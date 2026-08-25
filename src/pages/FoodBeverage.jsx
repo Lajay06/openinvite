@@ -269,7 +269,7 @@ export default function FoodBeveragePage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <label style={labelStyle}>Meal choices guests can pick on your RSVP form</label>
                   <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 4px' }}>
-                    Leave this empty and guests will see a default list (chicken, beef, fish, vegetarian, vegan, kids meal).
+                    Leave this empty and guests are not asked about meals at all. Add options here and the question appears on your RSVP form.
                   </p>
                   {mealOptions.map((opt) => (
                     <div key={opt.id} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10, alignItems: 'flex-end' }}>

@@ -18,6 +18,7 @@ import CapeTownSectionMark from '../layouts/CapeTownSectionMark';
 import VineRule from '../layouts/VineRule';
 import { getCachedWeddingPassword } from '@/lib/guestSitePassword';
 import RsvpForm from '@/components/rsvp/RSVPPage';
+import { formSurfaces } from '@/lib/surfaceTint';
 
 const STATUS = { idle: 'idle', sending: 'sending', sent: 'sent', error: 'error' };
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
@@ -26,6 +27,7 @@ export default function WeddingRSVPPage({
   weddingDetails, theme, typography, universeConfig,
   recognisedToken = '', onForgetGuest,
 }) {
+  const S = formSurfaces(theme);
   const content = weddingDetails.rsvpContent || {};
 
   const [email, setEmail] = useState('');
@@ -91,7 +93,7 @@ export default function WeddingRSVPPage({
   if (isParis) {
     const fieldColor = theme.lightText;
     return (
-      <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '110px 40px' }}>
+      <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100dvh', padding: '110px 40px' }}>
         <div style={{ maxWidth: '460px', margin: '0 auto', textAlign: 'center' }}>
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <ParisSectionMark kicker={copy.rsvpKicker} theme={theme} typography={typography} />
@@ -134,7 +136,7 @@ export default function WeddingRSVPPage({
                   onChange={(e) => { setEmail(e.target.value); if (status === STATUS.error) setStatus(STATUS.idle); }}
                   placeholder="you@example.com"
                   style={{
-                    width: '100%', textAlign: 'center', backgroundColor: 'transparent',
+                    width: '100%', textAlign: 'center', backgroundColor: S.surface,
                     border: 'none', borderBottom: `1px solid ${fieldColor}30`, padding: '8px 0',
                     color: fieldColor, fontSize: '1rem', fontFamily: typography.bodyFont, outline: 'none', boxSizing: 'border-box',
                   }}
@@ -180,7 +182,7 @@ export default function WeddingRSVPPage({
   if (isCapri) {
     const fieldColor = theme.lightText;
     return (
-      <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '90px 32px' }}>
+      <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100dvh', padding: '90px 32px' }}>
         <div style={{ maxWidth: '480px', margin: '0 auto' }}>
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <CapriSectionMark kicker={copy.rsvpKicker} theme={theme} typography={typography} accentColor={theme.accent} />
@@ -222,7 +224,7 @@ export default function WeddingRSVPPage({
                   onChange={(e) => { setEmail(e.target.value); if (status === STATUS.error) setStatus(STATUS.idle); }}
                   placeholder="you@example.com"
                   style={{
-                    width: '100%', backgroundColor: 'transparent',
+                    width: '100%', backgroundColor: S.surface,
                     border: 'none', borderBottom: `1px solid ${fieldColor}40`, padding: '8px 0',
                     color: fieldColor, fontSize: '1rem', fontFamily: typography.bodyFont, outline: 'none', boxSizing: 'border-box',
                   }}
@@ -268,7 +270,7 @@ export default function WeddingRSVPPage({
   if (isMykonos) {
     const fieldColor = theme.lightText;
     return (
-      <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '130px 48px' }}>
+      <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100dvh', padding: '130px 48px' }}>
         <div style={{ maxWidth: '460px', margin: '0 auto' }}>
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <MykonosSectionMark kicker={copy.rsvpKicker} theme={theme} typography={typography} accentColor={theme.accent} />
@@ -310,7 +312,7 @@ export default function WeddingRSVPPage({
                   onChange={(e) => { setEmail(e.target.value); if (status === STATUS.error) setStatus(STATUS.idle); }}
                   placeholder="you@example.com"
                   style={{
-                    width: '100%', backgroundColor: 'transparent',
+                    width: '100%', backgroundColor: S.surface,
                     border: 'none', borderBottom: `1px solid ${fieldColor}30`, padding: '8px 0',
                     color: fieldColor, fontSize: '1rem', fontFamily: typography.bodyFont, outline: 'none', boxSizing: 'border-box',
                   }}
@@ -356,7 +358,7 @@ export default function WeddingRSVPPage({
   if (isCapeTown) {
     const fieldColor = theme.lightText;
     return (
-      <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '100px 48px' }}>
+      <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100dvh', padding: '100px 48px' }}>
         <div style={{ maxWidth: '480px', margin: '0 auto' }}>
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <CapeTownSectionMark kicker={copy.rsvpKicker} theme={theme} typography={typography} />
@@ -400,7 +402,7 @@ export default function WeddingRSVPPage({
                   onChange={(e) => { setEmail(e.target.value); if (status === STATUS.error) setStatus(STATUS.idle); }}
                   placeholder="you@example.com"
                   style={{
-                    width: '100%', backgroundColor: 'transparent',
+                    width: '100%', backgroundColor: S.surface,
                     border: 'none', borderBottom: `1px solid ${fieldColor}40`, padding: '8px 0',
                     color: fieldColor, fontSize: '1rem', fontFamily: typography.bodyFont, outline: 'none', boxSizing: 'border-box',
                   }}
@@ -446,7 +448,7 @@ export default function WeddingRSVPPage({
   if (isKyoto) {
     const fieldColor = theme.lightText;
     return (
-      <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '130px 48px' }}>
+      <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100dvh', padding: '130px 48px' }}>
         <div style={{ maxWidth: '440px', margin: '0 auto' }}>
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <KyotoSectionMark kicker={copy.rsvpKicker} theme={theme} typography={typography} />
@@ -489,7 +491,7 @@ export default function WeddingRSVPPage({
                   onChange={(e) => { setEmail(e.target.value); if (status === STATUS.error) setStatus(STATUS.idle); }}
                   placeholder="you@example.com"
                   style={{
-                    width: '100%', backgroundColor: 'transparent', border: 'none',
+                    width: '100%', backgroundColor: S.surface, border: 'none',
                     borderBottom: `1px solid ${fieldColor}30`, padding: '8px 0',
                     color: fieldColor, fontSize: '1rem', fontFamily: typography.bodyFont, outline: 'none', boxSizing: 'border-box',
                   }}
@@ -535,7 +537,7 @@ export default function WeddingRSVPPage({
   if (isBrooklyn) {
     const fieldColor = theme.lightText;
     return (
-      <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '100px 32px' }}>
+      <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100dvh', padding: '100px 32px' }}>
         <div style={{ maxWidth: '480px', margin: '0 auto' }}>
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <BrooklynSectionMark kicker={copy.rsvpKicker} theme={theme} typography={typography} accentColor={theme.accent} />
@@ -578,7 +580,7 @@ export default function WeddingRSVPPage({
                   onChange={(e) => { setEmail(e.target.value); if (status === STATUS.error) setStatus(STATUS.idle); }}
                   placeholder="you@example.com"
                   style={{
-                    width: '100%', backgroundColor: 'transparent',
+                    width: '100%', backgroundColor: S.surface,
                     border: 'none', borderBottom: `2px solid ${fieldColor}`, padding: '8px 0',
                     color: fieldColor, fontSize: '1rem', fontFamily: typography.bodyFont, outline: 'none', boxSizing: 'border-box',
                   }}
@@ -624,7 +626,7 @@ export default function WeddingRSVPPage({
   if (isBali) {
     const fieldColor = theme.lightText;
     return (
-      <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '100px 40px' }}>
+      <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100dvh', padding: '100px 40px' }}>
         <div style={{ maxWidth: '520px', margin: '0 auto' }}>
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <BaliSectionMark kicker={copy.rsvpKicker} theme={theme} typography={typography} />
@@ -668,7 +670,7 @@ export default function WeddingRSVPPage({
                   onChange={(e) => { setEmail(e.target.value); if (status === STATUS.error) setStatus(STATUS.idle); }}
                   placeholder="you@example.com"
                   style={{
-                    width: '100%', backgroundColor: 'transparent',
+                    width: '100%', backgroundColor: S.surface,
                     border: 'none', borderBottom: `1px solid ${fieldColor}40`, padding: '8px 0',
                     color: fieldColor, fontSize: '1rem', fontFamily: typography.bodyFont, outline: 'none', boxSizing: 'border-box',
                   }}
@@ -714,7 +716,7 @@ export default function WeddingRSVPPage({
   if (isMinimal) {
     const fieldColor = theme.lightText;
     return (
-      <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '120px 24px' }}>
+      <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100dvh', padding: '120px 24px' }}>
         <div style={{ maxWidth: '460px', margin: '0 auto', textAlign: 'center' }}>
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <MinimalSectionMark kicker={copy.rsvpKicker} theme={theme} typography={typography} />
@@ -761,7 +763,7 @@ export default function WeddingRSVPPage({
                   style={{
                     width: '100%',
                     textAlign: 'center',
-                    backgroundColor: 'transparent',
+                    backgroundColor: S.surface,
                     border: 'none',
                     borderBottom: `1px solid ${fieldColor}30`,
                     padding: '8px 0',
@@ -816,7 +818,7 @@ export default function WeddingRSVPPage({
   }
 
   return (
-    <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '60px 24px' }}>
+    <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100dvh', padding: '60px 24px' }}>
       <div style={{ maxWidth: '520px', margin: '0 auto' }}>
         {isEditorial && (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
@@ -895,7 +897,7 @@ export default function WeddingRSVPPage({
                   placeholder="you@example.com"
                   style={{
                     width: '100%',
-                    backgroundColor: 'transparent',
+                    backgroundColor: S.surface,
                     border: 'none',
                     borderBottom: `1px solid ${theme.accent}40`,
                     padding: '8px 0',
@@ -972,7 +974,7 @@ function RecognisedRsvp({ token, onForgetGuest, weddingDetails, theme, typograph
   // is exactly what the per-universe line exists to avoid.
   const copy = universeConfig?.copy || {};
   return (
-    <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '60px 24px' }}>
+    <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100dvh', padding: '60px 24px' }}>
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
         <p style={{
           fontFamily: typography.bodyFont, fontSize: '0.9375rem', lineHeight: 1.75,
@@ -988,7 +990,10 @@ function RecognisedRsvp({ token, onForgetGuest, weddingDetails, theme, typograph
             type="button"
             onClick={onForgetGuest}
             style={{
-              background: 'none', border: 'none', padding: '8px 4px', cursor: 'pointer',
+              // M-2: measured at 37px in WebKit. WCAG 2.5.5 wants 44; the
+              // padding does the work so the underline still hugs the text.
+              background: 'none', border: 'none', padding: '13px 8px', cursor: 'pointer',
+              minHeight: 44, display: 'inline-flex', alignItems: 'center',
               fontFamily: typography.bodyFont, fontSize: '0.875rem',
               color: theme.lightText, opacity: 0.7,
               textDecoration: 'underline', textUnderlineOffset: '3px',

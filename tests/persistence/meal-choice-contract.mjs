@@ -70,6 +70,54 @@ export async function runMealChoiceContract() {
     ? pass('meal contract — DEFAULT_MEAL_OPTIONS still defines all six ids', MEALS.join(', '))
     : fail('meal contract — DEFAULT_MEAL_OPTIONS still defines all six ids', 'all six', `missing: ${missing.join(', ')}`));
 
+  // ── OUR DEFAULTS MUST NEVER IMPERSONATE THE COUPLE'S CHOICES ────────────
+  // Meal preference is opt-in: WeddingDetails.mealOptions is the switch, on
+  // BOTH surfaces. Before this, RSVPPage and GuestForm each fell back to
+  // DEFAULT_MEAL_OPTIONS when the couple had configured nothing — so guests
+  // were asked to choose from six options we invented, presented on the
+  // couple's own wedding site as the couple's menu, and the couple could
+  // record a choice against an id their menu does not contain for a guest who
+  // was never asked.
+  //
+  // The six survive ONLY as a label resolver, for values already stored
+  // against historical answers. Any file other than the definition importing
+  // them is reaching for a convenient defaults array and reintroducing the
+  // defect — which is exactly how it would come back.
+  const importers = files
+    .filter(f => path.relative(ROOT, f) !== DEFINITION_FILE)
+    .filter(f => /import\s*\{[^}]*DEFAULT_MEAL_OPTIONS[^}]*\}/.test(stripComments(fs.readFileSync(f, 'utf8'))))
+    .map(f => path.relative(ROOT, f));
+  results.push(importers.length === 0
+    ? pass('meal contract — nothing outside the definition imports DEFAULT_MEAL_OPTIONS', 'label resolver only')
+    : fail('meal contract — nothing outside the definition imports DEFAULT_MEAL_OPTIONS', 'no importers',
+           `${importers.join(', ')} — our defaults must not be offered as the couple's menu`));
+
+  // CONTROL: the importer detector must be able to see one, or the assertion
+  // above passes for a scan that never matched anything.
+  const detects = /import\s*\{[^}]*DEFAULT_MEAL_OPTIONS[^}]*\}/
+    .test("import { getWeddingEvents, DEFAULT_MEAL_OPTIONS } from '@/lib/weddingEvents';");
+  results.push(detects
+    ? pass('meal contract — control: an importing file IS detected', 'detector works')
+    : fail('meal contract — control: an importing file IS detected', 'detected', 'the scan cannot see an importer'));
+
+  // Both surfaces must GATE on the couple's menu, not merely prefer it.
+  for (const [rel, gate] of [
+    ['src/components/rsvp/RSVPPage.jsx', /\{hasMealOptions && \(/],
+    ['src/components/guests/GuestForm.jsx', /hasMealOptions \? \(/],
+  ]) {
+    const code = stripComments(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
+    results.push(gate.test(code) && /const hasMealOptions/.test(code)
+      ? pass(`meal contract — ${rel.split('/').pop()} gates on the couple's menu`, 'opt-in')
+      : fail(`meal contract — ${rel.split('/').pop()} gates on the couple's menu`, 'gated', 'renders regardless'));
+  }
+
+  // A gated control must say why it is absent — the silent-guard defect class.
+  const gf = stripComments(fs.readFileSync(path.join(ROOT, 'src/components/guests/GuestForm.jsx'), 'utf8'));
+  results.push(/function NoMenuPointer/.test(gf) && /Set up meal options in/.test(gf) && /FoodBeverage/.test(gf)
+    ? pass('meal contract — the couple is pointed at Food & beverage, not left guessing', 'linked pointer')
+    : fail('meal contract — the couple is pointed at Food & beverage, not left guessing', 'a pointer',
+           'the field vanishes with no explanation'));
+
   // The resolver has to keep its last-resort fallback: an id from a menu option
   // the couple has since deleted must render as itself, never blank.
   const resolverOk = /export function mealOptionLabel/.test(def)

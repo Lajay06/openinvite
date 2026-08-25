@@ -70,17 +70,25 @@ export function getWeddingEvents(weddingDetails) {
  * since neither has its own date field). Custom events DO carry their own
  * date/venueName directly. This looks those back up from the wedding record
  * for callers (e.g. invitation emails) that need venue + date per event.
+ *
+ * F-F: also returns address and mapsUrl. The RSVP event card showed name and
+ * time only — a guest deciding whether they can make the ceremony needs to
+ * know WHERE it is. Additive: existing callers destructure { venue, date }.
  */
 export function getEventVenueAndDate(weddingDetails, event) {
   if (event.event_id === MAIN_CEREMONY_EVENT_ID) {
     return {
       venue: weddingDetails?.mainCeremony?.venueName || '',
+      address: weddingDetails?.mainCeremony?.address || '',
+      mapsUrl: weddingDetails?.mainCeremony?.mapsUrl || '',
       date: weddingDetails?.weddingDate || null,
     };
   }
   if (event.event_id === RECEPTION_EVENT_ID) {
     return {
       venue: weddingDetails?.reception?.venueName || '',
+      address: weddingDetails?.reception?.address || '',
+      mapsUrl: weddingDetails?.reception?.mapsUrl || '',
       date: weddingDetails?.weddingDate || null,
     };
   }
@@ -88,6 +96,8 @@ export function getEventVenueAndDate(weddingDetails, event) {
     .find(e => (e.event_id || e.id) === event.event_id);
   return {
     venue: custom?.venueName || custom?.venue || '',
+    address: custom?.address || '',
+    mapsUrl: custom?.mapsUrl || '',
     date: custom?.date || null,
   };
 }

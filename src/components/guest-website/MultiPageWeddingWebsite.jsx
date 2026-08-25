@@ -282,6 +282,7 @@ export default function MultiPageWeddingWebsite() {
       <WeddingWebsiteNav
         weddingName={weddingDetails.coupleNames}
         theme={theme}
+        typography={typography}
         enabledPages={enabledPages}
         currentPage={page}
         weddingSlug={weddingSlug}
