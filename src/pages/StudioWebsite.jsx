@@ -195,7 +195,13 @@ const DEFAULT = {
   heroEffect: 'static',
   heroVideoUrl: '',
   coverPhoto: '',
-  welcomeMessage: 'We are overjoyed to celebrate with you.',
+  // EMPTY, like every field around it. This was pre-filled with 'We are
+  // overjoyed to celebrate with you.' — our words, sitting in the couple's
+  // draft as though they had written them, and persistable to their record on
+  // the next save. welcomeMessage is the SECOND link in the home page's
+  // tagline chain (homeContent.tagline || welcomeMessage || ''), so a default
+  // here reaches guests by the same route the removed fallback did.
+  welcomeMessage: '',
   coupleStory: '',
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp'],
   homeContent: { tagline: '', partnerOneName: '', partnerTwoName: '' },

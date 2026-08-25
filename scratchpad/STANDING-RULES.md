@@ -936,6 +936,38 @@ against a state of the code; the code moves; the ruling does not. The gap
 between them is not the ruling being wrong — it is the ruling being about a
 different codebase.
 
+## A default that publishes must be PRE-FILLED as a real value, never shown as a placeholder
+
+Grey placeholder text conventionally means "an example of what to write". If
+that same text then publishes verbatim, the convention has lied.
+
+Two sites failed this in opposite directions and drew two separate rulings
+before the advisor named the principle that subsumes both:
+
+- **The home tagline** published "We are overjoyed to celebrate with you." while
+  the builder showed that exact sentence as the field's PLACEHOLDER. A couple
+  could reasonably read the grey text as an example and believe leaving it blank
+  meant no tagline.
+- **The music request message** published one sentence while the editor's
+  placeholder said something else entirely, so the couple could not see what
+  their guests were reading at all.
+
+**The single requirement behind both: the couple must be able to see what will
+publish.** Applied — useful default copy is pre-filled as a real, editable,
+normal-weight value; copy we should not be writing for them is removed and the
+field publishes nothing when empty. Placeholders describe what to write and
+never become content.
+
+**Use `??`, not `||`.** `undefined` means never set and takes the default; `''`
+means deliberately cleared and publishes nothing. Those are different
+intentions and `||` collapses them.
+
+This supersedes both earlier phrasings ("either a filled default or publishes
+nothing, not both" and "the editor shows the actual string") — they were
+reaching for this.
+
+---
+
 ## When you fix one of a near-duplicate pair, go looking for the twin
 
 `ToastProvider` and `ToastViewport` sit ten lines apart in the same file and

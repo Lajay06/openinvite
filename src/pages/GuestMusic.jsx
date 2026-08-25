@@ -9,6 +9,7 @@ import { getCachedWeddingPassword } from '@/lib/guestSitePassword';
 import { resolveTypography, resolveUniverseConfig, resolveColors } from '@/lib/universeStyling';
 import GuestPageHeading from '@/components/guest-website/GuestPageHeading';
 import { loadFontFamilies, familiesFromGoogleSpec } from '@/lib/selfHostedFonts';
+import { DEFAULT_MUSIC_REQUEST_MESSAGE } from '@/lib/musicCopy';
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
@@ -198,7 +199,7 @@ export default function GuestMusic() {
         </div>
         <GuestPageHeading title={"Request a song"} theme={theme} typography={typography} universeConfig={universeConfig} textColor="#FFFFFF" />
         <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, maxWidth: 400, margin: '0 auto' }}>
-          {music?.requestMessage || "Help us build the soundtrack to our night. Request a song you'd love to hear."}
+          {music?.requestMessage ?? DEFAULT_MUSIC_REQUEST_MESSAGE}
         </p>
         {music?.requestsClosedDate && isOpen && (
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginTop: 12 }}>

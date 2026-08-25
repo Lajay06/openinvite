@@ -301,7 +301,14 @@ function GenericMastheadHero({ Masthead, Footer, weddingDetails, theme, typograp
 }
 
 function WeddingHomePageContent({ weddingDetails, theme, typography, universeConfig }) {
-  const tagline = weddingDetails.homeContent?.tagline || weddingDetails.welcomeMessage || 'We are overjoyed to celebrate with you.';
+  // NO INVENTED FALLBACK. This used to end in 'We are overjoyed to celebrate
+  // with you.' — our words, in the couple's first person, published to their
+  // guests as theirs. The builder showed that same sentence as the field's
+  // PLACEHOLDER, grayed out, which conventionally means "example" while it
+  // actually published verbatim. A couple could reasonably believe leaving it
+  // blank meant no tagline.
+  // Now it means no tagline. What the editor shows is what guests get.
+  const tagline = weddingDetails.homeContent?.tagline || weddingDetails.welcomeMessage || '';
   const prefersReduced = useReducedMotion();
   const isEditorial = universeConfig?.layout === 'editorial-masthead';
   const isMinimal = universeConfig?.layout === 'london-minimal';
@@ -763,6 +770,9 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
             {formattedDate || 'Date to be announced'}
           </p>
 
+          {/* Nothing renders when there is no tagline — an empty container
+              would leave its margins behind as an unexplained gap. */}
+          {tagline && (
           <motion.div
             initial={{ opacity: 0, y: prefersReduced ? 0 : 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -779,6 +789,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
           >
             {tagline}
           </motion.div>
+          )}
 
           {weddingDetails.slug && (
             <motion.div
