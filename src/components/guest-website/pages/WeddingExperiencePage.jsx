@@ -249,7 +249,7 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
                   if (items.length === 0) return null;
                   return (
                     <div key={key} style={{ marginBottom: 22 }}>
-                      <p style={{ ...label, marginBottom: 12 }}>{blockLabel}</p>
+                      <h3 style={{ ...label, margin: '0 0 12px' }}>{blockLabel}</h3>
                       <div style={{ display: 'grid', gap: 14 }}>
                         {items.map((item, ii) => (
                           <div
@@ -275,9 +275,9 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
                               </div>
                             )}
                             <div>
-                              <p style={{ ...body, opacity: 1, fontWeight: 600, margin: '0 0 3px', fontSize: '0.9375rem' }}>
+                              <h4 style={{ ...body, opacity: 1, fontWeight: 600, margin: '0 0 3px', fontSize: '0.9375rem' }}>
                                 {item.place_name}
-                              </p>
+                              </h4>
                               {(item.time || item.duration || item.category) && (
                                 <p style={{ ...body, fontSize: '0.75rem', opacity: 0.6, margin: '0 0 6px' }}>
                                   {[item.time, item.duration, item.category].filter(Boolean).join(' · ')}

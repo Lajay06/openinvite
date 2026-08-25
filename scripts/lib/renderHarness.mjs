@@ -308,7 +308,9 @@ export const GUEST_ROUTE_EXPECT = {
   'faq':         'FAQ',
   'stay':        'Where to stay',
   'transport':   'Getting here',
-  'experience':  'Your guide to',
+  // N-1 renamed the guest-facing word: the dashboard tool is still
+  // "Experience guide", the page a guest sees is "Experiences".
+  'experience':  'Experiences',
 };
 
 /**
