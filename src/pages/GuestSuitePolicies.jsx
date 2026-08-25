@@ -89,7 +89,7 @@ const STYLING_MODES = [
     enabled: false,
     name: 'Personal stylist',
     asks: 'who they are dressing, their style, how comfortable they want to be, their budget, and anything else they want to mention.',
-    result: 'Writes them a personal outfit suggestion, with colours and fabrics.',
+    result: 'Writes them a personal outfit suggestion, with colors and fabrics.',
   },
   {
     key: 'quick',
@@ -407,7 +407,7 @@ export default function GuestSuitePolicies() {
                 advisor as a REGRESSION REPORT ("the update has changed the
                 styling quiz... gender, budget and notes are missing") and was
                 investigated as a bad deploy. Nothing had shipped.
-                See STANDING-RULES, "a toggle that swaps behaviour must name
+                See STANDING-RULES, "a toggle that swaps behavior must name
                 what it replaces". */}
             <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 14px', fontFamily: PJS, lineHeight: 1.6 }}>
               Guests answer a few questions on your Styling page and get an outfit suggestion.
