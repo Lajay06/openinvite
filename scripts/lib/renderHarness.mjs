@@ -136,6 +136,16 @@ export const PUBLISHED_WEDDING = {
   mainCeremony: { venueName: 'The Old Observatory', address: '12 Greenwich Park, London', startTime: '15:00', time: '15:00' },
   reception: { venueName: 'The Long Room', address: '12 Greenwich Park, London', startTime: '18:00', time: '18:00' },
   rsvpContent: { rsvpDeadline: iso(200) },
+  // COUPLE-AUTHORED BLOCKS. Unseeded until now, which is why the block gap
+  // (P2d) and four of the eleven heading conversions could not be
+  // render-verified, and why F4/F5's motif sweeps measured an empty page.
+  homeContent: {
+    blocks: [
+      { id: 'b1', type: 'heading',   order: 0, content: { text: 'The weekend' } },
+      { id: 'b2', type: 'paragraph', order: 1, content: { text: 'Two days by the river, and one of them is the wedding. Everything you need is on these pages.' } },
+      { id: 'b3', type: 'quote',     order: 2, content: { text: 'We are so glad you are coming.', attribution: 'Ada & Alan' } },
+    ],
+  },
   musicContent: {},
   music: { playlists: [{ playlistUrl: 'https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M', enabled: true }], guestRequestsEnabled: true },
   ourStory: { headline: 'How we met', body: 'On a wet Tuesday in a bookshop.' },

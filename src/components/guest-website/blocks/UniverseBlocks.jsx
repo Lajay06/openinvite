@@ -743,7 +743,13 @@ export default function UniverseBlocks({ blocks, weddingDetails, theme, typograp
   const motionDisabled = !isMotionEnabled(weddingDetails);
 
   return (
-    <div style={{ backgroundColor: theme.lightBg, display: 'flex', flexDirection: 'column', gap: editable ? 0 : 40, padding: '64px 24px' }}>
+    // P2d: blocks sit FLUSH. `gap: editable ? 0 : 40` meant the couple
+    // arranged them touching in the builder and the published site pushed them
+    // 40px apart — a builder/publish parity gap as well as a design one, and
+    // the owner asked for them "up against each other". A block that wants
+    // breathing room carries its own padding (see spacingPadding below), which
+    // is the couple's choice; a container gap was ours.
+    <div style={{ backgroundColor: theme.lightBg, display: 'flex', flexDirection: 'column', gap: 0, padding: '64px 24px' }}>
       {editable && <InsertPoint index={0} onRequestInsert={onRequestInsert} theme={theme} />}
       {sorted.map((block, i) => {
         const Renderer = RENDERERS[block.type];
