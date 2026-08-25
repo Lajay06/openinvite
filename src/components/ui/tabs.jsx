@@ -8,7 +8,14 @@ const TabsList = React.forwardRef(({ className, ...props }, ref) => (
   <TabsPrimitive.List
     ref={ref}
     className={cn(
+      // A TAB ROW IS A SEQUENCE, so it SCROLLS rather than wraps: wrapping a tab
+      // set into two ragged lines loses the metaphor, and the page must never
+      // scroll sideways. `max-w-full` is what stops an inline-flex row from
+      // pushing the document wider than the viewport — overflow-x alone does
+      // not, because the element still sizes to its content.
+      // Measured: registry's row was 596px inside a 390px viewport.
       "inline-flex items-center border-b border-[rgba(10,10,10,0.1)] bg-transparent h-auto p-0 gap-0",
+      "max-w-full overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
       className
     )}
     {...props} />

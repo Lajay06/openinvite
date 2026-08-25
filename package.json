@@ -41,7 +41,8 @@
     "test:guest-font-effect": "node scripts/test-guest-font-effect.mjs",
     "pr:merge": "node scripts/pr-merge.mjs",
     "test:guest-no-invalid-date": "node scripts/test-guest-no-invalid-date.mjs",
-    "test:typography-pairings": "node scripts/test-typography-pairings.mjs"
+    "test:typography-pairings": "node scripts/test-typography-pairings.mjs",
+    "test:dashboard-no-overflow": "node scripts/test-dashboard-no-overflow.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.43",
