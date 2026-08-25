@@ -33,6 +33,7 @@ import SeoulMasthead from '../layouts/SeoulMasthead';
 import SeoulFooter from '../layouts/SeoulFooter';
 import ShanghaiMasthead from '../layouts/ShanghaiMasthead';
 import ShanghaiFooter from '../layouts/ShanghaiFooter';
+import MediaOverlay from '../MediaOverlay';
 
 /** Formats weddingDate for display, or null if unset/unparseable — never
  * lets `new Date('')` render the literal text "Invalid Date" to a guest. */
@@ -137,7 +138,7 @@ function UnmuteButton({ unmuted, onToggle }) {
  * Both are answered by the same thing: the poster frame, a visible play button,
  * and preload="none" so not a byte of video is fetched until the guest taps.
  */
-function HeroBackground({ coverPhoto, heroVideoUrl, prefersReduced }) {
+function HeroBackground({ coverPhoto, heroVideoUrl, prefersReduced, overlay }) {
   const [videoFailed, setVideoFailed] = useState(false);
   // Per-visit, per-wedding: an unmute on the home page still holds on the
   // story, schedule and RSVP pages. See src/lib/useSoundPreference.js.
@@ -167,7 +168,11 @@ function HeroBackground({ coverPhoto, heroVideoUrl, prefersReduced }) {
     />
   );
 
-  if (!showVideo) return imageFallback;
+  // The overlay rides on top of WHATEVER media rendered — image or video —
+  // because it is layered in the same absolutely-positioned container.
+  const withOverlay = (media) => (<>{media}<MediaOverlay overlay={overlay} /></>);
+
+  if (!showVideo) return withOverlay(imageFallback);
 
   if (holdForConsent) {
     // preload="none" is the whole point for data-saver: the poster is an
@@ -260,7 +265,7 @@ function GenericMastheadHero({ Masthead, Footer, weddingDetails, theme, typograp
   return (
     <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <HeroBackground coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
+        <HeroBackground overlay={weddingDetails.homeContent?.overlay} coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
         <div style={{ position: 'absolute', inset: 0, backgroundColor: `${theme.darkBg}45` }} />
 
         <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '120px 32px 60px' }}>
@@ -336,7 +341,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
     return (
       <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          <HeroBackground coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
+          <HeroBackground overlay={weddingDetails.homeContent?.overlay} coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
           <div style={{ position: 'absolute', inset: 0, backgroundColor: `${theme.darkBg}60` }} />
 
           <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '140px 40px 80px' }}>
@@ -368,7 +373,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
     return (
       <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          <HeroBackground coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
+          <HeroBackground overlay={weddingDetails.homeContent?.overlay} coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
           <div style={{ position: 'absolute', inset: 0, backgroundColor: `${theme.darkBg}45` }} />
 
           <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '120px 32px 60px' }}>
@@ -400,7 +405,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
     return (
       <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          <HeroBackground coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
+          <HeroBackground overlay={weddingDetails.homeContent?.overlay} coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
           <div style={{ position: 'absolute', inset: 0, backgroundColor: `${theme.darkBg}55` }} />
 
           <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', alignItems: 'center', padding: '150px 48px 90px' }}>
@@ -430,7 +435,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
     return (
       <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          <HeroBackground coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
+          <HeroBackground overlay={weddingDetails.homeContent?.overlay} coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
           <div style={{ position: 'absolute', inset: 0, backgroundColor: `${theme.darkBg}60` }} />
 
           <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', alignItems: 'center', padding: '140px 48px 80px' }}>
@@ -460,6 +465,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
       <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <HeroBackground
+            overlay={weddingDetails.homeContent?.overlay}
             coverPhoto={weddingDetails.coverPhoto}
             heroVideoUrl={weddingDetails.heroVideoUrl}
             prefersReduced={prefersReduced}
@@ -499,6 +505,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
       <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <HeroBackground
+            overlay={weddingDetails.homeContent?.overlay}
             coverPhoto={weddingDetails.coverPhoto}
             heroVideoUrl={weddingDetails.heroVideoUrl}
             prefersReduced={prefersReduced}
@@ -540,6 +547,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
       <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <HeroBackground
+            overlay={weddingDetails.homeContent?.overlay}
             coverPhoto={weddingDetails.coverPhoto}
             heroVideoUrl={weddingDetails.heroVideoUrl}
             prefersReduced={prefersReduced}
@@ -582,6 +590,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
       <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <HeroBackground
+            overlay={weddingDetails.homeContent?.overlay}
             coverPhoto={weddingDetails.coverPhoto}
             heroVideoUrl={weddingDetails.heroVideoUrl}
             prefersReduced={prefersReduced}
@@ -622,6 +631,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
       <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <HeroBackground
+            overlay={weddingDetails.homeContent?.overlay}
             coverPhoto={weddingDetails.coverPhoto}
             heroVideoUrl={weddingDetails.heroVideoUrl}
             prefersReduced={prefersReduced}
@@ -673,6 +683,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
         }}
       >
         <HeroBackground
+          overlay={weddingDetails.homeContent?.overlay}
           coverPhoto={weddingDetails.coverPhoto}
           heroVideoUrl={weddingDetails.heroVideoUrl}
           prefersReduced={prefersReduced}

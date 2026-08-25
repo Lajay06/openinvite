@@ -521,6 +521,51 @@ function ContentTab({ details, onChange }) {
           Takes priority over the hero photo when set. Falls back to the photo if the video fails to load.
         </p>
       </div>
+      {/* THE COUPLE'S MARK OVER THEIR OWN MEDIA. Sits directly under the hero
+          fields because that is what it lands on — photo or video, whichever
+          renders. The preview beside this panel composites it over the REAL
+          media, not a placeholder: a monogram previewed over a gray box and
+          shipped over a sunset is not a preview. */}
+      <MediaPicker
+        label="Monogram or mark"
+        value={details?.homeContent?.overlay?.url}
+        onChange={v => updateNested('homeContent', 'overlay', { ...(details?.homeContent?.overlay || {}), url: v })}
+        aspectRatio="16/9"
+      />
+      {details?.homeContent?.overlay?.url && (
+        <div style={{ marginBottom: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {[
+            { key: 'scale', label: 'Size',      min: 5,  max: 90,  def: 30, suffix: '% of width' },
+            { key: 'x',     label: 'Across',    min: 0,  max: 100, def: 50, suffix: '%' },
+            { key: 'y',     label: 'Down',      min: 0,  max: 100, def: 18, suffix: '%' },
+            // DEFAULT 0 — off. A scrim is a dial the couple turns, not a value
+            // we derive, and there is no automatic contrast rescue here.
+            { key: 'scrim', label: 'Darken photo behind it', min: 0, max: 80, def: 0, suffix: '%' },
+          ].map(f => {
+            const cur = details?.homeContent?.overlay?.[f.key];
+            const val = Number.isFinite(cur) ? cur : f.def;
+            return (
+              <label key={f.key} style={{ display: 'block' }}>
+                <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>{f.label}</span>
+                  <span style={{ fontVariantNumeric: 'tabular-nums' }}>{val}{f.suffix === '%' ? '%' : ` ${f.suffix}`}</span>
+                </span>
+                <input
+                  type="range" min={f.min} max={f.max} value={val}
+                  onChange={e => updateNested('homeContent', 'overlay', {
+                    ...(details?.homeContent?.overlay || {}), [f.key]: Number(e.target.value),
+                  })}
+                  style={{ width: '100%', accentColor: '#E03553' }}
+                />
+              </label>
+            );
+          })}
+          <button
+            onClick={() => updateNested('homeContent', 'overlay', undefined)}
+            style={{ alignSelf: 'flex-start', fontSize: 12, color: 'rgba(255,255,255,0.7)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+          >Remove mark</button>
+        </div>
+      )}
       <UTextarea
         label="Tagline"
         value={details?.homeContent?.tagline}
