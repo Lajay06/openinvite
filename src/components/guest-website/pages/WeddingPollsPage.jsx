@@ -379,17 +379,22 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography, un
           maxWidth: 680,
           margin: '0 auto',
         }}>
-          <p style={{
-            fontSize: 11,
+          {/* The hand-rolled kicker that used to sit here IS the heading now,
+              rendered by GuestPageHeading below as the universe's own mark. */}
+          <GuestPageHeading title={"Guest polls"} theme={theme} typography={typography} universeConfig={universeConfig} textColor={theme.darkText} />
+          {/* NOT a heading. The page's one h1 is the kicker above; this line is
+              distinct copy, not a repeat of it, so it stays — demoted in
+              semantics only. Its styling is unchanged. */}
+          <div style={{
+            fontSize: 'clamp(32px, 5vw, 52px)',
             fontWeight: 700,
-            letterSpacing: '0.12em',
-            color: `${theme.darkText}40`,
-            fontFamily: typography.bodyFont,
+            color: theme.darkText,
+            fontFamily: typography.headingFont || "'Plus Jakarta Sans', sans-serif",
             margin: '0 0 12px',
+            lineHeight: 1.1,
           }}>
-            Guest polls
-          </p>
-          <GuestPageHeading title={"Guest polls"} theme={theme} typography={typography} universeConfig={universeConfig} />
+            Have your say.
+          </div>
           <p style={{
             fontSize: 15,
             color: `${theme.darkText}50`,

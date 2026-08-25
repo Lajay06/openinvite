@@ -31,7 +31,7 @@ export default function WeddingMusicPage({ weddingDetails, theme, typography, un
     <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '60px 24px' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
         <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-          <GuestPageHeading title={"Song requests"} theme={theme} typography={typography} universeConfig={universeConfig} />
+          <GuestPageHeading title={"Our Music"} theme={theme} typography={typography} universeConfig={universeConfig} />
         </SectionReveal>
 
         {content.customMessage && (

@@ -253,6 +253,12 @@ function AccommodationHero({ details, city, typography, theme, universeConfig })
           hardcoded kicker AND a serif display title — the doubling the
           ruling removes. */}
       <GuestPageHeading title={"Where to stay"} theme={theme} typography={typography} universeConfig={universeConfig} />
+      {/* NOT a heading. "Staying in {city}" is distinct copy, not a repeat of
+          the kicker, so it survives Reading A — demoted in semantics only,
+          styling untouched. */}
+      <div style={{ fontFamily: typography.headingFont, fontWeight: 300, fontSize: 'clamp(32px, 8vw, 52px)', color: '#0A0A0A', lineHeight: 1.1, margin: '0 0 20px' }}>
+        Staying in {city}
+      </div>
       {details?.accommodation?.coupleNote ? (
         <p style={{ fontSize: 15, color: '#555', lineHeight: 1.7, maxWidth: 560, margin: '0 0 32px', fontFamily: typography.bodyFont }}>
           {details.accommodation.coupleNote}

@@ -196,7 +196,7 @@ export default function GuestMusic() {
         <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#1DB954', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
           <Music size={28} color="#000000" />
         </div>
-        <GuestPageHeading title={"Song requests"} theme={theme} typography={typography} universeConfig={universeConfig} textColor="#FFFFFF" />
+        <GuestPageHeading title={"Request a song"} theme={theme} typography={typography} universeConfig={universeConfig} textColor="#FFFFFF" />
         <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, maxWidth: 400, margin: '0 auto' }}>
           {music?.requestMessage || "Help us build the soundtrack to our night. Request a song you'd love to hear."}
         </p>

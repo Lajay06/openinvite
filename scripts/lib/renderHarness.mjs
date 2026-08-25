@@ -340,7 +340,15 @@ export async function seededContext(browser, { width, height, seed, user, onEnti
  */
 export async function presenceThenProperties(page, expect, assertFn) {
   const body = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' '));
-  const missing = expect.filter((s) => !body.includes(s));
+  // CASE-INSENSITIVE, deliberately. `innerText` APPLIES text-transform, so a
+  // heading styled `text-transform: uppercase` reads back as "WHERE TO STAY"
+  // however it is written in the source. This gate asks whether the expected
+  // CONTENT rendered; casing is a presentation question, enforced separately by
+  // tests/persistence/sentence-case-chrome.mjs (and guest artwork is exempt
+  // from that anyway). Comparing case-sensitively here reported two pages that
+  // rendered perfectly as PRESENCE FAILED — twice.
+  const hay = body.toUpperCase();
+  const missing = expect.filter((s) => !hay.includes(s.toUpperCase()));
   if (missing.length) return { ok: false, missing, skipped: true };
   const result = await assertFn(page);
   return { ok: true, missing: [], ...result };
