@@ -682,6 +682,49 @@ control, where changing it is a reviewable diff rather than a silent drift.
 
 ---
 
+## State the guard's QUESTION and the PROPERTY it protects in one sentence, and check they match
+
+Third instance in three days, and the cheapest rule to apply of any here.
+
+| | |
+|---|---|
+| the property | *can a change to this file reach a prerendered page?* |
+| what the scan asked | *does a marketing file import this file **directly**?* |
+
+Both questions are answerable and both answers were correct. Only one was
+relevant. On that mismatch #554 removed `websiteThemes.js` from the marketing
+sources and opened a silent stale-HTML hole — the exact incident class the
+guard was built for — while reporting itself green.
+
+**The worked example is `marketingSeo.js`: ZERO direct importers in the whole
+marketing tree, and it holds every prerendered page's title and description.**
+It is reached through `useMarketingSeo`. A direct-import scan calls it stale; it
+is load-bearing. One file was enough to refute the shape, and it was sitting in
+the same list.
+
+The family, now three deep:
+
+| Instance | property | what was actually checked |
+|---|---|---|
+| api-glob guard | does traffic reach the interceptor? | what `ctx.request` saw |
+| token strip count | does THIS unit strip tokens? | did the file mention it anywhere |
+| marketing sources | can a change reach a prerendered page? | is there a direct import |
+
+**Write the two down side by side before writing the check.** If they are not
+the same sentence, the check is measuring a proxy — and a proxy can be green
+while the property is false.
+
+### Advisor's share, recorded at their instruction
+
+*"I approved a scan whose definition was narrower than the property, having
+written the pre-mortem rule that morning. The rule works; applying it is the
+part that has to be deliberate."*
+
+That is the real lesson. Every rule in this file was available when each of
+these shipped. Having the rule is not the same as running it.
+
+---
+
 ## An assertion behind an early exit cannot fire in the case it exists for
 
 `test-prerendered-freshness.mjs` exits early when nothing marketing-relevant

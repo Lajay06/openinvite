@@ -316,6 +316,24 @@ needs an effect-level assertion, not only a source-level one.
    something once needed it.
 3. Both, sequenced: (1) to fix guests now, (2) as a separate considered change.
 
+## BEHIND THE OWNER'S QUEUE — do not pick these up first (advisor ruling 2026-08-25)
+
+Four PRs in a row went to build infrastructure while a mobile defect batch
+waited. These are real and none of them is blocking:
+
+- **GUEST-COPY-SPLIT** — move `rsvpIntro`/`rsvpSent` (and the rest of
+  `UNIVERSE_CONFIGS[x].copy`) out of `websiteThemes.js`. The only fix that gets
+  BOTH properties: no false positives on guest-copy changes, no hole on
+  structural ones. Advisor and terminal both dismissed it as unnecessary on the
+  same wrong premise. Cost of not doing it: one CI round-trip per copy change.
+- **Five-entry assertion extension** — the transitive reachability check now
+  covers all six watched sources; extending the same treatment to the page and
+  component patterns is the remaining half.
+- **PRERENDER-GUARD-SCOPE option 3** — compare generated output instead of
+  watching source paths. Now known to be viable in principle: two consecutive
+  prerenders are **byte-identical**, so the output is deterministic and a
+  regenerate-and-diff guard would not produce animation-state false positives.
+
 ## PUBLISH-PARITY — A NAMED PROGRAMME, NOT A SWEEP
 
 **THE DASHBOARD PROMISES MORE THAN THE SITE DELIVERS.** On a paid product that
