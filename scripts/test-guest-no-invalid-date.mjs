@@ -23,6 +23,7 @@
  *     is rendered by a different branch per layout.
  */
 /* eslint-env browser */
+/* global document */  // used inside page.evaluate(), which runs in the browser
 import { chromium } from 'playwright';
 import { seededContext, PUBLISHED_WEDDING, dismissEntrance } from './lib/renderHarness.mjs';
 import { UNIVERSE_CONFIGS } from '../src/lib/websiteThemes.js';
