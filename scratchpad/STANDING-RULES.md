@@ -916,6 +916,35 @@ the common cause but not the class.)
 
 ---
 
+## When measurement and reasoning disagree, BOTH are suspects
+
+This file has said *measure, do not assert* all session, and that was right five
+times in one day. The transport fixture is the counter-case, and the two belong
+together.
+
+**The static reading predicted `theme.lightText` on `theme.darkBg` would fail
+4.5:1 on all 20 palettes. The first measurement showed zero failures.** The
+measurement was wrong: the harness seed wrote `note.body` where the page reads
+`note.text`, so the text never rendered and the guard could not see the defect
+it was pointed at. A fixture that does not match the shape under test measures
+nothing and reports it as clean.
+
+Same day, the same shape from the other direction: the contrast guard treated a
+translucent background as opaque, so `rgba(255,255,255,0.04)` over a near-black
+page read as WHITE and scored real, readable text at **1:1**. Acting on that
+would have "fixed" a page that was never broken. **A guard producing work
+rather than safety is a guard that is wrong**, and it looks exactly like a
+guard that is right.
+
+**The complete instruction, with "presence before properties" above:**
+
+> Measure rather than assert. And when a measurement contradicts a
+> well-founded prediction, **investigate the instrument before revising the
+> belief.**
+
+Neither side is automatically the truth. The way through both cases was
+refusing to accept either answer until they agreed.
+
 ## Presence before properties
 
 A render pass first proves the expected content strings are **present**, and
