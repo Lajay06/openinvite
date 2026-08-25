@@ -8,6 +8,14 @@ import { fetchGuestLinks } from '@/lib/guestLinks';
 
 const WHATSAPP_GREEN = "#25D366";
 
+// INVITE-URL-UNDEFINED, WhatsApp channel. rsvpLink used to fall back to '',
+// so a failed link fetch rendered "Please RSVP: " with nothing after it and
+// the couple sent a dead invitation to a guest. Same consequence as
+// /rsvp/undefined and equally unsendable. When no link can be produced the
+// placeholder is now LEFT IN PLACE rather than substituted away, so it is
+// visible in the textarea, explained above it, and the send is blocked.
+const RSVP_PLACEHOLDER = '{rsvp_link}';
+
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
   letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
@@ -35,6 +43,7 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
   const [phone, setPhone] = useState(guest?.phone || "");
   const [loading, setLoading] = useState(false);
   const [variables, setVariables] = useState({});
+  const [linkState, setLinkState] = useState('loading'); // loading | ready | unavailable
 
   React.useEffect(() => { loadVariables(); }, []);
 
@@ -53,8 +62,14 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
       // Minted and read server-side (Track E) — awaited, unlike the old
       // fire-and-forget write, so the link is never rendered before the token
       // it points at actually exists.
-      const linkMap = guest?.id ? await fetchGuestLinks([guest.id]) : {};
-      const rsvpLink = linkMap[guest?.id]?.rsvpUrl || '';
+      let rsvpLink = '';
+      try {
+        const linkMap = guest?.id ? await fetchGuestLinks([guest.id], { strict: true }) : {};
+        rsvpLink = linkMap[guest?.id]?.rsvpUrl || '';
+      } catch (linkErr) {
+        console.error('[WhatsAppCompose] link fetch failed:', linkErr.message);
+      }
+      setLinkState(rsvpLink ? 'ready' : 'unavailable');
 
       const inv = await getMyInvitation();
       if (inv) {
@@ -71,6 +86,9 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
   const renderTemplate = (tpl) => {
     let rendered = tpl;
     Object.entries(variables).forEach(([key, value]) => {
+      // An empty rsvp_link must NOT collapse to nothing — that is the dead
+      // invitation. Leave the placeholder so it is visible and blockable.
+      if (key === 'rsvp_link' && !value) return;
       rendered = rendered.replace(new RegExp(`\\{${key}\\}`, "g"), value || "");
     });
     if (guest?.name) rendered = rendered.replace(/{guest_name}/g, guest.name);
@@ -79,6 +97,9 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
 
   const handleSend = async () => {
     if (!message.trim() || !phone.trim()) return;
+    // Hard stop: an unresolved placeholder means we have no link for this
+    // guest. Sending would deliver a broken invitation that cannot be recalled.
+    if (message.includes(RSVP_PLACEHOLDER)) return;
     setLoading(true);
     const cleaned = phone.replace(/\D/g, "");
     const formatted = !cleaned.startsWith("61") && !cleaned.startsWith("1") ? "61" + cleaned : cleaned;
@@ -88,6 +109,12 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
     setLoading(false);
     onClose();
   };
+
+  // An unresolved placeholder is the only signal that matters here: the
+  // couple may have edited the message, so branch on what is actually
+  // about to be sent rather than on which template was chosen.
+  const linkMissing = message.includes(RSVP_PLACEHOLDER);
+  const sendBlocked = loading || !message.trim() || !phone.trim() || linkMissing;
 
   return (
     <Sheet open onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -136,6 +163,14 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
           <span style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{message.length} characters</span>
         </div>
 
+        {linkMissing && (
+          <div style={{ background: 'rgba(224,53,83,0.08)', border: '1px solid rgba(224,53,83,0.35)', padding: '10px 12px', fontSize: 12, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            {linkState === 'loading'
+              ? 'Still preparing this guest\u2019s invitation link\u2026'
+              : 'We could not create an invitation link for this guest, so this message would arrive without one. Nothing has been sent. Close this and try again, or send from the guest list.'}
+          </div>
+        )}
+
         <div style={{ background: '#F5F5F5', padding: '10px 12px', fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Opens WhatsApp on your device or browser
         </div>
@@ -152,8 +187,8 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
       {/* Footer */}
       <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.12)', display: 'flex', gap: 10, flexShrink: 0 }}>
         <button onClick={onClose} className="btn-editorial-secondary" style={{ flex: 1, fontSize: 13 }}>Cancel</button>
-        <button onClick={handleSend} disabled={loading || !message.trim() || !phone.trim()}
-          style={{ flex: 1, padding: '9px 16px', background: WHATSAPP_GREEN, color: '#FFFFFF', border: 'none', borderRadius: 999, cursor: loading || !message.trim() || !phone.trim() ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", opacity: loading || !message.trim() || !phone.trim() ? 0.5 : 1, transition: 'opacity 0.15s' }}>
+        <button onClick={handleSend} disabled={sendBlocked}
+          style={{ flex: 1, padding: '9px 16px', background: WHATSAPP_GREEN, color: '#FFFFFF', border: 'none', borderRadius: 999, cursor: sendBlocked ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", opacity: sendBlocked ? 0.5 : 1, transition: 'opacity 0.15s' }}>
           Open in WhatsApp
         </button>
       </div>

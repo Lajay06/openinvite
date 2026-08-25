@@ -115,5 +115,28 @@ export async function runInviteLinkIntegrity() {
   check('the render-time call site stays guarded',
     /\?\s*buildRsvpUrl\(/.test(preview), 'a throw during render would be worse than the bug');
 
+  // ── the WhatsApp channel: same defect, different clothes ───────────────
+  // rsvpLink fell back to '' and the template collapsed to "Please RSVP: "
+  // with nothing after it — a dead invitation delivered to a guest, and just
+  // as unrecallable as an emailed /rsvp/undefined.
+  const wa = strip(read('src/components/messages/WhatsAppCompose.jsx'));
+
+  check('WhatsApp: the link fetch is strict', /fetchGuestLinks\([\s\S]{0,80}?strict: true/.test(wa),
+    'a failed fetch is not an empty link');
+  check('WhatsApp: an empty link is never substituted away',
+    /if \(key === 'rsvp_link' && !value\) return;/.test(wa),
+    'the placeholder stays visible instead of collapsing to nothing');
+
+  const handler = wa.slice(wa.indexOf('const handleSend'));
+  check('WhatsApp: send refuses a message with an unresolved link',
+    /if \(message\.includes\(RSVP_PLACEHOLDER\)\) return;/.test(handler.slice(0, handler.indexOf('};'))),
+    'hard stop, not just a disabled button');
+  check('  and the button is disabled with it',
+    /const sendBlocked = [\s\S]{0,120}?linkMissing/.test(wa) && /disabled=\{sendBlocked\}/.test(wa),
+    'the control agrees with the guard');
+  check('  and the couple is told why',
+    /\{linkMissing && \(/.test(wa) && /could not create an invitation link/.test(wa),
+    'never a silently dead button');
+
   return results;
 }
