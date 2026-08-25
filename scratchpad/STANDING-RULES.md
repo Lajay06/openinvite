@@ -647,6 +647,41 @@ investigation into a real defect.
 
 ---
 
+## Accepted copy is committed before the ticket that consumes it opens
+
+The 19 `rsvpIntro` lines were owner-accepted on 2026-08-24, scoped into the fix
+wave, and **#547 shipped without them**. The owner found it by reading his own
+RSVP page: *"the rsvp page is not fixed and talks about resending."*
+
+The landing check — *grep the actual strings to prove accepted content landed* —
+had been instituted days earlier **by the terminal that then failed to run it**.
+But it could not have run in any case: the accepted set lived in an advisor
+document outside the repo, so there was nothing to check against. The failure
+was reported twice as "the copy is missing" before the cause was named.
+
+**The rule, and it binds the advisor as much as the terminal:**
+
+> Every accepted copy set gets a **docs-only commit to the repo at the moment
+> of acceptance**, BEFORE the ticket that consumes it opens.
+
+This is the enforceable half of *acceptance is not a merge*. Acceptance that
+lives only in a conversation is not a decision the product can be checked
+against — it is a memory, and memories do not survive a context reset or a
+different pair of eyes.
+
+`claude/rsvp-experience-ruling.md` is the record;
+`tests/persistence/accepted-copy-landed.mjs` reads it and asserts every line is
+on its own universe — per-universe, because a line present on the WRONG
+universe satisfies a file-wide grep and is wrong on every guest's screen.
+
+**What the guard cannot do**, stated because a guard that implies more than it
+proves is the failure it exists to prevent: it cannot stop someone editing the
+ruling doc to match whatever the code says. Nothing technical can. What
+protects that is the doc being a dated record of an owner decision in version
+control, where changing it is a reviewable diff rather than a silent drift.
+
+---
+
 ## A guarantee that depends on step order is not a guarantee
 
 `buildGuestShell` asserted "#root is empty" on `dist/index.html`. That held
