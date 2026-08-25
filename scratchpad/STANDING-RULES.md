@@ -528,6 +528,39 @@ nothing explains.** That is the shape to recognise, whatever the surface.
 
 ---
 
+## Computed font-family measures loading; declared font-family measures intent
+
+A production font sweep read `getComputedStyle(el).fontFamily` across a guest
+page and returned **Plus Jakarta Sans on 86 of 86 elements**. That number was
+true. The conclusion drawn from it — "the typography resolver is not working" —
+was false, and it cost a full investigation.
+
+The inline styles on those same elements said `font-family: Cormorant Garamond,
+serif` and `font-family: Jost, sans-serif`. The resolver was correct. The
+**faces were never loaded**: the page was a standalone route outside
+`MultiPageWeddingWebsite`, so nothing called `loadFontFamilies`, and the browser
+fell back to the inherited product face. WebKit reported the USED family, not
+the declared one.
+
+**The two measurements answer different questions:**
+
+| Read | Answers |
+|---|---|
+| computed `fontFamily` | is the right font *loaded and applied* |
+| the inline `style` attribute | is the right font *declared* |
+
+A wiring bug and a loading bug are indistinguishable from the computed value
+alone. **Measure both, or you cannot tell which you have** — and a page that
+declares correctly while loading nothing looks exactly like a page whose
+resolver is broken.
+
+The control that separated them was the advisor's: measure a KNOWN-CORRECT page
+in the same pass, same timing, same method. `/stay` registered
+`[Plus Jakarta Sans, Cormorant Garamond, Jost]`; `/accommodation` registered
+`[Plus Jakarta Sans]` alone. One line of evidence, and the ambiguity collapsed.
+
+---
+
 ## A scan is only as good as its definition of the thing it scans for
 
 The publish-parity sweep asked "which couple-facing promises have no guest-side

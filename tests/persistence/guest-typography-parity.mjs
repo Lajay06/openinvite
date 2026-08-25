@@ -135,6 +135,35 @@ export async function runGuestTypographyParity() {
   check('  control: a || fallback after a typography read is not flagged',
     [...fallback.matchAll(LITERAL_RE)].length === 0, 'defensive code is fine');
 
+  // ── DECLARING A FACE IS NOT LOADING IT ─────────────────────────────────
+  // #547 wired typography into two STANDALONE guest routes — pages outside
+  // MultiPageWeddingWebsite's tree — and did not add the font-loading effect
+  // those pages need. The inline styles correctly asked for the universe's
+  // faces, the faces were never fetched, and the browser fell back to the
+  // inherited Plus Jakarta Sans on every element.
+  //
+  // It presents EXACTLY like a broken resolver, which is why it cost a whole
+  // investigation: measured on production, /stay registered
+  // [Plus Jakarta Sans, Cormorant Garamond, Jost] and /accommodation
+  // registered [Plus Jakarta Sans] alone, while both had correct inline
+  // font-family declarations.
+  const STANDALONE = ['src/pages/GuestAccommodation.jsx', 'src/pages/GuestMusic.jsx', 'src/components/rsvp/RSVPPage.jsx'];
+  for (const rel of STANDALONE) {
+    const src = strip(readFileSync(resolve(ROOT, rel), 'utf8'));
+    const consumes = /resolveTypography\(/.test(src);
+    const loads = /loadFontFamilies\(familiesFromGoogleSpec\(/.test(src);
+    check(`${rel.split('/').pop()}: a standalone route loads the faces it declares`,
+      !consumes || loads,
+      loads ? 'loadFontFamilies present' : 'DECLARES BUT NEVER LOADS');
+  }
+
+  // CONTROL: the detector must be able to see a page that consumes without
+  // loading, or the assertions above pass for a test that matched nothing.
+  const consumesOnly = 'const t = resolveTypography(details); return <div style={{fontFamily: t.bodyFont}} />;';
+  check('  control: consume-without-load IS detectable',
+    /resolveTypography\(/.test(consumesOnly) && !/loadFontFamilies\(familiesFromGoogleSpec\(/.test(consumesOnly),
+    'detector works');
+
   // The nav is the one that makes correct pages look wrong, and it is rendered
   // by two components — the live site and the builder preview. Parity or the
   // couple sees one thing while their guests see another.
