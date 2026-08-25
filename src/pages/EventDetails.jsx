@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyRecords } from "@/lib/resolveMyWedding";
 import { interactiveDivProps } from "@/lib/a11y";
@@ -500,6 +502,7 @@ function initialTab() {
 }
 
 export default function EventDetailsPage() {
+  const navigate = useNavigate();
   const [tab, setTab] = useState(initialTab);
   useAvaFocus();
   const [record, setRecord] = useState(null);
@@ -704,6 +707,19 @@ export default function EventDetailsPage() {
     setShowEventForm(true);
   };
 
+  // P2a. A couple who creates "Welcome" expects guests to be able to reply to
+  // it. They cannot: getGuestEventResponse defaults a custom event to
+  // invited:false and defaultEventResponses seeds only the main events, so a
+  // new event is invisible on every RSVP until someone opens each guest and
+  // ticks it. The event exists, nobody is invited, and nothing says so.
+  //
+  // Asked at the moment of creation, and BOTH answers navigate to Guests:
+  // "invite everyone" writes to every Guest record, and that write belongs on
+  // the page that already loads the guest list — which is also the only place
+  // the COUNT is known before it runs. EventDetails never becomes a guest
+  // writer.
+  const [invitePrompt, setInvitePrompt] = useState(null); // {event_id, name}
+
   const closeEventForm = () => {
     setShowEventForm(false);
     setEditingEvent(null);
@@ -718,7 +734,7 @@ export default function EventDetailsPage() {
     // never re-reading latestRef after an async gap. `changedKey` is the single
     // field this save actually touches — the write below sends only that field,
     // never the whole record.
-    let nextData, changedKey;
+    let nextData, changedKey, newlyCreated = null;
 
     if (editingFixed) {
       const key  = editingFType === 'ceremony' ? 'mainCeremony' : 'reception';
@@ -750,12 +766,14 @@ export default function EventDetailsPage() {
       const eid   = uid();
       const newEv = { ...saved, id: eid, event_id: eid };
       nextData = { ...(latestRef.current || {}), [key]: [...list, newEv] };
+      newlyCreated = { event_id: eid, name: saved.name || 'this event' };
     }
 
     // Synchronously commit to ref + React state, then save with the explicit value.
     latestRef.current = nextData;
     setRecord(nextData);
     closeEventForm();
+    if (newlyCreated) setInvitePrompt(newlyCreated);
 
     clearTimeout(autoSaveRef.current);
     const id = recordIdRef.current;
@@ -976,6 +994,46 @@ export default function EventDetailsPage() {
           onCancel={closeEventForm}
           locationBias={locationBias}
         />
+      )}
+
+      {/* P2a: asked once, at the moment of creation. Both answers go to
+          Guests — the bulk write happens where the list is already loaded and
+          where the count can be stated before it runs. Dismissible, which is
+          why the event card below also reports "no guests invited yet". */}
+      {invitePrompt && (
+        <Dialog open onOpenChange={(o) => { if (!o) setInvitePrompt(null); }}>
+          <DialogContent className="max-w-[420px]">
+            <div style={{ padding: 24 }}>
+              <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: '0 0 6px', fontFamily: PJS }}>
+                Who is invited to {invitePrompt.name}?
+              </p>
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px', lineHeight: 1.6, fontFamily: PJS }}>
+                Guests only see an event they are invited to. Until you choose,
+                nobody is invited to this one.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <button
+                  className="btn-primary"
+                  onClick={() => navigate(`${createPageUrl('Guests')}?inviteAll=${encodeURIComponent(invitePrompt.event_id)}&eventName=${encodeURIComponent(invitePrompt.name)}`)}
+                >
+                  Everyone on the guest list
+                </button>
+                <button
+                  className="btn-editorial-secondary"
+                  onClick={() => navigate(`${createPageUrl('Guests')}?setEvents=${encodeURIComponent(invitePrompt.event_id)}`)}
+                >
+                  Choose guests
+                </button>
+                <button
+                  onClick={() => setInvitePrompt(null)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, padding: '6px 0' }}
+                >
+                  Decide later
+                </button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
 
       <style>{`
