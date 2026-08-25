@@ -292,10 +292,14 @@ CANCELLED for now, they may return to service.
 
 ---
 
-## OWNER CHECKS OUTSTANDING
+## OWNER CHECKS
 
-**#544 network-off test** — proves the send aborts rather than mailing a dead
-link. Load Guests, select **two or more** guests with emails (two so the count
+**#544 network-off test — CONFIRMED BY THE OWNER 2026-08-25. PASSED:** the send
+aborted and nothing was mailed. #544 is verified end to end **including its
+failure path**, which is the half that normally ships untested. Steps kept
+below as the reusable regression procedure, not as outstanding work.
+
+Load Guests, select **two or more** guests with emails (two so the count
 reads plural), open Send invites, reach the final step, THEN turn off Wi-Fi (or
 Safari → Develop → Network Link Conditioner → 100% Loss), then tap Send.
 *Expected:* a red toast — "Could not reach the invitation-link service" or
@@ -316,6 +320,16 @@ explanation above the footer, and the green button disabled.
 lacking a token. **Next time the owner opens their guest list, those two should
 gain tokens and no others.** Report it when seen — it costs nothing and proves
 the sweep.
+
+**Owner's unfurl check on `/w/john-suzanne`** — cache-busting with a query
+param, since iMessage caches per URL. Verified on production that this works:
+`?cb=1` and `?utm=imessage2` both still serve the guest shell (2,145 bytes,
+`og:title="You are invited"`, `X-Robots-Tag` present) — the rewrite matches on
+path, so the query is preserved and harmless.
+**What success looks like:** a compact card reading "You are invited" with no
+image. `twitter:card` is `summary` and there is deliberately no `og:image`, so
+Apple will not draw a large image card. A generic card is the CORRECT current
+state, not a failure — names, date and hero photograph are Option B.
 
 **Owner's Safari retry of Copy links** (#543). Three outcomes, all informative:
 copies (fix confirmed), fallback panel opens (activation fixed, permission
