@@ -805,7 +805,11 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
 
   // ── RSVP form (step === 'rsvp') — one card per invited event ───────────────
   return (
-    <div style={{ ...shellOuter(theme), ...F }}>
+    <div className="wb-guest-root" style={{
+      ...shellOuter(theme), ...F,
+      '--wb-heading-font': typography.headingFont,
+      '--wb-body-font': typography.bodyFont,
+    }}>
       <div style={shellInner}>
 
         {/* Logo and wedding header: the standalone page owns these, the site

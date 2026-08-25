@@ -244,11 +244,20 @@ export async function presenceThenProperties(page, expect, assertFn) {
  */
 export const GUEST_ROUTE_EXPECT = {
   '':            'AN INVITATION',
+  // WEDDING_PAGES calls the landing page 'home'; the router serves it at the
+  // bare /w/:slug. Same page, two names, so both are listed.
+  'home':        'AN INVITATION',
+  // STANDALONE pages — App.jsx routes these explicitly, ahead of the /:page
+  // catch-all, so they are NOT the in-site component of the same name.
+  'accommodation': 'Where to Stay',
   'our-story':   'OUR STORY',
   'celebration': 'THE CELEBRATION',
   'rsvp':        'RSVP',
   'registry':    'Registry',
-  'music':       'Song requests',
+  // /w/:slug/music hits the standalone GuestMusic (App.jsx lists it before
+  // the catch-all), which renders "Request a song" — not the in-site
+  // WeddingMusicPage's "Song requests". Derivation surfaced this drift.
+  'music':       'Request a song',
   'photos':      'Photos',
   'styling':     'What will you wear?',
   'polls':       'Guest polls',
