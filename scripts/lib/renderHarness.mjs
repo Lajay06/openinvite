@@ -30,15 +30,20 @@
  */
 /* global localStorage, document */  // used inside page.evaluate(), which runs in the browser
 
+import { assertSeedMatchesSchemas } from './seedSchema.mjs';
+import { CONTRACTS } from './stubContracts.mjs';
 const DAY = 86400000;
 const iso = (offsetDays) => new Date(Date.now() + offsetDays * DAY).toISOString();
 
 /** A wedding with enough shape that stat tiles compute non-zero values. */
 export const SEED = {
   WeddingDetails: [{
-    id: 'w1', partner1Name: 'Ada', partner2Name: 'Alan',
-    weddingDate: iso(300), venueName: 'The Old Observatory',
-    slug: 'ada-and-alan', guestCount: 41, created_by: 'fixture@example.com',
+    id: 'w1', couple1Name: 'Ada', couple2Name: 'Alan', coupleNames: 'Ada & Alan',
+    weddingDate: iso(300),
+    // guestCount is a STRING on the entity, not a number. partner1Name /
+    // partner2Name were seed inventions read by ZERO product files; the real
+    // fields are couple1Name / couple2Name.
+    slug: 'ada-and-alan', guestCount: '41', created_by: 'fixture@example.com',
     // A CUSTOM EVENT, because without one the per-event invite flow cannot be
     // rendered at all: getWeddingEvents derives only Ceremony and Reception
     // from the main record, both isMain, and every guest is already invited to
@@ -49,60 +54,73 @@ export const SEED = {
         startTime: '18:00', venueName: 'The Trafalgar Tavern' },
     ],
   }],
+  // EVERY FIELD BELOW IS A REAL ONE, checked against base44/entities/*.jsonc by
+  // assertSeedMatchesSchemas() at startup. The rows this replaces invented
+  // fields wholesale — first_name/last_name (used by ZERO product files),
+  // table_id (the entity says table_assignment), seats (capacity), title
+  // (song_title / event_name), body (message), board (board_name), price and
+  // purchased (neither exists). A seed field the product never reads is not a
+  // harmless extra: the surface renders its EMPTY STATE and the pass reports
+  // it as clean.
   Guest: [
-    { id:'g1', name:'Grace Hopper',   first_name:'Grace', last_name:'Hopper',   rsvp_status:'attending', attending:true,  table_id:'t1', invited:true, created_by:'fixture@example.com' },
-    { id:'g2', name:'Katherine J.',   first_name:'Katherine', last_name:'J.',   rsvp_status:'attending', attending:true,  table_id:'t2', invited:true, created_by:'fixture@example.com' },
-    { id:'g3', name:'Alan Turing',    first_name:'Alan', last_name:'Turing',    rsvp_status:'pending',   invited:true, created_by:'fixture@example.com' },
-    { id:'g4', name:'Edsger D.',      first_name:'Edsger', last_name:'D.',      rsvp_status:'declined',  attending:false, invited:true, created_by:'fixture@example.com' },
+    { id:'g1', name:'Grace Hopper',  email:'grace@example.com',  rsvp_status:'attending', table_assignment:'t1', meal_choice:'chicken', event_responses:[], created_by:'fixture@example.com' },
+    { id:'g2', name:'Katherine J.',  email:'kj@example.com',     rsvp_status:'attending', table_assignment:'t1', meal_choice:'fish',    event_responses:[], created_by:'fixture@example.com' },
+    { id:'g3', name:'Alan Turing',   email:'alan@example.com',   rsvp_status:'pending',   table_assignment:'t2', event_responses:[], created_by:'fixture@example.com' },
+    { id:'g4', name:'Edsger D.',     email:'edsger@example.com', rsvp_status:'declined',  event_responses:[], created_by:'fixture@example.com' },
   ],
   Table: [
-    { id:'t1', name:'Table 1', seats:8,  shape:'round', x:200, y:200, created_by:'fixture@example.com' },
-    { id:'t2', name:'Table 2', seats:10, shape:'round', x:520, y:200, created_by:'fixture@example.com' },
+    { id:'t1', name:'Table 1', capacity:8,  shape:'round', x:200, y:200, assigned_guests:[{ seat_index:0, guest_id:'g1' }, { seat_index:1, guest_id:'g2' }], created_by:'fixture@example.com' },
+    { id:'t2', name:'Table 2', capacity:10, shape:'round', x:520, y:200, assigned_guests:[{ seat_index:0, guest_id:'g3' }],      created_by:'fixture@example.com' },
   ],
-  VenueAsset: [{ id:'va1', type:'dance_floor', x:360, y:420, created_by:'fixture@example.com' }],
+  VenueAsset: [{ id:'va1', name:'Dance floor', type:'dance-floor', x:360, y:420, created_by:'fixture@example.com' }],
   // TodoList's kanban columns only render once notes exist -- the known gap
   // that left its case source-verified in the item 6 evidence table.
   Note: [
-    { id:'n1', title:'Book the florist',           status:'Ideas',       completed:false, view_type:'todo', priority:'High',   created_by:'fixture@example.com' },
-    { id:'n2', title:'Confirm the string quartet', status:'In progress', completed:false, view_type:'todo', priority:'Medium', created_by:'fixture@example.com' },
-    { id:'n3', title:'Send save the dates',        status:'Done',        completed:true,  view_type:'todo', priority:'Low',    created_by:'fixture@example.com' },
+    { id:'n1', title:'Book the florist',           status:'Ideas',       completed:false, view_type:'todo', priority:'high',   created_by:'fixture@example.com' },
+    { id:'n2', title:'Confirm the string quartet', status:'In progress', completed:false, view_type:'todo', priority:'medium', created_by:'fixture@example.com' },
+    { id:'n3', title:'Send save the dates',        status:'Done',        completed:true,  view_type:'todo', priority:'low',    created_by:'fixture@example.com' },
   ],
   Task: [
     { id:'k1', title:'Final dress fitting', completed:false, due_date: iso(30), created_by:'fixture@example.com' },
     { id:'k2', title:'Confirm numbers',     completed:true,  due_date: iso(-5), created_by:'fixture@example.com' },
   ],
   Schedule: [
-    { id:'s1', title:'Ceremony',  type:'ceremony',  start_time:'15:00', date: iso(300), created_by:'fixture@example.com' },
-    { id:'s2', title:'Reception', type:'reception', start_time:'18:00', date: iso(300), created_by:'fixture@example.com' },
-    { id:'s3', title:'Brunch',    type:'other',     start_time:'10:00', date: iso(301), created_by:'fixture@example.com' },
+    { id:'s1', event_name:'Ceremony',  category:'ceremony', start_time:'15:00', event_date: iso(300).slice(0,10), location:'The Old Observatory', created_by:'fixture@example.com' },
+    { id:'s2', event_name:'Reception', category:'reception', start_time:'18:00', event_date: iso(300).slice(0,10), location:'The Long Room', created_by:'fixture@example.com' },
+    { id:'s3', event_name:'Brunch',    category:'other',    start_time:'10:00', event_date: iso(301).slice(0,10), location:'The Trafalgar Tavern', created_by:'fixture@example.com' },
   ],
   Vendor: [
-    { id:'v1', name:'Bloom & Vine',  category:'florist',      status:'booked',      quoted_price:2400, created_by:'fixture@example.com' },
-    { id:'v2', name:'Kestrel Films', category:'videographer', status:'quoted',      quoted_price:3800, created_by:'fixture@example.com' },
-    { id:'v3', name:'Ilford Studio', category:'photographer', status:'researching',                    created_by:'fixture@example.com' },
+    { id:'v1', name:'Bloom & Vine',  category:'flowers',      status:'booked',      quoted_price:2400, created_by:'fixture@example.com' },
+    { id:'v2', name:'Kestrel Films', category:'videography',  status:'quoted',      quoted_price:3800, created_by:'fixture@example.com' },
+    { id:'v3', name:'Ilford Studio', category:'photography',  status:'researching',                    created_by:'fixture@example.com' },
     { id:'v4', name:'Sable Beauty',  category:'beauty',       status:'booked',      quoted_price:900,  created_by:'fixture@example.com' },
   ],
   MoodboardItem: [
-    { id:'m1', board:'Flowers', category:'flowers', image_url:'', created_by:'fixture@example.com' },
-    { id:'m2', board:'Table',   category:'decor',   image_url:'', created_by:'fixture@example.com' },
+    { id:'m1', title:'Peonies',    board_name:'Flowers', category:'flowers', image_url:'', created_by:'fixture@example.com' },
+    { id:'m2', title:'Long table', board_name:'Table',   category:'decor',   image_url:'', created_by:'fixture@example.com' },
   ],
   VowSpeech: [
     { id:'vs1', type:'vow',    title:"Ada's vows",   created_by:'fixture@example.com' },
     { id:'vs2', type:'speech', title:'Best man',     created_by:'fixture@example.com' },
   ],
   Music: [
-    { id:'mu1', title:'First dance', approved:true,  created_by:'fixture@example.com' },
-    { id:'mu2', title:'Guest pick',  approved:false, created_by:'fixture@example.com' },
+    { id:'mu1', song_title:'First dance', artist:'The Quartet', approved:true,  created_by:'fixture@example.com' },
+    { id:'mu2', song_title:'Guest pick',  artist:'Unknown',     approved:false, created_by:'fixture@example.com' },
   ],
   RegistryItem: [
-    { id:'r1', name:'Copper pan', price:120, purchased:true,  created_by:'fixture@example.com' },
-    { id:'r2', name:'Linen set',  price:240, purchased:false, created_by:'fixture@example.com' },
+    { id:'r1', store_name:'Copper & Co', url:'https://example.com/pan',  description:'A copper pan', created_by:'fixture@example.com' },
+    { id:'r2', store_name:'Linen House', url:'https://example.com/linen', description:'A linen set', created_by:'fixture@example.com' },
   ],
   RegistryProduct: [],
-  CustomGift: [{ id:'cg1', name:'Honeymoon fund', target:1500, created_by:'fixture@example.com' }],
+  CustomGift: [{ id:'cg1', title:'Honeymoon fund', requested_amount:1500, description:'A week somewhere warm.', created_by:'fixture@example.com' }],
+  // created_date IS REQUIRED HERE. Base44 stamps it on every row, and
+  // Messages.jsx does `format(new Date(message.created_date), …)` — date-fns
+  // THROWS RangeError on an invalid date rather than returning a string, so an
+  // unstamped row white-screens the page behind the error boundary. The seed
+  // omitted it and the page rendered its error state, not its list.
   GuestMessage: [
-    { id:'gm1', guest_name:'Grace Hopper', message:'Cannot wait!',    body:'Cannot wait!',    read:false, replied:false, created_date: iso(-3), created_by:'fixture@example.com' },
-    { id:'gm2', guest_name:'Alan Turing',  message:'Congratulations', body:'Congratulations', read:true,  replied:true,  created_date: iso(-1), reply_sent_at: iso(-1), created_by:'fixture@example.com' },
+    { id:'gm1', guest_name:'Grace Hopper', message:'Cannot wait!',    read:false, replied:false, created_date: iso(-3), created_by:'fixture@example.com' },
+    { id:'gm2', guest_name:'Alan Turing',  message:'Congratulations', read:true,  replied:true,  created_date: iso(-1), reply_sent_at: iso(-1), created_by:'fixture@example.com' },
   ],
   Invitation: [],
   Notification: [],
@@ -128,7 +146,6 @@ export const PUBLISHED_WEDDING = {
   slug: 'ada-and-alan',
   coupleNames: 'Ada & Alan',
   couple1Name: 'Ada', couple2Name: 'Alan',
-  partner1Name: 'Ada', partner2Name: 'Alan',
   weddingDate: iso(300),
   activeUniverse: 'london',
   passwordProtected: false,
@@ -312,10 +329,20 @@ export const FIXTURE_USER = {
  * Stub every backend call a page makes. Returns seeded rows for known
  * entities, `[]` for unknown ones, and the fixture user for identity.
  */
-export async function stubBackend(ctx, { seed = SEED, user = FIXTURE_USER, onEntity } = {}) {
-  const handler = async (route) => {
-    const url = route.request().url();
-    const json = (body) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+/**
+ * The stub's response body for a URL, with no browser involved.
+ * Extracted so assertStubContracts() can check the SHAPE each stub returns
+ * against the shape its real endpoint returns — the check that would have
+ * caught the { details: … } envelope on /api/my-wedding-details.
+ */
+export function stubBodyFor(url, { seed = SEED, user = FIXTURE_USER } = {}) {
+  let captured;
+  const json = (body) => { captured = body; };
+  resolveStub(url, seed, user, json, () => {});
+  return captured;
+}
+
+function resolveStub(url, seed, user, json, onEntity) {
 
     if (/\/me\b|auth\/me|users\/me/.test(url)) return json(user);
 
@@ -345,9 +372,20 @@ export async function stubBackend(ctx, { seed = SEED, user = FIXTURE_USER, onEnt
     // died on `undefined.poll_votes` behind an error boundary. Every pass that
     // needed this route paid the same diagnosis. It is stubbed once, here.
     if (/\/api\/rsvp-lookup/.test(url))       return json({ guest: RSVP_GUEST, wedding: PUBLISHED_WEDDING });
-    if (/\/api\/wedding-attendees/.test(url)) return json({ attendees: [], count: 0 });
+    if (/\/api\/wedding-attendees/.test(url)) return json({ attendees: [], circle: [] });
     if (/\/api\/guest-/.test(url))            return json({ ok: true });
     return json([]);
+}
+
+/**
+ * Stub every backend call a page makes. Returns seeded rows for known
+ * entities, `[]` for unknown ones, and the fixture user for identity.
+ */
+export async function stubBackend(ctx, { seed = SEED, user = FIXTURE_USER, onEntity } = {}) {
+  const handler = async (route) => {
+    const url = route.request().url();
+    const json = (body) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+    return resolveStub(url, seed, user, json, onEntity);
   };
   // A URL PREDICATE, not a glob. `'**/api/**'` looks right and is a trap: it
   // matches any path with an `api` SEGMENT, including Vite's own dev-server
@@ -364,8 +402,39 @@ export async function stubBackend(ctx, { seed = SEED, user = FIXTURE_USER, onEnt
   await ctx.route((url) => isBackend(typeof url === 'string' ? url : url.href), handler);
 }
 
+/**
+ * The stubs must return the ENVELOPE their real endpoints return. A stub with
+ * the right NAME and the wrong SHAPE makes every page that reads it render its
+ * no-data state, and the pass reports that as clean — which is exactly what
+ * `{ details: … }` on /api/my-wedding-details did to every dashboard pass.
+ */
+function assertStubContractsSync(seed) {
+  const bad = [];
+  for (const c of CONTRACTS) {
+    const body = stubBodyFor(`http://localhost${c.match}`, { seed });
+    if (body === undefined) { bad.push(`${c.match}: no stub answers this path`); continue; }
+    if (!c.ok(body)) bad.push(`${c.match}\n      want: ${c.want}\n      got : ${JSON.stringify(body).slice(0, 80)}\n      per : ${c.cite}`);
+  }
+  if (bad.length) throw new Error(`\n  HARNESS STUBS DO NOT MATCH THEIR ENDPOINTS — ${bad.length}:\n    ` + bad.join('\n    ') + '\n');
+}
+
+let seedChecked = false;
+function assertSeedOnce(seed) {
+  if (seedChecked) return;
+  seedChecked = true;
+  const drift = assertSeedMatchesSchemas(seed, { WeddingDetails: [PUBLISHED_WEDDING] });
+  assertStubContractsSync(seed);
+  if (drift.length) {
+    console.log(`  [harness] ${drift.length} known schema-drift field(s) in use — see SCHEMA_DRIFT`);
+  }
+}
+
 /** A context with the dummy token planted and the backend stubbed. */
 export async function seededContext(browser, { width, height, seed, user, onEntity } = {}) {
+  // VALIDATE BEFORE RENDERING, not after measuring. Five times a seed field the
+  // product never reads made a surface render its empty state while the pass
+  // reported it clean. This throws instead.
+  assertSeedOnce(seed || SEED);
   const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1 });
   await ctx.addInitScript(() => {
     // A dummy string, never a real credential: it exists only to get
