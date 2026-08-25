@@ -647,6 +647,59 @@ investigation into a real defect.
 
 ---
 
+## A guarantee that depends on step order is not a guarantee
+
+`buildGuestShell` asserted "#root is empty" on `dist/index.html`. That held
+only while nothing had overwritten `dist/index.html` yet — and
+`npm run build:prerender` runs build → prerender → apply, where
+`scripts/prerender.mjs:151-153` writes every snapshot into `dist/` as well as
+`prerendered/`, homepage included. By the time the assertion ran inside that
+command, its input was the marketing snapshot and the build failed.
+
+**CI could never have caught it**: CI runs build → apply, with no prerender
+step. So the only person who could hit it was a developer running the exact
+command the prerendered-freshness guard tells them to run.
+
+The assertion was right. The design was wrong — it depended on an ordering
+that was true in one pipeline and false in another.
+
+**Ask not only WHERE a fix lives, but UNDER WHICH ORDERINGS it holds.** If a
+guarantee reads an artifact another step can rewrite, it is a race with extra
+words. The fix here was to stop depending on order at all: the shell is built
+from the repo's `index.html` template, which is empty by definition and cannot
+be overwritten by a build step.
+
+Third costume of the api-glob lesson, and the family is now clear:
+| | the question that was not asked |
+|---|---|
+| api-glob | where does the fix live so the next author inherits it? |
+| effect vs intent | what would make this guard pass while the defect exists? |
+| step order | under which orderings does this guarantee hold? |
+
+### Worked example — a guard that cannot run where the thing it guards happens
+
+`test-guest-font-effect.mjs` was written to assert computed styles in CI, and
+launched **webkit**. CI installs **chromium only**, so it failed on the merge
+SHA rather than protecting anything. A guard that cannot execute in the place
+the defect ships is not a guard. It now defaults to the engine CI has, with
+`RENDER_ENGINE=webkit` for the passes that genuinely need Safari.
+
+### Worked example — closing a declared limit finds things
+
+The same guard's pre-mortem named a limit it could not cover: a new guest route
+nobody added to its hand-written list of four. The advisor's push was that a
+list a human must remember to update is the same shape as the five call sites
+that each minted their own token before #538 gave them one write boundary.
+
+Derived from `src/App.jsx` and `WEDDING_PAGES` instead, four routes became
+fifteen — and it **immediately** caught a stale expectation on a route renamed
+hours earlier, plus two routes with no entry at all. Within the same session it
+then caught the `Guide → Experiences` rename before the author did.
+
+**DECLARING A LIMIT IS HONEST; CLOSING IT FINDS THINGS.**
+
+---
+
 ## A fixed bug that returns is a fix in the wrong place
 
 `page.route('**/api/**')` also matches Vite's own `/src/api/base44Client.js`.
