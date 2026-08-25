@@ -179,6 +179,47 @@ renders 🗳️ (E1 batch) · the report-only CSP refuses `blob:` URLs on every 
 page, so `/api/csp-report` is being spammed by a policy that is not actually
 blocking anything — low-priority CSP tuning.
 
+## PUBLISH-PARITY — A NAMED PROGRAMME, NOT A SWEEP
+
+**THE DASHBOARD PROMISES MORE THAN THE SITE DELIVERS.** On a paid product that
+is a trust and refund-risk issue before it is a bug list, and it is exactly the
+class the owner keeps finding by walking around — which means the four below
+are what one walk surfaced, not what exists.
+
+| Control | Promise | Actual | Disposition |
+|---|---|---|---|
+| Policies → "Display on website" | appears in the website's Policies section **and Experience Guide** | **no such section exists anywhere** | D-1b, building now as "Good to know" |
+| Experience guide → Itinerary | part of the published guide | **delivered in the guest-safe payload, discarded at the render** | D-1a, building now |
+| Guest Suite → Live stream | "visible to guests" | **no guest page or route found** | **SCOPE REPORT FIRST** — may never have been built, rather than never wired |
+| Website builder → fonts | the couple's chosen fonts | `fontOverride` **absent from the live Base44 schema** — dropped on write | blocked on a schema declaration (advisor) |
+| Website → hero effect | parallax / zoom / static | declared, **zero readers** | known dead scaffolding (PHASE2-HERO-TIERS-PRESCOPE) |
+
+**Verified working, for the record:** Schedule · Q&A · Registry · Polls ·
+Accommodation · Transport · Music · Guest-experience "who's coming"
+(server-enforced in `api/wedding-attendees.js`) · meal options.
+
+**Fixed on the spot 2026-08-25:** `FoodBeverage.jsx` promised "guests will see a
+default list (chicken, beef, fish…)", which F-B made false. A dashboard
+describing behaviour the product no longer has is the same defect this
+programme exists to find, and it was mine.
+
+**Method warning for whoever extends this** — see STANDING-RULES, "A scan is
+only as good as its definition of the thing it scans for". The first pass
+wrongly cleared `mealOptions` (scan excluded `src/components/rsvp/`) and wrongly
+condemned `showAttending` (enforced server-side, not read from the field).
+Neither was findable by re-running the scan.
+
+## STYLING-QUIZ-CHOICE (from R-1)
+
+**OWNER RULED: keep both questionnaires. Make the toggle an EXPLICIT NAMED
+CHOICE, not a switch**, showing what each one asks so a couple can see the
+trade:
+- **AI stylist** — gender, style, comfort, budget, notes → a generated look.
+- **Quick guide** — events, style, budget → a read-only style guide.
+
+**Do not delete either.** See STANDING-RULES, "A toggle that swaps behaviour
+must name what it replaces" — this is the worked example that produced the rule.
+
 ## QUEUED, in order
 
 **DONE 2026-08-25 — the Option A guest shell (#546, `0179667`).** Guest routes
