@@ -4,6 +4,17 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Edit2, Trash2, DollarSign, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
+import { parseStoredDate } from '@/lib/guestDate';
+
+// A guarded date-fns format: date-fns THROWS RangeError on an invalid date, so
+// an unstamped or malformed value white-screens the page behind the error
+// boundary. A truthy check on the value is not enough — it stops undefined and
+// passes anything malformed through.
+const formatStored = (value, pattern) => {
+  const d = parseStoredDate(value);
+  return d ? format(d, pattern) : '';
+};
+
 
 // Filled, not outlined (dashboard round 6, item 10) — same colour-per-
 // category grouping as before, now as a solid background + contrasting
@@ -147,7 +158,7 @@ export default function BudgetList({ items, onEdit, onDelete, readOnly = false, 
                   </TableCell>
                   <TableCell>
                     <span style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                      {item.payment_date ? format(new Date(item.payment_date), 'MMM d, yyyy') : '—'}
+                      {item.payment_date ? formatStored(item.payment_date, 'MMM d, yyyy') : '—'}
                     </span>
                   </TableCell>
                   <TableCell>
