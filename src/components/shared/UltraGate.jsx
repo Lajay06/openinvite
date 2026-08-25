@@ -13,7 +13,7 @@ const F = { fontFamily: "'Plus Jakarta Sans', sans-serif" };
 export default function UltraGate({
   heading = 'This is an Ultra feature',
   description = 'Upgrade to Ultra to unlock this feature.',
-  tabs = ['Website', 'Assets', 'Experience Guide', 'Policies', 'Share'],
+  tabs = ['Website', 'Assets', 'Experience Guide', 'Good to know', 'Share'],
 }) {
   const navigate = useNavigate();
   return (

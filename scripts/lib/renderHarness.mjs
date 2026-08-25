@@ -125,7 +125,8 @@ export const PUBLISHED_WEDDING = {
   passwordProtected: false,
   locked: false,
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music',
-                 'photos', 'styling', 'polls', 'faq', 'stay', 'transport', 'experience'],
+                 'photos', 'styling', 'polls', 'faq', 'stay', 'transport', 'experience',
+                 'good-to-know'],
   // REAL EVENTS, PERMANENTLY. getWeddingEvents() derives Ceremony and Reception
   // from these; without them a guest has no invited events, so RSVPPage renders
   // ZERO EventCards and therefore ZERO attend controls. A render sheet built on
@@ -139,7 +140,50 @@ export const PUBLISHED_WEDDING = {
   music: { playlists: [{ playlistUrl: 'https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M', enabled: true }], guestRequestsEnabled: true },
   ourStory: { headline: 'How we met', body: 'On a wet Tuesday in a bookshop.' },
   faq: [{ question: 'Is there parking?', answer: 'Yes, behind the observatory.' }],
-  accommodation: {}, transport: {}, experienceGuide: {},
+  accommodation: {}, transport: {},
+  // A PUBLISHED guide WITH an itinerary. Empty here for a long time, which is
+  // why the guest-page sweep measured a near-empty Experiences page and read
+  // clean: the richest thing a couple builds was neither seeded nor rendered.
+  // Seeded in its STORED form — the product does the transforming.
+  experienceGuide: {
+    published: true,
+    destination: 'Greenwich, London',
+    couplePicks: [{ name: 'The Trafalgar Tavern', category: 'Eat', note: 'Our first date.' }],
+    categories: {},
+    itinerary: {
+      days: 2,
+      schedule: [
+        {
+          day: 1, title: 'Arrivals and the river',
+          summary: 'Settle in, then walk the Thames path while the light is good.',
+          blocks: {
+            morning: [{ id: 'a1', type: 'custom', place_name: 'Check in at the Devonport', category: 'Stay', time: '11:00 AM', duration: '~1 hr', description: 'Drop your bags and take the courtyard entrance — it is easy to miss from the road.' }],
+            afternoon: [{ id: 'a2', type: 'custom', place_name: 'Greenwich Market', category: 'Eat', time: '1:00 PM', duration: '~2 hrs', description: 'Lunch under the glass roof. The Ethiopian stall at the back is the one to find.' }],
+            evening: [],
+          },
+        },
+        {
+          day: 2, title: 'The wedding day',
+          summary: 'A slow start, then the Observatory.',
+          blocks: {
+            morning: [{ id: 'b1', type: 'custom', place_name: 'Breakfast at the Pavilion', category: 'Eat', time: '9:00 AM', duration: '~1 hr', description: 'Right by the park gates, so you can walk up afterwards.' }],
+            afternoon: [], evening: [],
+          },
+        },
+      ],
+    },
+  },
+  // POLICIES WITH DISPLAY FLAGS, mixed on and off. Three shown, three hidden —
+  // so a render proves the flag is honoured in both directions rather than
+  // proving only that something appeared.
+  weddingPolicies: {
+    dressCode:   { guidance: 'Garden formal — the lawn is uneven, so heels are a gamble.', weatherNote: 'It turns cold once the sun goes behind the hill.', display: true },
+    children:    { option: 'all', message: 'There will be a quiet room upstairs if anyone needs it.', display: true },
+    gifts:       { option: 'no_gifts', registryUrl: '', message: '', display: true },
+    dietary:     { description: 'Vegetarian and gluten-free available.', contactName: 'Ada', contactEmail: 'ada@example.com', display: false },
+    photography: { unplugged: true, message: '', display: false },
+    lateArrival: { policy: 'Doors close at 3pm.', display: false },
+  },
   created_by: 'fixture@example.com', created_by_id: 'u1',
 };
 

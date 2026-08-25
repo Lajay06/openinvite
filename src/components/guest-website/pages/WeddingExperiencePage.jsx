@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, MapPin, ExternalLink, Heart } from 'lucide-react';
+import { Star, MapPin, ExternalLink, Heart, CalendarDays } from 'lucide-react';
 import SectionReveal from '../SectionReveal';
 import { isMotionEnabled } from '@/lib/universeStyling';
 
@@ -17,6 +17,13 @@ const CATEGORIES = [
   { key: 'weddingWeekend', label: 'Wedding weekend essentials' },
 ];
 
+/** The itinerary's three parts of a day, in the order a day happens. */
+const BLOCKS = [
+  { key: 'morning', label: 'Morning' },
+  { key: 'afternoon', label: 'Afternoon' },
+  { key: 'evening', label: 'Evening' },
+];
+
 function photoUrl(ref) {
   if (!ref) return null;
   return `/api/places-photo?ref=${encodeURIComponent(ref)}&maxwidth=600`;
@@ -29,6 +36,13 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
   const destination = guide.destination || weddingDetails.mainCeremony?.address?.split(',').slice(-3).join(', ') || '';
 
   const enabledCats = CATEGORIES.filter(c => cats[c.key]?.enabled && (cats[c.key]?.places || []).length > 0);
+
+  // Defensive on every level: a day with no blocks, a block that is not an
+  // array, an activity with no photo. The couple's builder can leave any of
+  // these empty and a guest page must not care.
+  const itineraryDays = Array.isArray(guide.itinerary?.schedule)
+    ? guide.itinerary.schedule.filter(d => d && d.blocks && BLOCKS.some(b => (d.blocks[b.key] || []).length > 0))
+    : [];
 
   const heading = {
     fontFamily: typography.headingFont,
@@ -65,7 +79,7 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
 
         <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
           <h1 style={{ ...heading, fontSize: 'clamp(2rem,5vw,3.5rem)', textAlign: 'center', marginBottom: 16 }}>
-            {destination ? `Your guide to ${destination.split(',')[0].trim()}` : 'Experience guide'}
+            {destination ? `Experiences in ${destination.split(',')[0].trim()}` : 'Experiences'}
           </h1>
         </SectionReveal>
 
@@ -198,8 +212,94 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
           );
         })}
 
+        {/* ── The itinerary (D-1a) ──────────────────────────────────────────
+            The couple builds a day-by-day plan in Experience guide → Itinerary
+            — days, morning/afternoon/evening blocks, each activity with a
+            photo, time, duration, category and a written description. It
+            arrives in the guest-safe payload in full and, before this, NOTHING
+            READ IT: the page rendered `categories` and `couplePicks` only, so
+            the richest thing a couple builds here never reached a guest.
+            Same publish-parity class as fontOverride, one layer further along
+            — that one is stopped at the API allowlist; this one cleared the
+            allowlist and was discarded at the render. */}
+        {itineraryDays.length > 0 && (
+          <div style={{ marginBottom: 56 }}>
+            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+              <p style={{ ...label, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <CalendarDays size={11} color={theme.accent} /> Day by day
+              </p>
+            </SectionReveal>
+
+            {itineraryDays.map((day, di) => (
+              <SectionReveal
+                key={day.day ?? di}
+                universeConfig={universeConfig}
+                disabled={!isMotionEnabled(weddingDetails)}
+                style={{ marginBottom: 40 }}
+              >
+                <h2 style={{ ...heading, fontSize: 'clamp(1.25rem,3vw,1.75rem)', margin: '0 0 6px' }}>
+                  {day.title || `Day ${day.day ?? di + 1}`}
+                </h2>
+                {day.summary && (
+                  <p style={{ ...body, margin: '0 0 20px', maxWidth: 640 }}>{day.summary}</p>
+                )}
+
+                {BLOCKS.map(({ key, label: blockLabel }) => {
+                  const items = Array.isArray(day.blocks?.[key]) ? day.blocks[key] : [];
+                  if (items.length === 0) return null;
+                  return (
+                    <div key={key} style={{ marginBottom: 22 }}>
+                      <p style={{ ...label, marginBottom: 12 }}>{blockLabel}</p>
+                      <div style={{ display: 'grid', gap: 14 }}>
+                        {items.map((item, ii) => (
+                          <div
+                            key={item.id || ii}
+                            style={{
+                              display: 'grid',
+                              gridTemplateColumns: item.photo_url ? '92px 1fr' : '1fr',
+                              gap: 14,
+                              alignItems: 'start',
+                              borderTop: `1px solid ${theme.lightText}18`,
+                              paddingTop: 14,
+                            }}
+                          >
+                            {item.photo_url && (
+                              <div style={{ width: 92, height: 92, overflow: 'hidden', background: `${theme.lightText}0D` }}>
+                                <img
+                                  src={item.photo_url}
+                                  alt={item.place_name || ''}
+                                  loading="lazy"
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                  onError={e => { e.target.style.display = 'none'; }}
+                                />
+                              </div>
+                            )}
+                            <div>
+                              <p style={{ ...body, opacity: 1, fontWeight: 600, margin: '0 0 3px', fontSize: '0.9375rem' }}>
+                                {item.place_name}
+                              </p>
+                              {(item.time || item.duration || item.category) && (
+                                <p style={{ ...body, fontSize: '0.75rem', opacity: 0.6, margin: '0 0 6px' }}>
+                                  {[item.time, item.duration, item.category].filter(Boolean).join(' · ')}
+                                </p>
+                              )}
+                              {item.description && (
+                                <p style={{ ...body, fontSize: '0.875rem', margin: 0 }}>{item.description}</p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </SectionReveal>
+            ))}
+          </div>
+        )}
+
         {/* Empty state */}
-        {enabledCats.length === 0 && couplePicks.length === 0 && (
+        {enabledCats.length === 0 && couplePicks.length === 0 && itineraryDays.length === 0 && (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ textAlign: 'center', padding: '60px 24px' }}>
             <p style={{ ...body, opacity: 0.4, fontStyle: 'italic' }}>
               The experience guide will be added here by the couple.

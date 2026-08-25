@@ -65,6 +65,7 @@ import { runIndexingPosture } from '../tests/persistence/indexing-posture.mjs';
 import { runGuestShell } from '../tests/persistence/guest-shell.mjs';
 import { runRouteInterceptionGuard } from '../tests/persistence/route-interception-guard.mjs';
 import { runGuestTypographyParity } from '../tests/persistence/guest-typography-parity.mjs';
+import { runPublishParity } from '../tests/persistence/publish-parity.mjs';
 import { runWeatherProxy } from '../tests/persistence/weather-proxy.mjs';
 import { runThirdPartyAssets } from '../tests/persistence/third-party-assets.mjs';
 import { runUltraGateUnification } from '../tests/persistence/ultra-gate-unification.mjs';
@@ -162,6 +163,7 @@ async function run() {
   await runModule('runGuestShell', () => runGuestShell());
   await runModule('runRouteInterceptionGuard', () => runRouteInterceptionGuard());
   await runModule('runGuestTypographyParity', () => runGuestTypographyParity());
+  await runModule('runPublishParity', () => runPublishParity());
   await runModule('runWeatherProxy', () => runWeatherProxy());
   await runModule('runThirdPartyAssets', () => runThirdPartyAssets());
   await runModule('runUltraGateUnification', () => runUltraGateUnification());
