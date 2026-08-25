@@ -14,6 +14,17 @@ import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import CountUp from "@/components/shared/CountUp";
+import { parseStoredDate } from '@/lib/guestDate';
+
+// A guarded date-fns format: date-fns THROWS RangeError on an invalid date, so
+// an unstamped or malformed value white-screens the page behind the error
+// boundary. A truthy check on the value is not enough — it stops undefined and
+// passes anything malformed through.
+const formatStored = (value, pattern) => {
+  const d = parseStoredDate(value);
+  return d ? format(d, pattern) : '';
+};
+
 
 const GuestMessage = base44.entities.GuestMessage;
 
@@ -260,7 +271,7 @@ export default function MessagesPage() {
                       </span>
                     )}
                     <span style={{ ...labelStyle, color: '#444444' }}>
-                      {format(new Date(message.created_date), 'MMM d, yyyy h:mm a')}
+                      {formatStored(message.created_date, 'MMM d, yyyy h:mm a')}
                     </span>
                   </div>
                 </div>
@@ -307,7 +318,7 @@ export default function MessagesPage() {
                   <span style={{ ...labelStyle, color: '#E03553' }}>Your reply</span>
                   {message.reply_sent_at && (
                     <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.45)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                      · emailed {format(new Date(message.reply_sent_at), 'MMM d, h:mm a')}
+                      · emailed {formatStored(message.reply_sent_at, 'MMM d, h:mm a')}
                     </span>
                   )}
                 </div>

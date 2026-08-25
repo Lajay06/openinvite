@@ -174,14 +174,12 @@ export const PUBLISHED_WEDDING = {
   },
   musicContent: {},
   music: { playlists: [{ playlistUrl: 'https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M', enabled: true }], guestRequestsEnabled: true },
-  ourStory: { headline: 'How we met', body: 'On a wet Tuesday in a bookshop.' },
   // FIELD-NAME BUG, fixed: the seed wrote `faq` while WeddingFAQPage reads
   // `qna`, so every pass over /faq measured the empty state and read it as
   // clean. THIRD seed mismatch of this class (note.body/note.text, missing
   // homeContent.blocks, faq/qna): the seed was written from assumption rather
   // than from the entity shape. `faq` is kept alongside because nothing proves
   // it is unread.
-  faq: [{ question: 'Is there parking?', answer: 'Yes, behind the observatory.' }],
   qna: [
     { question: 'Is there parking?', answer: 'Yes, behind the observatory. The park gates close at 6pm.' },
     { question: 'Can we bring children?', answer: 'Please do. There is a quiet room off the Long Room.' },

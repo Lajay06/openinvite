@@ -32,3 +32,27 @@ export function formatWeddingDate(value, locale, options) {
   const d = parseWeddingDate(value);
   return d ? d.toLocaleDateString(locale, options) : '';
 }
+
+/**
+ * Parse a STORED timestamp (created_date, payment_date, reply_sent_at …) into
+ * a Date, or null. Use it to guard date-fns `format`, which THROWS RangeError
+ * on an invalid date rather than returning a string:
+ *
+ *   const d = parseStoredDate(row.created_date);
+ *   return d ? format(d, 'MMM d, yyyy') : '';
+ *
+ * Messages.jsx did `format(new Date(message.created_date), …)` with no guard at
+ * all, so a row without the stamp white-screened the whole page behind the
+ * error boundary. A truthy check on the value is NOT sufficient — it stops
+ * undefined and passes anything malformed straight through.
+ *
+ * NOTE THE ASYMMETRY, it is the whole reason both helpers exist:
+ * toLocaleDateString RETURNS the string "Invalid Date" and a try/catch around
+ * it is useless; date-fns format THROWS and a try/catch around it works. The
+ * same defect wears two opposite disguises.
+ */
+export function parseStoredDate(value) {
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+}

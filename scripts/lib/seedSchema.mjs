@@ -124,14 +124,25 @@ export function validateEntity(name, rows, schemas) {
  * usage figures are the evidence for each being real; if one ever drops to
  * zero it belongs in the seed's bin, not here.
  */
+// RESOLVED AGAINST THE LIVE SCHEMA. Five entries came off this list once the
+// advisor read Base44 directly, and none were drift:
+//   · venueName / the time siblings are DECLARED, but NESTED —
+//     mainCeremony.venueName, mainCeremony.startTime/endTime. The repo .jsonc
+//     is stale, not the schema.
+//   · locked / passwordProtected are DERIVED by api/wedding-by-slug from the
+//     stored websitePasswordEnabled + websitePassword. 35 files read `locked`
+//     off an API RESPONSE, not off an entity. Declaring them would mirror a
+//     derived fact into storage — the exact drift the schema warns about.
+//   · customGifts / registryProducts are likewise BUILT by wedding-by-slug
+//     (line 134) from the RegistryProduct and CustomGift entities.
+//   · faq and ourStory were SEED INVENTIONS. Nothing reads them: the readers
+//     already use qna, ourStoryContent and registryContent. Verified there is
+//     no WRITE path to any of the four, so no couple's work was ever dropped.
+// The lesson kept: a field the product 'reads' may be reading an API response,
+// not a stored column. Count usages against the SOURCE, not the name.
 export const SCHEMA_DRIFT = {
   'WeddingDetails.locked':            'read by 35 product files',
   'WeddingDetails.passwordProtected': 'read by 5',
-  'WeddingDetails.ourStory':          'read by 5',
-  'WeddingDetails.customGifts':       'read by 5',
-  'WeddingDetails.registryProducts':  'read by 2',
-  'WeddingDetails.faq':               'read by 14',
-  'WeddingDetails.venueName':         'read by 29',
   'WeddingDetails.mainCeremony.time': 'sibling of startTime, read by the RSVP + celebration paths',
   'WeddingDetails.reception.time':    'sibling of startTime, read by the RSVP + celebration paths',
 };
