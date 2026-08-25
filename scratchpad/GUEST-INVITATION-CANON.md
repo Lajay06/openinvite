@@ -2,6 +2,20 @@
 
 Design rulings, 2026-08-25. Design only; no code in this document.
 
+**STATUS: both rulings ACCEPTED by the advisor.** The non-repetition rule at
+the end is adopted as canon.
+
+**OWNER ACCEPT STILL REQUIRED ON THREE SPECIFICS, before any build:**
+1. The four worked address-line examples.
+2. The tagline demotion (recorded as the terminal's judgment call, put to the
+   owner as overrulable — not smuggled through).
+3. **The essentials band.** Below the hero there is currently no fixed
+   furniture at all, so this is NEW STRUCTURE appearing on every wedding site
+   and cannot ship on a design ruling alone.
+
+**Do not write the remaining fifteen address lines until the four examples are
+accepted.**
+
 Amends the hero-experience canon. **The ladder, the scrim rules and the motion
 personalities are untouched** — this constrains the overlay's CONTENT and adds
 one new fixed band. Those three live in the advisor's ledger, not in this repo;

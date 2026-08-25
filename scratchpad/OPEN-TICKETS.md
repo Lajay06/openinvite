@@ -97,18 +97,51 @@ width-conditional route.
 
 ## THE ORDER (advisor, 2026-08-25)
 
-**R-1 first — nothing new starts until it is established.** A styling-quiz
-regression on a couple-facing flow, possibly shipped 2026-08-25. **The symptom
-did not survive the context reset — re-request it.** Established so far:
-- Today's merges are #538–#546. The three I built (#544/#545/#546) touch only
-  SendInvitesModal, WhatsAppCompose, guestLinks, MultiPageWeddingWebsite's
-  tab-title effect, and vercel.json — **no path to a styling surface.**
-- The likelier candidates are the same-day #541 (recognition transport), #542
-  (RSVP embed, which reworked WeddingRSVPPage/RSVPPage) and #543.
-- `/w/john-suzanne/styling` **renders on production** at 390: "What will you
-  wear? … Ceremony — sdfsdfsdf Reception Welcome Recove…". `stylingQuestionnaire`
-  is `{enabled: true}` and `styling` is in `enabledPages`. So R-1 is NOT a blank
-  page; it is behavioural, and cannot be found without the symptom.
+**R-1 — RESOLVED 2026-08-25. NOT A REGRESSION, AND NOT FROM ANY DEPLOY.**
+
+Owner: *"the update has changed the styling quiz as the gender selection,
+budget and notes on the final page are missing or condensed."*
+
+The answer is a third possibility neither option covered: **the fields are
+absent by design, because the site is running a different questionnaire.**
+
+`WeddingStylePage.jsx:103-108` is a dispatcher on
+`weddingPolicies.stylingQuestionnaire.enabled`:
+
+| flag | component | shape |
+|---|---|---|
+| `false` (default) | `AIStyleQuestionnaire` | gender → style → comfort → **budget** → **notes** (notes last) |
+| `true` | `RulesBasedStyleQuestionnaire` | events → style → budget → results |
+
+The rules-based variant **has never had a gender step or a notes field**, and
+its budget is step 2, not a control on the final page. The AI variant has
+exactly the shape the owner remembers.
+
+Live on john-suzanne: `stylingQuestionnaire: {"enabled": true}`. Walked the
+quiz to the end in WebKit at 390 — events → style → budget → "Your style
+guide", which is a **read-only results page with zero inputs, selects or
+textareas**. Not condensed. Not broken. A different flow.
+
+**Excluded by file scoping, as instructed:**
+- `RulesBasedStyleQuestionnaire.jsx` and `stylingRules.js` — untouched since
+  **2026-08-17** (#459, when they were introduced).
+- `WeddingStylePage.jsx` — last changed **2026-08-21** (#513, the season fix).
+- `GuestSuitePolicies.jsx` (where the toggle lives) — last changed 2026-08-21
+  (#511, UI only). Its default is `enabled: false` and **no code path writes
+  `true`**.
+- **No feel-pass commit touched any styling-quiz file.** Items 3/3b, 5 and 6
+  are excluded, not merely unlikely.
+
+So the toggle was turned on by hand, in Guest Suite → Policies.
+
+**THE REAL FINDING, and it is a product one:** the toggle is described only by
+what it ADDS — *"Show a quick 'what to wear' questionnaire on the Styling
+page… Guests pick the events they're attending, their style, and their
+budget"* — and never says what it REPLACES. A couple switching it on has no
+way to know they are trading away a richer flow that asked gender and notes.
+Honest about itself, silent about the swap. **Needs a ruling: reword the
+toggle, or make it a two-way choice that names both flows.** Filed as
+STYLING-TOGGLE-NAMES-ONE-SIDE.
 
 **Then M-3 — RULED, FIX IT, own micro PR.** `ToastViewport`
 (`src/components/ui/toast.jsx:18`): `w-full` at a 16px offset gives
@@ -129,10 +162,17 @@ E1–E4 emoji · PREVIEW-NAV · F4/F5 · item 7 · MESSAGES-GUARDS ·
 EXPORT-OVERLAY-SILENT-FAIL · NULL-SCRIPT-VERIFY-FIX · INVENTED-CONTENT-SWEEP ·
 HARNESS-FIXTURE-TRUTH · Option B proposal · WEBKIT-PASS.
 
-**Note on D-1:** `/w/john-suzanne/experience` **renders** on production
-(2026-08-25) — "Your guide to 1 Barangaroo Ave … Our favorites Must Eat …" and
-`experienceGuide.published` is `true`. So either D-1 is on a different wedding
-or state, or its symptom is not "does not render". Establish before building.
+**D-1 — HELD** pending the owner's specific. `/w/john-suzanne/experience`
+renders on production with `experienceGuide.published: true`, so "not
+rendering" does not reproduce on this wedding. Do not chase further.
+**D-2 (guide doubled) and D-3 (RSVP to the end of the nav) are unaffected and
+stand.**
+
+**CSP-BLOB-NOISE** (new, low priority, pre-beta) — the report-only policy
+refuses `blob:` on every guest page, so `/api/csp-report` is spammed by a rule
+that blocks nothing. Either allow `blob:` or stop reporting it. A noisy channel
+is a channel nobody reads, and we want that one quiet and meaningful before
+beta.
 
 **Incidentals seen while checking, held not absorbed:** `/w/:slug/polls` still
 renders 🗳️ (E1 batch) · the report-only CSP refuses `blob:` URLs on every guest
