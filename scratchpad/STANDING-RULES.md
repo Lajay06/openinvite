@@ -936,6 +936,38 @@ against a state of the code; the code moves; the ruling does not. The gap
 between them is not the ruling being wrong — it is the ruling being about a
 different codebase.
 
+## When you fix one of a near-duplicate pair, go looking for the twin
+
+`ToastProvider` and `ToastViewport` sit ten lines apart in the same file and
+carried the identical defect: `fixed top-0 ... w-full p-4` with no horizontal
+anchor, ending at 406 on a 390 viewport before any toast exists. A ticket —
+M-3 — fixed one of them, wrote a comment explaining the fix, and left the
+other. It survived a ticket specifically about that component.
+
+The twin is always in the file you already have open, so checking costs
+nothing. Grep the fixed string before you close the ticket.
+
+Related but distinct from applying a check to every instance of a shape: that
+rule is about running your OWN test everywhere it applies. This one is about
+the code already containing a second copy of the thing you just fixed.
+
+---
+
+## A named exception is debt with a name; a relaxed threshold is a probe that stops noticing
+
+Two surfaces could not be fixed in the overflow pass. The tempting move is to
+raise the probe's tolerance until it passes. Instead each got an explicit
+entry — surface, measured amount, and why it is not covered — and they are
+still measured and still FAIL if they exceed the recorded figure. Verified by
+tightening one entry below its measured value and confirming the run goes red.
+
+Also record what the instrument CANNOT see. Bounding-rect detection cannot find
+an element whose own scrollWidth exceeds its box, so the probe declares that
+blind spot rather than leaving the next reader hunting for an element that was
+never findable that way.
+
+---
+
 ## Count usages against the SOURCE, not the name
 
 Three instances in one investigation, each a real count and a misleading one:
