@@ -48,7 +48,10 @@ export async function runGuestShell() {
   }
 
   // ── the shell itself, built from the real template ─────────────────────
-  const shell = buildGuestShell(read('index.html'));
+  // Same inputs the build uses: the repo template plus a build's entry tags.
+  const ENTRY = { scriptTag: '<script type="module" crossorigin src="/assets/index-TEST.js"></script>',
+                  styleTag: '<link rel="stylesheet" crossorigin href="/assets/index-TEST.css">' };
+  const shell = buildGuestShell(read('index.html'), ENTRY);
 
   check('the shell carries no marketing copy',
     !/Because planning your wedding|All the powerful tools|planning platform/i.test(shell),
@@ -71,7 +74,7 @@ export async function runGuestShell() {
 
   // CONTROL: the builder must actually be capable of rejecting a bad shell.
   let rejected = false;
-  try { buildGuestShell('<html><head></head><body><div id="root"><h1>Because planning your wedding</h1></div></body></html>'); }
+  try { buildGuestShell('<html><head></head><body><div id="root"><h1>Because planning your wedding</h1></div><script type="module" src="/src/main.jsx"></script></body></html>', ENTRY); }
   catch { rejected = true; }
   check('  control: a shell with marketing DOM in #root is rejected', rejected,
     'the builder asserts its guarantees rather than assuming them');
@@ -79,7 +82,8 @@ export async function runGuestShell() {
   // ── the build actually writes it ───────────────────────────────────────
   const apply = read('scripts/apply-prerendered.mjs');
   check('the build writes the guest shell',
-    /writeFileSync\(resolve\(DIST, 'guest-shell\.html'\), buildGuestShell\(/.test(apply), 'from this build\'s own index');
+    /buildGuestShell\(\s*readFileSync\(resolve\(ROOT, 'index\.html'\)/.test(apply.replace(/\s+/g, ' ')),
+    'from the repo template, not from dist/index.html');
   check('  before the prerendered/ early-exit',
     apply.indexOf("guest-shell.html") < apply.indexOf('No prerendered/ directory found'),
     'a build without snapshots must still serve guests a correct shell');

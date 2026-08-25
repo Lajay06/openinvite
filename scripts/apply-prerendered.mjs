@@ -61,7 +61,14 @@ console.log(`[apply-prerendered] Current build entry: ${currentEntryTags.scriptS
 // homepage. vercel.json points /w/ and /rsvp/ at it, so guest routes stop
 // being served marketing HTML. Written before the prerendered/ early-exit
 // too — a build without snapshots must still serve guests a correct shell.
-writeFileSync(resolve(DIST, 'guest-shell.html'), buildGuestShell(freshIndexHtml));
+// From the repo TEMPLATE, not from dist/index.html: prerender.mjs overwrites
+// that with the marketing snapshot when this runs inside `build:prerender`.
+// The entry tags still come from the build, so the shell always points at
+// this build's assets.
+writeFileSync(
+  resolve(DIST, 'guest-shell.html'),
+  buildGuestShell(readFileSync(resolve(ROOT, 'index.html'), 'utf8'), currentEntryTags),
+);
 console.log('[apply-prerendered] ✓ dist/guest-shell.html written for /w/ and /rsvp/');
 
 if (!existsSync(PRERENDERED)) {

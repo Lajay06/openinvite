@@ -76,18 +76,46 @@ const STRIP_PATTERNS = [
 ];
 
 /**
- * @param {string} indexHtml — this build's fresh dist/index.html
+ * ORDER-INDEPENDENT BY CONSTRUCTION.
+ *
+ * This used to read `dist/index.html` as "the fresh build's index". It is not
+ * reliably fresh: `npm run build:prerender` runs build -> prerender -> apply,
+ * and `scripts/prerender.mjs:151-153` writes each snapshot into `dist/` as
+ * well as `prerendered/` — including the homepage, over `dist/index.html`.
+ * So by the time this ran, its input was the MARKETING SNAPSHOT, and the
+ * `#root is not empty` guarantee below caught it as a hard build failure.
+ *
+ * CI never hit it (it runs build -> apply, with no prerender step), so this
+ * would only ever have bitten a developer running the exact command the
+ * prerendered-freshness guard tells them to run.
+ *
+ * The fix is to stop depending on the order: the shell is now built from the
+ * repo's own `index.html` TEMPLATE — which is empty by definition and cannot
+ * be overwritten by a build step — with the built entry tags spliced in.
+ *
+ * @param {string} templateHtml — the repo's index.html (never a build output)
+ * @param {{scriptTag: string, styleTag: string}} entryTags — this build's
+ *   entry script and stylesheet, from extractCurrentEntryTags()
  * @returns {string} the guest shell
  * @throws if the result is not what it claims to be. A shell that silently
  *   kept the marketing meta would reproduce the exact bug this removes, so
  *   every guarantee is asserted here and the build fails loudly instead.
  */
-export function buildGuestShell(indexHtml) {
-  if (!/<head>[\s\S]*<\/head>/i.test(indexHtml)) {
+export function buildGuestShell(templateHtml, entryTags) {
+  if (!/<head>[\s\S]*<\/head>/i.test(templateHtml)) {
     throw new Error('[guestShell] input has no <head> — not an index.html');
   }
+  if (!entryTags?.scriptTag || !entryTags?.styleTag) {
+    throw new Error('[guestShell] entryTags must carry this build\'s scriptTag and styleTag');
+  }
 
-  let out = indexHtml;
+  let out = templateHtml;
+  // The template points at Vite's dev entry; swap it for the built assets.
+  out = out.replace(/<script[^>]*type="module"[^>]*src="\/src\/main\.jsx"[^>]*>\s*<\/script>/i,
+                    `${entryTags.styleTag}\n    ${entryTags.scriptTag}`);
+  if (!out.includes(entryTags.scriptTag)) {
+    throw new Error('[guestShell] could not splice the built entry into the template');
+  }
   for (const re of STRIP_PATTERNS) out = out.replace(re, '');
   out = out.replace(/<\/head>/i, `${HEAD_BLOCK}  </head>`);
 
@@ -109,6 +137,9 @@ export function buildGuestShell(indexHtml) {
   if (rootInner.trim() !== '') throw new Error('[guestShell] #root is not empty — the shell must paint nothing');
   if (/Because planning your wedding|All the powerful tools/i.test(out)) {
     throw new Error('[guestShell] marketing copy present in the guest shell');
+  }
+  if (!out.includes(entryTags.scriptTag) || !out.includes(entryTags.styleTag)) {
+    throw new Error('[guestShell] the built entry did not survive the head rewrite');
   }
   return out;
 }
