@@ -330,9 +330,21 @@ waited. These are real and none of them is blocking:
   covers all six watched sources; extending the same treatment to the page and
   component patterns is the remaining half.
 - **PRERENDER-GUARD-SCOPE option 3** — compare generated output instead of
-  watching source paths. Now known to be viable in principle: two consecutive
-  prerenders are **byte-identical**, so the output is deterministic and a
-  regenerate-and-diff guard would not produce animation-state false positives.
+  watching source paths. **EVIDENCE BANKED 2026-08-25, start from this rather
+  than re-deriving it:** two consecutive `npm run build:prerender` runs with no
+  source change between them are **byte-identical**. The output is
+  deterministic, so a regenerate-and-diff guard would NOT drown in
+  animation-state false positives. That was the main objection and it does not
+  hold.
+
+- **COMMITTED SNAPSHOTS ARE STALE TODAY** (small, not urgent, and **do not open
+  a PR just for it** — fold into the next PR touching this area). The committed
+  `prerendered/universes/index.html` differs from a fresh capture by
+  `opacity: 1` → `opacity: 0` on an animated scroll cue. Since two consecutive
+  captures are byte-identical, that is not run-to-run flake: **the committed
+  snapshot was taken from a different code state.** Visible text is unaffected
+  (5919 chars either way), so nothing is wrong on screen — but it is precisely
+  the condition the freshness guard exists to prevent, sitting in the repo.
 
 ## PUBLISH-PARITY — A NAMED PROGRAMME, NOT A SWEEP
 
