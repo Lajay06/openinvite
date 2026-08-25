@@ -40,7 +40,8 @@
     "test:harness": "node scripts/test-harness-selftest.mjs",
     "test:guest-font-effect": "node scripts/test-guest-font-effect.mjs",
     "pr:merge": "node scripts/pr-merge.mjs",
-    "test:guest-no-invalid-date": "node scripts/test-guest-no-invalid-date.mjs"
+    "test:guest-no-invalid-date": "node scripts/test-guest-no-invalid-date.mjs",
+    "test:typography-pairings": "node scripts/test-typography-pairings.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.43",
