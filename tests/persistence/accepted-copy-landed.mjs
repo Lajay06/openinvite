@@ -33,11 +33,25 @@ import { UNIVERSE_CONFIGS } from '../../src/lib/websiteThemes.js';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../');
 const DOC = 'claude/rsvp-experience-ruling.md';
 
-/** Parses the `| \`universe\` | line |` table out of the accepted-copy doc. */
-function acceptedIntros() {
+/**
+ * Parses one `| \`universe\` | line |` table out of the accepted-copy doc,
+ * scoped to the section that owns it.
+ *
+ * SCOPED, not file-wide: the doc now carries two accepted sets, and a
+ * file-wide table scan would happily satisfy the rsvpSent assertions with
+ * rsvpIntro rows. That is the same "a check that searches wider than the
+ * thing it verifies" failure the meal probe hit — the assertion must be
+ * scoped to the unit under test.
+ */
+function acceptedFrom(headingStartsWith) {
   const md = readFileSync(resolve(ROOT, DOC), 'utf8');
+  const start = md.indexOf(headingStartsWith);
+  if (start === -1) return new Map();
+  const rest = md.slice(start + headingStartsWith.length);
+  const end = rest.indexOf('\n## ');
+  const section = end === -1 ? rest : rest.slice(0, end);
   const out = new Map();
-  for (const m of md.matchAll(/^\|\s*`(\w+)`\s*\|\s*(.+?)\s*\|\s*$/gm)) out.set(m[1], m[2]);
+  for (const m of section.matchAll(/^\|\s*`(\w+)`\s*\|\s*(.+?)\s*\|\s*$/gm)) out.set(m[1], m[2]);
   return out;
 }
 
@@ -46,19 +60,32 @@ export async function runAcceptedCopyLanded() {
   const check = (n, ok, d) => results.push(ok ? pass(n, d) : fail(n, 'see name', d));
   console.log('\n  Accepted copy — in the product, not just in a document:\n');
 
-  const accepted = acceptedIntros();
-  check('the accepted-copy doc is readable and parses', accepted.size >= 19, `${accepted.size} lines`);
+  const SETS = [
+    { field: 'rsvpIntro', heading: '## `rsvpIntro`' },
+    { field: 'rsvpSent',  heading: '## `rsvpSent`' },
+  ];
 
-  // Per-universe, not file-wide: a line present on the WRONG universe would
-  // satisfy a file-wide grep and be wrong on every guest's screen.
-  const wrong = [];
-  for (const [universe, line] of accepted) {
-    const actual = UNIVERSE_CONFIGS[universe]?.copy?.rsvpIntro;
-    if (actual !== line) wrong.push(universe);
+  for (const { field, heading } of SETS) {
+    const accepted = acceptedFrom(heading);
+    check(`${field}: the accepted set parses from the ruling doc`,
+      accepted.size === 19, `${accepted.size} lines`);
+
+    // Per-universe, not file-wide: a line present on the WRONG universe would
+    // satisfy a file-wide grep and be wrong on every guest's screen.
+    const wrong = [];
+    for (const [universe, line] of accepted) {
+      if (UNIVERSE_CONFIGS[universe]?.copy?.[field] !== line) wrong.push(universe);
+    }
+    check(`  ${field}: every accepted line is on its own universe`,
+      wrong.length === 0,
+      wrong.length ? `wrong or missing: ${wrong.join(', ')}` : `${accepted.size}/${accepted.size} exact`);
   }
-  check('every accepted rsvpIntro is on its own universe',
-    wrong.length === 0,
-    wrong.length ? `wrong or missing: ${wrong.join(', ')}` : `${accepted.size}/${accepted.size} exact`);
+
+  // The two sets must not be the same table read twice — the scoping above is
+  // load-bearing, so prove the sections really are distinct.
+  check('  the two accepted sets are distinct sections',
+    acceptedFrom('## `rsvpIntro`').get('brooklyn') !== acceptedFrom('## `rsvpSent`').get('brooklyn'),
+    'scoped parse, not a file-wide table scan');
 
   // The framing the owner reported. If any of it survives, the rewrite did not
   // actually replace what he was reading.
@@ -69,10 +96,17 @@ export async function runAcceptedCopyLanded() {
     survivors.join(', ') || 'none of it survives');
 
   // CONTROL: the comparison must be capable of failing.
-  const first = [...accepted.keys()][0];
+  const intros = acceptedFrom('## `rsvpIntro`');
+  const first = [...intros.keys()][0];
   check('  control: a changed line IS detected',
-    UNIVERSE_CONFIGS[first]?.copy?.rsvpIntro !== accepted.get(first) + ' x',
+    UNIVERSE_CONFIGS[first]?.copy?.rsvpIntro !== intros.get(first) + ' x',
     'exact comparison, not substring');
+
+  // The loanword rule names this exact string as its own reductio, and it was
+  // live in production until this set replaced it.
+  const src2 = readFileSync(resolve(ROOT, 'src/lib/websiteThemes.js'), 'utf8');
+  check('  and paris no longer opens with a loanword flourish',
+    !src2.includes('Avec plaisir'), 'CLAUDE.md\'s own reductio, gone');
 
   return results;
 }
