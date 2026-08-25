@@ -157,8 +157,12 @@ export default function MessagesPage() {
   };
 
   const filteredMessages = messages.filter(message => {
-    const matchesSearch = message.guest_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         message.message.toLowerCase().includes(searchTerm.toLowerCase());
+    // Both fields are OPTIONAL on the entity, and a row missing either threw
+    // TypeError the moment a couple typed in the search box — taking the page
+    // down behind the error boundary rather than just not matching.
+    const needle = searchTerm.toLowerCase();
+    const matchesSearch = (message.guest_name || '').toLowerCase().includes(needle) ||
+                         (message.message || '').toLowerCase().includes(needle);
     if (filterStatus === 'unread') return matchesSearch && !message.read;
     if (filterStatus === 'replied') return matchesSearch && message.replied;
     if (filterStatus === 'unreplied') return matchesSearch && !message.replied;
