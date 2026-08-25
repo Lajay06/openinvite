@@ -97,7 +97,38 @@ width-conditional route.
 
 ## QUEUED, in order
 
-**INVITE-LINK-PREVIEW** — findings first, report in flight. Shared invite links
+**DONE 2026-08-25 — the Option A guest shell (#546, `0179667`).** Guest routes
+served the prerendered marketing homepage, head and body. Fixed by writing
+`dist/guest-shell.html` from the fresh index before the snapshot overwrites it,
+and pointing `/w/(.*)` and `/rsvp/(.*)` at it ahead of the catch-all. Verified
+on production: 2,145 bytes (was 50,846) on all three guest URL shapes, zero
+marketing strings, invitation card to a crawler UA, `noindex` header on each,
+tab title "John & Suzanne", **zero marketing frames** in a live browser at 390
+and 1440, and all 14 marketing routes unaffected.
+RULED: **`og:image` absent is correct for now** — any single image honest across
+20 universes is a compromise we would discard when B lands per-wedding images.
+**Do not build an interim asset**; "the card's image" folds into the B proposal.
+
+**OPTION B — per-wedding unfurl cards. Pre-beta project, not polish.**
+Commercial case, from the advisor: the card is seen by every guest of every
+wedding — at 200 guests a wedding it is the most-viewed Openinvite-adjacent
+surface that will ever exist, and it is free distribution. Bring a scoped
+proposal AFTER the fix wave: cost, cache strategy (`s-maxage` +
+`stale-while-revalidate` keyed on slug), invalidation when a couple edits,
+failure behaviour when the function is down, and the card's image.
+**The constraint B inherits, already enforced in code:** the meta decision keys
+on `websitePasswordEnabled` **directly**, never on the gate's runtime result —
+`api/wedding-by-slug.js:215` documents a fail-open, and a card keyed on gate
+state leaks through it. `tests/persistence/guest-shell.mjs` fails if any
+title/meta decision is ever keyed on gate state. This is why B can be
+*designed* rather than retrofitted.
+
+**INVITE-LINK-PREVIEW** — the metadata half shipped with #546; what remains is
+Option B above. Robots question is CLOSED: the owner pastes into iMessage,
+Apple's Rich Link fetcher advertises `facebookexternalhit`, and a card is being
+produced today — so the fetch already succeeds under current robots rules and
+**no robots.txt change is needed** for the primary case. Verify WhatsApp before
+assuming it generalises, but do not hold the ticket on it. Original findings: Shared invite links
 unfurl as technical rather than invite-forward. Must establish: served meta for
 `/w/:slug` and `/rsvp/:token` as an unfurler sees it (crawler UA, not the SPA's
 client-rendered head — unfurlers do not run JS); whether prerender produces
@@ -260,6 +291,22 @@ its own decision) · six components orphaned by the homepage rebuild
 CANCELLED for now, they may return to service.
 
 ---
+
+## OWNER CHECKS OUTSTANDING
+
+**#544 network-off test** — proves the send aborts rather than mailing a dead
+link. Load Guests, select **two or more** guests with emails (two so the count
+reads plural), open Send invites, reach the final step, THEN turn off Wi-Fi (or
+Safari → Develop → Network Link Conditioner → 100% Loss), then tap Send.
+*Expected:* a red toast — "Could not reach the invitation-link service" or
+"N invitation links could not be created (names…). Nothing was sent." — the
+modal stays open, the button becomes usable again, and **no guest is marked
+invited**. *A failure looks like:* a success toast, a silent nothing, or any
+guest showing as invited. Then restore the network and send normally: the links
+must be real `/rsvp/<token>` URLs, never `/rsvp/undefined`.
+WhatsApp half: network off, open "Open in WhatsApp" for one guest, pick the
+RSVP reminder template. Expected `{rsvp_link}` visible in the box, a red
+explanation above the footer, and the green button disabled.
 
 ## WATCH FOR (free production verification)
 
