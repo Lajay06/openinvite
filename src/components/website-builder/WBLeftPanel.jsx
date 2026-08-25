@@ -5,6 +5,7 @@ import { WEDDING_PAGES, WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS } from '@/lib/websit
 import { resolveColors } from '@/lib/universeStyling';
 import { interactiveDivProps } from '@/lib/a11y';
 import NewPageModal from './NewPageModal';
+import { ALWAYS_ON_PAGES } from '@/lib/guestPages';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -96,7 +97,7 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
   const customPages = details.customPages || [];
 
   const toggle = (slug) => {
-    if (slug === 'home') return;
+    if (ALWAYS_ON_PAGES.includes(slug)) return;
     const next = enabledPages.includes(slug)
       ? enabledPages.filter(p => p !== slug)
       : [...enabledPages, slug];
@@ -170,15 +171,29 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>{label}</span>
 
-              {slug !== 'home' ? (
+              {!ALWAYS_ON_PAGES.includes(slug) ? (
                 <Toggle enabled={enabled} onToggle={() => toggle(slug)} label={label} />
               ) : (
-                <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', fontWeight: 600, fontFamily: PJS }}>Req</span>
+                // Not "Req". An abbreviation of a word the couple never used is
+                // not an explanation, and a dead toggle would be worse still.
+                <span
+                  title="Your guests need to find the date and a way to reply."
+                  style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', fontWeight: 600, fontFamily: PJS, letterSpacing: '0.04em' }}
+                >Always on</span>
               )}
             </div>
           );
         })}
       </div>
+      {/* Said once, under the list, rather than three times in rows too narrow
+          to hold it. Their words about their invitation, not ours about the
+          system. */}
+      <p style={{
+        fontSize: 11, lineHeight: 1.5, color: 'rgba(255,255,255,0.4)',
+        fontFamily: PJS, margin: '10px 2px 0',
+      }}>
+        Your guests need to find the date and a way to reply, so those pages stay on.
+      </p>
 
       {/* Custom pages */}
       {customPages.length > 0 && (

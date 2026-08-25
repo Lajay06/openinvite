@@ -79,6 +79,8 @@ import WeddingExperiencePage from './pages/WeddingExperiencePage';
 import WeddingGoodToKnowPage from './pages/WeddingGoodToKnowPage';
 import { visibleSections } from '@/lib/goodToKnow';
 import InvitationNotAvailable from './InvitationNotAvailable';
+import { withAlwaysOnPages } from '@/lib/guestPages';
+import { WEDDING_PAGES } from '@/lib/websiteThemes';
 
 // Background music: reader gated OFF (owner decision, video-sound batch 4b).
 // The same SHOW_BACKGROUND_MUSIC_UI flag that hides the two writing surfaces
@@ -210,7 +212,14 @@ export default function MultiPageWeddingWebsite() {
   // WEBSITE_THEMES lookup — see resolveColors() (fix/universe-palettes).
   const theme = resolveColors(weddingDetails);
   const typography = resolveTypography(weddingDetails);
-  const enabledPages = weddingDetails.enabledPages || ['home', 'our-story', 'celebration', 'rsvp'];
+  // THE GUARANTEE, applied at render rather than trusted from storage: a record
+  // saved before rsvp/celebration were protected may still have them off, and
+  // with the date and RSVP gone from the hero that would leave a guest with no
+  // date and no way to reply anywhere on the site.
+  const enabledPages = withAlwaysOnPages(
+    weddingDetails.enabledPages || ['home', 'our-story', 'celebration', 'rsvp'],
+    WEDDING_PAGES.map(p => p.slug),
+  );
   const PageComponent = PAGE_COMPONENTS[page] || WeddingHomePage;
   const universeConfig = resolveUniverseConfig(weddingDetails);
 
