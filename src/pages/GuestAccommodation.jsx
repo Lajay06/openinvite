@@ -4,6 +4,7 @@ import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
 import { ChevronLeft } from 'lucide-react';
 import { getCachedWeddingPassword } from '@/lib/guestSitePassword';
 import { resolveTypography } from '@/lib/universeStyling';
+import { loadFontFamilies, familiesFromGoogleSpec } from '@/lib/selfHostedFonts';
 
 export default function GuestAccommodation() {
   const { weddingSlug } = useParams();
@@ -50,6 +51,31 @@ export default function GuestAccommodation() {
     }
   };
 
+  // GUEST-TYPOGRAPHY-PARITY. This page had no typography plumbing at all: it
+  // hard-coded Cormorant Garamond + Plus Jakarta Sans, which is LONDON's
+  // pairing frozen in place. That is why the owner saw "some pages have the
+  // right blend, some are just one font" — london weddings looked right and
+  // every other universe got london's faces or none.
+  //
+  // The mapping preserves the existing hierarchy exactly: the display face
+  // becomes headingFont, Plus Jakarta Sans becomes bodyFont. Nothing about the
+  // layout changes; it just stops being one universe's typography for everyone.
+  const typography = resolveTypography(details);
+
+  // A STANDALONE ROUTE MUST LOAD ITS OWN FACES. This page lives outside
+  // MultiPageWeddingWebsite's tree, so nothing above it injects the universe's
+  // fonts — same reason RSVPPage carries this effect.
+  //
+  // #547 wired the typography here and NOT this, which is a wiring bug that
+  // looks exactly like a resolver bug: the inline styles correctly asked for
+  // Cormorant Garamond and Jost, the faces were never loaded, and the browser
+  // fell back to the inherited Plus Jakarta Sans on every element. Measured:
+  // /stay registered [Plus Jakarta Sans, Cormorant Garamond, Jost] and
+  // /accommodation registered [Plus Jakarta Sans] alone.
+  useEffect(() => {
+    loadFontFamilies(familiesFromGoogleSpec(typography?.googleFonts));
+  }, [typography]);
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF' }}>
@@ -60,9 +86,10 @@ export default function GuestAccommodation() {
   }
 
   // Deliberately the product face, not the universe's: an error state on a
-  // guest surface is CHROME (a broken link is our failure to report, not the
-  // couple's typography — CLAUDE.md). It also sits above the resolveTypography
-  // call below, so a universe face is not in scope here at all.
+  // guest surface is CHROME — a broken link is our failure to report, not the
+  // couple's typography (CLAUDE.md). `typography` is now resolved above (it
+  // must be, so the font-loading effect is not called conditionally), so this
+  // is a choice rather than a scoping accident.
   if (!details) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF' }}>
@@ -77,16 +104,7 @@ export default function GuestAccommodation() {
   const manualProperties = details.accommodation?.manualProperties || [];
   const curatedPlaces   = details.guestSuiteAccommodation?.places || [];
   const city = details.mainCeremony?.address?.split(',').slice(-3, -1).join(',').trim() || 'the area';
-  // GUEST-TYPOGRAPHY-PARITY. This page had no typography plumbing at all: it
-  // hard-coded Cormorant Garamond + Plus Jakarta Sans, which is LONDON's
-  // pairing frozen in place. That is why the owner saw "some pages have the
-  // right blend, some are just one font" — london weddings looked right and
-  // every other universe got london's faces or none.
-  //
-  // The mapping preserves the existing hierarchy exactly: the display face
-  // becomes headingFont, Plus Jakarta Sans becomes bodyFont. Nothing about the
-  // layout changes; it just stops being one universe's typography for everyone.
-  const typography = resolveTypography(details);
+
   const PJS = typography.bodyFont;
 
   return (
