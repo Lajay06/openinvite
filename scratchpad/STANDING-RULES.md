@@ -682,6 +682,40 @@ control, where changing it is a reviewable diff rather than a silent drift.
 
 ---
 
+## An assertion behind an early exit cannot fire in the case it exists for
+
+`test-prerendered-freshness.mjs` exits early when nothing marketing-relevant
+changed. An assertion checking whether a marketing file has newly imported
+`websiteThemes.js` had to run BEFORE that exit — because **a newly added import
+is exactly the situation where nothing appears to have changed.** Behind the
+exit it would have been permanently silent, and the guard would have looked
+green while quietly no longer protecting the route it was built for.
+
+The general form: a check that only runs when something already looks relevant
+is blind to the thing that makes it relevant.
+
+Same family as the guard written to catch the api-glob bug that observed
+`ctx.request` while the traffic went through `ctx.route` — the right check in
+the wrong position in the flow. And the same family as the guarantee that
+depended on step order: correct logic, placed where it cannot do its job.
+
+**Ask of every guard: what is the state of the world when the defect appears,
+and does my check run in THAT state?** Not "does it run in the state I was
+looking at when I wrote it."
+
+### Corollary — a remembered dependency graph rots in both directions
+
+`MARKETING_SOURCE_PATTERNS` is a hand-maintained list of what marketing imports.
+One entry stopped being true and cost two CI round-trips in a day — the
+harmless direction. The dangerous direction is a real import appearing with NO
+entry covering it: the guard then silently stops protecting that route, which
+is precisely the 2026-08-04 incident it was built for.
+
+So removing a stale entry is only safe when paired with an assertion that the
+edge really is absent. Self-checking, not self-reporting.
+
+---
+
 ## A guarantee that depends on step order is not a guarantee
 
 `buildGuestShell` asserted "#root is empty" on `dist/index.html`. That held
