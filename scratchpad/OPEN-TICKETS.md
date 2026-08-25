@@ -417,6 +417,55 @@ CANCELLED for now, they may return to service.
 
 ---
 
+## BLOCKER — #547 MERGED BUT NOT VISIBLE ON PRODUCTION (2026-08-25)
+
+`09d5ea8` merged under a quoted line, `pr:green` green and SHA-matched to
+`3d62c46` per RULE 13e. GitHub reports a **successful Production deployment**
+for `09d5ea8` at 04:15:46Z.
+
+**The live site has not changed.** Across ~35 minutes:
+- `/` (edge `MISS`, fresh) and `/w/john-suzanne` both serve
+  `/assets/index-DaO3d0bM.js` — the pre-merge bundle.
+- `/w/john-suzanne/accommodation` renders **86 of 86 elements in Plus Jakarta
+  Sans**. #547 should give london's `Jost` for body text there.
+
+Cannot be pushed further from here: the deployment's own URL
+(`openinvite-594bsfd12-…vercel.app`) returns **302, deployment protection**, and
+reaching it would mean transplanting credentials, which is not done.
+
+**NEEDS SOMEONE WITH VERCEL DASHBOARD ACCESS** to confirm whether the
+production alias actually advanced to `09d5ea8`. Until then #547 is merged but
+**NOT VERIFIED LIVE**, and by the definition of done it is not done.
+
+## GUEST-SHELL-EDGE-CACHE (found while verifying; independent of the above)
+
+Guest routes are served from the Vercel edge cache; marketing routes are not:
+
+| URL | x-vercel-cache | age |
+|---|---|---|
+| `/w/john-suzanne` | **HIT** | ~1800s |
+| `/rsvp/X` | **HIT** | ~1800s |
+| `/pricing` | MISS | 0 |
+| `/` | MISS | 0 |
+
+Identical `cache-control: public, max-age=0, must-revalidate` on all four, so
+the difference is the **rewrite**: #546 points every guest URL at one static
+`/guest-shell.html`, and the edge caches that object. **A query string does not
+bust it** — `?cb=verify1` still returned HIT — because every guest URL resolves
+to the same cached object.
+
+Consequences to weigh:
+1. **Guests can be served the previous build's shell after a deploy**, delaying
+   fixes reaching exactly the audience #546 was built for.
+2. The worse shape, not observed but the same class `apply-prerendered.mjs`'s
+   header documents: a cached shell referencing an `/assets/index-*.js` that no
+   longer exists boots nothing. Assets are `immutable` and Vercel retains old
+   ones, so this is unlikely — but it is the mechanism, and it is worth a
+   deliberate decision rather than luck.
+
+Note the owner's iMessage cache-bust still works for *iMessage's* cache; this is
+about our origin, not theirs.
+
 ## OWNER CHECKS
 
 **#544 network-off test — CONFIRMED BY THE OWNER 2026-08-25. PASSED:** the send
