@@ -81,6 +81,7 @@ import MonacoSectionMark from '../layouts/MonacoSectionMark';
 import FlorenceSectionMark from '../layouts/FlorenceSectionMark';
 import SeoulSectionMark from '../layouts/SeoulSectionMark';
 import ShanghaiSectionMark from '../layouts/ShanghaiSectionMark';
+import { parseWeddingDate } from '@/lib/guestDate';
 
 // Per-universe divider accent for `spacer` (variant 'rule') — every entry
 // here is one of the already-built, reused-as-is primitives from
@@ -437,7 +438,12 @@ function DressCodeBlock({ content, theme, typography, editable, style }) {
 // ── Wedding ───────────────────────────────────────────────────────
 function CountdownBlock({ theme, typography, weddingDetails, editable }) {
   const weddingDate = weddingDetails?.weddingDate;
-  const target = weddingDate ? new Date(weddingDate + 'T00:00:00') : null;
+  // Was `new Date(weddingDate + 'T00:00:00')`. weddingDate is a full ISO
+  // timestamp, so that produced an unparseable Date, isNaN caught it, and the
+  // block rendered "set your wedding date in settings" — to couples who HAD
+  // set it. The countdown vanished from the published site with a false
+  // explanation attached, which is worse than showing the broken value.
+  const target = parseWeddingDate(weddingDate);
   if (!target || isNaN(target.getTime())) {
     return editable ? <EmptyPlaceholder theme={theme} typography={typography} label="Countdown — set your wedding date in the Content tab to activate" /> : null;
   }

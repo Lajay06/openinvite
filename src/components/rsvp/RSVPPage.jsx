@@ -6,6 +6,7 @@ import { resolveColors, resolveTypography, resolveUniverseConfig, isMotionEnable
 import { formSurfaces } from '@/lib/surfaceTint';
 import { loadFontFamilies, familiesFromGoogleSpec } from '@/lib/selfHostedFonts';
 import SectionReveal from '@/components/guest-website/SectionReveal';
+import { formatWeddingDate } from '@/lib/guestDate';
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
@@ -148,9 +149,11 @@ function EventCard({ event, value, onChange, hasPlusOne, mealChoices, hasMealOpt
   // card a guest cannot act on.
   const { venue, address, mapsUrl, date: lookedUpDate } = getEventVenueAndDate(wedding, event);
   const effectiveDate = event.date || lookedUpDate;
-  const dateStr = effectiveDate
-    ? new Date(effectiveDate + 'T00:00:00').toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })
-    : '';
+  // formatWeddingDate returns '' for anything unparseable rather than the
+  // string "Invalid Date" — effectiveDate falls back to the wedding record's
+  // date, which is a full ISO timestamp, not the date-only shape 'T00:00:00'
+  // was being appended to.
+  const dateStr = formatWeddingDate(effectiveDate, 'en-AU', { weekday: 'long', day: 'numeric', month: 'long' });
 
   return (
     <div style={{ border: `1px solid ${S.border}`, background: S.surface, padding: '20px 20px 20px', marginBottom: 16 }}>

@@ -1,5 +1,6 @@
 import React from 'react';
 import SectionReveal from '../SectionReveal';
+import { parseWeddingDate } from '@/lib/guestDate';
 import { isMotionEnabled } from '@/lib/universeStyling';
 import { accentText } from '@/lib/surfaceTint';
 import EditorialSectionKicker from '../layouts/EditorialSectionKicker';
@@ -219,13 +220,17 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
         {hasEvents ? dayOrder.map((dateKey, gi) => {
           const events = dayMap[dateKey];
 
+          // The try/catch that used to sit here guarded nothing:
+          // toLocaleDateString RETURNS the string "Invalid Date" instead of
+          // throwing, so the catch never fired and every guest saw that text as
+          // a day header. parseWeddingDate handles the real cause — weddingDate
+          // is a full ISO timestamp, not the date-only string 'T00:00:00' was
+          // being appended to.
           let dayOfWeek = '', fullDate = '';
-          if (dateKey) {
-            try {
-              const d = new Date(dateKey + 'T00:00:00');
-              dayOfWeek = d.toLocaleDateString('en-AU', { weekday: 'long' });
-              fullDate  = d.toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
-            } catch { fullDate = dateKey; }
+          const d = parseWeddingDate(dateKey);
+          if (d) {
+            dayOfWeek = d.toLocaleDateString('en-AU', { weekday: 'long' });
+            fullDate  = d.toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
           }
 
           return (

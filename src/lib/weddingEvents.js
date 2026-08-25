@@ -1,3 +1,4 @@
+import { parseWeddingDate } from './guestDate.js';
 /**
  * src/lib/weddingEvents.js
  *
@@ -16,8 +17,12 @@ export const RECEPTION_EVENT_ID = 'reception';
 
 function safeDateMs(d) {
   if (!d) return Infinity;
-  const t = Date.parse(d + 'T00:00:00');
-  return isNaN(t) ? Infinity : t;
+  // Was `Date.parse(d + 'T00:00:00')`, which returned NaN for a full ISO
+  // timestamp and sent the event to Infinity — sorting it LAST instead of into
+  // its real position. The only symptom was wrong order, with no error text
+  // anywhere, so nothing would have surfaced it by looking.
+  const parsed = parseWeddingDate(d);
+  return parsed ? parsed.getTime() : Infinity;
 }
 
 function cmpTime(ta, tb) {
