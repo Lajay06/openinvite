@@ -190,9 +190,41 @@ are NOT violations; `✦` is an instance of the rule, not an exception.
   These need a replacement MECHANISM — an icon token key, not a glyph. The
   advisor is commissioning an icon vocabulary; **do not invent one.**
 
-**T3 POLLS-TYPOGRAPHY** — `WeddingPollsPage.jsx` has **18 hard-coded
-`'Plus Jakarta Sans'`** refs; heading reads `typography.headingFont` at :131 but
-body is hard-coded throughout. Every other guest page consumes both faces.
+**GUEST-TYPOGRAPHY-PARITY** (was T3 POLLS-TYPOGRAPHY; absorbs T2's typography
+half) — **in the fix wave.** This is what the owner reported as "the font
+combinations seem inconsistent, some pages have the right blend, some are just
+one font". Swept 2026-08-25 across every guest-facing file; four offenders, all
+the rest of the tree (20 masthead/footer/section-mark sets, twelve pages)
+consumes both faces correctly:
+
+| file | hard-coded | headingFont | bodyFont | what a guest sees |
+|---|---:|---:|---:|---|
+| `src/pages/GuestAccommodation.jsx` | 36 | 0 | 0 | entirely Plus Jakarta Sans — no typography plumbing AT ALL |
+| `WeddingPollsPage.jsx` | 18 | 3 | 0 | universe headings, chrome body — the half-and-half |
+| `WeddingWebsiteNav.jsx` | 1 | 0 | 0 | **the sneakiest** — one line, but the nav is on EVERY page, so even correct pages carry a wrong one |
+| `src/pages/GuestMusic.jsx` | 1 | 0 | 0 | no universe typography at all |
+
+`GuestAccommodation.jsx` serves `/w/:slug/accommodation` (App.jsx:189) — it has
+no `resolveTypography`, no `universeConfig`, no `typography` reference of any
+kind.
+
+**THE SYSTEMIC FIX IS THE DELIVERABLE, not the four files.**
+`GuestAccommodation` is NEW and shipped with no plumbing at all, which means
+the next new guest page can do exactly the same and nobody will notice. Add a
+probe that FAILS when any guest-facing file declares a font-face literal
+instead of consuming `resolveTypography`, with an explicit allowlist for
+anything genuinely exempt. The four fixes are cleanup; the guard is what makes
+the defect unshippable. Same shape as the clipboard sweep's "no awaited
+clipboard write remains anywhere in src".
+
+**FONT-OVERRIDE-NOT-PUBLISHED** — also in the wave, but it explains a DIFFERENT
+symptom and does not explain the owner's observation. `fontOverride` is written
+by the studio (`WBRightPanel.jsx:213-215`), listed in `StudioWebsite.jsx`'s
+writable fields, and read FIRST by `resolveTypography` — but it is absent from
+`GUEST_SAFE_WEDDING_FIELDS`, so `wedding-by-slug` cannot return it (confirmed
+against the live 44-key response). A couple who picks fonts sees them in the
+builder and their guests never do. Latent today — `universeStyling.js` notes no
+wedding has one set — and it bites the first couple who uses the picker.
 
 **PREVIEW-NAV** — `?preview=true` only skips the password gate
 (`weddingBySlug.js:18-19`). `WeddingWebsiteNav` builds plain `href`s with **zero**

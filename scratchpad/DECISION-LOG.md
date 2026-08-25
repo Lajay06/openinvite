@@ -871,3 +871,43 @@ of failing.
 If a string should differ per universe, it is `universeConfig.copy`. If a string
 should differ per couple, it is the wedding record. A probe cannot tell these
 apart — only reading the rendered words can.
+
+---
+
+## Ticket: WEBKIT-PASS — pre-beta, findings only
+
+**Why.** `GamesManager`'s copy-links was broken in Safari and nobody reported
+it. It shares a file-neighbourhood and an idiom with the Guests control the
+owner *did* report, and the only reason one surfaced and the other did not is
+that nobody happened to click it. That means the product has effectively been
+verified in **one engine**.
+
+The market is couples and their guests on iPhones and Macs. Safari is not a
+minority case here; it is probably the majority — and the guest side, where the
+RSVP lives, skews further that way than the dashboard does.
+
+**Scope** — a WebKit run across the interactive surfaces that matter, reporting
+every difference from Chromium as a finding:
+
+- guest list actions (select, copy links, set events, bulk edits, export)
+- invite sending
+- the RSVP flow end to end, including the recognised-guest path
+- publish and the share controls
+- exports (CSV, ZIP — download behaviour differs by engine)
+- the studio's copy and share controls
+
+**Known engine-specific classes to look for**, beyond whatever turns up:
+
+- clipboard writes behind an `await` (the class just fixed — pinned by
+  `tests/persistence/clipboard-actions.mjs`, but new sites can still be written)
+- programmatic downloads and `<a download>`
+- date parsing and `Intl` formatting differences
+- `100vh` and viewport units with the Safari toolbar
+- backdrop-filter, sticky positioning, scroll behaviour
+
+**Findings only. Fixes ticket separately.** Slot after the current defect wave,
+before beta.
+
+Playwright ships webkit, and `scripts/lib/renderHarness.mjs` already drives it —
+`copylinks-webkit.mjs` is the worked example of running both engines and
+reporting the difference.

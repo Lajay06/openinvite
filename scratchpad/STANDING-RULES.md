@@ -466,6 +466,39 @@ SKIPPED` rather than a flattering total.
 real work in CI. Every "13/13" reported before this date was, in truth, 11
 exercised and 2 inert.
 
+### RULE 13e — a verdict is bound to a SHA, or it is not a verdict (2026-08-25)
+
+Observed on PR #545. `npm run pr:green 545` reported `Build & test = FAILURE`
+while the run for the commit actually being merged was still queued — it had
+read the conclusion of the **previous** run and presented it as the current
+verdict.
+
+That direction is merely annoying: it blocks a merge that would have passed.
+**The dangerous direction is the other one.** A stale *green* read as the
+current verdict would satisfy a RULE 13 authorization line that was never
+earned — the advisor's line says "conditional on `npm run pr:green` exiting 0
+**at merge time**", and a verdict describing an earlier commit does not
+describe merge time at all. Every line issued this session carries that phrase;
+this is what makes it enforceable rather than decorative.
+
+**The rule:**
+
+- A `pr:green` verdict is evidence only for the SHA it was computed from.
+  Before merging, confirm the run whose conclusion you are quoting has
+  `headSha == HEAD` of the branch being merged.
+- **A verdict whose SHA does not match is NO VERDICT — not a pass, and not a
+  failure.** Wait for the matching run; do not re-read the old one, and do not
+  infer the new one's outcome from it.
+- In practice: poll
+  `gh run list --branch <b> --json databaseId,status,conclusion,headSha` and
+  select on `headSha`, then re-run `pr:green` once that run is `completed`.
+  Trusting the bare `pr:green` line without the SHA check is the hole.
+
+Same family as the push-verification rule below and as RULE 13d: a check that
+answers a question slightly different from the one being asked ("did some run
+pass?" instead of "did *this commit's* run pass?") reads as authoritative and
+is not.
+
 ---
 
 ## A push is verified against the remote, never trusted from local exit status
@@ -692,3 +725,70 @@ Safari-only: Safari requires the clipboard write inside the click's transient
 activation, and an `await` on a network call spends it. Chromium is permissive
 and writes anyway, so a green Chromium run was a control that could not fail.
 Playwright ships webkit; use it when the defect is engine-specific.
+
+### Corollary — a check that searches wider than the thing it verifies
+
+An assertion scoped wider than its subject can be satisfied by something else
+entirely, and then it passes on a broken tree.
+
+The clipboard fallback check searched the whole of `Guests.jsx` for
+`setCopyFallback(`. A control deleted it from the Copy-links handler — and the
+check still passed, because the collect-link handler in the same file also uses
+it. Rescoped to the handler body, the control fires.
+
+Third instance of one family:
+
+- **`ctx.request` vs `ctx.route`** — the guard watched a channel the bug could
+  not travel on.
+- **`stripTokenColumns(` counted** — `.map(stripTokenColumns)` passes the
+  function bare, so a count of call-parens structurally missed the list path,
+  the most important of the three.
+- **File-wide `setCopyFallback`** — another usage satisfied the assertion.
+
+**Scope the assertion to the unit under test.** If the check would still pass
+when the subject is deleted, it is not checking the subject. The way to find out
+is the control: plant the defect in exactly the place the check names, and watch.
+
+### Corollary — verify a deploy by asserting behaviour at a known URL
+
+Not by hunting a marker in a chunk you guessed the name of.
+
+Ten minutes went into polling `Guests-BzQ-XmHR.js` for `ClipboardItem`. That
+chunk is a **78-byte re-export stub**, and the symbol lives in a different
+module entirely — the string was never going to be there, and the loop would
+have run forever reporting a truthful zero about the wrong file.
+
+Same family as the guard on the wrong channel: the check was fine, the target
+was wrong.
+
+**Prefer an assertion the change actually alters at a stable address**: an
+endpoint's response, a rendered string on a known route, a CSS rule in
+`index-*.css` (linked from `/`, so its name is discoverable rather than
+guessed). Where only a lazy chunk carries the change, read its name **out of the
+bundle that references it** instead of predicting it — and if the marker is
+absent, first ask whether it could ever have been present.
+
+---
+
+## Owner-accepted content needs a landing check
+
+Acceptance is not a merge.
+
+The 19 `rsvpIntro` rewrites and the 19 in-voice `rsvpSent` tails went through
+three rounds of critique — construction families, mechanism phrasing, US-English
+sweep, loanword ruling — and were owner-accepted. **They were never written to
+the file.** `git log -S rsvpIntro -- src/lib/websiteThemes.js` returns nothing:
+that field has never been touched by any commit. The owner found it on his phone,
+reading the original lost-property copy in production, weeks of review later.
+
+The cause was mundane. A later message accepted a *different* copy set in the
+same thread, that one was applied, and the earlier set was treated as done
+because it had been agreed.
+
+**Any copy set the owner signs off is verified PRESENT in the codebase before
+the ticket carrying it is closed — and the check is a grep for the actual
+strings, not a claim that it was applied.**
+
+Generalises past copy: an accepted decision that produces an artifact (a string,
+a config value, a schema field, a route) needs the artifact confirmed to exist.
+The same family as the empty read — "I did it" is not evidence, the file is.
