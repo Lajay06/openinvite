@@ -154,6 +154,20 @@ const driftKey = (path) => path.replace(/^(\w+)\[\d+\]/, '$1');
  * excluding the drift register. Returns the drift actually hit, so a caller
  * can print it rather than let it pass unseen.
  */
+/**
+ * Fields api/wedding-by-slug ADDS to its response that are not stored columns.
+ * PUBLISHED_WEDDING models that RESPONSE, not an entity row, so validating it
+ * against the entity schema is a category error for these four.
+ *
+ * `locked` and `passwordProtected` are computed from websitePasswordEnabled +
+ * websitePassword; `customGifts` and `registryProducts` are built at line 134
+ * from the CustomGift and RegistryProduct entities. Declaring any of them as
+ * storage would mirror a derived fact — the drift the schema warns about.
+ */
+export const API_DERIVED_ON_WEDDING_RESPONSE = new Set([
+  'locked', 'passwordProtected', 'customGifts', 'registryProducts',
+]);
+
 export function assertSeedMatchesSchemas(seed, extra = {}) {
   const schemas = loadEntitySchemas();
   const problems = [], drift = [];
@@ -163,7 +177,16 @@ export function assertSeedMatchesSchemas(seed, extra = {}) {
     }
   };
   for (const [name, rows] of Object.entries(seed)) check(name, rows);
-  for (const [name, rows] of Object.entries(extra)) check(name, rows);
+  // `extra` is the API-response fixture. Strip the derived fields before
+  // checking the rest of its shape against the entity.
+  for (const [name, rows] of Object.entries(extra)) {
+    const stripped = (Array.isArray(rows) ? rows : [rows]).map(r => {
+      const c = { ...r };
+      for (const k of API_DERIVED_ON_WEDDING_RESPONSE) delete c[k];
+      return c;
+    });
+    check(name, stripped);
+  }
 
   if (problems.length) {
     const lines = problems.map(p => `    ${p.path}: ${p.problem}${p.got ? ` (got ${p.got})` : ''}`);
