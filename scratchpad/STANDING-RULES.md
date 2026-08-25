@@ -942,6 +942,28 @@ guard that is right.
 > well-founded prediction, **investigate the instrument before revising the
 > belief.**
 
+### And a well-founded claim from a trusted source is still a claim
+
+Later the same day, the advisor diagnosed a coverage hole: the US-English guard
+said "dashboard/universe-builder source", so guest-facing copy looked unchecked.
+The terminal accepted it and **began implementing the fix**.
+
+Measured: `SCOPE_PATTERNS` is `src/pages`, `src/components`, `src/lib`, and the
+only exclusions are the marketing tree and generated files.
+**`src/components/guest-website/` had been in scope the whole time.** A planted
+`"favourite"` in a guest page was caught, exit 1, named by file and line.
+
+The wording was stale, not the scope — and it produced a wrong diagnosis in the
+advisor and a wrong implementation start in the terminal. *(That wording is now
+fixed, because a tool that misdescribes itself produces wrong conclusions in
+everyone who reads it, however carefully they read.)*
+
+**The protocol's value is that the terminal can refuse the advisor. It only
+works if that is used on confident rulings as readily as on uncertain ones.**
+A ruling arrives with authority; it does not arrive with evidence. Ask for the
+evidence, or go and get it, before building on it — the same standard applied
+to one's own claims all session.
+
 Neither side is automatically the truth. The way through both cases was
 refusing to accept either answer until they agreed.
 
