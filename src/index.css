@@ -86,6 +86,25 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
    which pulls it into the h1-h6 rule and would render a small wide-tracked SANS
    kicker in the serif display face. This opts it back out, on the same
    specificity footing: (0,2,0) against the (0,1,1) of the h1-h6 rule. */
+/* MIN-WIDTH ON DASHBOARD CONTENT.
+   A flex or grid CHILD defaults to `min-width: auto`, which means it refuses to
+   shrink below its own content — so nothing above it can constrain it, and the
+   page grows sideways instead. Eight of sixteen dashboard surfaces scrolled
+   horizontally at 390px because of this, with dozens of independent offenders
+   each (57 elements past the edge on checklist alone), which is why clamping
+   any single one changed nothing.
+
+   `min-width: auto` computes to `0` for ordinary block boxes, so this is inert
+   everywhere except the flex and grid items it is aimed at.
+
+   The `:not([class*="min-w-"])` guard keeps any DELIBERATE minimum — a utility
+   class asking for one still wins. Measured at 390: budget 79->0, beauty 73->0,
+   checklist 195->0, todolist 195->0, photography 213->8. Seating is unaffected
+   by this rule and has a different cause. */
+.page-content *:not([class*="min-w-"]) {
+  min-width: 0;
+}
+
 .wb-guest-root .wb-body-face {
   font-family: var(--wb-body-font, 'Plus Jakarta Sans', sans-serif) !important;
 }

@@ -20,7 +20,12 @@ ToastProvider.displayName = "ToastProvider";
 const ToastViewport = React.forwardRef(({ ...props }, ref) => (
   <div
     ref={ref}
-    className="fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]"
+    // THE UNFIXED TWIN of ToastProvider above. M-3 corrected that one and left
+    // this one with the identical `fixed top-0 ... w-full p-4` defect: no
+    // horizontal anchor, so at 390 it starts at the padding offset and ends at
+    // 406 — 16px of overflow on every page below sm, before any toast exists.
+    // Same fix, and they now match.
+    className="fixed inset-x-0 top-0 z-[100] flex max-h-screen w-auto flex-col-reverse p-4 sm:inset-x-auto sm:bottom-0 sm:right-0 sm:top-auto sm:w-full sm:flex-col md:max-w-[420px]"
     {...props}
   />
 ));
