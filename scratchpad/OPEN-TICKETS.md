@@ -179,6 +179,73 @@ renders 🗳️ (E1 batch) · the report-only CSP refuses `blob:` URLs on every 
 page, so `/api/csp-report` is being spammed by a policy that is not actually
 blocking anything — low-priority CSP tuning.
 
+## GUEST-FONT-SCOPE — the inline font-family on guest pages does nothing
+
+**Found 2026-08-25 while production-verifying #549. This changes the model.**
+
+`src/index.css:45-51` locks EVERY element to the product face:
+
+```css
+*, *::before, *::after            { font-family: 'Plus Jakarta Sans', … !important; }
+h1,h2,h3,h4,h5,h6,p,span,div,a,…  { font-family: 'Plus Jakarta Sans', … !important; }
+```
+
+An `!important` stylesheet rule beats an inline `style={{ fontFamily }}`. So on
+a guest page **the inline declaration is inert**. The only thing that works is
+the escape hatch below it:
+
+```css
+.wb-guest-root, .wb-guest-root *   { font-family: var(--wb-body-font, …) !important; }
+.wb-guest-root h1…h6               { font-family: var(--wb-heading-font, …) !important; }
+```
+
+**Exactly two files set that wrapper** — `MultiPageWeddingWebsite` (the live
+guest site) and `RealWebsitePreview` (the builder). Three guest routes render
+OUTSIDE it and therefore show the product face no matter what they declare:
+
+| Route | Component | Status |
+|---|---|---|
+| `/w/:slug/accommodation` | `GuestAccommodation` | no wrapper |
+| `/w/:slug/music` | `GuestMusic` | no wrapper |
+| **`/rsvp/:token`** | `RSVPPage` | **no wrapper** |
+
+The third is the invitation itself — the surface the owner walked, and where
+every F-A…F-G change landed. Embedded in the RSVP tab it inherits the wrapper
+and works; on its own route it never has.
+
+Measured on production, same pass, declared vs computed:
+
+| Page | declared | computed |
+|---|---|---|
+| `/stay` (wrapped) | `Cormorant Garamond, serif` | **Cormorant Garamond** |
+| `/accommodation` (unwrapped) | `Cormorant Garamond, serif` | **Plus Jakarta Sans** |
+
+**#549 is not wrong, it is incomplete.** Loading the faces is necessary — the
+wrapper cannot render a font that was never fetched — but without the wrapper
+the loaded faces are never used. Both halves are required.
+
+**COROLLARY DEFECT, same read:** inside `.wb-guest-root`, the `*` rule forces
+`--wb-body-font` onto every non-heading tag, beating the component's own inline
+style. On `/stay`, `<p>Crown Towers Sydney</p>` declares Cormorant Garamond and
+**computes Jost** — a paragraph deliberately set in the heading face is
+silently overridden. Any component styling a `<p>` as a heading is losing.
+
+**AND IT INDICTS MY OWN GUARD.** `guest-typography-parity.mjs` checks that
+files DECLARE `typography.*` rather than literals. Declarations do not reach
+the screen here. The guard verified intent and called it parity — the same
+"a scan is only as good as its definition" failure, one level up. The guard
+needs an effect-level assertion, not only a source-level one.
+
+**Options to weigh (report-first, do not build blind):**
+1. Wrap the three standalone routes in `.wb-guest-root` and set the two CSS
+   variables. Smallest, consistent with the existing mechanism, leaves the
+   corollary defect in place.
+2. Drop the global `*` lock and scope it to the dashboard shell instead. More
+   correct — inline styles would mean what they say — but it is a global CSS
+   change touching every surface in the product, and the lock exists because
+   something once needed it.
+3. Both, sequenced: (1) to fix guests now, (2) as a separate considered change.
+
 ## PUBLISH-PARITY — A NAMED PROGRAMME, NOT A SWEEP
 
 **THE DASHBOARD PROMISES MORE THAN THE SITE DELIVERS.** On a paid product that
