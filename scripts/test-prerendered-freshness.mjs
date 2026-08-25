@@ -39,8 +39,8 @@
  * is available — e.g. a shallow/orphan local checkout), 1 if stale.
  */
 
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, dirname } from 'node:path';
 import { execSync } from 'node:child_process';
 
 const MARKETING_SOURCE_PATTERNS = [
@@ -60,16 +60,26 @@ const MARKETING_SOURCE_PATTERNS = [
   /^src\/lib\/planFeatures\.js$/,
   /^src\/lib\/marketingSeo\.js$/,
   /^src\/lib\/universeCatalog\.js$/,
-  // src/lib/websiteThemes.js WAS listed here and no marketing file imports it.
-  // Universes.jsx takes its data from src/lib/universeCatalog.js; across
-  // Universes/Home/Features/Ava/Pricing/About and all of components/marketing,
-  // components/home and components/public there is not one reference to
-  // websiteThemes. The entry cost two CI round-trips in one day, both for
-  // GUEST-SITE COPY that no marketing page renders.
+  // RESTORED 2026-08-25 after being wrongly removed in #554.
   //
-  // It is removed rather than loosened, and assertNoStaleMarketingDeps() below
-  // fails loudly if a marketing file ever does import it — so the guard now
-  // tracks the actual dependency instead of a remembered one.
+  // The removal was justified with "no marketing file imports it" — which was
+  // only true of DIRECT imports. src/lib/universeCatalog.js imports
+  // UNIVERSE_CONFIGS from it and derives the Universes page's display ORDER,
+  // its Ultra TIER gating and its descriptions; Universes.jsx and
+  // UniverseTeaserSection.jsx import universeCatalog. So websiteThemes is
+  // reachable from a prerendered marketing page in two hops.
+  //
+  // Proven, not argued: flipping one universe's tier and re-running the
+  // prerender changes the rendered #root of prerendered/universes/index.html,
+  // not merely its asset hashes.
+  //
+  // Removing it created exactly the silent-stale-HTML hole this guard exists
+  // to prevent — the 2026-08-04 incident class. The copy changes that motivated
+  // the removal (rsvpIntro/rsvpSent live under UNIVERSE_CONFIGS[x].copy, which
+  // universeCatalog never reads) really are harmless, but the ENTRY is not.
+  // The right fix is to split guest copy into its own module so the two
+  // concerns stop sharing a file; until then the conservative entry stands.
+  /^src\/lib\/websiteThemes\.js$/,
   /^src\/hooks\/useMarketingSeo\.js$/,
   /^src\/hooks\/useOrganizationStructuredData\.js$/,
 ];
@@ -86,35 +96,73 @@ const MARKETING_SOURCE_PATTERNS = [
  * have changed.
  */
 function assertNoStaleMarketingDeps() {
-  const TREES = [
-    'src/components/marketing', 'src/components/home', 'src/components/public',
-  ];
+  // TRANSITIVE, not direct. The direct-only version of this shipped in #554 and
+  // reported "no marketing file imports websiteThemes" while
+  // Universes.jsx -> universeCatalog.js -> websiteThemes.js was live the whole
+  // time. A direct-import check answers a different question from the one the
+  // guard asks, which is: can a change to this file reach a prerendered page?
+  const TREES = ['src/components/marketing', 'src/components/home', 'src/components/public'];
   const PAGES = ['Home', 'Features', 'Ava', 'FAQ', 'Universes', 'Gifting', 'Pricing',
                  'Contact', 'About', 'PrivacyPolicy', 'TermsOfService', 'Login',
                  'Register', 'ForgotPassword'].map((n) => `src/pages/${n}.jsx`);
 
-  const files = [];
-  const walk = (dir) => {
-    if (!existsSync(dir)) return;
+  const walk = (dir, out = []) => {
+    if (!existsSync(dir)) return out;
     for (const e of readdirSync(dir, { withFileTypes: true })) {
       const full = join(dir, e.name);
-      if (e.isDirectory()) walk(full);
-      else if (/\.jsx?$/.test(e.name)) files.push(full);
+      if (e.isDirectory()) walk(full, out);
+      else if (/\.jsx?$/.test(e.name)) out.push(full);
     }
+    return out;
   };
-  TREES.forEach(walk);
-  PAGES.filter((f) => existsSync(f)).forEach((f) => files.push(f));
 
-  const offenders = files.filter((f) => /from\s+['"][^'"]*websiteThemes/.test(readFileSync(f, 'utf8')));
-  if (offenders.length > 0) {
-    console.error('\n  ✗ A marketing-tree file now imports src/lib/websiteThemes.js:\n');
-    offenders.forEach((f) => console.error(`      ${f}`));
-    console.error('\n  That module was REMOVED from MARKETING_SOURCE_PATTERNS because nothing');
-    console.error('  in the marketing tree imported it. It does now, so the entry must be');
-    console.error('  restored — otherwise a copy change there ships stale prerendered HTML.\n');
+  /** Resolves an import specifier to a repo path, or null if it is external. */
+  const resolveSpec = (spec, fromFile) => {
+    let rel;
+    if (spec.startsWith('@/')) rel = join('src', spec.slice(2));
+    else if (spec.startsWith('.')) rel = join(dirname(fromFile), spec);
+    else return null;
+    for (const cand of [rel, `${rel}.js`, `${rel}.jsx`, join(rel, 'index.js'), join(rel, 'index.jsx')]) {
+      if (existsSync(cand) && statSync(cand).isFile()) return cand;
+    }
+    return null;
+  };
+
+  // Breadth-first over the real import graph, from every marketing entry point.
+  const seen = new Set();
+  const queue = [...TREES.flatMap((t) => walk(t)), ...PAGES.filter((f) => existsSync(f))];
+  const roots = queue.length;
+  while (queue.length) {
+    const file = queue.shift();
+    if (seen.has(file)) continue;
+    seen.add(file);
+    let src;
+    try { src = readFileSync(file, 'utf8'); } catch { continue; }
+    for (const m of src.matchAll(/from\s+['"]([^'"]+)['"]/g)) {
+      const next = resolveSpec(m[1], file);
+      if (next && !seen.has(next)) queue.push(next);
+    }
+  }
+
+  // Every lib/hook entry in the pattern list must be REACHABLE. An unreachable
+  // one is a stale entry costing CI round-trips; a reachable one that is NOT
+  // listed is the dangerous direction — the guard silently stops protecting a
+  // route. Both are reported.
+  const WATCHED = [
+    'src/lib/planFeatures.js', 'src/lib/marketingSeo.js', 'src/lib/universeCatalog.js',
+    'src/lib/websiteThemes.js', 'src/hooks/useMarketingSeo.js',
+    'src/hooks/useOrganizationStructuredData.js',
+  ];
+  const unreachable = WATCHED.filter((f) => existsSync(f) && !seen.has(f));
+  if (unreachable.length > 0) {
+    console.error('\n  ✗ Listed as a marketing source but NOT reachable from any prerendered page:\n');
+    unreachable.forEach((f) => console.error(`      ${f}`));
+    console.error('\n  Either the entry is stale, or an import was removed. Verify both');
+    console.error('  directions before deleting it — #554 deleted one on a direct-import');
+    console.error('  check and missed a two-hop path that was live.\n');
     process.exit(1);
   }
-  console.log(`  ✓ No marketing-tree file imports websiteThemes (${files.length} files checked).`);
+  console.log(`  ✓ All ${WATCHED.length} watched sources are reachable from marketing (${seen.size} modules from ${roots} entry points).`);
 }
 
 function git(cmd) {
