@@ -179,6 +179,56 @@ renders 🗳️ (E1 batch) · the report-only CSP refuses `blob:` URLs on every 
 page, so `/api/csp-report` is being spammed by a policy that is not actually
 blocking anything — low-priority CSP tuning.
 
+## HEADING-OUTLINE — established 2026-08-25, and the scope is 11 not 18
+
+**The advisor's expected ruling does NOT hold, and that is the good outcome.**
+Measured across all 15 derived guest routes with the entrance overlay
+dismissed: **zero routes have more than one h1.** The masthead renders only in
+the HOME hero, where the couple's names are legitimately the h1. No masthead
+correction is needed and none should be made.
+
+The first measurement said 12 routes had two h1s. That was the instrument: the
+harness gives each route a fresh context, so `EntranceMoment` — a fixed overlay
+carrying its own `<motion.h1>` with the couple's names — was present every
+time. Traced via ancestor chain (`body > div.fixed > … > h1`), not guessed.
+`dismissEntrance` exists in the harness for exactly this and I had not used it.
+
+**THE 18 SPLIT 11 / 7 ON INSPECTION. Do not blanket-convert.**
+
+*Real card titles → convert to headings (11):*
+
+| File | Lines | Content |
+|---|---|---|
+| `UniverseBlocks.jsx` | 464, 489, 511, 528 | `item.title`, `venue.venueName`, `item.question`, `name` |
+| `WeddingExperiencePage.jsx` | 122, 175 | `place.name` |
+| `WeddingRegistryPage.jsx` | 19, 64 | `fund.title`, `product.name` |
+| `WeddingStayPage.jsx` | 111, 163 | `place.name`, `p.name` |
+| `WeddingTransportPage.jsx` | 96 | `place.name` |
+
+*NOT titles — genuine non-heading uses of the display face (7). Step 2's cases,
+leave them:*
+
+| File | Lines | What it actually is |
+|---|---|---|
+| `WeddingRSVPPage.jsx` | 204, 380, 648, 738 | the **rsvpIntro paragraph**, set in the display face for voice |
+| `WeddingStayPage.jsx` | 68, 76 | check-in / check-out **dates** |
+| `WeddingOurStoryPage.jsx` | 331 | a milestone **date**, 0.875rem accent |
+
+Converting the RSVP intro paragraph to an `<h3>` would be semantically wrong
+and would damage the outline rather than fix it. **That is what a blanket
+conversion would have done to four of the eighteen.**
+
+**TWO SEPARATE OUTLINE DEFECTS found in the same pass, both in scope:**
+1. **`/our-story` has ZERO headings.** Its page title is not a heading at all —
+   the only h1 on that route was the entrance overlay's. Needs an h1.
+2. **`/polls` skips h1 → h3** ("Polls coming soon"). Needs h2, or the h3 needs
+   a parent.
+
+**Spacing:** `h1`–`h6` carry UA default margins that `<p>` does not. #551
+already hit this once. The render pass for the conversion must compare
+before/after spacing per element, not just tag names — eighteen (now eleven)
+silent spacing shifts is what passes code review and fails on screen.
+
 ## GUEST-FONT-SCOPE — the inline font-family on guest pages does nothing
 
 **Found 2026-08-25 while production-verifying #549. This changes the model.**
