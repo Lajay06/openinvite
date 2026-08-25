@@ -136,3 +136,40 @@ export function accentChip(theme = {}) {
   }
   return { background: bg, color: light };
 }
+
+/**
+ * Flatten a color that may carry alpha onto the ground it will actually sit
+ * on, returning an opaque hex.
+ *
+ * WHY THIS EXISTS. A block background of `#2B21181a` painted over the builder's
+ * dark right panel composites to near-black; painted over the page's light
+ * ground it composites to a barely-there cream. Same token, opposite
+ * appearance — so the swatch showed the couple one color and their site
+ * rendered another. A PREVIEW MUST COMPOSITE OVER THE SAME GROUND AS THE THING
+ * IT PREVIEWS.
+ *
+ * Also what makes contrast decidable: you cannot measure a ratio against a
+ * translucent surface, only against what it resolves to.
+ */
+export function flattenOver(color, ground) {
+  if (typeof color !== 'string' || !color.startsWith('#')) return color;
+  if (color.length === 7) return color;              // already opaque
+  if (color.length !== 9) return color;              // not #RRGGBBAA
+  const alpha = parseInt(color.slice(7, 9), 16) / 255;
+  return mixHex(ground, color.slice(0, 7), alpha);
+}
+
+/**
+ * The ink that clears 4.5:1 on a given background — the higher-contrast of the
+ * palette's two, so an arbitrary color from the picker still reads.
+ * Returns { color, ratio, passes } so a caller can WARN rather than block.
+ */
+export function readableInkOn(background, theme = {}, ground = '#FFFFFF') {
+  const solid = flattenOver(background, ground);
+  const candidates = [theme.lightText || '#0A0A0A', theme.darkText || '#FFFFFF'];
+  const scored = candidates
+    .map(c => ({ color: c, ratio: contrastRatio(c, solid) }))
+    .sort((a, b) => b.ratio - a.ratio);
+  const best = scored[0];
+  return { color: best.color, ratio: best.ratio, passes: best.ratio >= 4.5, solid };
+}

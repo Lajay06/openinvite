@@ -8,10 +8,10 @@
  * component instance running inside the same render, not a second one fed
  * the same data independently. See BUILDER_BLOCK_SCOPE.md.
  *
- * Every block resolves colour + typography from the SAME theme/typography
+ * Every block resolves color + typography from the SAME theme/typography
  * objects the page component already received from resolveColors/
  * resolveTypography — a block cannot look off-brand because it never
- * chooses its own colours or fonts. Several block types additionally pick
+ * chooses its own colors or fonts. Several block types additionally pick
  * a per-universe *shape* accent, reusing already-built primitives from
  * ../layouts — never a hardcoded block style, and never a couple-chosen
  * manual override.
@@ -82,6 +82,7 @@ import FlorenceSectionMark from '../layouts/FlorenceSectionMark';
 import SeoulSectionMark from '../layouts/SeoulSectionMark';
 import ShanghaiSectionMark from '../layouts/ShanghaiSectionMark';
 import { parseWeddingDate } from '@/lib/guestDate';
+import { readableInkOn, contrastRatio } from '@/lib/surfaceTint';
 
 // Per-universe divider accent for `spacer` (variant 'rule') — every entry
 // here is one of the already-built, reused-as-is primitives from
@@ -413,7 +414,11 @@ function QuoteBannerBlock({ content, theme, typography, editable }) {
     return <EmptyPlaceholder theme={theme} typography={typography} label="Quote banner — click to add text" />;
   }
   return (
-    <div style={{ background: theme.darkBg, padding: '48px 24px', textAlign: 'center', margin: '0 -24px' }}>
+    // The `margin: '0 -24px'` that used to sit here was this block breaking out
+    // of the container inset by hand — a second, private full-bleed mechanism.
+    // The container no longer applies that inset, so the hack is retired rather
+    // than left as a rival to the shared one.
+    <div style={{ background: theme.darkBg, padding: '48px 24px', textAlign: 'center' }}>
       <p style={headingStyle(typography, theme, { color: theme.darkText, fontStyle: 'italic', fontSize: 'clamp(1.25rem, 3vw, 1.75rem)', maxWidth: 720, marginLeft: 'auto', marginRight: 'auto' })}>
         “{content.text}”
       </p>
@@ -678,10 +683,10 @@ function BlockCanvasWrapper({ block, index, count, isSelected, onSelectBlock, on
 }
 
 // Resolves a block's curated style overrides against the ACTIVE UNIVERSE's
-// own tokens — never a free colour/size. textColor becomes an "effective
+// own tokens — never a free color/size. textColor becomes an "effective
 // theme" with `lightText` swapped, since every renderer already derives its
-// text colour from theme.lightText (never a hardcoded literal) — so
-// substituting it here changes the real rendered colour with zero changes
+// text color from theme.lightText (never a hardcoded literal) — so
+// substituting it here changes the real rendered color with zero changes
 // needed inside any individual renderer. background/align/size are passed
 // through to renderers that support them (see WBRightPanel.jsx's
 // ALIGN_CAPABLE_TYPES / SIZE_CAPABLE_TYPES / NO_TEXT_COLOR_TYPES — kept in
@@ -692,7 +697,7 @@ function BlockCanvasWrapper({ block, index, count, isSelected, onSelectBlock, on
 // Hex alpha suffixes below are exact: FF/no-suffix=100%, B3=~70%, 66=~40%,
 // 30=~19%, 18=~9%, 0d=~5%.
 // Exported (with labels) so WBRightPanel.jsx's swatch grid renders the
-// EXACT same colours these renderers use — one source of truth, no drift.
+// EXACT same colors these renderers use — one source of truth, no drift.
 export const TEXT_COLOR_OPTIONS = [
   { value: 'text-100', label: 'Text', resolve: (t) => t.lightText },
   { value: 'text-70', label: 'Text · muted', resolve: (t) => `${t.lightText}B3` },
@@ -712,12 +717,19 @@ export const BACKGROUND_OPTIONS = [
   { value: 'accent-soft', label: 'Accent · soft', resolve: (t) => `${t.accent}30` },
   { value: 'accent2-subtle', label: 'Accent 2 · subtle', resolve: (t) => `${t.accentSecondary || t.accent}18` },
   { value: 'accent2-soft', label: 'Accent 2 · soft', resolve: (t) => `${t.accentSecondary || t.accent}30` },
+  // THE OPAQUE TIER. Everything above is a TINT — the darkest is 19% alpha, so
+  // the darkest swatch in the set composited to a barely-there cream over the
+  // page ground. "Sometimes you just want a black background" was unbuildable
+  // from this palette at any preview fidelity.
+  // `universe-dark` belongs to each palette; `ink` belongs to none.
+  { value: 'universe-dark', label: 'Universe · dark', resolve: (t) => t.darkBg || '#0A0A0A' },
+  { value: 'ink',           label: 'Near black',      resolve: () => '#0A0A0A' },
 ];
 const TEXT_COLOR_TOKENS = Object.fromEntries(TEXT_COLOR_OPTIONS.map(o => [o.value, o.resolve]));
 const BACKGROUND_TOKENS = Object.fromEntries(BACKGROUND_OPTIONS.filter(o => o.value !== 'none').map(o => [o.value, o.resolve]));
 // PR #101 shipped a 3-value enum for each — these values may already be
 // saved on real weddings, so they're aliased forward rather than dropped.
-// The 'surface'/'accent' backgrounds and 'secondary'/'accent' text colours
+// The 'surface'/'accent' backgrounds and 'secondary'/'accent' text colors
 // alias to tokens that render the exact same hex, so existing blocks look
 // byte-identical after this upgrade.
 const LEGACY_TEXT_COLOR_ALIASES = { primary: 'text-100', secondary: 'text-70', accent: 'accent-100' };
@@ -735,11 +747,35 @@ function resolveBlockStyle(style, theme) {
   const textColor = (textColorKey && TEXT_COLOR_TOKENS[textColorKey]) ? TEXT_COLOR_TOKENS[textColorKey](theme) : theme.lightText;
 
   const backgroundKey = s.background != null && LEGACY_BACKGROUND_ALIASES[s.background] !== undefined ? LEGACY_BACKGROUND_ALIASES[s.background] : s.background;
-  const backgroundColor = (backgroundKey && backgroundKey !== 'none' && BACKGROUND_TOKENS[backgroundKey]) ? BACKGROUND_TOKENS[backgroundKey](theme) : null;
+  // A RAW HEX is the escape hatch: the swatches are the fast path, the picker
+  // is for "sometimes you just want a black background" in a shade we did not
+  // anticipate. Stored as the literal value, so it needs no token to resolve.
+  const isCustomHex = typeof backgroundKey === 'string' && /^#[0-9a-fA-F]{6}$/.test(backgroundKey);
+  const backgroundColor = isCustomHex
+    ? backgroundKey
+    : (backgroundKey && backgroundKey !== 'none' && BACKGROUND_TOKENS[backgroundKey]) ? BACKGROUND_TOKENS[backgroundKey](theme) : null;
 
   const spacingPadding = (s.spacing && SPACING_PRESETS[s.spacing]) || null;
 
-  return { effectiveTheme: { ...theme, lightText: textColor }, backgroundColor, spacingPadding };
+  // ADAPTIVE INK. An opaque background the couple chose freely will make the
+  // palette's default text unreadable — and contrast in this product fails
+  // silently. So when a background is set and the couple has NOT chosen a text
+  // color, pick whichever ink clears 4.5:1 against what the background
+  // actually composites to. An explicit textColor is always honored: warn,
+  // never block. It is their wedding.
+  let resolvedText = textColor;
+  let contrast = null;
+  if (backgroundColor) {
+    const ground = theme.lightBg || '#FFFFFF';
+    const auto = readableInkOn(backgroundColor, theme, ground);
+    if (!textColorKey) resolvedText = auto.color;
+    contrast = { ratio: contrastRatio(resolvedText, auto.solid), solid: auto.solid };
+  }
+
+  return {
+    effectiveTheme: { ...theme, lightText: resolvedText },
+    backgroundColor, spacingPadding, contrast,
+  };
 }
 
 export default function UniverseBlocks({ blocks, weddingDetails, theme, typography, universeConfig, editable = false, onRequestInsert, onMoveBlock, onDeleteBlock, onSelectBlock, selectedBlockId }) {
@@ -755,7 +791,12 @@ export default function UniverseBlocks({ blocks, weddingDetails, theme, typograp
     // the owner asked for them "up against each other". A block that wants
     // breathing room carries its own padding (see spacingPadding below), which
     // is the couple's choice; a container gap was ours.
-    <div style={{ backgroundColor: theme.lightBg, display: 'flex', flexDirection: 'column', gap: 0, padding: '64px 24px' }}>
+    // NO HORIZONTAL PADDING HERE. It used to be '64px 24px', which capped every
+    // block background at viewport-48 — measured 342 at 390 and 1392 at 1440,
+    // exactly the inset, which is why a block background was never full bleed.
+    // The inset now lives on each block's INNER content element, so the
+    // background spans the viewport while the words stay on the reading measure.
+    <div style={{ backgroundColor: theme.lightBg, display: 'flex', flexDirection: 'column', gap: 0, padding: '64px 0' }}>
       {editable && <InsertPoint index={0} onRequestInsert={onRequestInsert} theme={theme} />}
       {sorted.map((block, i) => {
         const Renderer = RENDERERS[block.type];
@@ -763,15 +804,19 @@ export default function UniverseBlocks({ blocks, weddingDetails, theme, typograp
         const { effectiveTheme, backgroundColor, spacingPadding } = resolveBlockStyle(block.style, theme);
         const wrapperStyle = { color: effectiveTheme.lightText };
         if (backgroundColor) wrapperStyle.background = backgroundColor;
-        // Unset spacing preserves the pre-existing behaviour exactly: padding
-        // only appeared when a background was also set. An explicit spacing
-        // choice now applies regardless of background.
-        if (spacingPadding) wrapperStyle.padding = spacingPadding;
-        else if (backgroundColor) wrapperStyle.padding = '32px 24px';
+        // VERTICAL padding only on the wrapper — the horizontal half is the
+        // reading inset and belongs to the content, not to the painted surface.
+        // Unset spacing preserves the pre-existing behaviour: padding appeared
+        // only when a background was set.
+        const vPad = spacingPadding ? spacingPadding.split(' ')[0] : (backgroundColor ? '32px' : null);
+        if (vPad) wrapperStyle.padding = `${vPad} 0`;
         const rendered = (
           <SectionReveal universeConfig={universeConfig} disabled={motionDisabled || editable}>
             <div style={wrapperStyle}>
+              {/* The reading inset. Full-bleed background, contained words. */}
+              <div style={{ padding: '0 24px' }}>
               <Renderer content={block.content || {}} theme={effectiveTheme} typography={typography} universeConfig={universeConfig} weddingDetails={weddingDetails} editable={editable} style={block.style} />
+            </div>
             </div>
           </SectionReveal>
         );
