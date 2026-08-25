@@ -203,7 +203,7 @@ export default function GuestSuitePolicies() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-      <DashboardPageHeader title="Policies" subtitle="Set clear expectations for your guests" />
+      <DashboardPageHeader title="Good to know" subtitle="The practical things your guests will want to know" />
 
       {/* Ava button + save indicator */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -505,7 +505,7 @@ export default function GuestSuitePolicies() {
         </div>
 
         <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '20px 0 16px', fontStyle: 'italic', fontFamily: PJS }}>
-          Policies marked "Display on website" will appear in the Policies section of your wedding website and Experience Guide.
+          Anything marked "Display on website" appears in the Good to know section of your wedding website.
         </p>
 
         <button

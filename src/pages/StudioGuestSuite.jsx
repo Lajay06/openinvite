@@ -18,7 +18,7 @@ import { canAccessUltra } from '@/lib/trialStatus';
 const TABS = [
   { id: 'website',  label: 'Website' },
   { id: 'assets',   label: 'Assets' },
-  { id: 'policies', label: 'Policies' },
+  { id: 'policies', label: 'Good to know' },
   { id: 'share',    label: 'Share' },
 ];
 

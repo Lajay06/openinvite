@@ -208,7 +208,7 @@ export default function PoliciesTab({ details }) {
       </PolicySection>
 
       <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', marginBottom: 16, marginTop: 8, fontStyle: 'italic' }}>
-        Policies marked "Display on website" will appear in the Policies section of your wedding website and Experience Guide.
+        Anything marked "Display on website" appears in the Good to know section of your wedding website.
       </p>
 
       <button

@@ -136,7 +136,7 @@ export const NAV_SECTIONS = [
       { icon: Car,        label: "Transport",       url: createPageUrl("GuestSuiteTransport") },
       { icon: Radio,      label: "Live stream",     url: createPageUrl("GuestSuiteLiveStream") },
       { icon: MapPin,     label: "Experience guide",url: createPageUrl("GuestSuiteExperience") },
-      { icon: ScrollText, label: "Policies",        url: createPageUrl("GuestSuitePolicies") },
+      { icon: ScrollText, label: "Good to know",   url: createPageUrl("GuestSuitePolicies") },
       { icon: BarChart2,  label: "Guest polls",     url: createPageUrl("GuestSuitePolls") },
     ],
   },

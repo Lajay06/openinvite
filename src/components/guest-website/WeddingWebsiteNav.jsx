@@ -12,7 +12,7 @@ import { WEDDING_PAGES } from '@/lib/websiteThemes';
 // many pages a couple enables.
 const MAX_VISIBLE_LINKS = 5;
 
-export default function WeddingWebsiteNav({ weddingName, theme, typography, enabledPages, currentPage, weddingSlug, hasTransport, hasAccommodation, hasMusic, hasExperience, onNavigate }) {
+export default function WeddingWebsiteNav({ weddingName, theme, typography, enabledPages, currentPage, weddingSlug, hasTransport, hasAccommodation, hasMusic, hasExperience, hasGoodToKnow, onNavigate }) {
    const [scrolled, setScrolled] = useState(false);
    const [mobileOpen, setMobileOpen] = useState(false);
    const [moreOpen, setMoreOpen] = useState(false);
@@ -64,7 +64,8 @@ export default function WeddingWebsiteNav({ weddingName, theme, typography, enab
     hasTransport && { key: 'transport', label: 'Getting here', href: `/w/${weddingSlug}/transport` },
     hasAccommodation && { key: 'accommodation', label: 'Stay', href: `/w/${weddingSlug}/accommodation` },
     hasMusic && { key: 'music', label: 'Music', href: `/w/${weddingSlug}/music` },
-    hasExperience && { key: 'experience', label: 'Guide', href: `/w/${weddingSlug}/experience` },
+    hasExperience && { key: 'experience', label: 'Experiences', href: `/w/${weddingSlug}/experience` },
+    hasGoodToKnow && { key: 'good-to-know', label: 'Good to know', href: `/w/${weddingSlug}/good-to-know` },
   ].filter(Boolean);
 
   // A wedding's stored enabledPages may still list a slug for a page that

@@ -20,6 +20,7 @@ import React from 'react';
 import { resolveTypography, resolveColors, resolveUniverseConfig } from '@/lib/universeStyling';
 import TextureOverlay from '@/components/guest-website/TextureOverlay';
 import EntranceMoment from '@/components/guest-website/EntranceMoment';
+import { visibleSections } from '@/lib/goodToKnow';
 import WeddingWebsiteNav from '@/components/guest-website/WeddingWebsiteNav';
 import WeddingHomePage from '@/components/guest-website/pages/WeddingHomePage';
 import WeddingOurStoryPage from '@/components/guest-website/pages/WeddingOurStoryPage';
@@ -98,6 +99,7 @@ export default function RealWebsitePreview({ details, currentPage = 'home', onNa
         hasAccommodation={!!details?.accommodation?.manualProperties?.length}
         hasMusic={!!details?.music?.guestRequestsEnabled}
         hasExperience={!!details?.experienceGuide?.published}
+        hasGoodToKnow={visibleSections(details?.weddingPolicies).length > 0}
         onNavigate={onNavigate}
       />
 

@@ -76,6 +76,8 @@ import WeddingPollsPage from './pages/WeddingPollsPage';
 import WeddingStayPage from './pages/WeddingStayPage';
 import WeddingTransportPage from './pages/WeddingTransportPage';
 import WeddingExperiencePage from './pages/WeddingExperiencePage';
+import WeddingGoodToKnowPage from './pages/WeddingGoodToKnowPage';
+import { visibleSections } from '@/lib/goodToKnow';
 
 // Background music: reader gated OFF (owner decision, video-sound batch 4b).
 // The same SHOW_BACKGROUND_MUSIC_UI flag that hides the two writing surfaces
@@ -103,6 +105,7 @@ const PAGE_COMPONENTS = {
   'stay': WeddingStayPage,
   'transport': WeddingTransportPage,
   'experience': WeddingExperiencePage,
+  'good-to-know': WeddingGoodToKnowPage,
 };
 
 export default function MultiPageWeddingWebsite() {
@@ -290,6 +293,12 @@ export default function MultiPageWeddingWebsite() {
         hasAccommodation={!!weddingDetails?.accommodation?.manualProperties?.length}
         hasMusic={weddingDetails?.music?.guestRequestsEnabled}
         hasExperience={weddingDetails?.experienceGuide?.published}
+        // D-1b: derived, exactly like hasTransport/hasAccommodation/hasMusic
+        // above — NOT an enabledPages entry. Every existing wedding record
+        // predates this page, so a flag-based nav item would need a data
+        // migration to appear; a derived one works for every couple who has
+        // already ticked "Display on website" and never knew it did nothing.
+        hasGoodToKnow={visibleSections(weddingDetails?.weddingPolicies).length > 0}
         onNavigate={(newPage) => {
           navigate(`/w/${weddingSlug}/${newPage === 'home' ? '' : newPage}`);
           setMobileMenuOpen(false);
