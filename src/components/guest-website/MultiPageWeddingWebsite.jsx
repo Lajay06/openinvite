@@ -78,6 +78,7 @@ import WeddingTransportPage from './pages/WeddingTransportPage';
 import WeddingExperiencePage from './pages/WeddingExperiencePage';
 import WeddingGoodToKnowPage from './pages/WeddingGoodToKnowPage';
 import { visibleSections } from '@/lib/goodToKnow';
+import InvitationNotAvailable from './InvitationNotAvailable';
 
 // Background music: reader gated OFF (owner decision, video-sound batch 4b).
 // The same SHOW_BACKGROUND_MUSIC_UI flag that hides the two writing surfaces
@@ -112,6 +113,7 @@ export default function MultiPageWeddingWebsite() {
   const { weddingSlug, page = 'home' } = useParams();
   const navigate = useNavigate();
   const [weddingDetails, setWeddingDetails] = useState(null);
+  const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isPreview = new URLSearchParams(window.location.search).get('preview') === 'true';
@@ -180,7 +182,10 @@ export default function MultiPageWeddingWebsite() {
     const loadWeddingDetails = async () => {
       const cachedPassword = sessionStorage.getItem('wb_pw_' + weddingSlug) || '';
       const result = await fetchWeddingBySlug(weddingSlug, cachedPassword, isPreview);
-      if (!result) { navigate('/'); return; }
+      // NOT navigate('/'). That sent a guest with a broken invitation link to
+      // the MARKETING HOME PAGE — a sales pitch to someone trying to reach a
+      // wedding. It also made the `!weddingDetails` branch below unreachable.
+      if (!result) { setNotFound(true); setLoading(false); return; }
       setWeddingDetails(result);
       setLoading(false);
     };
@@ -189,7 +194,7 @@ export default function MultiPageWeddingWebsite() {
 
   if (loading) return <GuestSiteSkeleton prefersReduced={prefersReduced} />;
 
-  if (!weddingDetails) return <div className="min-h-screen bg-black flex items-center justify-center"><div className="text-white">Wedding not found</div></div>;
+  if (notFound || !weddingDetails) return <InvitationNotAvailable />;
 
   // Password gate — the endpoint returns { passwordProtected: true,
   // locked: true } and no other fields when a password is required and none

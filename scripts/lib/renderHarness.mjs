@@ -340,7 +340,7 @@ export function stubBodyFor(url, { seed = SEED, user = FIXTURE_USER } = {}) {
   return captured;
 }
 
-function resolveStub(url, seed, user, json, onEntity) {
+function resolveStub(url, seed, user, json, onEntity, fail = () => json(null)) {
 
     if (/\/me\b|auth\/me|users\/me/.test(url)) return json(user);
 
@@ -362,7 +362,18 @@ function resolveStub(url, seed, user, json, onEntity) {
     if (/\/api\/rates/.test(url))              return json({ result: 'success', rates: { USD: 1, AUD: 1.5 } });
     // The guest site's single source: without this every /w/ route sits on its
     // skeleton forever, which reads as "nothing rendered" rather than "not seeded".
-    if (/\/api\/wedding-by-slug/.test(url))   return json(PUBLISHED_WEDDING);
+    // SLUG-AWARE, deliberately. This used to answer EVERY slug with the seeded
+    // wedding, which meant the not-found path could not be tested at all: a
+    // stub that answers everything cannot test a not-found path, and it hid a
+    // live defect where an unknown slug redirected guests to the marketing
+    // home page. Only the seeded slug resolves; anything else 404s, exactly as
+    // api/wedding-by-slug does.
+    if (/\/api\/wedding-by-slug/.test(url)) {
+      let slug = null;
+      try { slug = new URL(url).searchParams.get('slug'); } catch { /* non-URL */ }
+      if (slug && slug !== PUBLISHED_WEDDING.slug) return fail(404, { error: 'not found' });
+      return json(PUBLISHED_WEDDING);
+    }
     // THE INVITATION ROUTE. /rsvp/:token is a real guest surface — change-your-
     // reply, the address line and the hero all render here — and it could not be
     // rendered under the harness at all: rsvp-lookup fell through to the generic
@@ -383,7 +394,8 @@ export async function stubBackend(ctx, { seed = SEED, user = FIXTURE_USER, onEnt
   const handler = async (route) => {
     const url = route.request().url();
     const json = (body) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
-    return resolveStub(url, seed, user, json, onEntity);
+    const fail = (status, body) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
+    return resolveStub(url, seed, user, json, onEntity, fail);
   };
   // A URL PREDICATE, not a glob. `'**/api/**'` looks right and is a trap: it
   // matches any path with an `api` SEGMENT, including Vite's own dev-server
