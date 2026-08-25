@@ -382,10 +382,12 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography, un
           {/* The hand-rolled kicker that used to sit here IS the heading now,
               rendered by GuestPageHeading below as the universe's own mark. */}
           <GuestPageHeading title={"Guest polls"} theme={theme} typography={typography} universeConfig={universeConfig} textColor={theme.darkText} />
-          {/* NOT a heading. The page's one h1 is the kicker above; this line is
-              distinct copy, not a repeat of it, so it stays — demoted in
-              semantics only. Its styling is unchanged. */}
-          <div style={{
+          {/* A SECTION HEADING, in the display face. The page title is the
+              kicker above; this distinct line is the section heading under it.
+              It was briefly a <div>, which lost the display face outright —
+              .wb-guest-root * beats an inline fontFamily, so only h1-h6 (or
+              .wb-display-face) keeps it. */}
+          <h2 style={{
             fontSize: 'clamp(32px, 5vw, 52px)',
             fontWeight: 700,
             color: theme.darkText,
@@ -394,7 +396,7 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography, un
             lineHeight: 1.1,
           }}>
             Have your say.
-          </div>
+          </h2>
           <p style={{
             fontSize: 15,
             color: `${theme.darkText}50`,
