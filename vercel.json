@@ -8,6 +8,14 @@
       "destination": "https://base44.app/api/apps/:path*"
     },
     {
+      "source": "/w/(.*)",
+      "destination": "/guest-shell.html"
+    },
+    {
+      "source": "/rsvp/(.*)",
+      "destination": "/guest-shell.html"
+    },
+    {
       "source": "/((?!api/)(?!\\.well-known/)(?!assets/).*)",
       "destination": "/index.html"
     }

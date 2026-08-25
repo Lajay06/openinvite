@@ -153,6 +153,26 @@ export default function MultiPageWeddingWebsite() {
     loadFontFamilies(familiesFromGoogleSpec(typography?.googleFonts));
   }, [weddingDetails]);
 
+  // The browser tab. The static guest shell ships a neutral "Wedding
+  // invitation" title (scripts/lib/guestShell.mjs) — before this, every
+  // wedding site's tab read "Openinvite: the wedding planning platform",
+  // because the SPA fallback served the prerendered marketing homepage and
+  // nothing guest-side ever set a title.
+  //
+  // Keyed on the couple's names being PRESENT, never on weddingDetails.locked.
+  // That is the privacy constraint expressed as code rather than as a check:
+  // a gated site's response is {passwordProtected, locked} with no names in
+  // it, so there is nothing to reveal and the neutral title simply stays. It
+  // is therefore correct through api/wedding-by-slug.js's documented
+  // fail-open as well — the data governs, not the gate's verdict.
+  useEffect(() => {
+    const names = weddingDetails?.coupleNames;
+    if (!names) return;
+    const previous = document.title;
+    document.title = names;
+    return () => { document.title = previous; };
+  }, [weddingDetails]);
+
   useEffect(() => {
     const loadWeddingDetails = async () => {
       const cachedPassword = sessionStorage.getItem('wb_pw_' + weddingSlug) || '';
