@@ -140,7 +140,28 @@ export const PUBLISHED_WEDDING = {
   music: { playlists: [{ playlistUrl: 'https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M', enabled: true }], guestRequestsEnabled: true },
   ourStory: { headline: 'How we met', body: 'On a wet Tuesday in a bookshop.' },
   faq: [{ question: 'Is there parking?', answer: 'Yes, behind the observatory.' }],
-  accommodation: {}, transport: {},
+  // CONTENT-RICH ENOUGH TO MEASURE. These were empty objects, so the guest-page
+  // sweeps rendered near-empty pages and read `overflow=0 cropped=0` as clean.
+  // A card cannot be measured if no card renders — and the heading-conversion
+  // pass could verify only 2 of 11 conversions until these existed.
+  accommodation: {},
+  guestSuiteAccommodation: {
+    places: [
+      { id: 'a1', name: 'The Devonport Hotel', address: '4 Park Row, Greenwich', rating: 4.4, photo_url: '' },
+      { id: 'a2', name: 'Greenwich Guesthouse', address: '18 Crooms Hill, Greenwich', rating: 4.2, photo_url: '' },
+    ],
+  },
+  transport: {},
+  guestSuiteTransport: {
+    places: [{ id: 't1', name: 'Cutty Sark DLR', address: 'Greenwich, London', photo_url: '' }],
+    notes: [{ id: 'n1', title: 'Parking', body: 'The park gates close at 6pm.' }],
+  },
+  customGifts: [
+    { id: 'g1', title: 'Our honeymoon fund', description: 'A week somewhere warm.', image_url: '', url: 'https://example.com' },
+  ],
+  registryProducts: [
+    { id: 'r1', name: 'The good kettle', price: '£60', image_url: '', url: 'https://example.com' },
+  ],
   // A PUBLISHED guide WITH an itinerary. Empty here for a long time, which is
   // why the guest-page sweep measured a near-empty Experiences page and read
   // clean: the richest thing a couple builds was neither seeded nor rendered.
@@ -149,7 +170,9 @@ export const PUBLISHED_WEDDING = {
     published: true,
     destination: 'Greenwich, London',
     couplePicks: [{ name: 'The Trafalgar Tavern', category: 'Eat', note: 'Our first date.' }],
-    categories: {},
+    categories: {
+      mustEat: { enabled: true, places: [{ id: 'c1', name: 'The Trafalgar Tavern', address: 'Park Row, Greenwich', rating: 4.3 }] },
+    },
     itinerary: {
       days: 2,
       schedule: [

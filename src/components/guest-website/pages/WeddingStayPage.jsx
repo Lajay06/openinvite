@@ -65,7 +65,7 @@ export default function WeddingStayPage({ weddingDetails, theme, typography, uni
             {accom.checkInDate && (
               <div style={{ textAlign: 'center' }}>
                 <p style={{ ...label, marginBottom: 4 }}>Check in</p>
-                <p style={{ ...heading, fontSize: '1.25rem', margin: 0 }}>
+                <p className="wb-display-face" style={{ ...heading, fontSize: '1.25rem', margin: 0 }}>
                   {new Date(accom.checkInDate + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })}
                 </p>
               </div>
@@ -73,7 +73,7 @@ export default function WeddingStayPage({ weddingDetails, theme, typography, uni
             {accom.checkOutDate && (
               <div style={{ textAlign: 'center' }}>
                 <p style={{ ...label, marginBottom: 4 }}>Check out</p>
-                <p style={{ ...heading, fontSize: '1.25rem', margin: 0 }}>
+                <p className="wb-display-face" style={{ ...heading, fontSize: '1.25rem', margin: 0 }}>
                   {new Date(accom.checkOutDate + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })}
                 </p>
               </div>
@@ -108,9 +108,9 @@ export default function WeddingStayPage({ weddingDetails, theme, typography, uni
 
                   {/* Info */}
                   <div style={{ padding: '18px 20px 20px' }}>
-                    <p style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: '1.0625rem', color: theme.darkText, margin: '0 0 8px', lineHeight: 1.3 }}>
+                    <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: '1.0625rem', color: theme.darkText, margin: '0 0 8px', lineHeight: 1.3 }}>
                       {place.name}
-                    </p>
+                    </h2>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
                       {place.rating && (
@@ -160,7 +160,7 @@ export default function WeddingStayPage({ weddingDetails, theme, typography, uni
               <SectionReveal key={p.id || i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={card}>
                 {p.photoUrl && <img src={p.photoUrl} alt={p.name} style={{ width: '100%', height: 160, objectFit: 'cover', display: 'block' }} />}
                 <div style={{ padding: '16px 20px' }}>
-                  <p style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: '1rem', color: theme.darkText, margin: '0 0 6px' }}>{p.name}</p>
+                  <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: '1rem', color: theme.darkText, margin: '0 0 6px' }}>{p.name}</h2>
                   {p.address && <p style={{ fontSize: 12, color: theme.darkText, opacity: 0.6, fontFamily: typography.bodyFont, margin: '0 0 8px' }}>{p.address}</p>}
                   {p.description && <p style={{ fontSize: 13, color: theme.darkText, opacity: 0.7, fontFamily: typography.bodyFont, margin: 0, lineHeight: 1.5 }}>{p.description}</p>}
                   {p.website && (

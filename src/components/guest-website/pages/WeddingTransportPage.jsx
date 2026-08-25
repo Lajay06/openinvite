@@ -93,9 +93,9 @@ export default function WeddingTransportPage({ weddingDetails, theme, typography
                       </span>
                     </div>
                     <div style={{ padding: '16px 18px 18px' }}>
-                      <p style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: '1rem', color: theme.darkText, margin: '0 0 8px', lineHeight: 1.3 }}>
+                      <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: '1rem', color: theme.darkText, margin: '0 0 8px', lineHeight: 1.3 }}>
                         {place.name}
-                      </p>
+                      </h2>
                       {place.address && (
                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 5, marginBottom: 8 }}>
                           <MapPin size={11} color={theme.accent} style={{ flexShrink: 0, marginTop: 3 }} />

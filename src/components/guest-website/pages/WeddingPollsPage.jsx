@@ -124,7 +124,7 @@ function PollCard({ poll, theme, typography, onVote, weddingSlug, getTurnstileTo
           <span style={{ fontSize: 22 }}>{poll.emoji}</span>
         )}
         <div>
-          <h3 style={{
+          <h2 style={{
             fontSize: 16,
             fontWeight: 700,
             color: theme.darkText,
@@ -132,7 +132,7 @@ function PollCard({ poll, theme, typography, onVote, weddingSlug, getTurnstileTo
             margin: 0,
           }}>
             {poll.title}
-          </h3>
+          </h2>
           {poll.category && (
             <span style={{
               fontSize: 10,
@@ -416,7 +416,7 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography, un
         {polls.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '80px 0' }}>
             <p style={{ fontSize: 36, marginBottom: 16 }}>🗳️</p>
-            <h3 style={{
+            <h2 style={{
               fontSize: 18,
               fontWeight: 700,
               color: theme.darkText,
@@ -424,7 +424,7 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography, un
               margin: '0 0 8px',
             }}>
               Polls coming soon
-            </h3>
+            </h2>
             <p style={{ fontSize: 14, color: `${theme.darkText}40`, fontFamily: typography.bodyFont }}>
               The couple hasn't opened any polls yet — check back closer to the date.
             </p>

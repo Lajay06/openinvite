@@ -38,6 +38,12 @@ function GenericStoryComposition({ SectionMark, weddingDetails, theme, typograph
   return (
     <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '90px 32px' }}>
       <div style={{ maxWidth: 760, margin: '0 auto' }}>
+        {/* The outline's h1. This page renders its title through SectionMark,
+            which has 19 per-universe variants and is not a heading — so the
+            route had h2 sections under no h1 at all. Visually hidden because
+            the kicker already carries the title on screen; this exists so the
+            document outline is honest. */}
+        <h1 className="sr-only">{copy.storyKicker || 'Our story'}</h1>
         <SectionReveal universeConfig={universeConfig} disabled={!motionEnabled}>
           <SectionMark kicker={copy.storyKicker} theme={theme} typography={typography} accentColor={theme.accent} />
         </SectionReveal>
@@ -120,6 +126,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
       <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '110px 40px' }}>
         <div style={{ maxWidth: 680, margin: '0 auto', textAlign: 'center' }}>
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <h1 className="sr-only">{copy.storyKicker || 'Our story'}</h1>
             <ParisSectionMark kicker={copy.storyKicker} theme={theme} typography={typography} />
           </SectionReveal>
 
@@ -163,6 +170,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
       <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '90px 32px' }}>
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <h1 className="sr-only">{copy.storyKicker || 'Our story'}</h1>
             <CapriSectionMark kicker={copy.storyKicker} theme={theme} typography={typography} accentColor={theme.accent} />
           </SectionReveal>
 
@@ -206,6 +214,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
       <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '130px 48px' }}>
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <h1 className="sr-only">{copy.storyKicker || 'Our story'}</h1>
             <MykonosSectionMark kicker={copy.storyKicker} theme={theme} typography={typography} accentColor={theme.accent} />
           </SectionReveal>
 
@@ -252,6 +261,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
       <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '100px 48px' }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <h1 className="sr-only">{copy.storyKicker || 'Our story'}</h1>
             <CapeTownSectionMark kicker={copy.storyKicker} theme={theme} typography={typography} />
           </SectionReveal>
 
@@ -296,6 +306,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
       <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '120px 48px' }}>
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <h1 className="sr-only">{copy.storyKicker || 'Our story'}</h1>
             <KyotoSectionMark kicker={copy.storyKicker} theme={theme} typography={typography} />
           </SectionReveal>
 
@@ -328,7 +339,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
                 <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ display: 'flex', gap: 24, marginBottom: 40 }}>
                   <VerticalRule color={theme.accent} opacity={0.5} height={44} thickness={1} style={{ flexShrink: 0, marginTop: 4 }} />
                   <div>
-                    <div style={{ fontFamily: typography.headingFont, fontSize: '0.875rem', color: theme.accent, marginBottom: 6 }}>{milestone.date}</div>
+                    <div className="wb-display-face" style={{ fontFamily: typography.headingFont, fontSize: '0.875rem', color: theme.accent, marginBottom: 6 }}>{milestone.date}</div>
                     <div style={{ fontFamily: typography.bodyFont, fontSize: '1rem', lineHeight: 1.7 }}>{milestone.text}</div>
                   </div>
                 </SectionReveal>
@@ -345,6 +356,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
       <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '80px 32px' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <h1 className="sr-only">{copy.storyKicker || 'Our story'}</h1>
             <BrooklynSectionMark kicker={copy.storyKicker} theme={theme} typography={typography} accentColor={theme.accent} />
           </SectionReveal>
 
@@ -396,6 +408,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
       <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '90px 40px' }}>
         <div style={{ maxWidth: 780, margin: '0 auto' }}>
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <h1 className="sr-only">{copy.storyKicker || 'Our story'}</h1>
             <BaliSectionMark kicker={copy.storyKicker} theme={theme} typography={typography} />
           </SectionReveal>
 
@@ -448,6 +461,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
       <div style={{ maxWidth: containerMaxWidth, margin: containerMargin }}>
         {isMinimal && (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <h1 className="sr-only">{copy.storyKicker || 'Our story'}</h1>
             <MinimalSectionMark kicker={copy.storyKicker} theme={theme} typography={typography} />
           </SectionReveal>
         )}

@@ -119,9 +119,9 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
                       )}
                     </div>
                     <div style={{ padding: '14px 16px' }}>
-                      <p style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: '0.9375rem', color: theme.darkText, margin: '0 0 4px', lineHeight: 1.3 }}>
+                      <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: '0.9375rem', color: theme.darkText, margin: '0 0 4px', lineHeight: 1.3 }}>
                         {place.name}
-                      </p>
+                      </h2>
                       {place.rating && (
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: theme.accent, fontFamily: typography.bodyFont }}>
                           <Star size={10} fill={theme.accent} color={theme.accent} /> {place.rating}
@@ -172,9 +172,9 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
                         )}
                       </div>
                       <div style={{ padding: '14px 16px 16px' }}>
-                        <p style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: '0.9375rem', color: theme.darkText, margin: '0 0 6px', lineHeight: 1.3 }}>
+                        <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: '0.9375rem', color: theme.darkText, margin: '0 0 6px', lineHeight: 1.3 }}>
                           {place.name}
-                        </p>
+                        </h2>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
                           {place.rating && (
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, color: theme.accent, fontFamily: typography.bodyFont }}>
