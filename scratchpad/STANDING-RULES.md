@@ -466,6 +466,31 @@ SKIPPED` rather than a flattering total.
 real work in CI. Every "13/13" reported before this date was, in truth, 11
 exercised and 2 inert.
 
+### RULE 13f — the gate and the merge must not be separable (2026-08-25)
+
+PR #557 was merged **while CI was failing.** `npm run pr:green` returned NOT
+GREEN and `gh pr merge` ran anyway, because the two were chained in one shell
+command with no check of the exit status between them. Main went red.
+
+Every merge in this programme had that same shape and survived only because the
+gate happened to be green. **Luck wearing the costume of a guard** — the exact
+thing named in the code an hour earlier, in the workflow rather than the code.
+
+The failure is a different class from the measurement errors in this file.
+Those were wrong answers to questions that were asked. This was **not asking**:
+the verdict was on screen and was not read before acting on it.
+
+**A rule that depends on remembering is what this programme keeps replacing
+with a mechanism.** So the promise is not the fix:
+
+> `npm run pr:merge <n>` runs the gate, READS ITS EXIT STATUS, and refuses to
+> merge on anything but 0 — printing the verdict and the SHA it matched. It
+> also enforces RULE 13e by waiting for the run whose `headSha` is the branch
+> head, rather than quoting whatever conclusion is newest.
+
+There is no second command to chain, so the shell cannot defeat it. Merging by
+hand becomes the exception that has to be argued for, not the default path.
+
 ### RULE 13e — a verdict is bound to a SHA, or it is not a verdict (2026-08-25)
 
 Observed on PR #545. `npm run pr:green 545` reported `Build & test = FAILURE`
@@ -647,6 +672,22 @@ investigation into a real defect.
 
 ---
 
+## Quote a rule into src/ by PARAPHRASING it in US English
+
+`STANDING-RULES.md` is written in British English and is not covered by the
+US-English guard — correctly, because it is an internal document, not product.
+
+But on 2026-08-25 a comment in `GuestSuitePolicies.jsx` quoted *"a toggle that
+swaps **behaviour** must name what it replaces"* verbatim, and the guard failed
+the build on it. **The rule that swapped behaviour must name what it replaces,
+failing a guard by being quoted verbatim in the language it was written in.**
+
+RULED: paraphrase, do not rewrite the rules doc. The rules are ours and written
+in our own register, which is easier to keep honest than a document translated
+for a guard that does not apply to it. **When a rule is quoted into `src/`, it
+gets paraphrased in US English** — the guard covers source, and source is the
+customer's.
+
 ## Accepted copy is committed before the ticket that consumes it opens
 
 The 19 `rsvpIntro` lines were owner-accepted on 2026-08-24, scoped into the fix
@@ -811,6 +852,24 @@ then caught the `Guide → Experiences` rename before the author did.
 **DECLARING A LIMIT IS HONEST; CLOSING IT FINDS THINGS.**
 
 ---
+
+## A bug you route around is still load-bearing somewhere you haven't looked
+
+The `#root` extractor — a non-greedy regex that stops at the first nested
+`</div>` — gave a false reading twice in one session. Both times it was
+*avoided* rather than fixed: measured a different way, moved on.
+
+The cost was not the two false readings. When it was finally fixed, the ad-hoc
+copies turned out to include the one inside `guestShell.mjs`'s own
+`#root is empty` guarantee — **the build-failing check that caught the
+`build:prerender` ordering bug, and that was cited as proof the guest shell
+paints nothing.** That guarantee had been standing on an extractor that can
+return `''` for a populated document. It was right every time it mattered,
+which is luck, not correctness.
+
+**Routing around a bug leaves it in place for the code that did not route
+around it.** When something misleads you, the question is not "how do I get my
+answer" — it is "where else is this already being trusted".
 
 ## A fixed bug that returns is a fix in the wrong place
 
