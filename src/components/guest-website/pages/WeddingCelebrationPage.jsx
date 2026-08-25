@@ -104,7 +104,7 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
   const bFont = T.bodyFont;
   const hWt   = T.headingWeight || 400;
   const lt    = theme.lightText;
-  // P2c: `acc` is used as a TEXT colour for times and labels, and the raw
+  // P2c: `acc` is used as a TEXT color for times and labels, and the raw
   // accent fails 4.5:1 against lightBg on 15 of the 20 palettes (london 2.27,
   // measured on screen, not inferred). accentText darkens it toward the
   // palette's own ink only as far as needed, keeping the hue.
@@ -445,7 +445,7 @@ function EventDetails({ ev, timeStr, lt, acc, hFont, bFont, hWt, noPhoto, style:
         </div>
       )}
 
-      {/* Dress code — quiet pill, sentence case, no loud colour */}
+      {/* Dress code — quiet pill, sentence case, no loud color */}
       {ev.dressCode && (
         <div style={{ marginBottom: 22 }}>
           <span style={{

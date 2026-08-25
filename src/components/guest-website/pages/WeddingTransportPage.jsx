@@ -137,7 +137,7 @@ export default function WeddingTransportPage({ weddingDetails, theme, typography
                       theme.darkText — `body` and `label` carry lightText and
                       accent, which are the LIGHT-ground pair. Measured before
                       the fix: 1.26:1 on london, and 1.00:1 (text the exact
-                      colour of its background, invisible) on 12 of the 20
+                      color of its background, invisible) on 12 of the 20
                       palettes. Every palette failed. */}
                   <div>
                     {note.title && (
