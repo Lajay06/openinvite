@@ -936,6 +936,46 @@ against a state of the code; the code moves; the ruling does not. The gap
 between them is not the ruling being wrong — it is the ruling being about a
 different codebase.
 
+## Count usages against the SOURCE, not the name
+
+Three instances in one investigation, each a real count and a misleading one:
+
+**`locked` — 35 files.** Evidence of an API CONTRACT, not a storage column.
+`api/wedding-by-slug` DERIVES it from the stored `websitePasswordEnabled` +
+`websitePassword`. Every one of those 35 files reads an API response.
+
+**`customGifts` / `registryProducts`.** Same shape — built at
+`wedding-by-slug:134` from the CustomGift and RegistryProduct entities.
+
+**`ourStory` — "5 files".** It does not exist anywhere. `grep -rl ourStory`
+matched `ourStoryContent` as a SUBSTRING. The loose-pattern trap in a third
+costume, after `'**/api/**'` matching `/src/api/` and the non-greedy `#root`
+regex.
+
+The count was never the problem; what it was counting was. Before treating a
+usage count as evidence a field is STORED, check whether those readers are
+reading storage or a response — and use a word boundary.
+
+---
+
+## A plausible causal story attached to a real defect is how wrong fixes get built
+
+Three dashboard surfaces overflowed horizontally at 390. The explanation
+assembled itself instantly and fitted perfectly: the empty states had concealed
+it, because a tab row with no tabs cannot overflow. It was about to be reported
+that way.
+
+Measured against the pre-fix seed, the numbers were IDENTICAL. The tab rows are
+static chrome; the overflow is content-independent. It was never concealed — it
+was never measured.
+
+**The finding stood; the explanation did not.** This is
+establish-cause-before-attributing turned on one's own narrative, and it matters
+more than the finding: a fix built on the concealment story would have gone
+looking at seed content and changed nothing.
+
+---
+
 ## Hold the universe fixed when one axis is per-universe and another per-layout
 
 Celebration renders a branch per LAYOUT. `celebrationKicker` is defined per
