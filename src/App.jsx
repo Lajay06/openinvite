@@ -12,6 +12,7 @@ import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import RouteLoadingFallback from '@/components/shared/RouteLoadingFallback';
 import { lazyWithReload } from '@/lib/lazyWithReload.js';
+import InvitationNotAvailable from './components/guest-website/InvitationNotAvailable';
 
 // AUDIT_2026-07.md B1: every page below is lazy-loaded so each becomes its
 // own chunk — a marketing-site visitor no longer downloads the entire
@@ -189,6 +190,8 @@ const AuthenticatedApp = () => {
         <Route path="/w/:weddingSlug/accommodation" element={<GuestAccommodation />} />
         <Route path="/w/:weddingSlug/music" element={<GuestMusic />} />
         <Route path="/w/:weddingSlug/collect" element={<GuestCollect />} />
+        <Route path="/w" element={<InvitationNotAvailable />} />
+        <Route path="/w/" element={<InvitationNotAvailable />} />
         <Route path="/w/:weddingSlug" element={<MultiPageWeddingWebsite />} />
         <Route path="/w/:weddingSlug/:page" element={<MultiPageWeddingWebsite />} />
         {/* THIS ROUTE IS PERMANENT. It is a public URL contract: couples have
@@ -275,6 +278,8 @@ const AuthenticatedApp = () => {
         <Route path="/w/:weddingSlug/accommodation" element={<GuestAccommodation />} />
         <Route path="/w/:weddingSlug/music" element={<GuestMusic />} />
         <Route path="/w/:weddingSlug/collect" element={<GuestCollect />} />
+        <Route path="/w" element={<InvitationNotAvailable />} />
+        <Route path="/w/" element={<InvitationNotAvailable />} />
         <Route path="/w/:weddingSlug" element={<MultiPageWeddingWebsite />} />
         <Route path="/w/:weddingSlug/:page" element={<MultiPageWeddingWebsite />} />
         <Route path="/website-editor" element={<StudioWebsite />} />
