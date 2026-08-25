@@ -6,7 +6,12 @@ import { cn } from "@/lib/utils";
 const ToastProvider = React.forwardRef(({ ...props }, ref) => (
   <div
     ref={ref}
-    className="fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]"
+    // M-3: this was `fixed top-0 ... w-full` with no horizontal anchor, so on a
+    // 390 viewport it started at the padding offset and ended at 406 — 16px of
+    // horizontal overflow on EVERY page below `md`, before any toast exists.
+    // Anchored left+right and sized auto at base; the sm+ bottom-right
+    // behavior is unchanged.
+    className="fixed inset-x-0 top-0 z-[100] flex max-h-screen w-auto flex-col-reverse p-4 sm:inset-x-auto sm:bottom-0 sm:right-0 sm:top-auto sm:w-full sm:flex-col md:max-w-[420px]"
     {...props}
   />
 ));

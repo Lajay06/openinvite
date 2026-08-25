@@ -100,6 +100,7 @@ async function main() {
 
   const browser = await ENGINE.launch();
   let failures = 0;
+  let contrastFailures = 0;
 
   const ROUTES = deriveRoutes();
   const unexpected = ROUTES.filter((r) => !r.expect).map((r) => r.path);
@@ -129,6 +130,72 @@ async function main() {
       continue;
     }
 
+    const contrast = await page.evaluate(() => {
+      // EFFECT-LEVEL CONTRAST. Not "what colour does the source say" — what
+      // does the browser actually paint, over whatever ancestor supplies the
+      // background. A card styled theme.darkBg containing text styled
+      // theme.lightText is dark-on-dark, and grepping a file for both tokens
+      // cannot tell you whether they meet on screen.
+      const lum = (c) => {
+        const m = c.match(/rgba?\(([^)]+)\)/);
+        if (!m) return null;
+        const [r, g, b, a] = m[1].split(',').map(Number);
+        if (a === 0) return null;
+        const f = (v) => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; };
+        return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+      };
+      // A TRANSLUCENT BACKGROUND IS NOT AN OPAQUE ONE. The first version of
+      // this took the first backgroundColor with alpha > 0 and treated it as
+      // the ground — so `rgba(255,255,255,0.04)` over a near-black page read as
+      // WHITE, and white text on it scored 1:1. It reported a real page as
+      // unreadable when it is fine. Composite instead: blend each translucent
+      // layer over what is behind it, exactly as the browser paints.
+      const rgb = (c) => {
+        const m = c.match(/rgba?\(([^)]+)\)/);
+        if (!m) return null;
+        const p = m[1].split(',').map(Number);
+        return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 };
+      };
+      const bgOf = (el) => {
+        const layers = [];
+        for (let n = el; n; n = n.parentElement) {
+          const c = rgb(getComputedStyle(n).backgroundColor);
+          if (c && c.a > 0) { layers.push(c); if (c.a === 1) break; }
+        }
+        let out = { r: 255, g: 255, b: 255 };       // page ground
+        for (let i = layers.length - 1; i >= 0; i--) {
+          const l = layers[i];
+          out = { r: l.r * l.a + out.r * (1 - l.a),
+                  g: l.g * l.a + out.g * (1 - l.a),
+                  b: l.b * l.a + out.b * (1 - l.a) };
+        }
+        const f = (v) => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; };
+        return 0.2126 * f(out.r) + 0.7152 * f(out.g) + 0.0722 * f(out.b);
+      };
+      const out = [];
+      document.querySelectorAll('#root h1,#root h2,#root h3,#root h4,#root p,#root span,#root a,#root li').forEach((el) => {
+        const txt = (el.textContent || '').trim();
+        if (!txt || el.children.length) return;
+        const cs = getComputedStyle(el);
+        if (cs.visibility === 'hidden' || cs.display === 'none') return;
+        const r = el.getBoundingClientRect();
+        if (r.width < 2 || r.height < 2) return;
+        const fg = lum(cs.color);
+        if (fg === null) return;
+        const bg = bgOf(el);
+        const op = parseFloat(cs.opacity);
+        const hi = Math.max(fg, bg), lo = Math.min(fg, bg);
+        const ratio = (hi + 0.05) / (lo + 0.05);
+        if (ratio < 4.5) out.push({ txt: txt.slice(0, 34), ratio: +ratio.toFixed(2), color: cs.color, op });
+      });
+      return out;
+    });
+    if (contrast.length) {
+      console.log(`  ⚠ ${r.path} — ${contrast.length} text element(s) below 4.5:1`);
+      contrast.slice(0, 4).forEach((c) => console.log(`      ${c.ratio}:1  "${c.txt}"  ${c.color}`));
+      contrastFailures += contrast.length;
+    }
+
     const seen = await page.evaluate(() => {
       const counts = {};
       document.querySelectorAll('#root h1, #root h2, #root h3, #root p, #root span, #root a').forEach((el) => {
@@ -154,7 +221,8 @@ async function main() {
   }
 
   await browser.close();
-  console.log(`\n  ${ROUTES.length - failures}/${ROUTES.length} guest routes render the faces they declare\n`);
+  console.log(`\n  ${ROUTES.length - failures}/${ROUTES.length} guest routes render the faces they declare`);
+  console.log(`  ${contrastFailures} text element(s) below the 4.5:1 contrast floor\n`);
   process.exit(failures ? 1 : 0);
 }
 

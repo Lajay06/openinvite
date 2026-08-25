@@ -133,13 +133,19 @@ export default function WeddingTransportPage({ weddingDetails, theme, typography
               {notes.map((note, i) => (
                 <SectionReveal key={note.id || i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...card, padding: '18px 22px', display: 'flex', gap: 14, alignItems: 'flex-start' }}>
                   <FileText size={14} color={theme.accent} style={{ flexShrink: 0, marginTop: 3 }} />
+                  {/* P2c. This card is theme.darkBg, so its text needs
+                      theme.darkText — `body` and `label` carry lightText and
+                      accent, which are the LIGHT-ground pair. Measured before
+                      the fix: 1.26:1 on london, and 1.00:1 (text the exact
+                      color of its background, invisible) on 12 of the 20
+                      palettes. Every palette failed. */}
                   <div>
                     {note.title && (
-                      <p style={{ ...label, marginBottom: 6, color: theme.accent }}>
+                      <p style={{ ...label, marginBottom: 6, color: theme.darkText }}>
                         {note.title}
                       </p>
                     )}
-                    <p style={{ ...body, margin: 0, opacity: 0.85, fontSize: '0.9rem' }}>{note.text}</p>
+                    <p style={{ ...body, margin: 0, opacity: 0.9, fontSize: '0.9rem', color: theme.darkText }}>{note.text}</p>
                   </div>
                 </SectionReveal>
               ))}

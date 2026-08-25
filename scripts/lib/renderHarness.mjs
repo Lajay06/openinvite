@@ -154,7 +154,7 @@ export const PUBLISHED_WEDDING = {
   transport: {},
   guestSuiteTransport: {
     places: [{ id: 't1', name: 'Cutty Sark DLR', address: 'Greenwich, London', photo_url: '' }],
-    notes: [{ id: 'n1', title: 'Parking', body: 'The park gates close at 6pm.' }],
+    notes: [{ id: 'n1', title: 'Parking', text: 'The park gates close at 6pm. Cabs wait on the King William Walk side.' }],
   },
   customGifts: [
     { id: 'g1', title: 'Our honeymoon fund', description: 'A week somewhere warm.', image_url: '', url: 'https://example.com' },
