@@ -6,6 +6,8 @@ import { resolveRecipients } from '@/lib/questionnaireRecipients';
 import toast from 'react-hot-toast';
 import { Plus, X, ChevronLeft, Printer, Link2, Loader2, Check, Clock, Trash2 } from 'lucide-react';
 import { fetchGuestLinks } from '@/lib/guestLinks';
+import { copyFromPromise } from '@/lib/copyToClipboard';
+import CopyFallbackModal from '@/components/shared/CopyFallbackModal';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 const genId = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36);
@@ -345,6 +347,7 @@ function GameResponses({ questionnaire, guests, responses, onBack, onCopyLinks, 
 // ── Games — main export ───────────────────────────────────────────────────────
 export default function GamesManager() {
   const [questionnaires, setQuestionnaires] = useState([]);
+  const [copyFallback, setCopyFallback] = useState(null);
   const [guests, setGuests] = useState([]);
   const [responses, setResponses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -421,14 +424,27 @@ export default function GamesManager() {
     if (recipients.length === 0) { toast.error("No recipients match this game's settings"); return; }
     // Server-side mint/read (Track E). The raw token is still needed here
     // because a game link is /games/<token>/<gameId>, not an /rsvp/ URL.
-    const linkMap = await fetchGuestLinks(recipients.map(g => g.id));
-    const base = `${window.location.origin}/games/`;
-    const lines = recipients
-      .filter(g => linkMap[g.id]?.token)
-      .map(g => `${g.name}: ${base}${linkMap[g.id].token}/${q.id}`);
-    if (lines.length === 0) { toast.error('Could not generate game links'); return; }
-    await navigator.clipboard.writeText(lines.join('\n'));
-    toast.success(`${lines.length} game link${lines.length === 1 ? '' : 's'} copied`);
+    // Same shape as Guests' Copy links, and broken the same way: awaiting the
+    // link fetch spends the click's transient activation, so Safari denies the
+    // clipboard write and -- with no catch -- the button did nothing at all.
+    // Hand the clipboard the promise instead.
+    let lines = [];
+    const textPromise = (async () => {
+      const linkMap = await fetchGuestLinks(recipients.map(g => g.id));
+      const base = `${window.location.origin}/games/`;
+      lines = recipients
+        .filter(g => linkMap[g.id]?.token)
+        .map(g => `${g.name}: ${base}${linkMap[g.id].token}/${q.id}`);
+      return lines.join('\n');
+    })();
+
+    const { ok, text } = await copyFromPromise(textPromise);
+    if (!text) { toast.error('Could not generate game links'); return; }
+    if (ok) {
+      toast.success(`${lines.length} game link${lines.length === 1 ? '' : 's'} copied`);
+    } else {
+      setCopyFallback({ title: 'Your game links', text });
+    }
     load();
   };
 
@@ -457,6 +473,12 @@ export default function GamesManager() {
 
   return (
     <div>
+      <CopyFallbackModal
+        open={!!copyFallback}
+        onClose={() => setCopyFallback(null)}
+        title={copyFallback?.title}
+        text={copyFallback?.text || ''}
+      />
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
         <button onClick={() => setView('create')} style={{ padding: '9px 20px', borderRadius: 999, background: '#E03553', color: '#FFFFFF', border: 'none', cursor: 'pointer', fontFamily: PJS, fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
           <Plus size={13} />Create game

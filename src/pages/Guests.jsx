@@ -33,6 +33,8 @@ import PageConsiderations from '../components/shared/PageConsiderations';
 import { getWeddingEvents, defaultEventResponses, getGuestEventResponse, effectiveMealChoice, mealOptionLabel } from '@/lib/weddingEvents';
 import CountUp from "@/components/shared/CountUp";
 import { fetchGuestLinks } from '@/lib/guestLinks';
+import { copyFromPromise, copyText } from '@/lib/copyToClipboard';
+import CopyFallbackModal from '@/components/shared/CopyFallbackModal';
 import { createGuest, updateGuest, deleteGuest } from '@/lib/guestWrites';
 
 const RSVP_BASE = `${window.location.origin}/rsvp/`;
@@ -614,11 +616,15 @@ export default function Guests() {
     });
   };
 
+  const [copyFallback, setCopyFallback] = useState(null);
   const selectedGuests = guests.filter(g => selectedIds.has(g.id));
 
   /* ── Send invites ─────────────────────────────────────────────────────── */
   const openSendForSelection = () => {
-    if (isPro) return;
+    // A gate that returns silently is the same defect as an unhandled
+    // rejection: the user acts, nothing happens, nothing explains. Say what it
+    // needs -- consistent with the Ultra gates unified in #531.
+    if (isPro) { toast('Sending invitations is part of Ultra — upgrade to invite your guests.'); return; }
     if (selectedIds.size > 0) {
       setSendModalConfig({ initialSelectedIds: Array.from(selectedIds) });
     } else {
@@ -634,14 +640,33 @@ export default function Guests() {
 
   /* ── Copy links (bulk) ───────────────────────────────────────────────── */
   const handleCopyLinks = async () => {
-    if (isPro || selectedGuests.length === 0) return;
-    // Minting and reading both happen server-side now (Track E): the token
-    // becomes an HMAC + ciphertext in E2, which the browser cannot produce.
-    const linkMap = await fetchGuestLinks(selectedGuests.map(g => g.id));
-    const urls = selectedGuests.map(g => linkMap[g.id]?.rsvpUrl).filter(Boolean);
-    if (urls.length === 0) { toast.error('Could not generate RSVP links'); return; }
-    await navigator.clipboard.writeText(urls.join('\n'));
-    toast.success(`${urls.length} RSVP link${urls.length !== 1 ? 's' : ''} copied`);
+    if (isPro) { toast('Copy links is part of Ultra — upgrade to share invitations.'); return; }
+    if (selectedGuests.length === 0) { toast('Select a guest first.'); return; }
+
+    // THE PROMISE GOES TO THE CLIPBOARD, NOT THE RESULT.
+    //
+    // Minting and reading happen server-side (Track E), so the URLs arrive over
+    // the network. Awaiting that response before writing spends the click's
+    // transient activation, and Safari then denies the write -- which is how
+    // this button came to do nothing at all, with no error, on the owner's Mac.
+    // copyFromPromise hands the clipboard a promise synchronously instead.
+    let urls = [];
+    const textPromise = (async () => {
+      const linkMap = await fetchGuestLinks(selectedGuests.map(g => g.id));
+      urls = selectedGuests.map(g => linkMap[g.id]?.rsvpUrl).filter(Boolean);
+      return urls.join('\n');
+    })();
+
+    const { ok, text } = await copyFromPromise(textPromise);
+
+    if (!text) { toast.error('Could not generate RSVP links'); return; }
+    if (ok) {
+      toast.success(`${urls.length || text.split('\n').length} RSVP link${urls.length !== 1 ? 's' : ''} copied`);
+    } else {
+      // Never silence. The clipboard can be refused for reasons we cannot see;
+      // showing the links is a working path, not an apology.
+      setCopyFallback({ title: 'Your RSVP links', text });
+    }
     loadGuests();
   };
 
@@ -733,8 +758,13 @@ export default function Guests() {
           {!isCollaborating && weddingSlug && (
             <button
               onClick={async () => {
-                await navigator.clipboard.writeText(`${window.location.origin}/w/${weddingSlug}/collect`);
-                toast.success('Collect link copied');
+                // No network call before this one, so the activation is intact
+                // and Safari is happy -- but an unguarded write is still silent
+                // when a browser refuses permission outright.
+                const url = `${window.location.origin}/w/${weddingSlug}/collect`;
+                const { ok } = await copyText(url);
+                if (ok) toast.success('Collect link copied');
+                else setCopyFallback({ title: 'Your collect link', text: url });
               }}
               className="btn-editorial-secondary"
             >
@@ -959,6 +989,19 @@ export default function Guests() {
           onChanged={() => { loadGuests(); loadPendingSubmissions(); }}
         />
       )}
+
+      <CopyFallbackModal
+
+        open={!!copyFallback}
+
+        onClose={() => setCopyFallback(null)}
+
+        title={copyFallback?.title}
+
+        text={copyFallback?.text || ''}
+
+      />
+
 
       {sendModalConfig && (
         <SendInvitesModal

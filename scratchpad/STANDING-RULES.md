@@ -657,3 +657,38 @@ their own hooks.
 **The question to ask: if someone adds a sixth way to create this row next
 month, does my enforcement still hold?** If the answer depends on them
 remembering, it is at the wrong layer.
+
+---
+
+## Every user-initiated action must render success or failure
+
+Silence is a defect, not a neutral outcome.
+
+"Copy links" on the guest list did nothing: no copy, no toast, no error. The
+handler fetched the links, awaited the response, then called
+`navigator.clipboard.writeText` with no try/catch. The request succeeded, the
+write was denied, the rejection went unhandled, and the user saw a dead button
+on the control that is how a couple gets RSVP links at all.
+
+Two different causes produce that identical symptom, and both were present:
+
+- **An unhandled rejection.** Any `await` that can throw, in a handler with no
+  catch, ends as silence.
+- **A guard that returns without speaking.** `if (isPro) return;` is the same
+  dead button. It is also a conversion loss: a user who taps a paid feature and
+  gets nothing learns the product is broken, not that the feature is paid.
+
+**Neither shows up in a build, a probe, or a render sheet.** The instrument that
+finds them is a person clicking, which is why the owner found this one and
+nothing in the pipeline did.
+
+So: every handler that can fail must show what happened, and every gate must say
+what it needs. Where the mechanism can be refused by the browser (clipboard,
+notifications, storage), there must also be a path that works without it — the
+fallback is the safety net for the primary path, not an error state.
+
+**Corollary — verify in the engine where the bug lives.** This one was
+Safari-only: Safari requires the clipboard write inside the click's transient
+activation, and an `await` on a network call spends it. Chromium is permissive
+and writes anyway, so a green Chromium run was a control that could not fail.
+Playwright ships webkit; use it when the defect is engine-specific.
