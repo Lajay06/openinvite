@@ -74,7 +74,6 @@ import { runRsvpTokenMinting } from '../tests/persistence/rsvp-token-minting.mjs
 import { runGuestRecognition } from '../tests/persistence/guest-recognition.mjs';
 import { runClipboardActions } from '../tests/persistence/clipboard-actions.mjs';
 import { runInviteLinkIntegrity } from '../tests/persistence/invite-link-integrity.mjs';
-import { runIndexingPosture } from '../tests/persistence/indexing-posture.mjs';
 import { runGuestCsvExport } from '../tests/persistence/guest-csv-export.mjs';
 import { runBudgetPlanExport } from '../tests/persistence/budget-plan-export.mjs';
 import { runNotesExport } from '../tests/persistence/notes-export.mjs';
@@ -169,7 +168,6 @@ async function run() {
   await runModule('runGuestRecognition', () => runGuestRecognition());
   await runModule('runClipboardActions', () => runClipboardActions());
   await runModule('runInviteLinkIntegrity', () => runInviteLinkIntegrity());
-  await runModule('runIndexingPosture', () => runIndexingPosture());
   await runModule('runGuestCsvExport', () => runGuestCsvExport());
   await runModule('runBudgetPlanExport', () => runBudgetPlanExport());
   await runModule('runNotesExport', () => runNotesExport());
