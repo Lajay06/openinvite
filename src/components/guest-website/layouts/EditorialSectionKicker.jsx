@@ -8,12 +8,12 @@
 import React from 'react';
 import ZelligeDivider from './ZelligeDivider';
 
-export default function EditorialSectionKicker({ kicker, theme, typography, align = 'left', textColor }) {
+export default function EditorialSectionKicker({ kicker, theme, typography, align = 'left', textColor, as: Tag = 'p' }) {
   const color = textColor || theme.lightText;
   return (
     <div style={{ textAlign: align, marginBottom: 40 }}>
       {kicker && (
-        <p
+        <Tag className="wb-body-face"
           style={{
             fontFamily: typography.bodyFont,
             fontSize: 12,
@@ -26,7 +26,7 @@ export default function EditorialSectionKicker({ kicker, theme, typography, alig
           }}
         >
           {kicker}
-        </p>
+        </Tag>
       )}
       <ZelligeDivider
         color={color}

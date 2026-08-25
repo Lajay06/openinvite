@@ -1,6 +1,7 @@
 import React from 'react';
 import { MapPin, Plane, Train, Bus, Car, Ship, Navigation2, ExternalLink, FileText } from 'lucide-react';
 import SectionReveal from '../SectionReveal';
+import GuestPageHeading from '../GuestPageHeading';
 import { isMotionEnabled } from '@/lib/universeStyling';
 
 const TYPE_ICONS = {
@@ -59,9 +60,7 @@ export default function WeddingTransportPage({ weddingDetails, theme, typography
       <div style={{ maxWidth: 860, margin: '0 auto' }}>
 
         <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-          <h1 style={{ ...heading, fontSize: 'clamp(2rem,5vw,3.5rem)', textAlign: 'center', marginBottom: 16 }}>
-            Getting here
-          </h1>
+          <GuestPageHeading title={"Getting here"} theme={theme} typography={typography} universeConfig={universeConfig} />
         </SectionReveal>
 
         <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' }}>

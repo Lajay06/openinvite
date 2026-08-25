@@ -6,13 +6,13 @@
 import React from 'react';
 import CitrusScallop from './CitrusScallop';
 
-export default function CapriSectionMark({ kicker, theme, typography, textColor, accentColor }) {
+export default function CapriSectionMark({ kicker, theme, typography, textColor, accentColor, as: Tag = 'p' }) {
   const color = textColor || theme.lightText;
   const accent = accentColor || theme.accent;
   return (
     <div style={{ textAlign: 'left', marginBottom: 48 }}>
       {kicker && (
-        <p
+        <Tag className="wb-body-face"
           style={{
             fontFamily: typography.bodyFont,
             fontSize: 13,
@@ -24,7 +24,7 @@ export default function CapriSectionMark({ kicker, theme, typography, textColor,
           }}
         >
           {kicker}
-        </p>
+        </Tag>
       )}
       <CitrusScallop color={accent} bumpSize={6} style={{ maxWidth: 120 }} />
     </div>

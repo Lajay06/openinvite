@@ -916,6 +916,26 @@ the common cause but not the class.)
 
 ---
 
+## A design ruling is evaluated against the codebase as it stands, not the idea of it
+
+The owner asked for one heading treatment across every guest page. Applying it
+means removing the serif display face from inner-page titles — so the question
+is what still carries that face afterwards.
+
+**Audited: eleven of fifteen pages keep it, entirely through the CARD TITLES
+converted to real headings in #552.** Before that conversion those were `<p>`s,
+forced to the body face by `.wb-guest-root *`, carrying no display face at all.
+
+So the same instruction, evaluated two weeks apart, has two different correct
+answers. Had it been applied before #552, the honest audit would have read *the
+display face disappears from every inner page*, and the advisor said plainly
+they would have ruled differently.
+
+**Re-audit before applying a ruling that has been sitting.** A ruling is made
+against a state of the code; the code moves; the ruling does not. The gap
+between them is not the ruling being wrong — it is the ruling being about a
+different codebase.
+
 ## When measurement and reasoning disagree, BOTH are suspects
 
 This file has said *measure, do not assert* all session, and that was right five

@@ -81,6 +81,15 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
   font-family: var(--wb-heading-font, 'Plus Jakarta Sans', sans-serif) !important;
 }
 
+/* The mirror of the above, and it exists for one reason: a section kicker that
+   is semantically a heading. Reading A makes each guest page's kicker its <h1>,
+   which pulls it into the h1-h6 rule and would render a small wide-tracked SANS
+   kicker in the serif display face. This opts it back out, on the same
+   specificity footing: (0,2,0) against the (0,1,1) of the h1-h6 rule. */
+.wb-guest-root .wb-body-face {
+  font-family: var(--wb-body-font, 'Plus Jakarta Sans', sans-serif) !important;
+}
+
 @layer base {
   :root {
     /* Editorial Monochrome System */

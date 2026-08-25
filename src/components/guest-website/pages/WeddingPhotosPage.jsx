@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import SectionReveal from '../SectionReveal';
+import GuestPageHeading from '../GuestPageHeading';
 import { isMotionEnabled } from '@/lib/universeStyling';
 import { interactiveDivProps, useModalFocusTrap } from '@/lib/a11y';
 
@@ -73,17 +74,7 @@ export default function WeddingPhotosPage({ weddingDetails, theme, typography, u
     <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '60px 24px' }}>
       <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
         <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-          <h1
-            style={{
-              fontFamily: typography.headingFont,
-              fontSize: 'clamp(2rem, 5vw, 3rem)',
-              fontWeight: typography.headingWeight,
-              marginBottom: '60px',
-              textAlign: 'center'
-            }}
-          >
-            Photos
-          </h1>
+          <GuestPageHeading title={"Photos"} theme={theme} typography={typography} universeConfig={universeConfig} />
         </SectionReveal>
 
         {gallery.length > 0 ? (

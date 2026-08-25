@@ -7,14 +7,14 @@
 import React from 'react';
 import TicketStub from './TicketStub';
 
-export default function BrooklynSectionMark({ kicker, theme, typography, textColor, accentColor }) {
+export default function BrooklynSectionMark({ kicker, theme, typography, textColor, accentColor, as: Tag = 'p' }) {
   const color = textColor || theme.lightText;
   const accent = accentColor || theme.accent;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 48 }}>
       <TicketStub color={accent} width={48} height={10} />
       {kicker && (
-        <p
+        <Tag className="wb-body-face"
           style={{
             fontFamily: typography.bodyFont,
             fontSize: 12,
@@ -27,7 +27,7 @@ export default function BrooklynSectionMark({ kicker, theme, typography, textCol
           }}
         >
           {kicker}
-        </p>
+        </Tag>
       )}
     </div>
   );

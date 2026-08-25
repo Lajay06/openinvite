@@ -98,6 +98,11 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
   const isMykonos = universeConfig?.layout === 'mykonos-whitewash';
   const isCapeTown = universeConfig?.layout === 'capetown-estate';
   const copy = universeConfig?.copy || {};
+  // Every branch's heading is now the kicker alone, so the kicker can no
+  // longer be optional — tulum defines no celebrationKicker, and a custom
+  // wedding has no universeConfig at all. Both fall back to the exact words
+  // the removed serif title printed, so no new universe voice is invented.
+  const celebrationKicker = copy.celebrationKicker || 'The celebration';
 
   const T   = typography;
   const hFont = T.headingFont;
@@ -134,50 +139,36 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
         {isParis ? (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <div style={{ marginBottom: 88, textAlign: 'center' }}>
-              <ParisSectionMark kicker={copy.celebrationKicker} theme={theme} typography={typography} />
-              <h1 style={{ fontFamily: hFont, fontWeight: hWt, fontSize: 'clamp(2.5rem, 6vw, 4rem)', lineHeight: 1.1, color: lt, margin: 0 }}>
-                The celebration
-              </h1>
+              <ParisSectionMark as="h1" kicker={celebrationKicker} theme={theme} typography={typography} />
+              {/* P2e: the serif display title is gone. This page printed its
+                  name twice — once as the SectionMark kicker above and again
+                  as a 36px serif heading, the same words both times. The kicker
+                  stays and is now the page's only heading, as on every other. */}
             </div>
           </SectionReveal>
         ) : isCapri ? (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <div style={{ marginBottom: 72 }}>
-              <CapriSectionMark kicker={copy.celebrationKicker} theme={theme} typography={typography} accentColor={acc} />
-              <h1 style={{ fontFamily: hFont, fontWeight: hWt, fontSize: 'clamp(2.4rem, 6vw, 3.75rem)', lineHeight: 1.1, color: lt, margin: 0, textAlign: 'left' }}>
-                The celebration
-              </h1>
+              <CapriSectionMark as="h1" kicker={celebrationKicker} theme={theme} typography={typography} accentColor={acc} />
             </div>
           </SectionReveal>
         ) : isMykonos ? (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <div style={{ marginBottom: 96 }}>
-              <MykonosSectionMark kicker={copy.celebrationKicker} theme={theme} typography={typography} accentColor={acc} />
-              <h1 style={{ fontFamily: hFont, fontWeight: hWt, letterSpacing: '-0.01em', fontSize: 'clamp(2rem, 5.5vw, 3.5rem)', lineHeight: 1.1, color: lt, margin: 0, textAlign: 'left' }}>
-                The celebration
-              </h1>
+              <MykonosSectionMark as="h1" kicker={celebrationKicker} theme={theme} typography={typography} accentColor={acc} />
             </div>
           </SectionReveal>
         ) : isCapeTown ? (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <div style={{ marginBottom: 88 }}>
-              <CapeTownSectionMark kicker={copy.celebrationKicker} theme={theme} typography={typography} />
-              <h1 style={{ fontFamily: hFont, fontWeight: hWt, fontSize: 'clamp(2.25rem, 5.5vw, 3.75rem)', lineHeight: 1.15, color: lt, margin: 0, textAlign: 'left' }}>
-                The celebration
-              </h1>
+              <CapeTownSectionMark as="h1" kicker={celebrationKicker} theme={theme} typography={typography} />
             </div>
           </SectionReveal>
         ) : isKyoto ? (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <div style={{ marginBottom: 96 }}>
-              <KyotoSectionMark kicker={copy.celebrationKicker} theme={theme} typography={typography} />
-              <h1 style={{
-                fontFamily: hFont, fontWeight: hWt, letterSpacing: '0.01em',
-                fontSize: 'clamp(2rem, 5vw, 3rem)', lineHeight: 1.3,
-                color: lt, textAlign: 'left', margin: 0,
-              }}>
-                The celebration
-              </h1>
+              <KyotoSectionMark as="h1" kicker={celebrationKicker} theme={theme} typography={typography} />
+              {/* P2e: serif title removed — the kicker above prints these same words. */}
             </div>
           </SectionReveal>
         ) : isBrooklyn ? (
@@ -191,9 +182,9 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
                 The party
               </h1>
               <TicketStub color={acc} width={200} height={12} />
-              {copy.celebrationKicker && (
+              {celebrationKicker && (
                 <p style={{ fontFamily: bFont, fontSize: 12, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: acc, opacity: 0.8, margin: '16px 0 0' }}>
-                  {copy.celebrationKicker}
+                  {celebrationKicker}
                 </p>
               )}
             </div>
@@ -201,51 +192,30 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
         ) : isBali ? (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <div style={{ marginBottom: 88 }}>
-              <BaliSectionMark kicker={copy.celebrationKicker} theme={theme} typography={typography} />
-              <h1 style={{
-                fontFamily: hFont, fontWeight: hWt, letterSpacing: '-0.005em',
-                fontSize: 'clamp(2.25rem, 5.5vw, 3.5rem)', lineHeight: 1.15,
-                color: lt, textAlign: 'left', margin: 0,
-              }}>
-                The celebration
-              </h1>
+              <BaliSectionMark as="h1" kicker={celebrationKicker} theme={theme} typography={typography} />
+              {/* P2e: serif title removed — the kicker above prints these same words. */}
             </div>
           </SectionReveal>
         ) : isMinimal ? (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <div style={{ marginBottom: 88 }}>
-              <MinimalSectionMark kicker={copy.celebrationKicker} theme={theme} typography={typography} />
-              <h1 style={{
-                fontFamily: hFont, fontWeight: hWt, letterSpacing: '-0.005em',
-                fontSize: 'clamp(2.25rem, 5.5vw, 3.5rem)', lineHeight: 1.1,
-                color: lt, textAlign: 'center', margin: 0,
-              }}>
-                The celebration
-              </h1>
+              <MinimalSectionMark as="h1" kicker={celebrationKicker} theme={theme} typography={typography} />
+              {/* P2e: serif title removed — the kicker above prints these same words. */}
             </div>
           </SectionReveal>
         ) : isEditorial ? (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <div style={{ marginBottom: 96 }}>
-              <EditorialSectionKicker kicker={copy.celebrationKicker} theme={theme} typography={typography} />
-              <h1 style={{
-                fontFamily: hFont, fontWeight: hWt, letterSpacing: '-0.02em',
-                fontSize: 'clamp(2.6rem, 7vw, 4.5rem)', lineHeight: 1.02,
-                color: lt, textAlign: 'left', margin: 0,
-              }}>
-                The <span style={{ fontStyle: 'italic', opacity: 0.85 }}>celebration</span>
-              </h1>
+              <EditorialSectionKicker as="h1" kicker={celebrationKicker} theme={theme} typography={typography} />
+              {/* P2e: serif title removed — the kicker above prints these same words. */}
             </div>
           </SectionReveal>
         ) : (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <h1 style={{
-              fontFamily: hFont, fontWeight: hWt, letterSpacing: '-0.025em',
-              fontSize: 'clamp(2.4rem, 6vw, 4rem)', lineHeight: 1.05,
-              color: lt, textAlign: 'center', margin: '0 0 96px',
-            }}>
-              The celebration
-            </h1>
+            {/* P2e: the default branch had no SectionMark, so it gets the same
+                kicker-only heading the layout branches use rather than losing
+                its title outright. */}
+            <MinimalSectionMark as="h1" kicker={celebrationKicker} theme={theme} typography={typography} />
           </SectionReveal>
         )}
 

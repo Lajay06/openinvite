@@ -7,14 +7,14 @@
 import React from 'react';
 import CubeBlock from './CubeBlock';
 
-export default function MykonosSectionMark({ kicker, theme, typography, textColor, accentColor }) {
+export default function MykonosSectionMark({ kicker, theme, typography, textColor, accentColor, as: Tag = 'p' }) {
   const color = textColor || theme.lightText;
   const accent = accentColor || theme.accent;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 48 }}>
       <CubeBlock color={accent} width={28} height={28} />
       {kicker && (
-        <p
+        <Tag className="wb-body-face"
           style={{
             fontFamily: typography.bodyFont,
             fontSize: 11,
@@ -27,7 +27,7 @@ export default function MykonosSectionMark({ kicker, theme, typography, textColo
           }}
         >
           {kicker}
-        </p>
+        </Tag>
       )}
     </div>
   );

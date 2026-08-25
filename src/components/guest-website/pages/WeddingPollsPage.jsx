@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { ChevronDown, ChevronUp, MessageCircle } from 'lucide-react';
 import SectionReveal from '../SectionReveal';
+import GuestPageHeading from '../GuestPageHeading';
 import { isMotionEnabled } from '@/lib/universeStyling';
 import { getCachedWeddingPassword } from '@/lib/guestSitePassword';
 
@@ -378,17 +379,13 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography, un
           maxWidth: 680,
           margin: '0 auto',
         }}>
-          <p style={{
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: '0.12em',
-            color: `${theme.darkText}40`,
-            fontFamily: typography.bodyFont,
-            margin: '0 0 12px',
-          }}>
-            Guest polls
-          </p>
-          <h1 style={{
+          {/* The hand-rolled kicker that used to sit here IS the heading now,
+              rendered by GuestPageHeading below as the universe's own mark. */}
+          <GuestPageHeading title={"Guest polls"} theme={theme} typography={typography} universeConfig={universeConfig} textColor={theme.darkText} />
+          {/* NOT a heading. The page's one h1 is the kicker above; this line is
+              distinct copy, not a repeat of it, so it stays — demoted in
+              semantics only. Its styling is unchanged. */}
+          <div style={{
             fontSize: 'clamp(32px, 5vw, 52px)',
             fontWeight: 700,
             color: theme.darkText,
@@ -397,7 +394,7 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography, un
             lineHeight: 1.1,
           }}>
             Have your say.
-          </h1>
+          </div>
           <p style={{
             fontSize: 15,
             color: `${theme.darkText}50`,

@@ -118,8 +118,16 @@ async function main() {
     let rendered = true;
     try {
       await page.goto(BASE + r.path, { waitUntil: 'domcontentloaded' });
+      // CASE-INSENSITIVE, deliberately. `innerText` APPLIES text-transform, so a
+      // title rendered through a uppercase-styled section mark reads back as
+      // "WHERE TO STAY" no matter how the source spells it. This gate asks
+      // whether the CONTENT rendered; casing is enforced by
+      // tests/persistence/sentence-case-chrome.mjs, and guest artwork is exempt
+      // from that anyway. Compared case-sensitively, three pages that rendered
+      // perfectly reported PRESENCE FAILED.
       await page.waitForFunction(
-        (s) => (document.getElementById('root')?.innerText || '').includes(s),
+        (s) => (document.getElementById('root')?.innerText || '')
+          .toUpperCase().includes(s.toUpperCase()),
         r.expect, { timeout: 30000 });
     } catch { rendered = false; }
 
