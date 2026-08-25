@@ -174,18 +174,14 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
         ) : isBrooklyn ? (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <div style={{ marginBottom: 80, display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-              <h1 style={{
-                fontFamily: hFont, fontWeight: hWt, letterSpacing: '0.01em',
-                fontSize: 'clamp(3rem, 9vw, 6rem)', lineHeight: 0.9,
-                color: lt, textAlign: 'right', margin: '0 0 20px',
-              }}>
-                The party
-              </h1>
+              {/* P2e: serif title removed — brooklyn's celebrationKicker IS
+                  "The party", so this printed the same words twice, exactly
+                  like the other four branches. */}
               <TicketStub color={acc} width={200} height={12} />
               {celebrationKicker && (
-                <p style={{ fontFamily: bFont, fontSize: 12, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: acc, opacity: 0.8, margin: '16px 0 0' }}>
+                <h1 className="wb-body-face" style={{ fontFamily: bFont, fontSize: 12, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: acc, opacity: 0.8, margin: '16px 0 0' }}>
                   {celebrationKicker}
-                </p>
+                </h1>
               )}
             </div>
           </SectionReveal>

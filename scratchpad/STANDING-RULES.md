@@ -936,6 +936,68 @@ against a state of the code; the code moves; the ruling does not. The gap
 between them is not the ruling being wrong — it is the ruling being about a
 different codebase.
 
+## Hold the universe fixed when one axis is per-universe and another per-layout
+
+Celebration renders a branch per LAYOUT. `celebrationKicker` is defined per
+UNIVERSE. Asked whether a branch's serif title duplicated its kicker, the check
+compared brooklyn's title against **london's** kicker, found "The party" vs
+"The celebration", and reported it as distinct copy. brooklyn's own kicker is
+literally "The party" — it was a duplicate, and the ruling that it should stay
+was issued on that false report.
+
+**When a comparison spans two axes, hold one fixed.** This codebase has twenty
+parallel configurations; any check that reads a per-universe value while
+iterating per-layout branches will silently compare across the diagonal. The
+answer looks specific and is arbitrary — it is whichever universe happened to
+be the default.
+
+---
+
+## Documenting a trap does not immunize you from it
+
+The PR that introduced `.wb-body-face` explained, in its own description, that
+an inline `fontFamily` under `.wb-guest-root *` is decoration that does not
+apply — that only `h1`-`h6` or `.wb-display-face` actually gets the face. The
+same PR then restored two copy lines as plain `<div>`s and described the change
+as "styling untouched". Measured: both had dropped from Cormorant Garamond to
+the body face. The trap was walked into **from the opposite direction, in the
+same PR that named it**.
+
+Writing a rule down is not applying it. The record of a trap is a prompt to
+re-measure, not a certificate that you avoided it.
+
+---
+
+## A try/catch does not guard a function that returns an error VALUE
+
+`toLocaleDateString` returns the **string** `"Invalid Date"` for an unparseable
+date. It does not throw. So:
+
+    try { fullDate = d.toLocaleDateString(...) } catch { fullDate = dateKey }
+
+is defended against nothing. The catch never fires, and every guest of every
+wedding saw `Invalid Date` as a day header on the celebration page, in all 20
+universes, while the code read as carefully handled.
+
+**Before trusting a try/catch, check that the failure mode throws.** Same family
+as MESSAGES-GUARDS: a guard that cannot fire looks exactly like a guard that
+never needed to.
+
+---
+
+## A static sweep and a render each resolve what the other cannot
+
+Sweeping for non-heading elements requesting the display face inline produced
+three candidates. Rendering them resolved one as a false positive — a registry
+`<span>` that sits inside an `h2` and inherits correctly, invisible to a
+source-level check that walks back to the nearest tag. The other two were real
+and had been invisible to every render pass, because nobody had thought to
+measure a line that "obviously" kept its styling.
+
+Neither method alone was sufficient. The sweep proposes; the render disposes.
+
+---
+
 ## When measurement and reasoning disagree, BOTH are suspects
 
 This file has said *measure, do not assert* all session, and that was right five
