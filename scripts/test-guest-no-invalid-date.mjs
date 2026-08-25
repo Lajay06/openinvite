@@ -25,7 +25,7 @@
 /* eslint-env browser */
 /* global document */  // used inside page.evaluate(), which runs in the browser
 import { chromium } from 'playwright';
-import { seededContext, PUBLISHED_WEDDING, dismissEntrance } from './lib/renderHarness.mjs';
+import { seededContext, PUBLISHED_WEDDING, dismissEntrance, RSVP_TOKEN } from './lib/renderHarness.mjs';
 import { UNIVERSE_CONFIGS } from '../src/lib/websiteThemes.js';
 
 const BASE = process.env.CAPTURE_BASE_URL || 'http://localhost:4173';
@@ -65,6 +65,31 @@ for (const uni of Object.keys(UNIVERSE_CONFIGS)) {
   else console.log(`  ✅ ${uni}`);
   await ctx.close();
 }
+// THE INVITATION ROUTE renders the same class of date, from the same wedding
+// record, and was unreachable under the harness until /api/rsvp-lookup was
+// stubbed. Its date lives inside an event card, which only appears once the
+// guest replies — so the probe REPLIES. Verified to catch the defect: against
+// the unfixed code this route renders "Invalid Date · 15:00".
+{
+  const ctx = await seededContext(browser, { width: 390, height: 1800 });
+  const page = await ctx.newPage();
+  await page.goto(`${BASE}/rsvp/${RSVP_TOKEN}`, { waitUntil: 'networkidle' }).catch(() => {});
+  await page.waitForTimeout(1200);
+  const yes = page.getByText(/Yes, I will be there/i).first();
+  if (await yes.count()) { await yes.click(); await page.waitForTimeout(1400); }
+  const text = await page.evaluate(() => document.body.innerText || '');
+  if (!/Ceremony|Reception/i.test(text)) {
+    console.log('  ❌ /rsvp/:token — PRESENCE FAILED (no event cards rendered); not measured');
+    failures++;
+  } else {
+    checked++;
+    const hit = text.match(BAD);
+    if (hit) { console.log(`  ❌ /rsvp/:token — renders ${JSON.stringify(hit[0])}`); failures++; }
+    else console.log('  ✅ /rsvp/:token');
+  }
+  await ctx.close();
+}
+
 await browser.close();
-console.log(`\n  ${checked}/${Object.keys(UNIVERSE_CONFIGS).length} universes measured, ${failures} failing\n`);
+console.log(`\n  ${checked} surfaces measured (${Object.keys(UNIVERSE_CONFIGS).length} universes + the invitation route), ${failures} failing\n`);
 process.exit(failures ? 1 : 0);

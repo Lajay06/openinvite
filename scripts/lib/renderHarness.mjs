@@ -269,6 +269,27 @@ export function extractBodyText(html) {
 }
 
 /** The couple. Paid plan, onboarded, so no gate or banner intercepts the page. */
+/**
+ * The guest an /rsvp/:token render resolves to. Deliberately mid-flow — a
+ * PENDING rsvp_status with an email already on file — because that is the state
+ * with the most surface: the reply controls are live and the address line has a
+ * value to show. A fresh guest renders half the page.
+ */
+export const RSVP_GUEST = {
+  id: 'g1', name: 'Grace Hopper', first_name: 'Grace', last_name: 'Hopper',
+  email: 'grace@example.com', rsvp_status: 'pending', invited: true,
+  // event_responses is an ARRAY — getGuestEventResponse calls .find on it.
+  // Seeded as {} it threw "n.find is not a function" behind the error boundary.
+  // Left EMPTY deliberately: getGuestEventResponse reads an empty list as "no
+  // per-event answers yet" and falls back to invited = event.isMain, so the
+  // ceremony and reception cards render. A populated list would opt the guest
+  // OUT of every event it does not mention.
+  event_responses: [], poll_votes: {}, plus_ones: [],
+};
+
+/** The token any /rsvp/:token render should use; the stub ignores its value. */
+export const RSVP_TOKEN = 'harness-token-not-a-real-token';
+
 export const FIXTURE_USER = {
   id: 'u1', email: 'fixture@example.com', full_name: 'Render Fixture',
   plan: 'ultra', onboardingCompleted: true, plan_step_completed: true,
@@ -299,6 +320,14 @@ export async function stubBackend(ctx, { seed = SEED, user = FIXTURE_USER, onEnt
     // The guest site's single source: without this every /w/ route sits on its
     // skeleton forever, which reads as "nothing rendered" rather than "not seeded".
     if (/\/api\/wedding-by-slug/.test(url))   return json(PUBLISHED_WEDDING);
+    // THE INVITATION ROUTE. /rsvp/:token is a real guest surface — change-your-
+    // reply, the address line and the hero all render here — and it could not be
+    // rendered under the harness at all: rsvp-lookup fell through to the generic
+    // `[]` below, RSVPPage destructured `{ guest }` off an array, and the page
+    // died on `undefined.poll_votes` behind an error boundary. Every pass that
+    // needed this route paid the same diagnosis. It is stubbed once, here.
+    if (/\/api\/rsvp-lookup/.test(url))       return json({ guest: RSVP_GUEST, wedding: PUBLISHED_WEDDING });
+    if (/\/api\/wedding-attendees/.test(url)) return json({ attendees: [], count: 0 });
     if (/\/api\/guest-/.test(url))            return json({ ok: true });
     return json([]);
   };

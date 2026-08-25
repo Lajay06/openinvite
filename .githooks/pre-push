@@ -1,0 +1,11 @@
+#!/bin/sh
+# Lint before push.
+#
+# WHY THIS EXISTS. A probe was committed with two no-undef errors and pushed;
+# CI caught it. That is the gate catching an omission rather than the author
+# checking their own work — the same shape as a merge that went red because a
+# command's exit status was never read. "I will remember to run lint" is too
+# thin to build on; this is the structural version, and it costs a second.
+#
+# Bypass with --no-verify when you mean to.
+exec npm run lint
