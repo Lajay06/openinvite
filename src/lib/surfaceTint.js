@@ -138,13 +138,13 @@ export function accentChip(theme = {}) {
 }
 
 /**
- * Flatten a colour that may carry alpha onto the ground it will actually sit
+ * Flatten a color that may carry alpha onto the ground it will actually sit
  * on, returning an opaque hex.
  *
  * WHY THIS EXISTS. A block background of `#2B21181a` painted over the builder's
  * dark right panel composites to near-black; painted over the page's light
  * ground it composites to a barely-there cream. Same token, opposite
- * appearance — so the swatch showed the couple one colour and their site
+ * appearance — so the swatch showed the couple one color and their site
  * rendered another. A PREVIEW MUST COMPOSITE OVER THE SAME GROUND AS THE THING
  * IT PREVIEWS.
  *
@@ -161,7 +161,7 @@ export function flattenOver(color, ground) {
 
 /**
  * The ink that clears 4.5:1 on a given background — the higher-contrast of the
- * palette's two, so an arbitrary colour from the picker still reads.
+ * palette's two, so an arbitrary color from the picker still reads.
  * Returns { color, ratio, passes } so a caller can WARN rather than block.
  */
 export function readableInkOn(background, theme = {}, ground = '#FFFFFF') {

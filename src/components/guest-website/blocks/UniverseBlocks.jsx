@@ -8,10 +8,10 @@
  * component instance running inside the same render, not a second one fed
  * the same data independently. See BUILDER_BLOCK_SCOPE.md.
  *
- * Every block resolves colour + typography from the SAME theme/typography
+ * Every block resolves color + typography from the SAME theme/typography
  * objects the page component already received from resolveColors/
  * resolveTypography — a block cannot look off-brand because it never
- * chooses its own colours or fonts. Several block types additionally pick
+ * chooses its own colors or fonts. Several block types additionally pick
  * a per-universe *shape* accent, reusing already-built primitives from
  * ../layouts — never a hardcoded block style, and never a couple-chosen
  * manual override.
@@ -683,10 +683,10 @@ function BlockCanvasWrapper({ block, index, count, isSelected, onSelectBlock, on
 }
 
 // Resolves a block's curated style overrides against the ACTIVE UNIVERSE's
-// own tokens — never a free colour/size. textColor becomes an "effective
+// own tokens — never a free color/size. textColor becomes an "effective
 // theme" with `lightText` swapped, since every renderer already derives its
-// text colour from theme.lightText (never a hardcoded literal) — so
-// substituting it here changes the real rendered colour with zero changes
+// text color from theme.lightText (never a hardcoded literal) — so
+// substituting it here changes the real rendered color with zero changes
 // needed inside any individual renderer. background/align/size are passed
 // through to renderers that support them (see WBRightPanel.jsx's
 // ALIGN_CAPABLE_TYPES / SIZE_CAPABLE_TYPES / NO_TEXT_COLOR_TYPES — kept in
@@ -697,7 +697,7 @@ function BlockCanvasWrapper({ block, index, count, isSelected, onSelectBlock, on
 // Hex alpha suffixes below are exact: FF/no-suffix=100%, B3=~70%, 66=~40%,
 // 30=~19%, 18=~9%, 0d=~5%.
 // Exported (with labels) so WBRightPanel.jsx's swatch grid renders the
-// EXACT same colours these renderers use — one source of truth, no drift.
+// EXACT same colors these renderers use — one source of truth, no drift.
 export const TEXT_COLOR_OPTIONS = [
   { value: 'text-100', label: 'Text', resolve: (t) => t.lightText },
   { value: 'text-70', label: 'Text · muted', resolve: (t) => `${t.lightText}B3` },
@@ -729,7 +729,7 @@ const TEXT_COLOR_TOKENS = Object.fromEntries(TEXT_COLOR_OPTIONS.map(o => [o.valu
 const BACKGROUND_TOKENS = Object.fromEntries(BACKGROUND_OPTIONS.filter(o => o.value !== 'none').map(o => [o.value, o.resolve]));
 // PR #101 shipped a 3-value enum for each — these values may already be
 // saved on real weddings, so they're aliased forward rather than dropped.
-// The 'surface'/'accent' backgrounds and 'secondary'/'accent' text colours
+// The 'surface'/'accent' backgrounds and 'secondary'/'accent' text colors
 // alias to tokens that render the exact same hex, so existing blocks look
 // byte-identical after this upgrade.
 const LEGACY_TEXT_COLOR_ALIASES = { primary: 'text-100', secondary: 'text-70', accent: 'accent-100' };
@@ -760,8 +760,8 @@ function resolveBlockStyle(style, theme) {
   // ADAPTIVE INK. An opaque background the couple chose freely will make the
   // palette's default text unreadable — and contrast in this product fails
   // silently. So when a background is set and the couple has NOT chosen a text
-  // colour, pick whichever ink clears 4.5:1 against what the background
-  // actually composites to. An explicit textColor is always honoured: warn,
+  // color, pick whichever ink clears 4.5:1 against what the background
+  // actually composites to. An explicit textColor is always honored: warn,
   // never block. It is their wedding.
   let resolvedText = textColor;
   let contrast = null;

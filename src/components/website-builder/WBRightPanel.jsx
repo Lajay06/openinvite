@@ -235,7 +235,7 @@ function DesignTab({ details, onChange, universeTheme }) {
     <div>
 
       {/* ── Universe — prominent global master ───────────────── */}
-      {/* Governs colour, fonts, and (in future) texture + motion */}
+      {/* Governs color, fonts, and (in future) texture + motion */}
       <div style={{
         borderLeft: `3px solid ${universeAccent}`,
         background: 'rgba(255,255,255,0.04)',
@@ -246,7 +246,7 @@ function DesignTab({ details, onChange, universeTheme }) {
           Universe
         </p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {/* Accent swatch represents the universe's colour identity */}
+          {/* Accent swatch represents the universe's color identity */}
           <div style={{ width: 28, height: 28, background: universeAccent, flexShrink: 0, border: '1px solid rgba(255,255,255,0.1)' }} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ fontSize: 13, fontWeight: 700, color: '#FFFFFF', margin: 0, lineHeight: 1.2, fontFamily: 'inherit' }}>
@@ -657,7 +657,7 @@ function MasterDataReferenceDark({ label, value, detail }) {
 // (resolveColors output, read via universeTheme) — no free hex picker, no
 // arbitrary px size, no custom font. TEXT_COLOR_OPTIONS/BACKGROUND_OPTIONS/
 // SPACING_OPTIONS are imported from UniverseBlocks.jsx (not redefined here)
-// so the swatch a couple clicks and the colour that actually renders can
+// so the swatch a couple clicks and the color that actually renders can
 // never drift apart. See resolveBlockStyle() there for how these map back
 // to real rendered styles, and BUILDER_BLOCK_SCOPE.md for the "freedom
 // within beauty" principle this keeps intact at the per-block layer.
@@ -670,8 +670,8 @@ function MasterDataReferenceDark({ label, value, detail }) {
 const ALIGN_CAPABLE_TYPES = ['heading', 'subheading', 'paragraph', 'quote', 'list', 'two-column-text', 'dress-code'];
 const SIZE_CAPABLE_TYPES = ['heading', 'subheading', 'paragraph', 'quote'];
 // gallery/video/spacer have no meaningful text; button/quote-banner set
-// their own fixed-contrast colour deliberately (a coloured label on an
-// accent pill, pale text on a dark band) — a text-colour override on
+// their own fixed-contrast color deliberately (a colored label on an
+// accent pill, pale text on a dark band) — a text-color override on
 // theme.lightText would have no visible effect for any of these.
 const NO_TEXT_COLOR_TYPES = ['gallery', 'video', 'spacer', 'button', 'quote-banner'];
 const SIZE_STEPS = ['XS', 'S', 'M', 'L', 'XL'];
@@ -716,7 +716,7 @@ function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
     </div>
   );
 
-  // WARN, NEVER BLOCK — it is their wedding. With no text colour chosen the ink
+  // WARN, NEVER BLOCK — it is their wedding. With no text color chosen the ink
   // is picked automatically to clear 4.5:1, so this can only fire on a
   // deliberate override. It names the measured ratio rather than saying
   // "poor contrast", because a number is actionable and an adjective is not.
@@ -746,7 +746,7 @@ function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
         <span>
           This text sits at <strong>{ratio.toFixed(1)}:1</strong> on this background.
           Guests may struggle to read it below 4.5:1.
-          {auto.passes && <> Clearing the text colour uses one at {auto.ratio.toFixed(1)}:1.</>}
+          {auto.passes && <> Clearing the text color uses one at {auto.ratio.toFixed(1)}:1.</>}
         </span>
       </div>
     );
@@ -768,7 +768,7 @@ function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
         // the few fields it does carry over.
         // COMPOSITE OVER THE PAGE GROUND, not this panel's dark surface.
         // The tints carry alpha, and the same token over two different grounds
-        // reads as two different colours: `#2B21181a` composites to near-black
+        // reads as two different colors: `#2B21181a` composites to near-black
         // over the panel and to a barely-there cream over the site. The swatch
         // was telling the couple a truth about the panel and a lie about their
         // wedding. A preview must composite over the ground of the thing it
@@ -805,12 +805,12 @@ function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
           <FLabel>Background</FLabel>
           {colorSwatchGrid(BACKGROUND_OPTIONS, style.background, 'background')}
           {/* THE ESCAPE HATCH, alongside the swatches rather than instead of
-              them: the swatches stay the fast path. Text colour adapts to
+              them: the swatches stay the fast path. Text color adapts to
               whatever is picked, so an arbitrary background still reads. */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
             <input
               type="color"
-              aria-label="Custom background colour"
+              aria-label="Custom background color"
               value={/^#[0-9a-fA-F]{6}$/.test(style.background || '') ? style.background : ((theme && theme.lightBg) || '#FFFFFF')}
               onChange={e => updateStyle('background', e.target.value)}
               style={{ width: 34, height: 34, padding: 0, border: '1px solid rgba(255,255,255,0.15)', background: 'none', cursor: 'pointer' }}
@@ -818,7 +818,7 @@ function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
             <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>
               {/^#[0-9a-fA-F]{6}$/.test(style.background || '')
                 ? <>Custom <code>{style.background}</code></>
-                : 'Or pick any colour'}
+                : 'Or pick any color'}
             </span>
             {/^#[0-9a-fA-F]{6}$/.test(style.background || '') && (
               <button
