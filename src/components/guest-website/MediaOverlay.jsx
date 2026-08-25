@@ -30,13 +30,16 @@ export default function MediaOverlay({ overlay }) {
 
   const scale = Number.isFinite(overlay.scale) ? overlay.scale : 30;   // % of container width
   const x = Number.isFinite(overlay.x) ? overlay.x : 50;               // % of container
-  // DEFAULT 18, NOT 50. Every hero layout centres the couple's names and the
-  // invitation line, so a mark dropped at the geometric centre lands ON their
-  // own typography — measured at 390: the names sit around y=415 of 844, which
-  // is exactly where 50% puts it. The upper band is clear of text in all
-  // eleven layout branches. The couple can move it anywhere; this is just a
-  // starting point that does not collide out of the box.
-  const y = Number.isFinite(overlay.y) ? overlay.y : 18;
+  // DEFAULT 14, AND THE NUMBER WAS MEASURED ON ALL TWENTY, NOT ONE.
+  // Every hero layout centres the couple's names, so 50% lands ON their own
+  // typography. But the arrangements differ a lot in WHERE their text starts:
+  // measured at 390, the first hero text sits between 254px (amalfi-citrus,
+  // the tightest) and 552px (brooklyn-offgrid, the roomiest).
+  // 18% cleared all twenty — by 11px on amalfi. 14% clears by 45px, with no
+  // clipping at the top, so it is the same idea with four times the margin.
+  // It also raises how large a couple can scale the mark before it reaches
+  // text on the tightest layout: about 49% of the width at 18%, about 76% at 14%.
+  const y = Number.isFinite(overlay.y) ? overlay.y : 14;
   const scrim = Number.isFinite(overlay.scrim) ? overlay.scrim : 0;    // 0 = off, the default
 
   return (

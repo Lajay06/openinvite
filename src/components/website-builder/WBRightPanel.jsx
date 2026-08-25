@@ -537,7 +537,7 @@ function ContentTab({ details, onChange }) {
           {[
             { key: 'scale', label: 'Size',      min: 5,  max: 90,  def: 30, suffix: '% of width' },
             { key: 'x',     label: 'Across',    min: 0,  max: 100, def: 50, suffix: '%' },
-            { key: 'y',     label: 'Down',      min: 0,  max: 100, def: 18, suffix: '%' },
+            { key: 'y',     label: 'Down',      min: 0,  max: 100, def: 14, suffix: '%' },
             // DEFAULT 0 — off. A scrim is a dial the couple turns, not a value
             // we derive, and there is no automatic contrast rescue here.
             { key: 'scrim', label: 'Darken photo behind it', min: 0, max: 80, def: 0, suffix: '%' },
