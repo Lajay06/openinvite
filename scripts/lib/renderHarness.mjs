@@ -149,7 +149,15 @@ export const PUBLISHED_WEDDING = {
   musicContent: {},
   music: { playlists: [{ playlistUrl: 'https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M', enabled: true }], guestRequestsEnabled: true },
   ourStory: { headline: 'How we met', body: 'On a wet Tuesday in a bookshop.' },
+  // FIELD-NAME BUG, fixed: the seed wrote `faq` while WeddingFAQPage reads
+  // `qna`, so every pass over /faq measured the empty state and read it as
+  // clean. `faq` is kept alongside because nothing proves it is unread.
   faq: [{ question: 'Is there parking?', answer: 'Yes, behind the observatory.' }],
+  qna: [
+    { question: 'Is there parking?', answer: 'Yes, behind the observatory. The park gates close at 6pm.' },
+    { question: 'Can we bring children?', answer: 'Please do. There is a quiet room off the Long Room.' },
+    { question: 'What time should we arrive?', answer: 'Doors from 2:30pm. The ceremony starts at 3pm sharp.' },
+  ],
   // CONTENT-RICH ENOUGH TO MEASURE. These were empty objects, so the guest-page
   // sweeps rendered near-empty pages and read `overflow=0 cropped=0` as clean.
   // A card cannot be measured if no card renders — and the heading-conversion

@@ -8,12 +8,12 @@
 import React from 'react';
 import HairlineRule from './HairlineRule';
 
-export default function MinimalSectionMark({ kicker, theme, typography, textColor }) {
+export default function MinimalSectionMark({ kicker, theme, typography, textColor, as: Tag = 'p' }) {
   const color = textColor || theme.lightText;
   return (
     <div style={{ textAlign: 'center', marginBottom: 56 }}>
       {kicker && (
-        <p
+        <Tag className="wb-body-face"
           style={{
             fontFamily: typography.bodyFont,
             fontSize: 11,
@@ -26,7 +26,7 @@ export default function MinimalSectionMark({ kicker, theme, typography, textColo
           }}
         >
           {kicker}
-        </p>
+        </Tag>
       )}
       <HairlineRule color={color} opacity={0.22} width={40} style={{ margin: '0 auto' }} />
     </div>

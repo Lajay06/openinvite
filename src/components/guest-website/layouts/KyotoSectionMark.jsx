@@ -7,13 +7,13 @@
 import React from 'react';
 import EnsoRing from './EnsoRing';
 
-export default function KyotoSectionMark({ kicker, theme, typography, textColor }) {
+export default function KyotoSectionMark({ kicker, theme, typography, textColor, as: Tag = 'p' }) {
   const color = textColor || theme.lightText;
   return (
     <div style={{ textAlign: 'left', marginBottom: 64 }}>
       <EnsoRing color={color} opacity={0.5} size={22} style={{ marginBottom: 16 }} />
       {kicker && (
-        <p
+        <Tag className="wb-body-face"
           style={{
             fontFamily: typography.bodyFont,
             fontSize: 11,
@@ -26,7 +26,7 @@ export default function KyotoSectionMark({ kicker, theme, typography, textColor 
           }}
         >
           {kicker}
-        </p>
+        </Tag>
       )}
     </div>
   );

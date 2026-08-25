@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Minus } from 'lucide-react';
 import SectionReveal from '../SectionReveal';
+import GuestPageHeading from '../GuestPageHeading';
 import { isMotionEnabled } from '@/lib/universeStyling';
 
 export default function WeddingFAQPage({ weddingDetails, theme, typography, universeConfig }) {
@@ -12,17 +13,7 @@ export default function WeddingFAQPage({ weddingDetails, theme, typography, univ
     <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '60px 24px' }}>
       <div style={{ maxWidth: '700px', margin: '0 auto' }}>
         <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-          <h1
-            style={{
-              fontFamily: typography.headingFont,
-              fontSize: 'clamp(2rem, 5vw, 3rem)',
-              fontWeight: typography.headingWeight,
-              marginBottom: '60px',
-              textAlign: 'center'
-            }}
-          >
-            FAQ
-          </h1>
+          <GuestPageHeading title={"FAQ"} theme={theme} typography={typography} universeConfig={universeConfig} />
         </SectionReveal>
 
         {qna.length > 0 ? (
@@ -59,7 +50,10 @@ export default function WeddingFAQPage({ weddingDetails, theme, typography, univ
                   onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.accent}10`}
                   onMouseLeave={(e) => e.target.style.backgroundColor = theme.darkBg}
                 >
-                  <span>{item.question}</span>
+                  {/* A card title, and now marked as one — the pattern ruled
+                      and shipped in #552. It is also what keeps the universe's
+                      display face on this page once the serif title goes. */}
+                  <h2 style={{ font: 'inherit', margin: 0, fontWeight: 'inherit' }}>{item.question}</h2>
                   {openIndex === i ? (
                     <Minus size={20} style={{ color: theme.accent, flexShrink: 0 }} />
                   ) : (

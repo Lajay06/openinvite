@@ -7,13 +7,13 @@
 import React from 'react';
 import HairlineRule from './HairlineRule';
 
-export default function ParisSectionMark({ kicker, theme, typography, textColor }) {
+export default function ParisSectionMark({ kicker, theme, typography, textColor, as: Tag = 'p' }) {
   const color = textColor || theme.lightText;
   return (
     <div style={{ textAlign: 'center', marginBottom: 56 }}>
       <HairlineRule color={color} opacity={0.3} width="100%" thickness={1} style={{ marginBottom: 20 }} />
       {kicker && (
-        <p
+        <Tag className="wb-body-face"
           style={{
             fontFamily: typography.bodyFont,
             fontSize: 11,
@@ -26,7 +26,7 @@ export default function ParisSectionMark({ kicker, theme, typography, textColor 
           }}
         >
           {kicker}
-        </p>
+        </Tag>
       )}
     </div>
   );

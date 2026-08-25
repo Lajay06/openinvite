@@ -5,15 +5,15 @@
 import React from 'react';
 import SedonaContour from './SedonaContour';
 
-export default function SedonaSectionMark({ kicker, theme, typography, textColor, accentColor }) {
+export default function SedonaSectionMark({ kicker, theme, typography, textColor, accentColor, as: Tag = 'p' }) {
   const color = textColor || theme.lightText;
   const accent = accentColor || theme.accent;
   return (
     <div style={{ textAlign: 'left', marginBottom: 48 }}>
       {kicker && (
-        <p style={{ fontFamily: typography.bodyFont, fontSize: 13, fontWeight: 600, letterSpacing: '0.08em', color, opacity: 0.65, margin: '0 0 14px' }}>
+        <Tag className="wb-body-face" style={{ fontFamily: typography.bodyFont, fontSize: 13, fontWeight: 600, letterSpacing: '0.08em', color, opacity: 0.65, margin: '0 0 14px' }}>
           {kicker}
-        </p>
+        </Tag>
       )}
       <SedonaContour color={accent} opacity={0.5} width={120} height={26} />
     </div>

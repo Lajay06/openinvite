@@ -1,6 +1,7 @@
 import React from 'react';
 import { ExternalLink } from 'lucide-react';
 import SectionReveal from '../SectionReveal';
+import GuestPageHeading from '../GuestPageHeading';
 import { isMotionEnabled } from '@/lib/universeStyling';
 
 // Cash fund + registry public-site wiring (Option A — couples link their
@@ -126,17 +127,7 @@ export default function WeddingRegistryPage({ weddingDetails, theme, typography,
     <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '60px 24px' }}>
       <div style={{ maxWidth: '700px', margin: '0 auto' }}>
         <SectionReveal universeConfig={universeConfig} disabled={motionDisabled}>
-          <h1
-            style={{
-              fontFamily: typography.headingFont,
-              fontSize: 'clamp(2rem, 5vw, 3rem)',
-              fontWeight: typography.headingWeight,
-              marginBottom: '40px',
-              textAlign: 'center'
-            }}
-          >
-            Registry
-          </h1>
+          <GuestPageHeading title={"Registry"} theme={theme} typography={typography} universeConfig={universeConfig} />
         </SectionReveal>
 
         {content.noGiftsPlease ? (

@@ -1,5 +1,6 @@
 import React from 'react';
 import SectionReveal from '../SectionReveal';
+import GuestPageHeading from '../GuestPageHeading';
 import { isMotionEnabled } from '@/lib/universeStyling';
 import { parsePlaylistLink } from '@/lib/musicLinkParser';
 
@@ -30,17 +31,7 @@ export default function WeddingMusicPage({ weddingDetails, theme, typography, un
     <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '60px 24px' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
         <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-          <h1
-            style={{
-              fontFamily: typography.headingFont,
-              fontSize: 'clamp(2rem, 5vw, 3rem)',
-              fontWeight: typography.headingWeight,
-              marginBottom: '40px',
-              textAlign: 'center'
-            }}
-          >
-            Our Music
-          </h1>
+          <GuestPageHeading title={"Song requests"} theme={theme} typography={typography} universeConfig={universeConfig} />
         </SectionReveal>
 
         {content.customMessage && (

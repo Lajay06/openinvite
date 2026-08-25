@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { ChevronDown, ChevronUp, MessageCircle } from 'lucide-react';
 import SectionReveal from '../SectionReveal';
+import GuestPageHeading from '../GuestPageHeading';
 import { isMotionEnabled } from '@/lib/universeStyling';
 import { getCachedWeddingPassword } from '@/lib/guestSitePassword';
 
@@ -388,16 +389,7 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography, un
           }}>
             Guest polls
           </p>
-          <h1 style={{
-            fontSize: 'clamp(32px, 5vw, 52px)',
-            fontWeight: 700,
-            color: theme.darkText,
-            fontFamily: typography.headingFont || "'Plus Jakarta Sans', sans-serif",
-            margin: '0 0 12px',
-            lineHeight: 1.1,
-          }}>
-            Have your say.
-          </h1>
+          <GuestPageHeading title={"Guest polls"} theme={theme} typography={typography} universeConfig={universeConfig} />
           <p style={{
             fontSize: 15,
             color: `${theme.darkText}50`,

@@ -6,13 +6,13 @@
 import React from 'react';
 import LeafCurve from './LeafCurve';
 
-export default function BaliSectionMark({ kicker, theme, typography, textColor }) {
+export default function BaliSectionMark({ kicker, theme, typography, textColor, as: Tag = 'p' }) {
   const color = textColor || theme.lightText;
   return (
     <div style={{ textAlign: 'left', marginBottom: 48 }}>
       <LeafCurve color={color} opacity={0.55} size={26} style={{ marginBottom: 14 }} />
       {kicker && (
-        <p
+        <Tag className="wb-body-face"
           style={{
             fontFamily: typography.bodyFont,
             fontSize: 12,
@@ -24,7 +24,7 @@ export default function BaliSectionMark({ kicker, theme, typography, textColor }
           }}
         >
           {kicker}
-        </p>
+        </Tag>
       )}
     </div>
   );

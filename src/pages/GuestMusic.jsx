@@ -6,7 +6,8 @@ import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
 import { ChevronLeft, Music } from 'lucide-react';
 import { interactiveDivProps } from '@/lib/a11y';
 import { getCachedWeddingPassword } from '@/lib/guestSitePassword';
-import { resolveTypography } from '@/lib/universeStyling';
+import { resolveTypography, resolveUniverseConfig, resolveColors } from '@/lib/universeStyling';
+import GuestPageHeading from '@/components/guest-website/GuestPageHeading';
 import { loadFontFamilies, familiesFromGoogleSpec } from '@/lib/selfHostedFonts';
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
@@ -65,6 +66,8 @@ export default function GuestMusic() {
   // the couple's typography). Mapping preserves the hierarchy exactly:
   // display face -> headingFont, Plus Jakarta Sans -> bodyFont.
   const typography = resolveTypography(details);
+  const universeConfig = resolveUniverseConfig(details);
+  const theme = resolveColors(details);
 
   // A STANDALONE ROUTE MUST LOAD ITS OWN FACES. This page lives outside
   // MultiPageWeddingWebsite's tree, so nothing above it injects the universe's
@@ -193,9 +196,7 @@ export default function GuestMusic() {
         <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#1DB954', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
           <Music size={28} color="#000000" />
         </div>
-        <h1 style={{ fontFamily: typography.headingFont, fontWeight: 300, fontSize: 'clamp(32px, 8vw, 52px)', color: '#FFFFFF', margin: '0 0 16px', lineHeight: 1.1 }}>
-          Request a song
-        </h1>
+        <GuestPageHeading title={"Song requests"} theme={theme} typography={typography} universeConfig={universeConfig} textColor="#FFFFFF" />
         <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, maxWidth: 400, margin: '0 auto' }}>
           {music?.requestMessage || "Help us build the soundtrack to our night. Request a song you'd love to hear."}
         </p>
@@ -303,7 +304,7 @@ export default function GuestMusic() {
             >
               <img src={track.albumArt} alt={`${track.title} album art`} loading="lazy" style={{ width: 52, height: 52, objectFit: 'cover', flexShrink: 0 }} />
               <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF', margin: '0 0 4px' }}>{track.title}</p>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF', margin: '0 0 4px' }}>{track.title}</h3>
                 <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: 0 }}>{track.artist}</p>
               </div>
               <div style={{ width: 24, height: 24, borderRadius: '50%', border: `2px solid ${selectedTrack?.id === track.id ? '#1DB954' : 'rgba(255,255,255,0.2)'}`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
