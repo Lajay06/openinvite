@@ -39,6 +39,15 @@ export const SEED = {
     id: 'w1', partner1Name: 'Ada', partner2Name: 'Alan',
     weddingDate: iso(300), venueName: 'The Old Observatory',
     slug: 'ada-and-alan', guestCount: 41, created_by: 'fixture@example.com',
+    // A CUSTOM EVENT, because without one the per-event invite flow cannot be
+    // rendered at all: getWeddingEvents derives only Ceremony and Reception
+    // from the main record, both isMain, and every guest is already invited to
+    // those. The opt-in path this seeds — a custom event nobody is invited to
+    // yet — is the state the invite prompt exists to resolve.
+    preWeddingEvents: [
+      { id: 'welcome-drinks', name: 'Welcome drinks', date: iso(299).slice(0, 10),
+        startTime: '18:00', venueName: 'The Trafalgar Tavern' },
+    ],
   }],
   Guest: [
     { id:'g1', name:'Grace Hopper',   first_name:'Grace', last_name:'Hopper',   rsvp_status:'attending', attending:true,  table_id:'t1', invited:true, created_by:'fixture@example.com' },
@@ -317,7 +326,13 @@ export async function stubBackend(ctx, { seed = SEED, user = FIXTURE_USER, onEnt
     }
     // The owner endpoints the dashboard uses for decrypted reads.
     if (/\/api\/my-guests/.test(url))          return json({ guests: seed.Guest ?? [] });
-    if (/\/api\/my-wedding-details/.test(url)) return json({ details: (seed.WeddingDetails ?? [])[0] ?? null });
+    // THE RECORD DIRECTLY, not { details }. api/my-wedding-details.js ends in
+    // `res.status(200).json(decrypted)` and getMyWeddingDetails() returns
+    // `await res.json()` untouched — so the wrapper meant every dashboard pass
+    // read a shape with NO wedding fields on it: getWeddingEvents(wd) saw no
+    // events, wd.mealOptions/weddingParty/slug/id were all undefined. FOURTH
+    // stub-vs-reality mismatch of this class. Check the endpoint, not the name.
+    if (/\/api\/my-wedding-details/.test(url)) return json((seed.WeddingDetails ?? [])[0] ?? null);
     if (/\/api\/my-guest-links/.test(url))     return json({ links: [] });
     if (/\/api\/rates/.test(url))              return json({ result: 'success', rates: { USD: 1, AUD: 1.5 } });
     // The guest site's single source: without this every /w/ route sits on its
