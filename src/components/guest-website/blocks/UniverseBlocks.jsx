@@ -461,7 +461,7 @@ function TimelineBlock({ content, theme, typography, editable }) {
         <div key={i} style={{ display: 'flex', gap: 20, marginBottom: 24, paddingBottom: 24, borderBottom: i < items.length - 1 ? `1px solid ${theme.lightText}14` : 'none' }}>
           <div style={{ flexShrink: 0, minWidth: 80, fontFamily: typography.bodyFont, fontSize: 13, fontWeight: 600, color: theme.accent }}>{item.time}</div>
           <div>
-            <p style={{ ...headingStyle(typography, theme, { fontSize: 16, marginBottom: 4 }) }}>{item.title}</p>
+            <h2 style={{ margin: '0 0 4px', ...headingStyle(typography, theme, { fontSize: 16 }) }}>{item.title}</h2>
             {item.description && <p style={{ ...bodyStyle(typography, theme, { fontSize: 14 }) }}>{item.description}</p>}
           </div>
         </div>
@@ -486,7 +486,7 @@ function EventDetailsBlock({ theme, typography, weddingDetails, editable }) {
   const Row = ({ label, venue }) => venue.venueName ? (
     <div style={{ marginBottom: 16 }}>
       <p style={{ fontFamily: typography.bodyFont, fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', color: theme.accent, margin: '0 0 4px' }}>{label}</p>
-      <p style={{ ...headingStyle(typography, theme, { fontSize: 18 }) }}>{venue.venueName}</p>
+      <h2 style={{ margin: 0, ...headingStyle(typography, theme, { fontSize: 18 }) }}>{venue.venueName}</h2>
       {venue.startTime && <p style={{ ...bodyStyle(typography, theme, { fontSize: 14, margin: '2px 0 0' }) }}>{venue.startTime}</p>}
       {venue.address && <p style={{ ...bodyStyle(typography, theme, { fontSize: 13, margin: '2px 0 0', opacity: 0.7 }) }}>{venue.address}</p>}
     </div>
@@ -508,7 +508,7 @@ function FaqBlock({ content, theme, typography, editable }) {
     <div style={{ maxWidth: 640, margin: '0 auto' }}>
       {items.map((item, i) => (
         <div key={i} style={{ marginBottom: 20, paddingBottom: 20, borderBottom: i < items.length - 1 ? `1px solid ${theme.lightText}14` : 'none' }}>
-          <p style={{ ...headingStyle(typography, theme, { fontSize: 16, marginBottom: 6 }) }}>{item.question}</p>
+          <h2 style={{ margin: '0 0 6px', ...headingStyle(typography, theme, { fontSize: 16 }) }}>{item.question}</h2>
           <p style={{ ...bodyStyle(typography, theme, { fontSize: 14 }) }}>{item.answer}</p>
         </div>
       ))}
@@ -525,7 +525,7 @@ function PersonCard({ name, role, bio, photoUrl, theme, typography }) {
       ) : (
         <div style={{ width: 120, height: 120, borderRadius: '50%', background: `${theme.lightText}0d`, margin: '0 auto 16px' }} />
       )}
-      <p style={{ ...headingStyle(typography, theme, { fontSize: 18, marginBottom: 2 }) }}>{name}</p>
+      <h2 style={{ margin: '0 0 2px', ...headingStyle(typography, theme, { fontSize: 18 }) }}>{name}</h2>
       {role && <p style={{ fontFamily: typography.bodyFont, fontSize: 12, color: theme.accent, margin: '0 0 8px' }}>{role}</p>}
       {bio && <p style={{ ...bodyStyle(typography, theme, { fontSize: 13 }) }}>{bio}</p>}
     </div>

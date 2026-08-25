@@ -201,7 +201,7 @@ export default function WeddingRSVPPage({
           )}
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <p style={{ margin: '0 0 32px', fontSize: '1rem', fontFamily: typography.headingFont, lineHeight: 1.65 }}>
+            <p className="wb-display-face" style={{ margin: '0 0 32px', fontSize: '1rem', fontFamily: typography.headingFont, lineHeight: 1.65 }}>
               {copy.rsvpIntro || "Each guest responds using their own personal invite link. If you can't find yours, enter the email your invite was sent to and we'll send it straight to your inbox."}
             </p>
           </SectionReveal>
@@ -377,7 +377,7 @@ export default function WeddingRSVPPage({
           )}
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <p style={{ margin: '0 0 32px', fontSize: '1rem', fontFamily: typography.headingFont, lineHeight: 1.8 }}>
+            <p className="wb-display-face" style={{ margin: '0 0 32px', fontSize: '1rem', fontFamily: typography.headingFont, lineHeight: 1.8 }}>
               {copy.rsvpIntro || "Each guest responds using their own personal invite link. If you can't find yours, enter the email your invite was sent to and we'll send it straight to your inbox."}
             </p>
           </SectionReveal>
@@ -645,7 +645,7 @@ export default function WeddingRSVPPage({
           )}
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <p style={{ margin: '0 0 32px', fontSize: '1rem', fontFamily: typography.headingFont, lineHeight: 1.75 }}>
+            <p className="wb-display-face" style={{ margin: '0 0 32px', fontSize: '1rem', fontFamily: typography.headingFont, lineHeight: 1.75 }}>
               {copy.rsvpIntro || "Each guest responds using their own personal invite link. If you can't find yours, enter the email your invite was sent to and we'll send it straight to your inbox."}
             </p>
           </SectionReveal>
@@ -735,7 +735,7 @@ export default function WeddingRSVPPage({
           )}
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <p style={{ margin: '0 0 48px', fontSize: '1rem', fontFamily: typography.headingFont, fontStyle: 'italic', lineHeight: 1.7, opacity: 0.85 }}>
+            <p className="wb-display-face" style={{ margin: '0 0 48px', fontSize: '1rem', fontFamily: typography.headingFont, fontStyle: 'italic', lineHeight: 1.7, opacity: 0.85 }}>
               {copy.rsvpIntro || "Each guest responds using their own personal invite link. If you can't find yours, enter the email your invite was sent to and we'll send it straight to your inbox."}
             </p>
           </SectionReveal>

@@ -16,9 +16,9 @@ function CashFundCard({ fund, theme, typography, coupleNames }) {
       {fund.image_url && (
         <img src={fund.image_url} alt="" style={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: '4px' }} />
       )}
-      <p style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: '1.25rem', margin: 0 }}>
+      <h2 style={{ margin: 0, fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: '1.25rem', margin: 0 }}>
         {fund.title}
-      </p>
+      </h2>
       {fund.description && (
         <p style={{ fontFamily: typography.bodyFont, fontSize: '0.9rem', lineHeight: 1.6, opacity: 0.85, margin: 0 }}>
           {fund.description}
@@ -61,9 +61,9 @@ function WishlistCard({ product, theme, typography }) {
       {product.image_url && (
         <img src={product.image_url} alt="" style={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: '4px' }} />
       )}
-      <p style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: '1.25rem', margin: 0 }}>
+      <h2 style={{ margin: 0, fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: '1.25rem', margin: 0 }}>
         {product.name}
-      </p>
+      </h2>
       {product.description && (
         <p style={{ fontFamily: typography.bodyFont, fontSize: '0.9rem', lineHeight: 1.6, opacity: 0.85, margin: 0 }}>
           {product.description}

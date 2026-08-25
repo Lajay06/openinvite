@@ -70,6 +70,17 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
   font-family: var(--wb-heading-font, 'Plus Jakarta Sans', sans-serif) !important;
 }
 
+/* Some guest text is deliberately set in the display face and is NOT a
+   heading — the RSVP intro paragraph, which is the couple's own voice, and
+   the stay/story dates. Those declared the face inline and rendered the body
+   face, because `.wb-guest-root *` above beats an inline style.
+   This wins on SPECIFICITY, not on a louder !important: (0,2,0) against the
+   (0,1,0) of `.wb-guest-root *` — the same way the h1-h6 rule above already
+   does. No change to the global lock, and no arms race. */
+.wb-guest-root .wb-display-face {
+  font-family: var(--wb-heading-font, 'Plus Jakarta Sans', sans-serif) !important;
+}
+
 @layer base {
   :root {
     /* Editorial Monochrome System */
