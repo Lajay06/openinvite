@@ -201,7 +201,7 @@ jobs:
       # defaults to https://openinvite.com.au otherwise, which would test
       # whatever's already live instead of the change under review) and
       # points the marketing-routes smoke test at it.
-      - name: Marketing-routes + guest-font-effect (against this build)
+      - name: Marketing-routes + guest-font-effect + no-invalid-date (against this build)
         run: |
           npx vite preview --port 4173 --strictPort &
           SERVER_PID=$!
@@ -226,6 +226,15 @@ jobs:
           # declaration and did on three routes. Same server, no extra boot.
           if [ $TEST_EXIT -eq 0 ]; then
             CAPTURE_BASE_URL=http://localhost:4173 npm run test:guest-font-effect
+            TEST_EXIT=$?
+          fi
+          # Every guest of every wedding once saw "Invalid Date" as a day header
+          # on the celebration page, in all 20 universes, because the call sat
+          # inside a try/catch that could not fire — toLocaleDateString RETURNS
+          # "Invalid Date" rather than throwing. Source review read it as
+          # defended. Only a render shows the text a guest actually gets.
+          if [ $TEST_EXIT -eq 0 ]; then
+            CAPTURE_BASE_URL=http://localhost:4173 npm run test:guest-no-invalid-date
             TEST_EXIT=$?
           fi
           kill "$SERVER_PID" 2>/dev/null || true
