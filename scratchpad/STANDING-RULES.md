@@ -563,8 +563,20 @@ Every guard from here carries that line. `test-guest-font-effect.mjs` states
 its own three: a seed whose universe faces happen to BE the product face
 (guarded — the run aborts unless the expected faces differ from it), a page
 that renders nothing so there is nothing to be wrong (guarded — presence
-before properties), and a new route nobody adds to the list (NOT guarded, and
-said so).
+before properties), and a new route nobody adds to the list.
+
+**That third one was DECLARED first and then CLOSED**, which is the better
+ending. The advisor's push: a list a human must remember to update is the same
+shape as the five UI call sites that each minted their own token before #538
+replaced them with one write boundary. So the route list is now DERIVED from
+`src/App.jsx` and `WEDDING_PAGES`, and a derived route with no expected string
+FAILS THE RUN rather than being skipped — a route that exists is a route that
+is checked.
+
+Deriving it immediately surfaced drift nobody had noticed: the harness expected
+the in-site music page's "Song requests" on a path the router actually serves
+with the standalone `GuestMusic` ("Request a song"), and two routes had no
+entry at all. **Declaring a limit is honest; closing it finds things.**
 
 ---
 
