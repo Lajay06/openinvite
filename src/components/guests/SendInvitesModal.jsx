@@ -16,7 +16,15 @@ import { fetchGuestLinks } from '@/lib/guestLinks';
 
 const RSVP_BASE = `${window.location.origin}/rsvp/`;
 
-function buildRsvpUrl(token) { return RSVP_BASE + token; }
+// Belt to ensureTokens' braces. A falsy token concatenates to the string
+// "undefined" and yields a URL that resolves to "Invitation not found" — a
+// dead link, emailed, unrecallable. The caller must never reach here with one;
+// if it does, fail loudly rather than build it. handleSend's catch turns this
+// into a visible toast and nothing is sent.
+function buildRsvpUrl(token) {
+  if (!token) throw new Error('Refusing to build an RSVP link from an empty token.');
+  return RSVP_BASE + token;
+}
 
 function buildWhatsAppMessage(guest, coupleName, weddingDate, rsvpUrl) {
   const name = guest?.name ? guest.name.split(' ')[0] : 'there';
@@ -325,9 +333,18 @@ export default function SendInvitesModal({
   // key. The returned shape is deliberately unchanged — the same
   // rsvp_link_id / plus_one_rsvp_link_id fields, attached to the same guest
   // objects — so every downstream consumer below keeps working untouched.
+  //
+  // INVITE-URL-UNDEFINED: this used to swallow a failed fetch. fetchGuestLinks
+  // returned {} on any error and logged to console only; `if (!l) return g`
+  // then kept the guest's stripped, undefined rsvp_link_id (#539 removed the
+  // token columns from /api/my-guests), and every recipient was emailed
+  // ".../rsvp/undefined". An invitation cannot be unsent, so a partial or
+  // failed link fetch ABORTS the send: throwOnFailure:true throws on transport
+  // failure, and any guest still missing a link after a successful fetch is
+  // counted and named in the error. Nothing downstream constructs an email.
   const ensureTokens = async (list) => {
-    const linkMap = await fetchGuestLinks(list.map(g => g.id), { includePlusOne: true });
-    return list.map(g => {
+    const linkMap = await fetchGuestLinks(list.map(g => g.id), { includePlusOne: true, throwOnFailure: true });
+    const withTokens = list.map(g => {
       const l = linkMap[g.id];
       if (!l) return g;
       return {
@@ -336,6 +353,21 @@ export default function SendInvitesModal({
         ...(l.plusOneToken ? { plus_one_rsvp_link_id: l.plusOneToken } : {}),
       };
     });
+
+    // A plus-one with an email needs its OWN link; without one it is silently
+    // dropped from the recipient list further down, which is the same silent
+    // failure wearing different clothes. Counted here so it aborts too.
+    const missingPrimary = withTokens.filter(g => !g.rsvp_link_id);
+    const missingPlusOne = withTokens.filter(g => g.plus_one_email && !g.plus_one_rsvp_link_id);
+    const missing = missingPrimary.length + missingPlusOne.length;
+    if (missing > 0) {
+      const names = [...missingPrimary, ...missingPlusOne].slice(0, 3)
+        .map(g => g.name || 'a guest').join(', ');
+      throw new Error(
+        `${missing} invitation link${missing === 1 ? '' : 's'} could not be created (${names}${missing > 3 ? ', …' : ''}). Nothing was sent.`
+      );
+    }
+    return withTokens;
   };
 
   const handleSend = async () => {
