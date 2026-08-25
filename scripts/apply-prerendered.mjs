@@ -35,16 +35,12 @@ import { existsSync, readFileSync, writeFileSync, copyFileSync, mkdirSync, readd
 import { resolve, dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { extractCurrentEntryTags, rewriteAndVerify } from './lib/rewritePrerenderedAssets.mjs';
+import { buildGuestShell } from './lib/guestShell.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const DIST = resolve(ROOT, 'dist');
 const PRERENDERED = resolve(ROOT, 'prerendered');
-
-if (!existsSync(PRERENDERED)) {
-  console.log('[apply-prerendered] No prerendered/ directory found — nothing to apply. Run `npm run build:prerender` locally first to generate it.');
-  process.exit(0);
-}
 
 if (!existsSync(DIST)) {
   console.error('[apply-prerendered] dist/ not found — run `vite build` first.');
@@ -56,8 +52,22 @@ if (!existsSync(freshIndexPath)) {
   console.error('[apply-prerendered] dist/index.html not found — run `vite build` first.');
   process.exit(1);
 }
-const currentEntryTags = extractCurrentEntryTags(readFileSync(freshIndexPath, 'utf8'));
+const freshIndexHtml = readFileSync(freshIndexPath, 'utf8');
+const currentEntryTags = extractCurrentEntryTags(freshIndexHtml);
 console.log(`[apply-prerendered] Current build entry: ${currentEntryTags.scriptSrc} + ${currentEntryTags.styleHref}`);
+
+// The guest shell is written from THIS build's fresh index.html, BEFORE the
+// loop below overwrites dist/index.html with the prerendered marketing
+// homepage. vercel.json points /w/ and /rsvp/ at it, so guest routes stop
+// being served marketing HTML. Written before the prerendered/ early-exit
+// too — a build without snapshots must still serve guests a correct shell.
+writeFileSync(resolve(DIST, 'guest-shell.html'), buildGuestShell(freshIndexHtml));
+console.log('[apply-prerendered] ✓ dist/guest-shell.html written for /w/ and /rsvp/');
+
+if (!existsSync(PRERENDERED)) {
+  console.log('[apply-prerendered] No prerendered/ directory found — nothing else to apply. Run `npm run build:prerender` locally first to generate it.');
+  process.exit(0);
+}
 
 function walk(dir) {
   const out = [];
