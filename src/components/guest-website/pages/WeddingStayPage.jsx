@@ -1,6 +1,7 @@
 import React from 'react';
 import { MapPin, Star, ExternalLink, Hotel } from 'lucide-react';
 import SectionReveal from '../SectionReveal';
+import GuestPageTitle, { GuestPageKicker } from '../GuestPageTitle';
 import { isMotionEnabled } from '@/lib/universeStyling';
 
 export default function WeddingStayPage({ weddingDetails, theme, typography, universeConfig }) {
@@ -44,7 +45,9 @@ export default function WeddingStayPage({ weddingDetails, theme, typography, uni
 
         {/* Page title */}
         <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-          <h1 style={{ ...heading, fontSize: 'clamp(2rem,5vw,3.5rem)', textAlign: 'center', marginBottom: 16 }}>Where to stay</h1>
+          <GuestPageKicker text="Where to stay" theme={theme} typography={typography} />
+          <GuestPageTitle text="Where to stay" theme={theme} typography={typography}
+            style={{ fontSize: 'clamp(2rem,5vw,3.5rem)', textAlign: 'center', marginBottom: 16 }} />
         </SectionReveal>
 
         {accom.coupleNote && (

@@ -81,6 +81,15 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
   font-family: var(--wb-heading-font, 'Plus Jakarta Sans', sans-serif) !important;
 }
 
+/* The mirror of the rule above, and needed for the same reason in reverse: the
+   `.wb-guest-root h1-h6` rule forces the HEADING face on every heading element,
+   so a page title set deliberately in the body face — an all-caps sans title —
+   is impossible on an <h1> without this. Specificity again, not volume:
+   (0,2,0) beats the (0,1,1) of `.wb-guest-root h1`. */
+.wb-guest-root .wb-body-face {
+  font-family: var(--wb-body-font, 'Plus Jakarta Sans', sans-serif) !important;
+}
+
 @layer base {
   :root {
     /* Editorial Monochrome System */
