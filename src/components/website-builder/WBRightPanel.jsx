@@ -17,6 +17,7 @@ import { blockLabel } from '@/components/guest-website/blocks/blockTypes';
 import { TEXT_COLOR_OPTIONS, BACKGROUND_OPTIONS, SPACING_OPTIONS, JUSTIFY_CAPABLE_TYPES } from '@/components/guest-website/blocks/UniverseBlocks';
 import { interactiveDivProps } from '@/lib/a11y';
 import { loadFontFamilies, familiesFromGoogleSpec } from '@/lib/selfHostedFonts';
+import { flattenOver, readableInkOn, contrastRatio } from '@/lib/surfaceTint';
 
 // Background music: writing surface HIDDEN (owner decision, video-sound batch).
 // guestExperienceSettings.backgroundMusic had two sources: 'curated' (the mood
@@ -715,6 +716,42 @@ function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
     </div>
   );
 
+  // WARN, NEVER BLOCK — it is their wedding. With no text colour chosen the ink
+  // is picked automatically to clear 4.5:1, so this can only fire on a
+  // deliberate override. It names the measured ratio rather than saying
+  // "poor contrast", because a number is actionable and an adjective is not.
+  const contrastWarning = (() => {
+    if (!style.background || style.background === 'none') return null;
+    if (!style.textColor) return null;                    // auto-picked, always passes
+    const t = theme || {};
+    const isHex = /^#[0-9a-fA-F]{6}$/.test(style.background);
+    const bgOpt = BACKGROUND_OPTIONS.find(o => o.value === style.background);
+    const txOpt = TEXT_COLOR_OPTIONS.find(o => o.value === style.textColor);
+    if ((!bgOpt && !isHex) || !txOpt) return null;
+    const rawBg = isHex ? style.background : bgOpt.resolve(t);
+    const ground = t.lightBg || '#FFFFFF';
+    const solid = flattenOver(rawBg, ground);
+    const ink = flattenOver(txOpt.resolve(t), solid);
+    const ratio = contrastRatio(ink, solid);
+    if (ratio >= 4.5) return null;
+    const auto = readableInkOn(rawBg, t, ground);
+    return (
+      <div style={{
+        display: 'flex', gap: 8, alignItems: 'flex-start',
+        padding: '10px 12px', marginBottom: 14,
+        background: 'rgba(224,53,83,0.10)', border: '1px solid rgba(224,53,83,0.35)',
+        fontSize: 12, lineHeight: 1.5, color: 'rgba(255,255,255,0.88)',
+      }}>
+        <span aria-hidden="true" style={{ fontWeight: 700 }}>&#9650;</span>
+        <span>
+          This text sits at <strong>{ratio.toFixed(1)}:1</strong> on this background.
+          Guests may struggle to read it below 4.5:1.
+          {auto.passes && <> Clearing the text colour uses one at {auto.ratio.toFixed(1)}:1.</>}
+        </span>
+      </div>
+    );
+  })();
+
   const colorSwatchGrid = (options, activeValue, key) => (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6, marginBottom: 14 }}>
       {options.map(opt => {
@@ -729,7 +766,15 @@ function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
         // only the 3 accent-* swatches happened to resolve at all, since
         // universeTheme.accent (not .lightText/.accentSecondary) is one of
         // the few fields it does carry over.
-        const hex = opt.resolve(theme || {});
+        // COMPOSITE OVER THE PAGE GROUND, not this panel's dark surface.
+        // The tints carry alpha, and the same token over two different grounds
+        // reads as two different colours: `#2B21181a` composites to near-black
+        // over the panel and to a barely-there cream over the site. The swatch
+        // was telling the couple a truth about the panel and a lie about their
+        // wedding. A preview must composite over the ground of the thing it
+        // previews.
+        const raw = opt.resolve(theme || {});
+        const hex = raw ? flattenOver(raw, (theme && theme.lightBg) || '#FFFFFF') : raw;
         return (
           <button
             key={opt.value}
@@ -759,6 +804,30 @@ function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
 
           <FLabel>Background</FLabel>
           {colorSwatchGrid(BACKGROUND_OPTIONS, style.background, 'background')}
+          {/* THE ESCAPE HATCH, alongside the swatches rather than instead of
+              them: the swatches stay the fast path. Text colour adapts to
+              whatever is picked, so an arbitrary background still reads. */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+            <input
+              type="color"
+              aria-label="Custom background colour"
+              value={/^#[0-9a-fA-F]{6}$/.test(style.background || '') ? style.background : ((theme && theme.lightBg) || '#FFFFFF')}
+              onChange={e => updateStyle('background', e.target.value)}
+              style={{ width: 34, height: 34, padding: 0, border: '1px solid rgba(255,255,255,0.15)', background: 'none', cursor: 'pointer' }}
+            />
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>
+              {/^#[0-9a-fA-F]{6}$/.test(style.background || '')
+                ? <>Custom <code>{style.background}</code></>
+                : 'Or pick any colour'}
+            </span>
+            {/^#[0-9a-fA-F]{6}$/.test(style.background || '') && (
+              <button
+                onClick={() => updateStyle('background', undefined)}
+                style={{ marginLeft: 'auto', fontSize: 12, color: 'rgba(255,255,255,0.7)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+              >Clear</button>
+            )}
+          </div>
+          {contrastWarning}
         </>
       )}
 
