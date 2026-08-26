@@ -28,6 +28,18 @@ without looking, so assume there are others until they are counted.
 - Weight by whether a human pressed something: a background refetch failing
   silently is untidy; a toggle a couple pressed failing silently is the defect.
 
+**WIDENED: a surface that LIES about success belongs in this sweep too.** The
+studio displayed "✓ Saved" over an address it had never written — the response
+was checked and truthful, but the payload no longer carried the field the
+couple had just edited. So the sweep has two shapes, not one:
+
+- a mutation that fails and says nothing;
+- a save that succeeds while excluding what the user changed, and reports
+  success anyway.
+
+The second is nastier, because every naive check passes. Look for fields edited
+into local state whose persistence path filters them out.
+
 Related: the positive form of the silence rule — *tell them before they try,
 not only after they fail*. The `Music` banner does the work; the error message
 is the safety net for someone who acts anyway.
