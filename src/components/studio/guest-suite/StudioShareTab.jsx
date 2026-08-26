@@ -132,10 +132,16 @@ export default function StudioShareTab({ details: propDetails }) {
     }
     const r = await claimSlug(detailsId, slug);
     if (!r.ok) {
+      // REVERT THE FIELD. Without this the input keeps displaying the address
+      // the couple typed while the toast fades, so the screen goes on saying
+      // the change happened — the same lie the studio told with '✓ Saved',
+      // in a quieter voice. The old value is what is true.
+      setSlugInput(details?.slug || '');
       toast.error(r.suggestion ? `${r.message} ${r.suggestion} is free, or pick another name.` : r.message);
       return;
     }
     setDetails(prev => ({ ...prev, slug: r.slug }));
+    setSlugInput(r.slug);
     toast.success('URL saved!');
   };
 

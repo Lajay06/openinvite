@@ -11,6 +11,39 @@ on renders** before the merge request.
 
 ---
 
+## WAVE 4 — remove Share from the website builder's top bar
+
+**Owner-ruled. Do not build before Wave 4.**
+
+Owner: there is a Publish and a Share, it is confusing, and the page Share
+opens is weird.
+
+**The principle: PUBLISH IS A STATE CHANGE; SHARING IS WHAT HAPPENS
+AFTERWARDS, SOMEWHERE ELSE.** A button in builder chrome is for something done
+repeatedly while building. Sharing is done once, later, from the Guest Suite —
+which already has a proper home for it with the links, the QR code and the
+email tools.
+
+- **Publish stays** in the builder.
+- **Share leaves the chrome entirely.**
+- The route to sharing is offered as the **next step after a successful
+  publish**, not as a permanent competitor to it.
+
+### And the duplication to resolve while in there
+
+The address editor exists in **two** homes: the builder's publish modal and the
+Guest Suite share page. Same field, twice.
+
+**That duplication is why the claim adoption had to touch as many surfaces as
+it did** — and both copies had to be fixed separately when a failed claim left
+the typed value on screen. The second was missed on the first pass.
+
+> **The fewer places a thing can be changed, the fewer places can be wrong.**
+
+Propose ONE home for the address when Wave 4 comes round.
+
+---
+
 ## MUTATION-SILENCE-SWEEP — mutations with onSuccess and no onError
 
 **Report first, then fix as its own small branch. Not urgent, not now.**
