@@ -188,14 +188,14 @@ export default function PublishModal({ onClose, details, onUpdate }) {
                   product. Their words, and it offers them something. */}
               {slugError && (
                 <p style={{ fontSize: 12, lineHeight: 1.5, color: '#E03553', margin: '8px 0 0' }}>
-                  {slugError.message}
+                  {slugError.suggestion ? `${slugError.message} ${slugError.suggestion} is free, or pick another name.` : slugError.message}
                   {slugError.suggestion && (
                     <>{' '}
                       <button
                         type="button"
                         onClick={() => { setSlugInput(slugError.suggestion); setSlugError(null); }}
                         style={{ color: '#E03553', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textDecoration: 'underline', font: 'inherit' }}
-                      >Use {slugError.suggestion}</button>
+                      >Use it</button>
                     </>
                   )}
                 </p>
