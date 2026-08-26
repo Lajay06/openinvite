@@ -192,8 +192,23 @@ export default function MusicPage() {
   const updateMutation = useMutation({
     mutationFn: async (updates) => {
       const current = details || {};
-      if (current.id) await base44.entities.WeddingDetails.update(current.id, updates);
-      else await base44.entities.WeddingDetails.create({ ...updates, slug: 'temp' });
+      // REFUSES RATHER THAN INVENTS. This used to
+      // `create({ ...updates, slug: 'temp' })` — minting a WeddingDetails the
+      // couple never named, as a side effect of toggling a music switch, and
+      // giving every such record the SAME address.
+      //
+      // Reachability, checked before deleting it: /Music sits behind
+      // ProtectedRoute, which verifies authentication and nothing else, and
+      // this page tolerates a missing record throughout via `details?.`. So a
+      // signed-up user who never completed onboarding can reach it. That is a
+      // state that should not exist, and the honest response is to say so
+      // rather than to fabricate a wedding to hang the setting on.
+      if (!current.id) {
+        throw new Error('No wedding record to save music settings against. ' +
+          'Reached /Music without an onboarded wedding — the record is created by ' +
+          'onboarding, never here.');
+      }
+      await base44.entities.WeddingDetails.update(current.id, updates);
     },
     onSuccess: () => queryClient.invalidateQueries(['musicDetails']),
   });
