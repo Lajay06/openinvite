@@ -1248,6 +1248,35 @@ shipped.
 
 ---
 
+## The admin key can READ and can never WRITE
+
+`BASE44_ADMIN_KEY` is evaluated against each entity's own RLS with **no session
+identity of its own**. So:
+
+- `read` returns `200` with rows **silently filtered**
+- `update` returns a flat **`403 Permission denied`**
+
+**Every production data change therefore goes through one of exactly two
+routes:**
+
+1. **an authenticated OWNER path** — the couple, or someone signed in as the
+   account that owns the record, acting through the product;
+2. **a deliberate SCHEMA/RLS change** — the advisor's call, and it widens a
+   permanent security boundary.
+
+**There is no third option, and any plan that assumes one is already wrong.**
+This governs planning, not just scripting: a cleanup, migration or backfill
+designed around "the admin key will fix the rows" is unbuildable before a line
+is typed. Establish the route first.
+
+Learned by writing a cleanup script that verified four preconditions perfectly
+and then took a `403` on the single authorised write. The constraint was
+already in `BASE44_PLATFORM_NOTES.md`, written before that script existed — so
+it is recorded here too, where a PLAN is written rather than where a script is
+run.
+
+---
+
 ## An address is claimed, not stored
 
 `StudioWebsite` autosaves every two seconds, and `slug` was in its payload — so
