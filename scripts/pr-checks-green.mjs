@@ -93,7 +93,12 @@ export function evaluate(rows, maySkip = MAY_SKIP, mustBePresent = MUST_BE_PRESE
   if (missing.length) {
     return { ok: false, mode: 'missing', lines: [
       `CHECK MISSING ENTIRELY: ${missing.join(', ')}`,
-      'A workflow that never ran reports nothing. Absence is not success.'] };
+      'A workflow that never ran reports nothing, and a gate that only inspects',
+      'the rows it was handed calls that green. Absence is not success.',
+      '',
+      'MEASURED: GitHub can take 5+ minutes to CREATE a run — during that window',
+      'the check is absent rather than PENDING, and this is what you see. Refusing',
+      'is still correct; wait and re-run before hunting for a broken workflow.'] };
   }
 
   const failing = rows.filter(r => !NOT_RUN.includes(r.state) && r.state !== 'SUCCESS');

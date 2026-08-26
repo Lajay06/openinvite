@@ -272,10 +272,3 @@ jobs:
           fi
           kill "$SERVER_PID" 2>/dev/null || true
           exit $TEST_EXIT
-
-  gate-skip-probe:
-    name: gate-skip-probe
-    runs-on: ubuntu-latest
-    if: ${{ false }}
-    steps:
-      - run: echo "never runs"
