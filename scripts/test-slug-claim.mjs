@@ -103,6 +103,26 @@ console.log(`  ${ok2 ? '✅' : '❌'} a number only once the year is gone ${s2}`
 // NOT "all clear". Every assertion passes and the job is one-sixth done; a
 // summary that says "all clear" is honest about the tests and misleading about
 // the state. It reports what is true of the WORK, not only of the checks.
+// THE TWO RULES THAT MATTER MOST IN api/claim-slug.js.
+const claim = readFileSync('api/claim-slug.js', 'utf8');
+
+// 1. the write uses the CALLER's token, never the admin key. The endpoint
+//    shipped writing with the admin key and never once succeeded.
+const writesWithAdmin = /method: 'PUT'[\s\S]{0,200}BASE44_ADMIN_KEY/.test(claim);
+if (writesWithAdmin) { console.log('  ❌ a PUT uses BASE44_ADMIN_KEY — owner-scoped RLS makes that a flat 403'); bad++; }
+else console.log('  ✅ the write uses the caller\'s own token');
+
+// 2. NO ADMIN FALLBACK. Falling back when the caller's token is absent would
+//    bypass the RLS that stops a caller claiming a record they do not own.
+const hasFallback = /callerToken\s*\|\|\s*BASE44_ADMIN_KEY|\?\s*callerToken\s*:\s*BASE44_ADMIN_KEY/.test(claim);
+if (hasFallback) { console.log('  ❌ the write falls back to the admin key when a token is absent'); bad++; }
+else console.log('  ✅ no admin fallback — no token means refuse, never escalate');
+
+// 3. taken and save-failed are different messages
+const distinct = /'save-failed'/.test(claim) && /That address is taken/.test(claim);
+if (!distinct) { console.log('  ❌ a collision and a save failure are not distinguishable'); bad++; }
+else console.log('  ✅ a collision and a save failure say different things');
+
 console.log(bad
   ? `\n  ${bad} FAILING\n`
   : `\n  every wedding address is claimed through one server path\n`);

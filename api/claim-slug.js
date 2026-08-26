@@ -62,16 +62,50 @@ async function adminGet(path) {
   return unwrapList(await res.json());
 }
 
-async function adminPatch(id, body) {
+/**
+ * THE WRITE USES THE CALLER'S OWN TOKEN, NEVER THE ADMIN KEY.
+ *
+ * WeddingDetails.update is owner-scoped, and BASE44_ADMIN_KEY has no session
+ * identity matching {{user.id}} — so an admin write is a flat 403. This
+ * endpoint shipped writing with the admin key and therefore NEVER ONCE
+ * SUCCEEDED: verified in the production logs, both from a script and from the
+ * owner's own attempt through the publish modal.
+ *
+ * PRIOR ART: api/my-wedding-details.js already does exactly this, on this same
+ * entity, with a `callerFetch` helper and a header explaining why. The pattern
+ * was solved before this file existed.
+ *
+ * THE TOKEN IS NEVER LOGGED, NEVER PERSISTED, AND GOES NOWHERE BUT BASE44.
+ *
+ * AND THERE IS NO ADMIN FALLBACK. If the caller's token is absent this refuses.
+ * Falling back to the admin key would be the most dangerous line in the file:
+ * Base44's own RLS is what stops a caller claiming on a record they do not own,
+ * and an admin write would bypass exactly that. NO TOKEN MEANS REFUSE, never
+ * escalate.
+ */
+async function callerPut(id, body, callerToken) {
+  if (!callerToken) throw new Error('no caller token — refusing to write');
   const res = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/WeddingDetails/${id}`, {
     method: 'PUT',
-    headers: { Authorization: `Bearer ${BASE44_ADMIN_KEY}`, 'Content-Type': 'application/json' },
+    headers: { Authorization: `Bearer ${callerToken}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`Base44 PUT WeddingDetails/${id} failed (${res.status})`);
   return res.json();
 }
 
+/**
+ * READS STAY ON THE ADMIN KEY, and this is not an oversight.
+ *
+ * The caller's token would return only rows THEY own — Base44 filters
+ * owner-scoped reads silently, with a 200 and a short list. Ambiguity
+ * detection depends on seeing OTHER couples' records, so a caller-token read
+ * would report "nobody holds this address" for every address held by someone
+ * else, and the endpoint would hand out addresses that are already taken.
+ *
+ * Mixed credentials, on purpose, exactly as api/my-wedding-details.js does:
+ * admin to SEE, the caller to ACT.
+ */
 const holdersOf = (slug) =>
   adminGet(`/apps/${BASE44_APP_ID}/entities/WeddingDetails?q=${encodeURIComponent(JSON.stringify({ slug }))}`)
     .then(rows => rows.filter(w => w && w.slug === slug && !w.is_test));
@@ -119,6 +153,12 @@ export default async function handler(req, res) {
   const caller = await verifyBase44User(req);
   if (!caller) return res.status(401).json({ error: 'Unauthorized' });
 
+  // Held for the WRITE only. Reads stay on the admin key deliberately — see
+  // holdersOf below.
+  const auth = req.headers.authorization || '';
+  const callerToken = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  if (!callerToken) return res.status(401).json({ error: 'Unauthorized' });
+
   const { weddingId, slug: requested } = req.body || {};
   const slug = canonicalSlug(requested);
 
@@ -149,7 +189,7 @@ export default async function handler(req, res) {
         suggestion: suggestSlug(slug, takenSet, mine.weddingDate) || null });
     }
 
-    await adminPatch(weddingId, { slug });
+    await callerPut(weddingId, { slug }, callerToken);
 
     // VERIFY AFTER WRITE. One holder is success. More than one means a race
     // already happened, and the pre-check above told us nothing.
@@ -180,13 +220,23 @@ export default async function handler(req, res) {
         message: 'That address is already in use and your invitations have gone out. Contact us and we will sort it.' });
     }
 
-    await adminPatch(weddingId, { slug: '' });
+    await callerPut(weddingId, { slug: '' }, callerToken);
     const takenSet = new Set((await adminGet(
       `/apps/${BASE44_APP_ID}/entities/WeddingDetails`)).map(w => canonicalSlug(w.slug)).filter(Boolean));
     return res.status(409).json({ error: 'taken', message: 'That address is taken.',
       suggestion: suggestSlug(slug, takenSet, mine.weddingDate) || null });
   } catch (err) {
-    console.error('[claim-slug] error:', err.message);
-    return res.status(500).json({ error: 'server', message: 'Something went wrong — please try again.' });
+    // A SAVE FAILURE IS NOT A COLLISION, and a couple mid-edit must be able to
+    // tell them apart. 'Something went wrong' was what the owner actually saw
+    // when the write 403'd — the generic failure this product has spent a day
+    // eliminating, produced by the very backstop whose job was to speak.
+    //
+    // The second sentence is the thing they most need to hear mid-edit: their
+    // wedding is intact, and only this one action failed.
+    console.error('[claim-slug] write failed:', err.message);
+    return res.status(500).json({
+      error: 'save-failed',
+      message: 'We couldn\'t save that address just now. Nothing else has changed — please try again.',
+    });
   }
 }

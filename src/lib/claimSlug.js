@@ -28,7 +28,11 @@ export async function claimSlug(weddingId, slug) {
     // Their words, never ours about the system. A couple typing the name they
     // wanted and being told "no" is a small heartbreak in a product about
     // their wedding, so the refusal offers them something.
-    message: body.message || 'Something went wrong — please try again.',
+    // NOT a generic fallback. The endpoint distinguishes 'taken' from
+    // 'save-failed' and this must not collapse them back together — a couple
+    // mid-edit needs to know whether their address is gone or their save is.
+    message: body.message
+      || 'We couldn\'t save that address just now. Nothing else has changed — please try again.',
     suggestion: body.suggestion || null,
   };
 }
