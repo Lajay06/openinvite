@@ -18,18 +18,27 @@
  *   · Any edit to the three named files.
  *   · Any NEW file under api/webhooks/ — that directory holds stripe.js and
  *     nothing else, so a new file there is a new webhook.
- *   · DELETION or RENAME of a named file: a rename shows as a delete of the
- *     old path, which is a diff against a frozen path.
+ *   · DELETION or RENAME of a named file — but ONLY because this runs
+ *     `git diff --no-renames`. THIS LINE PREVIOUSLY CLAIMED RENAMES WERE
+ *     CAUGHT AND THE CLAIM WAS FALSE IN THE SHIPPED GUARD: the fix was written,
+ *     lost to a bad `git reset`, and the header shipped asserting a hole was
+ *     closed while the code left it open. Measured both ways.
  *
  * NOT CAUGHT, stated plainly rather than implied away:
- *   · A CHANGE REACHING PAYMENTS THROUGH A HELPER. The three import
- *     _lib/planGift.js, _lib/giftAuth.js, _lib/security.js,
- *     _lib/base44Admin.js and three emails/*.js modules. Editing planGift.js
- *     changes payment behaviour without touching a frozen path. THIS IS THE
- *     BIGGEST HOLE. Widening the freeze to the transitive closure would drag
- *     in base44Admin.js and security.js, which most of the API depends on, and
- *     a freeze that blocks ordinary work gets overridden habitually — which is
- *     worse than a narrow one.
+ *   · THE REMAINING HELPER EXPOSURE, named rather than implied away.
+ *     planGift.js and giftAuth.js ARE frozen (2 importers each). Still NOT:
+ *       _lib/security.js       — 47 api files import it
+ *       _lib/base44Admin.js    —  7 api files import it
+ *       emails/purchase-confirmation.js
+ *       emails/gift-receipt.js
+ *       emails/gift-reveal.js
+ *     THE EMAILS ARE NAMED DELIBERATELY. A payer's experience is shaped by
+ *     what arrives in their inbox as much as by what the webhook does: a
+ *     mis-addressed receipt or a broken reveal is a payments failure the payer
+ *     SEES, and none of the three are frozen.
+ *     Infrastructure stays out on purpose — freezing security.js would refuse
+ *     ordinary work daily and make the override a reflex, training the habit
+ *     the guard exists to prevent.
  *   · Stripe configuration outside the repo: keys, webhook endpoints, product
  *     and price objects in the Stripe dashboard.
  *   · A PUSH THAT NEVER RUNS THIS. A pre-push hook is LOCAL. It does not run
@@ -66,12 +75,17 @@ const CI = process.argv.includes('--ci');
 const base = process.argv.slice(2).find(a => !a.startsWith('-')) || 'origin/main';
 let changed = [];
 try {
-  const range = execSync(`git diff --name-only ${base}...HEAD`, { encoding: 'utf8' });
+  // --no-renames ON PURPOSE. With git's rename detection ON, moving a frozen
+  // file reports only the NEW path, so the frozen path never appears in the
+  // diff and the rename sails through. Measured on the merged guard: renaming
+  // create-checkout-session.js returned exit 0. Without detection the same
+  // change reports a DELETE of the frozen path, which is refused.
+  const range = execSync(`git diff --no-renames --name-only ${base}...HEAD`, { encoding: 'utf8' });
   changed = range.split('\n').map(s => s.trim()).filter(Boolean);
 } catch {
   // No upstream to compare against (a first push, a detached head). Fall back
   // to the working tree rather than silently passing.
-  changed = execSync('git diff --name-only HEAD', { encoding: 'utf8' })
+  changed = execSync('git diff --no-renames --name-only HEAD', { encoding: 'utf8' })
     .split('\n').map(s => s.trim()).filter(Boolean);
 }
 
