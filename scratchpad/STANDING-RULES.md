@@ -1070,6 +1070,14 @@ same PR that named it**.
 Writing a rule down is not applying it. The record of a trap is a prompt to
 re-measure, not a certificate that you avoided it.
 
+**The nav that buried the thing it meant to feature.** A comment explained the
+RSVP link was pulled from page order and appended LAST so it would read as an
+action rather than "just another page sitting fourth in a list of eight". The
+nav then took its visible set with `slice(0, MAX_VISIBLE_LINKS)` — so
+appended-last was exactly what the overflow ate first, and the reply sat two
+taps deep on any site with more than five pages. The comment stated the intent;
+the slice was the mechanism; **the mechanism wins.**
+
 ---
 
 ## A try/catch does not guard a function that returns an error VALUE
@@ -1099,6 +1107,58 @@ and had been invisible to every render pass, because nobody had thought to
 measure a line that "obviously" kept its styling.
 
 Neither method alone was sufficient. The sweep proposes; the render disposes.
+
+---
+
+## Canon lands on main, or it is not canon
+
+Rules were written up, committed and pushed — onto the FEATURE BRANCH that
+discovered them. They believed themselves recorded. Nobody could read them, and
+had that branch been abandoned they would have gone with it. It happened twice
+in one session, and the second time the recovery attempt overwrote main's copy
+and lost four other rules until it was checked.
+
+A rule on an unmerged branch is not a rule. **Write canon to main directly,
+never on the branch that produced it.**
+
+---
+
+## A visual defect can only be caught by LOOKING
+
+The monogram overlay's first render reported `263 chars, non-blank` and passed
+every automated check. Opening the image showed the mark sitting directly on
+top of the couple's own names.
+
+A render sheet that is GENERATED AND NOT VIEWED is not a verification step. A
+character count proves something rendered; it cannot prove the thing rendered
+is not on top of another thing. Nothing in the pipeline was going to catch it,
+because nothing in the pipeline has eyes.
+
+Open the frames. Especially the one about to go to the owner.
+
+**Example 2 — two green gates certified a page that could not render.** A JSX
+comment written `{{/* … */}}` is an object literal containing a comment, so
+React threw #31, "objects are not valid as a React child". **eslint reported
+zero errors and Vite built it successfully**, because neither evaluates JSX
+children. The page rendered its error boundary and nothing else. A build that
+passes is not a page that works.
+
+---
+
+## A default is the one position that has to be right without anyone touching it
+
+Having found the collision, the fix was measured on ONE hero layout and set to
+18%. There are twenty arrangements, and the vertical start of the hero text is
+exactly what varies between them: 254px on amalfi-citrus, 552px on
+brooklyn-offgrid, at the same 390 width.
+
+18% cleared all twenty — by 11px on the tightest. 14% clears by 45px.
+
+Both are "correct"; only one is right. A couple CAN move the mark, but a
+default is what most of them will ship, so it carries a burden the other
+positions do not. And the first measurement was of a single instance of a shape
+that has twenty — the same error as comparing a per-layout branch against one
+universe's kicker.
 
 ---
 
