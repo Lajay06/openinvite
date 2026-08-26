@@ -1055,6 +1055,14 @@ iterating per-layout branches will silently compare across the diagonal. The
 answer looks specific and is arbitrary — it is whichever universe happened to
 be the default.
 
+**Twice more, in the instrument built to close this very hole.** Sweeping the
+home page across all twenty universes, the sweep first reused **london's
+kicker** as the expected string for the other nineteen — each waited out a
+30-second timeout, a ten-minute run that proved nothing. Corrected, it then
+asserted **london's two typefaces** against nineteen universes' own faces and
+failed them all for being correct. The rule was already written down, and was
+broken twice in one sitting while building the fix for it.
+
 ---
 
 ## Documenting a trap does not immunize you from it
@@ -1069,6 +1077,14 @@ same PR that named it**.
 
 Writing a rule down is not applying it. The record of a trap is a prompt to
 re-measure, not a certificate that you avoided it.
+
+**The nav that buried the thing it meant to feature.** A comment explained the
+RSVP link was pulled from page order and appended LAST so it would read as an
+action rather than "just another page sitting fourth in a list of eight". The
+nav then took its visible set with `slice(0, MAX_VISIBLE_LINKS)` — so
+appended-last was exactly what the overflow ate first, and the reply sat two
+taps deep on any site with more than five pages. The comment stated the intent;
+the slice was the mechanism; **the mechanism wins.**
 
 ---
 
@@ -1099,6 +1115,99 @@ and had been invisible to every render pass, because nobody had thought to
 measure a line that "obviously" kept its styling.
 
 Neither method alone was sufficient. The sweep proposes; the render disposes.
+
+---
+
+## Coverage is the PRODUCT OF ITS AXES, not the length of its list
+
+`GUEST_ROUTE_EXPECT` enumerated **15 guest routes**, derived from the router so
+a new route could not be added without one. It looked complete, and along the
+route axis it was.
+
+`WeddingHomePage` branches **20 ways** on `universeConfig.layout`.
+
+So the guard covered **15 of 300 cells** while wearing the appearance of
+totality — and nothing in the list could tell you what was missing, because the
+missing thing was not a list item. It was a DIMENSION. A derived, exhaustive,
+fails-closed enumeration along one axis says nothing at all about the others.
+
+**Before trusting any enumeration, ask what ELSE the thing under test varies
+by.** Routes × universes. Widths × themes. Locales × plan tiers.
+
+**And it was caught by luck, which is the part worth remembering.** The defect
+that exposed it broke all ten hero strips at once, so london's was among them
+and the guard fired. Break a branch london does not render and the same guard
+certifies 15/15 in silence. Measured, all three cases. The guard did not catch
+that defect — it caught a defect that happened to contain one it could see.
+That is luck with a passing exit code, and it is exactly what the
+perfect-score rule warns about.
+
+---
+
+## A guard must distinguish its FAILURE MODES, not just pass and fail
+
+`PRESENCE FAILED (expected "AN INVITATION")` on a page that had thrown sent the
+diagnosis toward the copy, the seed and the expected string — anywhere but the
+exception. The page was not missing text; it was rendering an error boundary.
+
+**A guard reporting the wrong failure mode costs more than a missing guard**,
+because it buys a wrong direction with the authority of a measurement. The
+guard now asks the page whether it threw and says so.
+
+Ask of every guard we own: what does it say when the page is BROKEN, rather
+than merely wrong?
+
+---
+
+## Canon lands on main, or it is not canon
+
+Rules were written up, committed and pushed — onto the FEATURE BRANCH that
+discovered them. They believed themselves recorded. Nobody could read them, and
+had that branch been abandoned they would have gone with it. It happened twice
+in one session, and the second time the recovery attempt overwrote main's copy
+and lost four other rules until it was checked.
+
+A rule on an unmerged branch is not a rule. **Write canon to main directly,
+never on the branch that produced it.**
+
+---
+
+## A visual defect can only be caught by LOOKING
+
+The monogram overlay's first render reported `263 chars, non-blank` and passed
+every automated check. Opening the image showed the mark sitting directly on
+top of the couple's own names.
+
+A render sheet that is GENERATED AND NOT VIEWED is not a verification step. A
+character count proves something rendered; it cannot prove the thing rendered
+is not on top of another thing. Nothing in the pipeline was going to catch it,
+because nothing in the pipeline has eyes.
+
+Open the frames. Especially the one about to go to the owner.
+
+**Example 2 — two green gates certified a page that could not render.** A JSX
+comment written `{{/* … */}}` is an object literal containing a comment, so
+React threw #31, "objects are not valid as a React child". **eslint reported
+zero errors and Vite built it successfully**, because neither evaluates JSX
+children. The page rendered its error boundary and nothing else. A build that
+passes is not a page that works.
+
+---
+
+## A default is the one position that has to be right without anyone touching it
+
+Having found the collision, the fix was measured on ONE hero layout and set to
+18%. There are twenty arrangements, and the vertical start of the hero text is
+exactly what varies between them: 254px on amalfi-citrus, 552px on
+brooklyn-offgrid, at the same 390 width.
+
+18% cleared all twenty — by 11px on the tightest. 14% clears by 45px.
+
+Both are "correct"; only one is right. A couple CAN move the mark, but a
+default is what most of them will ship, so it carries a burden the other
+positions do not. And the first measurement was of a single instance of a shape
+that has twenty — the same error as comparing a per-layout branch against one
+universe's kicker.
 
 ---
 
