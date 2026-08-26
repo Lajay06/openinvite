@@ -123,6 +123,20 @@ const distinct = /'save-failed'/.test(claim) && /That address is taken/.test(cla
 if (!distinct) { console.log('  ❌ a collision and a save failure are not distinguishable'); bad++; }
 else console.log('  ✅ a collision and a save failure say different things');
 
+// A FAILED CLAIM MUST LEAVE THE OLD VALUE ON SCREEN, on every surface that
+// edits an address. One of the two was fixed first and the other kept showing
+// the typed value while its toast faded — the same lie in a quieter voice.
+const REVERTERS = {
+  'src/components/website-builder/WBRightPanel.jsx': /setSlugDraft\(details\.slug \|\| ''\)/,
+  'src/components/studio/guest-suite/StudioShareTab.jsx': /setSlugInput\(details\?\.slug \|\| ''\)/,
+};
+for (const [f, re] of Object.entries(REVERTERS)) {
+  if (!re.test(readFileSync(f, 'utf8'))) {
+    console.log(`  ❌ ${f} does not restore the old address when a claim fails`); bad++;
+  }
+}
+if (!Object.keys(REVERTERS).some(f => false)) console.log('  ✅ both address editors revert on a failed claim');
+
 console.log(bad
   ? `\n  ${bad} FAILING\n`
   : `\n  every wedding address is claimed through one server path\n`);

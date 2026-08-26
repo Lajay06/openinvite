@@ -90,7 +90,16 @@ async function callerPut(id, body, callerToken) {
     headers: { Authorization: `Bearer ${callerToken}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`Base44 PUT WeddingDetails/${id} failed (${res.status})`);
+  if (!res.ok) {
+    // THE BODY, NOT ONLY THE STATUS. A 422 is a validation rejection, and the
+    // one thing Base44 tells us about WHY is in the body — which an earlier
+    // version of this line threw away, leaving four production failures with
+    // nothing to diagnose but a number.
+    const detail = await res.text().catch(() => '');
+    throw new Error(
+      `Base44 PUT WeddingDetails/${id} failed (${res.status}): ${detail.slice(0, 400)} ` +
+      `| payload keys: ${Object.keys(body).join(', ')}`);
+  }
   return res.json();
 }
 
