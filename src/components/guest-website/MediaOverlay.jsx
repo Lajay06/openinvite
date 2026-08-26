@@ -30,15 +30,22 @@ export default function MediaOverlay({ overlay }) {
 
   const scale = Number.isFinite(overlay.scale) ? overlay.scale : 30;   // % of container width
   const x = Number.isFinite(overlay.x) ? overlay.x : 50;               // % of container
-  // DEFAULT 14, AND THE NUMBER WAS MEASURED ON ALL TWENTY, NOT ONE.
-  // Every hero layout centres the couple's names, so 50% lands ON their own
-  // typography. But the arrangements differ a lot in WHERE their text starts:
-  // measured at 390, the first hero text sits between 254px (amalfi-citrus,
-  // the tightest) and 552px (brooklyn-offgrid, the roomiest).
-  // 18% cleared all twenty — by 11px on amalfi. 14% clears by 45px, with no
-  // clipping at the top, so it is the same idea with four times the margin.
-  // It also raises how large a couple can scale the mark before it reaches
-  // text on the tightest layout: about 49% of the width at 18%, about 76% at 14%.
+  // DEFAULT 14, MEASURED ON ALL TWENTY LAYOUTS AGAINST THE FINISHED HERO.
+  //
+  // Every hero centres the couple's names, so 50% lands ON their own
+  // typography. The arrangements differ in where their text starts: measured
+  // at 390, from 396px (marrakech, the tightest) to 692px (brooklyn).
+  //
+  // These numbers were taken AFTER the date/RSVP strip left the hero, and that
+  // removal moved everything — each hero re-centred and its text dropped by
+  // roughly 140px, which changed WHICH layout is tightest (it was amalfi at
+  // 254px before). An earlier default chosen against the old hero would have
+  // been tuned to a layout that is no longer the constraint.
+  //
+  // AND IT HOLDS ACROSS THE SIZE DIAL, not just at its starting value: the
+  // couple can turn that control, and a default verified only at its own
+  // default is not verified. Measured at 30/60/90% width — minimum clearance
+  // 187/152/117px, zero collisions on all twenty at every size.
   const y = Number.isFinite(overlay.y) ? overlay.y : 14;
   const scrim = Number.isFinite(overlay.scrim) ? overlay.scrim : 0;    // 0 = off, the default
 
