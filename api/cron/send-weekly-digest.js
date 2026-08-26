@@ -39,6 +39,7 @@ import { tallyGuestRsvp } from '../../src/lib/guestRsvpTally.js';
 import { DEFAULT_NOTIFICATION_PREFS } from '../../src/lib/notificationPrefs.js';
 import { renderWeeklyDigestEmail } from '../../src/lib/weeklyDigestEmailTemplate.js';
 
+import { coupleDisplayName } from '../_lib/coupleNames.js';
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY;
@@ -219,7 +220,7 @@ export async function buildDigestForWedding(wedding, allQuestionnaireResponses, 
   });
 
   return {
-    coupleNames: wedding.coupleNames || [wedding.couple1Name, wedding.couple2Name].filter(Boolean).join(' & '),
+    coupleNames: coupleDisplayName(wedding),
     daysUntil,
     newRsvpCount: newGuestIds.size,
     newAttending,

@@ -4,14 +4,11 @@ import { Sparkles, ChevronLeft, Check, Copy } from 'lucide-react';
 import RulesBasedStyleQuestionnaire from './RulesBasedStyleQuestionnaire';
 import { deriveSeason } from '@/lib/weddingSeason';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function getCoupleNames(wd) {
-  if (wd.coupleNames) return wd.coupleNames;
-  const n1 = wd.couple1Name, n2 = wd.couple2Name;
-  if (n1 && n2) return `${n1} & ${n2}`;
-  if (n1) return n1;
-  return 'the couple';
+  return coupleDisplayName(wd, 'the couple');
 }
 
 // ── Questionnaire config ──────────────────────────────────────────────────────

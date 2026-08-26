@@ -542,11 +542,22 @@ function ContentTab({ details, onChange }) {
   return (
     <div>
       <SLabel>The couple</SLabel>
+      {/* TWO FIELDS, NOT ONE. This was a single "Couple names" input writing
+          `coupleNames` — the DERIVED copy — while EventDetails wrote the
+          partner fields. Two writers, two answers, and the copy is what 40+
+          surfaces read. Splitting it here means the builder and EventDetails
+          now edit the same truth. */}
       <UInputDark
-        label="Couple names"
-        value={details?.coupleNames}
-        onChange={v => onChange('coupleNames', v)}
-        placeholder="Sarah &amp; James"
+        label="Partner 1 name"
+        value={details?.couple1Name || ''}
+        onChange={v => onChange('couple1Name', v)}
+        placeholder="Sarah"
+      />
+      <UInputDark
+        label="Partner 2 name"
+        value={details?.couple2Name || ''}
+        onChange={v => onChange('couple2Name', v)}
+        placeholder="James"
       />
       <UInputDark
         label="Wedding date"

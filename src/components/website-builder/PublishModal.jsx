@@ -5,6 +5,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useWebsitePasswordGate } from '@/lib/websitePasswordGate';
 import { claimSlug } from '@/lib/claimSlug';
 
+import { coupleNameParts } from '@/lib/coupleNames';
 function ToggleSwitch({ value, onChange, label }) {
   return (
     <button
@@ -98,8 +99,7 @@ export default function PublishModal({ onClose, details, onUpdate }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const couple1 = details?.couple1Name || details?.coupleNames?.split(' & ')?.[0] || 'John';
-  const couple2 = details?.couple2Name || details?.coupleNames?.split(' & ')?.[1] || 'Sarah';
+  const [couple1, couple2] = coupleNameParts(details, 'John', 'Sarah');
 
   const [emailSubject, setEmailSubject] = useState(`${couple1} & ${couple2}'s Wedding — Save the Date`);
   const [emailMessage, setEmailMessage] = useState(

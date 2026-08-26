@@ -19,6 +19,7 @@ import { verifyBase44User } from './_lib/auth.js';
 import { getCollaborationFor } from './_lib/collaboratorAuth.js';
 import { excludeTestRecords } from './_lib/productData.js';
 
+import { coupleDisplayName } from './_lib/coupleNames.js';
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY;
@@ -72,7 +73,7 @@ export default async function handler(req, res) {
     const wedding = weddings.length > 0
       ? weddings.slice().sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0]
       : null;
-    const coupleNames = wedding?.coupleNames || [wedding?.couple1Name, wedding?.couple2Name].filter(Boolean).join(' & ') || '';
+    const coupleNames = coupleDisplayName(wedding);
 
     return res.status(200).json({
       permissions: collaboration.permissions,

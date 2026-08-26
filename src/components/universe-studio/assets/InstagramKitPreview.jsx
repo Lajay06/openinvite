@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 // Fallbacks only — used if a universe somehow has no imageUrl (none
 // currently do; all 20 carry a real, distinct photo).
 const FALLBACK_IMAGE_SAVE_DATE = 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14263_su2ltz.jpg';
@@ -26,7 +27,7 @@ function StoryFrame({ type, weddingDetails, universe }) {
   // Same photo for both the save-date and day-of story types (a real
   // Instagram kit commonly reuses one hero shot across a story set too).
   const image = universe?.imageUrl ? universe.imageUrl.replace(/\.jpg$/, '-800.jpg') : null;
-  const names = weddingDetails?.coupleNames || 'Sarah & James';
+  const names = coupleDisplayName(weddingDetails, 'Sarah & James');
   const date = weddingDetails?.weddingDate ? new Date(weddingDetails.weddingDate) : new Date('2026-03-15');
   const daysLeft = Math.max(0, Math.ceil((date - new Date()) / (1000 * 60 * 60 * 24)));
   const venue = weddingDetails?.mainCeremony?.venueName || 'The Grand Hall';

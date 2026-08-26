@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 // Fallback only — used if a universe somehow has no imageUrl (none currently
 // do; all 20 carry a real, distinct photo).
 const FALLBACK_IMAGE = 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14274_nhniqk.jpg';
@@ -16,7 +17,7 @@ export default function WelcomeSignagePreview({ universe, weddingDetails }) {
   // couple-photo stock shoot — see SaveTheDatePreview.jsx's own comment for
   // why this is correct for a "browsing universes" preview specifically.
   const image = universe?.imageUrl ? universe.imageUrl.replace(/\.jpg$/, '-800.jpg') : FALLBACK_IMAGE;
-  const names = weddingDetails?.coupleNames || 'Sarah & James';
+  const names = coupleDisplayName(weddingDetails, 'Sarah & James');
   const date = weddingDetails?.weddingDate
     ? new Date(weddingDetails.weddingDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
     : '15 March 2026';

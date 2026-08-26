@@ -17,6 +17,7 @@ import MenuCardPreview from '@/components/universe-studio/assets/MenuCardPreview
 import SeatingChartPreview from '@/components/universe-studio/assets/SeatingChartPreview';
 import { loadFontFamilies } from '@/lib/selfHostedFonts';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 // Real, documented signature motif per universe — drawn from the code
@@ -160,7 +161,7 @@ export function MockDataNotice({ loading, weddingDetails }) {
   if (loading) return null;
   return (
     <p style={{ fontSize: 11, fontFamily: PJS, color: 'rgba(10,10,10,0.6)', margin: 0 }}>
-      Showing live data for {weddingDetails?.coupleNames || 'your wedding'} — a design mock, read-only: nothing here writes back.
+      Showing live data for {coupleDisplayName(weddingDetails, 'your wedding')} — a design mock, read-only: nothing here writes back.
     </p>
   );
 }

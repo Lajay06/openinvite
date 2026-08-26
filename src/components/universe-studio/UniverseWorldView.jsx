@@ -98,6 +98,7 @@ import ThankYouPreview from '@/components/universe-studio/assets/ThankYouPreview
 import InstagramKitPreview from '@/components/universe-studio/assets/InstagramKitPreview';
 import MotionGraphicPreview from '@/components/universe-studio/assets/MotionGraphicPreview';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const MASTHEAD_BY_LAYOUT = {
@@ -329,7 +330,7 @@ export default function UniverseWorldView({
   escapeLayout = true,
 }) {
   const prefersReducedMotion = useReducedMotion();
-  const coupleNames = weddingDetails?.coupleNames || 'Your names';
+  const coupleNames = coupleDisplayName(weddingDetails, 'Your names');
   const slug = weddingDetails?.slug || 'your-wedding';
   const showUpgrade = universe.isUltra && !canAccessUltra && !isCurrent;
   const motifLarge = MOTIF_LARGE[universe.id];

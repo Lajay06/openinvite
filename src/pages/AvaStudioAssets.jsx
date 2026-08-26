@@ -8,6 +8,7 @@ import MediaLibraryModal from '@/components/website-builder/MediaLibraryModal';
 import toast from 'react-hot-toast';
 import { interactiveDivProps } from '@/lib/a11y';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 const sans = "'Plus Jakarta Sans', sans-serif";
 
 function AvaInput({ label, value, onChange, placeholder, rows, mode }) {
@@ -197,7 +198,7 @@ export default function AvaStudioAssets() {
   );
   const assetContent = details.assetContent?.[step.key] || {};
   const PreviewComp = ASSET_PREVIEW_MAP[step.key];
-  const coupleName = details?.coupleNames || `${details?.couple1Name || 'You'} & ${details?.couple2Name || 'Your Partner'}`;
+  const coupleName = coupleDisplayName(details, 'You & Your Partner');
 
   if (complete) {
     return (

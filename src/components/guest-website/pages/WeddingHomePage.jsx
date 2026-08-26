@@ -35,6 +35,7 @@ import ShanghaiMasthead from '../layouts/ShanghaiMasthead';
 import ShanghaiFooter from '../layouts/ShanghaiFooter';
 import MediaOverlay from '../MediaOverlay';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 /** Formats weddingDate for display, or null if unset/unparseable — never
  * lets `new Date('')` render the literal text "Invalid Date" to a guest. */
 function formatWeddingDate(weddingDate, options) {
@@ -275,7 +276,7 @@ function GenericMastheadHero({ Masthead, Footer, weddingDetails, theme, typograp
             transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.55), ease: universeConfig?.motion?.ease }}
             style={{ width: '100%' }}
           >
-            <Masthead coupleNames={weddingDetails.coupleNames} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} accentColor={theme.accent} />
+            <Masthead coupleNames={coupleDisplayName(weddingDetails)} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} accentColor={theme.accent} />
           </motion.div>
         </div>
 
@@ -351,7 +352,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
               transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.7), ease: universeConfig?.motion?.ease }}
               style={{ width: '100%' }}
             >
-              <ParisMasthead coupleNames={weddingDetails.coupleNames} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} />
+              <ParisMasthead coupleNames={coupleDisplayName(weddingDetails)} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} />
             </motion.div>
           </div>
 
@@ -383,7 +384,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
               transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.55), ease: universeConfig?.motion?.ease }}
               style={{ width: '100%' }}
             >
-              <CapriMasthead coupleNames={weddingDetails.coupleNames} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} accentColor={theme.accent} />
+              <CapriMasthead coupleNames={coupleDisplayName(weddingDetails)} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} accentColor={theme.accent} />
             </motion.div>
           </div>
 
@@ -415,7 +416,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
               transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.6), ease: universeConfig?.motion?.ease }}
               style={{ width: '100%', maxWidth: 900 }}
             >
-              <MykonosMasthead coupleNames={weddingDetails.coupleNames} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} accentColor={theme.accent} />
+              <MykonosMasthead coupleNames={coupleDisplayName(weddingDetails)} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} accentColor={theme.accent} />
             </motion.div>
           </div>
 
@@ -444,7 +445,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.75), ease: universeConfig?.motion?.ease }}
             >
-              <CapeTownMasthead coupleNames={weddingDetails.coupleNames} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} />
+              <CapeTownMasthead coupleNames={coupleDisplayName(weddingDetails)} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} />
             </motion.div>
           </div>
 
@@ -479,7 +480,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
               transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.8), ease: universeConfig?.motion?.ease }}
             >
               <KyotoMasthead
-                coupleNames={weddingDetails.coupleNames}
+                coupleNames={coupleDisplayName(weddingDetails)}
                 kicker={copy.heroKicker}
                 theme={theme}
                 typography={typography}
@@ -520,7 +521,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
               style={{ width: '100%' }}
             >
               <BrooklynMasthead
-                coupleNames={weddingDetails.coupleNames}
+                coupleNames={coupleDisplayName(weddingDetails)}
                 kicker={copy.heroKicker}
                 theme={theme}
                 typography={typography}
@@ -562,7 +563,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
               style={{ width: '100%', maxWidth: 900, margin: '0 auto' }}
             >
               <BaliMasthead
-                coupleNames={weddingDetails.coupleNames}
+                coupleNames={coupleDisplayName(weddingDetails)}
                 kicker={copy.heroKicker}
                 theme={theme}
                 typography={typography}
@@ -605,7 +606,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
               style={{ width: '100%' }}
             >
               <MinimalMasthead
-                coupleNames={weddingDetails.coupleNames}
+                coupleNames={coupleDisplayName(weddingDetails)}
                 kicker={copy.heroKicker}
                 theme={theme}
                 typography={typography}
@@ -646,7 +647,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
               style={{ width: '100%', maxWidth: 1100, margin: '0 auto' }}
             >
               <EditorialMasthead
-                coupleNames={weddingDetails.coupleNames}
+                coupleNames={coupleDisplayName(weddingDetails)}
                 kicker={copy.heroKicker}
                 theme={theme}
                 typography={typography}
@@ -722,7 +723,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
               lineHeight: 1.1
             }}
           >
-            {weddingDetails.coupleNames}
+            {coupleDisplayName(weddingDetails)}
           </h1>
 
           <p

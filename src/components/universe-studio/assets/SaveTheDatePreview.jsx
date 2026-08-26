@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 // universe: the FULL config object from UNIVERSE_CATALOG/UNIVERSE_CONFIGS
 // (colors, typography, ...), not just its id — the caller (UniverseWorldView's
 // Chapter 6) already calls loadUniverseFont(universe) on mount, so by the
@@ -25,7 +26,7 @@ export default function SaveTheDatePreview({ universe, weddingDetails }) {
   // uses their own uploaded photo (assetContent.saveTheDate.photoUrl), never
   // this scenery image; confirmed no code path there reads universe.imageUrl.
   const image = universe?.imageUrl ? universe.imageUrl.replace(/\.jpg$/, '-800.jpg') : FALLBACK_IMAGE;
-  const names = weddingDetails?.coupleNames || 'Sarah & James';
+  const names = coupleDisplayName(weddingDetails, 'Sarah & James');
   const date = weddingDetails?.weddingDate
     ? new Date(weddingDetails.weddingDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, ' · ')
     : '15 · 03 · 2026';

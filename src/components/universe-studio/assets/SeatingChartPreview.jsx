@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 // universe: the full config object (colors/typography), not just its id —
 // see UniverseWorldView.jsx's Chapter 6 comment for why.
 export default function SeatingChartPreview({ universe, weddingDetails, guests }) {
@@ -7,7 +8,7 @@ export default function SeatingChartPreview({ universe, weddingDetails, guests }
   const text = universe?.colors?.darkText || '#FFFFFF';
   const accent = universe?.colors?.accent || '#E03553';
   const headingFont = universe?.typography?.headingFont || 'Georgia, serif';
-  const names = weddingDetails?.coupleNames || 'Sarah & James';
+  const names = coupleDisplayName(weddingDetails, 'Sarah & James');
   const date = weddingDetails?.weddingDate
     ? new Date(weddingDetails.weddingDate).toLocaleDateString('en-GB')
     : '15 March 2026';

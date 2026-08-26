@@ -30,6 +30,7 @@ import HairlineRule from './layouts/HairlineRule';
 import { interactiveDivProps } from '@/lib/a11y';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 const SKIP_REVEAL_MS = 300;
 const CUE_VISIBLE_MS = 1800;
 const CURTAIN_BLUR_PX = 14;
@@ -274,7 +275,7 @@ export default function EntranceMoment({ weddingSlug, weddingDetails, theme, typ
             lineHeight: 1.15,
           }}
         >
-          {weddingDetails?.coupleNames || 'Our wedding'}
+          {coupleDisplayName(weddingDetails, 'Our wedding')}
         </motion.h1>
       </motion.div>
 

@@ -183,6 +183,16 @@ jobs:
       - name: no-use-before-define carve-out ratchet
         run: npm run test:no-use-before-define-ratchet
 
+      # The couple's names had two disagreeing sources: couple1Name/couple2Name
+      # (the truth, edited in EventDetails and the builder) and coupleNames (a
+      # copy written once at onboarding and never re-derived). Forty-odd
+      # surfaces read the copy, and every fallback in the repo consulted it
+      # FIRST — so the one case the fallback existed for was the only case it
+      # handled right. The wedding address now derives from these names, which
+      # is why the ownership has to hold.
+      - name: couple names have one owner
+        run: npm run test:couple-names
+
       # Credential-free subset of the persistence suite — no live Base44
       # login, no BASE44_ADMIN_KEY. That key is full production database
       # access and deliberately does not live in GitHub secrets; the live

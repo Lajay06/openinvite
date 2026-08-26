@@ -7,6 +7,7 @@ import { getUniverse } from '@/lib/universeCatalog';
 import { loadUniverseFont } from '@/lib/lazyUniverseFonts';
 import { getCachedWeddingPassword } from '@/lib/guestSitePassword';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 const PJS = "'Plus Jakarta Sans', sans-serif";
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
@@ -63,9 +64,7 @@ export default function GuestCollect() {
     if (universe) loadUniverseFont(universe);
   }, [universe]);
 
-  const coupleNames = wedding?.coupleNames
-    || [wedding?.couple1Name, wedding?.couple2Name].filter(Boolean).join(' & ')
-    || 'the couple';
+  const coupleNames = coupleDisplayName(wedding, 'the couple');
 
   const colors = universe?.colors || {};
   const typography = universe?.typography || {};
