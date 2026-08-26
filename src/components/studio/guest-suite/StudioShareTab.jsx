@@ -6,6 +6,7 @@ import { isPending, isAttending, isDeclined } from '@/lib/guestRsvpTally';
 import toast from 'react-hot-toast';
 import { interactiveDivProps } from '@/lib/a11y';
 import { useWebsitePasswordGate } from '@/lib/websitePasswordGate';
+import { claimSlug, canonicalSlug } from '@/lib/claimSlug';
 
 const sans = "'Plus Jakarta Sans', sans-serif";
 
@@ -115,17 +116,26 @@ export default function StudioShareTab({ details: propDetails }) {
   };
 
   const saveSlug = async (val) => {
-    const slug = val.toLowerCase().replace(/[^a-z0-9-]/g, '-');
-    const isActualChange = details?.slug && slug !== details.slug;
-    // Changing the URL after it's already been shared silently breaks every
-    // link already sent in an invitation — warn before applying it.
+    // THE CLAIM PATH, not a direct write. The confirm below used to be the only
+    // protection, and it asked the wrong question: it warned when
+    // `websiteEnabled` was true, which is a guess about whether invitations
+    // exist. The endpoint checks the actual evidence — an issued rsvp_link_id,
+    // an invitation_sent flag, an invite_sent_at stamp — and refuses to
+    // reassign an address that may already be in someone's inbox.
+    const slug = canonicalSlug(val);
+    const isActualChange = details?.slug && slug !== canonicalSlug(details.slug);
     if (isActualChange && details?.websiteEnabled) {
       const confirmed = window.confirm(
         `Change your wedding's URL to /w/${slug}? Any invitations already sent with the old link (/w/${details.slug}) will stop working.`
       );
       if (!confirmed) return;
     }
-    await updateField('slug', slug);
+    const r = await claimSlug(detailsId, slug);
+    if (!r.ok) {
+      toast.error(r.suggestion ? `${r.message} ${r.suggestion} is free, or pick another name.` : r.message);
+      return;
+    }
+    setDetails(prev => ({ ...prev, slug: r.slug }));
     toast.success('URL saved!');
   };
 
