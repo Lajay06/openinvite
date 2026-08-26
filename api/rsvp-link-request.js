@@ -44,6 +44,7 @@ import { decryptToken } from './_lib/rsvpTokenCrypto.js';
 import { mergeGuestPii } from './_lib/guestPii.js';
 import { resolveWeddingBySlug } from './_lib/resolveWeddingBySlug.js';
 
+import { coupleDisplayName } from './_lib/coupleNames.js';
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY; // server-side only, no VITE_ prefix
 
 const KNOWN_ORIGINS = new Set([
@@ -193,8 +194,7 @@ export default async function handler(req, res) {
         return res.status(200).json(NEUTRAL);
       }
       const rsvpUrl = `${baseUrl}/rsvp/${rsvpToken}`;
-      const coupleName = wedding.coupleNames
-        || [wedding.couple1Name, wedding.couple2Name].filter(Boolean).join(' & ');
+      const coupleName = coupleDisplayName(wedding);
 
       const events = wedding.weddingDate
         ? [{ name: 'Wedding day', date: wedding.weddingDate, venue: wedding.mainCeremony?.venueName || '' }]

@@ -3,6 +3,7 @@ import { tallyAttendees } from '@/lib/guestRsvpTally';
 import { resolveAttendees, MEAL_CHOSEN } from '@/lib/attendees';
 import { mealOptionLabel } from '@/lib/weddingEvents';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 export async function buildWeddingContext() {
   const [guestsResult, budgetResult, vendorsResult, scheduleResult, wdResult] = await Promise.allSettled([
     getMyGuestsWithRsvp(),
@@ -28,7 +29,7 @@ export async function buildWeddingContext() {
     ? `Expected guest count: ~${expectedCount}${expectedTier ? ` (${expectedTier})` : ''}`
     : '';
 
-  const coupleName  = wd.coupleNames || localStorage.getItem('oi_couple_name') || 'the couple';
+  const coupleName  = coupleDisplayName(wd) || localStorage.getItem('oi_couple_name') || 'the couple';
   const weddingDate = wd.weddingDate || localStorage.getItem('oi_wedding_date');
   const city        = wd.mainCeremony?.address || localStorage.getItem('oi_wedding_city');
   const universe    = wd.activeUniverse || '';

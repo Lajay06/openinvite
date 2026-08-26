@@ -8,6 +8,7 @@ import { interactiveDivProps } from '@/lib/a11y';
 import { useWebsitePasswordGate } from '@/lib/websitePasswordGate';
 import { claimSlug, canonicalSlug } from '@/lib/claimSlug';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 const sans = "'Plus Jakarta Sans', sans-serif";
 
 function ToggleSwitch({ value, onChange, label }) {
@@ -42,10 +43,10 @@ export default function StudioShareTab({ details: propDetails }) {
 
   useEffect(() => {
     const defaultSubjects = {
-      'save-the-date': `Save the Date — ${details?.coupleNames || 'Our Wedding'}`,
-      'website-share': `Our wedding website is live — ${details?.coupleNames || ''}`,
-      'rsvp-reminder': `RSVP Reminder — ${details?.coupleNames || 'Our Wedding'}`,
-      'update': `Wedding Update from ${details?.coupleNames || 'the couple'}`,
+      'save-the-date': `Save the Date — ${coupleDisplayName(details, 'Our Wedding')}`,
+      'website-share': `Our wedding website is live — ${coupleDisplayName(details, '')}`,
+      'rsvp-reminder': `RSVP Reminder — ${coupleDisplayName(details, 'Our Wedding')}`,
+      'update': `Wedding Update from ${coupleDisplayName(details, 'the couple')}`,
     };
     setEmailSubject(defaultSubjects[emailType] || '');
   }, [emailType, details]);

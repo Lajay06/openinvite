@@ -82,6 +82,7 @@ import InvitationNotAvailable from './InvitationNotAvailable';
 import { withAlwaysOnPages } from '@/lib/guestPages';
 import { WEDDING_PAGES } from '@/lib/websiteThemes';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 // Background music: reader gated OFF (owner decision, video-sound batch 4b).
 // The same SHOW_BACKGROUND_MUSIC_UI flag that hides the two writing surfaces
 // (GuestSuitePolicies.jsx, WBRightPanel.jsx). Hiding the writers does not
@@ -173,7 +174,7 @@ export default function MultiPageWeddingWebsite() {
   // is therefore correct through api/wedding-by-slug.js's documented
   // fail-open as well — the data governs, not the gate's verdict.
   useEffect(() => {
-    const names = weddingDetails?.coupleNames;
+    const names = coupleDisplayName(weddingDetails);
     if (!names) return;
     const previous = document.title;
     document.title = names;
@@ -297,7 +298,7 @@ export default function MultiPageWeddingWebsite() {
 
       {/* Navigation */}
       <WeddingWebsiteNav
-        weddingName={weddingDetails.coupleNames}
+        weddingName={coupleDisplayName(weddingDetails)}
         theme={theme}
         typography={typography}
         enabledPages={enabledPages}

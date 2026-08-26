@@ -12,6 +12,7 @@ import { Users, Building2, DollarSign, Cloud } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import TipsModal from '@/components/dashboard/TipsModal';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 // v2 key busts any old cache that lacks the headline field. Scoped by user
@@ -285,8 +286,7 @@ export default function DailyUpdate() {
     }
 
     const wd = weddingRows[0] || {};
-    const couple = wd.coupleNames
-      || (wd.couple1Name && wd.couple2Name ? `${wd.couple1Name} & ${wd.couple2Name}` : null)
+    const couple = coupleDisplayName(wd)
       || localStorage.getItem('oi_couple_name')
       || '';
     setCoupleName(couple);

@@ -1,6 +1,7 @@
 import React from 'react';
 import { buildTablesWithGuests, buildGuestTagList } from '@/lib/seatingChart';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 // Matches this file's original, pre-universe hardcoded look exactly — used
 // when no theme/typography is passed (older/unmigrated call sites), so
 // nothing regresses for a consumer that hasn't been updated yet.
@@ -8,8 +9,7 @@ const DEFAULT_THEME = { darkBg: '#0A0A0A', lightBg: '#FAF8F3', darkText: '#FFFFF
 const DEFAULT_TYPOGRAPHY = { headingFont: 'Cormorant Garamond, Georgia, serif', bodyFont: "'Plus Jakarta Sans', sans-serif", headingWeight: 300 };
 
 function couple(details) {
-  if (details?.couple1Name && details?.couple2Name) return `${details.couple1Name} & ${details.couple2Name}`;
-  return details?.coupleNames || 'Your Names';
+  return coupleDisplayName(details, 'Your Names');
 }
 function weddingDate(details) {
   if (!details?.weddingDate) return '15 March 2026';

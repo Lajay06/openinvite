@@ -73,6 +73,7 @@ import { stripProtectedFields } from './_lib/guestProtectedFields.js';
 import { getCollaborationFor, hasPagePermission } from './_lib/collaboratorAuth.js';
 import { excludeTestRecords } from './_lib/productData.js';
 
+import { coupleDisplayName } from './_lib/coupleNames.js';
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 
@@ -151,7 +152,7 @@ export default async function handler(req, res) {
       const weddingQuery = encodeURIComponent(JSON.stringify({ created_by_id: ownerUserId }));
       const weddings = excludeTestRecords(unwrapList(await adminFetch('GET', `/apps/${BASE44_APP_ID}/entities/WeddingDetails?q=${weddingQuery}`)));
       const wedding = weddings.length > 0 ? weddings.slice().sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0] : null;
-      const coupleNames = wedding?.coupleNames || [wedding?.couple1Name, wedding?.couple2Name].filter(Boolean).join(' & ') || '';
+      const coupleNames = coupleDisplayName(wedding);
 
       return res.status(200).json({
         guests: excludeTestRecords(rows),

@@ -49,7 +49,8 @@
     "test:payments-freeze": "node scripts/test-payments-freeze.mjs",
     "check:canon-branch": "node scripts/check-canon-branch.mjs",
     "test:slug-resolver": "node scripts/test-slug-resolver.mjs",
-    "test:slug-claim": "node scripts/test-slug-claim.mjs"
+    "test:slug-claim": "node scripts/test-slug-claim.mjs",
+    "test:couple-names": "node scripts/test-couple-names-owner.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.43",

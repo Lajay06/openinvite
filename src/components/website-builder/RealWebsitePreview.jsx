@@ -36,6 +36,7 @@ import WeddingStayPage from '@/components/guest-website/pages/WeddingStayPage';
 import WeddingTransportPage from '@/components/guest-website/pages/WeddingTransportPage';
 import WeddingExperiencePage from '@/components/guest-website/pages/WeddingExperiencePage';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 const PAGE_COMPONENTS = {
   'home':         WeddingHomePage,
   'our-story':    WeddingOurStoryPage,
@@ -89,7 +90,7 @@ export default function RealWebsitePreview({ details, currentPage = 'home', onNa
       )}
 
       <WeddingWebsiteNav
-        weddingName={details?.coupleNames}
+        weddingName={coupleDisplayName(details)}
         theme={theme}
         typography={typography}
         enabledPages={enabledPages}

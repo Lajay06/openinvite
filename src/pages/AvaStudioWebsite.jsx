@@ -7,6 +7,7 @@ import MediaLibraryModal from '@/components/website-builder/MediaLibraryModal';
 import toast from 'react-hot-toast';
 import { interactiveDivProps } from '@/lib/a11y';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 const sans = "'Plus Jakarta Sans', sans-serif";
 
 // ── Shared primitives ─────────────────────────────────────────
@@ -348,7 +349,7 @@ export default function AvaStudioWebsite() {
     // AI story generation
     if (step.aiGenerate) {
       setAvaLoading(true);
-      const coupleName = details?.coupleNames || `${details?.couple1Name || ''} & ${details?.couple2Name || ''}`;
+      const coupleName = coupleDisplayName(details);
       try {
         const story = await base44.integrations.Core.InvokeLLM({
           prompt: `Write a warm, personal 3-paragraph love story for a wedding website. Keep it genuine and heartfelt, not cheesy. Couple: ${coupleName}. Wedding date: ${details?.weddingDate || 'upcoming'}. Wedding style: ${JSON.stringify(details?.weddingStyle || [])}. Any notes: ${details?.coupleStory || 'none provided'}. Write in first person plural ("We..."). Keep each paragraph 2-3 sentences. End on the wedding. Output only the story text, no headings.`,
@@ -375,7 +376,7 @@ export default function AvaStudioWebsite() {
   const steps = makeSteps(details, updateField, mode);
   const step = steps[stepIndex];
   const total = steps.length;
-  const coupleName = details?.coupleNames || `${details?.couple1Name || 'You'} & ${details?.couple2Name || 'Your Partner'}`;
+  const coupleName = coupleDisplayName(details, 'You & Your Partner');
 
   if (complete) {
     return (

@@ -4,6 +4,7 @@ import SectionReveal from '../SectionReveal';
 import GuestPageHeading from '../GuestPageHeading';
 import { isMotionEnabled } from '@/lib/universeStyling';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 // Cash fund + registry public-site wiring (Option A — couples link their
 // own external payment page; no money moves through Openinvite). customGifts
 // and registryProducts come from /api/wedding-by-slug, already scoped to
@@ -170,7 +171,7 @@ export default function WeddingRegistryPage({ weddingDetails, theme, typography,
                 <div style={cardGridStyle}>
                   {customGifts.map(fund => (
                     <SectionReveal key={fund.id} universeConfig={universeConfig} disabled={motionDisabled}>
-                      <CashFundCard fund={fund} theme={theme} typography={typography} coupleNames={weddingDetails.coupleNames} />
+                      <CashFundCard fund={fund} theme={theme} typography={typography} coupleNames={coupleDisplayName(weddingDetails)} />
                     </SectionReveal>
                   ))}
                 </div>

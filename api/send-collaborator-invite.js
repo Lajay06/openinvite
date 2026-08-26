@@ -26,6 +26,7 @@ import { verifyBase44User } from './_lib/auth.js';
 import { renderCollaboratorInviteEmail } from '../src/lib/collaboratorEmailTemplate.js';
 import { signInvite } from './_lib/collaboratorInviteToken.js';
 
+import { coupleDisplayName } from './_lib/coupleNames.js';
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = 'Openinvite <hello@openinvite.com.au>';
 const BASE44_API = 'https://base44.app/api';
@@ -80,7 +81,7 @@ export default async function handler(req, res) {
     const wedding = weddings.length > 0
       ? weddings.slice().sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0]
       : null;
-    const coupleNames = wedding?.coupleNames || [wedding?.couple1Name, wedding?.couple2Name].filter(Boolean).join(' & ') || '';
+    const coupleNames = coupleDisplayName(wedding);
 
     // Stored on the Collaborator record for display/dedup purposes only — the
     // actual accept link below never looks this up in Base44 (the admin key

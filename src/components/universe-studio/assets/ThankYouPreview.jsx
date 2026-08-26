@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 // universe: the full config object (colors/typography), not just its id —
 // see UniverseWorldView.jsx's Chapter 6 comment for why.
 export default function ThankYouPreview({ universe, weddingDetails }) {
@@ -7,7 +8,7 @@ export default function ThankYouPreview({ universe, weddingDetails }) {
   const text = universe?.colors?.darkText || '#FFFFFF';
   const accent = universe?.colors?.accent || '#E03553';
   const headingFont = universe?.typography?.headingFont || 'Georgia, serif';
-  const names = weddingDetails?.coupleNames || 'Sarah & James';
+  const names = coupleDisplayName(weddingDetails, 'Sarah & James');
   const message = weddingDetails?.thankYouMessage || 'Your presence on our wedding day meant the world to us. Thank you for celebrating this moment with us.';
 
   return (

@@ -18,6 +18,7 @@ import MediaLibraryModal from '@/components/website-builder/MediaLibraryModal';
 import ComponentLibraryModal from '@/components/website-builder/ComponentLibraryModal';
 import { newBlock } from '@/components/guest-website/blocks/blockTypes';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 const UNIVERSE_THEMES = {
   london: {
     name: 'London',
@@ -345,8 +346,8 @@ export default function StudioWebsite({ onBack }) {
 
   // Auto-generate slug from couple names if none set
   useEffect(() => {
-    if (!details?.slug && details?.coupleNames) {
-      const autoSlug = details.coupleNames
+    if (!details?.slug && coupleDisplayName(details)) {
+      const autoSlug = coupleDisplayName(details)
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '')
@@ -359,7 +360,7 @@ export default function StudioWebsite({ onBack }) {
       const slug = autoSlug + '-' + Math.random().toString(36).substring(2, 6);
       updateField('slug', slug);
     }
-  }, [details?.coupleNames]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [coupleDisplayName(details)]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Autosave — debounced 2s after last change
   useEffect(() => {

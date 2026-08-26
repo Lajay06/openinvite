@@ -13,11 +13,10 @@
 
 import { getUniverse } from '@/lib/universeCatalog';
 
+import { coupleDisplayName } from '@/lib/coupleNames';
 function coupleNames(wedding) {
   return (
-    wedding?.coupleNames ||
-    [wedding?.couple1Name, wedding?.couple2Name].filter(Boolean).join(' & ') ||
-    ''
+    coupleDisplayName(wedding)
   );
 }
 
