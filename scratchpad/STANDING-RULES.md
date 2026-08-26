@@ -1055,6 +1055,14 @@ iterating per-layout branches will silently compare across the diagonal. The
 answer looks specific and is arbitrary — it is whichever universe happened to
 be the default.
 
+**Twice more, in the instrument built to close this very hole.** Sweeping the
+home page across all twenty universes, the sweep first reused **london's
+kicker** as the expected string for the other nineteen — each waited out a
+30-second timeout, a ten-minute run that proved nothing. Corrected, it then
+asserted **london's two typefaces** against nineteen universes' own faces and
+failed them all for being correct. The rule was already written down, and was
+broken twice in one sitting while building the fix for it.
+
 ---
 
 ## Documenting a trap does not immunize you from it
@@ -1107,6 +1115,47 @@ and had been invisible to every render pass, because nobody had thought to
 measure a line that "obviously" kept its styling.
 
 Neither method alone was sufficient. The sweep proposes; the render disposes.
+
+---
+
+## Coverage is the PRODUCT OF ITS AXES, not the length of its list
+
+`GUEST_ROUTE_EXPECT` enumerated **15 guest routes**, derived from the router so
+a new route could not be added without one. It looked complete, and along the
+route axis it was.
+
+`WeddingHomePage` branches **20 ways** on `universeConfig.layout`.
+
+So the guard covered **15 of 300 cells** while wearing the appearance of
+totality — and nothing in the list could tell you what was missing, because the
+missing thing was not a list item. It was a DIMENSION. A derived, exhaustive,
+fails-closed enumeration along one axis says nothing at all about the others.
+
+**Before trusting any enumeration, ask what ELSE the thing under test varies
+by.** Routes × universes. Widths × themes. Locales × plan tiers.
+
+**And it was caught by luck, which is the part worth remembering.** The defect
+that exposed it broke all ten hero strips at once, so london's was among them
+and the guard fired. Break a branch london does not render and the same guard
+certifies 15/15 in silence. Measured, all three cases. The guard did not catch
+that defect — it caught a defect that happened to contain one it could see.
+That is luck with a passing exit code, and it is exactly what the
+perfect-score rule warns about.
+
+---
+
+## A guard must distinguish its FAILURE MODES, not just pass and fail
+
+`PRESENCE FAILED (expected "AN INVITATION")` on a page that had thrown sent the
+diagnosis toward the copy, the seed and the expected string — anywhere but the
+exception. The page was not missing text; it was rendering an error boundary.
+
+**A guard reporting the wrong failure mode costs more than a missing guard**,
+because it buys a wrong direction with the authority of a measurement. The
+guard now asks the page whether it threw and says so.
+
+Ask of every guard we own: what does it say when the page is BROKEN, rather
+than merely wrong?
 
 ---
 
