@@ -5,23 +5,14 @@ import { detectHeroVideoType, youtubeEmbedUrl, vimeoEmbedUrl } from '@/lib/heroV
 import { useSoundPreference, isIOS } from '@/lib/useSoundPreference';
 import UniverseBlocks from '../blocks/UniverseBlocks';
 import EditorialMasthead from '../layouts/EditorialMasthead';
-import EditorialGridFooter from '../layouts/EditorialGridFooter';
 import MinimalMasthead from '../layouts/MinimalMasthead';
-import MinimalFooter from '../layouts/MinimalFooter';
 import KyotoMasthead from '../layouts/KyotoMasthead';
-import KyotoFooter from '../layouts/KyotoFooter';
 import BrooklynMasthead from '../layouts/BrooklynMasthead';
-import BrooklynFooter from '../layouts/BrooklynFooter';
 import BaliMasthead from '../layouts/BaliMasthead';
-import BaliFooter from '../layouts/BaliFooter';
 import ParisMasthead from '../layouts/ParisMasthead';
-import ParisFooter from '../layouts/ParisFooter';
 import CapriMasthead from '../layouts/CapriMasthead';
-import CapriFooter from '../layouts/CapriFooter';
 import MykonosMasthead from '../layouts/MykonosMasthead';
-import MykonosFooter from '../layouts/MykonosFooter';
 import CapeTownMasthead from '../layouts/CapeTownMasthead';
-import CapeTownFooter from '../layouts/CapeTownFooter';
 import AmalfiMasthead from '../layouts/AmalfiMasthead';
 import AmalfiFooter from '../layouts/AmalfiFooter';
 import SedonaMasthead from '../layouts/SedonaMasthead';
@@ -285,14 +276,11 @@ function GenericMastheadHero({ Masthead, Footer, weddingDetails, theme, typograp
 
         <div style={{ position: 'relative', zIndex: 10, padding: '0 32px 56px' }}>
           <div style={{ maxWidth: 720, margin: '0 auto' }}>
-            <Footer
-              theme={theme} typography={typography} textColor={theme.lightBg} accentColor={theme.accent}
-              columns={[
-                { label: 'The date', value: formattedDate || 'To be announced' },
-                { label: 'Join us in', value: weddingDetails.mainCeremony?.venueName || weddingDetails.mainCeremony?.address?.split(',')[0] || venueFallback },
-                { label: 'RSVP', value: 'View invitation', href: weddingDetails.slug ? `/w/${weddingDetails.slug}/rsvp` : undefined },
-              ]}
-            />
+            {/* P5 hero restraint. The three-column strip — date / venue / RSVP —
+                is gone. The hero carries identity: the kicker, the couple's names,
+                and their own mark if they place one. Logistics leave the hero, they
+                do not leave the site: the date is on celebration, the reply on rsvp,
+                and neither page can be switched off any more. */}
           </div>
         </div>
       </div>
@@ -364,14 +352,11 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
 
           <div style={{ position: 'relative', zIndex: 10, padding: '0 40px 64px' }}>
             <div style={{ maxWidth: 680, margin: '0 auto' }}>
-              <ParisFooter
-                theme={theme} typography={typography} textColor={theme.lightBg}
-                columns={[
-                  { label: 'The date', value: formattedDate || 'To be announced' },
-                  { label: 'Join us in', value: weddingDetails.mainCeremony?.venueName || weddingDetails.mainCeremony?.address?.split(',')[0] || 'Paris' },
-                  { label: 'RSVP', value: 'View invitation', href: weddingDetails.slug ? `/w/${weddingDetails.slug}/rsvp` : undefined },
-                ]}
-              />
+              {/* P5 hero restraint. The three-column strip — date / venue / RSVP —
+                  is gone. The hero carries identity: the kicker, the couple's names,
+                  and their own mark if they place one. Logistics leave the hero, they
+                  do not leave the site: the date is on celebration, the reply on rsvp,
+                  and neither page can be switched off any more. */}
             </div>
           </div>
         </div>
@@ -399,14 +384,11 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
 
           <div style={{ position: 'relative', zIndex: 10, padding: '0 32px 56px' }}>
             <div style={{ maxWidth: 720, margin: '0 auto' }}>
-              <CapriFooter
-                theme={theme} typography={typography} textColor={theme.lightBg} accentColor={theme.accent}
-                columns={[
-                  { label: 'The date', value: formattedDate || 'To be announced' },
-                  { label: 'Join us in', value: weddingDetails.mainCeremony?.venueName || weddingDetails.mainCeremony?.address?.split(',')[0] || 'Capri' },
-                  { label: 'RSVP', value: 'View invitation', href: weddingDetails.slug ? `/w/${weddingDetails.slug}/rsvp` : undefined },
-                ]}
-              />
+              {/* P5 hero restraint. The three-column strip — date / venue / RSVP —
+                  is gone. The hero carries identity: the kicker, the couple's names,
+                  and their own mark if they place one. Logistics leave the hero, they
+                  do not leave the site: the date is on celebration, the reply on rsvp,
+                  and neither page can be switched off any more. */}
             </div>
           </div>
         </div>
@@ -433,13 +415,11 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
           </div>
 
           <div style={{ position: 'relative', zIndex: 10, padding: '0 48px 80px' }}>
-            <MykonosFooter
-              theme={theme} typography={typography} textColor={theme.lightBg} accentColor={theme.accent}
-              lines={[
-                { label: 'The date', value: formattedDate || 'To be announced' },
-                { label: 'RSVP', value: 'Send it over', href: weddingDetails.slug ? `/w/${weddingDetails.slug}/rsvp` : undefined },
-              ]}
-            />
+            {/* P5 hero restraint. The three-column strip — date / venue / RSVP —
+                is gone. The hero carries identity: the kicker, the couple's names,
+                and their own mark if they place one. Logistics leave the hero, they
+                do not leave the site: the date is on celebration, the reply on rsvp,
+                and neither page can be switched off any more. */}
           </div>
         </div>
       </div>
@@ -464,13 +444,11 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
           </div>
 
           <div style={{ position: 'relative', zIndex: 10, padding: '0 48px 72px' }}>
-            <CapeTownFooter
-              theme={theme} typography={typography} textColor={theme.lightBg}
-              lines={[
-                { label: 'The date', value: formattedDate || 'To be announced' },
-                { label: 'RSVP', value: 'View invitation', href: weddingDetails.slug ? `/w/${weddingDetails.slug}/rsvp` : undefined },
-              ]}
-            />
+            {/* P5 hero restraint. The three-column strip — date / venue / RSVP —
+                is gone. The hero carries identity: the kicker, the couple's names,
+                and their own mark if they place one. Logistics leave the hero, they
+                do not leave the site: the date is on celebration, the reply on rsvp,
+                and neither page can be switched off any more. */}
           </div>
         </div>
       </div>
@@ -505,15 +483,11 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
           </div>
 
           <div style={{ position: 'relative', zIndex: 10, padding: '0 48px 72px' }}>
-            <KyotoFooter
-              theme={theme}
-              typography={typography}
-              textColor={theme.lightBg}
-              lines={[
-                { label: 'The date', value: formattedDate || 'To be announced' },
-                { label: 'RSVP', value: 'View invitation', href: weddingDetails.slug ? `/w/${weddingDetails.slug}/rsvp` : undefined },
-              ]}
-            />
+            {/* P5 hero restraint. The three-column strip — date / venue / RSVP —
+                is gone. The hero carries identity: the kicker, the couple's names,
+                and their own mark if they place one. Logistics leave the hero, they
+                do not leave the site: the date is on celebration, the reply on rsvp,
+                and neither page can be switched off any more. */}
           </div>
         </div>
       </div>
@@ -550,16 +524,11 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
           </div>
 
           <div style={{ position: 'relative', zIndex: 10, padding: '0 32px 56px' }}>
-            <BrooklynFooter
-              theme={theme}
-              typography={typography}
-              textColor={theme.lightBg}
-              accentColor={theme.accent}
-              lines={[
-                { label: 'The date', value: formattedDate || 'To be announced' },
-                { label: 'RSVP', value: 'Get my invite →', href: weddingDetails.slug ? `/w/${weddingDetails.slug}/rsvp` : undefined },
-              ]}
-            />
+            {/* P5 hero restraint. The three-column strip — date / venue / RSVP —
+                is gone. The hero carries identity: the kicker, the couple's names,
+                and their own mark if they place one. Logistics leave the hero, they
+                do not leave the site: the date is on celebration, the reply on rsvp,
+                and neither page can be switched off any more. */}
           </div>
         </div>
       </div>
@@ -596,15 +565,11 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
 
           <div style={{ position: 'relative', zIndex: 10, padding: '0 40px 64px' }}>
             <div style={{ maxWidth: 900, margin: '0 auto' }}>
-              <BaliFooter
-                theme={theme}
-                typography={typography}
-                textColor={theme.lightBg}
-                lines={[
-                  { label: 'The date', value: formattedDate || 'To be announced' },
-                  { label: 'RSVP', value: 'Join us', href: weddingDetails.slug ? `/w/${weddingDetails.slug}/rsvp` : undefined },
-                ]}
-              />
+              {/* P5 hero restraint. The three-column strip — date / venue / RSVP —
+                  is gone. The hero carries identity: the kicker, the couple's names,
+                  and their own mark if they place one. Logistics leave the hero, they
+                  do not leave the site: the date is on celebration, the reply on rsvp,
+                  and neither page can be switched off any more. */}
             </div>
           </div>
         </div>
@@ -641,15 +606,11 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
           </div>
 
           <div style={{ position: 'relative', zIndex: 10, padding: '0 40px 96px' }}>
-            <MinimalFooter
-              theme={theme}
-              typography={typography}
-              textColor={theme.lightBg}
-              lines={[
-                { label: 'The date', value: formattedDate || 'To be announced' },
-                { label: 'RSVP', value: 'View invitation', href: weddingDetails.slug ? `/w/${weddingDetails.slug}/rsvp` : undefined },
-              ]}
-            />
+            {/* P5 hero restraint. The three-column strip — date / venue / RSVP —
+                is gone. The hero carries identity: the kicker, the couple's names,
+                and their own mark if they place one. Logistics leave the hero, they
+                do not leave the site: the date is on celebration, the reply on rsvp,
+                and neither page can be switched off any more. */}
           </div>
         </div>
       </div>
@@ -686,16 +647,11 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
 
           <div style={{ position: 'relative', zIndex: 10, padding: '0 40px 56px' }}>
             <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-              <EditorialGridFooter
-                theme={theme}
-                typography={typography}
-                textColor={theme.lightBg}
-                columns={[
-                  { label: 'The date', value: formattedDate || 'To be announced' },
-                  { label: 'Join us in', value: weddingDetails.mainCeremony?.venueName || weddingDetails.mainCeremony?.address?.split(',')[0] || 'Marrakech' },
-                  { label: 'RSVP', value: 'View invitation →', href: weddingDetails.slug ? `/w/${weddingDetails.slug}/rsvp` : undefined },
-                ]}
-              />
+              {/* P5 hero restraint. The three-column strip — date / venue / RSVP —
+                  is gone. The hero carries identity: the kicker, the couple's names,
+                  and their own mark if they place one. Logistics leave the hero, they
+                  do not leave the site: the date is on celebration, the reply on rsvp,
+                  and neither page can be switched off any more. */}
             </div>
           </div>
         </div>

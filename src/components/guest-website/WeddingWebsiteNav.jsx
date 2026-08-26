@@ -86,13 +86,20 @@ export default function WeddingWebsiteNav({ weddingName, theme, typography, enab
   // enabledPages order and appended rather than reordered in the data, so a
   // couple's own page order is untouched.
   const rsvpLink = pageLinks.find(l => l.key === 'rsvp');
-  const allLinks = [
-    ...pageLinks.filter(l => l.key !== 'rsvp'),
-    ...subLinks,
-    ...(rsvpLink ? [rsvpLink] : []),
-  ];
-  const visibleLinks = allLinks.slice(0, MAX_VISIBLE_LINKS);
-  const overflowLinks = allLinks.slice(MAX_VISIBLE_LINKS);
+  // THE RSVP IS PINNED AND NEVER ENTERS THE OVERFLOW.
+  // It was already appended last so it would read as an action rather than
+  // "just another page sitting fourth in a list of eight" — but appended last
+  // is exactly what a tail-slice takes FIRST, so on any site with more than
+  // five links the reply ended up behind "More", two taps deep on a 390 screen.
+  // The intent and the mechanism were pulling opposite ways.
+  // Overflow now takes from the other pages, in their existing order.
+  const rest = [...pageLinks.filter(l => l.key !== 'rsvp'), ...subLinks];
+  const restSlots = MAX_VISIBLE_LINKS - (rsvpLink ? 1 : 0);
+  const visibleLinks = [...rest.slice(0, restSlots), ...(rsvpLink ? [rsvpLink] : [])];
+  const overflowLinks = rest.slice(restSlots);
+  // The mobile drawer lists everything, so it takes the full ordered set —
+  // pinned or not, nothing is hidden there.
+  const allLinks = [...rest, ...(rsvpLink ? [rsvpLink] : [])];
 
   const renderLink = (link, { forMobile = false } = {}) => {
     const isActive = link.isPage && (currentPage === link.slug || (link.slug === 'home' && !currentPage));
