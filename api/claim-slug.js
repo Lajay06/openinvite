@@ -39,7 +39,14 @@ import { verifyBase44User } from './_lib/auth.js';
 import { canonicalSlug, isReservedSlug, suggestSlug } from './_lib/slugCanon.js';
 
 const BASE44_API = 'https://base44.app/api';
-const BASE44_APP_ID = process.env.BASE44_APP_ID;
+// VITE_BASE44_APP_ID, not BASE44_APP_ID. That is the name every other server
+// endpoint reads — wedding-by-slug, song-request-submit and my-wedding-details
+// all use it — and it is what is actually set in the environment. Written from
+// the shape the codebase already had rather than the name it ought to have,
+// because the wrong one meant this endpoint answered 500 'Server not
+// configured' in production while every guard around it passed: nothing in the
+// build or the test suite reads a deployed env var.
+const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID;
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY;
 
 function unwrapList(p) {
