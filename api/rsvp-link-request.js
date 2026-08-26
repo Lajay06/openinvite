@@ -42,6 +42,7 @@ const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 import { decryptToken } from './_lib/rsvpTokenCrypto.js';
 import { mergeGuestPii } from './_lib/guestPii.js';
+import { resolveWeddingBySlug } from './_lib/resolveWeddingBySlug.js';
 
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY; // server-side only, no VITE_ prefix
 
@@ -142,7 +143,10 @@ export default async function handler(req, res) {
 
   try {
     const allWeddings = await fetchAll('WeddingDetails');
-    const wedding = allWeddings.find(w => w.slug === weddingSlug);
+    const resolved = resolveWeddingBySlug(allWeddings, weddingSlug, { context: 'rsvp-link-request' });
+    // Ambiguity and an empty slug both refuse here rather than being
+    // handed whichever row sorted first. The guest never sees why.
+    const wedding = resolved.ok ? resolved.wedding : null;
     if (!wedding) return res.status(200).json(NEUTRAL);
 
     // The website password gate — decided BEFORE the guest lookup, and

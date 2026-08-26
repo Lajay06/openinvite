@@ -96,6 +96,7 @@ import {
 import { pickGuestSafeFields, verifyWeddingPassword, websiteGateIsOn } from './_lib/guestSafeWedding.js';
 import { pickGuestSafeCustomGift, pickGuestSafeRegistryProduct } from './_lib/guestSafeRegistry.js';
 import { verifyBase44User } from './_lib/auth.js';
+import { resolveWeddingBySlug } from './_lib/resolveWeddingBySlug.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -200,7 +201,10 @@ export default async function handler(req, res) {
 
     const payload = await findRes.json();
     const list = Array.isArray(payload) ? payload : (payload?.data || payload?.results || []);
-    const wedding = list.find(w => w.slug === slug && !w.is_test);
+    const resolved = resolveWeddingBySlug(list, slug, { context: 'wedding-by-slug' });
+    // Ambiguity and an empty slug both refuse here rather than being
+    // handed whichever row sorted first. The guest never sees why.
+    const wedding = resolved.ok ? resolved.wedding : null;
 
     if (!wedding) {
       return res.status(404).json({ error: 'Wedding not found.' });
