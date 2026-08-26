@@ -983,6 +983,13 @@ Related but distinct from applying a check to every instance of a shape: that
 rule is about running your OWN test everywhere it applies. This one is about
 the code already containing a second copy of the thing you just fixed.
 
+**Fourth instance, same day, same feature.** Two surfaces edit a wedding
+address — the builder panel and the Guest Suite share page. The first was fixed
+to restore the true value on a failed claim and the shape was declared closed.
+The second kept displaying the typed address while its toast faded, and was
+found only because the first fix was MEASURED rather than believed. The guard
+now asserts both.
+
 ---
 
 ## A named exception is debt with a name; a relaxed threshold is a probe that stops noticing
@@ -1310,6 +1317,30 @@ and then took a `403` on the single authorised write. The constraint was
 already in `BASE44_PLATFORM_NOTES.md`, written before that script existed — so
 it is recorded here too, where a PLAN is written rather than where a script is
 run.
+
+---
+
+## A save that excludes what the user changed must not report success
+
+The studio displayed **"✓ Saved"** over an address it had never written.
+
+**What makes this shape dangerous is that every naive check passes.** The
+response was checked. It was a 2xx. It was truthful. The save really happened —
+it simply no longer carried the one field the couple had just edited. There is
+no unchecked promise here, no swallowed catch, nothing a code review looking
+for those would find.
+
+**AND OUR OWN FIX CREATED IT.** Removing `slug` from the studio's autosave
+payload stopped it rewriting live addresses every two seconds — and orphaned
+the input that was still writing into that payload's local state. The narrowing
+was right; what it left behind was a field that looked saved and never was.
+
+> **A fix that narrows a payload can orphan the field it removed.** Check what
+> still writes into anything you take out.
+
+The quieter form of the same lie: a failed write that leaves the typed value on
+screen. The toast fades; the screen goes on saying the change happened. A
+failed write must restore what is TRUE.
 
 ---
 
