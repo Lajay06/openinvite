@@ -1226,6 +1226,28 @@ a way "it felt too broad" does not. **Count before arguing.**
 
 ---
 
+## A green pipeline says nothing about the deployed environment
+
+`/api/claim-slug` shipped reading `process.env.BASE44_APP_ID`. Every other
+server endpoint reads `VITE_BASE44_APP_ID`. So the endpoint deployed, answered
+**500 "Server not configured"** to every caller, and the entire claim path was
+inert from the moment it merged — while lint, build and every guard in the
+suite passed.
+
+They all read the REPOSITORY. **None of them can see a variable name that only
+exists in production.**
+
+**A new or changed server endpoint is not shipped until it has been CALLED
+against production and answered.** Not "deployed" — called. This one was found
+by calling it while doing something else; that has to be the deliberate last
+step of an endpoint change, not a lucky by-product.
+
+Second time in one day that a suite said "all clear" while reality disagreed —
+first partial adoption reported as complete, then a dead endpoint reported as
+shipped.
+
+---
+
 ## An address is claimed, not stored
 
 `StudioWebsite` autosaves every two seconds, and `slug` was in its payload — so
@@ -1257,6 +1279,14 @@ argue from first principles.
 
 **The file usually knows something you are about to rediscover.** Before
 inventing an exemption, grep for the exemptions that exist.
+
+**Second case, the same day.** The claim endpoint needed an application id and
+invented the variable name. The codebase held the correct one in **three
+places** — every other server endpoint reads `VITE_BASE44_APP_ID`. The endpoint
+shipped dead.
+
+Not a failure of memory: a failure to LOOK. Before naming a thing, grep for
+what the codebase already calls it.
 
 ---
 
