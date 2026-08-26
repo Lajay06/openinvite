@@ -4,7 +4,7 @@
 # 1. PAYMENTS FREEZE — the only files in this repo where a mistake costs the
 #    owner money. It ran first for a reason: a lint failure is an
 #    inconvenience, a payments change is a liability.
-# 2. LINT — a probe was once committed with two no-undef errors and pushed,
+# 3. LINT — a probe was once committed with two no-undef errors and pushed,
 #    and CI caught it. That is the gate catching an omission rather than the
 #    author checking their own work.
 #
@@ -14,4 +14,8 @@
 # does at midnight, and a shared bypass makes that careless act carry the
 # dangerous one.
 node scripts/check-payments-freeze.mjs || exit 1
+# 2. CANON ON A BRANCH — the standing-rules files have been destroyed twice by
+#    being written on a branch and then reset away. They belong on main, where
+#    a docs-only commit needs no branch and has nothing to lose.
+node scripts/check-canon-branch.mjs || exit 1
 exec npm run lint

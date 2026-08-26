@@ -95,6 +95,11 @@ jobs:
       # changed dashboard/universe-builder file introduces a British/
       # Australian spelling (colour, favourite, organise, ...) in a
       # non-comment line. See scripts/test-us-english-spelling.mjs.
+      - name: Canon on a branch
+        # Canon files belong on main. A pre-push hook is local and does not see
+        # an edit made through the GitHub UI, so this runs here too.
+        run: node scripts/check-canon-branch.mjs --ci origin/${{ github.base_ref || 'main' }}
+
       - name: Payments freeze
         # A pre-push hook watches ONE of four doors: a merge in the GitHub UI, a
         # push from another clone, and `--no-verify` all reach main without it.
