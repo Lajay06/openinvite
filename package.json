@@ -47,7 +47,8 @@
     "check:payments-freeze": "node scripts/check-payments-freeze.mjs",
     "checkpoint": "node scripts/checkpoint.mjs",
     "test:payments-freeze": "node scripts/test-payments-freeze.mjs",
-    "check:canon-branch": "node scripts/check-canon-branch.mjs"
+    "check:canon-branch": "node scripts/check-canon-branch.mjs",
+    "test:slug-resolver": "node scripts/test-slug-resolver.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.43",

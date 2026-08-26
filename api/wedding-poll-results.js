@@ -41,6 +41,7 @@
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
 import { aggregateVotes } from './_lib/pollAuth.js';
 import { websiteGateIsOn, verifyWeddingPassword } from './_lib/guestSafeWedding.js';
+import { resolveWeddingBySlug } from './_lib/resolveWeddingBySlug.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -96,7 +97,8 @@ export default async function handler(req, res) {
       const body = await findRes.text().catch(() => '');
       throw new Error(`Base44 WeddingDetails lookup failed (${findRes.status}): ${body.slice(0, 200)}`);
     }
-    const wedding = unwrapList(await findRes.json()).find(w => w.slug === weddingSlug && !w.is_test);
+    const resolved = resolveWeddingBySlug(unwrapList(await findRes.json()), weddingSlug, { context: 'wedding-poll-results' });
+    const wedding = resolved.ok ? resolved.wedding : null;
     if (!wedding) {
       return res.status(404).json({ error: 'Wedding not found.' });
     }
