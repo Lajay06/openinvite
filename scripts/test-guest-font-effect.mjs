@@ -32,6 +32,7 @@ import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { seededContext, PUBLISHED_WEDDING, GUEST_ROUTE_EXPECT } from './lib/renderHarness.mjs';
+import { UNIVERSE_CONFIGS } from '../src/lib/websiteThemes.js';
 import { WEDDING_PAGES } from '../src/lib/websiteThemes.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -110,10 +111,40 @@ async function main() {
     await browser.close();
     process.exit(1);
   }
-  console.log(`  ${ROUTES.length} guest routes derived from the router\n`);
+  // EVERY LAYOUT BRANCH, NOT EVERY ROUTE ONCE.
+  //
+  // This guard enumerated 15 routes against ONE universe, and WeddingHomePage
+  // alone branches ELEVEN ways on `universeConfig.layout`. So ten of eleven
+  // hero branches were unreachable by it, and a page that threw React #31 in
+  // any of them passed 15/15 in silence. Measured: injecting the same crash
+  // into london's branch failed the run; injecting it into any other branch
+  // did not fail anything at all.
+  //
+  // The home route is the one that branches, so it is swept across every
+  // universe. The rest keep one pass each — they do not branch on layout, and
+  // a full cross-product would be 300 renders to catch nothing extra.
+  const HOME = ROUTES.filter((r) => r.path.endsWith(`/w/${PUBLISHED_WEDDING.slug}`) || r.path.endsWith('/home'));
+  // The sweep expects the COUPLE'S NAMES, not london's kicker. Each universe
+  // writes its own kicker ("A quiet gathering", "You are invited"), so reusing
+  // one universe's string made 19 of 20 wait out the full timeout — a ten
+  // minute run that proved nothing. The names are what every hero renders.
+  const layoutSweep = Object.keys(UNIVERSE_CONFIGS).map((uni) => ({
+    ...HOME[0], universe: uni, expect: PUBLISHED_WEDDING.coupleNames,
+    label: `${HOME[0].path} [${uni}]`, timeout: 9000,
+  }));
+  const PASSES = [...ROUTES.map((r) => ({ ...r, label: r.path })), ...layoutSweep];
 
-  for (const r of ROUTES) {
+  console.log(`  ${ROUTES.length} guest routes derived from the router`);
+  console.log(`  + ${layoutSweep.length} home renders, one per universe — the hero branches ${Object.keys(UNIVERSE_CONFIGS).length} ways\n`);
+
+  for (const r of PASSES) {
     const ctx = await seededContext(browser, { width: 1280, height: 900 });
+    if (r.universe) {
+      await ctx.route(
+        (u) => { try { return new URL(typeof u === 'string' ? u : u.href).pathname.startsWith('/api/wedding-by-slug'); } catch { return false; } },
+        (route) => route.fulfill({ status: 200, contentType: 'application/json',
+          body: JSON.stringify({ ...PUBLISHED_WEDDING, activeUniverse: r.universe }) }));
+    }
     const page = await ctx.newPage();
     let rendered = true;
     try {
@@ -128,12 +159,33 @@ async function main() {
       await page.waitForFunction(
         (s) => (document.getElementById('root')?.innerText || '')
           .toUpperCase().includes(s.toUpperCase()),
-        r.expect, { timeout: 30000 });
+        r.expect, { timeout: r.timeout || 30000 });
     } catch { rendered = false; }
 
+    // Ask the page whether it threw, rather than inferring it from absence.
+    const crashed = !rendered && await page.evaluate(() =>
+      /Something went wrong|unexpected error occurred/i.test(document.body.innerText || ''));
+
     if (!rendered) {
-      console.log(`  ❌ ${r.path} — PRESENCE FAILED (expected ${JSON.stringify(r.expect)}); not measured`);
+      // DISTINGUISH A CRASH FROM MISSING CONTENT. Both fail presence, but they
+      // are different defects and the diagnosis costs real time: "expected X"
+      // reads as a copy problem when the page actually threw and rendered the
+      // error boundary.
+      console.log(crashed
+        ? `  ❌ ${r.label} — THE PAGE THREW and rendered the error boundary; not measured`
+        : `  ❌ ${r.label} — PRESENCE FAILED (expected ${JSON.stringify(r.expect)}); not measured`);
       failures++;
+      await ctx.close();
+      continue;
+    }
+
+    // THE LAYOUT SWEEP IS PRESENCE-AND-CRASH ONLY. Each universe legitimately
+    // renders its OWN faces, so asserting london's pair against all twenty
+    // would fail nineteen of them for being correct. Fonts are already checked
+    // per-route on the seeded universe; what was missing was any render at all
+    // of the other ten hero branches.
+    if (r.universe) {
+      console.log(`  ✅ ${r.label} — rendered`);
       await ctx.close();
       continue;
     }
@@ -199,7 +251,7 @@ async function main() {
       return out;
     });
     if (contrast.length) {
-      console.log(`  ⚠ ${r.path} — ${contrast.length} text element(s) below 4.5:1`);
+      console.log(`  ⚠ ${r.label} — ${contrast.length} text element(s) below 4.5:1`);
       contrast.slice(0, 4).forEach((c) => console.log(`      ${c.ratio}:1  "${c.txt}"  ${c.color}`));
       contrastFailures += contrast.length;
     }
@@ -217,13 +269,13 @@ async function main() {
     const wrong = Object.entries(seen).filter(([fam]) => !allowed.has(fam));
     const total = Object.values(seen).reduce((a, b) => a + b, 0);
     if (total === 0) {
-      console.log(`  ❌ ${r.path} — rendered but produced no measurable text`);
+      console.log(`  ❌ ${r.label} — rendered but produced no measurable text`);
       failures++;
     } else if (wrong.length) {
-      console.log(`  ❌ ${r.path} — ${wrong.map(([f, n]) => `${n}× ${f}`).join(', ')}  (of ${total})`);
+      console.log(`  ❌ ${r.label} — ${wrong.map(([f, n]) => `${n}× ${f}`).join(', ')}  (of ${total})`);
       failures++;
     } else {
-      console.log(`  ✅ ${r.path} — ${total} elements, all in the universe's faces`);
+      console.log(`  ✅ ${r.label} — ${total} elements, all in the universe's faces`);
     }
     await ctx.close();
   }
