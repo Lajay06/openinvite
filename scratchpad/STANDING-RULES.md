@@ -1121,9 +1121,22 @@ text starts cannot agree to the pixel. The selector had matched the nav's brand
 text, identical everywhere. Scoped to the hero container, the numbers separated
 at once: 254px to 552px.
 
-The tell is the ABSENCE OF VARIANCE where variance was the whole question. Ask
-what would have to be true for the result to be real, and check that instead of
-the result.
+**Case 3 — the silent null.** A reachability probe reported the RSVP nav entry
+absent in every configuration. It was present throughout: the locator read
+`<a href>` when the nav renders `<button onClick>`, and later `getByRole`
+failed to match a button whose accessible name is not its label. A locator that
+matches NOTHING and a locator that matches an ABSENT CONTROL return the same
+value — and "nothing there" is exactly an answer that requires no explanation.
+Four wrong readings, each of which looked like a product defect.
+
+The tell is the ABSENCE OF VARIANCE where variance was the whole question, or
+the absence of anything at all where something was expected. Ask what would
+have to be true for the result to be real, and check that instead of the
+result.
+
+**The generalizable fix: an instrument must prove it can see a POSITIVE before
+its negatives are believed.** The probe now asserts it can find a page it knows
+is enabled, and reports itself blind rather than reporting the product broken.
 
 ---
 
