@@ -1159,6 +1159,73 @@ than merely wrong?
 
 ---
 
+## Every claim is bound to the thing it was made about
+
+Three failures in one day, three different people-shaped mistakes, one rule.
+**A claim detached from its referent keeps all its confidence and loses all its
+meaning.**
+
+**A VERDICT IS BOUND TO ITS SHA.** RULE 13e. A gate that passed on some other
+commit has not passed on this one.
+
+**AN AUTHORIZATION IS BOUND TO ITS SCOPE.** A line covering three files and one
+channel was used to merge five files and two channels. The widening ruling sat
+in the same message, so the intent was unmistakable — but the intent is not the
+line. The line is the record, and a year later the log shows an authorization
+narrower than what shipped. **When a ruling changes what will ship, ask for the
+line to be re-issued before merging.** Asking is cheap; an unfindable scope is
+not.
+
+**A MEASUREMENT IS BOUND TO ITS BUILD.** The payments freeze was effect-tested;
+the rename fix was destroyed by a bad reset; the rebuild restored everything
+except that fix; the re-run skipped that one case. Its earlier PASS was carried
+forward into a report about a build where the fix no longer existed, and the
+guard shipped with a live hole while its own header asserted the hole was
+closed. **A result carried across a rebuild is an assumption wearing a
+measurement's clothes.**
+
+THE MECHANISM, because the rule alone will not hold. The failure was not "I
+forgot a case" — it was that RE-RUNNING WAS A SUBSET-SHAPED ACTIVITY. Twelve
+cases run by hand can be run eleven-at-a-time and nobody notices. One command
+runs all of them, prints each by name, and **exits non-zero if the number
+EXECUTED is not the number DECLARED**, independently of pass or fail. A case
+that silently did not run is itself the failure.
+
+---
+
+## A destructive command takes an ABSOLUTE target
+
+Four canon losses and one live payments hole in a single day, one shape — and
+the command was never the problem, the TARGET was:
+
+| what fired | what it aimed at | what it cost |
+|---|---|---|
+| `git checkout <sha> -- FILE` | main's implicit current copy | four canon rules overwritten |
+| `git stash pop` | the implicit top of a stack nobody had looked at | eight conflicted paths, incl. the frozen payments files |
+| `git reset --hard HEAD~1` | a relative position on an unpinned tree | an implementation discarded — the live hole in the payments guard |
+| `git reset --hard <sha>` | a SHA chosen to strip one file | three freshly-written rules, gone with it |
+
+Every one aimed at something **computed at the moment of firing** rather than
+at something named in advance. `npm run checkpoint save` pins the SHA, prints
+it, and warns when uncommitted work would be destroyed; `restore` returns to
+the pin, never to `HEAD~n`.
+
+**Pin it, print it, then act on it.**
+
+---
+
+## Scope decisions deserve a measurement
+
+"How wide should this freeze be" was a matter of taste until it was counted:
+`planGift.js` and `giftAuth.js` are imported by **2 API files each**;
+`security.js` by **47**. Freezing the first pair costs nothing; freezing
+`security.js` would refuse ordinary work daily and make the override a reflex.
+
+The arithmetic decided it in one line, and it stays reviewable a year later in
+a way "it felt too broad" does not. **Count before arguing.**
+
+---
+
 ## Never put a critical guard behind the same switch as a convenience one
 
 The pre-push hook ran the payments freeze and lint together, so `--no-verify`
