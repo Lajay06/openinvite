@@ -1159,6 +1159,34 @@ than merely wrong?
 
 ---
 
+## Never put a critical guard behind the same switch as a convenience one
+
+The pre-push hook ran the payments freeze and lint together, so `--no-verify`
+skipped both. **Skipping lint is what a tired person does at midnight. Nobody
+intends to skip a payments freeze — they intend to skip lint**, and a shared
+bypass makes the careless act silently carry the dangerous one.
+
+The fix is not a second switch; it is a second CHANNEL. The freeze also runs in
+CI, where it cannot be skipped at all.
+
+---
+
+## A guard's documentation must distinguish what was MEASURED from what was ASSUMED
+
+The payments freeze header claimed a renamed file would be caught, because a
+rename shows as a delete of the old path. Reasonable, and false: git's rename
+detection reports only the NEW path, so the frozen one never appeared and the
+rename passed. Fixed with `--no-renames`.
+
+The header now records that the claim was **made, tested, and found false**.
+That line is worth more than the fix, because the next reader knows which parts
+of the header are evidence and which are confidence. **A pre-mortem is a set of
+hypotheses, not a set of findings** — and an untested hypothesis written in the
+same voice as a measured one is how a guard acquires a reputation it has not
+earned.
+
+---
+
 ## A local question must not be answered with a global command
 
 Both of today's near-misses were READS PERFORMED WITH WRITES.
@@ -1265,6 +1293,13 @@ result.
 **The generalizable fix: an instrument must prove it can see a POSITIVE before
 its negatives are believed.** The probe now asserts it can find a page it knows
 is enabled, and reports itself blind rather than reporting the product broken.
+
+**Case 4 — exit 0 from an instrument pointed at the wrong thing.** The first
+effect test of the payments freeze edited the WORKING TREE while the check
+compares COMMITS. It reported exit 0, and the reading very nearly taken was
+"the guard is broken" rather than "the test is". An exit 0 from an instrument
+aimed at the wrong target is the most expensive zero there is: it certifies
+whatever you were hoping for.
 
 ---
 

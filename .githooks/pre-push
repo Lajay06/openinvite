@@ -1,11 +1,17 @@
 #!/bin/sh
-# Lint before push.
+# Pre-push gates. Each must exit 0 or the push is refused.
 #
-# WHY THIS EXISTS. A probe was committed with two no-undef errors and pushed;
-# CI caught it. That is the gate catching an omission rather than the author
-# checking their own work — the same shape as a merge that went red because a
-# command's exit status was never read. "I will remember to run lint" is too
-# thin to build on; this is the structural version, and it costs a second.
+# 1. PAYMENTS FREEZE — the only files in this repo where a mistake costs the
+#    owner money. It ran first for a reason: a lint failure is an
+#    inconvenience, a payments change is a liability.
+# 2. LINT — a probe was once committed with two no-undef errors and pushed,
+#    and CI caught it. That is the gate catching an omission rather than the
+#    author checking their own work.
 #
-# Bypass with --no-verify when you mean to.
+# --no-verify skips BOTH of these, which is exactly why the payments check also
+# runs in CI, where it cannot be skipped. Never leave a critical guard behind
+# the same switch as a convenience one: skipping lint is what a tired person
+# does at midnight, and a shared bypass makes that careless act carry the
+# dangerous one.
+node scripts/check-payments-freeze.mjs || exit 1
 exec npm run lint
