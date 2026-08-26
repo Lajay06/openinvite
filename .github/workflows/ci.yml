@@ -193,6 +193,12 @@ jobs:
       - name: couple names have one owner
         run: npm run test:couple-names
 
+      # The merge gate counted SKIPPED and NEUTRAL as green while ~15 merge
+      # authorizations carried "SKIPPED is not PASS" as their condition. The
+      # words and the mechanism disagreed for every one of them.
+      - name: the merge gate refuses what it should
+        run: npm run test:pr-gate
+
       # Credential-free subset of the persistence suite — no live Base44
       # login, no BASE44_ADMIN_KEY. That key is full production database
       # access and deliberately does not live in GitHub secrets; the live
@@ -266,3 +272,10 @@ jobs:
           fi
           kill "$SERVER_PID" 2>/dev/null || true
           exit $TEST_EXIT
+
+  gate-skip-probe:
+    name: gate-skip-probe
+    runs-on: ubuntu-latest
+    if: false
+    steps:
+      - run: echo "never runs"
