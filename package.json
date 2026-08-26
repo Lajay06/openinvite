@@ -43,7 +43,8 @@
     "test:guest-no-invalid-date": "node scripts/test-guest-no-invalid-date.mjs",
     "test:typography-pairings": "node scripts/test-typography-pairings.mjs",
     "test:dashboard-no-overflow": "node scripts/test-dashboard-no-overflow.mjs",
-    "test:guest-essentials-reachable": "node scripts/test-guest-essentials-reachable.mjs"
+    "test:guest-essentials-reachable": "node scripts/test-guest-essentials-reachable.mjs",
+    "check:payments-freeze": "node scripts/check-payments-freeze.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.43",
