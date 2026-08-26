@@ -1159,6 +1159,25 @@ than merely wrong?
 
 ---
 
+## A local question must not be answered with a global command
+
+Both of today's near-misses were READS PERFORMED WITH WRITES.
+
+Wanting one file's earlier contents, the reach was for `git checkout <sha> --
+path` — which overwrote main's canon and silently lost four rules — and then
+`git stash` / `git stash pop`, which restored an unrelated branch's work and
+produced **eight conflicted paths, including the frozen payments files**.
+Nothing was committed either time, but only because the state was checked
+afterwards.
+
+`git show <sha>:<path>` and `git show stash@{0}:<path>` answer the same
+question and mutate nothing. **`checkout --`, `stash pop` and `reset` change
+the entire working tree to answer a question about a single file.**
+
+Before running a command that writes, ask whether the question was a read.
+
+---
+
 ## Canon lands on main, or it is not canon
 
 Rules were written up, committed and pushed — onto the FEATURE BRANCH that

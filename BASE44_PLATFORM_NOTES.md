@@ -1014,3 +1014,24 @@ site was offered as the explanation. The stamp supports no such conclusion — a
 admin-key server write is at least as likely, and the row's date did not fit the
 browser story anyway. Use the stamp to rule out a user session, never to rule in
 a client.
+
+
+## The git stash stack is GLOBAL, not per-branch
+
+Not a Base44 fact, but the same kind: a tool that does not work the way its
+name implies, recorded where the other such facts live.
+
+`git stash pop` on one branch will happily restore work stashed on a
+completely different branch. The stack is repository-wide and ordered by time,
+not by branch. Running `git stash` then `git stash pop` around a quick file
+swap therefore does not necessarily return what you just saved — it returns
+whatever is on top.
+
+Observed 2026-08-26: a `stash`/`stash pop` pair intended to swap one test file
+popped `feat/multi-currency-pricing` work into an unrelated branch, producing
+eight conflicted paths including `api/create-checkout-session.js` and
+`api/_lib/planPricing.js`. On conflict the entry is KEPT rather than dropped,
+which is what made the recovery clean: `git reset --hard HEAD` discarded the
+merge and `stash@{0}` was still intact.
+
+Read a file from a stash with `git show stash@{0}:<path>`. It mutates nothing.
