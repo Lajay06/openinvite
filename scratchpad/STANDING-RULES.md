@@ -1248,6 +1248,42 @@ shipped.
 
 ---
 
+## An endpoint is proven by a SUCCESS from the real caller
+
+`/api/claim-slug` was reported as working because an unauthenticated call
+returned **401 instead of 500**. That proved the configuration loads. It did
+not prove the endpoint works, and it was allowed to stand as if it had.
+
+The endpoint could read, normalize, detect ambiguity and adjudicate — and then
+could not perform the one action it exists to perform. **It had never once
+succeeded**, and would not have, for any couple, since it shipped.
+
+**An upgrade from "not called" to "called and rejected" is not arrival.** A
+better-looking failure is still a failure. The proof is a success, from the
+real caller, on the real path.
+
+---
+
+## Every PR body names its prior art
+
+One line: the sibling file or function read before writing, and what was taken
+from it. If there genuinely is none, say that instead.
+
+Written after three instances in a single day of writing what seemed right
+instead of finding what already worked:
+
+- an env var name the codebase held in **three places** — the endpoint shipped
+  dead;
+- an exemption pattern sitting **ten lines above** the line being edited;
+- an entire solved pattern in a **sibling file with a header addressed to this
+  exact problem** — `my-wedding-details.js` had been writing this same entity
+  with the caller's token all along.
+
+It costs a sentence, cannot be satisfied without actually looking, and leaves a
+trace the way a guard header distinguishing measured from assumed already does.
+
+---
+
 ## The admin key can READ and can never WRITE
 
 `BASE44_ADMIN_KEY` is evaluated against each entity's own RLS with **no session
