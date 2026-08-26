@@ -1226,6 +1226,40 @@ a way "it felt too broad" does not. **Count before arguing.**
 
 ---
 
+## An address is claimed, not stored
+
+`StudioWebsite` autosaves every two seconds, and `slug` was in its payload — so
+a wedding's public address was persisted keystroke by keystroke. Renaming
+`jay-and-ella` to `jay-and-ella-2027` wrote five live addresses, not one. With
+invitations already out, four of them were broken links in somebody's inbox.
+
+**Anything a couple can hold only one of, that strangers depend on, cannot ride
+a general-purpose save.** Content autosaves. A claim cannot — every keystroke
+would fire a claim attempt and the couple would race themselves through
+half-typed names.
+
+Ask of any field: **is this content, or is it a claim?** Addresses, handles,
+invite codes and anything else with a uniqueness constraint are claims, even
+when the platform has no constraint to enforce it.
+
+---
+
+## When you need to exempt something, look for what is already exempted and why
+
+`slug` had to leave the studio's autosave payload. Ten lines above the payload,
+`websitePassword` and `websitePasswordEnabled` were already excluded — with a
+comment explaining that they are written only through a dedicated server path
+because the credential is hashed server-side.
+
+Same shape, same reason, already solved. Finding it turned a design decision
+into a matching one, and the new comment could point at the old one rather than
+argue from first principles.
+
+**The file usually knows something you are about to rediscover.** Before
+inventing an exemption, grep for the exemptions that exist.
+
+---
+
 ## Tell them before they try, not only after they fail
 
 The silence rule's positive form.
@@ -1387,6 +1421,16 @@ compares COMMITS. It reported exit 0, and the reading very nearly taken was
 "the guard is broken" rather than "the test is". An exit 0 from an instrument
 aimed at the wrong target is the most expensive zero there is: it certifies
 whatever you were hoping for.
+
+**Case 5 — the regex that read half the array, and the near-miss.** Checking
+whether `slug` was in the studio's autosave payload, a regex parsed
+`const WRITABLE_FIELDS = [...]` and reported **"slug included: False"**. It had
+read the literal entries and missed `...Object.keys(DEFAULT)`, where `slug`
+actually lives. The answer was clean, plausible, and exactly what would have
+ended the investigation — **and it was nearly accepted before a second check**.
+The finding underneath was the most serious defect in that branch. An
+instrument that reads part of a structure reports confidently about the part it
+read.
 
 ---
 

@@ -4,6 +4,39 @@ Closed decisions with their reasoning, so a restart doesn't re-litigate them.
 
 ---
 
+## 2026-08-26 — the studio was rewriting live wedding addresses on a 2-second timer
+
+**Severity: this was in production.** Not a tidy-up.
+
+`StudioWebsite` autosaves every 2 seconds. `slug` was in its `WRITABLE_FIELDS`
+payload — reached through `...Object.keys(DEFAULT)`, not the literal array — so
+**the wedding's public address was persisted keystroke by keystroke while the
+couple typed it.**
+
+A couple renaming `jay-and-ella` to `jay-and-ella-2027` did not write one new
+address. They wrote `jay-and-ella-`, `jay-and-ella-2`, `jay-and-ella-20`,
+`jay-and-ella-202`, and then the one they meant — each one live, each one for
+about two seconds.
+
+**If invitations were already out, every intermediate string was a broken link
+in somebody's inbox.** That is the exact safety property established earlier the
+same day — *a slug may be reassigned only before it has ever been shared* — and
+the studio violated it continuously, silently, on every edit.
+
+**THE RULE UNDERNEATH: AN ADDRESS IS CLAIMED, NOT STORED.** Anything a couple
+can hold only one of, that strangers depend on, cannot ride a general-purpose
+save. Content can autosave. A claim cannot: every keystroke would fire a claim
+attempt, and the couple would race themselves through half-typed names.
+
+Ask of any future field: **is this content, or is it a claim?**
+
+**Fixed** by removing `slug` from that payload — the precedent for which was
+already in the file, ten lines above, where `websitePassword` is excluded for
+the same reason. See also: *when you need to exempt something, look for what is
+already exempted and why.*
+
+---
+
 ## PlanGift RLS — delete closed, update deliberately left open, 2026-08-17
 
 `delete` flipped to `{created_by_id: "{{user.id}}"}`; `create`, `read` and
