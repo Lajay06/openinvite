@@ -16,6 +16,8 @@ import { useCollaboratorContext } from '@/lib/collaboratorContext';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import CountUp from "@/components/shared/CountUp";
 import { DEFAULT_MUSIC_REQUEST_MESSAGE } from '@/lib/musicCopy';
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -192,10 +194,29 @@ export default function MusicPage() {
   const updateMutation = useMutation({
     mutationFn: async (updates) => {
       const current = details || {};
-      if (current.id) await base44.entities.WeddingDetails.update(current.id, updates);
-      else await base44.entities.WeddingDetails.create({ ...updates, slug: 'temp' });
+      // REFUSES RATHER THAN INVENTS. This used to
+      // `create({ ...updates, slug: 'temp' })` — minting a WeddingDetails the
+      // couple never named, as a side effect of toggling a music switch, and
+      // giving every such record the SAME address.
+      //
+      // Reachability, checked before deleting it: /Music sits behind
+      // ProtectedRoute, which verifies authentication and nothing else, and
+      // this page tolerates a missing record throughout via `details?.`. So a
+      // signed-up user who never completed onboarding can reach it. That is a
+      // state that should not exist, and the honest response is to say so
+      // rather than to fabricate a wedding to hang the setting on.
+      if (!current.id) {
+        throw new Error('No wedding record to save music settings against. ' +
+          'Reached /Music without an onboarded wedding — the record is created by ' +
+          'onboarding, never here.');
+      }
+      await base44.entities.WeddingDetails.update(current.id, updates);
     },
     onSuccess: () => queryClient.invalidateQueries(['musicDetails']),
+    // IT HAD NO onError. A thrown refusal went into react-query's mutation
+    // state and nothing rendered it, so the toggle silently did nothing —
+    // which is the defect our own rule names, on a control the couple pressed.
+    onError: () => toast.error('Finish setting up your wedding first — then your music settings will save.'),
   });
 
   const addTrackMutation = useMutation({
@@ -345,6 +366,27 @@ export default function MusicPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader title="Music" subtitle="Plan playlists, add songs and manage guest song requests" />
+
+      {/* Said before they press anything, not after. This page is reachable
+          without a wedding — ProtectedRoute checks authentication only — and
+          nothing here can save until one exists. */}
+      {!isCollaborating && !details?.id && (
+        <div style={{
+          display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12,
+          padding: '14px 32px', background: 'rgba(224,53,83,0.06)',
+          borderBottom: '1px solid rgba(224,53,83,0.25)',
+        }}>
+          <p style={{ margin: 0, fontSize: 13, color: '#0A0A0A', fontFamily: PJS }}>
+            Your wedding isn&rsquo;t set up yet, so nothing on this page can save.
+          </p>
+          <Link
+            to={createPageUrl('Onboarding')}
+            style={{ fontSize: 13, fontWeight: 700, color: '#E03553', fontFamily: PJS }}
+          >
+            Finish setting up
+          </Link>
+        </div>
+      )}
 
       {/* Stat strip */}
       <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>

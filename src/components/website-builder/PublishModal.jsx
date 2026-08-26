@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { fetchGuestLinks } from '@/lib/guestLinks';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useWebsitePasswordGate } from '@/lib/websitePasswordGate';
+import { claimSlug } from '@/lib/claimSlug';
 
 function ToggleSwitch({ value, onChange, label }) {
   return (
@@ -71,10 +72,14 @@ export default function PublishModal({ onClose, details, onUpdate }) {
     }
   };
 
+  const [slugError, setSlugError] = React.useState(null);
   const saveSlug = async () => {
-    const next = { slug: slugInput };
-    await base44.entities.WeddingDetails.update(details.id, next);
-    onUpdate(next);
+    // THE CLAIM PATH, not a direct write. The address is the one field two
+    // couples can collide on, and the platform has no unique constraint.
+    setSlugError(null);
+    const r = await claimSlug(details.id, slugInput);
+    if (!r.ok) { setSlugError(r); return; }
+    onUpdate({ slug: r.slug });
   };
 
   // The gate hook persists through /api/my-wedding-details itself (the
@@ -178,6 +183,23 @@ export default function PublishModal({ onClose, details, onUpdate }) {
                 />
                 <button onClick={saveSlug} disabled={!slugInput} style={{ padding: '10px 16px', background: '#0A0A0A', color: '#FFF', border: 'none', fontSize: 12, fontWeight: 600, cursor: slugInput ? 'pointer' : 'not-allowed', opacity: slugInput ? 1 : 0.4, fontFamily: 'inherit' }}>Save</button>
               </div>
+              {/* THE BACKSTOP SPEAKS. A publish that silently does nothing is the
+                  silence-is-a-defect rule on the most important button in the
+                  product. Their words, and it offers them something. */}
+              {slugError && (
+                <p style={{ fontSize: 12, lineHeight: 1.5, color: '#E03553', margin: '8px 0 0' }}>
+                  {slugError.suggestion ? `${slugError.message} ${slugError.suggestion} is free, or pick another name.` : slugError.message}
+                  {slugError.suggestion && (
+                    <>{' '}
+                      <button
+                        type="button"
+                        onClick={() => { setSlugInput(slugError.suggestion); setSlugError(null); }}
+                        style={{ color: '#E03553', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textDecoration: 'underline', font: 'inherit' }}
+                      >Use it</button>
+                    </>
+                  )}
+                </p>
+              )}
 
               {/* Password */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
