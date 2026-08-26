@@ -936,38 +936,6 @@ against a state of the code; the code moves; the ruling does not. The gap
 between them is not the ruling being wrong — it is the ruling being about a
 different codebase.
 
-## A visual defect can only be caught by LOOKING
-
-The monogram overlay's first render reported `263 chars, non-blank` and passed
-every automated check. Opening the image showed the mark sitting directly on
-top of the couple's own names.
-
-A render sheet that is GENERATED AND NOT VIEWED is not a verification step. A
-character count proves something rendered; it cannot prove the thing rendered
-is not on top of another thing. Nothing in the pipeline was going to catch it,
-because nothing in the pipeline has eyes.
-
-Open the frames. Especially the one about to go to the owner.
-
----
-
-## A default is the one position that has to be right without anyone touching it
-
-Having found the collision, the fix was measured on ONE hero layout and set to
-18%. There are twenty arrangements, and the vertical start of the hero text is
-exactly what varies between them: 254px on amalfi-citrus, 552px on
-brooklyn-offgrid, at the same 390 width.
-
-18% cleared all twenty — by 11px on the tightest. 14% clears by 45px.
-
-Both are "correct"; only one is right. A couple CAN move the mark, but a
-default is what most of them will ship, so it carries a burden the other
-positions do not. And the first measurement was of a single instance of a shape
-that has twenty — the same error as comparing a per-layout branch against one
-universe's kicker.
-
----
-
 ## A default that publishes must be PRE-FILLED as a real value, never shown as a placeholder
 
 Grey placeholder text conventionally means "an example of what to write". If
