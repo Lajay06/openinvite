@@ -11,6 +11,29 @@ on renders** before the merge request.
 
 ---
 
+## MUTATION-SILENCE-SWEEP — mutations with onSuccess and no onError
+
+**Report first, then fix as its own small branch. Not urgent, not now.**
+
+Found by accident: `Music.jsx`'s `updateMutation` had `onSuccess` and **no
+`onError`**, so a thrown refusal went into react-query's mutation state and
+nothing rendered it. A couple pressed a toggle and saw *nothing happen*.
+
+Canon says every user-initiated action renders success or failure — and **a
+canon rule is presumed unenforced until swept product-wide**. One was found
+without looking, so assume there are others until they are counted.
+
+- Enumerate every `useMutation` with an `onSuccess` and no `onError`.
+- Report the count before fixing anything.
+- Weight by whether a human pressed something: a background refetch failing
+  silently is untidy; a toggle a couple pressed failing silently is the defect.
+
+Related: the positive form of the silence rule — *tell them before they try,
+not only after they fail*. The `Music` banner does the work; the error message
+is the safety net for someone who acts anyway.
+
+---
+
 ## THE FIX WAVE — next, one PR, owner accept before merge
 
 From the owner's production walk of the RSVP flow (2026-08-25). The walk itself

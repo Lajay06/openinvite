@@ -1226,6 +1226,26 @@ a way "it felt too broad" does not. **Count before arguing.**
 
 ---
 
+## Tell them before they try, not only after they fail
+
+The silence rule's positive form.
+
+`/Music` is reachable without a wedding record — `ProtectedRoute` verifies
+authentication and nothing else — and nothing on the page can save without one.
+The first fix made the save throw. The second checked what the couple actually
+SAW: nothing, because the mutation had no `onError`. So the third added a
+message.
+
+But a message on failure only speaks **after the person has already been
+confused**. The banner now says it before they press anything, with a link to
+the thing that fixes it; the error text is the safety net for someone who acts
+anyway.
+
+**A product that only speaks after you have already failed has let the failure
+happen.** Where a state is knowable in advance, say it in advance.
+
+---
+
 ## Never put a critical guard behind the same switch as a convenience one
 
 The pre-push hook ran the payments freeze and lint together, so `--no-verify`
