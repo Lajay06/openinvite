@@ -276,6 +276,6 @@ jobs:
   gate-skip-probe:
     name: gate-skip-probe
     runs-on: ubuntu-latest
-    if: false
+    if: ${{ false }}
     steps:
       - run: echo "never runs"
