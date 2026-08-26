@@ -228,8 +228,16 @@ const DEFAULT = {
 // by another page and must never round-trip through this component's save —
 // a full-object write here would silently revert any field another page
 // has since moved to encrypted-at-rest storage back to stale plaintext.
+// `slug` is deliberately REMOVED from this payload, for exactly the reason
+// websitePassword and websitePasswordEnabled are absent above: it is written
+// only through a dedicated server path. Here that path is /api/claim-slug.
+//
+// It cannot ride the autosave. This page saves every 2 seconds, and an address
+// is CLAIMED, not stored — autosaving it would fire a claim attempt on every
+// keystroke, and the couple would race themselves through half-typed names.
+// The studio still SUGGESTS an address locally; PublishModal claims it.
 const WRITABLE_FIELDS = [
-  ...Object.keys(DEFAULT),
+  ...Object.keys(DEFAULT).filter(k => k !== 'slug'),
   'fontOverride',
   'guestExperienceSettings',
   'photosContent',
@@ -343,6 +351,11 @@ export default function StudioWebsite({ onBack }) {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '')
         .substring(0, 30);
+      // A SUGGESTION, held in local state only — it no longer reaches the
+      // record, because the autosave no longer carries `slug`. The random
+      // suffix stays for now: it made collisions unlikely rather than
+      // impossible, which was the whole defect, and the claim path is what
+      // actually settles it at publish.
       const slug = autoSlug + '-' + Math.random().toString(36).substring(2, 6);
       updateField('slug', slug);
     }

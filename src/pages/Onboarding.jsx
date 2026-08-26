@@ -30,6 +30,7 @@ import OnboardingPathACultural from '@/components/onboarding/OnboardingPathACult
 import OnboardingPathAInspiration from '@/components/onboarding/OnboardingPathAInspiration';
 import OnboardingCompletion from '@/components/onboarding/OnboardingCompletion';
 import OnboardingShell from '@/components/onboarding/OnboardingShell';
+import { claimSlug } from '@/lib/claimSlug';
 
 // TASK 6+7: 'welcome' added as step 0; 'priorities' removed
 const STEPS = [
@@ -318,6 +319,12 @@ export default function Onboarding() {
         // write can be clobbered by this one landing after it.
         if (completingRef.current) return;
         const payload = { ...buildWeddingDetailsPayload(mergedData), onboardingDraft: true, onboardingStepIndex: stepIndex };
+        // A DRAFT DOES NOT OWN AN ADDRESS. This wrote the raw
+        // `couple1-couple2` slug on EVERY step transition, with no uniqueness
+        // check at all — so two couples with the same first names collided
+        // before the final save's check ever ran. The address is claimed once,
+        // at the end, through the server.
+        delete payload.slug;
         if (draftWeddingIdRef.current) {
           await WeddingDetails.update(draftWeddingIdRef.current, payload);
         } else {
@@ -385,21 +392,12 @@ export default function Onboarding() {
   // the exact same /w/:slug — checks the candidate, and every "-2", "-3", …
   // suffix in turn, against real (non-draft-of-this-record) WeddingDetails
   // records, until one is free.
-  const resolveUniqueSlug = async (baseSlug, excludeId) => {
-    if (!baseSlug) return baseSlug;
-    let candidate = baseSlug;
-    let suffix = 1;
-    // Bounded — collisions on a second or third attempt are already an edge
-    // case; this only loops further if several couples share the same name.
-    while (suffix < 50) {
-      const matches = await WeddingDetails.filter({ slug: candidate });
-      const collision = (matches || []).some(w => w.id !== excludeId);
-      if (!collision) return candidate;
-      suffix += 1;
-      candidate = `${baseSlug}-${suffix}`;
-    }
-    return `${baseSlug}-${Date.now()}`; // pathological fallback, guaranteed unique
-  };
+  // resolveUniqueSlug REMOVED. It was a client-side check-then-write: it read
+  // the collisions, then wrote, and two couples onboarding at once both saw
+  // "no collision" and both wrote. That race cannot be fixed by tightening the
+  // check — only by moving it somewhere it does not exist, which is
+  // /api/claim-slug.
+
 
   const saveOnboarding = async (path) => {
     // Set before anything else (even before awaiting the chain below) — a
@@ -426,7 +424,12 @@ export default function Onboarding() {
       await draftSaveChain.current;
 
       const payload = { ...buildWeddingDetailsPayload(onboardingData), onboardingDraft: false, onboardingStepIndex: null };
-      payload.slug = await resolveUniqueSlug(payload.slug, draftWeddingId);
+      // Claimed AFTER the record exists, through /api/claim-slug — a
+      // client-side check-then-write cannot be made safe by tightening it, only
+      // by moving it somewhere the race does not exist. The desired address is
+      // held aside; the record is created without one.
+      const desiredSlug = payload.slug;
+      delete payload.slug;
 
       let weddingId = draftWeddingId;
       if (weddingId) {
@@ -436,6 +439,19 @@ export default function Onboarding() {
         weddingId = created.id;
         setDraftWeddingId(weddingId);
       }
+
+      // THE ADDRESS IS CLAIMED HERE, once, against a record that now exists.
+      // A refusal is not fatal to onboarding — the couple has a wedding, just
+      // not yet an address, and PublishModal will ask them for one with a
+      // suggestion. Failing the whole onboarding over a taken name would be a
+      // far worse trade.
+      if (desiredSlug) {
+        const claim = await claimSlug(weddingId, desiredSlug);
+        if (!claim.ok) {
+          console.warn(`[onboarding] address ${JSON.stringify(desiredSlug)} not claimed: ${claim.reason}`);
+        }
+      }
+
       completed.weddingDetails = true;
 
       if (onboardingData.guestList.length > 0) {

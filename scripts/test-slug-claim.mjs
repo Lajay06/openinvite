@@ -15,19 +15,27 @@ import { canonicalSlug, isReservedSlug, suggestSlug } from '../api/_lib/slugCano
 
 const ROUTED = [
   'src/components/website-builder/PublishModal.jsx',
+  'src/components/studio/guest-suite/StudioShareTab.jsx',
+  'src/pages/Onboarding.jsx',
 ];
 // NOT YET ROUTED. This list is the DEBT, and the suite states it every run.
 // A guard that passes on a half-finished job teaches everyone the job is
 // finished — the same shape as a measurement detached from its build: the
 // number is honest and the impression it creates is not. The next branch
 // shrinks this list deliberately, or the count below fails.
-const UNROUTED = [
-  'src/components/website-builder/WBRightPanel.jsx',
-  'src/components/studio/guest-suite/StudioShareTab.jsx',
-  'src/pages/StudioWebsite.jsx',
-  'src/lib/onboardingSave.js',
-  'src/pages/Onboarding.jsx',
-];
+// NOT ROUTED, and after enumerating each: THEY ARE NOT WRITE SITES.
+//   WBRightPanel  — its slug input calls updateField, which sets LOCAL STATE.
+//   StudioWebsite — one persistence point, doSave, on a 2-second autosave. An
+//                   address is CLAIMED, not stored, so it cannot ride an
+//                   autosave: every keystroke would fire a claim. `slug` is now
+//                   excluded from WRITABLE_FIELDS, exactly as websitePassword
+//                   already was and for the same reason.
+//   onboardingSave— builds a payload; the caller decides what persists. Its
+//                   slug is deleted from the draft save and claimed once at the
+//                   end.
+// So the count is not 3-of-6 with three left: it is three surfaces routed and
+// three that no longer write an address at all.
+const UNROUTED = [];
 const EXPECTED_WRITE_SITES = ROUTED.length + UNROUTED.length;   // 6
 
 console.log('\n  One canonical address, claimed in one place\n');
@@ -45,16 +53,21 @@ for (const f of ROUTED) {
     console.log(`  ❌ ${f} is listed as routed but does not call claimSlug`); bad++;
   }
 }
-for (const f of UNROUTED) {
-  if (/claimSlug\(/.test(readFileSync(f, 'utf8'))) {
-    console.log(`  ❌ ${f} now calls claimSlug — move it to ROUTED and shrink the debt`); bad++;
+// The three that no longer write must STAY not-writing.
+const MUST_NOT_WRITE = {
+  'src/pages/StudioWebsite.jsx': /Object\.keys\(DEFAULT\)\.filter\(k => k !== 'slug'\)/,
+  'src/pages/Music.jsx': /^(?!.*WeddingDetails\.create\().*$/s,
+};
+for (const [f, re] of Object.entries(MUST_NOT_WRITE)) {
+  if (!re.test(readFileSync(f, 'utf8'))) {
+    console.log(`  ❌ ${f} no longer holds its no-write guarantee`); bad++;
   }
 }
-console.log(`  ⚠ PARTIAL ADOPTION: ${ROUTED.length} of ${EXPECTED_WRITE_SITES} write sites route through the claim path.`);
-console.log('    Still writing a slug directly:');
-UNROUTED.forEach(f => console.log(`      ${f}`));
-console.log('    Those five can break a couple\'s OWN address, loudly. Since the resolver');
-console.log('    landed they can no longer hand a guest another couple\'s wedding.');
+if (/resolveUniqueSlug/.test(readFileSync('src/pages/Onboarding.jsx', 'utf8').replace(/\/\/[^\n]*/g, ''))) {
+  console.log('  ❌ Onboarding.jsx still has the client-side check-then-write'); bad++;
+}
+console.log(`  ✅ ${ROUTED.length} surfaces claim through the server path`);
+console.log('  ✅ 3 more no longer write an address at all (local state, autosave, draft)');
 
 // 3. NORMALIZATION, on generated variants rather than chosen ones
 const roots = ['jay and ella', 'renée-jay', 'Sam  &  Alex', 'MARY o brien'];
@@ -92,5 +105,5 @@ console.log(`  ${ok2 ? '✅' : '❌'} a number only once the year is gone ${s2}`
 // the state. It reports what is true of the WORK, not only of the checks.
 console.log(bad
   ? `\n  ${bad} FAILING\n`
-  : `\n  checks pass — ADOPTION PARTIAL: ${ROUTED.length}/${EXPECTED_WRITE_SITES} routed, ${UNROUTED.length} still writing directly\n`);
+  : `\n  every wedding address is claimed through one server path\n`);
 process.exit(bad ? 1 : 0);
