@@ -1,12 +1,14 @@
 /**
  * scripts/cleanup-duplicate-slug.mjs
  *
- * ONE ROW, ONE FIELD. Sets the slug of a single WeddingDetails record to the
- * empty string so that one other record holds that address alone.
+ * VERIFIES the preconditions for clearing one duplicated wedding address.
+ * It cannot perform the change: the admin key can read these rows and can
+ * never update them.
  *
  * Usage:
- *   node scripts/cleanup-duplicate-slug.mjs            (dry run — reads and reports)
- *   node scripts/cleanup-duplicate-slug.mjs --write     (performs the one write)
+ *   node scripts/cleanup-duplicate-slug.mjs      (reads, verifies, reports)
+ *
+ * IT DOES NOT WRITE. See the constraint at the foot of this file.
  *
  * ══════════════════════════════════════════════════════════════════════════
  * SAFETY LOCKS — NEVER BYPASS.
@@ -44,8 +46,10 @@
  *
  * PROCESS NOTE, recorded against myself: CLAUDE.md says to read
  * BASE44_PLATFORM_NOTES.md BEFORE touching the admin key. I read it after the
- * 403. The notes exist to prevent exactly this attempt, and consulting them
- * first would have replaced a failed production write with a report.
+ * 403. The note existed, the rule existed, and neither fired — a documented
+ * rule is evidence of intent, never compliance.
+ * THE PLATFORM, NOT THE PROCESS, IS WHAT MADE THIS SAFE. The write was refused
+ * by RLS; nothing about my care prevented it.
  */
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
@@ -74,7 +78,6 @@ const KEY = process.env.BASE44_ADMIN_KEY;
 const KEEPS  = '6a53724b2a603fc391c5bf82';   // earlier created_date — keeps the address
 const CLEARS = '6a537256a029951304f83e18';   // later — its slug becomes ''
 const SLUG   = 'tulum-test';
-const WRITE  = process.argv.includes('--write');
 
 if (!KEY) { console.error('  BASE44_ADMIN_KEY not available. Stopping.'); process.exit(1); }
 
@@ -87,7 +90,7 @@ const get = async (p) => {
 
 const fail = (msg) => { console.error(`\n  PRECONDITION NOT MET: ${msg}\n  Stopping. Nothing written.\n`); process.exit(1); };
 
-console.log(`\n  Duplicate address cleanup — ${WRITE ? 'WRITE' : 'DRY RUN'}\n`);
+console.log(`\n  Duplicate address cleanup — VERIFY ONLY (this script cannot write)\n`);
 
 const all = await get(`/apps/${APP_ID}/entities/WeddingDetails`);
 console.log(`  ${all.length} WeddingDetails rows read`);
@@ -121,27 +124,31 @@ for (const w of [keeper, clearer]) {
   if (issued.length > 0) fail(`${w.id} has ${issued.length} guest(s) with an issued RSVP link — the address may already be in an inbox`);
 }
 
-console.log(`\n  BEFORE  ${CLEARS}.slug = ${JSON.stringify(clearer.slug)}`);
-if (!WRITE) {
-  console.log('\n  DRY RUN — every precondition met. Re-run with --write to perform the single write.\n');
-  process.exit(0);
-}
+console.log(`\n  current  ${CLEARS}.slug = ${JSON.stringify(clearer.slug)}`);
+console.log(`  target   ${CLEARS}.slug = "" so that ${KEEPS} holds the address alone`);
 
-const res = await fetch(`${API}/apps/${APP_ID}/entities/WeddingDetails/${CLEARS}`, {
-  method: 'PUT',
-  headers: { Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
-  body: JSON.stringify({ slug: '' }),
-});
-if (!res.ok) { console.error(`  WRITE FAILED: ${res.status}`); process.exit(1); }
-
-// RE-READ, from the source, not from the write's response
-const after = (await get(`/apps/${APP_ID}/entities/WeddingDetails?q=${encodeURIComponent(JSON.stringify({ id: CLEARS }))}`))[0];
-console.log(`  AFTER   ${CLEARS}.slug = ${JSON.stringify(after?.slug)}`);
-
-const holdersAfter = (await get(`/apps/${APP_ID}/entities/WeddingDetails`))
-  .filter(w => canonicalSlug(w.slug) === canonicalSlug(SLUG));
-console.log(`\n  records now holding ${JSON.stringify(SLUG)}: ${holdersAfter.length}`);
-holdersAfter.forEach(w => console.log(`    ${w.id}`));
-console.log(holdersAfter.length === 1 && holdersAfter[0].id === KEEPS
-  ? '\n  The address belongs to one record.\n'
-  : '\n  UNEXPECTED post-state — report before doing anything else.\n');
+// ─────────────────────────────────────────────────────────────────────────
+// THERE IS NO WRITE HERE, AND THERE CANNOT BE ONE.
+//
+// BASE44_ADMIN_KEY is evaluated against each entity's own RLS with no session
+// identity of its own. Reads come back filtered; updates come back 403. A write
+// path at this line was written, run, refused, and then DELETED rather than
+// left as a reproducible curiosity — dead code that can only ever return 403 is
+// a trap for whoever finds it next and reasonably assumes it works.
+//
+// EVERY PRODUCTION DATA CHANGE THEREFORE GOES THROUGH ONE OF TWO ROUTES:
+//   · an authenticated OWNER path — the couple, or an admin signed in as the
+//     account that owns the record, acting through the product; or
+//   · a deliberate SCHEMA/RLS change, which is the advisor's call and widens a
+//     permanent security boundary.
+// There is no third option. A plan that assumes one is already wrong.
+//
+// For this record the route is the first: sign in as the owning account and
+// change the address in the publish modal, which runs /api/claim-slug.
+// ─────────────────────────────────────────────────────────────────────────
+console.log(`
+  Preconditions verified. This script does not write, and cannot:
+  the admin key can read these rows and can never update them.
+  Route: sign in as the owning account and change the address in the
+  publish modal, which runs the claim endpoint.
+`);

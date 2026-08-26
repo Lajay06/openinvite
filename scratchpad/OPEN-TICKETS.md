@@ -11,6 +11,29 @@ on renders** before the merge request.
 
 ---
 
+## SLUG-DUPLICATE-CLEANUP — needs an owner session, not a script
+
+**Preconditions verified and reported; the change itself is a human action.**
+
+Two records hold `tulum-test`. `6a53724b2a603fc391c5bf82` (created 10:54:03)
+keeps it; `6a537256a029951304f83e18` (10:54:14) should give it up. Neither owner
+has a guest with an issued RSVP link, so reassignment is safe.
+
+`scripts/cleanup-duplicate-slug.mjs` verifies all of that and **cannot perform
+it** — the admin key can read these rows and can never update them.
+
+**Route:** sign in as `adminopeninvite@gmail.com`, open that wedding's publish
+modal, change the address. That runs `/api/claim-slug`.
+
+**The value is the exercise, not the row.** The record is a throwaway with no
+couple names and no guests; if the address were never freed nobody is harmed.
+What matters is watching the endpoint against production data as a real
+signed-in couple: the refusal, the suggestion, the verify-after-write, the
+reread. **If the row changes and the endpoint behaved oddly, that is a failure.
+If the endpoint behaves perfectly and the row is stubborn, that is a success.**
+
+---
+
 ## MUTATION-SILENCE-SWEEP — mutations with onSuccess and no onError
 
 **Report first, then fix as its own small branch. Not urgent, not now.**
