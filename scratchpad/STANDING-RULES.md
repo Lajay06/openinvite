@@ -4,6 +4,75 @@ These survive restarts. Re-read at the start of every session.
 
 ---
 
+## THE INTERFACE REPORTS A STATE THE SYSTEM DOES NOT HAVE
+
+**This is the defect. Everything else in this document is a corollary.**
+
+> **EVERY DISPLAYED STATE MUST BE DERIVED FROM THE THING IT CLAIMS TO DESCRIBE**
+> — not stored beside it, not written once and trusted, not computed twice by
+> two files that agree today.
+
+Ten instances, found in one week, in ten unrelated features. They were treated
+as ten bugs. They are one defect wearing different clothes:
+
+1. **A placeholder that publishes** — shown as a hint, saved as real content.
+2. **Names that render stale** — `coupleNames` written once at signup, never
+   re-derived, read by 40+ surfaces.
+3. **An address shown that was never on the record** — `StudioWebsite.jsx`
+   appended `Math.random()` to a name stem and wrote it to LOCAL STATE ONLY.
+4. **A save that reported success while excluding the edited field** — the
+   studio said "✓ Saved" over an address it had removed from its own payload.
+5. **A category switched on that guests never see** — studio read
+   `enabled !== false`, guest read `enabled &&`; undefined meant opposite things.
+6. **Publish gated a link but not a page** — an unpublished guide was fully
+   readable by anyone with the URL.
+7. **"Your website is live" while the address resolved to nothing** — the status
+   line was true about the flag and false about the world.
+8. **Live streaming promised with no page to show it** — the dashboard said
+   "visible to guests"; no guest route existed.
+9. **A moodboard button whose feature was gone** — a control outliving what it
+   controlled.
+10. **A font pairing that changes nothing** — `activeTypography` displayed a
+    pairing name while `resolveTypography` gave the universe unconditional
+    priority. The codebase already called it "permanently dead code", and the
+    panel went on displaying it.
+
+**Publish parity is a special case of this.** So is the invented-content family.
+So is the silent-failure family. So is every "two sources of truth" bug.
+
+Each corollary is this rule seen from one angle:
+
+- *one owner for a value* — so there is nothing beside it to drift
+- *derive, don't store* — so it cannot be written once and go stale
+- *one computation, two uses* — so two files cannot quietly disagree
+- *the meaning of absence decided once* — so undefined cannot mean two things
+- *a guard on the same channel as the thing it guards* — so the check sees what
+  the user sees
+- *publish gates the page, not the link* — so the promise and the world match
+
+**The test for any interface element:** if the thing it describes changed right
+now, and nothing else ran, would this still be true? If not, it is not derived —
+it is a copy, and copies are how the interface starts lying.
+
+---
+
+## When a control replaces a readout, it must carry the readout
+
+The left panel's Design section is replaced by one pill. The section carried two
+rows; one was a dead readout, and the other displayed **the current universe**.
+
+The pill reads **"London — Change universe"**, not "Change universe" — the
+universe name is the only true information that section ever carried, and it
+survives the control that carried it.
+
+Same check as removing a door and confirming the destination is still
+reachable — applied to **information** rather than navigation. Ask both:
+
+- if this control goes, can the destination still be reached?
+- if this control goes, is the information it displayed still shown anywhere?
+
+---
+
 ## The meaning of absence must be decided once and written down
 
 **Undefined is where two correct implementations quietly disagree**, and it
