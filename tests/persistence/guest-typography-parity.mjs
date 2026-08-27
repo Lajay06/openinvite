@@ -47,14 +47,6 @@ const GENERIC = new Set(['inherit', 'monospace', 'monospace, monospace', 'initia
  * being read aloud. Anything not listed here is a failure.
  */
 const ALLOWLIST = [
-  {
-    file: 'src/pages/GuestAccommodation.jsx',
-    literal: "'Plus Jakarta Sans', sans-serif",
-    reason:
-      'the "Wedding not found" error state. An error on a guest surface is CHROME — a broken ' +
-      'link is our failure to report, not the couple\'s typography (CLAUDE.md) — and it sits ' +
-      'above the resolveTypography call, so a universe face is not in scope there.',
-  },
 ];
 
 function walk(dir, out = []) {
@@ -73,7 +65,7 @@ function guestFacingFiles() {
   const all = [
     ...walk(resolve(ROOT, 'src/components/guest-website')),
     ...walk(resolve(ROOT, 'src/pages')).filter((p) =>
-      /\/(GuestMusic|GuestAccommodation|GuestCollect)\.jsx$/.test(p)),
+      /\/GuestMusic\.jsx$/.test(p)),
   ];
   return all.map((p) => relative(ROOT, p)).sort();
 }
@@ -147,7 +139,11 @@ export async function runGuestTypographyParity() {
   // [Plus Jakarta Sans, Cormorant Garamond, Jost] and /accommodation
   // registered [Plus Jakarta Sans] alone, while both had correct inline
   // font-family declarations.
-  const STANDALONE = ['src/pages/GuestAccommodation.jsx', 'src/pages/GuestMusic.jsx', 'src/components/rsvp/RSVPPage.jsx'];
+  // GuestAccommodation.jsx was retired in Wave 2 — the duplicate accommodation
+  // page. Its URL redirects to /w/:slug/stay, which lives inside the guest
+  // shell and takes its faces from the shell, so it is not a standalone surface
+  // and has nothing to check here.
+  const STANDALONE = ['src/pages/GuestMusic.jsx', 'src/components/rsvp/RSVPPage.jsx'];
   for (const rel of STANDALONE) {
     const src = strip(readFileSync(resolve(ROOT, rel), 'utf8'));
     const consumes = /resolveTypography\(/.test(src);

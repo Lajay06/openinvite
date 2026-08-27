@@ -238,7 +238,12 @@ export default function MultiPageWeddingWebsite() {
   // in enabledPages, so both inputs are needed to answer the question.
   const subPageAvailability = {
     transport: !!weddingDetails?.transport?.enabledModes?.length,
-    accommodation: !!weddingDetails?.accommodation?.manualProperties?.length,
+    // `stay`, not `accommodation`. The duplicate /accommodation route now
+    // redirects here, so the availability that used to unlock that path must
+    // unlock THIS one — otherwise a couple with properties but no 'stay' in
+    // enabledPages would follow a redirect straight into a refusal.
+    stay: !!weddingDetails?.accommodation?.manualProperties?.length
+       || !!weddingDetails?.guestSuiteAccommodation?.places?.length,
     music: weddingDetails?.music?.guestRequestsEnabled,
     experience: weddingDetails?.experienceGuide?.published,
     'good-to-know': visibleSections(weddingDetails?.weddingPolicies).length > 0,

@@ -52,7 +52,8 @@ const ARTWORK = new RegExp([
   // The published site itself, and the studio previews OF that site.
   '^components/(guest-website|universe-studio|website-builder)/',
   // Pages served on /w/:weddingSlug/* -- the published site, outside those folders.
-  '^pages/(GuestMusic|GuestAccommodation|GuestCollect)\\.jsx$',
+  // GuestAccommodation and GuestCollect were retired in Wave 2.
+  '^pages/GuestMusic\\.jsx$',
 ].join('|'));
 
 // Genuine acronyms and initialisms, plus units. Not sentence-case violations.
