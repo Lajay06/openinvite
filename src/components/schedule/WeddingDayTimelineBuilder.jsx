@@ -2,6 +2,7 @@ import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { Printer, Edit2, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { interactiveDivProps } from '@/lib/a11y';
+import { sortScheduleItems } from '@/lib/scheduleOrder';
 
 const CATEGORY_CONFIG = {
   ceremony:       { label: 'Ceremony',       bg: '#E03553',               text: '#FFFFFF' },
@@ -412,12 +413,10 @@ export default function WeddingDayTimelineBuilder({ scheduleItems, onEdit, onAdd
   const printRef = useRef(null);
   const [isExporting, setIsExporting] = useState(false);
 
-  const sorted = useMemo(() =>
-    [...scheduleItems].sort((a, b) =>
-      (a.event_date || '').localeCompare(b.event_date || '') || timeToMinutes(a.start_time) - timeToMinutes(b.start_time)
-    ),
-    [scheduleItems]
-  );
+  // The one comparator (src/lib/scheduleOrder.js). This file already had the
+  // rule right — day then time — while the two dashboard lists ignored the day
+  // entirely. Four implementations of one rule is three too many.
+  const sorted = useMemo(() => sortScheduleItems(scheduleItems), [scheduleItems]);
 
   // Grouped by date — each day gets its own independent hour-grid block,
   // same "date header, divider, count" pattern as ScheduleTimeline.jsx's

@@ -52,7 +52,8 @@
     "test:slug-claim": "node scripts/test-slug-claim.mjs",
     "test:couple-names": "node scripts/test-couple-names-owner.mjs",
     "test:pr-gate": "node scripts/test-pr-gate.mjs",
-    "test:song-status-coverage": "node scripts/test-song-status-coverage.mjs"
+    "test:song-status-coverage": "node scripts/test-song-status-coverage.mjs",
+    "test:schedule-order": "node scripts/test-schedule-order.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.43",

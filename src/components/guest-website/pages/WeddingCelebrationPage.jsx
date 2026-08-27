@@ -21,6 +21,7 @@ import CapeTownSectionMark from '../layouts/CapeTownSectionMark';
 import VineRule from '../layouts/VineRule';
 import UniverseBlocks from '../blocks/UniverseBlocks';
 
+import { compareDayThenTime } from '@/lib/scheduleOrder';
 function fmtTime(t) {
   if (!t) return '';
   const [h, m] = t.split(':').map(Number);
@@ -72,12 +73,11 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
     }
   });
 
-  // Sort chronologically: by date then start time
-  allEvents.sort((a, b) => {
-    const da = a._date || '9999-12-31', db = b._date || '9999-12-31';
-    if (da !== db) return da.localeCompare(db);
-    return (a.startTime || '').localeCompare(b.startTime || '');
-  });
+  // Chronological: day first, then time, undated last. This page had the rule
+  // right while the two dashboard lists ignored the day entirely — so the rule
+  // now lives in one place rather than in the one surface that happened to
+  // implement it correctly.
+  allEvents.sort((a, b) => compareDayThenTime(a._date, a.startTime, b._date, b.startTime));
 
   // Group by date key
   const dayMap = {};
