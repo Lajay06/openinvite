@@ -839,3 +839,60 @@ list because it had never been stated in-session; that must not need asking twic
   schema is the advisor's boundary.
 - Flag anything that consumes **Cloudinary** — the media-cost report is queued
   behind this wave because these deletions may change the numbers.
+
+---
+
+# OWNER RULING — THE PHYSICAL UNIVERSE ASSETS ARE BEING RETIRED ENTIRELY
+
+**Recorded, not scheduled.** Owner's words: *"we are removing all the physical
+assets for the universe as it is not worth it."*
+
+That is the **printed and shareable suite** — save the date, menu, place cards,
+welcome sign, thank you card, seating chart, Instagram kit, motion graphic. Not
+a tidy-up of the editor: **the artifacts themselves stop being something
+Openinvite offers.**
+
+Wave 2 item 7 removed the *tool* that made and edited them. This ruling retires
+*the things*.
+
+## 1. Reading A stands, but its premise is now temporary
+
+The eight preview components were retained in #607 because they double as the
+universe's showcase in `UniverseWorldView`'s Nº 05 chapter — rendered at
+`/studio/universe` **and in onboarding**.
+
+**Once the suite is retired, previewing artifacts a couple can never receive is
+exactly the defect named in STANDING-RULES.md's headline** — the interface
+reporting a state the system does not have, on the first screen of the product.
+
+> **DO NOT REMOVE THE SHOWCASE UNTIL SOMETHING ELSE SHOWS THE UNIVERSE.**
+
+The universe chooser must show a couple what a world looks like. Once the
+printed suite is gone the honest answer is almost certainly **their website in
+that universe** — the thing they actually receive.
+
+That is a **build with a design question inside it**, not a deletion, which is
+why it cannot fold into Wave 2.
+
+## 2. The marketing site sells this suite
+
+Owner-flagged. Every claim about printed and shareable assets becomes false the
+day the suite goes. By the sold-anywhere rule that is a **correctness problem on
+a page people read before paying** — and removing a claim for a retired feature
+needs no owner accept.
+
+**Remember the prerender: editing marketing source is half a change.** The
+served HTML is the other half (`npm run build:prerender`, committed in the same
+PR).
+
+## 3. This needs its own scope report
+
+Not a line in Wave 2. It touches:
+
+- the universe studio and `UniverseWorldView`'s Nº 05 chapter
+- **onboarding**, through the same component
+- the marketing site and pricing copy
+- whatever still generates or exports these artifacts
+- **what replaces Chapter 6** — the open design question
+
+Its own item, its own report, **after Wave 2 closes.**
