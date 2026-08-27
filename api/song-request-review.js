@@ -13,7 +13,7 @@
  * {created_by_id: "{{user.id}}"}, which "anonymous" can never match for
  * any real user. Ownership is verified here in application code (matching
  * the row's weddingId against the caller's own resolved wedding) before
- * any admin-key write, the same as guest-contact-review.js does for the
+ * any admin-key write, the same as the deleted guest contact collector did
  * identical class of problem on GuestContactSubmission.
  *
  * GET → { requests: SongRequest[] } — every request for the caller's own
@@ -24,7 +24,7 @@
  *   'add'     — valid from status pending or approved. Creates a real
  *               Music entry (via the CALLER's own token, so Base44 stamps
  *               ownership correctly — Music.create is open RLS, exactly
- *               like Guest.create in guest-contact-review.js) from the
+ *               like the deleted guest contact collector did) from the
  *               request's track data, then sets the SongRequest's own
  *               status to 'added' (its own dedicated terminal state,
  *               distinct from 'approved' — this is what "approval
@@ -81,7 +81,7 @@ async function adminFetch(method, path, body) {
   return res.status === 204 ? null : res.json();
 }
 
-/** Music.create with the CALLER's own token — never the admin key, so Base44 stamps real ownership (see file header, same as Guest.create in guest-contact-review.js). */
+/** Music.create with the CALLER's own token — never the admin key, so Base44 stamps real ownership (see file header). */
 async function callerFetch(method, path, callerToken, body) {
   const res = await fetch(`${BASE44_API}${path}`, {
     method,

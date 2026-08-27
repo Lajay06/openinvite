@@ -794,7 +794,7 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
         </div>
 
         {/* Invisible Turnstile — execution="render" auto-generates a token on
-            mount, same pattern as WeddingPollsPage.jsx/GuestCollect.jsx. */}
+            mount, same pattern as WeddingPollsPage.jsx. */}
         <Turnstile
           ref={turnstileRef}
           siteKey={TURNSTILE_SITE_KEY}

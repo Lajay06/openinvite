@@ -12,6 +12,7 @@ rows costs nothing to keep and something to remove.
 |---|---|---|---|
 | `LiveStream` (whole entity) | #601, live stream deletion | **0** | `base44/entities/LiveStream.jsonc` and its `entityFields.generated.js` entry left in place. The generated file should be regenerated, never hand-edited. |
 | `Photo` (whole entity) | Photos deletion | **0** | `base44/entities/Photo.jsonc` left in place. Note `enabledPages` on 4 WeddingDetails records still lists `'photos'`; those entries are inert, not errors — `pageLinks` filters on a resolvable label. |
+| `GuestContactSubmission` (whole entity) | collect link deletion | **1** (`status=approved`) | Left in place. The single row is a SPENT RECEIPT — approval already merged its details onto the guest via the review endpoint — so no data line is needed. `scripts/reset-test-account.mjs` still special-cases this entity; harmless, and it should not be edited until the schema pass decides the entity's fate. |
 
 ## Standing cautions found while surveying
 

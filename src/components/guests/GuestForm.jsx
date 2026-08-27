@@ -72,7 +72,7 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
     name: '', email: '', phone: '', category: 'family',
     tags: [], table_assignment: '', dietary_restrictions: '',
     rsvp_status: 'pending', plus_one: false, plus_one_name: '', plus_one_email: '',
-    plus_one_dietary_restrictions: '', notes: '',
+    plus_one_dietary_restrictions: '', notes: '', mailing_address: '',
     meal_choice: '', plus_one_meal_choice: '',
   });
   const [tagInput, setTagInput] = useState('');
@@ -438,6 +438,35 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
               </div>
             </>
           )}
+
+          {/* Postal address.
+
+              ONE FREE-TEXT BLOCK, never line1/city/state/postcode. A structured
+              form imposes one country's idea of an address on everyone, and this
+              product sends physical invitations across borders more than most.
+              People write addresses as a block, and label printing works from a
+              block. The country belongs INSIDE it — a separate country field
+              would be a second place the same fact lives, empty or contradictory
+              half the time.
+
+              The field has existed on Guest all along, the review endpoint
+              filled it, and the export carried it. The product simply never
+              offered anywhere to type one.
+
+              `|| ''` on the value because on EDIT the form seeds from the guest
+              row itself (useState(guest || {...})), and a guest saved before
+              this field existed has no mailing_address — undefined would turn a
+              controlled input uncontrolled on the first keystroke. */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <Label htmlFor="mailing_address">Postal address</Label>
+            <Textarea
+              id="mailing_address"
+              value={formData.mailing_address || ''}
+              onChange={e => set('mailing_address', e.target.value)}
+              rows={4}
+              placeholder={'For save the dates and invitations\nInclude the country if they are overseas'}
+            />
+          </div>
 
           {/* Notes */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

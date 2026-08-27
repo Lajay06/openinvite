@@ -13,7 +13,7 @@
  * moot rather than something to fight.
  *
  * GET is retained for password-less reads — the three guest pages that never
- * send one (GuestCollect, GuestMusic, GuestAccommodation) and every
+ * send one (GuestMusic, GuestAccommodation) and every
  * unprotected site — so the common path is unchanged.
  *
  * Public, unauthenticated endpoint backing every page of a couple's
