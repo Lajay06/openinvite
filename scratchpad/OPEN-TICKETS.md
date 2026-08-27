@@ -789,3 +789,19 @@ explicitly — see STANDING-RULES.md, "A guard should say why it still exists".
 **The question for Wave 2:** which one is the real accommodation page, and what
 does the other one's route do once it is gone (redirect, or 404 through the
 existing not-found path)?
+
+---
+
+## CLOSED (#599) — logged at its real size: every optional page was readable
+
+The ticket was "does publish on the guest guide do anything". The finding was
+not about the guide.
+
+`MultiPageWeddingWebsite` computed `enabledPages` and never consulted it.
+**Every page a couple had switched off was fully readable by anyone with the
+URL** — the toggle governed the navigation and nothing else. A couple who
+turned a page off believed it was gone.
+
+Same class as the unpublished draft, and it affected **every optional page in
+the product**, not one. Closed by making reachability and the nav the same
+computation.

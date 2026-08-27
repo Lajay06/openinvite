@@ -4,6 +4,45 @@ These survive restarts. Re-read at the start of every session.
 
 ---
 
+## One computation, two uses — never two computations of one truth
+
+The guest nav decided what to LINK to. The router decided what to SERVE. Two
+answers to one question, and nothing held them together.
+
+The fix derives reachability from **the same computation the nav uses**, rather
+than writing a second rule that happens to agree today. That is what guarantees
+a link can never lead to a refusal, and a refusal can never hide something the
+nav still advertises.
+
+**The single-owner rule applied to a COMPUTED value rather than a stored one** —
+the same principle as `coupleNames`, and it belongs beside "a second copy of a
+user's own words is a defect waiting for its turn."
+
+---
+
+## When a fix breaks a probe, the probe may be standing on the defect
+
+`test:guest-essentials-reachable` read the nav from `/w/:slug/our-story`. Two of
+its four hostile cases DISABLE our-story — so the probe only ever worked because
+unavailable pages rendered anyway. The moment they stopped, it reported itself
+blind.
+
+**Order matters.** The regression was established by running the same probe on
+`main` first (4/4 there, 2/4 on the branch) before anything was adjusted. That
+is the difference between discovering this and quietly weakening a test.
+
+> **A probe moved to a new vantage point must be re-proven able to fail from
+> it.**
+
+Moving a probe until it passes is exactly how a suite becomes decorative. The
+control run — 0/4 with the guarantee stripped, "CONTROL PASSED" — is what
+separates the two. Both halves belong together: either alone is dangerous.
+
+**And a probe should stand on something we have promised never moves.** The new
+vantage point is `/celebration`, covered by the always-on guarantee.
+
+---
+
 ## Deduplicate on what the person perceives, not on what the code identifies
 
 The guest nav showed four destinations twice. Three pairs shared a `key`. One
