@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { Globe, Sparkles, Eye, ChevronRight } from 'lucide-react';
+import { Globe, Sparkles, ChevronRight } from 'lucide-react';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { getUniverse } from '@/lib/universeCatalog';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
@@ -31,7 +31,6 @@ export default function StudioHub() {
     load();
   }, []);
 
-  const siteUrl = wedding?.slug ? `openinvite.com.au/w/${wedding.slug}` : null;
 
   const universe = getUniverse(wedding?.activeUniverse || 'london');
   const universeImage = universe?.imageUrl || null;
@@ -55,19 +54,6 @@ export default function StudioHub() {
       badge: isProPlan ? 'Ultra' : (universe?.name || 'Choose one'),
       action: () => navigate('/studio/universe'),
     },
-    {
-      icon: Eye,
-      kicker: 'See it live',
-      title: 'Preview your site',
-      subtitle: 'See your website exactly as your guests see it.',
-      image: wedding?.coverPhoto || universeImage,
-      badge: null,
-      rightLabel: siteUrl,
-      action: () => {
-        if (wedding?.slug) window.open(`/w/${wedding.slug}`, '_blank');
-        else navigate('/studio/guest-suite');
-      },
-    },
   ];
 
   return (
@@ -88,7 +74,19 @@ export default function StudioHub() {
               3-column row (not a stack) — equal-width columns filling the
               page's available width, no scrolling needed for just 3 items. */}
           <div style={{
-            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16,
+            /* TWO CARDS, NOT THREE. 'Preview your site' carried the same
+               visual weight as Guest Suite and My Universe, so three doors read
+               as three equal destinations when only two are places a couple
+               goes to WORK. The live site is still one click from the builder's
+               Preview (FullScreenPreview's "Visit live") and from the Guest
+               Suite's Share tab — the door went only after the destination had
+               another one.
+
+               320px min rather than 240: with two cards the old minimum let
+               them stretch across half the page while keeping a near-square
+               height, which reads as two squares pushed apart rather than two
+               rectangles. */
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16,
             opacity: loading ? 0.5 : 1, transition: 'opacity 0.3s',
           }}>
           {cards.map((card, i) => {
@@ -102,7 +100,7 @@ export default function StudioHub() {
                 whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
                 transition={{ duration: 0.5, ease: 'easeOut' }}
                 style={{
-                  position: 'relative', height: 'clamp(320px, 34vw, 440px)',
+                  position: 'relative', height: 'clamp(240px, 24vw, 340px)',
                   overflow: 'hidden', cursor: 'pointer', borderRadius: 0,
                   background: card.image ? '#0A0A0A' : 'linear-gradient(135deg, #0A1930 0%, #1a2f4a 100%)',
                 }}
@@ -158,11 +156,6 @@ export default function StudioHub() {
                       <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', margin: 0, lineHeight: 1.4 }}>
                         {card.subtitle}
                       </p>
-                      {card.rightLabel && (
-                        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', margin: '6px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {card.rightLabel}
-                        </p>
-                      )}
                     </div>
                     <ChevronRight size={20} color="rgba(255,255,255,0.6)" style={{ flexShrink: 0 }} />
                   </div>
