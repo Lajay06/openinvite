@@ -82,6 +82,8 @@ const SCHEMAS = {
     plus_one_name:1, plus_one_email:1, plus_one_rsvp:1, plus_one_meal_choice:1,
     plus_one_dietary_restrictions:1, special_requests:1, invitation_sent:1, rsvp_link_id:1,
     seating_preferences:1, seating_avoid:1, notes:1, interests:1,
+    // Registered 2026-06-03 (previously silently dropped — Guest RSVP fields)
+    song_request:1, rsvp_note:1, poll_votes:1,
     _nested: {},
   },
 
