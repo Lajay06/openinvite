@@ -4,7 +4,7 @@
  * Admin-key REST helpers for the PlanGift entity (PR G4, gifting v2
  * bridge) — create:null/read:null/update:null, so every read/write here
  * goes through BASE44_ADMIN_KEY, same pattern as
- * api/send-collaborator-invite.js's
+ * api/collect-guest-contact.js and api/send-collaborator-invite.js's
  * Collaborator calls. fetchImpl is injectable so the webhook's own unit
  * tests can stub network calls.
  */
