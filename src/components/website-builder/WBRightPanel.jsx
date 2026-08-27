@@ -613,14 +613,6 @@ function ContentTab({ details, onChange }) {
       <MilestoneEditor milestones={milestones} onChange={setMilestones} />
       <Divider />
 
-      {enabledPages.includes('photos') && (
-        <>
-          <SLabel>Photos page</SLabel>
-          <FLabel>Gallery</FLabel>
-          <PhotoGrid photos={gallery} onChange={setGallery} />
-          <Divider />
-        </>
-      )}
 
       <SLabel>Ceremony &amp; reception</SLabel>
       <MasterDataReferenceDark

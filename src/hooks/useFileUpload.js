@@ -5,7 +5,7 @@ import { stripGpsFromFile } from '@/lib/stripImageGps';
 
 /**
  * useFileUpload — one shared upload lifecycle for every upload site in the
- * app (builder, moodboard, attire, vendor docs, our story, photo gallery,
+ * app (builder, moodboard, attire, vendor docs, our story,
  * seating, website customization). Previously each site hand-rolled its own
  * setUploadingX(true/false) boolean and a toast — easy to miss, and gave no
  * visible feedback at the actual upload spot (a thumbnail placeholder,

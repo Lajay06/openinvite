@@ -28,7 +28,6 @@ import WeddingCelebrationPage from '@/components/guest-website/pages/WeddingCele
 import WeddingRSVPPage from '@/components/guest-website/pages/WeddingRSVPPage';
 import WeddingRegistryPage from '@/components/guest-website/pages/WeddingRegistryPage';
 import WeddingMusicPage from '@/components/guest-website/pages/WeddingMusicPage';
-import WeddingPhotosPage from '@/components/guest-website/pages/WeddingPhotosPage';
 import WeddingStylePage from '@/components/guest-website/pages/WeddingStylePage';
 import WeddingPollsPage from '@/components/guest-website/pages/WeddingPollsPage';
 import WeddingFAQPage from '@/components/guest-website/pages/WeddingFAQPage';
@@ -44,7 +43,6 @@ const PAGE_COMPONENTS = {
   'rsvp':         WeddingRSVPPage,
   'registry':     WeddingRegistryPage,
   'music':        WeddingMusicPage,
-  'photos':       WeddingPhotosPage,
   'styling':      WeddingStylePage,
   'polls':        WeddingPollsPage,
   'faq':          WeddingFAQPage,
