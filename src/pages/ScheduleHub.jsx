@@ -19,6 +19,7 @@ import { buildIcsCalendar, downloadIcs } from "@/lib/ics";
 import toast from "react-hot-toast";
 import CountUp from "@/components/shared/CountUp";
 
+import { sortScheduleItems } from '@/lib/scheduleOrder';
 const Schedule = base44.entities.Schedule;
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -91,7 +92,7 @@ export default function ScheduleHub() {
         });
         if (!res.ok) throw new Error('Failed to load schedule');
         const { data } = await res.json();
-        setScheduleItems((data.Schedule || []).slice().sort((a, b) => (a.start_time || '').localeCompare(b.start_time || '')));
+        setScheduleItems(sortScheduleItems(data.Schedule));
       } else {
         const data = await getMyRecords('Schedule', "start_time");
         setScheduleItems(data);

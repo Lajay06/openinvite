@@ -206,6 +206,12 @@ jobs:
       - name: song request filters cover their domain
         run: npm run test:song-status-coverage
 
+      # Schedule.jsx and ScheduleHub.jsx sorted by start_time only — event_date
+      # was not a sort key at all, so 1 January sat above 31 December for every
+      # couple with more than one day of events.
+      - name: the schedule runs forwards
+        run: npm run test:schedule-order
+
       # Credential-free subset of the persistence suite — no live Base44
       # login, no BASE44_ADMIN_KEY. That key is full production database
       # access and deliberately does not live in GitHub secrets; the live

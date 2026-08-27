@@ -18,6 +18,7 @@ import { base44 } from "@/api/base44Client";
 import { getMyRecords } from "@/lib/resolveMyWedding";
 import { useCollaboratorContext } from "@/lib/collaboratorContext";
 import CountUp from "@/components/shared/CountUp";
+import { sortScheduleItems } from '@/lib/scheduleOrder';
 const Schedule = base44.entities.Schedule;
 
 
@@ -102,7 +103,7 @@ export default function SchedulePage({
         });
         if (!res.ok) throw new Error('Failed to load schedule');
         const { data } = await res.json();
-        setScheduleItems((data.Schedule || []).slice().sort((a, b) => (a.start_time || '').localeCompare(b.start_time || '')));
+        setScheduleItems(sortScheduleItems(data.Schedule));
       } else {
         const data = await getMyRecords('Schedule', 'start_time');
         setScheduleItems(data);
