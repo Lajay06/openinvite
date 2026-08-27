@@ -88,7 +88,6 @@ const Moodboard = lazyWithReload(() => import('./pages/Moodboard'));
 const Music = lazyWithReload(() => import('./pages/Music'));
 const Onboarding = lazyWithReload(() => import('./pages/Onboarding'));
 const OurStory = lazyWithReload(() => import('./pages/OurStory'));
-const PhotoGallery = lazyWithReload(() => import('./pages/PhotoGallery'));
 const Photography = lazyWithReload(() => import('./pages/Photography'));
 const Policies = lazyWithReload(() => import('./pages/Policies'));
 const Pricing = lazyWithReload(() => import('./pages/Pricing'));
@@ -135,7 +134,6 @@ export const PAGES = {
     "Music": Music,
     "Onboarding": Onboarding,
     "OurStory": OurStory,
-    "PhotoGallery": PhotoGallery,
     "Photography": Photography,
     "Policies": Policies,
     "Pricing": Pricing,

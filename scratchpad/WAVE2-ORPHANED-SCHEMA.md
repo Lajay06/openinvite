@@ -11,6 +11,7 @@ rows costs nothing to keep and something to remove.
 | entity / field | orphaned by | production rows | notes |
 |---|---|---|---|
 | `LiveStream` (whole entity) | #601, live stream deletion | **0** | `base44/entities/LiveStream.jsonc` and its `entityFields.generated.js` entry left in place. The generated file should be regenerated, never hand-edited. |
+| `Photo` (whole entity) | Photos deletion | **0** | `base44/entities/Photo.jsonc` left in place. Note `enabledPages` on 4 WeddingDetails records still lists `'photos'`; those entries are inert, not errors — `pageLinks` filters on a resolvable label. |
 
 ## Standing cautions found while surveying
 

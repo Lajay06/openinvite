@@ -58,7 +58,7 @@ function PasswordGateSimple({ slug, onUnlock }) {
 const PAGE_LABELS = {
   'home': 'Home', 'our-story': 'Our Story', 'celebration': 'Celebration',
   'rsvp': 'RSVP', 'registry': 'Registry',
-  'music': 'Music', 'photos': 'Photos', 'styling': 'Styling', 'polls': 'Polls', 'faq': 'FAQ',
+  'music': 'Music', 'styling': 'Styling', 'polls': 'Polls', 'faq': 'FAQ',
   'stay': 'Stay', 'transport': 'Getting here', 'experience': 'Guide',
 };
 import { motion, AnimatePresence } from 'framer-motion';
@@ -69,7 +69,6 @@ import WeddingCelebrationPage from './pages/WeddingCelebrationPage';
 import WeddingRSVPPage from './pages/WeddingRSVPPage';
 import WeddingRegistryPage from './pages/WeddingRegistryPage';
 import WeddingMusicPage from './pages/WeddingMusicPage';
-import WeddingPhotosPage from './pages/WeddingPhotosPage';
 import WeddingFAQPage from './pages/WeddingFAQPage';
 import WeddingStylePage from './pages/WeddingStylePage';
 import WeddingPollsPage from './pages/WeddingPollsPage';
@@ -102,7 +101,6 @@ const PAGE_COMPONENTS = {
   'rsvp': WeddingRSVPPage,
   'registry': WeddingRegistryPage,
   'music': WeddingMusicPage,
-  'photos': WeddingPhotosPage,
   'styling': WeddingStylePage,
   'polls': WeddingPollsPage,
   'faq': WeddingFAQPage,
