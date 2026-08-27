@@ -4,6 +4,35 @@ These survive restarts. Re-read at the start of every session.
 
 ---
 
+## Nothing reported is not the same as nothing wrong
+
+**Every instrument must distinguish "I looked and found nothing" from "I did
+not look."** An empty result and a clean result are the same output and
+opposite facts.
+
+It bit FIVE TIMES IN ONE DAY, in five different tools, and none of us saw it
+as one thing until the fifth:
+
+1. **The payments runner** counted a case that never executed as not-failed.
+2. **The render guard** reported 15/15 while nineteen of twenty universes were
+   never rendered.
+3. **A caller-token read** would have returned an empty list for every address
+   held by someone else, and the endpoint would have called them free.
+4. **The advisor's own date filter** returned nothing and was nearly read as
+   "no records since the 18th" — the control caught it.
+5. **A workflow that never ran** produced no rows, and the merge gate called no
+   rows green — which would have authorized a merge whose entire test suite
+   never executed.
+
+The list is what makes the shape recognisable, which is why all five are kept.
+
+> Before trusting any guard, ask it one question:
+> **WHAT DOES THIS SAY WHEN IT DOESN'T RUN?**
+
+If the answer is "the same thing it says when it passes", it is not a guard.
+
+---
+
 ## RULE 1 — Quote the authorization line before any merge
 
 **Recorded 2026-08-16, after #441 and #443 were merged and the authorization
