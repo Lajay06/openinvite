@@ -75,5 +75,26 @@ if (/if \(!pageIsAvailable\) return <InvitationNotAvailable \/>;/.test(src)) {
 if (/page === 'home' \|\|/.test(src)) pass('no-new-state', 'home is always reachable');
 else fail('no-new-state', 'home is not exempt — a guest with the couple\'s own address could be refused');
 
+/* ── 4. A SHARED URL IS REDIRECTED, NEVER REMOVED ───────────────────── */
+// Before #598 deduped the guest nav, a guest could be shown /w/:slug/accommodation
+// under the label "Stay". Those links exist in inboxes nobody can reach. The page
+// behind it was retired in Wave 2; the ROUTE must not be, or every one of those
+// links breaks silently. Same reasoning that freezes a wedding address once the
+// first invitation goes out.
+const app = readFileSync(join(ROOT, 'src/App.jsx'), 'utf8');
+const routes = [...app.matchAll(/path="\/w\/:weddingSlug\/accommodation" element=\{<(\w+)/g)].map(m => m[1]);
+if (routes.length === 0) {
+  fail('shared-url', '/w/:slug/accommodation no longer routes at all — links already sent now 404');
+} else if (routes.every(r => /Redirect/.test(r))) {
+  pass('shared-url', `/w/:slug/accommodation redirects (${routes.length} registration(s))`);
+} else {
+  fail('shared-url', `/w/:slug/accommodation renders ${routes.join(', ')} rather than redirecting`);
+}
+if (/<Navigate to=\{`\/w\/\$\{weddingSlug\}\/stay`\} replace \/>/.test(app)) {
+  pass('shared-url', 'it redirects to the surviving stay page, preserving the slug');
+} else {
+  fail('shared-url', 'the redirect does not preserve the wedding slug');
+}
+
 console.log(failed ? `\n  ${failed} failure(s)` : '\n  an unpublished page is not reachable');
 process.exit(failed ? 1 : 0);

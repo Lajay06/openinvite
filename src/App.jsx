@@ -6,7 +6,7 @@ import { queryClientInstance } from '@/lib/query-client'
 import VisualEditAgent from '@/lib/VisualEditAgent'
 import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
-import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation, useParams } from 'react-router-dom';
 import { AuthProvider } from '@/lib/AuthContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -50,7 +50,25 @@ const FoodBeverage = lazyWithReload(() => import('./pages/FoodBeverage'));
 const EntertainmentDetails = lazyWithReload(() => import('./pages/EntertainmentDetails'));
 const Transport = lazyWithReload(() => import('./pages/Transport'));
 const Accommodation = lazyWithReload(() => import('./pages/Accommodation'));
-const GuestAccommodation = lazyWithReload(() => import('./pages/GuestAccommodation'));
+/**
+ * /w/:slug/accommodation redirects to /w/:slug/stay.
+ *
+ * THE ROUTE IS NOT DELETED, AND THAT IS THE WHOLE POINT. Before #598 deduped
+ * the guest nav, a guest could be shown this path under the label "Stay" — so
+ * links to it exist in inboxes we cannot reach. A guest-facing URL that has
+ * ever been shared is never removed, only redirected; the same reasoning that
+ * freezes a wedding's address once the first invitation goes out.
+ *
+ * The page it used to render (GuestAccommodation) is retired: it sat outside
+ * the guest shell with no nav, printed its heading twice, and rendered emoji
+ * on a live guest surface. WeddingStayPage reads the same fields inside the
+ * shell.
+ */
+function AccommodationRedirect() {
+  const { weddingSlug } = useParams();
+  return <Navigate to={`/w/${weddingSlug}/stay`} replace />;
+}
+
 const GuestMusic = lazyWithReload(() => import('./pages/GuestMusic'));
 const Music = lazyWithReload(() => import('./pages/Music'));
 const CeremonyDetails = lazyWithReload(() => import('./pages/CeremonyDetails'));
@@ -184,7 +202,7 @@ const AuthenticatedApp = () => {
         <Route path="/cookie-policy" element={<CookiePolicy />} />
         <Route path="/data-deletion" element={<DataDeletion />} />
         <Route path="/refund-policy" element={<RefundPolicy />} />
-        <Route path="/w/:weddingSlug/accommodation" element={<GuestAccommodation />} />
+        <Route path="/w/:weddingSlug/accommodation" element={<AccommodationRedirect />} />
         <Route path="/w/:weddingSlug/music" element={<GuestMusic />} />
         <Route path="/w" element={<InvitationNotAvailable />} />
         <Route path="/w/" element={<InvitationNotAvailable />} />
@@ -271,7 +289,7 @@ const AuthenticatedApp = () => {
         <Route path="/universes" element={<Universes />} />
         <Route path="/gifting" element={<Gifting />} />
         <Route path="/gift/success" element={<GiftPurchaseSuccess />} />
-        <Route path="/w/:weddingSlug/accommodation" element={<GuestAccommodation />} />
+        <Route path="/w/:weddingSlug/accommodation" element={<AccommodationRedirect />} />
         <Route path="/w/:weddingSlug/music" element={<GuestMusic />} />
         <Route path="/w" element={<InvitationNotAvailable />} />
         <Route path="/w/" element={<InvitationNotAvailable />} />

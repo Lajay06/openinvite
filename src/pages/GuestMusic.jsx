@@ -46,7 +46,7 @@ export default function GuestMusic() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Cached password: same reason as GuestAccommodation — /w/:slug/music is
+        // Cached password: /w/:slug/music is
         // its own route, outside the unlock screen, so an already-unlocked
         // guest would otherwise be served the gated response and shown the
         // "requests not open" fallback.

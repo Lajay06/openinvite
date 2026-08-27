@@ -62,7 +62,7 @@ export default function WeddingWebsiteNav({ weddingName, theme, typography, enab
 
   const subLinks = [
     hasTransport && { key: 'transport', label: 'Getting here', href: `/w/${weddingSlug}/transport` },
-    hasAccommodation && { key: 'accommodation', label: 'Stay', href: `/w/${weddingSlug}/accommodation` },
+    hasAccommodation && { key: 'stay', label: 'Stay', href: `/w/${weddingSlug}/stay` },
     hasMusic && { key: 'music', label: 'Music', href: `/w/${weddingSlug}/music` },
     hasExperience && { key: 'experience', label: 'Experiences', href: `/w/${weddingSlug}/experience` },
     hasGoodToKnow && { key: 'good-to-know', label: 'Good to know', href: `/w/${weddingSlug}/good-to-know` },
