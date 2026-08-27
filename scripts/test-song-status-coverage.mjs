@@ -74,5 +74,27 @@ if (!Array.isArray(declared) || declared.length === 0) {
   else pass('writers', `every status written by the server is declared: ${[...new Set(written)].join(', ')}`);
 }
 
+/* ── THE DEFAULT VIEW ───────────────────────────────────────────────── */
+// A DEFAULT VIEW SHOULD NOT DEPEND ON DATA THAT CAN CHANGE UNDER IT.
+// The page opened on Pending, which is empty in production while 235 requests
+// exist. "First non-empty tab" was the tempting fix and is the wrong one — a
+// tab that moves when the underlying set empties teaches a couple that the
+// product rearranges itself.
+const music2 = readFileSync(join(ROOT, 'src/pages/Music.jsx'), 'utf8');
+const initial = music2.match(/const \[requestFilter, setRequestFilter\] = useState\('([a-z]+)'\)/);
+if (!initial) {
+  fail('default', 'could not read the default tab');
+} else if (initial[1] === 'all') {
+  pass('default', 'the page opens on All, with every count visible');
+} else {
+  fail('default', `the page opens on '${initial[1]}' — a tab that can be empty while requests exist`);
+}
+
+// 'all' must be a VIEW, never a status: if it leaked into the partition the
+// coverage check above would be comparing against a value nothing can write.
+const partition = music2.match(/const REQUEST_STATUSES = \[([^\]]*)\]/);
+if (partition && !partition[1].includes("'all'")) pass('default', "'all' is a view, not a status in the partition");
+else fail('default', "'all' leaked into REQUEST_STATUSES — the partition no longer matches the schema");
+
 console.log(failed ? `\n  ${failed} failure(s)` : '\n  the filters cover their domain');
 process.exit(failed ? 1 : 0);
