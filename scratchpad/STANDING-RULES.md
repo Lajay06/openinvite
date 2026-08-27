@@ -4,6 +4,37 @@ These survive restarts. Re-read at the start of every session.
 
 ---
 
+## The meaning of absence must be decided once and written down
+
+**Undefined is where two correct implementations quietly disagree**, and it
+never shows up in either file's own tests.
+
+Three instances today, in three unrelated features:
+
+1. **`??` versus `||`** on the music message — one treats empty string as a
+   value, the other as absent.
+2. **The `coupleNames` fallback ordering** — nine sites consulted the stale copy
+   first and the truth only when the copy was missing.
+3. **`enabled` on guide categories** — and this one is the worst:
+
+```
+studio  ExperienceGuideTab.jsx:234   enabled !== false   → undefined reads as ENABLED
+guest   WeddingExperiencePage.jsx:39 enabled && …        → undefined reads as OFF
+```
+
+Both are reasonable. Both are defensible in isolation. **Together they make a
+product that lies:** the couple saw the switch on, the guest saw nothing, and
+neither file was wrong on its own terms.
+
+**This is publish parity in its purest form** — not a promise the site failed to
+keep, but a CONTROL REPORTING A STATE THE SITE NEVER HAD, for every category
+ever saved without an explicit toggle, since the feature shipped.
+
+> When two surfaces read the same field, decide once what absence means, write
+> it beside the field, and make both sides read it the same way.
+
+---
+
 ## When an instrument has already been wrong once, discard it rather than debug it — if a simpler direct observation exists
 
 A selector written to measure card geometry reported a **199×273 sidebar item**
@@ -31,6 +62,10 @@ the other two. They were found by grepping after the deletion.
 **The tools that run automatically cover a smaller area than they feel like
 they cover** — which is precisely why the delete-then-grep step exists. A green
 lint is not an empty room.
+
+**Three instances in one day** — `siteUrl`/`rightLabel` on the hub, the seating
+copy-layout strings, and the guest guide's own `CATEGORIES` constant. It is now
+a documented characteristic of the tool, not a surprise.
 
 ---
 
