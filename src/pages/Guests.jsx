@@ -21,7 +21,6 @@ import { color } from "@/styles/tokens";
 import GuestForm from "../components/guests/GuestForm";
 import GuestList from "../components/guests/GuestList";
 import ImportGuestModal from "../components/guests/ImportGuestModal";
-import PendingImportsPanel from "../components/guests/PendingImportsPanel";
 import BulkActionBar from "../components/guests/BulkActionBar";
 import SendInvitesModal from "../components/guests/SendInvitesModal";
 import SetEventsModal from "../components/guests/SetEventsModal";
@@ -33,7 +32,7 @@ import PageConsiderations from '../components/shared/PageConsiderations';
 import { getWeddingEvents, defaultEventResponses, getGuestEventResponse, toggleEventInvite, effectiveMealChoice, mealOptionLabel } from '@/lib/weddingEvents';
 import CountUp from "@/components/shared/CountUp";
 import { fetchGuestLinks } from '@/lib/guestLinks';
-import { copyFromPromise, copyText } from '@/lib/copyToClipboard';
+import { copyFromPromise } from '@/lib/copyToClipboard';
 import CopyFallbackModal from '@/components/shared/CopyFallbackModal';
 import { createGuest, updateGuest, deleteGuest } from '@/lib/guestWrites';
 
@@ -136,8 +135,6 @@ export default function Guests() {
   const [weddingSlug, setWeddingSlug] = useState(null);
   // Menu Phase 1 (Ultra) — for mapping a stored meal_choice id back to a label
   const [mealOptions, setMealOptions] = useState([]);
-  const [pendingSubmissions, setPendingSubmissions] = useState([]);
-  const [showPendingImports, setShowPendingImports] = useState(false);
   // fix/guest-rls-step1: collaborator guest viewing is parked (api/collaborator-guests.js
   // returns 503) — see that file's header comment for why and the rebuild path.
   const [collaboratorGuestsUnavailable, setCollaboratorGuestsUnavailable] = useState(false);
@@ -196,19 +193,6 @@ export default function Guests() {
   // Contact Collector (PR B3) — pending submissions from the public
   // /w/:slug/collect form. Collaborators never see this (no WeddingDetails
   // of their own to scope it to, same reasoning as weddingEvents above).
-  // fix/guest-contact-submission-rls (PR 1b): fetched via the server
-  // endpoint, not read directly off the entity — the content is now
-  // encrypted at rest and only api/guest-contact-review.js can decrypt it.
-  const loadPendingSubmissions = React.useCallback(() => {
-    if (isCollaborating || !weddingId) return;
-    fetch('/api/guest-contact-review', {
-      headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
-    })
-      .then(res => (res.ok ? res.json() : { submissions: [] }))
-      .then(data => setPendingSubmissions(data.submissions || []))
-      .catch(() => {});
-  }, [isCollaborating, weddingId]);
-  useEffect(() => { loadPendingSubmissions(); }, [loadPendingSubmissions]);
 
   const loadGuests = async () => {
     try {
@@ -810,34 +794,6 @@ export default function Guests() {
               Import CSV
             </button>
           )}
-          {!isCollaborating && weddingSlug && (
-            <button
-              onClick={async () => {
-                // No network call before this one, so the activation is intact
-                // and Safari is happy -- but an unguarded write is still silent
-                // when a browser refuses permission outright.
-                const url = `${window.location.origin}/w/${weddingSlug}/collect`;
-                const { ok } = await copyText(url);
-                if (ok) toast.success('Collect link copied');
-                else setCopyFallback({ title: 'Your collect link', text: url });
-              }}
-              className="btn-editorial-secondary"
-            >
-              Copy collect link
-            </button>
-          )}
-          {!isCollaborating && pendingSubmissions.length > 0 && (
-            <button
-              onClick={() => setShowPendingImports(true)}
-              className="btn-editorial-secondary"
-              style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-            >
-              Pending imports
-              <span style={{ background: '#E03553', color: '#FFFFFF', borderRadius: 999, fontSize: 10, fontWeight: 700, padding: '1px 6px', minWidth: 16, textAlign: 'center' }}>
-                {pendingSubmissions.length}
-              </span>
-            </button>
-          )}
           <button
             onClick={exportGuestList}
             disabled={guests.length === 0}
@@ -1036,14 +992,6 @@ export default function Guests() {
         />
       )}
 
-      {showPendingImports && (
-        <PendingImportsPanel
-          submissions={pendingSubmissions}
-          guests={guests}
-          onClose={() => setShowPendingImports(false)}
-          onChanged={() => { loadGuests(); loadPendingSubmissions(); }}
-        />
-      )}
 
       <CopyFallbackModal
 

@@ -52,7 +52,6 @@ const Transport = lazyWithReload(() => import('./pages/Transport'));
 const Accommodation = lazyWithReload(() => import('./pages/Accommodation'));
 const GuestAccommodation = lazyWithReload(() => import('./pages/GuestAccommodation'));
 const GuestMusic = lazyWithReload(() => import('./pages/GuestMusic'));
-const GuestCollect = lazyWithReload(() => import('./pages/GuestCollect'));
 const Music = lazyWithReload(() => import('./pages/Music'));
 const CeremonyDetails = lazyWithReload(() => import('./pages/CeremonyDetails'));
 const Honeymoon = lazyWithReload(() => import('./pages/Honeymoon'));
@@ -188,7 +187,6 @@ const AuthenticatedApp = () => {
         <Route path="/refund-policy" element={<RefundPolicy />} />
         <Route path="/w/:weddingSlug/accommodation" element={<GuestAccommodation />} />
         <Route path="/w/:weddingSlug/music" element={<GuestMusic />} />
-        <Route path="/w/:weddingSlug/collect" element={<GuestCollect />} />
         <Route path="/w" element={<InvitationNotAvailable />} />
         <Route path="/w/" element={<InvitationNotAvailable />} />
         <Route path="/w/:weddingSlug" element={<MultiPageWeddingWebsite />} />
@@ -276,7 +274,6 @@ const AuthenticatedApp = () => {
         <Route path="/gift/success" element={<GiftPurchaseSuccess />} />
         <Route path="/w/:weddingSlug/accommodation" element={<GuestAccommodation />} />
         <Route path="/w/:weddingSlug/music" element={<GuestMusic />} />
-        <Route path="/w/:weddingSlug/collect" element={<GuestCollect />} />
         <Route path="/w" element={<InvitationNotAvailable />} />
         <Route path="/w/" element={<InvitationNotAvailable />} />
         <Route path="/w/:weddingSlug" element={<MultiPageWeddingWebsite />} />

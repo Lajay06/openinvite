@@ -18,7 +18,7 @@ export default function GuestAccommodation() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Cached password, same reason as GuestMusic/GuestCollect:
+        // Cached password, same reason as GuestMusic:
         // /w/:slug/accommodation is its own route, outside
         // MultiPageWeddingWebsite's unlock screen, so an already-unlocked
         // guest would otherwise be served the gated response and shown an

@@ -21,9 +21,10 @@
  * FIVE CREATION PATHS, not four. Hooking the UI would have missed two:
  *   1-3. Guests.jsx add, ImportGuestModal, AvaModal -> all api/my-guests.js
  *   4.   Onboarding.jsx -> Guest.bulkCreate, straight to the SDK
- *   5.   guest-contact-review.js approve -> creates a Guest server-side
+ *   5.   [REMOVED in Wave 2] guest-contact-review.js approve created a Guest
+ *        server-side; the guest contact collector no longer exists.
  * Minting at the my-guests boundary covers 1-3 at once and cannot be missed by
- * a call site added later. 4 and 5 need their own, and have them.
+ * a call site added later. 4 needs its own, and has one.
  */
 import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
@@ -48,9 +49,12 @@ export async function runRsvpTokenMinting() {
   check('  plus-one tokens stay lazy',
     !/tokenPatch\([^)]*,\s*true\)/.test(guests), 'only minted when there is a plus-one email');
 
-  const review = strip(read('api/guest-contact-review.js'));
-  check('collect-approval mints too (it bypasses my-guests)',
-    /tokenPatch\(crypto\.randomUUID\(\), false\)/.test(review), 'approve branch');
+  // Path 5 — the collect-approval server-side create — was DELETED in Wave 2
+  // with the guest contact collector. Removing the check rather than leaving it
+  // reading a missing file: the module CRASHED on the ENOENT, and a crashed
+  // module runs none of its other assertions. The suite reported that honestly
+  // ("1 MODULE(S) CRASHED — their assertions never ran") instead of counting
+  // them as passes, which is the only reason this was visible at all.
 
   const onboarding = strip(read('src/pages/Onboarding.jsx'));
   check('onboarding sweeps its bulkCreate ids',

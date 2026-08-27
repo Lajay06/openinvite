@@ -23,8 +23,10 @@ const API = path.resolve(new URL('../../api/', import.meta.url).pathname);
 
 /** Reads PII field names but does NOT read them from a Guest row. */
 const ALLOWLIST = {
-  'collect-guest-contact.js': 'reads the submitting guest\'s own req.body, not a stored Guest row',
-  'guest-contact-review.js': 'reads an already-decrypted GuestContactSubmission, not a Guest row',
+  // collect-guest-contact.js and guest-contact-review.js were removed here in
+  // Wave 2 with the guest contact collector. The allowlist asserts it has no
+  // STALE entries, and it caught these — an exemption naming a file that no
+  // longer exists is an exemption nobody can evaluate.
   'cron/send-weekly-digest.js': 'every .email is user.email — the couple\'s own address from a User row; Guest rows are read only for counts',
 };
 

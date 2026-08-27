@@ -10,13 +10,19 @@
  * land on a DIFFERENT couple's record than their invitation page did.
  *
  * THE COUNT IS PART OF THE TEST. Seven sites were found by shape, not by name —
- * two more than the five that had been named from memory. If an eighth appears,
- * this fails rather than quietly covering seven of eight.
+ * two more than the five that had been named from memory. If a new one appears,
+ * this fails rather than quietly covering six of seven.
+ *
+ * SEVEN BECAME SIX when the guest contact collector was deleted in Wave 2:
+ * api/collect-guest-contact.js was one of the seven adopters and no longer
+ * exists. The number is lowered deliberately and with its reason, in the same
+ * PR as the deletion — a guard whose expected count is edited without one is
+ * indistinguishable from a guard being silenced.
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolveWeddingBySlug } from '../api/_lib/resolveWeddingBySlug.js';
 
-const EXPECTED_SITES = 7;
+const EXPECTED_SITES = 6;
 const files = readdirSync('api').filter(f => f.endsWith('.js'));
 const raw = files.filter(f => /\.find\(w => w\.slug ===/.test(readFileSync(`api/${f}`, 'utf8')));
 const adopted = files.filter(f => /resolveWeddingBySlug\(/.test(readFileSync(`api/${f}`, 'utf8')));

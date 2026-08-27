@@ -293,6 +293,11 @@ jobs:
           # defended. Only a render shows the text a guest actually gets.
           if [ $TEST_EXIT -eq 0 ]; then
             CAPTURE_BASE_URL=http://localhost:4173 npm run test:guest-no-invalid-date
+
+          # The postal address a couple types must come back out of the export.
+          # Asserting the column exists would pass while the value was blank —
+          # this clicks Export, captures the real download, and reads it.
+          CAPTURE_BASE_URL=http://localhost:4173 npm run test:guest-export-address
             TEST_EXIT=$?
           fi
           kill "$SERVER_PID" 2>/dev/null || true
