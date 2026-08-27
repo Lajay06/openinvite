@@ -19,8 +19,12 @@ export function buildWeddingDetailsPayload(data) {
     couple1Name: data.couple1Name,
     couple2Name: data.couple2Name,
     weddingDate: data.weddingDate,
-    slug: data.couple1Name?.toLowerCase().replace(/\s+/g, '-') + '-' +
-          data.couple2Name?.toLowerCase().replace(/\s+/g, '-'),
+    // NO slug. This built one by lowercasing and collapsing whitespace and
+    // nothing else — no accent stripping, no punctuation handling, no reserved
+    // check, no collision check. "O'Brien & Zoe" became o'brien-zoe, and an
+    // apostrophe went into a live URL. It had been doing that since the
+    // beginning. The address is derived once, after the record exists, by
+    // src/lib/weddingAddress.js.
     mainCeremony: {
       venueName: typeof data.venue === 'object' ? data.venue?.name : data.venue,
       address: typeof data.venue === 'object' ? data.venue?.address : data.location,

@@ -300,7 +300,7 @@ const ARTICLES = {
         <li style={S.li}>In the Guest Suite → Website tab, select "RSVP" from the left panel page list (toggle it on if off)</li>
         <li style={S.li}>Open its editor: set your RSVP deadline date, add meal options (type and press Enter), toggle plus ones, dietary field, and song requests</li>
         <li style={S.li}>Add a closing message: "We cannot wait to celebrate with you."</li>
-        <li style={S.li}>Save — your RSVP page is live at openinvite.com.au/w/[your-slug]</li>
+        <li style={S.li}>Save — your RSVP page is live at your website address</li>
       </ol>
       <h3 style={S.h3}>How responses work</h3>
       <ul style={S.ul}>
@@ -316,7 +316,7 @@ const ARTICLES = {
   ),
   'Publishing and sharing your site': (
     <div>
-      <p style={S.p}>Publishing makes your wedding website live at openinvite.com.au/w/[your-slug] so guests can visit it.</p>
+      <p style={S.p}>Publishing makes your wedding website live at openinvite.com.au/w/your-names so guests can visit it.</p>
       <h3 style={S.h3}>How to publish</h3>
       <ol style={S.ol}>
         <li style={S.li}>Open the Guest Suite website builder</li>
@@ -325,7 +325,9 @@ const ARTICLES = {
         <li style={S.li}>Your site is immediately live</li>
       </ol>
       <h3 style={S.h3}>Your website URL</h3>
-      <p style={S.p}>Your default URL is openinvite.com.au/w/[your-name-slug]. To customize it: in the Publish modal → Website tab → edit the slug field (e.g. "john-and-sarah-2026") → Save. Changing your slug after you've already sent invitations breaks those links — you'll see a warning before it's applied.</p>
+      <p style={S.p}>Your website address is built from your names &mdash; openinvite.com.au/w/john-and-sarah. You don&rsquo;t need to set it up, and there&rsquo;s nothing to fill in.</p>
+      <p style={S.p}>If two couples share the same first names, we add something real about your wedding rather than a string of random characters: the year, then the month, then the date. So you might get john-and-sarah-2026.</p>
+      <p style={S.p}>Correcting a name in Event details updates your address to match. Once your first invitation has gone out, it stays exactly as it is so that every link already sent keeps working.</p>
       <h3 style={S.h3}>The Publish modal's tabs</h3>
       <ul style={S.ul}>
         <li style={S.li}><strong>Website:</strong> publish toggle, URL/slug, password protection</li>

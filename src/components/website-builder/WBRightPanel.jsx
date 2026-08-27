@@ -18,7 +18,6 @@ import { TEXT_COLOR_OPTIONS, BACKGROUND_OPTIONS, SPACING_OPTIONS, JUSTIFY_CAPABL
 import { interactiveDivProps } from '@/lib/a11y';
 import { loadFontFamilies, familiesFromGoogleSpec } from '@/lib/selfHostedFonts';
 import { flattenOver, readableInkOn, contrastRatio } from '@/lib/surfaceTint';
-import { claimSlug, canonicalSlug } from '@/lib/claimSlug';
 
 // Background music: writing surface HIDDEN (owner decision, video-sound batch).
 // guestExperienceSettings.backgroundMusic had two sources: 'curated' (the mood
@@ -369,68 +368,22 @@ function SettingsTab({ details, onChange }) {
     setMusicUploading(false);
   };
 
-  // The draft is what the couple is typing; details.slug is what is actually
-  // claimed. They are deliberately separate so a REFUSED claim can put the old
-  // value back — a failed write must leave the field showing what is true.
-  const [slugDraft, setSlugDraft] = React.useState(details.slug || '');
-  const [slugMsg, setSlugMsg] = React.useState(null);
-  const [claimingSlug, setClaimingSlug] = React.useState(false);
-  React.useEffect(() => { setSlugDraft(details.slug || ''); }, [details.slug]);
-
-  const claimAddress = async () => {
-    const next = canonicalSlug(slugDraft);
-    if (!next || next === canonicalSlug(details.slug)) { setSlugDraft(details.slug || ''); return; }
-    setClaimingSlug(true);
-    const r = await claimSlug(details.id, next);
-    setClaimingSlug(false);
-    if (r.ok) {
-      onChange('slug', r.slug);
-      setSlugMsg({ ok: true, text: 'Address saved.' });
-      return;
-    }
-    // REVERT. The old value is what is true, and leaving the new one on screen
-    // is the same lie in a quieter voice.
-    setSlugDraft(details.slug || '');
-    setSlugMsg({
-      ok: false,
-      text: r.suggestion ? `${r.message} ${r.suggestion} is free, or pick another name.` : r.message,
-      suggestion: r.suggestion || null,
-    });
-  };
 
   return (
     <div>
       <SLabel>Your site URL</SLabel>
-      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.08)', padding: '7px 10px', marginBottom: 8 }}>
+      {/* NOT AN INPUT. The address is built from the couple's names and follows
+          them until the first invitation exists — see src/lib/weddingAddress.js.
+          There was an editor here; the owner's question was "why do they HAVE to
+          be able to edit?" and the answer was that they don't, and nobody had
+          ever asked to. */}
+      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', padding: '8px 10px', gap: 4 }}>
         <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', flexShrink: 0 }}>openinvite.com.au/w/</span>
-        {/* THE ADDRESS IS CLAIMED HERE, ON BLUR — it does not ride the autosave.
-            It used to set local state and nothing else, and because `slug` was
-            removed from the autosave payload the studio then reported
-            "✓ Saved" over a field that had never been written. The response was
-            checked and truthful; the payload simply no longer contained the one
-            field the couple had just edited. A save that excludes what the user
-            changed must not report success. */}
-        <input
-          value={slugDraft}
-          onChange={e => { setSlugDraft(canonicalSlug(e.target.value)); setSlugMsg(null); }}
-          onBlur={claimAddress}
-          disabled={claimingSlug}
-          placeholder="your-names" style={{ flex: 1, border: 'none', background: 'transparent', fontSize: 13, fontWeight: 600, color: '#FFFFFF', outline: 'none', fontFamily: '"Plus Jakarta Sans", sans-serif' }} />
+        <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: '#FFFFFF', wordBreak: 'break-all' }}>{details.slug || '\u2026'}</span>
       </div>
-      {slugMsg && (
-        <p style={{ fontSize: 11, lineHeight: 1.5, margin: '6px 0 0', color: slugMsg.ok ? 'rgba(255,255,255,0.45)' : '#E03553' }}>
-          {slugMsg.text}
-          {slugMsg.suggestion && (
-            <>{' '}
-              <button
-                type="button"
-                onClick={() => { setSlugDraft(slugMsg.suggestion); setSlugMsg(null); }}
-                style={{ color: '#E03553', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textDecoration: 'underline', font: 'inherit' }}
-              >Use it</button>
-            </>
-          )}
-        </p>
-      )}
+      <p style={{ fontSize: 11, lineHeight: 1.5, margin: '6px 0 0', color: 'rgba(255,255,255,0.45)' }}>
+        Built from your names. Change a name and this follows &mdash; until your first invitation goes out, after which it stays put so links keep working.
+      </p>
       {siteUrl && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.04)', padding: '6px 10px', marginBottom: 16 }}>
           <span style={{ flex: 1, fontSize: 11, fontFamily: 'monospace', color: 'rgba(255,255,255,0.5)', wordBreak: 'break-all' }}>{siteUrl}</span>

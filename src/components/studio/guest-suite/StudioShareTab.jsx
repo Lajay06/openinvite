@@ -6,7 +6,6 @@ import { isPending, isAttending, isDeclined } from '@/lib/guestRsvpTally';
 import toast from 'react-hot-toast';
 import { interactiveDivProps } from '@/lib/a11y';
 import { useWebsitePasswordGate } from '@/lib/websitePasswordGate';
-import { claimSlug, canonicalSlug } from '@/lib/claimSlug';
 
 import { coupleDisplayName } from '@/lib/coupleNames';
 const sans = "'Plus Jakarta Sans', sans-serif";
@@ -31,14 +30,13 @@ export default function StudioShareTab({ details: propDetails }) {
   const [emailMessage, setEmailMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [sentHistory, setSentHistory] = useState([]);
-  const [slugInput, setSlugInput] = useState('');
 
   useEffect(() => {
     getMyGuestsWithRsvp().then(setGuests).catch(() => {});
   }, []);
 
   useEffect(() => {
-    if (propDetails) { setDetails(propDetails); setDetailsId(propDetails.id); setSlugInput(propDetails.slug || ''); }
+    if (propDetails) { setDetails(propDetails); setDetailsId(propDetails.id); }
   }, [propDetails]);
 
   useEffect(() => {
@@ -116,35 +114,6 @@ export default function StudioShareTab({ details: propDetails }) {
     setSending(false);
   };
 
-  const saveSlug = async (val) => {
-    // THE CLAIM PATH, not a direct write. The confirm below used to be the only
-    // protection, and it asked the wrong question: it warned when
-    // `websiteEnabled` was true, which is a guess about whether invitations
-    // exist. The endpoint checks the actual evidence — an issued rsvp_link_id,
-    // an invitation_sent flag, an invite_sent_at stamp — and refuses to
-    // reassign an address that may already be in someone's inbox.
-    const slug = canonicalSlug(val);
-    const isActualChange = details?.slug && slug !== canonicalSlug(details.slug);
-    if (isActualChange && details?.websiteEnabled) {
-      const confirmed = window.confirm(
-        `Change your wedding's URL to /w/${slug}? Any invitations already sent with the old link (/w/${details.slug}) will stop working.`
-      );
-      if (!confirmed) return;
-    }
-    const r = await claimSlug(detailsId, slug);
-    if (!r.ok) {
-      // REVERT THE FIELD. Without this the input keeps displaying the address
-      // the couple typed while the toast fades, so the screen goes on saying
-      // the change happened — the same lie the studio told with '✓ Saved',
-      // in a quieter voice. The old value is what is true.
-      setSlugInput(details?.slug || '');
-      toast.error(r.suggestion ? `${r.message} ${r.suggestion} is free, or pick another name.` : r.message);
-      return;
-    }
-    setDetails(prev => ({ ...prev, slug: r.slug }));
-    setSlugInput(r.slug);
-    toast.success('URL saved!');
-  };
 
   if (!details) return <div style={{ padding: 40, textAlign: 'center', color: 'rgba(10,10,10,0.6)', fontFamily: sans }}>Loading…</div>;
 
@@ -192,11 +161,16 @@ export default function StudioShareTab({ details: propDetails }) {
           </div>
           <div style={{ border: '1px solid #EEEEEE', padding: 20 }}>
             <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', margin: '0 0 6px' }}>Your URL</p>
-            <div style={{ display: 'flex', border: '1px solid #DDD', marginBottom: 12 }}>
-              <span style={{ padding: '8px 10px', background: '#F8F8F8', fontSize: 11, color: 'rgba(10,10,10,0.6)', flexShrink: 0, fontFamily: 'monospace' }}>openinvite.com.au/w/</span>
-              <input value={slugInput} onChange={e => setSlugInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))} style={{ flex: 1, border: 'none', padding: '8px 10px', fontSize: 12, outline: 'none', fontFamily: 'monospace', minWidth: 0 }} />
-              <button onClick={() => saveSlug(slugInput)} style={{ padding: '8px 12px', background: '#0A0A0A', color: '#FFF', border: 'none', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: sans }}>Save</button>
+            {/* NOT AN INPUT. The address is built from the couple's names —
+                see src/lib/weddingAddress.js. Nobody types it, so there is
+                nothing here to type into. */}
+            <div style={{ display: 'flex', border: '1px solid #DDD', marginBottom: 8, background: '#F8F8F8' }}>
+              <span style={{ padding: '8px 10px', fontSize: 11, color: 'rgba(10,10,10,0.6)', flexShrink: 0, fontFamily: 'monospace' }}>openinvite.com.au/w/</span>
+              <span style={{ flex: 1, padding: '8px 10px', fontSize: 12, fontFamily: 'monospace', color: '#0A0A0A', minWidth: 0, overflowWrap: 'anywhere' }}>{details.slug || '\u2026'}</span>
             </div>
+            <p style={{ margin: '0 0 12px', fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: sans, lineHeight: 1.5 }}>
+              Built from your names. Change a name and this follows &mdash; until your first invitation goes out, after which it stays put so links keep working.
+            </p>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, paddingTop: 8, borderTop: '1px solid #F5F5F5' }}>
               <div>
                 <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 600, color: '#0A0A0A' }}>Password Protection</p>

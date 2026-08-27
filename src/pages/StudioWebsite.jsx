@@ -18,7 +18,7 @@ import MediaLibraryModal from '@/components/website-builder/MediaLibraryModal';
 import ComponentLibraryModal from '@/components/website-builder/ComponentLibraryModal';
 import { newBlock } from '@/components/guest-website/blocks/blockTypes';
 
-import { coupleDisplayName } from '@/lib/coupleNames';
+import { syncWeddingAddress } from '@/lib/weddingAddress';
 const UNIVERSE_THEMES = {
   london: {
     name: 'London',
@@ -344,23 +344,20 @@ export default function StudioWebsite({ onBack }) {
     }
   }, [existing]);
 
-  // Auto-generate slug from couple names if none set
+  // THE ADDRESS IS NOT GENERATED HERE ANY MORE.
+  //
+  // This appended `Math.random().toString(36).substring(2, 6)` to a name-derived
+  // stem — the random token the ruling forbids, live in the product. It reads as
+  // a tracking code on something that goes on printed cards and gets read aloud.
+  // It also normalized differently from every other surface (30-char truncation,
+  // no accent handling), and wrote to local state only, so the couple saw an
+  // address that was never on their record.
+  //
+  // Derivation now happens once, server-side, from the names, on a ladder of
+  // real facts — see src/lib/weddingAddress.js.
   useEffect(() => {
-    if (!details?.slug && coupleDisplayName(details)) {
-      const autoSlug = coupleDisplayName(details)
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '')
-        .substring(0, 30);
-      // A SUGGESTION, held in local state only — it no longer reaches the
-      // record, because the autosave no longer carries `slug`. The random
-      // suffix stays for now: it made collisions unlikely rather than
-      // impossible, which was the whole defect, and the claim path is what
-      // actually settles it at publish.
-      const slug = autoSlug + '-' + Math.random().toString(36).substring(2, 6);
-      updateField('slug', slug);
-    }
-  }, [coupleDisplayName(details)]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (existing?.id && !details?.slug) syncWeddingAddress(existing.id);
+  }, [existing?.id, details?.slug]);
 
   // Autosave — debounced 2s after last change
   useEffect(() => {

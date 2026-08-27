@@ -36,7 +36,7 @@
  */
 import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
-import { canonicalSlug, isReservedSlug, suggestSlug } from './_lib/slugCanon.js';
+import { canonicalSlug, deriveSlug, slugRootFromNames } from './_lib/slugCanon.js';
 
 const BASE44_API = 'https://base44.app/api';
 // VITE_BASE44_APP_ID, not BASE44_APP_ID. That is the name every other server
@@ -62,46 +62,6 @@ async function adminGet(path) {
   return unwrapList(await res.json());
 }
 
-/**
- * THE WRITE USES THE CALLER'S OWN TOKEN, NEVER THE ADMIN KEY.
- *
- * WeddingDetails.update is owner-scoped, and BASE44_ADMIN_KEY has no session
- * identity matching {{user.id}} — so an admin write is a flat 403. This
- * endpoint shipped writing with the admin key and therefore NEVER ONCE
- * SUCCEEDED: verified in the production logs, both from a script and from the
- * owner's own attempt through the publish modal.
- *
- * PRIOR ART: api/my-wedding-details.js already does exactly this, on this same
- * entity, with a `callerFetch` helper and a header explaining why. The pattern
- * was solved before this file existed.
- *
- * THE TOKEN IS NEVER LOGGED, NEVER PERSISTED, AND GOES NOWHERE BUT BASE44.
- *
- * AND THERE IS NO ADMIN FALLBACK. If the caller's token is absent this refuses.
- * Falling back to the admin key would be the most dangerous line in the file:
- * Base44's own RLS is what stops a caller claiming on a record they do not own,
- * and an admin write would bypass exactly that. NO TOKEN MEANS REFUSE, never
- * escalate.
- */
-async function callerPut(id, body, callerToken) {
-  if (!callerToken) throw new Error('no caller token — refusing to write');
-  const res = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/WeddingDetails/${id}`, {
-    method: 'PUT',
-    headers: { Authorization: `Bearer ${callerToken}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    // THE BODY, NOT ONLY THE STATUS. A 422 is a validation rejection, and the
-    // one thing Base44 tells us about WHY is in the body — which an earlier
-    // version of this line threw away, leaving four production failures with
-    // nothing to diagnose but a number.
-    const detail = await res.text().catch(() => '');
-    throw new Error(
-      `Base44 PUT WeddingDetails/${id} failed (${res.status}): ${detail.slice(0, 400)} ` +
-      `| payload keys: ${Object.keys(body).join(', ')}`);
-  }
-  return res.json();
-}
 
 /**
  * READS STAY ON THE ADMIN KEY, and this is not an oversight.
@@ -168,16 +128,8 @@ export default async function handler(req, res) {
   const callerToken = auth.startsWith('Bearer ') ? auth.slice(7) : '';
   if (!callerToken) return res.status(401).json({ error: 'Unauthorized' });
 
-  const { weddingId, slug: requested } = req.body || {};
-  const slug = canonicalSlug(requested);
-
-  if (!slug) {
-    return res.status(400).json({ error: 'invalid', message: 'Choose an address for your site.' });
-  }
-  if (isReservedSlug(slug)) {
-    return res.status(409).json({ error: 'reserved',
-      message: 'That address is reserved. Pick another name.' });
-  }
+  const { weddingId } = req.body || {};
+  if (!weddingId) return res.status(400).json({ error: 'invalid' });
 
   try {
     const mine = (await adminGet(
@@ -185,67 +137,73 @@ export default async function handler(req, res) {
     if (!mine || String(mine.created_by_id) !== String(caller.id)) {
       return res.status(403).json({ error: 'forbidden' });
     }
-    if (canonicalSlug(mine.slug) === slug) return res.status(200).json({ ok: true, slug, unchanged: true });
 
-    // PRE-CHECK. It can lie — another claim may land between this read and the
-    // write below — which is exactly why the verify step exists.
-    const before = await holdersOf(slug);
-    if (before.length > 0) {
-      const takenSet = new Set((await adminGet(
-        `/apps/${BASE44_APP_ID}/entities/WeddingDetails`)).map(w => canonicalSlug(w.slug)).filter(Boolean));
-      return res.status(409).json({ error: 'taken',
-        message: 'That address is taken.',
-        suggestion: suggestSlug(slug, takenSet, mine.weddingDate) || null });
-    }
+    const current = canonicalSlug(mine.slug);
+    const root = slugRootFromNames(mine);
 
-    await callerPut(weddingId, { slug }, callerToken);
+    // A wedding with no names has nothing to show a guest, and the resolver
+    // already refuses an empty address. Nothing freezes, because nothing is
+    // frozen until names exist.
+    if (!root) return res.status(200).json({ slug: null, reason: 'no-names' });
 
-    // VERIFY AFTER WRITE. One holder is success. More than one means a race
-    // already happened, and the pre-check above told us nothing.
-    const after = await holdersOf(slug);
-    if (after.length <= 1) return res.status(200).json({ ok: true, slug });
-
-    const yielders = loser(after);
-    const weYield = yielders.some(w => String(w.id) === String(weddingId));
-    console.error(`[claim-slug] RACE on ${JSON.stringify(slug)}: ${after.length} holders — ` +
-      `${after.map(w => w.id).join(', ')}. This record ${weYield ? 'YIELDS' : 'KEEPS'}.`);
-
-    if (!weYield) return res.status(200).json({ ok: true, slug });
-
-    // We lost the race. Reassigning is only permitted while the address has
-    // never been shared — and a read failure here refuses rather than assumes.
-    let shared;
-    try {
-      shared = await hasBeenShared(caller.id);
-    } catch (e) {
-      console.error(`[claim-slug] REFUSING TO YIELD ${weddingId}: could not read guests (${e.message}). ` +
-        'Failing closed — a wrong "no" costs a moment, a wrong "yes" breaks a link already sent.');
-      return res.status(409).json({ error: 'taken', message: 'That address is taken.', suggestion: null });
-    }
-    if (shared) {
-      console.error(`[claim-slug] REFUSING TO YIELD ${weddingId}: invitations already exist for this wedding. ` +
-        'The address is in guests\' inboxes and cannot be changed. Needs manual resolution.');
-      return res.status(409).json({ error: 'conflict-after-share',
-        message: 'That address is already in use and your invitations have gone out. Contact us and we will sort it.' });
-    }
-
-    await callerPut(weddingId, { slug: '' }, callerToken);
-    const takenSet = new Set((await adminGet(
-      `/apps/${BASE44_APP_ID}/entities/WeddingDetails`)).map(w => canonicalSlug(w.slug)).filter(Boolean));
-    return res.status(409).json({ error: 'taken', message: 'That address is taken.',
-      suggestion: suggestSlug(slug, takenSet, mine.weddingDate) || null });
-  } catch (err) {
-    // A SAVE FAILURE IS NOT A COLLISION, and a couple mid-edit must be able to
-    // tell them apart. 'Something went wrong' was what the owner actually saw
-    // when the write 403'd — the generic failure this product has spent a day
-    // eliminating, produced by the very backstop whose job was to speak.
+    // THE FREEZE. The address follows the names until the first invitation
+    // exists, then never moves again — the link is in someone's inbox and we
+    // do not get to change it.
     //
-    // The second sentence is the thing they most need to hear mid-edit: their
-    // wedding is intact, and only this one action failed.
-    console.error('[claim-slug] write failed:', err.message);
-    return res.status(500).json({
-      error: 'save-failed',
-      message: 'We couldn\'t save that address just now. Nothing else has changed — please try again.',
-    });
+    // It guards CHANGING an address, not assigning a first one: a record with
+    // no address has nothing in anyone's inbox to break, so an invitation
+    // issued before an address existed must not lock the couple out of ever
+    // having one.
+    if (current) {
+      let shared;
+      try {
+        shared = await hasBeenShared(caller.id);
+      } catch (e) {
+        // FAIL CLOSED. A wrong "no" costs a moment; a wrong "yes" breaks a
+        // link already sent, and no apology recovers that.
+        console.error(`[claim-slug] treating ${weddingId} as FROZEN: could not read guests (${e.message}).`);
+        return res.status(200).json({ slug: mine.slug, frozen: true, reason: 'read-failed' });
+      }
+      if (shared) return res.status(200).json({ slug: mine.slug, frozen: true });
+    }
+
+    // THE DETERMINISTIC TIE-BREAK, still doing the job it was built for.
+    //
+    // Two records can derive the same address simultaneously — the platform has
+    // no unique constraint and no conditional write, so the race is real and can
+    // only be DETECTED. Without a tie-break both sides would then see the other
+    // holding "their" address and both would move, forever. Earliest
+    // created_date wins, id breaks the tie: computed identically by both sides
+    // with no coordination, so exactly one of them yields.
+    if (current) {
+      const holders = await holdersOf(mine.slug);
+      if (holders.length > 1 && !loser(holders).some(w => String(w.id) === String(weddingId))) {
+        return res.status(200).json({ slug: mine.slug, unchanged: true, wonRace: true });
+      }
+    }
+
+    // Every address in use, EXCEPT this record's own — otherwise a couple
+    // whose names have not changed would collide with themselves and climb a
+    // rung on every visit.
+    const all = await adminGet(`/apps/${BASE44_APP_ID}/entities/WeddingDetails`);
+    const taken = new Set(
+      all.filter(w => String(w.id) !== String(weddingId))
+         .map(w => canonicalSlug(w.slug))
+         .filter(Boolean));
+
+    const derived = deriveSlug(root, taken, mine.weddingDate);
+    if (!derived) {
+      console.error(`[claim-slug] ladder exhausted for root ${JSON.stringify(root)} on ${weddingId}`);
+      return res.status(200).json({ slug: mine.slug || null, reason: 'exhausted' });
+    }
+
+    if (derived === current) return res.status(200).json({ slug: mine.slug, unchanged: true });
+    return res.status(200).json({ slug: derived });
+  } catch (err) {
+    // The couple never sees this. There is no address editor and no message —
+    // the second couple is never told they are second. A derivation that fails
+    // leaves the record exactly as it was, and the next call retries.
+    console.error('[claim-slug] derivation failed:', err.message);
+    return res.status(500).json({ error: 'derive-failed' });
   }
 }
