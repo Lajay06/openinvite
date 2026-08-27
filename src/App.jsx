@@ -57,7 +57,6 @@ const Music = lazyWithReload(() => import('./pages/Music'));
 const CeremonyDetails = lazyWithReload(() => import('./pages/CeremonyDetails'));
 const Honeymoon = lazyWithReload(() => import('./pages/Honeymoon'));
 const EmergencyContact = lazyWithReload(() => import('./pages/EmergencyContact'));
-const LiveStreaming = lazyWithReload(() => import('./pages/LiveStreaming'));
 const WeddingParty = lazyWithReload(() => import('./pages/WeddingParty'));
 const WeddingFavours = lazyWithReload(() => import('./pages/WeddingFavours'));
 const EventDetails = lazyWithReload(() => import('./pages/EventDetails'));
@@ -338,10 +337,6 @@ const AuthenticatedApp = () => {
         <Route path="/ceremony-details" element={<LayoutWrapper currentPageName="CeremonyDetails"><CeremonyDetails /></LayoutWrapper>} />
         <Route path="/honeymoon" element={<LayoutWrapper currentPageName="Honeymoon"><Honeymoon /></LayoutWrapper>} />
         <Route path="/emergency-contact" element={<LayoutWrapper currentPageName="EmergencyContact"><EmergencyContact /></LayoutWrapper>} />
-        {/* LiveStreaming: this used to be a literal duplicate of the
-            auto-loop's own /LiveStreaming route (identical path, not just
-            a casing difference) — removed, the auto-loop already renders
-            it. Not linked anywhere internally either way. */}
         <Route path="/wedding-party" element={<LayoutWrapper currentPageName="WeddingParty"><WeddingParty /></LayoutWrapper>} />
         <Route path="/wedding-favours" element={<LayoutWrapper currentPageName="WeddingFavours"><WeddingFavours /></LayoutWrapper>} />
         <Route path="/event-details" element={<LayoutWrapper currentPageName="EventDetails"><EventDetails /></LayoutWrapper>} />

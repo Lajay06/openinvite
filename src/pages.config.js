@@ -78,13 +78,11 @@ const GuestSuiteAccommodation = lazyWithReload(() => import('./pages/GuestSuiteA
 const GuestSuiteTransport = lazyWithReload(() => import('./pages/GuestSuiteTransport'));
 const GuestSuiteRegistry = lazyWithReload(() => import('./pages/GuestSuiteRegistry'));
 const GuestSuitePolls = lazyWithReload(() => import('./pages/GuestSuitePolls'));
-const GuestSuiteLiveStream = lazyWithReload(() => import('./pages/GuestSuiteLiveStream'));
 const GuestSuiteExperience = lazyWithReload(() => import('./pages/GuestSuiteExperience'));
 const GuestSuitePolicies = lazyWithReload(() => import('./pages/GuestSuitePolicies'));
 const Guests = lazyWithReload(() => import('./pages/Guests'));
 const Home = lazyWithReload(() => import('./pages/Home'));
 const Invitations = lazyWithReload(() => import('./pages/Invitations'));
-const LiveStreaming = lazyWithReload(() => import('./pages/LiveStreaming'));
 const Messages = lazyWithReload(() => import('./pages/Messages'));
 const Moodboard = lazyWithReload(() => import('./pages/Moodboard'));
 const Music = lazyWithReload(() => import('./pages/Music'));
@@ -127,13 +125,11 @@ export const PAGES = {
     "GuestSuiteTransport": GuestSuiteTransport,
     "GuestSuiteRegistry": GuestSuiteRegistry,
     "GuestSuitePolls": GuestSuitePolls,
-    "GuestSuiteLiveStream": GuestSuiteLiveStream,
     "GuestSuiteExperience": GuestSuiteExperience,
     "GuestSuitePolicies": GuestSuitePolicies,
     "Guests": Guests,
     "Home": Home,
     "Invitations": Invitations,
-    "LiveStreaming": LiveStreaming,
     "Messages": Messages,
     "Moodboard": Moodboard,
     "Music": Music,
