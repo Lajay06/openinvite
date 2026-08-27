@@ -4,6 +4,63 @@ These survive restarts. Re-read at the start of every session.
 
 ---
 
+## Edit by an exact range, never by searching for a boundary
+
+Removing a function by walking backwards to "the comment above it" swallowed
+thirty unrelated lines, including `passwordGate` and everything that used it.
+Locate the exact first and last line and delete precisely that.
+
+**Lint caught it this time. Lint will not always be looking at the file you
+damaged** — it reports what is broken, not what silently vanished.
+
+The recurrences: a non-greedy regex swallowing content between the first match
+and the target; a regex that read only a literal array and missed
+`...Object.keys(DEFAULT)`, reporting "slug included: False" about the most
+serious defect in that branch.
+
+---
+
+## When you remove or reroute something, ask what else was standing on it
+
+Two costumes, one principle.
+
+> **A layer can die by having its road moved rather than by being deleted.**
+
+Nobody deleted the publish backstop. The three-layer address design had one, and
+when the claim path was repointed at derivation the backstop simply stopped
+being on any road anyone travelled. **Every test still passed, because a layer
+that is never reached never fails.** It was found only by asking directly
+whether publish still resolved a contested address — the answer was no, and the
+harmful case was exactly a couple who publishes, sends invitations and never
+returns.
+
+> **A fix that narrows a payload can orphan the field it removed.**
+
+Removing `slug` from the studio autosave was correct and left an input still
+writing into that payload's local state — so the field looked saved and never
+was.
+
+Same question closes both: **what else was standing on the thing you moved?**
+
+---
+
+## A symmetric resolution is not a resolution
+
+Two records race for the same address. Each reads the other holding "their"
+address. Each politely yields and moves. Then each reads the other again.
+
+**That is not a race condition, it is a livelock built out of good manners.**
+
+Any mutual-yield mechanism needs an **asymmetry both sides compute identically**
+with no coordination. Here: earliest `created_date` wins, id breaks the tie —
+so both sides reach the same verdict about which of them moves, and exactly one
+does. If both yield the address belongs to nobody; if neither yields nothing is
+fixed.
+
+Politeness is not a protocol.
+
+---
+
 ## Nothing reported is not the same as nothing wrong
 
 **Every instrument must distinguish "I looked and found nothing" from "I did
@@ -1370,6 +1427,20 @@ was right; what it left behind was a field that looked saved and never was.
 The quieter form of the same lie: a failed write that leaves the typed value on
 screen. The toast fades; the screen goes on saying the change happened. A
 failed write must restore what is TRUE.
+
+**THIRD INSTANCE, THIRD SURFACE, SAME DAY.** `StudioWebsite.jsx` appended
+`Math.random().toString(36)` to a name stem and called `updateField('slug', …)`
+— which wrote to LOCAL STATE ONLY. The couple saw an address on their screen
+that was never on their record. Not a failed write, not a narrowed payload: a
+write that never left the browser. The family now has three members found in
+one day, in three different surfaces, and every one of them displayed something
+true-looking about data that did not exist.
+
+**FOURTH, in the branch that fixed the third.** Removing the address editor left
+`useEffect(() => {}, [details?.slug])` behind — dead, and lint does not flag an
+empty effect — and left the status line reading "Set a URL below before
+publishing" when there was no longer anything below. The substitution was right
+and what it left behind was not, in code and in copy, in the same branch.
 
 ---
 
