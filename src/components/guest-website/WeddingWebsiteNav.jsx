@@ -93,7 +93,31 @@ export default function WeddingWebsiteNav({ weddingName, theme, typography, enab
   // five links the reply ended up behind "More", two taps deep on a 390 screen.
   // The intent and the mechanism were pulling opposite ways.
   // Overflow now takes from the other pages, in their existing order.
-  const rest = [...pageLinks.filter(l => l.key !== 'rsvp'), ...subLinks];
+  // ONE ENTRY PER PAGE. The nav is assembled from TWO independent lists and
+  // nothing reconciled them:
+  //
+  //   pageLinks — from the couple's enabledPages (WEDDING_PAGES)
+  //   subLinks  — from hasTransport / hasAccommodation / hasMusic / hasExperience
+  //
+  // Four labels appear in both, identically: 'Music', 'Stay', 'Getting here'
+  // and 'Experiences'. A couple who enabled those pages saw each of them twice
+  // in their own guests' navigation.
+  //
+  // Deduped on the LABEL, not the key, because the label is what a guest reads
+  // — and the worst case was not a repeated key at all: subLinks' 'accommodation'
+  // and WEDDING_PAGES' 'stay' are different keys pointing at different routes
+  // that render the SAME accommodation data under the same word. Keying on
+  // `key` would have left that pair looking like two different places to go.
+  //
+  // pageLinks come first, so the couple's own page order wins the position.
+  const seen = new Set();
+  const rest = [...pageLinks.filter(l => l.key !== 'rsvp'), ...subLinks]
+    .filter(l => {
+      const label = (l.label || '').trim().toLowerCase();
+      if (!label || seen.has(label)) return false;
+      seen.add(label);
+      return true;
+    });
   const restSlots = MAX_VISIBLE_LINKS - (rsvpLink ? 1 : 0);
   const visibleLinks = [...rest.slice(0, restSlots), ...(rsvpLink ? [rsvpLink] : [])];
   const overflowLinks = rest.slice(restSlots);

@@ -212,6 +212,12 @@ jobs:
       - name: the schedule runs forwards
         run: npm run test:schedule-order
 
+      # The guest nav was assembled from two lists that overlapped on four
+      # labels — Music, Stay, Getting here, Experiences — with nothing
+      # reconciling them, so each rendered twice in a couple's own navigation.
+      - name: each page appears once in the guest nav
+        run: npm run test:nav-no-duplicates
+
       # Credential-free subset of the persistence suite — no live Base44
       # login, no BASE44_ADMIN_KEY. That key is full production database
       # access and deliberately does not live in GitHub secrets; the live
