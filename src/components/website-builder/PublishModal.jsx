@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { fetchGuestLinks } from '@/lib/guestLinks';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useWebsitePasswordGate } from '@/lib/websitePasswordGate';
 
 import { coupleNameParts } from '@/lib/coupleNames';
+import { syncWeddingAddress } from '@/lib/weddingAddress';
 function ToggleSwitch({ value, onChange, label }) {
   return (
     <button
@@ -26,12 +27,6 @@ export default function PublishModal({ onClose, details, onUpdate }) {
   const [tab, setTab] = useState(details?.initialTab || 'website');
   const [copied, setCopied] = useState(false);
 
-  // Keep the slug field in sync if a fresh `details` prop arrives (e.g.
-  // after the auto-slug-from-name effect fires in the parent) while this
-  // modal is already open.
-  useEffect(() => {
-  }, [details?.slug]);
-
   const hasRealSlug = !!details?.slug;
   // window.location.host, not a hardcoded literal — so the link shown
   // and shared always matches wherever this is actually running (a
@@ -41,6 +36,26 @@ export default function PublishModal({ onClose, details, onUpdate }) {
 
   const togglePublish = async () => {
     const next = { websiteEnabled: !details?.websiteEnabled };
+
+    // PUBLISH SETTLES THE ADDRESS, BEFORE THE SITE BECOMES REACHABLE.
+    //
+    // Two records can derive the same address simultaneously — the platform
+    // has no unique constraint and no conditional write, so the race can only
+    // be DETECTED, and the deterministic tie-break decides who moves.
+    //
+    // Detection previously happened "on the next load", which is not a
+    // guarantee: a couple who publishes and sends invitations without
+    // revisiting never triggers it. Guests only exist after publish, so
+    // forcing resolution HERE closes the window before anyone can be hurt by
+    // it — the address a guest is given has already been settled.
+    //
+    // Before enabling only, and awaited: the point is to be certain the
+    // address is final at the moment it becomes shareable.
+    if (next.websiteEnabled) {
+      const settled = await syncWeddingAddress(details.id);
+      if (settled.changed && settled.slug) onUpdate({ slug: settled.slug });
+    }
+
     await base44.entities.WeddingDetails.update(details.id, next);
     onUpdate(next);
 
@@ -140,7 +155,7 @@ export default function PublishModal({ onClose, details, onUpdate }) {
                 <div style={{ width: 10, height: 10, borderRadius: '50%', background: details?.websiteEnabled ? '#22C55E' : '#AAAAAA', flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
                   <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>
-                    {!hasRealSlug ? 'Set a URL below before publishing' : details?.websiteEnabled ? 'Your website is live' : 'Your website is not published yet'}
+                    {!hasRealSlug ? 'Add your names in Event details to get your address' : details?.websiteEnabled ? 'Your website is live' : 'Your website is not published yet'}
                   </p>
                   <p style={{ margin: 0, fontSize: 12, color: 'rgba(10,10,10,0.6)' }}>{siteUrl || 'No URL set yet'}</p>
                 </div>

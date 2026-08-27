@@ -113,5 +113,20 @@ for (const [re, why] of STALE) {
 }
 if (!stale) pass('docs', 'help copy describes the feature that exists');
 
+/* ── 5. PUBLISH SETTLES THE ADDRESS ─────────────────────────────────── */
+// "It converges on the next load" is not a guarantee: a couple who publishes
+// and sends invitations without revisiting never triggers it. Guests only
+// exist after publish, so publish is where the window has to close.
+const pm = readFileSync(join(ROOT, 'src/components/website-builder/PublishModal.jsx'), 'utf8');
+const toggle = pm.slice(pm.indexOf('const togglePublish'), pm.indexOf('const copyLink'));
+if (!/syncWeddingAddress\(/.test(toggle)) {
+  fail('publish-settles', 'togglePublish does not settle the address before enabling the site');
+} else if (toggle.indexOf('syncWeddingAddress(') > toggle.indexOf('websiteEnabled: !')
+        && /await syncWeddingAddress/.test(toggle)) {
+  pass('publish-settles', 'publish awaits address resolution before the site becomes reachable');
+} else {
+  fail('publish-settles', 'the address is not settled before the site is enabled');
+}
+
 console.log(failed ? `\n  ${failed} failure(s)` : '\n  the address derives, and nothing offers to edit it');
 process.exit(failed ? 1 : 0);
