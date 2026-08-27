@@ -7,7 +7,7 @@ import { EventChip, DietaryCell } from '@/components/guests/GuestList';
 import GuestAvatar from '@/components/shared/GuestAvatar';
 const Table = base44.entities.Table;
 const VenueAsset = base44.entities.VenueAsset;
-import { Search, Trash2, ZoomIn, ZoomOut, RotateCcw, Users, Pencil, Monitor, Plus, Copy, Download } from 'lucide-react';
+import { Search, Trash2, ZoomIn, ZoomOut, RotateCcw, Users, Pencil, Monitor, Plus, Download } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';
 import { validateUploadFile } from '@/lib/uploadValidation';
@@ -198,7 +198,6 @@ export default function SeatingPage() {
 
   const [manuallyAddedEventIds, setManuallyAddedEventIds] = useState(new Set());
   const [showAddEventMenu, setShowAddEventMenu] = useState(false);
-  const [showCopyMenu, setShowCopyMenu] = useState(false);
   const [attendingOnly, setAttendingOnly] = useState(false);
 
   const collab = useCollaboratorContext();
@@ -290,7 +289,6 @@ export default function SeatingPage() {
     setSelectedSeatIndex(null);
     setTableGuestSearch('');
     setShowAddEventMenu(false);
-    setShowCopyMenu(false);
   };
 
   const handleAddEventTab = (eventId) => {
@@ -398,29 +396,6 @@ export default function SeatingPage() {
 
   const eventAssets = useMemo(() => venueAssets.filter(a => resolveEventId(a) === activeEventId), [venueAssets, activeEventId]);
 
-  /* ── Copy layout — tables only, never guest assignments (decision #3).
-     Only offered into an empty tab; never overwrites. ── */
-  const copyableSources = useMemo(
-    () => visibleEventTabs.filter(e => e.event_id !== activeEventId && tables.some(t => resolveEventId(t) === e.event_id)),
-    [visibleEventTabs, activeEventId, tables]
-  );
-  const canCopyLayout = eventTables.length === 0 && copyableSources.length > 0;
-
-  const handleCopyLayout = async (sourceEventId) => {
-    setShowCopyMenu(false);
-    const sourceTables = tables.filter(t => resolveEventId(t) === sourceEventId);
-    if (sourceTables.length === 0) return;
-    const tid = toast.loading('Copying layout…');
-    try {
-      const created = await Promise.all(sourceTables.map(t => Table.create({
-        name: t.name, capacity: t.capacity, shape: t.shape,
-        x: t.x, y: t.y, rotation: t.rotation || 0,
-        assigned_guests: [], event_id: activeEventId,
-      })));
-      setTables(prev => [...prev, ...created.map(t => ({ ...t, assigned_guests: [] }))]);
-      toast.success(`Copied ${created.length} table${created.length !== 1 ? 's' : ''} — add guests for ${activeEvent.name} from here`, { id: tid, duration: 5000 });
-    } catch { toast.error('Failed to copy layout', { id: tid }); }
-  };
 
   /* ── Stats — scoped to this event's tables and this event's pool ── */
   const assignedGuestIds = useMemo(
@@ -914,40 +889,9 @@ export default function SeatingPage() {
         </div>
       )}
 
-      {/* Ava button + copy layout */}
+      {/* Ava button */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
         <AvaButton label="Ask Ava to arrange your seating plan" onClick={() => setAvaOpen(true)} />
-        {!readOnly && (
-          <div style={{ position: 'relative' }} title={!canCopyLayout && eventTables.length > 0 ? `${activeEvent.name} already has tables — copy layout is only offered into an empty event` : undefined}>
-            <button
-              onClick={() => canCopyLayout && setShowCopyMenu(v => !v)}
-              disabled={!canCopyLayout}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, fontFamily: PJS,
-                color: canCopyLayout ? '#0A0A0A' : 'rgba(10,10,10,0.3)',
-                background: 'transparent', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 999,
-                padding: '6px 14px', cursor: canCopyLayout ? 'pointer' : 'not-allowed',
-              }}
-            >
-              <Copy size={12} /> Copy layout from…
-            </button>
-            {showCopyMenu && canCopyLayout && (
-              <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 4, background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.12)', boxShadow: '0 8px 24px rgba(10,10,10,0.12)', zIndex: 50, minWidth: 180 }}>
-                {copyableSources.map(ev => (
-                  <button
-                    key={ev.event_id}
-                    onClick={() => handleCopyLayout(ev.event_id)}
-                    style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 14px', fontSize: 12, fontWeight: 500, color: '#0A0A0A', fontFamily: PJS, background: 'none', border: 'none', cursor: 'pointer' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(224,53,83,0.04)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
-                  >
-                    {ev.name}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Content */}
@@ -1170,7 +1114,7 @@ export default function SeatingPage() {
                   </div>
                   <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>Add tables from the left panel</p>
                   <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.2)', fontFamily: PJS, margin: '4px 0 0' }}>
-                    {canCopyLayout ? 'Or copy a layout from another event, above' : 'Drag tables and assets to arrange your venue'}
+                    Drag tables and assets to arrange your venue
                   </p>
                 </div>
               )}
