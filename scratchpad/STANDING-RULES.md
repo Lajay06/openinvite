@@ -4,6 +4,60 @@ These survive restarts. Re-read at the start of every session.
 
 ---
 
+## When consolidating duplicates, take the most careful implementation, not the most common one
+
+Two files compared `start_time` with `localeCompare`; one parsed it to minutes.
+**A majority vote would have shipped "9:00" sorting after "17:00" into the
+shared helper and called it consistency.**
+
+Deduplication is the moment a latent bug can become the standard. The only
+defence is READING all the copies rather than counting them.
+
+---
+
+## An exception must be keyed to what it exempts, not to where it sits
+
+A line-numbered allowance was invalidated by adding one import above it.
+
+Same family as the **rename that slipped the payments freeze** (fixed with
+`--no-renames`) and the **relative `git checkout <sha> -- FILE` that ate the
+canon**. Anything anchored to a POSITION rather than to an IDENTITY comes loose
+the moment the file breathes. Key on the code, the name, the content hash —
+never the line, the index, or the offset.
+
+---
+
+## Verify red: find a guard's blindness by trying to make it fail
+
+**The single most productive habit in this project.** It has caught more than
+any amount of careful reading.
+
+The clearest case: a guard written to catch inline schedule sorts used
+`\.sort\([^)]*start_time` — which cannot cross the `(a, b)` parameter list, so
+it never reached the token it was written for. It was **green against the exact
+defect it existed to catch**, and would have shipped as coverage. Fixing it
+surfaced two more sort sites neither the advisor nor the terminal knew existed.
+
+A guard that has only ever been seen green has not been tested. Break the thing
+it guards, watch it go red, put it back.
+
+---
+
+## Where a rule is right and where it is absent may split along who sees it
+
+The correct day-then-time schedule ordering already existed on
+WeddingCelebrationPage — the GUEST-facing page. It was absent from both
+dashboard lists, the surfaces a COUPLE works in.
+
+**The rule was right where a guest sees it and absent where a couple works.**
+
+This is a SEARCH DIRECTION, not only a rule: anything got right for guests
+during the RSVP programme may still be wrong on the dashboard side, and the
+reverse. When a defect is found on one side of that line, look for its twin on
+the other.
+
+---
+
 ## Edit by an exact range, never by searching for a boundary
 
 Removing a function by walking backwards to "the comment above it" swallowed
