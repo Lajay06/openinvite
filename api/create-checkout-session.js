@@ -65,7 +65,13 @@ export default async function handler(req, res) {
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      currency: 'aud',
+      // No top-level `currency` — Stripe infers it from the referenced
+      // Price object itself, and errors if a top-level currency were passed
+      // that didn't match ("The price specified only supports `usd`. This
+      // doesn't match the expected currency: `aud`.", confirmed empirically
+      // via the Stripe CLI while adding USD prices). Now that priceId can
+      // resolve to either an AUD or a USD price, hardcoding one here would
+      // break checkout for the other currency's prices entirely.
       payment_method_types: [
         'card',
         'afterpay_clearpay',

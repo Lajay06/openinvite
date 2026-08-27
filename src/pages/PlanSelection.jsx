@@ -4,13 +4,9 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Loader2, Check, Crown } from 'lucide-react';
 import { track } from '@/lib/analytics';
+import { PRICE_IDS, PLAN_PRICES, currencyForUser, formatPlanPrice } from '@/lib/currencyPricing';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
-
-const PRICE_IDS = {
-  pro:   import.meta.env.VITE_STRIPE_PRO_PRICE_ID   || 'price_1TavqVJ4ROjxYxkaoCOUvzS8',
-  ultra: import.meta.env.VITE_STRIPE_ULTRA_PRICE_ID || 'price_1TavrJJ4ROjxYxkaM6oOwBZz',
-};
 
 const PRO_FEATURES = [
   'Unlimited guests & full RSVP management',
@@ -43,8 +39,8 @@ function CheckIcon() {
   );
 }
 
-async function startCheckout(plan, setLoadingPlan) {
-  const priceId = PRICE_IDS[plan];
+async function startCheckout(plan, currency, setLoadingPlan) {
+  const priceId = PRICE_IDS[currency][plan];
   setLoadingPlan(plan);
   try {
     let userEmail = '';
@@ -73,9 +69,14 @@ export default function PlanSelection() {
   const { user } = useAuth();
   const plan = user?.plan || 'free';
   const [loadingPlan, setLoadingPlan] = useState(null);
+  // Always a logged-in context (this page only shows once a real user's
+  // trial is ending) — no geo-IP fallback or manual switcher needed here,
+  // unlike Pricing.jsx. Just the same stored preference, same narrowing
+  // rule: only an exact 'USD' preference means USD, everything else is AUD.
+  const currency = currencyForUser(user);
 
-  const goPro   = () => { track('checkout_initiated', { plan: 'pro',   price: 79  }); startCheckout('pro',   setLoadingPlan); };
-  const goUltra = () => { track('checkout_initiated', { plan: 'ultra', price: 149 }); startCheckout('ultra', setLoadingPlan); };
+  const goPro   = () => { track('checkout_initiated', { plan: 'pro',   price: PLAN_PRICES[currency].pro,   currency }); startCheckout('pro',   currency, setLoadingPlan); };
+  const goUltra = () => { track('checkout_initiated', { plan: 'ultra', price: PLAN_PRICES[currency].ultra, currency }); startCheckout('ultra', currency, setLoadingPlan); };
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 24px' }}>
@@ -100,7 +101,8 @@ export default function PlanSelection() {
         <div style={{ flex: '0 1 340px', minWidth: 280, border: '1px solid #E5E5E5', background: '#FAFAF9', padding: 32, display: 'flex', flexDirection: 'column' }}>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: '0 0 14px', fontFamily: PJS }}>Pro</p>
           <div style={{ marginBottom: 4 }}>
-            <span style={{ fontSize: 44, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>$79</span>
+            <span style={{ fontSize: 44, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>${PLAN_PRICES[currency].pro}</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: 'rgba(10,10,10,0.4)', marginLeft: 6, fontFamily: PJS }}>{currency}</span>
           </div>
           <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: '0 0 20px', fontFamily: PJS }}>24-month access · one-time payment</p>
           <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, margin: '0 0 20px', fontFamily: PJS }}>
@@ -129,7 +131,7 @@ export default function PlanSelection() {
             onMouseEnter={e => { if (!loadingPlan) e.currentTarget.style.opacity = '0.88'; }}
             onMouseLeave={e => { if (!loadingPlan) e.currentTarget.style.opacity = '1'; }}
           >
-            {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: 'oi-spin 0.8s linear infinite' }} /> Redirecting…</> : 'Get Pro — $79'}
+            {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: 'oi-spin 0.8s linear infinite' }} /> Redirecting…</> : `Get Pro — ${formatPlanPrice(currency, 'pro')}`}
           </button>
         </div>
 
@@ -140,7 +142,8 @@ export default function PlanSelection() {
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.4)', margin: 0, fontFamily: PJS }}>Ultra</p>
           </div>
           <div style={{ marginBottom: 4 }}>
-            <span style={{ fontSize: 44, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>$149</span>
+            <span style={{ fontSize: 44, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: PJS }}>${PLAN_PRICES[currency].ultra}</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: 'rgba(10,10,10,0.4)', marginLeft: 6, fontFamily: PJS }}>{currency}</span>
           </div>
           <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.4)', margin: '0 0 20px', fontFamily: PJS }}>24-month access · one-time payment</p>
           <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, margin: '0 0 20px', fontFamily: PJS }}>
@@ -172,7 +175,7 @@ export default function PlanSelection() {
             onMouseEnter={e => { if (!loadingPlan) e.currentTarget.style.opacity = '0.88'; }}
             onMouseLeave={e => { if (!loadingPlan) e.currentTarget.style.opacity = '1'; }}
           >
-            {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: 'oi-spin 0.8s linear infinite' }} /> Redirecting…</> : 'Get Ultra — $149'}
+            {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: 'oi-spin 0.8s linear infinite' }} /> Redirecting…</> : `Get Ultra — ${formatPlanPrice(currency, 'ultra')}`}
           </button>
         </div>
 
@@ -189,7 +192,7 @@ export default function PlanSelection() {
       )}
 
       <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.3)', margin: '20px 0 0', fontFamily: PJS }}>
-        Prices in AUD · 14-day money-back guarantee · No recurring fees
+        Prices shown in {currency} · 14-day money-back guarantee · No recurring fees
       </p>
 
       <style>{`@keyframes oi-spin { to { transform: rotate(360deg); } }`}</style>

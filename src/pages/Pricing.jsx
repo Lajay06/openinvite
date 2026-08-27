@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import { base44 } from "@/api/base44Client";
 import { Loader2 } from "lucide-react";
 import { track } from "@/lib/analytics";
+import { PRICE_IDS, PLAN_PRICES, currencyForUser, currencyFromGeoIp, formatPlanPrice } from "@/lib/currencyPricing";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -31,54 +32,61 @@ const ULTRA_EXTRAS = [
   "Save the dates & thank you cards",
 ];
 
-const FAQS = [
-  {
-    q: "Is this really a one-time payment?",
-    a: "Yes. Pay once, plan your entire wedding. No monthly fees, no subscriptions, no surprises. Pro is $79 AUD total. Ultra is $149 AUD total.",
-  },
-  {
-    q: "What's included in the 14-day free trial?",
-    a: "Full access to every feature, including all Ultra features. No credit card required. At the end of 14 days, choose Pro or Ultra to keep your data and access.",
-  },
-  {
-    q: "What's the difference between Pro and Ultra?",
-    a: "Pro includes everything you need to plan your wedding: guests, budget, vendors, seating, timeline, and more. Ultra adds the digital suite: wedding website, invitations, online RSVP, and premium themes.",
-  },
-  {
-    q: "Can I upgrade from Pro to Ultra later?",
-    a: "Yes — you can upgrade at any time and pay only the difference ($70).",
-  },
-  {
-    q: "What if I want a refund?",
-    a: "We offer a 14-day money-back guarantee from your purchase date, no questions asked.",
-  },
-  {
-    q: "Do I need a credit card for the trial?",
-    a: "No. Start free with just your email. No card details required until you upgrade.",
-  },
-  {
-    q: "What happens to my data after 24 months?",
-    a: "Your wedding is done — congratulations. After 24 months, your account moves to archive mode. Add an archive plan for $49 to keep permanent access to your wedding story.",
-  },
-];
+// FAQs and the comparison table's Price row mention actual amounts, so both
+// are built per-currency rather than as module-level constants.
+function buildFaqs(currency) {
+  const upgradeDiff = PLAN_PRICES[currency].ultra - PLAN_PRICES[currency].pro;
+  return [
+    {
+      q: "Is this really a one-time payment?",
+      a: `Yes. Pay once, plan your entire wedding. No monthly fees, no subscriptions, no surprises. Pro is ${formatPlanPrice(currency, 'pro')} total. Ultra is ${formatPlanPrice(currency, 'ultra')} total.`,
+    },
+    {
+      q: "What's included in the 14-day free trial?",
+      a: "Full access to every feature, including all Ultra features. No credit card required. At the end of 14 days, choose Pro or Ultra to keep your data and access.",
+    },
+    {
+      q: "What's the difference between Pro and Ultra?",
+      a: "Pro includes everything you need to plan your wedding: guests, budget, vendors, seating, timeline, and more. Ultra adds the digital suite: wedding website, invitations, online RSVP, and premium themes.",
+    },
+    {
+      q: "Can I upgrade from Pro to Ultra later?",
+      a: `Yes — you can upgrade at any time and pay only the difference ($${upgradeDiff} ${currency}).`,
+    },
+    {
+      q: "What if I want a refund?",
+      a: "We offer a 14-day money-back guarantee from your purchase date, no questions asked.",
+    },
+    {
+      q: "Do I need a credit card for the trial?",
+      a: "No. Start free with just your email. No card details required until you upgrade.",
+    },
+    {
+      q: "What happens to my data after 24 months?",
+      a: "Your wedding is done — congratulations. After 24 months, your account moves to archive mode. Add an archive plan for $49 to keep permanent access to your wedding story.",
+    },
+  ];
+}
 
-const TABLE_ROWS = [
-  { feature: "Access duration",        trial: "14 days",  pro: "24 months",  ultra: "24 months" },
-  { feature: "Guests",                  trial: "∞",         pro: "∞",          ultra: "∞" },
-  { feature: "Ava AI",                  trial: "∞",         pro: "∞",          ultra: "∞" },
-  { feature: "Budget tracker",          trial: "Full",      pro: "Full",       ultra: "Full" },
-  { feature: "Vendor tools",            trial: "∞",         pro: "∞",          ultra: "∞" },
-  { feature: "Seating planner",         trial: true,        pro: true,         ultra: true },
-  { feature: "Schedule & timeline",     trial: true,        pro: true,         ultra: true },
-  { feature: "Music & registry",        trial: true,        pro: true,         ultra: true },
-  { feature: "Wedding website",         trial: true,        pro: false,        ultra: true },
-  { feature: "Digital invitations",     trial: true,        pro: false,        ultra: true },
-  { feature: "Online RSVP",            trial: true,        pro: false,        ultra: true },
-  { feature: "Premium themes",          trial: true,        pro: false,        ultra: true },
-  { feature: "Guest suite",             trial: true,        pro: false,        ultra: true },
-  { feature: "Support",                 trial: "Priority",  pro: "Priority",   ultra: "Priority" },
-  { feature: "Price",                   trial: "Free",      pro: "$79",        ultra: "$149" },
-];
+function buildTableRows(currency) {
+  return [
+    { feature: "Access duration",        trial: "14 days",  pro: "24 months",  ultra: "24 months" },
+    { feature: "Guests",                  trial: "∞",         pro: "∞",          ultra: "∞" },
+    { feature: "Ava AI",                  trial: "∞",         pro: "∞",          ultra: "∞" },
+    { feature: "Budget tracker",          trial: "Full",      pro: "Full",       ultra: "Full" },
+    { feature: "Vendor tools",            trial: "∞",         pro: "∞",          ultra: "∞" },
+    { feature: "Seating planner",         trial: true,        pro: true,         ultra: true },
+    { feature: "Schedule & timeline",     trial: true,        pro: true,         ultra: true },
+    { feature: "Music & registry",        trial: true,        pro: true,         ultra: true },
+    { feature: "Wedding website",         trial: true,        pro: false,        ultra: true },
+    { feature: "Digital invitations",     trial: true,        pro: false,        ultra: true },
+    { feature: "Online RSVP",            trial: true,        pro: false,        ultra: true },
+    { feature: "Premium themes",          trial: true,        pro: false,        ultra: true },
+    { feature: "Guest suite",             trial: true,        pro: false,        ultra: true },
+    { feature: "Support",                 trial: "Priority",  pro: "Priority",   ultra: "Priority" },
+    { feature: "Price",                   trial: "Free",      pro: formatPlanPrice(currency, 'pro'), ultra: formatPlanPrice(currency, 'ultra') },
+  ];
+}
 
 function CheckIcon({ color = "#0A0A0A" }) {
   return (
@@ -94,15 +102,9 @@ function CellValue({ val }) {
   return <span style={{ fontSize: 13, color: "#0A0A0A", fontFamily: PJS }}>{val}</span>;
 }
 
-// Price IDs: prefer env vars (set at build time via VITE_ prefix), fall back to hardcoded
-const PRICE_IDS = {
-  pro:   import.meta.env.VITE_STRIPE_PRO_PRICE_ID   || 'price_1TavqVJ4ROjxYxkaoCOUvzS8',
-  ultra: import.meta.env.VITE_STRIPE_ULTRA_PRICE_ID || 'price_1TavrJJ4ROjxYxkaM6oOwBZz',
-};
-
-async function startCheckout(plan, setLoadingPlan, setCheckoutError) {
-  const priceId = PRICE_IDS[plan];
-  console.log('[Checkout] Button clicked — plan:', plan, '| priceId:', priceId);
+async function startCheckout(plan, currency, setLoadingPlan, setCheckoutError) {
+  const priceId = PRICE_IDS[currency][plan];
+  console.log('[Checkout] Button clicked — plan:', plan, '| currency:', currency, '| priceId:', priceId);
   setLoadingPlan(plan);
   setCheckoutError(null);
 
@@ -173,10 +175,42 @@ export default function Pricing() {
   const navigate = useNavigate();
   const [loadingPlan, setLoadingPlan] = useState(null);
   const [checkoutError, setCheckoutError] = useState(null);
+  // Default AUD while the real signal resolves (logged-in preference, else
+  // geo-IP) — a brief, immediately-corrected guess, never a blocking spinner
+  // over the whole page. currencyLocked stays false until the visitor uses
+  // the manual switcher, so a slightly-delayed geo-IP/user response can
+  // still safely overwrite the initial default without clobbering a
+  // deliberate choice.
+  const [currency, setCurrency] = useState('AUD');
+  const currencyLocked = React.useRef(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      let user = null;
+      try { user = await base44.auth.me(); } catch { /* anonymous — fall through to geo-IP */ }
+      if (cancelled || currencyLocked.current) return;
+      if (user) {
+        setCurrency(currencyForUser(user));
+      } else {
+        const geo = await currencyFromGeoIp();
+        if (!cancelled && !currencyLocked.current) setCurrency(geo);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const switchCurrency = (next) => {
+    currencyLocked.current = true;
+    setCurrency(next);
+  };
+
+  const faqs = buildFaqs(currency);
+  const tableRows = buildTableRows(currency);
 
   const goFree  = () => navigate("/onboarding");
-  const goPro   = () => { track('checkout_initiated', { plan: 'pro',   price: 79  }); startCheckout('pro',   setLoadingPlan, setCheckoutError); };
-  const goUltra = () => { track('checkout_initiated', { plan: 'ultra', price: 149 }); startCheckout('ultra', setLoadingPlan, setCheckoutError); };
+  const goPro   = () => { track('checkout_initiated', { plan: 'pro',   price: PLAN_PRICES[currency].pro,   currency }); startCheckout('pro',   currency, setLoadingPlan, setCheckoutError); };
+  const goUltra = () => { track('checkout_initiated', { plan: 'ultra', price: PLAN_PRICES[currency].ultra, currency }); startCheckout('ultra', currency, setLoadingPlan, setCheckoutError); };
 
   return (
     <div style={{ background: "#FFFFFF", minHeight: "100vh", fontFamily: PJS }}>
@@ -230,6 +264,29 @@ export default function Pricing() {
           </button>
         </div>
 
+        {/* Currency switcher — defaults from a logged-in user's Account
+            preference, or geo-IP for anonymous visitors, but never traps
+            anyone: manual override always available. */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 28 }}>
+          <div style={{ display: "inline-flex", border: "1px solid rgba(10,10,10,0.12)", borderRadius: 999, padding: 3, gap: 2 }}>
+            {["AUD", "USD"].map(code => (
+              <button
+                key={code}
+                onClick={() => switchCurrency(code)}
+                style={{
+                  padding: "6px 18px", borderRadius: 999, border: "none", cursor: "pointer",
+                  fontSize: 12, fontWeight: 700, fontFamily: PJS,
+                  background: currency === code ? "#0A0A0A" : "transparent",
+                  color: currency === code ? "#FFFFFF" : "rgba(10,10,10,0.5)",
+                  transition: "background 0.15s, color 0.15s",
+                }}
+              >
+                {code}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div style={{
           maxWidth: 860, margin: "0 auto",
           display: "flex", gap: 20, alignItems: "stretch",
@@ -247,7 +304,8 @@ export default function Pricing() {
               Pro
             </p>
             <div style={{ marginBottom: 4 }}>
-              <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$79</span>
+              <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>${PLAN_PRICES[currency].pro}</span>
+              <span style={{ fontSize: 16, fontWeight: 700, color: "rgba(10,10,10,0.4)", marginLeft: 8, fontFamily: PJS }}>{currency}</span>
             </div>
             <p style={{ fontSize: 13, color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
               24-month access · one-time payment
@@ -277,7 +335,7 @@ export default function Pricing() {
               onMouseEnter={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "0.88"; }}
               onMouseLeave={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "1"; }}
             >
-              {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Pro — $79"}
+              {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : `Get Pro — ${formatPlanPrice(currency, 'pro')}`}
             </button>
           </div>
 
@@ -295,7 +353,8 @@ export default function Pricing() {
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "rgba(10,10,10,0.4)", margin: 0, fontFamily: PJS }}>Ultra</p>
             </div>
             <div style={{ marginBottom: 4 }}>
-              <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>$149</span>
+              <span style={{ fontSize: 48, fontWeight: 800, color: "#0A0A0A", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: PJS }}>${PLAN_PRICES[currency].ultra}</span>
+              <span style={{ fontSize: 16, fontWeight: 700, color: "rgba(10,10,10,0.4)", marginLeft: 8, fontFamily: PJS }}>{currency}</span>
             </div>
             <p style={{ fontSize: 13, color: "rgba(10,10,10,0.4)", marginBottom: 16, fontFamily: PJS }}>
               24-month access · one-time payment
@@ -328,18 +387,18 @@ export default function Pricing() {
               onMouseEnter={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.opacity = "0.88"; }}
               onMouseLeave={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.opacity = "1"; }}
             >
-              {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Ultra — $149"}
+              {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : `Get Ultra — ${formatPlanPrice(currency, 'ultra')}`}
             </button>
           </div>
 
         </div>
 
-        {/* No upsells + AUD note */}
+        {/* No upsells note */}
         <p style={{ textAlign: "center", fontSize: 13, color: "rgba(10,10,10,0.4)", marginTop: 28, fontFamily: PJS }}>
           No upsells, ever. Pay once, plan your entire wedding.
         </p>
         <p style={{ textAlign: "center", fontSize: 12, color: "rgba(10,10,10,0.3)", marginTop: 6, fontFamily: PJS }}>
-          Prices in AUD · Approx. US$50 / US$95
+          Prices shown in {currency} — switch above if that's not right for you.
         </p>
 
         {/* ── Checkout error banner ── */}
@@ -407,7 +466,7 @@ export default function Pricing() {
                 </tr>
               </thead>
               <tbody>
-                {TABLE_ROWS.map((row, i) => (
+                {tableRows.map((row, i) => (
                   <tr key={i} style={{ borderTop: "1px solid rgba(10,10,10,0.05)" }}>
                     <td style={{ padding: "14px 0", fontSize: 13, color: "rgba(10,10,10,0.7)", fontFamily: PJS }}>
                       {row.feature}
@@ -433,7 +492,7 @@ export default function Pricing() {
           </h2>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
-            {FAQS.map((faq, i) => (
+            {faqs.map((faq, i) => (
               <div key={i}>
                 <p style={{ fontSize: 15, fontWeight: 600, color: "#0A0A0A", marginBottom: 8, fontFamily: PJS }}>
                   {faq.q}
@@ -485,7 +544,7 @@ export default function Pricing() {
             onMouseEnter={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "0.85"; }}
             onMouseLeave={e => { if (loadingPlan !== 'pro') e.currentTarget.style.opacity = "1"; }}
           >
-            {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Pro — $79"}
+            {loadingPlan === 'pro' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : `Get Pro — ${formatPlanPrice(currency, 'pro')}`}
           </button>
           <button
             onClick={goUltra}
@@ -500,7 +559,7 @@ export default function Pricing() {
             onMouseEnter={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.opacity = "0.85"; }}
             onMouseLeave={e => { if (loadingPlan !== 'ultra') e.currentTarget.style.opacity = "1"; }}
           >
-            {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : "Get Ultra — $149"}
+            {loadingPlan === 'ultra' ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : `Get Ultra — ${formatPlanPrice(currency, 'ultra')}`}
           </button>
         </div>
       </section>

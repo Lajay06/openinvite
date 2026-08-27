@@ -43,7 +43,7 @@ export default function RefundPolicy() {
           </PolicyCard>
 
           <PolicyCard icon="⭐" title="Pro and Ultra — 14-day money-back guarantee">
-            <p style={P}>If you purchase Pro ($79 AUD) or Ultra ($149 AUD) and are not satisfied, you may request a full refund within <strong>14 days</strong> of your purchase date — no questions asked.</p>
+            <p style={P}>If you purchase Pro ($79 AUD / $59 USD) or Ultra ($149 AUD / $79 USD) and are not satisfied, you may request a full refund within <strong>14 days</strong> of your purchase date — no questions asked.</p>
             <p style={{ ...P, marginBottom: 0 }}>After 14 days, your purchase is non-refundable. You keep access to your plan's features for the full 24-month access period regardless.</p>
           </PolicyCard>
 
