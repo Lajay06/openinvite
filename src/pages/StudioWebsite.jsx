@@ -243,6 +243,10 @@ const WRITABLE_FIELDS = [
   'guestExperienceSettings',
   'photosContent',
   'customPages',
+  // 'assetContent' is RETAINED here although nothing writes it any more. The
+  // asset feature was removed in Wave 2; dropping the field from this payload
+  // would strand whatever a couple already has stored the next time anything
+  // else saves. A fix that narrows a payload can orphan the field it removes.
   'assetContent',
 ];
 
@@ -250,7 +254,6 @@ export default function StudioWebsite({ onBack }) {
   const navigate = useNavigate();
   const [publishModalOpen, setPublishModalOpen] = useState(false);
   const [publishModalTab, setPublishModalTab] = useState('website');
-  const [selectedAsset, setSelectedAsset] = useState(null);
   const [details, setDetails] = useState(null);
   const [unsaved, setUnsaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -313,18 +316,6 @@ export default function StudioWebsite({ onBack }) {
     setMediaLibrary(prev => [newItem, ...prev]);
   };
 
-  const updateAssetContent = (assetKey, field, value) => {
-    setDetailsAndMark(prev => ({
-      ...prev,
-      assetContent: {
-        ...(prev.assetContent || {}),
-        [assetKey]: {
-          ...(prev.assetContent?.[assetKey] || {}),
-          [field]: value,
-        }
-      }
-    }));
-  };
 
   const { data: existing, isLoading } = useQuery({
     queryKey: ['wb-details'],
@@ -617,8 +608,6 @@ export default function StudioWebsite({ onBack }) {
           onChange={updateField}
           currentPage={currentPage}
           onPageChange={(p) => { setCurrentPage(p); setRightPanelTab('design'); }}
-          selectedAsset={selectedAsset}
-          onAssetSelect={setSelectedAsset}
         />
 
         {/* CENTER PREVIEW */}
@@ -714,10 +703,6 @@ export default function StudioWebsite({ onBack }) {
             onChange={updateField}
             rightTab={rightPanelTab}
             onRightTabChange={setRightPanelTab}
-            selectedAsset={null}
-            assetContent={{}}
-            onAssetChange={updateAssetContent}
-            onClearAsset={() => {}}
             selectedBlock={selectedBlock}
             onUpdateSelectedBlockContent={updateSelectedBlockContent}
             onUpdateSelectedBlockStyle={updateSelectedBlockStyle}

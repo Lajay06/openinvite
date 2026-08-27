@@ -11,7 +11,6 @@
 import React, { useEffect } from 'react';
 import { ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
-import AssetGrid from '@/components/universe-studio/AssetGrid';
 import SaveTheDatePreview from '@/components/universe-studio/assets/SaveTheDatePreview';
 import MenuCardPreview from '@/components/universe-studio/assets/MenuCardPreview';
 import SeatingChartPreview from '@/components/universe-studio/assets/SeatingChartPreview';
@@ -143,19 +142,6 @@ export function TypeSpecimen({ typography = {}, textOn }) {
   );
 }
 
-/** The real "Your design assets" grid — genuine preview components, genuine
- *  John & Suzanne data. Editing is a no-op toast (see file header); Preview/
- *  Share still work since those are read-only. */
-export function RealAssetsSection({ universe, weddingDetails, guests }) {
-  return (
-    <AssetGrid
-      universe={universe}
-      weddingDetails={weddingDetails}
-      guests={guests}
-      onEdit={() => mockActionToast('Edit asset')}
-    />
-  );
-}
 
 export function MockDataNotice({ loading, weddingDetails }) {
   if (loading) return null;

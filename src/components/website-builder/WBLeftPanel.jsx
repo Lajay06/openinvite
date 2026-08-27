@@ -1,26 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, LayoutDashboard, BookOpen, Star, Mail, MapPin, Gift, Music, Camera, HelpCircle, FileText, CalendarCheck, Send, UtensilsCrossed, LayoutGrid, Clapperboard, Instagram, Signpost, Tag, Heart, Sparkles, BarChart2 } from 'lucide-react';
-import { WEDDING_PAGES, WEBSITE_THEMES, TYPOGRAPHY_PAIRINGS } from '@/lib/websiteThemes';
+import { Plus, LayoutDashboard, BookOpen, Star, Mail, MapPin, Gift, Music, Camera, HelpCircle, FileText, Heart, Sparkles, BarChart2 } from 'lucide-react';
+import { WEDDING_PAGES } from '@/lib/websiteThemes';
 import { resolveColors } from '@/lib/universeStyling';
 import { interactiveDivProps } from '@/lib/a11y';
 import NewPageModal from './NewPageModal';
 import { ALWAYS_ON_PAGES } from '@/lib/guestPages';
 
+import { resolveUniverseConfig } from '@/lib/universeStyling';
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-const ASSETS = [
-  { id: 'save-the-date', name: 'Save the Date', icon: CalendarCheck },
-  { id: 'digital-invitation', name: 'Digital Invitation', icon: Send },
-  { id: 'rsvp-card', name: 'RSVP Card', icon: Mail },
-  { id: 'menu-card', name: 'Menu Card', icon: UtensilsCrossed },
-  { id: 'seating-chart', name: 'Seating Chart', icon: LayoutGrid },
-  { id: 'motion-graphic', name: 'Motion Graphic', icon: Clapperboard },
-  { id: 'instagram-kit', name: 'Instagram Story Kit', icon: Instagram },
-  { id: 'welcome-signage', name: 'Welcome Signage', icon: Signpost },
-  { id: 'guest-tags', name: 'Guest Tags', icon: Tag },
-  { id: 'thank-you', name: 'Thank You Notes', icon: Heart },
-];
 
 const PAGE_ICONS = {
   LayoutDashboard, BookOpen, Star, Mail, MapPin, Gift, Music, Camera, HelpCircle, FileText, Sparkles, BarChart2, Heart,
@@ -83,15 +72,12 @@ function Divider() {
   return <div style={{ height: 1, background: 'rgba(255,255,255,0.12)', margin: '8px 0' }} />;
 }
 
-export default function WBLeftPanel({ details, onChange, currentPage, onPageChange, selectedAsset, onAssetSelect }) {
+export default function WBLeftPanel({ details, onChange, currentPage, onPageChange }) {
   const [showNewPage, setShowNewPage] = useState(false);
   const navigate = useNavigate();
   const [hoveredPage, setHoveredPage] = useState(null);
-  const [hoveredAsset, setHoveredAsset] = useState(null);
   const [hoverNewPage, setHoverNewPage] = useState(false);
   const [pagesOpen, setPagesOpen] = useState(true);
-  const [designOpen, setDesignOpen] = useState(true);
-  const [assetsOpen, setAssetsOpen] = useState(false);
 
   const enabledPages = details.enabledPages || ['home', 'our-story', 'celebration', 'rsvp'];
   const customPages = details.customPages || [];
@@ -120,10 +106,16 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
   // A universe's own colours take priority over the legacy activeTheme
   // lookup — see resolveColors() (fix/universe-palettes).
   const theme = resolveColors(details);
-  const themeLabel = details?.activeUniverse
-    ? details.activeUniverse.charAt(0).toUpperCase() + details.activeUniverse.slice(1)
-    : (WEBSITE_THEMES.find(t => t.id === (details.activeTheme || 'still')) || WEBSITE_THEMES[0]).name;
-  const typo = TYPOGRAPHY_PAIRINGS.find(t => t.id === (details.activeTypography || 'classic')) || TYPOGRAPHY_PAIRINGS[0];
+  // The universe's OWN name, through the same resolver every other surface
+  // uses. This previously title-cased `activeUniverse` and, when that was
+  // absent, fell back to the LEGACY `activeTheme` — so a record with no
+  // universe showed "Still" here while WBRightPanel showed "London" for the
+  // same record. Two fallbacks disagreeing about what absence means, on one
+  // screen. resolveUniverseConfig defaults to london, and now both do.
+  const themeLabel = resolveUniverseConfig(details)?.name
+    || (details?.activeUniverse
+      ? details.activeUniverse.charAt(0).toUpperCase() + details.activeUniverse.slice(1)
+      : 'London');
 
   return (
     <div style={{
@@ -258,80 +250,44 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
       </div>
       </div>{/* end pages collapsible */}
 
-      {/* ── Design ── */}
+      {/* ── Universe ──
+          ONE PILL, replacing the Design and Assets sections.
+
+          Design held two rows, and BOTH "Change →" links already navigated to
+          /studio/universe — never two destinations, only two labels. The second
+          row displayed `details.activeTypography`, which NOTHING writes and
+          which curatedFonts.js already documents as "permanently dead code":
+          resolveTypography gives the universe unconditional priority. It showed
+          a pairing name with no bearing on what rendered.
+
+          The real typography control is unaffected — it lives in the RIGHT
+          panel as `fontOverride` (any of 30 fonts per role, per-universe
+          pairing presets).
+
+          WHEN A CONTROL REPLACES A READOUT, IT MUST CARRY THE READOUT: the
+          universe name was the only true information this section held, so the
+          pill says it. */}
       <Divider />
-      <SLabel onClick={() => setDesignOpen(o => !o)} isOpen={designOpen}>Design</SLabel>
-      <div style={{ overflow: 'hidden', maxHeight: designOpen ? '2000px' : '0px', transition: 'max-height 0.2s ease' }}>
-      <div style={{ padding: '0 16px 12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <div style={{ display: 'flex', width: 20, height: 20, overflow: 'hidden', flexShrink: 0, border: '1px solid rgba(255,255,255,0.15)' }}>
+      <div style={{ padding: '12px 16px' }}>
+        <div
+          onClick={() => navigate('/studio/universe')}
+          {...interactiveDivProps(() => navigate('/studio/universe'), { label: `${themeLabel} — Change universe` })}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; }}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
+            border: '1px solid rgba(255,255,255,0.15)', borderRadius: 999,
+            padding: '7px 14px', transition: 'border-color 0.15s',
+          }}
+        >
+          <div style={{ display: 'flex', width: 16, height: 16, overflow: 'hidden', flexShrink: 0, border: '1px solid rgba(255,255,255,0.15)' }}>
             <div style={{ flex: 1, background: theme.darkBg }} />
             <div style={{ flex: 1, background: theme.lightBg }} />
           </div>
-          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: 500, fontFamily: PJS }}>{themeLabel}</span>
-          <span
-            onClick={() => navigate('/studio/universe')}
-            {...interactiveDivProps(() => navigate('/studio/universe'), { label: 'Change theme' })}
-            onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
-            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
-            style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', cursor: 'pointer', marginLeft: 'auto', fontFamily: PJS, transition: 'color 0.15s', flexShrink: 0 }}
-          >Change →</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.15)', flexShrink: 0 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.5)', fontFamily: 'Georgia,serif', lineHeight: 1 }}>Tt</span>
-          </div>
-          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: 500, fontFamily: PJS }}>{typo.name}</span>
-          <span
-            onClick={() => navigate('/studio/universe')}
-            {...interactiveDivProps(() => navigate('/studio/universe'), { label: 'Change theme' })}
-            onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
-            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
-            style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', cursor: 'pointer', marginLeft: 'auto', fontFamily: PJS, transition: 'color 0.15s', flexShrink: 0 }}
-          >Change →</span>
+          <span style={{ fontSize: 12, color: '#FFFFFF', fontWeight: 600, fontFamily: PJS }}>{themeLabel}</span>
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginLeft: 'auto', fontFamily: PJS, flexShrink: 0 }}>Change universe</span>
         </div>
       </div>
-      </div>{/* end design collapsible */}
-
-      {/* ── Assets ── */}
-      {/* Divider at 0.12 — advisor ruling 2026-08-20: dividers are ONE value
-          regardless of implementation. This one is a background fill, not a
-          border, so the feel-pass property guard skipped it; the guard is
-          unchanged and this exemption lives here at the site. */}
-      <div style={{ height: 1, background: 'rgba(255,255,255,0.12)', margin: '4px 0 0' }} />
-      <SLabel onClick={() => setAssetsOpen(o => !o)} isOpen={assetsOpen}>Assets</SLabel>
-      <div style={{ overflow: 'hidden', maxHeight: assetsOpen ? '2000px' : '0px', transition: 'max-height 0.2s ease' }}>
-      {ASSETS.map(({ id, name, icon: Icon }) => {
-        const active = selectedAsset === id;
-        const hovered = hoveredAsset === id;
-        return (
-          <div
-            key={id}
-            onClick={() => onAssetSelect(id)}
-            {...interactiveDivProps(() => onAssetSelect(id), { label: name })}
-            onMouseEnter={() => { if (!active) setHoveredAsset(id); }}
-            onMouseLeave={() => setHoveredAsset(null)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              padding: '6px 16px', cursor: 'pointer',
-              background: active ? 'rgba(255,255,255,0.06)' : hovered ? 'rgba(255,255,255,0.04)' : 'transparent',
-              borderLeft: active ? '2px solid #E03553' : '2px solid transparent',
-              transition: 'background 0.1s',
-            }}
-          >
-            <Icon size={13} strokeWidth={1.5} color={active ? '#FFFFFF' : 'rgba(255,255,255,0.5)'} />
-            <span style={{ flex: 1, fontSize: 12, fontWeight: 500, fontFamily: PJS, color: active ? '#FFFFFF' : 'rgba(255,255,255,0.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
-            <span style={{
-              fontSize: 9, fontWeight: 600, padding: '2px 6px', borderRadius: 999, fontFamily: PJS,
-              background: active ? '#E03553' : 'rgba(255,255,255,0.08)',
-              color: active ? '#FFFFFF' : 'rgba(255,255,255,0.4)',
-            }}>
-              {active ? 'Edit' : 'Ready'}
-            </span>
-          </div>
-        );
-      })}
-      </div>{/* end assets collapsible */}
 
       <div style={{ flex: 1, minHeight: 12 }} />
 
