@@ -4,6 +4,41 @@ These survive restarts. Re-read at the start of every session.
 
 ---
 
+## A hazard left in the workspace will eventually be picked up by a routine command
+
+**Two instances in one day, both fixed by removing the hazard rather than by
+resolving to be careful around it.**
+
+1. **An unowned stash entry.** It sat on the stack since July with no branch and
+   no owner. Two ordinary `git stash pop` calls reached for it, both times
+   conflicting in frozen payments files. Fixed by converting it to a named
+   branch and emptying the stack — a pop now fails loudly.
+2. **Credential files in the working tree.** `scripts/capture/output/` holds a
+   browser `storage-state.json` and a live `rsvp-token.txt`. A routine
+   `git add -A` staged both.
+
+Discipline is not the fix for either. The hazard is.
+
+### And the mechanism behind the second is worth its own line
+
+> **A `.gitignore` protects you only at commits where the rule exists.**
+
+Both files WERE in `.gitignore`. The rule covering them was added on
+**2026-08-25**. The recovery branch was created at a **2026-07-16** base, which
+checked out a `.gitignore` that predated it — so every ignored hazard in the
+working directory silently became stageable again.
+
+**Four rules were added in that same commit** (`scripts/capture/output/`,
+`.claude/settings.local.json`, `base44/.app.jsonc`, `.env*.local`). Any branch
+based before 25 August loses all four at once.
+
+Protection that lives in the tree can be time-travelled away. Protection that
+does not: `.git/info/exclude` (per-clone, unversioned) and a pre-push check that
+never consults ignore state. Both are now in place, and the check also runs in
+CI, because `--no-verify` skips hooks.
+
+---
+
 ## A rule you only grep for is a rule you only partly enforce
 
 The retired accommodation page rendered **🏨 and ⭐ on a live guest surface**,

@@ -14,6 +14,14 @@
 # does at midnight, and a shared bypass makes that careless act carry the
 # dangerous one.
 node scripts/check-payments-freeze.mjs || exit 1
+# 1b. CREDENTIALS — a session storage-state and a live RSVP token were staged
+#    into a commit by `git add -A`, DESPITE both being in .gitignore. The rules
+#    covering them were added on 2026-08-25; a recovery branch created at a
+#    2026-07-16 base checked out a .gitignore that predated them, and every
+#    ignored hazard in the working directory became stageable again.
+#    .gitignore protection is only as old as the commit you stand on. This
+#    check does not consult it.
+node scripts/check-no-credentials.mjs || exit 1
 # 2. CANON ON A BRANCH — the standing-rules files have been destroyed twice by
 #    being written on a branch and then reset away. They belong on main, where
 #    a docs-only commit needs no branch and has nothing to lose.

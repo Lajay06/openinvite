@@ -224,6 +224,12 @@ jobs:
       - name: an unpublished page is not reachable
         run: npm run test:page-gate
 
+      # --no-verify skips the pre-push hook. The payments freeze runs in CI for
+      # exactly that reason, and a credential in a commit is the same class of
+      # thing: it must not be behind a switch a tired person can flip.
+      - name: no credential files in this branch
+        run: npm run check:no-credentials
+
       # Credential-free subset of the persistence suite — no live Base44
       # login, no BASE44_ADMIN_KEY. That key is full production database
       # access and deliberately does not live in GitHub secrets; the live

@@ -45,6 +45,7 @@
     "test:dashboard-no-overflow": "node scripts/test-dashboard-no-overflow.mjs",
     "test:guest-essentials-reachable": "node scripts/test-guest-essentials-reachable.mjs",
     "check:payments-freeze": "node scripts/check-payments-freeze.mjs",
+    "check:no-credentials": "node scripts/check-no-credentials.mjs",
     "checkpoint": "node scripts/checkpoint.mjs",
     "test:payments-freeze": "node scripts/test-payments-freeze.mjs",
     "check:canon-branch": "node scripts/check-canon-branch.mjs",
