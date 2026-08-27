@@ -199,6 +199,13 @@ jobs:
       - name: the merge gate refuses what it should
         run: npm run test:pr-gate
 
+      # SongRequest.status declares four values; the Music page offered three
+      # tabs. A request marked 'added' was counted in the headline and shown
+      # under no tab — one such row existed in production. Reads the schema, so
+      # a new enum value fails here rather than going invisible.
+      - name: song request filters cover their domain
+        run: npm run test:song-status-coverage
+
       # Credential-free subset of the persistence suite — no live Base44
       # login, no BASE44_ADMIN_KEY. That key is full production database
       # access and deliberately does not live in GitHub secrets; the live

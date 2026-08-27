@@ -295,11 +295,21 @@ export default function MusicPage() {
   // Counts derived once from the guarded list. The filter buttons previously
   // called songRequests.filter() inline, which threw before react-query
   // resolved and took the whole page to the error boundary.
-  const requestCounts = {
-    pending: allRequests.filter(r => (r.status || 'pending') === 'pending').length,
-    approved: allRequests.filter(r => r.status === 'approved').length,
-    declined: allRequests.filter(r => r.status === 'declined').length,
-  };
+  // A SET OF FILTERS MUST COVER ITS OWN DOMAIN.
+  //
+  // SongRequest.status declares four values — pending, approved, declined,
+  // added — and the tabs offered three. A request marked 'added' (put on the
+  // playlist by api/song-request-review.js) was counted in the headline and
+  // appeared under no tab at all. Measured in production: 235 requests, of
+  // which exactly one was invisible by this route.
+  //
+  // Anything that can be written must be reachable by something. This list is
+  // the partition, and scripts/test-song-status-coverage.mjs fails if the
+  // schema ever gains a value it does not contain.
+  const REQUEST_STATUSES = ['pending', 'approved', 'declined', 'added'];
+  const STATUS_LABELS = { pending: 'Pending', approved: 'Approved', declined: 'Declined', added: 'On the playlist' };
+  const requestCounts = Object.fromEntries(
+    REQUEST_STATUSES.map(k => [k, allRequests.filter(r => (r.status || 'pending') === k).length]));
   const reviewRequest = (songRequestId, action) => reviewRequestMutation.mutate({ songRequestId, action });
 
   const pendingCount = (songRequests || []).filter(r => r.status === 'pending').length;
@@ -493,12 +503,11 @@ export default function MusicPage() {
               </div>
 
               <div style={{ display: 'flex', gap: 8, margin: '16px 0 20px', flexWrap: 'wrap' }}>
-                {['pending', 'approved', 'declined'].map(f => (
+                {REQUEST_STATUSES.map(f => (
                   <button key={f} onClick={() => setRequestFilter(f)}
                     className={requestFilter === f ? 'btn-primary' : 'btn-editorial-secondary'}
                     style={{ fontSize: 12 }}>
-                    {f === 'pending' ? 'Pending' : f === 'approved' ? 'Approved' : 'Declined'}
-                    {' '}({requestCounts[f]})
+                    {STATUS_LABELS[f]}{' '}({requestCounts[f]})
                   </button>
                 ))}
               </div>
@@ -507,7 +516,9 @@ export default function MusicPage() {
                 <p style={{ ...helpTextStyle, margin: 0 }}>
                   {requestFilter === 'pending'
                     ? 'No requests waiting on you.'
-                    : `No ${requestFilter} requests yet.`}
+                    : requestFilter === 'added'
+                      ? 'No requests have been added to your playlist yet.'
+                      : `No ${requestFilter} requests yet.`}
                 </p>
               ) : (
                 <div style={{ borderTop: '1px solid rgba(10,10,10,0.12)' }}>
