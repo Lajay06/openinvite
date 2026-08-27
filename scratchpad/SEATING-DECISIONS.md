@@ -9,9 +9,9 @@ Deleting the implementation would delete the reasoning.
 > A decision recorded only in the code that implements it dies with that code.
 > — STANDING-RULES.md
 
-Two are found in the file. **#2 is absent** — either it was never written down,
-or it lived in code already deleted. That gap is itself worth recording: a
-numbered series with a hole in it is evidence that this has happened before.
+Two are found in the file; **#2 was recovered from git history** and turns out
+to be alive and well in another module. See below — the gap was a relocation,
+not a loss.
 
 ---
 
@@ -29,10 +29,43 @@ an already-safe pool; it does not widen it.
 
 ---
 
-## Decision #2 — NOT FOUND
+## Decision #2 — Guest.table_assignment stays scoped to Reception only
 
-No comment in `Seating.jsx` carries it. Recorded as missing rather than assumed
-never to have existed.
+**FOUND. It was not lost — it was relocated.**
+
+`git log -S` on the origin commit `ea594ec` ("Add multi-event seating: event
+tabs, per-event guest pools, copy layout") recovered it:
+
+```js
+// Guest.table_assignment stays scoped to Reception only (decision #2)
+// — other events' seating is visible inside this page's own tabs.
+if (resolveEventId(table) === RECEPTION_EVENT_ID) {
+  await Guest.update(guestId, { table_assignment: table.name });
+}
+```
+
+**The constraint still holds today**, and it now lives somewhere better: the
+file header of `src/lib/tableAssignment.js`, which is the single write path for
+"which table is this guest at", enforced through `propagateTableRename`.
+`Guest.table_assignment` is a denormalized display cache; scoping it to
+Reception is what stops one event's seating overwriting another's in the guest
+list's Table column.
+
+**What actually happened:** a refactor moved the reasoning into a shared
+module's header — a strictly better home than an inline comment — and dropped
+the number on the way. The reasoning survived; only the label vanished.
+
+### Why this changes how worried to be
+
+The hole in the numbering was read as evidence that a decision had already been
+lost before anyone was watching. **It was not.** It is evidence of something
+milder and more common: reasoning migrating to a better location while its
+identifier is discarded.
+
+That is still worth a sweep — a decision whose number no longer exists cannot be
+cross-referenced, and nobody can tell from `Seating.jsx` that #2 has a home —
+but it is a naming problem, not a loss. **The search cost one command and
+converted a worrying inference into a mild one.**
 
 ---
 
