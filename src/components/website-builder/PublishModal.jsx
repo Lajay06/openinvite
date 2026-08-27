@@ -3,7 +3,6 @@ import { base44 } from '@/api/base44Client';
 import { fetchGuestLinks } from '@/lib/guestLinks';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useWebsitePasswordGate } from '@/lib/websitePasswordGate';
-import { claimSlug } from '@/lib/claimSlug';
 
 import { coupleNameParts } from '@/lib/coupleNames';
 function ToggleSwitch({ value, onChange, label }) {
@@ -25,14 +24,12 @@ function ToggleSwitch({ value, onChange, label }) {
 
 export default function PublishModal({ onClose, details, onUpdate }) {
   const [tab, setTab] = useState(details?.initialTab || 'website');
-  const [slugInput, setSlugInput] = useState(details?.slug || '');
   const [copied, setCopied] = useState(false);
 
   // Keep the slug field in sync if a fresh `details` prop arrives (e.g.
   // after the auto-slug-from-name effect fires in the parent) while this
   // modal is already open.
   useEffect(() => {
-    setSlugInput(details?.slug || '');
   }, [details?.slug]);
 
   const hasRealSlug = !!details?.slug;
@@ -73,15 +70,6 @@ export default function PublishModal({ onClose, details, onUpdate }) {
     }
   };
 
-  const [slugError, setSlugError] = React.useState(null);
-  const saveSlug = async () => {
-    // THE CLAIM PATH, not a direct write. The address is the one field two
-    // couples can collide on, and the platform has no unique constraint.
-    setSlugError(null);
-    const r = await claimSlug(details.id, slugInput);
-    if (!r.ok) { setSlugError(r); return; }
-    onUpdate({ slug: r.slug });
-  };
 
   // The gate hook persists through /api/my-wedding-details itself (the
   // credential is hashed server-side); this only keeps the parent in step.
@@ -174,32 +162,15 @@ export default function PublishModal({ onClose, details, onUpdate }) {
 
               {/* URL */}
               <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>YOUR URL</p>
-              <div style={{ display: 'flex', alignItems: 'stretch', marginBottom: 20, borderBottom: '1px solid #DDD' }}>
-                <span style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', padding: '10px 12px', background: '#F5F5F5', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>{siteHost}/w/</span>
-                <input
-                  value={slugInput}
-                  onChange={e => setSlugInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                  style={{ flex: 1, border: 'none', padding: '10px 8px', fontSize: 13, outline: 'none', background: 'transparent' }}
-                />
-                <button onClick={saveSlug} disabled={!slugInput} style={{ padding: '10px 16px', background: '#0A0A0A', color: '#FFF', border: 'none', fontSize: 12, fontWeight: 600, cursor: slugInput ? 'pointer' : 'not-allowed', opacity: slugInput ? 1 : 0.4, fontFamily: 'inherit' }}>Save</button>
+              {/* NOT AN INPUT. Built from the couple's names — nobody types
+                  this. See src/lib/weddingAddress.js. */}
+              <div style={{ display: 'flex', alignItems: 'stretch', marginBottom: 8, borderBottom: '1px solid #DDD', background: '#F5F5F5' }}>
+                <span style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', padding: '10px 12px', whiteSpace: 'nowrap' }}>openinvite.com.au/w/</span>
+                <span style={{ flex: 1, padding: '10px 8px', fontSize: 13, color: '#0A0A0A', overflowWrap: 'anywhere' }}>{details?.slug || '\u2026'}</span>
               </div>
-              {/* THE BACKSTOP SPEAKS. A publish that silently does nothing is the
-                  silence-is-a-defect rule on the most important button in the
-                  product. Their words, and it offers them something. */}
-              {slugError && (
-                <p style={{ fontSize: 12, lineHeight: 1.5, color: '#E03553', margin: '8px 0 0' }}>
-                  {slugError.suggestion ? `${slugError.message} ${slugError.suggestion} is free, or pick another name.` : slugError.message}
-                  {slugError.suggestion && (
-                    <>{' '}
-                      <button
-                        type="button"
-                        onClick={() => { setSlugInput(slugError.suggestion); setSlugError(null); }}
-                        style={{ color: '#E03553', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textDecoration: 'underline', font: 'inherit' }}
-                      >Use it</button>
-                    </>
-                  )}
-                </p>
-              )}
+              <p style={{ fontSize: 11, lineHeight: 1.5, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px' }}>
+                Built from your names. Change a name and this follows &mdash; until your first invitation goes out, after which it stays put so links keep working.
+              </p>
 
               {/* Password */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>

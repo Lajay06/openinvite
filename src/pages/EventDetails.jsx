@@ -23,6 +23,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 import SectionHeading, { CONTENT_WIDTH, sectionDivider, FIELD_GAP } from '../components/event-details/SectionHeading';
 
+import { syncWeddingAddress } from '@/lib/weddingAddress';
 const TABS = [
   { key: 'details', label: 'Details' },
   { key: 'events',  label: 'Events' },
@@ -659,12 +660,21 @@ export default function EventDetailsPage() {
     }
     setSaveStatus('saving');
     try {
+      let savedId = id;
       if (id) {
         await base44.entities.WeddingDetails.update(id, data);
       } else {
         const created = await base44.entities.WeddingDetails.create(data);
+        savedId = created.id;
         setRecordId(created.id);
         recordIdRef.current = created.id;
+      }
+      // THE ADDRESS FOLLOWS THE NAMES. A name mistyped at signup is corrected
+      // by correcting the name — until the first invitation exists, after which
+      // it freezes forever and this becomes a no-op. Fire-and-forget: the
+      // couple is not waiting on it and there is nothing to report to them.
+      if ('couple1Name' in data || 'couple2Name' in data) {
+        syncWeddingAddress(savedId);
       }
       setSaveStatus('saved');
       window.dispatchEvent(new CustomEvent('weddingDetailsSaved'));

@@ -1,143 +1,117 @@
+#!/usr/bin/env node
 /**
- * scripts/test-slug-claim.mjs — the canonical form, the reserved list, the
- * suggestion, and the tie-break. Plus the write-site count.
+ * THE ADDRESS IS DERIVED, NOT TYPED.
  *
- * THE COUNT IS PART OF THE TEST, exactly as with the read sites — where
- * counting against the source found seven where five had been named. A new
- * write site must adopt the claim path and update this number, or fail here.
+ * Four cases, each with its own failure message:
+ *   1. LADDER   — collisions climb real facts, never a random token
+ *   2. DATE     — the date is read without a timezone
+ *   3. NO EDITOR — no surface renders an input bound to the address
+ *   4. DOCS     — the help copy does not describe a control that is gone
  *
- * NORMALIZATION IS TESTED ON GENERATED PAIRS, not hand-picked strings. Every
- * test written by hand uses the same casing, which is precisely how a
- * normalization hole survives a test suite.
+ * Case 3 exists because the editor was found on THREE surfaces when both
+ * working lists said two, and the third — PublishModal — was the one a couple
+ * was most likely to meet.
+ *
+ * Case 4 exists because documentation is a surface. Help copy describing a
+ * removed control outlives the code it describes, and an enumeration of "code
+ * that touches the address" misses it every time.
  */
-import { readFileSync } from 'node:fs';
-import { canonicalSlug, isReservedSlug, suggestSlug } from '../api/_lib/slugCanon.js';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join, relative } from 'node:path';
+import { deriveSlug, slugRootFromNames, weddingDateParts, canonicalSlug } from '../api/_lib/slugCanon.js';
 
-const ROUTED = [
-  'src/components/website-builder/PublishModal.jsx',
-  'src/components/studio/guest-suite/StudioShareTab.jsx',
-  'src/pages/Onboarding.jsx',
+const ROOT = new URL('..', import.meta.url).pathname;
+let failed = 0;
+const fail = (c, m) => { console.error(`  FAIL [${c}] ${m}`); failed++; };
+const pass = (c, m) => console.log(`  pass [${c}] ${m}`);
+const W = (a, b, d) => ({ couple1Name: a, couple2Name: b, weddingDate: d });
+
+/* ── 1. THE LADDER ──────────────────────────────────────────────────── */
+const taken = new Set();
+const rungs = [];
+for (let i = 0; i < 5; i++) {
+  const w = W('Jay', 'Ella', '2027-06-14');
+  const s = deriveSlug(slugRootFromNames(w), taken, w.weddingDate);
+  taken.add(s); rungs.push(s);
+}
+const EXPECTED = ['jay-and-ella', 'jay-and-ella-2027', 'jay-and-ella-june-2027',
+                  'jay-and-ella-14-june-2027', 'jay-and-ella-14-june-2027-2'];
+for (let i = 0; i < EXPECTED.length; i++) {
+  if (rungs[i] === EXPECTED[i]) pass('ladder', `rung ${i + 1}: ${rungs[i]}`);
+  else fail('ladder', `rung ${i + 1}: got ${rungs[i]}, expected ${EXPECTED[i]}`);
+}
+// The rule the ladder exists to honour.
+if (rungs.every(r => !/[a-z]{4}\d{4}/.test(r))) pass('ladder', 'no random-looking token in any rung');
+else fail('ladder', `a rung looks like a random token: ${rungs.join(', ')}`);
+
+const checks = [
+  [slugRootFromNames(W('O’Brien', 'Zoë', null)), 'o-brien-and-zoe', 'apostrophes and accents normalise'],
+  [slugRootFromNames(W('Jay', '', null)), 'jay', 'one name is not a dangling join'],
+  [slugRootFromNames({ coupleNames: 'Jay & Ella' }), 'jay-and-ella', 'a legacy record still derives'],
+  [slugRootFromNames({ polls: [] }), '', 'no names means no address'],
+  [deriveSlug('jay-and-ella', new Set(['jay-and-ella']), null), 'jay-and-ella-2',
+   'a dateless record on a clash takes the number rather than being blocked'],
 ];
-// NOT YET ROUTED. This list is the DEBT, and the suite states it every run.
-// A guard that passes on a half-finished job teaches everyone the job is
-// finished — the same shape as a measurement detached from its build: the
-// number is honest and the impression it creates is not. The next branch
-// shrinks this list deliberately, or the count below fails.
-// NOT ROUTED, and after enumerating each: THEY ARE NOT WRITE SITES.
-//   WBRightPanel  — its slug input calls updateField, which sets LOCAL STATE.
-//   StudioWebsite — one persistence point, doSave, on a 2-second autosave. An
-//                   address is CLAIMED, not stored, so it cannot ride an
-//                   autosave: every keystroke would fire a claim. `slug` is now
-//                   excluded from WRITABLE_FIELDS, exactly as websitePassword
-//                   already was and for the same reason.
-//   onboardingSave— builds a payload; the caller decides what persists. Its
-//                   slug is deleted from the draft save and claimed once at the
-//                   end.
-// So the count is not 3-of-6 with three left: it is three surfaces routed and
-// three that no longer write an address at all.
-const UNROUTED = [];
-const EXPECTED_WRITE_SITES = ROUTED.length + UNROUTED.length;   // 6
+for (const [got, want, why] of checks) {
+  if (got === want) pass('ladder', why);
+  else fail('ladder', `${why}: got ${JSON.stringify(got)}, expected ${JSON.stringify(want)}`);
+}
 
-console.log('\n  One canonical address, claimed in one place\n');
-let bad = 0;
+/* ── 2. THE DATE, WITHOUT A TIMEZONE ────────────────────────────────── */
+// new Date('2027-01-01').getFullYear() is 2026 anywhere west of Greenwich —
+// which is the entire US, the market this product sells to in USD. Under a
+// derived address that is frozen on a printed card, not a declinable suggestion.
+const before = process.env.TZ;
+for (const tz of ['Pacific/Midway', 'America/Los_Angeles', 'UTC', 'Australia/Sydney', 'Pacific/Auckland']) {
+  process.env.TZ = tz;
+  const p = weddingDateParts('2027-01-01');
+  const ok = p && p.year === 2027 && p.month === 1 && p.day === 1 && p.monthName === 'january';
+  if (ok) pass('date', `${tz}: 2027-01-01 reads as 1 january 2027`);
+  else fail('date', `${tz}: 2027-01-01 read as ${p && `${p.day} ${p.monthName} ${p.year}`}`);
+}
+process.env.TZ = before;
+for (const [input, why] of [[null, 'null'], ['', 'empty'], ['not-a-date', 'garbage'], ['2027-13-01', 'month 13']]) {
+  if (weddingDateParts(input) === null) pass('date', `${why} yields no rungs rather than throwing`);
+  else fail('date', `${why} should have yielded null`);
+}
+if (canonicalSlug('Jay & Ella') === 'jay-ella') pass('date', 'canonicalSlug still collapses & — which is why the root joins with the word "and"');
+else fail('date', 'canonicalSlug behaviour changed unexpectedly');
 
-// 1. Music must no longer mint a wedding
-const music = readFileSync('src/pages/Music.jsx', 'utf8');
-const mints = /WeddingDetails\.create\(/.test(music);
-if (mints) { console.log('  ❌ Music.jsx still creates a WeddingDetails'); bad++; }
-else console.log('  ✅ Music.jsx no longer invents a wedding record');
+/* ── walk src/ ──────────────────────────────────────────────────────── */
+const files = [];
+(function walk(d) {
+  for (const e of readdirSync(d)) {
+    if (e === 'node_modules' || e.startsWith('.')) continue;
+    const p = join(d, e);
+    if (statSync(p).isDirectory()) walk(p);
+    else if (/\.(js|jsx)$/.test(p)) files.push(p);
+  }
+})(join(ROOT, 'src'));
 
-// 2. ADOPTION IS PARTIAL AND SAYS SO
-for (const f of ROUTED) {
-  if (!/claimSlug\(/.test(readFileSync(f, 'utf8'))) {
-    console.log(`  ❌ ${f} is listed as routed but does not call claimSlug`); bad++;
+/* ── 3. NO EDITOR ───────────────────────────────────────────────────── */
+let editors = 0;
+const EDITOR = /(value=\{[^}]*slug[^}]*\}[^>]*onChange|onChange=\{[^}]*setSlug|setSlugInput|setSlugDraft|claimSlug\()/i;
+for (const f of files) {
+  const r = relative(ROOT, f);
+  for (const [i, line] of readFileSync(f, 'utf8').split('\n').entries()) {
+    if (line.trimStart().startsWith('*') || line.trimStart().startsWith('//')) continue;
+    if (EDITOR.test(line)) { fail('no-editor', `${r}:${i + 1} looks like an address editor — the address is derived, nobody types it`); editors++; }
   }
 }
-// The three that no longer write must STAY not-writing.
-const MUST_NOT_WRITE = {
-  'src/pages/StudioWebsite.jsx': /Object\.keys\(DEFAULT\)\.filter\(k => k !== 'slug'\)/,
-  'src/pages/Music.jsx': /^(?!.*WeddingDetails\.create\().*$/s,
-};
-for (const [f, re] of Object.entries(MUST_NOT_WRITE)) {
-  if (!re.test(readFileSync(f, 'utf8'))) {
-    console.log(`  ❌ ${f} no longer holds its no-write guarantee`); bad++;
-  }
+if (!editors) pass('no-editor', 'no surface lets a couple type their address');
+
+/* ── 4. DOCUMENTATION IS A SURFACE ──────────────────────────────────── */
+const help = readFileSync(join(ROOT, 'src/pages/Help.jsx'), 'utf8');
+const STALE = [
+  [/edit the slug field/i, 'tells couples to edit a field that no longer exists'],
+  [/\[your-slug\]/i, 'uses a placeholder from the removed editor'],
+  [/to customi[sz]e it/i, 'offers customisation that is gone'],
+];
+let stale = 0;
+for (const [re, why] of STALE) {
+  if (re.test(help)) { fail('docs', `Help.jsx ${why}`); stale++; }
 }
-if (/resolveUniqueSlug/.test(readFileSync('src/pages/Onboarding.jsx', 'utf8').replace(/\/\/[^\n]*/g, ''))) {
-  console.log('  ❌ Onboarding.jsx still has the client-side check-then-write'); bad++;
-}
-console.log(`  ✅ ${ROUTED.length} surfaces claim through the server path`);
-console.log('  ✅ 3 more no longer write an address at all (local state, autosave, draft)');
+if (!stale) pass('docs', 'help copy describes the feature that exists');
 
-// 3. NORMALIZATION, on generated variants rather than chosen ones
-const roots = ['jay and ella', 'renée-jay', 'Sam  &  Alex', 'MARY o brien'];
-let normBad = 0;
-for (const r of roots) {
-  const variants = [r, r.toUpperCase(), `  ${r}  `, r.replace(/[ &]/g, '--'), r.replace(/[ &]/g, '_')];
-  const forms = new Set(variants.map(canonicalSlug));
-  if (forms.size !== 1) { normBad++; console.log(`  ❌ ${JSON.stringify(r)} yields ${forms.size} forms: ${[...forms].join(' | ')}`); }
-}
-if (!normBad) console.log(`  ✅ every case/padding/separator variant of ${roots.length} names collapses to one address`);
-else bad++;
-
-// 4. reserved, canonically
-const reserved = [['openinvite', true], ['Open Invite', true], ['OPEN_INVITE', true], ['admin', true],
-                  ['help-center', true], ['jay-and-ella', false], ['administrator', false]];
-let resBad = 0;
-for (const [s, want] of reserved) if (isReservedSlug(s) !== want) { resBad++; console.log(`  ❌ reserved(${JSON.stringify(s)}) = ${!want}`); }
-if (!resBad) console.log('  ✅ reserved addresses are refused in any spelling');
-else bad++;
-
-// 5. the suggestion leads with the year
-const taken1 = new Set(['jay-and-ella']);
-const s1 = suggestSlug('Jay and Ella', taken1, '2027-06-21');
-const ok1 = s1 === 'jay-and-ella-2027';
-if (!ok1) bad++;
-console.log(`  ${ok1 ? '✅' : '❌'} the first offer is the year        ${s1}`);
-const taken2 = new Set(['jay-and-ella', 'jay-and-ella-2027']);
-const s2 = suggestSlug('Jay and Ella', taken2, '2027-06-21');
-const ok2 = s2 === 'jay-and-ella-2';
-if (!ok2) bad++;
-console.log(`  ${ok2 ? '✅' : '❌'} a number only once the year is gone ${s2}`);
-
-// NOT "all clear". Every assertion passes and the job is one-sixth done; a
-// summary that says "all clear" is honest about the tests and misleading about
-// the state. It reports what is true of the WORK, not only of the checks.
-// THE TWO RULES THAT MATTER MOST IN api/claim-slug.js.
-const claim = readFileSync('api/claim-slug.js', 'utf8');
-
-// 1. the write uses the CALLER's token, never the admin key. The endpoint
-//    shipped writing with the admin key and never once succeeded.
-const writesWithAdmin = /method: 'PUT'[\s\S]{0,200}BASE44_ADMIN_KEY/.test(claim);
-if (writesWithAdmin) { console.log('  ❌ a PUT uses BASE44_ADMIN_KEY — owner-scoped RLS makes that a flat 403'); bad++; }
-else console.log('  ✅ the write uses the caller\'s own token');
-
-// 2. NO ADMIN FALLBACK. Falling back when the caller's token is absent would
-//    bypass the RLS that stops a caller claiming a record they do not own.
-const hasFallback = /callerToken\s*\|\|\s*BASE44_ADMIN_KEY|\?\s*callerToken\s*:\s*BASE44_ADMIN_KEY/.test(claim);
-if (hasFallback) { console.log('  ❌ the write falls back to the admin key when a token is absent'); bad++; }
-else console.log('  ✅ no admin fallback — no token means refuse, never escalate');
-
-// 3. taken and save-failed are different messages
-const distinct = /'save-failed'/.test(claim) && /That address is taken/.test(claim);
-if (!distinct) { console.log('  ❌ a collision and a save failure are not distinguishable'); bad++; }
-else console.log('  ✅ a collision and a save failure say different things');
-
-// A FAILED CLAIM MUST LEAVE THE OLD VALUE ON SCREEN, on every surface that
-// edits an address. One of the two was fixed first and the other kept showing
-// the typed value while its toast faded — the same lie in a quieter voice.
-const REVERTERS = {
-  'src/components/website-builder/WBRightPanel.jsx': /setSlugDraft\(details\.slug \|\| ''\)/,
-  'src/components/studio/guest-suite/StudioShareTab.jsx': /setSlugInput\(details\?\.slug \|\| ''\)/,
-};
-for (const [f, re] of Object.entries(REVERTERS)) {
-  if (!re.test(readFileSync(f, 'utf8'))) {
-    console.log(`  ❌ ${f} does not restore the old address when a claim fails`); bad++;
-  }
-}
-if (!Object.keys(REVERTERS).some(f => false)) console.log('  ✅ both address editors revert on a failed claim');
-
-console.log(bad
-  ? `\n  ${bad} FAILING\n`
-  : `\n  every wedding address is claimed through one server path\n`);
-process.exit(bad ? 1 : 0);
+console.log(failed ? `\n  ${failed} failure(s)` : '\n  the address derives, and nothing offers to edit it');
+process.exit(failed ? 1 : 0);

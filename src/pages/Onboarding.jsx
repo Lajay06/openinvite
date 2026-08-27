@@ -30,7 +30,7 @@ import OnboardingPathACultural from '@/components/onboarding/OnboardingPathACult
 import OnboardingPathAInspiration from '@/components/onboarding/OnboardingPathAInspiration';
 import OnboardingCompletion from '@/components/onboarding/OnboardingCompletion';
 import OnboardingShell from '@/components/onboarding/OnboardingShell';
-import { claimSlug } from '@/lib/claimSlug';
+import { syncWeddingAddress } from '@/lib/weddingAddress';
 
 // TASK 6+7: 'welcome' added as step 0; 'priorities' removed
 const STEPS = [
@@ -428,7 +428,6 @@ export default function Onboarding() {
       // client-side check-then-write cannot be made safe by tightening it, only
       // by moving it somewhere the race does not exist. The desired address is
       // held aside; the record is created without one.
-      const desiredSlug = payload.slug;
       delete payload.slug;
 
       let weddingId = draftWeddingId;
@@ -440,17 +439,17 @@ export default function Onboarding() {
         setDraftWeddingId(weddingId);
       }
 
-      // THE ADDRESS IS CLAIMED HERE, once, against a record that now exists.
-      // A refusal is not fatal to onboarding — the couple has a wedding, just
-      // not yet an address, and PublishModal will ask them for one with a
-      // suggestion. Failing the whole onboarding over a taken name would be a
-      // far worse trade.
-      if (desiredSlug) {
-        const claim = await claimSlug(weddingId, desiredSlug);
-        if (!claim.ok) {
-          console.warn(`[onboarding] address ${JSON.stringify(desiredSlug)} not claimed: ${claim.reason}`);
-        }
-      }
+      // THE ADDRESS IS DERIVED HERE, once, against a record that now exists.
+      //
+      // Names first: derivation needs the record to hold couple1Name and
+      // couple2Name, so this runs after the create rather than inside it. The
+      // couple is never asked and never told — a collision resolves invisibly
+      // by adding a real fact about their wedding (the year, then the month,
+      // then the day), never a random token.
+      //
+      // Not fatal. A wedding with no address yet is a wedding; the next load
+      // derives it again.
+      await syncWeddingAddress(weddingId);
 
       completed.weddingDetails = true;
 
