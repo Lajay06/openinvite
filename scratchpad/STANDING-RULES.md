@@ -4,6 +4,52 @@ These survive restarts. Re-read at the start of every session.
 
 ---
 
+## Deduplicate on what the person perceives, not on what the code identifies
+
+The guest nav showed four destinations twice. Three pairs shared a `key`. One
+did not:
+
+| | key | route | label |
+|---|---|---|---|
+| subLinks | `accommodation` | `/w/:slug/accommodation` | **Stay** |
+| WEDDING_PAGES | `stay` | `WeddingStayPage` | **Stay** |
+
+Different key, different route, **same word, same content underneath**. Keying
+the dedupe on identity would have passed every test and still shown a guest two
+doors to the same room.
+
+> **The user does not have access to our keys. They have access to the words.**
+
+---
+
+## A guard should say why it still exists
+
+The nav dedupe is a WORKAROUND for a structure not yet corrected — two link
+lists that overlap. So the guard reports the overlap *alongside* the dedupe
+assertion, and names the dedupe as load-bearing until the lists are made
+disjoint.
+
+Whoever finally separates them will find the guard explaining what it was
+standing in for, instead of finding a check that looks redundant and removing
+it.
+
+**This is the road-moved rule applied FORWARD rather than in hindsight** — the
+first time in this project that failure was prevented rather than discovered.
+Do it whenever a fix is a workaround for something still uncorrected.
+
+---
+
+## Test the real assembly, not a reimplementation of it
+
+**A test that models the code cannot catch the code diverging from the model.**
+
+The nav guard reads the actual assembly expression out of the source rather
+than rebuilding the link list and asserting on its own copy. The sharpest
+phrasing yet of the same-channel rule: a check that runs beside the thing it
+checks is not checking it.
+
+---
+
 ## When consolidating duplicates, take the most careful implementation, not the most common one
 
 Two files compared `start_time` with `localeCompare`; one parsed it to minutes.

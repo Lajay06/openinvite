@@ -763,3 +763,29 @@ stopped in #540, data purged, column undeclare last — see DECISION-LOG).
 HttpOnly cookie for the RSVP token — only pays if the seven `resolveGuestByToken`
 endpoints read it server-side; a non-HttpOnly cookie buys nothing over
 localStorage. Do not half-build it.
+
+---
+
+## WAVE 2 / DELETION SCOPE — two routes render the same accommodation data
+
+**A subtraction question, not a navigation one. One of them should stop existing.**
+
+| | route | component | reads |
+|---|---|---|---|
+| subLinks `accommodation` | `/w/:slug/accommodation` | `GuestAccommodation` | `guestSuiteAccommodation`, `accommodation` |
+| WEDDING_PAGES `stay` | in `MultiPageWeddingWebsite` | `WeddingStayPage` | `guestSuiteAccommodation`, `accommodation` |
+
+Same fields, same content, two routes, and **both labelled "Stay"** — which is
+how it reached a guest as two doors to the same room.
+
+`GuestAccommodation` is registered as its own route OUTSIDE
+`MultiPageWeddingWebsite`, so the two do not share the shell, the nav
+highlighting, or the page transitions.
+
+**Survivable in the meantime:** the nav dedupe (#598) means a guest is shown
+only one of them. That is a workaround for this, and the guard for it says so
+explicitly — see STANDING-RULES.md, "A guard should say why it still exists".
+
+**The question for Wave 2:** which one is the real accommodation page, and what
+does the other one's route do once it is gone (redirect, or 404 through the
+existing not-found path)?
