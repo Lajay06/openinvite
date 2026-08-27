@@ -20,3 +20,10 @@ rows costs nothing to keep and something to remove.
   *"Do not remove this declaration until the separate post-D cleanup —
   undeclaring drops stored data (gotcha #5)."* Whatever happens to the collect
   feature, this field is not a candidate for removal.
+
+## Stale references awaiting a legitimate carrier
+
+- **`api/_lib/planGift.js:7`** names `api/collect-guest-contact.js`, deleted in
+  Wave 2. The file is under the payments freeze. **The override was not spent on
+  a comment** — see STANDING-RULES.md, "The value of an override is its rarity".
+  This rides along with the next genuine payments change.

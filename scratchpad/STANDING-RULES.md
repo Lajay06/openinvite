@@ -4,6 +4,45 @@ These survive restarts. Re-read at the start of every session.
 
 ---
 
+## An exemption must name something that exists
+
+The guest-PII allowlist exempted two files that had just been deleted. An
+entry pointing at a file that is gone **can neither be justified nor removed on
+evidence**, so it survives forever as a hole with a name on it.
+
+Same family as keying an exception to code rather than to a line number: an
+exception is only as good as the thing it points at.
+
+The guard asserted it had no STALE entries, which is why this was caught rather
+than inherited.
+
+---
+
+## A guard whose expected count is edited without a reason is indistinguishable from a guard being silenced
+
+The slug resolver asserts the number of adoption sites. Deleting one adopter
+required lowering seven to six — **the same edit a person makes to quieten a
+failing guard**.
+
+The difference is prose. The reason goes in the guard, in the same PR as the
+change that caused it.
+
+---
+
+## The value of an override is its rarity
+
+The payments freeze refused a push over a COMMENT in `api/_lib/planGift.js`
+naming a deleted endpoint. The override existed and was not used.
+
+> **The first time an override is spent on something trivial, it becomes a
+> thing we do, and the next person reaches for it without thinking.**
+
+A comment naming a deleted endpoint is untidy. An override that gets used for
+untidiness is dangerous. The stale reference rides along with the next
+legitimate payments change instead.
+
+---
+
 ## Delete, then grep the name again — and its synonyms
 
 The marketing description still sold "live streaming" after the bullet beside it
@@ -292,6 +331,14 @@ The list is what makes the shape recognisable, which is why all five are kept.
 > **WHAT DOES THIS SAY WHEN IT DOESN'T RUN?**
 
 If the answer is "the same thing it says when it passes", it is not a guard.
+
+**AND IT WAS ALREADY BUILT.** When the guest contact collector was deleted, a
+test module crashed on the missing file and the suite reported *"1 MODULE(S)
+CRASHED — their assertions never ran"* rather than counting them as passes.
+Nobody added that after the rule was written; it was already there.
+
+A canon that keeps finding itself already present is describing something real
+rather than something invented.
 
 ---
 
