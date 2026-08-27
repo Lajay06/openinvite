@@ -4,6 +4,36 @@ These survive restarts. Re-read at the start of every session.
 
 ---
 
+## When an instrument has already been wrong once, discard it rather than debug it — if a simpler direct observation exists
+
+A selector written to measure card geometry reported a **199×273 sidebar item**
+as a card at 1440, and found **nothing at all** at 390. It had disqualified
+itself. Reading the two screenshots directly was faster and more trustworthy
+than repairing it.
+
+**This is the move AFTER suspicion.** Suspecting the instrument is step one;
+the answer is not always "fix the tool". Ask first whether a direct observation
+is available — a render, a file read, a real download — and prefer it.
+
+Repairing a wrong instrument also carries a quieter risk: the repaired version
+is trusted more than it has earned, because effort was spent on it.
+
+---
+
+## The linter is not a completeness check
+
+ESLint flags unused **imports**. It does not flag unused **locals**.
+
+Removing the hub's Preview card left `siteUrl` and a `rightLabel` render behind
+as dead code; the linter caught the unused `Eye` import and said nothing about
+the other two. They were found by grepping after the deletion.
+
+**The tools that run automatically cover a smaller area than they feel like
+they cover** — which is precisely why the delete-then-grep step exists. A green
+lint is not an empty room.
+
+---
+
 ## An exemption must name something that exists
 
 The guest-PII allowlist exempted two files that had just been deleted. An
