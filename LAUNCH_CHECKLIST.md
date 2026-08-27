@@ -98,3 +98,30 @@ rolling back, or coordinate reverting the schema change itself in Base44
 *before* any code rollback. Check `BASE44_PLATFORM_NOTES.md` and the
 merged PR's diff for any entity-schema touch before choosing rollback over
 fix-forward.
+
+---
+
+## AFTER LAUNCH, THIS DELETION PROCESS DOES NOT SURVIVE
+
+During Wave 2 features were deleted from live sites on a single quoted merge
+line. That worked because the only affected records were the owner's own, plus
+two belonging to people we could name individually.
+
+**`/w/florida-john` was the first time this project changed a published site
+belonging to a stranger.** It was benign only because the page removed held no
+data.
+
+Once there are paying customers:
+
+- **Deleting a feature from live customer sites needs notice and a migration
+  path, not a merge line.**
+- A guest-facing page that disappears breaks links already sent — see
+  STANDING-RULES.md on the address freeze; the same logic applies to any URL a
+  couple has shared.
+- "The entity holds no rows" stops being sufficient. It must be "no CUSTOMER
+  holds rows", and that is a different query.
+
+Any change that alters a published site belonging to someone other than the
+owner is **named in the report before it happens** — whose site, what changes,
+what a guest of theirs would notice. That rule started mid-Wave-2 and is not
+optional afterwards.
