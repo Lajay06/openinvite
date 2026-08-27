@@ -4,19 +4,6 @@ import SectionReveal from '../SectionReveal';
 import { isMotionEnabled } from '@/lib/universeStyling';
 import { accentText, accentChip } from '@/lib/surfaceTint';
 
-const CATEGORIES = [
-  { key: 'mustEat',        label: 'Must eat' },
-  { key: 'coffee',         label: 'Coffee & bakeries' },
-  { key: 'hiddenGems',     label: 'Hidden gems' },
-  { key: 'luxuryDining',   label: 'Luxury dining' },
-  { key: 'nature',         label: 'Beaches & nature' },
-  { key: 'nightlife',      label: 'Nightlife' },
-  { key: 'thingsToDo',     label: 'Things to do' },
-  { key: 'wellness',       label: 'Recovery & wellness' },
-  { key: 'dayTrips',       label: 'Day trips' },
-  { key: 'shopping',       label: 'Shopping' },
-  { key: 'weddingWeekend', label: 'Wedding weekend essentials' },
-];
 
 /** The itinerary's three parts of a day, in the order a day happens. */
 const BLOCKS = [
@@ -32,11 +19,9 @@ function photoUrl(ref) {
 
 export default function WeddingExperiencePage({ weddingDetails, theme, typography, universeConfig }) {
   const guide = weddingDetails.experienceGuide || {};
-  const cats = guide.categories || {};
   const couplePicks = guide.couplePicks || [];
   const destination = guide.destination || weddingDetails.mainCeremony?.address?.split(',').slice(-3).join(', ') || '';
 
-  const enabledCats = CATEGORIES.filter(c => cats[c.key]?.enabled && (cats[c.key]?.places || []).length > 0);
 
   // Defensive on every level: a day with no blocks, a block that is not an
   // array, an activity with no photo. The couple's builder can leave any of
@@ -147,71 +132,6 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
           </SectionReveal>
         )}
 
-        {/* Enabled categories */}
-        {enabledCats.map((cat) => {
-          const places = cats[cat.key]?.places || [];
-          return (
-            <SectionReveal key={cat.key} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ marginBottom: 48 }}>
-              <p style={{ ...label, marginBottom: 20 }}>{cat.label}</p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
-                {places.map((place, i) => {
-                  const photo = place.photo_ref ? photoUrl(place.photo_ref) : null;
-                  return (
-                    <div key={place.place_id || i} style={card}>
-                      <div style={{ height: 150, background: `${theme.darkBg}cc`, position: 'relative', overflow: 'hidden' }}>
-                        {photo ? (
-                          <img src={photo} alt={place.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; }} />
-                        ) : (
-                          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.15 }}>
-                            <MapPin size={28} color={theme.darkText} />
-                          </div>
-                        )}
-                        {place.is_couple_pick && (
-                          <span style={{ position: 'absolute', top: 10, left: 10 }}>
-                            <Heart size={14} fill={theme.accent} color={theme.accent} />
-                          </span>
-                        )}
-                      </div>
-                      <div style={{ padding: '14px 16px 16px' }}>
-                        <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: '0.9375rem', color: theme.darkText, margin: '0 0 6px', lineHeight: 1.3 }}>
-                          {place.name}
-                        </h2>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                          {place.rating && (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, color: accentText(theme), fontFamily: typography.bodyFont }}>
-                              <Star size={10} fill={theme.accent} color={theme.accent} /> {place.rating}
-                            </span>
-                          )}
-                          {place.price_level > 0 && (
-                            <span style={{ fontSize: 12, color: theme.darkText, opacity: 0.45, fontFamily: typography.bodyFont }}>
-                              {'$'.repeat(place.price_level)}
-                            </span>
-                          )}
-                        </div>
-                        {place.address && (
-                          <p style={{ fontSize: 11, color: theme.darkText, opacity: 0.5, fontFamily: typography.bodyFont, margin: '0 0 6px', lineHeight: 1.4 }}>
-                            {place.address}
-                          </p>
-                        )}
-                        {place.note && (
-                          <p style={{ fontSize: 12, color: theme.darkText, opacity: 0.7, fontFamily: typography.bodyFont, margin: '0 0 8px', fontStyle: 'italic', lineHeight: 1.5 }}>
-                            "{place.note}"
-                          </p>
-                        )}
-                        {place.maps_url && (
-                          <a href={place.maps_url} target="_blank" rel="noopener noreferrer"
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: accentText(theme), fontFamily: typography.bodyFont, textDecoration: 'none' }}>
-                            View on maps <ExternalLink size={10} />
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </SectionReveal>
-          );
-        })}
 
         {/* ── The itinerary (D-1a) ──────────────────────────────────────────
             The couple builds a day-by-day plan in Experience guide → Itinerary
@@ -300,7 +220,7 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
         )}
 
         {/* Empty state */}
-        {enabledCats.length === 0 && couplePicks.length === 0 && itineraryDays.length === 0 && (
+        {couplePicks.length === 0 && itineraryDays.length === 0 && (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ textAlign: 'center', padding: '60px 24px' }}>
             <p style={{ ...body, opacity: 0.4, fontStyle: 'italic' }}>
               The experience guide will be added here by the couple.

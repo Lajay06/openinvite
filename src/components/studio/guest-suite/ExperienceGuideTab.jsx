@@ -52,7 +52,13 @@ function uid() {
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export default function ExperienceGuideTab({ details }) {
-  const [activeTab, setActiveTab] = useState('categories');
+  // Opens on Places, not on the removed Categories tab. The category
+  // enable/disable grid is gone: it toggled `categories[key].enabled`, which the
+  // GUEST page required to be truthy while the studio treated `!== false` as on.
+  // A category saved without the key showed as ENABLED in the studio and
+  // rendered NOTHING to a guest. Places are unaffected — they are stored inside
+  // `categories[key].places` and the Places tab still reads them.
+  const [activeTab, setActiveTab] = useState('places');
   // Owned local state — initialised from prop on mount, kept fresh after every save.
   // The prop (details) never re-renders from the parent after mount, so we cannot
   // derive guide display data from it directly; that's the stale-closure bug.
@@ -86,12 +92,6 @@ export default function ExperienceGuideTab({ details }) {
     updateMutation.mutate(next);
   };
 
-  const handleToggleCategory = (catKey) => {
-    const cats = guide.categories || {};
-    const next = { ...guide, categories: { ...cats, [catKey]: { ...cats[catKey], enabled: !cats[catKey]?.enabled } } };
-    setGuide(next);
-    updateMutation.mutate(next);
-  };
 
   const handleAddPlace = (place, catKey, note, isCouplePick) => {
     const categories = { ...(guide.categories || {}) };
@@ -175,15 +175,10 @@ export default function ExperienceGuideTab({ details }) {
       <div style={{ padding: '32px 32px 48px' }}>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="w-full justify-start">
-            <TabsTrigger value="categories">Categories</TabsTrigger>
             <TabsTrigger value="places">Places</TabsTrigger>
             <TabsTrigger value="itinerary">Itinerary</TabsTrigger>
             <TabsTrigger value="publish">Publish</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="categories" className="mt-8">
-            <CategoriesTab guide={guide} onToggleCategory={handleToggleCategory} />
-          </TabsContent>
 
           <TabsContent value="places" className="mt-8">
             <PlacesTab
@@ -223,40 +218,6 @@ export default function ExperienceGuideTab({ details }) {
 
 // ── Categories tab ─────────────────────────────────────────────────────────────
 
-function CategoriesTab({ guide, onToggleCategory }) {
-  return (
-    <div>
-      <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 28px', lineHeight: 1.6, maxWidth: 560 }}>
-        Toggle which sections appear in your guest guide.
-      </p>
-      <div style={{ borderTop: '1px solid rgba(10,10,10,0.12)' }}>
-        {CATEGORIES.map(cat => {
-          const isEnabled = guide.categories?.[cat.key]?.enabled !== false;
-          const count = guide.categories?.[cat.key]?.places?.length || 0;
-          return (
-            <div
-              key={cat.key}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0', borderBottom: '1px solid rgba(10,10,10,0.06)', gap: 16 }}
-            >
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                  <span style={{ fontSize: 14, fontWeight: 500, color: '#0A0A0A', fontFamily: PJS }}>{cat.label}</span>
-                  {count > 0 && (
-                    <span className="filter-pill" style={{ cursor: 'default', pointerEvents: 'none' }}>
-                      {count} {count === 1 ? 'place' : 'places'}
-                    </span>
-                  )}
-                </div>
-                <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>{cat.desc}</p>
-              </div>
-              <Switch checked={isEnabled} onCheckedChange={() => onToggleCategory(cat.key)} />
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
 // ── Places tab ─────────────────────────────────────────────────────────────────
 
