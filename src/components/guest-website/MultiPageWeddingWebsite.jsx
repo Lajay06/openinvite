@@ -221,6 +221,41 @@ export default function MultiPageWeddingWebsite() {
     weddingDetails.enabledPages || ['home', 'our-story', 'celebration', 'rsvp'],
     WEDDING_PAGES.map(p => p.slug),
   );
+  // A PAGE IS REACHABLE IF, AND ONLY IF, THE NAV WOULD LINK TO IT.
+  //
+  // `enabledPages` was computed directly above and then never consulted:
+  // PAGE_COMPONENTS[page] resolved any slug a guest typed. So every page a
+  // couple had turned off was live on a direct URL, and an experience guide
+  // with `published: false` — an explicit, deliberate "not yet" — rendered in
+  // full to anyone with the link. Publishing controlled the nav link and
+  // nothing else.
+  //
+  // A couple who has not published a guide believes nobody can read it. That is
+  // what publishing means, and a half-written list of local recommendations is
+  // exactly the sort of thing they would be embarrassed to have found.
+  //
+  // The rule is deliberately the SAME computation the nav uses, not a second
+  // one that could drift from it: the sub-pages carry their own gates
+  // (transport/accommodation/music/experience/good-to-know) rather than living
+  // in enabledPages, so both inputs are needed to answer the question.
+  const subPageAvailability = {
+    transport: !!weddingDetails?.transport?.enabledModes?.length,
+    accommodation: !!weddingDetails?.accommodation?.manualProperties?.length,
+    music: weddingDetails?.music?.guestRequestsEnabled,
+    experience: weddingDetails?.experienceGuide?.published,
+    'good-to-know': visibleSections(weddingDetails?.weddingPolicies).length > 0,
+  };
+  const pageIsAvailable =
+    page === 'home' ||
+    enabledPages.includes(page) ||
+    subPageAvailability[page] === true;
+
+  // Indistinguishable from a site that is not published at all — the same warm
+  // page, the same words. NOT a new empty state: a guest following a link to
+  // something the couple has not published should meet exactly what a guest
+  // following a link to an unpublished site meets.
+  if (!pageIsAvailable) return <InvitationNotAvailable />;
+
   const PageComponent = PAGE_COMPONENTS[page] || WeddingHomePage;
   const universeConfig = resolveUniverseConfig(weddingDetails);
 

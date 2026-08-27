@@ -55,7 +55,17 @@ for (const c of CASES) {
   // where reachability has to be measured. Measuring the landing instead
   // reported every page unreachable, which was the probe's error, not the
   // product's.
-  await page.goto(`${BASE}/w/${PUBLISHED_WEDDING.slug}/our-story`, { waitUntil: 'networkidle' }).catch(() => {});
+  //
+  // THE VANTAGE POINT MUST BE A PAGE THE COUPLE CANNOT TURN OFF.
+  // This used /our-story, which worked only because a DISABLED page still
+  // rendered — the defect that unpublished-pages-are-not-reachable closed.
+  // Two of the four cases here disable our-story, so once an unavailable page
+  // began refusing, the probe was reading the nav of a page that correctly
+  // no longer existed and reporting itself blind.
+  //
+  // /celebration is guaranteed by withAlwaysOnPages, so it is present in every
+  // case this probe constructs — including the hostile ones.
+  await page.goto(`${BASE}/w/${PUBLISHED_WEDDING.slug}/celebration`, { waitUntil: 'networkidle' }).catch(() => {});
   await page.waitForTimeout(1100);
 
   // Open the mobile menu: at 390 the nav is behind a hamburger, and its entries

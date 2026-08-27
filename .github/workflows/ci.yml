@@ -218,6 +218,12 @@ jobs:
       - name: each page appears once in the guest nav
         run: npm run test:nav-no-duplicates
 
+      # enabledPages was computed and never consulted, so every page a couple
+      # turned off was live on a direct URL — including an experience guide
+      # with published: false. Publishing gated the nav link and nothing else.
+      - name: an unpublished page is not reachable
+        run: npm run test:page-gate
+
       # Credential-free subset of the persistence suite — no live Base44
       # login, no BASE44_ADMIN_KEY. That key is full production database
       # access and deliberately does not live in GitHub secrets; the live

@@ -54,7 +54,8 @@
     "test:pr-gate": "node scripts/test-pr-gate.mjs",
     "test:song-status-coverage": "node scripts/test-song-status-coverage.mjs",
     "test:schedule-order": "node scripts/test-schedule-order.mjs",
-    "test:nav-no-duplicates": "node scripts/test-nav-no-duplicates.mjs"
+    "test:nav-no-duplicates": "node scripts/test-nav-no-duplicates.mjs",
+    "test:page-gate": "node scripts/test-page-gate.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.43",
