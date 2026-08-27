@@ -21,10 +21,14 @@ export default function SaveTheDatePreview({ universe, weddingDetails }) {
   // The universe's own destination photography (UNIVERSE_CONFIGS.imageUrl —
   // 20 distinct, verified photos), not the shared couple-photo stock shoot.
   // -800 is the same responsive variant UniverseWorldView.jsx's HeroChapter
-  // already requests for a card this size. This is the "browsing universes"
-  // preview only — the real save-the-date the couple produces (StudioAssetsTab.jsx)
-  // uses their own uploaded photo (assetContent.saveTheDate.photoUrl), never
-  // this scenery image; confirmed no code path there reads universe.imageUrl.
+  // already requests for a card this size.
+  //
+  // THIS IS NOW THE ONLY SAVE-THE-DATE IN THE PRODUCT, and it is an
+  // ILLUSTRATION. The asset feature — the tool a couple used to produce a real
+  // one from their own uploaded photo — was removed in Wave 2. This component
+  // survives because its second job is showing what a universe looks like at
+  // the moment someone chooses one (UniverseWorldView, and onboarding through
+  // it). It renders scenery, not a deliverable.
   const image = universe?.imageUrl ? universe.imageUrl.replace(/\.jpg$/, '-800.jpg') : FALLBACK_IMAGE;
   const names = coupleDisplayName(weddingDetails, 'Sarah & James');
   const date = weddingDetails?.weddingDate

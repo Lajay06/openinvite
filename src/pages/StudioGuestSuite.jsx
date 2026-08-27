@@ -10,20 +10,17 @@ const F = { fontFamily: "'Plus Jakarta Sans', sans-serif" };
 
 // Import all the builder sub-components
 import StudioWebsiteTab from '@/components/studio/guest-suite/StudioWebsiteTab';
-import StudioAssetsTab from '@/components/studio/guest-suite/StudioAssetsTab';
 import PoliciesTab from '@/components/studio/guest-suite/PoliciesTab';
 import StudioShareTab from '@/components/studio/guest-suite/StudioShareTab';
 import { canAccessUltra } from '@/lib/trialStatus';
 
 const TABS = [
   { id: 'website',  label: 'Website' },
-  { id: 'assets',   label: 'Assets' },
   { id: 'policies', label: 'Good to know' },
   { id: 'share',    label: 'Share' },
 ];
 
 function getTabFromPath(pathname) {
-  if (pathname.includes('/assets'))   return 'assets';
   if (pathname.includes('/policies')) return 'policies';
   if (pathname.includes('/share'))    return 'share';
   return 'website';
@@ -57,18 +54,11 @@ export default function StudioGuestSuite() {
     queryFn: () => getMyWeddingDetails(),
   });
 
-  // Optimistic local update so an asset edit is reflected immediately
-  // (mini-preview, reopening the editor) without waiting on a refetch —
-  // the actual persist call happens in StudioAssetsTab itself.
-  const handleDetailsChange = (nextDetails) => {
-    queryClient.setQueryData(['guestSuiteDetails'], nextDetails);
-  };
 
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
     const pathMap = {
       website:  '/studio/guest-suite',
-      assets:   '/studio/guest-suite/assets',
       policies: '/studio/guest-suite/policies',
       share:    '/studio/guest-suite/share',
     };
@@ -150,7 +140,6 @@ export default function StudioGuestSuite() {
 
       {/* TAB CONTENT */}
       <div style={{ flex: 1, overflow: 'auto' }}>
-        {activeTab === 'assets'   && <StudioAssetsTab details={details} onDetailsChange={handleDetailsChange} />}
         {activeTab === 'policies' && <PoliciesTab details={details} />}
         {activeTab === 'share' && <StudioShareTab details={details} />}
       </div>

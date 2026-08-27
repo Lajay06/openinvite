@@ -7,12 +7,12 @@
  * image IS the design), a style filter above them, and pressing a banner
  * triggers a full-screen entrance into that world.
  *
- * "Your design assets" has been removed from this page entirely — every
- * asset it used to show is reachable via Studio dashboard → Guest Suite
- * → Assets (StudioAssetsTab.jsx), which is the more complete of the two
- * (real PDF export via ASSET_EXPORT_SPECS); the live invitation website/
- * RSVP page are reachable via Guest Suite → Website (or the Preview
- * link). See this PR's description for the full asset-by-asset mapping
+ * "Your design assets" was removed from this page, and in Wave 2 the asset
+ * feature was removed from the product entirely — the Guest Suite Assets tab
+ * it used to point at no longer exists. The live invitation website and RSVP
+ * page are still reachable via Guest Suite → Website. The eight asset previews
+ * survive only as illustrations inside UniverseWorldView's Nº 05 chapter,
+ * showing what a universe looks like applied to a wedding
  * verified before this section was cut.
  *
  * Every palette/type/motion/motif/tag/description value is sourced from

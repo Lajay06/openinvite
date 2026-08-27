@@ -19,7 +19,7 @@ import { Crown, Loader2, ArrowDown, X } from 'lucide-react';
 import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
 import { MOCK_UNIVERSES, getMockUniverse } from '@/lib/mockUniverseData';
 import {
-  useGoogleFontsFor, PaletteSwatches, TypeSpecimen, RealAssetsSection,
+  useGoogleFontsFor, PaletteSwatches, TypeSpecimen,
   UniverseAssetQuintet, MOTIF_NOTES, mockActionToast, MockDataNotice,
 } from '@/components/mocks/MockShared';
 
@@ -216,7 +216,6 @@ export default function MockUniverseA() {
           Your design assets
         </p>
         <div style={{ background: '#FFFFFF', padding: 24 }}>
-          <RealAssetsSection universe={activeId} weddingDetails={weddingDetails} guests={guests} />
         </div>
       </div>
     </div>

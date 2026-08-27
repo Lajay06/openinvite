@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, X, Trash2, Music } from 'lucide-react';
-import { ASSET_EDITOR_MAP } from './AssetEditors';
+import { X, Trash2, Music } from 'lucide-react';
 import { TRANSITION_OPTIONS, SCROLL_ANIMATION_OPTIONS, normalizeUniverseKey } from '@/lib/websiteThemes';
 import { CURATED_FONTS, FONT_CATALOG, UNIVERSE_DEFAULT_FONT_IDS, universePairingPresets } from '@/lib/curatedFonts';
 import { useWebsitePasswordGate } from '@/lib/websitePasswordGate';
@@ -934,12 +933,11 @@ function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
 // (feat/component-library), which lives outside this panel, so ownership
 // moved up to the one place both can share it.
 
-export default function WBRightPanel({ details, theme, universeTheme, onChange, rightTab, onRightTabChange, selectedAsset, assetContent, onAssetChange, onClearAsset, selectedBlock, onUpdateSelectedBlockContent, onUpdateSelectedBlockStyle, onDeleteSelectedBlock, onClearSelectedBlock }) {
-  const AssetEditorComp = selectedAsset ? ASSET_EDITOR_MAP[selectedAsset] : null;
+export default function WBRightPanel({ details, theme, universeTheme, onChange, rightTab, onRightTabChange, selectedBlock, onUpdateSelectedBlockContent, onUpdateSelectedBlockStyle, onDeleteSelectedBlock, onClearSelectedBlock }) {
 
   return (
     <>
-      <div style={{ width: '100%', flexShrink: 0, background: '#1C1C1E', borderLeft: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflowY: (selectedAsset || selectedBlock) ? 'hidden' : 'auto', zIndex: 50, height: '100%', color: '#FFFFFF' }}>
+      <div style={{ width: '100%', flexShrink: 0, background: '#1C1C1E', borderLeft: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflowY: selectedBlock ? 'hidden' : 'auto', zIndex: 50, height: '100%', color: '#FFFFFF' }}>
 
         {selectedBlock ? (
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -966,23 +964,6 @@ export default function WBRightPanel({ details, theme, universeTheme, onChange, 
               >
                 <Trash2 size={13} /> Delete block
               </button>
-            </div>
-          </div>
-        ) : selectedAsset ? (
-          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-              <button onClick={onClearAsset} aria-label="Back" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', padding: 2, display: 'flex', alignItems: 'center' }}><ChevronLeft size={16} /></button>
-              <div>
-                <p style={{ margin: '0 0 1px', fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(255,255,255,0.35)' }}>Editing asset</p>
-                <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#FFFFFF', textTransform: 'capitalize' }}>{selectedAsset.replace(/([A-Z])/g, ' $1').trim()}</p>
-              </div>
-            </div>
-            <div style={{ flex: 1, overflowY: 'auto' }}>
-              {AssetEditorComp ? (
-                <AssetEditorComp content={assetContent} onChange={(field, value) => onAssetChange(selectedAsset, field, value)} />
-              ) : (
-                <p style={{ padding: 16, fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>No editor for this asset.</p>
-              )}
             </div>
           </div>
         ) : (

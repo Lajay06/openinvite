@@ -62,7 +62,6 @@ const EventDetails = lazyWithReload(() => import('./pages/EventDetails'));
 const PaymentSuccess = lazyWithReload(() => import('./pages/PaymentSuccess'));
 const AvaStudio = lazyWithReload(() => import('./pages/AvaStudio'));
 const AvaStudioWebsite = lazyWithReload(() => import('./pages/AvaStudioWebsite'));
-const AvaStudioAssets = lazyWithReload(() => import('./pages/AvaStudioAssets'));
 const Help = lazyWithReload(() => import('./pages/Help'));
 const Account = lazyWithReload(() => import('./pages/Account'));
 const Admin = lazyWithReload(() => import('./pages/Admin'));
@@ -341,8 +340,6 @@ const AuthenticatedApp = () => {
         <Route path="/studio/ava" element={<LayoutWrapper currentPageName="AvaStudio"><AvaStudio /></LayoutWrapper>} />
         <Route path="/studio/ava/website" element={<AvaStudioWebsite />} />
         <Route path="/studio/ava/website/:step" element={<AvaStudioWebsite />} />
-        <Route path="/studio/ava/assets" element={<AvaStudioAssets />} />
-        <Route path="/studio/ava/assets/:step" element={<AvaStudioAssets />} />
         {/* No explicit /onboarding route here — "Onboarding" is also a
             pages.config.js PAGES key, so the auto-loop above already
             declares "/Onboarding" (case-insensitively equal, earlier in

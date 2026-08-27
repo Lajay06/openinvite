@@ -504,8 +504,19 @@ export default function UniverseWorldView({
       {/* Chapter 6 — your wedding in this world. This is where the
           couple's real names belong (per the hero-title consistency
           fix — the hero above always shows the universe's own name, this
-          chapter is where their actual pieces, in their actual names,
-          are shown). Every asset type the product has, not a subset.
+          chapter shows the world carrying their actual names).
+
+          THESE ARE ILLUSTRATIONS, NOT DELIVERABLES. The asset feature — the
+          tool a couple used to make and edit these pieces — was removed in
+          Wave 2. This chapter kept its previews because their SECOND job is
+          showing someone what a universe looks like at the moment they choose
+          one, which is also why they still render in onboarding.
+
+          The framing had to change with the deletion: a labelled inventory of
+          pieces, under the couple's own names, on the first screen they see,
+          would be the interface reporting a state the system does not have —
+          created by our own subtraction. The website and RSVP tiles are the
+          exception and remain real: they are live links to /w/:slug.
 
           Passes the FULL universe object (not universe.id) to every asset
           preview below — was passing just the id, which is why every
@@ -519,6 +530,11 @@ export default function UniverseWorldView({
         <Reveal prefersReducedMotion={prefersReducedMotion}>
           <p style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: colors.accent, margin: '0 0 12px', textAlign: 'center' }}>
             Nº 05 — Your wedding in this world
+          </p>
+          {/* Says what the tiles ARE. Without it the labels below read as an
+              inventory of pieces the couple will be given. */}
+          <p style={{ fontFamily: PJS, fontSize: 13, color: colors.lightText, opacity: 0.55, margin: '0 0 20px', textAlign: 'center', maxWidth: 520, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.6 }}>
+            How this world would look across a wedding day, carrying your names.
           </p>
           <p style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.4rem, 3vw, 2rem)', color: colors.lightText, margin: '0 0 40px', textAlign: 'center' }}>
             {coupleNames}

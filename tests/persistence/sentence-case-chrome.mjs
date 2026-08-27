@@ -109,10 +109,19 @@ export async function runSentenceCaseChrome() {
   // The exemption must stay real: artwork keeps its typography.
   const art = ALL.filter(([p]) => ARTWORK.test(p)).flatMap(([p, s]) =>
     [...s.matchAll(/textTransform:\s*['"]uppercase|text-transform:\s*uppercase/g)].map(() => p));
-  // 80 is the count at the time of the ruling. A LOOSE threshold here passed
+  // 80 was the count at the time of the ruling. A LOOSE threshold here passed
   // while a control stripped an artwork declaration, so it is pinned: the
   // exemption is only real if nothing quietly erodes it.
-  check('artwork keeps its uppercase treatment', art.length >= 80, `${art.length} declarations preserved (baseline 80)`);
+  //
+  // 80 -> 64 IN WAVE 2, DELIBERATELY AND WITH ITS REASON. The asset feature was
+  // removed: AssetEditors.jsx, AssetPreviews.jsx and StudioAssetsTab.jsx held
+  // 16 uppercase declarations between them — printed-card typography like
+  // "ACCEPTS WITH PLEASURE", which is exactly what the artwork exemption exists
+  // to protect. Deleting the feature deletes its typography; nothing eroded.
+  //
+  // A guard whose expected count is edited WITHOUT a reason is
+  // indistinguishable from a guard being silenced. This is the reason.
+  check('artwork keeps its uppercase treatment', art.length >= 64, `${art.length} declarations preserved (baseline 64)`);
 
   // Product names match the sidebar rather than drifting into Title Case.
   const gate = CHROME.find(([p]) => p === 'pages/UniverseStudio.jsx')?.[1] || '';
