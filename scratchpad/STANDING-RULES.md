@@ -4,6 +4,67 @@ These survive restarts. Re-read at the start of every session.
 
 ---
 
+## A component's name is not its purpose, and shared code has more than one owner
+
+**Delete by feature, never by filename.** Three times in one wave a shared
+component's NAME misled the deletion scope:
+
+1. **`photoExport.js`** looked like it belonged to Photos. It belongs to the
+   **moodboard** — deleting it broke the build, caught by the re-grep.
+2. **`CATEGORIES`** looked like it belonged to guide categories. It is
+   **load-bearing for Places**, which stores its places inside them.
+3. **The eight asset previews** looked like they belonged to the asset feature.
+   Their second job is **showing what a universe looks like** — in the universe
+   studio and in ONBOARDING, the first thing a couple ever does.
+
+This is the specific reason the Wave 2 scope report was wrong seven times, and
+every time in the direction of OVER-deleting.
+
+---
+
+## Ask of every deletion: what does the surviving surface now claim?
+
+Removing the asset feature left eight previews inside the universe world view,
+under **"Nº 05 — Your wedding in this world"**, the couple's real names, and ten
+labels reading *Save the date · Menu · Place cards · Welcome sign…* — a labelled
+inventory of pieces, shown at signup, for a feature that no longer exists. The
+code comment said it outright: *"every asset type the product has."*
+
+**A deletion can CREATE the interface-reports-a-state-the-system-does-not-have
+defect**, on a surface it never touched, by leaving a promise behind.
+
+> If a couple can no longer make these things, what does this screen claim?
+
+Ask it of every removal, first — not tenth. And a reframing must be honest
+BEYOND the current change: "how this world would look across a wedding day"
+stays true after the printed suite retires. **A reframing that only survives
+until the next deletion is a delay, not a fix.**
+
+---
+
+## When you find yourself performing a manoeuvre, ask what problem it solves
+
+To write one document to main: **stash, switch, commit, switch back, pop.** Five
+stateful steps. Docs go to main directly and always have — the canon guard's own
+error message says so.
+
+The pop then took `stash@{0}`, which was **a stranger's `feat/multi-currency-pricing`
+WIP**, because the stash pushed a moment earlier was EMPTY. It conflicted in two
+frozen payments files. Second incident from the same unowned stash entry.
+
+**The mistake was not the command. It was the manoeuvre.** Most of today's damage
+came from elaborate sequences standing in for simple ones — walking backwards to
+find a boundary instead of naming a range, reimplementing a guard's logic in a
+shell one-liner instead of running the guard.
+
+Second instance of the local-question rule: *the simplest thing that answers the
+question is usually also the safest.*
+
+`git stash pop` takes the top of a stack you did not necessarily push to. Prefer
+`git stash push` and pop **by name** — or don't stash at all.
+
+---
+
 ## THE INTERFACE REPORTS A STATE THE SYSTEM DOES NOT HAVE
 
 **This is the defect. Everything else in this document is a corollary.**
