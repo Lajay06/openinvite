@@ -111,7 +111,17 @@ export default function MusicPage() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('playlist');
   const [activePlaylist, setActivePlaylist] = useState(null);
-  const [requestFilter, setRequestFilter] = useState('pending');
+  // OPENS ON ALL. The page opened on Pending, and in production Pending is
+  // empty while 235 requests exist — so a couple landed on a blank list under a
+  // headline reading 235 and had to guess that the requests were behind another
+  // tab.
+  //
+  // NOT "the first non-empty tab", which was the tempting answer. A DEFAULT VIEW
+  // SHOULD NOT DEPEND ON DATA THAT CAN CHANGE UNDER IT: a tab that moves when
+  // the underlying set empties teaches a couple that the product rearranges
+  // itself, and they stop trusting where things are. A stable position plus a
+  // count directs attention without moving the furniture.
+  const [requestFilter, setRequestFilter] = useState('all');
   const [showSearch, setShowSearch] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showAddLink, setShowAddLink] = useState(false);
@@ -291,7 +301,9 @@ export default function MusicPage() {
   };
 
   const allRequests = songRequests || [];
-  const visibleRequests = allRequests.filter(r => (r.status || 'pending') === requestFilter);
+  const visibleRequests = requestFilter === 'all'
+    ? allRequests
+    : allRequests.filter(r => (r.status || 'pending') === requestFilter);
   // Counts derived once from the guarded list. The filter buttons previously
   // called songRequests.filter() inline, which threw before react-query
   // resolved and took the whole page to the error boundary.
@@ -307,9 +319,15 @@ export default function MusicPage() {
   // the partition, and scripts/test-song-status-coverage.mjs fails if the
   // schema ever gains a value it does not contain.
   const REQUEST_STATUSES = ['pending', 'approved', 'declined', 'added'];
-  const STATUS_LABELS = { pending: 'Pending', approved: 'Approved', declined: 'Declined', added: 'On the playlist' };
-  const requestCounts = Object.fromEntries(
-    REQUEST_STATUSES.map(k => [k, allRequests.filter(r => (r.status || 'pending') === k).length]));
+  // 'all' is a VIEW, not a status — it stays out of REQUEST_STATUSES so the
+  // coverage guard keeps checking a real partition of the schema's enum.
+  const REQUEST_TABS = ['all', ...REQUEST_STATUSES];
+  const STATUS_LABELS = { all: 'All', pending: 'Pending', approved: 'Approved', declined: 'Declined', added: 'On the playlist' };
+  const requestCounts = {
+    all: allRequests.length,
+    ...Object.fromEntries(
+      REQUEST_STATUSES.map(k => [k, allRequests.filter(r => (r.status || 'pending') === k).length])),
+  };
   const reviewRequest = (songRequestId, action) => reviewRequestMutation.mutate({ songRequestId, action });
 
   const pendingCount = (songRequests || []).filter(r => r.status === 'pending').length;
@@ -503,7 +521,7 @@ export default function MusicPage() {
               </div>
 
               <div style={{ display: 'flex', gap: 8, margin: '16px 0 20px', flexWrap: 'wrap' }}>
-                {REQUEST_STATUSES.map(f => (
+                {REQUEST_TABS.map(f => (
                   <button key={f} onClick={() => setRequestFilter(f)}
                     className={requestFilter === f ? 'btn-primary' : 'btn-editorial-secondary'}
                     style={{ fontSize: 12 }}>
@@ -514,11 +532,13 @@ export default function MusicPage() {
 
               {visibleRequests.length === 0 ? (
                 <p style={{ ...helpTextStyle, margin: 0 }}>
-                  {requestFilter === 'pending'
-                    ? 'No requests waiting on you.'
-                    : requestFilter === 'added'
-                      ? 'No requests have been added to your playlist yet.'
-                      : `No ${requestFilter} requests yet.`}
+                  {requestFilter === 'all'
+                    ? 'No song requests yet. They appear here as guests send them.'
+                    : requestFilter === 'pending'
+                      ? 'No requests waiting on you.'
+                      : requestFilter === 'added'
+                        ? 'No requests have been added to your playlist yet.'
+                        : `No ${requestFilter} requests yet.`}
                 </p>
               ) : (
                 <div style={{ borderTop: '1px solid rgba(10,10,10,0.12)' }}>
