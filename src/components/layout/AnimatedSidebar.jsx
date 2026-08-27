@@ -54,7 +54,7 @@ function buildCollaboratorNav(permissions) {
   }
   return { topLevel, sections: [...sections.entries()].map(([label, items]) => ({ label, items })) };
 }
-import { BarChart2, Calendar, Camera, Car, Clock, CreditCard, FileText, Gift, Globe, Heart, HelpCircle, Hotel, Image, ImagePlus, LayoutDashboard, LayoutGrid, Lightbulb, ListTodo, LogOut, MapPin, MessageCircle, Music2, Package, Palette, Phone, Plane, Radio, ScrollText, Send, ShoppingBag, Sparkles, StickyNote, Store, UserCheck, UserPlus, Users, UtensilsCrossed, Wallet } from 'lucide-react';
+import { BarChart2, Calendar, Camera, Car, Clock, CreditCard, FileText, Gift, Globe, Heart, HelpCircle, Hotel, Image, ImagePlus, LayoutDashboard, LayoutGrid, Lightbulb, ListTodo, LogOut, MapPin, MessageCircle, Music2, Package, Palette, Phone, Plane, ScrollText, Send, ShoppingBag, Sparkles, StickyNote, Store, UserCheck, UserPlus, Users, UtensilsCrossed, Wallet } from 'lucide-react';
 
 // Maps collaboratorPageMap.js's icon name strings to the actual lucide
 // components — kept out of that shared file so it stays framework-neutral
@@ -134,7 +134,6 @@ export const NAV_SECTIONS = [
       { icon: Gift,       label: "Registry",        url: createPageUrl("GuestSuiteRegistry") },
       { icon: Hotel,      label: "Accommodation",   url: createPageUrl("GuestSuiteAccommodation") },
       { icon: Car,        label: "Transport",       url: createPageUrl("GuestSuiteTransport") },
-      { icon: Radio,      label: "Live stream",     url: createPageUrl("GuestSuiteLiveStream") },
       { icon: MapPin,     label: "Experience guide",url: createPageUrl("GuestSuiteExperience") },
       { icon: ScrollText, label: "Good to know",   url: createPageUrl("GuestSuitePolicies") },
       { icon: BarChart2,  label: "Guest polls",     url: createPageUrl("GuestSuitePolls") },
