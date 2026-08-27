@@ -4,6 +4,40 @@ These survive restarts. Re-read at the start of every session.
 
 ---
 
+## A rule you only grep for is a rule you only partly enforce
+
+The retired accommodation page rendered **🏨 and ⭐ on a live guest surface**,
+against a standing rule, for as long as it existed. Every emoji sweep this
+project has run searched the SOURCE. This was found by RENDERING the page.
+
+**Ask of every content rule: does anything check the rendered surface, or only
+the source?** If only the source, that whole family — emoji, sentence case,
+uppercase, US English, exclamation marks — is weaker than it looks. A rule can
+be violated by something the source never spells out: a value from data, a
+library's own markup, a glyph inside a component nobody thought to sweep.
+
+Third time in one day that discarding an instrument and looking directly found
+something the instrument was **structurally incapable** of seeing.
+
+---
+
+## Verify before you drop: read it back from where it will actually live
+
+Converting two unowned stash entries into branches, the first commit used
+`git add -A` and swept in untracked capture output that was never in the stash —
+including `scripts/capture/output/storage-state.json` and `rsvp-token.txt`,
+**session credentials**.
+
+It was caught by diffing the commit against the stash **before** the stash was
+dropped. Then: staged by name from `git stash show -u --name-only`, verified
+file-by-file and insertion-by-insertion, content-diffed against the rescued
+copies, pushed, **re-read from `origin`**, and only then dropped.
+
+Read-verify-write-reread, applied to git. The reread is the half people skip,
+and it is the half that makes dropping safe.
+
+---
+
 ## A component's name is not its purpose, and shared code has more than one owner
 
 **Delete by feature, never by filename.** Three times in one wave a shared

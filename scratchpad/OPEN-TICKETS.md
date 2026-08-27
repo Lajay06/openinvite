@@ -896,3 +896,41 @@ Not a line in Wave 2. It touches:
 - **what replaces Chapter 6** — the open design question
 
 Its own item, its own report, **after Wave 2 closes.**
+
+---
+
+## TICKET — do our content rules check rendered surfaces, or only source?
+
+**Raised by the accommodation retirement.** The page rendered 🏨 (U+1F3E8) and
+⭐ (U+2B50) on a live guest surface for its whole life. Every emoji sweep this
+project has run searched the SOURCE and never saw it; rendering the page did.
+
+**Question for the next emoji batch, and for the content-rule family generally:**
+does anything assert against the RENDERED output of a guest surface, or only
+against the files?
+
+Rules in this family: no emoji · sentence case in chrome · no ALL CAPS outside
+artwork · US English · no exclamation marks in chrome.
+
+A source-only check misses anything that reaches the screen without being
+spelled out in the file — a value from data, a library's own markup, a glyph in
+a component nobody thought to sweep. The render harness already visits guest
+routes, so the mechanism exists.
+
+---
+
+## RECOVERED — two unowned stash entries are now branches
+
+The stack is **empty**, so `git stash pop` fails loudly instead of silently
+taking a stranger's work. It had detonated twice in Wave 2, both times in frozen
+payments files.
+
+- **`wip/multi-currency-pricing-stash-recovered`** — `7169eab`, base `0797e39`
+  (2026-07-16). 12 files, 838 insertions. Payments-adjacent: `planPricing.js`,
+  `create-checkout-session.js`, `geo-currency.js`, `currencyPricing.js`,
+  `Pricing.jsx`, `PlanSelection.jsx`, `stripe-webhook.mjs`.
+- **`wip/onboarding-guest-count-stash-recovered`** — `0442822`, base `67cdc98`
+  (2026-06-03). 2 files, 45 insertions.
+
+**Neither has been reviewed, run or verified.** They are preserved as found, and
+both are the owner's work to keep or discard.
