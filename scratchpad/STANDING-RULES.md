@@ -4,6 +4,72 @@ These survive restarts. Re-read at the start of every session.
 
 ---
 
+## Delete, then grep the name again — and its synonyms
+
+The marketing description still sold "live streaming" after the bullet beside it
+had been removed. It was found by re-grepping AFTER the deletion, and that is a
+different search, not luck:
+
+- the **first pass** hunts a codebase that still contains the thing, where every
+  mention looks like it belongs;
+- the **second** searches an emptier space, where a survivor stands out.
+
+Make it a step. Grep the name, the synonyms, and the marketing phrasing.
+
+---
+
+## Ask of every deletion: is this feature sold anywhere?
+
+Marketing site, pricing page, comparison pages, help centre, launch copy,
+directory listings. **A paid product advertising a feature it no longer has is
+the worst version of publish parity — the promise is made before the money
+changes hands.**
+
+Removing a claim for a deleted feature **needs no owner accept**: it is a
+correctness fix, and leaving it would be a lie. Adding or rewording anything on
+a marketing page still does. Report every removal so the owner sees what left
+the sales copy.
+
+---
+
+## A marketing copy change is not shipped until the prerendered output is regenerated
+
+`test:marketing-routes` passed. The source was correct. **And the claim was
+still being served**, because the marketing site is prerendered and
+`prerendered/index.html` still contained the sentence.
+
+Caught by the prerendered-freshness guard in CI — a guard the terminal did not
+know existed and had not run locally. `npm run build:prerender`, and the
+freshness guard reads the git diff, so it only passes once `prerendered/` is
+committed alongside the source.
+
+**Editing marketing source is half a change.**
+
+---
+
+## A decision recorded only in the code that implements it dies with that code
+
+`Seating.jsx:401` carries "decision #3 — tables only, never guest assignments".
+That comment is the only record of the ruling. Deleting the implementation would
+delete the reasoning.
+
+Before any deletion, read the comments for reasoning that exists nowhere else
+and rescue it first, as its own commit.
+
+---
+
+## Never prune schema during a code deletion
+
+An orphaned entity with **no rows costs nothing to keep and something to
+remove**, and Base44 schema changes are the least reversible thing this project
+does. Do not delete the local `.jsonc`, do not hand-edit the generated fields
+file.
+
+Collect the orphans across the whole wave and decide them in ONE deliberate pass
+rather than seven nervous ones. See scratchpad/WAVE2-ORPHANED-SCHEMA.md.
+
+---
+
 ## One computation, two uses — never two computations of one truth
 
 The guest nav decided what to LINK to. The router decided what to SERVE. Two
