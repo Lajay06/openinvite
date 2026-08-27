@@ -805,3 +805,37 @@ turned a page off believed it was gone.
 Same class as the unpublished draft, and it affected **every optional page in
 the product**, not one. Closed by making reachability and the nav the same
 computation.
+
+---
+
+# WAVE 2 — THE DELETION LIST (owner's words, recorded verbatim)
+
+Written down on receipt so it cannot be lost again. The terminal asked for this
+list because it had never been stated in-session; that must not need asking twice.
+
+1. **PHOTOS** — "get rid of the photos feature completely."
+2. **LIVE STREAM** — "live stream is not connected to anything and does not
+   work, so need [removing]." Also closes the publish-parity finding: it
+   promises "visible to guests" with no guest page.
+3. **COPY COLLECT LINK** — "remove the whole copy collect link feature."
+4. **GUEST GUIDE CATEGORIES** — "get rid of categories in guest guide."
+5. **COPY LAYOUT** — "remove the copy layout from button and feature."
+6. **ALL ASSET MACHINERY** — "remove all the asset stuff as we are not doing
+   this feature anymore." The left panel's Assets and Design sections are
+   replaced by ONE pill reading "Change universe" that navigates there.
+7. **THE "PREVIEW YOUR SITE" CARD** — removed, the two surviving cards widened
+   into rectangles. Owner: Guest suite, my universe and preview site "all have
+   the same hierarchy and gets confusing."
+8. **THE SECOND ACCOMMODATION ROUTE** — see the Wave 2 entry above.
+
+## Standing constraints for this wave
+- Deletions merge ONE AT A TIME, each on its own quoted line.
+- **DELETING CODE IS NOT DELETING DATA.** Report them separately; orphaned rows
+  survive a code deletion and need their own decision.
+- **THE TWO NON-OWNER RECORDS ARE NEVER TOUCHED** — `jay-ella`
+  (gowdeman@hotmail.com) and `florida-john` (floridasogialofa2@gmail.com) — in
+  this or any sweep.
+- **DO NOT PROPOSE SCHEMA CHANGES.** Name the orphaned entities and fields; the
+  schema is the advisor's boundary.
+- Flag anything that consumes **Cloudinary** — the media-cost report is queued
+  behind this wave because these deletions may change the numbers.
