@@ -21,21 +21,44 @@ Discipline is not the fix for either. The hazard is.
 
 ### And the mechanism behind the second is worth its own line
 
-> **A `.gitignore` protects you only at commits where the rule exists.**
+> **Protection that lives in version control is only as old as the commit you
+> are standing on. Check out an old commit and you check out its old safety.**
 
-Both files WERE in `.gitignore`. The rule covering them was added on
-**2026-08-25**. The recovery branch was created at a **2026-07-16** base, which
-checked out a `.gitignore` that predated it — so every ignored hazard in the
-working directory silently became stageable again.
+Both files WERE in `.gitignore`, and had been for two days. The rule covering
+them was added on **2026-08-25**. The recovery branch was created at a
+**2026-07-16** base, which checked out a `.gitignore` that predated it — so
+every ignored hazard in the working directory silently became stageable again.
 
 **Four rules were added in that same commit** (`scripts/capture/output/`,
 `.claude/settings.local.json`, `base44/.app.jsonc`, `.env*.local`). Any branch
 based before 25 August loses all four at once.
 
-Protection that lives in the tree can be time-travelled away. Protection that
-does not: `.git/info/exclude` (per-clone, unversioned) and a pre-push check that
-never consults ignore state. Both are now in place, and the check also runs in
-CI, because `--no-verify` skips hooks.
+**This is not a fact about ignore files.** It is true of every guard that ships
+in the tree: lint configs, CI workflow definitions, hook scripts, the guard
+scripts themselves, and this document. A July checkout has July's safety, and
+nothing announces the downgrade. Whenever you check out an old base, ask what
+protection you just rolled back with it.
+
+Protection that does NOT time-travel:
+
+| Layer | Survives an old checkout | Survives a fresh clone |
+|---|---|---|
+| `.gitignore`, guard scripts, canon | no — versioned with the tree | yes |
+| `.git/info/exclude` | yes — unversioned, per-clone | **no** |
+| `core.hooksPath` + `.githooks/` | yes — local config | **no** |
+| CI | yes | yes |
+
+Only CI survives both, which is why `--no-verify`-skippable checks must also
+run there. The local layers are **machine-local**: a fresh clone starts with an
+empty `info/exclude` and no `core.hooksPath`, so a new machine begins with the
+CI backstop alone. That is the same rule wearing a different hat.
+
+**On the incident itself: `info/exclude` did not fail — it did not yet exist.**
+It was written 2026-08-27 23:05:26, nine minutes after the 22:55:49 commit, in
+the same second as `check-no-credentials.mjs`. It was remediation, not a net
+that failed. Verified after the fact by simulating the July base in a scratch
+clone — with the `.gitignore` rule stripped, `info/exclude:25` still caught both
+files and `git add -A` staged nothing.
 
 ---
 
