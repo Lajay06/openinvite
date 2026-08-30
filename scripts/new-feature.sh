@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
-# Usage: ./scripts/new-feature.sh <name>
+# Usage: ./scripts/new-feature.sh <name> [--carry]
 # Creates and checks out a new branch from the latest main.
+#
+# --carry  deliberately bring uncommitted work onto the new branch. Announces
+#          every file it carries. Without it, a dirty tree is refused.
 # Examples:
 #   ./scripts/new-feature.sh marketplace-search-fix   → feat/marketplace-search-fix
 #   ./scripts/new-feature.sh fix-accommodation-reload → fix/fix-accommodation-reload
@@ -8,7 +11,14 @@
 
 set -e
 
-NAME="${1:-}"
+NAME=""
+CARRY=0
+for arg in "$@"; do
+  case "$arg" in
+    --carry) CARRY=1 ;;
+    *)       [[ -z "$NAME" ]] && NAME="$arg" ;;
+  esac
+done
 
 if [[ -z "$NAME" ]]; then
   echo "Usage: ./scripts/new-feature.sh <branch-name>"
@@ -58,16 +68,48 @@ if [[ -n "$(git status --porcelain)" ]]; then
   echo "  For a docs-only commit to main, use the docs worktree instead:"
   echo "    cd ../openinvite-docs && git pull && … && git push origin HEAD:main"
   echo ""
+  echo "  If you MEANT to bring this work onto ${BRANCH}, say so:"
+  echo "    ./scripts/new-feature.sh ${NAME} --carry"
+  echo ""
   exit 1
 fi
 
-echo ""
-echo "→ Switching to main and pulling latest…"
-git checkout main
-git pull origin main
+# ── --carry: the deliberate case, made BETTER than the workaround ────────────
+#
+# A guard with no way through does not remove the situation, it pushes the
+# situation onto a worse path. Without this flag the answer to a refusal is
+# `git checkout -b`, which carries the work AND skips the pull — so you branch
+# from stale main, and nothing announces either fact.
+#
+# So the sanctioned route is not merely permitted, it is the BEST route:
+# it bases the branch on a freshly fetched origin/main, and it NAMES every file
+# it carried. An override that leaves no trace cannot be audited, and this one
+# is used at exactly the moment scope is at risk.
+#
+# `checkout -b <branch> origin/main` reaches a fresh base while keeping the
+# working tree — no stash, no pop, none of the manoeuvre canon warns about.
+# Git still refuses if the carried files would be clobbered by the checkout,
+# which is the one case where stopping is correct.
+if [[ "$CARRY" == "1" && -n "$(git status --porcelain)" ]]; then
+  echo ""
+  echo "  ── CARRYING UNCOMMITTED WORK onto ${BRANCH} ──────────────────"
+  git status --porcelain | sed 's/^/    /'
+  echo "    ───────────────────────────────────────────────────────────"
+  echo "    $(git status --porcelain | wc -l | tr -d ' ') file(s) carried, deliberately, via --carry."
+  echo ""
+  echo "→ Fetching latest origin/main…"
+  git fetch origin main
+  echo "→ Creating branch ${BRANCH} from origin/main, keeping your changes…"
+  git checkout -b "${BRANCH}" origin/main
+else
+  echo ""
+  echo "→ Switching to main and pulling latest…"
+  git checkout main
+  git pull origin main
 
-echo "→ Creating branch: ${BRANCH}"
-git checkout -b "${BRANCH}"
+  echo "→ Creating branch: ${BRANCH}"
+  git checkout -b "${BRANCH}"
+fi
 
 echo ""
 echo "✓ You're now on branch: ${BRANCH}"
