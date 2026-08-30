@@ -1260,3 +1260,28 @@ body {
     display: none !important;
   }
 }
+
+/* THE ACCORDION PATTERN — option pills (Wave 3).
+   See src/components/shared/OptionAccordion.jsx for the spec these implement.
+
+   Hover on an UNSELECTED pill goes fully black: the owner likes that it goes
+   black and softening it is explicitly ruled out. Selected is also black, so
+   the two are told apart by the leading tick the component renders, never by
+   dulling this hover. :hover is scoped to (hover: hover) pointers so a touch
+   device does not leave a pill stuck looking selected after a tap. */
+@media (hover: hover) {
+  .oi-option-pill:not(.oi-option-pill--selected):not(:disabled):hover {
+    background: #0A0A0A;
+    color: #FFFFFF;
+    border-color: #0A0A0A;
+  }
+}
+.oi-option-pill:not(.oi-option-pill--selected):not(:disabled):active {
+  background: #111111;
+  color: #FFFFFF;
+  border-color: #111111;
+}
+.oi-option-pill:focus-visible {
+  outline: 2px solid #0A0A0A;
+  outline-offset: 2px;
+}
