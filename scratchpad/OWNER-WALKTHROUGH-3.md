@@ -138,7 +138,72 @@ the cost of the compression, and it is why the owner's audit is finding things.
 
 ---
 
-## Verification status
+## VERIFICATION PASS — 2026-08-31, checked against source and running guards
+
+**Prediction, stated before the run** (so the result cannot be massaged after):
+VERIFIED ~12 · UNVERIFIED ~3 · NOT STARTED ~12 · SUPERSEDED ~2.
+
+**Actual: VERIFIED 12 · PARTIAL 2 · UNVERIFIED 9 · NOT STARTED 6 · SUPERSEDED 0.**
+
+### The miss is the finding, and it is about the verdict scheme itself
+
+- **VERIFIED landed exactly** (12 predicted, 12 found).
+- **NOT STARTED was half** what I predicted — more had been built than expected.
+- **UNVERIFIED was three times** what I predicted. Most are *visual* claims —
+  centring, spacing, stacking order — which source cannot settle and the load
+  harness cannot reach. **This is the render gap deciding a third of the pass.**
+- **SUPERSEDED: none.** I predicted 2 and found 0.
+- **PARTIAL: 2, a bucket the four-verdict scheme does not have.**
+
+> **The scheme's gap is the important result.** Forced to choose from four,
+> item #14 — the one with the owner's live counterexample — would have been
+> filed FIXED BUT UNVERIFIED. That is wrong in the direction that hides the
+> owner's own sighting. **A verdict scheme with no PARTIAL bucket rounds
+> incomplete work up to done.**
+
+| # | Item | Verdict | Evidence |
+|---|---|---|---|
+| 1 | Song statuses no tab can display | **VERIFIED** | `test:song-status-coverage` — "every writable status is reachable by a tab", "no tab offers a status the schema cannot produce" |
+| 2 | Schedule sorted by time, ignoring date | **VERIFIED** | `test:schedule-order` — "31 December sorts above 1 January", plus two timezone controls |
+| 3 | Nav pages doubled, no dedupe | **VERIFIED** | `test:nav-no-duplicates` — and it asserts the overlap **still exists** on 4 labels, so the dedupe is proven load-bearing rather than vacuous |
+| 4 | Guide Publish gates the nav link only | **VERIFIED** | `test:page-gate` — "availability is decided before the page component is chosen", "page and nav gate on the same 5 inputs" |
+| 5 | Photos | **VERIFIED** | no page file, no route, no nav entry. `photosContent.gallery` in `WBRightPanel` is the couple's own website gallery — a different surface |
+| 6 | Live stream | **VERIFIED (code)** | zero feature references; residue only in `entityFields.generated.js` → schema orphan pass |
+| 7 | Copy collect link | **VERIFIED** | zero references |
+| 8 | Guest-guide categories | **VERIFIED** | zero references |
+| 9 | Copy-layout | **VERIFIED** | zero references |
+| 10 | Asset machinery → one "Change universe" pill | **PARTIAL** | pill exists (`WBLeftPanel:274,288`); `VenueAssetLibrary.jsx` + `Seating.jsx` still reference `VenueAsset` — **hands to the asset-retirement scope report** |
+| 11 | "Preview your site" card | **VERIFIED** | only surviving mention is a comment documenting the removal: *"TWO CARDS, NOT THREE"* |
+| 12 | Accordion pattern, product-wide | **VERIFIED** | built 2026-08-30; `ThemeSection` render-verified 8/8; wedding party, theme options, FAQ all merged |
+| 13 | No wide letter-spacing | **NOT STARTED** | **160** occurrences of `letterSpacing >= 0.1em` in `src/` |
+| 14 | "Openinvite" one word, lowercase i | **PARTIAL** | **162 correct vs 28 wrong** across 25 lines. **20 user-visible**, concentrated in legal pages (`TermsOfService` 9, `PrivacyPolicy` 7) and **`PublicFooter`, on every marketing page**. The sweep hit the app and skipped the legal set and the footer — which is exactly where the owner saw it |
+| 15 | Currency symbols + thousands separators | **UNVERIFIED** | `useCurrency`, `formatCurrency`, `symbol`, `toLocaleString` all present — a visual claim source cannot settle |
+| 16 | Table numbers centred | **UNVERIFIED** | `Seating.jsx:912` has `textAlign:'center', minWidth:36` — needs a look |
+| 17 | Marketplace controls at narrow widths | **UNVERIFIED** | `flexWrap:'wrap'` on both control rows — needs a narrow viewport |
+| 18 | Send-invitation modal above the Ava button | **UNVERIFIED** | no z-index in either file; stacking order needs a look |
+| 19 | One investigation: venue-assets typography, invisible panel titles, universe button contrast | **NOT STARTED** | no investigation exists |
+| 20 | Our Story page-level editing | **NOT STARTED** | zero edit affordances in `OurStory.jsx` |
+| 21 | Design Studio to top of Guest Suite | **UNVERIFIED** | no "Design Studio" string in the sidebar; may be named differently |
+| 22 | Add-section "+" always visible | **UNVERIFIED** | no hover-opacity pattern found; needs a look |
+| 23 | "Make this my universe" on the universe hero | **VERIFIED** | `UniverseWorldView.jsx:632`, with an `isCurrent` branch |
+| 24 | One preview, with device switcher | **UNVERIFIED** | `FullScreenPreview.jsx` exists; that it is the ONLY preview is unconfirmed |
+| 25 | Styling quiz (B1-2) | **UNVERIFIED** | |
+| 26 | Vows lock (B1-15) | **NOT STARTED** | held for the owner |
+| 27 | Plus-one row (B3-1) — "Beef" in CONTACT column | **UNVERIFIED** | `GuestList.jsx:300` documents a *different* plus-one fix (9 of 40 rendering no status); the column-misplacement is unconfirmed |
+| 28 | Gifting page "Email us" | **NOT STARTED** | new item |
+| 29 | Casing sweep | **NOT STARTED** | the enforcement half of #14 |
+
+### Two facts kept visually distinct, as ruled
+
+**NOT STARTED (6)** — nobody built it. **UNVERIFIED (9)** — we cannot currently
+see it. These must not average into one number: six are work, nine are a
+**tooling** limit, and most of the nine are visual claims blocked by the render
+gap. That gap is now deciding a third of a verification pass, which is the
+strongest argument yet for the universe verification approach.
+
+---
+
+## Original note, retained
 
 **None of the above is verified by this file.** Several are marked "closed" from
 the ledger, and a status column is exactly the instrument this project has spent
