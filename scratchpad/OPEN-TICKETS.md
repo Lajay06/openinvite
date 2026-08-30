@@ -1091,12 +1091,45 @@ not depend on fetched data.
 **What it does not:** a page's data-populated state. That needs the data layer
 stubbed, which is a further piece of work.
 
-**Open sub-item:** count how many of the 89 render real content versus a
-loading shell. Attempted and abandoned after the harness hit a two-React-copies
-problem (the bundle carries its own React; the runner requires another). The fix
-is to mark `react`/`react-dom` external and share one instance. Left undone
-rather than guessed — the count is unknown, and the honest statement today is
-"89 loadable, an unknown subset content-testable".
+### THE CAPABILITY, IN THREE TIERS — so the correction does not bury what is new
+
+| Tier | Status |
+|---|---|
+| **A component rendered directly with props** | **WORKS TODAY.** `ThemeSection` verified 8/8: six sections, collapsed on load, summary chips reading back `cultureOther` and the composed interfaith pair, compact sizing at the three nested sites, no local `Pill`. A real assertion about real markup, not a load check. |
+| **A page whose first paint needs no fetched data** | Works. |
+| **A page's data-populated state** | **Not available** — see the parked fix below. |
+
+**The middle tier is what most UI work here actually needs.** The accordion
+adoptions, the pill consolidation, the modals — all component-level, all
+verifiable now in a way they were not this morning.
+
+So state it precisely, neither overclaiming nor underselling: **"verified by
+build, not by render" stops being acceptable for COMPONENT work, and remains
+honest for PAGE-DATA work.**
+
+### PARKED, with the fix written down — content testing
+
+Counting how many of the 89 draw real content versus a loading shell needs the
+data layer reachable. Attempted and abandoned on a **two-React-copies** problem:
+the esbuild bundle carries its own React while the runner `require`s another,
+producing "Invalid hook call".
+
+**Known fix, one line:** mark `react` and `react-dom` **external** in the bundle
+so both share one instance.
+
+Parked deliberately rather than attempted tired — three attempts deep twice in
+one day, stopped correctly both times. A known fix for a known problem is worth
+more than a fourth attempt at midnight.
+
+### `WeddingParty` did NOT fail — read this before hunting a defect
+
+The page returned a spinner under a load check because it fetches in a
+`useEffect` and nothing ran the effect. **My assertions about its first paint
+were wrong; the page is fine.** Recorded explicitly so that nobody reading
+"WeddingParty failed" in six weeks goes looking for a bug that does not exist.
+
+The twelve-name summary chip remains verified at **component** level (tier 1):
+all twelve names, each its own chip, wrapping, no truncation.
 
 ### Residue, kept by name
 

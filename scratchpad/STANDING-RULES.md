@@ -919,6 +919,44 @@ rather than something invented.
 
 ---
 
+## THE NAME OF AN INSTRUMENT IS ITS LOUDEST OUTPUT
+
+**Owner ruling, 2026-08-30. The fix for the recurrence is a rename, not a
+resolution.**
+
+An instrument that loaded page modules was called `render:gap`. Every report of
+its output said "render-testable" — mine, and then the advisor's summary
+amplifying mine. **Nobody misread anything.** The instrument said render, so
+everyone said render.
+
+> A name is quoted far more often than a methodology. **The name is a claim, and
+> it is the claim that travels.**
+
+Renamed to `load:gap`, output changed to "89 of 90 modules load", and the word
+removed from the script's live output and its ticket. The overstatement is now
+**unavailable** rather than merely discouraged — nobody has to remember not to
+make it.
+
+**Ask of any instrument: if someone quotes only its name and its number, is the
+resulting sentence true?** If not, the name is wrong, however accurate the
+methodology section is.
+
+### It was also the fourth form of one error in a single day
+
+| Form | Cheaper question asked | Dearer question reported |
+|---|---|---|
+| build-for-render | does it compile | does it display |
+| grep-for-load | which files mention a blocker | which files load |
+| presence-for-coverage | does the file know the rule | does the file obey it |
+| **loads-for-renders** | does the module import | does the page draw |
+
+The fourth was caught **unprompted, against an instrument built an hour
+earlier, while writing the rule about it** — which is the rule working rather
+than the rule being recited. The advisor's own summary made the same error
+independently, and recorded it: **a summary is a hypothesis too.**
+
+---
+
 ## THE CHEAPER INSTRUMENT MEASURED THE CHEAPER QUESTION
 
 **Owner ruling, 2026-08-30. The day's best rule.**
