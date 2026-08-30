@@ -2691,3 +2691,5 @@ strings, not a claim that it was applied.**
 Generalises past copy: an accepted decision that produces an artifact (a string,
 a config value, a schema field, a route) needs the artifact confirmed to exist.
 The same family as the empty read — "I did it" is not evidence, the file is.
+
+<!-- override pathway proof, branch deleted immediately, never merged -->
