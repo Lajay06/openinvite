@@ -1,5 +1,6 @@
 import React from 'react';
 import SectionReveal from '../SectionReveal';
+import { OptionAccordion, OptionAccordionSection } from '@/components/shared/OptionAccordion';
 import { isMotionEnabled } from '@/lib/universeStyling';
 import { visibleSections } from '@/lib/goodToKnow';
 
@@ -53,18 +54,39 @@ export default function WeddingGoodToKnowPage({ weddingDetails, theme, typograph
           </h1>
         </SectionReveal>
 
-        {sections.map(section => (
-          <SectionReveal key={section.key} {...reveal} style={{ marginBottom: 36 }}>
-            <h2 style={{ ...heading, fontSize: 'clamp(1.125rem,2.5vw,1.5rem)', margin: '0 0 10px' }}>
-              {section.title}
-            </h2>
-            {section.lines.map((line, i) => (
-              <p key={i} style={{ ...body, margin: i === section.lines.length - 1 ? 0 : '0 0 8px' }}>
-                {line}
-              </p>
-            ))}
+        {/* WAVE 3 — the accordion pattern, CORE ONLY. "do good to know the same
+            as that" landed with the FAQ instruction and is the same adoption:
+            these sections used to render all open at once, which is what made
+            the page a wall on a phone. Nothing here is selectable, so pills and
+            the summary chip do not apply — structure is the core, that periphery
+            is not. Skin comes from the universe, never the dashboard. */}
+        {sections.length > 0 && (
+          <SectionReveal {...reveal}>
+            <OptionAccordion
+              headingSize="clamp(1.125rem,2.5vw,1.5rem)"
+              headingWeight={typography.headingWeight}
+              headingStyle={typography.headingStyle || 'normal'}
+              faceFamily={typography.headingFont}
+              bodyFamily={typography.bodyFont}
+              skin={{
+                ruleColor: `${theme.accent}33`,
+                headingColor: theme.lightText,
+                chevronColor: theme.accent,
+                mutedColor: theme.lightText,
+              }}
+            >
+              {sections.map(section => (
+                <OptionAccordionSection key={section.key} sectionKey={section.key} title={section.title}>
+                  {section.lines.map((line, i) => (
+                    <p key={i} style={{ ...body, margin: i === section.lines.length - 1 ? 0 : '0 0 8px' }}>
+                      {line}
+                    </p>
+                  ))}
+                </OptionAccordionSection>
+              ))}
+            </OptionAccordion>
           </SectionReveal>
-        ))}
+        )}
 
         {sections.length === 0 && (
           <SectionReveal {...reveal} style={{ textAlign: 'center', padding: '40px 24px' }}>
