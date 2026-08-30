@@ -31,8 +31,8 @@
  * THE SKIN IS NOT UNIVERSAL. Carry the BEHAVIOUR to guest surfaces (collapsed
  * by default, one at a time, the summary chip, the rhythm, the hierarchy) but
  * NEVER the black pill or the Plus Jakarta Sans face — there the universe
- * supplies colour, face and weight. Owner: "there is no point if they all run
- * the same and just have slight colours." Hence every colour and face below is
+ * supplies color, face and weight. Owner: "there is no point if they all run
+ * the same and just have slight colors." Hence every color and face below is
  * a prop with a dashboard default, not a hard-coded constant.
  */
 
@@ -63,7 +63,14 @@ export function OptionAccordion({ children, headingSize = 13, headingWeight = 70
  * One section. `summary` is the list of choices shown while collapsed (rule 5).
  * Pass [] and it renders "Nothing selected yet" (rule 4) — never nothing at all.
  */
-export function OptionAccordionSection({ sectionKey, title, summary = [], children }) {
+/**
+ * `action` renders to the RIGHT of the header, as a SIBLING of the header
+ * button rather than inside it — a button nested inside a button is invalid
+ * markup and the inner control stops being clickable. A surface that manages a
+ * list (delete a question, remove a row) needs that control reachable without
+ * opening the section first, which is why it is not simply put in the body.
+ */
+export function OptionAccordionSection({ sectionKey, title, summary = [], action = null, children }) {
   const ctx = useContext(AccordionCtx);
   if (!ctx) throw new Error('OptionAccordionSection must be inside an OptionAccordion');
   const { openKey, toggle, headingSize, headingWeight, faceFamily } = ctx;
@@ -71,12 +78,13 @@ export function OptionAccordionSection({ sectionKey, title, summary = [], childr
 
   return (
     <div style={{ borderBottom: `1px solid ${RULE_COLOR}` }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       <button
         type="button"
         onClick={() => toggle(sectionKey)}
         aria-expanded={isOpen}
         style={{
-          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           background: 'none', border: 'none', cursor: 'pointer',
           padding: '18px 0',           // rule 7: the rhythm
           textAlign: 'left', fontFamily: faceFamily,
@@ -94,6 +102,8 @@ export function OptionAccordionSection({ sectionKey, title, summary = [], childr
           }}
         />
       </button>
+      {action}
+      </div>
 
       {/* rule 5 — a collapsed section must still tell you what you decided */}
       {!isOpen && summary.length > 0 && (
@@ -150,7 +160,7 @@ export function SummaryChip({ label, faceFamily = font.family }) {
  * chose from what their cursor is touching. Resolving that by making hover
  * subtle is explicitly ruled out: the owner likes that it goes black.
  *
- * So the distinction is carried by a MARK, not by a colour. A selected pill
+ * So the distinction is carried by a MARK, not by a color. A selected pill
  * shows a leading tick; a hovered-but-unselected pill does not. Hover keeps its
  * full black. The tick slot is always in the layout and merely invisible when
  * unselected, so selecting never reflows the row. ✓ (U+2713) is a
