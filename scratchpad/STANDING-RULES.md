@@ -919,6 +919,81 @@ rather than something invented.
 
 ---
 
+## THE CHEAPER INSTRUMENT MEASURED THE CHEAPER QUESTION
+
+**Owner ruling, 2026-08-30. The day's best rule.**
+
+Sizing the render gap, a static scan of the import graph reported **33 of 90
+dashboard pages renderable**. Actually attempting to load each page returned
+**6**. We reported a third of the dashboard as verifiable when it was a
+fifteenth — **wrong by a factor of five, in the reassuring direction**, and
+nothing in the first instrument suggested it might be off at all.
+
+> Grepping the import graph answers *"which files mention a known blocker"*.
+> Loading the module answers *"which files load"*.
+> **We asked the first and reported the second.**
+
+This is the same substitution as reporting "verified by build" where "verified by
+render" was meant — one level up, in a **number** instead of a claim. A number
+carries no hedge; nobody reads "33" and wonders which question produced it.
+
+**The 33 figure is superseded and the method that produced it is named**, so the
+number cannot be quoted later without its provenance. 6 is what an instrument
+that could actually fail returned.
+
+**Before quoting a measurement, say which question the instrument answered.** If
+that is not the question being asked, the number is not the answer — however
+precise it looks.
+
+---
+
+## State the prediction before the run, and treat the miss as the finding
+
+**Owner ruling, 2026-08-30.** Before re-measuring the render gap, the expected
+figure was written down: **70 of 90**, with "a residue of roughly 20 pages and at
+least one cause not named `window is not defined`".
+
+**Actual: 89 of 90, one residue, and not the one predicted.**
+
+The miss was informative in both directions at once, which a bare result never
+would have been:
+
+- the **number** of distinct causes was over-estimated — "many small offenders"
+- the **concentration** was under-estimated — it was ONE chokepoint,
+  `src/lib/app-params.js`, imported by the Base44 client and therefore by
+  nearly every page, accounting for all 82 failures
+
+The mental model was *distributed rot*; the reality was *a single deep
+dependency*. **A prediction that had landed near 70 would have confirmed a model
+that was wrong about the SHAPE of the problem, not merely its size.**
+
+> Write the number down before you run it. A result that arrives already
+> agreeing with itself teaches nothing; a miss tells you which part of your model
+> to throw away.
+
+---
+
+## The right pattern gets written once, in the place that hurt, and never propagated
+
+**Third instance in one day, so it is a property of how this codebase gets built
+rather than three coincidences.**
+
+| # | The pattern, already correct somewhere | Where it had not been applied |
+|---|---|---|
+| 1 | `check-payments-freeze` falls back to the working tree rather than silently passing — with a comment explaining why | three sibling guards, one directory away, all silently passing |
+| 2 | `check-payments-freeze` announces its override and lists what it let through | `check-canon-branch`, both override paths, silent |
+| 3 | `app-params.js` guards environment access with `typeof window === 'undefined'` | four eager reads, including one **in that same file**, and one in `lib/utils.js` |
+
+The third is the sharpest: the file that demonstrated the correct guard
+**contained an unguarded read of its own, twelve lines further down**, and that
+single line was the largest blocker in the codebase.
+
+**This is why the sweep rule exists**, and it now has three instances behind it:
+a PR that fixes a shape either sweeps for it or opens the ticket. The moment you
+fix a shape is the only moment you hold it clearly.
+
+---
+
 ## AN ORDER IS NOT AN AUTHORIZATION
 
 **Owner ruling, 2026-08-30, after I merged #619 on a line I manufactured.**
