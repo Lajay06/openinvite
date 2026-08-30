@@ -269,8 +269,19 @@ its declared type, recursing into nested object properties and array items.
 | `User` | unknown | unknown | cannot be bulk-listed via the admin key (see below) |
 
 All 15 are the owner's own test accounts (`la.jay06+*`, `adminopeninvite`,
-`uri.jay09`, `lax.music06`, `jaygalaxy23`), with one to check by eye:
-`gow-deepa`, created by `gow.jay22@gmail.com`.
+`uri.jay09`, `lax.music06`, `jaygalaxy23`) plus `gow-deepa`
+(`gow.jay22@gmail.com`), **confirmed by the owner 2026-08-30 as a friend's test
+account**.
+
+**Owner ruling: no migration. The fifteen stay as evidence.** Repairing them
+would need an owner-authenticated write for data nobody depends on.
+
+**The one standing note on `gow-deepa`:** it belongs to a real person, not a
+synthetic account. If that friend returns to it, **their saves will fail
+silently** — the freeze produces no symptom until a write is attempted, and the
+422 names a field they never touched. It is therefore first in line to be
+unfrozen the next time an owner-authenticated write path is open for something
+else. Not worth its own operation; not to be forgotten either.
 
 **Both non-owner records are clean** — `florida-john`
 (`floridasogialofa2@gmail.com`) and `jay-ella` (`gowdeman@hotmail.com`) hold

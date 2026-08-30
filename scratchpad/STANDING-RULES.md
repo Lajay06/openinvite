@@ -79,6 +79,34 @@ something the instrument was **structurally incapable** of seeing.
 
 ---
 
+## Never hold a fix to protect a measurement the fix does not affect
+
+**Owner ruling, 2026-08-30.** Asked whether to delay the chunk-load fix so the
+newly-shipped beacon could gather a baseline first, the answer was no, and the
+reasoning generalizes:
+
+> **THE FIX AND THE MEASUREMENT ARE INDEPENDENT.** The beacon measures whether
+> the RELOAD succeeds. The never-resolving promise changes only what is
+> DISPLAYED while the reload is attempted. Shipping it does not blind the
+> instrument — the outcome field records the same thing either way.
+
+So the alternative was leaving a known-bad experience live purely to preserve a
+measurement the fix would not disturb. **That trade is never worth making.**
+
+The test is not "am I measuring something?" but **"does this fix change what the
+instrument reads?"** Ask it explicitly:
+
+- **No** — ship the fix now. The data accumulates regardless, and it accumulates
+  faster with fewer people staring at an error screen.
+- **Yes** — then the question is a real one, and it becomes *how long a baseline*,
+  discussed and agreed, not assumed in either direction.
+
+The failure this prevents is a cautious-sounding one: holding a shipped-ready
+fix out of a vague sense that changing anything spoils the reading. Caution that
+costs users something real, and buys nothing, is not caution.
+
+---
+
 ## Verify before you drop: read it back from where it will actually live
 
 Converting two unowned stash entries into branches, the first commit used
