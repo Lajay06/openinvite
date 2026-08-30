@@ -99,7 +99,7 @@ sections showing what has been chosen.**
 **Report the proposal before building.** This is a proposal gate, not a build
 instruction.
 
-## HELD — theme options needs a component change (2026-08-30)
+## DONE — theme options adopted (#620), after the density variant (#619)
 
 Stopped and reported rather than built, per the owner's instruction to sequence
 rather than untangle a three-way collision.
@@ -117,10 +117,13 @@ same file. **Sequence it: land #614, then add the variant, then adopt.**
 
 ### The Pill count, filed — a pattern's cost is only arguable once someone says how many
 
-**22 locally-defined pill components** across the repo. Five implement the
-option-selection pill that `OptionPill` replaces:
+**22 locally-defined pill components** across the repo. Five implemented the
+option-selection pill that `OptionPill` replaces — **now FOUR: `ThemeSection`'s
+copy died with its adoption in #620, as ruled.** Updated here rather than left
+to rot, because a ticket that overstates its own scope is the same defect we
+spent the day chasing, just cheaper.
 
-- `src/components/event-details/ThemeSection.jsx`
+- ~~`src/components/event-details/ThemeSection.jsx`~~ — **done, #620**
 - `src/components/onboarding/OnboardingStep5WeddingType.jsx` — **two**, `Pill` and `s5-pill`
 - `src/components/onboarding/OnboardingPathACultural.jsx`
 - `src/pages/Policies.jsx`
@@ -1056,6 +1059,50 @@ Not a line in Wave 2. It touches:
 - **what replaces Chapter 6** — the open design question
 
 Its own item, its own report, **after Wave 2 closes.**
+
+---
+
+## TICKET — THE RENDER GAP: most of the dashboard cannot be render-tested (2026-08-30)
+
+**Owner wants this before the strictness ladder.** It was found as one PR's
+caveat and is in fact a property of the whole surface.
+
+### The count
+
+| Scope | Cannot be render-tested | Can |
+|---|---|---|
+| **Dashboard PAGES** (the substantive surfaces) | **57 of 90 — 63%** | 33 |
+| All dashboard components | 142 of 263 — 54% | 121 |
+
+So: not "almost none", but **the majority**, and every page that matters.
+
+### It is NOT structural. There are exactly two causes, both cheap.
+
+1. **`react-hot-toast`** — touches the DOM at module load; **76 files import it
+   directly**. Needs no product change at all: a test-time alias to a stub
+   (`--alias:react-hot-toast=<stub>`) bypasses it. Confirmed working.
+2. **`src/lib/utils.js`** — **our own code, one line**:
+   ```js
+   export const isIframe = window.self !== window.top;
+   ```
+   Evaluated at import. That file also exports `cn()`, which nearly every
+   component imports, so this single line taints most of the tree. Fix is a
+   guard or making it lazy.
+
+**Method note on the count itself:** the first measurement looked only for
+`react-hot-toast` and reported 56% of pages. Aliasing that away revealed the
+second cause immediately, and the number moved to 63%. **The first figure was a
+lower bound produced by an instrument that only knew one answer** — the same
+shape as everything else on this list, found in my own analysis this time. If a
+third blocker exists, this number is still a lower bound.
+
+### Why it matters beyond convenience
+
+"Verified by build, not by render" was written as one PR's limitation
+(`ThemeSection`, #620). It is the default state for 63% of dashboard pages.
+Every claim about what a dashboard page *displays* currently rests on a preview
+click or on reasoning, not on a test — while the guest surfaces, which have no
+such blocker, were render-verified today without difficulty.
 
 ---
 
