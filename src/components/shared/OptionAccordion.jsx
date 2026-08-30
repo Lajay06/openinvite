@@ -43,18 +43,48 @@ import { color, font } from '@/styles/tokens';
 
 const AccordionCtx = createContext(null);
 
-const RULE_COLOR = 'rgba(10,10,10,0.12)'; // rule 3: the thin rule between sections
+/**
+ * THE SKIN IS A PARAMETER, NOT AN ASSUMPTION.
+ *
+ * These are the DASHBOARD's values, and they are defaults only. A guest surface
+ * passes its universe's own palette and faces instead: there the couple's
+ * universe supplies colour, face and weight, and a component that hardcoded
+ * this ink would drag the dashboard onto their wedding site. Owner: "there is
+ * no point if they all run the same and just have slight colours."
+ *
+ * Behaviour travels; skin does not.
+ */
+const DASHBOARD_SKIN = {
+  ruleColor:   'rgba(10,10,10,0.12)', // rule 3: the thin rule between sections
+  headingColor: color.black,
+  chevronColor: color.iconMuted,
+  mutedColor:   color.textMuted,      // "Nothing selected yet"
+  chipBg:       'rgba(10,10,10,0.06)',
+  chipColor:    color.textMuted,
+};
 
 /**
  * Container. Owns "one section open at a time" and starts with every section
  * collapsed — rules 1 and 2 live here so no instance can opt out of them.
  */
-export function OptionAccordion({ children, headingSize = 13, headingWeight = 700, faceFamily = font.family }) {
+export function OptionAccordion({
+  children,
+  headingSize = 13,
+  headingWeight = 700,
+  headingStyle = 'normal',
+  faceFamily = font.family,
+  bodyFamily,
+  skin,
+}) {
   const [openKey, setOpenKey] = useState(null); // rule 1: collapsed by default
   const toggle = (key) => setOpenKey((cur) => (cur === key ? null : key)); // rule 2
+  const resolved = { ...DASHBOARD_SKIN, ...(skin || {}) };
   return (
-    <AccordionCtx.Provider value={{ openKey, toggle, headingSize, headingWeight, faceFamily }}>
-      <div style={{ borderTop: `1px solid ${RULE_COLOR}` }}>{children}</div>
+    <AccordionCtx.Provider value={{
+      openKey, toggle, headingSize, headingWeight, headingStyle,
+      faceFamily, bodyFamily: bodyFamily || faceFamily, skin: resolved,
+    }}>
+      <div style={{ borderTop: `1px solid ${resolved.ruleColor}` }}>{children}</div>
     </AccordionCtx.Provider>
   );
 }
@@ -73,11 +103,11 @@ export function OptionAccordion({ children, headingSize = 13, headingWeight = 70
 export function OptionAccordionSection({ sectionKey, title, summary = [], action = null, children }) {
   const ctx = useContext(AccordionCtx);
   if (!ctx) throw new Error('OptionAccordionSection must be inside an OptionAccordion');
-  const { openKey, toggle, headingSize, headingWeight, faceFamily } = ctx;
+  const { openKey, toggle, headingSize, headingWeight, headingStyle, faceFamily, bodyFamily, skin } = ctx;
   const isOpen = openKey === sectionKey;
 
   return (
-    <div style={{ borderBottom: `1px solid ${RULE_COLOR}` }}>
+    <div style={{ borderBottom: `1px solid ${skin.ruleColor}` }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       <button
         type="button"
@@ -91,12 +121,12 @@ export function OptionAccordionSection({ sectionKey, title, summary = [], action
         }}
       >
         {/* rule 3: the page's own size and weight, sentence case, left */}
-        <span style={{ fontSize: headingSize, fontWeight: headingWeight, color: color.black }}>{title}</span>
+        <span style={{ fontSize: headingSize, fontWeight: headingWeight, fontStyle: headingStyle, color: skin.headingColor }}>{title}</span>
         <ChevronDown
           size={16}
           aria-hidden="true"
           style={{
-            color: color.iconMuted, flexShrink: 0,
+            color: skin.chevronColor, flexShrink: 0,
             transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
             transition: 'transform 0.2s ease',
           }}
@@ -108,12 +138,12 @@ export function OptionAccordionSection({ sectionKey, title, summary = [], action
       {/* rule 5 — a collapsed section must still tell you what you decided */}
       {!isOpen && summary.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, paddingBottom: 16 }}>
-          {summary.map((s, i) => <SummaryChip key={i} label={s} faceFamily={faceFamily} />)}
+          {summary.map((s, i) => <SummaryChip key={i} label={s} faceFamily={bodyFamily} skin={skin} />)}
         </div>
       )}
       {/* rule 4 */}
       {!isOpen && summary.length === 0 && (
-        <p style={{ fontSize: 12, color: color.textMuted, fontFamily: faceFamily, margin: '0 0 16px' }}>
+        <p style={{ fontSize: 12, color: skin.mutedColor, fontFamily: bodyFamily, margin: '0 0 16px' }}>
           Nothing selected yet
         </p>
       )}
@@ -139,11 +169,11 @@ export function OptionAccordionSection({ sectionKey, title, summary = [], action
  * Rule 5's chip. Borderless and NON-INTERACTIVE by construction — a span, not a
  * button, so a collapsed section can never read as still-clickable.
  */
-export function SummaryChip({ label, faceFamily = font.family }) {
+export function SummaryChip({ label, faceFamily = font.family, skin = DASHBOARD_SKIN }) {
   return (
     <span style={{
       display: 'inline-block', padding: '4px 10px', borderRadius: 999,
-      background: 'rgba(10,10,10,0.06)', color: color.textMuted,
+      background: skin.chipBg, color: skin.chipColor,
       fontSize: 11, fontWeight: 500, fontFamily: faceFamily, whiteSpace: 'nowrap',
     }}>
       {label}

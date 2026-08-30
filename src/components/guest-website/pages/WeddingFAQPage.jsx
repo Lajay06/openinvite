@@ -1,100 +1,76 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Plus, Minus } from 'lucide-react';
+import React from 'react';
 import SectionReveal from '../SectionReveal';
 import GuestPageHeading from '../GuestPageHeading';
 import { isMotionEnabled } from '@/lib/universeStyling';
+import { OptionAccordion, OptionAccordionSection } from '@/components/shared/OptionAccordion';
 
+/**
+ * WAVE 3 — the accordion pattern, CORE ONLY.
+ *
+ * The owner's instruction came from a mobile walk-through of a wedding site:
+ * "fix the faq page to be simple accordion and do good to know the same as
+ * that." This page used to render every question as a filled card on
+ * theme.darkBg with a plus/minus toggle; it is now the same simple accordion
+ * the celebration step established — a thin rule between questions, a chevron,
+ * and room to breathe.
+ *
+ * CORE ONLY, and that is the correct adoption rather than a compromised one:
+ * an FAQ has questions and answers and nothing to select, so pills, the summary
+ * chip and "Nothing selected yet" have no referent here. Structure is the core;
+ * that periphery only applies where there is something to choose.
+ *
+ * SKIN COMES FROM THE UNIVERSE, NOT THE DASHBOARD. Every colour and face below
+ * is read from `theme`/`typography` and handed to the component as its skin.
+ * The couple's universe supplies colour, face and weight — there is no black
+ * pill and no Plus Jakarta Sans anywhere on this page.
+ *
+ * Collapsed-by-default and one-at-a-time were already true here (a single
+ * `openIndex` starting null); the component now owns both so they cannot drift.
+ */
 export default function WeddingFAQPage({ weddingDetails, theme, typography, universeConfig }) {
   const qna = weddingDetails.qna || [];
-  const [openIndex, setOpenIndex] = useState(null);
+  const motionOn = isMotionEnabled(weddingDetails);
 
   return (
     <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: '60px 24px' }}>
       <div style={{ maxWidth: '700px', margin: '0 auto' }}>
-        <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+        <SectionReveal universeConfig={universeConfig} disabled={!motionOn}>
           <GuestPageHeading title={"FAQ"} theme={theme} typography={typography} universeConfig={universeConfig} />
         </SectionReveal>
 
         {qna.length > 0 ? (
-          <div style={{ space: '12px' }}>
-            {qna.map((item, i) => (
-              <SectionReveal
-                key={i}
-                universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
-                style={{
-                  backgroundColor: theme.darkBg,
-                  borderRadius: '4px',
-                  overflow: 'hidden',
-                  marginBottom: '12px'
-                }}
-              >
-                <button
-                  onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                  style={{
-                    width: '100%',
-                    padding: '20px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    backgroundColor: theme.darkBg,
-                    border: 'none',
-                    color: theme.darkText,
-                    cursor: 'pointer',
-                    transition: 'all 0.3s',
-                    fontFamily: typography.headingFont,
-                    fontSize: '1.125rem',
-                    fontWeight: typography.headingWeight,
-                    textAlign: 'left'
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = `${theme.accent}10`}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = theme.darkBg}
-                >
-                  {/* A card title, and now marked as one — the pattern ruled
-                      and shipped in #552. It is also what keeps the universe's
-                      display face on this page once the serif title goes. */}
-                  <h2 style={{ font: 'inherit', margin: 0, fontWeight: 'inherit' }}>{item.question}</h2>
-                  {openIndex === i ? (
-                    <Minus size={20} style={{ color: theme.accent, flexShrink: 0 }} />
-                  ) : (
-                    <Plus size={20} style={{ color: theme.accent, flexShrink: 0 }} />
-                  )}
-                </button>
-
-                {openIndex === i && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    style={{
-                      borderTop: `1px solid ${theme.accent}20`,
-                      padding: '20px',
-                      backgroundColor: `${theme.accent}05`,
-                      fontFamily: typography.bodyFont,
-                      fontSize: '1rem',
-                      lineHeight: 1.7,
-                      whiteSpace: 'pre-wrap'
-                    }}
-                  >
+          <SectionReveal universeConfig={universeConfig} disabled={!motionOn}>
+            <OptionAccordion
+              headingSize="1.125rem"
+              headingWeight={typography.headingWeight}
+              headingStyle={typography.headingStyle || 'normal'}
+              faceFamily={typography.headingFont}
+              bodyFamily={typography.bodyFont}
+              skin={{
+                ruleColor: `${theme.accent}33`,
+                headingColor: theme.lightText,
+                chevronColor: theme.accent,
+                mutedColor: theme.lightText,
+              }}
+            >
+              {qna.map((item, i) => (
+                <OptionAccordionSection key={i} sectionKey={`q${i}`} title={item.question}>
+                  <div style={{
+                    fontFamily: typography.bodyFont,
+                    fontSize: '1rem',
+                    lineHeight: 1.7,
+                    whiteSpace: 'pre-wrap',
+                    color: theme.lightText,
+                  }}>
                     {item.answer}
-                  </motion.div>
-                )}
-              </SectionReveal>
-            ))}
-          </div>
+                  </div>
+                </OptionAccordionSection>
+              ))}
+            </OptionAccordion>
+          </SectionReveal>
         ) : (
-          <SectionReveal
-            universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
-            style={{
-              backgroundColor: theme.darkBg,
-              color: theme.darkText,
-              padding: '60px 40px',
-              borderRadius: '4px',
-              textAlign: 'center'
-            }}
-          >
-            <p style={{ fontFamily: typography.bodyFont, fontSize: '1.125rem' }}>
+          <SectionReveal universeConfig={universeConfig} disabled={!motionOn}>
+            <p style={{ fontFamily: typography.bodyFont, fontSize: '1.125rem', textAlign: 'center', padding: '60px 40px' }}>
               No FAQs added yet.
             </p>
           </SectionReveal>
