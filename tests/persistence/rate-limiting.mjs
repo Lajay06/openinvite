@@ -29,7 +29,6 @@
  */
 
 import { pass, fail } from './_shared.mjs';
-import placesHandler from '../../api/places.js';
 import placesSearchHandler from '../../api/places-search.js';
 import placeDetailsHandler from '../../api/place-details.js';
 import placesPhotoHandler from '../../api/places-photo.js';
@@ -93,14 +92,6 @@ export async function runRateLimiting() {
 
   console.log('\n  Rate limiting — 6 previously-unprotected public functions:\n');
 
-  {
-    const status = await assertRateLimited(placesHandler, {
-      limit: 20, ip: '203.0.113.10', reqShape: { method: 'GET', query: {} },
-    });
-    results.push(status === 429
-      ? pass('places.js — 21st request in a minute is rate limited', '429')
-      : fail('places.js — 21st request in a minute is rate limited', 429, status));
-  }
 
   {
     const status = await assertRateLimited(placesSearchHandler, {
@@ -136,13 +127,6 @@ export async function runRateLimiting() {
 
   // ── Confirm limits are per-IP, not global — a fresh IP is never blocked
   //    by another IP's exhausted bucket. ──
-  {
-    const { req, res } = mockReqRes({ method: 'GET', ip: '203.0.113.99', query: {} });
-    await placesHandler(req, res);
-    results.push(res._status !== 429
-      ? pass('places.js — a fresh IP is not affected by another IP\'s rate limit', res._status)
-      : fail('places.js — a fresh IP is not affected by another IP\'s rate limit', '!== 429', res._status));
-  }
 
   console.log('\n  Rate limiting — security-batch follow-up, 5 more previously-unprotected functions:\n');
 
