@@ -126,8 +126,18 @@ if (!hits.length) {
 if (CI) {
   let log = '';
   try { log = execSync(`git log ${base}..HEAD --format=%B`, { encoding: 'utf8' }); } catch { /* no range */ }
-  if (log.split('\n').map(l => l.trim()).some(l => /^Canon-On-Branch:\s*\S/.test(l))) process.exit(0);
+  if (log.split('\n').map(l => l.trim()).some(l => /^Canon-On-Branch:\s*\S/.test(l))) {
+    // AN OVERRIDE THAT ENGAGES SILENTLY CANNOT BE AUDITED FOR RARITY, and the
+    // value of an override is its rarity. Proven reachable in real CI on
+    // 2026-08-30 — and the run printed nothing at all, which is how this line
+    // came to be written.
+    console.log(`  canon guard: OVERRIDDEN by a Canon-On-Branch trailer — ${hits.length} canon file(s) allowed through on ${branch}`);
+    hits.forEach(f => console.log(`    ${f}`));
+    process.exit(0);
+  }
 } else if (process.env.CANON_ON_BRANCH === PASSPHRASE) {
+  console.log(`  canon guard: OVERRIDDEN by CANON_ON_BRANCH — ${hits.length} canon file(s) allowed through on ${branch}`);
+  hits.forEach(f => console.log(`    ${f}`));
   process.exit(0);
 }
 
