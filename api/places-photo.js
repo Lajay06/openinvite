@@ -55,7 +55,19 @@ export default async function handler(req, res) {
         // in the test, not by the happy path.
         let parsed = null;
         try { parsed = JSON.parse(body); } catch { /* not JSON */ }
-        reason = parsed?.error?.message || body.slice(0, 200) || null;
+        if (parsed?.error?.message) {
+          // Google's own prose. The useful case.
+          reason = parsed.error.message;
+        } else if (/^\s*<(!doctype|html)/i.test(body)) {
+          // An HTML error page carries no sentence worth forwarding. A truncated
+          // doctype is noise wearing the shape of a diagnostic, and noise in a
+          // reason field is worse than a short honest one — a reader stops
+          // looking once a field is populated. The upstream STATUS is the real
+          // signal here, and it is already returned beside this.
+          reason = 'upstream returned an HTML error page';
+        } else {
+          reason = body.trim().slice(0, 200) || null;
+        }
       } catch { /* body unreadable — reason stays null */ }
       console.error('[places-photo] upstream refused:', response.status, reason);
       return res.status(502).json({ error: 'Photo fetch failed', upstreamStatus: response.status, reason });
