@@ -215,14 +215,47 @@ A perfect payload does not help. Retrying does not help. The error names a field
 the caller has no reason to connect to what they were doing, which is why this
 took a full 422 body to find rather than showing up as an obvious bug.
 
-**What this changes about how to reason here.** A schema type change is not
-backward compatible on its own. Narrowing a declared type (array -> string, as
-PR #446 did) freezes every existing row that still holds the old shape, silently
-and retroactively, at the moment the schema is pushed. Anything that migrates a
-field's TYPE must migrate the existing VALUES in the same operation, or it
-strands every row it did not rewrite. Pair this with "The first write after a
-schema push materializes every newly-declared field on that row" below — both
-are cases of the schema acting on rows nobody is currently editing.
+### NARROWING A DECLARED TYPE IS RETROACTIVE AND SILENT
+
+**Owner ruling, 2026-08-30 — the most important consequence of the above.**
+
+> Every row holding the old shape freezes **the moment the schema is pushed**.
+> No error. No log. No symptom. Nothing happens at all until someone tries to
+> save, which may be weeks later and will be someone who did nothing wrong.
+
+The worked example is `dayVendorContacts`. It was declared `array` and held `[]`
+on rows going back to July. PR #446 redeclared it `string` (AES-256-GCM
+ciphertext). Nothing failed at push time; nothing was logged; no row was
+touched. Fifteen rows became permanently unwritable at that instant, and it
+surfaced only when a `PUT` carrying nothing but `{slug}` came back 422 naming a
+field the caller had never sent.
+
+A schema type change is therefore **not backward compatible on its own**. Pair
+this with "The first write after a schema push materializes every newly-declared
+field on that row" below: both are the schema acting on rows nobody is editing.
+
+### THE AUTHORIZATION GATE — this is now part of what the owner must approve
+
+**Owner ruling, 2026-08-30, verbatim:**
+
+> "ANY FIELD-TYPE CHANGE MUST REWRITE EVERY EXISTING ROW IN THE SAME OPERATION,
+> OR IT STRANDS EVERY ROW IT SKIPS. Schema remains my boundary; that step is now
+> part of what I have to authorize."
+
+So a field-type change is **two inseparable halves**, and a proposal carrying
+only the first half is incomplete and must not be authorized:
+
+1. the `update_entity_schema` push, and
+2. the rewrite of every existing row still holding the old shape.
+
+Before proposing any field-type change, count the rows that hold the old shape
+and present that count with the proposal. "No rows affected" is a claim to
+verify with a read, not an assumption — and read it with `Authorization: Bearer`,
+never `?api_key=` (see the amendment below for why that distinction bites).
+
+If the rows cannot be rewritten — RLS makes them unwritable, or they are
+`created_by_id: "anonymous"` — then the type change strands them permanently and
+that has to be stated in the proposal, not discovered afterwards.
 
 ### The audit, 2026-08-30 — 15 of 19 `WeddingDetails` rows are frozen
 
