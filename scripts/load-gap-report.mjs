@@ -1,9 +1,23 @@
 #!/usr/bin/env node
 /**
- * scripts/render-gap-report.mjs
+ * scripts/load-gap-report.mjs
  *
- * HOW MANY DASHBOARD SURFACES CAN BE LOADED IN A NODE RENDER TEST, AND WHICH
- * CANNOT — BY NAME, WITH THE REASON.
+ * HOW MANY DASHBOARD PAGE MODULES CAN BE LOADED IN NODE, AND WHICH CANNOT —
+ * BY NAME, WITH THE REASON.
+ *
+ * THIS SCRIPT WAS CALLED render-gap-report AND THAT NAME WAS A FALSE CLAIM.
+ * It requires each page module and reports whether the import throws. It does
+ * NOT check that anything is drawn. Because the instrument said "render", every
+ * report of its output said "render-testable" — and `WeddingParty.jsx` loads
+ * perfectly while producing 413 bytes of spinner, since its data arrives from a
+ * useEffect that nothing here runs.
+ *
+ *   THE NAME OF AN INSTRUMENT IS ITS LOUDEST OUTPUT. It is quoted far more
+ *   often than its methodology.
+ *
+ * So the word "render" is deliberately absent from this file, its output and
+ * its ticket: renaming makes the overstatement unavailable rather than asking
+ * the next reader to remember not to make it. A mechanism, not a resolution.
  *
  * WHY THIS SHAPE. The first attempt to size this gap grepped the import graph
  * for one known offender (react-hot-toast), reported 56% of pages blocked, and
@@ -22,7 +36,7 @@
  * Loading, not rendering, is the bar: every blocker found so far throws at
  * module load, before a component is ever called.
  *
- * Usage:  node scripts/render-gap-report.mjs [--verbose]
+ * Usage:  npm run load:gap  [-- --verbose] [-- --bare]
  */
 import { readdirSync, mkdirSync, rmSync, existsSync, readFileSync } from 'node:fs';
 import { join, resolve, basename, dirname } from 'node:path';
@@ -32,7 +46,7 @@ import { createRequire } from 'node:module';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = join(ROOT, 'src');
-const OUT = join(ROOT, 'node_modules', '.render-gap');
+const OUT = join(ROOT, 'node_modules', '.load-gap');
 const STUB = join(ROOT, 'tests', 'render', 'stubs', 'react-hot-toast.mjs');
 const VERBOSE = process.argv.includes('--verbose');
 // --bare disables the harness entirely, so the value of the harness itself can
@@ -45,7 +59,7 @@ const pages = readdirSync(join(SRC, 'pages'))
   .map(f => join(SRC, 'pages', f))
   .sort();
 
-if (existsSync(OUT)) if (!process.env.KEEP_RENDER_GAP_BUNDLE) rmSync(OUT, { recursive: true, force: true });
+if (existsSync(OUT)) if (!process.env.KEEP_LOAD_GAP_BUNDLE) rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 
 try {
@@ -120,10 +134,12 @@ for (const p of pages) {
 
 const total = pages.length;
 console.log('\n═══════════════════════════════════════════════════════');
-console.log('  Render gap — dashboard pages that can be loaded in a test');
+console.log(`  Load gap — dashboard page modules that import without throwing${BARE ? '  [--bare: harness OFF]' : ''}`);
 console.log('═══════════════════════════════════════════════════════\n');
-console.log(`  loadable     : ${ok.length}/${total}  (${Math.round(ok.length / total * 100)}%)`);
-console.log(`  NOT loadable : ${failed.length}/${total}  (${Math.round(failed.length / total * 100)}%)\n`);
+console.log(`  ${ok.length} of ${total} modules load  (${Math.round(ok.length / total * 100)}%)`);
+console.log(`  ${failed.length} of ${total} modules THROW on import  (${Math.round(failed.length / total * 100)}%)`);
+console.log('\n  NOTE: loading is not drawing. A module that imports cleanly may still');
+console.log('  produce only a spinner, if its content arrives from an effect.\n');
 
 if (failed.length) {
   const byCause = new Map();
@@ -141,4 +157,4 @@ if (failed.length) {
 } else {
   console.log('  No remaining causes — and this instrument attempts the load rather\n  than grepping for known offenders, so an empty list is evidence.\n');
 }
-if (!process.env.KEEP_RENDER_GAP_BUNDLE) rmSync(OUT, { recursive: true, force: true });
+if (!process.env.KEEP_LOAD_GAP_BUNDLE) rmSync(OUT, { recursive: true, force: true });
