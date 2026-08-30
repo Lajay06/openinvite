@@ -1062,7 +1062,52 @@ Its own item, its own report, **after Wave 2 closes.**
 
 ---
 
-## TICKET — THE RENDER GAP: most of the dashboard cannot be render-tested (2026-08-30)
+## CLOSED (#621, #622) — the render gap, and the claim it does NOT support
+
+**8 of 90 dashboard pages loadable in a test -> 89 of 90.** One line in
+`src/lib/app-params.js` was the cause of all 82 failures.
+
+### CORRECTION, made the same hour: LOADABLE is not CONTENT-TESTABLE
+
+"89 of 90 render-testable" **overstates what was measured.** The instrument
+requires each page module and reports whether it loads. It does not check that
+the page renders anything.
+
+Demonstrated immediately on `WeddingParty.jsx`: it loads fine and renders **413
+bytes — a spinner**. `loading` starts true and the roster arrives from a
+`useEffect`, which server rendering never runs. So the page is *loadable* and
+its populated state is *not reachable* by this harness.
+
+> **The instrument measures loads. "Render-testable" was the cheaper question
+> answered and the dearer one reported** — the same substitution as
+> build-for-render and grep-for-load, now committed by me against an instrument
+> I had built an hour earlier, while writing the rule about it.
+
+**What the harness genuinely supports:** any component rendered directly with
+props (`ThemeSection` was verified this way — six sections, collapsed, summary
+chips, compact sizing, no local `Pill`), and any page whose initial paint does
+not depend on fetched data.
+
+**What it does not:** a page's data-populated state. That needs the data layer
+stubbed, which is a further piece of work.
+
+**Open sub-item:** count how many of the 89 render real content versus a
+loading shell. Attempted and abandoned after the harness hit a two-React-copies
+problem (the bundle carries its own React; the runner requires another). The fix
+is to mark `react`/`react-dom` external and share one instance. Left undone
+rather than guessed — the count is unknown, and the honest statement today is
+"89 loadable, an unknown subset content-testable".
+
+### Residue, kept by name
+
+```
+1 page(s)  src/pagePreload.js — import_meta.glob is not a function
+```
+
+Vite-only compile-time API, no Node equivalent. Harness limitation on one page,
+not product code. One named, understood residue beats 90/90 bought with a hack.
+
+## TICKET — THE ORIGINAL SIZING, superseded (kept for the method, not the number)
 
 **Owner wants this before the strictness ladder.** It was found as one PR's
 caveat and is in fact a property of the whole surface.
