@@ -92,6 +92,28 @@ if (gate.status !== 0) {
 }
 
 // ── 4. only now ────────────────────────────────────────────────────────────
+// ── WHAT IS IN THE SHA BEING MERGED ──────────────────────────────────────────
+// An authorization line names a PR and binds a SHA. That proves WHICH commit
+// merges; it proves nothing about what is IN it. On 2026-08-30 a bound SHA
+// carried five files nobody reviewing the line had ever seen.
+//
+// So the file list prints here, at the last moment before the merge, where the
+// line's description can still be compared against it. Printing only — the
+// comparison is the operator's, but it cannot be made at all if the list is
+// never shown.
+try {
+  const files = JSON.parse(sh(`gh pr view ${num} --json files`)).files || [];
+  console.log('  ── files in this PR ────────────────────────────────────────');
+  for (const f of files) {
+    console.log(`    ${String(f.additions).padStart(5)}+ ${String(f.deletions).padStart(5)}-  ${f.path}`);
+  }
+  console.log('  ────────────────────────────────────────────────────────────');
+  console.log(`    ${files.length} file(s). Does this match what the authorization describes?\n`);
+} catch (err) {
+  // A diagnostic must never be the thing that blocks a merge.
+  console.log(`  (could not list PR files: ${err.message.split('\n')[0]})\n`);
+}
+
 console.log('\n  ✓ Gate green on the merge SHA. Merging.\n');
 const args = ['pr', 'merge', num, '--squash'];
 if (!keepBranch) args.push('--delete-branch');

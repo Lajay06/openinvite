@@ -51,6 +51,23 @@ echo ""
 echo "→ Staging all changes…"
 git add -A
 
+# ── WHAT IS ABOUT TO BE COMMITTED ────────────────────────────────────────────
+# `git add -A` stages the WORKING TREE, not the change you have in mind, and
+# uncommitted work follows a branch switch. On 2026-08-30 that carried a held
+# /api/places consolidation into a PR about error-message passthrough: eight
+# files landed where three were authorized, and the PR body said the
+# consolidation was "held" while containing it.
+#
+# This prints, it does not refuse. Refusing a dirty tree is new-feature.sh's
+# job and travels separately, because it can block and this cannot. The whole
+# value is that eight files appear where you expected three.
+echo ""
+echo "  ── files in this commit ──────────────────────────────────────"
+git diff --cached --name-status | sed 's/^/    /'
+echo "    ───────────────────────────────────────────────────────────"
+echo "    $(git diff --cached --name-only | wc -l | tr -d ' ') file(s). If that is not what you meant to ship, stop now."
+echo ""
+
 if git diff --cached --quiet; then
   echo "  (nothing new to commit — skipping commit step)"
 else
