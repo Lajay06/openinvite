@@ -192,6 +192,84 @@ third-party-key error, don't assume the code is wrong — check whether the
 var in question is actually one `vercel dev` reads locally before
 debugging further.
 
+## A partial update is validated against the WHOLE record, not just the fields you send
+
+**Established from a production 422, 2026-08-30.** This is the single most
+load-bearing fact about writes in this app, so it goes near the top of what any
+future session should assume.
+
+A `PUT` carrying **only `{slug}`** was refused. The 422 body named
+`dayVendorContacts` — a field the request did not contain, and one the couple
+had never edited. That row holds `[]` where the schema declares `string`
+(`dayVendorContacts` became AES-256-GCM ciphertext in PR #446; every row written
+before that carries the legacy array shape).
+
+**Base44 validates the merged result, not the patch.** The consequence is not a
+nuisance, it is a permanent state:
+
+> Any record holding a value that disagrees with its declared type is **frozen**.
+> Every future write fails — whatever it changes — citing a field the writer
+> never touched and usually cannot see.
+
+A perfect payload does not help. Retrying does not help. The error names a field
+the caller has no reason to connect to what they were doing, which is why this
+took a full 422 body to find rather than showing up as an obvious bug.
+
+**What this changes about how to reason here.** A schema type change is not
+backward compatible on its own. Narrowing a declared type (array -> string, as
+PR #446 did) freezes every existing row that still holds the old shape, silently
+and retroactively, at the moment the schema is pushed. Anything that migrates a
+field's TYPE must migrate the existing VALUES in the same operation, or it
+strands every row it did not rewrite. Pair this with "The first write after a
+schema push materializes every newly-declared field on that row" below — both
+are cases of the schema acting on rows nobody is currently editing.
+
+### The audit, 2026-08-30 — 15 of 19 `WeddingDetails` rows are frozen
+
+Read-only sweep of every record of all 48 entities, each field checked against
+its declared type, recursing into nested object properties and array items.
+
+| Entity | Rows | Frozen | Field |
+|---|---|---|---|
+| `WeddingDetails` | 19 | **15** | `dayVendorContacts` — `[]` where `string` is declared |
+| every other listable entity | 4,059 | 0 | — |
+| `User` | unknown | unknown | cannot be bulk-listed via the admin key (see below) |
+
+All 15 are the owner's own test accounts (`la.jay06+*`, `adminopeninvite`,
+`uri.jay09`, `lax.music06`, `jaygalaxy23`), with one to check by eye:
+`gow-deepa`, created by `gow.jay22@gmail.com`.
+
+**Both non-owner records are clean** — `florida-john`
+(`floridasogialofa2@gmail.com`) and `jay-ella` (`gowdeman@hotmail.com`) hold
+`null`, which validates against any declared type. Both were created 2026-08-26,
+after the PR #446 schema change, so they never received the legacy array. The
+`john-suzanne` fixture holds a proper `string`. No real customer is currently
+frozen; the exposure is that nothing prevents the next one.
+
+Method, so this is re-runnable: `GET /entities/:name` with
+`Authorization: Bearer $BASE44_ADMIN_KEY`, then walk each value against
+`entity_schema.properties`, treating `null` as valid for any type. The freeze
+itself was NOT re-demonstrated by writing — that would require a write to a
+production record, and the audit was ordered read-only. It is inferred from the
+observed 422 plus the type mismatch, which is the same evidence.
+
+### Amendment to the `?api_key=` trap below: it is not User-specific
+
+The "`GET /entities/User?api_key=` returns `200 []`" behavior documented further
+down applies to **every entity, not just `User`**. Verified 2026-08-30 on
+`WeddingDetails`, same key, same moment:
+
+| Call | Response |
+|---|---|
+| `?api_key=<ADMIN_KEY>` | `200`, **2 bytes** — `[]` |
+| `Authorization: Bearer <ADMIN_KEY>` | `200`, **37,186 bytes** — all 19 rows |
+
+This is the dangerous kind of wrong: an empty array is a successful-looking
+answer. The first pass of the audit above used `?api_key=` and reported **zero
+violations across all 48 entities** — a clean bill of health produced entirely
+by an instrument that was not reading anything. Always use the `Bearer` form for
+LIST, and treat a `0` from any Base44 sweep as a claim to verify, not a result.
+
 ## Schema drift: a pushed field/RLS shape can silently revert
 
 Observed at least three times across different entities
