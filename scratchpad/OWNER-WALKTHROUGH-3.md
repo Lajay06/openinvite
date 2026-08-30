@@ -56,6 +56,12 @@ this reconstruction is the measurement of what the compression cost.
     original counted them separately, that is +2 toward the missing count.)*
 13. **No wide letter-spacing.**
 14. **"Openinvite" is one word, lowercase i.**
+    **LIVE COUNTEREXAMPLE, 2026-08-31 — the owner has seen "OpenInvite" in the
+    running product.** So this item is either never done, done partially, or
+    regressed. The verification pass determines which, and **records how it
+    established it**, because this is exactly the shape the owner is worried
+    about: an item on a list, plausibly believed done, contradicted by his own
+    eyes. The pass justifying itself before it started.
 15. **Currency symbols and thousands separators.**
 16. **Table numbers centred.**
 17. **Marketplace controls at narrow widths.**
@@ -77,6 +83,42 @@ this reconstruction is the measurement of what the compression cost.
 25. **The styling quiz** — B1-2. Samoan recorded, suits recommended.
 26. **The vows lock** — B1-15. Held for the owner.
 27. **The plus-one row** — B3-1. "Beef" rendering in the CONTACT column.
+
+## ADDED AFTER THE ORIGINAL WALK-THROUGH (2026-08-31)
+
+Recorded when made, which is the whole lesson of this file. Numbered on from
+the reconstruction; not part of the ~34.
+
+28. **The gifting page's "Prefer to arrange this with a real person? Email us."
+    comes off the bottom of that page.** Owner's words: *"Email us should never
+    be an option."*
+
+    **THE PRINCIPLE, AND ITS BOUNDARY — the sentence is broader than the
+    instruction and must not be over-applied.**
+
+    - **The directive is specific:** remove that line, from that page.
+    - **The principle behind it:** *buying should not offer a human as an
+      alternative to the product.* A self-serve purchase that suggests emailing
+      someone instead is confessing the flow does not work.
+    - **It is NOT "remove every contact email".** The owner's own launch list
+      has `support@` and `CONTACT_TO_ADDRESS` as gating items. **Support AFTER a
+      purchase is a different thing from an escape hatch DURING one.**
+
+    **Sweep is a report first.** When this item is built, report every other
+    place the same pattern appears — a human offered as an alternative inside a
+    purchase or signup flow — and bring that list before removing anything
+    beyond the gifting page.
+
+    **Scope note:** the gifting page is marketing-adjacent. This is a fresh
+    owner directive and therefore authorized, but **narrowly: one line.** It is
+    not a licence to touch anything else on that page, and the standing
+    no-marketing-edits reset otherwise holds.
+
+29. **Casing sweep: "Openinvite", one word, lowercase i, everywhere.**
+    This is the enforcement half of #14 — #14 is the rule, this is the sweep
+    across the product that makes it true. Kept separate because the owner
+    raised it again after seeing it wrong live, and because a rule and a sweep
+    have different completion tests.
 
 ---
 
