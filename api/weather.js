@@ -1,7 +1,7 @@
 /**
  * GET /api/weather?mode=<geocode|current|forecast|archive>&...
  *
- * Open-Meteo proxy. Mirrors the api/places.js pattern that CLAUDE.md
+ * Open-Meteo proxy. Mirrors the api/places-search.js pattern that CLAUDE.md
  * mandates for third-party lookups.
  *
  * WHY (L2, leak pair): weather.js called Open-Meteo directly from the

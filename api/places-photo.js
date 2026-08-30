@@ -39,7 +39,27 @@ export default async function handler(req, res) {
 
   try {
     const response = await fetch(url, { redirect: 'follow' });
-    if (!response.ok) return res.status(502).json({ error: 'Photo fetch failed' });
+    if (!response.ok) {
+      // The guest-facing path. It returned a bare 502 with no reason, which is
+      // how 62 failures over 72 hours looked like a crash and were in fact
+      // Google refusing the key. The body is read defensively: a photo endpoint
+      // may answer with bytes rather than JSON, and a diagnostic must never be
+      // the thing that throws.
+      let reason = null;
+      try {
+        const body = await response.text();
+        // Parse in its OWN try: a throwing JSON.parse used to skip the
+        // raw-text fallback entirely, so an HTML gateway error reported
+        // `reason: null` — a diagnostic that goes quiet exactly when the
+        // upstream failure is the unfamiliar kind. Caught by the control case
+        // in the test, not by the happy path.
+        let parsed = null;
+        try { parsed = JSON.parse(body); } catch { /* not JSON */ }
+        reason = parsed?.error?.message || body.slice(0, 200) || null;
+      } catch { /* body unreadable — reason stays null */ }
+      console.error('[places-photo] upstream refused:', response.status, reason);
+      return res.status(502).json({ error: 'Photo fetch failed', upstreamStatus: response.status, reason });
+    }
 
     const contentType = response.headers.get('content-type') || 'image/jpeg';
     res.setHeader('Content-Type', contentType);

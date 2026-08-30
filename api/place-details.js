@@ -38,7 +38,14 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (data.status !== 'OK') {
-      return res.status(500).json({ error: `Places API error: ${data.status}` });
+      // Same defect as places-search, swept here rather than left for later:
+      // this branch did not even LOG the reason, so the cause was unavailable
+      // from anywhere at all.
+      console.error('[place-details] API error:', data.status, data.error_message);
+      return res.status(500).json({
+        error: `Places API error: ${data.status}`,
+        reason: data.error_message || null,
+      });
     }
 
     const p = data.result;

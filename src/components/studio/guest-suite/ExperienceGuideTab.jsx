@@ -656,9 +656,21 @@ function SavedPlaceCard({ place, onRemove }) {
 async function fetchPhotoForActivity(name, destination) {
   try {
     const loc = destination && destination !== 'Set your venue in Event Details' ? destination : '';
-    const params = new URLSearchParams({ q: name });
-    if (loc) params.set('location', loc);
-    const res = await fetch(`/api/places?${params}`);
+    // Moved off /api/places (deleted) onto the endpoint this file already uses
+    // for its search dropdown. The two returned IDENTICAL key sets — id,
+    // displayName/name, address, rating, userRatingCount, priceLevel, mapsUri,
+    // photo_reference — so nothing here changes except which Google API family
+    // answers. The only difference is the photo_reference FORMAT: legacy
+    // returns a raw string, the New API returned a "places/…" resource name,
+    // and places-photo already branches on that prefix. Legacy is also what the
+    // six refs stored on live wedding sites look like, so this keeps one format
+    // end to end instead of two.
+    const res = await fetch('/api/places-search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(loc ? { q: name, location: loc } : { q: name }),
+    });
+    if (!res.ok) return null;
     const data = await res.json();
     const ref = data.places?.[0]?.photo_reference;
     return ref ? `/api/places-photo?ref=${encodeURIComponent(ref)}&maxwidth=800` : null;

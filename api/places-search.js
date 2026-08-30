@@ -12,6 +12,24 @@
  * Required env var: GOOGLE_PLACES_API_KEY
  */
 
+/**
+ * WHY THE REASON IS RETURNED, NOT ONLY LOGGED.
+ *
+ * Google hands us `error_message` in the response body and this proxy used to
+ * throw it away, returning the bare status. On 2026-08-30 that cost the whole
+ * team the cause of a production outage TWICE in one day: `REQUEST_DENIED` is
+ * emitted for a lapsed billing account AND for a key with an HTTP-referrer
+ * restriction, and the two are indistinguishable from the status alone. Both
+ * times the answer — "You must enable Billing on the Google Cloud Project" —
+ * was sitting in a field only someone with Vercel log access could read.
+ *
+ * An instrument must say what it found. Returning the reason costs nothing and
+ * turns a guessing game into a sentence.
+ *
+ * SAFE TO RETURN: `error_message` is Google's own prose about the project or
+ * key configuration. It never contains the key — the key travels in the request
+ * URL, which is never echoed here.
+ */
 import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
 
 export default async function handler(req, res) {
@@ -51,7 +69,10 @@ export default async function handler(req, res) {
 
     if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
       console.error('[places-search] API error:', data.status, data.error_message);
-      return res.status(500).json({ error: `Places API error: ${data.status}` });
+      return res.status(500).json({
+        error: `Places API error: ${data.status}`,
+        reason: data.error_message || null,
+      });
     }
 
     const places = (data.results || []).slice(0, 8).map(p => ({

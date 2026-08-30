@@ -1,7 +1,7 @@
 /**
  * GET /api/rates?base=<ISO-4217>
  *
- * open.er-api.com proxy. Mirrors api/weather.js, which mirrors api/places.js,
+ * open.er-api.com proxy. Mirrors api/weather.js, which mirrors api/places-search.js,
  * the shape CLAUDE.md mandates for third-party lookups.
  *
  * WHY (L3, leak batch): CurrencyContext fetched open.er-api.com directly from
