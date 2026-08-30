@@ -201,7 +201,39 @@ export function SummaryChip({ label, faceFamily = font.family, skin = DASHBOARD_
  * chosen with no cursor anywhere near it, including on touch where hover does
  * not exist at all.
  */
-export function OptionPill({ label, selected, onClick, faceFamily = font.family, disabled = false }) {
+/**
+ * THE TWO SIZES, AND THE RULE FOR CHOOSING BETWEEN THEM.
+ *
+ * A variant is only a variant if someone can say WHEN to use it; otherwise it
+ * is a per-caller override wearing a name, and that is how twenty-two pill
+ * implementations happened. So there are exactly two, and the rule is:
+ *
+ *   'default'  — a PRIMARY option: it answers the question the section exists
+ *                to ask. Faith. Aesthetic. Season. Style.
+ *   'compact'  — a SUB-OPTION: it refines an answer already given, and sits
+ *                one level below a primary group under its own sub-heading.
+ *                The two interfaith picks that appear only after "Interfaith"
+ *                is chosen. Culture items under a region heading. The
+ *                cross-cutting qualifiers inside the culture section.
+ *
+ * The test is about the CONTENT, not the page: does this option answer the
+ * section's question, or qualify an answer already made?
+ *
+ * WHY NOT A COUNT. "More than N options in a group" was the obvious rule and
+ * the evidence refuses it. In ThemeSection today, compact is used for
+ * cross-cutting (4 options) and the interfaith pair (2 picks), while Aesthetic
+ * (11 options) is full size. Group size does not predict a single one of the
+ * four existing uses; nesting predicts all four. A threshold derived from
+ * Culture's 52 would have been a plausible number attached to a per-caller
+ * override.
+ *
+ * KNOWN INCONSISTENCY THIS RULE RESOLVES. `OnboardingPathACultural.jsx` renders
+ * the SAME culture list, under the same region sub-headings, at full size —
+ * while `ThemeSection.jsx` renders it compact. Identical content, two sizes,
+ * because nobody had written the rule down. Under this rule both are compact.
+ */
+export function OptionPill({ label, selected, onClick, faceFamily = font.family, disabled = false, size = 'default' }) {
+  const compact = size === 'compact';
   return (
     <button
       type="button"
@@ -210,13 +242,13 @@ export function OptionPill({ label, selected, onClick, faceFamily = font.family,
       aria-pressed={selected}
       className={`oi-option-pill${selected ? ' oi-option-pill--selected' : ''}`}
       style={{
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        padding: '8px 16px',
+        display: 'inline-flex', alignItems: 'center', gap: compact ? 5 : 6,
+        padding: compact ? '5px 12px' : '8px 16px',
         borderRadius: 999,
         border: `1px solid ${selected ? color.black : 'rgba(10,10,10,0.18)'}`,
         background: selected ? color.black : 'transparent',
         color: selected ? '#FFFFFF' : color.textMuted,
-        fontSize: 12, fontWeight: 500, fontFamily: faceFamily,
+        fontSize: compact ? 11 : 12, fontWeight: 500, fontFamily: faceFamily,
         cursor: disabled ? 'not-allowed' : 'pointer',
         transition: 'all 0.15s',
         whiteSpace: 'nowrap',
@@ -224,7 +256,7 @@ export function OptionPill({ label, selected, onClick, faceFamily = font.family,
     >
       {/* Reserved slot: present in layout whether or not it is shown, so
           selecting a pill never shifts the pills beside it. */}
-      <span aria-hidden="true" style={{ visibility: selected ? 'visible' : 'hidden', fontSize: 11, lineHeight: 1 }}>✓</span>
+      <span aria-hidden="true" style={{ visibility: selected ? 'visible' : 'hidden', fontSize: compact ? 10 : 11, lineHeight: 1 }}>✓</span>
       {label}
     </button>
   );
