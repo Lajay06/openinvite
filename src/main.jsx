@@ -36,7 +36,7 @@ import { Sentry } from '@/lib/sentry'
 import App from '@/App.jsx'
 import '@/index.css'
 import '@/lib/analytics.js' // initialises PostHog on app load
-import { reloadOnceForChunkError } from '@/lib/chunkReloadGuard.js'
+import { reloadOnceForChunkError, lastChunkReloadOutcome } from '@/lib/chunkReloadGuard.js'
 
 // Stale-build-after-deploy fix (see chunkReloadGuard.js) — Vite's built
 // __vitePreload wrapper dispatches this on window (a plain Event with the
@@ -85,6 +85,12 @@ function beaconClientError(error, componentStack) {
       userAgent: navigator.userAgent,
       viewportWidth: window.innerWidth,
       layoutVariant: isDesktop ? 'desktop' : 'mobile',
+      // Was a stale-build reload already on its way when this fired? Without
+      // it, a beacon from a guest who saw a flash and recovered is byte-for-byte
+      // identical to one from a guest left stranded on the fallback. 'reloaded'
+      // = recovering; 'suppressed-recent-reload' / 'sessionstorage-unavailable'
+      // = genuinely stuck, and says which; null = not a chunk error at all.
+      chunkReloadOutcome: lastChunkReloadOutcome(),
     };
     const body = JSON.stringify(payload);
     if (typeof navigator.sendBeacon === 'function') {
