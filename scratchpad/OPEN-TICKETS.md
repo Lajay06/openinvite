@@ -11,6 +11,102 @@ on renders** before the merge request.
 
 ---
 
+# WAVE 3 — THE ACCORDION PATTERN (owner's spec, recorded verbatim 2026-08-30)
+
+**This spec was never written into the repo until now — the owner's own note,
+the same failure as the deletion list.** It is recorded here first, before any
+code, because a pattern that lives only in a conversation is a pattern that gets
+re-derived differently every time it is used.
+
+## The ruling
+
+The **celebration onboarding step is the REFERENCE IMPLEMENTATION** for options
+and accordions, dashboard-wide. Owner, verbatim:
+
+> "please understand how much we love the accordion for the celebration page and
+> how it needs to translate across the entire dashboard and website invitation
+> where possible."
+
+This carries the **same standing as the Stay page** does for guest content
+layout — a named reference implementation, not a suggestion.
+
+## The first rule of this wave
+
+**WRITE THE PATTERN DOWN AS ONE COMPONENT BEFORE PROPAGATING IT.** A pattern
+copied twenty times from memory becomes twenty patterns. The component is the
+deliverable; the adoptions are downstream of it.
+
+## The specification
+
+| # | Rule |
+|---|---|
+| 1 | **Collapsed by default. Always. Every instance.** (Matches the standing `defaultValue={[]}` rule in CLAUDE.md.) |
+| 2 | **One section open at a time.** |
+| 3 | Section heading in **the size and weight of that page**, sentence case, left-aligned, **chevron right**, **thin rule between sections**. |
+| 4 | Collapsed, nothing chosen: **"Nothing selected yet"**, quiet grey. |
+| 5 | Collapsed, choice made: **THE CHOICE IS SHOWN** as a light, borderless, **non-interactive chip**. |
+| 6 | Options are **PILLS**. Unselected: **outlined**. Selected: **solid black, white text**. |
+| 7 | **Generous vertical rhythm.** The page breathes; that is most of why it reads as expensive. |
+
+**Rule 5 is the one most likely to be dropped.** The owner singled it out: a
+collapsed section must still tell you what you decided. A section that collapses
+and hides the decision has lost the point of collapsing.
+
+**THE TOP ROW IS THE BUG, NOT THE MODEL.** Style's pills are borderless while
+Ceremony's are outlined — the owner flagged this himself. **Outlined wins.** Do
+not reproduce the top row's treatment when building the component.
+
+## The open question — do not guess, do not soften
+
+Hover on an unselected pill goes **black**, and **selected** is also **black**.
+Those cannot be the same black, or a couple cannot tell what they chose from
+what their cursor is touching.
+
+**Propose the distinction and show it before adopting.** Explicitly ruled out:
+resolving it by making hover subtle. The owner likes that it goes black.
+
+## Universal structure, local skin
+
+**Carry the BEHAVIOUR everywhere:** collapsed by default, one open at a time,
+the summary chip, the rhythm, the heading hierarchy.
+
+**Do NOT carry the black pill or the Plus Jakarta Sans face onto guest
+surfaces.** There the universe supplies colour, face and weight. Owner's canon:
+
+> "there is no point if they all run the same and just have slight colours."
+
+This is the artwork exemption expressed as a component boundary: the accordion's
+mechanics are chrome, its skin on a guest surface belongs to the couple's
+universe.
+
+## What this absorbs
+
+Three tickets stop being three fixes and become **three adoptions**:
+
+- wedding party
+- theme options
+- **L-2** — the FAQ accordion (previously listed under THE ORDER)
+
+**Report any accordion that cannot become an instance, and why.** A surface that
+resists the pattern is a finding, not a silent exception.
+
+## Then the modals — propose before building
+
+**Add guest** and **Add vendor** "feel crowded and a bit cheap" (owner). Propose
+them rebuilt on this pattern: **essentials open, everything else in collapsed
+sections showing what has been chosen.**
+
+**Report the proposal before building.** This is a proposal gate, not a build
+instruction.
+
+## Sequence
+
+1. The component + the hover question — **report before merging**
+2. The three adoptions
+3. The modal proposal
+
+---
+
 ## WAVE 4 — remove Share from the website builder's top bar
 
 **Owner-ruled. Do not build before Wave 4.**
