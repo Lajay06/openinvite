@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Plus, X, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';
+import { OptionAccordion, OptionAccordionSection, OptionPill } from '@/components/shared/OptionAccordion';
 import { FAITH_OPTIONS, FAITH_FOR_INTERFAITH, CULTURE_REGIONS, CULTURE_CROSS_CUTTING } from '@/lib/weddingThemeOptions';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -15,30 +16,6 @@ const SETTING_OPTIONS    = ['Indoor', 'Mix of both', 'Outdoor'];
 
 const headingStyle = { fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 14px' };
 const subLabelStyle = { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px', display: 'block' };
-
-function Pill({ label, selected, onClick, small, disabled }) {
-  return (
-    <button
-      type="button"
-      onClick={disabled ? undefined : onClick}
-      style={{
-        padding: small ? '5px 12px' : '6px 16px',
-        borderRadius: 999,
-        border: `1px solid ${selected ? '#0A0A0A' : 'rgba(10,10,10,0.18)'}`,
-        background: selected ? '#0A0A0A' : 'transparent',
-        color: selected ? '#FFFFFF' : '#0A0A0A',
-        fontSize: small ? 11 : 12,
-        fontWeight: 600,
-        fontFamily: PJS,
-        cursor: disabled ? 'default' : 'pointer',
-        transition: 'all 0.15s',
-        whiteSpace: 'nowrap',
-        opacity: disabled && !selected ? 0.6 : 1,
-      }}>
-      {label}
-    </button>
-  );
-}
 
 export default function ThemeSection({ theme, onSave, readOnly = false }) {
   const [local, setLocal] = useState({
@@ -107,25 +84,38 @@ export default function ThemeSection({ theme, onSave, readOnly = false }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
 
-      {/* 1. Aesthetic */}
-      <div>
-        <p style={headingStyle}>What's the aesthetic?</p>
+      {/* WAVE 3 — the accordion pattern, FULL INSTANCE (structure and
+          periphery both). The Theme tab is the densest options surface in the
+          product: 89 pills across six groups, 52 of them culture. Rendering
+          all six open was the reason it read as a wall.
+
+          The local `Pill` that used to live at the top of this file is gone —
+          it was the third copy of the same component, and it dies with this
+          adoption rather than in a separate tidy-up. `small` becomes the named
+          `size="compact"` variant, whose rule is written where the component
+          is: primary options answer the section's question, compact ones
+          qualify an answer already given. */}
+      <OptionAccordion headingSize={13} headingWeight={700}>
+
+      <OptionAccordionSection sectionKey="aesthetic" title="What's the aesthetic?" summary={local.aesthetic || []}>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {AESTHETIC_OPTIONS.map(opt => (
-            <Pill key={opt} label={opt}
+            <OptionPill key={opt} label={opt}
               selected={(local.aesthetic || []).includes(opt)}
               onClick={() => toggleMulti('aesthetic', opt)}
               disabled={readOnly} />
           ))}
         </div>
-      </div>
+      </OptionAccordionSection>
 
-      {/* 2. Faith / religion */}
-      <div>
-        <p style={headingStyle}>Faith or religion</p>
+      <OptionAccordionSection
+        sectionKey="faith"
+        title="Faith or religion"
+        summary={local.faith ? [local.faith === 'Interfaith' && interfaithPicks.length === 2 ? `Interfaith: ${interfaithPicks.join(' and ')}` : local.faith] : []}
+      >
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {FAITH_OPTIONS.map(opt => (
-            <Pill key={opt} label={opt}
+            <OptionPill key={opt} label={opt}
               selected={local.faith === opt}
               onClick={() => setFaith(opt)}
               disabled={readOnly} />
@@ -139,7 +129,7 @@ export default function ThemeSection({ theme, onSave, readOnly = false }) {
             </span>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {FAITH_FOR_INTERFAITH.map(opt => (
-                <Pill key={opt} label={opt} small
+                <OptionPill key={opt} label={opt} size="compact"
                   selected={interfaithPicks.includes(opt)}
                   onClick={() => toggleInterfaithPick(opt)}
                   disabled={readOnly} />
@@ -152,11 +142,13 @@ export default function ThemeSection({ theme, onSave, readOnly = false }) {
             )}
           </div>
         )}
-      </div>
+      </OptionAccordionSection>
 
-      {/* 3. Cultures and traditions */}
-      <div>
-        <p style={headingStyle}>Cultures and traditions</p>
+      <OptionAccordionSection
+        sectionKey="culture"
+        title="Cultures and traditions"
+        summary={[...(local.culture || []), ...(local.cultureOther ? [local.cultureOther] : [])]}
+      >
         <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: PJS, margin: '0 0 12px', lineHeight: 1.5 }}>
           Separate from faith — you can be culturally Indian and non-religious, for example. Select as many as apply; this shapes Ava's suggestions and checklists.
         </p>
@@ -200,7 +192,7 @@ export default function ThemeSection({ theme, onSave, readOnly = false }) {
                   <span style={subLabelStyle}>{r.region}</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                     {(readOnly ? r.items.filter(opt => selected.includes(opt)) : r.items).map(opt => (
-                      <Pill key={opt} label={opt} small
+                      <OptionPill key={opt} label={opt} size="compact"
                         selected={selected.includes(opt)}
                         onClick={() => toggleMulti('culture', opt)}
                         disabled={readOnly} />
@@ -214,7 +206,7 @@ export default function ThemeSection({ theme, onSave, readOnly = false }) {
                   <span style={subLabelStyle}>Also relevant</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                     {visibleCrossCutting.map(opt => (
-                      <Pill key={opt} label={opt} small
+                      <OptionPill key={opt} label={opt} size="compact"
                         selected={selected.includes(opt)}
                         onClick={() => toggleMulti('culture', opt)}
                         disabled={readOnly} />
@@ -249,46 +241,42 @@ export default function ThemeSection({ theme, onSave, readOnly = false }) {
             </button>
           </div>
         )}
-      </div>
+      </OptionAccordionSection>
 
-      {/* 4. Atmosphere */}
-      <div>
-        <p style={headingStyle}>Atmosphere</p>
+      <OptionAccordionSection sectionKey="atmosphere" title="Atmosphere" summary={local.atmosphere || []}>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {ATMOSPHERE_OPTIONS.map(opt => (
-            <Pill key={opt} label={opt}
+            <OptionPill key={opt} label={opt}
               selected={(local.atmosphere || []).includes(opt)}
               onClick={() => toggleMulti('atmosphere', opt)}
               disabled={readOnly} />
           ))}
         </div>
-      </div>
+      </OptionAccordionSection>
 
-      {/* 5. Season */}
-      <div>
-        <p style={headingStyle}>Season</p>
+      <OptionAccordionSection sectionKey="season" title="Season" summary={local.season ? [local.season] : []}>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {SEASON_OPTIONS.map(opt => (
-            <Pill key={opt} label={opt}
+            <OptionPill key={opt} label={opt}
               selected={local.season === opt}
               onClick={() => setSingle('season', opt)}
               disabled={readOnly} />
           ))}
         </div>
-      </div>
+      </OptionAccordionSection>
 
-      {/* 6. Setting */}
-      <div>
-        <p style={headingStyle}>Setting</p>
+      <OptionAccordionSection sectionKey="setting" title="Setting" summary={local.setting ? [local.setting] : []}>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {SETTING_OPTIONS.map(opt => (
-            <Pill key={opt} label={opt}
+            <OptionPill key={opt} label={opt}
               selected={local.setting === opt}
               onClick={() => setSingle('setting', opt)}
               disabled={readOnly} />
           ))}
         </div>
-      </div>
+      </OptionAccordionSection>
+
+      </OptionAccordion>
 
       {/* Save — hidden entirely while read-only, not just disabled, since
           there is nothing for it to do (onSave's writes 403/no-op upstream). */}
