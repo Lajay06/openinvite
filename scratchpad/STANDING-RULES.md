@@ -919,6 +919,149 @@ rather than something invented.
 
 ---
 
+## FULLY DIGITAL, PREMIUM UX — the north star, and it decides arguments
+
+**Owner ruling, 2026-08-30. Canon because it settles disputes rather than
+describing a mood.**
+
+> **If a thing exists because it used to lead to a physical artefact, IT GOES.**
+
+That sentence is the test for the asset-retirement scope and for every universe
+decision after it. It is not a preference about styling; it is a rule with a
+truth value, applied to a feature, that returns keep or cut.
+
+Corollary the owner set alongside it: **twenty distinct worlds is what someone
+pays for. Ava is a helper.** The build order is universes first — the previously
+standing "Ava first, then hero experience" order is superseded.
+
+---
+
+## THE FOUR MARKS BIND IDENTITY, NOT CONTENT — so there is a fifth
+
+**2026-08-30**, after a bound SHA merged five files nobody in the authorization
+had seen.
+
+An authorization line names a PR and binds a head SHA. That proves **which**
+commit merged. **It proves nothing about what is in it.**
+
+So the marks are five, not four. A real line:
+
+1. names the PR number
+2. binds the head SHA — void if the branch moves
+3. states the `pr:green` condition in those words
+4. exists in the owner's message AS an authorization, not assembled from prose
+5. **the SHA's file list matches the line's description**
+
+Mark 5 is checkable rather than remembered because `pr:merge` now prints the
+file list before merging (#625). **A mark that depends on someone remembering to
+compare two lists is a rule enforced by review, and this file already says those
+do not hold.**
+
+And the habit that makes it real: **the check runs before the ask, not after the
+line.** Satisfy mark 5 on your own PR and report the file list WITH the request,
+so the person writing the line can see the shape of what they are describing.
+
+---
+
+## A DESCRIPTION WRITTEN FROM INTENT RATHER THAN FROM THE DIFF IS A FALSE STATE REPORT
+
+**2026-08-30.** A PR body read *"the consolidation stays held until Places
+works"* — in a PR that contained the consolidation. Not a lie; the author
+believed it. That is exactly why it belongs beside the guard docstring that
+named the scenario it did not handle.
+
+> **Generated from the file list, it could not have been wrong.**
+
+Write the "what changed" section of anything — PR body, report, changelog —
+**from the diff**, not from what you set out to do. The gap between intent and
+diff is invisible to the author and obvious to everyone else afterwards.
+
+---
+
+## SMALL IS NOT A RISK PROFILE
+
+**Owner ruling, 2026-08-30**, sharpening "different risk profiles do not travel
+together" — which invites the reply *"but it is tiny"*.
+
+A one-line cosmetic change to shipped API code does not become a local-script
+change by being small. **Size is not a risk category.** Ships / does not ship,
+can block / cannot block, guest-facing / chrome — those are risk categories.
+
+Vindicated twice in one day by the two occasions it was ignored.
+
+---
+
+## A GUARD WITH NO WAY THROUGH PUSHES THE SITUATION ONTO A WORSE PATH
+
+**2026-08-30**, from `new-feature.sh` refusing a dirty tree.
+
+The refusal was correct and the omission of an override was not. The legitimate
+case — *"I started editing, realised I am on main, now I want a branch"* — is
+frequent, and with no way through the answer is `git checkout -b`, which
+**carries the work AND skips the pull**. So you branch from stale main, and
+nothing announces either fact.
+
+> **A refusal that produces a silent, staler version of the thing it forbade has
+> made the system worse while looking stricter.**
+
+### And the fix generalises: MAKE THE SANCTIONED PATH THE BEST PATH
+
+`--carry` does not merely permit the deliberate case, it makes it **better than
+the workaround**: it bases the branch on a freshly fetched `origin/main`, and it
+names every file it carried.
+
+> **A guard people route around is a guard that lost an argument about
+> convenience.** Win the argument on the merits.
+
+Same principle as the docs worktree: the manoeuvre existed because the workspace
+made the simple thing hard.
+
+---
+
+## THE PARTS OF A SYSTEM YOU DID NOT WRITE STILL SPEAK TO YOUR USERS
+
+Two instances, 2026-08-30, and they are the same defect.
+
+**A guard can be defeated by the error message of the tool underneath it.**
+When `--carry` hits a file that also moved upstream, git aborts with *"Please
+commit your changes or stash them before you switch branches."* Correct advice
+in general — and **precisely wrong in this workspace**, where it recruits the
+reader straight back into the stash manoeuvre the script exists to prevent. It
+is now caught and restated as the real choice.
+
+**The harness is an instrument too.** A control ran in a shallow clone with no
+local `main`, so `git checkout main` failed and the whole test executed in the
+original repo while reporting a plausible result. **A test environment that
+misconfigures itself produces the same confident wrong answer as a guard that
+cannot see** — and it is the easiest of all to trust, because you built it five
+minutes ago for this exact purpose and it has no history of lying to you.
+
+Nothing in a code review surfaces either. Only walking the failing path does.
+
+### THE BEST FIXTURE IS THE DEFECT
+
+When the defect is recent, do not invent a fixture — **point the new instrument
+at the failure that already happened.** The PR file-list print was verified by
+running it against the merge that went wrong and watching `0+ 112- api/places.js`
+appear under a description saying "three proxies". That is proof the instrument
+can see the thing it exists to catch, and it is cheaper than a synthetic case.
+
+### And the count that makes the case for controls
+
+**Three times in one day a control caught what the happy path missed:**
+
+| # | What the control caught | The code was |
+|---|---|---|
+| 1 | `JSON.parse` throwing skipped the raw-text fallback — a diagnostic that went silent exactly when the failure was unfamiliar | minutes old |
+| 2 | a misconfigured clone reporting a plausible pass | minutes old |
+| 3 | `--carry` was **inert** — the refusal fired before the flag was consulted | minutes old |
+
+In every case the code was written deliberately, by someone being careful, for
+the express purpose of being careful. **A control that passes first time is a
+guard, not a catch** — keep the count honest, and keep writing them.
+
+---
+
 ## THE NAME OF AN INSTRUMENT IS ITS LOUDEST OUTPUT
 
 **Owner ruling, 2026-08-30. The fix for the recurrence is a rename, not a
