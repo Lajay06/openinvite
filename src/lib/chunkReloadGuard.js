@@ -29,6 +29,30 @@ const STORAGE_KEY = 'oi_chunk_reload_at';
 const WINDOW_MS = 10_000;
 
 /**
+ * What this guard did the last time it was asked, in this page lifetime.
+ *
+ * WHY THIS EXISTS. The client-error beacon fires from the root ErrorBoundary's
+ * onError, and lazyWithReload.js re-throws AFTER calling this guard — so React
+ * renders the fallback and beacons it whether or not a reload is already on its
+ * way. Ten beacons in production could therefore have been ten guests stuck on
+ * "Something went wrong", or ten guests who saw it flash and got a working page,
+ * and nothing in the payload could tell the two apart.
+ *
+ * A signal that cannot distinguish recovery from failure cannot be used to
+ * decide anything. This is the instrument, shipped before the fix, so the fix
+ * can be measured.
+ *
+ * null once a reload lands, because module state resets on the new document.
+ * @type {null | 'reloaded' | 'suppressed-recent-reload' | 'sessionstorage-unavailable'}
+ */
+let lastOutcome = null;
+
+/** @returns {string|null} what this guard last did — read by the beacon. */
+export function lastChunkReloadOutcome() {
+  return lastOutcome;
+}
+
+/**
  * @param {unknown} error — the original chunk-load error, logged for context
  * @returns {boolean} true if a reload was triggered, false if the guard
  *   held (recent reload already happened, or sessionStorage is unavailable —
@@ -44,18 +68,23 @@ export function reloadOnceForChunkError(error) {
     // — can't guarantee the loop guard, so don't auto-reload. The
     // ErrorBoundary fallback (with its own manual refresh button) is the
     // safe outcome here, not a potentially-unguarded reload loop.
+    lastOutcome = 'sessionstorage-unavailable';
     return false;
   }
 
   if (Date.now() - last < WINDOW_MS) {
+    lastOutcome = 'suppressed-recent-reload';
     return false;
   }
 
   try {
     sessionStorage.setItem(STORAGE_KEY, String(Date.now()));
   } catch {
+    lastOutcome = 'sessionstorage-unavailable';
     return false;
   }
+
+  lastOutcome = 'reloaded';
 
   console.warn('[chunk-reload] stale build asset failed to load, reloading once:', error?.message || error);
   window.location.reload();

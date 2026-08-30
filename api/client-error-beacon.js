@@ -33,6 +33,13 @@ function str(value, maxLen) {
   return typeof value === 'string' ? value.slice(0, maxLen) : null;
 }
 
+// Mirrors src/lib/chunkReloadGuard.js's lastOutcome union. 'reloaded' means a
+// stale-build reload was already in flight when the boundary caught — the guest
+// is recovering. The other two mean the guard deliberately did NOT reload, and
+// name which brake engaged, so a stuck guest is distinguishable from a recovered
+// one in the logs.
+const CHUNK_RELOAD_OUTCOMES = ['reloaded', 'suppressed-recent-reload', 'sessionstorage-unavailable'];
+
 export default async function handler(req, res) {
   if (applyCors(req, res)) return;
   if (req.method !== 'POST') {
@@ -58,6 +65,11 @@ export default async function handler(req, res) {
       userAgent: str(b.userAgent, MAX_SHORT),
       viewportWidth: typeof b.viewportWidth === 'number' ? b.viewportWidth : null,
       layoutVariant: b.layoutVariant === 'desktop' || b.layoutVariant === 'mobile' ? b.layoutVariant : null,
+      // This payload is an ALLOW-LIST, not a passthrough — a field the client
+      // sends that is not named here is dropped without a trace. Anything added
+      // to beaconClientError() in src/main.jsx must be added here too, or the
+      // new signal ships reporting nothing.
+      chunkReloadOutcome: CHUNK_RELOAD_OUTCOMES.includes(b.chunkReloadOutcome) ? b.chunkReloadOutcome : null,
     };
     console.error('[client-error-beacon]', JSON.stringify(payload));
   } catch (err) {
