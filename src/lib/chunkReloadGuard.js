@@ -4,13 +4,27 @@
  * Shared "stale build after deploy" reload-once guard. Vite's code-split
  * chunks are content-hashed per build — a browser tab left open across a
  * deploy holds asset URLs for whatever build was live when the tab loaded.
- * Navigating to a route it hasn't lazy-loaded yet then fails: Vercel's SPA
- * rewrite serves index.html (200, text/html) for the now-gone hashed asset
- * path, which the browser reports as "'text/html' is not a valid
- * JavaScript MIME type" / "Failed to fetch dynamically imported module" —
- * exactly the errors Sentry confirmed across /universes, /Features,
- * /Schedule, /event-details, /DailyUpdate, /privacy-policy. A full reload
+ * Navigating to a route it hasn't lazy-loaded yet then fails. A full reload
  * pulls the fresh build's asset manifest and fixes it.
+ *
+ * WHAT PRODUCTION ACTUALLY RETURNS (re-measured 2026-08-30 — this comment
+ * previously described a failure mode that no longer occurs). A missing hashed
+ * asset returns a real 404 with `content-type: text/plain`, NOT the SPA rewrite
+ * serving index.html as `200 text/html`. The MIME-type error this file used to
+ * cite ("'text/html' is not a valid JavaScript MIME type") is therefore no
+ * longer what the browser reports; Safari says "Importing a module script
+ * failed" and Chrome "Failed to fetch dynamically imported module". The import
+ * rejects either way, so the guard's behavior is unchanged — but a comment
+ * describing a failure mode the system no longer produces is drift, and it sent
+ * one investigation looking for the wrong signature.
+ *
+ * The other half worth recording, because the reload depends on it: index.html
+ * is served `cache-control: public, max-age=0, must-revalidate`, so a reload
+ * genuinely revalidates and picks up the new build rather than replaying the
+ * stale document out of cache. This guard would not work if that changed.
+ *
+ * Nothing here matches on the error message, deliberately — the wording differs
+ * per engine and has already changed once.
  *
  * Used by two independent failure paths that both need this same guarded
  * reload — see src/lib/lazyWithReload.js (a failed dynamic import at
