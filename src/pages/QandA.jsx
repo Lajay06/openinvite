@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import toast from 'react-hot-toast';
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
-import { Loader2, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import { OptionAccordion, OptionAccordionSection } from '@/components/shared/OptionAccordion';
 import AvaButton from "@/components/shared/AvaButton";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -45,53 +46,6 @@ function UInput({ label, value, onChange, placeholder = '', multiline = false })
           onBlur={() => setFocused(false)}
           style={shared}
         />
-      )}
-    </div>
-  );
-}
-
-function QnaAccordionItem({ item, id, onDelete }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div style={{ borderBottom: '1px solid rgba(10,10,10,0.07)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <button
-          onClick={() => setOpen(v => !v)}
-          style={{
-            flex: 1, background: 'none', border: 'none', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: 10,
-            padding: '14px 0', textAlign: 'left',
-          }}
-        >
-          <span style={{ flex: 1, fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, lineHeight: 1.4 }}>
-            {item.question}
-          </span>
-          <span style={{ flexShrink: 0, color: 'rgba(10,10,10,0.6)', display: 'flex' }}>
-            {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          </span>
-        </button>
-        <button
-          onClick={() => onDelete(id)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.25)', padding: 4, flexShrink: 0, transition: 'color 0.15s' }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#E03553'; }}
-          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(10,10,10,0.25)'; }}
-          title="Delete"
-        >
-          <Trash2 size={14} />
-        </button>
-      </div>
-      {open && (
-        <div style={{ paddingBottom: 16, paddingRight: 32 }}>
-          {item.answer ? (
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS, lineHeight: 1.7 }}>
-              {item.answer}
-            </p>
-          ) : (
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS, fontStyle: 'italic' }}>
-              No answer added yet.
-            </p>
-          )}
-        </div>
       )}
     </div>
   );
@@ -207,6 +161,14 @@ export default function QandA() {
         </div>
 
         {/* Q&A list — accordion */}
+          {/* WAVE 3 — the accordion pattern, CORE ONLY. A Q&A list has nothing
+              to select, so pills and the summary chip do not apply here;
+              structure is the core and that periphery is not.
+
+              DELIBERATE BEHAVIOUR CHANGE, not a bug fix: each item used to hold
+              its own open state, so any number could be open at once. One at a
+              time is the ruling. A couple who left three questions expanded will
+              come back to one. */}
         {qna.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '48px 0' }}>
             <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
@@ -214,12 +176,31 @@ export default function QandA() {
             </p>
           </div>
         ) : (
-          <div>
+          <OptionAccordion headingSize={14} headingWeight={700}>
             {qna.map((item, i) => {
               const id = item.id ?? i;
-              return <QnaAccordionItem key={id} item={item} id={id} onDelete={handleDelete} />;
+              return (
+                <OptionAccordionSection
+                  key={id}
+                  sectionKey={String(id)}
+                  title={item.question}
+                  action={
+                    <button
+                      onClick={() => handleDelete(id)}
+                      aria-label={`Delete question: ${item.question}`}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.45)', padding: 4, flexShrink: 0, transition: 'color 0.15s' }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  }
+                >
+                  <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, lineHeight: 1.7, whiteSpace: 'pre-wrap', margin: 0 }}>
+                    {item.answer}
+                  </p>
+                </OptionAccordionSection>
+              );
             })}
-          </div>
+          </OptionAccordion>
         )}
       </div>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
