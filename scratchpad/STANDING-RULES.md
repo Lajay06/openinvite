@@ -117,6 +117,80 @@ something the instrument was **structurally incapable** of seeing.
 
 ---
 
+## An override that leaves no trace cannot be audited
+
+**Owner ruling, 2026-08-30.**
+
+The entire justification for an escape hatch is that it is used **rarely and
+deliberately**. Rarity is a claim about a count — and you cannot count what does
+not announce itself.
+
+> **A silent override is indistinguishable from a guard that simply passed.**
+> Same defect as a silent guard, arriving from the other direction.
+
+Found when the `Canon-On-Branch:` trailer was exercised in real CI for the first
+time and the step printed **nothing at all**. The override worked; it just left
+no evidence that it had been used, on the guard protecting the one thing in this
+repo that has actually been destroyed twice.
+
+### The sweep, done rather than promised
+
+The shape has exactly one sibling, and it was checked: **two guards in the repo
+have overrides, four paths between them.**
+
+| Guard | CI trailer path | Local passphrase path |
+|---|---|---|
+| `check-payments-freeze` | **already announced** — names the trailer and every touched file | **already announced** |
+| `check-canon-branch` | was silent — fixed | was silent — fixed |
+| `check-no-credentials` | **no override exists**, by design | — |
+
+The payments guard was already correct on both doors and needed nothing. Saying
+so explicitly is part of the result: *"I checked and it was fine"* is a finding;
+not mentioning it is not.
+
+---
+
+## When a pathway only exists in CI, go to CI
+
+**Owner ruling, 2026-08-30 — the default move, not a clever one-off.**
+
+The `Canon-On-Branch:` override could not be exercised locally: it only runs
+under `--ci`, and the bug being fixed was that CI never reached it. Simulating
+the environment proves the FUNCTION works; it does not prove the PATHWAY is
+reachable — and an unreachable pathway with a passing unit test is exactly what
+had been sitting there since the guard was written.
+
+**So: push a disposable branch, open a PR purely to make Actions run, watch the
+real thing, close it unmerged.** CI here triggers on `pull_request` and pushes
+to main, so a branch push alone runs nothing — the throwaway PR is the trigger.
+
+Cheap: one branch, one closed PR, three minutes. The alternative is a tested
+function inside a pathway nobody has ever entered.
+
+Pair it with the control. The override run passed *because* a canon file was on
+the branch with the trailer; the same commit with the trailer removed exits 1.
+Without that control, "it passed" would not have distinguished the override
+working from the guard not looking.
+
+---
+
+## A report is an interface, and it can report a state the system does not have
+
+**2026-08-30.** A report closed with "no open PRs"; a PR was opened later in the
+same turn and the line was never restated. True when written, false when read.
+
+This is `THE INTERFACE REPORTS A STATE THE SYSTEM DOES NOT HAVE` — the rule
+already in this file — pointed at our own output rather than at the product.
+Today it also caught two docstrings and four silent guards, all the same shape.
+
+**So: state at the END of the report, from a fresh query, not from memory of
+what was true earlier in the turn.** `gh pr list --state open` costs nothing.
+The failure is not carelessness; it is that a status line written mid-work
+describes the moment it was written, and a reader reasonably reads it as
+describing now.
+
+---
+
 ## A test that cannot fail looks exactly like a test that passed
 
 **2026-08-30.** Verifying that the guard-coverage change had not weakened any
