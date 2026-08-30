@@ -31,8 +31,8 @@
  * THE SKIN IS NOT UNIVERSAL. Carry the BEHAVIOUR to guest surfaces (collapsed
  * by default, one at a time, the summary chip, the rhythm, the hierarchy) but
  * NEVER the black pill or the Plus Jakarta Sans face — there the universe
- * supplies colour, face and weight. Owner: "there is no point if they all run
- * the same and just have slight colours." Hence every colour and face below is
+ * supplies color, face and weight. Owner: "there is no point if they all run
+ * the same and just have slight colors." Hence every color and face below is
  * a prop with a dashboard default, not a hard-coded constant.
  */
 
@@ -160,7 +160,7 @@ export function SummaryChip({ label, faceFamily = font.family }) {
  * chose from what their cursor is touching. Resolving that by making hover
  * subtle is explicitly ruled out: the owner likes that it goes black.
  *
- * So the distinction is carried by a MARK, not by a colour. A selected pill
+ * So the distinction is carried by a MARK, not by a color. A selected pill
  * shows a leading tick; a hovered-but-unselected pill does not. Hover keeps its
  * full black. The tick slot is always in the layout and merely invisible when
  * unselected, so selecting never reflows the row. ✓ (U+2713) is a

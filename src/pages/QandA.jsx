@@ -165,7 +165,7 @@ export default function QandA() {
               to select, so pills and the summary chip do not apply here;
               structure is the core and that periphery is not.
 
-              DELIBERATE BEHAVIOUR CHANGE, not a bug fix: each item used to hold
+              DELIBERATE BEHAVIOR CHANGE, not a bug fix: each item used to hold
               its own open state, so any number could be open at once. One at a
               time is the ruling. A couple who left three questions expanded will
               come back to one. */}
