@@ -58,13 +58,53 @@ const sh = (c) => execSync(c, { encoding: 'utf8' }).trim();
 // pass carried no information about whether anything was read. It still exits 0
 // in exactly the same cases — verdicts are untouched — but now says which one,
 // because "clean" and "did not look" must not print the same thing.
-let branch = '';
-try { branch = sh('git rev-parse --abbrev-ref HEAD'); } catch {
-  console.log('  canon guard: could not resolve HEAD — 0 file(s) checked');
+/**
+ * THE BRANCH UNDER REVIEW, WHICH IS NOT THE CHECKOUT'S HEAD NAME.
+ *
+ * THIS GUARD HAD NEVER ONCE RUN IN CI. `actions/checkout` produces a DETACHED
+ * HEAD, so `git rev-parse --abbrev-ref HEAD` returns the literal string "HEAD",
+ * which hit the main-or-HEAD early exit and returned before reading a single
+ * file. Every CI run of this guard since it was written checked nothing, and
+ * its whole `--ci` mode was unreachable. Found 2026-08-30 by #616, the moment
+ * guards began printing their coverage: "on HEAD, where canon belongs — 0
+ * file(s) checked".
+ *
+ * The docstring above this function used to claim the opposite — "a pre-push
+ * hook is local, which is why this also runs in CI". That sentence was false
+ * from the day it was written. It is true as of this commit.
+ *
+ * In CI, ask the environment which branch is under review:
+ *   GITHUB_HEAD_REF  — the SOURCE branch of a pull request (empty otherwise)
+ *   GITHUB_REF_NAME  — the branch for a push event
+ *
+ * LOCALLY, a detached HEAD still passes, deliberately: the docs worktree
+ * (`git worktree add --detach ../openinvite-docs origin/main`) is detached by
+ * design and is the sanctioned route for writing canon to main. Refusing it
+ * would break the very workflow that exists to stop canon being written on a
+ * branch. CI is now the backstop for the case that route cannot cover — which
+ * is exactly the division of labour the docstring always claimed.
+ */
+function resolveBranchUnderReview() {
+  if (process.env.GITHUB_HEAD_REF) return process.env.GITHUB_HEAD_REF; // pull request
+  if (process.env.GITHUB_REF_NAME) return process.env.GITHUB_REF_NAME; // push
+  try { return sh('git rev-parse --abbrev-ref HEAD'); } catch { return null; }
+}
+
+const branch = resolveBranchUnderReview();
+if (branch === null) {
+  // Fallback POLICY (what to do when the input cannot be resolved at all) is
+  // the strictness-ladder ticket's question, deliberately not decided here.
+  // This prints rather than exiting silently, which is the part that is settled.
+  console.log('  canon guard: could not resolve the branch under review — 0 file(s) checked');
   process.exit(0);
 }
-if (branch === 'main' || branch === 'HEAD') {
-  console.log(`  canon guard: on ${branch}, where canon belongs — 0 file(s) checked`);
+if (branch === 'main') {
+  console.log('  canon guard: on main, where canon belongs — 0 file(s) checked');
+  process.exit(0);
+}
+if (branch === 'HEAD') {
+  // Local detached checkout only — in CI the env vars above answer first.
+  console.log('  canon guard: local detached HEAD (the docs worktree) — 0 file(s) checked');
   process.exit(0);
 }
 
@@ -86,8 +126,18 @@ if (!hits.length) {
 if (CI) {
   let log = '';
   try { log = execSync(`git log ${base}..HEAD --format=%B`, { encoding: 'utf8' }); } catch { /* no range */ }
-  if (log.split('\n').map(l => l.trim()).some(l => /^Canon-On-Branch:\s*\S/.test(l))) process.exit(0);
+  if (log.split('\n').map(l => l.trim()).some(l => /^Canon-On-Branch:\s*\S/.test(l))) {
+    // AN OVERRIDE THAT ENGAGES SILENTLY CANNOT BE AUDITED FOR RARITY, and the
+    // value of an override is its rarity. Proven reachable in real CI on
+    // 2026-08-30 — and the run printed nothing at all, which is how this line
+    // came to be written.
+    console.log(`  canon guard: OVERRIDDEN by a Canon-On-Branch trailer — ${hits.length} canon file(s) allowed through on ${branch}`);
+    hits.forEach(f => console.log(`    ${f}`));
+    process.exit(0);
+  }
 } else if (process.env.CANON_ON_BRANCH === PASSPHRASE) {
+  console.log(`  canon guard: OVERRIDDEN by CANON_ON_BRANCH — ${hits.length} canon file(s) allowed through on ${branch}`);
+  hits.forEach(f => console.log(`    ${f}`));
   process.exit(0);
 }
 
