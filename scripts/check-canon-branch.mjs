@@ -54,17 +54,34 @@ const CI = process.argv.includes('--ci');
 const base = process.argv.slice(2).find(a => !a.startsWith('-')) || 'origin/main';
 const sh = (c) => execSync(c, { encoding: 'utf8' }).trim();
 
+// COVERAGE REPORTING (2026-08-30). Every exit-0 below used to be silent, so a
+// pass carried no information about whether anything was read. It still exits 0
+// in exactly the same cases — verdicts are untouched — but now says which one,
+// because "clean" and "did not look" must not print the same thing.
 let branch = '';
-try { branch = sh('git rev-parse --abbrev-ref HEAD'); } catch { process.exit(0); }
-if (branch === 'main' || branch === 'HEAD') process.exit(0);
+try { branch = sh('git rev-parse --abbrev-ref HEAD'); } catch {
+  console.log('  canon guard: could not resolve HEAD — 0 file(s) checked');
+  process.exit(0);
+}
+if (branch === 'main' || branch === 'HEAD') {
+  console.log(`  canon guard: on ${branch}, where canon belongs — 0 file(s) checked`);
+  process.exit(0);
+}
 
 let changed = [];
+let source = `${base}...HEAD`;
 try {
   changed = sh(`git diff --no-renames --name-only ${base}...HEAD`).split('\n').map(s => s.trim()).filter(Boolean);
-} catch { process.exit(0); }
+} catch {
+  console.log(`  canon guard: diff against ${base} failed — 0 file(s) checked`);
+  process.exit(0);
+}
 
 const hits = changed.filter(f => CANON.includes(f));
-if (!hits.length) process.exit(0);
+if (!hits.length) {
+  console.log(`  no canon files in ${source} (${changed.length} file(s) checked)`);
+  process.exit(0);
+}
 
 if (CI) {
   let log = '';

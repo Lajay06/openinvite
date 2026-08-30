@@ -206,8 +206,13 @@ if (base === null) {
 }
 
 let changed;
+// COVERAGE REPORTING (2026-08-30): keep the resolved range so every success
+// line can state what was compared. A pass that names no input is
+// indistinguishable from a pass that had none.
+let resolvedRange = null;
 try {
   const range = process.env.GITHUB_EVENT_NAME === 'push' ? `${base}..HEAD` : `${base}...HEAD`;
+  resolvedRange = range;
   changed = git(`diff --name-only ${range}`).split('\n').filter(Boolean);
 } catch (err) {
   console.warn(`[prerender-freshness] Diff against ${base} failed: ${err.message.split('\n')[0]} — skipping.`);
@@ -224,13 +229,13 @@ console.log('══════════════════════�
 assertNoStaleMarketingDeps();
 
 if (marketingSourceChanged.length === 0) {
-  console.log('  ✓ No marketing-relevant source files changed in this diff — nothing to check.');
+  console.log(`  ✓ No marketing-relevant source files in ${resolvedRange} (${changed.length} file(s) changed overall) — nothing to check.`);
   console.log('───────────────────────────────────────────────────────\n');
   process.exit(0);
 }
 
 if (prerenderedChanged) {
-  console.log(`  ✓ ${marketingSourceChanged.length} marketing source file(s) changed, and prerendered/ was updated in the same diff.`);
+  console.log(`  ✓ ${marketingSourceChanged.length} marketing source file(s) in ${resolvedRange} (${changed.length} changed overall), and prerendered/ was updated in the same diff.`);
   console.log('───────────────────────────────────────────────────────\n');
   process.exit(0);
 }

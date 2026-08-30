@@ -74,6 +74,12 @@ const PASSPHRASE = 'I am deliberately changing payments';
 const CI = process.argv.includes('--ci');
 const base = process.argv.slice(2).find(a => !a.startsWith('-')) || 'origin/main';
 let changed = [];
+// COVERAGE REPORTING. A guard that prints nothing on success cannot be told
+// apart from a guard that looked at nothing — the shape that let three
+// `colour` uses through the US-English guard. This records which input the
+// guard actually resolved so the success line can state it. Verdicts are
+// unchanged; this only makes the existing behaviour observable.
+let source = `${base}...HEAD`;
 try {
   // --no-renames ON PURPOSE. With git's rename detection ON, moving a frozen
   // file reports only the NEW path, so the frozen path never appears in the
@@ -87,11 +93,15 @@ try {
   // to the working tree rather than silently passing.
   changed = execSync('git diff --no-renames --name-only HEAD', { encoding: 'utf8' })
     .split('\n').map(s => s.trim()).filter(Boolean);
+  source = 'the working tree (no diff base resolved)';
 }
 
 const hits = changed.filter(f => FROZEN.includes(f) || FROZEN_DIRS.some(d => f.startsWith(d)));
 
-if (!hits.length) process.exit(0);
+if (!hits.length) {
+  console.log(`  no frozen payment files in ${source} (${changed.length} file(s) checked)`);
+  process.exit(0);
+}
 
 // IN CI THE OVERRIDE IS A COMMIT TRAILER, not an env var. A value typed in
 // someone's shell has no existence in a runner, and a payments change should
