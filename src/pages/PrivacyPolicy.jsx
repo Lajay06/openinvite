@@ -57,7 +57,7 @@ export default function PrivacyPolicy() {
           <div style={DIV} />
 
           <h2 style={H2}>1. Who this policy covers</h2>
-          <p style={P}>OpenInvite is used by two kinds of people: <strong>couples</strong> (account holders who plan a wedding and pay for the service) and <strong>guests</strong> (people a couple invites, who interact with the couple's published wedding website, RSVP form, and related pages; guests do not create an OpenInvite account).</p>
+          <p style={P}>Openinvite is used by two kinds of people: <strong>couples</strong> (account holders who plan a wedding and pay for the service) and <strong>guests</strong> (people a couple invites, who interact with the couple's published wedding website, RSVP form, and related pages; guests do not create an Openinvite account).</p>
 
           <div style={DIV} />
           <h2 style={H2}>2. What we collect</h2>
@@ -66,7 +66,7 @@ export default function PrivacyPolicy() {
           <ul style={UL}>
             <li><strong>Account information</strong>: name, email address, and authentication credentials (sign-up/login is handled by our backend platform, Base44, including an optional "continue with Google" option)</li>
             <li><strong>Wedding details</strong>: wedding date, venue and location details, ceremony/reception information, theme and styling choices, and other planning content you choose to store</li>
-            <li><strong>Payment information</strong>: OpenInvite is a one-time-purchase product (Pro or Ultra plan). Payments are processed by <strong>Stripe</strong>; we do not receive or store your full card number. Stripe shares with us the information needed to confirm your purchase (email, plan, amount, transaction status)</li>
+            <li><strong>Payment information</strong>: Openinvite is a one-time-purchase product (Pro or Ultra plan). Payments are processed by <strong>Stripe</strong>; we do not receive or store your full card number. Stripe shares with us the information needed to confirm your purchase (email, plan, amount, transaction status)</li>
             <li><strong>Content you create</strong>: guest lists, budget and vendor notes, seating plans, checklists, vows/speech drafts, moodboard images, and messages you send through the platform</li>
             <li><strong>AI assistant conversations</strong>: when you use Ava or another in-app AI assistant, your prompts and the relevant wedding context you're asking about are processed to generate a response</li>
             <li><strong>Usage data</strong>: pages visited and features used, collected via analytics (see section 6)</li>
@@ -81,12 +81,12 @@ export default function PrivacyPolicy() {
             <li>Notes to the couple and song requests</li>
             <li>Photos uploaded to a shared wedding gallery, where the couple has enabled this</li>
           </ul>
-          <p style={P}>Guests do not create an OpenInvite account. Access to a guest's own RSVP page is by a private link unique to that guest.</p>
+          <p style={P}>Guests do not create an Openinvite account. Access to a guest's own RSVP page is by a private link unique to that guest.</p>
 
           <div style={DIV} />
           <h2 style={H2}>3. How we use this data</h2>
           <ul style={UL}>
-            <li>To provide, operate, and maintain the OpenInvite platform for couples and their guests</li>
+            <li>To provide, operate, and maintain the Openinvite platform for couples and their guests</li>
             <li>To power AI planning assistance: the assistant uses your own wedding context to give relevant suggestions</li>
             <li>To process payments and confirm plan purchases</li>
             <li>To send service emails: invitations and RSVP links to guests on a couple's behalf, account and receipt emails to couples, and (where enabled) marketing/product emails you can opt out of</li>
@@ -107,7 +107,7 @@ export default function PrivacyPolicy() {
 
           <div style={DIV} />
           <h2 style={H2}>5. Guest data: the couple's responsibilities</h2>
-          <p style={P}>When a couple stores or imports their guests' personal information in OpenInvite, <strong>the couple is the data controller and OpenInvite is the data processor</strong> for that guest data.</p>
+          <p style={P}>When a couple stores or imports their guests' personal information in Openinvite, <strong>the couple is the data controller and Openinvite is the data processor</strong> for that guest data.</p>
           <ul style={UL}>
             <li>The couple is responsible for having a lawful basis to collect and store their guests' information</li>
             <li>The couple should let guests know their details are being stored for wedding coordination purposes</li>
@@ -121,7 +121,7 @@ export default function PrivacyPolicy() {
 
           <div style={DIV} />
           <h2 style={H2}>7. Third-party services</h2>
-          <p style={P}>We use the following specialist providers to run OpenInvite. Each processes only what it needs for its specific purpose, and each has its own privacy policy governing how it handles data on our behalf.</p>
+          <p style={P}>We use the following specialist providers to run Openinvite. Each processes only what it needs for its specific purpose, and each has its own privacy policy governing how it handles data on our behalf.</p>
           <ProcessorTable rows={[
             ['Base44', 'All account, wedding, guest, RSVP, and photo data: our backend database and application platform', 'Hosts and processes all product data; also provides AI processing and file storage'],
             ['Vercel', 'Hosting infrastructure, request logs', 'Hosts the website and serverless functions'],
@@ -151,7 +151,7 @@ export default function PrivacyPolicy() {
 
           <div style={DIV} />
           <h2 style={H2}>10. Your rights</h2>
-          <p style={P}>OpenInvite is an Australian business and this policy is written with the Privacy Act 1988 (Cth) and the Australian Privacy Principles (APPs) in mind. If you are a couple with an OpenInvite account, or a guest whose information a couple has stored, you can ask us to:</p>
+          <p style={P}>Openinvite is an Australian business and this policy is written with the Privacy Act 1988 (Cth) and the Australian Privacy Principles (APPs) in mind. If you are a couple with an Openinvite account, or a guest whose information a couple has stored, you can ask us to:</p>
           <ul style={UL}>
             <li><strong>Access</strong>: request a copy of the personal information we hold about you</li>
             <li><strong>Correct</strong>: update or correct inaccurate information</li>

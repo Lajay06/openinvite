@@ -14,7 +14,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 // when a wedding has no active universe, per BUILDER_UNIVERSE_AUDIT.md item
 // 1's "graceful fallback" requirement. Deliberately NOT resolveColors()'s own
 // internal default (which falls back to the London palette) — a wedding that
-// never chose a universe should see OpenInvite's own brand look, not a
+// never chose a universe should see Openinvite's own brand look, not a
 // phantom London theme it never selected.
 const DIETARY_OTHER = 'Something else';
 const DIETARY_OPTIONS = [
@@ -382,7 +382,7 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
   const [eventForm, setEventForm] = useState({});
 
   // A wedding with no active universe (or an unrecognised one) falls back to
-  // OpenInvite's own brand look rather than silently borrowing resolveColors'/
+  // Openinvite's own brand look rather than silently borrowing resolveColors'/
   // resolveTypography's own internal default (the London palette) — see
   // FALLBACK_THEME's comment.
   const universeConfig = wedding ? resolveUniverseConfig(wedding) : null;

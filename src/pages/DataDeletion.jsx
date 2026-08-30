@@ -25,7 +25,7 @@ export default function DataDeletion() {
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 17, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, marginBottom: 6 }}>Email us a deletion request</div>
                 <p style={{ fontSize: 14, lineHeight: 1.7, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 16 }}>
-                  Send an email to <a href="mailto:hello@openinvite.com.au?subject=Account deletion request" style={LK}>hello@openinvite.com.au</a> from the email address on your OpenInvite account, with the subject line <strong>"Account deletion request"</strong>. We verify every request by email before deleting anything, to make sure it's really you.
+                  Send an email to <a href="mailto:hello@openinvite.com.au?subject=Account deletion request" style={LK}>hello@openinvite.com.au</a> from the email address on your Openinvite account, with the subject line <strong>"Account deletion request"</strong>. We verify every request by email before deleting anything, to make sure it's really you.
                 </p>
                 <a href="mailto:hello@openinvite.com.au?subject=Account deletion request"
                   style={{ display: 'inline-block', padding: '9px 20px', borderRadius: 999, fontSize: 13, fontWeight: 700, fontFamily: PJS, background: '#0A0A0A', color: '#FFFFFF', textDecoration: 'none' }}>

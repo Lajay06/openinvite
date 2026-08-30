@@ -95,7 +95,7 @@ export default function PublicFooter() {
         </div>
 
         <div className="border-t border-[#E0E0DC] pt-8">
-          <p style={{ color: 'rgba(10,10,10,0.6)', fontSize: 12 }}>© 2026 OpenInvite. All rights reserved.</p>
+          <p style={{ color: 'rgba(10,10,10,0.6)', fontSize: 12 }}>© 2026 Openinvite. All rights reserved.</p>
         </div>
       </div>
     </footer>

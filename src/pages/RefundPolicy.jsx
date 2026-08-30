@@ -56,7 +56,7 @@ export default function RefundPolicy() {
           <p style={P}>Email us with the following details:</p>
           <ul style={UL}>
             <li>Subject line: <strong>"Refund request"</strong></li>
-            <li>The email address on your OpenInvite account</li>
+            <li>The email address on your Openinvite account</li>
             <li>The reason for your refund request</li>
             <li>Your purchase date, if you have it</li>
           </ul>
