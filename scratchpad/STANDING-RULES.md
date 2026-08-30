@@ -17,7 +17,45 @@ resolving to be careful around it.**
    browser `storage-state.json` and a live `rsvp-token.txt`. A routine
    `git add -A` staged both.
 
-Discipline is not the fix for either. The hazard is.
+3. **The stash manoeuvre, reached for a third time.** To write a docs-only
+   commit to main while standing on a branch: stash, switch, commit, switch
+   back, pop. Five steps, twice already destructive.
+
+Discipline is not the fix for any of them. The hazard is.
+
+### The third instance names the general shape
+
+> **The manoeuvre existed because the workspace made the simple thing hard.**
+
+Nobody stashes for pleasure. The stash was reached for because writing a doc to
+main *while working on a branch* had no other route. Resolving to stop stashing
+would have left that route missing, and the reach would have happened again —
+it already had, twice, after the rule was written down.
+
+**The fix, one command, permanent:**
+
+```
+git worktree add --detach ../openinvite-docs origin/main
+ln -s ../openinvite/node_modules ../openinvite-docs/node_modules
+```
+
+Every docs-only commit is written in `../openinvite-docs` and pushed with
+`git push origin HEAD:main`. No stash, no switch, no pop, and the branch you are
+working on never moves.
+
+Two details that make it work rather than merely exist:
+
+- **Detached on purpose.** A worktree that checked out `main` as a branch would
+  claim it, and the primary repo could no longer check out main at all —
+  `new-feature.sh` does exactly that. Detached at `origin/main` claims nothing.
+  (`check-canon-branch.mjs` already exits 0 on a detached HEAD, so canon may be
+  written there, which is the entire point.)
+- **`node_modules` symlinked**, because the pre-push hook ends in `npm run lint`
+  and a fresh worktree has none. Without the symlink every docs push fails on a
+  missing eslint.
+
+When a hazard keeps getting picked up, ask what the workspace was making hard.
+The answer is usually the fix.
 
 ### And the mechanism behind the second is worth its own line
 
@@ -76,6 +114,54 @@ library's own markup, a glyph inside a component nobody thought to sweep.
 
 Third time in one day that discarding an instrument and looking directly found
 something the instrument was **structurally incapable** of seeing.
+
+---
+
+## A reference pattern has a core and a periphery
+
+**Owner ruling, 2026-08-30**, settling how a named reference implementation
+travels to a surface that only partly fits it.
+
+The accordion pattern's **core** is its structure: collapsed by default, one
+section open at a time, the heading hierarchy, the rhythm. Its **periphery** is
+everything that presupposes a choice: pills, the summary chip, "Nothing selected
+yet".
+
+A guest-facing FAQ has questions and answers and nothing to select. It takes the
+core and leaves the periphery — and:
+
+> **An adoption that takes the core and leaves the periphery is a CORRECT
+> adoption, not a compromised one.**
+
+The failure this prevents runs both ways. Forcing the periphery onto a surface
+with nothing to select invents a decision the user never makes; refusing the
+adoption entirely because the fit is partial abandons the structure that would
+have helped. Neither is the answer — say which half applies and why.
+
+So when a pattern is propagated, state for each target which half it takes. A
+partial instance recorded as partial is a finding. A partial instance quietly
+presented as a full one is drift waiting to be "fixed" back.
+
+---
+
+## A deliberate hang needs an expiry
+
+**Established 2026-08-30**, from the chunk-reload fix.
+
+Suppressing an error by returning a promise that never settles is a legitimate
+move — while a navigation really is coming, holding the loading state is exactly
+right. But unbounded, it trades an error screen for **a spinner that never
+ends**, which is worse, because a spinner looks like progress. A user will wait
+on it, and nothing will ever arrive.
+
+> **Any deliberate hang gets an expiry and a real failure at the end of it.**
+
+The chunk fix holds Suspense for 10 seconds and then rejects with the original
+error, so the ordinary fallback appears after all. Long enough that a committing
+navigation always wins the race; short enough that nobody is stranded.
+
+And prove the expiry fires by waiting the whole interval out in a test. An
+expiry nobody has watched elapse is an assumption, not a guard.
 
 ---
 

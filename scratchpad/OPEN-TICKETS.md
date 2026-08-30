@@ -997,6 +997,37 @@ Its own item, its own report, **after Wave 2 closes.**
 
 ## TICKET — do our content rules check rendered surfaces, or only source?
 
+**SHARPENED 2026-08-30 — the framing above understates it. It is not that the
+guard misses rendered surfaces. THERE IS NO GUARD.**
+
+Went looking for the emoji check in order to run it against a new use of `✓`.
+The only match for "emoji" anywhere in `tests/` is fixture data in
+`wedding-details.mjs`. Emoji and sentence-case in product chrome are enforced by
+**review alone**.
+
+The contrast is the whole argument, and it is measurable:
+
+| Rule | Automated guard | Times it has caught us |
+|---|---|---|
+| US English | yes | **five** |
+| Emoji | none | **never** |
+| Sentence case (chrome) | partial — `sentence-case-chrome.mjs` | — |
+
+US English has caught five violations because something was looking. Emoji has
+caught none — not because none occurred, but because nothing was looking: 🏨 and
+⭐ rendered on a live guest surface for that page's **entire life**, against a
+standing rule, and were found by rendering the page rather than by any check.
+
+So this ticket has two halves, and the second is the bigger one:
+
+1. do the content rules check rendered surfaces, or only source, and
+2. **for emoji, is anything checking at all** — in either place.
+
+Build the guard before the next sweep. A sweep finds today's violations once; a
+guard finds every future one. Scope note: the guard must sort on **presentation**
+(U+FE0F is the tell), never on a Unicode block, and must encode the ARTWORK
+exemption the same way `sentence-case-chrome.mjs` already does.
+
 **Raised by the accommodation retirement.** The page rendered 🏨 (U+1F3E8) and
 ⭐ (U+2B50) on a live guest surface for its whole life. Every emoji sweep this
 project has run searched the SOURCE and never saw it; rendering the page did.
