@@ -100,6 +100,27 @@ npm run build
 
 ---
 
+## Pre-push hooks — installed by `npm install`, not by memory
+
+`.githooks/pre-push` gates every push on four checks: the payments freeze,
+the credential-file check, the canon-on-a-branch check, and lint.
+
+Git does not use `.githooks/` unless `core.hooksPath` points at it, and that
+setting is **local config — it is not version-controlled and does not survive
+a fresh clone**. It used to depend on someone remembering to run the command,
+which is the same shape as every other failure it exists to prevent. The
+`prepare` script in `package.json` now sets it automatically on `npm install`
+and `npm ci`, so a new clone is protected as soon as its dependencies are.
+
+If you ever see `prepare: could not set core.hooksPath` during an install, the
+hooks are NOT active in that checkout — CI still runs the same checks, but
+nothing will stop a bad push locally.
+
+`--no-verify` skips the hooks entirely. That is why the payments and credential
+checks also run in CI, where they cannot be skipped.
+
+---
+
 ## Branch protection (GitHub)
 
 `main` has branch protection enabled:

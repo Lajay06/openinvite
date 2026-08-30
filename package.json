@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks 2>/dev/null || echo prepare: could not set core.hooksPath - git hooks are NOT installed",
     "dev": "BASE44_LEGACY_SDK_IMPORTS=true vite",
     "build": "BASE44_LEGACY_SDK_IMPORTS=true vite build",
     "build:prerender": "npm run build && node scripts/prerender.mjs && node scripts/apply-prerendered.mjs",
