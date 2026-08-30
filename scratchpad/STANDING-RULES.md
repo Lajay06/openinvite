@@ -117,6 +117,72 @@ something the instrument was **structurally incapable** of seeing.
 
 ---
 
+## A test that cannot fail looks exactly like a test that passed
+
+**2026-08-30.** Verifying that the guard-coverage change had not weakened any
+verdict, the verify-red probe modified a frozen payments file and a canon file
+in the WORKING TREE — and both guards passed. They diff COMMITS, so the probe
+was invisible to them. A silent exit 0 would have read as proof that the guards
+still refuse, and the visibility change would have shipped with its own
+verification broken.
+
+What caught it was the line added minutes earlier: `0 file(s) checked`.
+
+> **Before trusting a red test that came back green, ask what it would have
+> taken for it to fail — and confirm the instrument could see the thing you
+> planted.**
+
+Re-run on a committed probe, both guards refused with exit 1. Same probe, same
+guards, opposite result, purely because the input was reachable.
+
+This is the argument for visibility-before-strictness made twice in one day by
+the same four print statements: once finding that the canon guard never ran in
+CI, once finding that this verification was hollow.
+
+### The corollary, from the same hour
+
+> **A visibility fix that prints nothing is worse than none, because it
+> manufactures confidence.**
+
+One of those coverage lines was written with single quotes, so it printed
+`${resolvedRange}` literally. A reader would have seen a line, assumed coverage,
+and learned nothing. **Read the rendered line, never the source of it** — the
+same rule as reading a page rather than its markup, applied to a log.
+
+---
+
+## The header is part of the interface
+
+**Second instance today, so it is a shape, not an incident.**
+
+`check-canon-branch.mjs` carried this in its docstring:
+
+> "An edit made through the GitHub UI on a branch — a pre-push hook is local,
+>  which is why this also runs in CI."
+
+**It had never run in CI.** `actions/checkout` produces a detached HEAD, the
+guard asked the checkout for its branch name, got `HEAD`, and exited before
+reading a file. The sentence was false from the day it was written, and it named
+the exact scenario it did not handle — so a reader checking "is this case
+covered?" got a confident yes.
+
+This morning's instance: the payments guard whose header claimed it had no hole.
+
+> **A docstring that describes behavior the code does not have is a false state
+> report, in the same family as an instrument that returns a confident empty
+> result.** It is worse in one way: nothing will ever contradict it, because
+> comments are not executed.
+
+So: **when you fix the behavior, say in the PR that the comment was false**, not
+merely that the code changed. The next reader needs to know the comment was
+CHECKED rather than inherited — otherwise the correction is indistinguishable
+from a comment that was always true.
+
+And when reading a guard to learn what it covers, believe the code path, not the
+header. Today the header was wrong twice.
+
+---
+
 ## A GUARD THAT CANNOT FIND ITS INPUT MUST FAIL, NOT PASS
 
 **Owner ruling, 2026-08-30. Headline rule.**
