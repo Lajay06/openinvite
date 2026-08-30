@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import toast from 'react-hot-toast';
 import { InvokeLLM } from "@/integrations/Core";
-import { Lightbulb, Loader2, X, FileText, Check, Plus, Users, Crown, Trash2 } from "lucide-react";
+import { Lightbulb, Loader2, X, FileText, Check, Plus, Crown, Trash2 } from "lucide-react";
 import DetailsSection from "../components/event-details/DetailsSection";
+import { OptionAccordion, OptionAccordionSection } from '@/components/shared/OptionAccordion';
 import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
@@ -466,11 +467,24 @@ export default function WeddingPartyPage() {
           </p>
         </div>
 
-        {/* Every role group visible together (not an accordion-of-
-            accordions), so comparing rosters across roles never requires
-            opening/closing several collapsed sections. */}
+        {/* WAVE 3 — the accordion pattern. This block used to render every role
+            group expanded (`defaultOpen`), with the stated reason that
+            "comparing rosters across roles never requires opening/closing
+            several collapsed sections". That reversal is deliberate, and it is
+            safe because the SUMMARY CHIP answers the original objection
+            directly: a collapsed role now lists its members by name, so
+            comparing rosters across roles no longer requires opening anything
+            at all — it is easier than it was, not harder. Seven roles expanded
+            was also most of why this page scrolled forever.
+            Spec: scratchpad/OPEN-TICKETS.md, "WAVE 3". */}
+        <OptionAccordion headingSize={14} headingWeight={700}>
         {ROLES.map(role => (
-          <DetailsSection key={role.key} title={role.label} icon={Users} defaultOpen>
+          <OptionAccordionSection
+            key={role.key}
+            sectionKey={role.key}
+            title={role.label}
+            summary={(data[role.key] || []).map(m => (m.name || '').trim()).filter(Boolean)}
+          >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {(data[role.key] || []).length > 0 && (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 12, marginBottom: 4 }}>
@@ -495,8 +509,9 @@ export default function WeddingPartyPage() {
                 <Plus size={12} />Add {role.singularLabel.toLowerCase()}
               </button>
             </div>
-          </DetailsSection>
+          </OptionAccordionSection>
         ))}
+        </OptionAccordion>
         </>
         )}
 
