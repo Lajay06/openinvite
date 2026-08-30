@@ -99,6 +99,37 @@ sections showing what has been chosen.**
 **Report the proposal before building.** This is a proposal gate, not a build
 instruction.
 
+## HELD — theme options needs a component change (2026-08-30)
+
+Stopped and reported rather than built, per the owner's instruction to sequence
+rather than untangle a three-way collision.
+
+The Theme tab (`EventDetails.jsx` -> `ThemeSection.jsx`) is a **full instance**,
+periphery included — but it carries **89 pills**, and **52 of them** (Culture,
+across 5 regions) render at a `small` density: 11px type, 5x12 padding. The
+shared `OptionPill` has no size variant. Forcing 52 dense options up to
+12px/8x16 inflates each by roughly 40% in area on the densest surface in the
+product.
+
+So the adoption needs a density variant on the shared component. That is a
+component change, and `feat/guest-faq-accordion` (#614) is already editing the
+same file. **Sequence it: land #614, then add the variant, then adopt.**
+
+### The Pill count, filed — a pattern's cost is only arguable once someone says how many
+
+**22 locally-defined pill components** across the repo. Five implement the
+option-selection pill that `OptionPill` replaces:
+
+- `src/components/event-details/ThemeSection.jsx`
+- `src/components/onboarding/OnboardingStep5WeddingType.jsx` — **two**, `Pill` and `s5-pill`
+- `src/components/onboarding/OnboardingPathACultural.jsx`
+- `src/pages/Policies.jsx`
+- `src/pages/UniverseStudio.jsx`
+
+The other 17 are filter / status / toggle pills doing a different job and are
+NOT in this pattern's scope. The two in the celebration step are their own
+ticket, not part of any adoption.
+
 ## Sequence
 
 1. The component + the hover question — **report before merging**
@@ -981,6 +1012,39 @@ needs no owner accept.
 served HTML is the other half (`npm run build:prerender`, committed in the same
 PR).
 
+## WE HAVE NO PRODUCTION USE DATA — every retirement argument is judgement
+
+**Found 2026-08-30 while verifying the wedding-party summary chip, and recorded
+here because it changes how this whole programme has to be argued.**
+
+Across all 19 `WeddingDetails` records, the maximum number of wedding-party
+members in any role group is **zero**. Not one record has a single bridesmaid,
+groomsman, reader or usher.
+
+**The honest reading, and it is not the tempting one.** This is NOT evidence the
+feature is unwanted. The sample is the owner's own test accounts plus a friend's
+— people poking at the product, not planning a wedding with it. Nineteen records
+of that kind can tell you nothing about what real couples would use.
+
+What it IS evidence of:
+
+> **We have no production use data for almost anything.**
+
+So every "is this feature worth keeping" question in this programme has to be
+settled on **judgement — what the product is for, what it promises, what it
+costs to carry** — and never on "nobody uses it", because we cannot know that.
+An argument in this programme that leans on usage is leaning on nothing.
+
+If usage evidence is ever wanted, it has to be built (instrumentation, a real
+cohort) before it can be cited, and that is its own project.
+
+### Method note, applies beyond this programme
+
+The chip was **verified by render, not by content** — a 12-name roster rendered
+through the real component — precisely because no record had content to verify
+against. Say it that way every time: naming which of the two you did is the
+difference between a checked claim and an assumed one.
+
 ## 3. This needs its own scope report
 
 Not a line in Wave 2. It touches:
@@ -995,7 +1059,34 @@ Its own item, its own report, **after Wave 2 closes.**
 
 ---
 
-## TICKET — do our content rules check rendered surfaces, or only source?
+## TICKET — WHAT ACTUALLY LOOKS AT WHAT (owner ruling 2026-08-30)
+
+**This supersedes and absorbs the rendered-surface question below. It is not
+"fix the US-English guard" — it is one pass over EVERY check, guard, hook and
+script, in CI and locally, answering three questions each:**
+
+1. **What is its input?**
+2. **What does it do when that input is missing or empty?**
+3. **What does it print when it finds nothing?**
+
+**Report the table before changing anything.** The owner wants the shape of the
+whole set before any individual one is patched.
+
+The three known points on the spectrum, which is why the sweep is scoped this way:
+
+| Case | Instrument | State |
+|---|---|---|
+| **Extreme** | emoji / no-emoji rule | **No instrument at all.** Enforced by review. 🏨 and ⭐ lived on a live guest surface for that page's entire life. |
+| **Middle** | `test-us-english-spelling.mjs` | **An instrument that can blind itself.** Scans only ADDED lines in a resolved diff range; exits 0 when no base resolves. Three `colour` uses reached main through it. |
+| **Control** | the same guard, working | **Six catches**, including one on 2026-08-30. It works when it can see. |
+
+The governing rule is now canon: **a guard that cannot find its input must fail,
+not pass.** This is the merge gate's SKIPPED-is-not-PASS bug in another
+instrument — the shape was fixed once and never swept for.
+
+### The original question, still in scope as part of the sweep
+
+## Do our content rules check rendered surfaces, or only source?
 
 **SHARPENED 2026-08-30 — the framing above understates it. It is not that the
 guard misses rendered surfaces. THERE IS NO GUARD.**

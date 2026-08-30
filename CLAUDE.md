@@ -21,11 +21,17 @@ var sourcing). Update it when you learn something new the same way.
   The reductio is the test: if paris says "avec plaisir", kyoto says "hai" and
   marrakech says "inshallah", and the system becomes costume. Binds the design
   lane as well as copy.
-- US ENGLISH in user-facing strings, product-wide. The product sells to the US
+- US ENGLISH THROUGHOUT THE REPO, not only in user-facing strings. The product sells to the US
   in USD. No British/Australian spellings (honoured, colour, organised) and no
   UK/AU idiom ("the bit", "pop in", "quick as anything", "in due course").
   This is a RULING, not a discovered rule — it postdates the code, so existing
   strings are drift to be swept, not violations anyone committed.
+  **Comments and identifiers are in scope too** (owner ruling 2026-08-30). The
+  guard already scanned them and the guard is right: comments become strings —
+  someone lifts a phrase out of a comment into a label and the spelling travels
+  with it. A rule narrower than its instrument teaches people to argue with the
+  instrument. `ALLOWLIST_SUBSTRINGS` in `scripts/test-us-english-spelling.mjs`
+  is the escape hatch, for third-party identifiers and direct quotations.
 - Exclamation marks are barred in product CHROME, not in voiced universe copy.
   The couple's site has a register; capri's rsvpIntro ("This is the bit where
   you say yes!") is a deliberate, owner-approved exemption. A later sweep must

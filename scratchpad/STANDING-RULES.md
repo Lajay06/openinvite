@@ -117,6 +117,42 @@ something the instrument was **structurally incapable** of seeing.
 
 ---
 
+## A GUARD THAT CANNOT FIND ITS INPUT MUST FAIL, NOT PASS
+
+**Owner ruling, 2026-08-30. Headline rule.**
+
+> **Absence of a finding is only evidence when you can prove something looked.**
+
+`scripts/test-us-english-spelling.mjs` scans only ADDED lines inside a resolved
+diff range, and its own header says it "Exits 0 if … no diff base is available".
+So a green check can mean either "I looked and it was clean" or "I did not look",
+and the system reports the first while holding the second. Three uses of
+`colour` reached main through it in #611.
+
+**This is the merge gate's SKIPPED-is-not-PASS bug, in a different instrument.**
+Identical shape, already diagnosed, already fixed once.
+
+### And the failure worth recording is not the bug, it is what we did after it
+
+> **WE FIXED A SHAPE IN ONE PLACE AND DID NOT SWEEP FOR IT.**
+
+When the merge gate was found accepting SKIPPED as PASS, it was fixed there and
+nobody asked which OTHER instrument had the same shape. That question was free
+at the time and would have found this one.
+
+**So: when a defect turns out to be a SHAPE rather than an incident, the fix is
+not done until you have swept for the shape elsewhere.** Name the shape, list
+every place it could live, and check them. A shape fixed in one instance is a
+shape you now know to look for — and looking is cheapest immediately after you
+have just understood it.
+
+Today's four instances of the family, in one place, because the count is the
+argument: `?api_key=` returning `200 []`; `timeout`-not-found reported as a
+passing check; `git push | sed` testing sed's exit status; and this. Each
+returned a confident, clean, empty answer.
+
+---
+
 ## A reference pattern has a core and a periphery
 
 **Owner ruling, 2026-08-30**, settling how a named reference implementation
