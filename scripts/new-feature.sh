@@ -25,6 +25,42 @@ else
   BRANCH="feat/${NAME}"
 fi
 
+# ── REFUSE A DIRTY TREE ──────────────────────────────────────────────────────
+#
+# UNCOMMITTED WORK FOLLOWS A CHECKOUT. That is the whole defect, and it is the
+# fourth instance of one shape: work left loose in the workspace gets swept up
+# by the next routine command. The stash-switch-pop took an unrelated branch's
+# WIP; `git add -A` took a session storage-state and an RSVP token; and on
+# 2026-08-30 a held /api/places consolidation rode this very checkout into a PR
+# about error-message passthrough, where `ship.sh`'s `git add -A` committed it
+# and eight files merged under a line describing three.
+#
+# Refusing here removes the situation rather than asking anyone to remember.
+#
+# NO OVERRIDE FLAG, DELIBERATELY. This script is a convenience wrapper; anyone
+# who genuinely wants to carry changes onto a new branch can still run
+# `git checkout -b <name>` directly. An escape hatch already exists outside the
+# script, so adding one inside it would only make the refusal ignorable — and
+# the value of an override is its rarity.
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo ""
+  echo "  REFUSING: the working tree is not clean."
+  echo ""
+  echo "  These changes would FOLLOW you onto ${BRANCH} and be committed there"
+  echo "  by ship.sh, which stages everything:"
+  echo ""
+  git status --porcelain | sed 's/^/    /'
+  echo ""
+  echo "  Commit them where they belong, or move them deliberately:"
+  echo "    git add <paths> && git commit -m \"…\"   # if they belong on this branch"
+  echo "    git stash push -m \"<name>\" -- <paths>   # by name; never a bare pop"
+  echo ""
+  echo "  For a docs-only commit to main, use the docs worktree instead:"
+  echo "    cd ../openinvite-docs && git pull && … && git push origin HEAD:main"
+  echo ""
+  exit 1
+fi
+
 echo ""
 echo "→ Switching to main and pulling latest…"
 git checkout main
