@@ -1084,6 +1084,37 @@ The governing rule is now canon: **a guard that cannot find its input must fail,
 not pass.** This is the merge gate's SKIPPED-is-not-PASS bug in another
 instrument — the shape was fixed once and never swept for.
 
+### FOUND BY THE VISIBILITY PR, WITHIN MINUTES — the canon guard does not run in CI
+
+**2026-08-30, #616.** The moment every guard started printing what it looked at,
+the CI log said this under the "Canon on a branch" step:
+
+```
+canon guard: on HEAD, where canon belongs — 0 file(s) checked
+```
+
+`check-canon-branch.mjs` exits 0 immediately when the branch name is `main` or
+`HEAD`. **CI checks out a detached HEAD**, so `git rev-parse --abbrev-ref HEAD`
+returns literally `HEAD`, and the guard returns before it looks at a single
+file. Its whole `--ci` mode — the `Canon-On-Branch:` trailer override, written
+and tested — is unreachable.
+
+**The script's own docstring claims the opposite**, and names this exact
+scenario as the reason CI matters:
+
+> "An edit made through the GitHub UI on a branch — a pre-push hook is local,
+>  which is why this also runs in CI."
+
+It does not run in CI. Canon has been destroyed twice; the local hook is the
+only thing that has ever guarded it, and the backstop everyone believed existed
+does not. The early exit is correct in intent (canon on main is fine) but tests
+the wrong thing: it needs the branch under review, not the checkout's HEAD name
+— in CI that is `GITHUB_HEAD_REF`.
+
+**This is the argument for the visibility PR in one line.** Nothing was broken
+by that change; it made an existing hole legible, and the hole had been there
+since the guard was written. Cost: four print statements.
+
 ### The original question, still in scope as part of the sweep
 
 ## Do our content rules check rendered surfaces, or only source?
