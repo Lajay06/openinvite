@@ -52,7 +52,7 @@ fi
 # `git checkout -b <name>` directly. An escape hatch already exists outside the
 # script, so adding one inside it would only make the refusal ignorable — and
 # the value of an override is its rarity.
-if [[ -n "$(git status --porcelain)" ]]; then
+if [[ -n "$(git status --porcelain)" && "$CARRY" != "1" ]]; then
   echo ""
   echo "  REFUSING: the working tree is not clean."
   echo ""
@@ -100,7 +100,30 @@ if [[ "$CARRY" == "1" && -n "$(git status --porcelain)" ]]; then
   echo "→ Fetching latest origin/main…"
   git fetch origin main
   echo "→ Creating branch ${BRANCH} from origin/main, keeping your changes…"
-  git checkout -b "${BRANCH}" origin/main
+  # Git refuses when a carried file would be CLOBBERED by moving to
+  # origin/main — i.e. you have edited a file that also changed upstream.
+  # That refusal is correct: carrying it would silently discard one side. But
+  # git's raw message says "commit or stash", which is exactly the advice that
+  # sends someone back to the manoeuvre this script exists to avoid. So it is
+  # caught and explained in terms of the actual choice.
+  if ! git checkout -b "${BRANCH}" origin/main 2>/tmp/.nf-carry-err; then
+    echo ""
+    echo "  CANNOT CARRY: one of your changed files also moved on origin/main,"
+    echo "  so bringing it across would silently discard one version."
+    echo ""
+    sed 's/^/    /' /tmp/.nf-carry-err
+    echo ""
+    echo "  This is the one case where stopping is right. Your options:"
+    echo "    1. Commit the work where it is, then branch clean:"
+    echo "         git add <paths> && git commit -m \"…\""
+    echo "         ./scripts/new-feature.sh ${NAME}"
+    echo "    2. Branch from where you ARE rather than from origin/main:"
+    echo "         git checkout -b ${BRANCH}      # keeps changes, base is this branch"
+    echo ""
+    rm -f /tmp/.nf-carry-err
+    exit 1
+  fi
+  rm -f /tmp/.nf-carry-err
 else
   echo ""
   echo "→ Switching to main and pulling latest…"
