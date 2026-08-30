@@ -36,7 +36,11 @@ import { copyFromPromise } from '@/lib/copyToClipboard';
 import CopyFallbackModal from '@/components/shared/CopyFallbackModal';
 import { createGuest, updateGuest, deleteGuest } from '@/lib/guestWrites';
 
-const RSVP_BASE = `${window.location.origin}/rsvp/`;
+// Guarded on the pattern already used by src/lib/app-params.js: read the
+// environment at module load only when there IS one. Browser behavior is
+// byte-identical; outside a browser this is a relative path rather than a throw,
+// which is what lets this module be loaded in a test at all.
+const RSVP_BASE = typeof window === 'undefined' ? '/rsvp/' : `${window.location.origin}/rsvp/`;
 
 // One-shot backfill for guests that predate minting-at-creation.
 //

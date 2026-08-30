@@ -17,7 +17,11 @@ import { FlaskConical, ArrowUpRight, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const F = { fontFamily: "'Plus Jakarta Sans', sans-serif" };
-const RSVP_BASE = `${window.location.origin}/rsvp/`;
+// Guarded on the pattern already used by src/lib/app-params.js: read the
+// environment at module load only when there IS one. Browser behavior is
+// byte-identical; outside a browser this is a relative path rather than a throw,
+// which is what lets this module be loaded in a test at all.
+const RSVP_BASE = typeof window === 'undefined' ? '/rsvp/' : `${window.location.origin}/rsvp/`;
 
 const TYPE_DESCRIPTIONS = {
   invite: 'The first ask — sent when a guest is added to your list.',

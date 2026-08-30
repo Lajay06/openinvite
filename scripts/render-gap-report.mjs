@@ -24,7 +24,7 @@
  *
  * Usage:  node scripts/render-gap-report.mjs [--verbose]
  */
-import { readdirSync, mkdirSync, rmSync, existsSync } from 'node:fs';
+import { readdirSync, mkdirSync, rmSync, existsSync, readFileSync } from 'node:fs';
 import { join, resolve, basename, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
@@ -45,7 +45,7 @@ const pages = readdirSync(join(SRC, 'pages'))
   .map(f => join(SRC, 'pages', f))
   .sort();
 
-if (existsSync(OUT)) rmSync(OUT, { recursive: true, force: true });
+if (existsSync(OUT)) if (!process.env.KEEP_RENDER_GAP_BUNDLE) rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 
 try {
@@ -80,6 +80,7 @@ try {
   process.exit(1);
 }
 
+const escapeRe = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const require_ = createRequire(import.meta.url);
 const ok = [];
 const failed = [];
@@ -90,9 +91,29 @@ for (const p of pages) {
     ok.push(basename(p));
   } catch (err) {
     const first = String(err && err.message || err).split('\n')[0];
-    // Attribute to the module that actually threw, not to the page.
-    const frame = (err.stack || '').split('\n').find(l => l.includes('src/'));
-    const blame = frame ? (frame.match(/src\/[^\s:)]+/) || [])[0] : null;
+    // ATTRIBUTE TO THE MODULE THAT ACTUALLY THREW.
+    //
+    // The first version looked for a `src/` path in the stack, but esbuild
+    // emits no sourcemap here, so every frame points at the bundle and 79 of
+    // 82 failures came back "unknown". A cause you cannot name is a cause you
+    // cannot fix, and "unknown" on 96% of failures is the instrument declining
+    // to answer the question it exists for.
+    //
+    // esbuild writes a `// path/to/module.js` comment above each module in the
+    // bundle. So: take the line number from the stack, then scan BACKWARDS
+    // through the bundle for the nearest such marker. That names the real
+    // offender rather than the page that happened to import it.
+    let blame = null;
+    try {
+      const m = (err.stack || '').match(new RegExp(escapeRe(out) + ':(\\d+)'));
+      if (m) {
+        const lines = readFileSync(out, 'utf8').split('\n');
+        for (let i = Number(m[1]) - 1; i >= 0; i--) {
+          const mk = lines[i].match(/^\s*\/\/ (src\/[^\s]+|node_modules\/[^\s]+)$/);
+          if (mk) { blame = mk[1]; break; }
+        }
+      }
+    } catch { /* attribution is a hint; never let it break the run */ }
     failed.push({ page: basename(p), reason: first, blame });
   }
 }
@@ -120,4 +141,4 @@ if (failed.length) {
 } else {
   console.log('  No remaining causes — and this instrument attempts the load rather\n  than grepping for known offenders, so an empty list is evidence.\n');
 }
-rmSync(OUT, { recursive: true, force: true });
+if (!process.env.KEEP_RENDER_GAP_BUNDLE) rmSync(OUT, { recursive: true, force: true });

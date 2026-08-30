@@ -14,7 +14,11 @@ import { interactiveDivProps } from '@/lib/a11y';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { fetchGuestLinks } from '@/lib/guestLinks';
 
-const RSVP_BASE = `${window.location.origin}/rsvp/`;
+// Guarded on the pattern already used by src/lib/app-params.js: read the
+// environment at module load only when there IS one. Browser behavior is
+// byte-identical; outside a browser this is a relative path rather than a throw,
+// which is what lets this module be loaded in a test at all.
+const RSVP_BASE = typeof window === 'undefined' ? '/rsvp/' : `${window.location.origin}/rsvp/`;
 
 // Belt to ensureTokens' braces. A falsy token concatenates to the string
 // "undefined" and yields a URL that resolves to "Invitation not found" — a
