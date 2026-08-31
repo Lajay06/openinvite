@@ -505,10 +505,7 @@ export const UNIVERSE_CONFIGS = {
       ease:          'easeOut',
       intensity:     'subtle',
     },
-    pageTransition: {
-      type:     'fade',
-      duration: 0.9,     // slowed from 0.65s to match the reverent personality above
-    },
+    pageTransition: { type: 'iris', direction: 'center-out', duration: 0.3 },
     // Per-universe SECTION LAYOUT (see UNIVERSE_DESIGN_SYSTEM.md §1) — the
     // minimal pole: deeply centred, symmetric, vast whitespace, a single
     // bare hairline rule as the only divider (the anti-motif to
@@ -560,7 +557,7 @@ export const UNIVERSE_CONFIGS = {
       accent: '#D4845A', accentSecondary: '#C4956A', navBg: '#3D2B1F',
     },
     motion: { sectionReveal: 'fade', duration: 0.7, yOffset: 16, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'dissolve', duration: 0.7 },
+    pageTransition: { type: 'lift', direction: 'up', duration: 0.3 },
     // Design Studio tile metadata (fix/design-studio-entrance) — see london's
     // tags/tileDescription/imageUrl comment above for what these do.
     tags: ['tropical', 'coastal'],
@@ -596,7 +593,7 @@ export const UNIVERSE_CONFIGS = {
     // the shortest travel distance outside London, fitting "spare and
     // serene" rather than "gentle lift."
     motion: { sectionReveal: 'fade', duration: 0.8, yOffset: 10, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'fade', duration: 0.7 },
+    pageTransition: { type: 'unfold', direction: 'vertical', duration: 0.3 },
     // Per-universe SECTION LAYOUT (UNIVERSE_DESIGN_SYSTEM.md §1) —
     // asymmetric, vertical-rhythm composition: a narrow column (couple
     // names one per line, generous line-height) against vast negative
@@ -649,7 +646,7 @@ export const UNIVERSE_CONFIGS = {
     // Bright, buoyant — quicker and lighter than the original, fitting
     // "sun-drenched, playful" rather than "crisp."
     motion: { sectionReveal: 'fade', duration: 0.55, yOffset: 14, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'slide', duration: 0.45 },
+    pageTransition: { type: 'push', direction: 'left', duration: 0.28 },
     // Per-universe SECTION LAYOUT — sun-drenched and centred, but bright
     // and present rather than quiet: a CitrusScallop rule (a repeating
     // row of semicircle bumps, like scalloped citrus pith) under the
@@ -701,7 +698,7 @@ export const UNIVERSE_CONFIGS = {
     // "worth waiting for" personality. Still the same fade-up mechanism
     // every universe uses (SectionReveal) — only calibration differs.
     motion: { sectionReveal: 'fade', duration: 0.85, yOffset: 22, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'dissolve', duration: 0.8 },
+    pageTransition: { type: 'push', direction: 'right-slant', duration: 0.32 },
     // Per-universe SECTION LAYOUT (not just colour/type/motion) — an id
     // resolved by each guest-site page component (WeddingHomePage.jsx,
     // WeddingOurStoryPage.jsx, WeddingCelebrationPage.jsx,
@@ -768,7 +765,7 @@ export const UNIVERSE_CONFIGS = {
     // soft easeOut every other universe uses, reading as a hard stop
     // rather than a gentle settle.
     motion: { sectionReveal: 'fade', duration: 0.4, yOffset: 10, ease: 'circOut', intensity: 'subtle' },
-    pageTransition: { type: 'slide', duration: 0.3 },
+    pageTransition: { type: 'push', direction: 'left-sharp', duration: 0.24 },
     // Per-universe SECTION LAYOUT — off-grid, asymmetric: a vertical
     // sideways kicker, couple names shifted hard right (never centred),
     // a bold TicketStub rule (a solid block with a perforated tear-line
@@ -823,7 +820,7 @@ export const UNIVERSE_CONFIGS = {
     // gentle-but-still-abrupt stop), reading as an unhurried drift
     // rather than a settle.
     motion: { sectionReveal: 'fade', duration: 0.9, yOffset: 20, ease: 'easeInOut', intensity: 'subtle' },
-    pageTransition: { type: 'reveal', duration: 0.85 },
+    pageTransition: { type: 'lift', direction: 'down', duration: 0.32 },
     // Per-universe SECTION LAYOUT — flowing and organic: relaxed
     // left-aligned composition, a WaveDivider (a real generated SVG
     // curve) in place of every other layout's straight rule, a small
@@ -878,7 +875,7 @@ export const UNIVERSE_CONFIGS = {
     // Elegant, precise — shorter travel than the original for "precise"
     // rather than "lingering," while staying unhurried.
     motion: { sectionReveal: 'fade', duration: 0.7, yOffset: 12, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'fade', duration: 0.6 },
+    pageTransition: { type: 'dissolve', duration: 0.32 },
     // Per-universe SECTION LAYOUT — a fashion-plate caption card: a fine
     // full-width HairlineRule above AND below the centred kicker/names
     // (framed, not just a single quiet mark beneath), structured evenly-
@@ -936,7 +933,7 @@ export const UNIVERSE_CONFIGS = {
     // original "adventurous, snappier" safari calibration, fitting
     // "serene luxury, unhurried" instead.
     motion: { sectionReveal: 'fade', duration: 0.75, yOffset: 18, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'dissolve', duration: 0.9 },
+    pageTransition: { type: 'unfold', direction: 'center-split', duration: 0.32 },
     // Per-universe SECTION LAYOUT — left-aligned, generously spaced,
     // grounded (not centred-formal, not dramatically asymmetric): a
     // VineRule (a fine estate-stationery botanical rule) beneath the
@@ -1001,7 +998,7 @@ export const UNIVERSE_CONFIGS = {
     // this batch, reading as a precise architectural cut rather than a
     // soft lift.
     motion: { sectionReveal: 'fade', duration: 0.6, yOffset: 8, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'reveal', duration: 0.5 },
+    pageTransition: { type: 'unfold', direction: 'horizontal', duration: 0.28 },
     // Per-universe SECTION LAYOUT — a Bauhaus-flat colour-block
     // composition: a solid CubeBlock (a plain rectangle, no line, no
     // pattern — literal architecture) beside the kicker/names, vast
@@ -1051,7 +1048,7 @@ export const UNIVERSE_CONFIGS = {
       accent: '#D9A441', accentSecondary: '#2F6E5A', navBg: '#1B5E6B',
     },
     motion: { sectionReveal: 'fade', duration: 0.72, yOffset: 18, ease: 'easeInOut', intensity: 'subtle' },
-    pageTransition: { type: 'dissolve', duration: 0.72 },
+    pageTransition: { type: 'push', direction: 'right', duration: 0.3 },
     layout: 'amalfi-citrus',
     copy: {
       heroKicker: 'You are warmly invited',
@@ -1087,7 +1084,7 @@ export const UNIVERSE_CONFIGS = {
       accent: '#B5522A', accentSecondary: '#A68966', navBg: '#3B2A1E',
     },
     motion: { sectionReveal: 'fade', duration: 0.85, yOffset: 20, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'fade', duration: 0.78 },
+    pageTransition: { type: 'push', direction: 'left-slant', duration: 0.32 },
     layout: 'sedona-mesa',
     copy: {
       heroKicker: 'Join us',
@@ -1123,7 +1120,7 @@ export const UNIVERSE_CONFIGS = {
       accent: '#3D5A46', accentSecondary: '#B8C0C4', navBg: '#2A2E31',
     },
     motion: { sectionReveal: 'fade', duration: 0.7, yOffset: 14, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'fade', duration: 0.65 },
+    pageTransition: { type: 'fade', duration: 0.3 },
     layout: 'aspen-lodge',
     copy: {
       heroKicker: 'You are invited',
@@ -1160,7 +1157,7 @@ export const UNIVERSE_CONFIGS = {
       accent: '#C9922E', accentSecondary: '#1F5C3F', navBg: '#5C1626',
     },
     motion: { sectionReveal: 'fade', duration: 0.9, yOffset: 22, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'dissolve', duration: 0.85 },
+    pageTransition: { type: 'iris', direction: 'scale-up', duration: 0.32 },
     layout: 'taj-pavilion',
     copy: {
       heroKicker: 'You are graciously invited',
@@ -1196,7 +1193,7 @@ export const UNIVERSE_CONFIGS = {
       accent: '#D9713C', accentSecondary: '#2C7A6B', navBg: '#16324A',
     },
     motion: { sectionReveal: 'fade', duration: 0.6, yOffset: 16, ease: 'circOut', intensity: 'subtle' },
-    pageTransition: { type: 'fade', duration: 0.55 },
+    pageTransition: { type: 'fade', duration: 0.34 },
     layout: 'havana-deco',
     copy: {
       heroKicker: 'You are invited',
@@ -1232,7 +1229,7 @@ export const UNIVERSE_CONFIGS = {
       accent: '#6B2333', accentSecondary: '#A6842E', navBg: '#2E3B2A',
     },
     motion: { sectionReveal: 'fade', duration: 0.95, yOffset: 24, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'dissolve', duration: 0.95 },
+    pageTransition: { type: 'iris', direction: 'center-in', duration: 0.32 },
     layout: 'edinburgh-estate',
     copy: {
       heroKicker: 'You are cordially invited',
@@ -1268,7 +1265,7 @@ export const UNIVERSE_CONFIGS = {
       accent: '#B8963E', accentSecondary: '#1F5C3F', navBg: '#14213D',
     },
     motion: { sectionReveal: 'fade', duration: 0.7, yOffset: 15, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'fade', duration: 0.68 },
+    pageTransition: { type: 'unfold', direction: 'edge-in', duration: 0.3 },
     layout: 'monaco-marina',
     copy: {
       heroKicker: 'You are invited',
@@ -1304,7 +1301,7 @@ export const UNIVERSE_CONFIGS = {
       accent: '#B5643A', accentSecondary: '#5C6B3E', navBg: '#5C2A2E',
     },
     motion: { sectionReveal: 'fade', duration: 0.78, yOffset: 18, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'dissolve', duration: 0.82 },
+    pageTransition: { type: 'dissolve', duration: 0.34 },
     layout: 'florence-editorial',
     copy: {
       heroKicker: 'You are invited',
@@ -1342,7 +1339,7 @@ export const UNIVERSE_CONFIGS = {
       accent: '#9B8AC4', accentSecondary: '#C48FA0', navBg: '#2B2E33',
     },
     motion: { sectionReveal: 'fade', duration: 0.5, yOffset: 12, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'fade', duration: 0.45 },
+    pageTransition: { type: 'push', direction: 'up-sharp', duration: 0.24 },
     layout: 'seoul-glass',
     copy: {
       heroKicker: 'You are invited',
@@ -1381,7 +1378,7 @@ export const UNIVERSE_CONFIGS = {
       accent: '#C9A227', accentSecondary: '#1F5C4A', navBg: '#0F1B14',
     },
     motion: { sectionReveal: 'fade', duration: 0.8, yOffset: 20, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'dissolve', duration: 0.75 },
+    pageTransition: { type: 'iris', direction: 'scale-down', duration: 0.3 },
     layout: 'shanghai-glamour',
     copy: {
       heroKicker: 'You are invited',

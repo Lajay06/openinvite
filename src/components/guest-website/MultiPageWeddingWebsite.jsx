@@ -262,33 +262,97 @@ export default function MultiPageWeddingWebsite() {
   const PageComponent = PAGE_COMPONENTS[page] || WeddingHomePage;
   const universeConfig = resolveUniverseConfig(weddingDetails);
 
-  const getTransitionVariants = (transitionType) => {
-    switch (transitionType) {
-      case 'slide':
+  /**
+   * PAGE TRANSITIONS — the guest's most repeated motion, and the one that was
+   * thinnest.
+   *
+   * Measured on 2026-08-31 with tests/motion/capture.mjs, which reads the
+   * animating element's transform and opacity rather than comparing
+   * screenshots: twenty universes produced FOUR distinct motion signatures.
+   * Nineteen of twenty collided with at least one other. The declared types
+   * did not predict the observed motion — `london` (fade) moved identically to
+   * `marrakech` (dissolve), because a 2% scale is not perceptible.
+   *
+   * THE GUEST TRANSITION IS THE STUDIO ENTRANCE'S QUIETER SIBLING. A couple
+   * crosses the entrance once and should be moved by it; a guest crosses this
+   * ten or twenty times looking for the venue address. Same character, a
+   * fraction of the theatre — Marrakech's slanted sand wipe becomes a short
+   * slanted push, Kyoto's unfold a restrained vertical reveal. The family is
+   * recognisable; the duration is not.
+   *
+   * CONSTRAINT: nothing over 340ms, nothing that delays content becoming
+   * readable, nothing that moves the page under a thumb mid-scroll (these fire
+   * on navigation, never on scroll).
+   *
+   * `reveal` IS DELETED. It was byte-identical to `fade` — a type that exists
+   * and does nothing is a trap for the next reader, who reasonably assumes the
+   * name means something.
+   */
+  const AXES = {
+    left:         { x: 28 },  right:       { x: -28 },
+    up:           { y: 24 },  down:        { y: -24 },
+    'left-sharp': { x: 36 },  'up-sharp':  { y: 30 },
+    'left-slant': { x: 26, y: 10 }, 'right-slant': { x: -26, y: 10 },
+  };
+
+  const getTransitionVariants = (pt) => {
+    const type = typeof pt === 'string' ? pt : pt?.type;
+    const dir = typeof pt === 'object' ? pt?.direction : undefined;
+
+    // prefers-reduced-motion gets a NEUTRAL variant, not a zero-duration one.
+    // A zero duration still RUNS the transform, so `x: 28` became an instant
+    // sideways jump — movement, delivered faster. The correct answer to "I do
+    // not want motion" is no motion.
+    if (prefersReduced) {
+      return { initial: { opacity: 1 }, animate: { opacity: 1 }, exit: { opacity: 1 } };
+    }
+
+    const axis = AXES[dir] || {};
+    switch (type) {
+      case 'push':
         return {
-          initial: { opacity: 0, x: 100 },
-          animate: { opacity: 1, x: 0 },
-          exit: { opacity: 0, x: -100 }
+          initial: { opacity: 0, ...axis },
+          animate: { opacity: 1, x: 0, y: 0 },
+          exit:    { opacity: 0, ...Object.fromEntries(Object.entries(axis).map(([k, v]) => [k, -v])) },
         };
-      case 'reveal':
+      case 'lift':
         return {
-          initial: { opacity: 0 },
-          animate: { opacity: 1 },
-          exit: { opacity: 0 }
+          initial: { opacity: 0, ...axis },
+          animate: { opacity: 1, y: 0 },
+          exit:    { opacity: 0, y: (axis.y ?? 24) * -0.6 },
+        };
+      case 'iris':
+        return {
+          initial: { opacity: 0, scale: dir === 'center-in' || dir === 'scale-down' ? 1.06 : 0.94 },
+          animate: { opacity: 1, scale: 1 },
+          exit:    { opacity: 0, scale: dir === 'center-in' || dir === 'scale-down' ? 0.97 : 1.03 },
+        };
+      case 'unfold':
+        return {
+          initial: {
+            opacity: 0,
+            clipPath: dir === 'horizontal' ? 'inset(0% 46% 0% 46%)'
+                    : dir === 'center-split' ? 'inset(46% 0% 46% 0%)'
+                    : dir === 'edge-in' ? 'inset(0% 0% 0% 88%)'
+                    : 'inset(42% 0% 42% 0%)',
+          },
+          animate: { opacity: 1, clipPath: 'inset(0% 0% 0% 0%)' },
+          exit:    { opacity: 0, clipPath: 'inset(0% 0% 0% 0%)' },
         };
       case 'dissolve':
         return {
           initial: { opacity: 0, scale: 0.98 },
           animate: { opacity: 1, scale: 1 },
-          exit: { opacity: 0, scale: 1.02 }
+          exit:    { opacity: 0, scale: 1.02 },
         };
       case 'fade':
       default:
-        return {
-          initial: { opacity: 0 },
-          animate: { opacity: 1 },
-          exit: { opacity: 0 }
-        };
+        // aspen + havana keep pure fade DELIBERATELY. universeTransitions.js
+        // says it in their own family's words: "Deliberately no scale/clip-path
+        // — the stillness IS the character, in contrast to every other, higher-
+        // energy style." Stillness is a choice here, not an omission, and this
+        // is the comment that stops a later sweep "fixing" it.
+        return { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } };
     }
   };
 
@@ -386,8 +450,16 @@ export default function MultiPageWeddingWebsite() {
       <AnimatePresence mode="wait">
         <motion.div
           key={page}
+          // THE WHOLE OBJECT, NOT `.type`. Reading `.type` here threw away
+          // `direction` before the function could see it, so every universe
+          // took its type's DEFAULT branch: all six pushes rendered as a plain
+          // fade (their entire displacement comes from the axis), all four
+          // unfolds rendered the same vertical inset, and up/down lift became
+          // one direction. The signatures still came back 20-of-20 distinct
+          // because durations and sampling jitter differ -- A DISTINCTNESS
+          // COUNT IS NOT A VARIETY CHECK. Grade the mechanism, not the tally.
           variants={getTransitionVariants(
-            universeConfig?.pageTransition?.type ?? weddingDetails.pageTransition ?? 'fade'
+            universeConfig?.pageTransition ?? weddingDetails.pageTransition ?? 'fade'
           )}
           initial="initial"
           animate="animate"

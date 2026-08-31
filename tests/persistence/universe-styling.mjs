@@ -136,9 +136,19 @@ export async function runUniverseStyling() {
     ? pass('UNIVERSE_CONFIGS — every universe declares a pageTransition (fix/universe-cleanup, was london-only)', resolvedTransitions.map(t => t.type).join(', '))
     : fail('UNIVERSE_CONFIGS — every universe declares a pageTransition (fix/universe-cleanup, was london-only)', 'all non-null', resolvedTransitions.map(t => t?.type ?? 'MISSING').join(', ')));
 
-  results.push(new Set(resolvedTransitions.map(t => `${t.type}-${t.duration}`)).size === 20
-    ? pass('UNIVERSE_CONFIGS — pageTransition (type, duration) is distinct across all 20 universes', resolvedTransitions.map(t => `${t.type}/${t.duration}`).join(', '))
-    : fail('UNIVERSE_CONFIGS — pageTransition (type, duration) is distinct across all 20 universes', '20 distinct', `${new Set(resolvedTransitions.map(t => `${t.type}-${t.duration}`)).size} distinct: ${resolvedTransitions.map(t => `${t.type}/${t.duration}`).join(', ')}`));
+  // DIRECTION IS PART OF THE IDENTITY, and this key had to grow to say so.
+  // It read (type, duration) because that was the whole of a pageTransition
+  // when it was written. Once `direction` was added, six universes shared a
+  // type and a duration while moving DIFFERENT WAYS -- push/left/0.32 and
+  // push/right-slant/0.32 are not the same transition, and a key that cannot
+  // see direction called them a collision. The test was measuring a
+  // PROJECTION of the config that dropped the dimension under test. Any new
+  // dimension of pageTransition belongs in this key on the day it is added.
+  const transitionKey = t => `${t.type}-${t.direction ?? '-'}-${t.duration}`;
+  const transitionLabel = t => `${t.type}/${t.direction ?? '-'}/${t.duration}`;
+  results.push(new Set(resolvedTransitions.map(transitionKey)).size === 20
+    ? pass('UNIVERSE_CONFIGS — pageTransition (type, direction, duration) is distinct across all 20 universes', resolvedTransitions.map(transitionLabel).join(', '))
+    : fail('UNIVERSE_CONFIGS — pageTransition (type, direction, duration) is distinct across all 20 universes', '20 distinct', `${new Set(resolvedTransitions.map(transitionKey)).size} distinct: ${resolvedTransitions.map(transitionLabel).join(', ')}`));
 
   console.log('\n  Colour resolution — distinct per universe, no fallback to London (fix/universe-palettes):\n');
 

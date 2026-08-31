@@ -183,12 +183,23 @@ export default [
     // errors here and nowhere else in the repo — every one a false positive of
     // exactly this shape. Do not "tidy" this group away.
     //
-    // Listed by name because there are only three. If a fourth Playwright file
-    // appears, turn this into a directory pattern rather than growing the list.
+    // A fourth appeared, and the instruction it arrived with was to convert
+    // this list into a directory pattern. Deliberately not done, because the
+    // premise was wrong: these files do not share a directory, and the trait
+    // they share is not "drives Playwright". The repo has 15 Playwright
+    // drivers and 79 scripts; the other 11 drivers lint clean precisely
+    // because they never run code INSIDE the page -- they assert on values
+    // Playwright hands back to node. THE CRITERION IS `page.evaluate`, NOT THE
+    // FOLDER. A `scripts/**` pattern would hand browser globals to all 79 and
+    // disarm no-undef across the lot, to save four lines.
+    //
+    // So this list is expected to grow, one entry per file that genuinely
+    // evaluates in the browser, and growing is the correct behavior.
     files: [
       "scripts/test-marketing-routes.mjs",
       "scripts/prerender.mjs",
       "scripts/capture/videos.mjs",
+      "tests/motion/capture.mjs",
     ],
     languageOptions: {
       globals: { ...globals.node, ...globals.browser },
