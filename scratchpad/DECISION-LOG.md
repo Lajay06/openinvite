@@ -1025,3 +1025,37 @@ contributes nothing, in all eight grid universes. It appears only on the four
 inner pages, which are about half light. That is not a design; it is one alpha
 meeting two grounds. A design question for the owner, not a defect to fix
 quietly.
+
+---
+
+## 2026-09-01 — twenty universes have zero verifiable production surfaces (MISSING INSTRUMENT)
+
+The guest-website texture overlay mounts only on `/w/:slug`. There is no
+published wedding on any universe we are permitted to read, so **a
+guest-facing universe change cannot be verified in production at all.** What
+can be read from a deployed bundle is the VALUE — `defaultOpacity: .012`,
+`texture:{type:"canvas"}` — and that proves the value shipped. **IT DOES NOT
+PROVE A PAGE RENDERS IT.**
+
+The gap is widest exactly where it matters most. #641 deleted eight config
+values so the level resolves through `var(--texture-opacity, default)`, and the
+failure mode of getting that wrong is a full-strength weave on every guest page.
+The bundle read cannot see it: the config is *supposed* to be absent. Only a
+computed style on a live guest page can distinguish "inherits correctly" from
+"resolved to the initial value of 1".
+
+**THIS APPLIES RETROSPECTIVELY AND THE EARLIER REPORTS OVERCLAIMED.** #637 and
+#639 were both reported as "verified live", and both were bundle reads —
+transition tokens and magnitude literals found in the shipped chunk. That is a
+weaker claim than either report made. The values were literals rather than
+fallback resolutions, so the exposure was smaller, but the class of evidence
+was the same and it was not labelled as such.
+
+**Once the owner's two fixture sites exist — bali (canvas) and paris (linen) —
+the computed reading on a live guest page becomes the definition of done for
+guest-facing universe work**, replacing the bundle read. Do NOT create them:
+that is a production write and it is not ours to make.
+
+Until then, guest-facing universe changes are verified by rendering the real
+component locally and reading the computed value, and the report must say that
+is what happened rather than calling it live verification.
