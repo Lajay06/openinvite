@@ -505,7 +505,7 @@ export const UNIVERSE_CONFIGS = {
       ease:          'easeOut',
       intensity:     'subtle',
     },
-    pageTransition: { type: 'iris', direction: 'centre-out', duration: 0.3 },
+    pageTransition: { type: 'iris', direction: 'center-out', duration: 0.3 },
     // Per-universe SECTION LAYOUT (see UNIVERSE_DESIGN_SYSTEM.md §1) — the
     // minimal pole: deeply centred, symmetric, vast whitespace, a single
     // bare hairline rule as the only divider (the anti-motif to
@@ -933,7 +933,7 @@ export const UNIVERSE_CONFIGS = {
     // original "adventurous, snappier" safari calibration, fitting
     // "serene luxury, unhurried" instead.
     motion: { sectionReveal: 'fade', duration: 0.75, yOffset: 18, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'unfold', direction: 'centre-split', duration: 0.32 },
+    pageTransition: { type: 'unfold', direction: 'center-split', duration: 0.32 },
     // Per-universe SECTION LAYOUT — left-aligned, generously spaced,
     // grounded (not centred-formal, not dramatically asymmetric): a
     // VineRule (a fine estate-stationery botanical rule) beneath the
@@ -1229,7 +1229,7 @@ export const UNIVERSE_CONFIGS = {
       accent: '#6B2333', accentSecondary: '#A6842E', navBg: '#2E3B2A',
     },
     motion: { sectionReveal: 'fade', duration: 0.95, yOffset: 24, ease: 'easeOut', intensity: 'subtle' },
-    pageTransition: { type: 'iris', direction: 'centre-in', duration: 0.32 },
+    pageTransition: { type: 'iris', direction: 'center-in', duration: 0.32 },
     layout: 'edinburgh-estate',
     copy: {
       heroKicker: 'You are cordially invited',

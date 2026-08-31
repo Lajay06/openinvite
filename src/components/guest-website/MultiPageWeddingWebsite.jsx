@@ -323,16 +323,16 @@ export default function MultiPageWeddingWebsite() {
         };
       case 'iris':
         return {
-          initial: { opacity: 0, scale: dir === 'centre-in' || dir === 'scale-down' ? 1.06 : 0.94 },
+          initial: { opacity: 0, scale: dir === 'center-in' || dir === 'scale-down' ? 1.06 : 0.94 },
           animate: { opacity: 1, scale: 1 },
-          exit:    { opacity: 0, scale: dir === 'centre-in' || dir === 'scale-down' ? 0.97 : 1.03 },
+          exit:    { opacity: 0, scale: dir === 'center-in' || dir === 'scale-down' ? 0.97 : 1.03 },
         };
       case 'unfold':
         return {
           initial: {
             opacity: 0,
             clipPath: dir === 'horizontal' ? 'inset(0% 46% 0% 46%)'
-                    : dir === 'centre-split' ? 'inset(46% 0% 46% 0%)'
+                    : dir === 'center-split' ? 'inset(46% 0% 46% 0%)'
                     : dir === 'edge-in' ? 'inset(0% 0% 0% 88%)'
                     : 'inset(42% 0% 42% 0%)',
           },

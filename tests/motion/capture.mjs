@@ -290,7 +290,7 @@ for (const g of allCollisions) console.log('      COLLIDE: ' + g.join(', '));
 // Grade WHICH PROPERTIES MOVE AND WHICH WAY, not the sampled numbers. Zero vs
 // non-zero is preserved inside clip-path because that is exactly what
 // separates a horizontal unfold, inset(0% N%), from a vertical one,
-// inset(N% 0%) -- an earlier version normalised every number alike and
+// inset(N% 0%) -- an earlier version normalized every number alike and
 // reported four different unfolds as one.
 function mechanismOf(frames) {
   const clips = frames.filter(f => f && f.clipPath).map(f => f.clipPath);
