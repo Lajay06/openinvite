@@ -3319,3 +3319,46 @@ before it goes in a proposal.
 Filed alongside, unresolved: capetown and kyoto declare `unfold/center-split` at
 46% and `unfold/vertical` at 42% — two names for one vertical clip axis, four
 percent apart, a distinction nobody decided.
+
+## Enumerate the domain before measuring it
+
+Four findings in one week, each reported as a separate lesson, all of them the
+same one:
+
+- **The universe fingerprint** hashed `html.length + first-3-hex-colours`.
+  London and tulum collided and "two universes render identically" was
+  reported. They differ on all nine dimensions. It sampled three colors of a
+  whole page.
+- **Edge-pixels** graded motion by how far the animating edge travelled, which
+  made `unfold` look 13x a push. `inset(42% 0% 42% 0%)` hides the top AND the
+  bottom: the page starts showing sixteen percent of its area. It measured one
+  edge of a six-fold area change.
+- **The 320ms capture window** sampled a transition that runs `mode="wait"`, so
+  exit completes before entrance begins and the event is roughly double the
+  declared duration. It measured the exit of a two-part event -- and for iris,
+  dissolve and lift the exit is deliberately the quieter half.
+- **The texture contrast table** had one row per universe, keyed on `darkBg`.
+  The overlay is `inset: 0` on a root with no fixed height, so it spans the
+  whole page, and four of five guest pages are about half LIGHT ground. Every
+  figure in the table was the quiet case. The owner's one-line correction --
+  "the issue is on the light background" -- was worth more than the whole
+  report.
+
+In all four the instrument was sound, the arithmetic was right, and the output
+was read carefully. **THE SAMPLE WAS CHOSEN BY ASSUMPTION**, and an assumption
+about scope does not announce itself in the result: a number computed over the
+wrong domain looks exactly like a number computed over the right one.
+
+**ENUMERATE THE DOMAIN BEFORE MEASURING IT.** What does the overlay cover. What
+does the event span. What does the page contain. What grounds does this meet.
+Ask it FIRST, from the code, and write down the answer -- not because the
+measurement is hard, but because the domain is the one part of a measurement
+that the measurement itself can never check.
+
+The tell is a table with one row per thing when the thing has several of
+whatever is being measured. One row per universe for an overlay with two
+grounds; one number per transition for an event with two halves.
+
+And note what the fourth one cost to find: not a better instrument, not a
+closer reading, but the question "what does `inset: 0` sit over". That question
+was available on day one at zero cost.
