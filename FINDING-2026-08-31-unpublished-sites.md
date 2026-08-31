@@ -134,3 +134,16 @@ couple's own preview requires proving the caller owns the record, which is
 authentication and is a separate change.
 
 > **A data leak is never held open to keep a feature working.**
+
+**Preview was restored in #633** with the gate's own authentication —
+`verifyBase44User` on every request, compared to `created_by_id`, no request flag
+consulted. The `previewGranted` variable was deliberately NOT reused: its
+ownership check only ran for password-protected sites, and **all 11 exposed
+records had no password**, so reusing it would have reopened the leak behind a
+flag inside the commit that closed it.
+
+**CLOSED 2026-08-31: the owner confirmed his own preview loads on an unpublished
+wedding.** Both halves are now verified in production — the unauthenticated
+refusal by probe, the owner path by the only person who could test it. This was
+the third "verified by test, unverified in production" gap of the day, and it is
+the one that closed properly rather than being worked around.

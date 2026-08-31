@@ -11,6 +11,74 @@ on renders** before the merge request.
 
 ---
 
+# UNIVERSE PROGRAMME — the report before the work (2026-08-31)
+
+**Ordered by the owner before a line of universe work: what is a universe made
+of, and can we look at twenty at once. Both answered from source.**
+
+## What a universe is: 13 dimensions, and they are NOT palette swaps
+
+`websiteThemes.js` (1,416 lines) -> `universeCatalog.js`. Every dimension is
+rendered somewhere; none is dead.
+
+| | filled /20 | distinct /20 |
+|---|---|---|
+| colors, typography, motion, texture, layout, copy, tagline, tileDescription, motifNote, worldStory, imageUrl | 20 (layout & copy: 19) | **20** |
+| tags | 20 | 19 |
+| **transitionStyle** | 20 | **10** |
+
+**Eleven of thirteen dimensions carry twenty distinct values.** This is not five
+worlds and fifteen palettes — each universe has its own layout token
+(`london-minimal`, `kyoto-vertical`, `capri-citrus`), texture object, motion
+timing, copy voice and world story.
+
+**The two real gaps, and they are small:**
+1. **`transitionStyle`: 10 values across 20 universes**, each shared by a pair.
+   The one genuinely thin axis.
+2. **`tulum` is missing `layout` and `copy`** — the only hole in 260 cells.
+
+## The contrast finding, RELOCATED — it is the accent, not the body
+
+The standing claim was "15 of 20 palettes fail contrast", read as the product
+being illegible. **Measured, that is true of the accent and false of the body.**
+
+| | Result |
+|---|---|
+| **Body text** (`lightText` on `lightBg`) | **0 of 20 fail.** All above 7:1, most above 10:1 |
+| **Accent** (`accent` on `lightBg`) | **15 of 20 fail 4.5:1** &middot; **10 of 20 fail even 3:1** |
+
+**It is still real**, because `color: accent` appears **62 times on guest
+surfaces** — active nav, section eyebrows, quote attribution, list marks. That
+is text, so 4.5:1 applies.
+
+**Honest severity: secondary and label text in 15 universes is below the
+legibility threshold. Not "three quarters of the product is illegible".** The
+fix is the accent value in 15 palettes, not a redesign.
+
+## Can we look at twenty at once? YES, and it is cheap — tested, not asserted
+
+**All 20 universes render at tier 1: 20/20, zero failures, 19/20 visually
+distinct outputs.** A real guest page renders once per universe through the
+existing harness, in seconds, no browser needed.
+
+**The contact sheet is built:** every universe on one page, each card rendered in
+its own palette and type stack, with the matrix and computed contrast beneath.
+
+**The 19/20 is itself a finding the matrix could not produce:** two universes
+rendered byte-identically on that page. Either a genuine collision or a page that
+does not exercise the dimension they differ on. Worth identifying.
+
+## The work the matrix says this actually is
+
+1. **The 15 accent contrast failures** — bounded, concrete, launch-relevant
+2. **`transitionStyle`** — 10 values for 20 universes
+3. **`tulum`'s missing `layout` and `copy`**
+4. **The two identical renders** — which, and why
+
+Not "make twenty worlds distinct". They largely are.
+
+---
+
 # WAVE 3 — THE ACCORDION PATTERN (owner's spec, recorded verbatim 2026-08-30)
 
 **This spec was never written into the repo until now — the owner's own note,
