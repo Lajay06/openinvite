@@ -288,11 +288,33 @@ export default function MultiPageWeddingWebsite() {
    * and does nothing is a trap for the next reader, who reasonably assumes the
    * name means something.
    */
+  // MAGNITUDES ARE CALIBRATED, NOT PICKED. The first set (28/24/36/30/26)
+  // varied the KIND of motion and left the AMOUNT at a whisper: measured at
+  // the 390x844 guest viewport, these moved 3-12 visible pixels while `unfold`
+  // moved 60-129, a 40:1 spread inside one supposedly calibrated family. The
+  // owner watched all twenty and reported the differences as near-invisible.
+  //
+  // Two things make the declared number smaller than it looks. Every variant
+  // sits at opacity 0 when displacement is greatest and opacity 1 only once it
+  // has stopped, so integrated against opacity ONLY A THIRD of declared travel
+  // happens while the page can be seen -- 28px is a 9px push. And a translate
+  // and a clip are not comparable in edge-pixels at all: on the common currency
+  // of "fraction of the viewport not showing settled content", unfold sits at
+  // 0.84-0.92 because it hides most of the page, against 0.03-0.12 here.
+  //
+  // These values put the quiet types at 0.14-0.25 on that scale. Matching
+  // unfold was considered and rejected: 0.84 by translation alone needs 328px
+  // on a 390px screen, which is not a push, it is the page leaving.
+  //
+  // VERTICAL IS DELIBERATELY LOWER THAN HORIZONTAL (0.14-0.17 against
+  // 0.20-0.25). A large vertical page movement reads as a scroll jump -- the
+  // gesture the guest makes constantly on this surface -- so the same loudness
+  // that is legible sideways is ambiguous up and down.
   const AXES = {
-    left:         { x: 28 },  right:       { x: -28 },
-    up:           { y: 24 },  down:        { y: -24 },
-    'left-sharp': { x: 36 },  'up-sharp':  { y: 30 },
-    'left-slant': { x: 26, y: 10 }, 'right-slant': { x: -26, y: 10 },
+    left:         { x: 78 },  right:       { x: -78 },
+    up:           { y: 120 }, down:        { y: -120 },
+    'left-sharp': { x: 96 },  'up-sharp':  { y: 140 },
+    'left-slant': { x: 70, y: 18 }, 'right-slant': { x: -70, y: 18 },
   };
 
   const getTransitionVariants = (pt) => {
@@ -319,13 +341,13 @@ export default function MultiPageWeddingWebsite() {
         return {
           initial: { opacity: 0, ...axis },
           animate: { opacity: 1, y: 0 },
-          exit:    { opacity: 0, y: (axis.y ?? 24) * -0.6 },
+          exit:    { opacity: 0, y: (axis.y ?? 120) * -0.6 },
         };
       case 'iris':
         return {
-          initial: { opacity: 0, scale: dir === 'center-in' || dir === 'scale-down' ? 1.06 : 0.94 },
+          initial: { opacity: 0, scale: dir === 'center-in' || dir === 'scale-down' ? 1.12 : 0.89 },
           animate: { opacity: 1, scale: 1 },
-          exit:    { opacity: 0, scale: dir === 'center-in' || dir === 'scale-down' ? 0.97 : 1.03 },
+          exit:    { opacity: 0, scale: dir === 'center-in' || dir === 'scale-down' ? 0.94 : 1.06 },
         };
       case 'unfold':
         return {
@@ -341,9 +363,12 @@ export default function MultiPageWeddingWebsite() {
         };
       case 'dissolve':
         return {
-          initial: { opacity: 0, scale: 0.98 },
+          // Dissolve stays the quietest of the MOVING types by design -- 0.12
+          // against push's 0.20 -- but 0.98 put it at 0.04, which is the
+          // register that made it indistinguishable from a plain fade.
+          initial: { opacity: 0, scale: 0.94 },
           animate: { opacity: 1, scale: 1 },
-          exit:    { opacity: 0, scale: 1.02 },
+          exit:    { opacity: 0, scale: 1.06 },
         };
       case 'fade':
       default:
