@@ -24,7 +24,7 @@ import { isPlusOneId, MEAL_CHOSEN } from './attendees.js';
  *   an unknown PLAIN id is STALE DATA. A guest was deleted after being seated,
  *     their row lingers in Table.assigned_guests, and dropping it silently is
  *     correct. That is deliberate and fixtured in
- *     tests/persistence/asset-system.mjs:48 with `g-does-not-exist`.
+ *     tests/persistence/seating-chart.mjs with `g-does-not-exist`.
  *
  *   an unresolvable SYNTHETIC id is OUR BUG. It means Guest records were passed
  *     where attendees were required, and every seated plus-one is about to
