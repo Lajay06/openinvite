@@ -13,7 +13,11 @@ export default [
   // comment in src/lib/a11y.js failed with "Definition for rule ... was not
   // found" (the react-hooks plugin was never registered for that file, so
   // its own disable comment couldn't be validated against it).
-  { ignores: ["src/components/ui/**/*", "dist/**"] },
+  // tests/motion/bundle.* is esbuild output — React's own source, not ours.
+  // Linting it reports React internals as our defects, which is noise that
+  // teaches people to ignore the linter. It is gitignored too; this stops it
+  // failing the run for anyone who has built the harness locally.
+  { ignores: ["src/components/ui/**/*", "dist/**", "tests/motion/bundle.js", "tests/motion/bundle.css"] },
   // dist/** is build output. It is gitignored and untracked, but ESLint does
   // not read .gitignore, so without this entry it visits 238 emitted bundles.
   // prerendered/ IS tracked in git but holds only .html, which ESLint never
