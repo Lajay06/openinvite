@@ -1,5 +1,5 @@
 /**
- * OpenInvite Design System Reference
+ * Openinvite Design System Reference
  * This file documents the canonical design tokens for the platform
  * Use these values across all UI components (excluding wedding website guest pages)
  */

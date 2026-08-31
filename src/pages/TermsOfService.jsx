@@ -26,22 +26,22 @@ export default function TermsOfService() {
 
           <div style={{ background: 'rgba(224,53,83,0.04)', border: '1px solid rgba(224,53,83,0.12)', padding: '20px 24px', marginBottom: 48 }}>
             <p style={{ ...P, marginBottom: 0, fontWeight: 600, color: '#0A0A0A' }}>The short version</p>
-            <p style={{ ...P, marginBottom: 0 }}>Use OpenInvite to plan your wedding. Pro and Ultra are one-time purchases, not subscriptions. Be respectful of your guests and other users. Your content is yours — we provide the tools, you make the decisions.</p>
+            <p style={{ ...P, marginBottom: 0 }}>Use Openinvite to plan your wedding. Pro and Ultra are one-time purchases, not subscriptions. Be respectful of your guests and other users. Your content is yours — we provide the tools, you make the decisions.</p>
           </div>
 
           <div style={DIV} />
           <h2 style={H2}>1. Acceptance of terms</h2>
-          <p style={P}>By creating an account or using OpenInvite, you agree to these terms of service. If you do not agree, please do not use the service.</p>
+          <p style={P}>By creating an account or using Openinvite, you agree to these terms of service. If you do not agree, please do not use the service.</p>
           <p style={P}>We may update these terms from time to time. We'll notify account holders of material changes by email or in-app notice. Continued use after a change takes effect constitutes acceptance.</p>
 
           <div style={DIV} />
           <h2 style={H2}>2. Who these terms apply to</h2>
-          <p style={P}><strong>Couples</strong> create an OpenInvite account, purchase a plan, and use the platform to plan their wedding and manage their guest list. <strong>Guests</strong> are the people a couple invites — guests interact with a couple's published wedding website, RSVP form, and related pages without creating their own account, using a private link the couple sends them.</p>
+          <p style={P}><strong>Couples</strong> create an Openinvite account, purchase a plan, and use the platform to plan their wedding and manage their guest list. <strong>Guests</strong> are the people a couple invites — guests interact with a couple's published wedding website, RSVP form, and related pages without creating their own account, using a private link the couple sends them.</p>
           <p style={P}>These terms govern both roles. A couple is responsible for their guests' use of the guest-facing pages the couple has published, in the same way a host is responsible for an event they organize.</p>
 
           <div style={DIV} />
           <h2 style={H2}>3. Description of service</h2>
-          <p style={P}>OpenInvite is a wedding planning platform. Depending on plan, the service includes:</p>
+          <p style={P}>Openinvite is a wedding planning platform. Depending on plan, the service includes:</p>
           <ul style={UL}>
             <li>Guest list management and per-event RSVP tracking</li>
             <li>Budget, vendor, seating, schedule, and checklist tools</li>
@@ -62,7 +62,7 @@ export default function TermsOfService() {
 
           <div style={DIV} />
           <h2 style={H2}>5. Acceptable use</h2>
-          <p style={P}>You agree not to use OpenInvite to:</p>
+          <p style={P}>You agree not to use Openinvite to:</p>
           <ul style={UL}>
             <li>Send unsolicited communications (spam) through the platform</li>
             <li>Submit fake RSVPs or falsified guest information</li>
@@ -77,7 +77,7 @@ export default function TermsOfService() {
 
           <div style={DIV} />
           <h2 style={H2}>6. Your content</h2>
-          <p style={P}>All content you create in OpenInvite — guest lists, vendor notes, vows, messages, and wedding details — remains yours. You own it.</p>
+          <p style={P}>All content you create in Openinvite — guest lists, vendor notes, vows, messages, and wedding details — remains yours. You own it.</p>
           <p style={P}>By using the service, you grant us a limited, non-exclusive license to store, process, and display your content solely to provide the service to you (and, where relevant, your guests). We will not use your content for any other purpose.</p>
           <p style={P}>You are responsible for the accuracy of your content and for ensuring you have the right to share any information you upload — including your guests' personal details.</p>
 
@@ -95,7 +95,7 @@ export default function TermsOfService() {
           <div style={DIV} />
           <h2 style={H2}>8. Plans and payment</h2>
           <h3 style={H3}>Plans</h3>
-          <p style={P}>OpenInvite offers a free trial and two paid, <strong>one-time-payment</strong> plans — Pro (US$49) and Ultra (US$99) — each giving 24 months of access from purchase. These are not recurring subscriptions: you are charged once, at checkout, and are not billed again for that plan.</p>
+          <p style={P}>Openinvite offers a free trial and two paid, <strong>one-time-payment</strong> plans — Pro (US$49) and Ultra (US$99) — each giving 24 months of access from purchase. These are not recurring subscriptions: you are charged once, at checkout, and are not billed again for that plan.</p>
 
           <h3 style={H3}>Billing</h3>
           <p style={P}>Payments are processed securely by Stripe. We do not store your full card details.</p>
@@ -109,7 +109,7 @@ export default function TermsOfService() {
           <div style={DIV} />
           <h2 style={H2}>9. Intellectual property</h2>
           <p style={P}><strong>Yours:</strong> all wedding content, guest data, and personal information you create belongs to you.</p>
-          <p style={P}><strong>Ours:</strong> the OpenInvite platform, brand, design, code, and all non-user content is our intellectual property. You may not copy, reproduce, or distribute it without permission.</p>
+          <p style={P}><strong>Ours:</strong> the Openinvite platform, brand, design, code, and all non-user content is our intellectual property. You may not copy, reproduce, or distribute it without permission.</p>
 
           <div style={DIV} />
           <h2 style={H2}>10. Termination</h2>
@@ -118,7 +118,7 @@ export default function TermsOfService() {
 
           <div style={DIV} />
           <h2 style={H2}>11. Limitation of liability</h2>
-          <p style={P}>OpenInvite is a planning tool, not a wedding service provider. We are not liable for:</p>
+          <p style={P}>Openinvite is a planning tool, not a wedding service provider. We are not liable for:</p>
           <ul style={UL}>
             <li>The quality, availability, or conduct of any vendors you find or book</li>
             <li>The accuracy of AI-generated suggestions</li>

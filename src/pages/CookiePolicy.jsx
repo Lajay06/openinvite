@@ -58,7 +58,7 @@ export default function CookiePolicy() {
           <h3 style={H3}>Essential — always on</h3>
           <p style={P}>Required for the service to function. They cannot be turned off.</p>
           <CookieTable rows={[
-            ['base44_access_token', 'Keeps you signed in to your OpenInvite account', 'Until you sign out'],
+            ['base44_access_token', 'Keeps you signed in to your Openinvite account', 'Until you sign out'],
             ['oi_auth / oi_user', 'Stores your session state and basic profile so the app doesn\'t need to re-check on every page', 'Until you sign out'],
             ['oi_cookie_consent', 'Remembers your cookie consent choice from the banner', '1 year'],
             ['wb_pw_&#123;wedding-slug&#125;', 'On a password-protected wedding site, remembers that a guest has already entered the correct password for that visit', 'Browser session'],

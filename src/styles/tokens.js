@@ -1,5 +1,5 @@
 /**
- * Design tokens — single source of truth for the OpenInvite design system.
+ * Design tokens — single source of truth for the Openinvite design system.
  * Import and use these in components instead of hard-coding values.
  *
  * Usage:
