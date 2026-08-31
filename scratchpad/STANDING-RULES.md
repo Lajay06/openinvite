@@ -3395,3 +3395,48 @@ Related precision, because it is where this nearly went wrong twice: the eight
 configs are `{ type, opacity }`, and **only `opacity` is deleted**. `type` has
 no sensible default -- it is what distinguishes canvas from linen -- so
 "remove the override" means removing one property, not the object.
+
+## An echo is not corroboration
+
+I reported that `apply-prerendered` "failed CI twice today" and that it was the
+only one of three recovered CI steps with no second instrument. The advisor put
+both into an instruction as established premises and assigned work on them.
+Neither of us opened the runs.
+
+Both were false. Checking the actual runs: two CI failures that day, one on
+`test:prerendered-freshness` and one on `test:us-english-spelling`.
+**`apply-prerendered` failed zero times.** What happened twice was me running
+`build:prerender` locally, which is not CI failing. And on the second claim,
+`vercel.json`'s buildCommand is `vite build && node scripts/apply-prerendered.mjs`
+-- it runs in the production build, where NOTHING can skip it, while the
+pre-push hook backing the other two dies to `--no-verify`. It was the most
+strongly enforced of the three, not the least. **THREE THINGS RANKED BY A
+PROPERTY NOBODY MEASURED.**
+
+**A CLAIM ECHOED BY THE REVIEWER IS NOT CORROBORATED, IT IS DUPLICATED — AND
+THE ECHO IS WORSE THAN THE ORIGINAL, BECAUSE AFTER IT THE CLAIM APPEARS TO HAVE
+TWO SOURCES.** A number that has been repeated back reads as agreed, and
+"agreed" is what stops anyone re-deriving it. The false premise then survives
+into a work assignment, which is where it costs something.
+
+The move that caught it: when asked to audit a thing, **check your own claims
+about it before auditing anything else.** The audit brief itself was built on
+the error, so starting anywhere else would have inherited it.
+
+## What a specimen licenses is bounded by what it sampled
+
+The owner compared bali's dark ground at 0.030 against 0.010 -- three times the
+opacity -- and could not tell them apart. That result is real and it settled a
+structural question: no two-overlay build, no mounting change, because
+"solving for light kills it on dark" was preserving something already invisible.
+
+**BUT IT LICENSES EXACTLY WHAT IT SAMPLED.** bali's dark dL* of 0.89 is the
+HIGHEST of the eight grids, so the result covers "imperceptible on dark" up to
+0.89 and no further. **brooklyn sits at 1.27 and is not covered by that test.**
+Anyone reading it as "the dark ground shows nothing" will be wrong about
+exactly one universe -- and brooklyn is a noise texture, a family the whole
+enquiry never measured by eye at all.
+
+Same shape as enumerating the domain, applied after the fact: a test answers
+for its sample, and the sample's extremes are the boundary of the claim. State
+the bound in the same sentence as the result, or the result travels without it.
