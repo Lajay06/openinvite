@@ -961,12 +961,31 @@ The conventional just-noticeable difference for a luminance step is around
 is below it on both grounds** -- a render layer, a paint cost and a config
 dimension that may produce nothing a guest can see.
 
-**FILED AS UNVERIFIED, NOT PROVEN.** A patch JND does not transfer cleanly to a
-fine repeating pattern: structure aids detection, and a regular weave can be
-visible at a step where a flat patch difference is not. Noise is unstructured,
-which cuts the other way. The honest position is that this is a strong
-indication and the cheap test is the same one the grids are getting -- two
-panels, same discipline, one eye.
+**FILED AS UNMEASURED, NOT AS SAFE.** (Amended 2026-08-31: the first draft
+parked these as "probably imperceptible, therefore minor". That is the wrong
+reason and it inverts the risk.)
+
+dL* measures how much darker a STROKE PIXEL is than the ground beside it. It
+has no term for coverage or spatial frequency, and it was never calibrated
+against the noise family at all -- the whole texture enquiry was conducted on
+the two GRID families. So its verdict of "below threshold on both grounds" for
+these twelve carries the identical blind spot that reclassifies the linen
+question, and it carries it on a family the instrument has even less claim to.
+
+Which kills the tempting argument outright: **"we can sweep these for
+consistency because nobody could see the difference" IS A PREDICTION MADE BY
+THE INSTRUMENT THAT HAS ALREADY BEEN CAUGHT MISSING A TERM.** It is exactly the
+reasoning this week taught us not to trust, applied to the family where it is
+least tested.
+
+A patch JND also does not transfer cleanly to a fine repeating pattern:
+structure aids detection, and a regular weave can be visible at a step where a
+flat patch difference is not. Noise is unstructured, which cuts the other way,
+and neither direction has been measured.
+
+**brooklyn is the one to look at first** -- grain at 0.035 against the 0.025
+default, 1.4x, and the only noise texture above threshold anywhere (dark,
+1.27). If any of the twelve wants its own decision, it is that one.
 
 This is a **universe-programme finding, not a texture bug**. Texture is one of
 the thirteen dimensions a universe is made of; if it does nothing for most of

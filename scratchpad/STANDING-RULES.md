@@ -3362,3 +3362,36 @@ grounds; one number per transition for an event with two halves.
 And note what the fourth one cost to find: not a better instrument, not a
 closer reading, but the question "what does `inset: 0` sit over". That question
 was available on day one at zero cost.
+
+## A cleanup is a behavior change when the removed value was in a fallback chain
+
+Eight universes override the texture opacity their registry already defines.
+Four of them were about to be set to exactly the default they would inherit, so
+the obvious tidy-up is to delete the property and let the fallback do the work.
+The diff would have read "remove four numbers that match the default".
+
+`TextureOverlay` resolves opacity as `var(--texture-opacity, 0.015)`, and
+`MultiPageWeddingWebsite` sets `--texture-opacity` from the config. **`var()`
+falls back to the default ONLY WHEN THE PROPERTY IS ABSENT.** Set to an invalid
+value -- the string "undefined", an empty string -- the whole declaration is
+invalid at computed-value time and `opacity` falls to its INITIAL VALUE OF 1.
+Not to the fallback. Not to the previous value. To fully opaque.
+
+So the failure mode of that tidy-up was a **full-strength weave on every guest
+page**, shipped by a diff that reads as removing redundant numbers.
+
+It resolved fine -- React omits a custom property whose value is `undefined`,
+the computed opacity came back `0.015`, exactly as intended. **THAT WAS NOT
+KNOWABLE FROM THE DIFF, AND IT WAS NOT KNOWABLE FROM THE CSS EITHER.** It is a
+fact about what React does with `undefined` in a style object, and the only
+thing that could settle it was rendering the real component and reading the
+computed value off the real element.
+
+**WHENEVER A DELETION REMOVES A VALUE THAT SOMETHING ELSE FALLS BACK FROM,
+RENDER IT AND READ THE RESULT.** The fallback chain is the behavior; deleting a
+link in it is a behavior change wearing a cleanup's clothes.
+
+Related precision, because it is where this nearly went wrong twice: the eight
+configs are `{ type, opacity }`, and **only `opacity` is deleted**. `type` has
+no sensible default -- it is what distinguishes canvas from linen -- so
+"remove the override" means removing one property, not the object.
