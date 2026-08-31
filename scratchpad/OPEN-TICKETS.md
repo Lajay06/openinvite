@@ -1190,6 +1190,7 @@ such blocker, were render-verified today without difficulty.
 "fix the US-English guard" — it is one pass over EVERY check, guard, hook and
 script, in CI and locally, answering three questions each:**
 
+0. **DOES IT STILL HAVE A SUBJECT?** *(added 2026-08-31)*
 1. **What is its input?**
 2. **What does it do when that input is missing or empty?**
 3. **What does it print when it finds nothing?**
@@ -1204,6 +1205,21 @@ The three known points on the spectrum, which is why the sweep is scoped this wa
 | **Extreme** | emoji / no-emoji rule | **No instrument at all.** Enforced by review. 🏨 and ⭐ lived on a live guest surface for that page's entire life. |
 | **Middle** | `test-us-english-spelling.mjs` | **An instrument that can blind itself.** Scans only ADDED lines in a resolved diff range; exits 0 when no base resolves. Three `colour` uses reached main through it. |
 | **Control** | the same guard, working | **Six catches**, including one on 2026-08-30. It works when it can see. |
+
+### A GUARD WHOSE SUBJECT HAS BEEN REMOVED STILL PASSES
+
+**Found 2026-08-31, deleting `assetExport.js`.** `tests/persistence/asset-system.mjs`
+asserted that every editable asset type had an export spec — checking against a
+mirror of `ASSET_EDITOR_MAP` from `AssetEditors.jsx`, **a file deleted a week
+earlier in #607**. The guard had been passing green against a map that no longer
+existed.
+
+> **This is the emptiest form of the day's shape:** not an instrument that cannot
+> see, but one with **nothing left to look at**, still reporting success.
+
+Hence question 0 above. For every guard in the sweep, ask whether the thing it
+guards still exists — a green check on a deleted subject is worse than no check,
+because it occupies the slot where a real one would be noticed missing.
 
 The governing rule is now canon: **a guard that cannot find its input must fail,
 not pass.** This is the merge gate's SKIPPED-is-not-PASS bug in another

@@ -120,6 +120,57 @@ the reconstruction; not part of the ~34.
     raised it again after seeing it wrong live, and because a rule and a sweep
     have different completion tests.
 
+30. **Marketing image sharpness — full-width images look blurry.**
+    **Method:** for every image on every marketing page, measure **natural pixel
+    width against displayed width at each breakpoint**. Anything under roughly
+    **2x at desktop is blurry by arithmetic**, not by opinion. Rank worst-first.
+
+    **Separate two cases, because they have different owners:**
+    - **the source image is too small** — the owner must supply a better one;
+    - **the source is fine and we request too small a Cloudinary transformation**
+      — that is our defect and we fix it.
+
+    **Tension to respect:** delivery cost. The answer is **responsive sizing per
+    breakpoint**, not one enormous file for every viewport. See the per-wedding
+    media economics work.
+
+31. **RSVP investigation — three questions, in order.**
+    1. Does the **tokened guest path work end to end in production today?**
+    2. Can a guest respond **per event** and choose a **meal**, or only yes/no?
+    3. If those do not exist — **were they built and made unreachable, or never
+       built?** That distinction has bitten us twice today (a written-and-unreached
+       CI override; a flag that existed and did nothing), so it is asked
+       explicitly rather than assumed either way.
+
+    The owner is testing by sending himself an invitation; **his result may answer
+    question 1 before this starts.** Check before investigating.
+
+32. **Add/Edit guest modal — the feel is TYPE SIZE AND DENSITY, not only field
+    count.** Recorded against the rebuild because **the accordion alone would not
+    have fixed it**: collapsing sections reduces how much is on screen, it does
+    not change how the type reads. A rebuild that only reorganises will come back
+    still feeling unrefined.
+
+33. **DEFECT — the email field carries no required asterisk, but the validator
+    blocks submit without it.**
+    **The interface says optional and the system says mandatory**, and the person
+    finds out by being stopped with nothing explaining what to fix. This is the
+    house shape: *the interface reports a state the system does not have.*
+
+    **TIED TO #32, AND IT INVALIDATES AN ASSUMPTION IN THE MODAL RULING.** The
+    ruling that the create modal opens **name and category** assumed email was
+    optional. **If email stays required, a mandatory field sits behind a collapsed
+    section** and the person hits an invisible wall — worse than today, not better.
+
+    **Advisor's recommendation to the owner, not yet ruled:** email should **not**
+    be required at add time — a guest list contains people whose address you do not
+    have yet — and **should** be required when you try to **invite** them.
+
+    > **Require a field when it is needed, not when it is convenient to ask.**
+
+    **Do not build either way until the owner rules**, because the two designs
+    differ in which fields are open at create time.
+
 ---
 
 ## Counting reconciliation, stated rather than smoothed over
