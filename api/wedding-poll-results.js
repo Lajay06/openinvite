@@ -103,6 +103,38 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'Wedding not found.' });
     }
 
+    // ── AN UNPUBLISHED WEDDING'S POLLS ARE NOT SERVED ───────────────────────
+    //
+    // Second instance of the class fixed in #632, found by sweeping every
+    // guest-facing route. Verified against production 2026-08-31: this endpoint
+    // returned 200 for a wedding with websiteEnabled false, while a nonexistent
+    // slug returned 404 — so publication was never consulted, and the 200 was a
+    // decision rather than a default.
+    //
+    // WHY THIS ROUTE AND NOT THE OTHER FOUR UNAUTHENTICATED ONES:
+    //
+    //   A CAPABILITY TOKEN IS A SECRET THE HOLDER WAS GIVEN.
+    //   A SLUG IS A NAME.
+    //
+    // rsvp-lookup, wedding-attendees, rsvp-submit and collaborator-lookup are
+    // unauthenticated too, and correctly so — each is gated by an unguessable
+    // crypto.randomUUID token that IS the credential. This route was gated by
+    // the slug, which is derived from the couple's names at onboarding. An
+    // identifier that is hard to type is not a secret.
+    //
+    // What was reachable: poll counts and `comments` — guest-authored text, on
+    // weddings nobody published.
+    //
+    // 404, matching wedding-by-slug: an unpublished wedding must be
+    // indistinguishable from one that does not exist, or the refusal itself
+    // discloses that a wedding is there.
+    //
+    // Placed before any data is assembled, and before the password gate — an
+    // unpublished site is not a locked site, and must not answer like one.
+    if (wedding.websiteEnabled !== true) {
+      return res.status(404).json({ error: 'Wedding not found.' });
+    }
+
     // The gate, consulted exactly as api/wedding-by-slug.js consults it.
     const { on: passwordProtected, failedOpen } = websiteGateIsOn(wedding);
     if (failedOpen) {
