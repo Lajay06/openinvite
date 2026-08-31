@@ -187,7 +187,7 @@ check('a plus-one at another event does not either',
   shouldWriteTableCache(PO_ID, 'brunch-123') === false);
 
 // ── THE LOUD/QUIET SPLIT ────────────────────────────────────────────────────
-// Quiet: a stale PLAIN id (a deleted guest) drops silently, as asset-system.mjs
+// Quiet: a stale PLAIN id (a deleted guest) drops silently, as seating-chart.mjs
 // fixtures deliberately.
 resetUnresolvedAttendees();
 const stale = buildTablesWithGuests(

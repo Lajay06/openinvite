@@ -1,36 +1,29 @@
 /**
- * tests/persistence/asset-system.mjs
+ * tests/persistence/seating-chart.mjs
  *
- * Covers feat/asset-system (WEBSITE_BUILDER_GAP_MAP.md items 5-6):
- * - src/lib/seatingChart.js — real Table/Guest data → seating chart /
- *   guest tag shapes, with honest empty states (no fake placeholder names).
- * - src/lib/assetExport.js's ASSET_EXPORT_SPECS — every asset type the
- *   asset system offers (src/components/website-builder/AssetEditors.jsx's
- *   ASSET_EDITOR_MAP) has a real export spec with sane print dimensions.
+ * src/lib/seatingChart.js — real Table/Guest data → seating chart and guest
+ * tag shapes, with honest empty states (no fake placeholder names).
  *
- * Pure-function tests — no Base44 API calls, no auth needed. jsPDF/
- * html2canvas themselves need a browser DOM (canvas, document) the plain-
- * Node harness doesn't have, so "does exportAsset() produce a real PDF
- * blob" isn't covered here — verified manually in the browser instead
- * (see the PR description). What IS covered: every asset has a spec, no
- * two print assets are configured with degenerate (zero/negative) sizes,
- * and guest-tags' 6-per-page constant matches the product's own printed
- * claim ("6 per A4 sheet").
+ * RENAMED FROM asset-system.mjs, 2026-08-31. It used to cover a second thing:
+ * ASSET_EXPORT_SPECS from src/lib/assetExport.js, asserting that every
+ * printable asset had sane physical dimensions. That file is deleted — it
+ * existed to turn a rendered element into a PDF at its real print size, which
+ * is precisely the north star's test for what goes: if a thing exists because
+ * it used to lead to a physical artefact, it goes.
+ *
+ * The name went with it. A test called "asset-system" that no longer tests an
+ * asset system is a false state report, and the name is the loudest thing a
+ * test says about itself.
+ *
+ * The seating chart STAYS and is not part of that retirement: it produces a
+ * digital plan, and its printing is incidental rather than its purpose.
+ *
+ * Pure-function tests — no Base44 API calls, no auth needed.
  */
 
 import { resolveAttendees } from '../../src/lib/attendees.js';
 import { buildTablesWithGuests, buildGuestTagList } from '../../src/lib/seatingChart.js';
-import { ASSET_EXPORT_SPECS } from '../../src/lib/assetExport.js';
 import { pass, fail } from './_shared.mjs';
-
-// Mirrors ASSET_EDITOR_MAP's keys (src/components/website-builder/
-// AssetEditors.jsx) — not imported directly since that file contains real
-// JSX syntax the plain-Node harness can't parse (same constraint noted in
-// tests/persistence/universe-picker-integrity.mjs).
-const EDITABLE_ASSET_KEYS = [
-  'saveTheDate', 'digitalInvitation', 'menuCard', 'seatingChart', 'rsvpCard',
-  'instagramStory', 'welcomeSignage', 'guestTags', 'thankYouNotes', 'motionGraphic',
-];
 
 // meal_choice lives on event_responses (the live per-event RsvpResponse
 // overlay), not a flat g.meal_choice column — that column is vestigial,
@@ -54,10 +47,10 @@ const TABLES = [
   { id: 't3', name: 'Head Table', assigned_guests: [{ seat_index: 0, guest_id: 'g-does-not-exist' }] }, // dangling ref — must not crash or show a phantom guest
 ];
 
-export async function runAssetSystem() {
+export async function runSeatingChart() {
   const results = [];
 
-  console.log('\n  Asset system — real seating data, no fake placeholders:\n');
+  console.log('\n  Seating chart — real seating data, no fake placeholders:\n');
 
   {
     const result = buildTablesWithGuests(TABLES, ATTENDEES);
@@ -109,38 +102,6 @@ export async function runAssetSystem() {
       : fail('buildGuestTagList — no guests at all → empty list, not 4 fake tags', '[]', JSON.stringify(buildGuestTagList([], []))));
   }
 
-  console.log('\n  Asset system — export spec completeness:\n');
-
-  const editorKeys = EDITABLE_ASSET_KEYS;
-  const specKeys = Object.keys(ASSET_EXPORT_SPECS);
-
-  results.push(editorKeys.every(k => specKeys.includes(k))
-    ? pass('ASSET_EXPORT_SPECS — every editable asset type has an export spec', editorKeys.join(', '))
-    : fail('ASSET_EXPORT_SPECS — every editable asset type has an export spec', editorKeys.join(', '), `missing: ${editorKeys.filter(k => !specKeys.includes(k)).join(', ')}`));
-
-  for (const [key, spec] of Object.entries(ASSET_EXPORT_SPECS)) {
-    if (spec.format === 'pdf') {
-      const sane = spec.widthMm > 0 && spec.heightMm > 0;
-      results.push(sane
-        ? pass(`${key} — PDF export dimensions are sane (>0mm)`, `${spec.widthMm}x${spec.heightMm}mm`)
-        : fail(`${key} — PDF export dimensions are sane (>0mm)`, '>0mm both axes', `${spec.widthMm}x${spec.heightMm}mm`));
-    } else if (spec.format === 'png') {
-      const sane = spec.pixelWidth > 0 && spec.pixelHeight > 0;
-      results.push(sane
-        ? pass(`${key} — PNG export dimensions are sane (>0px)`, `${spec.pixelWidth}x${spec.pixelHeight}px`)
-        : fail(`${key} — PNG export dimensions are sane (>0px)`, '>0px both axes', `${spec.pixelWidth}x${spec.pixelHeight}px`));
-    } else {
-      results.push(fail(`${key} — has a recognised export format`, "'pdf' or 'png'", spec.format));
-    }
-  }
-
-  results.push(ASSET_EXPORT_SPECS.guestTags?.perPage === 6
-    ? pass('guestTags — 6 tags per sheet, matching the product\'s own "6 per A4 sheet" claim', '6')
-    : fail('guestTags — 6 tags per sheet, matching the product\'s own "6 per A4 sheet" claim', 6, ASSET_EXPORT_SPECS.guestTags?.perPage));
-
-  results.push(ASSET_EXPORT_SPECS.seatingChart?.widthMm >= 297
-    ? pass('seatingChart — exports at poster/A-series size, not a small card', `${ASSET_EXPORT_SPECS.seatingChart?.widthMm}x${ASSET_EXPORT_SPECS.seatingChart?.heightMm}mm`)
-    : fail('seatingChart — exports at poster/A-series size, not a small card', '>=297mm wide (A3+)', `${ASSET_EXPORT_SPECS.seatingChart?.widthMm}mm`));
 
   return results;
 }

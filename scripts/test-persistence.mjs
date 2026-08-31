@@ -35,7 +35,7 @@ import { runUniverseStyling } from '../tests/persistence/universe-styling.mjs';
 import { runRateLimiting } from '../tests/persistence/rate-limiting.mjs';
 import { runHeroVideo } from '../tests/persistence/hero-video.mjs';
 import { runUniversePickerIntegrity } from '../tests/persistence/universe-picker-integrity.mjs';
-import { runAssetSystem } from '../tests/persistence/asset-system.mjs';
+import { runSeatingChart } from '../tests/persistence/seating-chart.mjs';
 import { runStripeWebhook } from '../tests/persistence/stripe-webhook.mjs';
 import { runComponentLibrary } from '../tests/persistence/component-library.mjs';
 import { runCuratedFonts } from '../tests/persistence/curated-fonts.mjs';
@@ -148,7 +148,7 @@ async function run() {
     await runModule('runRateLimiting', () => runRateLimiting());
     await runModule('runHeroVideo', () => runHeroVideo());
     await runModule('runUniversePickerIntegrity', () => runUniversePickerIntegrity());
-    await runModule('runAssetSystem', () => runAssetSystem());
+    await runModule('runSeatingChart', () => runSeatingChart());
     await runModule('runStripeWebhook', () => runStripeWebhook());
     await runModule('runComponentLibrary', () => runComponentLibrary());
     await runModule('runCuratedFonts', () => runCuratedFonts());
