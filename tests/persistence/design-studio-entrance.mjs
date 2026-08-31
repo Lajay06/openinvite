@@ -505,14 +505,38 @@ export async function runDesignStudioEntrance() {
     ? pass('World hero shows the universe\'s tagline alongside its name', 'found')
     : fail('World hero shows the universe\'s tagline alongside its name', 'found', 'not found'));
 
-  const ASSET_COMPONENTS = [
+  // INVERTED 2026-08-31. This used to assert that all 8 asset previews rendered
+  // here. They no longer do, and the guard was right to refuse the change — the
+  // contract moved, so the assertion moves with it rather than being deleted.
+  //
+  // The asset feature was removed in Wave 2, which left eight tiles claiming
+  // pieces the product will never produce, under the couple's own names, on the
+  // first screen they see. The two that were always real — their website and
+  // their RSVP page — are promoted in their place.
+  //
+  // The preview COMPONENTS are untouched and still live: UniverseStudio.jsx uses
+  // them for choosing a universe, where the identical tile is honest. The same
+  // image is an illustration in one place and a promise in another.
+  const RETIRED_ASSET_TILES = [
     'SaveTheDatePreview', 'MenuCardPreview', 'SeatingChartPreview',
     'PlaceCardsPreview', 'WelcomeSignagePreview', 'ThankYouPreview', 'InstagramKitPreview', 'MotionGraphicPreview',
   ];
-  const missingAssetComponents = ASSET_COMPONENTS.filter(name => !new RegExp(`<${name} `).test(worldViewSource));
-  results.push(missingAssetComponents.length === 0
-    ? pass(`World page's "your wedding in this world" chapter renders all ${ASSET_COMPONENTS.length} real asset preview components (+ website/RSVP links)`, `${ASSET_COMPONENTS.length} found`)
-    : fail(`World page's "your wedding in this world" chapter renders all ${ASSET_COMPONENTS.length} real asset preview components (+ website/RSVP links)`, `${ASSET_COMPONENTS.length} found`, `missing: ${missingAssetComponents.join(', ')}`));
+  const lingering = RETIRED_ASSET_TILES.filter(name => new RegExp(`<${name} `).test(worldViewSource));
+  results.push(lingering.length === 0
+    ? pass('World page\'s "your wedding in this world" chapter shows NO speculative asset tiles', '0 of 8')
+    : fail('World page\'s "your wedding in this world" chapter shows NO speculative asset tiles', '0 of 8', `still rendered: ${lingering.join(', ')}`));
+
+  // And the positive half — a deletion guard alone would pass on an empty
+  // chapter. These assert what IS there.
+  results.push(/<RealSurfaceTile/.test(worldViewSource)
+    ? pass('The chapter renders the two real surfaces (website + RSVP)', 'found')
+    : fail('The chapter renders the two real surfaces (website + RSVP)', 'found', 'not found'));
+  results.push(/const isPublished = Boolean\(weddingDetails\?\.slug\)/.test(worldViewSource)
+    ? pass('Published state is derived from a claimed slug, not assumed', 'found')
+    : fail('Published state is derived from a claimed slug, not assumed', 'found', 'not found'));
+  results.push(!/href=\{`\/w\/\$\{slug\}/.test(worldViewSource)
+    ? pass('The your-wedding placeholder can never become an href', 'guarded by isPublished')
+    : fail('The your-wedding placeholder can never become an href', 'guarded by isPublished', 'an unguarded /w/${slug} href exists'));
   results.push(/\{coupleNames\}/.test(worldViewSource.slice(worldViewSource.indexOf('your wedding in this world')))
     ? pass('The couple\'s real names appear in the asset-preview chapter, not the hero', 'found')
     : fail('The couple\'s real names appear in the asset-preview chapter, not the hero', 'found', 'not found'));
