@@ -23,14 +23,33 @@ rendered somewhere; none is dead.
 
 | | filled /20 | distinct /20 |
 |---|---|---|
-| colors, typography, motion, texture, layout, copy, tagline, tileDescription, motifNote, worldStory, imageUrl | 20 (layout & copy: 19) | **20** |
+| colors, typography, motion, layout, copy, tagline, tileDescription, motifNote, worldStory, imageUrl | 20 (layout & copy: 19) | **20** |
 | tags | 20 | 19 |
+| **texture** | 20 | **14** |
 | **transitionStyle** | 20 | **10** |
 
-**Eleven of thirteen dimensions carry twenty distinct values.** This is not five
-worlds and fifteen palettes — each universe has its own layout token
-(`london-minimal`, `kyoto-vertical`, `capri-citrus`), texture object, motion
-timing, copy voice and world story.
+**Ten of thirteen dimensions carry twenty distinct values.** (Was eleven;
+texture left the group on 2026-08-31, see below.) This is not five worlds and
+fifteen palettes — each universe has its own layout token (`london-minimal`,
+`kyoto-vertical`, `capri-citrus`), motion timing, copy voice and world story.
+
+**Texture moved to 14 deliberately.** The eight grid universes now inherit a
+per-family level from `TEXTURE_REGISTRY` (canvas 0.015, linen 0.012) instead of
+each carrying its own opacity; the twelve noise universes keep theirs. The
+distinctness test that had required all twenty to differ was retired with it —
+that rule is what forced four canvas universes to override the calibrated
+default upward, to 2x at bali, which was the defect the owner reported as "too
+in your face". A per-family calibrated level cannot coexist with a rule
+demanding a unique level per universe.
+
+**AND THE NUMBER ABOVE COUNTS VALUES, NOT DIFFERENCES ANYONE CAN SEE.** Measured
+in dL* against the two grounds each overlay actually meets, eleven of the twenty
+textures sit below the ~1.0 threshold on BOTH grounds. So texture never carried
+twenty distinguishable values — it carried twenty different numbers, and a test
+enforcing distinctness in the config could never have told the difference. The
+same caveat applies untested to the other ten dimensions in this table: **the
+real programme question is how many carry twenty PERCEPTIBLY distinct values,
+and that has never been measured for any of them.** See DECISION-LOG 2026-08-31.
 
 **The two real gaps, and they are small:**
 1. **`transitionStyle`: 10 values across 20 universes**, each shared by a pair.
