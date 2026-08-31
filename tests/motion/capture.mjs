@@ -65,7 +65,18 @@ const DIR = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(DIR, '../..');
 const OUT = resolve(DIR, 'frames');
 const universes = (process.argv[2] || 'brooklyn,aspen,paris').split(',');
-const FRAMES_MS = [0, 60, 120, 200, 320];
+// THE WINDOW MUST COVER BOTH HALVES. AnimatePresence runs mode="wait": the
+// outgoing page finishes its exit before the incoming page begins, so the whole
+// event is ~2x the declared duration (480-680ms here). Sampling only to 320ms
+// photographed the EXIT and almost none of the entrance -- and for iris,
+// dissolve and lift the exit is deliberately the quieter half, so every
+// loudness figure for those was reading the smaller of the two numbers the
+// guest actually sees.
+const FRAMES_MS = [0, 60, 120, 200, 320, 420, 520, 640];
+// The guest viewport, declared ONCE. It is both the size the frames are
+// captured at and the denominator every loudness figure is divided by; two
+// copies of it would let the measure drift from the thing it measures.
+const VIEWPORT = { width: 390, height: 844 };
 
 const { UNIVERSE_CONFIGS } = await import(resolve(ROOT, 'src/lib/websiteThemes.js'))
   .catch(async () => ({ UNIVERSE_CONFIGS: null }));
@@ -118,7 +129,7 @@ const browser = await chromium.launch();
 const results = {};
 
 for (const u of universes) {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+  const ctx = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: 1 });
   const page = await ctx.newPage();
   // A URL PREDICATE, NOT A GLOB — enforced by
   // tests/persistence/route-interception-guard.mjs, and the reason is in that
@@ -313,6 +324,80 @@ function mechanismOf(frames) {
   if (moved !== undefined) return 'scale from ' + (moved > 1 ? '>1' : '<1');
   return 'opacity only';
 }
+// ── LOUDNESS: a common currency for mechanisms that pixels cannot compare ──
+//
+// WHY EDGE-PIXELS ARE THE WRONG UNIT, because this is the part that will
+// otherwise be re-invented. The first attempt to grade "how big is this
+// motion" measured how far the animating edge travelled, and it made a clip
+// and a translate look comparable when they are not. `unfold` was reported at
+// 118px against push's 9px -- a 13x gap that sounded like a calibration
+// problem inside one family. It was not. `inset(42% 0% 42% 0%)` hides the top
+// 42% AND the bottom 42%: the page starts as a band showing SIXTEEN PERCENT of
+// its area. Measuring one edge's travel described a 6x change in visible area
+// as a distance, and undersold it by an order of magnitude.
+//
+// So measure AREA, not distance: the fraction of the viewport not showing
+// settled content, at the frame where that fraction peaks.
+//
+//   clip     1 - (visible height / H) * (visible width / W)
+//   translate 1 - ((W-|tx|)/W) * ((H-|ty|)/H)      the band vacated at the edge
+//   scale s   1 - s^2   for s<1;   1 - 1/s^2   for s>1
+//
+// On this scale the four unfolds sit at 0.84-0.92 and everything else at
+// 0.03-0.25 -- so unfold is 7x to 32x louder, not 13x, and matching it by
+// translation alone would need 328px on a 390px screen: the page leaving
+// rather than a push. That is the number that settled a taste argument.
+//
+// IT IS A FLOOR, NOT A PEAK, and must be read as one. Loudness is the maximum
+// over the SAMPLED frames, and eight samples across a ~640ms event can land
+// either side of the true extreme. Widening FRAMES_MS moves the number up and
+// never down. So it can say "this is at least this loud" and can compare two
+// mechanisms measured the same way; it cannot certify that anything is quiet.
+//
+// NO NEW DATA IS COLLECTED HERE. The clipPath and transform values have been
+// in the signature since the mechanism measure was added; only the denominator
+// is new. THE CHEAPEST NEW INSTRUMENT IS A NEW READING OF AN OLD CAPTURE.
+function loudnessOf(frames) {
+  const { width: W, height: H } = VIEWPORT;
+  // CSS shorthand: 1 value -> all sides, 2 -> (block, inline), 3 -> (t, inline,
+  // b), 4 -> t r b l. Expanding wrongly would silently swap an axis.
+  const sides = (parts) => (parts.length === 1 ? [parts[0], parts[0], parts[0], parts[0]]
+    : parts.length === 2 ? [parts[0], parts[1], parts[0], parts[1]]
+    : parts.length === 3 ? [parts[0], parts[1], parts[2], parts[1]]
+    : parts.slice(0, 4));
+  let peak = 0;
+  for (const f of frames) {
+    if (!f) continue;
+    let cover = 1;
+    if (f.clipPath) {
+      const raw = /inset\(([^)]*)\)/.exec(f.clipPath);
+      if (raw) {
+        // Resolve against the RIGHT AXIS while the unit is still known: a
+        // percentage is already a fraction, a px value is not, and getComputedStyle
+        // returns either. Converting to a number first and testing that for '%'
+        // is a test that can never pass.
+        const frac = (v, axis) => (v.endsWith('%') ? parseFloat(v) / 100 : parseFloat(v) / axis);
+        const [t, r, b, l] = sides(raw[1].trim().split(/\s+/));
+        cover *= Math.max(0, 1 - frac(t, H) - frac(b, H))
+               * Math.max(0, 1 - frac(l, W) - frac(r, W));
+      }
+    }
+    const m = /^matrix\(([-\d.]+), 0, 0, [-\d.]+, ([-\d.]+), ([-\d.]+)\)$/.exec(f.transform || '');
+    if (m) {
+      const [sc, tx, ty] = [+m[1], +m[2], +m[3]];
+      cover *= Math.max(0, (W - Math.abs(tx)) / W) * Math.max(0, (H - Math.abs(ty)) / H);
+      cover *= sc < 1 ? sc * sc : 1 / (sc * sc);
+    }
+    peak = Math.max(peak, 1 - cover);
+  }
+  return peak;
+}
+const LOUDFILE = resolve(OUT, 'loudness.json');
+let allLoud = {};
+try { allLoud = JSON.parse(readFileSync(LOUDFILE, 'utf8')); } catch { /* first run */ }
+for (const id of ids) allLoud[id] = +loudnessOf(results[id].signature || []).toFixed(3);
+writeFileSync(LOUDFILE, JSON.stringify(allLoud, null, 2));
+
 const MECHFILE = resolve(OUT, 'mechanisms.json');
 let allMech = {};
 try { allMech = JSON.parse(readFileSync(MECHFILE, 'utf8')); } catch { /* first run */ }
@@ -328,6 +413,20 @@ console.log('\n  DISTINCT MECHANISMS (duration and jitter quotiented out — THE
   const names = Object.keys(byMech).sort();
   console.log('    ' + names.length + ' distinct, across ' + Object.keys(allMech).length + ' universes');
   for (const m of names) console.log('      ' + m.padEnd(26) + byMech[m].join(', '));
+}
+
+console.log('\n  LOUDNESS (fraction of the viewport not showing settled content, at peak):');
+{
+  const es = Object.entries(allLoud).sort((a, b) => b[1] - a[1]);
+  for (const [id, v] of es) {
+    const bar = '█'.repeat(Math.max(0, Math.round(v * 40)));
+    console.log(`    ${id.padEnd(11)}${v.toFixed(3)}  ${bar}`);
+  }
+  const vals = es.map(([, v]) => v).filter((v) => v > 0);
+  if (vals.length > 1) {
+    console.log(`    spread: ${Math.min(...vals).toFixed(3)} to ${Math.max(...vals).toFixed(3)}`
+      + `  (${(Math.max(...vals) / Math.min(...vals)).toFixed(0)}x)`);
+  }
 }
 
 console.log('\n  DOES IT MOVE?');
