@@ -20,7 +20,7 @@
  *   2. One section open at a time.                         -> single openKey
  *   3. Heading in the size/weight of THAT page, sentence   -> headingSize/Weight
  *      case, left, chevron right, thin rule between.
- *   4. Collapsed + nothing chosen: "Nothing selected yet", quiet grey.
+ *   4. Collapsed + nothing chosen: "No info", quiet grey.
  *   5. Collapsed + a choice made: THE CHOICE IS SHOWN as a light, borderless,
  *      NON-INTERACTIVE chip. The owner singled this out; it is the rule most
  *      likely to be dropped. A section that collapses and hides the decision
@@ -58,7 +58,7 @@ const DASHBOARD_SKIN = {
   ruleColor:   'rgba(10,10,10,0.12)', // rule 3: the thin rule between sections
   headingColor: color.black,
   chevronColor: color.iconMuted,
-  mutedColor:   color.textMuted,      // "Nothing selected yet"
+  mutedColor:   color.textMuted,      // "No info"
   chipBg:       'rgba(10,10,10,0.06)',
   chipColor:    color.textMuted,
 };
@@ -91,7 +91,7 @@ export function OptionAccordion({
 
 /**
  * One section. `summary` is the list of choices shown while collapsed (rule 5).
- * Pass [] and it renders "Nothing selected yet" (rule 4) — never nothing at all.
+ * Pass [] and it renders "No info" (rule 4) — never nothing at all.
  */
 /**
  * `action` renders to the RIGHT of the header, as a SIBLING of the header
@@ -144,7 +144,7 @@ export function OptionAccordionSection({ sectionKey, title, summary = [], action
       {/* rule 4 */}
       {!isOpen && summary.length === 0 && (
         <p style={{ fontSize: 12, color: skin.mutedColor, fontFamily: bodyFamily, margin: '0 0 16px' }}>
-          Nothing selected yet
+          No info
         </p>
       )}
 
