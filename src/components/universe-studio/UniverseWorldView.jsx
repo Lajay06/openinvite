@@ -89,14 +89,6 @@ import SeoulMasthead from '@/components/guest-website/layouts/SeoulMasthead';
 import SeoulOrb from '@/components/guest-website/layouts/SeoulOrb';
 import ShanghaiMasthead from '@/components/guest-website/layouts/ShanghaiMasthead';
 import ShanghaiCloud from '@/components/guest-website/layouts/ShanghaiCloud';
-import SaveTheDatePreview from '@/components/universe-studio/assets/SaveTheDatePreview';
-import MenuCardPreview from '@/components/universe-studio/assets/MenuCardPreview';
-import SeatingChartPreview from '@/components/universe-studio/assets/SeatingChartPreview';
-import PlaceCardsPreview from '@/components/universe-studio/assets/PlaceCardsPreview';
-import WelcomeSignagePreview from '@/components/universe-studio/assets/WelcomeSignagePreview';
-import ThankYouPreview from '@/components/universe-studio/assets/ThankYouPreview';
-import InstagramKitPreview from '@/components/universe-studio/assets/InstagramKitPreview';
-import MotionGraphicPreview from '@/components/universe-studio/assets/MotionGraphicPreview';
 
 import { coupleDisplayName } from '@/lib/coupleNames';
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -172,19 +164,30 @@ function GenericMasthead({ coupleNames, kicker, typography, textColor }) {
   );
 }
 
-function MiniLinkCard({ label, sublabel, href, colors }) {
-  return (
-    <a href={href} target="_blank" rel="noopener noreferrer" style={{
-      width: '100%', height: '100%', textDecoration: 'none', background: colors.darkBg,
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 16, gap: 8,
-    }}>
-      <div style={{ width: 32, height: 32, border: '1px solid rgba(255,255,255,0.25)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <ExternalLink size={14} color="rgba(255,255,255,0.7)" />
+/**
+ * The two surfaces a couple actually has. Renders as a LINK when the site is
+ * published and as an INERT CARD when it is not — never as a link to an address
+ * that does not exist. `href={null}` is the unpublished state, and it changes
+ * the element, not merely the styling: there is nothing to click, so nothing
+ * offers to be clicked.
+ */
+function RealSurfaceTile({ label, sublabel, href, colors }) {
+  const inner = (
+    <>
+      <div style={{ width: 40, height: 40, border: `1px solid ${href ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.12)'}`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <ExternalLink size={16} color={href ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.3)'} />
       </div>
-      <p style={{ color: colors.lightBg, fontSize: 12, fontWeight: 600, fontFamily: PJS, textAlign: 'center', margin: 0 }}>{label}</p>
-      <p style={{ color: colors.lightBg, opacity: 0.5, fontSize: 10, textAlign: 'center', margin: 0 }}>{sublabel}</p>
-    </a>
+      <p style={{ color: colors.lightBg, fontSize: 14, fontWeight: 600, fontFamily: PJS, textAlign: 'center', margin: 0 }}>{label}</p>
+      <p style={{ color: colors.lightBg, opacity: href ? 0.5 : 0.35, fontSize: 11, textAlign: 'center', margin: 0, fontFamily: PJS }}>{sublabel}</p>
+    </>
   );
+  const box = {
+    width: '100%', minHeight: 180, background: colors.darkBg, textDecoration: 'none',
+    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+    padding: 24, gap: 10,
+  };
+  if (!href) return <div style={{ ...box, opacity: 0.72 }}>{inner}</div>;
+  return <a href={href} target="_blank" rel="noopener noreferrer" style={box}>{inner}</a>;
 }
 
 /** Fades/lifts its children into view once as they cross into the
@@ -331,6 +334,25 @@ export default function UniverseWorldView({
 }) {
   const prefersReducedMotion = useReducedMotion();
   const coupleNames = coupleDisplayName(weddingDetails, 'Your names');
+  // PUBLISHED IS websiteEnabled, NOT slug — and the difference is not academic.
+  //
+  // A slug is DERIVED FROM THE COUPLE'S NAMES AND CLAIMED AT ONBOARDING
+  // (Onboarding.jsx calls syncWeddingAddress, long before anything is
+  // published), so nearly every couple has one from the day they sign up.
+  // Measured 2026-08-31 against the live records: 16 of 19 carry a slug, and
+  // 11 of those have websiteEnabled false. Gating on the slug alone would have
+  // shown two live tiles to eleven couples who have published nothing — the
+  // exact defect this state exists to prevent, wearing the fix's clothes.
+  //
+  // BOTH are required, which is the pattern StudioShareTab.jsx:134 already
+  // uses: websiteEnabled says the couple chose to go live, the slug says there
+  // is an address to go live AT. Two records have websiteEnabled true with an
+  // empty slug, so the second half is load-bearing too.
+  //
+  // The 'your-wedding' fallback below stays a DISPLAY placeholder and must
+  // never become an href — a placeholder wearing the clothes of an address is
+  // the same family as an invented business or a fabricated place id.
+  const isPublished = Boolean(weddingDetails?.websiteEnabled && weddingDetails?.slug);
   const slug = weddingDetails?.slug || 'your-wedding';
   const showUpgrade = universe.isUltra && !canAccessUltra && !isCurrent;
   const motifLarge = MOTIF_LARGE[universe.id];
@@ -501,7 +523,11 @@ export default function UniverseWorldView({
         </Reveal>
       </Chapter>
 
-      {/* Chapter 6 — your wedding in this world. This is where the
+      {/* Nº 05 (the hero is unnumbered, so this is the sixth <Chapter>
+            but the fifth numbered section — the heading a couple reads is
+            correct and this comment used to disagree with it).
+
+            Your wedding in this world. This is where the
           couple's real names belong (per the hero-title consistency
           fix — the hero above always shows the universe's own name, this
           chapter shows the world carrying their actual names).
@@ -534,73 +560,47 @@ export default function UniverseWorldView({
           {/* Says what the tiles ARE. Without it the labels below read as an
               inventory of pieces the couple will be given. */}
           <p style={{ fontFamily: PJS, fontSize: 13, color: colors.lightText, opacity: 0.55, margin: '0 0 20px', textAlign: 'center', maxWidth: 520, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.6 }}>
-            How this world would look across a wedding day, carrying your names.
+            Your wedding site and RSVP page, in this world.
           </p>
           <p style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.4rem, 3vw, 2rem)', color: colors.lightText, margin: '0 0 40px', textAlign: 'center' }}>
             {coupleNames}
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 18, maxWidth: 1040, margin: '0 auto' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
-                <SaveTheDatePreview universe={universe} weddingDetails={weddingDetails} />
-              </div>
-              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Save the date</span>
+            {/* TWO REAL SURFACES, NOT TEN ILLUSTRATIONS.
+                This grid used to carry eight speculative asset tiles beside
+                these two. The asset feature was removed in Wave 2, so those
+                eight showed a couple pieces the product would never produce —
+                under their own names, on the first screen they see. The two
+                that were always real are promoted in their place.
+
+                The eight preview COMPONENTS stay alive and are untouched:
+                UniverseStudio.jsx still uses them for choosing a universe,
+                where the identical tile is honest. The same image is an
+                illustration in one place and a promise in another; context
+                decides, so this is placement, not deletion.
+
+                minmax(200px) was sized for a ten-item inventory — two items in
+                it would read as leftovers. Two columns, because these are the
+                product rather than thumbnails of it. */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20, maxWidth: 780, margin: '0 auto' }}>
+              <RealSurfaceTile
+                label="Invitation website"
+                sublabel={isPublished ? `/w/${slug}` : 'Not published yet'}
+                href={isPublished ? `/w/${slug}` : null}
+                colors={colors}
+              />
+              <RealSurfaceTile
+                label="RSVP page"
+                sublabel={isPublished ? `/w/${slug}/rsvp` : 'Not published yet'}
+                href={isPublished ? `/w/${slug}/rsvp` : null}
+                colors={colors}
+              />
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
-                <MiniLinkCard label="Invitation website" sublabel={`/w/${slug}`} href={`/w/${slug}`} colors={colors} />
-              </div>
-              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Website</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
-                <MiniLinkCard label="RSVP page" sublabel={`/w/${slug}/rsvp`} href={`/w/${slug}/rsvp`} colors={colors} />
-              </div>
-              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>RSVP page</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
-                <MenuCardPreview universe={universe} weddingDetails={weddingDetails} />
-              </div>
-              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Menu</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
-                <SeatingChartPreview universe={universe} weddingDetails={weddingDetails} guests={guests} />
-              </div>
-              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Seating chart</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
-                <PlaceCardsPreview universe={universe} weddingDetails={weddingDetails} guests={guests} />
-              </div>
-              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Place cards</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
-                <WelcomeSignagePreview universe={universe} weddingDetails={weddingDetails} />
-              </div>
-              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Welcome sign</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
-                <ThankYouPreview universe={universe} weddingDetails={weddingDetails} />
-              </div>
-              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Thank you card</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
-                <InstagramKitPreview universe={universe} weddingDetails={weddingDetails} />
-              </div>
-              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Instagram kit</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ height: 220, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
-                <MotionGraphicPreview universe={universe} weddingDetails={weddingDetails} />
-              </div>
-              <span style={{ fontSize: 12, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.6 }}>Motion graphic</span>
-            </div>
-          </div>
+            {!isPublished && (
+              <p style={{ fontFamily: PJS, fontSize: 12, color: colors.lightText, opacity: 0.55, margin: '18px 0 0', textAlign: 'center' }}>
+                Publish your site to give these an address.{' '}
+                <a href="/website-editor" style={{ color: colors.lightText, opacity: 0.9 }}>Open the website editor</a>
+              </p>
+            )}
         </Reveal>
       </Chapter>
 
