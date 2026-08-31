@@ -66,6 +66,9 @@ this reconstruction is the measurement of what the compression cost.
 16. **Table numbers centred.**
 17. **Marketplace controls at narrow widths.**
 18. **Send-invitation modal above the Ava button.**
+    **LIKELY SUPERSEDED by #34.** This is a stacking fix on a modal the owner now
+    wants rebuilt as a full page — if it becomes a page, the defect dissolves
+    rather than being fixed. Do not build #18 ahead of the programme.
 19. **One investigation covering three symptoms that smell like one cause:**
     venue-assets typography, invisible panel titles, universe button contrast.
     *(Counting note: one line, three symptoms. Another +2 if counted separately.)*
@@ -170,6 +173,40 @@ the reconstruction; not part of the ~34.
 
     **Do not build either way until the owner rules**, because the two designs
     differ in which fields are open at create time.
+
+34. **THE INVITATION, END TO END — one programme, not three tickets.**
+
+    **Recorded 2026-08-31.** Checked against the existing list first: this is
+    **new**, and it **supersedes #18** (a stacking fix on a modal that would cease
+    to exist). **#31**, the RSVP investigation, is the same model seen from the
+    other end and belongs inside this programme rather than beside it.
+
+    **The owner's two reports:**
+    - He **cannot choose which events a guest is invited to** when sending.
+    - The **email covers only ceremony and reception**, regardless of what else
+      exists on the record.
+    - He wants the **send experience rebuilt as a full page**, not a modal.
+
+    **WHY IT IS ONE PROGRAMME.** Who is invited to what, what the email says, and
+    what the guest can respond to:
+
+    > **are one data model with three surfaces.**
+
+    Build any one surface alone and you get an interface reporting a state the
+    system cannot back up — a send flow offering per-event choice the email does
+    not carry, or an email naming events the reply form cannot answer. The
+    per-event RSVP question in #31 is this same model from the guest's end.
+
+    **Scope, as one thing:**
+    1. **The send flow** — per-guest event scope, as a full page
+    2. **The email template** — carries whatever events that guest was actually
+       given, not a hardcoded ceremony-and-reception pair
+    3. **The landing page** — what the tokened link opens
+    4. **The reply** — per-event response, and meal choice
+
+    **Sequencing note:** this may deserve to **precede the universes**. The
+    invitation is the thing the product exists to deliver; a wedding site nobody
+    was correctly invited to is a brochure. **The owner sequences it when ready.**
 
 ---
 
