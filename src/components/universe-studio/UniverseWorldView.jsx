@@ -334,13 +334,25 @@ export default function UniverseWorldView({
 }) {
   const prefersReducedMotion = useReducedMotion();
   const coupleNames = coupleDisplayName(weddingDetails, 'Your names');
-  // A claimed slug IS the published signal: PublishModal claims the address
-  // through /api/claim-slug, and StudioWebsite deliberately keeps `slug` out of
-  // its local payload for that reason. The 'your-wedding' fallback below is a
-  // DISPLAY placeholder only — it must never become an href, which is what this
-  // flag exists to prevent. A placeholder wearing the clothes of an address is
+  // PUBLISHED IS websiteEnabled, NOT slug — and the difference is not academic.
+  //
+  // A slug is DERIVED FROM THE COUPLE'S NAMES AND CLAIMED AT ONBOARDING
+  // (Onboarding.jsx calls syncWeddingAddress, long before anything is
+  // published), so nearly every couple has one from the day they sign up.
+  // Measured 2026-08-31 against the live records: 16 of 19 carry a slug, and
+  // 11 of those have websiteEnabled false. Gating on the slug alone would have
+  // shown two live tiles to eleven couples who have published nothing — the
+  // exact defect this state exists to prevent, wearing the fix's clothes.
+  //
+  // BOTH are required, which is the pattern StudioShareTab.jsx:134 already
+  // uses: websiteEnabled says the couple chose to go live, the slug says there
+  // is an address to go live AT. Two records have websiteEnabled true with an
+  // empty slug, so the second half is load-bearing too.
+  //
+  // The 'your-wedding' fallback below stays a DISPLAY placeholder and must
+  // never become an href — a placeholder wearing the clothes of an address is
   // the same family as an invented business or a fabricated place id.
-  const isPublished = Boolean(weddingDetails?.slug);
+  const isPublished = Boolean(weddingDetails?.websiteEnabled && weddingDetails?.slug);
   const slug = weddingDetails?.slug || 'your-wedding';
   const showUpgrade = universe.isUltra && !canAccessUltra && !isCurrent;
   const motifLarge = MOTIF_LARGE[universe.id];

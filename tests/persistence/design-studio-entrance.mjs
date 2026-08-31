@@ -531,9 +531,14 @@ export async function runDesignStudioEntrance() {
   results.push(/<RealSurfaceTile/.test(worldViewSource)
     ? pass('The chapter renders the two real surfaces (website + RSVP)', 'found')
     : fail('The chapter renders the two real surfaces (website + RSVP)', 'found', 'not found'));
-  results.push(/const isPublished = Boolean\(weddingDetails\?\.slug\)/.test(worldViewSource)
-    ? pass('Published state is derived from a claimed slug, not assumed', 'found')
-    : fail('Published state is derived from a claimed slug, not assumed', 'found', 'not found'));
+  // websiteEnabled AND slug — never slug alone. A slug is derived from the
+  // couple's names at ONBOARDING, so 16 of 19 live records carry one and 11 of
+  // those have never published. Gating on the slug would show live links to
+  // couples with no site. Two records have websiteEnabled with an empty slug,
+  // so both halves are load-bearing.
+  results.push(/const isPublished = Boolean\(weddingDetails\?\.websiteEnabled && weddingDetails\?\.slug\)/.test(worldViewSource)
+    ? pass('Published state requires websiteEnabled AND a slug, never the slug alone', 'found')
+    : fail('Published state requires websiteEnabled AND a slug, never the slug alone', 'found', 'not found'));
   results.push(!/href=\{`\/w\/\$\{slug\}/.test(worldViewSource)
     ? pass('The your-wedding placeholder can never become an href', 'guarded by isPublished')
     : fail('The your-wedding placeholder can never become an href', 'guarded by isPublished', 'an unguarded /w/${slug} href exists'));
