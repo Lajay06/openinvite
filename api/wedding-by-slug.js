@@ -238,8 +238,35 @@ export default async function handler(req, res) {
     //
     // Confirmed before shipping that this dark-fires nothing: all 7 records with
     // websiteEnabled true keep serving, including a real couple's published site.
+    //
+    // THE OWNER MAY PREVIEW THEIR OWN UNPUBLISHED SITE, and the check is this
+    // gate's OWN, deliberately not the `preview` flag and deliberately not the
+    // `previewGranted` variable below.
+    //
+    // WHY NOT REUSE previewGranted: it is only an ownership check when the site
+    // is PASSWORD-PROTECTED. Its else-branch set it true for any caller, with no
+    // authentication, whenever no password was set — and all 11 records exposed
+    // by the original leak had no password. Reusing it here would have reopened
+    // the leak behind a flag, inside the commit that closed it, and it would
+    // have read as safe because the real ownership check sits four lines above.
+    // A gate reused is a gate re-audited.
+    //
+    // No flag is consulted: `?preview=true` is neither necessary nor sufficient.
+    // What decides is a verified Base44 session belonging to the record's owner.
+    // The round-trip is paid only on the unpublished path, which is rare and is
+    // the couple looking at their own site.
+    //
+    // created_by_id is the whole ownership model TODAY: `resolveMyWedding`
+    // resolves by created_by_id alone, and collaborators (73 live grants) are
+    // scoped to CollaboratorAccept and CollaboratorGuests and never call this
+    // endpoint. If a second partner ever holds their own account, or a
+    // collaborator is given the studio, THIS CHECK MUST WIDEN — otherwise one of
+    // the two people getting married gets a 404 on their own wedding.
     if (wedding.websiteEnabled !== true) {
-      return res.status(404).json({ error: 'Wedding not found.' });
+      const owner = await verifyBase44User(req);
+      if (!owner || owner.id !== wedding.created_by_id) {
+        return res.status(404).json({ error: 'Wedding not found.' });
+      }
     }
 
     const { on: passwordProtected, failedOpen } = websiteGateIsOn(wedding);
@@ -267,10 +294,19 @@ export default async function handler(req, res) {
       if (!previewGranted) {
         console.warn(`[wedding-by-slug] preview flag ignored for slug "${slug}" — ${caller ? `caller ${caller.id} does not own this wedding` : 'unauthenticated caller'}`);
       }
-    } else if (previewRequested) {
-      // Not password-protected: nothing to bypass, so ownership is irrelevant.
-      previewGranted = true;
     }
+    // The `else if (previewRequested) previewGranted = true` branch that used to
+    // sit here is DELETED. It was inert — previewGranted has exactly one
+    // consumer, the `passwordProtected && !previewGranted && ...` test below,
+    // which short-circuits on passwordProtected before previewGranted is read,
+    // and that branch only ran when passwordProtected was false. So it granted
+    // nothing, while LOOKING like it granted preview access to any caller.
+    //
+    // It is removed rather than left because it nearly caused real harm: the
+    // publish gate above was one edit away from reusing this variable, which
+    // would have reopened the leak it was written to close. A code path that
+    // appears to grant something and grants nothing is a trap for the next
+    // reader.
 
     // MUST stay awaited. verifyWeddingPassword is async as of Step 2b stage
     // (iii); an un-awaited call returns a Promise, which is truthy, so `!promise`
