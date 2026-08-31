@@ -210,6 +210,38 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'Wedding not found.' });
     }
 
+    // ── AN UNPUBLISHED WEDDING IS NOT SERVED ────────────────────────────────
+    //
+    // This endpoint used to resolve a slug and return the wedding without ever
+    // consulting publication state. Verified against production 2026-08-31: a
+    // wedding with `websiteEnabled: false` returned 200 with the couple's names,
+    // their welcome message and their ceremony venue. Eleven live records were
+    // in that state, two belonging to people outside the business.
+    //
+    // THE ADDRESS IS NOT A SECRET AND WAS NEVER MEANT TO BE. It is derived from
+    // the couple's names at onboarding (syncWeddingAddress), so anyone who knows
+    // them can guess it. The publish state was supposed to be the protection,
+    // and it was not being read. The dashboard said "not published yet" while
+    // the internet said otherwise — the interface reporting a state the system
+    // did not have.
+    //
+    // 404, NOT 403: an unpublished site should be indistinguishable from one
+    // that does not exist. A 403 confirms "there is a wedding here, you just
+    // cannot see it", which is itself a disclosure about people who have chosen
+    // not to publish.
+    //
+    // PREVIEW IS DELIBERATELY NOT EXEMPTED HERE. The `preview` flag is set by
+    // the caller, and a flag the caller sets is not a gate — honouring it would
+    // move the hole rather than close it. Restoring the couple's own preview of
+    // their unpublished site needs an authenticated ownership check, which is a
+    // separate change. A data leak is never held open to keep a feature working.
+    //
+    // Confirmed before shipping that this dark-fires nothing: all 7 records with
+    // websiteEnabled true keep serving, including a real couple's published site.
+    if (wedding.websiteEnabled !== true) {
+      return res.status(404).json({ error: 'Wedding not found.' });
+    }
+
     const { on: passwordProtected, failedOpen } = websiteGateIsOn(wedding);
     if (failedOpen) {
       // Unreachable through the UI — useWebsitePasswordGate never persists
