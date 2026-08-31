@@ -16,7 +16,7 @@ import { OptionAccordion, OptionAccordionSection } from '@/components/shared/Opt
  *
  * CORE ONLY, and that is the correct adoption rather than a compromised one:
  * an FAQ has questions and answers and nothing to select, so pills, the summary
- * chip and "Nothing selected yet" have no referent here. Structure is the core;
+ * chip and "No info" have no referent here. Structure is the core;
  * that periphery only applies where there is something to choose.
  *
  * SKIN COMES FROM THE UNIVERSE, NOT THE DASHBOARD. Every colour and face below
