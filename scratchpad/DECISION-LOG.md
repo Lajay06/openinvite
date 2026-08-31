@@ -944,3 +944,65 @@ before beta.
 Playwright ships webkit, and `scripts/lib/renderHarness.mjs` already drives it —
 `copylinks-webkit.mjs` is the worked example of running both engines and
 reporting the difference.
+
+---
+
+## 2026-08-31 — eleven of twenty textures may render nothing (PARKED, UNVERIFIED)
+
+Measuring the perceptual step of every universe's texture against the two
+grounds its overlay actually meets, in dL* (CIELAB):
+
+- the **twelve noise universes** (grain, paper, plaster) sit at 0.39-0.90 on
+  light and 0.51-1.27 on dark
+- only **brooklyn** (grain 0.035) clears ~1.0 anywhere, and only on dark
+
+The conventional just-noticeable difference for a luminance step is around
+1.0 dL*. So on that threshold **eleven of twenty universes carry a texture that
+is below it on both grounds** -- a render layer, a paint cost and a config
+dimension that may produce nothing a guest can see.
+
+**FILED AS UNVERIFIED, NOT PROVEN.** A patch JND does not transfer cleanly to a
+fine repeating pattern: structure aids detection, and a regular weave can be
+visible at a step where a flat patch difference is not. Noise is unstructured,
+which cuts the other way. The honest position is that this is a strong
+indication and the cheap test is the same one the grids are getting -- two
+panels, same discipline, one eye.
+
+This is a **universe-programme finding, not a texture bug**. Texture is one of
+the thirteen dimensions a universe is made of; if it does nothing for most of
+the set, that is a fact about the dimension.
+
+**Brooklyn is the counterexample to keep.** It is perceptible on dark and not on
+light -- the exact inverse of the eight grids. So any rule of the form "texture
+lives on the light ground" is already contradicted by a shipped universe. The
+cause is compositing, see the next entry.
+
+## 2026-08-31 — the texture registry ordered the families by the wrong variable (PARKED)
+
+`src/lib/textures.js` calibrates its default opacities by REGULARITY: "regular
+geometric patterns (linen, canvas) read more perceptually salient than random
+noise at equal opacity, so they're calibrated lower". That is true, and it is
+not the dominant variable.
+
+The dominant variable is the **compositing model**:
+
+- a **grid** paints a black stroke at alpha `o`, so the step is `bg * o` --
+  ONE-SIDED DARKENING THAT SCALES WITH THE GROUND'S LUMINANCE. Loud on a light
+  ground, nearly absent on a dark one.
+- **noise** varies around a fixed midpoint, so the step is roughly `sigma * o`
+  and BARELY MOVES WITH THE GROUND at all.
+
+Measured: grids swing **2.8-6.7x** between their dark and light grounds; noise
+moves **0.7-1.1x**, and slightly the other way. Regularity cannot explain a 6x
+swing; only the compositing model can.
+
+**WHEN THESE DEFAULTS CHANGE, THE HEADER COMMENT MUST SAY THE ORDERING IS BY
+COMPOSITING MODEL FIRST AND REGULARITY SECOND** -- otherwise the next person
+recalibrates on regularity again and gets the same one-ground answer we did.
+
+Parked alongside: **the texture is a body-page signature, not a universe one.**
+Home is 100% dark ground, so on the page every guest sees FIRST the weave
+contributes nothing, in all eight grid universes. It appears only on the four
+inner pages, which are about half light. That is not a design; it is one alpha
+meeting two grounds. A design question for the owner, not a defect to fix
+quietly.
