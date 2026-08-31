@@ -1062,6 +1062,86 @@ guard, not a catch** — keep the count honest, and keep writing them.
 
 ---
 
+## A CAPABILITY TOKEN IS A SECRET THE HOLDER WAS GIVEN. A SLUG IS A NAME.
+
+**2026-08-31.** The sentence that would have prevented both leaks, and the one
+that now decides whether a guest-facing route needs a publication gate.
+
+Five routes served data with no authentication. **Four were correct** —
+`rsvp-lookup`, `wedding-attendees`, `rsvp-submit`, `collaborator-lookup` — each
+gated by an unguessable `crypto.randomUUID` token that **is** the credential,
+minted per guest and delivered to that guest. **One was a defect**:
+`wedding-poll-results` was gated by the slug, which is derived from the couple's
+names at onboarding.
+
+> **An identifier that is hard to type is not a secret.**
+
+And the corollary, which is why the token routes carry a comment explaining
+their own absence of a gate: **do not make them "consistent" with the gated
+ones.** Adding a `websiteEnabled` check there would strand every invitation
+already sent. Unpublishing a website is a decision about a public page; it is
+not a decision to revoke access from people who were personally invited.
+
+### A GUARDRAIL COMMENT SHIPS BEFORE THE THING IT GUARDS AGAINST
+
+Not folded into "whatever touches that file next" — **next may be the refactor
+it exists to prevent.** Small enough to keep postponing is exactly the reason to
+ship it alone.
+
+And it goes on **every** file the reasoning covers. A reader who finds the
+explanation on one route and not its twin will assume the omission was
+deliberate, and conclude the unexplained one is the bug.
+
+---
+
+## THE CLIENT IS NOT A GATE
+
+**2026-08-31.** The general form of both leaks, named after they were fixed.
+
+`MultiPageWeddingWebsite` computes `pageIsAvailable` **in the browser**, from a
+payload the server has already delivered in full. So the server performs no
+page-level authorization at all: the client decides what to *show* from data it
+was *given*.
+
+The site-level case was `wedding-by-slug` and `wedding-poll-results`, both fixed.
+The page-level case remains, and it applies to a **published** wedding with pages
+deliberately turned off.
+
+### A CORRELATION IS NOT A CONTROL
+
+Measured on a published record with pages disabled: **zero** hidden-page content
+was delivered. But **nothing filters it.** The payload is clean because a couple
+who disables a page has generally not filled it in — a correlation, not a
+control.
+
+> **The first couple who fills in a registry and then hides the page is the
+> counterexample**, and nothing in the system prevents it.
+
+Live instance of the pattern, exposing nothing today: a **13KB `experienceGuide`
+is delivered so the client can read `experienceGuide.published` and decide
+whether to show the page.** The data is in the browser; only the rendering is
+withheld.
+
+---
+
+## THE VOCABULARY YOU SEARCH WITH IS PART OF THE INSTRUMENT
+
+**Two instances on 2026-08-31, and the fix was the same both times.**
+
+| # | Searched for | Missed | Consequence |
+|---|---|---|---|
+| 1 | `publish\|live\|status\|visible` in the schema | **`websiteEnabled`** — the field is not named after the concept | Nearly gated on `slug`, which would have shown live links to 11 unpublished couples |
+| 2 | guessed page keys: `experiences`, `getting-here`, `good-to-know`, `schedule` | the real keys are `experience`, `transport`; two were not pages at all | First answer said **5 pages leaking**; the corrected answer was **0** — the opposite |
+
+> **An instrument can only find what you thought to name.** Its input space and
+> its output space both constrain it, and so does its vocabulary.
+
+**The fix, both times: read the canonical list from source rather than invent
+one.** `WEDDING_PAGES` and the schema's own property names are authoritative; a
+grep pattern assembled from memory is a guess wearing the clothes of a search.
+
+---
+
 ## THE NAME OF AN INSTRUMENT IS ITS LOUDEST OUTPUT
 
 **Owner ruling, 2026-08-30. The fix for the recurrence is a rename, not a
