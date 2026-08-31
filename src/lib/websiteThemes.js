@@ -551,7 +551,7 @@ export const UNIVERSE_CONFIGS = {
       bodyFont:    '"Karla", sans-serif',
       googleFonts: 'Fraunces:ital,wght@0,300;0,600;1,400&family=Karla:wght@300;400;500',
     },
-    texture: { type: 'canvas', opacity: 0.02 },
+    texture: { type: 'canvas' },
     colors: {
       darkBg: '#3D2B1F', lightBg: '#F5ECD7', darkText: '#F5ECD7', lightText: '#3D2B1F',
       accent: '#D4845A', accentSecondary: '#C4956A', navBg: '#3D2B1F',
@@ -633,7 +633,7 @@ export const UNIVERSE_CONFIGS = {
       bodyFont:    '"Poppins", sans-serif',
       googleFonts: 'Yeseva+One&family=Poppins:wght@300;400;500',
     },
-    texture: { type: 'linen', opacity: 0.015 },
+    texture: { type: 'linen' },
     colors: {
       // Previously a navy-and-lemon coastal palette (darkBg #1B3A6B,
       // accentSecondary a sky-blue #7BA7C2) — rebuilt around warm white/
@@ -806,7 +806,7 @@ export const UNIVERSE_CONFIGS = {
       bodyFont:    '"Mulish", sans-serif',
       googleFonts: 'Lora:ital,wght@0,400;0,600;1,400&family=Mulish:wght@300;400;500',
     },
-    texture: { type: 'canvas', opacity: 0.03 },
+    texture: { type: 'canvas' },
     colors: {
       // lightBg warmed toward sand (was a paler, less sandy cream);
       // accent is now a warm terracotta-clay, accentSecondary a genuinely
@@ -862,7 +862,7 @@ export const UNIVERSE_CONFIGS = {
       bodyFont:    '"Lato", sans-serif',
       googleFonts: 'Bodoni+Moda:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700',
     },
-    texture: { type: 'linen', opacity: 0.02 },
+    texture: { type: 'linen' },
     colors: {
       // darkBg/lightBg (ivory/ink-navy) unchanged — already fitting.
       // accent and accentSecondary were previously identical (a muted
@@ -1151,7 +1151,7 @@ export const UNIVERSE_CONFIGS = {
       bodyFont:    '"Hind", sans-serif',
       googleFonts: 'Prata&family=Hind:wght@300;400;500;600',
     },
-    texture: { type: 'linen', opacity: 0.025 },
+    texture: { type: 'linen' },
     colors: {
       darkBg: '#5C1626', lightBg: '#FBF6EA', darkText: '#FBF6EA', lightText: '#3A1116',
       accent: '#C9922E', accentSecondary: '#1F5C3F', navBg: '#5C1626',
@@ -1223,7 +1223,7 @@ export const UNIVERSE_CONFIGS = {
       bodyFont:    '"Source Sans 3", sans-serif',
       googleFonts: 'EB+Garamond:ital,wght@0,400;0,500;1,400&family=Source+Sans+3:wght@300;400;500;600',
     },
-    texture: { type: 'canvas', opacity: 0.025 },
+    texture: { type: 'canvas' },
     colors: {
       darkBg: '#2E3B2A', lightBg: '#F2ECDD', darkText: '#F2ECDD', lightText: '#2E3B2A',
       accent: '#6B2333', accentSecondary: '#A6842E', navBg: '#2E3B2A',
@@ -1295,7 +1295,7 @@ export const UNIVERSE_CONFIGS = {
       bodyFont:    '"DM Sans", sans-serif',
       googleFonts: 'Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;700',
     },
-    texture: { type: 'canvas', opacity: 0.022 },
+    texture: { type: 'canvas' },
     colors: {
       darkBg: '#5C2A2E', lightBg: '#F2E9DC', darkText: '#F2E9DC', lightText: '#5C2A2E',
       accent: '#B5643A', accentSecondary: '#5C6B3E', navBg: '#5C2A2E',
@@ -1372,7 +1372,7 @@ export const UNIVERSE_CONFIGS = {
       bodyFont:    '"Noto Sans SC", sans-serif',
       googleFonts: 'Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Noto+Sans+SC:wght@300;400;500;700',
     },
-    texture: { type: 'linen', opacity: 0.018 },
+    texture: { type: 'linen' },
     colors: {
       darkBg: '#0F1B14', lightBg: '#F5F0E8', darkText: '#F5F0E8', lightText: '#0F1B14',
       accent: '#C9A227', accentSecondary: '#1F5C4A', navBg: '#0F1B14',

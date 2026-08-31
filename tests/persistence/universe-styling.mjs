@@ -21,6 +21,7 @@ import {
   isMotionEnabled,
 } from '../../src/lib/universeStyling.js';
 import { UNIVERSE_CONFIGS, WEBSITE_THEMES } from '../../src/lib/websiteThemes.js';
+import { TEXTURE_REGISTRY } from '../../src/lib/textures.js';
 import { pass, fail } from './_shared.mjs';
 
 // feat/universes-expansion-10 added 10 more (all Ultra-gated) — 20 total.
@@ -100,19 +101,43 @@ export async function runUniverseStyling() {
     ? pass('resolveTexture — every universe declares a texture token', resolvedTextures.map(t => t.type).join(', '))
     : fail('resolveTexture — every universe declares a texture token', 'all non-null', resolvedTextures.map(t => t?.type ?? 'MISSING').join(', ')));
 
-  results.push(resolvedTextures.every(t => t.opacity > 0 && t.opacity <= 0.04)
-    ? pass('resolveTexture — every opacity is calibrated barely-there (0 < opacity <= 0.04)', resolvedTextures.map(t => t.opacity).join(', '))
-    : fail('resolveTexture — every opacity is calibrated barely-there (0 < opacity <= 0.04)', '0 < x <= 0.04', resolvedTextures.map(t => t.opacity).join(', ')));
+  // THE RESOLVED OPACITY, NOT THE CONFIG'S LITERAL. Eight grid universes
+  // deliberately carry no `opacity` — the level lives in the registry, per
+  // family — so reading `t.opacity` here tests a projection that no longer
+  // holds the value, and `undefined > 0` fails while the page renders fine.
+  // Resolving through the same fallback the component uses makes this check
+  // STRONGER than it was: it now covers the `var(--texture-opacity, default)`
+  // path, which is the one a deletion can silently break.
+  const effective = (t) => t.opacity ?? TEXTURE_REGISTRY[t.type]?.defaultOpacity;
+  const eff = resolvedTextures.map(effective);
+  results.push(eff.every(o => o > 0 && o <= 0.04)
+    ? pass('resolveTexture — every RESOLVED opacity is calibrated barely-there (0 < opacity <= 0.04)', eff.join(', '))
+    : fail('resolveTexture — every RESOLVED opacity is calibrated barely-there (0 < opacity <= 0.04)', '0 < x <= 0.04', eff.join(', ')));
 
   results.push(resolveTexture({}) === null
     ? pass('resolveTexture — no universe set → null (no texture rendered)', 'null')
     : fail('resolveTexture — no universe set → null (no texture rendered)', 'null', JSON.stringify(resolveTexture({}))));
 
-  // fix/universe-cleanup: tulum/bali previously resolved the identical
-  // (type, opacity) pair (canvas/0.02), making the two indistinguishable.
-  results.push(new Set(resolvedTextures.map(t => `${t.type}-${t.opacity}`)).size === 20
-    ? pass('resolveTexture — (type, opacity) pair is distinct across all 20 universes', resolvedTextures.map(t => `${t.type}/${t.opacity}`).join(', '))
-    : fail('resolveTexture — (type, opacity) pair is distinct across all 20 universes', '20 distinct', `${new Set(resolvedTextures.map(t => `${t.type}-${t.opacity}`)).size} distinct: ${resolvedTextures.map(t => `${t.type}/${t.opacity}`).join(', ')}`));
+  // THE (type, opacity) DISTINCTNESS ASSERTION IS RETIRED, AND ON PURPOSE.
+  //
+  // It required all twenty to differ, which forced every universe to carry its
+  // own opacity — and that is exactly the drift that produced the defect. Four
+  // canvas universes overrode the registry default UPWARD, to 2x at bali, and
+  // this test was the reason they had to. A rule that a texture level must be
+  // unique per universe cannot coexist with a calibrated per-family level.
+  //
+  // What replaces it is the invariant that actually matters now: the level for
+  // a GRID lives in the registry, once per family, so no grid universe may
+  // carry its own. Universes are distinguished by texture TYPE, which the
+  // assertion above already covers. Noise universes keep their per-universe
+  // values — untouched here, and re-measuring them is filed separately.
+  const GRIDS = ['canvas', 'linen'];
+  const gridOverrides = UNIVERSES
+    .filter((id) => GRIDS.includes(UNIVERSE_CONFIGS[id]?.texture?.type))
+    .filter((id) => UNIVERSE_CONFIGS[id]?.texture?.opacity !== undefined);
+  results.push(gridOverrides.length === 0
+    ? pass('resolveTexture — no grid universe overrides its family level (it lives in TEXTURE_REGISTRY)', 'canvas 0.015, linen 0.012, 8 universes inherit')
+    : fail('resolveTexture — no grid universe overrides its family level (it lives in TEXTURE_REGISTRY)', 'no overrides', `${gridOverrides.join(', ')} carry their own opacity`));
 
   console.log('\n  Motion resolution — one consistent reveal type, calibrated per universe:\n');
 

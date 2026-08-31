@@ -12,15 +12,50 @@
  * numOctaves 4, fully desaturated) so London's default renders with zero
  * visual change.
  *
- * Default opacities are calibrated against the C1 "barely-there" standard
- * (visible on close inspection of flat areas, invisible at a glance) using
- * grain's tuned 0.025 as the reference. Regular geometric patterns (linen,
- * canvas) read more perceptually salient than random noise at equal
- * opacity, so they're calibrated lower; lower-frequency noise (plaster)
- * produces larger contiguous blobs that also read stronger, so it sits
- * slightly below grain too. These are engineering-judgment starting points
- * per the spec's own build-sequence note ("verify live before merge") —
- * fine-tune visually against London on preview before shipping wider.
+ * ── CALIBRATION: COMPOSITING MODEL FIRST, REGULARITY SECOND ─────────────────
+ *
+ * The original note ordered these families by REGULARITY — geometric patterns
+ * read more salient than random noise at equal opacity, so linen and canvas
+ * were set lower than grain. That is true, and it is NOT the dominant
+ * variable, which is why it produced a level the owner rejected on sight.
+ *
+ * The dominant variable is HOW THE TEXTURE COMPOSITES:
+ *
+ *   - a GRID (linen, canvas) paints a black stroke at alpha `o`, so the step
+ *     is `ground * o` — ONE-SIDED DARKENING THAT SCALES WITH THE GROUND'S
+ *     LUMINANCE. Loud on a light ground, nearly absent on a dark one.
+ *   - NOISE (grain, plaster, paper) varies around a fixed midpoint, so the
+ *     step is roughly `sigma * o` and BARELY MOVES WITH THE GROUND.
+ *
+ * Measured in dL* (CIELAB) against each universe's own two grounds: grids
+ * swing 2.8-6.7x between dark and light; noise moves 0.7-1.1x, and slightly
+ * the other way. Regularity cannot explain a 6x swing. Only compositing can.
+ *
+ * This matters because ONE overlay at `inset: 0` spans a whole guest page, and
+ * four of the five pages are about half light ground. A grid's level is set by
+ * the LIGHT ground; the dark one contributes almost nothing.
+ *
+ * ── AND dL* UNDER-PREDICTS FINER WEAVES: THE 0.84x CORRECTION ───────────────
+ *
+ * dL* is a PER-PIXEL step — how much darker a stroke pixel is than the ground
+ * beside it. It has no term for tile period, stroke width or coverage, so it
+ * cannot see that linen's 8px tile lands near the peak of human contrast
+ * sensitivity (~3-4 cycles/degree at phone viewing distance) while canvas's
+ * 16px tile sits below it.
+ *
+ * Measured, not assumed: matching canvas 0.015's computed dL* of 1.23 solves
+ * to linen 0.0143. Shown both, the owner chose 0.012 — about 0.84x the
+ * arithmetic answer, in the predicted direction. SO A FINER WEAVE NEEDS ABOUT
+ * 0.84x THE OPACITY THAT EQUAL dL* WOULD SUGGEST.
+ *
+ * If a sixth texture is added, do not set it from dL* alone. The number looks
+ * authoritative and is wrong for anything finer than canvas.
+ *
+ * Current levels, both chosen by eye against rendered specimens at 1:1:
+ *   canvas 0.015 — UNCHANGED, the original calibration was correct
+ *   linen  0.012 — was 0.020
+ * The three noise defaults are untouched and remain the C1 engineering
+ * judgement; they have not been re-measured against this standard.
  */
 
 function svgDataUri(svgMarkup) {
@@ -117,7 +152,10 @@ export const TEXTURE_REGISTRY = {
     system: 'procedural',
     backgroundImage: LINEN_URI,
     backgroundSize: '8px 8px',
-    defaultOpacity: 0.02,
+    // 0.012, not the 0.0143 that equal-dL*-with-canvas solves to: linen's 8px
+    // period is near the eye's peak sensitivity and reads louder than the
+    // per-pixel number predicts. See the 0.84x correction in the header.
+    defaultOpacity: 0.012,
   },
   canvas: {
     id: 'canvas',
@@ -125,6 +163,9 @@ export const TEXTURE_REGISTRY = {
     system: 'procedural',
     backgroundImage: CANVAS_URI,
     backgroundSize: '16px 16px',
+    // UNCHANGED and deliberately so. Four universes overrode this upward (to
+    // 0.030 at bali, 2x) and that drift was the defect; shown 0.030 / 0.015 /
+    // 0.010 at 1:1 the owner chose 0.015 — the value that was already here.
     defaultOpacity: 0.015,
   },
 };
