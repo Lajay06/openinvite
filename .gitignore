@@ -36,3 +36,9 @@ dist-ssr
 base44/.app.jsonc
 scripts/capture/output/
 .env*.local
+
+# Motion capture harness — generated, never committed. The bundle is rebuilt by
+# `npm run motion:capture` and the frames are the run's output, not source.
+tests/motion/bundle.js
+tests/motion/bundle.css
+tests/motion/frames/
