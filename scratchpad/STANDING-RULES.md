@@ -1062,6 +1062,40 @@ guard, not a catch** — keep the count honest, and keep writing them.
 
 ---
 
+## FOLLOW THE COMPLAINT, DO NOT EXPLAIN IT
+
+**Owner ruling, 2026-08-31, recorded as the shape of the whole day.**
+
+> **Two live leaks were closed. Both were found because the owner said something
+> looked wrong on his own screen, and we followed it instead of explaining it.**
+
+Every serious finding began as a small complaint, and **not one of them was
+small**:
+
+| The complaint | What it actually was |
+|---|---|
+| *"the vendor list looks empty"* | an admin-key read that could not see 28 owner-scoped entities — and a working feature one authorization away from deletion |
+| *"marketplace search is broken"* | an expired Google trial, **and** a fixture serving invented businesses in production, **and** 62 guest-facing photo failures nobody had reported |
+| *"the invitation email looks wrong"* | one data model with three surfaces, filed as a programme rather than three tickets |
+| *"OpenInvite is spelled wrong"* | a sweep that ran where the code was rather than where the rule applied — and prerendered snapshots crawlers were still reading |
+| *"is the address really live?"* | **unpublished wedding sites publicly reachable, including two real couples** |
+
+**The temptation each time was to explain the complaint away** — the sample is
+small, the volume is low, the feature is unused, the guard says it passed. Every
+one of those explanations was available, plausible, and wrong.
+
+**The discipline is to treat a complaint as an OBSERVATION, not a claim to be
+adjudicated.** Someone looked at the product and saw something. The question is
+never "are they right?" — it is "what is actually there?" — and it is answered by
+reading the system, not by reasoning about whether the report is credible.
+
+The corollary, earned repeatedly today: **the defect someone reports is rarely
+the worst defect present.** Check the neighbours before accepting the reported
+scope. The loud failure the owner could see was a marketplace search; the quiet
+one he could not was every guest photo on a live wedding site.
+
+---
+
 ## A CAPABILITY TOKEN IS A SECRET THE HOLDER WAS GIVEN. A SLUG IS A NAME.
 
 **2026-08-31.** The sentence that would have prevented both leaks, and the one
