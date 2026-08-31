@@ -39,6 +39,41 @@
  * BASE44_PLATFORM_NOTES.md for why (read:null + a real confidentiality
  * promise means the row itself must not carry anything plaintext-readable).
  *
+ *
+ * ── THIS ROUTE DELIBERATELY DOES NOT CHECK websiteEnabled ────────────────────
+ *
+ * Two sibling routes gained a publication gate on 2026-08-31 after an audit
+ * found unpublished weddings were being served: api/wedding-by-slug.js (#632)
+ * and api/wedding-poll-results.js (#634). Both now return 404 when
+ * websiteEnabled is not true.
+ *
+ * THIS ROUTE IS NOT THE SAME CASE, AND MUST NOT BE MADE CONSISTENT WITH THEM.
+ *
+ *   A CAPABILITY TOKEN IS A SECRET THE HOLDER WAS GIVEN. A SLUG IS A NAME.
+ *
+ * Those two routes were reached by SLUG — derived from the couple's names at
+ * onboarding, so guessable by anyone who knows them. An identifier that is hard
+ * to type is not a credential, which is why they needed a gate.
+ *
+ * This route is reached by an rsvp_link_id: a crypto.randomUUID token minted per
+ * guest and delivered to that guest in their own invitation. The token IS the
+ * credential. It was given deliberately, to that person.
+ *
+ * WHAT ADDING A websiteEnabled CHECK HERE WOULD DO: strand every invitation
+ * already sent, the moment a couple toggles their site off. A guest holding a
+ * valid link would be told their invitation does not exist. Unpublishing a
+ * website is a decision about a PUBLIC PAGE; it is not a decision to revoke
+ * access from people who were personally invited.
+ *
+ * This is a decision, not an omission. It was raised with the owner on
+ * 2026-08-31 and left as-is on purpose. The danger it guards against is not the
+ * current behaviour — it is that someone later applies the pattern uniformly in
+ * the name of consistency. AN UNDECIDED BEHAVIOUR THAT HAPPENS TO BE RIGHT IS
+ * ONE REFACTOR AWAY FROM BEING WRONG, so the reason lives here, where that
+ * refactor will be read, rather than only in a ticket.
+ *
+ * If the product ever needs "unpublish also revokes sent invitations", that is
+ * a deliberate product decision with its own design — not a consistency fix.
  * Required env var: BASE44_ADMIN_KEY — server-side-only Base44 service token.
  */
 
