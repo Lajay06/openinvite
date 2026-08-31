@@ -3275,3 +3275,47 @@ strings, not a claim that it was applied.**
 Generalises past copy: an accepted decision that produces an artifact (a string,
 a config value, a schema field, a route) needs the artifact confirmed to exist.
 The same family as the empty read — "I did it" is not evidence, the file is.
+
+## The declared number is not the perceived number
+
+Twenty guest page transitions shipped, six types, every declared direction
+honored, the mechanism measure up from 3 distinct to 12. The owner watched all
+twenty and reported the differences as very subtle. Subtle was the goal;
+imperceptible was not.
+
+The types were fine. The **amounts** were a whisper, and the config said nothing
+about it. Measured at the 390px guest viewport, four of the six types moved
+**3 to 12 visible pixels**; `unfold` moved 60 to 129. A 40:1 spread inside what
+was described as one calibrated family.
+
+And there was a structural multiplier underneath, which no single value in the
+config revealed. Every variant sets `opacity: 0` at the extreme of its
+displacement and `opacity: 1` at zero displacement — so **the page is invisible
+exactly when it has moved furthest, and fully opaque only once it has stopped
+moving.** Integrate displacement against opacity and only **a third** of the
+declared travel happens while the page can be seen. A 28px push is a 9px push.
+Nothing in `AXES` or in any universe's config says `28` means `9`.
+
+**A DIFFERENCE BELOW THE THRESHOLD OF PERCEPTION IS NOT A DIFFERENCE.** The same
+rule that made dissolve's 2% scale indistinguishable from a plain fade, applied
+to five of six types at once. When a change is graded by whether a human
+notices it, the acceptance criterion is a human noticing it — an instrument can
+confirm the variants exist and separate, and that is a different claim.
+
+**And the elegant fix was wrong, which is the second half of this entry.** The
+obvious repair was to decouple opacity from displacement so the page is opaque
+while it still travels. That is a satisfying explanation, it addresses the
+structural cause directly, and the expectation going in was roughly 2x. It
+computes to **1.14x** — and 1.5x at the theoretical limit of pinning opacity to
+1 for the whole transition, because the displacement is spent early regardless.
+The coupling costs 3x and at most 1.5x is recoverable. Magnitude was the only
+lever, and the elegant mechanism was withdrawn inside the same report that
+proposed it.
+
+**THE ELEGANT EXPLANATION IS THE ONE TO ARITHMETIC HARDEST.** It is the one you
+will want to be true, and wanting it is exactly why it goes to the calculator
+before it goes in a proposal.
+
+Filed alongside, unresolved: capetown and kyoto declare `unfold/center-split` at
+46% and `unfold/vertical` at 42% — two names for one vertical clip axis, four
+percent apart, a distinction nobody decided.
