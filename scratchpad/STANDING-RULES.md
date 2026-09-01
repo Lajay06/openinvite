@@ -3468,3 +3468,37 @@ without being re-derived, and being established is what stops anyone looking.
 
 The check that catches it is one grep: what reads this flag, and what does it do
 when it is set.
+
+## A fallback chain ending in '' cannot tell "no data" from "wrong field name"
+
+Every invitation this product has sent went out with a BLANK SENDER NAME, and
+the cause was a typo that nothing could report.
+
+`SendInvitesModal.jsx` reads `wedding?.coupleName || wedding?.couple_name || ''`.
+Neither spelling exists: the schema field is `coupleNames`, plural. So the value
+is always `''`, and it stays `''` through every layer that handles it:
+
+  - posted as `wedding: { coupleName, … }`
+  - read server-side as `sanitizeString(wedding.coupleName) || ''`
+  - substituted into `[Couple names]` as `''`
+  - passed to `renderInvitationEmail({ coupleNames: coupleName })`
+  - **and used as the guest-facing FROM-NAME**, which the code comments
+    describe as deliberately being the couple's own names rather than
+    "Openinvite", so the invitation reads as coming from them
+
+**THREE `|| ''` IN SEQUENCE, EACH SUPPLYING A PLAUSIBLE EMPTY VALUE, CONVERTED
+A TYPO INTO SILENCE AT EVERY LAYER.** No error, no empty state, no log. An
+unvalidated property read on a plain object cannot fail — `wedding.coupleName`
+is `undefined` whether the field is missing, empty, or misspelled, and `|| ''`
+erases the difference before anyone can see it.
+
+**AND THE GRACEFUL DEGRADATION IS WHY IT SURVIVED.** The WhatsApp path renders
+`'our wedding'` when the name is empty, which reads perfectly well. One channel
+handled the empty case so gracefully that nobody ever asked why it was empty —
+the fallback that made the symptom tolerable is the same fallback that hid the
+cause. A good empty state is not evidence that the empty is intended.
+
+The lesson is not "avoid `||`". It is that **AN EMPTY DEFAULT AT THE POINT OF
+READ DESTROYS THE ONLY EVIDENCE THAT THE READ WAS WRONG.** Where a value is
+required, the absence should be loud at the boundary where it is fetched, not
+smoothed at every boundary it passes through.
