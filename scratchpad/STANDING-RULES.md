@@ -3580,3 +3580,31 @@ The correct recovery is `reset --soft HEAD~1` to un-commit, then
 `restore --staged` and `checkout --` on THAT ONE PATH, leaving every other
 change untouched. **BEFORE ANY RESET, ASK WHAT IS IN THE WORKING TREE THAT NO
 COMMIT HOLDS** — the answer is usually the only irreplaceable thing present.
+
+## A sighting is not an artifact: look again before reading the code
+
+An audit-first, mechanism-before-fix order is correct for a defect with a
+STABLE ARTIFACT. An email that renders wrong is there to be read whenever you
+look; a config value that is wrong stays wrong. Tracing first costs nothing you
+cannot recover.
+
+The universe report was not that. It was a SIGHTING — a claim about what
+appeared on a screen at a moment. Nobody could re-open the artifact, because
+there wasn't one.
+
+Hours went into tracing: four writers enumerated, the schema checked, the studio
+autosave cleared, `resolveMyWedding` read, telemetry queried, two authorized
+reads run. The data then showed the records were correct all along and the code
+path resolves correctly end to end. **THE DISCRIMINATOR — RELOAD THE PAGE AND
+LOOK — WAS AVAILABLE IN THE FIRST MINUTE AND COSTS TEN SECONDS.**
+
+**WHEN A REPORT CAN BE CHECKED BY LOOKING AGAIN, LOOK AGAIN BEFORE READING THE
+CODE.** The question that separates the two cases: *is the thing being reported
+still there to be observed, or is it a memory of a render?* If it is a memory,
+the first move is to reproduce it, and everything else is archaeology on a
+premise nobody has confirmed.
+
+The cost is asymmetric and that is the whole argument. Re-looking costs seconds
+and either yields a live repro against known state or closes the report. Tracing
+first costs hours and, if the sighting was stale, produces a map of code that
+was never broken.

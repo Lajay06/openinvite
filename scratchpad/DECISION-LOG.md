@@ -1227,3 +1227,51 @@ becomes the definition of done.
 currently the only person who can perform a level-3 check on a send. Until
 that changes, email fixes ship at level 2 and the honest status is "shipped,
 unverified" — which is a different sentence from "done".
+
+---
+
+## 2026-09-01 — the universe-persistence defect did not happen as described (RESOLVED, in part)
+
+The report was: a universe selected during onboarding "does nothing", and the
+Design Studio shows kyoto. It was treated as launch-blocking for several rounds,
+because a bali fixture that is secretly kyoto makes every verification built on
+it worthless.
+
+**The data falsifies the persistence claim outright.** Scoped read of the two
+fixture accounts, created minutes apart this morning:
+
+    la.jay06+bali@gmail.com    activeUniverse "bali"    "Chris & Sia"    1 row
+    la.jay06+paris@gmail.com   activeUniverse "paris"   "Theo & Larissa" 1 row
+
+**ONBOARDING WROTE THE CORRECT VALUE ON BOTH ACCOUNTS.** One row each, so no
+record multiplicity. Couple names present, so the save ran in full. There is no
+persistence defect. **A DEFECT WE TREATED AS LAUNCH-BLOCKING FOR SEVERAL ROUNDS
+DID NOT HAPPEN AS DESCRIBED** — recorded in those words rather than quietly
+reclassified as something smaller.
+
+**The mechanism half is unresolved and is NOT covered by the confirmed half.**
+The prediction was "records hold bali and paris, kyoto is a display fallback".
+The first clause is confirmed; **the second is not** — every universe read
+reachable from `/studio` resolves correctly and every fallback is `london`:
+
+  - `/studio` is `StudioHub`, NOT `UniverseStudio` (`/studio/universe`). The
+    first trace looked at the wrong component, which is why "kyoto is not
+    reachable" was ruled correctly about the wrong code.
+  - `StudioHub` reads `getUniverse(wedding?.activeUniverse || 'london')`.
+  - that `getUniverse` is `universeCatalog`'s, a different module from the one
+    checked earlier: `UNIVERSE_CATALOG.find(u => u.id === id) || null`. No
+    default entry, no index fallback.
+  - all 20 `imageUrl`s are distinct and correctly named, and bali, paris,
+    kyoto and london all return 200 image/jpeg in production.
+  - `UltraGate` contains no universe reference.
+
+**A PREDICTION THAT IS HALF RIGHT IS NOT A PREDICTION THAT WAS RIGHT.** The
+halves are scored separately so the reasoning stays worth reusing.
+
+Three candidates remain, undecided: a stale view observed before the selection
+landed or against a cached bundle; a card element read as kyoto (it is
+image-led, and the badge shows "Ultra" rather than a universe name on a Pro
+plan); or something outside `src/` and `api/` still unfound.
+
+**The fixtures stand.** Both records hold the right universe, which was the only
+thing actually blocking them.
