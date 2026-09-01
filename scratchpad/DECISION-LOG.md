@@ -1111,3 +1111,75 @@ statement about bali.
 Practical note: the texture appears only on the INNER pages. Home is 100% dark
 ground where the weave contributes nothing, so verification must read an inner
 page such as `/w/<slug>/our-story`, which needs enough content to render.
+
+---
+
+## 2026-09-01 — the universe-persistence audit: what the scoped read found (OPEN)
+
+**The symptom:** the owner selected a universe in onboarding and reports his
+dashboard showing kyoto.
+
+**Code ruled out three of the four candidates.** All four writers
+(`OnboardingStepUniverse`, `buildWeddingDetailsPayload`, `persistDraftStep`,
+`UniverseStudio.handleSwitchUniverse`) write the same field, `activeUniverse`,
+which is a real schema field (`entityFields.generated.js:1329`) and therefore
+not silently dropped. `StudioWebsite`'s 2-second autosave cannot clobber it —
+`activeUniverse` is not in its `DEFAULT`, and `WRITABLE_FIELDS` derives from
+`Object.keys(DEFAULT)`. The studio persists only on an explicit switch with a
+confirming toast, never on opening a tile. And **kyoto exists nowhere as a
+default or fallback** — the studio's own display falls back to `'london'`, and
+the catalog order is london, tulum, kyoto, so no `[0]` default reaches it.
+
+**Telemetry, asked for the first time.** `/api/my-wedding-details` has logged
+"owns more than one real record" server-side since the "Alex & Sam" incident.
+**It has not fired.** Zero warning-level logs across every path in a 12-hour
+window, against a control showing logs flowing normally and 32 calls to that
+exact endpoint in 6 hours. Bounded honestly: that is a 12-hour window on
+retention-limited logs, so it means "not firing now", not "never fired".
+
+**The scoped read, one account only.** One row exists for the owner's account:
+
+    activeUniverse: "brooklyn"   coupleNames: ""   slug: "tulumtest"
+    created 2026-07-06           is_test: false    onboardingDraft: absent
+
+Nothing outside that account was returned, fetched or counted.
+
+**IT DOES NOT REPRODUCE THE SYMPTOM.** That row says brooklyn, not kyoto, and
+predates this week by two months. So the account showing kyoto is a DIFFERENT
+account — presumably one of the new fixture accounts — and it has not been read.
+**The audit is not finished; it is waiting on which account to look at.**
+
+**But that row is evidence for the mechanism anyway, and it is the important
+part.** `coupleNames` is EMPTY on a non-draft record. That is the exact shape
+`UniverseStudio.handleSwitchUniverse` produces when `recordId` is falsy:
+
+    const created = await WeddingDetails.create({ activeUniverse: universeId });
+
+A row containing a universe and nothing else. **THE BARE-CREATE PATH HAS RUN IN
+PRODUCTION.** Here it was harmless because it was the only row. It would not be
+harmless on an account that already had a real wedding: `resolveMyWedding`
+returns the MOST RECENTLY CREATED non-test row, so a bare row created later wins,
+and **the couple's entire wedding becomes unreachable through the UI.**
+
+**THE COSMETIC SYMPTOM AND THE CATASTROPHIC ONE ARE THE SAME BUG SEEN FROM TWO
+DISTANCES.** "My universe didn't stick" and "my wedding disappeared when I
+opened the studio" are the same line of code at different starting states. The
+telemetry exists because this shape has occurred before, which is why asking it
+was the cheap move and why it should have been asked on day one.
+
+**Not fixed.** The fix is a guard on the create branch — a universe switch
+should never mint a wedding — but the mechanism behind the kyoto sighting is
+still unidentified, and fixing the bare-create would not explain kyoto.
+
+## 2026-09-01 — OnboardingStepUniverse: Select is a no-op on an already-selected tile
+
+`OnboardingStepUniverse.jsx:149`
+
+    onClick={(e) => { e.stopPropagation(); if (!isSelected) onSelectTile(); }}
+
+Pressing Select on the tile that is already selected does nothing at all. The
+outcome is harmless — the tile is already chosen — but **A CONTROL THAT
+SILENTLY DOES NOTHING IN A STATE THE USER CAN REACH IS A DEFECT EVEN WHEN THE
+OUTCOME IS HARMLESS**, because what the user learns is that the button is
+unreliable, not that it was unnecessary. Filed during the universe-persistence
+audit, not folded into it.
