@@ -3502,3 +3502,81 @@ The lesson is not "avoid `||`". It is that **AN EMPTY DEFAULT AT THE POINT OF
 READ DESTROYS THE ONLY EVIDENCE THAT THE READ WAS WRONG.** Where a value is
 required, the absence should be loud at the boundary where it is fetched, not
 smoothed at every boundary it passes through.
+
+## The echo rule, second clause: the reviewer's version is more dangerous because it is better written
+
+I wrote "the same empty value feeds the guest-facing from-name" once, in
+passing, inside a larger finding. The advisor promoted it to the headline and
+sharpened it: "every invitation arrived from a blank sender", "looks like spam
+at the moment a couple is asking people to come to their wedding".
+
+It was wrong. `send-invites.js` reads `const fromName = coupleName ||
+'Openinvite'`. The sender was never blank. Seven downstream fallbacks were all
+floored — headline "The Wedding", subject "a wedding", body "the couple" — and
+the only genuinely empty render was a `[Couple names]` merge tag in copy the
+couple wrote themselves. Real bug, universal, worth fixing. Not the one either
+of us described.
+
+**AMPLIFICATION DOES NOT MERELY REPEAT A CLAIM, IT UPGRADES ITS APPARENT
+CONFIDENCE BY IMPROVING ITS PROSE.** A vivid restatement reads as checked. The
+advisor's version read as verified because it was written well, not because
+anything had been verified — and it then became the premise of a build
+authorization.
+
+**AND THE SIGNAL BOTH OF US MISSED WAS THE PHRASE "IN PASSING" ITSELF.** A claim
+made in passing is usually a claim that has not been checked. It reads as
+modesty; it is closer to a confidence interval, and a wide one. When a
+subordinate clause carries the most alarming fact in a report, that is the
+sentence to go and verify, not the one to quote.
+
+Corollary for the writer: **do not put an unverified claim in a dependent
+clause.** Give it its own sentence and mark it, or check it before writing it —
+because the grammar that makes it easy to say is the same grammar that makes it
+easy to promote.
+
+## A name-keyed guard is blind to misspellings of the thing it guards
+
+`scripts/test-couple-names-owner.mjs` exists to enforce that couple names have
+one owner. It forbids raw reads with:
+
+    const RAW_READ = /\b(weddingDetails|details|wd|wedding|record)\??\.coupleNames\b/;
+
+`SendInvitesModal` read `wedding?.coupleName` — singular, a field that does not
+exist. **THE GUARD MATCHES ON THE CORRECT NAME, SO IT COULD NOT SEE THE
+INCORRECT ONE.** It sat beside this defect for the entire life of the feature
+and fired within seconds of the spelling being fixed.
+
+**A GUARD BUILT TO POLICE A FIELD SHARES THE CODE'S BLIND SPOT EXACTLY WHEN THE
+CODE'S ERROR IS THE NAME ITSELF.** The instrument and the bug were keyed on the
+same string, so the one case the guard cannot cover is the one where that string
+is what went wrong.
+
+**The blind spot is general, not local.** Every name-keyed guard in this repo —
+anything matching a field, a component, a route or a token by its literal name —
+is blind to misspellings of that name. That is the argument for the narrow
+schema-field check: resolving reads against `entityFields.generated.js` catches
+the class from the other direction, by asking whether a read resolves at all
+rather than whether it matches a name we already know.
+
+**AND THE SECOND HALF, WHICH IS WHY THIS GUARD IS WORTH ITS COST.** Having
+fired, it rejected the obvious fix. A hand-rolled
+`coupleNames || [couple1Name, couple2Name].join(' & ')` looks right and is
+wrong in three ways the canonical `coupleDisplayName()` already handles: it
+prefers a stale legacy `coupleNames` over fresher parts, it does not trim, and
+it renders "Jay & " when one name is blank. The guard's own test table has a row
+for each. **A GUARD THAT ONLY EVER SAYS NO IS A COST; ONE THAT NAMES THE RIGHT
+ANSWER IS A COLLEAGUE.**
+
+## reset --hard is the reflex; it destroys what no branch is holding
+
+A canon file was committed onto a feature branch by mistake — the pre-push hook
+refused it, correctly. The reflex fix is `git reset --hard HEAD~1`.
+
+**That would have destroyed the actual work.** The uncommitted invitation fix
+was in the working tree and in no commit anywhere; only the canon edit was
+committed. `--hard` discards both.
+
+The correct recovery is `reset --soft HEAD~1` to un-commit, then
+`restore --staged` and `checkout --` on THAT ONE PATH, leaving every other
+change untouched. **BEFORE ANY RESET, ASK WHAT IS IN THE WORKING TREE THAT NO
+COMMIT HOLDS** — the answer is usually the only irreplaceable thing present.
