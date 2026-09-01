@@ -967,7 +967,7 @@ export default function SendInvitesModal({
         </div>
 
         {/* A GOOD EMPTY STATE THE AUTHOR CANNOT SEE IS INDISTINGUISHABLE FROM
-            CORRECT BEHAVIOUR. The from-name has always fallen back to
+            CORRECT BEHAVIOR. The from-name has always fallen back to
             "Openinvite" when the couple has no names — a sensible floor that
             nobody could tell was in use, which is most of why a wrong field
             name survived unnoticed for the life of the feature. The send is
