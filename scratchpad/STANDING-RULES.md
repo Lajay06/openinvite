@@ -3440,3 +3440,31 @@ enquiry never measured by eye at all.
 Same shape as enumerating the domain, applied after the fact: a test answers
 for its sample, and the sample's extremes are the boundary of the claim. State
 the bound in the same sentence as the result, or the result travels without it.
+
+## A standing rule is scoped to the problem it was written for
+
+The brief for the verification fixtures specified `is_test: true`, from the
+standing convention that test data carries that flag. The convention is real and
+correct. It does not apply here.
+
+`is_test` exists to keep harness records OUT of product UI, and it is enforced
+in exactly the two places a fixture has to appear:
+
+  - `api/_lib/resolveWeddingBySlug.js` filters `!w.is_test`, so an is_test
+    record is NOT SERVED at `/w/:slug` — the guest page 404s.
+  - `src/lib/resolveMyWedding.js` excludes is_test from the owner's own
+    dashboard, deliberately, so the studio would not show it either.
+
+**A CONVENTION THAT EXISTS TO KEEP TEST DATA OUT OF PRODUCT UI CANNOT SERVE A
+FIXTURE WHOSE PURPOSE IS TO BE IN PRODUCT UI.** The flag would have produced two
+records invisible in both places at once — and invisible is exactly what they
+were created to not be.
+
+**CITING A RULE IS NOT CHECKING THAT IT APPLIES.** The failure is applying a
+rule by its NAME (`is_test` — this is a test, therefore) rather than by its
+FUNCTION (what does this flag cause, in the paths this task touches). Same
+family as the echo rule: something already established gets carried forward
+without being re-derived, and being established is what stops anyone looking.
+
+The check that catches it is one grep: what reads this flag, and what does it do
+when it is set.

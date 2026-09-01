@@ -1059,3 +1059,55 @@ that is a production write and it is not ours to make.
 Until then, guest-facing universe changes are verified by rendering the real
 component locally and reading the computed value, and the report must say that
 is what happened rather than calling it live verification.
+
+---
+
+## 2026-09-01 — two verification fixtures, and what they are not
+
+To verify guest-facing universe work in production at all (see the missing-
+instrument entry above), two ordinary weddings are being published:
+
+| slug | universe | texture | dark ground | light ground |
+|---|---|---|---|---|
+| `openinvite-fixture-bali` | bali | canvas | `#2E4A2A` | `#F2E9D3` |
+| `openinvite-fixture-paris` | paris | linen | `#1A1A2E` | `#FAF7F2` |
+
+Two accounts, because there is no wedding switcher: `resolveMyWedding` returns
+the MOST RECENTLY CREATED non-test record, so a second wedding on one account
+makes the first unreachable, and `/api/my-wedding-details` already logs
+"owns more than one real record" as an anomaly.
+
+**THESE ARE ORDINARY REAL RECORDS AND THAT IS PERMANENT DATA CONTAMINATION.**
+They cannot carry `is_test` — that flag would 404 the guest page and hide them
+from the studio, which is the whole point of them. So they are indistinguishable
+from customer weddings in the data.
+
+**ANY COUNT OF REAL WEDDINGS MUST EXCLUDE THESE TWO SLUGS.** Revenue, adoption,
+"how many couples", anything. The exclusion is by slug because there is nothing
+else to exclude them by.
+
+**The option being declined, deliberately:** a distinct fixture flag — served
+like a real record but excluded from business counts. That is a schema change,
+so it is the owner's to authorize, and it is not worth it for two rows today.
+**BUILD IT THE MOMENT A WEDDING COUNT BECOMES LOAD-BEARING**, because at that
+point this entry is the only thing standing between the fixtures and a wrong
+number, and an entry is not a control.
+
+**The trial consequence is narrower than it looks.** Design Studio is
+Ultra-gated (`canAccessUltra`: plan === 'ultra' || trialActive), so both
+accounts need Ultra or an active trial to pick a universe. When a trial lapses
+the studio locks BUT THE SITE STAYS PUBLISHED — `websiteEnabled` is untouched
+by the gate — so verification keeps working indefinitely. The only thing lost is
+re-pointing a fixture at a different universe, and if we ever want that, it is a
+new fixture rather than a re-pointed one.
+
+**AND SAY WHAT THEY CANNOT VERIFY.** Two universes of twenty, one canvas and one
+linen. They cover the texture register on the two grid families. They do NOT
+cover the twelve noise universes, the page transitions, the entrances, or
+anything about the other eighteen worlds. **A FIXTURE THAT COVERS THE CASE THAT
+BROKE IS NOT A FIXTURE THAT COVERS THE CLASS** — a green check on bali is a
+statement about bali.
+
+Practical note: the texture appears only on the INNER pages. Home is 100% dark
+ground where the weave contributes nothing, so verification must read an inner
+page such as `/w/<slug>/our-story`, which needs enough content to render.
