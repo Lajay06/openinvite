@@ -1183,3 +1183,47 @@ SILENTLY DOES NOTHING IN A STATE THE USER CAN REACH IS A DEFECT EVEN WHEN THE
 OUTCOME IS HARMLESS**, because what the user learns is that the button is
 unreliable, not that it was unnecessary. Filed during the universe-persistence
 audit, not folded into it.
+
+---
+
+## 2026-09-01 — a class of change we can ship and cannot watch work (MISSING INSTRUMENT)
+
+Two instances in one day, and they are one gap rather than two incidents.
+
+**Instance 1 — guest-facing universe surfaces (#641).** The texture overlay
+mounts only on `/w/:slug`, and no published wedding exists that we may read. A
+deployed-bundle read proved `defaultOpacity: .012` shipped; it could not prove a
+page renders it. Worse for that PR specifically, the fix DELETED config values
+so the level resolves through a fallback — meaning the bundle read cannot even
+distinguish correct inheritance from a fallback resolving to `opacity: 1`.
+
+**Instance 2 — the invitation email (#642).** The couple's name now resolves
+through `coupleDisplayName()`. A deployed-bundle read proves the corrected call
+site shipped. **IT CANNOT PROVE AN EMAIL ARRIVES RIGHT.** The from-name, the
+subject, the headline and a `[Couple names]` tag in a couple's own custom body
+are all things that exist only in a delivered message.
+
+**THE COMMON SHAPE: THE ARTIFACT THE CHANGE IS ABOUT IS PRODUCED OUTSIDE ANY
+SURFACE WE CAN OBSERVE** — a guest site nobody has published, an email nobody
+has sent. Every other change this week could be verified by reading the
+deployed bundle for a literal, because the literal WAS the artifact. Here it is
+only an input to one.
+
+**Report these in three levels rather than as "done":**
+
+  1. **Proven now** — the code does what the diff says; a local render shows
+     the output of the shipped template. My machine.
+  2. **Provable after merge** — a deployed-bundle read confirms the call site
+     or value shipped. Proves the change is live. Proves nothing about output.
+  3. **Only real verification** — the artifact itself. A live guest page for
+     the universe half; an actual send, read in a real inbox, for the email
+     half.
+
+**The fixture accounts close the universe half.** Once `openinvite-fixture-bali`
+and `openinvite-fixture-paris` exist, level 3 becomes available there and
+becomes the definition of done.
+
+**NOTHING CLOSES THE EMAIL HALF.** There is no fixture inbox, and the owner is
+currently the only person who can perform a level-3 check on a send. Until
+that changes, email fixes ship at level 2 and the honest status is "shipped,
+unverified" — which is a different sentence from "done".
