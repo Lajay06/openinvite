@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
+import { coupleDisplayName } from '@/lib/coupleNames';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { getWeddingEvents, getGuestEventResponse, getEventVenueAndDate } from '@/lib/weddingEvents';
 import {
@@ -51,7 +52,11 @@ function replaceMergeTags(str, guestName, coupleName, dateStr) {
   return str
     .replace(/\[Guest name\]/gi, firstName)
     .replace(/\[Wedding date\]/gi, dateStr || '[Wedding date]')
-    .replace(/\[Couple names\]/gi, coupleName || '[Couple names]')
+    // A TAG THE COUPLE TYPED THEMSELVES IS NOT A TEMPLATE DEFAULT — they asked
+    // for that value by name, so rendering it as nothing is the one case where
+    // the empty state is not a kindness. Floors to the same words the email
+    // body already uses when it has no names.
+    .replace(/\[Couple names\]/gi, coupleName || 'the couple')
     .replace(/\[RSVP link\]/gi, '[RSVP link]');
 }
 
@@ -207,9 +212,28 @@ export default function SendInvitesModal({
     if (!bodyEdited) setMessageBody(defaults.body);
   }, [type]);
 
-  const coupleName = wedding?.coupleName || wedding?.couple_name || '';
-  const weddingDate = wedding?.weddingDate || wedding?.wedding_date || '';
-  const venue = wedding?.venueName || wedding?.venue_name || '';
+  // THE FIELD NAMES HERE WERE WRONG AND NOTHING COULD SAY SO. WeddingDetails
+  // has `coupleNames` (plural) and keeps the venue on `mainCeremony`; it has
+  // no `coupleName`, no `couple_name`, no `venueName`, no `venue_name` and no
+  // top-level `venue`. Every one of those reads was `undefined`, `|| ''` turned
+  // it into an empty string, and seven well-written fallbacks downstream then
+  // rendered a sensible default — so every invitation this product has sent
+  // went out from "Openinvite" with the headline "The Wedding", and looked
+  // fine. An unvalidated property read cannot fail; the empty default at the
+  // point of read destroyed the only evidence that the read was wrong.
+  //
+  // AND THE GUARD THAT OWNS THIS COULD NOT SEE IT. test-couple-names-owner.mjs
+  // forbids raw reads with `/\.coupleNames\b/` — the CORRECT spelling — so a
+  // misspelling of the very field it watches was invisible to it. It fired
+  // immediately once the spelling was fixed, and told us to call the owner.
+  // Which is the right answer: `coupleDisplayName` prefers couple1Name/
+  // couple2Name, falls back to a legacy `coupleNames`, trims, and handles one
+  // name being blank — none of which a hand-rolled join gets right.
+  //
+  // `weddingDate` was correct and is left alone.
+  const coupleName = coupleDisplayName(wedding);
+  const weddingDate = wedding?.weddingDate || '';
+  const venue = wedding?.mainCeremony?.venueName || '';
   const dateStr = weddingDate
     ? new Date(weddingDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })
     : '';
@@ -941,6 +965,27 @@ export default function SendInvitesModal({
           {/* Right: permanent live preview pane */}
           {previewPane}
         </div>
+
+        {/* A GOOD EMPTY STATE THE AUTHOR CANNOT SEE IS INDISTINGUISHABLE FROM
+            CORRECT BEHAVIOUR. The from-name has always fallen back to
+            "Openinvite" when the couple has no names — a sensible floor that
+            nobody could tell was in use, which is most of why a wrong field
+            name survived unnoticed for the life of the feature. The send is
+            NOT blocked: some sends are deliberate tests, and blocking the
+            product's central action over something fixable in ten seconds is
+            disproportionate. It is simply said out loud, before sending. */}
+        {!coupleName && (
+          <div style={{
+            padding: '12px 32px', borderTop: '1px solid rgba(10,10,10,0.12)',
+            background: '#FFFFFF', flexShrink: 0,
+          }}>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0, ...F }}>
+              This will be sent from <strong style={{ color: '#0A0A0A', fontWeight: 600 }}>Openinvite</strong> because
+              you haven&rsquo;t added your names yet. Add them in <strong style={{ color: '#0A0A0A', fontWeight: 600 }}>Event details</strong> and
+              guests will see your own names as the sender.
+            </p>
+          </div>
+        )}
 
         {/* Footer navigation */}
         <div style={{

@@ -45,7 +45,10 @@ function replaceMergeTags(str, guestName, coupleName, dateStr, rsvpUrl) {
   return str
     .replace(/\[Guest name\]/gi, firstName)
     .replace(/\[Wedding date\]/gi, dateStr || '')
-    .replace(/\[Couple names\]/gi, coupleName || '')
+    // Not '' — see SendInvitesModal's copy of this function. A merge tag the
+    // couple typed is a request for a value, and an empty substitution deletes
+    // their sentence rather than completing it.
+    .replace(/\[Couple names\]/gi, coupleName || 'the couple')
     .replace(/\[RSVP link\]/gi, rsvpUrl || '');
 }
 
