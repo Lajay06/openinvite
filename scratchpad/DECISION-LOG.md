@@ -1275,3 +1275,149 @@ plan); or something outside `src/` and `api/` still unfound.
 
 **The fixtures stand.** Both records hold the right universe, which was the only
 thing actually blocking them.
+
+---
+
+## 2026-09-02 — the first level-3 verification this project has produced
+
+`https://www.openinvite.com.au/w/chris-and-sia/our-story`, a real published
+guest site on the bali fixture account:
+
+    overlay found:    true
+    texture opacity:  0.015        <- computed, on the live page
+    background-size:  16px 16px    <- the canvas tile
+    root background:  rgb(46, 74, 42)
+
+**WHAT THIS PROVES THAT A BUNDLE READ CANNOT.** #641 DELETED the per-universe
+opacity so the level resolves through `var(--texture-opacity, 0.015)`. A bundle
+read can only confirm the config value is absent and the registry default is
+present — which is also exactly what a broken fallback looks like. **AN INVALID
+CUSTOM PROPERTY MAKES THE DECLARATION INVALID AT COMPUTED-VALUE TIME AND
+`opacity` FALLS TO ITS INITIAL VALUE OF 1** — a full-strength weave on every
+guest page, from a diff that reads as removing redundant numbers. Only a
+computed style on a live page separates those two worlds. It reads 0.015.
+
+**And the two-ground finding now rests on a real published site.** The single
+`inset: 0` overlay spans, on this page:
+
+    #2E4A2A  53.3%   (dark)      vs the local harness's 52.7%
+    #F2E9D3  46.7%   (light)     vs the local harness's 47.3%
+
+Same hex values as the deployed config, same split within a percentage point.
+The entire dL* calibration rested on "one overlay meets two grounds" and on
+those two colors. Both are now measured on production rather than assumed.
+
+bali's applied transition, from the deployed chunk:
+`pageTransition:{type:"lift",direction:"down",duration:.32}` — the #637/#639
+value — with `texture:{type:"canvas"}` carrying no opacity, inheriting as
+designed.
+
+## 2026-09-02 — the Design panel audit: six of eight controls are honored
+
+**THE HEADLINE IS THAT THE PANEL IS MOSTLY SOUND.** Two controls were found
+defective in the two that were first examined, which looked like an alarming
+sample. The full audit corrects that.
+
+`WBRightPanel.jsx`, every field it writes:
+
+| control -> field | read on the guest render? | verdict |
+|---|---|---|
+| coverPhoto | EntranceMoment, WeddingHomePage | honored |
+| heroVideoUrl | EntranceMoment, WeddingHomePage | honored |
+| fontOverride | universeStyling.resolveTypography | honored, couple wins |
+| guestExperienceSettings | MultiPageWeddingWebsite (music) | honored |
+| weddingDate | four guest files | honored |
+| websiteEnabled | server gate in api/wedding-by-slug | honored |
+| **pageTransition** | written, then shadowed | **dead** |
+| **scrollAnimation** | read, but only `!== 'none'` | **two of three options identical** |
+
+**fontOverride IS THE HOUSE RULE AND pageTransition IS ON THE WRONG SIDE OF IT.**
+Identical shape — a per-wedding value against a universe default — resolved in
+opposite directions:
+
+    resolveTypography:  override?.headingFontId || defaults?.headingFontId   <- couple first
+    guest call site:    universeConfig?.pageTransition ?? weddingDetails...  <- universe first
+
+The same two operands in the opposite order, and one of them is an accident.
+Letting a couple override typography is a LARGER break to a universe's coherence
+than letting them override a transition, and the product already decided that
+one in the couple's favor.
+
+**Two failure modes, two fixes.** `pageTransition` is a switch wired to nothing
+that looks like it works — it writes a real schema field, the pill persists
+across reloads, and nothing is ever read. `scrollAnimation` is wired correctly
+but `'subtle'` and `'dramatic'` produce identical output; websiteThemes.js:406
+describes dramatic as "Slower reveal, slight blur clear", a promise the
+implementation never kept. One is wiring; the other is missing behavior.
+
+**And the option list is a third, separate fix.** TRANSITION_OPTIONS offers
+Fade / Slide / Reveal / Dissolve against the six shipped types (push, lift,
+iris, unfold, dissolve, fade). `slide` never existed as a type. `reveal` was
+deleted in #637 for rendering byte-identically to fade. **A CONTROL WHOSE
+OPTIONS DO NOT NAME THE THINGS THE RENDERER CAN DO IS BROKEN EVEN WHEN IT IS
+WIRED CORRECTLY** — fixing the wiring without the list would ship a working
+control offering two impossible choices.
+
+## 2026-09-02 — reversing the pageTransition precedence would flatten 18 of 20 live sites
+
+The obvious fix is to swap the operands so the couple's choice wins, matching
+fontOverride. **COUNTED FIRST, AND THE COUNT INVERTS IT.**
+
+Read-only aggregate over WeddingDetails, that field only:
+
+    non-test records          20
+    with a universe set       20
+    non-null pageTransition   20   <- every single one
+    values                    fade 16, dissolve 2, slide 1, reveal 1
+    non-null scrollAnimation  20   ->  subtle 18, dramatic 2
+
+**16 of 20 hold `'fade'`, which is verbatim StudioWebsite's own `DEFAULT`, and
+18 of 20 hold `'subtle'`, likewise.** These are not choices. They are the
+default object seeded into a record by a 2-second autosave.
+
+So reversing precedence today would apply, to every live site: 16 x fade, plus
+`slide` and `reveal` which are not cases in `getTransitionVariants` and fall to
+its `default:` branch — which is fade. **EIGHTEEN OF TWENTY LIVE SITES WOULD
+RENDER A PLAIN FADE**, and the per-universe transition work of #637 and #639
+would be invisible on 90% of production. A one-line change; a catastrophic
+behavior change.
+
+**A STORED VALUE IS NOT EVIDENCE THE COUPLE WANTED IT.** The control offers four
+options and NO WAY TO SAY "leave it alone" — a couple opening that panel had to
+pick one of four or accept whatever was already selected. There has never been a
+neutral option, so a stored value is evidence only that one was never offered.
+
+**The shape that follows, not yet authorized:** add an explicit "Match my
+universe" and make it the default; treat every existing stored value as
+unintentional; honor a choice only when it was made after the neutral option
+existed — which requires distinguishing new writes from old ones, and that is
+the migration question rather than a config change.
+
+## 2026-09-02 — two corrections to the fixture entry
+
+**The slug is `chris-and-sia`**, auto-derived from the couple names — NOT
+`openinvite-fixture-bali`, which I proposed and which was never used. The
+earlier entry is wrong. Paris is not published yet.
+
+**AND THAT SLUG IS NOT STABLE.** The panel states the address follows name
+changes until the first invitation is sent. **A VERIFICATION FIXTURE WHOSE
+ADDRESS CAN MOVE IS ONE THAT WILL SILENTLY STOP BEING FOUND** — a later check
+would 404 and read as "the fixture is gone" rather than "the fixture was
+renamed". Record the slug AND the freezing mechanism together, always.
+
+Sending one invitation from that fixture does two things at once: it locks the
+slug, and it is the level-3 verification #642 has been waiting for — from-name,
+subject, headline and the `[Couple names]` tag in a real inbox, against a record
+whose coupleNames is known to be "Chris & Sia".
+
+## 2026-09-02 — a candidate explanation for the kyoto report, not a conclusion
+
+The owner reported changing something in the studio and nothing happening. The
+data falsified that for the universe field specifically — both fixture records
+hold the correct universe, and `/studio` now reads "Universe: Bali".
+
+But the panel audit has since confirmed that **a control on that exact panel
+does genuinely nothing while appearing to work.** He named the universe, so this
+is not a claim about what he saw. **A REAL COMPLAINT CAN BE MISLOCATED WITHOUT
+BEING WRONG**, and "the studio Design panel does not do what it says" is now a
+confirmed fact rather than a hypothesis. Noted as a candidate.
