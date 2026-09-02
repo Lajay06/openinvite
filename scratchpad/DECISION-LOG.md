@@ -1483,3 +1483,31 @@ telling them, not enabling it.**
 
 Not investigated. `getBannerImageUrl` and `getDefaultBannerChoice` in the send
 modal are where to start.
+
+---
+
+## 2026-09-02 — #642 VERIFIED AT LEVEL 3 AND CLOSED
+
+Real send from the bali fixture, read in a real inbox:
+
+    from-name   Chris & Sia
+    subject     You're invited to Chris & Sia's wedding
+    headline    Chris & Sia
+
+**ALL THREE SURFACES THAT CARRIED THE EMPTY STRING NOW CARRY THE NAMES.** Every
+invitation this product had ever sent went out as "Openinvite", subject
+"You're invited: a wedding", headline "The Wedding" — because
+`SendInvitesModal` read `wedding.coupleName` and the schema field is
+`coupleNames`. Three sequential `|| ''` and seven well-written template floors
+turned a typo into silence at every layer.
+
+**This is the first email verification this project has completed at the only
+level that counts.** Levels 1 and 2 — the code reads right, the value shipped —
+were both true of the broken version too, because the broken version shipped a
+correctly-resolved empty string.
+
+**THE SHIP-BUT-CANNOT-WATCH GAP IS NOW SHUT ON BOTH HALVES.** The universe half
+closed the same afternoon: computed texture opacity 0.015 on
+`/w/chris-and-sia/our-story`, resolved through the `var()` fallback after #641
+deleted the config value. The email half closes here. Both were verified by the
+fixture the owner published, which is the entire argument for having built it.
