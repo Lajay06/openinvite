@@ -1421,3 +1421,65 @@ does genuinely nothing while appearing to work.** He named the universe, so this
 is not a claim about what he saw. **A REAL COMPLAINT CAN BE MISLOCATED WITHOUT
 BEING WRONG**, and "the studio Design panel does not do what it says" is now a
 confirmed fact rather than a hypothesis. Noted as a candidate.
+
+---
+
+## 2026-09-02 — the send reported an error and succeeded (FILED, HIGH, NOT INVESTIGATED)
+
+Sending an invitation from the bali fixture surfaced an error to the user. **The
+send went through.**
+
+**RANKED ABOVE THE OTHER SEND-SURFACE DEFECTS, AND THE REASON IS THE USER'S
+CORRECT RESPONSE.** A false failure is worse than a failure, because the right
+thing to do after a failure is to try again — and on this action, trying again
+means guests receiving a second invitation to a wedding. The failure mode is not
+"a confusing message", it is "the product instructs the couple to do the one
+thing that damages them".
+
+**UNVERIFIED AND FIRST TO ESTABLISH WHEN THIS IS PICKED UP: does a retry
+actually duplicate, or does it dedupe?** `send-invites.js` does per-guest token
+work and ownership filtering; whether a second call re-sends to guests who
+already received one has NOT been checked. **If it dedupes, the severity drops
+sharply** and this becomes a message bug rather than a data-damage risk. Do not
+assume the bad case; do not assume the good one either.
+
+**Two candidate shapes, so whoever picks this up knows what to look for:**
+
+  1. **An error surfaced from a non-fatal step after the send committed.** The
+     handler does several things after dispatch — token persistence, guest-count
+     logging, ownership bookkeeping. A throw in any of those, after Resend has
+     already accepted the batch, produces exactly this: mail delivered, error
+     displayed.
+  2. **A success response the client failed to parse.** The modal awaits the
+     fetch and branches on the body; a shape mismatch, a non-JSON body, or a
+     status the client does not treat as success would show an error against a
+     200.
+
+These have different fixes and different blast radii. The first means the API is
+lying about its own outcome; the second means only this caller is confused.
+
+## 2026-09-02 — invitation email: the cover-photo control, and the greyed-out banner
+
+Merged into one entry rather than filed separately, because they are the same
+surface and may be the same cause.
+
+**The owner's request, the positive half of an existing ruling.** He previously
+ruled that the email hero cannot be a video, on bandwidth grounds. He now asks
+for the positive half: **an explicit option for the couple to choose a cover
+photo for the email, with NO VIDEO OPTION OFFERED AT ALL.** Not "video blocked
+with an error" — **a control that never offers the thing it will then refuse.**
+
+**Open question to decide before it is built:** does the email cover default to
+the website hero when that hero is an image, and what happens when the hero is a
+video? That second case is the one that produces a couple with no cover and no
+obvious reason why, and it is a branch worth deciding rather than discovering.
+
+**And observed on the live send: the photo banner option is greyed out.** No
+stated reason. **A DISABLED CONTROL THAT DOES NOT SAY WHY IS INDISTINGUISHABLE
+FROM A BROKEN ONE** — the couple cannot tell whether it is unavailable to them,
+unavailable yet, or defective. If it turns out to be gated on something the
+couple has not done (no cover photo uploaded, no venue photo), **the fix is
+telling them, not enabling it.**
+
+Not investigated. `getBannerImageUrl` and `getDefaultBannerChoice` in the send
+modal are where to start.
