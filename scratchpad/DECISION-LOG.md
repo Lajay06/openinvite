@@ -2117,3 +2117,121 @@ certainly disabled because neither a cover photo nor a venue photo exists on the
 wedding — **and the state does not say so**, which is the defect. The fix is
 telling the couple which photo is missing and where to add it, not enabling a
 control with nothing to show.
+
+---
+
+## 2026-09-04 — THE ACCOUNT: unattended run, Track A and Track B
+
+**WHAT SHIPPED.** Four packages merged: the invitation email became a doorway
+(#643), the Experiences heading lost its address (#644), an all-lowercase guest
+name now gets a one-tap capitalisation suggestion (#645), and the dashboard says
+what is left instead of what percent is done (#646).
+
+**WHAT WAS FILED.** Nine packages report-only: A1, A4, A5, A7, A8, A9, A10, B0,
+B4, plus A11's eight sized proposals. Two of them are defects worth acting on —
+"No info" renders under content on both FAQ and Good to know, and Music is the
+one guest page outside the universe shell.
+
+**WHAT NEEDS THE OWNER.** #647 is open and held: it introduces a shared
+`EmptyState` component, and the hold IS the flag the spec asks for. Beyond that:
+A8 needs two targets named, A7 needs a decision that reverses a documented fix,
+A10 needs a destination that does not exist, and B0's proposals need his
+adjustment before any Track B code.
+
+### Merged, with SHAs and file lists
+
+    #643  1905fef  A2   api/send-invites.js 5+/1-
+                        src/components/guests/SendInvitesModal.jsx 10+/2-
+                        src/lib/emailTemplate.js 39+/6-
+      Event blocks out of the invitation, one date line in, CTA "Open your
+      invitation" to the site. Reminder and update keep their blocks.
+
+    #644  b26aa71  A6   src/components/guest-website/pages/WeddingExperiencePage.jsx 5+/1-
+      The heading is "Experiences", unconditionally.
+
+    #645  604d1b9  A3   src/components/guests/GuestList.jsx 75+/0-
+      A prompt, never a rule. Any capital anywhere means no suggestion at all.
+
+    #646  b504eb0  B5   src/pages/Checklist.jsx 12+/8-
+                        src/pages/TodoList.jsx 2+/1-
+      Three progress bars removed, four completion counts became "what is left".
+
+### Held
+
+    #647  head 070e70d  B3  https://github.com/Lajay06/openinvite/pull/647
+      src/components/shared/EmptyState.jsx 73+/0-  (NEW, SHARED)
+      src/pages/Vendors.jsx 17+/12-
+
+### Report-only, with the exact condition that pushed each out
+
+  - **A4** — per-wedding unfurl needs a server-rendered head. `vercel.json`
+    rewrites `/w/(.*)` to one static file and `functions: 0`. That is the guest
+    delivery path, which the MINOR CLASS excludes. **And the generic card is a
+    documented privacy decision**: a password-protected wedding must not unfurl
+    its couple's names, and the gate fails open, so gate state is an unsafe key.
+  - **A5** — the fix belongs in `OptionAccordion`, a shared component imported
+    by five surfaces, and A5 names the defect rather than the component.
+  - **A7** — the nav is two lists in per-wedding order, not one list. And the
+    requested position for RSVP is the exact position a documented fix moved it
+    away from.
+  - **A8** — two of four targets could not be located; deleting on a guess is
+    what the no-deletion rule exists to prevent.
+  - **A9** — four of five reported strings are not in the repository. They are
+    LLM output, and a prompt change is not verifiable at level 1.
+  - **A10** — there is no Story tab to move the editor to, and `WBRightPanel` is
+    a 993-line component with seven importers.
+  - **B0, B4, A11, A1** — report-only by instruction.
+
+### Time-boxes and stops
+
+**No time-box expired with work stranded.** Every package reached a merge, a
+hold, or a filed report. **A8 is the closest thing to a stop**: it was
+investigated for its full box and stopped on evidence rather than on the clock —
+items 8 and 12 could not be located, so it was filed rather than guessed at.
+
+### Live readings on the bali fixture
+
+    /w/chris-and-sia/our-story   texture opacity 0.015    canvas, correct
+    /w/chris-and-sia/our-story   h1 "Our story", shell mounted
+    /w/chris-and-sia/experience  "This invitation isn't available"
+                                 -> A6 COULD NOT BE VERIFIED LIVE (no guide published)
+
+One false alarm checked and dismissed: the story page reads "Experience the
+essence of Japan" on a bali wedding. That string is in no universe config and no
+source file. **It is content typed into the fixture, not leaked kyoto copy.**
+
+### The global-order deviation, stated as required
+
+The run reordered the calm pass's own PR1 -> PR5 sequence, and the reason holds:
+**PR1 and PR2 need the owner's accept on a mock before any code**, so in an
+unattended run they cannot proceed past the mock, and **PR5 was the only
+calm-pass item mechanical enough to merge alone.** PR3 was built last and held
+so it blocked nothing. **B0 was honoured as the spec requires** — no Track B
+code preceded it, and PR1/PR2 remain mocks.
+
+### Where this prompt met a standing rule
+
+**One boundary judgment, recorded because it is a judgment.** The MINOR CLASS
+excludes "the guest-site shell (MultiPageWeddingWebsite.jsx and what mounts
+inside it)". Read literally that excludes every guest page component, which
+would make A6 and A8 impossible — but A8 explicitly instructs touching pages
+inside the shell. **I read the exclusion as protecting the shell MECHANISM** —
+the wrappers, nav, texture overlay and transition machinery — not every page
+component, and said so in #644's body. If that reading is wrong, #644 is the one
+merge it affects and a revert is one PR.
+
+**No standing rule was overridden.** Payments untouched, no production writes,
+no schema changes, no Base44 writes, one open PR at a time, gate and merge
+inseparable on every merge, secrets never printed.
+
+### Two verification honesty notes
+
+**Nothing in this run reached level 3 except the texture reading**, which was
+already true before it. #643 is level 1 (rendered locally); the owner sends on
+return. #644 is level 1 and could not be read live. #645 and #646 are level 1 —
+both live behind an authenticated dashboard this run must not populate.
+
+**The before-and-afters for the dashboard packages are specimens, not
+screenshots**, built from the shipped values and styles, and the artifact says
+so on the page. Rendering the real components needs a session with a couple's
+data, which this run must not create.
