@@ -1856,3 +1856,63 @@ independently of the order.
      the two lists must be reconciled into one before any order can be applied.
 
 Item 3 is the real work and it is structural. Nothing built.
+
+---
+
+## 2026-09-04 — A9 daily brief zero-state: REPORT ONLY, because the strings are not in the codebase
+
+**Grepped for each string the owner reported:**
+
+    "Happy"                      2 hits (unrelated)
+    "tasks are complete"         0
+    "logistics are finalized"    0
+    "vendors are confirmed"      0
+    "dollars spent"              0
+
+**Four of the five do not exist in the repository.** `DailyUpdate.jsx` builds a
+prompt and asks an LLM for the briefing as JSON — headline, greeting, countdown,
+thisWeek, smartSuggestions, guestAlert, vendorNote, budgetNote, weatherNote,
+emotionalNote, forgottenDetail. **The sentences the owner saw are model output,
+not templates.** "All 0 tasks are complete" is the model dutifully describing a
+wedding with no data, in the confident register the prompt asks for
+("punchy newspaper headline… specific to their data").
+
+**THIS IS WHY THE PACKAGE CANNOT BE AUTO.** A9's instruction is to enumerate
+every templated string and ship zero and one variants for all of them together.
+There are no templated strings to vary. The fix is prompt constraint or a
+deterministic bypass, **and neither is verifiable at level 1** — I cannot prove
+an LLM will not produce "Happy 0 day" by rendering it once. Shipping an
+unverifiable change to what the owner calls the most emotionally loaded screen
+in the product is worse than filing it precisely.
+
+**Anyone hunting those strings would never find them.** That is the finding
+worth having.
+
+**What IS in the code, and what it does at zero** (the deterministic fallback
+used when the model call fails, plus the stat row):
+
+    line 340  `${days} days to go.`                    -> "0 days to go." on the day
+    line 345  `${pendingGuests} guest…haven't replied` -> guarded `> 0`, correct
+    line 347  `Budget is at ${budgetPercent}%`         -> guarded `> 80`, BUT A PERCENTAGE
+    line 424  'Guests confirmed'  value 0              -> renders a bare 0
+    line 426  'Budget used'       `${budgetPercent}%`  -> A PERCENTAGE
+    line 427  'Vendors booked'    `0/0`                -> renders 0/0
+    line 464  `${daysUntil} days to go` : "Today's the day"  -> correctly handled
+
+**Two of those are also B5's target** — `budgetPercent` renders a percentage in
+two places, and the calm-pass rules forbid percentages outright. They are picked
+up there rather than here, so the two packages do not collide.
+
+**The sized proposal, three parts:**
+
+  1. **A deterministic bypass.** When a wedding has no guests, no tasks and no
+     vendors, do not ask a model to characterize it. Render a fixed quiet state.
+     This is the part that actually removes "All 0 tasks are complete", and it
+     is verifiable because it is code.
+  2. **Prompt constraints** for the partly-populated cases: never state a count
+     of zero as an accomplishment, never congratulate on an empty set, prefer
+     "nothing yet" to "all 0 are complete".
+  3. **Zero and one variants** for the seven code-side lines above, which is the
+     only part matching A9's original description.
+
+Part 1 is the fix. Parts 2 and 3 are necessary and insufficient on their own.
