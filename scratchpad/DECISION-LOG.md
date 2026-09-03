@@ -1591,3 +1591,103 @@ holds — only shell pages get touched in this run.
 only. Not a defect on its face (it may not need the config), but it is the one
 shell page with no universe-config dependency at all, and worth a look when
 someone is next in it.
+
+---
+
+## 2026-09-04 — B0: Phase 0 dashboard inventory (REPORT ONLY, owner accepts before any Track B code)
+
+**1. Sidebar: eight groups, 35 items, already grouped.**
+
+    Planning            Daily update, Overall, Schedule, To do
+    Guests              Guest list, Polls & games, Messages, Seating, Wedding party
+    Style & experience  Moodboard, Styling, Beauty, Food & beverage, Music,
+                        Photography, Vows & speeches, Guest gifts
+    Vendors             My vendors, Marketplace
+    On the day          Ceremony details, Transport, Accommodation, Emergency contact
+    Finances            Budget, Registry
+    Guest Suite         Schedule, Q&A, Registry, Accommodation, Transport,
+                        Experience guide, Good to know, Guest polls
+    Extras              Honeymoon, Considerations
+
+**The sidebar is not ungrouped today — PR2 is a REGROUPING, not an introduction
+of grouping.** That matters for how the owner reads the proposal: the question
+is whether five stage-based groups beat eight feature-based ones, not whether
+grouping helps.
+
+**2. /Overall (`Dashboard.jsx`) top to bottom**, with what each panel reads:
+
+    DashboardPageHeader   "Overall / Your wedding planning at a glance"
+    StatCard row          guests, budget, schedule, vendors (counts)
+    AvaButton             "Ask Ava to review your wedding plan"
+    QuickLink row         static links
+    RSVPChart             guests
+    BudgetSummary         budget, stats
+    UpcomingTasks         schedule
+    RecentActivity        guests, budget, schedule, vendors, moodboardItems,
+                          tasks, notes, questionnaireResponses
+
+**RecentActivity reads eight collections.** It is the heaviest panel on the page
+and the one least like a briefing — it reports what happened, where a briefing
+reports what needs the couple.
+
+**3. Empty states: present but uneven.** Coarse signal count per page
+(`no … yet` / `nothing here` / `empty` / `get started` / `add your first`):
+
+    Seating 8   Music 7   Guests 3   Budget 3   Vendors 2   Moodboard 2
+    Polls 2   TodoList 1   Messages 1
+    Schedule 0   Registry 0   Photography 0
+
+**Three pages have no empty-state language at all** — Schedule, Registry and
+Photography. Those are the clearest candidates for PR3, and Schedule is on the
+spec's own priority list.
+
+**4. Duplicate entry points — AND THE SPEC'S OWN EXAMPLE IS ALREADY FIXED.**
+`VowsSpeeches.jsx:115` carries a comment: *"It used to open the generic AvaModal
+chat while three other buttons opened the purpose-built AIVowsSpeechesAssistant
+— four buttons, two destinations. This one now opens the assistant, and the
+other three are gone."* **Vows now has exactly one Ava entry point.**
+
+Across `src/pages/*.jsx` there are 68 `AvaButton` references, but that is ~one
+usage plus one import per page — the pattern is one Ava entry per page, which is
+the intended shape, not duplication. **B4's premise needs re-basing on the
+current code before anything is proposed for removal.**
+
+**5. `setupJourney.js`** re-exports `JOURNEY_STEPS` and `getJourneyProgress`
+from `journeySteps.js`, and exports `getJourneyCounts()`. Consumers:
+`components/dashboard/NextUp.jsx`, `pages/DailyUpdate.jsx`, `pages/AvaStudio.jsx`.
+So it is live on three surfaces, not orphaned by the Ava Studio entry points
+being hidden.
+
+**6. A DAILY BRIEFING SURFACE ALREADY EXISTS, AND THIS RESHAPES PR1.**
+`src/pages/DailyUpdate.jsx` — 719 lines, sidebar item "Daily update", its own
+route, an LLM-generated briefing cached per user per day
+(`oi_briefing_v2_<userId>_<date>`). It already consumes `setupJourney`.
+
+So spec PR1 ("Overall becomes the briefing") is not building a briefing — it is
+**deciding where the briefing lives**, and the honest options are: move
+DailyUpdate's content onto Overall and retire the separate page, make Overall a
+compact briefing that links to the full one, or leave both and accept two
+surfaces answering the same question. **The spec does not appear to know
+DailyUpdate exists.** That is a question for the owner, not a build decision.
+
+Data available to feed a briefing, all already read on the dashboard: guests
+(unreplied RSVPs), schedule and tasks (due this week), budget (variance),
+vendors (deposits due).
+
+**Proposed five groups against the real inventory** (Overall and To do
+ungrouped above, per the spec):
+
+    Foundations             Schedule, Ceremony details, Styling, Moodboard,
+                            Considerations
+    Guests                  Guest list, Seating, Messages, Wedding party,
+                            Polls & games
+    The day                 Food & beverage, Music, Photography, Beauty,
+                            Vows & speeches, Transport, Accommodation,
+                            Emergency contact, Guest gifts
+    Money & vendors         Budget, Registry, My vendors, Marketplace, Honeymoon
+    Website & invitations   the eight Guest Suite items
+
+**Two things the owner should adjust rather than me.** "The day" carries nine
+items and is the largest group in the proposal — it may want splitting. And
+"Daily update" has no home in the five groups; if PR1 merges it into Overall it
+disappears, and if it does not, it needs a group.
