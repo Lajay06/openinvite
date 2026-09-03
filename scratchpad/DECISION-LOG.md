@@ -1970,3 +1970,47 @@ and would be one PR of moderate size — but item 6 needs the owner to confirm h
 wants the per-universe day-header treatment flattened, because that is what
 "plain day headers" means in this code. Items 8 and 12 need him to name the
 surface.
+
+---
+
+## 2026-09-04 — A10 story editor relocation: REPORT ONLY, the destination does not exist
+
+**"Global content" is `ContentTab` inside
+`src/components/website-builder/WBRightPanel.jsx`** — one tab holding content
+for every page at once: couple names, wedding date, home tagline, the story text,
+story photos, milestones and the gallery. That much matches the owner's
+description exactly, including why it feels hard to find: the story editor is
+several sections down a tab that is not named for it.
+
+**THERE IS NO STORY TAB TO MOVE IT TO.** The builder's tabs are
+`[{id:'design'},{id:'content'},{id:'settings'}]` — three, fixed, at line 973.
+Nothing named Story exists in the Design Studio. So A10 is not a move; it is
+"create a per-page editing surface and relocate a section into it", which is a
+different and much larger piece of work.
+
+**And two MINOR CLASS conditions fail:**
+
+  1. `WBRightPanel.jsx` is **993 lines and imported by seven modules**
+     (WBLeftPanel, BlockFields, MultiPageWeddingWebsite, UniverseBlocks,
+     websitePasswordGate, universeStyling, StudioWebsite). It is a shared
+     component imported by more than one page, and A10 does not name it.
+  2. Creating a fourth tab and rehoming a section is not "at most 8 files and
+     300 changed lines" work with any confidence, and it changes the
+     information architecture of the builder — which is a Track B kind of
+     decision being made inside a Track A package.
+
+**The question for the owner is which shape he wants**, and they are genuinely
+different products:
+
+  - **A fourth tab, "Story"**, sitting beside Design / Content / Settings.
+    Simplest, but it sets a precedent — every page will want one, and then the
+    tab row is the page list.
+  - **Per-page content editing**, where selecting Our Story in the left panel
+    shows that page's fields. That is the architecture the comment at line 460
+    describes as deliberately abandoned: the old per-section editor became
+    unreachable and wrote to `pageSections`, a field the published pages no
+    longer read. **Rebuilding per-page editing must not resurrect that write
+    path** — the current editor writes straight to `ourStoryContent`, and that
+    is the part worth keeping whatever the surface becomes.
+
+Nothing built.
