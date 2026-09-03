@@ -1805,3 +1805,54 @@ than implicit**: suppressing the chip automatically when children exist would
 change the selection accordions' behavior in a case nobody has thought about,
 and the whole reason this bug exists is a rule that was absolute when it should
 have been a parameter.
+
+---
+
+## 2026-09-04 — A7 menu order: REPORT ONLY, and the requested order contradicts a documented decision
+
+**It is not per-universe.** `navLayout` appears nowhere in `src/` — it was
+scoped as a universe dimension and never built. So the A7 condition "per-universe
+or touches navLayout → REPORT ONLY" does not fire.
+
+**But it is not one list either, which is the condition that does fire.**
+`WeddingWebsiteNav` assembles the nav from TWO independent sources:
+
+    pageLinks  <- the couple's stored `enabledPages`, in THEIR order,
+                  labelled from WEDDING_PAGES
+    subLinks   <- derived flags: hasTransport, hasAccommodation, hasMusic,
+                  hasExperience, hasGoodToKnow
+
+**The order is per-WEDDING data, not a constant.** A comment states the
+intent explicitly: *"Pulled out of enabledPages order and appended rather than
+reordered in the data, so a couple's own page order is untouched."* Imposing a
+fixed order means either rewriting couples' stored `enabledPages`, which is a
+data migration, or overriding their order at render, which reverses a decision
+someone made deliberately.
+
+**AND THE REQUESTED ORDER PUTS RSVP FOURTH, WHICH REVERSES A DOCUMENTED FIX.**
+The owner's order is Home, Our Story, Celebration, **RSVP**, Stay, Getting here,
+Experiences, Styling, Polls, Music, FAQ, Good to know. The code pins RSVP LAST,
+and says why, twice:
+
+  - *"D-3: RSVP goes LAST. It is the one thing a guest is asked to do, and it
+    read as just another page sitting fourth in a list of eight."*
+  - *"THE RSVP IS PINNED AND NEVER ENTERS THE OVERFLOW … on any site with more
+    than five links the reply ended up behind 'More', two taps deep on a 390
+    screen."*
+
+**The requested position is the exact position that fix moved it away from —
+fourth in the list.** And the overflow mechanism takes from the tail, so an
+RSVP sitting fourth in a twelve-item nav on a phone is at risk of the same
+two-taps-deep outcome the pinning exists to prevent, unless the pin is kept
+independently of the order.
+
+**This needs the owner, not a merge.** Three things for him to settle:
+  1. Does RSVP move to fourth, accepting the reversal, or stay pinned last with
+     the other eleven reordered around it?
+  2. Does the fixed order replace each couple's stored `enabledPages` order
+     (a migration) or override it at render (couples lose their own ordering)?
+  3. The requested list interleaves pageLinks and subLinks — Stay, Getting here,
+     Experiences, Music and Good to know are all derived sub-links today — so
+     the two lists must be reconciled into one before any order can be applied.
+
+Item 3 is the real work and it is structural. Nothing built.
