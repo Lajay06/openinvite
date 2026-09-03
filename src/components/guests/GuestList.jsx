@@ -77,6 +77,66 @@ function NotYetInvitedChip() {
 }
 
 /* ── Per-guest status chips + "Set events & send" for uninvited guests ──── */
+/**
+ * A PROMPT, NOT A RULE. A guest typed as "felix" almost certainly wants
+ * "Felix", but "bell hooks", "k.d. lang" and "van der Berg" are real names
+ * deliberately lower case, and a product that silently rewrites them is worse
+ * than one that renders what it was given. So nothing is ever rewritten
+ * without a tap.
+ *
+ * Fires only when the stored name contains NO uppercase letter at all — a name
+ * with any capital has been considered by whoever typed it and is left alone.
+ */
+function suggestTitleCase(name) {
+  const raw = (name || '').trim();
+  if (!raw || /[A-Z]/.test(raw) || !/[a-z]/.test(raw)) return null;
+  const suggested = raw.replace(/(^|[\s'-])([a-z])/g, (m, sep, ch) => sep + ch.toUpperCase());
+  return suggested === raw ? null : suggested;
+}
+
+/** Dismissals persist per guest, so a suggestion declined stays declined. */
+const CASE_DISMISS_KEY = 'oi_name_case_dismissed';
+function readDismissed() {
+  try { return new Set(JSON.parse(localStorage.getItem(CASE_DISMISS_KEY) || '[]')); }
+  catch { return new Set(); }
+}
+function writeDismissed(set) {
+  try { localStorage.setItem(CASE_DISMISS_KEY, JSON.stringify([...set])); } catch { /* private mode */ }
+}
+
+/** The quiet inline affordance. One tap applies it; the cross declines it. */
+function NameCaseSuggestion({ guest, onUpdate, dismissed, onDismiss }) {
+  const suggested = suggestTitleCase(guest.name);
+  if (!suggested || dismissed.has(guest.id)) return null;
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onUpdate(guest.id, { name: suggested }); }}
+        title={`Rename to ${suggested}`}
+        style={{
+          background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+          fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, whiteSpace: 'nowrap',
+        }}
+      >
+        {suggested}?
+      </button>
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onDismiss(guest.id); }}
+        title="Keep it as it is"
+        aria-label="Keep it as it is"
+        style={{
+          background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+          fontSize: 11, lineHeight: 1, color: 'rgba(10,10,10,0.45)', fontFamily: PJS,
+        }}
+      >
+        &times;
+      </button>
+    </span>
+  );
+}
+
 function GuestStatusCell({ guest, weddingEvents, onSetEventsAndSend, onEditEvents, readOnly, filterEvent }) {
   // Round 8 ask #14: filtered to one event, this column shows THAT event's
   // response only — not every event this guest is invited to — so it
@@ -697,6 +757,10 @@ export default function GuestList({
   // falls back to DEFAULT_MEAL_OPTIONS, then the raw stored value.
   mealOptions = [],
 }) {
+  const [dismissedNameCase, setDismissedNameCase] = useState(readDismissed);
+  const dismissNameCase = (id) => setDismissedNameCase((prev) => {
+    const next = new Set(prev); next.add(id); writeDismissed(next); return next;
+  });
   const [editCell, setEditCell] = useState(null); // { id, field }
   const [editValue, setEditValue] = useState('');
   const [expandedGuestIds, setExpandedGuestIds] = useState(() => new Set());
@@ -961,6 +1025,17 @@ export default function GuestList({
                               <span style={{ ...dietaryPillStyle, background: '#0A1930', color: '#DDF762' }}>
                                 {guestRoles[guest.id]}
                               </span>
+                            )}
+                            {/* Only where the list is editable — Seating mounts
+                                this same component read-only, and a suggestion
+                                you cannot accept is noise. */}
+                            {!readOnly && onUpdate && (
+                              <NameCaseSuggestion
+                                guest={guest}
+                                onUpdate={onUpdate}
+                                dismissed={dismissedNameCase}
+                                onDismiss={dismissNameCase}
+                              />
                             )}
                           </span>
                         )}
