@@ -106,6 +106,10 @@ export default async function handler(req, res) {
     const coupleName = sanitizeString(wedding.coupleName) || '';
     const weddingDate = sanitizeString(wedding.weddingDate) || '';
     const venue = sanitizeString(wedding.venue) || '';
+    // The invitation CTA opens the couple's site. Sanitized like every other
+    // caller-supplied string, and empty is fine — the template falls back to
+    // the RSVP link rather than rendering a button with no destination.
+    const siteUrl = sanitizeString(wedding.siteUrl) || '';
 
     // Guest-facing from-name is the couple's own names, not "Openinvite" —
     // this email should read as coming from them (email branding audit).
@@ -155,7 +159,7 @@ export default async function handler(req, res) {
         : (venue || weddingDate) ? [{ name: 'Wedding day', date: weddingDate, venue }] : [];
 
       const { html, text } = renderInvitationEmail({
-        universeId, type, guestName, coupleNames: coupleName, events, personalMessage: processedBody, rsvpUrl, bannerImageUrl,
+        universeId, type, guestName, coupleNames: coupleName, events, personalMessage: processedBody, rsvpUrl, siteUrl, weddingDate, bannerImageUrl,
       });
 
       return { from: FROM, to: g.email, replyTo, subject, html, text };
