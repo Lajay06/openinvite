@@ -2014,3 +2014,106 @@ different products:
     is the part worth keeping whatever the surface becomes.
 
 Nothing built.
+
+---
+
+## 2026-09-04 — B4 one entry point per action: REPORT ONLY, and the list is empty
+
+The spec's PR4 says report before removing anything. This is that report, and
+its finding is that **there is nothing to remove.**
+
+**Measured, not assumed.** Counting `<AvaButton` USAGES (not imports) across
+every page in `src/pages`: **no page has more than one.** The 68 references
+found earlier are one usage plus one import per page — the intended pattern.
+
+**The spec's own example is already fixed.** `VowsSpeeches.jsx:115` carries the
+history: *"It used to open the generic AvaModal chat while three other buttons
+opened the purpose-built AIVowsSpeechesAssistant — four buttons, two
+destinations. This one now opens the assistant, and the other three are gone."*
+The label and the assistant type both derive from the active tab. **Vows has
+exactly one Ava entry point and it is the leftmost one the spec asks to keep.**
+
+Checked a second duplication shape — pages carrying more than one
+add/new/create primary — across Guests, Vendors, Budget, Schedule, To do and
+Moodboard: **at most one each.**
+
+**So B4 removes nothing, and that is the correct outcome rather than a failure
+to find work.** The spec was written against a state the codebase has since
+moved past. **The entry that matters for the owner is that the premise is stale**
+— if he still perceives duplication, it is somewhere these two shapes do not
+cover, and naming the screen would find it in minutes.
+
+---
+
+## 2026-09-04 — A11: proposed and sized, none built
+
+**Shell integration for Music** (from A1). `GuestMusic.jsx` is 372 lines and
+already resolves typography, universeConfig and theme itself. Integration means
+deleting the standalone route, letting `/w/:slug/music` fall through to the
+shell, and moving its content into `WeddingMusicPage` — which already exists and
+is already mapped, and which the builder preview already renders. **The
+preview/live divergence disappears as a side effect.** Medium: one route
+deletion, one component merge, and a careful check that the playlist embed and
+request-close date survive the move. Blocked on the owner, because it deletes a
+route.
+
+**Item 5, Experiences sub-tabs** ("Our favorites" / "Day by day").
+`WeddingExperiencePage` currently renders one list. Sub-tabs mean a tab control
+inside a guest page, which no guest page has today — so it sets a pattern. Small
+in code, a design decision in kind. Needs the owner to say whether guest pages
+may carry tabs at all.
+
+**Item 11, address as a Maps link.** Correct: a maps URL needs no API key and no
+billing —
+`https://www.google.com/maps/search/?api=1&query=<encoded address>` is a plain
+link. Smallest item on the list, and it touches the venue address wherever it
+renders on the guest site. **Worth doing on its own; it is close to free.**
+
+**Item 13, add-to-calendar.** A feature, sized as one. ICS generation is a
+string builder (no dependency), plus a Google Calendar template URL. Needs
+decisions before code: one event or one per ceremony/reception, what a guest
+with no confirmed times gets, and where the control sits. Two to three files
+plus a lib helper.
+
+**`pageTransitionOverride` schema proposal.** Recorded in full on 2026-09-02:
+the control writes `weddingDetails.pageTransition`, the guest render reads
+`universeConfig?.pageTransition ?? weddingDetails.pageTransition`, and since all
+twenty universes declare one, the stored value is never reached. **Reversing the
+precedence naively would flatten 18 of 20 live sites to a plain fade**, because
+16 hold the seeded default `'fade'` and two more hold `slide`/`reveal`, which
+are not cases in `getTransitionVariants` and fall to its fade default. The
+shape that works adds an explicit "Match my universe" as the default and treats
+every existing stored value as unintentional — a migration, not a config change.
+**The scrollAnimation twin:** `isMotionEnabled` reads only
+`scrollAnimation !== 'none'`, so `'subtle'` and `'dramatic'` are the same value;
+either implement dramatic as `websiteThemes.js:406` describes it, or collapse
+the control to two honest options.
+
+**The quiescence re-cost, three corrections still owed.** Not done in this run —
+it needs the serialization question answered (is `prerendered/*.html`
+serialized HTML, in which case the cue's inline opacity is in it and the
+infinite `scrollCueBar` keyframe never is, which removes the ceiling problem
+entirely), the comparison row restated in one unit (both options cover exactly
+one component; the condition merely runs on six routes), and
+`HeroCollage`/`ScrollProgress` measured BEFORE the design rather than during,
+because if they settle later than the cue a cue-targeted condition moves the
+flip onto them instead of removing it. **Carried forward, still blocking any
+quiescence line.**
+
+**The false failure on send — READ ONLY, nothing sent.** The first thing to
+establish is whether a retry duplicates or dedupes, and I did not send anything
+to find out. From reading `send-invites.js`: it filters guests by ownership,
+ensures tokens, and dispatches a batch to Resend. **I found no
+already-invited check** — nothing compares against a previous send before
+dispatching. That is consistent with a retry re-sending, but it is inference
+from reading, not a verified behaviour, and the honest status is unverified.
+The two candidate shapes for the false error itself are unchanged: an error
+thrown by a non-fatal step after dispatch committed, or a success the client
+failed to parse.
+
+**The greyed-out photo banner.** `getBannerImageUrl` and `getDefaultBannerChoice`
+resolve from `{ coverPhoto, venuePhotoUrl }`. The photo option is almost
+certainly disabled because neither a cover photo nor a venue photo exists on the
+wedding — **and the state does not say so**, which is the defect. The fix is
+telling the couple which photo is missing and where to add it, not enabling a
+control with nothing to show.
