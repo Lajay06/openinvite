@@ -65,7 +65,11 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
 
         <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
           <h1 style={{ ...heading, fontSize: 'clamp(2rem,5vw,3.5rem)', textAlign: 'center', marginBottom: 16 }}>
-            {destination ? `Experiences in ${destination.split(',')[0].trim()}` : 'Experiences'}
+            {/* Always "Experiences". The heading used to append the
+                destination — "Experiences in Ubud" — which restated an
+                address the guest can already see and made the one heading on
+                the page vary by wedding for no reader benefit. Owner item 4. */}
+            Experiences
           </h1>
         </SectionReveal>
 
