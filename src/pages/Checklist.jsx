@@ -96,11 +96,15 @@ function ChecklistSection({ title, items, onToggle }) {
         <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>{done}/{items.length}</span>
       </div>
       <div style={{ marginBottom: 12 }}>
+        {/* CALM PASS PR5. State is "next", never "done": a bar and a
+            percentage grade a couple against a checklist they did not write,
+            and every wedding leaves some of it undone on purpose. What is
+            useful is how much is left, in items they can act on. */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-          <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>{done} of {items.length} completed</span>
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>{progress}%</span>
+          <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>
+            {items.length - done === 0 ? 'Nothing left here' : `${items.length - done} left`}
+          </span>
         </div>
-        <ProgressBar value={progress} />
       </div>
       {items.map((item, i) => (
         <CheckItem key={i} item={item} onToggle={() => onToggle(i)} />
@@ -209,10 +213,11 @@ function PlanningOverview() {
       {/* Progress summary */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <span style={labelStyle}>Planning progress</span>
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>{completedCount} of {allItems.length} complete</span>
+          <span style={labelStyle}>What is left</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>
+            {allItems.length - completedCount === 0 ? 'Nothing left' : `${allItems.length - completedCount} left`}
+          </span>
         </div>
-        <ProgressBar value={overallProgress} />
       </div>
 
       {/* Groups */}
@@ -386,10 +391,9 @@ export default function ChecklistPage({ embedded = false }) {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                   <span style={labelStyle}>Overall completion</span>
                   <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>
-                    {totalDone} of {allItems.length} completed
+                    {allItems.length - totalDone === 0 ? 'Nothing left' : `${allItems.length - totalDone} left`}
                   </span>
                 </div>
-                <ProgressBar value={overallProgress} />
               </div>
 
               {/* Two-column checklist */}
