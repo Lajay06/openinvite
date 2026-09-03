@@ -313,7 +313,8 @@ export default function TodoList({ embedded = false }) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
-              {done}/{total} complete
+              {/* Calm pass PR5 — "next", not a completion count. */}
+              {total - done === 0 ? 'Nothing left' : `${total - done} left`}
             </span>
             <button
               onClick={exportNotes}
