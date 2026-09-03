@@ -1751,3 +1751,57 @@ Roughly three files, but it puts a serverless hop in front of every guest page
 load on the platform, with caching and cold-start consequences for the product's
 most-visited surface. **That is an owner decision about the delivery path, not a
 minor change.** Sized here; not built.
+
+---
+
+## 2026-09-04 — A5 accordion "No info": DIAGNOSED, REPORT ONLY, and it is two pages not one
+
+**It is not a field-name mismatch.** I checked that first, as instructed. All
+eight section keys in `goodToKnow.js` SECTIONS match the studio's `EMPTY`
+defaults in `GuestSuitePolicies.jsx`, and every sub-field `linesFor()` reads
+exists on the object the studio writes — `lateArrival.policy`, `other.text`,
+`dressCode.guidance`, all of them. Nothing of the `coupleName` class here.
+
+**IT IS A COMPONENT-CONTRACT MISMATCH, AND BOTH PAGES DOCUMENT WALKING INTO IT.**
+
+`OptionAccordion` rule 4 renders "No info" whenever a collapsed section has an
+empty `summary`:
+
+    {!isOpen && summary.length === 0 && ( <p …>No info</p> )}
+
+That is correct for a SELECTION accordion, where an empty summary means the
+couple chose nothing. It is wrong for a CONTENT accordion, where there is
+nothing to select and the content lives in `children`.
+
+`WeddingGoodToKnowPage` passes `children` and no summary. So does
+`WeddingFAQPage`. Both carry comments saying the chip does not apply to them:
+
+  - FAQ: *"an FAQ has questions and answers and nothing to select, so pills, the
+    summary chip and 'No info' have no referent here"*
+  - Good to know: *"Nothing here is selectable, so pills and the summary chip do
+    not apply"*
+
+**Both authors understood the periphery did not apply and neither could switch
+it off, because the component offers no way to.** Its own header states the rule
+as absolute: *"Pass [] and it renders 'No info' (rule 4) — never nothing at
+all."*
+
+**So every collapsed FAQ question and every collapsed Good to know section
+carries the words "No info" underneath it, on the guest site, while holding
+content.** The owner reported it on Good to know; it is on both.
+
+**WHY THIS IS REPORT ONLY.** The fix belongs in
+`src/components/shared/OptionAccordion.jsx`, which is imported by five surfaces
+— ThemeSection, QandA, WeddingParty, WeddingFAQPage, WeddingGoodToKnowPage. The
+MINOR CLASS excludes a shared component imported by more than one page "unless
+the package names that component", and A5 names the defect, not the component.
+**The boundary is the boundary.**
+
+**The fix, sized for a one-line authorization.** Add an explicit opt-out to
+`OptionAccordion` — a prop such as `showEmptyState={false}` — defaulting to
+today's behavior so the three selection surfaces are untouched, and set it on
+the two content surfaces. Roughly 3 files, under 30 lines. **Explicit rather
+than implicit**: suppressing the chip automatically when children exist would
+change the selection accordions' behavior in a case nobody has thought about,
+and the whole reason this bug exists is a rule that was absolute when it should
+have been a parameter.
