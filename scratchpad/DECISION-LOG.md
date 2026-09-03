@@ -1691,3 +1691,63 @@ ungrouped above, per the spec):
 items and is the largest group in the proposal — it may want splitting. And
 "Daily update" has no home in the five groups; if PR1 merges it into Overall it
 disappears, and if it does not, it needs a group.
+
+---
+
+## 2026-09-04 — A4 share unfurl: REPORT ONLY, it left the MINOR CLASS
+
+**The exact condition that pushed it out:** delivering per-wedding OG tags is
+not a code change to a component. `vercel.json` rewrites `/w/(.*)` to a single
+static `guest-shell.html`, and `functions: 0` — there is no server-rendered head
+anywhere in the guest path. **Every guest site on the platform is served the
+same bytes.** Making the card carry a couple's name, date and photo requires
+introducing a server-rendered head for `/w/`, which is a change to the guest
+delivery path itself — the shell the MINOR CLASS excludes — and it is
+architecture, not copy.
+
+**AND THE EXISTING BEHAVIOR IS A DECISION, NOT AN OVERSIGHT.**
+`scripts/lib/guestShell.mjs` documents it: a per-wedding card is called
+"Option B (a server-rendered head)", and it names the binding constraint —
+
+> the decision keys on `websitePasswordEnabled` DIRECTLY, never on the gate's
+> runtime result: `api/wedding-by-slug.js` documents a fail-open
+> (websitePasswordEnabled true with no stored credential serves the site
+> publicly), and a card keyed on gate state would leak through it.
+
+**A PASSWORD-PROTECTED WEDDING MUST NOT UNFURL ITS COUPLE'S NAMES, DATE AND
+PHOTO INTO A CHAT APP.** Any implementation has to read
+`websitePasswordEnabled` as the gate and treat the fail-open as protected.
+`og:image` is absent for a stated reason too: no neutral asset is honest for
+every wedding, so `twitter:card` is `summary` rather than advertising a large
+image that is not supplied.
+
+**Today, verified live on the fixture** (`/w/chris-and-sia`):
+
+    <title>Wedding invitation</title>
+    og:title        You are invited
+    og:description  Open your invitation to see the details and reply.
+    og:type         website
+    og:image        (absent)
+
+**The fallback the run asked me to decide, decided:** when a couple has no
+`coverPhoto`, the card should carry **no image at all** and stay
+`twitter:card: summary`, exactly as today. Not a stock photo, not the universe's
+`imageUrl`. A universe image is Openinvite's asset, not the couple's, and a
+guest seeing a stranger's villa on their friend's invitation is worse than a
+text card. **The image is the couple's or it is absent.**
+
+**What a correct build looks like, sized:**
+
+  1. A serverless function serving `/w/:slug` HTML: fetch the wedding by slug
+     with the admin key, and IF `websitePasswordEnabled !== true`, inject
+     `og:title` = couple display name, `og:description` = the date,
+     `og:image` = `coverPhoto` when set. Otherwise emit today's generic meta
+     unchanged.
+  2. `vercel.json`: rewrite `/w/(.*)` to that function instead of the static file.
+  3. The function must reuse `coupleDisplayName()` — the #642 lesson — and must
+     not read the password gate's runtime result.
+
+Roughly three files, but it puts a serverless hop in front of every guest page
+load on the platform, with caching and cold-start consequences for the product's
+most-visited surface. **That is an owner decision about the delivery path, not a
+minor change.** Sized here; not built.
