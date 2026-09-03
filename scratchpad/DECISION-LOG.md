@@ -1511,3 +1511,83 @@ closed the same afternoon: computed texture opacity 0.015 on
 `/w/chris-and-sia/our-story`, resolved through the `var()` fallback after #641
 deleted the config value. The email half closes here. Both were verified by the
 fixture the owner published, which is the entire argument for having built it.
+
+---
+
+## 2026-09-04 — A1: the guest-page shell enumeration (REPORT ONLY)
+
+**One page of thirteen is outside the universe shell, and it is Music.**
+
+`WEDDING_PAGES` declares twelve slugs: home, our-story, celebration, rsvp,
+registry, music, styling, polls, faq, stay, transport, experience.
+`PAGE_COMPONENTS` in the shell maps thirteen — those twelve plus `good-to-know`.
+
+**Every page the shell renders receives the same five props and sits inside the
+same wrappers:**
+
+    weddingDetails, theme, typography, universeConfig, recognisedToken
+
+rendered as `<PageComponent …/>` inside `<motion.div>` inside `<AnimatePresence>`,
+inside `.wb-guest-root`. So all of them get the page transition, and the single
+`inset: 0` texture overlay spans all of them because it is a sibling on the root
+with no fixed height.
+
+**Music does not, and the mechanism is route ordering.** In `App.jsx`:
+
+    <Route path="/w/:weddingSlug/music" element={<GuestMusic />} />     <- line 206
+    <Route path="/w/:weddingSlug/:page" element={<MultiPageWeddingWebsite />} />
+
+The specific route is declared first and wins. **So `WeddingMusicPage` — which
+IS in `PAGE_COMPONENTS` — is unreachable in production.** `GuestMusic.jsx`
+already says so in a comment: "the rebuild stored playlistUrl and rendered it
+only on WeddingMusicPage, which this route shadows — so the saved link was
+invisible to every guest".
+
+**AND THE COUPLE PREVIEWS THE PAGE GUESTS NEVER SEE.**
+`src/components/website-builder/RealWebsitePreview.jsx:45` maps
+`'music': WeddingMusicPage`. The builder preview renders the in-shell version;
+the live site serves the out-of-shell one. **The preview is not a preview of the
+published page for this one route.**
+
+**History.** `GuestMusic.jsx` first appears in the range around #597; it was
+never inside the shell — there is no commit moving it out. It is not a
+regression, it is a page that was built separately and never integrated.
+
+**What being outside costs, feature by feature** (`grep` counts on the file):
+
+    wb-guest-root      present (1)   <- it sets the class itself
+    TextureOverlay     0             <- NO texture
+    AnimatePresence    0             <- NO page transition
+    WeddingWebsiteNav  0             <- NO shell nav
+    EntranceMoment     0             <- NO entrance
+    SectionReveal      0             <- NO scroll reveal
+
+It does resolve `typography`, `universeConfig` and `theme` itself (a prior fix,
+GUEST-TYPOGRAPHY-PARITY, wired the fonts after it was found hard-coding
+London's). So it is universe-*typed* but not universe-*moved* or
+universe-*textured*.
+
+**THE COST TO THE UNIVERSE PROGRAMME, STATED PLAINLY.** Every motion and texture
+measurement this week was taken on pages inside the shell. The mechanism counts
+(3 -> 12 distinct), the loudness readings, the 0.015 live verification — all of
+it describes the twelve shell pages. **A guest who navigates to Music leaves the
+universe: no transition on the way in, no weave on the ground, no entrance.** So
+the distinctness we measured overstates the distinctness a guest experiences,
+by exactly one page out of the set a couple can enable — and it is a page with
+its own nav link, so it is not obscure.
+
+**Consequence for A8, which is why A1 ran first:** any copy or layout work
+targeting Music would be done against a page scheduled to move. A8's condition
+holds — only shell pages get touched in this run.
+
+**Per-page integration (grep counts, universeConfig / typography / GuestPageHeading):**
+
+    Home 46/24/0    OurStory 65/67/0   RSVP 67/41/0    Celebration 26/12/0
+    Registry 11/26/2  Polls 4/23/3     Stay 11/18/2    Transport 9/12/2
+    Experience 8/11/0  FAQ 5/9/2       GoodToKnow 2/9/0  Style 0/5/0
+    MusicPage 6/4/2 (unreachable)      GuestMusic 2/10/2 (outside)
+
+`WeddingStylePage` reads `universeConfig` zero times — it takes `typography`
+only. Not a defect on its face (it may not need the config), but it is the one
+shell page with no universe-config dependency at all, and worth a look when
+someone is next in it.
