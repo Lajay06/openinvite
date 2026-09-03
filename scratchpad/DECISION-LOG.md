@@ -1916,3 +1916,57 @@ up there rather than here, so the two packages do not collide.
      only part matching A9's original description.
 
 Part 1 is the fix. Parts 2 and 3 are necessary and insufficient on their own.
+
+---
+
+## 2026-09-04 — A8 copy and layout batch: REPORT ONLY, two of four targets could not be located
+
+**The condition that pushed it out:** A8 authorizes four deletions and requires
+them as ONE PR. **I can locate two of the four with confidence and not the other
+two.** Deleting on a guess is the one thing the run's no-deletion rule exists to
+prevent — the risk is not deleting too much, it is deleting the wrong thing and
+reporting it as the owner's item.
+
+**Item 10 — the location photo in Celebration event blocks. LOCATED, bounded.**
+`WeddingCelebrationPage.jsx`: `_photoUrl` resolved at lines 46, 56 and 67 from
+`ceremony.photoUrl`, `reception.photoUrl` and `ev.venuePhotoUrl || ev.photoUrl`;
+`hasPhoto` branches the card at line 304; `.cel-photo` CSS at 125-131 including
+a responsive aspect-ratio change. **Removing it is a real layout change, not a
+string change** — the card has a with-photo branch and a without-photo branch,
+and the without branch becomes the only one.
+
+**Item 6 — generated itinerary day headings. LOCATED, but larger than "copy".**
+`WeddingCelebrationPage.jsx:229-250`. The day header is not generated text
+being swapped for plain text; it is a block whose padding, border, alignment,
+display mode and gap are all conditional on the universe:
+
+    isEditorial, isMinimal, isKyoto, isBali, isParis, isCapri, isMykonos,
+    isCapeTown, isBrooklyn
+
+and Kyoto injects a `VerticalRule` into it. **"Plain day headers instead" means
+collapsing nine universe branches**, which is universe-layout work, not a copy
+batch, and it would flatten per-universe treatment that the universe programme
+deliberately built.
+
+**Item 8 — the subtext under the Good to know heading. NOT WHERE EXPECTED.**
+The GUEST page `WeddingGoodToKnowPage` has no subtext: its `<h1>Good to know</h1>`
+is followed directly by the accordion. The only matching subtext is on the
+STUDIO page — `GuestSuitePolicies.jsx:231`,
+`<DashboardPageHeader title="Good to know" subtitle="What your guests will want
+to know" />`. **That is a dashboard page, not a guest page**, so A8's own
+condition ("only touch a page A1 confirmed is inside the shell") does not
+resolve it either way. The owner needs to say which surface he means.
+
+**Item 12 — the post-RSVP confirmation. NOT FOUND.** No confirmation, thank-you
+or success copy exists anywhere in `src/components/guest-website/`. Searched for
+thank you, we have your, reply received, see you there, recorded, submitted,
+hasReplied. `WeddingRSVPPage.jsx`'s only `onSuccess` handlers are Turnstile
+token callbacks, not a post-submit state. **Either the confirmation lives
+somewhere I have not found, or the flow does not render one and the owner is
+describing something else.**
+
+**What I would do with an answer:** items 10 and 6 are both `WeddingCelebrationPage`
+and would be one PR of moderate size — but item 6 needs the owner to confirm he
+wants the per-universe day-header treatment flattened, because that is what
+"plain day headers" means in this code. Items 8 and 12 need him to name the
+surface.
