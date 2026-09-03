@@ -234,6 +234,12 @@ export default function SendInvitesModal({
   const coupleName = coupleDisplayName(wedding);
   const weddingDate = wedding?.weddingDate || '';
   const venue = wedding?.mainCeremony?.venueName || '';
+  // The invitation's button opens the couple's site rather than jumping to the
+  // RSVP form. Empty when no address has been claimed yet, in which case the
+  // template falls back to the RSVP link so an invitation is never buttonless.
+  const siteUrl = wedding?.slug
+    ? `${typeof window === 'undefined' ? '' : window.location.origin}/w/${wedding.slug}`
+    : '';
   const dateStr = weddingDate
     ? new Date(weddingDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })
     : '';
@@ -345,6 +351,8 @@ export default function SendInvitesModal({
     universeId,
     type,
     coupleNames: coupleName,
+    siteUrl,
+    weddingDate,
     events: previewEvents,
     personalMessage: previewBody,
     rsvpUrl: previewRsvpUrl,
@@ -431,7 +439,7 @@ export default function SendInvitesModal({
             universeId,
             bannerChoice,
             guests: recipients,
-            wedding: { coupleName, weddingDate, venue, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl },
+            wedding: { coupleName, weddingDate, venue, siteUrl, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl },
             customSubject: subject,
             customBody: messageBody,
           };
@@ -494,7 +502,7 @@ export default function SendInvitesModal({
         bannerChoice,
         isTest: true,
         guests: [{ email: user.email, name: 'Test guest', rsvpUrl: previewRsvpUrl, events: previewEvents }],
-        wedding: { coupleName, weddingDate, venue, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl },
+        wedding: { coupleName, weddingDate, venue, siteUrl, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl },
         customSubject: subject,
         customBody: messageBody,
       };

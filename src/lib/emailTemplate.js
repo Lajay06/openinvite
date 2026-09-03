@@ -29,11 +29,25 @@ import { EMAIL_LOGO_MARK_URL } from './emailBrand.js';
 const SANS_FALLBACK = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
 const TYPE_CONFIG = {
+  // THE INVITATION IS A DOORWAY, NOT A DOCUMENT. Every detail carried here is
+  // a reason the guest does not need to open the website, and the website is
+  // the product — the ceremony and reception blocks meant the entrance the
+  // guest site opens with landed on information already read in Gmail.
+  //
+  // So the invitation shows the warm message and ONE date line, and its button
+  // opens the site rather than jumping to the RSVP form. The date stays because
+  // it is the one detail a guest acts on without clicking: it goes in a
+  // calendar. Venue and schedule are the site's to reveal.
+  //
+  // `reminder` and `update` deliberately keep their event blocks. A reminder is
+  // chasing a reply and an update EXISTS to say what changed, so stripping
+  // detail from those would remove the reason they are sent.
   invite: {
     kicker: "You're invited",
-    showEvents: true,
+    showEvents: false,
+    showDate: true,
     showRsvp: true,
-    ctaLabel: 'RSVP now',
+    ctaLabel: 'Open your invitation',
     footerNoun: 'invitation',
     defaultMessage: (firstName) =>
       `Dear ${firstName},\n\nWe would love to have you join us to celebrate our wedding. Please let us know if you'll be able to make it.`,
@@ -187,6 +201,8 @@ export function renderInvitationEmail({
   events = [],
   personalMessage,
   rsvpUrl,
+  siteUrl,
+  weddingDate,
   bannerImageUrl,
 }) {
   const cfg = getEmailTypeConfig(type);
@@ -211,6 +227,21 @@ export function renderInvitationEmail({
           </tr>`;
   }).join('') : '';
 
+  // One line, in the display face, where the event blocks used to be.
+  const inviteDateStr = cfg.showDate
+    ? formatEventDate(weddingDate || events?.[0]?.date)
+    : '';
+  const dateHtml = inviteDateStr ? `
+          <tr>
+            <td style="padding:22px 40px 0;text-align:center;">
+              <p style="margin:0;font-family:${fontDisplay};font-weight:400;font-size:19px;color:${textColor};letter-spacing:0.01em;">${escapeHtml(inviteDateStr)}</p>
+            </td>
+          </tr>` : '';
+
+  // The button opens the site when we have its address, and falls back to the
+  // RSVP link when we do not — an invitation is never sent without a button.
+  const ctaUrl = (cfg.showDate && siteUrl) ? siteUrl : rsvpUrl;
+
   const messageHtml = message ? `
           <tr>
             <td style="padding:28px 40px 0;">
@@ -228,20 +259,20 @@ export function renderInvitationEmail({
             </td>
           </tr>` : '';
 
-  const ctaHtml = (cfg.showRsvp && rsvpUrl) ? `
+  const ctaHtml = (cfg.showRsvp && ctaUrl) ? `
           <tr>
             <td style="padding:32px 40px 0;">
               <table role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="background:${accent};border-radius:999px;">
-                    <a href="${rsvpUrl}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:999px;font-family:${fontBody};letter-spacing:0.01em;">
+                    <a href="${ctaUrl}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:999px;font-family:${fontBody};letter-spacing:0.01em;">
                       ${escapeHtml(cfg.ctaLabel)}
                     </a>
                   </td>
                 </tr>
               </table>
               <p style="margin:16px 0 0;font-size:12px;color:rgba(0,0,0,0.4);word-break:break-all;font-family:${fontBody};">
-                Or copy this link: ${escapeHtml(rsvpUrl)}
+                Or copy this link: ${escapeHtml(ctaUrl)}
               </p>
             </td>
           </tr>` : '';
@@ -276,6 +307,7 @@ ${bannerHtml}
             </td>
           </tr>
 ${eventBlocksHtml}
+${dateHtml}
 ${messageHtml}
 ${ctaHtml}
 
@@ -321,7 +353,8 @@ ${ctaHtml}
     }) : []),
     message || '',
     '',
-    ...((cfg.showRsvp && rsvpUrl) ? [`${cfg.ctaLabel}: ${rsvpUrl}`, ''] : []),
+    ...(inviteDateStr ? [inviteDateStr, ''] : []),
+    ...((cfg.showRsvp && ctaUrl) ? [`${cfg.ctaLabel}: ${ctaUrl}`, ''] : []),
     `You received this ${cfg.footerNoun} because someone added you to their guest list on openinvite.com.au.`,
     'If you think this was sent in error, you can ignore this email.',
   ];
