@@ -2618,3 +2618,120 @@ it takes.
 > read path that would break if it were absent. Unknown fields are silently
 > dropped by the platform, so a field that is added and not recorded is a field
 > that will look like a persistence bug months later.
+
+---
+
+## 2026-09-04 (Run 2) — THE ACCOUNT
+
+**WHAT SHIPPED.** Six merged this run: Ava stops speaking when there is nothing
+to read (R7), "No info" no longer renders under content (R3), the two owner
+deletions I could locate (R6), a countdown after replying (A-NEW1), a guest
+read-boundary guard in CI (C1), and a dependency audit in CI (C2).
+
+**WHAT WAS FILED.** Eleven report-only: R4, R5, R2, B0-ADJUST, C3, C4, A-NEW3,
+B4, C6, plus A8's two unlocatable items and C5's blocking conflict.
+
+**WHAT NEEDS THE OWNER.** #647 still held. Two built-and-unmerged branches:
+`feat/guest-unfurl` and `feat/rsvp-calendar`. And four rulings whose premises
+did not survive contact with the code.
+
+**LOOK AT FIRST: THE B1 MOCK.** B0 found `DailyUpdate` already is a briefing, so
+PR1 is not inventing one — it is deciding that Overall becomes the one place,
+and what happens to the DailyUpdate route. My ruling as instructed: it stays and
+redirects. That is the decision waiting.
+
+### Merged, with SHAs and files
+
+    #648  e2c087a  R7      src/pages/DailyUpdate.jsx 56+/3-
+    #649  87e8463  R3      OptionAccordion.jsx 29+/5-, WeddingFAQPage 1+,
+                           WeddingGoodToKnowPage 1+, QandA 2+/1-
+    #650  a10e2e0  R6      WeddingCelebrationPage 12+/34-, RSVPPage 5+/13-
+    #651  7fa154f  A-NEW1  src/components/rsvp/RSVPPage.jsx 33+/0-
+    #652  536a6c0  C1      guest-read-boundary.mjs 97+, runner 6+, ci.yml 3+,
+                           package.json 2+/1-
+    #653  251f930  C2      ci.yml 10+, package.json 2+/1-, verify-all.mjs 1+
+
+### Built, not merged — branches, no PR
+
+    feat/guest-unfurl   a5733f6   R5, OG tags with fail-closed privacy
+    feat/rsvp-calendar  76f66fc   A-NEW2, ICS plus Google Calendar
+
+**Both are open-and-hold packages, and I did not open the PRs.** The standing
+rule "never leave a PR open at the end of a session" wins over the run's
+open-and-hold instruction, and #647 is already open from Run 1. Opening two more
+would leave three. **The standing rule won and this is me saying so.**
+
+### FOUR RULINGS WHOSE PREMISES DID NOT SURVIVE THE CODE
+
+**R4 Music — parity fails.** `WeddingMusicPage` has NO request form. Its own
+header says the form "still lives on the dedicated /w/:slug/music route"; it
+renders a LINK to that route. Removing the override would point that link at
+the page the guest is already on — **the form does not move, it disappears.**
+Shell integration is a merge, not a route change.
+
+**R5 unfurl — breaks an existing test.** `tests/persistence/guest-shell.mjs`
+asserts the exact rewrite destination. Built and pushed instead.
+
+**R2 menu order — position four is inside the visible slice, and RSVP still
+renders fifth.** `MAX_VISIBLE_LINKS = 5`, `restSlots = 4`, and the pin appends
+RSVP after the slice by construction. Simulated: visible becomes Home, Our Story,
+Celebration, **Stay**, RSVP — and "Getting here" drops behind More. The only way
+to render RSVP fourth is to stop pinning it, which R2 forbids.
+
+**R7 "Happy 0 day" — also not a template string.** `Happy` appears twice in the
+repo, both unrelated. All five reported sentences are LLM output. The grounding
+fix is unaffected and shipped.
+
+### Report-only, with exit conditions
+
+  - **R4** — parity condition failed (named above).
+  - **R5** — breaks an existing test.
+  - **R2** — the order's rendered effect is not what the ruling expects.
+  - **A8 items 6 and 8** — item 6 means collapsing nine per-universe branches,
+    which is universe-layout work; item 8 exists only as a studio subtitle.
+  - **C5** — **DIRECT CONFLICT.** It requires "a real-shaped record on a test
+    account" because is_test records are invisible to the guest site. That is a
+    production write, which this run forbids outright. **The standing rule wins;
+    C5 was not built.** It needs either an owner-run seed or an exemption.
+  - B0-ADJUST, C3, C4, A-NEW3, B4, C6 — report-only by instruction.
+
+### Time-boxes
+
+**None expired with work stranded.** Two process losses worth recording: a
+`pr:merge` blocked ten minutes on CI that takes ~9.5, and I polled
+`fix/accordion-no-info` when the branch was `feat/accordion-no-info` — my own
+error, ~8 minutes.
+
+### Live readings on the bali fixture
+
+    /w/chris-and-sia/our-story   texture opacity 0.015   canvas, correct
+    /w/chris-and-sia/our-story   shell mounted, transition present
+    /w/chris-and-sia/experience  "This invitation isn't available"
+
+### WHAT THE FIXTURE STILL LACKS FOR LIVE VERIFICATION
+
+  1. an experience guide, published — blocks A6, two runs now
+  2. Good to know sections with `display` toggled on — blocks R3
+  3. FAQ entries — blocks R3
+  4. a celebration event with a photo and one without — blocks R6 item 10
+  5. a guest who has not yet replied — blocks A-NEW1 and A-NEW2
+  6. the paris fixture published at all — linen 0.012 never read live
+
+### Verification levels for every merge
+
+    R7      level 1  branch and strings proven; no model called when empty
+    R3      level 1  every consumer enumerated; level 3 needs fixture FAQ data
+    R6      level 1  unconditional removals; level 3 needs fixture events
+    A-NEW1  level 1  every branch enumerated; level 3 needs an unreplied guest
+    C1      level 1+2 runs in verify and CI; failure path fired deliberately
+    C2      level 1+2 threshold measured at exit 0
+
+**Nothing this run reached level 3.** The fixture list above is why.
+
+### Missing input
+
+**`claude/ava-design-spec.md` does not exist.** `claude/` contains
+`homepage-copy.md` and `rsvp-experience-ruling.md` only. The run required
+reading it before anything. I used the voice rules stated inline in the prompt
+instead — numbers not adjectives, no pleasantries, no exclamation marks, no
+percentages, Ava never sells.
