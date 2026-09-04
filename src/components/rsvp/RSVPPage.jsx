@@ -654,6 +654,24 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
       })
     : '';
 
+  // A-NEW1 — the countdown a guest sees after replying. Whole days from
+  // today's midnight to the wedding's, so a reply at 11pm and one at 8am on
+  // the same date agree. Nothing renders once the day has passed: a guest who
+  // opens an old link should not be told the wedding was "-12 days" ago.
+  // Never a percentage, never a bar — the calm-pass rule is not only for the
+  // dashboard.
+  const daysToWedding = (() => {
+    if (!weddingDate) return null;
+    const d = new Date(weddingDate);
+    if (Number.isNaN(d.getTime())) return null;
+    const midnight = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+    return Math.round((midnight(d) - midnight(new Date())) / 86400000);
+  })();
+  const countdownLine = daysToWedding === null || daysToWedding < 0 ? null
+    : daysToWedding === 0 ? 'Today.'
+    : daysToWedding === 1 ? 'Tomorrow.'
+    : `${daysToWedding} days to go.`;
+
   const firstName = guest?.name ? guest.name.split(' ')[0] : '';
   // For the "done" screen icon/copy — attending overall if any invited event is a yes.
   const anyAttending = Object.values(eventForm).some(v => v.status === 'yes');
@@ -703,6 +721,21 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
             <h2 style={{ fontSize: 26, fontWeight: typography.headingWeight, color: theme.lightText, marginBottom: 14, letterSpacing: '-0.02em', fontFamily: typography.headingFont }}>
               {anyAttending ? `We can't wait to celebrate with you!` : 'Thank you for letting us know'}
             </h2>
+            {/* One line, in the universe's own display face. Only for guests
+                who are coming — a countdown to a day you have just declined is
+                not a kindness. */}
+            {anyAttending && countdownLine && (
+              <p style={{
+                fontSize: 18,
+                fontFamily: typography.headingFont,
+                fontWeight: typography.headingWeight,
+                fontStyle: typography.headingStyle || 'normal',
+                color: theme.accent,
+                margin: 0,
+              }}>
+                {countdownLine}
+              </p>
+            )}
             {(attendees.length > 0 || circle.length > 0) && (
               <div style={{ marginTop: 28, paddingTop: 24, borderTop: `1px solid ${theme.accent}22` }}>
                 {circle.length > 0 && (
