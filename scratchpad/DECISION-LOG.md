@@ -3187,3 +3187,126 @@ file a real song request. That is not new and not this page's alone —
 WeddingRSVPPage is mapped there the same way and posts to
 /api/rsvp-link-request. It is one defect about the preview, and it wants one
 fix at the preview, not a guard per page.
+
+---
+
+## 2026-09-05 (Run 4) — R17 Anonymous-record deletion. REPORT ONLY; schema is the owner's.
+
+Source: `base44/entities/*.jsonc`, the RULE-12 schema mirror in this repo. **I
+could not read the live app's RLS** — the Base44 MCP wants re-authorization, and
+RLS is not exposed over the entities REST API. One place where the mirror and
+the code disagree is flagged below; it needs a live check before anyone acts on
+it.
+
+### 1. Current delete RLS, per entity a guest creates
+
+    entity                    delete RLS                        who can satisfy it
+    ----------------------    ------------------------------    ------------------
+    PollVote                  {created_by_id: "{{user.id}}"}    NOBODY
+    PollComment               {created_by_id: "{{user.id}}"}    NOBODY
+    RsvpResponse              {created_by_id: "{{user.id}}"}    NOBODY
+    SongRequest               {created_by_id: "{{user.id}}"}    NOBODY
+    QuestionnaireResponse     {created_by_id: "{{user.id}}"}    NOBODY
+    GuestbookEntry            {created_by_id: "{{user.id}}"}    NOBODY (dead entity)
+    GuestContactSubmission    null                              ANYONE with a token
+
+**"NOBODY" is literal, not rhetorical.** Every one of these rows is written by
+an `api/*.js` endpoint through the admin key on behalf of an anonymous guest,
+and Base44 stamps `created_by_id: "anonymous"` itself. No real principal's
+`{{user.id}}` is ever the string `"anonymous"` — not the wedding owner's
+session, not the admin key. The rule cannot be satisfied by anyone, ever.
+Confirmed empirically twice (BASE44_PLATFORM_NOTES.md): `DELETE` returns **404,
+not 403**, and a follow-up `GET` returns the record unchanged. The denial is
+disguised as "not found", which is why it went unnoticed for so long.
+
+**GuestContactSubmission is the opposite failure and the one I would look at
+first.** All four rules are `null`. `delete: null` on an entity whose `read` is
+also `null` means any holder of any API token for this app can delete any
+couple's contact submissions. It was set open deliberately — an owner-scoped
+rule would have locked out the real owner too — but the reasoning stopped at
+`update`; `delete` inherited the same `null` without the same argument. The
+mediated endpoint (`api/guest-contact-review.js`) checks ownership for the
+couple's path; nothing checks it for anyone else's.
+
+**One contradiction I could not resolve.** The mirror says
+`SongRequest.update` is `{created_by_id: "{{user.id}}"}`. Both
+`api/song-request-submit.js:197` and the erasure ledger say the live rule is
+`{"data.ownerUserId": "{{user.id}}"}` — and `api/song-request-review.js` works
+in production using the couple's own caller token, which the mirror's rule
+could not permit. **The live app is almost certainly right and the mirror is
+stale.** Worth confirming, because it is also the proof for §2.
+
+### 2. What Base44 RLS can express
+
+**A rule CAN reference a data field of the row itself.** `{"data.<field>":
+"{{user.id}}"}` is supported and already in production here — `Notification`
+uses it on all three of read, update and delete:
+
+    "delete": { "data.recipient_user_id": "{{user.id}}" }
+
+This is the capability the whole answer turns on, and it is already proven in
+this app rather than hoped for.
+
+**A rule CANNOT reference the parent wedding's owner.** There is no join, no
+subquery, no traversal from `PollVote.wedding_id` to
+`WeddingDetails.created_by_id`. RLS compares fields of the row against
+`{{user.id}}` and nothing else. So the owner's id has to be ON the row.
+
+**A server function CANNOT bypass RLS — not from here.** `BASE44_ADMIN_KEY` is
+a normal credential evaluated against the same rules; it is not a superuser.
+Confirmed with Base44 support 2026-08-16: no RLS expression can match a
+service principal.
+
+**There IS a service-role path, and it is not reachable from this codebase.**
+`base44.asServiceRole.entities.*` works only INSIDE Base44-hosted functions
+(`base44/functions/<name>/entry.ts`, `createClientFromRequest(req)`). Every
+`api/*.js` here is a Vercel function calling in over REST, which is explicitly
+excluded. The plan supports hosted functions; the repo has zero infrastructure
+for them.
+
+**And the simplest fix is already disproven.** Supplying `created_by_id`
+explicitly in an admin-key create is IGNORED — tested on two entities,
+2026-08-03. Base44 always overwrites it with `"anonymous"`.
+
+### 3. The smallest change that works
+
+**Stamp the owner on the row; scope delete on the stamp.** Per entity:
+
+    1. add   ownerUserId: { type: "string" }
+    2. write ownerUserId: wedding.created_by_id   at the existing create call
+    3. set   "delete": { "data.ownerUserId": "{{user.id}}" }
+
+**Every write site already holds the value.** `wedding` is resolved before the
+insert in all of them — `wedding-poll-vote.js:122`, `wedding-poll-comment.js:114`,
+`rsvp-poll-vote.js:103`, `rsvp-submit.js:155/165`, `questionnaire-answer-submit.js`
+— and two of them ALREADY read `wedding.created_by_id` to stamp a Notification's
+`recipientUserId`. No new lookup, no new resolution, no new endpoint. One field
+and one line of RLS each. `SongRequest` needs only step 3; it has carried
+`ownerUserId` since 2026-08-17.
+
+**What that buys.** The wedding owner's own session token can delete their own
+guests' rows directly through `base44.entities.*` — no mediated endpoint, no
+admin key. And a wedding deletion can cascade, because "every row belonging to
+this wedding" becomes a query the owner is permitted to both read and delete.
+
+**What it does NOT buy, stated plainly:**
+
+- **Existing rows are not fixed by it.** ~2,240 historical rows carry no
+  `ownerUserId` and cannot be given one — `update` is owner-scoped by the same
+  broken rule, so they are unwritable as well as undeletable. They need a
+  Base44 support purge (ticket text is already drafted in
+  BASE44_PLATFORM_NOTES.md). A migration that back-stamps them is not possible.
+- **`update: null` is the price of the transition.** A row must be writable to
+  be stamped, so either the stamp happens at CREATE only (leaving every existing
+  row behind, which is the recommendation) or `update` opens up first.
+- **A guest still cannot erase their own record.** They have no account and no
+  `{{user.id}}`. Guest-initiated erasure needs a mediated endpoint that verifies
+  an RSVP token, and that is a separate piece of work.
+- **GuestContactSubmission needs the same treatment for the opposite reason** —
+  to CLOSE `delete`, not to open it.
+
+**Ordering, if the owner declares it.** `SongRequest` first: it is one RLS line,
+the field already exists and is already populated, and it makes the §1
+contradiction visible either way. Everything else follows the same three steps.
+
+**PROPOSED ONLY. Nothing in `base44/entities/` was touched.**
