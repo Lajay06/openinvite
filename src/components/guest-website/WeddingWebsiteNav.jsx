@@ -81,18 +81,24 @@ export default function WeddingWebsiteNav({ weddingName, theme, typography, enab
     }))
     .filter(link => !!link.label);
 
-  // D-3: RSVP goes LAST. It is the one thing a guest is asked to do, and it
-  // read as just another page sitting fourth in a list of eight. Pulled out of
-  // enabledPages order and appended rather than reordered in the data, so a
-  // couple's own page order is untouched.
+  // ── THE NAV ORDER IS FIXED, AND RSVP SITS FOURTH (Run 3, ruling R12) ───────
+  //
+  // History, because the previous shape was not an accident. D-3 pulled RSVP
+  // out of the couple's page order and appended it LAST so it would read as an
+  // action rather than "just another page sitting fourth in a list of eight".
+  // That created a second problem: appended last is exactly what a tail-slice
+  // takes FIRST, so on any site with more than five links the reply ended up
+  // behind "More", two taps deep on a 390 screen. It was then PINNED — held out
+  // of the overflow by construction.
+  //
+  // The pin guaranteed visibility by construction. POSITION FOUR GUARANTEES IT
+  // BY ARITHMETIC, which is weaker, so the arithmetic is now guarded: a test
+  // fails BY NAME if RSVP is not inside the visible slice at 390px. The
+  // accident is replaced by a check rather than by a promise.
+  //
+  // Consequence the owner accepted by ruling: with twelve links, "Getting here"
+  // moves behind "More".
   const rsvpLink = pageLinks.find(l => l.key === 'rsvp');
-  // THE RSVP IS PINNED AND NEVER ENTERS THE OVERFLOW.
-  // It was already appended last so it would read as an action rather than
-  // "just another page sitting fourth in a list of eight" — but appended last
-  // is exactly what a tail-slice takes FIRST, so on any site with more than
-  // five links the reply ended up behind "More", two taps deep on a 390 screen.
-  // The intent and the mechanism were pulling opposite ways.
-  // Overflow now takes from the other pages, in their existing order.
   // ONE ENTRY PER PAGE. The nav is assembled from TWO independent lists and
   // nothing reconciled them:
   //
@@ -109,7 +115,19 @@ export default function WeddingWebsiteNav({ weddingName, theme, typography, enab
   // that render the SAME accommodation data under the same word. Keying on
   // `key` would have left that pair looking like two different places to go.
   //
-  // pageLinks come first, so the couple's own page order wins the position.
+  // ONE ORDER FOR EVERY WEDDING, reconciling the two lists. Previously
+  // pageLinks came first so the couple's own enabledPages order won the
+  // position, which meant the nav read differently on every site. Ruling R12
+  // fixes the order; a page a couple has not enabled simply does not appear.
+  const NAV_ORDER = [
+    'home', 'our-story', 'celebration', 'rsvp', 'stay', 'transport',
+    'experience', 'styling', 'polls', 'music', 'faq', 'good-to-know',
+  ];
+  const orderOf = (l) => {
+    const i = NAV_ORDER.indexOf(l.key);
+    // An unknown key sorts after the known ones rather than to the front.
+    return i === -1 ? NAV_ORDER.length : i;
+  };
   const seen = new Set();
   const rest = [...pageLinks.filter(l => l.key !== 'rsvp'), ...subLinks]
     .filter(l => {
@@ -117,10 +135,16 @@ export default function WeddingWebsiteNav({ weddingName, theme, typography, enab
       if (!label || seen.has(label)) return false;
       seen.add(label);
       return true;
-    });
-  const restSlots = MAX_VISIBLE_LINKS - (rsvpLink ? 1 : 0);
-  const visibleLinks = [...rest.slice(0, restSlots), ...(rsvpLink ? [rsvpLink] : [])];
-  const overflowLinks = rest.slice(restSlots);
+    })
+    .sort((a, b) => orderOf(a) - orderOf(b));
+  // RSVP takes its place in the order (index 3 of NAV_ORDER, so fourth) rather
+  // than being appended. `ordered` is the single list the slice is taken from,
+  // so the visible row reads exactly as NAV_ORDER does.
+  const ordered = rsvpLink
+    ? [...rest.slice(0, 3), rsvpLink, ...rest.slice(3)]
+    : rest;
+  const visibleLinks = ordered.slice(0, MAX_VISIBLE_LINKS);
+  const overflowLinks = ordered.slice(MAX_VISIBLE_LINKS);
   // The mobile drawer lists everything, so it takes the full ordered set —
   // pinned or not, nothing is hidden there.
   const allLinks = [...rest, ...(rsvpLink ? [rsvpLink] : [])];

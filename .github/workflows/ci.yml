@@ -137,6 +137,9 @@ jobs:
       - name: Guest read boundary guard
         run: npm run test:guest-read-boundary
 
+      - name: The reply is never behind More
+        run: npm run test:nav-rsvp-visible
+
       - name: Route collision guard
         run: npm run test:route-collisions
 

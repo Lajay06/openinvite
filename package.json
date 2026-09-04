@@ -62,7 +62,8 @@
     "test:page-gate": "node scripts/test-page-gate.mjs",
     "test:guest-export-address": "node scripts/test-guest-export-address.mjs",
     "test:guest-read-boundary": "node tests/persistence/run-guest-read-boundary.mjs",
-    "audit:ci": "npm audit --audit-level=critical"
+    "audit:ci": "npm audit --audit-level=critical",
+    "test:nav-rsvp-visible": "node tests/persistence/run-nav-rsvp-visible.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.43",
