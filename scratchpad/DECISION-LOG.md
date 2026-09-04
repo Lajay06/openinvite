@@ -2834,3 +2834,167 @@ considers aligned. If Resend expects `hello@send.openinvite.com.au` and the code
 sends from the apex, tightening DMARC would break every email the product sends.
 
 **Not changed. DNS is not in this repository and would be a production change.**
+
+---
+
+## 2026-09-05 (Run 3) — C9 monitoring (REPORT ONLY)
+
+**What exists:** `src/lib/sentry.js` initialises Sentry when `VITE_SENTRY_DSN`
+is set, with `tracesSampleRate: isGuestRoute() ? 0 : 0.2` — **guest routes are
+deliberately not traced**, which is a sensible cost decision and also means the
+guest site is the least observed surface in the product.
+
+**What I cannot see from the repository:** alert RULES live in the Sentry
+dashboard, not in code. **I cannot confirm a single alert exists, and I did not
+assume one does.** The honest status is unknown, not absent.
+
+**What must be true for "weddings happen Saturday 6pm", and the gap is the
+routing not the tooling:**
+
+  1. **An error-rate alert that reaches a phone.** Sentry can email, and email
+     at 6pm on a Saturday is not a notification. It needs a channel that makes
+     a phone ring.
+  2. **An uptime check on a real guest URL**, not the marketing homepage. The
+     two are different rewrites to different destinations, and after R5 lands
+     they will be different runtimes. A check on `openinvite.com.au` proves
+     nothing about `/w/<slug>`.
+  3. **A check that asserts content, not status.** The guest shell returns 200
+     while React fails to boot; the SPA fallback returns 200 with an HTML body
+     for a missing asset. **A 200 is not a working invitation.** The check
+     should assert a known string from a published fixture page.
+  4. **Deploy-time verification.** Every merge to main should read one live
+     fixture page and fail loudly if it does not render.
+
+**Minimum viable, in order of value per hour: (2) and (3) together as one
+synthetic check against `/w/chris-and-sia/our-story` asserting a known string,
+routed to a phone. That single check would have caught every delivery-path
+failure this project has had.**
+
+---
+
+## 2026-09-05 (Run 3) — S1 three-state guest site (SIZE ONLY)
+
+**Size the preview toggle first, as instructed, because it is what makes the
+rest testable.** Today the guest site has one state. Day-of and after-mode are
+both time-derived, so without a toggle neither can be seen except by waiting.
+
+**The toggle: small.** A query parameter honoured only for the owner —
+`?preview=day-of` / `?preview=after` — read once in `MultiPageWeddingWebsite`
+and passed down as the state. It must NOT be honoured for guests: the existing
+`?preview=true` on `wedding-by-slug` was an unauthenticated flag that a bare
+query string could set, and that was the shape of a real leak. **This one keys
+on the owner's own session, not on the URL alone.** Roughly one file plus the
+gate.
+
+**Day-of Layer 1: medium.** Home becomes Now / Next from the schedule, polling
+each minute. Needs: a stable per-event time source (the same missing piece
+A-NEW3 found — `_id: ev.id || 'ev-' + Math.random()`), a defined "now" when
+events lack times, and a venue plus rideshare link. The polling is trivial; the
+event identity is not.
+
+**After-mode: medium to large.** Home becomes photos, guestbook, playlist,
+thank-you. Photos and guestbook are surfaces that do not exist yet, so this is
+mostly new build rather than a state change.
+
+**The honest sequence: toggle, then day-of, then after.** Building after-mode
+first would mean building two new surfaces before anything can be seen.
+
+---
+
+## 2026-09-05 (Run 3) — S2 universe as a data object (SIZE ONLY)
+
+**Measured distance from "a new universe is content, not code":**
+
+    per-universe layout components   78 files in guest-website/layouts/
+    isX branches in guest pages      192
+    entrance configs                 5 of 20 (fifteen fall back)
+    dispatch tables keyed on universe 8 files
+
+**Every place a universe is still code:**
+
+  1. **`src/components/guest-website/layouts/` — 78 components.** AmalfiWave,
+     AspenPine, BaliFooter, KyotoMasthead, EnsoRing and so on. A new universe
+     needs its own masthead, footer, section mark and signature ornament, and
+     each is a React file.
+  2. **192 `isKyoto` / `isBali` / `isEditorial` style branches** inside the
+     guest page components, controlling padding, alignment, borders and whether
+     an ornament is injected. `isMinimal` and `isEditorial` lead at 27 each.
+  3. **Dispatch tables** in `UniverseBlocks.jsx`, `GuestPageHeading.jsx` and
+     `UniverseWorldView.jsx` mapping a layout id to a component.
+  4. **`entranceConfig.js`** — five bespoke, fifteen on the default.
+  5. `websiteThemes.js` itself, which IS data and is the part already right.
+
+**THE REAL COST OF SERIES 2 IS THE 78 COMPONENTS AND THE 192 BRANCHES, NOT THE
+CONFIG.** Adding a twenty-first universe today means writing four or five new
+React components and touching every guest page. The config object is the
+smallest part of the work and the only part that looks like content.
+
+**The direction, if the owner wants it:** the 192 branches are mostly
+padding/alignment/border decisions that could become tokens on the universe
+config, and the ornaments could become one component reading an SVG path from
+config. Neither is small, and doing it badly would flatten exactly the
+per-universe character the programme built. **This is the standing constraint's
+own reasoning — no new universes until the existing twenty render consistently —
+seen from the code side.**
+
+---
+
+## 2026-09-05 (Run 3) — S3 wallet pass phase A (SIZE ONLY)
+
+**Every external prerequisite the owner must obtain, because none of it is
+code:**
+
+  1. **Apple Developer Program membership** — annual fee, and it is an
+     organisation enrolment for a company-issued pass.
+  2. **A Pass Type ID** registered in the developer account.
+  3. **A Pass Type ID certificate** (.p12), which expires annually and must be
+     rotated before it does or every pass stops issuing.
+  4. **The Apple WWDR intermediate certificate.**
+  5. **Google Wallet: a Google Cloud project, a service account, and Google
+     Wallet API issuer access** — issuer approval is a separate application.
+
+**The code half is comparatively small:** `passkit-generator` in a serverless
+function for Apple, a signed JWT for Google. Both need the certificate material
+as environment secrets.
+
+**The blocking risk is certificate rotation.** A pass certificate that expires
+silently means invitations stop issuing with no code change and no deploy — the
+kind of failure nothing in CI can catch. **Whatever ships must include an expiry
+check that alerts before the date.**
+
+---
+
+## 2026-09-05 (Run 3) — S4 deletion for couple and guest (SIZE ONLY)
+
+**A wedding deletion must cascade through**, at minimum: WeddingDetails, Guest,
+RsvpResponse, Budget, Vendor, Schedule, Task, Note, MoodboardItem, Poll,
+PollVote, PollComment, SongRequest, questionnaire responses, and any uploaded
+media (cover photo, venue photos, gallery, moodboard images) which live outside
+the entity store.
+
+**A guest removal must touch**: the Guest row, their RsvpResponse, their
+`event_responses` overlay, their plus-one records, their PollVote and
+PollComment rows, their SongRequest, their table assignment, and the couple's
+counts — **which must not silently change meaning.** Removing an attending guest
+after seating changes the seating chart.
+
+**THE HARD PART IS NOT THE DELETE.** Two structural obstacles, both already
+documented in the codebase:
+
+  1. **Anonymous-created records cannot be deleted by anyone.**
+     `anonymous-endpoints.mjs` records that PollVote, PollComment, RsvpResponse
+     and SongRequest are written with `created_by_id: 'anonymous'`, and each
+     entity's delete RLS is `{ created_by_id: '{{user.id}}' }` — **no logged-in
+     user, and not even the admin key, can satisfy that.** So the guest-created
+     records are exactly the ones a deletion request most needs to remove, and
+     today they cannot be. **This is a schema/RLS change, therefore the owner's.**
+  2. **A plus-one has no record of its own** — it exists inside a Guest's
+     `event_responses`. Deleting "a person" is not always deleting a row.
+
+**AND THERE IS NO SURFACE WHERE A GUEST CAN ASK.** Grepped the guest site and
+RSVP flow for any delete/remove/opt-out affordance: **none exists.** A guest who
+wants their data removed has no route but emailing the couple, who has no tool
+to do it.
+
+**Needs a written policy before any code:** what is deleted, what is anonymised,
+what is retained for the couple's own records, and how long it takes.
