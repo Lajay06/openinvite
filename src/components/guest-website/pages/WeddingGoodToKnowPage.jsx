@@ -63,6 +63,7 @@ export default function WeddingGoodToKnowPage({ weddingDetails, theme, typograph
         {sections.length > 0 && (
           <SectionReveal {...reveal}>
             <OptionAccordion
+              showEmptyState={false}
               headingSize="clamp(1.125rem,2.5vw,1.5rem)"
               headingWeight={typography.headingWeight}
               headingStyle={typography.headingStyle || 'normal'}

@@ -176,7 +176,8 @@ export default function QandA() {
             </p>
           </div>
         ) : (
-          <OptionAccordion headingSize={14} headingWeight={700}>
+          <OptionAccordion
+              showEmptyState={false} headingSize={14} headingWeight={700}>
             {qna.map((item, i) => {
               const id = item.id ?? i;
               return (
