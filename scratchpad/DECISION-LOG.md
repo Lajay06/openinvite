@@ -3104,3 +3104,86 @@ they exist in the repository rather than only in a prompt.
 marketing pages carry, the licence terms are a contract the owner holds — I can
 see file paths, not entitlements. **It is the owner's to confirm**, and it
 should be confirmed before launch rather than after.
+
+---
+
+## 2026-09-05 (Run 4) — R16 Music into the shell: BUILT. Parity table re-run.
+
+Run 3's R4 refused this correctly: removing the route alone would have turned
+WeddingMusicPage's "Request a song" link into a link to itself, and the form
+would have disappeared rather than moved. The merge is what makes the route
+deletion safe, so the merge is what this did.
+
+**PARITY TABLE, re-run against the built page.** Every row measured on a
+running preview, not read off the source.
+
+    guest action                       GuestMusic.jsx      WeddingMusicPage.jsx
+                                       (before, routed)    (after, in the shell)
+    --------------------------------   ----------------    --------------------
+    enter a song by hand               yes                 yes
+    attach a note                      yes                 yes
+    give an email                      yes                 yes
+    email REQUIRED when the couple
+      requires it (onlyForConfirmed-
+      Guests / limitOnePerGuest)       yes                 yes
+    submit -> /api/song-request-submit yes                 yes
+    Turnstile gate before submit       yes                 yes
+    "request another" reset            yes                 yes
+    playlist embed                     yes                 yes
+    requests-close date shown          yes                 yes
+    requests-closed state              yes                 yes
+    search for a track                 DEAD                absent
+    pick a search result               DEAD                absent
+    a LINK to /w/:slug/music           --                  replaced by the form
+    universe typography                yes (own loader)    yes (from the shell)
+    universe palette                   NO — 66 stops       yes
+    site nav and footer                NO — a Back link    yes
+
+DEAD, not missing: search was removed in the 2026-08-18 rebuild. GuestMusic
+still carries `searchQuery`/`searchResults`/`searching`/`searchError` state and
+a `searchResults.map` block, but nothing ever assigns a result — `setSearchResults`
+is called in exactly one place, the reset handler, with `[]`. The new page omits
+the state rather than porting a path that cannot fire.
+
+**THE PAYLOAD IS IDENTICAL, MEASURED NOT ASSERTED.** Both builds served, both
+forms driven by real keystrokes, Cloudflare's script stubbed so the widget
+issues a token, and the POST intercepted:
+
+    before  {"weddingSlug":"ada-and-alan","spotifyTrackId":null,"title":"This Must Be the Place",
+             "artist":"Talking Heads","album":"","albumArt":"","duration":0,"explicit":false,
+             "spotifyUrl":"","submittedBy":"Ada","password":"","guestEmail":"",
+             "guestNote":"For the first dance.","turnstileToken":"probe-turnstile-token"}
+    after   (byte-identical)
+
+**COLOR: 66 hard-coded stops across 20 distinct values, not 24.** Counted in
+GuestMusic.jsx: 13x #FFFFFF, 7x #1DB954, 5x #0A0A0A, 3x #000000, 1x #EEEEEE,
+25 rgba(255,255,255,x) across nine alphas, 4 rgba(29,185,84,x). None is a
+universe's. All are gone; the page now derives from the palette through
+src/lib/surfaceTint.js — the same helper the RSVP form uses, mixed rather than
+alpha-blended so contrast stays measurable over a universe's texture.
+
+**Rendered evidence.** Same route, same seed, same viewport, two universes:
+
+  · before/bali and before/mykonos are the SAME BLACK PAGE. Only the section
+    mark and the heading face differ; ground, text and action color are
+    identical because they were hard-coded. That is the defect in one image.
+  · after/bali is sand ground, terracotta action, jungle-green nav and footer.
+  · after/mykonos is white ground, blue action, navy nav and footer.
+
+**One behavior change beyond the port, deliberate.** The shell gated
+`/w/:slug/music` on `music.guestRequestsEnabled` alone. That was harmless while
+the standalone route shadowed it and nothing here was reachable; serving it for
+real, it would hide a couple's playlist and their own written message behind a
+switch that governs only the FORM. Availability is now requests OR a playlist OR
+a custom message. Nobody sees a form when requests are off.
+
+**GuestMusic.jsx stays in the tree, unrouted.** Deleting it in the same change
+that unrouted it would remove the thing to compare against if the shell page
+turns out to be wrong on production data.
+
+**Known and NOT closed here:** the builder preview (RealWebsitePreview.jsx)
+renders this page live, so a couple clicking Submit in their own preview would
+file a real song request. That is not new and not this page's alone —
+WeddingRSVPPage is mapped there the same way and posts to
+/api/rsvp-link-request. It is one defect about the preview, and it wants one
+fix at the preview, not a guard per page.
