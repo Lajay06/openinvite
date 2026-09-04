@@ -244,7 +244,15 @@ export default function MultiPageWeddingWebsite() {
     // enabledPages would follow a redirect straight into a refusal.
     stay: !!weddingDetails?.accommodation?.manualProperties?.length
        || !!weddingDetails?.guestSuiteAccommodation?.places?.length,
-    music: weddingDetails?.music?.guestRequestsEnabled,
+    // Requests OR a playlist OR a message the couple wrote. This used to be
+    // guestRequestsEnabled alone, which was harmless while the standalone route
+    // shadowed this one and nothing here was ever reached. Now that the shell
+    // serves /w/:slug/music, that test would hide a couple's playlist and their
+    // own words behind a switch that only governs the FORM — three kinds of
+    // content gated on one of them.
+    music: !!weddingDetails?.music?.guestRequestsEnabled
+        || !!(weddingDetails?.music?.playlists || [])[0]?.playlistUrl
+        || !!weddingDetails?.musicContent?.customMessage,
     experience: weddingDetails?.experienceGuide?.published,
     'good-to-know': visibleSections(weddingDetails?.weddingPolicies).length > 0,
   };

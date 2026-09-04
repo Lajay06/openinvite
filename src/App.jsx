@@ -69,7 +69,12 @@ function AccommodationRedirect() {
   return <Navigate to={`/w/${weddingSlug}/stay`} replace />;
 }
 
-const GuestMusic = lazyWithReload(() => import('./pages/GuestMusic'));
+// GuestMusic is deliberately NOT routed. It served /w/:slug/music ahead of the
+// catch-all, which meant the shell never rendered its own music page: guests
+// got a black page in Spotify green whatever universe the couple chose, and the
+// builder previewed a page nobody was served. WeddingMusicPage now carries the
+// request form, so the override is gone. The file stays in the tree for one
+// release rather than being deleted in the same change that unrouted it.
 const Music = lazyWithReload(() => import('./pages/Music'));
 const CeremonyDetails = lazyWithReload(() => import('./pages/CeremonyDetails'));
 const Honeymoon = lazyWithReload(() => import('./pages/Honeymoon'));
@@ -208,7 +213,6 @@ const AuthenticatedApp = () => {
         <Route path="/data-deletion" element={<DataDeletion />} />
         <Route path="/refund-policy" element={<RefundPolicy />} />
         <Route path="/w/:weddingSlug/accommodation" element={<AccommodationRedirect />} />
-        <Route path="/w/:weddingSlug/music" element={<GuestMusic />} />
         <Route path="/w" element={<InvitationNotAvailable />} />
         <Route path="/w/" element={<InvitationNotAvailable />} />
         <Route path="/w/:weddingSlug" element={<MultiPageWeddingWebsite />} />
@@ -295,7 +299,6 @@ const AuthenticatedApp = () => {
         <Route path="/gifting" element={<Gifting />} />
         <Route path="/gift/success" element={<GiftPurchaseSuccess />} />
         <Route path="/w/:weddingSlug/accommodation" element={<AccommodationRedirect />} />
-        <Route path="/w/:weddingSlug/music" element={<GuestMusic />} />
         <Route path="/w" element={<InvitationNotAvailable />} />
         <Route path="/w/" element={<InvitationNotAvailable />} />
         <Route path="/w/:weddingSlug" element={<MultiPageWeddingWebsite />} />
