@@ -124,6 +124,9 @@ jobs:
       # route-collision/self-redirect bug class (fix/dashboard-round5) that
       # silently left Transport/Accommodation/Honeymoon blank in production
       # with no build or lint failure. See scripts/test-route-collisions.mjs.
+      - name: Guest read boundary guard
+        run: npm run test:guest-read-boundary
+
       - name: Route collision guard
         run: npm run test:route-collisions
 

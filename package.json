@@ -60,7 +60,8 @@
     "test:schedule-order": "node scripts/test-schedule-order.mjs",
     "test:nav-no-duplicates": "node scripts/test-nav-no-duplicates.mjs",
     "test:page-gate": "node scripts/test-page-gate.mjs",
-    "test:guest-export-address": "node scripts/test-guest-export-address.mjs"
+    "test:guest-export-address": "node scripts/test-guest-export-address.mjs",
+    "test:guest-read-boundary": "node tests/persistence/run-guest-read-boundary.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.43",
