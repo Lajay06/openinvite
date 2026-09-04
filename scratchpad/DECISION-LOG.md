@@ -2235,3 +2235,57 @@ both live behind an authenticated dashboard this run must not populate.
 screenshots**, built from the shipped values and styles, and the artifact says
 so on the page. Rendering the real components needs a session with a couple's
 data, which this run must not create.
+
+---
+
+## 2026-09-04 (Run 2) — R4 Music into the shell: PARITY FAILS, REPORT ONLY
+
+**The condition R4 sets is the one that fails.** "WeddingMusicPage MUST OFFER
+EVERY GUEST ACTION GuestMusic OFFERS — song requests writing to the same
+endpoint above all." It does not, and it says so itself.
+
+**Side-by-side enumeration of guest actions:**
+
+    GuestMusic.jsx (372 lines)          WeddingMusicPage.jsx (96 lines)
+    ------------------------------      ------------------------------
+    search for a track                  --
+    pick a result                       --
+    enter a song manually               --
+    attach a note                       --
+    give an email                       --
+    submit -> /api/song-request-submit  --
+    Turnstile protection                --
+    "request another" reset             --
+    playlist embed                      playlist embed
+    requests-closed date                --
+    --                                  a LINK to /w/:slug/music
+
+**`WeddingMusicPage` has no request form at all.** Its own header states the
+arrangement deliberately: *"The request FORM still lives on the dedicated
+/w/:slug/music route (GuestMusic — Turnstile-protected, feature-complete). This
+page links to it rather than duplicating it; see the PR notes for why collapsing
+the two into one component is deferred rather than done here."*
+
+**AND REMOVING THE ROUTE WOULD CREATE A SELF-LINK.** Line 28:
+
+    const requestHref = weddingDetails.slug ? `/w/${weddingDetails.slug}/music` : null;
+
+If the override is removed so the catch-all serves `WeddingMusicPage` at
+`/w/:slug/music`, then that page's "Request a song" link points at the page the
+guest is already on. **The form does not move — it disappears**, and the only
+affordance left is a link to itself. That is strictly worse than today's split.
+
+**So the shell integration is a MERGE, not a route deletion**: the request form,
+its Turnstile gate, the manual-entry path and the requests-closed date all have
+to move into `WeddingMusicPage` first, and only then can the override go. That
+is a real piece of work, not a one-line route change, and the 96-line component
+is the smaller half of it.
+
+**The finding R4 asks me to record, recorded:** `RealWebsitePreview.jsx:45` maps
+`'music': WeddingMusicPage`, so **the couple's builder preview shows the
+playlist-and-a-link page while guests get the full request form.** The preview
+is not a preview of the published page for this one route. It is its own defect
+and the merge above closes it — but only the merge does, not the route change
+alone.
+
+**Nothing built. GuestMusic untouched, as R4 requires either way.**
