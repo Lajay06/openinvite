@@ -336,10 +336,31 @@ export default function DailyUpdate() {
     const snap = { confirmedGuests, pendingGuests, budgetPercent, bookedVendors, totalVendors };
     setSnapStats(snap);
 
+    // ── AVA MAY ONLY SAY WHAT SHE CAN READ ──────────────────────────────────
+    //
+    // A wedding with no guests, no vendors, no budget lines and no tasks gives
+    // the model nothing to describe, and asked anyway it describes the absence
+    // in the confident register the prompt requests: "All 0 tasks are
+    // complete", "All 0 vendors are confirmed for today", "The budget is
+    // finalized at 0 dollars spent". Every one of those is a congratulation
+    // for work nobody has done, on the screen a couple opens first.
+    //
+    // Those sentences are NOT in this repository — they were generated. So the
+    // fix is not a template variant, it is WHETHER THE MODEL IS ASKED AT ALL.
+    // With nothing to read, Ava does not speak: authored copy renders instead,
+    // and it says the true thing, which is that the wedding is new.
+    const hasAnythingToReport =
+      guests.length > 0 || vendors.length > 0 || budgetItems.length > 0 || todos.length > 0;
+
     const fallback = {
-      headline: days !== null ? `${days} days to go.` : 'Your wedding is coming.',
+      // "0 days to go." is not how anyone says it on the day itself, and
+      // "1 days to go." is not how anyone says it the day before.
+      headline: days === 0 ? 'Today is the day.'
+        : days === 1 ? 'Tomorrow.'
+        : days !== null ? `${days} days to go.`
+        : 'Your wedding is coming.',
       greeting: `Good ${tod}, ${firstName}. Here's where things stand today.`,
-      countdown: { headline: `${days ?? '—'} days`, subtext: 'Every detail is coming together.' },
+      countdown: { headline: days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : `${days ?? '—'} days`, subtext: 'Every detail is coming together.' },
       thisWeek: [],
       smartSuggestions: [],
       guestAlert:  pendingGuests > 0 ? `${pendingGuests} guest${pendingGuests !== 1 ? 's' : ''} haven't replied yet` : null,
@@ -349,6 +370,36 @@ export default function DailyUpdate() {
       emotionalNote:   'You are doing better than you think.',
       forgottenDetail: 'Confirm your rehearsal dinner headcount with the venue.',
     };
+
+    // Authored, not generated. Every line is true of a wedding with no data,
+    // and none of it congratulates anyone for an empty set.
+    if (!hasAnythingToReport) {
+      const emptyBriefing = {
+        ...fallback,
+        headline: days === 0 ? 'Today is the day.'
+          : days === 1 ? 'Tomorrow.'
+          : days !== null && days > 0 ? `${days} days to go.`
+          : 'Your wedding is being planned.',
+        greeting: `Good ${tod}, ${firstName}. Nothing needs you yet. Add your guests when you are ready and this page will start filling in.`,
+        countdown: {
+          headline: days === 0 ? 'Today' : days === 1 ? 'Tomorrow'
+            : days !== null && days > 0 ? `${days} days` : 'Date not set',
+          subtext: 'Nothing else needs you today.',
+        },
+        thisWeek: [],
+        smartSuggestions: [],
+        guestAlert: null,
+        vendorNote: null,
+        budgetNote: null,
+        weatherNote: null,
+        emotionalNote: 'There is no rush. The first step is your guest list.',
+        forgottenDetail: null,
+      };
+      setBriefing(emptyBriefing);
+      if (key) localStorage.setItem(key, JSON.stringify({ briefing: emptyBriefing, daysUntil: days, snapStats: snap, coupleName: couple }));
+      setPhase('ready');
+      return;
+    }
 
     try {
       const today = new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -383,7 +434,9 @@ Return JSON only:
   "forgottenDetail": "one thing couples often forget at this stage"
 }
 
-Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation marks. headline must be punchy and specific. Always write numbers as numerals (10, 68%, 3), never spelled out (not "ten", "sixty-eight percent", "three") — in every field, including headline and greeting.`;
+Rules: thisWeek max 3 items. smartSuggestions max 2. No clichés, no exclamation marks.
+
+NEVER PHRASE AN ABSENCE AS AN ACCOMPLISHMENT. A count of 0 means the couple has not started that thing, never that they have finished it. Do not write "all 0 tasks are complete", "0 vendors confirmed" as good news, or "the budget is finalized" when nothing has been spent. Where a count is 0, either say nothing about it (use null) or name it as the next thing to do. Do not congratulate anyone for an empty list. headline must be punchy and specific. Always write numbers as numerals (10, 68%, 3), never spelled out (not "ten", "sixty-eight percent", "three") — in every field, including headline and greeting.`;
 
       const raw = await base44.integrations.Core.InvokeLLM({
         prompt: aiPrompt,
