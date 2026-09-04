@@ -124,6 +124,16 @@ jobs:
       # route-collision/self-redirect bug class (fix/dashboard-round5) that
       # silently left Transport/Accommodation/Honeymoon blank in production
       # with no build or lint failure. See scripts/test-route-collisions.mjs.
+      - name: Dependency audit
+        # THRESHOLD IS `critical`, DELIBERATELY, AND IT IS NOT A CLEAN BILL.
+        # The tree carries 34 advisories today: 17 high, 15 moderate, 2 low,
+        # 0 critical. A threshold of `high` would fail this workflow on every
+        # PR from the moment it lands, which turns a security signal into an
+        # obstacle people learn to bypass. `critical` passes today and catches
+        # the class that must never ship. Raising it is the owner's call and
+        # belongs with the work to fix the 17 — see the ledger.
+        run: npm run audit:ci
+
       - name: Guest read boundary guard
         run: npm run test:guest-read-boundary
 
