@@ -695,22 +695,14 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
       <PageShell embedded={embedded} coupleName={coupleName} dateStr={dateStr} venue={venue} theme={theme} typography={typography} universeConfig={universeConfig} wedding={wedding}>
         <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(wedding)}>
           <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 13, fontWeight: 700, color: theme.accent, letterSpacing: '0.1em', marginBottom: 10, ...F }}>
-              {anyAttending ? 'SEE YOU THERE' : 'RESPONSE RECEIVED'}
-            </p>
+            {/* OWNER ITEM 12 — one subheading. This carried three stacked
+                levels of text: an eyebrow, this heading, and a closing line
+                that repeated the date and venue the page already shows. A
+                guest who has just replied needs to be told their reply landed,
+                once. */}
             <h2 style={{ fontSize: 26, fontWeight: typography.headingWeight, color: theme.lightText, marginBottom: 14, letterSpacing: '-0.02em', fontFamily: typography.headingFont }}>
               {anyAttending ? `We can't wait to celebrate with you!` : 'Thank you for letting us know'}
             </h2>
-            {anyAttending && dateStr && (
-              <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, ...F }}>
-                Mark your calendar — {dateStr}.{venue ? ` We'll see you at ${venue}.` : ''}
-              </p>
-            )}
-            {!anyAttending && (
-              <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, ...F }}>
-                You'll be missed. Thank you for taking the time to respond.
-              </p>
-            )}
             {(attendees.length > 0 || circle.length > 0) && (
               <div style={{ marginTop: 28, paddingTop: 24, borderTop: `1px solid ${theme.accent}22` }}>
                 {circle.length > 0 && (
