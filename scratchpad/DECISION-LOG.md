@@ -2998,3 +2998,109 @@ to do it.
 
 **Needs a written policy before any code:** what is deleted, what is anonymised,
 what is retained for the couple's own records, and how long it takes.
+
+---
+
+## 2026-09-05 (Run 3) — THE ACCOUNT
+
+**WHAT SHIPPED.** One merge: the nav order, with RSVP fourth and a guard that
+fails by name if it ever leaves the visible slice (#657, `04ba815`).
+
+**WHAT WAS FILED.** Ten report-only: R11, C3-ADD, C9, S1, S2, S3, S4, plus the
+C8 voice file and the motion budget from Run 2's carry-over.
+
+**WHAT NEEDS THE OWNER.** Five held PRs, all with previews: #654 the briefing on
+Overall, #655 the unfurl function, #656 add-to-calendar, #658 the Ava eval set,
+and #647 empty states from Run 1.
+
+**LOOK AT #654 FIRST.** Overall is the one place, the briefing is the first
+thing on it, and the DailyUpdate route redirects rather than being deleted.
+
+### Merged
+
+    #657  04ba815  R12  WeddingWebsiteNav.jsx 33+/14-,
+                        nav-rsvp-visible.mjs 47+, runner 6+,
+                        ci.yml 3+, package.json 1+
+      NAV_ORDER is one fixed list; RSVP sits fourth and is guarded by a test
+      rather than by a pin. "Getting here" moves behind More, by ruling.
+
+### Held, with previews
+
+    #654  B1-BUILD      github.com/Lajay06/openinvite/pull/654
+    #655  R5 unfurl     github.com/Lajay06/openinvite/pull/655
+    #656  A-NEW2 cal    github.com/Lajay06/openinvite/pull/656
+    #658  C7 eval set   github.com/Lajay06/openinvite/pull/658
+    #647  B3 empty      (Run 1)
+
+### Report-only, with exit conditions
+
+  - **R11 Music** — the form's LOGIC ports; its STYLING does not. GuestMusic is
+    a standalone dark page with 24 hardcoded `rgba(255,255,255,…)` stops; the
+    shell page is `theme.lightBg`. So it is an extraction plus a 250-line
+    restyle of a Turnstile-protected write path, over the cap either way. **I
+    chose not to attempt it unattended with no way to see the result** — a form
+    that submits correctly and looks broken is worse than the current split.
+  - **C3-ADD** — DNS is read-only to me and changing it is a production change.
+  - **C9, S1, S2, S3, S4** — report/size only by instruction.
+
+### THE THREE FINDINGS WORTH THE OWNER'S TIME
+
+**1. DMARC is `p=none` with no `rua=`.** Nothing is enforced and nobody is
+collecting the data that would let it be. SPF sits on `send.openinvite.com.au`
+while every `FROM` in the code is the apex, `hello@openinvite.com.au`, which has
+no SPF record at all. DKIM is published and valid, so mail is probably passing
+on DKIM alignment — **which is exactly why moving to `p=reject` without a
+reporting window could silently drop every invitation.**
+
+**2. A universe is still mostly code.** 78 per-universe layout components, 192
+`isKyoto`-style branches inside the guest pages, 8 dispatch tables, and 5 of 20
+entrance configs. **The config object is the smallest part of a universe and the
+only part that looks like content.** That is the standing constraint's own
+reasoning seen from the code side.
+
+**3. Guest-created records cannot be deleted by anyone.** PollVote, PollComment,
+RsvpResponse and SongRequest are written with `created_by_id: 'anonymous'`, and
+each entity's delete RLS is `{ created_by_id: '{{user.id}}' }` — no logged-in
+user and not even the admin key can satisfy it. **The records a deletion request
+most needs to remove are the ones that cannot be.** Schema and RLS, therefore
+the owner's. And there is no surface anywhere for a guest to ask.
+
+### Time-boxes
+
+None expired with work stranded. R11 was investigated for its full box and
+stopped on a judgment, recorded as mine.
+
+### Live readings on the bali fixture
+
+**None this run.** Nothing merged that the fixture can show: R12's nav order
+needs a guest visiting a published site with more than five pages enabled, and
+the fixture has fewer.
+
+### WHAT THE FIXTURE STILL LACKS — three runs, still no level 3
+
+  1. an experience guide, published — blocks A6 from Run 1
+  2. Good to know sections with `display` toggled on — blocks R3
+  3. FAQ entries — blocks R3
+  4. a celebration event with a photo and one without — blocks R6 item 10
+  5. **a guest who has not yet replied** — blocks A-NEW1 and A-NEW2
+  6. **the paris fixture published at all** — linen 0.012 never read live
+  7. **more than five enabled pages** — blocks R12's nav order
+  8. **music data** — blocks any R11 verification
+
+**Items 5, 6 and 7 unblock the most.** A published paris fixture with all pages
+enabled and one unreplied guest would make five held or merged packages
+verifiable at level 3 in a single sitting.
+
+### The Ava spec
+
+**`claude/ava-design-spec.md` was still not present** when this run started.
+`claude/` holds `homepage-copy.md` and `rsvp-experience-ruling.md` only. I used
+the rules stated inline in the prompt and wrote them into `PRODUCT_VOICE.md` so
+they exist in the repository rather than only in a prompt.
+
+### Death to Stock licence
+
+**Not checked and not checkable from here.** Whatever stock imagery the
+marketing pages carry, the licence terms are a contract the owner holds — I can
+see file paths, not entitlements. **It is the owner's to confirm**, and it
+should be confirmed before launch rather than after.
