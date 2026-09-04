@@ -2516,3 +2516,105 @@ silently wrong.
     which is defensible: a receipt is from Openinvite, not from the couple.
   - The collaborator invite and the guest-reply relay are the plainest and the
     most obviously system-generated.
+
+---
+
+## 2026-09-04 (Run 2) — A-NEW3 personalised celebration: SIZED, NOT BUILT
+
+**What "stable event IDs" requires today, which is the answer A-NEW3 asks for.**
+`WeddingCelebrationPage` builds its event list with THREE different id schemes:
+
+    ceremony    _id: 'ceremony'                  <- a literal
+    reception   _id: 'reception'                 <- a literal
+    other       _id: ev.id || `ev-${Math.random()}`   <- A RANDOM FALLBACK
+
+**The third one is the blocker.** An event with no `id` gets a fresh random
+identity on every render, so it cannot be matched against anything a guest
+replied to. Filtering Celebration by `event_responses` requires that every event
+has an id that is the same on the guest's device today as it was when they
+replied — and one in three code paths cannot promise that.
+
+`event_responses` is a real Guest column (`src/lib/attendees.js` documents it as
+the per-event overlay, with `plus_one_event_responses` alongside), so the
+response side is sound. **The event side is not.**
+
+**Size: medium, and the first half is a data change.** Give every event a stable
+id at creation, backfill the ones that have none, then filter. The filter itself
+is small. The backfill is a migration, so it is the owner's.
+
+**Risks, named:**
+  - **A guest who is invited to nothing sees an empty page.** The filtered view
+    needs a real empty state, not a blank list.
+  - **Ceremony and reception use literal ids.** If any wedding stores a custom
+    event whose id happens to be `'ceremony'`, the filter collides.
+  - **Plus-ones reply through a different column.** A filter reading only
+    `event_responses` would show the wrong set for a plus-one.
+  - Getting it wrong means a guest is told they are not invited to something
+    they are invited to, which is worse than showing everything.
+
+---
+
+## 2026-09-04 (Run 2) — B4 re-based: still nothing to remove
+
+Re-checked on current code after Run 1's finding. **No page carries more than
+one `<AvaButton` usage.** The Vows case the spec names was fixed before Run 1
+and its history is in the code. Checked a second shape — pages with more than
+one add/new/create primary — across Guests, Vendors, Budget, Schedule, To do and
+Moodboard: at most one each.
+
+**B4 removes nothing, for the second run in a row.** If the owner still
+perceives duplication, it is in a shape neither check covers, and naming the
+screen would settle it in minutes.
+
+---
+
+## 2026-09-04 (Run 2) — C6: guardrails, proposed and costed, none built
+
+**Rate limiting and Turnstile on guest-writable endpoints — MEASURED, and the
+picture is better than the ask assumes.** Every guest endpoint already carries
+`checkRateLimit`. Turnstile is on five of them:
+
+    turnstile + rate limit   rsvp-link-request, rsvp-poll-vote,
+                             song-request-submit, wedding-poll-comment,
+                             wedding-poll-vote
+    rate limit only          contact, rsvp-lookup, rsvp-submit,
+                             song-request-review, wedding-poll-results,
+                             wedding-attendees, my-guests-rsvp
+
+**`rsvp-lookup` is the one the roadmap singles out as a name-to-invite oracle,
+and it has rate limiting but no Turnstile.** `rsvp-submit` likewise. Those two
+are the gap. Cost: they already import the same helpers the five protected
+endpoints use, so it is a small change per endpoint plus a client-side widget on
+the RSVP lookup form — the friction question is the real cost, not the code.
+
+**Nightly export of all entities to owned storage.** Proposal: a scheduled
+Vercel cron hitting an admin-key endpoint that pages every entity and writes
+NDJSON to owned object storage, one file per entity per day, with a manifest
+recording row counts so a silent truncation is visible. Cost: one function, one
+cron entry, one storage bucket, and a decision about where "owned" is. **The
+row-count manifest is the part not to skip** — an export that silently exports
+nothing looks exactly like an export.
+
+**Feature flags — schema, therefore the owner's.** Proposal only: a single
+`FeatureFlags` entity keyed by name with a boolean and an optional account
+allowlist, read once at app start. Not built, not designed further, because
+adding an entity is outside every grant in this run.
+
+**Data deletion for couple and guest.** Size: large, and the hard part is not
+the delete. A couple's deletion cascades to guests, RSVPs, budget, vendors,
+schedule, polls, song requests and uploaded media; a guest's deletion must not
+break the couple's counts. Needs a written policy before code — what is deleted,
+what is anonymised, what is retained for the couple's own records, and how long
+it takes.
+
+**Deploy-freeze and schema-checkpoint rules — draft wording for CLAUDE.md:**
+
+> **Deploy freeze.** No merge to main in the 48 hours before a wedding date held
+> by any live account. The wedding-day surface is the one that cannot be rolled
+> back in time.
+>
+> **Schema checkpoint.** No Base44 schema change ships without a recorded
+> checkpoint: the entity, the field, its type, whether it is nullable, and the
+> read path that would break if it were absent. Unknown fields are silently
+> dropped by the platform, so a field that is added and not recorded is a field
+> that will look like a persistence bug months later.
