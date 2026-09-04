@@ -2392,3 +2392,60 @@ protect.
 with RSVP still pinned last (buildable now, small), or RSVP genuinely fourth
 with the pin removed (reverses the documented fix), or the two lists reconciled
 into one stored order first (a data change).
+
+---
+
+## 2026-09-04 (Run 2) — B0-ADJUST: every Ava action, and whether a function backs it
+
+**The roadmap's instruction is "remove every 'I can do that for you' that is not
+backed". Measured against the code, THERE IS NOTHING TO REMOVE.**
+
+**`AvaModal` is the only Ava surface that offers to do anything.** Its
+`ACTION_INSTRUCTIONS` tell the model exactly seven action types, and every one
+maps to a real executor in `confirmAction`'s `entityMap`:
+
+    offered in the prompt        executed by
+    -------------------------    --------------------------------------------
+    create_guest                 createGuest(cleaned)
+    create_budget_item           base44.entities.Budget.create(cleaned)
+    create_vendor                base44.entities.Vendor.create(cleaned)
+    create_schedule              base44.entities.Schedule.create(cleaned)
+    update_guest                 updateGuest(action.data.id, cleaned)
+    update_vendor                base44.entities.Vendor.update(action.data.id, cleaned)
+    navigate                     navigate(action.data.path)
+
+**Seven offered, seven backed. No orphan.**
+
+**And every write passes a validator first.** `validateAvaAction(entity, data,
+{ isUpdate })` runs before `entityMap` is consulted; a rejection sets the card
+to error and toasts the reason rather than writing. `ava-action-validation.mjs`
+pins the literal payloads a previous broken prompt produced as regression
+fixtures, so a future prompt edit that reintroduces them fails in CI.
+
+**Nothing executes without a tap.** The prompt ends "Always describe what you
+will do before the ACTION block. The user must confirm before anything
+executes", and `ActionCard` renders pending state with confirm and cancel.
+
+**The other Ava surfaces offer no actions at all:**
+
+    AvaChatPod.jsx               0 ACTION instructions, 0 writes  — chat only
+    AvaButton.jsx                0 / 0 — it is a button, it opens a surface
+    AIVowsSpeechesAssistant.jsx  0 / 0 — generates text into a field the couple edits
+
+**So the "unbacked offer" defect the roadmap describes does not exist in the
+current code.** That is the deliverable: the list, and the finding that it is
+clean.
+
+**WHAT IS NOT COVERED, AND IT IS THE LIVE RISK.** The new standing constraint
+says Ava may only say what she can READ, and any output built from a norm
+rather than this wedding's data is a defect. **The action surface is bounded;
+the PROSE surface is not.** `AvaChatPod`'s system prompt invites planning
+advice, and `DailyUpdate`'s brief asks for a "forgottenDetail" — literally
+"one thing couples often forget at this stage", which is a norm by
+construction, not a fact about this wedding.
+
+R7 closed the worst of that by not calling the model at all when there is
+nothing to read. **`forgottenDetail` and the chat pod's advice remain
+norm-derived by design and are the next thing to look at** under the new
+constraint. Filed, not changed — narrowing what Ava may say in prose is a
+product decision, not a terminal's.
