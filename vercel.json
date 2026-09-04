@@ -9,7 +9,7 @@
     },
     {
       "source": "/w/(.*)",
-      "destination": "/guest-shell.html"
+      "destination": "/api/guest-page"
     },
     {
       "source": "/rsvp/(.*)",
