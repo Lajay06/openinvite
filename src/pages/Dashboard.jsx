@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
+import Briefing from "@/components/dashboard/Briefing";
 import AvaModal from "@/components/layout/AvaModal";
 import RSVPChart from "../components/dashboard/RSVPChart";
 import BudgetSummary from "../components/dashboard/BudgetSummary";
@@ -93,6 +94,17 @@ export default function Dashboard() {
   // Stores whose load failed this attempt. Named on the page rather than left
   // to a toast that scrolls away: the zeroes they leave behind sit here for as
   // long as the couple is reading them.
+  //
+  // ONE list, not two. This branch arrived with its own `unseen` state and its
+  // own Promise.allSettled block; both were superseded by #659, which landed
+  // the same correctness fix through loadDashboardSources while this PR was
+  // held. The rebase drops the duplicate and the briefing reads THIS list.
+  //
+  // That is not merely deduplication — it fixes a real defect in the version
+  // being dropped. The old `unseen` carried LABELS ('your budget'), while
+  // buildBriefing tests KEYS (`unseen.includes('budget')`), so the check that
+  // stops the briefing calling a FAILED store an empty one could never match.
+  // loadDashboardSources returns the keys, so it now does.
   const [unseenSources, setUnseenSources] = useState([]);
   const [avaOpen, setAvaOpen] = useState(false);
 
@@ -234,6 +246,14 @@ export default function Dashboard() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
       <DashboardPageHeader title="Overall" subtitle="Your wedding planning at a glance" />
+
+      {/* THE BRIEFING IS THE PAGE'S FIRST THING. Overall is the one place, and
+          the first thing on it answers "what needs me today" before any module
+          card offers somewhere to go. */}
+      <Briefing
+        tasks={tasks} schedule={schedule} guests={guests}
+        budget={budget} vendors={vendors} unseen={unseenSources} loading={loading}
+      />
 
       {/* Some stores loaded and some did not. The cards below are built from
           partial data, so their zeroes are not facts about this wedding — say

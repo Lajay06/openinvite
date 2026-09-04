@@ -170,9 +170,14 @@ const AUTO_ROUTE_EXCLUDE = new Set([
 const AuthenticatedApp = () => {
   const location = useLocation();
 
-  // Lowercase /dashboard → canonical dashboard entry point (Daily update)
-  if (location.pathname === '/dashboard') {
-    return <Navigate to="/DailyUpdate" replace />;
+  // CALM PASS PR1 — OVERALL IS THE ONE PLACE. The briefing that lived on its
+  // own page is now the first thing on Overall, so /DailyUpdate redirects here
+  // rather than showing a second answer to the same question. The route STAYS
+  // and the page component stays in the tree: an existing bookmark, an email
+  // link or a collaborator's landing path still arrives somewhere correct.
+  // Nothing is deleted.
+  if (location.pathname === '/dashboard' || location.pathname === '/DailyUpdate') {
+    return <Navigate to="/Dashboard" replace />;
   }
 
   // ── Public pages — no auth check, render immediately ─────────────────────────
