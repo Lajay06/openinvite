@@ -41,6 +41,7 @@ export default function WeddingFAQPage({ weddingDetails, theme, typography, univ
         {qna.length > 0 ? (
           <SectionReveal universeConfig={universeConfig} disabled={!motionOn}>
             <OptionAccordion
+              showEmptyState={false}
               headingSize="1.125rem"
               headingWeight={typography.headingWeight}
               headingStyle={typography.headingStyle || 'normal'}

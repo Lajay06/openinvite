@@ -75,6 +75,9 @@ export function OptionAccordion({
   faceFamily = font.family,
   bodyFamily,
   skin,
+  // TRUE by default, so every selection surface keeps rule 4 exactly as it was.
+  // A content accordion — one with nothing to choose — passes false.
+  showEmptyState = true,
 }) {
   const [openKey, setOpenKey] = useState(null); // rule 1: collapsed by default
   const toggle = (key) => setOpenKey((cur) => (cur === key ? null : key)); // rule 2
@@ -82,7 +85,7 @@ export function OptionAccordion({
   return (
     <AccordionCtx.Provider value={{
       openKey, toggle, headingSize, headingWeight, headingStyle,
-      faceFamily, bodyFamily: bodyFamily || faceFamily, skin: resolved,
+      faceFamily, bodyFamily: bodyFamily || faceFamily, skin: resolved, showEmptyState,
     }}>
       <div style={{ borderTop: `1px solid ${resolved.ruleColor}` }}>{children}</div>
     </AccordionCtx.Provider>
@@ -91,7 +94,27 @@ export function OptionAccordion({
 
 /**
  * One section. `summary` is the list of choices shown while collapsed (rule 5).
- * Pass [] and it renders "No info" (rule 4) — never nothing at all.
+ *
+ * RULE 4 IS ABOUT A CHOICE NOBODY MADE, NOT ABOUT AN EMPTY SECTION. It used to
+ * read "pass [] and it renders 'No info' — never nothing at all", keyed only on
+ * `summary`. That is right for a SELECTION accordion, where an empty summary
+ * means the couple chose nothing. It is wrong for a CONTENT accordion, where
+ * there is nothing to select and the substance lives in `children`.
+ *
+ * Three consumers pass no summary at all — the guest FAQ, the guest Good to
+ * know page and the dashboard Q&A — so every collapsed section on those
+ * surfaces carried the words "No info" underneath a section that was full of
+ * content. Both guest pages carry comments saying the chip did not apply to
+ * them; neither could switch it off, because the rule was absolute.
+ *
+ * The fix is EXPLICIT, not inferred. Keying on "does this section have
+ * children" was tried and is wrong: `ThemeSection` renders its full pill list
+ * as children whether or not anything is selected, so a children-count test
+ * would suppress "No info" on the very surface the rule exists for. A content
+ * accordion knows it is one; the component cannot work it out.
+ *
+ * So the wrapper takes `showEmptyState`, defaulting to TRUE so every existing
+ * selection surface is untouched, and the three content surfaces pass false.
  */
 /**
  * `action` renders to the RIGHT of the header, as a SIBLING of the header
@@ -103,7 +126,7 @@ export function OptionAccordion({
 export function OptionAccordionSection({ sectionKey, title, summary = [], action = null, children }) {
   const ctx = useContext(AccordionCtx);
   if (!ctx) throw new Error('OptionAccordionSection must be inside an OptionAccordion');
-  const { openKey, toggle, headingSize, headingWeight, headingStyle, faceFamily, bodyFamily, skin } = ctx;
+  const { openKey, toggle, headingSize, headingWeight, headingStyle, faceFamily, bodyFamily, skin, showEmptyState } = ctx;
   const isOpen = openKey === sectionKey;
 
   return (
@@ -141,8 +164,9 @@ export function OptionAccordionSection({ sectionKey, title, summary = [], action
           {summary.map((s, i) => <SummaryChip key={i} label={s} faceFamily={bodyFamily} skin={skin} />)}
         </div>
       )}
-      {/* rule 4 */}
-      {!isOpen && summary.length === 0 && (
+      {/* rule 4 — a choice nobody made. Suppressed entirely on surfaces that
+          have nothing to choose; see `showEmptyState` on the wrapper. */}
+      {!isOpen && summary.length === 0 && showEmptyState && (
         <p style={{ fontSize: 12, color: skin.mutedColor, fontFamily: bodyFamily, margin: '0 0 16px' }}>
           No info
         </p>
