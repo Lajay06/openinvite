@@ -13,6 +13,7 @@ import BudgetSummary from "../components/dashboard/BudgetSummary";
 import UpcomingTasks from "../components/dashboard/UpcomingTasks";
 import RecentActivity from "../components/dashboard/RecentActivity";
 import { getMyRecords, getMyGuestsWithRsvp } from "@/lib/resolveMyWedding";
+import { loadDashboardSources, formatSourceList } from "@/lib/dashboardSources";
 import { tallyAttendees } from "@/lib/guestRsvpTally";
 import { resolveAttendees } from "@/lib/attendees";
 import { useCollaboratorContext, hasPagePermission } from "@/lib/collaboratorContext";
@@ -89,6 +90,10 @@ export default function Dashboard() {
   const [moodboardItems, setMoodboardItems] = useState([]);
   const [questionnaireResponses, setQuestionnaireResponses] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Stores whose load failed this attempt. Named on the page rather than left
+  // to a toast that scrolls away: the zeroes they leave behind sit here for as
+  // long as the couple is reading them.
+  const [unseenSources, setUnseenSources] = useState([]);
   const [avaOpen, setAvaOpen] = useState(false);
 
   const collab = useCollaboratorContext();
@@ -133,6 +138,7 @@ export default function Dashboard() {
   };
 
   const init = async () => {
+    setUnseenSources([]);
     try {
       if (isCollaborating) {
         // No welcome banner/onboarding-tips prompt — those are owner-onboarding
@@ -153,19 +159,41 @@ export default function Dashboard() {
       }
       const currentUser = await base44.auth.me();
       if (currentUser?.id) identify(currentUser.id, { email: currentUser.email, name: currentUser.full_name });
-      const [guestData, budgetData, scheduleData, taskData, noteData, vendorData, moodboardData, questionnaireData] = await Promise.all([
-        getMyGuestsWithRsvp(), getMyRecords('Budget'), getMyRecords('Schedule'),
-        getMyRecords('Task'), getMyRecords('Note'), getMyRecords('Vendor'),
-        getMyRecords('MoodboardItem'), fetchQuestionnaireResponses(),
+      // Promise.all rejected on the FIRST store that failed and discarded the
+      // seven that had already succeeded — one flaky request and the whole page
+      // rendered as a brand-new, empty account behind a single toast. Every
+      // stat card then read zero, which is a CLAIM about this couple's wedding.
+      //
+      // loadDashboardSources settles all of them: what loaded is shown, and
+      // what did not is named above the numbers it is missing from. It needs
+      // { strict: true } — the soft default turns a transport failure into []
+      // one layer down, which arrives here indistinguishable from success.
+      const [{ data, failed }, questionnaireData] = await Promise.all([
+        loadDashboardSources({
+          guests:    () => getMyGuestsWithRsvp(undefined, undefined, { strict: true }),
+          budget:    () => getMyRecords('Budget', undefined, undefined, { strict: true }),
+          schedule:  () => getMyRecords('Schedule', undefined, undefined, { strict: true }),
+          tasks:     () => getMyRecords('Task', undefined, undefined, { strict: true }),
+          notes:     () => getMyRecords('Note', undefined, undefined, { strict: true }),
+          vendors:   () => getMyRecords('Vendor', undefined, undefined, { strict: true }),
+          moodboard: () => getMyRecords('MoodboardItem', undefined, undefined, { strict: true }),
+        }),
+        // Deliberately outside the classification: this one returns [] rather
+        // than rejecting, by design. Inside the map it could never fail, which
+        // would make a total outage read as merely partial.
+        fetchQuestionnaireResponses(),
       ]);
-      setGuests(guestData); setBudget(budgetData); setSchedule(scheduleData);
-      setTasks(taskData); setNotes(noteData); setVendors(vendorData);
-      setMoodboardItems(moodboardData); setQuestionnaireResponses(questionnaireData);
+      setGuests(data.guests || []); setBudget(data.budget || []); setSchedule(data.schedule || []);
+      setTasks(data.tasks || []); setNotes(data.notes || []); setVendors(data.vendors || []);
+      setMoodboardItems(data.moodboard || []); setQuestionnaireResponses(questionnaireData);
+      setUnseenSources(failed);
     } catch {
       toast.error("Failed to load your dashboard data");
     }
     setLoading(false);
   };
+
+  const retryLoad = () => { setLoading(true); init(); };
 
   const stats = React.useMemo(() => {
     // Counts ATTENDEES, not Guest rows: a plus-one is a person at the wedding,
@@ -206,6 +234,37 @@ export default function Dashboard() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
       <DashboardPageHeader title="Overall" subtitle="Your wedding planning at a glance" />
+
+      {/* Some stores loaded and some did not. The cards below are built from
+          partial data, so their zeroes are not facts about this wedding — say
+          which ones we could not read rather than letting them stand. Same
+          copy shape and same offer as DailyUpdate's banner, deliberately: a
+          couple meets these two pages minutes apart. */}
+      {!loading && unseenSources.length > 0 && (
+        <div style={{
+          background: '#FFFFFF', padding: '16px 32px',
+          borderBottom: '1px solid rgba(10,10,10,0.12)',
+          display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap',
+        }}>
+          <span style={{
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: 13, color: 'rgba(10,10,10,0.6)',
+          }}>
+            Your {formatSourceList(unseenSources)} could not be loaded, so the numbers below are incomplete.
+          </span>
+          <button
+            onClick={retryLoad}
+            style={{
+              border: '1px solid rgba(10,10,10,0.45)', background: 'transparent',
+              color: '#0A0A0A', borderRadius: 999, padding: '6px 14px',
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            }}
+          >
+            Try again
+          </button>
+        </div>
+      )}
 
       {/* Stat cards — 2-col on mobile, 4-col on desktop */}
       <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>

@@ -73,10 +73,17 @@ export async function runDashboardSources() {
     swallowing.status === 'ok', 'soft loaders cannot report failure, by construction');
 
   // ── the soft default is the other ~12 callers' contract ─────────────────
-  // Only DailyUpdate opts in. If a second page ever adds strict:true it must be
-  // a deliberate decision, not a copy-paste — every other page renders an empty
-  // list on failure by design, and flipping that silently would turn a degraded
-  // page into a thrown one.
+  // Opting in must be a deliberate decision, not a copy-paste — every other
+  // page renders an empty list on failure by design, and flipping that silently
+  // would turn a degraded page into a thrown one.
+  //
+  // Two pages have made that decision, and for the same reason: both render
+  // COUNTS drawn from several stores at once, where a swallowed failure prints
+  // a zero that reads as a fact about the couple's wedding. Dashboard joined
+  // second: its Promise.all rejected on the first failing store and discarded
+  // the rest, so any one flaky request emptied the entire page. Anywhere that
+  // renders a list, an empty list is honest and the soft default is right;
+  // this pin is what keeps that the default.
   const { readFileSync, readdirSync, statSync } = await import('fs');
   const { resolve, dirname, join } = await import('path');
   const { fileURLToPath } = await import('url');
@@ -89,8 +96,9 @@ export async function runDashboardSources() {
     .filter((f) => !/resolveMyWedding|dashboardSources/.test(f))
     .filter((f) => /strict:\s*true/.test(readFileSync(f, 'utf8')))
     .map((f) => f.slice(SRC.length + 1));
-  check('only DailyUpdate opts into strict loaders; the soft default is untouched elsewhere',
-    strictCallers.length === 1 && strictCallers[0] === 'pages/DailyUpdate.jsx',
+  const STRICT_BY_DECISION = ['pages/DailyUpdate.jsx', 'pages/Dashboard.jsx'].sort();
+  check('only the two count-rendering pages opt into strict loaders; the soft default is untouched elsewhere',
+    JSON.stringify([...strictCallers].sort()) === JSON.stringify(STRICT_BY_DECISION),
     strictCallers.join(', ') || 'none');
 
   // ── user-facing copy: the source list must read as English ──────────────
