@@ -3310,3 +3310,88 @@ the field already exists and is already populated, and it makes the §1
 contradiction visible either way. Everything else follows the same three steps.
 
 **PROPOSED ONLY. Nothing in `base44/entities/` was touched.**
+
+---
+
+## 2026-09-05 (Run 4) — TRACK D. D0 report, and the specification I could not find.
+
+**FIRST, AN HONEST GAP.** The instruction says "as already specified". I looked
+for that specification and could not find it: not in `scratchpad/DECISION-LOG.md`,
+not in any `*.md` in the repo, not in the git history of any branch (the only
+"Track D" in this repo's history is the 2026-08 Guest-PII migration, a different
+thing entirely), and not in memory. It was given in a session whose prompt was
+never written down. **I did not invent a brief and then report against it as
+though it were the owner's.** D0 below is a real report on the ground it would
+sit on; the reading I built D1 to is stated in D1 and is mine, not the owner's.
+
+### D0 — the ground sample content would land on
+
+**A new couple's site is completely empty, and every page says so.** The
+onboarding payload (`src/lib/onboardingSave.js`'s `buildWeddingDetailsPayload`)
+writes names, date, venue, guest count, style, universe, and mode. It writes no
+story, no schedule, no FAQ, no registry, no music, no policies, no photos. So
+the first thing a couple sees after choosing a universe is thirteen guest pages
+in their chosen palette with nothing on them — and the builder preview shows
+them exactly that.
+
+**This is the strongest argument FOR sample content and it is not a small one.**
+A universe is sold on how it looks with content in it. An empty bali and an
+empty mykonos differ by a ground color and a section mark. The product's whole
+proposition is invisible at the exact moment a couple is deciding whether to
+pay.
+
+**AND THE PRODUCT HAS ALREADY BEEN BURNED BY THIS EXACT CLASS OF THING.**
+`793148c` / #576, "stop publishing words the couple never wrote", found three
+sites where our copy published as the couple's:
+
+  · `WeddingHomePage`'s tagline published *"We are overjoyed to celebrate with
+    you."* — our sentence, in the couple's first person, read by their guests as
+    theirs. The builder showed the same sentence as a GREY PLACEHOLDER, which
+    conventionally means "an example", while it published verbatim.
+  · `StudioWebsite`'s draft default pre-filled `welcomeMessage` with the same
+    sentence, so a couple's draft carried our words **persistably** — one save
+    away from being genuinely theirs in the database.
+  · Music's request message was published to guests while the editor's
+    placeholder said something else entirely.
+
+That is not a cautionary analogy. It is the same feature, shipped by accident,
+and the failure mode was precisely "sample copy on a published site". Any
+deliberate sample-content system has to be built as though that already
+happened, because it did.
+
+**One live instance remains, by explicit ruling.**
+`DEFAULT_MUSIC_REQUEST_MESSAGE` (`src/lib/musicCopy.js`) still publishes to
+guests when a couple has not set a request message. #576 left it deliberately —
+"both rulings followed literally rather than either revised" — and its own
+header documents why it is a PRE-FILLED EDITABLE VALUE rather than a
+placeholder, and why it uses `??` so that a deliberately cleared message
+publishes nothing while an unset one takes the default. **That distinction is
+the single most important piece of prior art for Track D**: it is the existing
+answer to "when may our words appear on a couple's site", and the answer is
+"only when they are visible and editable in the couple's own editor, never as
+grey placeholder text".
+
+**What exists that is NOT sample content, so nobody mistakes it for a head
+start:**
+
+  · `src/lib/mockUniverseData.js` — palette/type/tagline metadata for the three
+    `/mocks/universe/{a,b,c}` design mocks. No wedding content, and its own
+    header says mock-only.
+  · `scripts/lib/renderHarness.mjs`'s `PUBLISHED_WEDDING` — the test seed. It
+    IS content-shaped and it is the closest thing that exists, but it is a test
+    fixture: it declares its own blind spots ("almost no per-page content"), it
+    lives in `scripts/`, and it stamps `is_test` on everything it writes.
+    Reusing it as product sample content would tie a customer-visible surface
+    to a file whose whole job is to change whenever a guard needs it to.
+  · `EmptyState.jsx` (#647, still open) — the other answer to the same problem.
+    Sample content and a good empty state are alternatives on the same page,
+    not layers; whichever a couple meets first is the one that has to be right.
+
+**The constraint that shapes everything.** Base44's entity store is one
+database shared by previews and production
+(BASE44_PLATFORM_NOTES.md — "every preview click-through writes real production
+data"). So sample content must never be written to `WeddingDetails` to be
+shown. If it is stored to be rendered, it is one publish away from being
+served, and the couple has no way to tell our words from theirs. **Sample
+content has to be data the product renders WITHOUT persisting, or it repeats
+#576 with more surface area.**
