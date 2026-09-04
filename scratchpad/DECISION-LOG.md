@@ -2786,3 +2786,51 @@ split**, because the current split at least looks deliberate.
 builder preview shows the playlist-and-a-link page while guests get the full
 request form. **The preview is not a preview of the published page for this one
 route.**
+
+---
+
+## 2026-09-05 (Run 3) — C3-ADD: SPF, DKIM and DMARC read from live DNS (REPORT ONLY)
+
+Read directly from DNS, not from configuration:
+
+    _dmarc.openinvite.com.au   TXT  "v=DMARC1; p=none;"
+    openinvite.com.au          TXT  google-site-verification only — NO SPF
+    send.openinvite.com.au     TXT  "v=spf1 include:amazonses.com ~all"
+    send.openinvite.com.au     MX   feedback-smtp.ap-northeast-1.amazonses.com
+    resend._domainkey…         TXT  a valid RSA public key — DKIM IS PUBLISHED
+    openinvite.com.au          MX   SMTP.GOOGLE.COM
+
+**DKIM is configured and DMARC exists. Two things are wrong.**
+
+**1. DMARC IS `p=none`, WHICH ENFORCES NOTHING.** It is monitor-only: a receiver
+that finds a failing message is told to take no action. **Anyone can send mail
+as openinvite.com.au today and it will not be rejected on our policy.** For a
+product whose central artifact is an email a stranger receives, and which sends
+**as the couple** from our domain, that is the gap that matters. There is also
+no `rua=` reporting address, so nobody is even collecting the failure data
+`p=none` exists to gather.
+
+**The path is the standard one and it is not a code change:** add `rua=`, watch
+reports until legitimate senders are known to align, then move `p=none` →
+`p=quarantine` → `p=reject`. **Moving straight to `p=reject` without the
+reporting window risks silently dropping real invitations**, which is worse than
+the current state.
+
+**2. SPF IS ON `send.` AND NOT ON THE APEX, BUT MAIL IS SENT FROM THE APEX.**
+Every `FROM` in the code is `hello@openinvite.com.au` — the apex — and the apex
+TXT has no `v=spf1` record at all. The SPF that exists is on
+`send.openinvite.com.au`, the Resend/SES subdomain.
+
+**Whether that is a real failure depends on alignment mode**, which I cannot
+settle from DNS alone: DKIM is what usually carries DMARC alignment for Resend,
+and DKIM here is published and valid. So mail is probably passing on DKIM
+alignment while SPF is neutral for the apex. **With `p=none` nothing is being
+enforced either way, so no one would notice yet — and that is precisely what
+makes it dangerous to move to `p=reject` before checking.**
+
+**What the owner should verify in the Resend dashboard, which I cannot reach:**
+whether the verified domain is the apex or `send.`, and which `FROM` Resend
+considers aligned. If Resend expects `hello@send.openinvite.com.au` and the code
+sends from the apex, tightening DMARC would break every email the product sends.
+
+**Not changed. DNS is not in this repository and would be a production change.**
