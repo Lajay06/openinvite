@@ -301,46 +301,24 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
                 {/* Events */}
                 {events.map((ev, ei) => {
                   const timeStr = [fmtTime(ev.startTime), ev.endTime && fmtTime(ev.endTime)].filter(Boolean).join(' – ');
-                  const hasPhoto = !!ev._photoUrl;
 
                   return (
                     <div key={ev._id} style={{ marginBottom: ei < events.length - 1 ? 72 : 0 }}>
                       {ei > 0 && <div style={{ height: 1, background: `${lt}08`, marginBottom: 72 }} />}
 
                       {/* ── Card with photo ─────────────────────────────────── */}
-                      {hasPhoto ? (
-                        <div className="cel-grid">
-                          <div className="cel-photo">
-                            <img
-                              src={ev._photoUrl}
-                              alt={ev.venueName || ev._title}
-                              onError={e => {
-                                // On photo error, collapse photo col and expand details
-                                const grid = e.target.closest('.cel-grid');
-                                if (grid) {
-                                  e.target.closest('.cel-photo').style.display = 'none';
-                                  const det = grid.querySelector('.cel-details');
-                                  if (det) {
-                                    det.style.paddingLeft = '28px';
-                                    det.style.borderLeft = `2px solid ${acc}50`;
-                                    det.style.gridColumn = '1 / -1';
-                                  }
-                                }
-                              }}
-                            />
-                          </div>
-                          <EventDetails ev={ev} timeStr={timeStr} lt={lt} acc={acc} hFont={hFont} bFont={bFont} hWt={hWt} />
-                        </div>
-                      ) : (
-                        /* ── Type-only card — full width, accent left rule ── */
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr' }}>
-                          <EventDetails
-                            ev={ev} timeStr={timeStr} lt={lt} acc={acc} hFont={hFont} bFont={bFont} hWt={hWt}
-                            noPhoto
-                            style={{ paddingLeft: 28, borderLeft: `2px solid ${acc}50` }}
-                          />
-                        </div>
-                      )}
+                      {/* OWNER ITEM 10 — the location photo is gone from each
+                          event block. Every event now renders the type-only
+                          card: full width, accent left rule. The photo branch
+                          and its onError collapse went with it, because both
+                          existed only to lay out around an image. */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr' }}>
+                        <EventDetails
+                          ev={ev} timeStr={timeStr} lt={lt} acc={acc} hFont={hFont} bFont={bFont} hWt={hWt}
+                          noPhoto
+                          style={{ paddingLeft: 28, borderLeft: `2px solid ${acc}50` }}
+                        />
+                      </div>
                     </div>
                   );
                 })}
