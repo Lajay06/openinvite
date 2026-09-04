@@ -2289,3 +2289,54 @@ and the merge above closes it — but only the merge does, not the route change
 alone.
 
 **Nothing built. GuestMusic untouched, as R4 requires either way.**
+
+---
+
+## 2026-09-04 (Run 2) — R5 share unfurl: BUILT, NOT MERGED, on branch feat/guest-unfurl @ a5733f6
+
+**The condition that took it out of AUTO: it breaks an existing test.** The
+MINOR CLASS requires "breaks no existing test", and
+`tests/persistence/guest-shell.mjs` asserts
+`/w/(.*)` rewrites to `/guest-shell.html` exactly. Serving that route through a
+function necessarily changes the assertion.
+
+**And the change it makes is bigger than its diff.** It puts a serverless hop
+in front of 100% of guest traffic — the product's front door — where
+`functions: 0` today. Run 1 called that an owner decision about the delivery
+path; R5 authorized it, but the broken-test condition is the boundary and the
+run says not to negotiate with it.
+
+**So the work exists and is unmerged.** Branch `feat/guest-unfurl`, no PR
+opened, because #647 is already open and the run holds one-PR-at-a-time.
+
+**What it does, if the owner takes it:**
+
+  - `api/guest-page.js` (new, 130 lines) serves `/w/*`.
+  - **Privacy fails closed.** Names, date and image appear ONLY on positive
+    confirmation that `websitePasswordEnabled !== true`. The flag set, the
+    lookup failed, the field missing, the record absent, ambiguous slug,
+    `is_test`, `websiteEnabled !== true` — every one of those serves the bare
+    card. It deliberately does NOT consult `websiteGateIsOn`, because that
+    reports the gate's runtime result and `api/wedding-by-slug.js` documents a
+    FAIL-OPEN: `websitePasswordEnabled` true with no stored credential serves
+    the site publicly. A card keyed on the effective gate would leak a
+    protected couple's names into every chat app that touched the link.
+  - **Delivery fails safe.** No admin key, Base44 slow (2.5s abort), non-200,
+    malformed slug, anything thrown — it returns the ORIGINAL shell bytes
+    unchanged. The worst outcome it can produce is today's behavior.
+  - **The image is the couple's or absent.** No universe image, no stock photo:
+    a universe image is Openinvite's asset, and a stranger's villa on a
+    friend's invitation is worse than a text card. `twitter:card` only becomes
+    `summary_large_image` when an image is actually supplied.
+  - The test's assertion was rewritten to the invariant it was protecting —
+    "a guest route is never served the marketing homepage" — with both
+    acceptable destinations named, rather than one string. `/rsvp/` stays
+    static; it has nothing to unfurl.
+
+**What a protected wedding would show:** exactly today's card — title "Wedding
+invitation", og:title "You are invited", the generic description, no image,
+`twitter:card: summary`. Indistinguishable from an unprotected wedding whose
+lookup failed, which is the point.
+
+**Not verified live.** The unfurl fetch R5 asks for needs this deployed; it is
+not. `test:ci` passes with the updated guard.
