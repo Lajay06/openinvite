@@ -2449,3 +2449,70 @@ nothing to read. **`forgottenDetail` and the chat pod's advice remain
 norm-derived by design and are the next thing to look at** under the new
 constraint. Filed, not changed — narrowing what Ava may say in prose is a
 product decision, not a terminal's.
+
+---
+
+## 2026-09-04 (Run 2) — C3: the email inventory (REPORT ONLY)
+
+Every email the system can send, what backs it, and its one job.
+
+| email | template | universe-styled | plain-text alt | its one job |
+|---|---|---|---|---|
+| **Invitation** | `src/lib/emailTemplate.js` type `invite` | **YES** | **YES** (`text`) | get the guest to open the site |
+| RSVP reminder | same, `reminder` | YES | YES | chase a reply |
+| Details update | same, `update` | YES | YES | say what changed |
+| Thank you, attending | same, `thank_you_attending` | YES | YES | close the loop |
+| Thank you, declined | same, `thank_you_declined` | YES | YES | close the loop kindly |
+| **Welcome (day 0)** | `api/emails/onboarding-day1.js` | **no** | **no** | get the couple started |
+| Onboarding day 3 | `api/emails/onboarding-day3.js` | no | no | nudge |
+| Onboarding day 7 | `api/emails/onboarding-day7.js` | no | no | nudge |
+| Purchase confirmation | `api/emails/purchase-confirmation.js` | partial | no | receipt |
+| Gift receipt | `api/emails/gift-receipt.js` | no | no | receipt |
+| Gift reveal | `api/emails/gift-reveal.js` | no | no | reveal a gift |
+| Collaborator invite | `api/send-collaborator-invite.js` | no | no | bring a helper in |
+| Guest reply relay | `api/send-guest-reply.js` | no | no | forward a guest's note |
+
+**OTP / auth email: not in this repository.** Base44 owns the login flow, so
+its OTP mail is not ours to inventory or style. Flagged because it is the FIRST
+email a couple ever receives from the product and we neither control nor
+measure it.
+
+**THE PLAIN-TEXT GAP IS THE BIGGEST FINDING.** The five guest-facing
+invitation-family emails build a real `text` alternative — `renderInvitationEmail`
+returns `{ html, text }`. **Every other email is HTML only, and no sender passes
+`text:` to Resend at all.** Grepped `api/send-*.js` and `api/on-signup.js`:
+zero occurrences. So even the invitation's text alternative is BUILT AND NOT
+SENT unless a caller passes it — worth confirming per-caller before assuming
+guests get it.
+
+An HTML-only email is a deliverability and accessibility liability: some clients
+and most screen-reader workflows prefer `text/plain`, and its absence is a
+recognised spam signal.
+
+**Sending identity.** One domain, two shapes:
+
+    FROM = 'Openinvite <hello@openinvite.com.au>'          most system mail
+    FROM = `${fromName} <hello@openinvite.com.au>`         invitations, where
+                                                           fromName is the couple
+
+**SPF / DKIM / DMARC are not configured in this repository** and cannot be —
+they are DNS records on `openinvite.com.au` plus Resend's domain verification.
+**I cannot verify them from here and did not.** They must be checked in the
+Resend dashboard and at the DNS provider. Given every invitation is sent
+*as the couple* from our domain, DMARC alignment is the thing most likely to be
+silently wrong.
+
+**Anything still Base44-looking or generic, as C3 asks:**
+
+  - **The welcome email is the worst of them.** Not universe-styled, no text
+    alternative, and it is the one carrying the address-as-name defect: it
+    renders `name.split(' ')[0]`, so a `full_name` holding an email address
+    prints the address where a first name belongs. The owner's own account has
+    a real `full_name` ("La Jay"), so the defect appears on accounts where
+    Base44 seeds `full_name` from the address — new signups, which is exactly
+    who receives this email. **Still unconfirmed on a real fixture account;
+    reading a second account's `User` record was never authorized.**
+  - The three gift/receipt emails share the shell but carry no universe styling,
+    which is defensible: a receipt is from Openinvite, not from the couple.
+  - The collaborator invite and the guest-reply relay are the plainest and the
+    most obviously system-generated.
