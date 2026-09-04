@@ -2340,3 +2340,55 @@ lookup failed, which is the point.
 
 **Not verified live.** The unfurl fetch R5 asks for needs this deployed; it is
 not. `test:ci` passes with the updated guard.
+
+---
+
+## 2026-09-04 (Run 2) — R2 menu order: REPORT ONLY, with the numbers
+
+**R2's test, answered from the code.** `MAX_VISIBLE_LINKS = 5`. RSVP is pinned
+and never enters the overflow, so:
+
+    restSlots     = MAX_VISIBLE_LINKS - 1 = 4
+    visibleLinks  = rest.slice(0, 4) + [RSVP]
+    overflowLinks = rest.slice(4)
+
+**Position four DOES sit inside the visible slice** — the slice is five. So the
+literal test R2 sets is passed. **But applying the order does not put RSVP
+fourth, and cannot, without weakening the pin R2 forbids weakening.**
+
+Simulated against the owner's exact order:
+
+    requested : Home, Our Story, Celebration, RSVP, Stay, Getting here,
+                Experiences, Styling, Polls, Music, FAQ, Good to know
+    VISIBLE   : Home, Our Story, Celebration, Stay, RSVP
+    behind More: Getting here, Experiences, Styling, Polls, Music, FAQ,
+                Good to know
+
+**RSVP renders at visible position 5 of 5, not 4.** The pin appends it after
+the slice by construction — `[...rest.slice(0, restSlots), rsvpLink]` — so its
+index in the couple's list changes nothing about where a guest sees it. The
+only way to render RSVP fourth is to stop pinning it, which is the overflow fix
+R2 says not to weaken.
+
+**And "Stay" is promoted into the visible row by the requested order**, taking
+the fourth slot, while "Getting here" drops behind More. That is a real
+consequence of the order the owner asked for and he should see it before it
+ships.
+
+**A second obstacle R2 does not address.** The nav is still two lists reconciled
+at render: `pageLinks` from each couple's stored `enabledPages`, then `subLinks`
+from derived flags, deduped on label, with a comment stating the intent —
+*"pageLinks come first, so the couple's own page order wins the position."*
+Imposing a fixed order overrides every couple's own ordering, which is a
+decision about their data, not a layout change.
+
+**So: the order is implementable, its effect is not what the ruling expects, and
+one of its consequences is a page moving behind More.** Reporting rather than
+merging, because R2's premise — that position four is reachable — is not true of
+the rendered nav, and the difference is exactly the thing the pin was built to
+protect.
+
+**What the owner should decide:** whether he wants the other eleven reordered
+with RSVP still pinned last (buildable now, small), or RSVP genuinely fourth
+with the pin removed (reverses the documented fix), or the two lists reconciled
+into one stored order first (a data change).
