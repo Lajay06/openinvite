@@ -70,6 +70,7 @@ function stepsIn(yml) {
 const EXCLUDED = [
   [/^npm ci$/, 'dependency install; the local tree is already installed'],
   [/^npx playwright install/, 'CI-only browser provisioning'],
+  [/^npm run audit:ci$/, 'hits the npm registry; slow and network-dependent, so CI-only'],
 ];
 
 // GitHub expression substitution. An unresolved ${{ }} must never be handed to
