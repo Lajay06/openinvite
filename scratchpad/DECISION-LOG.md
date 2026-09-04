@@ -2735,3 +2735,54 @@ error, ~8 minutes.
 reading it before anything. I used the voice rules stated inline in the prompt
 instead — numbers not adjectives, no pleasantries, no exclamation marks, no
 percentages, Ava never sells.
+
+---
+
+## 2026-09-05 (Run 3) — R11 Music: SIZED, NOT BUILT, and the reason is styling not logic
+
+R11 grants the real fix: give `WeddingMusicPage` the song-request form, then
+remove the route override. **The form's logic ports cleanly. Its appearance does
+not, and that is the whole cost.**
+
+**Measured:**
+
+    GuestMusic.jsx          372 lines, ~17 pieces of form state
+    hardcoded white-on-dark colour stops:  24 occurrences of rgba(255,255,255,…)
+    its page surface:       background '#0A0A0A', minHeight 100svh
+    WeddingMusicPage:       backgroundColor theme.lightBg, color theme.lightText
+
+**GuestMusic is a standalone dark page. The shell page is light and
+universe-typed.** So this is not an extraction — it is an extraction PLUS a
+restyle of roughly 250 lines of form markup from hardcoded white-on-black to
+`theme.lightText` / `theme.accent` / `typography`, on a Turnstile-protected
+guest write path.
+
+**And it is over the cap either way**, so R11's own condition sends it to
+open-and-hold rather than AUTO.
+
+**I chose not to attempt it in this run, and that is my judgment rather than a
+blocker.** Restyling 250 lines of a working guest write path unattended, with no
+way to see the result — the fixture has no music data, so even a live check
+would render nothing — risks shipping a form that submits correctly and looks
+broken. **A dark form dropped onto a light page is worse than the current
+split**, because the current split at least looks deliberate.
+
+**The shape when it is done:**
+
+  1. Extract the form to `src/components/guest-website/SongRequestForm.jsx`,
+     taking `{ weddingSlug, details, theme, typography, universeConfig }` and
+     owning all 17 pieces of state, the Turnstile ref, the debounce and the
+     `/api/song-request-submit` POST — same endpoint, same payload.
+  2. Restyle every hardcoded colour to the universe's own, which is the real
+     work and the part that needs eyes.
+  3. `GuestMusic` renders it, so that route keeps working while it exists.
+  4. `WeddingMusicPage` renders it beneath the playlist embed, replacing the
+     "Request a song" link that would otherwise point at itself.
+  5. Only then remove the `/w/:slug/music` override from `App.jsx`.
+  6. Re-run the parity table; every guest action present on both.
+
+**The finding R4 recorded still stands and this closes it when done:**
+`RealWebsitePreview.jsx:45` maps `'music': WeddingMusicPage`, so the couple's
+builder preview shows the playlist-and-a-link page while guests get the full
+request form. **The preview is not a preview of the published page for this one
+route.**
