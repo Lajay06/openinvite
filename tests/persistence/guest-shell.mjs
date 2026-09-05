@@ -37,10 +37,16 @@ export async function runGuestShell() {
   const vercel = JSON.parse(read('vercel.json'));
   const rewrites = vercel.rewrites || [];
   const idxCatchAll = rewrites.findIndex((r) => r.destination === '/index.html');
+  // THE INVARIANT IS "NEVER THE MARKETING HOMEPAGE", NOT ONE DESTINATION
+  // STRING. /w/ is served by api/guest-page.js so a shared link can unfurl with
+  // the couple's own names; that function returns the guest shell's bytes and
+  // falls back to them on every failure, so a guest route still cannot reach
+  // /index.html. /rsvp/ stays on the static file — it has nothing to unfurl.
+  const GUEST_DESTINATIONS = ['/guest-shell.html', '/api/guest-page'];
   for (const src of ['/w/(.*)', '/rsvp/(.*)']) {
     const i = rewrites.findIndex((r) => r.source === src);
-    check(`${src} is rewritten to the guest shell`,
-      i > -1 && rewrites[i].destination === '/guest-shell.html',
+    check(`${src} is rewritten to a guest surface, never the marketing homepage`,
+      i > -1 && GUEST_DESTINATIONS.includes(rewrites[i].destination),
       i > -1 ? rewrites[i].destination : 'NO RULE');
     // Order is the whole mechanism: Vercel takes the first match, so a rule
     // after the catch-all would never run.
