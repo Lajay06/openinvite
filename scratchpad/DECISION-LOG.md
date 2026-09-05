@@ -3395,3 +3395,71 @@ shown. If it is stored to be rendered, it is one publish away from being
 served, and the couple has no way to tell our words from theirs. **Sample
 content has to be data the product renders WITHOUT persisting, or it repeats
 #576 with more surface area.**
+
+### D1 — built and held (#661), against a brief that is mine
+
+`feat/sample-content-bali`, own worktree, **two new paths and zero modified
+files**: `src/lib/sampleContent/bali.js`, `src/lib/sampleContent/index.js`,
+`tests/persistence/sample-content-never-published.mjs`.
+
+The brief it is built to is stated at the top of the PR as MINE, not the
+owner's, so it can be rejected cheaply. Three safety properties, all pinned:
+never a record (no slug, `websiteEnabled: false`, nothing writes to Base44),
+always marked (`__sample: true`), and no sample sentence is also a live default
+anywhere in `src/` — which is #576's exact shape.
+
+**Both structural checks were verified against planted failures.** Planting an
+import into the guest tree failed check 3; planting a sample sentence into
+`src/lib/musicCopy.js` failed check 4. **The first version of check 4 did not
+catch its plant** — apostrophes in prose comments open a false string literal
+and desynchronize the scan, so it was extracting 32 misaligned fragments and
+reporting green. Comments are stripped now. Worth recording because it was
+green and wrong before it was green and right.
+
+**Not wired to anything, and not registered in the runner.** Both need edits to
+existing files. Which surfaces a separate finding, below.
+
+### D2 — what the rest costs
+
+**1. A consumer, and it is one decision not one task.** The data renders
+through `RealWebsitePreview` today with no change to that component — it takes
+`details` and renders. What is missing is the surface that offers it: a control
+in the Design Studio that says "show me this universe with content in it", and
+a way back out. **The hard part is not the render, it is the exit.** A couple
+who has looked at a full bali must never be one click from having it, and must
+never wonder whether they now have it. That is the whole of #576 restated as an
+interaction problem. Small in code, and the only part worth arguing about.
+
+**2. Nineteen more universes: a copywriting job, roughly 2-3 hours each done
+properly.** The shape is now fixed, so each is prose, not engineering. But
+prose under two real constraints: no souvenir vocabulary (`CLAUDE.md`'s
+reductio), and enough distinctness that kyoto's sample does not read as bali's
+with the nouns swapped — which is the failure mode, and it is the same one the
+universe taglines already drifted into.
+
+**3. Imagery is the missing half and it is not free.** Every sample here is
+text. A universe with sample copy and no cover photo still renders a grey hero,
+which is most of what a couple is judging. Sample imagery means licensed stock
+per universe (`IMAGE_MANIFEST.md` is the existing machinery) — twenty covers
+minimum, and the licence question is the owner's, per the earlier note in this
+log.
+
+**4. If sample content is ever PERSISTED, it becomes a different project.**
+Everything above holds because nothing is written. A "start from this sample"
+feature that copies the content into the couple's own record is a legitimate
+product, but it is a data-migration-shaped thing with an erasure problem
+attached, and it should be sized separately rather than allowed to grow out of
+this.
+
+### A separate finding, surfaced by D1: `npm run test:persistence` is broken on main
+
+`scripts/test-persistence.mjs` imports `../tests/persistence/spotify-oauth.mjs`.
+**That file does not exist on any branch.** The suite dies with
+`ERR_MODULE_NOT_FOUND` before running a single check, and has been. `ci.yml`
+records the round-trip suite as a required LOCAL gate rather than a CI step,
+which is exactly why nobody noticed: the one runner that would have failed is
+the one CI never runs. Every domain file under `tests/persistence/` still
+passes when imported directly — that is how R15's and D1's checks were run
+here — so this is the runner, not the tests. Not fixed: the missing file was
+deleted, and restoring it is a decision about what that Spotify test should
+assert, not a mechanical repair.
