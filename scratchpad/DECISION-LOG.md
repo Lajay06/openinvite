@@ -4261,3 +4261,92 @@ overwritten" — because with that break, arrays are excluded from filling
 entirely, so nothing was overwritten. The "empty-but-present keys" check caught
 it instead. The prediction was wrong; the guard was not. Recorded because the
 interesting thing about a plant is what it teaches when it lands somewhere else.
+
+---
+
+## 2026-09-05 — THE ACCOUNT FOR RUN 6
+
+**Three merged, one open and held, two reports.** Main `0e59aa4`.
+
+### Done before the restart, verified from the repo rather than remembered
+
+  · **R26 / #655 — MERGED `c7ec350`.** `api/guest-page.js` resolves names
+    through `coupleDisplayName()`; the import is at :29 and the call at :114 on
+    main. Its live reading had never been recorded, so it was retaken.
+  · **D-READ — report landed** in this log at `d1f2215`.
+  · **D-HAVANA — `havana.js` on main**, though by the wrong route (below).
+
+### This run
+
+  · **R24 — MERGED `041656d`.** `ship.sh` no longer stages the working tree.
+  · **cleanup — MERGED `5c62281`.** Four scratch scripts removed from main.
+  · **D-STUDIO — #665, OPEN AND HELD.** CI 3/3 SUCCESS, no SKIPPED. Preview:
+    `openinvite-git-feat-studio-sample-97de5b-lajay06-5660s-projects.vercel.app`
+
+### R26's live reading, retaken with the rendered-app column
+
+    slug                  http   app   bytes   og:title
+    chris-and-sia         200    yes   2127    Chris & Sia
+    no-such-wedding-xyz   200    yes   2062    You are invited
+    tulum-test            200    yes   2062    You are invited
+
+    <title>Chris & Sia</title>
+    og:description  You are invited. 2 September 2026. Open the invitation…
+
+Names and date on the card where every wedding used to send the same one.
+**Fail-closed holds on both edges**: an absent slug and the ambiguous
+`tulum-test` (two records on one slug) both serve the bare card, and all three
+return the shell document intact, so delivery fail-safe holds too.
+
+### THE TWO — actually FOUR — UNIVERSES WITHOUT PHOTOGRAPHY
+
+**The brief expected two. There are four: `kyoto`, `bali`, `aspen`,
+`shanghai`.** No folder at all, not an empty one. Sixteen of twenty are
+covered, 111 assets. `bali` being among them is convenient rather than
+awkward — it is why bali keeps placeholder copy as the omission fixture and
+havana is the universe that gets real photography.
+
+### THE ALLOCATION RULE, FOR THE OWNER TO CONFIRM
+
+**The filenames carry no role signal and never will without renaming** — every
+id is `hf_<date>_<time>_<uuid>_<hash>` generator output, plus one hand-edited
+`tempImageVoljjw_-_Edited_sw0lhh`. **Aspect ratio is real signal, is already
+there, and needs no renaming:**
+
+    ratio >= 1.5    wide landscape   -> hero, then share image
+    1.1 - 1.5       landscape        -> event card, then experiences
+    0.9 - 1.1       square           -> experiences, then gallery
+    0.66 - 0.9      portrait         -> story, then gallery
+    < 0.66          tall portrait    -> gallery (reserved for full-bleed)
+
+Ties break on the timestamp in the id, ascending — the owner's own generation
+order. Checked against three folders before proposing it: havana (7) fills
+every slot with hero and share sharing the one wide landscape; paris (7) has
+two wide so they differ, and no square so experiences falls back; mykonos (9)
+fills every slot with the tall reserved.
+
+**THE LIMIT THAT DECIDES WHETHER TO CONFIRM OR RENAME: aspect ratio describes
+SHAPE, not SUBJECT.** A 3:4 portrait may be the couple, a doorway or a plate of
+food. The rule guarantees an image that FITS each slot; it cannot guarantee one
+that BELONGS there. **Havana's seven are allocated and rendered — confirming
+those by eye is the cheapest check before the rule runs across the other
+fifteen.**
+
+**If naming is preferred to confirming**, the smallest is one leading token on
+one asset each — `hero-`, `story-`, `event-`, `exp-`, `gallery-` — five renames
+per universe rather than 111, with the ratio rule as the fallback for the rest.
+
+### What went wrong
+
+**A `git add -A` put four scratch scripts and one source file on main in a
+commit called "docs".** No credential was exposed — verified before anything
+else. R24 now refuses rather than prints, because the previous fix for this
+exact shape printed and it happened again.
+
+**`havana.js` reached main without a PR.** CI on main was green so the content
+is verified; the process was skipped. Named as a violation rather than tidied
+away.
+
+**A plant landed on a different check than predicted** — recorded in the
+D-STUDIO entry, because the interesting thing about a plant is what it teaches
+when it lands somewhere else.
