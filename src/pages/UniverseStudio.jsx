@@ -141,6 +141,12 @@ export default function UniverseStudio() {
   }, [phase]);
 
   const handleSwitchUniverse = async (universeId) => {
+    // THE TRY WRAPS THE WRITE AND NOTHING ELSE.
+    //
+    // It used to span the success toast as well, so anything thrown after a
+    // SUCCESSFUL write — a lookup, a render, the toast itself — reported as
+    // "could not switch universe" while the switch had in fact landed. A
+    // failure message that can describe a success is worse than none.
     try {
       if (recordId) {
         await WeddingDetails.update(recordId, { activeUniverse: universeId });
@@ -148,12 +154,23 @@ export default function UniverseStudio() {
         const created = await WeddingDetails.create({ activeUniverse: universeId });
         setRecordId(created.id);
       }
-      setWeddingDetails(prev => ({ ...(prev || {}), activeUniverse: universeId }));
-      const u = getUniverse(universeId);
-      toast.success(`You're now in ${u?.name || universeId} — your invitations, website and RSVP are restyled.`);
-    } catch {
+    } catch (err) {
+      // THE CATCH USED TO BIND NOTHING (`catch {`), so the only evidence of a
+      // real failure was a toast that names no cause. On 2026-09-05 that cost
+      // a full diagnostic pass: the write path is a Base44 SDK call proxied
+      // through an edge rewrite (vercel.json), so it leaves no serverless log
+      // either — the browser console was the only place the truth could have
+      // been, and nothing was written to it.
+      //
+      // The prefix is stable so a console paste is greppable.
+      console.error('[universe-switch]', universeId, err?.status ?? '', err?.message ?? err);
       toast.error('Could not switch universe — please try again.');
+      return;
     }
+
+    setWeddingDetails(prev => ({ ...(prev || {}), activeUniverse: universeId }));
+    const u = getUniverse(universeId);
+    toast.success(`You're now in ${u?.name || universeId} — your invitations, website and RSVP are restyled.`);
   };
 
   const handleUpgrade = () => navigate('/account');
