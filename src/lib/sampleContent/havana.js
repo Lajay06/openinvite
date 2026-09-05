@@ -26,10 +26,16 @@
  * needs no renaming by the owner. The rule, applied in this order:
  *
  *   ratio >= 1.5   wide landscape   hero, then share image
- *   1.1 - 1.5      landscape        event card, then experiences
+ *   1.1 - 1.5      landscape        experiences, then gallery
  *   0.9 - 1.1      square           experiences, then gallery
  *   0.66 - 0.9     portrait         story, then gallery
  *   < 0.66         tall portrait    gallery (reserved for full-bleed)
+ *
+ * THE EVENT-CARD ROLE IS GONE (R31). It used to take the first landscape.
+ * Celebration has had no image position since #650, so the role described a
+ * slot that does not exist — and the rule now allocates that class to
+ * experiences and then the gallery instead. If the owner reinstates a
+ * Celebration image, the role comes back here and the rule regains a row.
  *
  * Ties inside a class break on the timestamp embedded in the public id
  * (`hf_YYYYMMDD_HHMMSS`), ascending — the owner's own generation order, and
@@ -63,9 +69,16 @@ export const HAVANA_IMAGES = {
   // that og:image wants.
   hero:        'hf_20260904_112949_7fd20c50-b661-46c5-8c59-cef0e3b7d9e5_mqzaga',
   share:       'hf_20260904_112949_7fd20c50-b661-46c5-8c59-cef0e3b7d9e5_mqzaga',
-  // 2048x1536, 4:3
-  eventCard:   'hf_20260904_112949_c18f011a-647f-4bc6-b75e-2752a3736efe_m3zomm',
-  // 2048x2048, 1:1 — the only square, and the experiences grid is square-first
+  // NO `eventCard` ROLE. R31: #650 removed the location photo from every
+  // Celebration event block deliberately, and Celebration has no other image
+  // position — no <img>, no background. A role with no slot is an unused
+  // asset, not a reason to invent a slot, so the role is dropped rather than
+  // parked on a key nothing reads.
+  //
+  // Its 4:3 landscape is not wasted: it becomes the fourth gallery image, so
+  // all seven of the owner's photographs are on screen somewhere.
+  //
+  // 2048x2048, 1:1 — the only square
   experiences: 'hf_20260904_112948_eaa395d4-77e2-424e-9754-65586ca4270b_uztrvs',
   // 1536x2048, 3:4 — earliest portrait by timestamp
   story:       'hf_20260904_112948_aecc13c7-4644-4ea3-8a9b-43b21c6a3a73_qucu5d',
@@ -73,6 +86,7 @@ export const HAVANA_IMAGES = {
     'hf_20260904_112950_ee43be91-2036-4b97-8ff9-f490913bfded_q6rrgk', // 1792x2400
     'hf_20260904_112950_c28145cb-425f-4060-803e-0ef8ad0474c9_okqxth', // 1536x2752, tall
     'tempImageVoljjw_-_Edited_sw0lhh',                                // 1536x2048, the jpg
+    'hf_20260904_112949_c18f011a-647f-4bc6-b75e-2752a3736efe_m3zomm', // 2048x1536, the former event card
   ],
 };
 
@@ -82,7 +96,7 @@ export const HAVANA_IMAGES = {
  * couple would go looking for an eighth picture that does not exist.
  */
 export const SAMPLE_IMAGE_IDS = [...new Set([
-  HAVANA_IMAGES.hero, HAVANA_IMAGES.share, HAVANA_IMAGES.eventCard,
+  HAVANA_IMAGES.hero, HAVANA_IMAGES.share,
   HAVANA_IMAGES.experiences, HAVANA_IMAGES.story, ...HAVANA_IMAGES.gallery,
 ])];
 

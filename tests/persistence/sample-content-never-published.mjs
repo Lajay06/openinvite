@@ -134,14 +134,35 @@ export async function runSampleContentNeverPublished() {
       (w) => w.photosContent === undefined],
     ['no experienceGuide.coverPhoto — that page has no cover slot',
       (w) => w.experienceGuide?.coverPhoto === undefined],
-    ['no mainCeremony.photoUrl — #650 removed the render, so it is orphaned',
+    ['no mainCeremony.photoUrl — #650 removed the render (R31: role dropped)',
       (w) => w.mainCeremony?.photoUrl === undefined],
+    ['no reception.photoUrl either — same slot, same absence',
+      (w) => w.reception?.photoUrl === undefined],
   ];
   for (const id of ids) {
     const w = getSampleWedding(id);
     const bad = RENDERED_BY.filter(([, ok]) => !ok(w)).map(([n]) => n);
     check(`${id}: every sampled key is one a page actually renders`,
       bad.length === 0, bad.length ? bad.join(' | ') : `${RENDERED_BY.length} accessors verified`);
+  }
+
+  // ── 2c-ter. THE PAGE SIDE OF R30 ────────────────────────────────────────
+  // The accessor checks above ask whether the SAMPLE writes a key the page
+  // reads. This asks the mirror question of the page: does it resolve an image
+  // it never renders? Celebration carried `_photoUrl` for eleven PRs after
+  // #650 deleted the render, which is how a sample role came to be allocated
+  // to a slot that did not exist.
+  {
+    // STRIP COMMENTS FIRST, and count ASSIGNMENTS rather than mentions. The
+    // first version of this check counted any occurrence and failed on the
+    // comment that explains why the field is gone — a guard that forbids
+    // writing down why it exists. Third time comment-stripping has been the
+    // fix in this file.
+    const celRaw = readFileSync(join(SRC, 'components/guest-website/pages/WeddingCelebrationPage.jsx'), 'utf8');
+    const cel = celRaw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    const assigns = (cel.match(/_photoUrl\s*[:=]/g) || []).length;
+    check('Celebration resolves no event image it does not render',
+      assigns === 0, assigns === 0 ? 'no _photoUrl' : `${assigns} dead _photoUrl assignment(s)`);
   }
 
   // ── 2d. AND EVERY SAMPLED SECTION IS ON A PAGE THAT CAN BE REACHED ───────
