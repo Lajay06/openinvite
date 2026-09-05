@@ -48,19 +48,55 @@ echo "✓ verify passed."
 echo ""
 
 # ── 2. Stage and commit ───────────────────────────────────────
-echo "→ Staging all changes…"
-git add -A
-
-# ── WHAT IS ABOUT TO BE COMMITTED ────────────────────────────────────────────
+#
+# THIS USED TO BE `git add -A`, AND PRINTING THE RESULT WAS NOT ENOUGH.
+#
 # `git add -A` stages the WORKING TREE, not the change you have in mind, and
 # uncommitted work follows a branch switch. On 2026-08-30 that carried a held
 # /api/places consolidation into a PR about error-message passthrough: eight
 # files landed where three were authorized, and the PR body said the
-# consolidation was "held" while containing it.
+# consolidation was "held" while containing it. The response was to PRINT what
+# had been staged.
 #
-# This prints, it does not refuse. Refusing a dirty tree is new-feature.sh's
-# job and travels separately, because it can block and this cannot. The whole
-# value is that eight files appear where you expected three.
+# On 2026-09-05 the same shape landed again, and the print did not stop it: a
+# `git add -A` swept four scratch probe scripts and one unreviewed source file
+# into a docs commit, straight onto main. A LIST YOU READ AFTER THE STAGING
+# DECISION IS A RECEIPT, NOT A GATE.
+#
+# So the decision moves ahead of the staging, and it splits on the only
+# distinction that matters here:
+#
+#   TRACKED modifications  — the change you are working on. Staged for you.
+#   UNTRACKED files        — either part of the work, in which case you say so
+#                            with `git add`, or scratch that must never ship.
+#                            Never guessed at.
+#
+# This REFUSES rather than prints, because the 2026-08-30 fix already proved
+# that printing does not stop it. It is not a dirty-tree refusal — a new file
+# you have staged yourself passes straight through, so adding files to a
+# feature is one deliberate command, not a fight with the tool.
+UNTRACKED=$(git ls-files --others --exclude-standard)
+if [[ -n "$UNTRACKED" ]]; then
+  echo ""
+  echo "  ✗ UNTRACKED FILES PRESENT — refusing to guess which are yours."
+  echo ""
+  echo "$UNTRACKED" | sed 's/^/      /'
+  echo ""
+  echo "  A file here is either part of this change or it is scratch:"
+  echo "    part of it   →  git add <file>   (then re-run ship.sh)"
+  echo "    scratch      →  delete it, or move it out of the repo"
+  echo ""
+  echo "  Nothing has been staged or committed."
+  exit 1
+fi
+
+echo "→ Staging tracked changes…"
+git add -u
+
+# ── WHAT IS ABOUT TO BE COMMITTED ────────────────────────────────────────────
+# Kept from the 2026-08-30 fix. It is no longer the only line of defense, but
+# seeing the file list is still how you notice a tracked file you forgot you
+# had edited — which the refusal above cannot catch, because it is tracked.
 echo ""
 echo "  ── files in this commit ──────────────────────────────────────"
 git diff --cached --name-status | sed 's/^/    /'
