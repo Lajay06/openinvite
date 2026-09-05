@@ -3852,3 +3852,80 @@ slug. The resolver refuses ambiguity by design and served "this invitation
 isn't available". The refusal is correct and `test:slug-resolver` covers it;
 I read it as a broken probe for a minute before reading it as the product
 working.
+
+---
+
+## 2026-09-05 — THE ACCOUNT FOR RUN 5
+
+**One merged and live. One amended and still held. Three reports. Two rulings
+recorded.** Seven PRs remain the owner's; none was added to.
+
+### Merged
+
+**P2 — the persistence gate runs again (#662).** `npm run test:persistence`
+imported a module deleted three weeks earlier in the Spotify teardown, so it
+threw on line 32 and **not one of its 1,138 checks had run since**. Retired by
+name with the reason, not restored — the endpoints it covered are gone.
+
+The moment it could run it reported **1,093/1,138**, and two failures were its
+own fixtures gone stale in the same 2026-08 wave: three fields encrypted at
+rest that the tests still wrote as plaintext objects (a `422` that aborted a
+whole module and every RSVP, poll and attendee check depending on it), and a
+password fixture predating `websitePasswordEnabled` becoming the source of
+truth. Both fixed, intent unchanged. **45 failures remain, revealed and not
+caused** — including a `LiveStream` isolation breach — and want their own pass.
+
+**The gates CI never exercises, listed:** ten. `test:persistence` was one; the
+others are `marketing-images`, `payments-freeze`, `slug-claim`, `slug-resolver`,
+`typography-pairings` (all pure — all five run and pass) and
+`dashboard-no-overflow`, `guest-essentials-reachable`, `harness`,
+`stat-surfaces` (browser plus a live server, which is what makes them the ones
+most able to die unnoticed).
+
+### Amended and held
+
+**P1 — #661**, preview
+`openinvite-git-feat-sample-content-bali-lajay06-5660s-projects.vercel.app`,
+CI green on the amended head. Report above. The short version: ruling (c) is
+now structural rather than promised, polls were missing, **three sections
+rendered nothing at all**, the fix for one of them was also wrong, and polls
+were unreachable after being added. Guard 19/19, six plants, six confirmed
+failures.
+
+**Held for the owner:** the (d)/(e) contradiction. A studio consumer cannot
+exist under "new files only", so (e)'s second half is unreachable and is not
+faked.
+
+### Reported
+
+**P3** — the entity is orphaned (writer and reader both deleted 2026-08-27) and
+its one row is **readable with no token at all**, confirmed by direct
+unauthenticated probe. DELETE deliberately unprobed: proving it means
+destroying the row. No audit log exists; the count proxy says nothing has been
+deleted. The row is synthetic and predates encryption. **No RLS change — schema
+is frozen until Monday.**
+
+**P4** — precondition failed; paris unpublished, bali unchanged. One reading
+taken on a fixture that was already eligible: **no horizontal overflow at 390px
+with 12 pages enabled**, five items inline then More then a burger. Two
+findings fell out: every nav item is a `<button>`, not a link, and the
+`john-suzanne` record renders "Jay & Ella".
+
+**R18 and R19** recorded as canon.
+
+### What I got wrong, in order
+
+**Reported five passing gates as failing.** Wrapped each in `timeout`, which
+does not exist on macOS, and read exit 127 as a verdict. **That is the exact
+defect P2 exists to fix, committed while writing P2 up** — a result that looks
+like a judgement and is actually the runner never having run.
+
+**Shipped a scratch file to main.** `.shoot-fixture.mjs`, a throwaway probe,
+rode in on `ship.sh`'s `git add -A`. Removed in a follow-up. The lesson is
+about the working tree, not the script: a scratch file in the repo root ships
+with whatever is committed next.
+
+**Read the product working as a broken probe.** `tulum-test` served "this
+invitation isn't available" and I took it for a failed reading before
+recognizing the ambiguous-slug refusal — which is correct, deliberate, and
+already covered by `test:slug-resolver`.
