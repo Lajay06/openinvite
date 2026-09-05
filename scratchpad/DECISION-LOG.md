@@ -3929,3 +3929,119 @@ with whatever is committed next.
 invitation isn't available" and I took it for a failed reading before
 recognizing the ambiguous-slug refusal — which is correct, deliberate, and
 already covered by `test:slug-resolver`.
+
+---
+
+## 2026-09-05 — THE ACCOUNT FOR THE MERGE SEQUENCE
+
+**Six of seven merged. One held on a red gate. Production is at `1a61c01`.**
+
+### Merge SHAs, in order
+
+    #654  cf14bbb   Overall is the one place, and the briefing is the first thing on it
+    #655  ——        HELD. red gate, red before the accept
+    #656  1dfa42c   after replying, a guest can put the day in their calendar
+    #660  11f3b6b   the music page belongs to the couple's universe, form and all
+    #661  586a6e4   sample content for bali, as data, with the guard
+    #647  a49f60a   an empty page tells you what it is for and what to do first
+    #658  1a61c01   an Ava eval set, five of whose answers must be I do not have that
+
+Every one gated with `npm run pr:merge <n>` — gate and merge as one operation,
+never chained in a shell. All 3/3 checks SUCCESS on the merged SHA each time.
+**No SKIPPED, no NEUTRAL, no rollup missing its checks.**
+
+### The one PR held, and why
+
+**#655 — `npm run pr:green 655` returned NOT GREEN: Build & test = FAILURE.**
+
+    FAIL [no-raw-reads] api/guest-page.js:113 reads the field directly
+                        — call coupleDisplayName()
+
+**It was red before the owner's accept.** `Build & test` on `a5733f6` — the
+head this PR has carried since it opened — concluded `failure`. The guard it
+violates last changed 2026-08-30; the branch was cut 2026-09-04, five days
+later. **The check has failed at every commit this PR has ever had**, so the
+owner accepted a PR whose gate was already failing. That is precisely what
+condition (3) is for.
+
+**I did not rebase it and I did not fix it.** A rebase applies cleanly (verified
+in a scratch worktree, then discarded) but would move the head off the reviewed
+SHA without fixing what holds it. The fix is one line — import
+`coupleDisplayName` and call it — but that is neither a rebase nor a P1
+amendment, and the file sits in front of 100% of guest traffic. The guard is
+right on the merits too: this PR's whole argument is about reading the record
+correctly, and it hand-rolls a fallback chain the owner module already owns.
+
+Per condition (4) it held alone and the sequence continued.
+
+### #654: what the rebase removed
+
+This branch carried its own `Promise.allSettled` conversion of the Overall
+loader — **the same fix that had already landed as #659** while the PR was
+held. The rebase dropped it: `Dashboard.jsx` went from `+42 −11` to `+20 −3`,
+leaving the briefing and nothing about loading.
+
+**And dropping it fixed a real defect in the version dropped.** #654's `unseen`
+array carried LABELS (`'your budget'`) while `buildBriefing` tests KEYS
+(`unseen.includes('budget')`). That check exists to stop the briefing calling a
+FAILED store an EMPTY one — against labels it could never match, so the
+briefing would have said "No budget set" about a budget it merely failed to
+read. The exact lie the PR says it exists to prevent.
+`loadDashboardSources` returns keys, so it now fires.
+
+### Live readings, each taken after its merge
+
+**After #660 — `/music` inside the shell.** On the published fixture, every
+sub-page now behaves the same way:
+
+    /music     OMITTED   ← was a black Spotify-green dead end
+    /faq       OMITTED
+    /registry  OMITTED
+    /stay      OMITTED
+
+The one page that did not omit now does. This is the P1(a) gap closed on
+production, not on a preview.
+
+**After #656 — the calendar file**, generated from the shipped module:
+
+    BEGIN:VCALENDAR / VERSION:2.0 / PRODID:-//Openinvite//EN
+    2 VEVENTs, CRLF line endings per RFC 5545
+    UID:ceremony-20270513T163000@openinvite.com.au
+    DTSTART 16:30 → DTEND 18:30 (two-hour default)
+    LOCATION only the venue already shown
+    undated events → null, never an empty file
+
+**Before #661 — the omission reading the merge was conditional on.** Zero of 50
+sample strings, on any of ten pages of the real published `chris-and-sia`
+record, on a build containing the sample module. Six pages omit, four render
+the couple's own content only. **OMISSION HOLDS.**
+
+**#655's reading was not taken** — the unfurl is not merged, so there is
+nothing to read.
+
+### What is live on openinvite.com.au that was not this morning
+
+**A couple opening Overall now meets a briefing that says what needs them
+today; a guest who replies can put the day in their calendar; the music page
+belongs to the couple's universe instead of being a black page in Spotify
+green; and an empty Vendors page says what it is for.**
+
+Verified in the production bundle by rendered copy: `"Something is overdue."`,
+`"BEGIN:VCALENDAR"`, `"Vendors is where you track everyone you hire."`, and
+`/music` omitting on the live fixture.
+
+### What I got wrong
+
+**I believed a reading that had never seen the product.** The first omission
+check pointed at #661's Vercel preview URL and reported `0 sample strings` on
+all ten pages — because deployment protection served a **login wall**, 244
+identical bytes on every page. It was caught only because pages that omit on
+production reported "renders", which they could not have. **R19, third
+instance, and this one nearly decided a merge.** The reading was retaken against
+a real build driving the real production record, and now carries an `app=yes`
+column so it cannot report clean without having rendered.
+
+**And then a smaller version of the same thing:** the first production
+verification grepped for `buildBriefing` and `EmptyState` and found zero.
+Minification renames identifiers. Zero meant nothing; user-visible copy is the
+only honest probe, and by that probe everything is there.
