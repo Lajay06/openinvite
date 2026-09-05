@@ -4350,3 +4350,89 @@ away.
 **A plant landed on a different check than predicted** — recorded in the
 D-STUDIO entry, because the interesting thing about a plant is what it teaches
 when it lands somewhere else.
+
+---
+
+## 2026-09-05 — R27 and R28: the docs channel, and the file that got through it
+
+### R27 — a channel named for what it carries must refuse what it does not. MERGED `d5e43db`.
+
+main took commits by two routes and only one was gated. The direct route
+exists so canon can land without a PR — that is what `check-canon-branch.mjs`
+enforces — **but that guard exits at its first line when you are on main.**
+Nothing checked that the docs channel carried docs.
+
+`scripts/check-docs-only-on-main.mjs` now refuses any non-docs file in a local
+push to main, naming each one. Documentation is defined by PATH, deliberately
+narrow: `.md` anywhere plus `scratchpad/` (a directory, not "markdown",
+because it holds one `.html` mockup).
+
+**It is the second half of R24's hole.** R24 stops the working tree being
+staged; this stops the result reaching main if it is staged anyway. Neither
+covers the other: R24 does not govern a hand-written `git add` + `commit -am`,
+and this does not govern what goes onto a branch.
+
+**Four controls, including the exact 2026-09-05 shape, which it refuses.** And
+the test bit its author: Control 2 built the offending commit with `git add -A`,
+which swept the guard's own in-progress source onto main, and the cleanup reset
+deleted it. It was rewritten from a scratch copy. **The failure under repair,
+reproduced by accident while repairing it.**
+
+**Stated limit: this is local-only and CANNOT simply also run in CI**, because
+every squash-merge from a PR lands on main carrying code and CI cannot tell
+that apart from a hand-pushed commit without reconstructing provenance. The
+canon guard's docstring once claimed a CI backstop it did not have for a year.
+This one claims none.
+
+### R28 — havana.js is STILL ON MAIN, and this is the paragraph it should have carried
+
+**Which happened: it was NOT removed with the scratch scripts.** PR #664
+deliberately left it and said why — CI on `d1f2215` concluded success, so the
+content was verified even though the route was not. It has been on main since,
+untouched.
+
+**The content was authorized (D-HAVANA, AUTO). The route was not.** No branch,
+no PR, no gate, under a commit titled "docs". Recorded as a process violation
+rather than tidied away, and R27 is the mechanism that stops the next one.
+
+**THE FIVE MARKS, RETROACTIVELY — so main carries no un-described product
+change:**
+
+**Every file, with counts:**
+
+    228+   0-   src/lib/sampleContent/havana.js   (new)
+
+**Every change mapped to a file:** all of it is the one new file — Havana's
+seven Cloudinary public ids allocated to roles by the aspect-ratio rule; the
+`img()` helper that forces `f_auto,q_auto,w_N`; `SAMPLE_IMAGE_IDS` as the
+publish acknowledgement's count source; and sample copy in Havana's voice
+(couple names, venue, date, story, events, one poll, Good-to-know entries).
+
+**Deliberately left unchanged:** no token file — `websiteThemes.js`,
+`universeCatalog.js`, `textures.js` are untouched. `sampleContent/index.js` was
+NOT edited, so `getSampleWedding('havana')` returns null on main and the file
+is **inert**: nothing imports it. Registration arrives with D-STUDIO (#665),
+where the "new files only" constraint is lifted.
+
+**Head SHA:** it has no PR head. It is on main as part of `d1f2215`.
+
+**Authorized by:** D-HAVANA, AUTO — *"One new file in #661's shape... No token
+file touched."*
+
+**VERIFIED NOW, as the gate would have:**
+
+    npm run lint                      clean
+    npm run build                     exit 0
+    sample-content guard              19/19 (does not reach havana on main —
+                                      it walks registered samples, and havana
+                                      is not registered here)
+    havana.js checked directly:       49 prose strings, 0 emoji, 0 exclamation
+                                      marks, 0 UK/AU spellings
+    all 7 Cloudinary assets           HTTP 200, image/jpeg, 15-48KB each,
+                                      every URL carrying f_auto,q_auto,w_N
+
+**One thing worth naming:** the raw `SAMPLE_HAVANA` export does not itself
+carry `slug: null` / `websiteEnabled: false` — those are stamped at the exit by
+`getSampleWedding()`, along with the non-enumerable `__sample` marker. bali has
+the same shape. The safety lives at the door, not in the room, which is fine
+while the door is the only way in — and on main there is no way in at all.
