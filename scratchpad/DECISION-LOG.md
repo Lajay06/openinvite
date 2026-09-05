@@ -4942,3 +4942,54 @@ sample photos anywhere" is simply correct and has nothing to do with #665.
 
 **Which account was at the keyboard is the one thing the data cannot say**, and
 it decides between the two explanations. Not inferred.
+
+---
+
+## 2026-09-06 — R34: a stacked PR is closed and stranded by `--delete-branch` on its base
+
+**Recorded because it happened, on 2026-09-05, to #668.**
+
+#668 was branched from #665's head and based on `feat/studio-sample-consumer`
+so it would show only its own three files. Merging #665 with
+`--delete-branch` — which `scripts/pr-merge.mjs` does by default — deleted that
+branch. **GitHub responded by CLOSING #668**, and a closed PR whose base branch
+no longer exists **cannot be reopened**: `gh pr reopen` returns *"Could not open
+the pull request"*, and `gh pr edit --base main` silently does nothing on a
+closed PR.
+
+**Recovery took three steps that should not have been necessary:** push the
+deleted base branch back to origin, reopen the child, retarget it to `main`,
+then delete the restored branch again (safe once the base is `main`).
+
+**And retargeting was not the end of it.** #665 was SQUASH-merged, so `main`
+carried its nine files as one new commit while #668's branch still carried the
+six original commits that produced them. Git saw both sides as having changed
+the same files from the merge base: **12 files and CONFLICTING**, where the
+authorization named three. Only a rebase fixes that, and a rebase changes the
+head SHA — which the authorization had named as a stop condition. It stopped.
+
+### THE RULE
+
+**Merging a base PR with `--delete-branch` while another PR is stacked on it
+closes the child and strands it.** Either:
+
+  · merge the base **without** deleting its branch, and delete the branch only
+    after the child has been retargeted; or
+  · **retarget the child to `main` FIRST**, then merge the base however you like.
+
+The second is better: it needs no cleanup and no memory of a pending deletion.
+
+**And expect a rebase regardless when the base was squash-merged** — the child's
+commits are not the commits that landed, so git cannot tell they are the same
+work. Plan for the head SHA to move, and for any SHA-specific authorization to
+need reissuing.
+
+### OPEN-TICKET (filed, not built)
+
+`pr:merge` should refuse `--delete-branch` when any open PR has that branch as
+its base. `scripts/pr-merge.mjs` already reads the PR's state before merging;
+one further query — open PRs whose `baseRefName` is this branch — would turn a
+silent stranding into a refusal that names the child PR. **The gate and the
+merge are already one operation there for exactly this class of reason: a rule
+that depends on remembering is the thing this programme keeps replacing with a
+mechanism.** Not built now.
