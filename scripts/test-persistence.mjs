@@ -44,6 +44,7 @@ import { runEndpointAuth } from '../tests/persistence/endpoint-auth.mjs';
 // api/spotify-search.js's app-token path is what remains of Spotify here, and
 // it is covered by the endpoint-auth and anonymous-endpoint modules.
 import { runAnonymousEndpoints } from '../tests/persistence/anonymous-endpoints.mjs';
+import { runUnfurlOgImage } from '../tests/persistence/unfurl-og-image.mjs';
 import { runUniverseStyling } from '../tests/persistence/universe-styling.mjs';
 import { runRateLimiting } from '../tests/persistence/rate-limiting.mjs';
 import { runHeroVideo } from '../tests/persistence/hero-video.mjs';
@@ -156,6 +157,7 @@ async function run() {
     await runModule('runOnboarding', () => runOnboarding(token));
     await runModule('runEndpointAuth', () => runEndpointAuth());
     await runModule('runAnonymousEndpoints', () => runAnonymousEndpoints());
+    await runModule('runUnfurlOgImage', () => runUnfurlOgImage());
     await runModule('runUniverseStyling', () => runUniverseStyling());
     await runModule('runRateLimiting', () => runRateLimiting());
     await runModule('runHeroVideo', () => runHeroVideo());

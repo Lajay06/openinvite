@@ -27,6 +27,10 @@
  * reason a wedding website does not load.
  */
 import { coupleDisplayName } from './_lib/coupleNames.js';
+// SERVER-SAFE BY CONSTRUCTION: sampleContent/{index,bali,havana}.js and
+// mergeSample.js import nothing but each other — no React, no window, no
+// component. Verified by importing the chain under plain node.
+import { sampleHeroImage } from '../src/lib/sampleContent/mergeSample.js';
 
 const BASE44_API = 'https://app.base44.com/api';
 const LOOKUP_TIMEOUT_MS = 2500;
@@ -127,11 +131,28 @@ export default async function handler(req, res) {
       description: dateStr
         ? `You are invited. ${dateStr}. Open the invitation to see the details and reply.`
         : 'You are invited. Open the invitation to see the details and reply.',
-      // The couple's own photo or none. A universe image is Openinvite's asset,
-      // not theirs, and a stranger's villa on a friend's invitation is worse
-      // than a text card.
+      // R32 RULING, resolved by the owner 2026-09-05: the couple's coverPhoto
+      // if they have one, else the ACTIVE UNIVERSE'S hero, else absent.
+      //
+      // This reverses an earlier decision, deliberately and by the owner. That
+      // one read: "not the universe's imageUrl. A universe image is
+      // Openinvite's asset, not the couple's" — and concluded therefore
+      // absent. The ruling now reaches the opposite conclusion from the same
+      // premise: the universe hero is the universe's own artwork, chosen by
+      // the couple when they chose the universe, so it may stand in.
+      //
+      // NOT SUBJECT TO THE SAMPLE-IMAGERY ACKNOWLEDGEMENT, for the same
+      // reason: this is the universe identifying itself, not sample content
+      // masquerading as the couple's own.
+      //
+      // It sits INSIDE the gates above, so it inherits them for free: an
+      // unpublished wedding (websiteEnabled !== true) and a password-protected
+      // one both returned the bare shell before reaching here, and therefore
+      // emit no og:image at all — universe hero included, because the universe
+      // itself would disclose a choice the couple has hidden.
       image: typeof wedding.coverPhoto === 'string' && /^https?:\/\//.test(wedding.coverPhoto)
-        ? wedding.coverPhoto : null,
+        ? wedding.coverPhoto
+        : sampleHeroImage(wedding.activeUniverse),
     }));
   } catch {
     return send(shell);
