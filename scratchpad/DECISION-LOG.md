@@ -4762,3 +4762,125 @@ first protected wedding will not announce itself.
 
 **PROPOSE ONLY. Nothing built. It lands after the owner sees Havana's pages,
 and only if he means to reverse the earlier ruling.**
+
+---
+
+## 2026-09-05 — DIAGNOSIS: "no photos anywhere, and my own photos may be gone"
+
+Three questions, answered from the owner's own record. **#665 stays held; nothing
+was built.**
+
+### Q1 — DOES THE MERGE EVER REMOVE OR HIDE COUPLE CONTENT? NO.
+
+**Read first.** `withSampleContent` is `merged = { ...details }` followed by
+assignment ONLY to keys where `isEmpty(details[k]) && !isEmpty(sample[k])`.
+Every key of `details` is copied; a key with any content is never written to.
+Per branch, for every field in `FILLABLE`:
+
+    couple's value      isEmpty   what happens
+    undefined           true      sample fills it        (nothing to lose)
+    null                true      sample fills it        (nothing to lose)
+    ''                  true      sample fills it        (nothing to lose)
+    []                  true      sample fills it        (nothing to lose)
+    {}                  true      sample fills it        (nothing to lose)
+    { anything }        FALSE     UNTOUCHED
+    [ anything ]        FALSE     UNTOUCHED
+    'anything'          FALSE     UNTOUCHED
+
+There is no `??` treating `[]` as present, no `||` treating `[]` as absent, and
+**no spread of a sample over a couple's object** — the field is taken whole or
+not at all, so no nested array can be dropped by a partial merge.
+
+**THEN TESTED, on the owner's real record** (`john-suzanne`), every image URL
+walked and diffed across the merge:
+
+    image-bearing values BEFORE merge : 19
+    image-bearing values AFTER  merge : 20
+    LOST                              : NONE
+    GAINED                            : 1  (the sample hero, into an empty coverPhoto)
+
+**No branch drops couple content. The sample system cannot erase a photograph.**
+
+### AND THIS IS WHY THE PAGES DID NOT FILL
+
+On his record only **five** fields were empty enough to fill —
+`registryContent`, `musicContent`, `accommodation`, `transport`, `coverPhoto` —
+and only one of those is an image. Everything else is already his:
+
+    ourStoryContent    object(2 keys)    isEmpty=false   NOT filled
+    homeContent        object(2 keys)    isEmpty=false   NOT filled
+    mainCeremony       object(14 keys)   isEmpty=false   NOT filled
+    celebrationContent object(1 key)     isEmpty=false   NOT filled
+    experienceGuide    object(12 keys)   isEmpty=false   NOT filled
+    qna                array(3)          isEmpty=false   NOT filled
+    polls              array(2)          isEmpty=false   NOT filled
+
+**The merge is behaving exactly as specified: the couple's content wins the
+moment it exists.** The owner's account is nearly full, so the sample correctly
+stands aside almost everywhere. He sees the hero fill because `coverPhoto` was
+the one empty image field. **That is the feature, seen from the one account it
+has least to say to.**
+
+### Q2 — WHERE ARE HIS PHOTOS? ALL 19 ARE STILL ON THE RECORD.
+
+All nineteen are Google Places photos (`/api/places-photo?ref=…`), not uploads.
+**Fifteen render. Four do not:**
+
+    field                                 count   renders?
+    guestSuiteAccommodation.places[].photo_url   6   YES — WeddingStayPage reads place.photo_url
+    experienceGuide.itinerary…blocks[].photo_url 8   YES — WeddingExperiencePage reads item.photo_url
+    guestSuiteTransport.places[0].photo_url      1   YES — WeddingTransportPage reads place.photo_url
+    mainCeremony.photoUrl                        1   NO
+    reception.photoUrl                           1   NO
+    preWeddingEvents[0].venuePhotoUrl            1   NO
+    postWeddingEvents[0].venuePhotoUrl           1   NO
+
+**NOT #602, and NOT photosContent.** `photosContent` is null or absent on ALL
+21 records — the Photos deletion (`fff7681`, 2026-08-27) orphaned **zero**
+couple photographs. Nothing was stored there.
+
+**IT IS #650** (`a10e2e0`, **2026-09-04 21:00**), which removed the location
+photo from every Celebration event block at the owner's own instruction.
+Confirmed orphaned across every guest surface: no guest page reads
+`mainCeremony.photoUrl`, `reception.photoUrl` or `venuePhotoUrl`. The data is
+intact and still editable in EventDetails, and still used by the email
+templates and the studio header — it is the guest-side render that is gone.
+
+**Platform-wide: 2 records, 5 images** in a field no guest page renders —
+`john-suzanne` (4) and `florida-john` (1).
+
+**Smallest home, if the owner wants them back on the guest site:** the Our
+Story grid (`ourStoryContent.photos`) is the only gallery the product still
+has. That is a decision, not a repair — R31 dropped the sample's event-card
+role for the same reason, and reversing one should reverse both.
+
+### Q3 — WHAT HE SEES, AND WHY
+
+His account is **`john-suzanne`, on havana** — one of the sixteen universes
+with a Cloudinary folder, and one of only two with sample content.
+
+**On the PUBLISHED site** (`/w/john-suzanne`), which never receives sample
+content by design:
+
+    page            app   his photos   sample photos
+    Home            yes   0            0
+    Our Story       yes   0            0
+    Celebration     yes   0            0        <- his 4 venue photos, since #650
+    Stay            yes   6            0
+    Experiences     yes   10           0
+
+**In the STUDIO on #665**, his own record:
+
+    app                 yes
+    sample marker       yes
+    sections sampled    5
+    sample photos       1     (the hero)
+
+**So both halves of his report are true and neither is a bug in #665:** the
+sample fills only what is empty, which on his account is the hero and four
+non-image fields; and his own Celebration photographs stopped rendering the day
+before, on 2026-09-04, at his own instruction.
+
+**Nothing built.** One thing worth adding when #665 next moves: a guard case
+pinning "a couple's images survive the merge", planted against — the property
+is proven today by measurement but not yet held by a test.
