@@ -16,6 +16,7 @@ import { base44 } from "@/api/base44Client";
 import { getMyRecords } from "@/lib/resolveMyWedding";
 import { useCollaboratorContext } from "@/lib/collaboratorContext";
 import CountUp from "@/components/shared/CountUp";
+import EmptyState from "@/components/shared/EmptyState";
 import { useAvaFocus } from "@/hooks/useAvaFocus";
 const Vendor = base44.entities.Vendor;
 
@@ -165,6 +166,9 @@ export default function VendorsPage() {
   });
 
   const favouriteVendors = vendors.filter(v => v.is_favourite);
+  // "Specific to this wedding where data allows" — the venue is the booking
+  // most others depend on, so an empty list says so rather than saying nothing.
+  const venueVendorMissing = !vendors.some(v => (v.category || '').toLowerCase().includes('venue'));
 
   const stats = React.useMemo(() => ({
     total:       vendors.length,
@@ -263,21 +267,21 @@ export default function VendorsPage() {
             </div>
 
             {/* Vendor list */}
+            {/* CALM PASS PR3 — the empty state is the guide. One line saying
+                what the page is for, one saying what to do first and specific
+                to this wedding where the data allows it, one action. The
+                dashed-circle icon went with it: the spec asks for no
+                illustration, and an icon that is not a control is decoration
+                on the one screen a couple most needs to be told what to do. */}
             {loading ? null : vendors.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '80px 32px', border: '1px solid rgba(10,10,10,0.06)' }}>
-                <div style={{ width: 48, height: 48, borderRadius: '50%', border: '1.5px dashed rgba(10,10,10,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                  <Search size={20} style={{ color: 'rgba(10,10,10,0.3)' }} />
-                </div>
-                <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 6px' }}>No vendors added yet</p>
-                {!readOnly && (
-                  <>
-                    <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 20px' }}>Click + Add vendor to start tracking your suppliers</p>
-                    <button onClick={() => { setEditingVendor(null); setShowForm(true); }} className="btn-primary">
-                      + Add vendor
-                    </button>
-                  </>
-                )}
-              </div>
+              <EmptyState
+                what="Vendors is where you track everyone you hire."
+                next={venueVendorMissing
+                  ? 'Add the venue first. Most other bookings depend on the date and place it fixes.'
+                  : 'Add your first supplier to start tracking quotes, deposits and contacts.'}
+                actionLabel={readOnly ? undefined : 'Add vendor'}
+                onAction={readOnly ? undefined : () => { setEditingVendor(null); setShowForm(true); }}
+              />
             ) : (
               <VendorList
                 vendors={filteredVendors}
