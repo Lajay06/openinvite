@@ -109,6 +109,41 @@ export async function runSampleContentNeverPublished() {
       empty.length === 0, empty.length ? `renders nothing: ${empty.join(', ')}` : `${READERS.length} sections verified against their readers`);
   }
 
+  // ── 2c-bis. EVERY IMAGE AND SUB-SHAPE SITS ON A KEY THE PAGE READS ───────
+  // The owner reported seeing a sample photograph on the hero and nowhere
+  // else. Four roles were written to keys no page component reads:
+  //   ourStoryContent.photoUrl   the page reads `photos`, an ARRAY
+  //   experienceGuide.coverPhoto the page has no cover slot at all
+  //   photosContent.photos       the Photos feature was deleted in #602
+  //   milestones {title,description} the page reads {date,text}
+  // A presence check cannot see any of that — the key exists, the value is a
+  // real URL, and nothing renders. These are the ACCESSORS, taken from the
+  // pages, which is the only thing that settles it.
+  // bali carries NO imagery on purpose — it is the omission fixture — so the
+  // "images are on a readable key" check applies only to a sample that has
+  // images at all. The dead-key checks below it apply to both, because a dead
+  // key is wrong whether or not the sample is illustrated.
+  const RENDERED_BY = [
+    ['ourStoryContent.photos is an array the story grid reads',
+      (w) => !w.coverPhoto || (Array.isArray(w.ourStoryContent?.photos) && w.ourStoryContent.photos.length > 0)],
+    ['  and no dead singular photoUrl beside it',
+      (w) => w.ourStoryContent?.photoUrl === undefined],
+    ['milestones carry {date,text}, the keys the page renders',
+      (w) => (w.ourStoryContent?.milestones || []).every((m) => m.date !== undefined && m.text !== undefined)],
+    ['no photosContent — the Photos page was deleted in #602',
+      (w) => w.photosContent === undefined],
+    ['no experienceGuide.coverPhoto — that page has no cover slot',
+      (w) => w.experienceGuide?.coverPhoto === undefined],
+    ['no mainCeremony.photoUrl — #650 removed the render, so it is orphaned',
+      (w) => w.mainCeremony?.photoUrl === undefined],
+  ];
+  for (const id of ids) {
+    const w = getSampleWedding(id);
+    const bad = RENDERED_BY.filter(([, ok]) => !ok(w)).map(([n]) => n);
+    check(`${id}: every sampled key is one a page actually renders`,
+      bad.length === 0, bad.length ? bad.join(' | ') : `${RENDERED_BY.length} accessors verified`);
+  }
+
   // ── 2d. AND EVERY SAMPLED SECTION IS ON A PAGE THAT CAN BE REACHED ───────
   // Content the renderer reads is still invisible if its page refuses to
   // render. `polls` is the trap: stay/transport/music/good-to-know are unlocked
