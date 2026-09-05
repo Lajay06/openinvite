@@ -4495,3 +4495,82 @@ fail-open fired.**
 document comes back intact whether the card is populated or bare. That is
 delivery-fails-safe holding: this function sits in front of 100% of guest
 traffic and the worst it can produce is the previous behaviour.
+
+---
+
+## 2026-09-05 — THE ACCOUNT FOR RUN 6'S CLOSE-OUT
+
+**Two merged, one open and held, one report. Main `HEAD`. Holding for the
+owner.**
+
+### Merged
+
+    d5e43db   R27  the docs channel to main refuses anything that is not docs
+    (docs)    R28  havana.js's five marks, recorded retroactively
+    (docs)    R29  the unfurl card measured three ways
+
+Plus, earlier in Run 6: `041656d` (R24, ship.sh) and `5c62281` (scratch removal).
+
+### Open and held
+
+**#665 — the studio consumer.** CI 3/3 SUCCESS, no SKIPPED. Preview:
+`openinvite-git-feat-studio-sample-97de5b-lajay06-5660s-projects.vercel.app`
+Status printed beside the link on the PR itself, per R25.
+
+### R27 — both ends of one hole are now closed
+
+    R24 (#663)  ship.sh no longer stages the working tree      — the staging
+    R27 (#666)  the docs channel refuses non-docs onto main    — the landing
+
+Neither covers the other. R24 does not govern a hand-written `git add` +
+`commit -am`; R27 does not govern what goes onto a branch. **The guard has run
+live three times since merging** — on this account and the two entries before
+it — printing `docs only, straight to main`.
+
+### R28 — WHICH HAPPENED: havana.js is still on main
+
+Not removed with the scratch. #664 left it deliberately and said why. The
+content was authorized (D-HAVANA, AUTO); the route was not — no branch, no PR,
+no gate, under a "docs" title. **Verified now as the gate would have**: lint
+clean, build exit 0, guard 19/19, and havana.js checked directly since main's
+guard does not reach it — 49 prose strings, 0 emoji, 0 exclamation marks, 0
+UK/AU spellings, and all seven Cloudinary assets returning 200 as transformed
+JPEGs of 15–48 KB. The five-mark paragraph is recorded above, so **main carries
+no un-described product change.**
+
+### R29 — a protected wedding shows the bare card
+
+Names and date are on the live card. **The image is absent and that is the
+ruling working**: not one of the 21 production weddings has a `coverPhoto`, and
+the decided behaviour is no image rather than a stranger's photograph. The two
+cases the platform cannot demonstrate — a cover photo, and a password — were
+measured on the real deployed module: with a photo the card carries it and
+upgrades to `summary_large_image`; **with a password it is the bare card, no
+name, no date, no image, indistinguishable from a link to a wedding that does
+not exist.** Rendered-app is `yes` on every path.
+
+### STILL THE OWNER'S — the hold
+
+**Havana's seven allocations await confirmation by eye, and #665 awaits
+review.** The other fifteen universe blocks are NOT built and must not be:
+**a rule that is wrong on Havana is wrong fifteen more times at once.**
+
+**The rule to confirm**, from Havana's actual filenames, which carry no role
+signal at all:
+
+    ratio >= 1.5    wide landscape   -> hero, then share image
+    1.1 - 1.5       landscape        -> event card, then experiences
+    0.9 - 1.1       square           -> experiences, then gallery
+    0.66 - 0.9      portrait         -> story, then gallery
+    < 0.66          tall portrait    -> gallery (reserved for full-bleed)
+
+Ties on the timestamp embedded in the public id, ascending.
+
+**Its limit, which is what makes confirmation necessary: aspect ratio describes
+SHAPE, not SUBJECT.** A 3:4 portrait may be the couple, a doorway or a plate of
+food. The rule guarantees an image that FITS each slot; it cannot guarantee one
+that BELONGS there.
+
+**On confirmation:** the fifteen are content work, one PR per five universes,
+same shape as havana.js. **kyoto, bali, aspen and shanghai are excluded — they
+have no photography at all** (four, not the two the brief expected).
