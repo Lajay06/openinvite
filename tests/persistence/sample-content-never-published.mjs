@@ -199,6 +199,61 @@ export async function runSampleContentNeverPublished() {
     }
   }
 
+  // ── 2b-ter. SLOT GRANULARITY (advisor ruling, 2026-09-06) ───────────────
+  //
+  // Filling at SECTION granularity meant one written sentence closed a whole
+  // section. The paris fixture carried `ourStoryContent = { storyText: "…" }`
+  // and nothing else, so the section read as present and four sample
+  // photographs never appeared — the owner saw a hero and nothing else.
+  //
+  // The rule is now: a couple's content wins PER SLOT. An empty slot inside a
+  // section they have started is still empty.
+  {
+    const uni = ids.find((i) => i === 'havana') || ids[0];
+    const sample = getSampleWedding(uni);
+
+    // (1) milestones present + photos empty -> photos fill, milestones untouched
+    const theirMilestones = [{ date: 'Ours', text: 'A milestone of our own.' }];
+    const a = withSampleContent({ activeUniverse: uni, ourStoryContent: { storyText: 'Our story.', milestones: theirMilestones } });
+    check(`${uni}: milestones present + photos empty -> photos fill`,
+      (a.details.ourStoryContent.photos || []).length > 0,
+      `${(a.details.ourStoryContent.photos || []).length} photo(s)`);
+    check('  and their milestones and text are untouched',
+      a.details.ourStoryContent.milestones === theirMilestones && a.details.ourStoryContent.storyText === 'Our story.',
+      'same array reference, same text');
+
+    // (2) milestones present + photos present -> photos untouched
+    const theirPhotos = ['https://example.com/ours-1.jpg'];
+    const b = withSampleContent({ activeUniverse: uni, ourStoryContent: { storyText: 'Ours.', milestones: theirMilestones, photos: theirPhotos } });
+    check(`${uni}: photos present -> photos UNTOUCHED`,
+      b.details.ourStoryContent.photos === theirPhotos,
+      `${b.details.ourStoryContent.photos.length} photo(s), same reference`);
+
+    // (3) one itinerary item with a photo, one without -> only the empty fills
+    const kept = { id: 'theirs', place_name: 'Theirs', photo_url: 'https://example.com/theirs.jpg' };
+    const bare = { id: 'bare', place_name: 'No picture' };
+    const c = withSampleContent({
+      activeUniverse: uni,
+      experienceGuide: { published: true, itinerary: { schedule: [{ day: 1, blocks: { morning: [kept, bare] } }] } },
+    });
+    const items = c.details.experienceGuide.itinerary.schedule[0].blocks.morning;
+    check(`${uni}: an itinerary item WITHOUT a photo gets one`,
+      !!items[1].photo_url && items[1].photo_url !== 'https://example.com/theirs.jpg',
+      String(items[1].photo_url || 'still empty').slice(0, 52));
+    check('  while the item WITH a photo keeps theirs',
+      items[0].photo_url === 'https://example.com/theirs.jpg', items[0].photo_url);
+    check('  and no item is added to an itinerary the couple wrote',
+      items.length === 2 && c.details.experienceGuide.itinerary.schedule.length === 1,
+      `${items.length} item(s), ${c.details.experienceGuide.itinerary.schedule.length} day(s)`);
+
+    // The caller's own object must not be mutated by any of the above.
+    const original = { activeUniverse: uni, ourStoryContent: { storyText: 'Mine.' } };
+    withSampleContent(original);
+    check('  the caller\'s own record object is never mutated',
+      original.ourStoryContent.photos === undefined, 'no photos written onto the input');
+    void sample;
+  }
+
   // ── 2c-bis. EVERY IMAGE AND SUB-SHAPE SITS ON A KEY THE PAGE READS ───────
   // The owner reported seeing a sample photograph on the hero and nowhere
   // else. Four roles were written to keys no page component reads:

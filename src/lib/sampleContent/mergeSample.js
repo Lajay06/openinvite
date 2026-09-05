@@ -72,6 +72,33 @@ const FILLABLE = [
 ];
 
 /**
+ * SLOTS INSIDE A SECTION THE COUPLE HAS ALREADY STARTED.
+ *
+ * WHY THIS EXISTS. Filling at SECTION granularity meant one written sentence
+ * closed the whole section. The paris fixture had
+ * `ourStoryContent = { storyText: "…" }` and nothing else: one key, so
+ * `isEmpty` said "present", so the section was skipped, so the four sample
+ * photographs never appeared — while the couple had written no photos at all.
+ * The owner saw a hero and nothing else and reasonably read it as broken.
+ *
+ * THE RULING (advisor, 2026-09-06): the sample fills at SLOT granularity, not
+ * section granularity. A couple's content wins PER SLOT. An empty slot inside
+ * a section they have started is still an empty slot.
+ *
+ * Each entry is `[sectionKey, slotKey]`. Only these are filled — the list is
+ * literal, so nothing is filled by accident, and a new slot is a deliberate
+ * addition here.
+ */
+const FILLABLE_SLOTS = [
+  ['ourStoryContent', 'photos'],
+  ['ourStoryContent', 'milestones'],
+  ['ourStoryContent', 'storyText'],
+  ['celebrationContent', 'daySchedule'],
+  ['registryContent', 'registryMessage'],
+  ['musicContent', 'customMessage'],
+];
+
+/**
  * `details` with the universe's sample filling only the fields the couple has
  * left empty, plus the list of fields that came from the sample.
  *
@@ -89,15 +116,73 @@ export function withSampleContent(details) {
   const sample = getSampleWedding(details.activeUniverse);
   if (!sample) return none;                      // no sample for this universe
 
+  // SECTION granularity: a whole section the couple has not started at all.
   const sampledFields = FILLABLE.filter(
     (k) => isEmpty(details[k]) && !isEmpty(sample[k]),
   );
-  if (sampledFields.length === 0) return none;   // the couple has filled it in
 
+  // SLOT granularity: an empty slot inside a section they HAVE started.
+  //
+  // This runs even when `sampledFields` is empty. The early return that used
+  // to sit here — `if (sampledFields.length === 0) return none;` — was the
+  // whole bug: a couple with one sentence in `ourStoryContent` and nothing
+  // else got no photographs, because the section counted as present.
   const merged = { ...details };
   for (const k of sampledFields) merged[k] = sample[k];
 
-  return { details: merged, sampledFields, isSampled: true };
+  const sampledSlots = [];
+  for (const [section, slot] of FILLABLE_SLOTS) {
+    if (sampledFields.includes(section)) continue;   // the whole section just came from the sample
+    const theirs = merged[section];
+    if (!theirs || typeof theirs !== 'object' || Array.isArray(theirs)) continue;
+    if (!isEmpty(theirs[slot])) continue;            // THEIR slot wins, untouched
+    const mine = sample[section]?.[slot];
+    if (isEmpty(mine)) continue;
+    // Copy the section before writing into it: `merged` is a shallow copy of
+    // `details`, so mutating the nested object in place would edit the
+    // caller's own record object.
+    merged[section] = { ...theirs, [slot]: mine };
+    sampledSlots.push(`${section}.${slot}`);
+  }
+
+  // ITINERARY PHOTOS, the one array case. A couple's own itinerary items may
+  // have no picture; the sample fills only those, and only the picture. Items
+  // are NEVER added to an itinerary the couple wrote — the sample's own
+  // itinerary arrives whole, or not at all, via the section fill above.
+  const schedule = merged.experienceGuide?.itinerary?.schedule;
+  const sampleItem = sample.experienceGuide?.itinerary?.schedule?.[0];
+  const samplePhoto = sampleItem && Object.values(sampleItem.blocks || {})
+    .flat().map((i) => i?.photo_url).find(Boolean);
+  if (!sampledFields.includes('experienceGuide') && Array.isArray(schedule) && samplePhoto) {
+    let filled = 0;
+    const nextSchedule = schedule.map((day) => {
+      if (!day?.blocks) return day;
+      const blocks = {};
+      for (const [key, items] of Object.entries(day.blocks)) {
+        blocks[key] = Array.isArray(items) ? items.map((item) => {
+          if (!item || !isEmpty(item.photo_url) === true) return item;
+          filled += 1;
+          return { ...item, photo_url: samplePhoto };
+        }) : items;
+      }
+      return { ...day, blocks };
+    });
+    if (filled > 0) {
+      merged.experienceGuide = {
+        ...merged.experienceGuide,
+        itinerary: { ...merged.experienceGuide.itinerary, schedule: nextSchedule },
+      };
+      sampledSlots.push(`experienceGuide.itinerary (${filled} item photo${filled === 1 ? '' : 's'})`);
+    }
+  }
+
+  if (sampledFields.length === 0 && sampledSlots.length === 0) return none;
+
+  return {
+    details: merged,
+    sampledFields: [...sampledFields, ...sampledSlots],
+    isSampled: true,
+  };
 }
 
 /**
