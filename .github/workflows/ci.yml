@@ -140,6 +140,9 @@ jobs:
       - name: The reply is never behind More
         run: npm run test:nav-rsvp-visible
 
+      - name: Ava eval set shape
+        run: npm run test:ava-eval-set
+
       - name: Route collision guard
         run: npm run test:route-collisions
 
