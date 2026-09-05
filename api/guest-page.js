@@ -26,6 +26,8 @@
  * worst outcome it may produce is today's behavior. It must never be the
  * reason a wedding website does not load.
  */
+import { coupleDisplayName } from './_lib/coupleNames.js';
+
 const BASE44_API = 'https://app.base44.com/api';
 const LOOKUP_TIMEOUT_MS = 2500;
 
@@ -109,8 +111,7 @@ export default async function handler(req, res) {
     // THE PRIVACY GATE. Positive confirmation only.
     if (wedding.websitePasswordEnabled === true) return send(shell);
 
-    const names = [wedding.couple1Name, wedding.couple2Name].filter(Boolean).join(' & ')
-      || wedding.coupleNames || '';
+    const names = coupleDisplayName(wedding);
     if (!names.trim()) return send(shell);
 
     let dateStr = '';
