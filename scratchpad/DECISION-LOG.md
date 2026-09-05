@@ -3729,3 +3729,126 @@ It walks the data now, which needs no parser and cannot desynchronize.
 **Amendment size:** three files, all mine, all on #661's own branch, no new
 surface, no product code. I judged that inside a conservative reading of the
 MINOR CLASS and did not hold. Guard 19/19; build and lint clean.
+
+---
+
+## 2026-09-05 (Run 5) — P3: GuestContactSubmission `delete: null`. REPORT ONLY.
+
+**No RLS change made. Schema is frozen Friday to Sunday and today is Saturday.**
+
+**The entity is ORPHANED, which changes the size of this.** Both its writer
+(`api/collect-guest-contact.js`) and its reader/mutator
+(`api/guest-contact-review.js`) were deleted in `b080a25` on 2026-08-27.
+Nothing in the product reads or writes it. `scratchpad/WAVE2-ORPHANED-SCHEMA.md`
+recorded it then as 1 production row, `status=approved`, a spent receipt.
+
+### Who can present a token that reaches that delete?
+
+**Read is worse than "any authenticated user" — it is nobody at all.** Probed
+directly, unauthenticated, no `Authorization` header and no `api_key`:
+
+    GET /api/apps/<app>/entities/GuestContactSubmission   ->  200, full row
+
+`read: null` is genuinely public, confirming for this entity what the 2026-08-03
+`RsvpResponse` probe found. **So an attacker needs no token and no id.**
+
+**I did not probe DELETE, deliberately.** `delete: null` is the same convention
+and there is every reason to expect it behaves the same way, but establishing
+that means destroying the one production row, and P3 is report-only. **Stated as
+unprobed rather than asserted from the pattern** — the platform notes already
+record one case (`DELETE` masked as `404`) where a delete did NOT behave the way
+its rule read.
+
+### Is there a read rule that limits visibility, so ids must be guessed?
+
+**No.** `read: null`. The row is returned by an unauthenticated bulk list, so
+ids are enumerable, not guessable. There is no obscurity layer to lean on.
+
+### Has any delete been recorded in the retention window?
+
+**No audit log is reachable** — Base44 exposes none through the REST surface
+this project uses, and the workspace MCP is unauthorized this session. So this
+cannot be answered directly, and I will not pretend otherwise.
+
+**The available proxy answers it anyway.** The ledger recorded exactly 1 row on
+2026-08-27; there is exactly 1 row today, same id, `created_date` 2026-08-02,
+`status=approved`. The only writer was deleted on 2026-08-27, so no row can have
+been created since — meaning the count cannot have been restored after a
+deletion. **Nothing has been deleted.** That is inference from a count, not a
+log, and it is worth exactly what that is worth.
+
+### What is actually exposed
+
+**One row, and it is synthetic.** Name carrying a test marker, an
+`@example.com` email, a 10-digit phone, a "1 Test St" address. Not a real
+person's data. It also predates PR 1b's encryption: it carries **plaintext**
+`name`/`email`/`phone`/`mailing_address`, not the `encrypted_contact_details`
++ `email_hash` the schema mirror describes. `created_by_id: "anonymous"`, so
+R17's deletion gap applies to it too.
+
+**Severity, stated plainly: low, and it is not zero.** One synthetic row,
+world-readable and probably world-deletable, on an entity nothing uses. The
+real finding is not this row — it is that **an orphaned entity kept "because an
+orphaned entity with no rows costs nothing to keep" is not costless when its
+rules are open and its rows are public.**
+
+### The shape to declare Monday
+
+Unchanged from R17, and it fits this entity too: carry the wedding owner's id
+on the row at write time — every write site already holds
+`wedding.created_by_id`, and two already use it for `Notification` — and scope
+`delete` on `{"data.ownerUserId": "{{user.id}}"}`, the way `Notification.delete`
+already scopes on `data.recipient_user_id`.
+
+**For GuestContactSubmission specifically the change is different and simpler,
+because the entity is dead:** there is no writer to carry a new field, so the
+owner-scoped rule has nothing to match on. The honest options are to close
+`delete` to nothing at all, or to retire the entity with its single spent row.
+**Both are schema. Neither is mine to declare.**
+
+---
+
+## 2026-09-05 (Run 5) — P4: fixtures, and one reading that was possible
+
+**The precondition failed: paris is not published, and bali has gained no
+content since Run 3.** `theo-and-larissa` exists on paris with
+`websiteEnabled: false`; `chris-and-sia` is still four enabled pages and no
+content blocks. So the linen-0.012-on-paris reading remains blocked, as does
+the post-RSVP countdown, which needs a guest who has replied and a token.
+
+**But the third reading was waiting on a different condition — "a site with all
+pages enabled" — and that condition IS met**, by fixtures that already existed
+rather than by anything new. Taken:
+
+### Reading — menu at 390px, `/w/john-suzanne`, kyoto, 12 pages enabled, published
+
+    document.scrollWidth   390
+    window.innerWidth      390
+    horizontal overflow    NONE
+
+    nav at 390px, in order:  Jay & Ella | Home | Our Story | Celebration |
+                             RSVP | Stay | More | [Open menu]
+
+**Five items inline, then "More", then a burger, with 12 pages enabled. No
+sideways scroll.**
+
+**Two things fell out of taking it.**
+
+**1. Every nav item is a `<button>`, not a link.** The page's only `<a>` is
+"Powered by Openinvite". A guest cannot middle-click, cmd-click or open any
+nav item in a new tab, and assistive technology is told these are buttons
+rather than navigation. Not investigated further; recorded as a reading, since
+it is what the DOM says.
+
+**2. The `john-suzanne` record renders "Jay & Ella".** Slug and couple names
+disagree on the app's richest fixture. Fixture drift rather than a product bug,
+but a verification fixture whose displayed identity does not match its address
+is one that will mislead somebody eventually — the same class as the 2026-09-02
+note about slugs that move.
+
+**A false start worth recording**, because it is R19's shape again: the first
+attempt used `tulum-test`, which has **two** WeddingDetails rows on the same
+slug. The resolver refuses ambiguity by design and served "this invitation
+isn't available". The refusal is correct and `test:slug-resolver` covers it;
+I read it as a broken probe for a minute before reading it as the product
+working.
