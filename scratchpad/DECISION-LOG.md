@@ -4045,3 +4045,105 @@ column so it cannot report clean without having rendered.
 verification grepped for `buildBriefing` and `EmptyState` and found zero.
 Minification renames identifiers. Zero meant nothing; user-visible copy is the
 only honest probe, and by that probe everything is there.
+
+---
+
+## 2026-09-05 (Run 6) — D-READ: the owner's Cloudinary folders. REPORT ONLY.
+
+Read through the Admin API using the app's own `CLOUDINARY_URL` from `.env`.
+**The key and secret were never printed, logged, or written anywhere**; the
+cloud name `dsr84xknv` is already public in `src/lib/marketingSeo.js` and in
+every delivery URL the product serves.
+
+**The console URL the owner gave for Havana is a dashboard address and was
+never fetched.** Folder listing went through `GET /v1_1/<cloud>/folders`.
+
+### 29 root folders, no subfolders. Sixteen match a universe id.
+
+Matching is case-insensitive with non-letters stripped, which is what makes
+`Cape Town` resolve to `capetown`.
+
+    universe     folder        assets        universe     folder      assets
+    ---------    ----------    ------        ---------    --------    ------
+    london       London          7           amalfi       Amalfi         7
+    tulum        Tulum           8           sedona       Sedona         7
+    kyoto        —               0  NONE     aspen        —              0  NONE
+    capri        Capri           6           taj          Taj            6
+    marrakech    Marrakech       6           havana       Havana         7
+    brooklyn     Brooklyn        8           edinburgh    Edinburgh      6
+    bali         —               0  NONE     monaco       Monaco         8
+    paris        Paris           7           florence     Florence       5
+    capetown     Cape Town       7           seoul        Seoul          7
+    mykonos      Mykonos         9           shanghai     —              0  NONE
+
+### CORRECTION: FOUR universes have no photography, not two
+
+**`kyoto`, `bali`, `aspen` and `shanghai` have no folder at all.** Not an empty
+folder — no folder. Sixteen of twenty are covered, 111 assets in total. The
+brief said 18 of 20; the count is 16.
+
+`bali` being one of the four is convenient rather than awkward: it is why bali
+keeps placeholder copy and stays the omission fixture, and why havana is the
+universe that gets real photography.
+
+Other root folders exist and are not universes: `Couple`, `Cultural`, `Food`,
+`Party`, `Planning`, `Relax`, `Launch`, `Texture`, `Textures`,
+`Invite Textures`, `email-assets`, `product-shots`, `Universe`. **`Universe`
+holds five Unsplash-sourced landscapes** (`*-unsplash_*`), a different class of
+asset from the generated per-universe sets, and is not any single universe's.
+
+### Havana, in full
+
+    2048x1152  16:9    wide landscape  png  hf_20260904_112949_7fd20c50-…_mqzaga
+    2048x1536  4:3     landscape       png  hf_20260904_112949_c18f011a-…_m3zomm
+    2048x2048  1:1     square          png  hf_20260904_112948_eaa395d4-…_uztrvs
+    1536x2048  3:4     portrait        png  hf_20260904_112948_aecc13c7-…_qucu5d
+    1792x2400  56:75   portrait        png  hf_20260904_112950_ee43be91-…_q6rrgk
+    1536x2752  24:43   tall portrait   png  hf_20260904_112950_c28145cb-…_okqxth
+    1536x2048  3:4     portrait        jpg  tempImageVoljjw_-_Edited_sw0lhh
+
+**The originals are 4–10 MB PNGs.** Delivered through `f_auto,q_auto,w_400`
+the same asset is ~15 KB. Any code that references these MUST carry the
+transform; a raw public id on a guest page ships ten megabytes to a phone.
+
+### THE FILENAMES CARRY NO ROLE SIGNAL. THE DIMENSIONS DO.
+
+Every id is generator output — `hf_<date>_<time>_<uuid>_<hash>` — plus one
+hand-edited `tempImageVoljjw_-_Edited_sw0lhh`. Nothing in a name says hero,
+story or gallery, and nothing will unless the owner renames 111 assets.
+
+**Aspect ratio is real signal, it is already there, and it needs no renaming.**
+The proposed rule, in order:
+
+    ratio >= 1.5    wide landscape   -> hero, then share image
+    1.1 - 1.5       landscape        -> event card, then experiences
+    0.9 - 1.1       square           -> experiences, then gallery
+    0.66 - 0.9      portrait         -> story, then gallery
+    < 0.66          tall portrait    -> gallery (reserved for full-bleed)
+
+Ties inside a class break on the timestamp embedded in the id
+(`hf_YYYYMMDD_HHMMSS`) ascending — the owner's own generation order, and the
+only stable ordering the ids contain.
+
+**Checked against three folders before proposing it:**
+
+  · havana (7): one wide landscape, so hero and share are the same asset; one
+    landscape; one square; four portraits. Fills every slot.
+  · paris (7): two wide landscapes, so hero and share differ; one landscape;
+    four portraits. No square, so experiences falls back to a portrait.
+  · mykonos (9): two wide, two landscape, four portrait, one tall. Fills every
+    slot with the tall reserved for full-bleed.
+
+**THE LIMIT, STATED BECAUSE IT DECIDES WHETHER THE OWNER SHOULD CONFIRM OR
+RENAME: aspect ratio describes SHAPE, not SUBJECT.** A 3:4 portrait may be the
+couple, a doorway, or a plate of food. The rule guarantees an image that FITS
+each slot; it cannot guarantee one that BELONGS there. Havana's seven are
+allocated in `src/lib/sampleContent/havana.js` and rendered — confirming those
+seven by eye is the cheapest possible check before the rule runs across the
+other fifteen.
+
+**If the owner would rather name than confirm, the smallest naming that removes
+all guesswork is a single leading token on the public id** — `hero-`, `story-`,
+`event-`, `exp-`, `gallery-` — on one asset each per folder, leaving the rest
+to fall to gallery by the ratio rule. That is five renames per universe, not
+111, and the rule above becomes the fallback rather than the mechanism.
