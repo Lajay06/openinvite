@@ -4574,3 +4574,87 @@ that BELONGS there.
 **On confirmation:** the fifteen are content work, one PR per five universes,
 same shape as havana.js. **kyoto, bali, aspen and shanghai are excluded — they
 have no photography at all** (four, not the two the brief expected).
+
+---
+
+## 2026-09-05 — R30: a field name is a claim about where data goes; only the reader proves it
+
+Record beside the coupleName entry. **Same class, one level up.** That one said
+a value must have ONE owner, because twenty-six readers of `coupleNames` had
+drifted. This one says a field must have a READER, because a key nothing reads
+looks identical to a key that works.
+
+**The evidence, all from one sample file.** Four of six image roles were
+written to keys no page component reads, and the owner saw a photograph on the
+hero and nowhere else:
+
+    ourStoryContent.photoUrl        the page reads `photos`, an ARRAY
+    experienceGuide.coverPhoto      that page has no cover slot at all
+    photosContent.photos            the Photos feature was deleted in #602
+    mainCeremony.photoUrl           computed into `_photoUrl`, rendered nowhere
+    milestones {title, description} the page reads {date, text}   (bali too)
+    celebrationContent.customMessage   the page reads daySchedule and blocks
+    weddingPolicies {enabled, text}    goodToKnow reads {display} + per-section
+    transport.notes                    the page reads guestSuiteTransport
+
+Every one of them is a plausible field name holding a real value. **A presence
+check passes on all of them.** So does a schema: the entity declares these as
+free-form objects, and every shape above is a valid object.
+
+**THE GUARD THAT WORKS READS THE ACCESSORS OFF THE PAGES.** Not the schema, not
+the field list, not "is this key non-empty" — the actual expression the
+consumer evaluates:
+
+    ['ourStoryContent.photos is an array the story grid reads',
+      (w) => Array.isArray(w.ourStoryContent?.photos) && w.ourStoryContent.photos.length > 0],
+    ['milestones carry {date,text}, the keys the page renders',
+      (w) => (w.ourStoryContent?.milestones || []).every(m => m.date !== undefined && m.text !== undefined)],
+
+**THIS IS THE SHAPE OF EVERY FUTURE FIXTURE AND SAMPLE CHECK: VALIDATE AGAINST
+CONSUMERS, NEVER AGAINST A SCHEMA.** The render harness's own seed learned this
+three times before it was written down — `note.body` vs `note.text`, a missing
+`homeContent.blocks`, and `faq` where the page reads `qna` — each time by a
+surface rendering its empty state and a pass reading it as clean.
+
+**And the check runs in both directions.** The sample side asks whether the
+fixture writes a key the page reads. The PAGE side asks whether a page resolves
+something it never renders — which is how `_photoUrl` survived eleven PRs after
+#650 deleted its render, and how a sample role came to be allocated to a slot
+that did not exist.
+
+---
+
+## 2026-09-05 — R31: the event-card role is DROPPED. Pending the owner, reversible.
+
+**#650 removed the Celebration location photo deliberately, at the owner's
+instruction.** Celebration has no other image position — no `<img>`, no
+background image, nothing. **A sample role with no slot is an unused asset, not
+a reason to invent a slot.**
+
+  · The `eventCard` role is gone from `HAVANA_IMAGES`.
+  · Its 2048x1536 landscape becomes the **fourth Our Story gallery image**, so
+    all seven of the owner's photographs are on screen.
+  · The ratio rule loses its event-card row: the 1.1–1.5 class now goes to
+    experiences, then the gallery. **If the owner reinstates a Celebration
+    image the role returns and the rule regains the row** — recorded so the
+    reversal is one edit, not an archaeology exercise.
+  · `_photoUrl` is removed from `WeddingCelebrationPage` at all three sites
+    (ceremony, reception, extra events). Computing an image and rendering
+    nothing is precisely what R30 exists to catch.
+
+**Rendered after, all four pages, rendered-app column on each:**
+
+    page            app   sample photos
+    Home            yes   1     hero
+    Our Story       yes   5     story + gallery x4
+    Celebration     yes   0     orphaned by ruling, and now honestly so
+    Experiences     yes   1     itinerary item
+
+**Seven of seven assets now render.** Published-site omission re-run: 10/10
+pages rendered the app, 0 sample strings, 0 sample images. **OMISSION HOLDS.**
+
+**A guard note worth keeping.** The new page-side check first failed on the
+clean file, because it counted any occurrence of `_photoUrl` and my own comment
+explaining the removal contains the word — **a guard that forbids writing down
+why it exists.** It now strips comments and counts assignments. That is the
+third time comment-stripping has been the fix in this file.
