@@ -6,6 +6,7 @@ import { resolveColors, resolveTypography, resolveUniverseConfig, isMotionEnable
 import { formSurfaces } from '@/lib/surfaceTint';
 import { loadFontFamilies, familiesFromGoogleSpec } from '@/lib/selfHostedFonts';
 import SectionReveal from '@/components/guest-website/SectionReveal';
+import { buildIcs, buildGoogleCalendarUrl } from '@/lib/calendarLinks';
 import { formatWeddingDate } from '@/lib/guestDate';
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
@@ -672,6 +673,22 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
     : daysToWedding === 1 ? 'Tomorrow.'
     : `${daysToWedding} days to go.`;
 
+  // A-NEW2 — only the events this guest was invited to AND accepted, carrying
+  // the same venue the page prints beside them. A calendar file is a copy of
+  // what is on screen, never a richer source.
+  const acceptedEvents = invitedEvents
+    .filter(ev => eventForm[ev.event_id]?.status === 'yes')
+    .map(ev => {
+      const { venue: evVenue, date: evDate } = getEventVenueAndDate(wedding, ev);
+      return { ...ev, venue: evVenue || '', date: evDate || wedding?.weddingDate || '' };
+    });
+
+  const icsText = buildIcs(acceptedEvents, coupleName);
+  // A data: URL keeps the file entirely client-side — nothing is uploaded, and
+  // no endpoint has to exist that hands out a guest's events.
+  const icsHref = icsText ? `data:text/calendar;charset=utf-8,${encodeURIComponent(icsText)}` : null;
+  const googleHref = buildGoogleCalendarUrl(acceptedEvents, coupleName);
+
   const firstName = guest?.name ? guest.name.split(' ')[0] : '';
   // For the "done" screen icon/copy — attending overall if any invited event is a yes.
   const anyAttending = Object.values(eventForm).some(v => v.status === 'yes');
@@ -735,6 +752,35 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
               }}>
                 {countdownLine}
               </p>
+            )}
+            {/* A-NEW2 — add to calendar. Only for guests who are coming, only
+                the events they accepted, and only when at least one has a
+                usable date. Both links are built from what this page already
+                shows them. */}
+            {anyAttending && icsHref && (
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginTop: 20 }}>
+                <a
+                  href={icsHref}
+                  download={`${(coupleName || 'wedding').replace(/[^\w-]+/g, '-').toLowerCase()}.ics`}
+                  style={{
+                    border: `1px solid ${theme.accent}`, color: theme.accent, borderRadius: 999,
+                    padding: '9px 18px', fontSize: 13, fontWeight: 600, textDecoration: 'none', ...F,
+                  }}
+                >
+                  Add to calendar
+                </a>
+                {googleHref && (
+                  <a
+                    href={googleHref} target="_blank" rel="noopener noreferrer"
+                    style={{
+                      border: `1px solid ${theme.accent}55`, color: theme.accent, borderRadius: 999,
+                      padding: '9px 18px', fontSize: 13, fontWeight: 600, textDecoration: 'none', ...F,
+                    }}
+                  >
+                    Google Calendar
+                  </a>
+                )}
+              </div>
             )}
             {(attendees.length > 0 || circle.length > 0) && (
               <div style={{ marginTop: 28, paddingTop: 24, borderTop: `1px solid ${theme.accent}22` }}>
