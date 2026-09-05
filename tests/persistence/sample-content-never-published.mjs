@@ -109,6 +109,96 @@ export async function runSampleContentNeverPublished() {
       empty.length === 0, empty.length ? `renders nothing: ${empty.join(', ')}` : `${READERS.length} sections verified against their readers`);
   }
 
+  // ── 2b-bis. A COUPLE'S CONTENT SURVIVES THE MERGE, WHOLE ────────────────
+  //
+  // THE PROPERTY THIS SYSTEM CANNOT BE ALLOWED TO BREAK. On 2026-09-05 the
+  // owner reported his photographs looked gone. They were not — the merge lost
+  // nothing, measured on his real record: 19 image values in, 20 out, none
+  // lost. But that was a MEASUREMENT, and a property proven once by hand is
+  // not a property held. This is the test.
+  //
+  // The fixture is a record with EVERY fillable field populated, including
+  // nested images at the depths a real record carries them (venue photos,
+  // accommodation places, an itinerary block). Nothing about it may change.
+  {
+    const populatedFor = (uni) => ({
+      activeUniverse: uni,
+      couple1Name: 'Real', couple2Name: 'Couple', coupleNames: 'Real & Couple',
+      coverPhoto: 'https://example.com/theirs-cover.jpg',
+      homeContent: { blocks: [{ id: 'c1', type: 'paragraph', content: { text: 'Their own words.' } }] },
+      ourStoryContent: { storyText: 'Their story.', photos: ['https://example.com/theirs-1.jpg', 'https://example.com/theirs-2.jpg'],
+        milestones: [{ date: 'Theirs', text: 'A milestone of their own.' }] },
+      celebrationContent: { daySchedule: [{ time: '3pm', description: 'Their schedule.' }] },
+      registryContent: { registryMessage: 'Their registry note.' },
+      musicContent: { customMessage: 'Their music note.' },
+      music: { guestRequestsEnabled: true, requestMessage: 'Their request message.' },
+      qna: [{ question: 'Theirs?', answer: 'Theirs.' }],
+      polls: [{ id: 'p', title: 'Their poll', isActive: true, options: [{ id: 'o', label: 'Their option', votes: 3 }] }],
+      weddingPolicies: { dressCode: { display: true, guidance: 'Their dress code.' } },
+      accommodation: { manualProperties: [{ name: 'Their hotel', photoUrl: 'https://example.com/theirs-hotel.jpg' }] },
+      transport: { enabledModes: ['taxi'] },
+      guestSuiteTransport: { places: [{ id: 't', name: 'Their taxi', photo_url: '/api/places-photo?ref=THEIRS-T' }], notes: [] },
+      experienceGuide: { published: true, itinerary: { schedule: [{ day: 1, blocks: {
+        morning: [{ id: 'i', place_name: 'Their place', photo_url: '/api/places-photo?ref=THEIRS-I' }] } }] } },
+      mainCeremony: { venueName: 'Their venue', photoUrl: '/api/places-photo?ref=THEIRS-C' },
+      reception: { venueName: 'Their reception', photoUrl: '/api/places-photo?ref=THEIRS-R' },
+      enabledPages: ['home', 'our-story'],
+    });
+
+    // Walk every string in the record, so a nested value cannot slip past a
+    // top-level comparison. This is the shape the real diagnosis used.
+    const strings = (v, path = '', out = []) => {
+      if (typeof v === 'string') { out.push(`${path}=${v}`); return out; }
+      if (Array.isArray(v)) { v.forEach((x, i) => strings(x, `${path}[${i}]`, out)); return out; }
+      if (v && typeof v === 'object') { Object.entries(v).forEach(([k, x]) => strings(x, path ? `${path}.${k}` : k, out)); return out; }
+      return out;
+    };
+    const isImage = (s) => /cloudinary|places-photo|\.(jpe?g|png|webp|gif)/i.test(s);
+
+    // EVERY SAMPLE UNIVERSE, not just the first. bali carries no imagery, so a
+    // fault that overwrites a couple's photos WITH sample photos is invisible
+    // against it — a planted nested overwrite passed this block green until
+    // havana was included. Testing one fixture tests one shape.
+    for (const uni of ids) {
+    const populated = populatedFor(uni);
+    const before = strings(populated).sort();
+    const { details: after, sampledFields } = withSampleContent(populated);
+    const afterAll = strings(after).sort();
+    const lost = before.filter((b) => !afterAll.includes(b));
+    const lostImages = lost.filter(isImage);
+
+    check(`${uni}: a fully populated record loses NOTHING to the merge (${before.length} values walked)`,
+      lost.length === 0, lost.length ? `LOST: ${lost.slice(0, 4).join(' | ')}` : 'every value survives, nested ones included');
+    check(`  ${uni}: no image of theirs is replaced or dropped`,
+      lostImages.length === 0, lostImages.length ? `LOST IMAGES: ${lostImages.join(' | ')}` : `${before.filter(isImage).length} of their images intact`);
+    check(`  ${uni}: nothing at all was filled, because nothing was empty`,
+      sampledFields.length === 0, sampledFields.length ? `filled anyway: ${sampledFields.join(', ')}` : 'sampledFields is empty');
+
+    // ── AND THE SAME RECORD WITH ONE GAP, SO THE MERGE BODY ACTUALLY RUNS ──
+    //
+    // The fixture above is FULLY populated, so withSampleContent takes its
+    // early return before the merge loop — which means it cannot see a bug
+    // inside that loop. A planted nested overwrite (replacing their
+    // ourStoryContent.photos while keeping the rest of the object) went
+    // straight through it, green.
+    //
+    // This is the same record with ONE harmless gap. `sampledFields` is now
+    // non-empty, the loop executes, and every one of their values is still
+    // required to survive. A guard that only tests the early return is testing
+    // the branch where nothing happens.
+    const withGap = { ...populated, polls: [] };
+    const gapBefore = strings(withGap).sort();
+    const { details: gapAfter, sampledFields: gapFilled } = withSampleContent(withGap);
+    const gapLost = gapBefore.filter((b) => !strings(gapAfter).sort().includes(b));
+    check(`  ${uni}: with one empty field the merge RUNS, and still loses nothing`,
+      gapFilled.length > 0 && gapLost.length === 0,
+      gapLost.length ? `LOST: ${gapLost.slice(0, 4).join(' | ')}` : `merge ran (filled: ${gapFilled.join(', ')}), ${gapBefore.length} values intact`);
+    check(`  ${uni}: their images specifically survive the merge body`,
+      gapLost.filter(isImage).length === 0,
+      gapLost.filter(isImage).join(' | ') || `${gapBefore.filter(isImage).length} images intact through a live merge`);
+    }
+  }
+
   // ── 2c-bis. EVERY IMAGE AND SUB-SHAPE SITS ON A KEY THE PAGE READS ───────
   // The owner reported seeing a sample photograph on the hero and nowhere
   // else. Four roles were written to keys no page component reads:
