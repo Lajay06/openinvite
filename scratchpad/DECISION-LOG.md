@@ -4436,3 +4436,62 @@ carry `slug: null` / `websiteEnabled: false` — those are stamped at the exit b
 `getSampleWedding()`, along with the non-enumerable `__sample` marker. bali has
 the same shape. The safety lives at the door, not in the room, which is fine
 while the door is the only way in — and on main there is no way in at all.
+
+---
+
+## 2026-09-05 — R29: #655's live reading, and what a protected wedding shows
+
+### Live production, the one case the platform actually has
+
+    slug                   http   app   og:title          og:image
+    chris-and-sia          200    yes   Chris & Sia       ABSENT
+    no-such-wedding-xyz    200    yes   You are invited   ABSENT
+
+    <title>Chris &amp; Sia</title>
+    og:description  You are invited. 2 September 2026. Open the invitation to
+                    see the details and reply.
+    twitter:card    summary
+
+**Names and date are on the card**, where before this every wedding on the
+platform sent the identical "You are invited" with no name and no date.
+
+**THE IMAGE IS ABSENT, AND THAT IS THE RULING WORKING, NOT A GAP.** R29 asked
+for "names and date and image present". The image is not present and cannot be:
+**not one wedding in the production database has a `coverPhoto` set** — checked
+across all 21 records. The decided behaviour is that a couple with no cover
+photo gets NO image and stays `twitter:card: summary` rather than being handed
+a stock photograph or the universe's own asset: *"a guest seeing a stranger's
+villa on their friend's invitation is worse than a text card. The image is the
+couple's or it is absent."*
+
+### The two cases no live wedding can demonstrate, measured on the real module
+
+**No wedding on the platform has a password enabled either**, so neither the
+image path nor the privacy gate could be read off production. Both were
+measured by driving the deployed `api/guest-page.js` handler directly with
+synthetic records — the real code, not the network.
+
+    case                                    app   og:title       og:image   twitter:card
+    published, no password, WITH photo      yes   Ada & Alan     present    summary_large_image
+    published, PASSWORD ENABLED             yes   You are        ABSENT     summary
+                                                  invited
+    published, no password, NO photo        yes   Chris & Sia    ABSENT     summary
+    (every wedding today)
+
+### WHAT A PASSWORD-PROTECTED WEDDING SHOWS: THE BARE CARD
+
+No name, no date, no image, `twitter:card` unchanged at `summary` — identical
+to a link to a wedding that does not exist. **The couple's identity does not
+leak into the chat app that previewed the link.**
+
+That gate is `websitePasswordEnabled === true`, positive confirmation only, and
+it deliberately does NOT consult the gate's runtime result:
+`api/wedding-by-slug.js` documents a FAIL-OPEN where `websitePasswordEnabled`
+true with no stored credential still serves the site publicly. **A card keyed
+on the effective gate would leak a protected couple's names every time that
+fail-open fired.**
+
+**The rendered-app column is `yes` in every row, on every path** — the shell
+document comes back intact whether the card is populated or bare. That is
+delivery-fails-safe holding: this function sits in front of 100% of guest
+traffic and the worst it can produce is the previous behaviour.
