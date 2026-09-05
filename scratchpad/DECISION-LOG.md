@@ -4658,3 +4658,107 @@ clean file, because it counted any occurrence of `_photoUrl` and my own comment
 explaining the removal contains the word — **a guard that forbids writing down
 why it exists.** It now strips comments and counts assignments. That is the
 third time comment-stripping has been the fix in this file.
+
+---
+
+## 2026-09-05 — R32 REPORT: the universe hero as og:image fallback. PROPOSE ONLY.
+
+### FIRST: THIS EXACT QUESTION WAS RULED ON, THE OTHER WAY
+
+Before any path, the conflict. The decision log already carries a decision on
+this, and **R32's premise and the prior ruling's premise are the same
+sentence** — they reach opposite conclusions from it.
+
+**Prior ruling, recorded when the unfurl was sized:**
+
+> *"The fallback the run asked me to decide, decided: when a couple has no
+> `coverPhoto`, the card should carry no image at all and stay
+> `twitter:card: summary`, exactly as today. Not a stock photo, **not the
+> universe's `imageUrl`. A universe image is Openinvite's asset, not the
+> couple's**, and a guest seeing a stranger's villa on their friend's
+> invitation is worse than a text card. The image is the couple's or it is
+> absent."*
+
+**R32's conditional ruling:**
+
+> *"the universe hero is **the universe's artwork, not the couple's**, so it
+> may serve as og:image on a published site without the sample-imagery
+> acknowledgement."*
+
+Both say the image is Openinvite's and not the couple's. The first concludes
+**therefore absent**; the second concludes **therefore permitted**. This is not
+a detail I can resolve by building carefully — **the owner is reversing his own
+earlier decision, and should do so knowingly.** Reported rather than
+implemented.
+
+### THE PATH, IF IT IS REVERSED: mechanically clean
+
+**`api/*.js` can already import from `src/lib/`** — five endpoints do today
+(`collaborator-data`, `dev-send-test-digest`, `my-guests-rsvp`, and both
+questionnaire endpoints). Nothing new is needed to reach either candidate.
+
+**TWO CANDIDATE SOURCES, AND THEY ARE NOT EQUIVALENT:**
+
+    source                            covers   what it is
+    UNIVERSE_CONFIGS[id].imageUrl     20 / 20  the universe's own artwork,
+                                               /universes/<id>.jpg, static
+    the sample hero (sampleContent)    2 / 20  SAMPLE IMAGERY
+
+**It must be the first.** The sample hero is exactly the class of image the
+publish acknowledgement governs — using it as og:image would put sample imagery
+on a published site with no acknowledgement, which is the rule the whole
+sample-content design is built around. It also covers two universes. The
+universe's own `imageUrl` covers all twenty and is unambiguously Openinvite's
+artwork, which is the thing R32's reasoning is actually about.
+
+**What it would touch:**
+
+  1. `api/guest-page.js` — one import of `UNIVERSE_CONFIGS`, and one fallback
+     in the block that already builds `image`, at the existing line:
+     `image: typeof wedding.coverPhoto === 'string' && /^https?:/ ? … : null`
+     becomes `… : universeHero(wedding.activeUniverse)`.
+  2. **Absolutising the path.** `imageUrl` is `/universes/havana.jpg`; og:image
+     requires an absolute URL, so it needs the request host —
+     `https://www.openinvite.com.au/universes/<id>.jpg`. The handler already
+     has `req.headers.host`.
+  3. Nothing else. The `summary_large_image` upgrade already keys off `image`
+     being non-null, so it follows automatically.
+
+**One cost worth naming:** `websiteThemes.js` is 66KB of pure data with no
+imports, so it is safe to import server-side, but it would be bundled into the
+function that fronts **100% of guest traffic**. A three-line id→path map inside
+`api/_lib/` would avoid that and would immediately be a second copy of a token
+file — which is the drift `universeCatalog.js` was written to end. **The 66KB
+import is the right trade; the alternative is drift.**
+
+### FAIL-CLOSED: CONFIRMED, AND IT IS FREE
+
+The password gate returns before any meta is built:
+
+    if (wedding.websiteEnabled !== true)      return send(shell);   // unpublished
+    if (wedding.websitePasswordEnabled === true) return send(shell); // PROTECTED
+    const names = coupleDisplayName(wedding);                        // …only now
+
+**A universe fallback placed in the `image:` expression sits after all three
+gates and inherits them.** A protected wedding gets the bare card: no name, no
+date, **and no universe image either** — which matters for the reason R32
+gives, that the universe identifies the couple's choice. Measured on the real
+module today: password enabled → `og:title: You are invited`, `og:image:
+ABSENT`, `twitter:card: summary`.
+
+Same for an absent record, an ambiguous slug (two rows on one slug — real, and
+`tulum-test` is that case today), a lookup failure and an unpublished site.
+
+### THE FACT THAT MAKES THIS URGENT OR NOT
+
+**No wedding on the platform has a `coverPhoto` — all 21 checked.** So today
+this fallback is the difference between *every* share card being text-only and
+*every* share card carrying its universe's artwork. It is not an edge case; it
+is the current state of every link the product can produce.
+
+**Equally: no wedding has a password enabled either**, so the fail-closed path
+has no live traffic to protect yet. It should still be built first, because the
+first protected wedding will not announce itself.
+
+**PROPOSE ONLY. Nothing built. It lands after the owner sees Havana's pages,
+and only if he means to reverse the earlier ruling.**
