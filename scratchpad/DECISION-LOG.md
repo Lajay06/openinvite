@@ -3463,3 +3463,101 @@ passes when imported directly — that is how R15's and D1's checks were run
 here — so this is the runner, not the tests. Not fixed: the missing file was
 deleted, and restoring it is a decision about what that Spotify test should
 assert, not a mechanical repair.
+
+---
+
+## 2026-09-05 — THE ACCOUNT FOR RUN 4
+
+**One merged and live. Two held with green CI and previews. Three reports.**
+
+### Merged and verified on production
+
+**R15 — the allSettled fix, #659.** `#654` had not merged, so the correctness
+fix split out as instructed. `Promise.all` in the Overall loader rejected on the
+FIRST store that failed and discarded the seven that had already succeeded: one
+flaky request emptied the whole page, and every stat card read zero — which is a
+CLAIM about a couple's wedding, not an absence of data.
+
+It reuses `src/lib/dashboardSources.js` rather than hand-rolling `allSettled`.
+That module already existed for DailyUpdate, is already behaviourally tested
+with injected rejecting loaders, and already knows the trap: the soft default on
+`resolveMyWedding`'s loaders converts a failure to `[]` one layer down, so
+`{ strict: true }` is mandatory or the classification reports "ok" for an outage.
+
+**A CI pin had to move, and moving it was the point of the pin.**
+`tests/persistence/dashboard-sources.mjs` asserted that ONLY DailyUpdate opts
+into strict loaders, with a comment saying a second page must be a deliberate
+decision rather than a copy-paste. It now names both, with the reason: both
+render COUNTS drawn from several stores, where a swallowed failure prints a zero
+that reads as fact. Anywhere that renders a LIST, the soft default is still
+right, and the pin still keeps that the default.
+
+**Verified live, not assumed.** Production serves
+`/assets/Dashboard-BeE99WTm.js`, which contains both the new banner copy and the
+`dashboardSources` path. Merged AND confirmed on openinvite.com.au.
+
+### Held, with previews, on the owner's instruction
+
+Both are held because the instruction said hold. Recording that explicitly
+because the standing rule is that no PR outlives its session.
+
+**R16 — music into the shell, #660.**
+`https://openinvite-git-feat-music-in-shell-lajay06-5660s-projects.vercel.app`
+CI green. The form moved into `WeddingMusicPage`, the route override is gone,
+and the payload is byte-identical — measured on two running builds with real
+keystrokes and an intercepted POST, not asserted. Parity table above.
+
+**Two corrections to the brief, both factual.** The count was **66 hard-coded
+stops across 20 distinct values**, not 24. And **bali is itself a light-ground
+universe** (`lightBg #F2E9D3`), so the second render is mykonos (`#FFFFFF`), the
+clearest available contrast. Before, those two universes render the SAME BLACK
+PAGE — only the section mark and heading face differ. That is the defect in one
+image.
+
+**D1 — sample content for bali, #661.**
+`https://openinvite-git-feat-sample-content-bali-lajay06-5660s-projects.vercel.app`
+CI green. Two new paths, zero modified files. **Its brief is mine, not the
+owner's** — the "as already specified" specification does not exist anywhere I
+can reach, and inventing one and then reporting against it as though it were
+the owner's would have been the worse failure. Stated at the top of the PR so it
+can be rejected cheaply.
+
+### Reported, nothing built
+
+**R17 — anonymous-record deletion.** The short version: for PollVote,
+PollComment, RsvpResponse, SongRequest, QuestionnaireResponse and GuestbookEntry,
+`delete` RLS is `{created_by_id: "{{user.id}}"}` and **nobody can satisfy it** —
+not the owner's session, not the admin key — because Base44 stamps every
+guest-written row `"anonymous"` itself. `GuestContactSubmission` is the opposite
+failure: `delete: null`, so **anyone with any token can delete any couple's
+contact submissions**. The fix exists and is already proven in this app:
+`Notification` scopes on `{"data.recipient_user_id": "{{user.id}}"}`, so RLS CAN
+read a field of the row. Stamp `ownerUserId` at create — every write site already
+holds `wedding.created_by_id`, and two already use it — and scope delete on it.
+**Proposed only. Nothing in `base44/entities/` touched.**
+
+**D0 and D2.** Above.
+
+### The finding nobody asked for
+
+**`npm run test:persistence` has been dead on main.** It imports
+`tests/persistence/spotify-oauth.mjs`, which exists on no branch. The suite
+throws `ERR_MODULE_NOT_FOUND` before a single check runs. It is a required LOCAL
+gate, never a CI step — which is exactly why it went unnoticed. Every domain
+file still passes when imported directly; this is the runner, not the tests. Not
+fixed, because restoring the missing file is a decision about what that test
+should assert, not a repair.
+
+### What I got wrong, in order
+
+**A probe that lied about the product.** The first interaction probe reported
+that every controlled input in the guest shell silently discarded what was
+typed — on `WeddingMusicPage` AND on the untouched `WeddingRSVPPage`, which
+would have been an enormous pre-existing defect. It was the harness: the
+entrance overlay was intercepting, and `dismissEntrance` had not been called.
+Checked before reporting it, rather than after.
+
+**A guard that was green and wrong.** D1's most important check — no sample
+sentence is also a live default — could not see a deliberately planted leak.
+Apostrophes in prose comments open a false string literal and desynchronize the
+scan. Found only because the plant was run; fixed rather than trusted.
