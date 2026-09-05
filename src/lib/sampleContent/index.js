@@ -23,9 +23,13 @@
  *      production (BASE44_PLATFORM_NOTES.md), so "it is only a preview" is not
  *      a safety argument here and never was.
  *
- *   2. IT IS MARKED. Every sample carries `__sample: true` at the top level and
- *      `isSample()` reads it. A surface that renders sample content can say so,
- *      and a guard can tell sample data from a couple's.
+ *   2. IT IS MARKED, AND THE MARK CANNOT TRAVEL INTO A WRITE. `isSample()` reads
+ *      a NON-ENUMERABLE `__sample` property. That is not a detail: the ruling is
+ *      that no `is_sample` field is ever stored on a wedding record, and a plain
+ *      key on a record-shaped object is one `JSON.stringify` away from being in
+ *      a request body. Non-enumerable means `JSON.stringify`, `{...spread}` and
+ *      `Object.keys` all drop it, so the marker is readable in memory and
+ *      structurally incapable of reaching the database. Asserted, not intended.
  *
  *   3. NO SAMPLE SENTENCE IS ALSO A LIVE DEFAULT. This is the specific shape of
  *      #576: a string that is an example in one place and a published fallback
@@ -75,13 +79,23 @@ export function getSampleWedding(universeId, { now } = {}) {
   const base = new Date(now || Date.now());
   const weddingDate = new Date(base.getFullYear(), base.getMonth() + 8, 14);
 
-  return {
+  const out = {
     ...structuredClone(sample),
     weddingDate: weddingDate.toISOString().slice(0, 10),
     // Restated here, not merely inherited, so the two facts that keep a sample
     // off a real address are visible at the exit rather than only at the source.
     slug: null,
     websiteEnabled: false,
-    __sample: true,
   };
+
+  // The source object declares `__sample: true` as an ordinary key so the file
+  // reads honestly; the spread above copies it, and this REDEFINES it
+  // non-enumerable on the way out. After this, `JSON.stringify(out)` has no
+  // `__sample` in it, so the marker cannot ride a save into the database — the
+  // ruling is that no is_sample field is ever STORED, and this is what makes
+  // that structural rather than a promise.
+  Object.defineProperty(out, '__sample', {
+    value: true, enumerable: false, writable: false, configurable: false,
+  });
+  return out;
 }

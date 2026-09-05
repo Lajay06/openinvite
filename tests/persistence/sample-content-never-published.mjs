@@ -66,6 +66,85 @@ export async function runSampleContentNeverPublished() {
     isSample({ coupleNames: 'A & B' }) === false && isSample(null) === false,
     'isSample is a positive test, not a truthiness test');
 
+  // ── 2b. THE MARK CANNOT REACH THE DATABASE ───────────────────────────────
+  // Ruling (c): no is_sample field is ever STORED on a wedding record. A plain
+  // key on a record-shaped object is one JSON.stringify away from a request
+  // body, so the marker is non-enumerable and this is the assertion that says
+  // so. Serializing is exactly what a save does.
+  for (const id of ids) {
+    const s = getSampleWedding(id);
+    const serialized = JSON.stringify(s);
+    check(`${id}: the sample marker survives no serialization, so it cannot be stored`,
+      !serialized.includes('__sample') && !Object.keys(s).includes('__sample'),
+      `${serialized.length} bytes, no __sample key`);
+    check(`${id}:   and a spread copy — what a save path builds — drops it too`,
+      ({ ...s }).__sample === undefined, 'spread drops the mark');
+    check(`${id}:   while isSample still reads it in memory`,
+      isSample(s) === true, '__sample readable, not enumerable');
+  }
+
+  // ── 2c. EVERY SAMPLE KEY IS A KEY THE PRODUCT ACTUALLY READS ─────────────
+  // A guard on STRINGS cannot tell a key the product ignores from one it
+  // renders. Three keys in the first version of this sample were invented from
+  // the field name rather than read off the page — celebrationContent.custom-
+  // Message, weddingPolicies.{enabled,text} and transport.notes — and every one
+  // of them rendered nothing at all. That is the render harness's own
+  // faq-instead-of-qna seed bug, repeated. These are the accessors, taken from
+  // the pages that consume them.
+  const READERS = [
+    ['celebration events (ceremony/reception)', (w) => !!(w.mainCeremony?.venueName || w.reception?.venueName)],
+    ['weddingPolicies -> visibleSections', (w) => Object.values(w.weddingPolicies || {}).some((p) => p?.display === true)],
+    ['guestSuiteTransport.places', (w) => w.guestSuiteTransport?.places?.length > 0],
+    ['accommodation.manualProperties', (w) => w.accommodation?.manualProperties?.length > 0],
+    ['ourStoryContent.storyText', (w) => !!w.ourStoryContent?.storyText],
+    ['homeContent.blocks', (w) => w.homeContent?.blocks?.length > 0],
+    ['qna', (w) => w.qna?.length > 0],
+    ['polls (isActive)', (w) => (w.polls || []).some((p) => p.isActive)],
+  ];
+  for (const id of ids) {
+    const s = getSampleWedding(id);
+    const empty = READERS.filter(([, read]) => !read(s)).map(([name]) => name);
+    check(`${id}: every sampled section is one the guest pages actually read`,
+      empty.length === 0, empty.length ? `renders nothing: ${empty.join(', ')}` : `${READERS.length} sections verified against their readers`);
+  }
+
+  // ── 2d. AND EVERY SAMPLED SECTION IS ON A PAGE THAT CAN BE REACHED ───────
+  // Content the renderer reads is still invisible if its page refuses to
+  // render. `polls` is the trap: stay/transport/music/good-to-know are unlocked
+  // by MultiPageWeddingWebsite's subPageAvailability map, but polls has no
+  // entry there, so enabledPages is the only route to it. Sample polls existed
+  // for one commit on a page that returned "this invitation isn't available".
+  // The mutual exclusion that made the SECOND wrong shape look right: a day
+  // schedule is rendered ONLY when the record has no ceremony/reception events
+  // (WeddingCelebrationPage: `!hasEvents && daySchedule.length > 0`). Carrying
+  // both means carrying content no guest can ever see.
+  for (const id of ids) {
+    const s = getSampleWedding(id);
+    const hasEvents = !!(s.mainCeremony?.venueName || s.reception?.venueName);
+    const hasDaySchedule = (s.celebrationContent?.daySchedule || []).length > 0;
+    check(`${id}: no day schedule that the presence of events would suppress`,
+      !(hasEvents && hasDaySchedule),
+      hasEvents ? 'events render; no competing daySchedule' : 'no events, daySchedule would render');
+  }
+
+  const NEEDS_ENABLED_PAGE = {
+    polls: (w) => (w.polls || []).some((p) => p.isActive),
+    faq: (w) => w.qna?.length > 0,
+    registry: (w) => !!w.registryContent?.registryMessage,
+    'our-story': (w) => !!w.ourStoryContent?.storyText,
+    celebration: (w) => !!(w.mainCeremony?.venueName || w.reception?.venueName),
+  };
+  for (const id of ids) {
+    const s = getSampleWedding(id);
+    const enabled = s.enabledPages || [];
+    const unreachable = Object.entries(NEEDS_ENABLED_PAGE)
+      .filter(([page, has]) => has(s) && !enabled.includes(page))
+      .map(([page]) => page);
+    check(`${id}: every sampled section sits on a page enabledPages can reach`,
+      unreachable.length === 0,
+      unreachable.length ? `content with no reachable page: ${unreachable.join(', ')}` : `${enabled.length} pages enabled`);
+  }
+
   // ── 3. Nothing a guest can reach imports it ──────────────────────────────
   // The guest site, the published-site routes and the server endpoints. If any
   // of these could import sample content, a bug could put it in front of a
@@ -81,28 +160,31 @@ export async function runSampleContentNeverPublished() {
   console.log(`     (${importers.length} importer(s) total: ${importers.join(', ') || 'none yet — D1 ships the data, not a consumer'})`);
 
   // ── 4. #576's EXACT SHAPE: a sample string that is also a live default ────
-  // Every sentence-length string in the sample directory, searched for across
-  // the rest of src/. A hit means that string is both "an example" and
-  // something the product can publish on its own — which is the defect, not a
-  // duplicate.
-  // STRIP COMMENTS FIRST. An apostrophe in prose ("a couple's data") opens a
-  // false string literal and desynchronizes every match after it — the first
-  // version of this check extracted 38 misaligned fragments and could not see a
-  // deliberately planted leak. A guard that cannot fail is not a guard; this one
-  // was verified against a planted duplicate before it was believed.
-  const strip = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-  const sampleSources = walk(SAMPLE_DIR).map((p) => strip(readFileSync(p, 'utf8'))).join('\n');
-  const sentences = [...sampleSources.matchAll(/'((?:[^'\\]|\\.){24,})'/g)]
-    .map((m) => m[1].replace(/\\'/g, "'"))
-    // Only prose. A long identifier or a path is not a sentence and would
-    // produce noise, which is how a guard stops being read.
-    .filter((s) => /\s/.test(s) && !/^[\w./@-]+$/.test(s));
+  // Every sentence the sample actually CONTAINS, searched for across the rest
+  // of src/. A hit means that string is both "an example" and something the
+  // product can publish on its own — which is the defect, not a duplicate.
+  //
+  // WALKED FROM THE DATA, NOT SCRAPED FROM THE SOURCE. Two versions of this
+  // check read the .js files with a regex for quoted strings, and both were
+  // wrong in the same family: an apostrophe in prose opened a false literal,
+  // and then a `{24,}` minimum let a match BEGIN on a closing quote, so a
+  // single import line swallowed the rest of the file as one "sentence". The
+  // second version reported a 4,000-character fragment as a leak. Reading the
+  // object the product would actually render needs no parser and cannot
+  // desynchronize — the strings are the strings.
+  const collectStrings = (v, out = []) => {
+    if (typeof v === 'string') { if (/\s/.test(v) && v.length >= 24) out.push(v); return out; }
+    if (Array.isArray(v)) { v.forEach((x) => collectStrings(x, out)); return out; }
+    if (v && typeof v === 'object') { Object.values(v).forEach((x) => collectStrings(x, out)); return out; }
+    return out;
+  };
+  const sentences = [...new Set(ids.flatMap((id) => collectStrings(getSampleWedding(id))))];
   const others = walk(SRC).filter((p) => !p.startsWith(SAMPLE_DIR));
   const leaked = [];
   for (const p of others) {
     const body = readFileSync(p, 'utf8');
     for (const s of sentences) {
-      if (body.includes(s)) leaked.push(`${relative(ROOT, p)}: "${s.slice(0, 40)}…"`);
+      if (body.includes(s)) leaked.push(`${relative(ROOT, p)}: "${s.slice(0, 44)}…"`);
     }
   }
   check(`no sample sentence is also a live string elsewhere in src/ (${sentences.length} checked)`,
@@ -138,6 +220,14 @@ export async function runSampleContentNeverPublished() {
   const bangs = sentences.filter((s) => s.includes('!'));
   check('no exclamation marks in sample copy',
     bangs.length === 0, bangs.join(' | ') || 'none');
+
+  // Poll options can carry an `emoji`. A couple's own choice would be exempt as
+  // artwork; copy WE author is not, so none is written here.
+  for (const id of ids) {
+    const withEmoji = (getSampleWedding(id).polls || []).filter((p) => p.emoji);
+    check(`${id}: no emoji on sample polls — this is our copy, not the couple's`,
+      withEmoji.length === 0, withEmoji.map((p) => p.title).join(', ') || 'none');
+  }
 
   return results;
 }

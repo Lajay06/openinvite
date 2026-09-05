@@ -41,7 +41,13 @@ export const SAMPLE_BALI = {
 
   activeUniverse: 'bali',
   websiteMode: 'light',
-  enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport'],
+  // 'polls' MUST be listed. Unlike stay/transport/music/good-to-know, the polls
+  // page has no entry in MultiPageWeddingWebsite's subPageAvailability map, so
+  // enabledPages is the ONLY thing that makes it reachable. Sample polls were
+  // added and the page still refused to render — caught by rendering it, not by
+  // reading it, which is why the guard below now checks reachability and not
+  // just presence.
+  enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls'],
 
   mainCeremony: {
     venueName: 'The Sample Garden',
@@ -80,9 +86,15 @@ export const SAMPLE_BALI = {
     ],
   },
 
-  celebrationContent: {
-    customMessage: 'The ceremony is outside and the ground is soft. Flat shoes are the kindest thing you can do for yourself.',
-  },
+  // NO `celebrationContent` AT ALL, and that is the finding rather than an
+  // omission. This carried a `customMessage` (which the page never reads) and
+  // was then "fixed" to a `daySchedule` — which the page DOES read, but only
+  // inside `{!hasEvents && daySchedule.length > 0}`. A record with a ceremony
+  // and a reception has events, so the day schedule never rendered either.
+  // Two wrong shapes in a row on the same key, both of which a presence check
+  // called correct, and both caught only by looking at the rendered page.
+  //
+  // The sample's events ARE mainCeremony and reception above. They render.
 
   rsvpContent: {
     // No deadline. A sample date would either be in the past or imply a
@@ -113,10 +125,17 @@ export const SAMPLE_BALI = {
     { question: 'What should we wear?', answer: 'Something you can stand in on grass for an hour. It stays warm well past dark.' },
   ],
 
+  // THE SHAPE `linesFor()` READS, not the shape the field names suggest.
+  // These were `{ enabled, text }`, which src/lib/goodToKnow.js reads not at
+  // all: a section shows only when `display` is true AND its own per-section
+  // fields carry something. Every Good-to-know entry here rendered NOTHING,
+  // and the guard could not see it because a guard on strings cannot tell a
+  // key the product ignores from one it reads.
   weddingPolicies: {
-    dressCode: { enabled: true, text: 'Garden formal. Flat shoes, and a layer for later.' },
-    children: { enabled: true, text: 'Children are welcome all day and all evening.' },
-    photography: { enabled: true, text: 'Phones down for the ceremony, please. Everything after is yours to photograph.' },
+    dressCode:   { display: true, guidance: 'Garden formal, and nothing that minds grass.', weatherNote: 'It stays warm well past dark, but bring a layer for the walk down.' },
+    children:    { display: true, option: 'all-welcome', message: 'There is a shaded room off the terrace with somewhere to nap.' },
+    photography: { display: true, unplugged: true, message: 'Everything after the ceremony is yours to photograph.' },
+    lateArrival: { display: true, policy: 'If you are late, come in at the back and nobody will mind.' },
   },
 
   accommodation: {
@@ -126,8 +145,53 @@ export const SAMPLE_BALI = {
     ],
   },
 
+  // TWO FIELDS, DELIBERATELY, because two different things read them.
+  // `transport.enabledModes` is what MultiPageWeddingWebsite's availability
+  // check consults to decide whether the page exists at all;
+  // `guestSuiteTransport.places[]/notes[]` is what WeddingTransportPage
+  // actually RENDERS. Setting only the first produced a reachable, empty page.
   transport: {
     enabledModes: ['shuttle', 'taxi'],
-    notes: 'A shuttle runs from the guesthouse at half past three and back again at midnight and at one.',
   },
+  guestSuiteTransport: {
+    places: [
+      { id: 'sample-t1', name: 'The hill shuttle', type: 'shuttle', address: 'From the guesthouse door', note: 'Half past three up, midnight and one back down.' },
+      { id: 'sample-t2', name: 'Taxis', type: 'taxi', address: 'Rank at the top of the track', note: 'Book ahead for the end of the night. There are not many.' },
+    ],
+    notes: [
+      { id: 'sample-tn1', title: 'The track', text: 'The last few hundred meters are unsealed. A low car will manage it slowly.' },
+    ],
+  },
+
+  // POLLS. Named in the ruling alongside names, story, events and
+  // Good-to-know, and absent from the first version of this file entirely.
+  // No `emoji` key: a poll can carry one, but this is copy WE author, and the
+  // no-emoji rule binds what we write even where a couple's own choice would
+  // be exempt.
+  polls: [
+    {
+      id: 'sample-p1',
+      title: 'What gets you onto the dance floor?',
+      category: 'music',
+      isActive: true,
+      allowComments: true,
+      options: [
+        { id: 'sample-p1a', label: 'Something everybody knows the words to', votes: 0 },
+        { id: 'sample-p1b', label: 'Something nobody expects', votes: 0 },
+        { id: 'sample-p1c', label: 'Nothing. I am here for the food', votes: 0 },
+      ],
+    },
+    {
+      id: 'sample-p2',
+      title: 'Sunday morning, before you go home',
+      category: 'schedule',
+      isActive: true,
+      allowComments: false,
+      options: [
+        { id: 'sample-p2a', label: 'Breakfast by the river', votes: 0 },
+        { id: 'sample-p2b', label: 'A slow walk and a coffee', votes: 0 },
+        { id: 'sample-p2c', label: 'A long lie-in, thank you', votes: 0 },
+      ],
+    },
+  ],
 };
