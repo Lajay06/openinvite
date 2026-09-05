@@ -29,7 +29,20 @@ import { runOwnership } from '../tests/persistence/ownership.mjs';
 import { runEmails } from '../tests/persistence/emails.mjs';
 import { runOnboarding } from '../tests/persistence/onboarding.mjs';
 import { runEndpointAuth } from '../tests/persistence/endpoint-auth.mjs';
-import { runSpotifyOAuth } from '../tests/persistence/spotify-oauth.mjs';
+// runSpotifyOAuth is RETIRED, not missing. tests/persistence/spotify-oauth.mjs
+// was deleted deliberately in 6d13e56 (the Spotify teardown, 2026-08-17)
+// together with the only two endpoints it covered — api/spotify-callback.js and
+// api/spotify-session-fetch.js. The import was left behind, so this runner has
+// thrown ERR_MODULE_NOT_FOUND on the FIRST LINE ever since: not one check in
+// this suite has run in roughly three weeks.
+//
+// It survived that long because ci.yml records the round-trip suite as a
+// required LOCAL gate and never runs it. A gate CI does not exercise is a gate
+// that can die silently, and this one did.
+//
+// Nothing is restored: the endpoints are gone, so the coverage has no subject.
+// api/spotify-search.js's app-token path is what remains of Spotify here, and
+// it is covered by the endpoint-auth and anonymous-endpoint modules.
 import { runAnonymousEndpoints } from '../tests/persistence/anonymous-endpoints.mjs';
 import { runUniverseStyling } from '../tests/persistence/universe-styling.mjs';
 import { runRateLimiting } from '../tests/persistence/rate-limiting.mjs';
@@ -142,7 +155,6 @@ async function run() {
     await runModule('runEmails', () => runEmails());
     await runModule('runOnboarding', () => runOnboarding(token));
     await runModule('runEndpointAuth', () => runEndpointAuth());
-    await runModule('runSpotifyOAuth', () => runSpotifyOAuth());
     await runModule('runAnonymousEndpoints', () => runAnonymousEndpoints());
     await runModule('runUniverseStyling', () => runUniverseStyling());
     await runModule('runRateLimiting', () => runRateLimiting());

@@ -100,7 +100,13 @@ export async function runAnonymousEndpoints() {
   {
     const kitchenSink = {
       id: 'test-id', slug: 'test-slug', coupleNames: 'Alex & Sam',
-      websitePassword: 'super-secret', emergencyContacts: { primary: { name: 'Mum', phone: '000' } },
+      // websitePasswordEnabled, not the presence of a password string: 44aa730
+      // made the flag the single source of truth and removed the sentinels.
+      // This fixture still set only the string, so passwordProtected came back
+      // false and the check failed — stale since 2026-08 and never seen,
+      // because the runner threw before reaching this module.
+      websitePassword: 'super-secret', websitePasswordEnabled: true,
+      emergencyContacts: { primary: { name: 'Mum', phone: '000' } },
       dayVendorContacts: [{ name: 'DJ', phone: '111' }], contactPerson: { name: 'X', phone: '222' },
       celebrant: { name: 'Y', phone: '333' }, license: { licenseNumber: 'ABC123' },
     };
@@ -125,9 +131,16 @@ export async function runAnonymousEndpoints() {
       couple1Name: 'Alex', couple2Name: 'Sam', coupleNames: 'Alex & Sam',
       slug: `test-slug-endpoint-${Date.now()}`,
       websitePassword: '', // not password-protected, so the full payload comes back
-      emergencyContacts: { primary: { name: 'Mum', phone: '0400000000' } },
-      dayVendorContacts: [{ name: 'DJ Test', phone: '0400000001', role: 'DJ' }],
-      contactPerson: { name: 'Best Man', phone: '0400000002' },
+      // STRINGS, because Step 2b encrypted these three at rest and the live
+      // schema types them `string`. The plaintext objects this used to send are
+      // now rejected with a 422, which aborted the whole module — and with it
+      // every RSVP, poll and attendee check that reuses the record it creates.
+      // What this test asserts is unchanged: the field is PRESENT on the
+      // record, and wedding-by-slug must not return it. A ciphertext-shaped
+      // sentinel serves that exactly as well as a plaintext object did.
+      emergencyContacts: 'ciphertext-sentinel-emergency-contacts',
+      dayVendorContacts: 'ciphertext-sentinel-day-vendor-contacts',
+      contactPerson: 'ciphertext-sentinel-contact-person',
     }, token);
     slugWeddingId = created.id;
     if (!slugWeddingId) throw new Error('No id on created sentinel WeddingDetails');
