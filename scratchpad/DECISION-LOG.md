@@ -3608,3 +3608,124 @@ macOS, and read exit 127 as "all five gates fail". A result that looks like a
 verdict and is actually the runner never having run — the same defect the whole
 P2 task exists to fix, committed while writing it up. Re-run without the
 wrapper, all five pass.
+
+---
+
+## 2026-09-05 (Run 5) — P1: #661 against the actual Track D rulings
+
+**The rulings were pasted in full this time, which is why this could be
+answered precisely.** Where #661 matched, where it did not, and what was
+amended on its own branch.
+
+    ruling                                              verdict
+    -------------------------------------------------   --------------------------
+    (a) sample copy never on a published guest site      MATCHED
+    (a) ...and the section is omitted                    ALREADY THE PRODUCT'S
+                                                         BEHAVIOR, except /music
+    (a) preview, studio and picker only                  NOT MATCHED — no consumer
+    (a) polls named as sample copy                       WAS MISSING — now added
+    (b) sample imagery behind a publish acknowledgement  NOT MATCHED — no imagery
+    (c) no is_sample field stored on a wedding record    MATCHED, now structurally
+    (d) new files only, no shared-component edits        MATCHED
+    (e) chris-and-sia shows omission; studio shows
+        samples                                          HALF REACHABLE — see below
+
+### (a) — omission is already the product's behavior, and /music is the exception
+
+Rendered the live fixture, `/w/chris-and-sia`, published on bali with four
+enabled pages and almost no content:
+
+    /home         renders. nav: Home, Our Story, Celebration, RSVP
+    /our-story    renders the couple's own text
+    /celebration  renders. ceremony only; no reception is set, and none is invented
+    /rsvp         renders
+    /faq          "This invitation isn't available"    OMITTED
+    /registry     "This invitation isn't available"    OMITTED
+    /stay         "This invitation isn't available"    OMITTED
+    /music        "Music requests unavailable  <- Back"   NOT OMITTED
+
+**Three of four omit correctly today. `/music` does not** — it serves the
+standalone black GuestMusic page as a dead end instead of being absent, because
+the route override is still on main. **#660 closes exactly this**: with the
+override gone and availability broadened to requests OR a playlist OR a
+message, chris-and-sia has none of the three and `/music` joins /faq,
+/registry and /stay. That is a second, independent argument for #660 that came
+out of testing something else.
+
+**Also observed, not introduced by this work:** the fixture's stored
+`welcomeMessage` is still the #576 sentence, *"We are overjoyed to celebrate
+with you."* — persisted on a real record, exactly the residue #576 flagged and
+did not clean. It does NOT publish (the render fallback was removed), but it is
+still in the database.
+
+**And two guest pages still carry OUR first-person copy**, which is #576's shape
+unaddressed rather than residual:
+
+    WeddingStayPage.jsx:59       "We've curated a few great places to stay..."
+    WeddingTransportPage.jsx:67  "Here's everything you need to know to get to the venue."
+
+Openinvite speaking as the couple, to their guests, on a published site. Not
+touched this run — it is a copy ruling, not a bug fix.
+
+### (c) — matched, and now structural rather than promised
+
+`__sample` was a plain key on a record-shaped object: never stored, because
+nothing writes, but one `JSON.stringify` from a request body. It is now
+**non-enumerable**, so serialization, spread and `Object.keys` all drop it
+while `isSample()` still reads it. Asserted by a check that was planted against.
+
+**A finding that makes this ruling less hypothetical than it sounds:** the live
+`GuestContactSubmission` row carries an **`is_sample: false`** field that
+appears nowhere in `base44/entities/` and nowhere in `src/`. An `is_sample`
+field already exists in this app's production schema, undeclared in the mirror.
+Whatever put it there is not in this repository.
+
+### (d) vs (e) — a contradiction I am not resolving silently
+
+(d) says new files only. (e) requires the studio preview of chris-and-sia to
+show bali's samples. **A consumer cannot exist without editing an existing
+file** — a studio surface, or App.jsx for a route. Under (d), (e)'s second half
+is unreachable. Its first half (published shows omission) is reachable and is
+verified above.
+
+So the studio half is NOT built and NOT faked. What I did instead, with a
+throwaway probe that is not part of the PR: fed the sample to the SAME page
+components the studio preview maps, by stubbing the slug endpoint. That shows
+what the sample looks like. It does not show that a studio surface exists,
+and it is labelled that way.
+
+### What the amendment actually fixed — three sections rendered NOTHING
+
+Checking against (a)'s enumeration ("names, story, events, polls,
+Good-to-know") is what exposed these. All three were written from what the
+field name suggested rather than from the page that reads it:
+
+  · `celebrationContent.customMessage` — the page reads `daySchedule`/`blocks`
+  · `weddingPolicies: { enabled, text }` — `goodToKnow.js` reads `{ display }`
+    plus per-section fields (`guidance`, `option`, `unplugged`, `policy`), so
+    **every Good-to-know entry was invisible**
+  · `transport.notes` — the page renders `guestSuiteTransport.places/notes`;
+    `transport.enabledModes` only decides whether the page EXISTS
+
+**Then the fix for the first was also wrong.** `daySchedule` renders only inside
+`!hasEvents && daySchedule.length > 0`, and the sample has a ceremony and a
+reception, so it could never show. `celebrationContent` is gone; the sample's
+events are `mainCeremony` and `reception`, which render.
+
+**And polls were unreachable once added** — the polls page has no entry in
+`subPageAvailability`, so `enabledPages` is the only route to it. Sample polls
+existed for one commit on a page that returned "this invitation isn't
+available".
+
+**None of that was visible to a guard that checks strings**, which is R19 again:
+four new checks now read the record the way the pages do — the reader for each
+section, `enabledPages` reachability, the day-schedule exclusion, and the
+marker's absence from serialized output. Every one was planted against.
+
+The leak check was rewritten a second time: scraping quoted strings from source
+let a match BEGIN on a closing quote and swallow a whole file as one "sentence".
+It walks the data now, which needs no parser and cannot desynchronize.
+
+**Amendment size:** three files, all mine, all on #661's own branch, no new
+surface, no product code. I judged that inside a conservative reading of the
+MINOR CLASS and did not hold. Guard 19/19; build and lint clean.
