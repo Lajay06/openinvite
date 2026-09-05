@@ -36,6 +36,7 @@ import WeddingTransportPage from '@/components/guest-website/pages/WeddingTransp
 import WeddingExperiencePage from '@/components/guest-website/pages/WeddingExperiencePage';
 
 import { coupleDisplayName } from '@/lib/coupleNames';
+import { withSampleContent } from '@/lib/sampleContent/mergeSample';
 const PAGE_COMPONENTS = {
   'home':         WeddingHomePage,
   'our-story':    WeddingOurStoryPage,
@@ -51,7 +52,23 @@ const PAGE_COMPONENTS = {
   'experience':   WeddingExperiencePage,
 };
 
-export default function RealWebsitePreview({ details, currentPage = 'home', onNavigate, editable = false, onRequestInsert, onMoveBlock, onDeleteBlock, onSelectBlock, selectedBlockId, replayEntranceKey }) {
+export default function RealWebsitePreview({ details: ownDetails, currentPage = 'home', onNavigate, editable = false, onRequestInsert, onMoveBlock, onDeleteBlock, onSelectBlock, selectedBlockId, replayEntranceKey }) {
+  // SAMPLE CONTENT FILLS ONLY WHAT THE COUPLE HAS LEFT EMPTY, and only here.
+  //
+  // A new account writes names, date, venue, style and universe and nothing
+  // else, so the first thing a couple saw after choosing a universe was
+  // thirteen empty pages in a new palette — the product's whole proposition
+  // invisible at the moment they are deciding whether to pay for it.
+  //
+  // THIS COMPONENT IS THE RIGHT PLACE BECAUSE OF WHAT IT IS NOT. It renders
+  // the builder canvas and the full-screen preview; the PUBLISHED site is
+  // rendered by MultiPageWeddingWebsite, which does not import this file and
+  // never has. So sample copy cannot reach a guest by any route from here —
+  // that is a property of the import graph, not a rule anyone has to keep, and
+  // tests/persistence/sample-content-never-published.mjs asserts it directly.
+  //
+  // The couple's content wins the moment it exists. See mergeSample.js.
+  const { details, isSampled, sampledFields } = withSampleContent(ownDetails);
   const theme = resolveColors(details);
   const typography = resolveTypography(details);
   const universeConfig = resolveUniverseConfig(details);
@@ -66,6 +83,25 @@ export default function RealWebsitePreview({ details, currentPage = 'home', onNa
       className="wb-guest-root"
       style={{ '--wb-heading-font': typography.headingFont, '--wb-body-font': typography.bodyFont, position: 'relative' }}
     >
+      {/* SAY THAT THESE ARE OUR WORDS. #576 shipped the opposite by accident —
+          our sentence published in the couple's own first person while the
+          builder showed it greyed out, which conventionally means "an example".
+          Sample content is that mechanism on purpose, so the one thing it may
+          never do is look like something the couple wrote. This is studio
+          chrome sitting above the artwork, not part of the site: product face,
+          sentence case, and it disappears the moment their own words arrive. */}
+      {isSampled && (
+        <div style={{
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontSize: 12, lineHeight: 1.5, color: 'rgba(10,10,10,0.6)',
+          background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.12)',
+          padding: '10px 16px',
+        }}>
+          Sample content, so you can see this universe with something in it.
+          {' '}Your own words replace it as you add them
+          {' '}({sampledFields.length} {sampledFields.length === 1 ? 'section' : 'sections'} shown from the sample).
+        </div>
+      )}
       {/* feat/entrance-moment: never auto-mounts here — only when the
           builder's own "Replay entrance" button bumps replayEntranceKey.
           `key` forces a fresh mount (fresh internal state) each replay;

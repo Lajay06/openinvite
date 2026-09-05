@@ -38,12 +38,22 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
   const daySchedule = weddingDetails.celebrationContent?.daySchedule || [];
 
   // ── Build unified event list ─────────────────────────────────────────────────
+  //
+  // NO `_photoUrl`. #650 removed the location photo from every event block at
+  // the owner's instruction, but the three assignments that fed it survived
+  // for another eleven PRs — an image resolved into a variable and rendered
+  // nowhere. It was found only when a sample tried to fill it and nothing
+  // appeared on screen.
+  //
+  // COMPUTING AN IMAGE AND RENDERING NOTHING IS EXACTLY WHAT R30 EXISTS TO
+  // CATCH: a field name is a claim about where data goes, and only the reader
+  // proves it. If a Celebration image is ever wanted again, add the render
+  // first and the field second.
   const allEvents = [];
 
   if (ceremony.venueName || ceremony.startTime || ceremony.notes) {
     allEvents.push({
       _id: 'ceremony', _title: 'Ceremony', _date: weddingDate,
-      _photoUrl: ceremony.photoUrl || null,
       startTime: ceremony.startTime || ceremony.time || '', endTime: ceremony.endTime || '',
       venueName: ceremony.venueName || '', address: ceremony.address || '',
       dressCode: ceremony.dressCode || '', notes: ceremony.notes || '',
@@ -53,7 +63,6 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
   if (reception.venueName || reception.startTime || reception.notes) {
     allEvents.push({
       _id: 'reception', _title: 'Reception', _date: weddingDate,
-      _photoUrl: reception.photoUrl || null,
       startTime: reception.startTime || reception.time || '', endTime: reception.endTime || '',
       venueName: reception.venueName || '', address: reception.address || '',
       dressCode: reception.dressCode || '', notes: reception.notes || '',
@@ -64,7 +73,7 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
     if (ev.name || ev.venueName || ev.startTime) {
       allEvents.push({
         _id: ev.id || `ev-${Math.random()}`, _title: ev.name || ev.type || 'Event',
-        _date: ev.date || '', _photoUrl: ev.venuePhotoUrl || ev.photoUrl || null,
+        _date: ev.date || '',
         startTime: ev.startTime || ev.time || '', endTime: ev.endTime || '',
         venueName: ev.venueName || ev.venue || '',
         address: ev.venueAddress || ev.address || '',

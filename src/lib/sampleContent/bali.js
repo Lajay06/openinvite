@@ -79,10 +79,14 @@ export const SAMPLE_BALI = {
 
   ourStoryContent: {
     storyText: 'We met at a friend\'s birthday where neither of us knew anybody else, and spent the whole evening talking in the kitchen because it was quieter. Seven years later we are still doing that at parties. This one is ours, so the kitchen is bigger.',
+    // `{ date, text }`, NOT `{ title, description }` — WeddingOurStoryPage reads
+    // milestone.date and milestone.text, so the other shape rendered the
+    // "Our journey" heading above nothing. Carried the wrong shape since this
+    // file was written; found while wiring havana's images.
     milestones: [
-      { title: 'The kitchen', description: 'A birthday neither of us wanted to go to.' },
-      { title: 'The first trip', description: 'Two weeks, one bag, and a great deal learned about each other.' },
-      { title: 'The question', description: 'Asked on an ordinary Tuesday, which is why it worked.' },
+      { date: 'The kitchen', text: 'A birthday neither of us wanted to go to.' },
+      { date: 'The first trip', text: 'Two weeks, one bag, and a great deal learned about each other.' },
+      { date: 'The question', text: 'Asked on an ordinary Tuesday, which is why it worked.' },
     ],
   },
 

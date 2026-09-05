@@ -34,6 +34,7 @@ import MonacoMast from '@/components/guest-website/layouts/MonacoMast';
 import FlorenceVine from '@/components/guest-website/layouts/FlorenceVine';
 import SeoulOrb from '@/components/guest-website/layouts/SeoulOrb';
 import ShanghaiCloud from '@/components/guest-website/layouts/ShanghaiCloud';
+import { sampleHeroImage } from '@/lib/sampleContent/mergeSample';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -63,14 +64,22 @@ const MOTIF_ACCENT = {
 
 function ImageBanner({ universe, isCurrent, prefersReducedMotion }) {
   const { name, tagline, tileDescription, tags, isUltra, colors, typography, imageUrl } = universe;
-  const smallUrl = imageUrl.replace(/\.jpg$/, '-800.jpg');
+  // Where a universe has sample content, its hero is the picture the couple is
+  // about to see filling their own preview. Showing a different one here made
+  // the picker promise one thing and the preview deliver another. Falls back to
+  // the static /universes/<id>.jpg for every universe without a sample, which
+  // is eighteen of the twenty today. The universe config is a token file and is
+  // not touched.
+  const heroUrl = sampleHeroImage(universe.id) || imageUrl;
+  // The -800 companion exists only for the static assets; a Cloudinary URL
+  // carries its width in the transform, so there is no second file to name.
+  const smallUrl = heroUrl === imageUrl ? imageUrl.replace(/\.jpg$/, '-800.jpg') : null;
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
       <motion.img
-        src={imageUrl}
-        srcSet={`${smallUrl} 800w, ${imageUrl} 1600w`}
-        sizes="100vw"
+        src={heroUrl}
+        {...(smallUrl ? { srcSet: `${smallUrl} 800w, ${heroUrl} 1600w`, sizes: '100vw' } : {})}
         loading="lazy"
         decoding="async"
         alt=""

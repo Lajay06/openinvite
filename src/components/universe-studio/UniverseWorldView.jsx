@@ -91,6 +91,7 @@ import ShanghaiMasthead from '@/components/guest-website/layouts/ShanghaiMasthea
 import ShanghaiCloud from '@/components/guest-website/layouts/ShanghaiCloud';
 
 import { coupleDisplayName } from '@/lib/coupleNames';
+import { sampleHeroImage } from '@/lib/sampleContent/mergeSample';
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const MASTHEAD_BY_LAYOUT = {
@@ -258,15 +259,30 @@ function HeroChapter({ universe, isCurrent, prefersReducedMotion, scrollContaine
   });
   const parallaxY = useTransform(scrollYProgress, [0, 1], ['0%', '22%']);
   const Masthead = MASTHEAD_BY_LAYOUT[universe.layout] || GenericMasthead;
-  const smallUrl = universe.imageUrl ? universe.imageUrl.replace(/\.jpg$/, '-800.jpg') : null;
+  // WHERE A UNIVERSE HAS SAMPLE CONTENT, ITS HERO IS THE BETTER PICTURE.
+  //
+  // The picker draws /universes/<id>.jpg, a static asset from the universe
+  // config. That config is a token file and is not touched here. But a
+  // universe with sample content has a hero photograph the couple is about to
+  // see filling their own preview, and showing them a different image here
+  // meant the picker promised one thing and the preview delivered another.
+  //
+  // Falls back to the static asset for every universe without sample content,
+  // which is eighteen of the twenty today.
+  const heroUrl = sampleHeroImage(universe.id) || universe.imageUrl;
+  // The -800 companion exists only for the static assets; a Cloudinary URL
+  // carries its own width in the transform, so there is no second file to
+  // point at and srcSet is dropped rather than pointed at a 404.
+  const smallUrl = heroUrl && heroUrl === universe.imageUrl && /\.jpg$/.test(heroUrl)
+    ? heroUrl.replace(/\.jpg$/, '-800.jpg')
+    : null;
 
   return (
     <div ref={ref} style={{ position: 'relative', minHeight: '82vh', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      {universe.imageUrl ? (
+      {heroUrl ? (
         <motion.img
-          src={universe.imageUrl}
-          srcSet={`${smallUrl} 800w, ${universe.imageUrl} 1600w`}
-          sizes="100vw"
+          src={heroUrl}
+          {...(smallUrl ? { srcSet: `${smallUrl} 800w, ${heroUrl} 1600w`, sizes: '100vw' } : {})}
           alt=""
           style={{
             position: 'absolute', inset: '-10% 0', width: '100%', height: '120%', objectFit: 'cover',
@@ -276,7 +292,7 @@ function HeroChapter({ universe, isCurrent, prefersReducedMotion, scrollContaine
       ) : (
         <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(160deg, ${universe.colors.darkBg} 0%, ${universe.colors.darkBg} 55%, ${universe.colors.accent}2E 100%)` }} />
       )}
-      <div style={{ position: 'absolute', inset: 0, background: universe.imageUrl ? 'rgba(0,0,0,0.38)' : 'transparent' }} />
+      <div style={{ position: 'absolute', inset: 0, background: heroUrl ? 'rgba(0,0,0,0.38)' : 'transparent' }} />
 
       <div style={{ position: 'relative', textAlign: 'center', padding: '0 24px' }}>
         {/* This is the world's own showcase, not the couple's real wedding
