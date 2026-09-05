@@ -28,6 +28,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getSampleWedding, sampleUniverseIds, isSample } from '../../src/lib/sampleContent/index.js';
+import { withSampleContent, isEmpty, sampleHeroImage } from '../../src/lib/sampleContent/mergeSample.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const SRC = join(ROOT, 'src');
@@ -150,6 +151,10 @@ export async function runSampleContentNeverPublished() {
   // of these could import sample content, a bug could put it in front of a
   // guest, and no amount of care inside the module would prevent it.
   const GUEST_REACHABLE = /^(src\/components\/guest-website\/|src\/components\/rsvp\/|src\/pages\/Guest)/;
+  // The published renderer, named. RealWebsitePreview (studio) may import
+  // sample content; MultiPageWeddingWebsite (published) may not, and the two
+  // are separate files precisely so this is decidable by reading the graph.
+  const PUBLISHED = 'src/components/guest-website/MultiPageWeddingWebsite.jsx';
   const importers = walk(SRC)
     .filter((p) => !p.startsWith(SAMPLE_DIR))
     .filter((p) => /from\s+['"][^'"]*sampleContent/.test(readFileSync(p, 'utf8')))
@@ -157,7 +162,55 @@ export async function runSampleContentNeverPublished() {
   const guestImporters = importers.filter((p) => GUEST_REACHABLE.test(p));
   check('nothing on a guest-reachable surface imports sample content',
     guestImporters.length === 0, guestImporters.join(', ') || 'no guest-side importer');
+  check('  and the PUBLISHED renderer in particular does not',
+    !importers.includes(PUBLISHED), importers.includes(PUBLISHED) ? 'MultiPageWeddingWebsite imports it' : 'MultiPageWeddingWebsite is clean');
+  const studioImporters = importers.filter((p) => !GUEST_REACHABLE.test(p));
+  console.log(`     (studio importers: ${studioImporters.join(', ') || 'none'})`);
   console.log(`     (${importers.length} importer(s) total: ${importers.join(', ') || 'none yet — D1 ships the data, not a consumer'})`);
+
+  // ── 3b. THE MERGE: the couple's content wins the moment it exists ────────
+  // The rule only reads one way, so it is asserted one way. A sample value
+  // fills a field only while that field is empty.
+  {
+    const uni = ids[0];
+    const bare = withSampleContent({ activeUniverse: uni });
+    check('an empty record takes sample content',
+      bare.isSampled && bare.sampledFields.length > 0, `${bare.sampledFields.length} field(s) filled`);
+
+    const theirs = withSampleContent({ activeUniverse: uni, qna: [{ question: 'Ours?', answer: 'Ours.' }] });
+    check("  and the couple's own value is never overwritten",
+      theirs.details.qna.length === 1 && theirs.details.qna[0].answer === 'Ours.'
+        && !theirs.sampledFields.includes('qna'),
+      'qna kept, not listed as sampled');
+
+    // The trap a plain {...sample, ...details} spread falls into: a record
+    // carries a key for every declared field, most of them null/''/[].
+    const nulls = withSampleContent({ activeUniverse: uni, qna: [], homeContent: null, ourStoryContent: {} });
+    check('  empty-but-present keys are treated as empty, not as content',
+      nulls.sampledFields.includes('qna') && nulls.sampledFields.includes('homeContent')
+        && nulls.sampledFields.includes('ourStoryContent'),
+      nulls.sampledFields.slice(0, 4).join(', '));
+
+    check('  whitespace-only text is empty', isEmpty('   ') && isEmpty('\n'), 'a space is not a story');
+
+    // Identity, so a caller can tell "nothing substituted" from "substituted".
+    const own = { activeUniverse: 'no-such-universe', qna: [] };
+    check('  a universe with no sample returns the original object untouched',
+      withSampleContent(own).details === own && withSampleContent(own).isSampled === false, 'same reference');
+
+    check('  the couple keeps their own identity fields even when empty',
+      !bare.sampledFields.includes('couple1Name') && !bare.sampledFields.includes('coupleNames')
+        && !bare.sampledFields.includes('activeUniverse'),
+      'names, mode and universe are never filled from a sample');
+  }
+
+  // ── 3c. THE PICKER hero prefers the sample photograph ────────────────────
+  check('a universe with sample content offers a hero image to the picker',
+    typeof sampleHeroImage(ids.find((i) => i === 'havana') || ids[0]) === 'string'
+      || sampleHeroImage('bali') === null,
+    `havana=${String(sampleHeroImage('havana')).slice(0, 48)} bali=${sampleHeroImage('bali')}`);
+  check('  and a universe with no sample offers none',
+    sampleHeroImage('no-such-universe') === null, 'null, so the static asset stands');
 
   // ── 4. #576's EXACT SHAPE: a sample string that is also a live default ────
   // Every sentence the sample actually CONTAINS, searched for across the rest
