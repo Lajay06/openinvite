@@ -26,4 +26,12 @@ node scripts/check-no-credentials.mjs || exit 1
 #    being written on a branch and then reset away. They belong on main, where
 #    a docs-only commit needs no branch and has nothing to lose.
 node scripts/check-canon-branch.mjs || exit 1
+# 2b. THE DOCS CHANNEL CARRIES ONLY DOCS — the other half of the same hole the
+#    canon guard covers one end of. Canon must reach main without a PR, so a
+#    direct-to-main route exists; nothing checked that it carried only what it
+#    was named for. On 2026-09-05 a `git add -A` pushed src/lib/sampleContent/
+#    havana.js onto main under a commit titled "docs: D-READ" — product code
+#    with no PR, no CI and no review. Pairs with ship.sh's untracked-file
+#    refusal (R24): that stops the staging, this stops the landing.
+node scripts/check-docs-only-on-main.mjs || exit 1
 exec npm run lint
