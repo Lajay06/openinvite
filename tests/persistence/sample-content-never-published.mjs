@@ -28,6 +28,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getSampleWedding, sampleUniverseIds, isSample } from '../../src/lib/sampleContent/index.js';
+import { withSampleContent, isEmpty, sampleHeroImage } from '../../src/lib/sampleContent/mergeSample.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const SRC = join(ROOT, 'src');
@@ -108,6 +109,152 @@ export async function runSampleContentNeverPublished() {
       empty.length === 0, empty.length ? `renders nothing: ${empty.join(', ')}` : `${READERS.length} sections verified against their readers`);
   }
 
+  // ── 2b-bis. A COUPLE'S CONTENT SURVIVES THE MERGE, WHOLE ────────────────
+  //
+  // THE PROPERTY THIS SYSTEM CANNOT BE ALLOWED TO BREAK. On 2026-09-05 the
+  // owner reported his photographs looked gone. They were not — the merge lost
+  // nothing, measured on his real record: 19 image values in, 20 out, none
+  // lost. But that was a MEASUREMENT, and a property proven once by hand is
+  // not a property held. This is the test.
+  //
+  // The fixture is a record with EVERY fillable field populated, including
+  // nested images at the depths a real record carries them (venue photos,
+  // accommodation places, an itinerary block). Nothing about it may change.
+  {
+    const populatedFor = (uni) => ({
+      activeUniverse: uni,
+      couple1Name: 'Real', couple2Name: 'Couple', coupleNames: 'Real & Couple',
+      coverPhoto: 'https://example.com/theirs-cover.jpg',
+      homeContent: { blocks: [{ id: 'c1', type: 'paragraph', content: { text: 'Their own words.' } }] },
+      ourStoryContent: { storyText: 'Their story.', photos: ['https://example.com/theirs-1.jpg', 'https://example.com/theirs-2.jpg'],
+        milestones: [{ date: 'Theirs', text: 'A milestone of their own.' }] },
+      celebrationContent: { daySchedule: [{ time: '3pm', description: 'Their schedule.' }] },
+      registryContent: { registryMessage: 'Their registry note.' },
+      musicContent: { customMessage: 'Their music note.' },
+      music: { guestRequestsEnabled: true, requestMessage: 'Their request message.' },
+      qna: [{ question: 'Theirs?', answer: 'Theirs.' }],
+      polls: [{ id: 'p', title: 'Their poll', isActive: true, options: [{ id: 'o', label: 'Their option', votes: 3 }] }],
+      weddingPolicies: { dressCode: { display: true, guidance: 'Their dress code.' } },
+      accommodation: { manualProperties: [{ name: 'Their hotel', photoUrl: 'https://example.com/theirs-hotel.jpg' }] },
+      transport: { enabledModes: ['taxi'] },
+      guestSuiteTransport: { places: [{ id: 't', name: 'Their taxi', photo_url: '/api/places-photo?ref=THEIRS-T' }], notes: [] },
+      experienceGuide: { published: true, itinerary: { schedule: [{ day: 1, blocks: {
+        morning: [{ id: 'i', place_name: 'Their place', photo_url: '/api/places-photo?ref=THEIRS-I' }] } }] } },
+      mainCeremony: { venueName: 'Their venue', photoUrl: '/api/places-photo?ref=THEIRS-C' },
+      reception: { venueName: 'Their reception', photoUrl: '/api/places-photo?ref=THEIRS-R' },
+      enabledPages: ['home', 'our-story'],
+    });
+
+    // Walk every string in the record, so a nested value cannot slip past a
+    // top-level comparison. This is the shape the real diagnosis used.
+    const strings = (v, path = '', out = []) => {
+      if (typeof v === 'string') { out.push(`${path}=${v}`); return out; }
+      if (Array.isArray(v)) { v.forEach((x, i) => strings(x, `${path}[${i}]`, out)); return out; }
+      if (v && typeof v === 'object') { Object.entries(v).forEach(([k, x]) => strings(x, path ? `${path}.${k}` : k, out)); return out; }
+      return out;
+    };
+    const isImage = (s) => /cloudinary|places-photo|\.(jpe?g|png|webp|gif)/i.test(s);
+
+    // EVERY SAMPLE UNIVERSE, not just the first. bali carries no imagery, so a
+    // fault that overwrites a couple's photos WITH sample photos is invisible
+    // against it — a planted nested overwrite passed this block green until
+    // havana was included. Testing one fixture tests one shape.
+    for (const uni of ids) {
+    const populated = populatedFor(uni);
+    const before = strings(populated).sort();
+    const { details: after, sampledFields } = withSampleContent(populated);
+    const afterAll = strings(after).sort();
+    const lost = before.filter((b) => !afterAll.includes(b));
+    const lostImages = lost.filter(isImage);
+
+    check(`${uni}: a fully populated record loses NOTHING to the merge (${before.length} values walked)`,
+      lost.length === 0, lost.length ? `LOST: ${lost.slice(0, 4).join(' | ')}` : 'every value survives, nested ones included');
+    check(`  ${uni}: no image of theirs is replaced or dropped`,
+      lostImages.length === 0, lostImages.length ? `LOST IMAGES: ${lostImages.join(' | ')}` : `${before.filter(isImage).length} of their images intact`);
+    check(`  ${uni}: nothing at all was filled, because nothing was empty`,
+      sampledFields.length === 0, sampledFields.length ? `filled anyway: ${sampledFields.join(', ')}` : 'sampledFields is empty');
+
+    // ── AND THE SAME RECORD WITH ONE GAP, SO THE MERGE BODY ACTUALLY RUNS ──
+    //
+    // The fixture above is FULLY populated, so withSampleContent takes its
+    // early return before the merge loop — which means it cannot see a bug
+    // inside that loop. A planted nested overwrite (replacing their
+    // ourStoryContent.photos while keeping the rest of the object) went
+    // straight through it, green.
+    //
+    // This is the same record with ONE harmless gap. `sampledFields` is now
+    // non-empty, the loop executes, and every one of their values is still
+    // required to survive. A guard that only tests the early return is testing
+    // the branch where nothing happens.
+    const withGap = { ...populated, polls: [] };
+    const gapBefore = strings(withGap).sort();
+    const { details: gapAfter, sampledFields: gapFilled } = withSampleContent(withGap);
+    const gapLost = gapBefore.filter((b) => !strings(gapAfter).sort().includes(b));
+    check(`  ${uni}: with one empty field the merge RUNS, and still loses nothing`,
+      gapFilled.length > 0 && gapLost.length === 0,
+      gapLost.length ? `LOST: ${gapLost.slice(0, 4).join(' | ')}` : `merge ran (filled: ${gapFilled.join(', ')}), ${gapBefore.length} values intact`);
+    check(`  ${uni}: their images specifically survive the merge body`,
+      gapLost.filter(isImage).length === 0,
+      gapLost.filter(isImage).join(' | ') || `${gapBefore.filter(isImage).length} images intact through a live merge`);
+    }
+  }
+
+  // ── 2c-bis. EVERY IMAGE AND SUB-SHAPE SITS ON A KEY THE PAGE READS ───────
+  // The owner reported seeing a sample photograph on the hero and nowhere
+  // else. Four roles were written to keys no page component reads:
+  //   ourStoryContent.photoUrl   the page reads `photos`, an ARRAY
+  //   experienceGuide.coverPhoto the page has no cover slot at all
+  //   photosContent.photos       the Photos feature was deleted in #602
+  //   milestones {title,description} the page reads {date,text}
+  // A presence check cannot see any of that — the key exists, the value is a
+  // real URL, and nothing renders. These are the ACCESSORS, taken from the
+  // pages, which is the only thing that settles it.
+  // bali carries NO imagery on purpose — it is the omission fixture — so the
+  // "images are on a readable key" check applies only to a sample that has
+  // images at all. The dead-key checks below it apply to both, because a dead
+  // key is wrong whether or not the sample is illustrated.
+  const RENDERED_BY = [
+    ['ourStoryContent.photos is an array the story grid reads',
+      (w) => !w.coverPhoto || (Array.isArray(w.ourStoryContent?.photos) && w.ourStoryContent.photos.length > 0)],
+    ['  and no dead singular photoUrl beside it',
+      (w) => w.ourStoryContent?.photoUrl === undefined],
+    ['milestones carry {date,text}, the keys the page renders',
+      (w) => (w.ourStoryContent?.milestones || []).every((m) => m.date !== undefined && m.text !== undefined)],
+    ['no photosContent — the Photos page was deleted in #602',
+      (w) => w.photosContent === undefined],
+    ['no experienceGuide.coverPhoto — that page has no cover slot',
+      (w) => w.experienceGuide?.coverPhoto === undefined],
+    ['no mainCeremony.photoUrl — #650 removed the render (R31: role dropped)',
+      (w) => w.mainCeremony?.photoUrl === undefined],
+    ['no reception.photoUrl either — same slot, same absence',
+      (w) => w.reception?.photoUrl === undefined],
+  ];
+  for (const id of ids) {
+    const w = getSampleWedding(id);
+    const bad = RENDERED_BY.filter(([, ok]) => !ok(w)).map(([n]) => n);
+    check(`${id}: every sampled key is one a page actually renders`,
+      bad.length === 0, bad.length ? bad.join(' | ') : `${RENDERED_BY.length} accessors verified`);
+  }
+
+  // ── 2c-ter. THE PAGE SIDE OF R30 ────────────────────────────────────────
+  // The accessor checks above ask whether the SAMPLE writes a key the page
+  // reads. This asks the mirror question of the page: does it resolve an image
+  // it never renders? Celebration carried `_photoUrl` for eleven PRs after
+  // #650 deleted the render, which is how a sample role came to be allocated
+  // to a slot that did not exist.
+  {
+    // STRIP COMMENTS FIRST, and count ASSIGNMENTS rather than mentions. The
+    // first version of this check counted any occurrence and failed on the
+    // comment that explains why the field is gone — a guard that forbids
+    // writing down why it exists. Third time comment-stripping has been the
+    // fix in this file.
+    const celRaw = readFileSync(join(SRC, 'components/guest-website/pages/WeddingCelebrationPage.jsx'), 'utf8');
+    const cel = celRaw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    const assigns = (cel.match(/_photoUrl\s*[:=]/g) || []).length;
+    check('Celebration resolves no event image it does not render',
+      assigns === 0, assigns === 0 ? 'no _photoUrl' : `${assigns} dead _photoUrl assignment(s)`);
+  }
+
   // ── 2d. AND EVERY SAMPLED SECTION IS ON A PAGE THAT CAN BE REACHED ───────
   // Content the renderer reads is still invisible if its page refuses to
   // render. `polls` is the trap: stay/transport/music/good-to-know are unlocked
@@ -150,6 +297,10 @@ export async function runSampleContentNeverPublished() {
   // of these could import sample content, a bug could put it in front of a
   // guest, and no amount of care inside the module would prevent it.
   const GUEST_REACHABLE = /^(src\/components\/guest-website\/|src\/components\/rsvp\/|src\/pages\/Guest)/;
+  // The published renderer, named. RealWebsitePreview (studio) may import
+  // sample content; MultiPageWeddingWebsite (published) may not, and the two
+  // are separate files precisely so this is decidable by reading the graph.
+  const PUBLISHED = 'src/components/guest-website/MultiPageWeddingWebsite.jsx';
   const importers = walk(SRC)
     .filter((p) => !p.startsWith(SAMPLE_DIR))
     .filter((p) => /from\s+['"][^'"]*sampleContent/.test(readFileSync(p, 'utf8')))
@@ -157,7 +308,55 @@ export async function runSampleContentNeverPublished() {
   const guestImporters = importers.filter((p) => GUEST_REACHABLE.test(p));
   check('nothing on a guest-reachable surface imports sample content',
     guestImporters.length === 0, guestImporters.join(', ') || 'no guest-side importer');
+  check('  and the PUBLISHED renderer in particular does not',
+    !importers.includes(PUBLISHED), importers.includes(PUBLISHED) ? 'MultiPageWeddingWebsite imports it' : 'MultiPageWeddingWebsite is clean');
+  const studioImporters = importers.filter((p) => !GUEST_REACHABLE.test(p));
+  console.log(`     (studio importers: ${studioImporters.join(', ') || 'none'})`);
   console.log(`     (${importers.length} importer(s) total: ${importers.join(', ') || 'none yet — D1 ships the data, not a consumer'})`);
+
+  // ── 3b. THE MERGE: the couple's content wins the moment it exists ────────
+  // The rule only reads one way, so it is asserted one way. A sample value
+  // fills a field only while that field is empty.
+  {
+    const uni = ids[0];
+    const bare = withSampleContent({ activeUniverse: uni });
+    check('an empty record takes sample content',
+      bare.isSampled && bare.sampledFields.length > 0, `${bare.sampledFields.length} field(s) filled`);
+
+    const theirs = withSampleContent({ activeUniverse: uni, qna: [{ question: 'Ours?', answer: 'Ours.' }] });
+    check("  and the couple's own value is never overwritten",
+      theirs.details.qna.length === 1 && theirs.details.qna[0].answer === 'Ours.'
+        && !theirs.sampledFields.includes('qna'),
+      'qna kept, not listed as sampled');
+
+    // The trap a plain {...sample, ...details} spread falls into: a record
+    // carries a key for every declared field, most of them null/''/[].
+    const nulls = withSampleContent({ activeUniverse: uni, qna: [], homeContent: null, ourStoryContent: {} });
+    check('  empty-but-present keys are treated as empty, not as content',
+      nulls.sampledFields.includes('qna') && nulls.sampledFields.includes('homeContent')
+        && nulls.sampledFields.includes('ourStoryContent'),
+      nulls.sampledFields.slice(0, 4).join(', '));
+
+    check('  whitespace-only text is empty', isEmpty('   ') && isEmpty('\n'), 'a space is not a story');
+
+    // Identity, so a caller can tell "nothing substituted" from "substituted".
+    const own = { activeUniverse: 'no-such-universe', qna: [] };
+    check('  a universe with no sample returns the original object untouched',
+      withSampleContent(own).details === own && withSampleContent(own).isSampled === false, 'same reference');
+
+    check('  the couple keeps their own identity fields even when empty',
+      !bare.sampledFields.includes('couple1Name') && !bare.sampledFields.includes('coupleNames')
+        && !bare.sampledFields.includes('activeUniverse'),
+      'names, mode and universe are never filled from a sample');
+  }
+
+  // ── 3c. THE PICKER hero prefers the sample photograph ────────────────────
+  check('a universe with sample content offers a hero image to the picker',
+    typeof sampleHeroImage(ids.find((i) => i === 'havana') || ids[0]) === 'string'
+      || sampleHeroImage('bali') === null,
+    `havana=${String(sampleHeroImage('havana')).slice(0, 48)} bali=${sampleHeroImage('bali')}`);
+  check('  and a universe with no sample offers none',
+    sampleHeroImage('no-such-universe') === null, 'null, so the static asset stands');
 
   // ── 4. #576's EXACT SHAPE: a sample string that is also a live default ────
   // Every sentence the sample actually CONTAINS, searched for across the rest

@@ -26,10 +26,16 @@
  * needs no renaming by the owner. The rule, applied in this order:
  *
  *   ratio >= 1.5   wide landscape   hero, then share image
- *   1.1 - 1.5      landscape        event card, then experiences
+ *   1.1 - 1.5      landscape        experiences, then gallery
  *   0.9 - 1.1      square           experiences, then gallery
  *   0.66 - 0.9     portrait         story, then gallery
  *   < 0.66         tall portrait    gallery (reserved for full-bleed)
+ *
+ * THE EVENT-CARD ROLE IS GONE (R31). It used to take the first landscape.
+ * Celebration has had no image position since #650, so the role described a
+ * slot that does not exist — and the rule now allocates that class to
+ * experiences and then the gallery instead. If the owner reinstates a
+ * Celebration image, the role comes back here and the rule regains a row.
  *
  * Ties inside a class break on the timestamp embedded in the public id
  * (`hf_YYYYMMDD_HHMMSS`), ascending — the owner's own generation order, and
@@ -63,9 +69,16 @@ export const HAVANA_IMAGES = {
   // that og:image wants.
   hero:        'hf_20260904_112949_7fd20c50-b661-46c5-8c59-cef0e3b7d9e5_mqzaga',
   share:       'hf_20260904_112949_7fd20c50-b661-46c5-8c59-cef0e3b7d9e5_mqzaga',
-  // 2048x1536, 4:3
-  eventCard:   'hf_20260904_112949_c18f011a-647f-4bc6-b75e-2752a3736efe_m3zomm',
-  // 2048x2048, 1:1 — the only square, and the experiences grid is square-first
+  // NO `eventCard` ROLE. R31: #650 removed the location photo from every
+  // Celebration event block deliberately, and Celebration has no other image
+  // position — no <img>, no background. A role with no slot is an unused
+  // asset, not a reason to invent a slot, so the role is dropped rather than
+  // parked on a key nothing reads.
+  //
+  // Its 4:3 landscape is not wasted: it becomes the fourth gallery image, so
+  // all seven of the owner's photographs are on screen somewhere.
+  //
+  // 2048x2048, 1:1 — the only square
   experiences: 'hf_20260904_112948_eaa395d4-77e2-424e-9754-65586ca4270b_uztrvs',
   // 1536x2048, 3:4 — earliest portrait by timestamp
   story:       'hf_20260904_112948_aecc13c7-4644-4ea3-8a9b-43b21c6a3a73_qucu5d',
@@ -73,6 +86,7 @@ export const HAVANA_IMAGES = {
     'hf_20260904_112950_ee43be91-2036-4b97-8ff9-f490913bfded_q6rrgk', // 1792x2400
     'hf_20260904_112950_c28145cb-425f-4060-803e-0ef8ad0474c9_okqxth', // 1536x2752, tall
     'tempImageVoljjw_-_Edited_sw0lhh',                                // 1536x2048, the jpg
+    'hf_20260904_112949_c18f011a-647f-4bc6-b75e-2752a3736efe_m3zomm', // 2048x1536, the former event card
   ],
 };
 
@@ -82,7 +96,7 @@ export const HAVANA_IMAGES = {
  * couple would go looking for an eighth picture that does not exist.
  */
 export const SAMPLE_IMAGE_IDS = [...new Set([
-  HAVANA_IMAGES.hero, HAVANA_IMAGES.share, HAVANA_IMAGES.eventCard,
+  HAVANA_IMAGES.hero, HAVANA_IMAGES.share,
   HAVANA_IMAGES.experiences, HAVANA_IMAGES.story, ...HAVANA_IMAGES.gallery,
 ])];
 
@@ -96,7 +110,11 @@ export const SAMPLE_HAVANA = {
 
   activeUniverse: 'havana',
   websiteMode: 'light',
-  enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls'],
+  // 'experience' included: on the published site subPageAvailability unlocks it
+  // from experienceGuide.published, but the STUDIO builds its page list from
+  // enabledPages alone, so without this the couple could not open the page the
+  // experiences image sits on.
+  enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls', 'experience'],
 
   coverPhoto: img(HAVANA_IMAGES.hero, 2048),
 
@@ -105,7 +123,13 @@ export const SAMPLE_HAVANA = {
     address: 'A courtyard off the old square',
     startTime: '17:00',
     time: '17:00',
-    photoUrl: img(HAVANA_IMAGES.eventCard, 1200),
+    // NO photoUrl. #650 removed the location photo from every Celebration
+    // event block at the owner's instruction. WeddingCelebrationPage still
+    // COMPUTES `_photoUrl` from this field and never renders it, so setting it
+    // would put an image in a variable and nowhere on screen.
+    //
+    // THE EVENT-CARD ROLE IS THEREFORE ORPHANED, and deliberately left so: the
+    // photo is not reinstated, and no substitute position is invented for it.
   },
   reception: {
     venueName: 'The Upstairs Bar',
@@ -131,11 +155,25 @@ export const SAMPLE_HAVANA = {
 
   ourStoryContent: {
     storyText: 'We met the summer one of us was leaving and the other had just arrived, which should have been the end of it. It was not. Everything since has been a version of that evening: the wrong timing, the right person, and a long night that nobody wanted to call.',
-    photoUrl: img(HAVANA_IMAGES.story, 1200),
+    // `photos`, an ARRAY, NOT `photoUrl`. WeddingOurStoryPage reads
+    // `content.photos` and renders it as a grid; it has no singular photoUrl
+    // slot and never had. The first version set photoUrl and the page ignored
+    // it — the owner reported seeing a photograph on the hero and nowhere
+    // else, and this is why. Same class as the three keys P1 corrected on
+    // bali: written from what the field name suggested rather than from the
+    // page that reads it.
+    //
+    // The story portrait leads and the gallery follows, so both roles land on
+    // the ONE page in the product that has a photo grid.
+    photos: [img(HAVANA_IMAGES.story, 1400), ...HAVANA_IMAGES.gallery.map((id) => img(id, 1400))],
+    // `{ date, text }`, NOT `{ title, description }`. WeddingOurStoryPage reads
+    // milestone.date and milestone.text; with the other shape the "Our journey"
+    // heading rendered above an empty space. Third instance of the same class
+    // in this file, all found by looking at the page rather than the field name.
     milestones: [
-      { title: 'The wrong week', description: 'One of us had a flight booked. It got moved.' },
-      { title: 'The long drive', description: 'Nine hours, one working speaker, no regrets.' },
-      { title: 'The question', description: 'Asked on a balcony, badly, and answered before the sentence finished.' },
+      { date: 'The wrong week', text: 'One of us had a flight booked. It got moved.' },
+      { date: 'The long drive', text: 'Nine hours, one working speaker, no regrets.' },
+      { date: 'The question', text: 'Asked on a balcony, badly, and answered before the sentence finished.' },
     ],
   },
 
@@ -201,15 +239,43 @@ export const SAMPLE_HAVANA = {
     published: true,
     destination: 'The old town',
     editorialIntro: 'If you are staying the weekend, these are the places we would send you first.',
-    coverPhoto: img(HAVANA_IMAGES.experiences, 1200),
+    // NO `coverPhoto`. WeddingExperiencePage renders an editorial intro, the
+    // couple's picks and an itinerary — it has no cover slot, so a coverPhoto
+    // here rendered nothing.
+    //
+    // The picks card is ALSO not a home for this image: it builds its src from
+    // `place.photo_ref` through /api/places-photo, which is a Google Places
+    // reference, not a URL. A Cloudinary address cannot go down that path.
+    //
+    // The itinerary item's `photo_url` IS a direct URL slot and is the only
+    // one on this page, so that is where the experiences role goes.
     couplePicks: [
       { place_id: 'sample-hv-p1', name: 'The Corner Cafe', category: 'Coffee & Bakeries', note: 'Open early, and the only place doing coffee before eight.' },
     ],
+    itinerary: {
+      schedule: [
+        {
+          day: 1,
+          title: 'If you are staying the weekend',
+          summary: 'One day, loosely. None of it is arranged and none of it is expected.',
+          blocks: {
+            morning: [
+              { id: 'sample-hv-i1', place_name: 'The Corner Cafe', description: 'Coffee before the town wakes up.',
+                photo_url: img(HAVANA_IMAGES.experiences, 800) },
+            ],
+            evening: [
+              { id: 'sample-hv-i2', place_name: 'The seawall', description: 'Walk out along it at sunset. Everybody does.' },
+            ],
+          },
+        },
+      ],
+    },
   },
 
-  photosContent: {
-    photos: HAVANA_IMAGES.gallery.map((id, i) => ({ id: `sample-hv-g${i + 1}`, url: img(id, 1400) })),
-  },
+  // NO `photosContent`. The Photos feature was deleted in #602: there is no
+  // 'photos' entry in WEDDING_PAGES and no component maps to it, so this key
+  // had no page to render on. The gallery images moved to Our Story's grid
+  // above, which is the only photo grid the product still has.
 
   polls: [
     {

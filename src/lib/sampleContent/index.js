@@ -37,14 +37,20 @@
  *      anywhere else in src/. That assertion is what makes the whole idea safe;
  *      without it this file is a bag of strings waiting to become defaults.
  *
- * ONE UNIVERSE ON PURPOSE. bali only. Nineteen more is a copywriting job, not
- * an engineering one, and shipping twenty at once would mean nineteen written
- * without anybody having looked at the first.
+ * TWO UNIVERSES, AND THEY DO DIFFERENT JOBS. bali carries placeholder copy and
+ * NO imagery — it is the omission fixture, the record a published site is
+ * checked against to prove none of this reaches a guest, and the published
+ * bali fixture chris-and-sia is what that check runs on. havana carries the
+ * owner's own photographs and is the proof of the other half: what a universe
+ * looks like full. Eighteen more is a copywriting job, not an engineering one,
+ * and four of those (kyoto, bali, aspen, shanghai) have no photography at all.
  */
 import { SAMPLE_BALI } from './bali.js';
+import { SAMPLE_HAVANA } from './havana.js';
 
 const SAMPLES = {
   bali: SAMPLE_BALI,
+  havana: SAMPLE_HAVANA,
 };
 
 /** Universe ids that have sample content. */
