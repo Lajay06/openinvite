@@ -513,10 +513,12 @@ export const GUEST_ROUTE_EXPECT = {
   'celebration': 'THE CELEBRATION',
   'rsvp':        'RSVP',
   'registry':    'Registry',
-  // /w/:slug/music hits the standalone GuestMusic (App.jsx lists it before
-  // the catch-all), which renders "Request a song" — not the in-site
-  // WeddingMusicPage's "Song requests". Derivation surfaced this drift.
-  'music':       'Request a song',
+  // /w/:slug/music now hits the in-site WeddingMusicPage like every other
+  // page. It used to hit the standalone GuestMusic, which App.jsx listed ahead
+  // of the catch-all — so this entry read "Request a song", a heading no
+  // in-site page had. Derivation surfaced that drift; the merge closed it, and
+  // the expected string moving is the evidence that the shell now serves it.
+  'music':       'Our Music',
   'photos':      'Photos',
   'styling':     'What will you wear?',
   'polls':       'Guest polls',
