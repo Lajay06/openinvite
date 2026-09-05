@@ -96,15 +96,25 @@ const TEST_FIELDS = {
     children:     { option: 'all', message: 'All welcome', display: true },
     stylingQuestionnaire: { enabled: true },
   },
-  emergencyContacts: {
-    primary:    { name: 'Test Primary', phone: '+61 400 000 001', role: 'Maid of honour' },
-    backup:     { name: 'Test Backup',  phone: '+61 400 000 002', role: 'Best man' },
-    otherNotes: 'Nearest hospital: Test Hospital, 5 min drive',
-  },
-  dayVendorContacts: [
-    { name: 'Test Photographer', phone: '+61 400 000 003', role: 'Photography' },
-    { name: 'Test Caterer',      phone: '+61 400 000 004', role: 'Catering' },
-  ],
+  // emergencyContacts and dayVendorContacts ARE NOT WRITTEN HERE, deliberately.
+  //
+  // Both were encrypted at rest in Step 2b (fix/weddingdetails-field-encryption):
+  // the live schema types them `string`, holding AES-256-GCM ciphertext produced
+  // server-side by api/_lib/questionnaireCrypto.js. This module writes to Base44
+  // DIRECTLY with the admin key, so it cannot produce that ciphertext, and the
+  // plaintext object/array it used to send is now rejected outright —
+  //   HTTP 422 "Error in field emergencyContacts: Input should be a valid string"
+  // — which aborted the whole run before any other field was checked.
+  //
+  // That failure was invisible for roughly three weeks because this runner
+  // imported a module deleted in the same period and threw before reaching it.
+  // Fixing the import is what surfaced this.
+  //
+  // The round trip for these two belongs to whatever covers the encrypting
+  // endpoint (putMyWeddingDetails -> api/my-wedding-details.js), not to a
+  // direct-write test that structurally cannot speak their storage format.
+  // Named here rather than silently dropped: this is a coverage gap with a
+  // reason, not a field nobody thought about.
   experienceGuide: {
     published:     false,
     destination:   'Test City, Australia',
@@ -390,23 +400,10 @@ export async function runWeddingDetails(token) {
       : fail('weddingPolicies.stylingQuestionnaire.enabled', written, got));
   }
 
-  // emergencyContacts — same: venue sub-field backfilled as null
-  {
-    const written = TEST_FIELDS.emergencyContacts;
-    const got     = record.emergencyContacts;
-    results.push(writtenSubsetMatches(written, got)
-      ? pass('emergencyContacts', 'primary + backup + otherNotes (venue: null from schema OK)')
-      : fail('emergencyContacts', written, got));
-  }
-
-  // dayVendorContacts
-  {
-    const written = TEST_FIELDS.dayVendorContacts;
-    const got     = record.dayVendorContacts;
-    results.push(deepEqual(written, got)
-      ? pass('dayVendorContacts', `${got?.length} vendor(s)`)
-      : fail('dayVendorContacts', written, got));
-  }
+  // emergencyContacts / dayVendorContacts assertions removed with their
+  // fixtures above — see the note in TEST_FIELDS. Asserting a field this module
+  // no longer writes would compare undefined against undefined and pass, which
+  // is worse than the gap it hides.
 
   // experienceGuide (couplePicks + categories + itinerary)
   {
