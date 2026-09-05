@@ -3561,3 +3561,50 @@ Checked before reporting it, rather than after.
 sentence is also a live default — could not see a deliberately planted leak.
 Apostrophes in prose comments open a false string literal and desynchronize the
 scan. Found only because the plant was run; fixed rather than trusted.
+
+---
+
+## 2026-09-05 (Run 5) — TWO RULINGS, RECORDED
+
+### R18 — a prompt that cites a prior prompt as delivered is making an unverifiable claim
+
+"Track D, as already specified" referenced a specification the owner never
+pasted. It was not in the log, the repo, any branch's history, or memory.
+**Every prompt is self-contained from here.** An instruction cannot cite
+context that only exists in a session nobody wrote down, because the recipient
+has no way to tell "you forgot to include it" from "you included it and I lost
+it" — and both readings lead somewhere worse than asking.
+
+**The correct response, and the model for the next one:** build to a stated
+brief, and say AT THE TOP that the specification did not exist and the brief is
+mine. Not silence, not a refusal to act, and above all not reporting against an
+invented spec as though it were the owner's.
+
+**This run proved the rule twice more.** "All standing rules and the MINOR CLASS
+carry over" — I do not have the MINOR CLASS text either, and acted on a
+conservative reading of it (small, reversible, no new surface) while saying so.
+And P1's rulings (a)-(e) were pasted in full, which is exactly why P1 could be
+answered precisely and Track D could not.
+
+### R19 — a guard that has never seen a failure has never been tested. Plant the failure.
+
+D1's leak check was GREEN AND WRONG. It found nothing because it could not see
+anything: apostrophes in prose comments opened false string literals and
+desynchronized the scan. It was caught only by planting a leak and watching the
+check stay green.
+
+**Record it beside SKIPPED-IS-NOT-PASS. They are the same lesson from opposite
+sides:** one is a gate that reports nothing because it did not run, the other a
+gate that reports success because it could not look. Both present as green.
+Neither is evidence.
+
+**The rule: before believing a new check, make it fail on purpose.** Every check
+added this run was planted against — six plants, six confirmed failures — and
+that is the only reason two of them are trusted, because both were wrong first.
+
+**Run 5 then produced a third instance inside its own P2 report.** Classifying
+the local-only gates, I wrapped each in `timeout`, which does not exist on
+macOS, and read exit 127 as "all five gates fail". A result that looks like a
+verdict and is actually the runner never having run — the same defect the whole
+P2 task exists to fix, committed while writing it up. Re-run without the
+wrapper, all five pass.
