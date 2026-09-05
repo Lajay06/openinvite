@@ -4147,3 +4147,117 @@ all guesswork is a single leading token on the public id** — `hero-`, `story-`
 `event-`, `exp-`, `gallery-` — on one asset each per folder, leaving the rest
 to fall to gallery by the ratio rule. That is five renames per universe, not
 111, and the rule above becomes the fallback rather than the mechanism.
+
+---
+
+## 2026-09-05 (Run 6) — R25, RECORDED AS CANON
+
+Three rulings, all earned by a specific failure in the preceding runs.
+
+**AN OWNER ACCEPT ON A PR WITH A RED GATE IS AN ACCEPT ON NOTHING.** #655 was
+accepted as part of "merge all" while `Build & test` had concluded `failure` at
+every commit it ever had. The accept could not have meant what it said, because
+the thing accepted could not merge. **Every held PR in an account carries its CI
+status beside its preview URL** — not looked up later, not assumed from the fact
+that it was opened.
+
+**A READING THAT CANNOT DISTINGUISH "CLEAN" FROM "DID NOT RENDER" IS NOT A
+READING.** The omission check that nearly decided #661's merge pointed at a
+Vercel preview URL and reported zero sample strings on all ten pages. It was
+reading a **login wall** — 244 identical bytes, the same on every page. It was
+caught only because pages that omit on production reported "renders". **The
+rendered-app column is mandatory on every live probe**, and it is a column, not
+a footnote: a probe that cannot fail its own sanity check has no sanity check.
+This is the third R19 instance.
+
+**MINIFICATION RENAMES IDENTIFIERS; USER-VISIBLE COPY IS THE ONLY HONEST
+PRODUCTION PROBE.** Grepping the production bundle for `buildBriefing` and
+`EmptyState` returned zero for changes that were demonstrably live. Zero meant
+nothing. `"Something is overdue."` and `"Vendors is where you track everyone
+you hire."` are the probe.
+
+---
+
+## 2026-09-05 (Run 6) — RECOVERY AFTER A RESTART, AND WHAT THE RESTART EXPOSED
+
+The machine restarted mid-D-READ. State was re-established from the repo and
+GitHub rather than from memory, and it was worse than the recovery brief
+assumed.
+
+**The brief said "an untracked `.dread.mjs`". It was not untracked — it was
+committed and pushed.** A `git add -A` in a commit titled *"docs: D-READ"*
+staged the whole working tree and shipped six files: the decision-log entry it
+meant to ship, **four scratch probe scripts, and one source file** —
+`src/lib/sampleContent/havana.js`, product code, straight onto main with no PR.
+
+**No credential was exposed**, checked before anything else because those
+scripts read `CLOUDINARY_URL`: they read the variable at runtime, no value is
+inlined, and `grep -oE "[A-Za-z0-9_-]{20,}"` across all four returns nothing.
+One alarming grep hit was the literal help string
+`'cloudinary://key:secret@cloud form'` — the words, not values.
+
+**R24 landed first, as ordered, because item 4 is precisely what it prevents.**
+`ship.sh` ran `git add -A`. The 2026-08-30 response to the same shape had been
+to PRINT the staged list. **A list you read after the staging decision is a
+receipt, not a gate**, and the receipt did not stop it happening again. The
+decision now moves ahead of the staging: tracked modifications stage
+automatically, untracked files cause a REFUSAL naming them. A new file you have
+staged yourself passes straight through, so adding files to a feature is one
+deliberate command rather than a fight with the tool. Three controls: scratch
+present → refuses with an empty index; new file staged → passes; tracked
+modification only → passes and stages.
+
+**Not `.gitignore`.** Ignoring the scratch files would make them invisible to
+the new gate. A file you can no longer see is not a file you have handled.
+
+`havana.js` was NOT reverted: `Build & test` on `d1f2215` concluded success, so
+the content is CI-verified, and nothing imported it. What was skipped is the
+PR, not the verification. Recorded as a process violation rather than tidied
+away.
+
+---
+
+## 2026-09-05 (Run 6) — D-STUDIO: the studio consumer. BUILT, OPEN, HELD (#665)
+
+**Where content came from before.** `StudioWebsite` and `FullScreenPreview`
+both render through `RealWebsitePreview`, fed the couple's own record with its
+empty fields intact. The picker's tiles (`UniverseBanner`) and world view
+(`UniverseWorldView`) both draw a static `/universes/<id>.jpg`. So a couple who
+had chosen a universe and written nothing saw thirteen empty pages, while the
+picker showed them a stock abstract — **the two surfaces disagreeing about what
+the universe even looks like.**
+
+**The chokepoint was chosen for what it is not.** `RealWebsitePreview` renders
+the two studio surfaces; the PUBLISHED site is rendered by
+`MultiPageWeddingWebsite`, which does not import it and never has. Sample copy
+therefore cannot reach a guest from here **as a property of the import graph**,
+not as a rule anyone keeps — and the guard now asserts that file by name.
+
+**Studio files touched, named in full** (the "new files only" lift applies to
+this package alone): `mergeSample.js` (new), `RealWebsitePreview.jsx`,
+`UniverseBanner.jsx`, `UniverseWorldView.jsx`, `sampleContent/index.js`,
+`sample-content-never-published.mjs`.
+
+**The rule reads one way: the couple's content wins the moment it exists.** The
+trap avoided is that `{...sample, ...details}` looks like it does this and does
+not — a record carries a key for every declared field, most of them null or
+empty, and a spread lets those overwrite the sample with nothing. Emptiness has
+to be asked about. **Identity is never sampled**, so the preview shows the
+couple's own names over sample content, which is why the screenshot reads
+"Chris & Sia" and not "Sample & Couple".
+
+**Before/after, rendered.** Picker: cloudinary images visible on the Havana
+tile 0 → 1, static 3 → 2; before is a blurry orange gradient with the kicker
+barely legible, after is the owner's seawall photograph. Preview: marker no →
+yes, sample copy no → yes (14 sections).
+
+**Omission retested after the change**, on the real production `chris-and-sia`
+record, against **every** universe's sample (95 strings): 10/10 pages rendered
+the app, **0 sample strings, 0 sample images. OMISSION HOLDS.**
+
+**A plant fired on a different check than predicted.** Breaking `isEmpty` so a
+filled array reads empty did not trip "the couple's own value is never
+overwritten" — because with that break, arrays are excluded from filling
+entirely, so nothing was overwritten. The "empty-but-present keys" check caught
+it instead. The prediction was wrong; the guard was not. Recorded because the
+interesting thing about a plant is what it teaches when it lands somewhere else.
