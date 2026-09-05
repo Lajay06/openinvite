@@ -80,10 +80,22 @@ export const HAVANA_IMAGES = {
   //
   // 2048x2048, 1:1 — the only square
   experiences: 'hf_20260904_112948_eaa395d4-77e2-424e-9754-65586ca4270b_uztrvs',
-  // 1536x2048, 3:4 — earliest portrait by timestamp
-  story:       'hf_20260904_112948_aecc13c7-4644-4ea3-8a9b-43b21c6a3a73_qucu5d',
+  // 1792x2400, 56:75 — the earliest REMAINING portrait by timestamp.
+  //
+  // WHY NOT `…qucu5d`, which the ratio rule would have picked first: it carries
+  // a large red sign reading "lolor onsy" — generated lettering that is not a
+  // word in any language — across the bottom third, plus fake film-edge
+  // markings down the right side. The owner caught it by eye on the Our Story
+  // grid. Aspect ratio cannot see that, which is the limit this whole
+  // allocation rule was recorded as having.
+  //
+  // IT IS DROPPED FROM THE SAMPLE, NOT REPLACED, because the Havana folder
+  // holds exactly seven assets and all seven were already allocated — there is
+  // no unused portrait to promote in its place. The asset remains in Cloudinary
+  // untouched; it is simply no longer referenced. The grid therefore shows four
+  // photographs rather than five.
+  story:       'hf_20260904_112950_ee43be91-2036-4b97-8ff9-f490913bfded_q6rrgk',
   gallery: [
-    'hf_20260904_112950_ee43be91-2036-4b97-8ff9-f490913bfded_q6rrgk', // 1792x2400
     'hf_20260904_112950_c28145cb-425f-4060-803e-0ef8ad0474c9_okqxth', // 1536x2752, tall
     'tempImageVoljjw_-_Edited_sw0lhh',                                // 1536x2048, the jpg
     'hf_20260904_112949_c18f011a-647f-4bc6-b75e-2752a3736efe_m3zomm', // 2048x1536, the former event card
