@@ -4884,3 +4884,61 @@ before, on 2026-09-04, at his own instruction.
 **Nothing built.** One thing worth adding when #665 next moves: a guard case
 pinning "a couple's images survive the merge", planted against — the property
 is proven today by measurement but not yet held by a test.
+
+---
+
+## 2026-09-05 — R33: the couple-content-survives property, and R23 corrected on evidence
+
+### R33 — the property is now held by a test. Head `150072c` -> `d252e18`.
+
+A fixture with every fillable field populated, including nested images at the
+depths a real record carries them, run through `withSampleContent` with every
+string walked and diffed. Guard now 51 checks.
+
+**Three plants caught at once:** the classic `{ ...sample, ...details }` spread,
+an `isEmpty` that calls a populated array absent, and a nested image dropped to
+`undefined`.
+
+**AND ONE THAT WAS NOT, TWICE.** A nested overwrite — replacing
+`ourStoryContent.photos` while keeping the rest of the object — passed the
+first two versions of the test green. Two independent reasons:
+
+  1. **The fixture was fully populated, so the function took its early return
+     before the merge loop.** A test that exercises only the branch where
+     nothing happens cannot see a fault in the branch where something does.
+     Fixed by adding the same record with ONE gap, so the loop runs.
+  2. **The fixture used `ids[0]`, which is bali, and bali carries no imagery.**
+     A fault that overwrites a couple's photos WITH sample photos has nothing
+     to overwrite with there. Fixed by looping every sample universe.
+
+**TESTING ONE FIXTURE TESTS ONE SHAPE**, and a guard that covers only the no-op
+branch has never seen the code work. Both faults were found by planting, not by
+reading — R19 for the fourth time, and the first two attempts at this very test
+were themselves green and wrong.
+
+### R23 — CONFIRMED FALSE. The records say something else.
+
+Asked to confirm that `john-suzanne` is the owner's own main account renamed,
+the `la.jay06@gmail.com` record that once carried slug `tulumtest`.
+
+    slug           created_by                created      updated      universe
+    john-suzanne   jaygalaxy23@gmail.com     2026-06-03   2026-09-05   havana
+    tulumtest      la.jay06@gmail.com        2026-07-06   2026-07-13   brooklyn
+
+**Two different records, both still present, two different accounts.**
+`tulumtest` was not renamed — it still exists. `jaygalaxy23@gmail.com` is the
+account BASE44_PLATFORM_NOTES.md already names as the known dev/test account.
+
+**MY OWN PRIOR REPORT CALLED `john-suzanne` "the owner's main account". That was
+an assumption and it was wrong.** Every measurement taken against that record
+stands; the ownership label on it does not. Recorded rather than quietly
+corrected, because the diagnosis was read and acted on.
+
+**And it may change which explanation applies.** The record owned by
+`la.jay06@gmail.com` is `tulumtest`, on **brooklyn** — a universe with NO
+sample content, carrying **zero images of its own**, last updated 2026-07-13.
+If the owner was signed in as himself rather than as the dev account, "no
+sample photos anywhere" is simply correct and has nothing to do with #665.
+
+**Which account was at the keyboard is the one thing the data cannot say**, and
+it decides between the two explanations. Not inferred.
