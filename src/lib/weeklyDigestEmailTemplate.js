@@ -7,6 +7,7 @@
  */
 
 import { emailShell, emailFooterRow, escapeHtml, EMAIL_FONT as FONT, EMAIL_ACCENT as ACCENT, EMAIL_BLACK as BLACK } from './emailBrand.js';
+import { countdownLabel } from './weddingCountdown.js';
 
 function statRow(label, value) {
   return `
@@ -32,8 +33,13 @@ export function renderWeeklyDigestEmail({
   coupleNames, daysUntil, newRsvpCount, newAttending, newDeclined,
   totals, pollActivity, questionnaireActivity, recommendedActions, accountUrl,
 }) {
-  const subject = daysUntil != null
-    ? `Your week in review: ${daysUntil} day${daysUntil === 1 ? '' : 's'} to go`
+  // The subject handled the singular but not zero, so the wedding-day digest
+  // went out titled "Your week in review: 0 days to go". countdownLabel says
+  // "Today" there, and returns null once the date has passed — after which the
+  // subject is simply the plain one rather than a countdown running backwards.
+  const countdown = countdownLabel(daysUntil);
+  const subject = countdown
+    ? `Your week in review: ${countdown}`
     : 'Your week in review';
 
   const countdownLine = daysUntil == null
@@ -41,8 +47,8 @@ export function renderWeeklyDigestEmail({
     : daysUntil > 0
       ? `<span style="color:${ACCENT};font-weight:700;">${daysUntil} day${daysUntil === 1 ? '' : 's'}</span> until the big day.`
       : daysUntil === 0
-        ? `<span style="color:${ACCENT};font-weight:700;">Today's the day!</span>`
-        : `Congratulations on your wedding!`;
+        ? `<span style="color:${ACCENT};font-weight:700;">Today is the day.</span>`
+        : `Congratulations on your wedding.`;
 
   const newRsvpLine = newRsvpCount > 0
     ? `${newRsvpCount} new RSVP${newRsvpCount === 1 ? '' : 's'} this week: ${newAttending} attending, ${newDeclined} declined.`

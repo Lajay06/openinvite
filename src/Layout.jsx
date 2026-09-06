@@ -15,6 +15,7 @@ import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyInvitation, getMyRecords } from '@/lib/resolveMyWedding';
 import { createPageUrl } from '@/utils';
 import { Toaster } from 'react-hot-toast';
+import { daysUntilWedding, countdownLabel } from '@/lib/weddingCountdown';
 import { color, font, radius, shadow } from '@/styles/tokens';
 
 /**
@@ -98,7 +99,10 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
 
   // Derive date + countdown from entity
   const dateStr = weddingDetails?.weddingDate || '';
-  const daysToGo = dateStr ? Math.ceil((new Date(dateStr) - new Date()) / (1000 * 60 * 60 * 24)) : null;
+  // Was Math.ceil between two instants, so the same calendar day read 1 in
+  // the morning and 0 in the evening. One shared, midnight-normalised count
+  // now — see src/lib/weddingCountdown.js.
+  const daysToGo = daysUntilWedding(dateStr);
   const formattedDate = dateStr
     ? new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
     : '';
@@ -219,10 +223,14 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
           <>
             <span style={{ color: 'rgba(255,255,255,0.18)', fontFamily: PJS, flexShrink: 0 }}>|</span>
             <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.65)', fontFamily: PJS, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 340 }}>
-              {daysToGo !== null
-                ? daysToGo > 0
-                  ? `${coupleName} · ${daysToGo} days to go`
-                  : 'Your wedding day has arrived!'
+              {/* "1 days to go" and, after the date, "Your wedding day has
+                  arrived!" forever — an exclamation mark in product chrome
+                  that was still there a year later. countdownLabel returns
+                  null once the day has passed, so the bar falls back to the
+                  couple's names and stops counting. Spec section 11: after
+                  the wedding, Ava goes quiet rather than filling silence. */}
+              {countdownLabel(daysToGo)
+                ? `${coupleName} · ${countdownLabel(daysToGo)}`
                 : coupleName}
             </span>
             {/* flexShrink 1000, not 0: inside a now-BOUNDED track something
