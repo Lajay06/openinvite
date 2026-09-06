@@ -105,6 +105,19 @@ export async function runUniverseGallery() {
       'an explicit count, not auto-fit');
     check('  the tiles are 4:5 and cropped, not letterboxed',
       /aspectRatio: '4 \/ 5'/.test(src) && /objectFit: 'cover'/.test(src), "aspectRatio 4/5 + objectFit cover");
+
+    // FLUSH, WITH A HAIRLINE. One rule drawn by the grid's own background
+    // showing through a 1px gutter, not four borders on four tiles — so no
+    // doubled line between two tiles and no line on the outer edge.
+    check('  the tiles sit flush, separated by a 1px gutter',
+      /gap: 1,/.test(src), 'gap: 1');
+    check('  the hairline is the app border token, not white and not a shadow',
+      /background: appColor\.border/.test(src)
+        && !/boxShadow/.test(src.slice(src.indexOf('uwv-gallery'), src.indexOf('uwv-gallery') + 900)),
+      'appColor.border');
+    check('  and nothing in the row is rounded',
+      /borderRadius: 0/.test(src) && !/uwv-gallery[\s\S]{0,400}borderRadius: (?!0)/.test(src),
+      'square corners, inner and outer');
     check('  no caption and no heading inside the row',
       !/<figcaption/.test(src), 'images only');
 

@@ -91,6 +91,11 @@ import ShanghaiCloud from '@/components/guest-website/layouts/ShanghaiCloud';
 
 import { sampleHeroImage } from '@/lib/sampleContent/mergeSample';
 import { universeGallery } from '@/lib/universeGallery';
+// The app's own border value. Imported as appColor because `colors` in this
+// file already means the UNIVERSE's palette, and the hairline between the
+// gallery tiles is deliberately ours rather than the universe's: it is a
+// structural rule, the same weight on every one of the twenty grounds.
+import { color as appColor } from '@/styles/tokens';
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const MASTHEAD_BY_LAYOUT = {
@@ -519,14 +524,27 @@ export default function UniverseWorldView({
             <p style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: colors.accent, margin: '0 0 32px', textAlign: 'center' }}>
               Nº 02 — The gallery
             </p>
-            <div className="uwv-gallery" style={{ display: 'grid', gap: 'clamp(8px, 1.2vw, 16px)', width: '100%' }}>
+            {/* FLUSH, WITH A HAIRLINE (owner, 2026-09-06).
+                gap: 1 and the container carrying the border token — the
+                photographs are opaque and cover their own cells, so the only
+                place that background shows is the 1px gutters. That is a
+                hairline drawn by the grid rather than four borders drawn on
+                four tiles, which is why there is no double line where two
+                tiles meet and no line at all on the outer edge.
+
+                NOT white and NOT a shadow: white would read as a gap on the
+                pale grounds and vanish on the dark ones, and a shadow would be
+                depth where the design asks for a rule. NOT rounded: nothing
+                on the inner edges, and the band's outer corners are square
+                like every other full-width section on this page. */}
+            <div className="uwv-gallery" style={{ display: 'grid', gap: 1, background: appColor.border, width: '100%' }}>
               {gallery.map((photo) => (
                 <img
                   key={photo.publicId}
                   src={photo.url}
                   alt={photo.alt}
                   loading="lazy"
-                  style={{ width: '100%', aspectRatio: '4 / 5', objectFit: 'cover', display: 'block' }}
+                  style={{ width: '100%', aspectRatio: '4 / 5', objectFit: 'cover', display: 'block', borderRadius: 0 }}
                 />
               ))}
             </div>
