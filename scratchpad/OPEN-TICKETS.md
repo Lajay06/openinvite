@@ -1424,3 +1424,37 @@ have been written by the hand that missed the import, and a guard on guards
 that nothing runs is the identical defect one level up. Build it in a run that
 can plant a failure against it (R19): add a new guard file, do not import it,
 and require this test to go red naming it.
+
+## Two browser gates are red locally and no runner notices (found 2026-09-06)
+
+`npm run test:harness` and `npm run test:stat-surfaces` both exit non-zero on
+main, from a clean checkout, against a live `vite preview` on 4173:
+
+```
+page.evaluate: SecurityError: Failed to read the 'localStorage' property from
+'Window': Access is denied for this document.
+    at scripts/test-harness-selftest.mjs:72:28
+```
+
+`test-stat-surfaces` fails at `scripts/test-stat-surfaces.mjs:84` in the same
+run. Both fail identically with and without an HTTPS proxy set, so it is not an
+environment the measurement introduced — it is the state of main.
+
+**Neither is in `npm run verify` and neither is in `ci.yml`.** They are
+local-only gates, which is why two red suites have gone unnoticed: nothing
+runs them and nothing reports that nothing runs them. That is R35's shape again
+in a third place — the guard exists, the runner does not.
+
+NOT FIXED HERE. It was found while measuring the Cloudinary block's request
+count across the browser lane, in a run whose subject was five universe blocks;
+fixing an unrelated red suite inside that PR is the scope creep this programme
+keeps refusing. Two pieces of work, in this order:
+
+  1. Diagnose the SecurityError. `localStorage` on a `file://` or opaque origin
+     throws rather than returning null, so the likely cause is a page that the
+     harness reaches at an origin it did not expect. Fix the harness, not the
+     assertion.
+  2. Then decide whether each belongs in `ci.yml`'s browser lane beside
+     `test:marketing-routes`. If it does not belong in CI, say so in the file
+     and say why — an intentionally-local gate is fine; a silently-local one is
+     what this ticket is about.
