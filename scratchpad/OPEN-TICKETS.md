@@ -1458,3 +1458,35 @@ keeps refusing. Two pieces of work, in this order:
      `test:marketing-routes`. If it does not belong in CI, say so in the file
      and say why — an intentionally-local gate is fine; a silently-local one is
      what this ticket is about.
+
+## Every guard PR conflicts with the last one on scripts/test-ci.mjs
+
+Twice in one session, from one mechanical cause. #674 and #675 both added a
+guard; #675 conflicted the moment #674 landed. #675 and #678 both added a
+guard; #678 conflicted the moment #675 landed. The conflict is always the same
+two lines in the same two places:
+
+```
+import { runX } from '../tests/persistence/x.mjs';
+...
+await runModule('runX', () => runX());
+```
+
+Both times the resolution was "keep both", both times it moved the head SHA,
+and both times a SHA-specific merge authorization had to be reissued for work
+that had not changed. R34 predicted the head moving; it did not predict that a
+single file would make it happen on every guard PR in flight.
+
+WORTH FIXING, NOT FIXED HERE. The shape that removes it: `scripts/test-ci.mjs`
+enumerates `tests/persistence/*.mjs` and calls each module's exported runner,
+instead of two hand-written lines per guard. That deletes the conflict class
+outright AND subsumes the R35 guard-reachability ticket above — a guard would
+be run because it exists, not because someone remembered to import it.
+
+Two cautions for whoever builds it, both real:
+  · the CI subset is deliberately NOT every file in that directory (the
+    credential-requiring modules live in test-persistence.mjs), so the
+    enumeration needs a declared split, not a glob over everything.
+  · a dynamic import loop makes a crashing module harder to attribute than a
+    static import does. `runModule` already catches and names crashes; keep
+    that, and keep the module name in the failure line.
