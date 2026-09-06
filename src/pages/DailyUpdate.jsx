@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { daysUntilWedding, countdownLabel, countdownSentence, countdownForPrompt } from '@/lib/weddingCountdown';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
@@ -304,9 +305,8 @@ export default function DailyUpdate() {
     const firstName = getFirstName(user?.full_name || couple);
     const tod = getTimeOfDay();
 
-    const days = weddingDate
-      ? Math.ceil((new Date(weddingDate) - new Date()) / 86400000)
-      : null;
+    // Was Math.ceil between two instants; see src/lib/weddingCountdown.js.
+    const days = daysUntilWedding(weddingDate);
     setDaysUntil(days);
 
     // AUDIT_2026-07.md S21: 'confirmed' is not a valid rsvp_status value —
@@ -355,12 +355,9 @@ export default function DailyUpdate() {
     const fallback = {
       // "0 days to go." is not how anyone says it on the day itself, and
       // "1 days to go." is not how anyone says it the day before.
-      headline: days === 0 ? 'Today is the day.'
-        : days === 1 ? 'Tomorrow.'
-        : days !== null ? `${days} days to go.`
-        : 'Your wedding is coming.',
+      headline: countdownSentence(days) || 'Your wedding is coming.',
       greeting: `Good ${tod}, ${firstName}. Here's where things stand today.`,
-      countdown: { headline: days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : `${days ?? '—'} days`, subtext: 'Every detail is coming together.' },
+      countdown: { headline: countdownLabel(days) || '—', subtext: 'Every detail is coming together.' },
       thisWeek: [],
       smartSuggestions: [],
       guestAlert:  pendingGuests > 0 ? `${pendingGuests} guest${pendingGuests !== 1 ? 's' : ''} haven't replied yet` : null,
@@ -376,14 +373,10 @@ export default function DailyUpdate() {
     if (!hasAnythingToReport) {
       const emptyBriefing = {
         ...fallback,
-        headline: days === 0 ? 'Today is the day.'
-          : days === 1 ? 'Tomorrow.'
-          : days !== null && days > 0 ? `${days} days to go.`
-          : 'Your wedding is being planned.',
+        headline: countdownSentence(days) || 'Your wedding is being planned.',
         greeting: `Good ${tod}, ${firstName}. Nothing needs you yet. Add your guests when you are ready and this page will start filling in.`,
         countdown: {
-          headline: days === 0 ? 'Today' : days === 1 ? 'Tomorrow'
-            : days !== null && days > 0 ? `${days} days` : 'Date not set',
+          headline: countdownLabel(days) || 'Date not set',
           subtext: 'Nothing else needs you today.',
         },
         thisWeek: [],
@@ -412,7 +405,8 @@ Today is ${today}.
 
 DATA:
 - Couple: ${couple || 'Not set'}
-- Wedding date: ${weddingDate || 'Not set'} (${days ?? 'unknown'} days away)
+- Wedding date: ${weddingDate || 'Not set'}
+- COUNTDOWN, and use these words rather than the number: ${countdownForPrompt(days)}
 - Location: ${city || 'Not set'}
 - Total guests: ${guests.length}, confirmed: ${confirmedGuests}, pending: ${pendingGuests}, unseated: ${unseatedGuests}
 - Budget: $${totalBudget.toLocaleString()} total, $${budgetSpent.toLocaleString()} spent (${budgetPercent}%)
@@ -514,7 +508,9 @@ NEVER PHRASE AN ABSENCE AS AN ACCOMPLISHMENT. A count of 0 means the couple has 
             fontFamily: PJS, fontSize: 12, fontWeight: 700, letterSpacing: '0.04em',
             whiteSpace: 'nowrap',
           }}>
-            {daysUntil > 0 ? `${daysUntil} days to go` : 'Today\'s the day'}
+            {/* Was `> 0 ? n days to go : "Today's the day"`, so the badge
+                said "Today's the day" every day after the wedding as well. */}
+            {countdownLabel(daysUntil) || 'Today\'s the day'}
           </div>
         ) : (
           <div style={{ width: 120 }} />

@@ -28,6 +28,7 @@
  * exactly like a couple who has not set a budget. Pinned in CI.
  */
 import React, { useState } from 'react';
+import { countdownLabel } from '@/lib/weddingCountdown';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 const INK = '#0A0A0A';
@@ -80,7 +81,10 @@ export default function NextUp({ journey, daysUntil, onGo }) {
         <span style={eyebrow}>Next up</span>
         <span style={{ ...eyebrow, color: ICON }}>
           {step ? `Step ${nextIndex + 1} of ${total}` : `${doneCount} of ${total} done`}
-          {typeof daysUntil === 'number' ? ` · ${daysUntil} days to go` : ''}
+          {/* Was `${daysUntil} days to go` unconditionally: "1 days to go"
+              the day before, "0 days to go" on the day, and a negative number
+              every day after. */}
+          {countdownLabel(daysUntil) ? ` · ${countdownLabel(daysUntil)}` : ''}
         </span>
       </div>
 
