@@ -17,6 +17,8 @@
  * `currentPage` itself, e.g. via the builder's own page selector).
  */
 import React from 'react';
+import { customPageFor } from '@/lib/customPages';
+import WeddingCustomPage from '@/components/guest-website/pages/WeddingCustomPage';
 import { resolveTypography, resolveColors, resolveUniverseConfig } from '@/lib/universeStyling';
 import TextureOverlay from '@/components/guest-website/TextureOverlay';
 import EntranceMoment from '@/components/guest-website/EntranceMoment';
@@ -76,7 +78,12 @@ export default function RealWebsitePreview({ details: ownDetails, currentPage = 
   // Custom page slugs with no dedicated component fall back to
   // WeddingHomePage — matching MultiPageWeddingWebsite.jsx's own
   // `PAGE_COMPONENTS[page] || WeddingHomePage` fallback exactly.
-  const PageComponent = PAGE_COMPONENTS[currentPage] || WeddingHomePage;
+  // A custom page resolves to its own renderer here as well, so the builder
+  // preview shows what the published site shows. The two fell out of step
+  // before: FullScreenPreview.jsx:23 already listed custom pages in its page
+  // picker, and picking one rendered the HOME page.
+  const PageComponent = PAGE_COMPONENTS[currentPage]
+    || (customPageFor(details, currentPage) ? WeddingCustomPage : WeddingHomePage);
 
   return (
     <div
@@ -124,6 +131,7 @@ export default function RealWebsitePreview({ details: ownDetails, currentPage = 
       )}
 
       <WeddingWebsiteNav
+        weddingDetails={details}
         weddingName={coupleDisplayName(details)}
         theme={theme}
         typography={typography}

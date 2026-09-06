@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { pageLabel } from '@/lib/customPages';
 import { Menu, X, ChevronDown } from 'lucide-react';
-import { WEDDING_PAGES } from '@/lib/websiteThemes';
 
 // fix/builder-polish: with many pages enabled (up to 14 in WEDDING_PAGES,
 // plus up to 4 sub-page links — transport/accommodation/music/experience —
@@ -12,7 +12,7 @@ import { WEDDING_PAGES } from '@/lib/websiteThemes';
 // many pages a couple enables.
 const MAX_VISIBLE_LINKS = 5;
 
-export default function WeddingWebsiteNav({ weddingName, theme, typography, enabledPages, currentPage, weddingSlug, hasTransport, hasAccommodation, hasMusic, hasExperience, hasGoodToKnow, onNavigate }) {
+export default function WeddingWebsiteNav({ weddingDetails, weddingName, theme, typography, enabledPages, currentPage, weddingSlug, hasTransport, hasAccommodation, hasMusic, hasExperience, hasGoodToKnow, onNavigate }) {
    const [scrolled, setScrolled] = useState(false);
    const [mobileOpen, setMobileOpen] = useState(false);
    const [moreOpen, setMoreOpen] = useState(false);
@@ -72,10 +72,18 @@ export default function WeddingWebsiteNav({ weddingName, theme, typography, enab
   // no longer exists (e.g. Guestbook, retired) — filter those out instead
   // of rendering a dead, blank-label nav link. WEDDING_PAGES is the single
   // source of truth for which page slugs are real.
+  // THE LABEL LOOKUP NOW INCLUDES THE COUPLE'S OWN PAGES.
+  //
+  // This looked the label up in WEDDING_PAGES alone and then dropped anything
+  // without one. The filter is right — a retired slug like Guestbook must not
+  // render a blank link — but WEDDING_PAGES is not the whole set of real
+  // slugs: a couple's custom page is real and is not in it. So every new page
+  // a couple created was silently filtered out of their own navigation.
+  // pageLabel() answers for both (src/lib/customPages.js).
   const pageLinks = enabledPages
     .map(pageSlug => ({
       key: pageSlug,
-      label: WEDDING_PAGES.find(p => p.slug === pageSlug)?.label,
+      label: pageLabel(weddingDetails, pageSlug),
       isPage: true,
       slug: pageSlug,
     }))
