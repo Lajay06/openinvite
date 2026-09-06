@@ -44,10 +44,17 @@
  * that check runs on. havana carries the owner's own photographs and is the
  * proof of the other half: what a universe looks like full.
  *
- * TWELVE OF TWENTY UNIVERSES NOW CARRY CONTENT. The remaining eight split in
- * two: taj, edinburgh, monaco, florence and seoul have photography and are a
- * copywriting job; kyoto, aspen and shanghai have no folder at all, so nothing
- * can be written for them until there are photographs to write against.
+ * SEVENTEEN OF TWENTY UNIVERSES NOW CARRY CONTENT, and the three that do not
+ * are no longer blocked on photography. On 2026-09-06 the owner uploaded
+ * folders for kyoto (9 assets), bali (11), aspen (6) and shanghai (7) — the
+ * four that had none. bali already had copy and now has imagery to allocate;
+ * kyoto, aspen and shanghai are a copywriting job with the pictures in place.
+ *
+ * bali is the one to think about before touching. It is the OMISSION FIXTURE:
+ * the published fixture chris-and-sia is checked against it to prove no sample
+ * copy reaches a guest, and several of those checks read on it carrying no
+ * imagery. Giving bali photographs is a change to a test fixture, not only to
+ * a sample, and it is a separate piece of work from filling a new universe.
  */
 import { SAMPLE_BALI } from './bali.js';
 import { SAMPLE_HAVANA } from './havana.js';
@@ -61,6 +68,11 @@ import { SAMPLE_CAPETOWN } from './capetown.js';
 import { SAMPLE_MYKONOS } from './mykonos.js';
 import { SAMPLE_AMALFI } from './amalfi.js';
 import { SAMPLE_SEDONA } from './sedona.js';
+import { SAMPLE_TAJ } from './taj.js';
+import { SAMPLE_EDINBURGH } from './edinburgh.js';
+import { SAMPLE_MONACO } from './monaco.js';
+import { SAMPLE_FLORENCE } from './florence.js';
+import { SAMPLE_SEOUL } from './seoul.js';
 
 const SAMPLES = {
   bali: SAMPLE_BALI,
@@ -75,6 +87,11 @@ const SAMPLES = {
   mykonos: SAMPLE_MYKONOS,
   amalfi: SAMPLE_AMALFI,
   sedona: SAMPLE_SEDONA,
+  taj: SAMPLE_TAJ,
+  edinburgh: SAMPLE_EDINBURGH,
+  monaco: SAMPLE_MONACO,
+  florence: SAMPLE_FLORENCE,
+  seoul: SAMPLE_SEOUL,
 };
 
 /** Universe ids that have sample content. */
