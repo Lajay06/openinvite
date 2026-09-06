@@ -1594,3 +1594,97 @@ SIZE, if the design lands as "page-scoped, link out where the planner owns it":
 one prop, one filter, and eight short link-out blocks of the shape
 MasterDataReferenceDark already provides. Still inside the MINOR CLASS cap.
 The cost is the decision, not the code.
+
+## Email templates editable in the guest studio — SCOPED, not built (2026-09-06)
+
+Owner: the invitation email is editable in the studio; save-the-date, reminder
+and thank-you are not. Preferred shape: one editor, four templates, a picker.
+
+### THE PREFERRED SHAPE IS MOSTLY ALREADY BUILT, one layer down
+
+`src/lib/emailTemplate.js` is already ONE template serving FIVE types —
+`invite`, `reminder`, `update`, `thank_you_attending`, `thank_you_declined`
+(TYPE_CONFIG, :31-91). They differ only in kicker, whether events and the RSVP
+CTA show, the CTA label, the footer's noun and the default message. Its header
+says so in as many words: "the only place in the codebase that produces this
+HTML". One render path, no preview-only second path.
+
+So the render layer needs nothing. What is missing is above it.
+
+### WHERE EACH PIECE LIVES
+
+  src/lib/emailTemplate.js                 the one renderer, five types
+  src/lib/universeEmailStyles.js           per-universe styling for it
+  src/components/guests/EmailTemplates.jsx a GALLERY: one preview card per
+                                           type, rendered through the real
+                                           renderer with real data. READ ONLY —
+                                           it previews and offers a test send.
+  src/components/guests/SendInvitesModal.jsx the compose pane. THIS is the
+                                           "editor": subject (:176), message
+                                           body (:177, textarea :783) and a
+                                           banner choice (:180).
+  api/send-invites.js                      the one send path (:36, :161)
+
+### THE ACTUAL GAPS, three of them, and only one is large
+
+1. NOTHING IS SAVED. The compose pane's subject and body are useState only —
+   grep for WeddingDetails.update / assetContent / emailTemplates in either
+   component returns NOTHING. So the invitation is not "editable" in the studio
+   either; it is TYPE-ABLE, once, per send. Every template is equally
+   uneditable, which is a truer statement of the defect than the owner's, and
+   changes the shape of the fix: this is not "extend editing to three more
+   templates", it is "add persistence, once, for all of them".
+
+2. SAVE-THE-DATE DOES NOT EXIST as a type. The five are invite, reminder,
+   update, thank_you_attending, thank_you_declined. Save-the-date is the one
+   genuinely new template. `update` exists and was not asked for.
+
+3. THE PICKER EXISTS TWICE AND EDITS NEITHER. EmailTemplates.jsx is a gallery
+   with a card per type; SendInvitesModal takes `type` as a prop. Neither lets
+   a couple open a template, change it, and keep the change.
+
+### THE SHAPE, and it is the owner's
+
+One editor, four templates, a picker, persistence:
+
+  a. A `emailTemplates` field on WeddingDetails: { [type]: { subject, body,
+     bannerChoice } }. Check the entity schema FIRST — unknown fields are
+     silently dropped by Base44 (CLAUDE.md), and this is a nested object three
+     levels deep, which is exactly the shape avaActionValidation.js warns about.
+  b. SendInvitesModal seeds from the saved value for its type and falls back to
+     the current default; a Save action writes it back.
+  c. EmailTemplates.jsx's cards become the picker — each opens the editor for
+     its type rather than only previewing it.
+  d. Add `save_the_date` to TYPE_CONFIG: no events, no RSVP CTA, its own kicker
+     and CTA label ("See our site"). One entry, and the renderer already
+     handles every switch it needs.
+  e. Cover photo carried across: getBannerImageUrl/getDefaultBannerChoice
+     (emailTemplate.js:148) already take coverPhoto and venuePhotoUrl and are
+     already wired in the compose pane (:202, :265). Persisting bannerChoice
+     per template is the whole of the owner's "carried across". NO VIDEO — the
+     banner is an <img> in a table-layout email; video was never an option here
+     and must not become one.
+  f. Sending stays the couple's action: no change: /api/send-invites is only
+     ever called from the modal's own send button.
+
+### SIZE
+
+Roughly 5 files: emailTemplate.js (one TYPE_CONFIG entry), SendInvitesModal.jsx
+(seed + save), EmailTemplates.jsx (cards become entry points), a persistence
+helper, and the guard. Inside the MINOR CLASS cap on files; the risk is not
+size but the SCHEMA — a nested field Base44 does not declare will be accepted
+with a 200 and silently discarded, and the whole feature would appear to work
+until a reload.
+
+### TESTS THE OWNER NAMED, and what each needs
+
+  round-trip edit -> save -> preview, per template: needs the persistence
+  helper to be a pure module so it can be tested without a browser.
+  NO LEAK BETWEEN WEDDINGS (plant): the field is on WeddingDetails, which is
+  RLS-scoped per couple, so the leak the owner fears is structurally
+  impossible — but it is worth a plant that reads back a second record and
+  asserts the first couple's text is absent, because "structurally impossible"
+  is what was said about several things this month.
+
+NOT BUILT. The session's budget went to the two AUTO items above it. This is
+the next thing to pick up and the report is written so it can be started cold.
