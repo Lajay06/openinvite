@@ -27,7 +27,7 @@ import { pass, fail } from './_shared.mjs';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { getSampleWedding, sampleUniverseIds, isSample } from '../../src/lib/sampleContent/index.js';
+import { getSampleWedding, sampleUniverseIds, isSample, OMISSION_FIXTURE_ID } from '../../src/lib/sampleContent/index.js';
 import { withSampleContent, isEmpty, sampleHeroImage } from '../../src/lib/sampleContent/mergeSample.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -155,10 +155,12 @@ export async function runSampleContentNeverPublished() {
     };
     const isImage = (s) => /cloudinary|places-photo|\.(jpe?g|png|webp|gif)/i.test(s);
 
-    // EVERY SAMPLE UNIVERSE, not just the first. bali carries no imagery, so a
-    // fault that overwrites a couple's photos WITH sample photos is invisible
-    // against it — a planted nested overwrite passed this block green until
-    // havana was included. Testing one fixture tests one shape.
+    // EVERY SAMPLE UNIVERSE, not just the first. This was written when bali
+    // carried no imagery and a fault that overwrites a couple's photos WITH
+    // sample photos was invisible against it — a planted nested overwrite
+    // passed green until havana was included. Every universe is illustrated
+    // now, but the reason to loop is unchanged: testing one fixture tests one
+    // shape.
     for (const uni of ids) {
     const populated = populatedFor(uni);
     const before = strings(populated).sort();
@@ -273,6 +275,77 @@ export async function runSampleContentNeverPublished() {
     void sample;
   }
 
+  // ── 2a-bis. THE OMISSION FIXTURE, AND WHY IT IS NOT A UNIVERSE ──────────
+  //
+  // The safety property of this directory is that sample COPY never reaches a
+  // guest, and proving it needs a control: a sample with copy and NO imagery,
+  // so that a published page rendering nothing from it is visible rather than
+  // merely plausible. bali was that control for as long as bali had no
+  // photographs. It has eleven now, so the control moved out to
+  // `__omission_fixture` — registered in SAMPLES, absent from
+  // `sampleUniverseIds()`, and not a universe at all.
+  //
+  // THE CHECKS THAT USED TO READ ON "bali HAS NO IMAGERY" READ HERE NOW. If
+  // they had been left pointing at bali they would have gone on passing while
+  // asserting something false, which is the worst state a guard can be in.
+  {
+    const fixture = getSampleWedding(OMISSION_FIXTURE_ID);
+    check('the omission fixture exists and is reachable through the one door',
+      !!fixture && isSample(fixture), OMISSION_FIXTURE_ID);
+
+    // Walk the whole record for anything that looks like an image. A single
+    // photograph here silently disarms every check the fixture exists to serve.
+    const imageish = (v, path = '', out = []) => {
+      if (typeof v === 'string') {
+        if (/cloudinary|places-photo|\.(jpe?g|png|webp|gif)(\?|$)|^https?:\/\/\S+\.(jpe?g|png|webp)/i.test(v)) out.push(`${path}=${v.slice(0, 60)}`);
+        return out;
+      }
+      if (Array.isArray(v)) { v.forEach((x, i) => imageish(x, `${path}[${i}]`, out)); return out; }
+      if (v && typeof v === 'object') { Object.entries(v).forEach(([k, x]) => imageish(x, path ? `${path}.${k}` : k, out)); return out; }
+      return out;
+    };
+    const found = imageish(fixture);
+    check('  it carries NO imagery — that is the whole point of it',
+      found.length === 0, found.slice(0, 3).join(' | ') || 'no image value anywhere in the record');
+    check('  while carrying real copy, so a published page has something to omit',
+      typeof fixture.ourStoryContent?.storyText === 'string' && fixture.ourStoryContent.storyText.length > 40,
+      `${(fixture.ourStoryContent?.storyText || '').length} characters of story`);
+
+    // NOT SELECTABLE, TWO WAYS.
+    check('  it is excluded from sampleUniverseIds(), so nothing can enumerate it',
+      !ids.includes(OMISSION_FIXTURE_ID), `${ids.length} ids, none of them the fixture`);
+    check('  and every id that IS enumerated is a real universe key',
+      ids.every((id) => /^[a-z]+$/.test(id)), ids.filter((id) => !/^[a-z]+$/.test(id)).join(', ') || 'all lowercase letters');
+    {
+      const themes = readFileSync(join(SRC, 'lib/websiteThemes.js'), 'utf8');
+      check('  and it is not a universe in websiteThemes.js, so the picker cannot draw it',
+        !new RegExp(`['"\\[]?${OMISSION_FIXTURE_ID}['"\\]]?\\s*:`).test(themes),
+        'no UNIVERSE_CONFIGS entry');
+    }
+
+    // PLANT 1: give the fixture an image. The no-imagery check must reject it.
+    {
+      const withImage = { ...structuredClone(fixture), coverPhoto: 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/planted' };
+      check('PLANT: a fixture given one photograph fails the no-imagery check',
+        imageish(withImage).length === 1, imageish(withImage).join(' | '));
+    }
+    // PLANT 2: put the fixture back into the enumerated ids.
+    {
+      const leaked = [...ids, OMISSION_FIXTURE_ID];
+      check('PLANT: a fixture leaked into sampleUniverseIds() fails the exclusion check',
+        leaked.includes(OMISSION_FIXTURE_ID) && !leaked.every((id) => /^[a-z]+$/.test(id)),
+        'both the exclusion check and the shape check reject it');
+    }
+    // PLANT 3: a published page rendering the fixture's copy. This is the
+    // failure the whole fixture exists to detect, stated as data rather than
+    // as a rendered page: its sentences must appear in no published surface.
+    {
+      const sentence = (fixture.ourStoryContent?.storyText || '').split('.')[0];
+      check('PLANT: the fixture has a sentence long enough to be searched for',
+        sentence.length > 25, `${sentence.length} characters`);
+    }
+  }
+
   // ── 2b-quater. THE DECLARED SLOTS NOBODY HAD EVER RUN ───────────────────
   //
   // FILLABLE_SLOTS declares seven pairs. Until this block three of them had
@@ -364,13 +437,18 @@ export async function runSampleContentNeverPublished() {
   // A presence check cannot see any of that — the key exists, the value is a
   // real URL, and nothing renders. These are the ACCESSORS, taken from the
   // pages, which is the only thing that settles it.
-  // bali carries NO imagery on purpose — it is the omission fixture — so the
-  // "images are on a readable key" check applies only to a sample that has
-  // images at all. The dead-key checks below it apply to both, because a dead
-  // key is wrong whether or not the sample is illustrated.
+  // THE ESCAPE HATCH IS GONE. This check used to read `!w.coverPhoto || …`,
+  // which excused any sample with no cover photo — and exactly one sample had
+  // none, bali, because bali was the omission fixture. bali is an illustrated
+  // universe now and the fixture has moved out of `sampleUniverseIds()`, so
+  // every id this loop sees is a real universe and every real universe must
+  // carry its photographs on the key the story grid reads. An escape hatch
+  // that no longer has an occupant is a hole waiting for the next one.
   const RENDERED_BY = [
     ['ourStoryContent.photos is an array the story grid reads',
-      (w) => !w.coverPhoto || (Array.isArray(w.ourStoryContent?.photos) && w.ourStoryContent.photos.length > 0)],
+      (w) => Array.isArray(w.ourStoryContent?.photos) && w.ourStoryContent.photos.length > 0],
+    ['and a cover photo the hero and the picker read',
+      (w) => typeof w.coverPhoto === 'string' && w.coverPhoto.startsWith('http')],
     ['  and no dead singular photoUrl beside it',
       (w) => w.ourStoryContent?.photoUrl === undefined],
     ['milestones carry {date,text}, the keys the page renders',
@@ -506,12 +584,21 @@ export async function runSampleContentNeverPublished() {
   }
 
   // ── 3c. THE PICKER hero prefers the sample photograph ────────────────────
-  check('a universe with sample content offers a hero image to the picker',
-    typeof sampleHeroImage(ids.find((i) => i === 'havana') || ids[0]) === 'string'
-      || sampleHeroImage('bali') === null,
-    `havana=${String(sampleHeroImage('havana')).slice(0, 48)} bali=${sampleHeroImage('bali')}`);
+  //
+  // The `|| sampleHeroImage('bali') === null` that used to sit in the first
+  // check was bali's exemption as the omission fixture, and it made the check
+  // pass whenever EITHER half held. Every universe is illustrated now, so the
+  // assertion is the strong one: all of them offer a hero.
+  {
+    const noHero = ids.filter((id) => typeof sampleHeroImage(id) !== 'string');
+    check(`every one of the ${ids.length} sample universes offers a hero image to the picker`,
+      noHero.length === 0, noHero.join(', ') || `havana=${String(sampleHeroImage('havana')).slice(-24)}`);
+  }
   check('  and a universe with no sample offers none',
     sampleHeroImage('no-such-universe') === null, 'null, so the static asset stands');
+  check('  the omission fixture offers none either — it is the control, not a universe',
+    sampleHeroImage(OMISSION_FIXTURE_ID) === null || sampleHeroImage(OMISSION_FIXTURE_ID) === undefined,
+    `${sampleHeroImage(OMISSION_FIXTURE_ID)}`);
 
   // ── 4. #576's EXACT SHAPE: a sample string that is also a live default ────
   // Every sentence the sample actually CONTAINS, searched for across the rest

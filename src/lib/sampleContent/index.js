@@ -37,26 +37,24 @@
  *      anywhere else in src/. That assertion is what makes the whole idea safe;
  *      without it this file is a bag of strings waiting to become defaults.
  *
- * THE TWO ORIGINAL UNIVERSES DO DIFFERENT JOBS, and both are still load
- * bearing. bali carries placeholder copy and NO imagery — it is the omission
- * fixture, the record a published site is checked against to prove none of
- * this reaches a guest, and the published bali fixture chris-and-sia is what
- * that check runs on. havana carries the owner's own photographs and is the
+ * THE OMISSION FIXTURE IS NO LONGER A UNIVERSE. bali used to be it: placeholder
+ * copy and no imagery, the control a published site is checked against to prove
+ * none of this reaches a guest. On 2026-09-06 bali received eleven photographs
+ * and became a universe a couple can choose and see filled, so the control moved
+ * out whole to omissionFixture.js, under `__omission_fixture` — a key
+ * `sampleUniverseIds()` omits and UNIVERSE_CONFIGS does not contain. The
+ * published fixture chris-and-sia still runs against it. havana remains the
  * proof of the other half: what a universe looks like full.
  *
- * SEVENTEEN OF TWENTY UNIVERSES NOW CARRY CONTENT, and the three that do not
- * are no longer blocked on photography. On 2026-09-06 the owner uploaded
- * folders for kyoto (9 assets), bali (11), aspen (6) and shanghai (7) — the
- * four that had none. bali already had copy and now has imagery to allocate;
- * kyoto, aspen and shanghai are a copywriting job with the pictures in place.
- *
- * bali is the one to think about before touching. It is the OMISSION FIXTURE:
- * the published fixture chris-and-sia is checked against it to prove no sample
- * copy reaches a guest, and several of those checks read on it carrying no
- * imagery. Giving bali photographs is a change to a test fixture, not only to
- * a sample, and it is a separate piece of work from filling a new universe.
+ * ALL TWENTY UNIVERSES NOW CARRY CONTENT. The last four — kyoto, aspen,
+ * shanghai and bali — were blocked on photography until the owner uploaded
+ * folders for them on 2026-09-06.
  */
 import { SAMPLE_BALI } from './bali.js';
+import { SAMPLE_KYOTO } from './kyoto.js';
+import { SAMPLE_ASPEN } from './aspen.js';
+import { SAMPLE_SHANGHAI } from './shanghai.js';
+import { SAMPLE_OMISSION_FIXTURE } from './omissionFixture.js';
 import { SAMPLE_HAVANA } from './havana.js';
 import { SAMPLE_LONDON } from './london.js';
 import { SAMPLE_TULUM } from './tulum.js';
@@ -74,7 +72,25 @@ import { SAMPLE_MONACO } from './monaco.js';
 import { SAMPLE_FLORENCE } from './florence.js';
 import { SAMPLE_SEOUL } from './seoul.js';
 
+/**
+ * THE KEY THE STUDIO CANNOT SELECT.
+ *
+ * The omission fixture is registered in SAMPLES so the guard can read it
+ * through the same door as everything else, and excluded from
+ * `sampleUniverseIds()` so that nothing which ENUMERATES sample universes can
+ * offer it. It is also not a key in UNIVERSE_CONFIGS, so it is not a universe:
+ * `resolveUniverseConfig` has nothing to resolve and the picker has nothing to
+ * draw. Both facts are asserted with planted failures in
+ * tests/persistence/sample-content-never-published.mjs.
+ *
+ * The leading underscores are the smallest part of the guarantee and the most
+ * visible: every universe id in this product is lowercase letters, so a key
+ * shaped like this cannot collide with one by accident.
+ */
+export const OMISSION_FIXTURE_ID = '__omission_fixture';
+
 const SAMPLES = {
+  [OMISSION_FIXTURE_ID]: SAMPLE_OMISSION_FIXTURE,
   bali: SAMPLE_BALI,
   havana: SAMPLE_HAVANA,
   london: SAMPLE_LONDON,
@@ -92,11 +108,22 @@ const SAMPLES = {
   monaco: SAMPLE_MONACO,
   florence: SAMPLE_FLORENCE,
   seoul: SAMPLE_SEOUL,
+  kyoto: SAMPLE_KYOTO,
+  aspen: SAMPLE_ASPEN,
+  shanghai: SAMPLE_SHANGHAI,
 };
 
-/** Universe ids that have sample content. */
+/**
+ * Universe ids that have sample content.
+ *
+ * THE FIXTURE IS NOT ONE. It is a control for the published-site checks, not a
+ * universe a couple can choose, and anything that enumerates universes — a
+ * picker, a report, a loop in a test — must not be handed it. Excluded here
+ * rather than filtered at each call site, because a rule enforced at one
+ * chokepoint is a rule and a rule enforced at seven is a habit.
+ */
 export function sampleUniverseIds() {
-  return Object.keys(SAMPLES);
+  return Object.keys(SAMPLES).filter((k) => k !== OMISSION_FIXTURE_ID);
 }
 
 /** True if this object is sample content rather than a couple's own data. */
