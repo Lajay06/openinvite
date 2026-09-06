@@ -26,6 +26,7 @@
  * validator to grow rather than slipping past it.
  */
 import { validateAvaAction } from './avaActionValidation.js';
+import { matchTodoByTitle } from './todoMatch.js';
 
 /**
  * THE MIRROR THE POD GETS.
@@ -123,6 +124,35 @@ export async function executeAvaAction(action, deps) {
   const { ok, cleaned, error } = validateAvaAction(entity, action.data, { isUpdate: IS_UPDATE(type) });
   if (!ok) return { ok: false, error, entity };
 
+  // WHICH TO-DO. The model has never been able to answer this: the prompt asked
+  // for an id (avaRequest.js) and the context sends titles only
+  // (avaContextFormat.js), so every id in a tick-off action was invented and
+  // every tick-off 404'd. Resolved here, against the couple's own list, before
+  // anything is written — and a failure names the to-do rather than shrugging.
+  let todoId = action.data?.id;
+  if (type === 'update_todo') {
+    const asked = action.data?.title || '';
+    const todos = (await deps.listTodos?.()) || [];
+    const byId = todoId ? todos.find((t) => t.id === todoId) : null;
+    if (!byId) {
+      const { todo, ambiguous } = matchTodoByTitle(todos, asked);
+      if (ambiguous.length) {
+        return { ok: false, entity, error:
+          `There is more than one to-do like "${asked}" — ${ambiguous.map((t) => `"${t.title}"`).join(' and ')}. Which one?` };
+      }
+      if (!todo) {
+        return { ok: false, entity, error: asked
+          ? `I could not find a to-do called "${asked}".`
+          : 'I could not tell which to-do you meant.' };
+      }
+      todoId = todo.id;
+    }
+    // The couple's phrasing is how the row was FOUND, never what it is renamed
+    // to: resolving "order invitations" must not rewrite "Order the
+    // invitations" into the words that happened to find it.
+    delete cleaned.title;
+  }
+
   const writers = {
     create_guest:       () => deps.createGuest(cleaned),
     update_guest:       () => deps.updateGuest(action.data.id, cleaned),
@@ -137,7 +167,7 @@ export async function executeAvaAction(action, deps) {
     // Marking done is two fields, not one: TodoList.jsx:218 writes both, and a
     // row with completed:true but status:'In progress' sits in the wrong column
     // forever.
-    update_todo:        () => deps.entities.Note.update(action.data.id, cleaned.completed
+    update_todo:        () => deps.entities.Note.update(todoId, cleaned.completed
       ? { ...cleaned, status: 'Done' }
       : cleaned),
   };

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { color } from '@/styles/tokens';
 import { parseAvaText } from '@/lib/avaMarkdown';
 import { base44 } from '@/api/base44Client';
+import { getMyRecords } from '@/lib/resolveMyWedding';
 import { buildWeddingContext } from '@/lib/avaContext';
 import { buildAvaPrompt, unwrapLlmReply, ACTION_MIRROR } from '@/lib/avaRequest';
 import { filterUnbackedOffers } from '@/lib/avaOfferFilter';
@@ -162,12 +163,18 @@ function AvaChatPod({ onClose, openDetail, messages, setMessages, dismissed, set
     if (!action) return;
     updateAction(msgId, actionId, { status: 'executing' });
     try {
-      const { ok, error } = await executeAvaAction(action, { entities: base44.entities, navigate, currentPath: location.pathname });
-      if (!ok) { updateAction(msgId, actionId, { status: 'error' }); toast.error(error); return; }
+      const { ok, error } = await executeAvaAction(action, { entities: base44.entities, navigate, currentPath: location.pathname, listTodos: () => getMyRecords('Note') });
+      if (!ok) { updateAction(msgId, actionId, { status: 'error', error }); toast.error(error); return; }
       updateAction(msgId, actionId, { status: 'done' });
       if (action.type !== 'navigate') toast.success(actionLabel(action.type, action.data));
-    } catch {
-      updateAction(msgId, actionId, { status: 'error' });
+    } catch (err) {
+      // NOT AN EMPTY CATCH. executeAvaAction returns {ok:false} for what it can
+      // check and THROWS for what only the backend knows — a 404 on a row that
+      // is not there is the second kind, and it was landing here and being
+      // dropped: no toast, and a card reading "Could not do that".
+      const message = err?.message || 'Something went wrong doing that.';
+      updateAction(msgId, actionId, { status: 'error', error: message });
+      toast.error(message);
     }
   };
 

@@ -6,6 +6,7 @@ import AvaActionCard, { actionLabel } from '@/components/layout/AvaActionCard';
 import { executeAvaAction, filterActionsToMirror } from '@/lib/avaExecute';
 import { parseActions } from '@/lib/avaActions';
 import { base44 } from '@/api/base44Client';
+import { getMyRecords } from '@/lib/resolveMyWedding';
 import { buildWeddingContext } from '@/lib/avaContext';
 import { buildAvaPrompt, ACTION_MIRROR, unwrapLlmReply } from '@/lib/avaRequest';
 import { filterUnbackedOffers } from '@/lib/avaOfferFilter';
@@ -76,17 +77,24 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
       // only what the modal does about the result.
       const { ok, error } = await executeAvaAction(action, {
         entities: base44.entities, createGuest, updateGuest, navigate, currentPath: location.pathname,
+        listTodos: () => getMyRecords('Note'),
       });
       if (!ok) {
-        updateAction(msgIndex, actionId, { status: 'error' });
+        updateAction(msgIndex, actionId, { status: 'error', error });
         toast.error(error);
         return;
       }
       updateAction(msgIndex, actionId, { status: 'done' });
       if (action.type === 'navigate') { onClose(); return; }
       toast.success(actionLabel(action.type, action.data));
-    } catch {
-      updateAction(msgIndex, actionId, { status: 'error' });
+    } catch (err) {
+      // NOT AN EMPTY CATCH. executeAvaAction returns {ok:false} for what it can
+      // check and THROWS for what only the backend knows — a 404 on a row that
+      // is not there is the second kind, and it was landing here and being
+      // dropped: no toast, and a card reading "Could not do that".
+      const message = err?.message || 'Something went wrong doing that.';
+      updateAction(msgIndex, actionId, { status: 'error', error: message });
+      toast.error(message);
     }
   };
 

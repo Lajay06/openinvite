@@ -50,13 +50,25 @@ export function actionLabel(type, data = {}) {
     case 'update_vendor':      return `Update vendor record${data.status ? ` → ${data.status}` : ''}`;
     case 'create_schedule':    return `Add to schedule: "${data.event_name || 'item'}"${data.start_time ? ` at ${data.start_time}` : ''}`;
     case 'create_todo':        return `Add to your to-do list: "${data.title || 'item'}"${data.due_date ? ` — due ${data.due_date}` : ''}`;
-    case 'update_todo':        return data.completed ? 'Tick that off your to-do list' : 'Update that to-do';
+    case 'update_todo':        return data.completed
+      ? `Tick ${data.title ? `"${data.title}"` : 'that'} off your to-do list`
+      : `Update ${data.title ? `"${data.title}"` : 'that to-do'}`;
     case 'navigate':           return `Go to ${(data.path || '').replace(/^\//, '')} page`;
     default:                   return `Run: ${type}`;
   }
 }
 
+/**
+ * 'Could not do that' is the fallback, not the message.
+ *
+ * The executor has always returned a sentence saying what happened, and this
+ * card has always thrown it away — every failure, from a refused enum to a
+ * to-do that does not exist, read as the same four words. The couple who
+ * confirmed a tick-off and got "Could not do that" had no way to learn that
+ * Ava had looked for a to-do by a name nothing matched.
+ */
 const STATUS_TEXT = { done: 'Done', error: 'Could not do that', executing: 'Working…', cancelled: 'Cancelled' };
+const statusText = (action) => action.status === 'error' && action.error ? action.error : STATUS_TEXT[action.status];
 
 export default function AvaActionCard({ action, tone = 'light', onConfirm, onCancel }) {
   const t = TONES[tone] || TONES.light;
@@ -91,7 +103,7 @@ export default function AvaActionCard({ action, tone = 'light', onConfirm, onCan
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600,
           color: action.status === 'done' ? '#10B981' : action.status === 'error' ? '#E03553' : t.doneText }}>
           {STATUS_ICON[action.status]}
-          {STATUS_TEXT[action.status]}
+          {statusText(action)}
         </div>
       )}
     </div>

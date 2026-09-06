@@ -51,6 +51,11 @@ function recorder() {
       createGuest: rec('createGuest'),
       updateGuest: rec('updateGuest'),
       navigate: rec('navigate'),
+      // update_todo resolves which row it is about before it writes, because
+      // nothing ever gave the model a real id — see tests/persistence/
+      // ava-tick-off.mjs. The executor needs the couple's list to do that, so
+      // the recorder supplies one; 'row-1' is the id the writers echo back.
+      listTodos: async () => [{ id: 'row-1', title: 'Confirm the florist count', completed: false }],
     },
   };
 }
