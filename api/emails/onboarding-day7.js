@@ -1,4 +1,5 @@
 import { emailShell, emailFooterRow, EMAIL_ACCENT, EMAIL_BLACK, EMAIL_FONT, EMAIL_MUTED, EMAIL_MUTED_LIGHT, EMAIL_BODY_TEXT } from '../../src/lib/emailBrand.js';
+import { greeting } from '../../src/lib/emailGreeting.js';
 import { PRO_FEATURES, ULTRA_EXTRAS } from '../../src/lib/planFeatures.js';
 
 /**
@@ -9,7 +10,11 @@ import { PRO_FEATURES, ULTRA_EXTRAS } from '../../src/lib/planFeatures.js';
  * @param {{ name?: string, email: string }} opts
  */
 export function onboardingDay7Email({ name, email }) {
-  const firstName = name ? name.split(' ')[0] : 'there';
+  // Was `name.split(' ')[0]`, which printed the whole email address when
+  // Base44's full_name carried one — see src/lib/emailGreeting.js. A missing
+  // name now means a greeting with no name in it, never a placeholder and
+  // never the address.
+  const hello = greeting("Don't lose your progress, {name}.", "Don't lose your progress.", name);
 
   const bodyRowsHtml = `
           <!-- Hero -->
@@ -19,7 +24,7 @@ export function onboardingDay7Email({ name, email }) {
                 7 days left on your trial
               </p>
               <h1 style="margin:0 0 16px;font-size:26px;font-weight:700;color:${EMAIL_BLACK};letter-spacing:-0.02em;line-height:1.2;">
-                Don't lose your progress, ${firstName}.
+                ${hello}
               </h1>
               <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:${EMAIL_BODY_TEXT};">
                 Your 14-day free trial ends in 7 days. If you're loving Openinvite,
