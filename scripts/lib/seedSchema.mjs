@@ -183,10 +183,13 @@ export const API_DERIVED_ON_WEDDING_RESPONSE = new Set([
  * ciphertext column is the same category error API_DERIVED_ON_WEDDING_RESPONSE
  * already covers for computed fields, one column over.
  *
- * The list is IMPORTED from the endpoint that owns it rather than retyped, so
- * a seventh encrypted field cannot appear there and be missed here.
+ * The list is IMPORTED rather than retyped, so a seventh encrypted field
+ * cannot appear and be missed here. From api/_lib/ and NOT from the endpoint
+ * itself: importing the handler ran its module scope inside this harness's
+ * import graph and left it cached, which turned trial-server-guard's
+ * "expired trial + POST is REJECTED" red on CI while every local check passed.
  */
-import { ENCRYPTED_FIELDS } from '../../api/my-wedding-details.js';
+import { ENCRYPTED_FIELDS } from '../../api/_lib/encryptedFields.js';
 
 export function assertSeedMatchesSchemas(seed, extra = {}) {
   const schemas = loadEntitySchemas();

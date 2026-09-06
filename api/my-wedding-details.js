@@ -71,7 +71,9 @@ const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY;
 // Fields this endpoint knows how to decrypt on read. Step 2a writes
 // ciphertext for budget/contactPerson only — the rest are wired for
 // Step 2b's writer-page migrations.
-export const ENCRYPTED_FIELDS = ['budget', 'contactPerson', 'emergencyContacts', 'dayVendorContacts', 'celebrant', 'license'];
+// The list lives in _lib so scripts/lib/seedSchema.mjs can read it without
+// importing this handler and running its module scope. See that file.
+import { ENCRYPTED_FIELDS } from './_lib/encryptedFields.js';
 
 // One-way HASHED on write, never decrypted, never returned (Step 2b stage
 // iii). Encryption is for values the couple must read back; the only question
