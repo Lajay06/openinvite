@@ -156,22 +156,40 @@ export async function runScheduleListFirst() {
     check('  and nothing reachable renders the builder',
       !/WeddingDayTimelineBuilder/.test(hub), 'ScheduleHub does not import it');
 
-    // UNREACHABLE, NOT ABSENT — deliberately. The owner asked to see the
-    // screenshots before anything is deleted, so the file is still here and
-    // this records that rather than pretending otherwise.
-    let stillPresent = true;
-    try { readFileSync(join(ROOT, 'src/components/schedule/WeddingDayTimelineBuilder.jsx')); }
-    catch { stillPresent = false; }
-    check(stillPresent
-      ? 'the builder is still in the repo, unreachable, pending the owner\'s word'
-      : 'the builder has been deleted, and nothing reaches for it',
-      true, stillPresent ? 'not deleted yet — see the PR body for the file list' : 'removed');
-    if (stillPresent) {
-      const sched = code('src/pages/Schedule.jsx');
-      check('  Schedule.jsx still holds the only import of it',
-        /WeddingDayTimelineBuilder/.test(sched) && !/WeddingDayTimelineBuilder/.test(hub),
-        'and ScheduleHub only mounts Schedule.jsx for the Considerations tab');
-    }
+    // GONE, AND NOTHING REACHES FOR IT.
+    //
+    // This used to assert UNREACHABLE and pass a literal `true` on the
+    // deleted branch, because the owner had not yet said the word. He has, the
+    // four files are removed, and a branch that cannot fail is not a check —
+    // so it now asserts what is actually true: every one of them is absent,
+    // and no live line in the repo imports or routes to any of them.
+    const REMOVED = [
+      'src/components/schedule/WeddingDayTimelineBuilder.jsx',
+      'src/components/schedule/ScheduleTimeline.jsx',
+      'src/components/schedule/ScheduleList.jsx',
+      'src/pages/Schedule.jsx',
+    ];
+    const stillThere = REMOVED.filter((f) => { try { readFileSync(join(ROOT, f)); return true; } catch { return false; } });
+    check('PLANT: all four removed files are gone', stillThere.length === 0,
+      stillThere.join(', ') || REMOVED.length + ' removed');
+
+    // A COMMENT MAY STILL NAME THEM — Seating.jsx cites the builder's Print
+    // PDF pattern and scheduleOrder.js records why the comparator exists, and
+    // deleting the reasoning because the file moved is the mistake this repo
+    // has made before. Only live code is searched.
+    const LIVE = ['src/pages/ScheduleHub.jsx', 'src/pages/Calendar.jsx', 'src/pages.config.js', 'src/App.jsx'];
+    const reaching = LIVE.filter((f) => {
+      const src = code(f);
+      return /WeddingDayTimelineBuilder|ScheduleTimeline|components\/schedule\/ScheduleList|SchedulePage|from ["']\.\/Schedule["']/.test(src);
+    });
+    check('  and no live file imports or routes to one of them',
+      reaching.length === 0, reaching.join(', ') || `${LIVE.length} checked, none reaches`);
+    check('  the Considerations tab renders the notes itself now',
+      /<PageConsiderations pageKey="schedule" \/>/.test(code('src/pages/ScheduleHub.jsx')),
+      'Schedule.jsx held nothing else by the end');
+    check('  and the schedule-order guard keeps no allowance for a file that is gone',
+      /const ALLOWED = \{\};/.test(readFileSync(join(ROOT, 'scripts/test-schedule-order.mjs'), 'utf8')),
+      'a dead allowance is a hole nobody is watching');
   }
 
   // ── THE CALENDAR LANDS WHERE THE EVENTS ARE, ON THE RIGHT DAY ───────────

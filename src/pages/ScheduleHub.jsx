@@ -11,7 +11,6 @@ import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import ScheduleForm from "../components/schedule/ScheduleForm";
 import CalendarPage from "./Calendar";
-import SchedulePage from "./Schedule";
 import { base44 } from "@/api/base44Client";
 import { getMyRecords } from "@/lib/resolveMyWedding";
 import { useCollaboratorContext } from "@/lib/collaboratorContext";
@@ -22,6 +21,7 @@ import CountUp from "@/components/shared/CountUp";
 import { sortScheduleItems } from '@/lib/scheduleOrder';
 import { buildScheduleEvents } from '@/lib/scheduleEvents';
 import ScheduleDayList from '../components/schedule/ScheduleDayList';
+import PageConsiderations from '../components/shared/PageConsiderations';
 import { getMyInvitation } from '@/lib/resolveMyWedding';
 const Schedule = base44.entities.Schedule;
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -51,10 +51,12 @@ const statValueStyle = {
  * stays because it is not a view of the events at all — it is the page's own
  * notes, and every planner page has one; removing it was not asked for.
  *
- * "visual" IS GONE FROM THIS LIST AND THE COMPONENT IS STILL IN THE REPO.
- * WeddingDayTimelineBuilder.jsx is unreachable from the UI, not deleted —
- * the owner asked to see the screenshots before anything is removed. The file
- * list to delete on that word is in the PR body.
+ * THE BUILDER IS GONE, on the owner's word after seeing the screenshots.
+ * WeddingDayTimelineBuilder.jsx went with it, and so did the two views nothing
+ * else reached — ScheduleTimeline ("Timeline view", already unreachable before
+ * this change) and ScheduleList (the old run sheet table) — along with
+ * Schedule.jsx, which by then held nothing but a wrapper around the notes this
+ * file now renders itself.
  */
 const TABS = [
   { key: "list",           label: "List" },
@@ -325,7 +327,9 @@ export default function ScheduleHub() {
       )}
       {activeTab === "calendar" && <CalendarPage embedded hideChrome />}
       {activeTab === "considerations" && (
-        <SchedulePage embedded hideChrome activeView="considerations" refreshKey={refreshKey} />
+        <div style={{ padding: "32px 32px 48px", maxWidth: 860 }}>
+          <PageConsiderations pageKey="schedule" />
+        </div>
       )}
 
       {/* Add / Edit form modal */}

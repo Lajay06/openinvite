@@ -45,7 +45,8 @@ export function compareDayThenTime(aDay, aTime, bDay, bTime) {
  *
  * NOT a string comparison. The two dashboard lists compared start_time with
  * localeCompare, which is only correct while every value is zero-padded —
- * "9:00" sorts AFTER "17:00" lexicographically. WeddingDayTimelineBuilder had
+ * "9:00" sorts AFTER "17:00" lexicographically. WeddingDayTimelineBuilder (since
+ * removed with the visual builder) had
  * always parsed to minutes instead, and it was right to. Taking the more
  * careful of the two rather than the more common one.
  *

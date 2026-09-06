@@ -528,7 +528,8 @@ export default function SeatingPage() {
 
   /* ── Export layout (image) + name/table list, as one PDF ──
      Reuses the same html2canvas + jsPDF pattern already established by
-     WeddingDayTimelineBuilder.jsx's "Print PDF" — no new export mechanism,
+     WeddingDayTimelineBuilder.jsx's "Print PDF" (that file was removed with the
+     visual builder, 2026-09-07; the pattern is what is cited) — no new export mechanism,
      just applied to the seating canvas. Zoom is reset to 100% for the
      capture (and restored after) so the exported image reflects the
      canvas's real layout, not whatever zoom level the couple happened to

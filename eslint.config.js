@@ -299,7 +299,6 @@ export default [
       "src/pages/Policies.jsx",
       "src/pages/Polls.jsx",
       "src/pages/Registry.jsx",
-      "src/pages/Schedule.jsx",
       "src/pages/ScheduleHub.jsx",
       "src/pages/Seating.jsx",
       "src/pages/StudioWebsite.jsx",
