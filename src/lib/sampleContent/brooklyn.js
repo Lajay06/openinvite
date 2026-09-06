@@ -27,9 +27,14 @@ export const BROOKLYN_IMAGES = {
     // keep is untouched; only this reused slot changes. Asset refresh, 2026-09-06.
     'hf_20260904_090213_ccb76f67-193c-48f3-8bfd-0888d94c6bdc_masfh3', // 2400x1792
   ],
-  hero:  'hf_20260904_090059_18da7a9c-eefa-4e7b-8779-86cdcc3b15e8_q418v1', // 2752x1536
+  // HERO REVERTED TO THE WIDE ASSET (owner, 2026-09-06). The Group A review
+  // swapped the wide hero with a portrait from Our Story; this puts both back.
+  // The dimension comments on these two lines were left describing the
+  // PRE-SWAP assets and were wrong for a week — every id below is measured
+  // against the Cloudinary listing now, not copied forward.
+  hero:  'hf_20260904_090213_add0b2d6-8dcc-44ce-8360-762925a327c7_g5eb7y', // 2752x1536, ratio 1.792
   story: [
-    'hf_20260904_090213_add0b2d6-8dcc-44ce-8360-762925a327c7_g5eb7y', // 2752x1536
+    'hf_20260904_090059_18da7a9c-eefa-4e7b-8779-86cdcc3b15e8_q418v1', // 1536x2048, back in Our Story
     'hf_20260904_090213_dcaa917a-e117-4610-8618-a399139999a4_jv74kl', // 1792x2400
     'hf_20260904_090214_aa592056-d6cf-4c84-bb8e-20ad4a8d3827_esutl7', // 1792x2400
     'hf_20260904_090214_88086b18-1484-488b-bafc-6415ecdd335f_hzk7jo', // 1536x2752
