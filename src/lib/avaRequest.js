@@ -62,6 +62,13 @@ export const ACTION_MIRROR = [
     offer: /\b(add|create|put|make)\b[^.?!]*\b(to.?do|todo|task|checklist|reminder|to.?do list)\b/i },
   { type: 'update_todo', entity: 'Note', label: 'update or tick off a to-do',
     offer: /\b(tick|check|mark|complete|update|close)\b[^.?!]*\b(off|done|to.?do|todo|task|complete[d]?)\b/i },
+  // THE BUDGET PLAN, not the expense list. create_budget_item adds a line to
+  // the itemised Budget records; this sets the PLANNED allocation for one of
+  // the thirteen categories the Budget page's planner form owns — the number
+  // Allocated and Unallocated are computed from. The owner asked for "$3,500
+  // on flowers" and got prose, because no action existed to back it.
+  { type: 'set_budget_allocation', entity: 'WeddingDetails', label: 'set the planned allocation for a budget category',
+    offer: /\b(set|change|update|make|allocate|budget|put|raise|lower|increase|reduce)\b[^.?!]*\b(allocation|allocated|budget for|budget to|category|categories)\b/i },
   { type: 'navigate', entity: null, label: 'open a page',
     offer: /\b(take|bring|go|open|show|jump)\b[^.?!]*\b(page|there|to the|you to)\b/i },
 ];
@@ -92,6 +99,7 @@ export const ACTION_FIELD_RULES = {
   // context does not carry taught it to invent one, and every invented id
   // 404'd. It asks for what the couple actually said instead.
   update_todo:        'update_todo needs title — the to-do\'s title as it appears in the list above — and sets completed true to tick something off.',
+  set_budget_allocation: 'set_budget_allocation needs category (one of venue, catering, photography, flowers, music, attire, transportation, decorations, rings, stationery, beauty, honeymoon, miscellaneous) and amount, a whole number of dollars.',
   navigate:           'navigate needs path.',
 };
 

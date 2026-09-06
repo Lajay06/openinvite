@@ -25,7 +25,7 @@
  * Budget page's expense list already reads, and a plan write waits for the
  * validator to grow rather than slipping past it.
  */
-import { validateAvaAction } from './avaActionValidation.js';
+import { validateAvaAction, validateNestedWrite } from './avaActionValidation.js';
 import { matchTodoByTitle } from './todoMatch.js';
 
 /**
@@ -53,6 +53,8 @@ export const ACTION_ENTITY = {
   create_schedule: 'Schedule',
   create_todo: 'Note',
   update_todo: 'Note',
+  // The PLAN, not an expense line: WeddingDetails.budget.categories.<key>.
+  set_budget_allocation: 'WeddingDetails',
   navigate: null,
 };
 
@@ -118,6 +120,40 @@ export async function executeAvaAction(action, deps) {
     }
     deps.navigate?.(action.data?.path);
     return { ok: true, error: null, entity: null };
+  }
+
+  // THE ONE NESTED WRITE, and it does not go through the top-level checker
+  // because the top-level checker cannot see it. `budget` IS a declared field,
+  // so an object with a misspelled category inside passes every check there and
+  // is stored intact — nothing refuses it and nothing reads it, and the couple
+  // gets a success toast over a Budget page that did not change.
+  if (type === 'set_budget_allocation') {
+    const category = String(action.data?.category || '').toLowerCase().trim();
+    // The model emits "3500", "$3,500" and 3500 interchangeably. Coerced BEFORE
+    // the rule runs, so the rule stays strict about what may be stored: a value
+    // that is not a number after this is not a number at all.
+    //
+    // ONLY IF THERE IS A DIGIT IN IT. Stripping non-numerics from "lots" leaves
+    // "", and Number("") is 0 — so the friendly coercion turned a word into a
+    // ZERO ALLOCATION and wrote it. Caught by its own guard before this shipped;
+    // a strings-to-numbers convenience that silently invents a number is worse
+    // than no convenience.
+    const raw = action.data?.amount;
+    const amount = typeof raw === 'string' && /[0-9]/.test(raw)
+      ? Number(raw.replace(/[^0-9.-]/g, ''))
+      : raw;
+    const v = validateNestedWrite('WeddingDetails.budget.categories', category, amount);
+    if (!v.ok) return { ok: false, error: v.error, entity: 'WeddingDetails' };
+
+    // READ, MERGE, WRITE. The plan is one encrypted column holding all thirteen
+    // keys; writing only the changed one would erase the other twelve.
+    const wd = await deps.readWeddingDetails?.();
+    if (!wd) return { ok: false, error: 'I could not read your budget plan.', entity: 'WeddingDetails' };
+    const plan = wd.budget || {};
+    await deps.putWeddingFields({
+      budget: { total: plan.total ?? null, categories: { ...(plan.categories || {}), [category]: amount } },
+    });
+    return { ok: true, error: null, entity: 'WeddingDetails' };
   }
 
   const entity = ACTION_ENTITY[type];

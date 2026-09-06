@@ -45,6 +45,30 @@ import { ACTION_MIRROR } from './avaRequest.js';
 const OFFER_RE = /\b(want me to|shall i|should i|would you like me to|do you want me to|i can|i could|let me|i'?ll|i will|happy to)\b/i;
 
 /**
+ * THE OTHER WAY AVA OPENS AN OFFER, and the one that got through.
+ *
+ * Owner report: "Set the flowers allocation to $3,500" produced "here is the
+ * proposal to update that allocation" and no card. Two things were wrong and
+ * this is the first — the sentence proposes an action in every sense that
+ * matters to a reader, and OFFER_RE did not contain a single one of its words,
+ * so isOffer() said false, the filter never looked for a backing action, and
+ * the prose promised something with no button under it.
+ *
+ * Kept separate from OFFER_RE rather than bolted onto it because these are
+ * NOUN forms — the offer is the sentence's subject, not its verb — and the
+ * next one to bite will be a noun too.
+ *
+ * IT OVER-REACHES, KNOWINGLY. "The proposal to move the ceremony came from
+ * your planner" reads as an offer to this pattern and is not one, so it would
+ * be dropped. That is this file's stated trade already: an over-eager filter
+ * loses a sentence Ava was allowed to say; an under-eager one promises the
+ * couple something that will never happen. The first is a worse answer, the
+ * second is a lie. Written down here so the next reader knows the cost was
+ * counted rather than missed.
+ */
+const PROPOSAL_RE = /\b(here (?:is|are)|here'?s) (?:the |a |my |an )?(?:proposal|suggestion|change|update|draft)\b|\bproposal to\b|\bmy proposal\b/i;
+
+/**
  * PERCEPTION, NOT PROPOSAL. "I can see", "I can tell" and friends open a
  * sentence about what Ava reads, which she is not only allowed but required to
  * do. Without this the filter eats her best sentences.
@@ -67,7 +91,7 @@ export function splitSentences(text) {
 export function isOffer(sentence) {
   const s = String(sentence);
   if (PERCEPTION_RE.test(s)) return false;
-  return OFFER_RE.test(s);
+  return OFFER_RE.test(s) || PROPOSAL_RE.test(s);
 }
 
 /** The mirror action an offer sentence resolves to, or null if it resolves to none. */

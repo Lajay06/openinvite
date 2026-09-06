@@ -18,6 +18,7 @@
  */
 import React from 'react';
 import { Check, AlertCircle, Loader2 } from 'lucide-react';
+import { budgetCategoryLabel } from '@/lib/budgetCategories';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -53,6 +54,7 @@ export function actionLabel(type, data = {}) {
     case 'update_todo':        return data.completed
       ? `Tick ${data.title ? `"${data.title}"` : 'that'} off your to-do list`
       : `Update ${data.title ? `"${data.title}"` : 'that to-do'}`;
+    case 'set_budget_allocation': return `Set your ${budgetCategoryLabel(data.category || '').toLowerCase()} allocation to $${Number(data.amount || 0).toLocaleString()}`;
     case 'navigate':           return `Go to ${(data.path || '').replace(/^\//, '')} page`;
     default:                   return `Run: ${type}`;
   }

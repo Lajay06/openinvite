@@ -17,6 +17,7 @@ import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { pass, fail } from './_shared.mjs';
+import { BUDGET_CATEGORY_KEYS } from '../../src/lib/budgetCategories.js';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const SRC = readFileSync(resolve(__dir, '../../src/pages/Budget.jsx'), 'utf8');
@@ -65,7 +66,13 @@ export async function runBudgetClarity() {
     THIRTEEN.every(k => planCategoryValue(undefined, k) === 0), 'safe');
 
   // ── the widening itself ─────────────────────────────────────────────────
-  const planKeys = [...CODE.matchAll(/\{ key: '([a-z]+)', label: '[^']+' \}/g)].map(m => m[1]);
+  // IMPORTED, not scraped out of the page. The list used to be a literal inside
+  // Budget.jsx and this read it with a regex; it now lives in
+  // src/lib/budgetCategories.js because Ava's nested-write allowlist needs the
+  // same thirteen keys and a second copy of a money schema goes wrong quietly.
+  // Reading the module means this check follows the list wherever it lives
+  // instead of going green on a page that no longer holds it.
+  const planKeys = BUDGET_CATEGORY_KEYS;
   check('the plan declares all 13 ledger categories', THIRTEEN.every(k => planKeys.includes(k)),
     `${planKeys.length} declared`);
   check('  no plan category is missing from the ledger list',

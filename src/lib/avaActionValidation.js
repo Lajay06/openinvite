@@ -32,16 +32,73 @@
  *      making the guest invisible to every RSVP tally. Storing a poisoned value
  *      is worse than dropping it, so this one refuses rather than strips.
  *
- * SCOPE LIMIT, deliberately: top-level fields only. Every Ava action writes a
- * flat object (see ACTION_INSTRUCTIONS), so there is no nested case to check
- * today. If an action ever writes a nested object, this must grow with it —
- * WeddingDetails.assetContent is declared three levels deep and a wrong leaf key
- * is dropped exactly as silently.
+ * THE NESTED CASE, which the scope limit above said would come. It said: "If
+ * an action ever writes a nested object, this must grow with it." It has.
+ *
+ * `set_budget_allocation` writes WeddingDetails.budget.categories.<key> — three
+ * levels down, and the encrypted column at that. The top-level check cannot see
+ * that far: `budget` is a declared field, so an object with a misspelled
+ * category key inside it passes every check here and is stored intact. Nothing
+ * refuses it and nothing reads it, so the couple sets an allocation, sees a
+ * success toast, and finds the Budget page unchanged.
+ *
+ * SO NESTED WRITES ARE ALLOWED ONLY DOWN A DECLARED PATH, and the declaration
+ * carries the leaf rule with it. Not "nested writes are now checked" — one
+ * path, named, with the values it accepts written next to it. Adding a second
+ * nested action means adding a second entry and its rule, deliberately, rather
+ * than a general nested-object walker that would let the next action through
+ * on the strength of this one's review.
  */
 // Relative, not the '@/' alias: this module is imported directly by
 // tests/persistence/ava-action-validation.mjs under plain Node, which does not
 // resolve Vite aliases. Vite handles a relative path identically.
 import { ENTITY_FIELDS } from './entityFields.generated.js';
+import { BUDGET_CATEGORY_KEYS } from './budgetCategories.js';
+
+/**
+ * EVERY NESTED PATH AVA MAY WRITE, and what a value at its leaf must be.
+ *
+ * `key` names the one variable segment; `keyIn` is the set it must belong to
+ * — the SAME list the Budget page renders its inputs from, so a category the
+ * form does not offer cannot be set from a chat window either (R30: validate
+ * against the consumer, not against a schema that would accept anything).
+ * `leaf` returns null for an acceptable value or the sentence explaining the
+ * refusal.
+ */
+export const NESTED_WRITE_PATHS = {
+  'WeddingDetails.budget.categories': {
+    key: 'category',
+    keyIn: BUDGET_CATEGORY_KEYS,
+    leaf: (v) => {
+      if (typeof v !== 'number' || !Number.isFinite(v)) return 'must be a number';
+      if (v < 0) return 'cannot be negative';
+      if (!Number.isInteger(v)) return 'must be a whole amount, with no cents';
+      return null;
+    },
+  },
+};
+
+/**
+ * Check one nested write before it is merged into the record.
+ *
+ * @param {string} path   the full dotted path, e.g. 'WeddingDetails.budget.categories'
+ * @param {string} key    the leaf key, e.g. 'flowers'
+ * @param {*}      value  the value to store there
+ * @returns {{ok: boolean, error: string|null}}
+ */
+export function validateNestedWrite(path, key, value) {
+  const rule = NESTED_WRITE_PATHS[path];
+  // FAIL CLOSED on an undeclared path. This is the whole point of a list: a
+  // nested write nobody reviewed does not get through because the mechanism
+  // that carries the reviewed one exists.
+  if (!rule) return { ok: false, error: `Ava may not write to ${path}.` };
+  if (!key || !rule.keyIn.includes(key)) {
+    return { ok: false, error: `"${key}" is not one of your budget categories.` };
+  }
+  const bad = rule.leaf(value);
+  if (bad) return { ok: false, error: `An allocation ${bad}.` };
+  return { ok: true, error: null };
+}
 
 /** Fields Base44 manages itself — never writable, never worth logging as a strip. */
 const SERVER_MANAGED = new Set(['id', 'created_date', 'updated_date', 'created_by_id', 'created_by']);
