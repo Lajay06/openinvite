@@ -325,6 +325,58 @@ export const FIXTURE_USER = {
 };
 
 /**
+ * THE ACCOUNT THAT HAS NOT ONBOARDED YET.
+ *
+ * FIXTURE_USER carries onboardingCompleted: true, which is right for every
+ * dashboard surface and makes /onboarding unrenderable: Onboarding.jsx:247
+ * calls isOnboardingComplete(user, draft) and redirects to /DailyUpdate before
+ * a single step mounts. So the wizard — eight steps, the universe picker among
+ * them — had no way to be rendered under this harness at all.
+ *
+ * BOTH HALVES ARE REQUIRED, and that is the whole point of pairing them here.
+ * isOnboardingComplete (resolveMyWedding.js:114) is an OR: the flag, or a real
+ * non-draft WeddingDetails record. Clearing the flag alone still redirects,
+ * because SEED.WeddingDetails[0] is a finished wedding and /api/my-wedding-
+ * details hands it straight back. A seed that gets one half right reproduces
+ * nothing and reads exactly like a seed that works.
+ */
+export const ONBOARDING_USER = { ...FIXTURE_USER, onboardingCompleted: false };
+export const ONBOARDING_SEED = { ...SEED, WeddingDetails: [] };
+
+// A URL PREDICATE, not a glob. `'**/api/**'` looks right and is a trap: it
+// matches any path with an `api` SEGMENT, including Vite's own dev-server
+// module URLs like /src/api/base44Client.js. The harness then answered the
+// app's own JavaScript with `[]`, the browser refused it ("Expected a
+// JavaScript-or-Wasm module script but the server responded with a MIME type
+// of application/json"), and every page rendered zero characters. The
+// presence check caught it as 34/34 MISSING rather than reporting a clean
+// pass over blank pages.
+export const isBackend = (url) => {
+  if (/:\/\/base44\.app\//.test(url)) return true;
+  let pathname;
+  try { pathname = new URL(url).pathname; } catch { return false; }
+  if (!pathname.startsWith('/api/')) return false;
+  // NOT EVERY FILE UNDER api/ IS AN ENDPOINT. Vercel treats an
+  // underscore-prefixed directory as source rather than a route, and this
+  // repo uses that: api/_lib/ holds modules the serverless handlers share.
+  // One of them is imported by the BROWSER too — src/lib/coupleNames.js:9
+  // re-exports api/_lib/coupleNames.js so the couple's displayed name has
+  // exactly one owner on both sides — and in dev Vite serves it at
+  // /api/_lib/coupleNames.js.
+  //
+  // Answering that request with `[]` is the same failure the predicate above
+  // was written to fix, one directory deeper: the browser refuses the module
+  // ("Expected a JavaScript-or-Wasm module script but the server responded
+  // with a MIME type of application/json") and EVERY page whose import graph
+  // reaches coupleNames renders zero characters. /onboarding is one of them,
+  // which is why the onboarding seed below could not be reproduced against
+  // until this line existed. Fifth instance of this class; the first four are
+  // in the comment above.
+  if (pathname.startsWith('/api/_')) return false;
+  return true;
+};
+
+/**
  * Stub every backend call a page makes. Returns seeded rows for known
  * entities, `[]` for unknown ones, and the fixture user for identity.
  */
@@ -397,18 +449,6 @@ export async function stubBackend(ctx, { seed = SEED, user = FIXTURE_USER, onEnt
     const json = (body) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
     const fail = (status, body) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
     return resolveStub(url, seed, user, json, onEntity, fail);
-  };
-  // A URL PREDICATE, not a glob. `'**/api/**'` looks right and is a trap: it
-  // matches any path with an `api` SEGMENT, including Vite's own dev-server
-  // module URLs like /src/api/base44Client.js. The harness then answered the
-  // app's own JavaScript with `[]`, the browser refused it ("Expected a
-  // JavaScript-or-Wasm module script but the server responded with a MIME type
-  // of application/json"), and every page rendered zero characters. The
-  // presence check caught it as 34/34 MISSING rather than reporting a clean
-  // pass over blank pages.
-  const isBackend = (url) => {
-    if (/:\/\/base44\.app\//.test(url)) return true;
-    try { return new URL(url).pathname.startsWith('/api/'); } catch { return false; }
   };
   await ctx.route((url) => isBackend(typeof url === 'string' ? url : url.href), handler);
 }
