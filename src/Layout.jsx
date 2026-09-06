@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, Suspense } from "react";
+import { AVA_OPEN_EVENT } from '@/lib/avaOpen';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from "react-router-dom";
 import { X, Sparkles, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning, Users, LogOut, Loader2, User, Bell, CreditCard, HelpCircle } from "lucide-react";
@@ -382,6 +383,31 @@ function LayoutShell({ children, currentPageName }) {
   const [showCollaborateModal, setShowCollaborateModal] = React.useState(false);
   const [showTipsModal, setShowTipsModal] = React.useState(false);
   const [chatOpen, setChatOpen] = React.useState(false);
+  // What the pod was opened WITH: the page, an optional seed question, and an
+  // optional sentence about what that page is for. Set by the openAva event.
+  const [avaOpenDetail, setAvaOpenDetail] = React.useState(null);
+
+  // POD HISTORY LIVES HERE, NOT IN THE POD (spec 3.4).
+  //
+  // It was useState inside AvaChatPod, which unmounts on close — so closing
+  // the pod erased the conversation, and a couple who closed it to look at the
+  // page they were asking about came back to an empty window. Lifted to the
+  // Layout, which stays mounted for the session.
+  //
+  // TRANSCRIPT ONLY, AND NOT ACROSS DAYS (spec ruling 8: "Ava re-reads the
+  // actual wedding every time. Nothing to drift, nothing misremembered.").
+  // This is session state in memory: it is gone on reload, it holds no facts
+  // about the wedding, and every answer is still read fresh from the record.
+  const [avaMessages, setAvaMessages] = React.useState([]);
+  // Proposals the couple has said no to, kept beside the transcript so a
+  // dismissed card stays dismissed when the pod is reopened.
+  const [avaDismissed, setAvaDismissed] = React.useState(() => new Set());
+
+  React.useEffect(() => {
+    const onOpen = (e) => { setAvaOpenDetail(e.detail || {}); setChatOpen(true); };
+    window.addEventListener(AVA_OPEN_EVENT, onOpen);
+    return () => window.removeEventListener(AVA_OPEN_EVENT, onOpen);
+  }, []);
   const collab = useCollaboratorContext();
   const isCollaborating = !!collab.ownerUserId;
   const queryClient = useQueryClient();
@@ -697,9 +723,20 @@ function LayoutShell({ children, currentPageName }) {
 
       {/* ── Floating Ava button ──────────────────────────── */}
       <div style={{ position: 'fixed', bottom: 32, right: 32, zIndex: 8000, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12 }}>
-        {chatOpen && <AvaChatPod onClose={() => setChatOpen(false)} />}
+        {chatOpen && (
+          <AvaChatPod
+            onClose={() => setChatOpen(false)}
+            openDetail={avaOpenDetail}
+            messages={avaMessages}
+            setMessages={setAvaMessages}
+            dismissed={avaDismissed}
+            setDismissed={setAvaDismissed}
+            onClear={() => { setAvaMessages([]); setAvaDismissed(new Set()); }}
+          />
+        )}
         <button
           onClick={() => setChatOpen(prev => !prev)}
+          onClickCapture={() => { if (!chatOpen) setAvaOpenDetail(null); }}
           aria-label={chatOpen ? 'Close Ava' : 'Chat with Ava'}
           style={{
             width: 44, height: 44, borderRadius: '50%',

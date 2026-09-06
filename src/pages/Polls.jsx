@@ -467,7 +467,11 @@ Return just the insight text, nothing else. Examples: "Espresso martinis are run
       </div>
 
       <div style={{ padding: '16px 32px 0' }}>
-        <AvaButton label="Ask Ava to suggest poll ideas" />
+        <AvaButton
+          label="Ask Ava to suggest poll ideas"
+          seedQuestion="Suggest a few polls we could ask our guests"
+          pageContext="asks their guests questions and collects the answers."
+        />
       </div>
 
       {/* Tab bar */}

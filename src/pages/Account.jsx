@@ -716,7 +716,11 @@ export default function AccountPage() {
       <DashboardPageHeader title="Account" subtitle="Manage your profile, plan, and security" />
 
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
-        <AvaButton label="Ask Ava about your account or plan" />
+        <AvaButton
+          label="Ask Ava about your account or plan"
+          seedQuestion="What does our plan include?"
+          pageContext="manages their account and their plan."
+        />
       </div>
 
       {/* Tab bar */}

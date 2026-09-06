@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
+import AvaButton from '@/components/shared/AvaButton';
 import toast from 'react-hot-toast';
-import { InvokeLLM } from "@/integrations/Core";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, Loader2, X, Search, FileText, Check, Plus, Gift, Package, Trash2, Lightbulb } from "lucide-react";
+import { Loader2, Search, FileText, Check, Plus, Gift, Package, Trash2 } from "lucide-react";
 import DetailsSection from "../components/event-details/DetailsSection";
 import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 const WeddingDetails = base44.entities.WeddingDetails;
 
 const labelStyle = {
@@ -61,69 +60,18 @@ function PillToggle({ label, value, onChange }) {
   );
 }
 
-const AVA_PROMPTS = [
-  "Suggest unique wedding favour ideas for a garden wedding",
-  "What are budget-friendly wedding favour options?",
-  "How many wedding favours do I need to order?",
-  "What should I write on wedding favour tags?",
-];
+/* THE BLUE "Ask Ava — wedding favours" DIALOG LIVED HERE (owner-named
+   removal). It was a FOURTH Ava: its own navy header, its own lime icon, its
+   own four canned prompts, and its own InvokeLLM call that sent
+   `Wedding favours planning: <question>` and NOTHING ELSE — no wedding
+   context, no action mirror, no confirm card, no history. So the one window
+   with the most confident branding was the one that knew the least about the
+   couple.
 
-function AvaModal({ onClose }) {
-  const [prompt, setPrompt] = useState('');
-  const [response, setResponse] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const ask = async (q) => {
-    const question = (q || prompt).trim();
-    if (!question) return;
-    setLoading(true); setResponse('');
-    try {
-      const res = await InvokeLLM({ prompt: `Wedding favours planning: ${question}` });
-      setResponse(typeof res === 'string' ? res : JSON.stringify(res));
-    } catch { setResponse('Something went wrong. Please try again.'); }
-    setLoading(false);
-  };
-
-  return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent hideClose title="Ask Ava — wedding favours" aria-label="Ask Ava — wedding favours" className="max-w-[520px] max-h-[80vh] p-0 gap-0 flex flex-col">
-        <div style={{ background: '#0A1930', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Lightbulb size={16} style={{ color: '#DDF762' }} />
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Ask Ava — wedding favours</span>
-          </div>
-          <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
-        </div>
-        <div style={{ padding: 24, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {AVA_PROMPTS.map(p => (
-              <button key={p} onClick={() => ask(p)} disabled={loading}
-                style={{ textAlign: 'left', padding: '10px 14px', background: '#F5F5F5', border: 'none', borderLeft: '2px solid rgba(10,10,10,0.12)', cursor: loading ? 'not-allowed' : 'pointer', fontSize: 13, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                {p}
-              </button>
-            ))}
-          </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
-            <input value={prompt} onChange={e => setPrompt(e.target.value)} onKeyDown={e => e.key === 'Enter' && ask()} disabled={loading}
-              placeholder="Or ask your own question…" style={{ ...inputStyle, flex: 1 }} />
-            <button onClick={() => ask()} disabled={loading || !prompt.trim()} className="btn-primary" style={{ fontSize: 12, flexShrink: 0 }}>Ask</button>
-          </div>
-          {loading && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Loader2 size={14} style={{ color: '#E03553' }} className="animate-spin" />
-              <span style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Thinking…</span>
-            </div>
-          )}
-          {response && (
-            <div style={{ background: '#F5F5F5', padding: '14px 16px', fontSize: 13, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
-              {response}
-            </div>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
+   Its four prompts are not lost: they are the pod's seed question and page
+   context below, so the pod answers what this window answered, with the
+   couple's actual wedding in front of it. Spec 3.3, one entry point per
+   page. */
 
 const TABS = [
   { key: 'overview',  label: 'Overview' },
@@ -138,7 +86,6 @@ export default function WeddingFavoursPage() {
   const [recordId, setRecordId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('idle');
-  const [showAva, setShowAva] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const autoSaveRef = useRef(null);
   const latestRef = useRef(null);
@@ -215,10 +162,11 @@ export default function WeddingFavoursPage() {
 
       {/* Ava + actions bar */}
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
-        <button onClick={() => setShowAva(true)}
-          style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 14px', borderRadius: 999, background: 'linear-gradient(135deg, #ec4899, #9333ea)', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          <Sparkles size={13} />Ask Ava
-        </button>
+        <AvaButton
+          label="Ask Ava"
+          seedQuestion="Suggest wedding favour ideas for our wedding"
+          pageContext="plans the favours and small gifts their guests take home."
+        />
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.6)', minWidth: 80 }}>
           {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
           {saveStatus === 'saved' && <><Check size={12} />Saved</>}
@@ -317,7 +265,6 @@ export default function WeddingFavoursPage() {
         </div>
       </div>
 
-      {showAva && <AvaModal onClose={() => setShowAva(false)} />}
     </div>
   );
 }

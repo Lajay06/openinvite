@@ -125,7 +125,11 @@ export default function QandA() {
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '24px 32px 80px' }}>
 
         <div style={{ marginBottom: 28 }}>
-          <AvaButton label="Ask Ava to suggest FAQ questions" />
+          <AvaButton
+          label="Ask Ava to suggest FAQ questions"
+          seedQuestion="What questions will our guests ask that we have not answered?"
+          pageContext="writes the questions and answers their guests read on the website."
+        />
         </div>
 
         {/* Add form */}

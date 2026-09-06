@@ -8,7 +8,7 @@ import { filterUnbackedOffers } from '@/lib/avaOfferFilter';
 import { executeAvaAction, POD_EXCLUDED_TYPES, filterActionsToMirror } from '@/lib/avaExecute';
 import AvaActionCard, { actionLabel } from '@/components/layout/AvaActionCard';
 import { parseActions } from '@/lib/avaActions';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 /**
@@ -32,14 +32,25 @@ import toast from 'react-hot-toast';
  */
 const POD_MIRROR = ACTION_MIRROR.filter(a => !POD_EXCLUDED_TYPES.includes(a.type));
 
-function AvaChatPod({ onClose }) {
-  const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content: "Hi! I'm Ava, your wedding specialist. Ask me anything — about your planning, your website, your guest list, or anything else wedding related.",
-      id: 'welcome',
-    }
-  ]);
+const WELCOME = {
+  role: 'assistant',
+  content: "Hi! I'm Ava, your wedding specialist. Ask me anything — about your planning, your website, your guest list, or anything else wedding related.",
+  id: 'welcome',
+};
+
+/**
+ * THE CONVERSATION IS THE LAYOUT'S, NOT THE POD'S (spec 3.4).
+ *
+ * It was useState in here, and this component unmounts on close — so closing
+ * the pod erased the conversation. A couple who closed it to look at the page
+ * they were asking about came back to an empty window. `messages`,
+ * `dismissed` and `onClear` are passed in from Layout, which stays mounted.
+ *
+ * Ruling 8 still holds: this is a TRANSCRIPT, in memory, for the session. It
+ * carries no facts about the wedding, it is gone on reload, and every answer
+ * is still read fresh from the record.
+ */
+function AvaChatPod({ onClose, openDetail, messages, setMessages, dismissed, setDismissed, onClear }) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [weddingContext, setWeddingContext] = useState('');
@@ -49,8 +60,15 @@ function AvaChatPod({ onClose }) {
   // later proposal matching one is dropped before it is ever rendered.
   // Not the card id: a re-offer is a NEW id for the same thing, which is
   // exactly the case this exists to catch.
-  const [dismissed, setDismissed] = useState(() => new Set());
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Opened from a page's own "Ask Ava" button: put its question in the box,
+  // unsent. The couple presses send — Ava is not asked anything on their
+  // behalf.
+  useEffect(() => {
+    if (openDetail?.seedQuestion) setInput(openDetail.seedQuestion);
+  }, [openDetail]);
 
   /**
    * WHAT A PROPOSAL IS, for the purpose of remembering a No.
@@ -87,7 +105,9 @@ function AvaChatPod({ onClose }) {
     setLoading(true);
 
     try {
-      const currentPage = window.location.pathname;
+      // The route the pod was opened FROM, not the one the couple has since
+      // navigated to — a question asked from Seating stays a seating question.
+      const currentPage = openDetail?.page || location.pathname;
       const systemPrompt = `You are Ava, the AI wedding specialist built into Openinvite — a premium wedding planning platform. You are warm, knowledgeable, concise, and personal. You help couples with wedding planning advice, timelines, their Openinvite dashboard, Guest Suite (website builder and invitation assets), guest management, budget, vendor management, vow writing, and RSVP management. The Guest Suite is where couples build their wedding website, invitation assets (Save the Date, Digital Invitation, Menu Card, Seating Chart, etc.), Experience Guide, and Policies — accessed via Design Studio → Guest Suite. Keep responses conversational and brief — 2-4 sentences unless they ask for detail. Never use emojis. Use "✦" sparingly for emphasis only.\n\nUse the wedding context below to tailor every answer to this specific couple — their theme, faith/culture, venues, and universe should shape your suggestions, not just generic advice. If the couple has selected cultures and traditions, actively bring in specific, named traditions relevant to those cultures where it's genuinely useful — not just a passing mention that you're "aware" of their background. For example: suggest a Mehndi night in schedule/timeline advice for a couple with Pakistani or Indian heritage, a tea ceremony for Chinese heritage, a sofreh aghd setup for Persian/Iranian heritage — and the equivalent for whatever other cultures they've selected, drawing on real knowledge of that tradition rather than generic "consider your culture" hedging. The context includes a per-guest list (name, RSVP status, table, meal) — this is the owner's own data in their own dashboard, so answer specific questions about a named guest directly (e.g. "has X RSVP'd?", "what table is X on?") using that list, rather than deflecting to aggregate counts only.`;
       // Assembled by the shared builder, so this frame and the modal are one
       // assistant with two doors rather than two assistants. What this frame
@@ -98,6 +118,11 @@ function AvaChatPod({ onClose }) {
         weddingContext,
         systemPrompt,
         page: currentPage,
+        // What THIS page is for, in one sentence, supplied by the button that
+        // opened the pod. This is where the retired "wedding favours" and
+        // "seating arrangement specialist" modals' prompts now live: the
+        // context moved, the second window did not survive.
+        pageContext: openDetail?.pageContext,
         messages: newMessages,
         mirror: POD_MIRROR,
         userText: text,
@@ -115,7 +140,7 @@ function AvaChatPod({ onClose }) {
       // arrives with a fresh id every time.
       // Mirror first, then dismissals: an action this frame cannot do is
       // dropped before it is ever a card, whatever the model emitted.
-      const backed = filterActionsToMirror(actions, POD_MIRROR);
+      const backed = filterActionsToMirror(actions, POD_MIRROR, location.pathname);
       const fresh = backed.filter(a => !dismissed.has(actionKey(a)));
       setMessages(prev => [...prev, { role: 'assistant', content: avaReply, actions: fresh, id: Date.now().toString() }]);
     } catch {
@@ -137,7 +162,7 @@ function AvaChatPod({ onClose }) {
     if (!action) return;
     updateAction(msgId, actionId, { status: 'executing' });
     try {
-      const { ok, error } = await executeAvaAction(action, { entities: base44.entities, navigate });
+      const { ok, error } = await executeAvaAction(action, { entities: base44.entities, navigate, currentPath: location.pathname });
       if (!ok) { updateAction(msgId, actionId, { status: 'error' }); toast.error(error); return; }
       updateAction(msgId, actionId, { status: 'done' });
       if (action.type !== 'navigate') toast.success(actionLabel(action.type, action.data));
@@ -202,6 +227,17 @@ function AvaChatPod({ onClose }) {
           <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#FFFFFF' }}>Ava</p>
           <p style={{ margin: 0, fontSize: 11, color: 'rgba(255,255,255,0.75)', fontWeight: 400 }}>Your wedding specialist</p>
         </div>
+        {/* ONE PLAIN CLEAR, no confirmation ceremony and no persuasion to
+            keep it (spec 3.4). Shown only when there is something to clear. */}
+        {messages.length > 0 && (
+          <button
+            onClick={onClear}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+              fontSize: 11, color: 'rgba(255,255,255,0.5)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+          >
+            Clear
+          </button>
+        )}
         <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22C55E' }} />
       </div>
 
@@ -214,7 +250,7 @@ function AvaChatPod({ onClose }) {
         flexDirection: 'column',
         gap: 12,
       }}>
-        {messages.map((msg) => (
+        {(messages.length ? messages : [WELCOME]).map((msg) => (
           <div key={msg.id} style={{ display: 'flex', flexDirection: 'column' }}>
             <div style={{
             display: 'flex',
@@ -280,7 +316,7 @@ function AvaChatPod({ onClose }) {
       </div>
 
       {/* QUICK PROMPTS */}
-      {messages.length === 1 && (
+      {messages.length === 0 && (
         <div style={{ padding: '0 16px 12px', display: 'flex', flexWrap: 'wrap', gap: 6, flexShrink: 0 }}>
           {quickPrompts.map(prompt => (
             <button

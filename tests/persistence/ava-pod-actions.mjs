@@ -125,8 +125,8 @@ export async function runAvaPodActions() {
     check('  while the modal, which is opened from the guest page, keeps it',
       filterActionsToMirror(actions, ACTION_MIRROR).length === 1, '1 card');
     check('  and the pod renders cards only from the filtered list',
-      /filterActionsToMirror\(actions, POD_MIRROR\)/.test(code('src/components/layout/AvaChatPod.jsx')),
-      'filterActionsToMirror(actions, POD_MIRROR)');
+      /filterActionsToMirror\(actions, POD_MIRROR, /.test(code('src/components/layout/AvaChatPod.jsx')),
+      'filterActionsToMirror(actions, POD_MIRROR, location.pathname)');
   }
 
   // ── PLANT 2: A DISMISSED PROPOSAL IS NOT RE-OFFERED ─────────────────────
