@@ -18,9 +18,16 @@ const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
 export const BROOKLYN_IMAGES = {
-  hero:  'hf_20260904_090213_add0b2d6-8dcc-44ce-8360-762925a327c7_g5eb7y', // 2752x1536
+  // TWO EXTRA HOME PHOTOS (owner review, 2026-09-06). Where the folder had no
+  // clean spare the asset is DOUBLED from Our Story — the owner's rule: reuse
+  // rather than leave a role empty.
+  home: [
+    'hf_20260904_090213_8e22b407-488f-4668-9c52-6a46c792cc8b_lau9mz', // spare wide
+    'hf_20260904_090214_aa592056-d6cf-4c84-bb8e-20ad4a8d3827_esutl7', // DOUBLED from Our Story
+  ],
+  hero:  'hf_20260904_090059_18da7a9c-eefa-4e7b-8779-86cdcc3b15e8_q418v1', // 2752x1536
   story: [
-    'hf_20260904_090059_18da7a9c-eefa-4e7b-8779-86cdcc3b15e8_q418v1', // 1536x2048
+    'hf_20260904_090213_add0b2d6-8dcc-44ce-8360-762925a327c7_g5eb7y', // 2752x1536
     'hf_20260904_090213_dcaa917a-e117-4610-8618-a399139999a4_jv74kl', // 1792x2400
     'hf_20260904_090214_aa592056-d6cf-4c84-bb8e-20ad4a8d3827_esutl7', // 1792x2400
     'hf_20260904_090214_88086b18-1484-488b-bafc-6415ecdd335f_hzk7jo', // 1536x2752
@@ -47,6 +54,9 @@ export const SAMPLE_BROOKLYN = {
         text: 'Short ceremony at four. Food at six. Dancing until they throw us out. That is the whole plan and there is not a second half we are keeping from you.',
       } },
       { id: 'bk3', type: 'quote', order: 2, content: { text: 'Come as you are. We mean it.', attribution: 'Frankie & Dev' } },
+      { id: 'bk4', type: 'photo', order: 3, content: { url: img(BROOKLYN_IMAGES.home[0], 1400) } },
+      { id: 'bk5', type: 'photo', order: 4, content: { url: img(BROOKLYN_IMAGES.home[1], 1400) } },
+
     ],
   },
   welcomeMessage: '',

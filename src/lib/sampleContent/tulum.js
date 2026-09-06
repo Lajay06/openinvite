@@ -18,9 +18,16 @@ const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
 export const TULUM_IMAGES = {
-  hero:  'hf_20260905_001735_9b9e69ff-59cb-4240-be11-ecc1fe022da0_bxwjjj', // 1376x768
+  // TWO EXTRA HOME PHOTOS (owner review, 2026-09-06). Where the folder had no
+  // clean spare the asset is DOUBLED from Our Story — the owner's rule: reuse
+  // rather than leave a role empty.
+  home: [
+    'hf_20260905_001735_a9300863-dbb3-4116-ac55-ed8ea564bc57_xmlmhw', // spare wide
+    'hf_20260905_001735_750038b5-8d32-467f-8bdc-7ae9cea5da12_bohkyu', // DOUBLED from Our Story
+  ],
+  hero:  'hf_20260905_001643_d8992ec0-b2cc-480a-8c6c-8c5fb0e915bb_umafkq', // 1376x768
   story: [
-    'hf_20260905_001643_d8992ec0-b2cc-480a-8c6c-8c5fb0e915bb_umafkq', // 1536x2048
+    'hf_20260905_001735_9b9e69ff-59cb-4240-be11-ecc1fe022da0_bxwjjj', // 1376x768
     'hf_20260905_001735_92fb56d4-9f40-4c89-bdcd-b9c053124180_ntt8vs', // 1536x2048
     'hf_20260905_001735_750038b5-8d32-467f-8bdc-7ae9cea5da12_bohkyu', // 1536x2752
     'hf_20260905_001735_49e4b931-667c-48d2-bb78-6f2f47668f8a_phsgpm', // 2048x1536
@@ -47,6 +54,9 @@ export const SAMPLE_TULUM = {
         text: 'We are marrying on the sand at the end of the afternoon, and eating afterward under the palms. Shoes are optional and mostly a nuisance. Stay as long as you like.',
       } },
       { id: 'tu3', type: 'quote', order: 2, content: { text: 'Bring nothing. Everything you need is already there.', attribution: 'Imogen & Kai' } },
+      { id: 'tu4', type: 'photo', order: 3, content: { url: img(TULUM_IMAGES.home[0], 1400) } },
+      { id: 'tu5', type: 'photo', order: 4, content: { url: img(TULUM_IMAGES.home[1], 1400) } },
+
     ],
   },
   welcomeMessage: '',

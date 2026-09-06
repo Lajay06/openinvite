@@ -64,6 +64,13 @@ export const img = (publicId, w = 1600) =>
 
 /** Role -> Cloudinary public id. Derived by the ratio rule in the header. */
 export const HAVANA_IMAGES = {
+  // TWO EXTRA HOME PHOTOS (owner review, 2026-09-06). Havana's seventh asset
+  // was rejected for generated lettering, so there is no clean spare: both are
+  // DOUBLED from Our Story, per the owner's reuse-rather-than-leave-empty rule.
+  home: [
+    'hf_20260904_112950_c28145cb-425f-4060-803e-0ef8ad0474c9_okqxth', // DOUBLED from Our Story
+    'tempImageVoljjw_-_Edited_sw0lhh',                                // DOUBLED from Our Story
+  ],
   // 2048x1152, 16:9 — the only wide landscape in the folder, so it is both
   // the hero and the share image. A 16:9 crop is already close to the 1.91:1
   // that og:image wants.
@@ -160,6 +167,9 @@ export const SAMPLE_HAVANA = {
         text: 'Wear something you can dance in. That is the only instruction.',
         attribution: 'Sample & Couple',
       } },
+      { id: 'h4', type: 'photo', order: 3, content: { url: img(HAVANA_IMAGES.home[0], 1400) } },
+      { id: 'h5', type: 'photo', order: 4, content: { url: img(HAVANA_IMAGES.home[1], 1400) } },
+
     ],
   },
 

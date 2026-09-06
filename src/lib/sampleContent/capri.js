@@ -21,11 +21,18 @@ const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
 export const CAPRI_IMAGES = {
+  // TWO EXTRA HOME PHOTOS (owner review, 2026-09-06). Where the folder had no
+  // clean spare the asset is DOUBLED from Our Story — the owner's rule: reuse
+  // rather than leave a role empty.
+  home: [
+    'hf_20260905_005926_ee593192-3fd1-4943-955c-17d37cf03652_vtp4ew', // DOUBLED from Our Story
+    'hf_20260905_005925_36eb96af-09cf-4625-8819-63012283f2af_hog41h', // DOUBLED from Our Story
+  ],
   hero:  'hf_20260905_005925_eb63737a-40ce-4eb0-8c7d-dc6e7c574f11_cencw5', // 2048x1152
   story: [
     'hf_20260905_005925_7a9b4f08-4f03-4a05-987e-143e56aa30f4_b8rzoj', // 1536x2048
     'hf_20260905_005926_ee593192-3fd1-4943-955c-17d37cf03652_vtp4ew', // 1792x2400
-    'hf_20260905_005925_36eb96af-09cf-4625-8819-63012283f2af_hog41h', // 2048x2048  (flagged)
+    'hf_20260905_005925_36eb96af-09cf-4625-8819-63012283f2af_hog41h', // 2048x2048
     'hf_20260905_005925_eecd3777-bce9-4681-b37e-b753e5912cde_qvvvzp', // 2048x1536
   ],
   experiences: 'hf_20260905_005926_71f24ef3-408f-451e-8d88-6c450136bc96_bemec7', // 2400x1792
@@ -50,6 +57,9 @@ export const SAMPLE_CAPRI = {
         text: 'We are marrying on a terrace in the late afternoon, and then we are eating outside for as long as the evening allows. There is more food than anyone needs and no speeches you have to sit still for.',
       } },
       { id: 'cp3', type: 'quote', order: 2, content: { text: 'Come hungry. That is the only preparation.', attribution: 'Beatrix & Elio' } },
+      { id: 'cp4', type: 'photo', order: 3, content: { url: img(CAPRI_IMAGES.home[0], 1400) } },
+      { id: 'cp5', type: 'photo', order: 4, content: { url: img(CAPRI_IMAGES.home[1], 1400) } },
+
     ],
   },
   welcomeMessage: '',

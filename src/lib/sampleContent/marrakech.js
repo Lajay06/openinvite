@@ -22,6 +22,13 @@ const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
 export const MARRAKECH_IMAGES = {
+  // TWO EXTRA HOME PHOTOS (owner review, 2026-09-06). Where the folder had no
+  // clean spare the asset is DOUBLED from Our Story — the owner's rule: reuse
+  // rather than leave a role empty.
+  home: [
+    'hf_20260904_083147_a83e571e-f649-4e1c-869a-a40cc5af10b1_v2tqmy', // DOUBLED from Our Story
+    'hf_20260904_083147_229c83c7-ec9b-4848-8571-4994529817ae_gph1qg', // DOUBLED from Our Story
+  ],
   hero:  'hf_20260904_083147_551c1338-3fce-4cec-8dbd-39179722c4ff_gtwtzg', // 2752x1536
   story: [
     'hf_20260904_083051_2ab83be9-6958-4117-9df4-ec3c48685524_nwvein', // 1536x2048
@@ -51,6 +58,9 @@ export const SAMPLE_MARRAKECH = {
         text: 'We are marrying downstairs as the heat goes out of the day, and eating upstairs once it is dark. The stairs are the only difficult part and somebody will help you with them.',
       } },
       { id: 'mk3', type: 'quote', order: 2, content: { text: 'Stay for the whole evening. It only gets better after ten.', attribution: 'Yasmin & Idris' } },
+      { id: 'mk4', type: 'photo', order: 3, content: { url: img(MARRAKECH_IMAGES.home[0], 1400) } },
+      { id: 'mk5', type: 'photo', order: 4, content: { url: img(MARRAKECH_IMAGES.home[1], 1400) } },
+
     ],
   },
   welcomeMessage: '',

@@ -222,6 +222,25 @@ export async function runSampleContentNeverPublished() {
       a.details.ourStoryContent.milestones === theirMilestones && a.details.ourStoryContent.storyText === 'Our story.',
       'same array reference, same text');
 
+    // (1b) HOME'S TWO EXTRA PHOTOS (owner review, 2026-09-06).
+    // homeContent.blocks is a SLOT as well as a section: a couple with an
+    // overlay set but no blocks has an empty slot, and an empty slot fills.
+    const homeSlot = withSampleContent({ activeUniverse: uni, homeContent: { overlay: 'dark' } });
+    const homePhotos = (homeSlot.details.homeContent.blocks || []).filter((b) => b.type === 'photo');
+    check(`${uni}: an empty homeContent.blocks fills, and carries two photographs`,
+      homePhotos.length === 2, `${homePhotos.length} photo block(s)`);
+    check('  and every one of them has a url a PhotoBlock can render',
+      homePhotos.every((b) => typeof b.content?.url === 'string' && b.content.url.startsWith('http')),
+      homePhotos.map((b) => (b.content?.url || '').slice(-14)).join(', '));
+    check("  while the couple's own overlay is untouched",
+      homeSlot.details.homeContent.overlay === 'dark', 'overlay kept');
+
+    // And a couple who HAS written blocks keeps them, whole.
+    const theirBlocks = [{ id: 'theirs', type: 'paragraph', content: { text: 'Our own words.' } }];
+    const keptHome = withSampleContent({ activeUniverse: uni, homeContent: { blocks: theirBlocks } });
+    check(`${uni}: a couple's own home blocks are never replaced`,
+      keptHome.details.homeContent.blocks === theirBlocks, 'same array reference');
+
     // (2) milestones present + photos present -> photos untouched
     const theirPhotos = ['https://example.com/ours-1.jpg'];
     const b = withSampleContent({ activeUniverse: uni, ourStoryContent: { storyText: 'Ours.', milestones: theirMilestones, photos: theirPhotos } });
