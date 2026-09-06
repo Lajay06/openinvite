@@ -498,7 +498,7 @@ export default function UniverseWorldView({
       {/* Nº 02 — the gallery.
           REPLACES "Your wedding in this world" (owner, 2026-09-06), which was
           an old asset block with the asset feature removed from under it: two
-          grey cards reading "Not published yet" under the couple's own names,
+          gray cards reading "Not published yet" under the couple's own names,
           on the screen where they are deciding whether they like a universe.
           Four photographs of the universe answer that question; two disabled
           cards about their own unpublished site do not.
