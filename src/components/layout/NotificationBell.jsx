@@ -5,6 +5,9 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import { useModalFocusTrap } from '@/lib/a11y';
 import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from '@/lib/useNotifications';
 import { parseBase44Date } from '@/lib/base44Date';
+// Plain .js, and imported rather than defined here, so the badge's two
+// decisions can be tested under Node without rendering a page.
+import { badgeLabel, unseenCount } from '@/lib/notificationBadge';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -147,15 +150,31 @@ function NotificationDropdown({ userId, notifications, onClose, triggerRef }) {
 
 export default function NotificationBell({ userId }) {
   const [open, setOpen] = useState(false);
+  const [seen, setSeen] = useState(() => new Set());
   const triggerRef = useRef(null);
   const { data: notifications = [] } = useNotifications(userId);
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = unseenCount(notifications, seen);
+
+  const openPanel = () => {
+    setOpen(o => {
+      const next = !o;
+      if (next) {
+        // Snapshot what is unread right now; those are the ones being seen.
+        setSeen(prev => {
+          const s = new Set(prev);
+          for (const n of notifications) if (!n.read) s.add(n.id);
+          return s;
+        });
+      }
+      return next;
+    });
+  };
 
   return (
     <div style={{ position: 'relative' }}>
       <button
         ref={triggerRef}
-        onClick={() => setOpen(o => !o)}
+        onClick={openPanel}
         aria-label={unreadCount > 0 ? `Notifications (${unreadCount} unread)` : 'Notifications'}
         aria-expanded={open}
         style={{
@@ -169,7 +188,22 @@ export default function NotificationBell({ userId }) {
       >
         <Bell size={16} strokeWidth={1.8} />
         {unreadCount > 0 && (
-          <span style={{ position: 'absolute', top: 5, right: 5, width: 5, height: 5, borderRadius: '50%', background: '#E03553' }} />
+          // A NUMBER, NOT A DOT. The dot said "something happened" and nothing
+          // more, so the only way to learn whether it was one RSVP or eleven
+          // was to open the panel. Capped at 9+ so the badge cannot grow wider
+          // than the bell it sits on.
+          <span
+            data-testid="notification-badge"
+            style={{
+              position: 'absolute', top: 0, right: 0,
+              minWidth: 15, height: 15, padding: '0 4px',
+              borderRadius: 999, background: '#E03553', color: '#FFFFFF',
+              fontFamily: PJS, fontSize: 9, fontWeight: 700, lineHeight: '15px',
+              textAlign: 'center', boxSizing: 'border-box', pointerEvents: 'none',
+            }}
+          >
+            {badgeLabel(unreadCount)}
+          </span>
         )}
       </button>
 

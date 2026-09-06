@@ -74,6 +74,12 @@ export const font = {
 export const radius = {
   none:   0,
   pill:   999,
+  // TRANSIENT POPUPS ONLY. Owner ruling 2026-09-06, for the toast restyle: a
+  // toast is not a card and not a page container, it is a floating notice in
+  // the modal/popup family, and it gets a soft corner. It is a NAMED token
+  // rather than a number typed into Layout.jsx precisely so the line below
+  // still means what it says — nothing hand-rolls a radius.
+  toast:  12,
   // Never use anything else on containers
 };
 
