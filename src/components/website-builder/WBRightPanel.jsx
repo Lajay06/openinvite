@@ -476,7 +476,53 @@ function SettingsTab({ details, onChange }) {
 // /event-details planner page) — so those are surfaced here as a
 // read-only reference + link out, not rebuilt as a second, divergent
 // write path onto the same mainCeremony/reception fields.
-function ContentTab({ details, onChange }) {
+/**
+ * WHERE EACH PAGE'S CONTENT IS ACTUALLY EDITED.
+ *
+ * Owner ruling: the Content tab is page-scoped, and a page with no editable
+ * section here says where its content lives instead of showing a form for a
+ * different page.
+ *
+ * THE SENTENCE IS THE POINT. Nine of the twelve pages are written on a planner
+ * page that already owns their data — Registry items, Q&A, the accommodation
+ * list — and rebuilding those forms here would be a second write path onto the
+ * same fields, which is the thing the Ceremony & reception block already
+ * refuses to do and says so at its own site. So the tab names the page and
+ * links to it, once, plainly.
+ */
+const CONTENT_HOME = ['home'];
+const CONTENT_STORY = ['our-story'];
+const CONTENT_CELEBRATION = ['celebration'];
+
+// The pages whose content is written somewhere else, and where. Keyed by the
+// slugs WEDDING_PAGES actually offers — 'good-to-know' is a real page on the
+// published site (MultiPageWeddingWebsite.jsx:111) but the builder's page list
+// never offers it, so an entry for it would be a row that can never be read.
+const EDITED_ELSEWHERE = {
+  rsvp:        ['Replies and the guest list are managed on the Guests page.', '/Guests'],
+  registry:    ['Registry items are managed on the Registry planner page.', '/GuestSuiteRegistry'],
+  music:       ['Your playlist and song requests are set on the Music page.', '/Music'],
+  styling:     ['Your styling notes are written on the Styling page.', '/Styling'],
+  polls:       ['Polls are written on the Guest polls page.', '/GuestSuitePolls'],
+  faq:         ['Questions and answers are written on the Q&A page.', '/QandA'],
+  stay:        ['Places to stay are added on the Accommodation page.', '/GuestSuiteAccommodation'],
+  transport:   ['Getting-here details are set on the Transport page.', '/GuestSuiteTransport'],
+  experience:  ['The experience guide is written on the Experience guide page.', '/GuestSuiteExperience'],
+};
+
+/** One plain sentence and one link. No card, no illustration, no persuasion. */
+function EditedElsewhere({ label, href }) {
+  return (
+    <div style={{ padding: '8px 0' }}>
+      <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', fontFamily: 'inherit', lineHeight: 1.6, margin: 0 }}>
+        {label}{' '}
+        <a href={href} style={{ color: '#FFFFFF', textDecoration: 'underline' }}>Open it</a>
+      </p>
+    </div>
+  );
+}
+
+function ContentTab({ details, onChange, currentPage = 'home' }) {
   const updateNested = (field, key, value) => {
     onChange(field, { ...(details?.[field] || {}), [key]: value });
   };
@@ -491,8 +537,24 @@ function ContentTab({ details, onChange }) {
   const gallery = details?.photosContent?.gallery || [];
   const setGallery = (photos) => updateNested('photosContent', 'gallery', photos);
 
+  // A CUSTOM PAGE has no section here and no planner page either — its content
+  // is its own, and the editor for it does not exist yet (see
+  // src/lib/customPages.js, which says so at its own site).
+  const elsewhere = EDITED_ELSEWHERE[currentPage];
+  if (elsewhere) return <EditedElsewhere label={elsewhere[0]} href={elsewhere[1]} />;
+  if (!CONTENT_HOME.includes(currentPage) && !CONTENT_STORY.includes(currentPage) && !CONTENT_CELEBRATION.includes(currentPage)) {
+    return (
+      <div style={{ padding: '8px 0' }}>
+        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', fontFamily: 'inherit', lineHeight: 1.6, margin: 0 }}>
+          This page has no content fields yet. Use the canvas to add blocks to it.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div>
+      {CONTENT_HOME.includes(currentPage) && (<>
       <SLabel>The couple</SLabel>
       {/* TWO FIELDS, NOT ONE. This was a single "Couple names" input writing
           `coupleNames` — the DERIVED copy — while EventDetails wrote the
@@ -596,8 +658,10 @@ function ContentTab({ details, onChange }) {
         // placeholder describes what to write instead of writing it for them.
         placeholder="A line to welcome your guests"
       />
-      <Divider />
+      </>)}
 
+
+      {CONTENT_STORY.includes(currentPage) && (<>
       <SLabel>Our story</SLabel>
       <UTextarea
         label="Story"
@@ -610,9 +674,11 @@ function ContentTab({ details, onChange }) {
       <PhotoGrid photos={storyPhotos} onChange={setStoryPhotos} />
       <div style={{ marginBottom: 14 }} />
       <MilestoneEditor milestones={milestones} onChange={setMilestones} />
-      <Divider />
+      </>)}
 
 
+
+      {CONTENT_CELEBRATION.includes(currentPage) && (<>
       <SLabel>Ceremony &amp; reception</SLabel>
       <MasterDataReferenceDark
         label="Ceremony venue"
@@ -627,6 +693,7 @@ function ContentTab({ details, onChange }) {
       <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', margin: '-6px 0 0' }}>
         Venue, times, dress code, and other events are set in the wedding planner (with address lookup and maps) — not duplicated here to avoid two places to keep in sync.
       </p>
+      </>)}
     </div>
   );
 }
@@ -933,7 +1000,7 @@ function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
 // (feat/component-library), which lives outside this panel, so ownership
 // moved up to the one place both can share it.
 
-export default function WBRightPanel({ details, theme, universeTheme, onChange, rightTab, onRightTabChange, selectedBlock, onUpdateSelectedBlockContent, onUpdateSelectedBlockStyle, onDeleteSelectedBlock, onClearSelectedBlock }) {
+export default function WBRightPanel({ details, theme, universeTheme, onChange, rightTab, onRightTabChange, currentPage, selectedBlock, onUpdateSelectedBlockContent, onUpdateSelectedBlockStyle, onDeleteSelectedBlock, onClearSelectedBlock }) {
 
   return (
     <>
@@ -980,7 +1047,7 @@ export default function WBRightPanel({ details, theme, universeTheme, onChange, 
               {rightTab === 'design' ? (
                 <DesignTab details={details} onChange={onChange} universeTheme={universeTheme} />
               ) : rightTab === 'content' ? (
-                <ContentTab details={details} onChange={onChange} />
+                <ContentTab details={details} onChange={onChange} currentPage={currentPage} />
               ) : (
                 <SettingsTab details={details} onChange={onChange} />
               )}
