@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { color } from '@/styles/tokens';
+import { parseAvaText } from '@/lib/avaMarkdown';
 import { base44 } from '@/api/base44Client';
 import { buildWeddingContext } from '@/lib/avaContext';
 import { buildAvaPrompt, unwrapLlmReply } from '@/lib/avaRequest';
@@ -133,10 +135,10 @@ function AvaChatPod({ onClose }) {
       }}>
         <div style={{
           width: 32, height: 32, borderRadius: '50%',
-          background: 'linear-gradient(135deg, #E03553, #803D81)',
+          background: color.primary,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 14, color: '#FFF', flexShrink: 0,
-          boxShadow: '0 0 16px rgba(224,53,83,0.3)',
+          boxShadow: 'none',
         }}>✦</div>
         <div style={{ flex: 1 }}>
           <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#FFFFFF' }}>Ava</p>
@@ -162,26 +164,35 @@ function AvaChatPod({ onClose }) {
             alignItems: 'flex-end',
           }}>
             {msg.role === 'assistant' && (
-              <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg, #E03553, #803D81)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#FFF', flexShrink: 0, marginBottom: 2 }}>✦</div>
+              <div style={{ width: 24, height: 24, borderRadius: '50%', background: color.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#FFF', flexShrink: 0, marginBottom: 2 }}>✦</div>
             )}
             <div style={{
               maxWidth: '80%',
               padding: '10px 14px',
-              background: msg.role === 'user' ? 'linear-gradient(135deg, #E03553, #803D81)' : 'rgba(255,255,255,0.07)',
+              background: msg.role === 'user' ? color.primary : 'rgba(255,255,255,0.07)',
               borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
               fontSize: 13,
               color: '#FFFFFF',
               lineHeight: 1.6,
               whiteSpace: 'pre-wrap',
             }}>
-              {msg.content}
+              {/* MARKDOWN IN, TEXT OUT. The model writes `**$154,000**`
+                  because models write markdown; this printed the string into
+                  a pre-wrap div, so the asterisks were on screen. Bold renders
+                  as bold and every other mark is stripped to its text — no raw
+                  asterisk ever reaches the couple. Tokens, not HTML: this is
+                  model output and there is no path here from a string to
+                  parsed markup. See src/lib/avaMarkdown.js. */}
+              {parseAvaText(msg.content).map((t, i) => (
+                t.bold ? <strong key={i} style={{ fontWeight: 700 }}>{t.text}</strong> : <React.Fragment key={i}>{t.text}</React.Fragment>
+              ))}
             </div>
           </div>
         ))}
 
         {loading && (
           <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
-            <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg, #E03553, #803D81)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#FFF', flexShrink: 0 }}>✦</div>
+            <div style={{ width: 24, height: 24, borderRadius: '50%', background: color.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#FFF', flexShrink: 0 }}>✦</div>
             <div style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.07)', borderRadius: '16px 16px 16px 4px', display: 'flex', gap: 4, alignItems: 'center' }}>
               {[0, 1, 2].map(i => (
                 <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(255,255,255,0.4)', animation: `avaDot 1.2s ease-in-out ${i * 0.2}s infinite` }} />
@@ -263,7 +274,7 @@ function AvaChatPod({ onClose }) {
               padding: '4px 0',
               maxHeight: 120,
               overflowY: 'auto',
-              caretColor: '#E03553',
+              caretColor: color.primary,
             }}
           />
           <button
@@ -273,7 +284,7 @@ function AvaChatPod({ onClose }) {
               width: 32,
               height: 32,
               borderRadius: '50%',
-              background: input.trim() ? 'linear-gradient(135deg, #E03553, #803D81)' : 'rgba(255,255,255,0.1)',
+              background: input.trim() ? color.primary : 'rgba(255,255,255,0.1)',
               border: 'none',
               cursor: input.trim() && !loading ? 'pointer' : 'default',
               display: 'flex',

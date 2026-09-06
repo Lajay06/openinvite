@@ -703,7 +703,11 @@ function LayoutShell({ children, currentPageName }) {
           aria-label={chatOpen ? 'Close Ava' : 'Chat with Ava'}
           style={{
             width: 44, height: 44, borderRadius: '50%',
-            background: chatOpen ? '#0A0A0A' : 'linear-gradient(135deg, #ec4899, #9333ea)',
+            // THE POD BUTTON IS THE SAME BRAND AS THE POD. It was a pink-to-
+            // purple gradient that appears on no other control in the product;
+            // the pod's own icon and bubbles carried a second, different
+            // gradient. One solid brand primary, from the token.
+            background: chatOpen ? '#0A0A0A' : color.primary,
             border: 'none', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 4px 12px rgba(147,51,234,0.3)',
