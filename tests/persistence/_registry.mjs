@@ -111,6 +111,27 @@ export function guardFilesFor(lane) {
  */
 export async function loadGuards(lane) {
   const out = [];
+  // PLACEHOLDER SECRETS AROUND THE IMPORTS, and this is not tidiness.
+  //
+  // CI CAUGHT A REAL ORDERING DEPENDENCY HERE and the first version of this
+  // file claimed there was none. Several api/ modules construct a Resend or
+  // Stripe client AT MODULE SCOPE, which throws synchronously when the key is
+  // unset — api/cron/send-onboarding-emails.js:92 is one. Two guards import
+  // into that graph, and under the old hand-written order `rate-limiting.mjs`
+  // got there first with its own placeholder set (rate-limiting.mjs:40-43), so
+  // the module was already evaluated and cached by the time
+  // `onboarding-cron-window.mjs` asked for it. Filename order reverses those
+  // two, and CI went red with "Missing API key" — the guards were never
+  // independent, the hand list was hiding it.
+  //
+  // Re-encoding the old order would preserve the bug and hide it again. The
+  // placeholders are hoisted here instead, so NO guard's import depends on
+  // which guard imported first. Restored afterward, so nothing downstream sees
+  // a value that was not already there.
+  const prior = { RESEND_API_KEY: process.env.RESEND_API_KEY, STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY };
+  if (!process.env.RESEND_API_KEY) process.env.RESEND_API_KEY = 're_persistence_suite_placeholder';
+  if (!process.env.STRIPE_SECRET_KEY) process.env.STRIPE_SECRET_KEY = 'sk_test_persistence_suite_placeholder';
+  try {
   for (const file of guardFilesFor(lane)) {
     try {
       const mod = await import(pathToFileURL(join(DIR, file)).href);
@@ -123,6 +144,11 @@ export async function loadGuards(lane) {
       out.push({ file, name: runners[0], run: mod[runners[0]], error: null });
     } catch (err) {
       out.push({ file, name: file, run: null, error: `import failed: ${err.message}` });
+    }
+  }
+  } finally {
+    for (const [k, v] of Object.entries(prior)) {
+      if (v === undefined) delete process.env[k]; else process.env[k] = v;
     }
   }
   return out;

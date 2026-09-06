@@ -60,9 +60,15 @@ async function run() {
   // A guard now runs BECAUSE IT EXISTS. Adding one touches no shared file, so
   // there is nothing left to collide on and nothing left to forget.
   //
-  // Sorted by filename, so the order is deterministic and reviewable. These
-  // guards are independent — none creates state another reads — so the order
-  // is a property of the log rather than of the result.
+  // Sorted by filename, so the order is deterministic and reviewable.
+  //
+  // THE FIRST VERSION OF THIS COMMENT SAID THE GUARDS WERE INDEPENDENT. CI
+  // proved otherwise within a minute: several api/ modules build a Resend or
+  // Stripe client at module scope, and under the old hand-written order one
+  // guard happened to import into that graph first with a placeholder key set.
+  // Filename order reversed the pair and the suite went red. The placeholders
+  // are hoisted into the loader now, so no guard's import depends on which
+  // guard imported first — see tests/persistence/_registry.mjs.
   const guards = await loadGuards('ci');
   for (const g of guards) {
     if (!g.run) {
