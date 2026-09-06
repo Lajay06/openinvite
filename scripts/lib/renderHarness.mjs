@@ -32,6 +32,7 @@
 
 import { assertSeedMatchesSchemas } from './seedSchema.mjs';
 import { CONTRACTS } from './stubContracts.mjs';
+import { blockRemoteImages } from './blockRemoteImages.mjs';
 const DAY = 86400000;
 const iso = (offsetDays) => new Date(Date.now() + offsetDays * DAY).toISOString();
 
@@ -453,6 +454,10 @@ export async function seededContext(browser, { width, height, seed, user, onEnti
     localStorage.setItem('oi_auth', '1');
   });
   await stubBackend(ctx, { seed, user, onEntity });
+  // NO RUN MAY BILL THE CLOUDINARY ACCOUNT. 95.6% of last month's 38.5 GB
+  // carried the referrer http://localhost:4173/ — this harness and its seven
+  // callers. See scripts/lib/blockRemoteImages.mjs.
+  ctx.__cloudinary = await blockRemoteImages(ctx);
   return ctx;
 }
 

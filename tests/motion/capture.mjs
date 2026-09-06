@@ -60,6 +60,7 @@ import { execFileSync } from 'node:child_process';
 import { createServer } from 'node:http';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { blockRemoteImages } from '../../scripts/lib/blockRemoteImages.mjs';
 
 const DIR = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(DIR, '../..');
@@ -130,6 +131,7 @@ const results = {};
 
 for (const u of universes) {
   const ctx = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: 1 });
+  await blockRemoteImages(ctx);   // motion is measured from transforms, not pixels
   const page = await ctx.newPage();
   // A URL PREDICATE, NOT A GLOB — enforced by
   // tests/persistence/route-interception-guard.mjs, and the reason is in that

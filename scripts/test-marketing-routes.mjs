@@ -36,12 +36,18 @@
 import { chromium } from 'playwright';
 import { BASE_URL } from './capture/config.mjs';
 import { MARKETING_ROUTES as ROUTES } from './marketingRoutes.mjs';
+import { blockRemoteImages } from './lib/blockRemoteImages.mjs';
 
 const ERROR_BOUNDARY_TEXT = 'Something went wrong.';
 const VIEWPORT = { width: 1440, height: 900 };
 
 async function checkRoute(browser, path) {
-  const page = await browser.newPage({ viewport: VIEWPORT });
+  // Fourteen marketing routes, each at networkidle — which by definition waits
+  // for every photograph. This loop was the largest single source of the
+  // Cloudinary bill. See scripts/lib/blockRemoteImages.mjs.
+  const ctx = await browser.newContext({ viewport: VIEWPORT });
+  await blockRemoteImages(ctx);
+  const page = await ctx.newPage();
   const pageErrors = [];
   page.on('pageerror', (err) => pageErrors.push(err.message));
 
