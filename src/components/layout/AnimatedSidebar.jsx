@@ -72,8 +72,11 @@ export const NAV_SECTIONS = [
   {
     label: "Planning",
     items: [
-      { icon: Sparkles,        label: "Daily update", url: createPageUrl("DailyUpdate") },
+      // Overall stays at the top of the nav (owner's standing rule); Daily
+      // update sits directly under it, where it is a real destination again
+      // rather than a label that redirected to the row above it.
       { icon: LayoutDashboard, label: "Overall",      url: createPageUrl("Dashboard") },
+      { icon: Sparkles,        label: "Daily update", url: createPageUrl("DailyUpdate") },
       { icon: Calendar,        label: "Schedule",     url: createPageUrl("Schedule") },
       { icon: ListTodo,        label: "To do",        url: createPageUrl("TodoList") },
     ],

@@ -82,10 +82,15 @@ export async function runNextUp() {
   // ── no data means no block ──────────────────────────────────────────────
   const src = readFileSync(resolve(__dir, '../../src/pages/DailyUpdate.jsx'), 'utf8')
     .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-  check('DailyUpdate renders NextUp only in the ready phase with a journey',
-    /phase === 'ready' && journey &&/.test(src), 'gated on both');
+  // SAME PROPERTY, NEW NAMES. The page was rebuilt as its own briefing page on
+  // the owner's ruling and no longer runs a phase machine around an LLM call,
+  // so `phase === 'ready'` is gone. What must still hold is that NextUp does
+  // not render while the page is loading and does not render without a
+  // journey — a setup checklist drawn from nothing is worse than none.
+  check('DailyUpdate renders NextUp only when loaded and with a journey',
+    /!loading && journey && \(/.test(src), 'gated on both');
   check('  and nulls the journey when the wedding record failed to load',
-    /failed\.includes\('wedding details'\)[\s\S]{0,80}setJourney\(null\)/.test(src), 'null on failure');
+    /if \(!details\) setJourney\(null\);/.test(src), 'null on failure');
 
   // ── THE SOURCE PIN ──────────────────────────────────────────────────────
   // A raw WeddingDetails read hands isComplete ciphertext (see above) and the

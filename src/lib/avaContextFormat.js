@@ -14,6 +14,7 @@ import { tallyAttendees } from './guestRsvpTally.js';
 import { resolveAttendees, MEAL_CHOSEN } from './attendees.js';
 import { mealOptionLabel } from './weddingEvents.js';
 import { coupleDisplayName } from './coupleNames.js';
+import { daysUntilWedding, countdownForPrompt } from './weddingCountdown.js';
 
 /**
  * THE FORMATTING, SPLIT OUT SO IT CAN BE TESTED.
@@ -48,8 +49,15 @@ export function formatWeddingContext({ guests = [], budget = [], vendors = [], s
   const ceremonyVenue  = wd.mainCeremony?.venueName || '';
   const receptionVenue = wd.reception?.venueName || '';
 
+  // THE FIFTH PLACE THIS FORMULA WAS SITTING. #681 removed
+  // `Math.ceil((new Date(date) - new Date()) / 86400000)` from four surfaces —
+  // it is arithmetic between two INSTANTS, so the same calendar day reads 1 in
+  // the morning and 0 in the evening, and `new Date('2027-07-03')` is UTC
+  // midnight, which is the 2nd west of Greenwich. This copy was in Ava's own
+  // prompt and was missed, so the pod and the modal were still being handed a
+  // number computed the broken way.
   const daysUntil = weddingDate
-    ? Math.ceil((new Date(weddingDate) - new Date()) / 86400000)
+    ? daysUntilWedding(weddingDate)
     : null;
 
   // ATTENDEES, not Guest rows. Ava was told "Total: 202" for a wedding of 242
@@ -212,7 +220,7 @@ export function formatWeddingContext({ guests = [], budget = [], vendors = [], s
   const ctx = `WEDDING CONTEXT:
 Couple: ${coupleName}
 Planner: ${user.full_name || 'Unknown'} (${user.email || ''})
-Wedding date: ${weddingDate || 'Not set'}${daysUntil !== null ? ` (${daysUntil} days away)` : ''}
+Wedding date: ${weddingDate || 'Not set'}${countdownForPrompt(daysUntil) ? `\nCOUNTDOWN, and use these words rather than the number: ${countdownForPrompt(daysUntil)}` : ''}
 Location: ${city || 'Not set'}
 Style universe: ${universe || 'Not set'}${venueLines ? `\n${venueLines}` : ''}${themeBlock}
 

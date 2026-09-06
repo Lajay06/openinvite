@@ -7,7 +7,8 @@ import toast from "react-hot-toast";
 
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
-import Briefing from "@/components/dashboard/Briefing";
+import DayStateHeadline from "@/components/dashboard/DayStateHeadline";
+import { todosFrom } from "@/lib/dayState";
 import AvaModal from "@/components/layout/AvaModal";
 import RSVPChart from "../components/dashboard/RSVPChart";
 import BudgetSummary from "../components/dashboard/BudgetSummary";
@@ -247,11 +248,14 @@ export default function Dashboard() {
 
       <DashboardPageHeader title="Overall" subtitle="Your wedding planning at a glance" />
 
-      {/* THE BRIEFING IS THE PAGE'S FIRST THING. Overall is the one place, and
-          the first thing on it answers "what needs me today" before any module
-          card offers somewhere to go. */}
-      <Briefing
-        tasks={tasks} schedule={schedule} guests={guests}
+      {/* ONE LINE ABOUT TODAY, AND A WAY TO THE PAGE THAT SAYS MORE.
+          The full briefing — badge, three lines, an action — is on the daily
+          update page, which is Ava's home (spec 3.1). This is the SAME
+          resolved state rendered as a sentence, not a summary of it: both
+          call resolveDayState, so they cannot disagree about the day. Overall
+          keeps the stats below and its place at the top of the nav. */}
+      <DayStateHeadline
+        tasks={todosFrom({ notes, tasks })} schedule={schedule} guests={guests}
         budget={budget} vendors={vendors} unseen={unseenSources} loading={loading}
       />
 

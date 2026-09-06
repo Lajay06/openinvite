@@ -175,13 +175,16 @@ const AUTO_ROUTE_EXCLUDE = new Set([
 const AuthenticatedApp = () => {
   const location = useLocation();
 
-  // CALM PASS PR1 — OVERALL IS THE ONE PLACE. The briefing that lived on its
-  // own page is now the first thing on Overall, so /DailyUpdate redirects here
-  // rather than showing a second answer to the same question. The route STAYS
-  // and the page component stays in the tree: an existing bookmark, an email
-  // link or a collaborator's landing path still arrives somewhere correct.
-  // Nothing is deleted.
-  if (location.pathname === '/dashboard' || location.pathname === '/DailyUpdate') {
+  // THE DAILY UPDATE PAGE IS BACK, on the owner's ruling and spec 3.1: it is
+  // Ava's home. #654 sent /DailyUpdate here because the briefing was on both
+  // pages and two answers to one question is worse than one — that was true,
+  // and the fix runs the other way now. The full briefing is on the daily
+  // update page; Overall carries the SAME resolved day state as one headline
+  // and a link (DayStateHeadline.jsx). One source, rendered twice.
+  //
+  // Lowercase /dashboard still normalises, because a bookmark or a hand-typed
+  // path should land somewhere rather than 404.
+  if (location.pathname === '/dashboard') {
     return <Navigate to="/Dashboard" replace />;
   }
 

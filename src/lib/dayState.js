@@ -1,0 +1,185 @@
+/**
+ * src/lib/dayState.js — ONE DAY STATE, COMPUTED ONCE.
+ *
+ * Spec section 9.1: the headline and the badge used to be two independent
+ * judgments about the same day, so a badge reading "Clear" could sit above a
+ * headline naming two overdue tasks. The fix is not to synchronise them — it is
+ * to have one state and render it twice.
+ *
+ * Now rendered in TWO PLACES rather than two ways: the daily update page, which
+ * is Ava's home (spec 3.1), and a single headline on Overall that links to it.
+ * Two pages showing one resolved state cannot disagree either, and that is the
+ * whole reason this is a module with no React in it and no imports the browser
+ * needs — a guard can load it and check that the two renderings read the same
+ * function.
+ *
+ * ── PRECEDENCE, HIGHEST FIRST (spec 9.1) ───────────────────────────────────
+ *
+ *   overdue   something is past its date        badge "Overdue"
+ *   today     something is due today            badge "Today"
+ *   waiting   nothing due, something outstanding badge "Waiting"
+ *   clear     nothing due and nothing blocked   badge "Clear"
+ *
+ * THE BADGE VOCABULARY IS THE SPEC'S. It read "Due today" here, which is the
+ * headline's words, not the badge's — the spec's table says "Today". A badge
+ * with its own vocabulary is how the two drifted apart in the first place.
+ *
+ * ── NO BADGE WHEN THE DAY CANNOT BE RESOLVED ───────────────────────────────
+ *
+ * Also 9.1, and it was not implemented: "if the day state cannot be resolved
+ * because data did not load, there is no badge at all, and the briefing says
+ * what cannot be seen". A badge is a claim about the whole day. If the to-do
+ * list failed to fetch, there is no such claim to make — so `badge` is null and
+ * the caller renders the unseen sentence instead.
+ *
+ * ── DATES ARE READ AS DATES, NOT AS INSTANTS ───────────────────────────────
+ *
+ * `new Date('2027-07-03')` is midnight UTC. Compared against a local start of
+ * day, that lands on the PREVIOUS day for every couple west of Greenwich — so
+ * a task due today read as overdue in New York and the badge said Overdue on a
+ * clear day. Date-only strings are parsed by hand, the same fix the wedding
+ * countdown and the schedule calendar each needed.
+ */
+
+/** Local midnight for a Date. */
+const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+
+/**
+ * A row's date as a local-midnight timestamp, or null.
+ * Accepts 'YYYY-MM-DD', an ISO timestamp, or a Date.
+ */
+export function rowDate(row) {
+  const raw = row?.due_date || row?.dueDate || row?.event_date || row?.date;
+  if (!raw) return null;
+  if (raw instanceof Date) return Number.isNaN(raw.getTime()) ? null : startOfDay(raw);
+  const s = String(raw);
+  const dateOnly = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+  if (dateOnly) {
+    const [, y, m, d] = dateOnly;
+    return new Date(Number(y), Number(m) - 1, Number(d)).getTime();
+  }
+  const d = new Date(s);
+  return Number.isNaN(d.getTime()) ? null : startOfDay(d);
+}
+
+/**
+ * THE ROWS THAT ARE ACTUALLY TO-DOS, from whatever a page happened to load.
+ *
+ * This exists because the two renderings disagreed on a screenshot: the daily
+ * update page said "Overdue — Order the invitations is overdue" while Overall
+ * said "Waiting on 1 reply", from the same wedding, at the same moment. Both
+ * called resolveDayState, which is what the guard checked — and they handed it
+ * DIFFERENT LISTS. Overall passed the `Task` entity; a to-do is a Note with
+ * view_type 'todo' (TodoList.jsx:159), so Overall's task list was empty and the
+ * overdue item was invisible to it.
+ *
+ * One state computed once is not enough if the inputs are chosen twice. The
+ * selection is part of the answer, so it lives here with the rest of it.
+ */
+export function todosFrom({ notes = [], tasks = [] } = {}) {
+  const fromNotes = (notes || []).filter((n) => n?.view_type === 'todo');
+  // `Task` rows are kept because some accounts still have them; they are not
+  // filtered on view_type because they never carried one.
+  return [...fromNotes, ...(tasks || [])];
+}
+
+export const STATE_BADGE = { overdue: 'Overdue', today: 'Today', waiting: 'Waiting', clear: 'Clear' };
+
+const titleOf = (r) => r?.title || r?.name || r?.event_name || null;
+
+/**
+ * @param {object} input
+ * @param {Array}  input.tasks     Note rows with view_type 'todo'
+ * @param {Array}  input.schedule  Schedule rows
+ * @param {Array}  input.guests    Guest rows
+ * @param {Array}  input.budget    Budget rows
+ * @param {Array}  input.vendors   Vendor rows
+ * @param {string[]} input.unseen  stores that failed to load, by key
+ * @param {Date}   [input.now]     injected, so a guard can pick the day
+ * @returns {{state:string, badge:string|null, headline:string, lines:Array<{text:string,to:string}>, unseen:string[], next:object|null}}
+ */
+export function resolveDayState({ tasks = [], schedule = [], guests = [], budget = [], vendors = [], unseen = [], now = new Date() } = {}) {
+  const today = startOfDay(now);
+
+  const open = tasks.filter((t) => !t.completed);
+  const overdue = open.filter((t) => { const d = rowDate(t); return d !== null && d < today; })
+    .sort((a, b) => rowDate(a) - rowDate(b));
+  const dueToday = open.filter((t) => rowDate(t) === today);
+  const eventsToday = schedule.filter((e) => rowDate(e) === today);
+  const unreplied = guests.filter((g) => !g.rsvp_status || g.rsvp_status === 'pending').length;
+
+  const state = overdue.length > 0 ? 'overdue'
+    : (dueToday.length > 0 || eventsToday.length > 0) ? 'today'
+    : unreplied > 0 ? 'waiting'
+    : 'clear';
+
+  // WHAT IS NEXT, AND WHEN — the subject the spec's table requires of a Clear
+  // headline. The soonest thing ahead of today, from either store.
+  const ahead = [...open, ...schedule]
+    .map((r) => ({ row: r, at: rowDate(r) }))
+    .filter((x) => x.at !== null && x.at > today)
+    .sort((a, b) => a.at - b.at);
+  const next = ahead.length ? { title: titleOf(ahead[0].row), at: ahead[0].at } : null;
+
+  // THE HEADLINE IS ABOUT THE STATE'S SUBJECT, always — never a second opinion.
+  const headline = state === 'overdue'
+      ? (titleOf(overdue[0]) ? `${titleOf(overdue[0])} is overdue.` : 'Something is overdue.')
+    : state === 'today'
+      ? (titleOf(dueToday[0] || eventsToday[0]) ? `${titleOf(dueToday[0] || eventsToday[0])} is today.` : 'Something is due today.')
+    : state === 'waiting'
+      ? `Waiting on ${unreplied} ${unreplied === 1 ? 'reply' : 'replies'}.`
+    : next?.title
+      ? `Nothing needs you today. Next is ${next.title}.`
+      : 'Nothing needs you today.';
+
+  // FACTS ONLY, IN PRIORITY ORDER, AND THE CAP IS ONE LINE.
+  //
+  // Every candidate is pushed unconditionally and the slice at the end is the
+  // only thing that enforces three. It used to be the other way round: four of
+  // the pushes were guarded by `lines.length < 3`, so the cap was a side
+  // effect of the conditions and the slice was DEAD — a plant that deleted it
+  // changed nothing, which is how a cap stops being a cap without anyone
+  // noticing. The conditions that remain are about whether a line is TRUE, not
+  // about how many there are already.
+  //
+  // AND THE SLICE IS IN EXACTLY ONE PLACE. There were two — here and again in
+  // the return — so deleting either left the other doing the work and the
+  // plant reported green twice. Two enforcements of one rule is one
+  // enforcement plus a decoy.
+  const candidates = [];
+  const name = (items) => items.slice(0, 2).map(titleOf).filter(Boolean).join(', ');
+  if (overdue.length) {
+    const n = name(overdue);
+    candidates.push({ text: `${overdue.length} task${overdue.length === 1 ? '' : 's'} overdue${n ? `: ${n}` : ''}.`, to: '/TodoList' });
+  }
+  if (dueToday.length) {
+    const n = name(dueToday);
+    candidates.push({ text: `${dueToday.length} due today${n ? `: ${n}` : ''}.`, to: '/TodoList' });
+  }
+  if (eventsToday.length) {
+    candidates.push({ text: `${eventsToday.length} on the schedule today.`, to: '/Schedule' });
+  }
+  if (unreplied > 0) {
+    candidates.push({ text: `${unreplied} guest${unreplied === 1 ? ' has' : 's have'} not replied.`, to: '/Guests' });
+  }
+  // An UNSEEN store is not an empty one — saying "No budget set" over a fetch
+  // that failed is the lie section 5.3 exists to prevent.
+  if (budget.length === 0 && !unseen.includes('budget')) {
+    candidates.push({ text: 'No budget set. It lives on the Budget page.', to: '/Budget' });
+  }
+  if (vendors.length === 0 && !unseen.includes('vendors')) {
+    candidates.push({ text: 'No vendors added. They live on the Vendors page.', to: '/Vendors' });
+  }
+  const lines = candidates.slice(0, 3);
+
+  return {
+    state,
+    // A badge is a claim about the whole day, and there is no such claim to
+    // make over a store that did not load.
+    badge: unseen.length ? null : STATE_BADGE[state],
+    headline,
+    lines,
+    unseen,
+    next,
+  };
+}
