@@ -15,6 +15,21 @@ import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyInvitation, getMyRecords } from '@/lib/resolveMyWedding';
 import { createPageUrl } from '@/utils';
 import { Toaster } from 'react-hot-toast';
+import { color, font, radius, shadow } from '@/styles/tokens';
+
+/**
+ * The toast's one coloured element. Size and weight are shared by all three
+ * variants so that swapping the mark cannot shift the layout — the only thing
+ * that changes between success, error and info is this colour.
+ */
+const TOAST_MARK = {
+  fontSize: 15,
+  lineHeight: 1,
+  fontWeight: 700,
+  color: color.primary,
+  display: 'inline-flex',
+  alignItems: 'center',
+};
 import { CollaboratorProvider, useCollaboratorContext, permissionKeyForPageName, hasPagePermission } from '@/lib/collaboratorContext';
 import { getTrialStatus } from '@/lib/trialStatus';
 import TopBarSearch from './components/layout/TopBarSearch';
@@ -502,16 +517,38 @@ function LayoutShell({ children, currentPageName }) {
 
   return (
     <div className="min-h-screen" style={{ background: '#FFFFFF' }}>
+      {/* THE TOAST, IN THE APP'S OWN TOKENS.
+          It was a black rectangle — #111 ground, white text, square corners —
+          with react-hot-toast's stock icon on it: a filled GREEN CIRCLE with a
+          white tick, a colour that appears nowhere else in this product. Two
+          things were wrong with it. The ground and the corner belonged to no
+          system we own, and the only coloured element on screen was a library
+          default.
+
+          Now: our surface, our border, our text, our radius token, and the
+          mark in the accent. The mark is a TEXT-PRESENTATION glyph (✓ / ✗),
+          which CLAUDE.md names explicitly as not-an-emoji — it inherits our
+          typeface and takes currentColor, so it is ours to colour rather than
+          a drawn asset with a colour baked in.
+
+          THE VARIANTS DIFFER BY THE MARK AND NOTHING ELSE. Same ground, same
+          border, same radius, same shadow, same position, same type. Copy is
+          untouched — not one string changed in this PR. */}
       <Toaster
         toastOptions={{
           style: {
-            fontFamily: '"Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif',
+            fontFamily: font.family,
             fontSize: '13px',
-            borderRadius: '0',
-            background: '#111',
-            color: '#fff',
-            border: '1px solid #222',
+            borderRadius: `${radius.toast}px`,
+            background: color.bg,
+            color: color.textPrimary,
+            border: `1px solid ${color.border}`,
+            boxShadow: shadow.float,
+            padding: '12px 16px',
           },
+          success: { icon: <span style={TOAST_MARK} aria-hidden="true">✓</span> },
+          error:   { icon: <span style={{ ...TOAST_MARK, color: color.primary }} aria-hidden="true">✗</span> },
+          blank:   { icon: <span style={{ ...TOAST_MARK, color: color.iconMuted }} aria-hidden="true">✓</span> },
         }}
       />
 
