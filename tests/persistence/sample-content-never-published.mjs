@@ -273,6 +273,87 @@ export async function runSampleContentNeverPublished() {
     void sample;
   }
 
+  // ── 2b-quater. THE DECLARED SLOTS NOBODY HAD EVER RUN ───────────────────
+  //
+  // FILLABLE_SLOTS declares seven pairs. Until this block three of them had
+  // never been executed by a test in either direction — registryContent.
+  // registryMessage, musicContent.customMessage and celebrationContent.
+  // daySchedule. A slot list is a list of promises, and an untested promise is
+  // a comment.
+  //
+  // The pairs are READ OUT OF mergeSample.js rather than retyped here, so a
+  // slot added there and forgotten here fails this block instead of quietly
+  // going untested for another five universes.
+  {
+    const mergeSrc = readFileSync(join(SAMPLE_DIR, 'mergeSample.js'), 'utf8');
+    const from = mergeSrc.indexOf('const FILLABLE_SLOTS');
+    const body = mergeSrc.slice(from, mergeSrc.indexOf('];', from));
+    const pairs = [...body.matchAll(/\[\s*'([A-Za-z]+)'\s*,\s*'([A-Za-z]+)'\s*\]/g)].map((m) => [m[1], m[2]]);
+    check('FILLABLE_SLOTS is read from mergeSample.js, not retyped in the test',
+      pairs.length >= 7, pairs.map((p) => p.join('.')).join(', ') || 'PARSED NOTHING');
+
+    // A slot no sample can fill never runs. That is tolerable for exactly one
+    // pair, and only because its CONSUMER excludes it: WeddingCelebrationPage
+    // renders the day schedule only when there are no ceremony or reception
+    // events (`!hasEvents && daySchedule.length > 0`), and every sample carries
+    // both. Filling it would put copy behind a condition no sample can satisfy
+    // — R30 read from the consumer's side rather than the field name's. If that
+    // mutual exclusion is ever removed, the second check here goes red and the
+    // slot should be filled in all twelve.
+    const INERT = new Map([[
+      'celebrationContent.daySchedule',
+      'WeddingCelebrationPage.jsx renders it only when the record has no events',
+    ]]);
+    const dead = pairs.filter(([sec, slot]) => ids.every((id) => isEmpty(getSampleWedding(id)[sec]?.[slot])));
+    const unexplained = dead.map((p) => p.join('.')).filter((n) => !INERT.has(n));
+    check('every declared slot either fills from a sample or is a documented inert one',
+      unexplained.length === 0,
+      unexplained.length
+        ? `NO SAMPLE FILLS: ${unexplained.join(', ')}`
+        : `${pairs.length - dead.length} live, ${dead.length} inert (${[...INERT.keys()].join(', ')})`);
+
+    const celSrc = readFileSync(join(SRC, 'components/guest-website/pages/WeddingCelebrationPage.jsx'), 'utf8');
+    check('  and the reason that one is inert still holds in the page',
+      /!hasEvents\s*&&\s*daySchedule\.length\s*>\s*0/.test(celSrc),
+      'day schedule is still gated behind the record having no events');
+
+    // BOTH DIRECTIONS, EVERY UNIVERSE, on the live slots this file had never
+    // touched. Direction one is the paris bug one level over: a section the
+    // couple has started, with this slot still empty, must fill. Direction two
+    // is the property that matters more: the same slot, written by them, is
+    // never overwritten.
+    const CASES = [
+      ['registryContent', 'registryMessage', { noGiftsPlease: false }, 'Our own words about gifts.'],
+      ['musicContent', 'customMessage', { spotifyPlaylistUrl: 'https://example.com/ours' }, 'Our own words about the music.'],
+    ];
+    for (const uni of ids) {
+      const sample = getSampleWedding(uni);
+      const live = CASES.filter(([sec, slot]) => !isEmpty(sample[sec]?.[slot]));
+
+      const notFilled = live.filter(([sec, slot, sibling]) => {
+        const out = withSampleContent({ activeUniverse: uni, [sec]: { ...sibling } });
+        return out.details[sec]?.[slot] !== sample[sec][slot];
+      });
+      check(`${uni}: a started section with this slot still empty fills from the sample`,
+        live.length > 0 && notFilled.length === 0,
+        live.length === 0
+          ? 'NO LIVE SLOT TO EXERCISE — this check ran on nothing'
+          : (notFilled.length
+            ? `did not fill: ${notFilled.map(([sec, slot]) => `${sec}.${slot}`).join(', ')}`
+            : `${live.map(([sec, slot]) => `${sec}.${slot}`).join(', ')} filled`));
+
+      const overwritten = live.filter(([sec, slot, sibling, theirs]) => {
+        const out = withSampleContent({ activeUniverse: uni, [sec]: { ...sibling, [slot]: theirs } });
+        return out.details[sec]?.[slot] !== theirs;
+      });
+      check(`  ${uni}: and the same slot, written by them, is never overwritten`,
+        live.length > 0 && overwritten.length === 0,
+        overwritten.length
+          ? `OVERWRITTEN: ${overwritten.map(([sec, slot]) => `${sec}.${slot}`).join(', ')}`
+          : `${live.length} slot(s) held the couple's own value`);
+    }
+  }
+
   // ── 2c-bis. EVERY IMAGE AND SUB-SHAPE SITS ON A KEY THE PAGE READS ───────
   // The owner reported seeing a sample photograph on the hero and nowhere
   // else. Four roles were written to keys no page component reads:

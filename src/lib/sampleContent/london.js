@@ -124,7 +124,7 @@ export const SAMPLE_LONDON = {
   polls: [{
     id: 'sample-ln-p1', title: 'What should the quartet play as we come in?', category: 'music', isActive: true, allowComments: true,
     options: [
-      { id: 'sample-ln-p1a', label: 'Something everybody half recognises', votes: 0 },
+      { id: 'sample-ln-p1a', label: 'Something everybody half recognizes', votes: 0 },
       { id: 'sample-ln-p1b', label: 'Something nobody expects', votes: 0 },
       { id: 'sample-ln-p1c', label: 'Let them choose on the day', votes: 0 },
     ],

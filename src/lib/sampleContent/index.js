@@ -37,13 +37,17 @@
  *      anywhere else in src/. That assertion is what makes the whole idea safe;
  *      without it this file is a bag of strings waiting to become defaults.
  *
- * TWO UNIVERSES, AND THEY DO DIFFERENT JOBS. bali carries placeholder copy and
- * NO imagery — it is the omission fixture, the record a published site is
- * checked against to prove none of this reaches a guest, and the published
- * bali fixture chris-and-sia is what that check runs on. havana carries the
- * owner's own photographs and is the proof of the other half: what a universe
- * looks like full. Eighteen more is a copywriting job, not an engineering one,
- * and four of those (kyoto, bali, aspen, shanghai) have no photography at all.
+ * THE TWO ORIGINAL UNIVERSES DO DIFFERENT JOBS, and both are still load
+ * bearing. bali carries placeholder copy and NO imagery — it is the omission
+ * fixture, the record a published site is checked against to prove none of
+ * this reaches a guest, and the published bali fixture chris-and-sia is what
+ * that check runs on. havana carries the owner's own photographs and is the
+ * proof of the other half: what a universe looks like full.
+ *
+ * TWELVE OF TWENTY UNIVERSES NOW CARRY CONTENT. The remaining eight split in
+ * two: taj, edinburgh, monaco, florence and seoul have photography and are a
+ * copywriting job; kyoto, aspen and shanghai have no folder at all, so nothing
+ * can be written for them until there are photographs to write against.
  */
 import { SAMPLE_BALI } from './bali.js';
 import { SAMPLE_HAVANA } from './havana.js';
@@ -52,6 +56,11 @@ import { SAMPLE_TULUM } from './tulum.js';
 import { SAMPLE_CAPRI } from './capri.js';
 import { SAMPLE_MARRAKECH } from './marrakech.js';
 import { SAMPLE_BROOKLYN } from './brooklyn.js';
+import { SAMPLE_PARIS } from './paris.js';
+import { SAMPLE_CAPETOWN } from './capetown.js';
+import { SAMPLE_MYKONOS } from './mykonos.js';
+import { SAMPLE_AMALFI } from './amalfi.js';
+import { SAMPLE_SEDONA } from './sedona.js';
 
 const SAMPLES = {
   bali: SAMPLE_BALI,
@@ -61,6 +70,11 @@ const SAMPLES = {
   capri: SAMPLE_CAPRI,
   marrakech: SAMPLE_MARRAKECH,
   brooklyn: SAMPLE_BROOKLYN,
+  paris: SAMPLE_PARIS,
+  capetown: SAMPLE_CAPETOWN,
+  mykonos: SAMPLE_MYKONOS,
+  amalfi: SAMPLE_AMALFI,
+  sedona: SAMPLE_SEDONA,
 };
 
 /** Universe ids that have sample content. */

@@ -92,6 +92,7 @@ import { runIcsExport } from '../tests/persistence/ics-export.mjs';
 import { runGiftCheckout } from '../tests/persistence/gift-checkout.mjs';
 import { runGuestSafeRegistry } from '../tests/persistence/guest-safe-registry.mjs';
 import { runGuestSafeWedding } from '../tests/persistence/guest-safe-wedding.mjs';
+import { runSampleContentNeverPublished } from '../tests/persistence/sample-content-never-published.mjs';
 
 async function run() {
   console.log('\n═══════════════════════════════════════════════════════');
@@ -191,6 +192,7 @@ async function run() {
   await runModule('runGiftCheckout', () => runGiftCheckout());
   await runModule('runGuestSafeRegistry', () => runGuestSafeRegistry());
   await runModule('runGuestSafeWedding', () => runGuestSafeWedding());
+  await runModule('runSampleContentNeverPublished', () => runSampleContentNeverPublished());
 
   const passed = results.filter(Boolean).length;
   const total = results.length;
