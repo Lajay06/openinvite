@@ -607,7 +607,7 @@ export default function StudioWebsite({ onBack }) {
           details={details}
           onChange={updateField}
           currentPage={currentPage}
-          onPageChange={(p) => { setCurrentPage(p); setRightPanelTab('design'); }}
+          onPageChange={(p) => setCurrentPage(p)}
         />
 
         {/* CENTER PREVIEW */}
@@ -681,7 +681,7 @@ export default function StudioWebsite({ onBack }) {
             }}>
               <PreviewContent
                 universeTheme={universeTheme} details={details} currentPage={currentPage}
-                onPageChange={(slug) => { setCurrentPage(slug); setRightPanelTab('design'); clearSelectedBlock(); }}
+                onPageChange={(slug) => { setCurrentPage(slug); clearSelectedBlock(); }}
                 editable={canvasMode === 'edit'}
                 replayEntranceKey={replayEntranceKey}
                 onRequestInsert={index => openLibrary(currentPage, index)}
@@ -701,6 +701,7 @@ export default function StudioWebsite({ onBack }) {
             theme={theme}
             universeTheme={universeTheme}
             onChange={updateField}
+            currentPage={currentPage}
             rightTab={rightPanelTab}
             onRightTabChange={setRightPanelTab}
             selectedBlock={selectedBlock}
