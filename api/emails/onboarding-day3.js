@@ -1,4 +1,5 @@
 import { emailShell, emailFooterRow, EMAIL_ACCENT, EMAIL_BLACK, EMAIL_FONT, EMAIL_MUTED, EMAIL_BODY_TEXT } from '../../src/lib/emailBrand.js';
+import { greeting } from '../../src/lib/emailGreeting.js';
 
 /**
  * Onboarding day-3 email — introduce Ava.
@@ -8,7 +9,11 @@ import { emailShell, emailFooterRow, EMAIL_ACCENT, EMAIL_BLACK, EMAIL_FONT, EMAI
  * @param {{ name?: string, email: string }} opts
  */
 export function onboardingDay3Email({ name, email }) {
-  const firstName = name ? name.split(' ')[0] : 'there';
+  // Was `name.split(' ')[0]`, which printed the whole email address when
+  // Base44's full_name carried one — see src/lib/emailGreeting.js. A missing
+  // name now means a greeting with no name in it, never a placeholder and
+  // never the address.
+  const hello = greeting('Have you met Ava yet, {name}?', 'Have you met Ava yet?', name);
 
   const bodyRowsHtml = `
           <!-- Ava intro -->
@@ -19,7 +24,7 @@ export function onboardingDay3Email({ name, email }) {
                 <span style="font-size:20px;line-height:1;">✦</span>
               </div>
               <h1 style="margin:0 0 12px;font-size:26px;font-weight:700;color:${EMAIL_BLACK};letter-spacing:-0.02em;line-height:1.2;">
-                Have you met Ava yet, ${firstName}?
+                ${hello}
               </h1>
               <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:${EMAIL_BODY_TEXT};">
                 Ava is your AI wedding assistant, built into your dashboard and available any time.

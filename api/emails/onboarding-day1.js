@@ -1,4 +1,5 @@
 import { emailShell, emailFooterRow, EMAIL_ACCENT, EMAIL_BLACK, EMAIL_FONT, EMAIL_MUTED, EMAIL_BODY_TEXT } from '../../src/lib/emailBrand.js';
+import { greeting } from '../../src/lib/emailGreeting.js';
 
 /**
  * Onboarding day-0 welcome email.
@@ -8,14 +9,18 @@ import { emailShell, emailFooterRow, EMAIL_ACCENT, EMAIL_BLACK, EMAIL_FONT, EMAI
  * @param {{ name?: string, email: string }} opts
  */
 export function onboardingDay1Email({ name, email }) {
-  const firstName = name ? name.split(' ')[0] : 'there';
+  // Was `name.split(' ')[0]`, which printed the whole email address when
+  // Base44's full_name carried one — see src/lib/emailGreeting.js. A missing
+  // name now means a greeting with no name in it, never a placeholder and
+  // never the address.
+  const hello = greeting('Welcome, {name}.', 'Welcome.', name);
 
   const bodyRowsHtml = `
           <!-- Hero -->
           <tr>
             <td style="padding:40px 40px 8px;">
               <h1 style="margin:0 0 12px;font-size:28px;font-weight:700;color:${EMAIL_BLACK};letter-spacing:-0.02em;line-height:1.2;">
-                Welcome, ${firstName}.
+                ${hello}
               </h1>
               <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:${EMAIL_BODY_TEXT};">
                 You're in. Your 14-day free trial has started, no credit card required.
