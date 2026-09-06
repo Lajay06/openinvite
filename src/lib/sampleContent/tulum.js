@@ -31,9 +31,14 @@ export const TULUM_IMAGES = {
     // room. Asset refresh, 2026-09-06.
     'composite-2_qxrfwk',                                             // 2048x2048
   ],
-  hero:  'hf_20260905_001643_d8992ec0-b2cc-480a-8c6c-8c5fb0e915bb_umafkq', // 1376x768
+  // HERO REVERTED TO THE WIDE ASSET (owner, 2026-09-06). The Group A review
+  // swapped the wide hero with a portrait from Our Story; this puts both back.
+  // The dimension comments on these two lines were left describing the
+  // PRE-SWAP assets and were wrong for a week — every id below is measured
+  // against the Cloudinary listing now, not copied forward.
+  hero:  'hf_20260905_001735_9b9e69ff-59cb-4240-be11-ecc1fe022da0_bxwjjj', // 1376x768, ratio 1.792
   story: [
-    'hf_20260905_001735_9b9e69ff-59cb-4240-be11-ecc1fe022da0_bxwjjj', // 1376x768
+    'hf_20260905_001643_d8992ec0-b2cc-480a-8c6c-8c5fb0e915bb_umafkq', // 1536x2048, back in Our Story
     'hf_20260905_001735_92fb56d4-9f40-4c89-bdcd-b9c053124180_ntt8vs', // 1536x2048
     'hf_20260905_001735_750038b5-8d32-467f-8bdc-7ae9cea5da12_bohkyu', // 1536x2752
     'hf_20260905_001735_49e4b931-667c-48d2-bb78-6f2f47668f8a_phsgpm', // 2048x1536

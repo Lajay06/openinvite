@@ -25,12 +25,17 @@ export const LONDON_IMAGES = {
     'hf_20260904_010212_d32d916a-32e0-4b43-811e-664019aaa901_rio25z', // spare portrait
     'hf_20260904_010212_1867c127-6db3-457f-8028-8ef4f7716f48_j79ul3', // 2596x1536, WAS DOUBLED (asset refresh)
   ],
-  hero:  'hf_20260904_010212_e9bf35e3-c220-4d78-8595-01d39c75be7e_se9wle', // 2752x1536
+  // HERO REVERTED TO THE WIDE ASSET (owner, 2026-09-06). The Group A review
+  // swapped the wide hero with a portrait from Our Story; this puts both back.
+  // The dimension comments on these two lines were left describing the
+  // PRE-SWAP assets and were wrong for a week — every id below is measured
+  // against the Cloudinary listing now, not copied forward.
+  hero:  'hf_20260904_010212_d65f2789-58a2-4a69-8455-0980e26d7139_dgjz3l', // 2752x1536, ratio 1.792
   story: [
     'hf_20260904_010121_e000fbac-491f-44b8-ad5e-9a9e2a6fae7e_bnmpgz', // 1536x2048
     'hf_20260904_010212_6e7e629c-7601-4a03-ba73-21581949a75b_gj6zfy', // 1792x2400
     'hf_20260904_010212_002fc4a7-ce63-4861-bdc3-c7ac4908c4ae_b4pdim', // 1792x2400
-    'hf_20260904_010212_d65f2789-58a2-4a69-8455-0980e26d7139_dgjz3l', // 2752x1536
+    'hf_20260904_010212_e9bf35e3-c220-4d78-8595-01d39c75be7e_se9wle', // 1792x2400, back in Our Story
   ],
   experiences: 'hf_20260904_010212_eb0647a4-0aae-4917-b89b-26dcd3974c79_dm1acq', // 2400x1792
 };
