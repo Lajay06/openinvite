@@ -99,14 +99,17 @@ export async function runAvaNoPrivatePowers() {
   // EVERY MIRROR ACTION RESOLVES TO A REAL EXECUTOR. The mirror is a promise
   // list; this is what makes it a true one. Read off AvaModal's own maps.
   {
-    const modal = code('components/layout/AvaModal.jsx');
-    // `navigate` is executed by an early branch rather than by an entry in the
-    // executor map, so "the type appears as a key OR is compared against" is
-    // the honest test of "this action has somewhere to go".
-    const missing = ACTION_MIRROR.filter((a) => !new RegExp(`['"]?${a.type}['"]?\\s*[:=]|===\\s*'${a.type}'`).test(modal));
-    check(`every one of the ${ACTION_MIRROR.length} mirror actions has an executor in AvaModal`,
+    // THE EXECUTOR MOVED, so this assertion moves with it. It used to read
+    // AvaModal, where every write lived inside confirmAction's closure. Ruling
+    // 11's port took them to src/lib/avaExecute.js so the pod could share ONE
+    // code path rather than a copy — the contract is the same and its address
+    // is not.
+    const exec = readFileSync(join(SRC, 'lib/avaExecute.js'), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    const missing = ACTION_MIRROR.filter((a) => !new RegExp(`['"]?${a.type}['"]?\\s*[:=]|===\\s*'${a.type}'`).test(exec));
+    check(`every one of the ${ACTION_MIRROR.length} mirror actions has an executor`,
       missing.length === 0, missing.map((a) => a.type).join(', ') || ACTION_MIRROR.map((a) => a.type).join(', '));
-    const orphan = [...modal.matchAll(/^\s{8}(create_\w+|update_\w+):\s*\(\)/gm)].map((m) => m[1]);
+    const orphan = [...exec.matchAll(/^\s{4}(create_\w+|update_\w+):\s*\(\)/gm)].map((m) => m[1]);
     const notInMirror = orphan.filter((t) => !ACTION_MIRROR.some((a) => a.type === t));
     check('  and no executor exists that the mirror does not declare',
       notInMirror.length === 0, notInMirror.join(', ') || `${orphan.length} executors, all declared`);

@@ -3,26 +3,34 @@ import { color } from '@/styles/tokens';
 import { parseAvaText } from '@/lib/avaMarkdown';
 import { base44 } from '@/api/base44Client';
 import { buildWeddingContext } from '@/lib/avaContext';
-import { buildAvaPrompt, unwrapLlmReply } from '@/lib/avaRequest';
+import { buildAvaPrompt, unwrapLlmReply, ACTION_MIRROR } from '@/lib/avaRequest';
 import { filterUnbackedOffers } from '@/lib/avaOfferFilter';
+import { executeAvaAction, POD_EXCLUDED_TYPES, filterActionsToMirror } from '@/lib/avaExecute';
+import AvaActionCard, { actionLabel } from '@/components/layout/AvaActionCard';
+import { parseActions } from '@/lib/avaActions';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 /**
- * THE POD'S MIRROR IS EMPTY, AND THAT IS THE TRUTHFUL VALUE.
+ * THE POD'S MIRROR, NOW THAT IT HAS A CONFIRM CARD.
  *
- * Ava has no private powers. A frame's powers are the actions it can propose
- * AND confirm, and this frame has no ACTION parser and no confirm card — the
- * couple has nothing to press. So the honest mirror here is the empty one, and
- * `mirrorInstructions([])` turns that into the right behaviour rather than
- * silence: Ava says plainly that she cannot do it here and names the page where
- * they can. `filterUnbackedOffers` then enforces it on the way out, because a
- * prompt instruction is a request and not a guarantee.
+ * It was `[]`, and the comment here said so honestly: a frame's powers are the
+ * actions it can propose AND confirm, and this frame had nothing to press.
+ * Ruling 11 (claude/ava-design-spec.md) recorded that as correct "until the
+ * confirm card is ported to it". It is ported, so the mirror is real.
  *
- * GIVING THE POD THE CARD IS THE FOLLOW-UP, and it is a real piece of work
- * rather than an import: ActionCard is light-surfaced (#0A0A0A on white) and
- * this pod is dark (#1A1A1A), so it is a restyle plus the executor, plus the
- * confirm path's write. Filed, not smuggled in here.
+ * IT IS ACTION_MIRROR MINUS GUEST EDITS, expressed as a subtraction rather
+ * than as a second list — so it can only ever be a subset and this frame can
+ * never invent a power the modal does not have.
+ *
+ * WHY GUESTS ARE OUT. A guest is a person with an email address, an RSVP and a
+ * seat. Adding one from a chat window — where the couple confirms a one-line
+ * card rather than filling the guest form — creates a half-record that then
+ * has to be found and completed. The modal keeps them because it is opened
+ * FROM the guest page, with that page's context and that page's form a click
+ * away. The pod is opened from anywhere.
  */
-const POD_MIRROR = [];
+const POD_MIRROR = ACTION_MIRROR.filter(a => !POD_EXCLUDED_TYPES.includes(a.type));
 
 function AvaChatPod({ onClose }) {
   const [messages, setMessages] = useState([
@@ -35,6 +43,21 @@ function AvaChatPod({ onClose }) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [weddingContext, setWeddingContext] = useState('');
+  // DISMISSED PROPOSALS STAY DISMISSED (spec ruling 9). A card the couple
+  // cancelled must not come back in the same conversation, so the ACTION's
+  // shape is remembered — type plus a stable digest of its data — and any
+  // later proposal matching one is dropped before it is ever rendered.
+  // Not the card id: a re-offer is a NEW id for the same thing, which is
+  // exactly the case this exists to catch.
+  const [dismissed, setDismissed] = useState(() => new Set());
+  const navigate = useNavigate();
+
+  /**
+   * WHAT A PROPOSAL IS, for the purpose of remembering a No.
+   * Its type and its data — never its id, because a re-offer arrives with a
+   * fresh id every time and that is exactly the case this exists to catch.
+   */
+  const actionKey = (a) => `${a.type}:${JSON.stringify(a.data || {})}`;
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
 
@@ -85,13 +108,48 @@ function AvaChatPod({ onClose }) {
       });
 
       const raw = unwrapLlmReply(response, "I'm having trouble responding right now. Please try again.");
-      const { text: avaReply } = filterUnbackedOffers(raw, POD_MIRROR);
-      setMessages(prev => [...prev, { role: 'assistant', content: avaReply, id: Date.now().toString() }]);
+      const { cleanText, actions } = parseActions(raw);
+      const { text: avaReply } = filterUnbackedOffers(cleanText, POD_MIRROR);
+      // A PROPOSAL THE COUPLE ALREADY SAID NO TO IS NOT PROPOSED AGAIN.
+      // Matched on what the action WOULD DO, not on its id — a re-offer
+      // arrives with a fresh id every time.
+      // Mirror first, then dismissals: an action this frame cannot do is
+      // dropped before it is ever a card, whatever the model emitted.
+      const backed = filterActionsToMirror(actions, POD_MIRROR);
+      const fresh = backed.filter(a => !dismissed.has(actionKey(a)));
+      setMessages(prev => [...prev, { role: 'assistant', content: avaReply, actions: fresh, id: Date.now().toString() }]);
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Something went wrong. Please try again.', id: 'error-' + Date.now() }]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const updateAction = (msgId, actionId, patch) => {
+    setMessages(prev => prev.map(m => m.id !== msgId ? m : {
+      ...m, actions: (m.actions || []).map(a => a.id === actionId ? { ...a, ...patch } : a),
+    }));
+  };
+
+  const confirmAction = async (msgId, actionId) => {
+    const msg = messages.find(m => m.id === msgId);
+    const action = msg?.actions?.find(a => a.id === actionId);
+    if (!action) return;
+    updateAction(msgId, actionId, { status: 'executing' });
+    try {
+      const { ok, error } = await executeAvaAction(action, { entities: base44.entities, navigate });
+      if (!ok) { updateAction(msgId, actionId, { status: 'error' }); toast.error(error); return; }
+      updateAction(msgId, actionId, { status: 'done' });
+      if (action.type !== 'navigate') toast.success(actionLabel(action.type, action.data));
+    } catch {
+      updateAction(msgId, actionId, { status: 'error' });
+    }
+  };
+
+  const cancelAction = (msgId, actionId) => {
+    const action = messages.find(m => m.id === msgId)?.actions?.find(a => a.id === actionId);
+    if (action) setDismissed(prev => new Set(prev).add(actionKey(action)));
+    updateAction(msgId, actionId, { status: 'cancelled' });
   };
 
   const handleKeyDown = (e) => {
@@ -157,7 +215,8 @@ function AvaChatPod({ onClose }) {
         gap: 12,
       }}>
         {messages.map((msg) => (
-          <div key={msg.id} style={{
+          <div key={msg.id} style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{
             display: 'flex',
             justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
             gap: 8,
@@ -187,6 +246,22 @@ function AvaChatPod({ onClose }) {
                 t.bold ? <strong key={i} style={{ fontWeight: 700 }}>{t.text}</strong> : <React.Fragment key={i}>{t.text}</React.Fragment>
               ))}
             </div>
+            </div>
+            {/* THE CONFIRM CARDS, under the message that proposed them —
+                grouping them at the foot of the pod would separate a card
+                from the sentence that explains it. Dark tone, from the same
+                component the modal renders; Ruling 11's port. Nothing is
+                written until the couple presses Confirm on one of these. */}
+            {(msg.actions || []).map(action => (
+              <div key={action.id} style={{ marginLeft: 32 }}>
+                <AvaActionCard
+                  action={action}
+                  tone="dark"
+                  onConfirm={() => confirmAction(msg.id, action.id)}
+                  onCancel={() => cancelAction(msg.id, action.id)}
+                />
+              </div>
+            ))}
           </div>
         ))}
 
