@@ -1411,3 +1411,16 @@ payments files.
 
 **Neither has been reviewed, run or verified.** They are preserved as found, and
 both are the owner's work to keep or discard.
+
+## Every guard under tests/persistence/ must be reachable from a runner (R35)
+
+A test that lists `tests/persistence/*.mjs`, reads the import lines of
+`scripts/test-ci.mjs` and `scripts/test-persistence.mjs`, and fails naming any
+guard file neither runner imports. Cheap — a directory-versus-imports set
+difference — and it is the mechanical form of R35.
+
+Filed rather than built in the run that discovered the defect, because it would
+have been written by the hand that missed the import, and a guard on guards
+that nothing runs is the identical defect one level up. Build it in a run that
+can plant a failure against it (R19): add a new guard file, do not import it,
+and require this test to go red naming it.
