@@ -526,11 +526,29 @@ export async function runDesignStudioEntrance() {
     ? pass('World page\'s "your wedding in this world" chapter shows NO speculative asset tiles', '0 of 8')
     : fail('World page\'s "your wedding in this world" chapter shows NO speculative asset tiles', '0 of 8', `still rendered: ${lingering.join(', ')}`));
 
-  // And the positive half — a deletion guard alone would pass on an empty
-  // chapter. These assert what IS there.
-  results.push(/<RealSurfaceTile/.test(worldViewSource)
-    ? pass('The chapter renders the two real surfaces (website + RSVP)', 'found')
-    : fail('The chapter renders the two real surfaces (website + RSVP)', 'found', 'not found'));
+  // INVERTED AGAIN, 2026-09-06, and by the same rule that inverted it on
+  // 2026-08-31: the contract moved, so the assertion moves with it rather than
+  // being deleted. The owner ruled the whole "Your wedding in this world"
+  // section an old asset block and removed it — two grey cards reading "Not
+  // published yet" under the couple's own names, on the screen where they are
+  // deciding whether they like a universe. A gallery of the universe's own
+  // photographs stands there now.
+  //
+  // This is the deletion half. The positive half — that a gallery IS there —
+  // is asserted in tests/persistence/universe-gallery.mjs, next to the module
+  // whose rules it depends on.
+  //
+  // COMMENTS STRIPPED FIRST. Fifth time in this suite a check has had to be
+  // taught the difference between code and the comment explaining it — the
+  // sample-content guard learned it three times and the Ava guard once. The
+  // note recording WHY a section was removed necessarily names the section; a
+  // check that fails on that note forbids writing the note.
+  const worldViewCode = worldViewSource.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  const REMOVED_SECTION = ['RealSurfaceTile', 'Your wedding in this world', 'Publish your site to give these an address'];
+  const stillThere = REMOVED_SECTION.filter((needle) => worldViewCode.includes(needle));
+  results.push(stillThere.length === 0
+    ? pass('The "your wedding in this world" section is gone, cards and copy', '0 of 3 present')
+    : fail('The "your wedding in this world" section is gone, cards and copy', '0 of 3 present', `still present: ${stillThere.join(', ')}`));
   // websiteEnabled AND slug — never slug alone. A slug is derived from the
   // couple's names at ONBOARDING, so 16 of 19 live records carry one and 11 of
   // those have never published. Gating on the slug would show live links to
@@ -542,9 +560,17 @@ export async function runDesignStudioEntrance() {
   results.push(!/href=\{`\/w\/\$\{slug\}/.test(worldViewSource)
     ? pass('The your-wedding placeholder can never become an href', 'guarded by isPublished')
     : fail('The your-wedding placeholder can never become an href', 'guarded by isPublished', 'an unguarded /w/${slug} href exists'));
-  results.push(/\{coupleNames\}/.test(worldViewSource.slice(worldViewSource.indexOf('your wedding in this world')))
-    ? pass('The couple\'s real names appear in the asset-preview chapter, not the hero', 'found')
-    : fail('The couple\'s real names appear in the asset-preview chapter, not the hero', 'found', 'not found'));
+  // WAS: the couple's real names appear in the asset-preview chapter. That
+  // chapter is gone and their names go with it — a universe detail page is the
+  // world's own showcase, and the couple's names belong on the couple's own
+  // site. The hero still shows the universe's name, which is what the original
+  // hero-title consistency fix was protecting; this asserts the pair.
+  results.push(!/const coupleNames = coupleDisplayName/.test(worldViewSource)
+    ? pass('The couple\'s real names are no longer read into the world view at all', 'coupleDisplayName not called')
+    : fail('The couple\'s real names are no longer read into the world view at all', 'coupleDisplayName not called', 'still derived'));
+  results.push(/coupleNames=\{universe\.name\}/.test(worldViewSource)
+    ? pass('The hero still shows the universe\'s own name', 'found')
+    : fail('The hero still shows the universe\'s own name', 'found', 'not found'));
 
   console.log('\n  Design Studio — universe copy has no em dashes and no "x, not y" construction:\n');
 
