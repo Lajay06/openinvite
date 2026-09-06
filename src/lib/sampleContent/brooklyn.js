@@ -18,12 +18,14 @@ const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
 export const BROOKLYN_IMAGES = {
-  // TWO EXTRA HOME PHOTOS (owner review, 2026-09-06). Where the folder had no
-  // clean spare the asset is DOUBLED from Our Story — the owner's rule: reuse
-  // rather than leave a role empty.
+  // TWO EXTRA HOME PHOTOS. The second was DOUBLED from Our Story because the
+  // folder had no clean spare; the owner's 2026-09-06 upload gave it one, and
+  // it is now a real asset. Nothing distinct was removed to make room.
   home: [
     'hf_20260904_090213_8e22b407-488f-4668-9c52-6a46c792cc8b_lau9mz', // spare wide
-    'hf_20260904_090214_aa592056-d6cf-4c84-bb8e-20ad4a8d3827_esutl7', // DOUBLED from Our Story
+    // WAS DOUBLED from Our Story. The neon story asset the owner has chosen to
+    // keep is untouched; only this reused slot changes. Asset refresh, 2026-09-06.
+    'hf_20260904_090213_ccb76f67-193c-48f3-8bfd-0888d94c6bdc_masfh3', // 2400x1792
   ],
   hero:  'hf_20260904_090059_18da7a9c-eefa-4e7b-8779-86cdcc3b15e8_q418v1', // 2752x1536
   story: [

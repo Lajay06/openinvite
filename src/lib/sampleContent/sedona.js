@@ -20,10 +20,12 @@ const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
 export const SEDONA_IMAGES = {
-  // TWO EXTRA HOME PHOTOS (owner review, 2026-09-06). One spare, one DOUBLED.
+  // TWO EXTRA HOME PHOTOS: one spare from the original folder, and one that WAS
+  // DOUBLED from Our Story until the owner's 2026-09-06 upload gave the folder
+  // a second clean spare. Asset refresh.
   home: [
     'hf_20260904_232810_b7223883-26ec-49bb-accc-019f65d4e968_f2anum', // spare portrait, the rim at dawn
-    'hf_20260904_232811_96ffa0e3-4aac-494c-9134-84c30b49e39f_dpinsl', // DOUBLED from Our Story
+    'hf_20260904_232810_fe62f568-ddc0-4edb-9337-2658f1a1c7f2_fuxjlf', // 2752x1536, WAS DOUBLED (asset refresh)
   ],
   hero:  'hf_20260904_232810_5dc31a5b-654f-4e78-b377-d2c7f0a8dbc3_vf8rug', // 2048x1152
   story: [

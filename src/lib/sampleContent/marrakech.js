@@ -11,12 +11,17 @@
  * (CLAUDE.md): not one word here reaches for a loanword, which for this
  * universe is the easiest rule to break and the most important to keep.
  *
- * Cloudinary folder `Marrakech` (6 assets). ONE REJECTED AND NOT REPLACED: the
- * only landscape asset has a caption baked into the pixels — "Woven by hand,
- * held breath." — which would put OUR words on a couple's page with no way to
- * remove them, the #576 failure in permanent form. Marrakech has no spare
- * asset, so the experiences role is LEFT EMPTY rather than filled with it.
- * The itinerary below therefore carries no photograph.
+ * Cloudinary folder `Marrakech` (7 assets). ONE REJECTED: the only landscape
+ * asset has a caption baked into the pixels — "Woven by hand, held breath." —
+ * which would put OUR words on a couple's page with no way to remove them, the
+ * #576 failure in permanent form. It is still rejected and still unreferenced.
+ *
+ * THE EMPTY ROLE IS NOW FILLED (asset refresh, 2026-09-06). When this file was
+ * written the folder had no spare, so `experiences` was left null and the
+ * itinerary carried no photograph — the one deliberately empty role in the
+ * whole sample directory. The owner has since uploaded a seventh asset, and it
+ * is clean: a carved window in an ochre wall, no lettering anywhere in frame.
+ * The role is filled from that, and the itinerary has its photograph.
  */
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
@@ -36,7 +41,9 @@ export const MARRAKECH_IMAGES = {
     'hf_20260904_083147_229c83c7-ec9b-4848-8571-4994529817ae_gph1qg', // 1792x2400
     'hf_20260904_083147_4979edb8-a7bf-435b-a430-53cac4299906_qpidci', // 1536x2752
   ],
-  experiences: null, // rejected, see the header
+  // The seventh asset, uploaded after this block was written. Portrait rather
+  // than landscape, which the itinerary's own thumbnail does not mind.
+  experiences: 'hf_20260904_083147_ebd4b247-69be-4e0d-98cf-914dff9f65c2_pc9gmk', // 1792x2400
 };
 
 export const SAMPLE_MARRAKECH = {
@@ -114,13 +121,11 @@ export const SAMPLE_MARRAKECH = {
     destination: 'The old quarter',
     editorialIntro: 'If you are staying a few days, these are the places we would send you first.',
     couplePicks: [{ place_id: 'sample-mk-p1', name: 'The Corner Tea House', category: 'Coffee & Bakeries', note: 'Open from six, and the only quiet table before the day starts.' }],
-    // NO photo_url on either item: the only landscape asset in this folder was
-    // rejected for baked-in caption text and there is no replacement.
     itinerary: {
       schedule: [{
         day: 1, title: 'If you are staying on', summary: 'Nothing arranged, and none of it expected.',
         blocks: {
-          morning: [{ id: 'sample-mk-i1', place_name: 'The Corner Tea House', description: 'Tea before the lanes fill up.' }],
+          morning: [{ id: 'sample-mk-i1', place_name: 'The Corner Tea House', description: 'Tea before the lanes fill up.', photo_url: img(MARRAKECH_IMAGES.experiences, 800) }],
           evening: [{ id: 'sample-mk-i2', place_name: 'The roof at dusk', description: 'Go up before the light goes. Everyone does it once.' }],
         },
       }],

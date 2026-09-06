@@ -18,12 +18,18 @@ const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
 export const TULUM_IMAGES = {
-  // TWO EXTRA HOME PHOTOS (owner review, 2026-09-06). Where the folder had no
-  // clean spare the asset is DOUBLED from Our Story — the owner's rule: reuse
-  // rather than leave a role empty.
+  // TWO EXTRA HOME PHOTOS. The second was DOUBLED from Our Story because the
+  // folder had no clean spare; the owner's 2026-09-06 upload gave it one, and
+  // it is now a real asset. Nothing distinct was removed to make room.
   home: [
     'hf_20260905_001735_a9300863-dbb3-4116-ac55-ed8ea564bc57_xmlmhw', // spare wide
-    'hf_20260905_001735_750038b5-8d32-467f-8bdc-7ae9cea5da12_bohkyu', // DOUBLED from Our Story
+    // WAS DOUBLED from Our Story. The owner re-shot the still life whose napkin
+    // carried generated lettering ("Mees Liscal ine") and uploaded it as
+    // `composite-2`: same table, same light, blank napkin. It takes the doubled
+    // slot rather than the story slot, because the landscape that replaced the
+    // rejected one is a distinct asset and nothing distinct is removed to make
+    // room. Asset refresh, 2026-09-06.
+    'composite-2_qxrfwk',                                             // 2048x2048
   ],
   hero:  'hf_20260905_001643_d8992ec0-b2cc-480a-8c6c-8c5fb0e915bb_umafkq', // 1376x768
   story: [
