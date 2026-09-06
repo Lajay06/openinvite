@@ -222,6 +222,25 @@ export async function runSampleContentNeverPublished() {
       a.details.ourStoryContent.milestones === theirMilestones && a.details.ourStoryContent.storyText === 'Our story.',
       'same array reference, same text');
 
+    // (1b) HOME'S TWO EXTRA PHOTOS (owner review, 2026-09-06).
+    // homeContent.blocks is a SLOT as well as a section: a couple with an
+    // overlay set but no blocks has an empty slot, and an empty slot fills.
+    const homeSlot = withSampleContent({ activeUniverse: uni, homeContent: { overlay: 'dark' } });
+    const homePhotos = (homeSlot.details.homeContent.blocks || []).filter((b) => b.type === 'photo');
+    check(`${uni}: an empty homeContent.blocks fills, and carries two photographs`,
+      homePhotos.length === 2, `${homePhotos.length} photo block(s)`);
+    check('  and every one of them has a url a PhotoBlock can render',
+      homePhotos.every((b) => typeof b.content?.url === 'string' && b.content.url.startsWith('http')),
+      homePhotos.map((b) => (b.content?.url || '').slice(-14)).join(', '));
+    check("  while the couple's own overlay is untouched",
+      homeSlot.details.homeContent.overlay === 'dark', 'overlay kept');
+
+    // And a couple who HAS written blocks keeps them, whole.
+    const theirBlocks = [{ id: 'theirs', type: 'paragraph', content: { text: 'Our own words.' } }];
+    const keptHome = withSampleContent({ activeUniverse: uni, homeContent: { blocks: theirBlocks } });
+    check(`${uni}: a couple's own home blocks are never replaced`,
+      keptHome.details.homeContent.blocks === theirBlocks, 'same array reference');
+
     // (2) milestones present + photos present -> photos untouched
     const theirPhotos = ['https://example.com/ours-1.jpg'];
     const b = withSampleContent({ activeUniverse: uni, ourStoryContent: { storyText: 'Ours.', milestones: theirMilestones, photos: theirPhotos } });
@@ -432,13 +451,30 @@ export async function runSampleContentNeverPublished() {
     if (v && typeof v === 'object') { Object.values(v).forEach((x) => collectStrings(x, out)); return out; }
     return out;
   };
+  // NORMALISE BOTH SIDES BEFORE COMPARING.
+  //
+  // The comparison is between a string as WE wrote it and the same string as
+  // it might appear somewhere else, and those two need not be byte-identical.
+  // A typographic apostrophe substituted anywhere along the way — an editor
+  // doing it silently, a copy-paste through a rich text field, a build step —
+  // turns "couple's" into "couple\u2019s" and the leak becomes invisible to
+  // `includes`. This guard has already been rewritten twice for
+  // apostrophe-shaped reasons; this closes the third.
+  //
+  // Curly quotes fold to straight and whitespace collapses. Nothing else is
+  // touched: the point is to make the SAME sentence match itself, not to make
+  // different sentences match.
+  const norm = (t) => t
+    .replace(/[\u2018\u2019\u02BC]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/\s+/g, ' ');
   const sentences = [...new Set(ids.flatMap((id) => collectStrings(getSampleWedding(id))))];
   const others = walk(SRC).filter((p) => !p.startsWith(SAMPLE_DIR));
   const leaked = [];
   for (const p of others) {
-    const body = readFileSync(p, 'utf8');
+    const body = norm(readFileSync(p, 'utf8'));
     for (const s of sentences) {
-      if (body.includes(s)) leaked.push(`${relative(ROOT, p)}: "${s.slice(0, 44)}…"`);
+      if (body.includes(norm(s))) leaked.push(`${relative(ROOT, p)}: "${s.slice(0, 44)}…"`);
     }
   }
   check(`no sample sentence is also a live string elsewhere in src/ (${sentences.length} checked)`,

@@ -47,10 +47,20 @@
  */
 import { SAMPLE_BALI } from './bali.js';
 import { SAMPLE_HAVANA } from './havana.js';
+import { SAMPLE_LONDON } from './london.js';
+import { SAMPLE_TULUM } from './tulum.js';
+import { SAMPLE_CAPRI } from './capri.js';
+import { SAMPLE_MARRAKECH } from './marrakech.js';
+import { SAMPLE_BROOKLYN } from './brooklyn.js';
 
 const SAMPLES = {
   bali: SAMPLE_BALI,
   havana: SAMPLE_HAVANA,
+  london: SAMPLE_LONDON,
+  tulum: SAMPLE_TULUM,
+  capri: SAMPLE_CAPRI,
+  marrakech: SAMPLE_MARRAKECH,
+  brooklyn: SAMPLE_BROOKLYN,
 };
 
 /** Universe ids that have sample content. */

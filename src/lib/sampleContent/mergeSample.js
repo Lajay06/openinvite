@@ -90,6 +90,15 @@ const FILLABLE = [
  * addition here.
  */
 const FILLABLE_SLOTS = [
+  // Home's two extra photographs ride in homeContent.blocks, which is what
+  // WeddingHomePage renders through UniverseBlocks (WeddingHomePage.jsx:822,
+  // PhotoBlock at UniverseBlocks.jsx:289 reads content.url). ONE shared
+  // renderer sits below all twelve hero variants, so this needs no component
+  // change and behaves identically in every universe.
+  //
+  // As a SLOT rather than only a section: a couple whose homeContent holds an
+  // overlay but no blocks has an empty blocks slot, and an empty slot fills.
+  ['homeContent', 'blocks'],
   ['ourStoryContent', 'photos'],
   ['ourStoryContent', 'milestones'],
   ['ourStoryContent', 'storyText'],
