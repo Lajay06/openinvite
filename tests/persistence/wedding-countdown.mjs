@@ -85,11 +85,39 @@ export async function runWeddingCountdown() {
     check('  and the day before reads 1 at every hour',
       new Set(eve).size === 1 && eve[0] === 1, `[${eve.join(', ')}]`);
 
-    // PLANT: the old computation, on the same two days.
+    // PLANT: the old computation, demonstrated with EXPLICIT UTC INSTANTS.
+    //
+    // The first version of this check compared the old formula across local
+    // hours and asserted it disagreed with itself. It does — in Sydney. On
+    // CI, which runs in UTC, the offset is zero and the old formula is stable,
+    // so the check went red on a green build. My assertion overclaimed: the
+    // defect is real but it is a function of the runner's offset, and a plant
+    // that only fires in one timezone is not a plant.
+    //
+    // Stated portably instead: `new Date('2027-06-12')` is midnight UTC, so
+    // for a couple at UTC+10 the wedding day begins ten hours BEFORE that
+    // instant. Both instants below are constructed in UTC, so this arithmetic
+    // is identical on every machine.
     const old = (d, now) => Math.ceil((new Date(d) - now) / 86400000);
-    const oldHours = [0, 9, 18, 23].map((h) => old('2027-06-12', new Date(2027, 5, 11, h, 0)));
-    check('PLANT: the old Math.ceil between instants disagrees with itself across a day',
-      new Set(oldHours).size > 1, `the day before read [${oldHours.join(', ')}] at 0/9/18/23h`);
+    const morningInSydney = new Date(Date.UTC(2027, 5, 11, 23, 0));  // 09:00 on the 12th, UTC+10
+    const eveningInSydney = new Date(Date.UTC(2027, 5, 12, 8, 0));   // 18:00 on the 12th, UTC+10
+    const oldMorning = old('2027-06-12', morningInSydney);
+    const oldEvening = old('2027-06-12', eveningInSydney);
+    check('PLANT: the old formula answered 1 and then 0 on the same wedding day',
+      oldMorning !== oldEvening, `morning=${oldMorning}, evening=${oldEvening} (UTC+10)`);
+    check('  and the new one answers 0 at both, because it compares calendar days',
+      daysUntilWedding('2027-06-12', new Date(2027, 5, 12, 9, 0)) === 0
+        && daysUntilWedding('2027-06-12', new Date(2027, 5, 12, 18, 0)) === 0,
+      '0 and 0');
+
+    // A DATE-ONLY STRING IS A LOCAL DATE. `new Date('2027-06-12')` is midnight
+    // UTC, which is the 11th anywhere west of Greenwich — so a naive parse is
+    // a day out for half the world. Asserted on the parsed value rather than
+    // on a timezone this runner may not have.
+    check('  a YYYY-MM-DD wedding date resolves to that calendar day, not the one before',
+      new Date(daysUntilWedding('2027-06-12', new Date(2027, 5, 12)) === 0 ? 0 : 1).getTime() === 0
+        && daysUntilWedding('2027-06-12', new Date(2027, 5, 11)) === 1,
+      'parsed as a local date');
   }
 
   // ── EVERY SURFACE READS THE MODULE ──────────────────────────────────────

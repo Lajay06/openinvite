@@ -47,9 +47,27 @@
  *    decides what the wrap-up says, and none of it is a countdown.
  */
 
-/** Local midnight for a Date or a YYYY-MM-DD string, or null. */
+/**
+ * Local midnight for a Date or a YYYY-MM-DD string, or null.
+ *
+ * A DATE-ONLY STRING IS PARSED BY HAND, and that is the whole point of this
+ * function. `new Date('2027-06-12')` is midnight UTC, not midnight here —
+ * which in Sydney is 10:00 on the 12th and in New York is 19:00 on the 11th.
+ * Handing that to `.getDate()` therefore reads the ELEVENTH for every couple
+ * west of Greenwich, and a wedding-day countdown that is a day out for half
+ * the world is the same defect this module was written to end, one layer down.
+ *
+ * `weddingDate` is stored as YYYY-MM-DD (see the entity mirror), so this is the
+ * common path rather than an edge case.
+ */
+const DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})$/;
+
 function localMidnight(value) {
   if (!value) return null;
+  if (typeof value === 'string') {
+    const m = DATE_ONLY.exec(value.trim());
+    if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getTime();
+  }
   const d = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(d.getTime())) return null;
   return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
