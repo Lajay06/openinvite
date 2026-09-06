@@ -48,7 +48,6 @@
 import React, { useRef, useState, useEffect, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
-import { ExternalLink } from 'lucide-react';
 import { loadUniverseFont } from '@/lib/lazyUniverseFonts';
 import MinimalMasthead from '@/components/guest-website/layouts/MinimalMasthead';
 import KyotoMasthead from '@/components/guest-website/layouts/KyotoMasthead';
@@ -90,8 +89,13 @@ import SeoulOrb from '@/components/guest-website/layouts/SeoulOrb';
 import ShanghaiMasthead from '@/components/guest-website/layouts/ShanghaiMasthead';
 import ShanghaiCloud from '@/components/guest-website/layouts/ShanghaiCloud';
 
-import { coupleDisplayName } from '@/lib/coupleNames';
 import { sampleHeroImage } from '@/lib/sampleContent/mergeSample';
+import { universeGallery } from '@/lib/universeGallery';
+// The app's own border value. Imported as appColor because `colors` in this
+// file already means the UNIVERSE's palette, and the hairline between the
+// gallery tiles is deliberately ours rather than the universe's: it is a
+// structural rule, the same weight on every one of the twenty grounds.
+import { color as appColor } from '@/styles/tokens';
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const MASTHEAD_BY_LAYOUT = {
@@ -165,31 +169,13 @@ function GenericMasthead({ coupleNames, kicker, typography, textColor }) {
   );
 }
 
-/**
- * The two surfaces a couple actually has. Renders as a LINK when the site is
- * published and as an INERT CARD when it is not — never as a link to an address
- * that does not exist. `href={null}` is the unpublished state, and it changes
- * the element, not merely the styling: there is nothing to click, so nothing
- * offers to be clicked.
- */
-function RealSurfaceTile({ label, sublabel, href, colors }) {
-  const inner = (
-    <>
-      <div style={{ width: 40, height: 40, border: `1px solid ${href ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.12)'}`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <ExternalLink size={16} color={href ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.3)'} />
-      </div>
-      <p style={{ color: colors.lightBg, fontSize: 14, fontWeight: 600, fontFamily: PJS, textAlign: 'center', margin: 0 }}>{label}</p>
-      <p style={{ color: colors.lightBg, opacity: href ? 0.5 : 0.35, fontSize: 11, textAlign: 'center', margin: 0, fontFamily: PJS }}>{sublabel}</p>
-    </>
-  );
-  const box = {
-    width: '100%', minHeight: 180, background: colors.darkBg, textDecoration: 'none',
-    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-    padding: 24, gap: 10,
-  };
-  if (!href) return <div style={{ ...box, opacity: 0.72 }}>{inner}</div>;
-  return <a href={href} target="_blank" rel="noopener noreferrer" style={box}>{inner}</a>;
-}
+/* RealSurfaceTile LIVED HERE — the two link cards in the removed
+   "Your wedding in this world" section. It had exactly two call sites, both
+   inside that section (grep: no other consumer anywhere in src/, api/, tests/
+   or scripts/), so removing the section left it unreferenced. Deleting dead
+   code the owner's own deletion created is part of that deletion, not a second
+   one: leaving it would fail lint's no-unused-vars and would leave a component
+   in the tree that nothing can reach. */
 
 /** Fades/lifts its children into view once as they cross into the
  *  viewport, via a plain IntersectionObserver + CSS opacity/transform
@@ -242,7 +228,7 @@ function Chapter({ background, children, minHeight = '60vh' }) {
   );
 }
 
-function HeroChapter({ universe, isCurrent, prefersReducedMotion, scrollContainerRef }) {
+function HeroChapter({ universe, isCurrent, prefersReducedMotion, scrollContainerRef, onSwitchUniverse, showUpgrade }) {
   const ref = useRef(null);
   // Without an explicit `container`, useScroll tracks progress against
   // document/window scroll — correct when this chapter is an ordinary
@@ -312,6 +298,28 @@ function HeroChapter({ universe, isCurrent, prefersReducedMotion, scrollContaine
         <p style={{ fontFamily: PJS, fontSize: 13, color: universe.colors.lightBg, opacity: 0.7, margin: '20px 0 0' }}>
           {universe.tagline}
         </p>
+
+        {/* THE SAME ACTION, ONE SCREEN EARLIER.
+            Deciding to switch happened at the bottom of a seven-chapter scroll
+            or not at all. This is the identical button: the same
+            `onSwitchUniverse(universe.id)` handler the closing chapter calls,
+            the same disabled state, the same two strings. One handler, two
+            placements — there is no second code path to keep in step, which is
+            the only reason a duplicated control is safe.
+
+            HIDDEN WHEN THE UNIVERSE IS GATED. The closing chapter shows an
+            Upgrade button instead for an Ultra universe on a lesser plan;
+            offering "Make this my universe" up here to someone who cannot
+            would be the interface promising something it will refuse. */}
+        {!showUpgrade && (
+          <button
+            onClick={() => onSwitchUniverse(universe.id)}
+            disabled={isCurrent}
+            style={{ marginTop: 28, padding: '14px 32px', borderRadius: 999, border: 'none', background: universe.colors.accent, color: universe.colors.darkBg, fontFamily: PJS, fontSize: 15, fontWeight: 700, cursor: isCurrent ? 'default' : 'pointer', opacity: isCurrent ? 0.6 : 1 }}
+          >
+            {isCurrent ? 'This is your current universe' : 'Make this my universe'}
+          </button>
+        )}
       </div>
 
       {isCurrent && (
@@ -349,7 +357,10 @@ export default function UniverseWorldView({
   escapeLayout = true,
 }) {
   const prefersReducedMotion = useReducedMotion();
-  const coupleNames = coupleDisplayName(weddingDetails, 'Your names');
+  // coupleNames and the ExternalLink icon were read only by the removed
+  // "Your wedding in this world" section and are gone with it. The couple's
+  // own names belong on their own site, not on the page where they are
+  // deciding whether they like a universe.
   // PUBLISHED IS websiteEnabled, NOT slug — and the difference is not academic.
   //
   // A slug is DERIVED FROM THE COUPLE'S NAMES AND CLAIMED AT ONBOARDING
@@ -368,6 +379,9 @@ export default function UniverseWorldView({
   // The 'your-wedding' fallback below stays a DISPLAY placeholder and must
   // never become an href — a placeholder wearing the clothes of an address is
   // the same family as an invented business or a fabricated place id.
+  // Four photographs of this universe, or [] where it has none. See
+  // src/lib/universeGallery.js — hero excluded, duplicates topped up.
+  const gallery = universeGallery(universe.id, universe.name);
   const isPublished = Boolean(weddingDetails?.websiteEnabled && weddingDetails?.slug);
   const slug = weddingDetails?.slug || 'your-wedding';
   const showUpgrade = universe.isUltra && !canAccessUltra && !isCurrent;
@@ -452,15 +466,29 @@ export default function UniverseWorldView({
 
   const chapters = (
     <>
+      {/* THE GALLERY'S ONE RULE THAT AN INLINE STYLE CANNOT CARRY.
+          Four columns on a desktop, two on a phone. `repeat(auto-fit,
+          minmax(...))` was the tempting inline answer and is wrong: at 1400px
+          it produces seven columns, not four. An explicit count and one media
+          query is the only thing that says what the design says. */}
+      <style>{`
+        .uwv-gallery { grid-template-columns: repeat(4, 1fr); }
+        @media (max-width: 640px) {
+          .uwv-gallery { grid-template-columns: repeat(2, 1fr); }
+        }
+      `}</style>
+
       {/* Chapter 1 — hero, full-bleed, parallax */}
       <HeroChapter
         universe={universe}
         isCurrent={isCurrent}
         prefersReducedMotion={prefersReducedMotion}
         scrollContainerRef={escapeLayout ? scrollContainerRef : undefined}
+        onSwitchUniverse={onSwitchUniverse}
+        showUpgrade={showUpgrade}
       />
 
-      {/* Chapter 2 — the world's story */}
+      {/* Nº 01 — the world's story */}
       <Chapter background={colors.lightBg} minHeight="50vh">
         <Reveal prefersReducedMotion={prefersReducedMotion} style={{ maxWidth: 760, margin: '0 auto', textAlign: 'center' }}>
           <p style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: colors.accent, margin: '0 0 20px' }}>
@@ -472,11 +500,63 @@ export default function UniverseWorldView({
         </Reveal>
       </Chapter>
 
-      {/* Chapter 3 — palette, big and physical */}
+      {/* Nº 02 — the gallery.
+          REPLACES "Your wedding in this world" (owner, 2026-09-06), which was
+          an old asset block with the asset feature removed from under it: two
+          gray cards reading "Not published yet" under the couple's own names,
+          on the screen where they are deciding whether they like a universe.
+          Four photographs of the universe answer that question; two disabled
+          cards about their own unpublished site do not.
+
+          THE PICTURES ARE THE UNIVERSE'S OWN SAMPLE PHOTOGRAPHS, and the
+          selection rules live in src/lib/universeGallery.js where they can be
+          asserted — hero excluded, duplicates topped up from Home, the
+          omission fixture refused, and an empty array rather than a throw for
+          a universe with no block. A universe with no photographs renders no
+          section at all rather than an empty row.
+
+          FOUR COLUMNS, TWO ON A PHONE. Inline styles cannot carry a media
+          query, so the grid is a class and the one rule lives in the <style>
+          block at the foot of this component beside the existing keyframes. */}
+      {gallery.length > 0 && (
+        <Chapter background={colors.lightBg} minHeight="auto">
+          <Reveal prefersReducedMotion={prefersReducedMotion}>
+            <p style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: colors.accent, margin: '0 0 32px', textAlign: 'center' }}>
+              Nº 02 — The gallery
+            </p>
+            {/* FLUSH, WITH A HAIRLINE (owner, 2026-09-06).
+                gap: 1 and the container carrying the border token — the
+                photographs are opaque and cover their own cells, so the only
+                place that background shows is the 1px gutters. That is a
+                hairline drawn by the grid rather than four borders drawn on
+                four tiles, which is why there is no double line where two
+                tiles meet and no line at all on the outer edge.
+
+                NOT white and NOT a shadow: white would read as a gap on the
+                pale grounds and vanish on the dark ones, and a shadow would be
+                depth where the design asks for a rule. NOT rounded: nothing
+                on the inner edges, and the band's outer corners are square
+                like every other full-width section on this page. */}
+            <div className="uwv-gallery" style={{ display: 'grid', gap: 1, background: appColor.border, width: '100%' }}>
+              {gallery.map((photo) => (
+                <img
+                  key={photo.publicId}
+                  src={photo.url}
+                  alt={photo.alt}
+                  loading="lazy"
+                  style={{ width: '100%', aspectRatio: '4 / 5', objectFit: 'cover', display: 'block', borderRadius: 0 }}
+                />
+              ))}
+            </div>
+          </Reveal>
+        </Chapter>
+      )}
+
+      {/* Nº 03 — palette, big and physical */}
       <Chapter background={colors.darkBg}>
         <Reveal prefersReducedMotion={prefersReducedMotion}>
           <p style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: colors.accent, margin: '0 0 32px', textAlign: 'center' }}>
-            Nº 02 — Palette
+            Nº 03 — Palette
           </p>
           <div style={{ display: 'flex', gap: 'clamp(16px, 3vw, 40px)', flexWrap: 'wrap', justifyContent: 'center' }}>
             {[
@@ -493,11 +573,11 @@ export default function UniverseWorldView({
         </Reveal>
       </Chapter>
 
-      {/* Chapter 4 — type specimen at scale */}
+      {/* Nº 04 — type specimen at scale */}
       <Chapter background={colors.lightBg}>
         <Reveal prefersReducedMotion={prefersReducedMotion} style={{ maxWidth: 820, margin: '0 auto' }}>
           <p style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: colors.accent, margin: '0 0 32px', textAlign: 'center' }}>
-            Nº 03 — Typography
+            Nº 04 — Typography
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
             <div style={{ textAlign: 'center' }}>
@@ -520,11 +600,11 @@ export default function UniverseWorldView({
         </Reveal>
       </Chapter>
 
-      {/* Chapter 5 — motifs & textures, large */}
+      {/* Nº 05 — motifs & textures, large */}
       <Chapter background={colors.darkBg}>
         <Reveal prefersReducedMotion={prefersReducedMotion} style={{ textAlign: 'center' }}>
           <p style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: colors.accent, margin: '0 0 32px' }}>
-            Nº 04 — Motifs & textures
+            Nº 05 — Motifs & textures
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
             {motifLarge ? motifLarge(colors.accent) : (
@@ -536,87 +616,6 @@ export default function UniverseWorldView({
           <p style={{ fontFamily: PJS, fontSize: 14, color: colors.lightBg, opacity: 0.7, maxWidth: 560, margin: '0 auto', lineHeight: 1.6 }}>
             {motifNote}
           </p>
-        </Reveal>
-      </Chapter>
-
-      {/* Nº 05 (the hero is unnumbered, so this is the sixth <Chapter>
-            but the fifth numbered section — the heading a couple reads is
-            correct and this comment used to disagree with it).
-
-            Your wedding in this world. This is where the
-          couple's real names belong (per the hero-title consistency
-          fix — the hero above always shows the universe's own name, this
-          chapter shows the world carrying their actual names).
-
-          THESE ARE ILLUSTRATIONS, NOT DELIVERABLES. The asset feature — the
-          tool a couple used to make and edit these pieces — was removed in
-          Wave 2. This chapter kept its previews because their SECOND job is
-          showing someone what a universe looks like at the moment they choose
-          one, which is also why they still render in onboarding.
-
-          The framing had to change with the deletion: a labelled inventory of
-          pieces, under the couple's own names, on the first screen they see,
-          would be the interface reporting a state the system does not have —
-          created by our own subtraction. The website and RSVP tiles are the
-          exception and remain real: they are live links to /w/:slug.
-
-          Passes the FULL universe object (not universe.id) to every asset
-          preview below — was passing just the id, which is why every
-          universe's assets rendered identically: none of the 8 preview
-          components could reach universe.colors/typography from an id
-          string alone, so each hardcoded its own styling instead. The
-          colors/typography themselves already existed for all 20
-          universes in UNIVERSE_CONFIGS — this was a wiring gap, not
-          missing design data. */}
-      <Chapter background={colors.lightBg} minHeight="70vh">
-        <Reveal prefersReducedMotion={prefersReducedMotion}>
-          <p style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: colors.accent, margin: '0 0 12px', textAlign: 'center' }}>
-            Nº 05 — Your wedding in this world
-          </p>
-          {/* Says what the tiles ARE. Without it the labels below read as an
-              inventory of pieces the couple will be given. */}
-          <p style={{ fontFamily: PJS, fontSize: 13, color: colors.lightText, opacity: 0.55, margin: '0 0 20px', textAlign: 'center', maxWidth: 520, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.6 }}>
-            Your wedding site and RSVP page, in this world.
-          </p>
-          <p style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.4rem, 3vw, 2rem)', color: colors.lightText, margin: '0 0 40px', textAlign: 'center' }}>
-            {coupleNames}
-          </p>
-            {/* TWO REAL SURFACES, NOT TEN ILLUSTRATIONS.
-                This grid used to carry eight speculative asset tiles beside
-                these two. The asset feature was removed in Wave 2, so those
-                eight showed a couple pieces the product would never produce —
-                under their own names, on the first screen they see. The two
-                that were always real are promoted in their place.
-
-                The eight preview COMPONENTS stay alive and are untouched:
-                UniverseStudio.jsx still uses them for choosing a universe,
-                where the identical tile is honest. The same image is an
-                illustration in one place and a promise in another; context
-                decides, so this is placement, not deletion.
-
-                minmax(200px) was sized for a ten-item inventory — two items in
-                it would read as leftovers. Two columns, because these are the
-                product rather than thumbnails of it. */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20, maxWidth: 780, margin: '0 auto' }}>
-              <RealSurfaceTile
-                label="Invitation website"
-                sublabel={isPublished ? `/w/${slug}` : 'Not published yet'}
-                href={isPublished ? `/w/${slug}` : null}
-                colors={colors}
-              />
-              <RealSurfaceTile
-                label="RSVP page"
-                sublabel={isPublished ? `/w/${slug}/rsvp` : 'Not published yet'}
-                href={isPublished ? `/w/${slug}/rsvp` : null}
-                colors={colors}
-              />
-            </div>
-            {!isPublished && (
-              <p style={{ fontFamily: PJS, fontSize: 12, color: colors.lightText, opacity: 0.55, margin: '18px 0 0', textAlign: 'center' }}>
-                Publish your site to give these an address.{' '}
-                <a href="/website-editor" style={{ color: colors.lightText, opacity: 0.9 }}>Open the website editor</a>
-              </p>
-            )}
         </Reveal>
       </Chapter>
 
@@ -650,6 +649,19 @@ export default function UniverseWorldView({
               <p style={{ fontFamily: PJS, fontSize: 12, color: colors.lightBg, opacity: 0.55, margin: '16px 0 0' }}>
                 Restyles your existing invitations, website and RSVP — switching is never destructive.
               </p>
+              {/* THE ONE LINK THAT HAD TO SURVIVE THE DELETION.
+                  This view portals to document.body with escapeLayout, so the
+                  sidebar is not on screen while it is open: the removed
+                  section's "Open the website editor" was the only route from
+                  this page to /website-editor. Kept as one plain text link
+                  rather than a card, and under the SAME `!isPublished`
+                  condition it always had — preserving what existed rather
+                  than inventing a new visibility rule on the way past. */}
+              {!isPublished && (
+                <p style={{ fontFamily: PJS, fontSize: 12, color: colors.lightBg, opacity: 0.55, margin: '10px 0 0' }}>
+                  <a href="/website-editor" style={{ color: colors.lightBg, opacity: 0.9 }}>Open the website editor</a>
+                </p>
+              )}
             </>
           )}
         </Reveal>

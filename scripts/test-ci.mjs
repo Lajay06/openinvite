@@ -95,6 +95,7 @@ import { runGuestSafeWedding } from '../tests/persistence/guest-safe-wedding.mjs
 import { runSampleContentNeverPublished } from '../tests/persistence/sample-content-never-published.mjs';
 import { runAvaNoPrivatePowers } from '../tests/persistence/ava-no-private-powers.mjs';
 import { runNotificationBadge } from '../tests/persistence/notification-badge.mjs';
+import { runUniverseGallery } from '../tests/persistence/universe-gallery.mjs';
 
 async function run() {
   console.log('\n═══════════════════════════════════════════════════════');
@@ -197,6 +198,7 @@ async function run() {
   await runModule('runSampleContentNeverPublished', () => runSampleContentNeverPublished());
   await runModule('runAvaNoPrivatePowers', () => runAvaNoPrivatePowers());
   await runModule('runNotificationBadge', () => runNotificationBadge());
+  await runModule('runUniverseGallery', () => runUniverseGallery());
 
   const passed = results.filter(Boolean).length;
   const total = results.length;
