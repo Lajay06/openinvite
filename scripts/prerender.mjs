@@ -47,6 +47,7 @@ import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MARKETING_ROUTES } from './marketingRoutes.mjs';
+import { blockRemoteImages } from './lib/blockRemoteImages.mjs';
 
 const SITE_URL = 'https://www.openinvite.com.au';
 
@@ -113,7 +114,12 @@ async function main() {
   let failures = 0;
 
   for (const route of MARKETING_ROUTES) {
-    const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    // Same fourteen routes as test-marketing-routes, also at networkidle, and
+    // this one runs on every build. Prerendered HTML keeps the image URLs; it
+    // does not need the bytes.
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    await blockRemoteImages(ctx);
+    const page = await ctx.newPage();
     const pageErrors = [];
     page.on('pageerror', err => pageErrors.push(err.message));
 
