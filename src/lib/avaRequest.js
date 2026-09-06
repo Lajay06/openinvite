@@ -179,11 +179,16 @@ export function historyBlock(messages = [], turns = RECENT_TURNS) {
  *
  * So it is its own block, at the top, and it says what to DO with the fact.
  */
-export function pageBlock(page) {
+export function pageBlock(page, pageContext) {
   const route = (page || '').trim();
   if (!route) return '';
   return [
     `PAGE: ${route}`,
+    // ONE SENTENCE ABOUT WHAT THIS PAGE IS FOR, from the button that opened
+    // the pod. This is where the retired per-page modals' systemPrompts went:
+    // "a seating arrangement specialist" was never a different Ava, it was a
+    // sentence of context wrapped in a second window.
+    ...(pageContext ? [`This page is where the couple ${pageContext}`] : []),
     'The couple is looking at this page right now. A question with no stated',
     'subject is about this page. If they ask "is this enough?" on the budget',
     'page, they mean the budget, and the answer uses budget figures. Do not',
@@ -242,11 +247,11 @@ export const VOICE_PROHIBITIONS = [
  * @param {Array}  o.mirror          the action mirror; pass [] for a frame with no powers
  * @param {string} o.userText        this turn's question
  */
-export function buildAvaPrompt({ weddingContext = '', systemPrompt = '', page = '', messages = [], mirror = ACTION_MIRROR, userText = '' }) {
+export function buildAvaPrompt({ weddingContext = '', systemPrompt = '', page = '', pageContext = '', messages = [], mirror = ACTION_MIRROR, userText = '' }) {
   return [
     weddingContext,
     systemPrompt,
-    pageBlock(page),
+    pageBlock(page, pageContext),
     historyBlock(messages),
     mirrorInstructions(mirror),
     VOICE_PROHIBITIONS,

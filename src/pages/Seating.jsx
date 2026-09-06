@@ -22,7 +22,6 @@ import AddTableModal from '../components/seating/AddTableModal';
 import AISeatingGenerator from '../components/seating/AISeatingGenerator';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
-import AvaModal from '@/components/layout/AvaModal';
 import { useCollaboratorContext } from '@/lib/collaboratorContext';
 import CountUp from "@/components/shared/CountUp";
 import { color } from "@/styles/tokens";
@@ -133,7 +132,6 @@ export default function SeatingPage() {
 
   const [showAddTable, setShowAddTable] = useState(false);
   const [showAIGenerator, setShowAIGenerator] = useState(false);
-  const [avaOpen, setAvaOpen] = useState(false);
   const [tableGuestSearch, setTableGuestSearch] = useState('');
 
   const [venueImageUrl, setVenueImageUrl] = useState(null);
@@ -891,7 +889,11 @@ export default function SeatingPage() {
 
       {/* Ava button */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-        <AvaButton label="Ask Ava to arrange your seating plan" onClick={() => setAvaOpen(true)} />
+        <AvaButton
+          label="Ask Ava to arrange your seating plan"
+          seedQuestion="Suggest a seating arrangement for our tables"
+          pageContext="arranges their tables and seats their guests, including the family dynamics that make that hard."
+        />
       </div>
 
       {/* Content */}
@@ -1456,13 +1458,12 @@ export default function SeatingPage() {
         />
       )}
 
-      <AvaModal
-        isOpen={avaOpen}
-        onClose={() => setAvaOpen(false)}
-        pageTitle="Seating arrangement specialist"
-        systemPrompt="You are Ava, a seating arrangement specialist. Help couples arrange tables, handle family dynamics, and optimise their seating plan."
-        quickActions={["Suggest a seating arrangement", "How do I handle divorced parents?", "What table shapes work best?", "Help me group my guests"]}
-      />
+      {/* THE "seating arrangement specialist" MODAL LIVED HERE (owner-named
+          removal). It was never a different Ava — it was AvaModal with a
+          per-caller systemPrompt calling itself a specialist, which is a
+          sentence of context wearing a second window. The sentence moved to
+          the pod's page context on the button above; the window did not
+          survive. Spec 3.3, one entry point per page. */}
     </div>
   );
 }

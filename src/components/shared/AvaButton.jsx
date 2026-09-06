@@ -1,12 +1,17 @@
 import React from 'react';
 import { Sparkles } from 'lucide-react';
+import { openAva } from '@/lib/avaOpen';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-export default function AvaButton({ label, onClick }) {
+export default function AvaButton({ label, onClick, seedQuestion, pageContext }) {
   return (
     <button
-      onClick={onClick || (() => window.dispatchEvent(new CustomEvent('openAva')))}
+      // The no-onClick path dispatched a CustomEvent NOTHING LISTENED FOR, so
+      // four buttons — Account, Event details, Polls, Q&A — did nothing at all
+      // when pressed. openAva() carries the page and any seed question, and
+      // Layout listens. See src/lib/avaOpen.js.
+      onClick={onClick || (() => openAva({ seedQuestion, pageContext }))}
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 6,
         borderRadius: 999, padding: '7px 14px',

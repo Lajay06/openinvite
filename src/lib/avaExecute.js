@@ -69,9 +69,20 @@ export const ACTION_ENTITY = {
  * the prompt is a request, the offer filter guards the prose, and this guards
  * the thing that actually writes.
  */
-export function filterActionsToMirror(actions, mirror) {
+export function filterActionsToMirror(actions, mirror, currentPath) {
   const allowed = new Set((mirror || []).map(a => a.type));
-  return (actions || []).filter(a => allowed.has(a?.type));
+  const here = String(currentPath || '').replace(/\/+$/, '').toLowerCase();
+  return (actions || []).filter((a) => {
+    if (!allowed.has(a?.type)) return false;
+    // A "go to page" card for the page already open is dropped before it is
+    // rendered, not refused after it is pressed. The executor refuses it too,
+    // because a card can outlive the route it was proposed on.
+    if (a.type === 'navigate' && here) {
+      const target = String(a.data?.path || '').replace(/\/+$/, '').toLowerCase();
+      if (target && target === here) return false;
+    }
+    return true;
+  });
 }
 
 /** Actions that update an existing row rather than creating one. */
@@ -92,6 +103,18 @@ export async function executeAvaAction(action, deps) {
   }
 
   if (type === 'navigate') {
+    // A CARD THAT OFFERS TO TAKE YOU WHERE YOU ALREADY ARE.
+    //
+    // Owner report: the Polls page's button opened the pod and offered a "Go
+    // to page" card for the page already open. Confirming it navigated from
+    // /polls to /polls — a control that does nothing, which is worse than an
+    // absent one because the couple presses it and learns the assistant is not
+    // paying attention.
+    const target = String(action.data?.path || '').replace(/\/+$/, '').toLowerCase();
+    const here = String(deps.currentPath || '').replace(/\/+$/, '').toLowerCase();
+    if (target && here && target === here) {
+      return { ok: false, error: 'You are already on that page.', entity: null, suppressed: true };
+    }
     deps.navigate?.(action.data?.path);
     return { ok: true, error: null, entity: null };
   }

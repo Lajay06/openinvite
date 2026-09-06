@@ -75,7 +75,7 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
       // and every entity write live in src/lib/avaExecute.js now; this decides
       // only what the modal does about the result.
       const { ok, error } = await executeAvaAction(action, {
-        entities: base44.entities, createGuest, updateGuest, navigate,
+        entities: base44.entities, createGuest, updateGuest, navigate, currentPath: location.pathname,
       });
       if (!ok) {
         updateAction(msgIndex, actionId, { status: 'error' });
@@ -123,7 +123,7 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
       const { cleanText, actions: proposed } = parseActions(rawText);
       // Same guard as the pod: a proposal outside the mirror never becomes a
       // card, whatever the model emitted.
-      const actions = filterActionsToMirror(proposed, ACTION_MIRROR);
+      const actions = filterActionsToMirror(proposed, ACTION_MIRROR, location.pathname);
       // No private powers: an offer the mirror does not back never reaches
       // the couple, whatever the prompt asked for.
       const { text: safeText } = filterUnbackedOffers(cleanText, ACTION_MIRROR);

@@ -867,7 +867,11 @@ export default function EventDetailsPage() {
 
       {/* Ava + actions bar — Add event button appears on Events tab */}
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
-        <AvaButton label="Ask Ava to help plan your event details" />
+        <AvaButton
+          label="Ask Ava to help plan your event details"
+          seedQuestion="What still needs setting on our ceremony and reception details?"
+          pageContext="sets the ceremony and reception venues, times and dress code."
+        />
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {!readOnly && tab === 'events' && (
             <button onClick={openAddEvent} className="btn-primary">
