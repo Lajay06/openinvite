@@ -98,22 +98,11 @@ export async function putMyWeddingDetails(fields) {
   return id;
 }
 
-/**
- * A user counts as already onboarded if they've explicitly completed the
- * wizard (onboardingCompleted), or already own a real, non-draft
- * WeddingDetails record — the latter covers every account created before
- * this flag existed, with no migration needed. Shared by Onboarding.jsx's
- * own skip-if-already-done guard and PaymentSuccess.jsx's post-payment
- * routing decision, so the two can never disagree about what "already
- * onboarded" means.
- *
- * @param {object|null} user   result of base44.auth.me()
- * @param {object|null} draft  result of getMyWeddingDetails()
- * @returns {boolean}
- */
-export function isOnboardingComplete(user, draft) {
-  return !!(user?.onboardingCompleted || (draft && !draft.onboardingDraft));
-}
+// The predicate itself lives in a file with no imports, so a guard can load
+// it — this module pulls in the authenticated Base44 client and cannot be
+// loaded outside a browser. Re-exported here so its two callers keep the
+// import they already have.
+export { isOnboardingComplete } from './onboardingComplete';
 
 /** @returns {Promise<object|null>} the logged-in user's own Invitation record, or null if they have none yet. */
 export async function getMyInvitation() {
