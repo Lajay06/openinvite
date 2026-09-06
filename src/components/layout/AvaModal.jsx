@@ -1,43 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Send, Sparkles, Check, AlertCircle, Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { InvokeLLM } from '@/integrations/Core';
 import { validateAvaAction } from '@/lib/avaActionValidation';
 import { base44 } from '@/api/base44Client';
 import { buildWeddingContext } from '@/lib/avaContext';
+import { buildAvaPrompt, ACTION_MIRROR, unwrapLlmReply } from '@/lib/avaRequest';
+import { filterUnbackedOffers } from '@/lib/avaOfferFilter';
 import toast from 'react-hot-toast';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { createGuest, updateGuest } from '@/lib/guestWrites';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-const ACTION_INSTRUCTIONS = `You can perform actions in the app. When the user asks you to do something, include an ACTION block AND explain what you are about to do first. Use this exact format (one action per line):
-
-ACTION:{"type":"create_guest","data":{"name":"John Smith","email":"john@example.com","rsvp_status":"pending"}}
-ACTION:{"type":"create_budget_item","data":{"category":"catering","item_name":"Wedding breakfast","budgeted_amount":8000}}
-ACTION:{"type":"create_vendor","data":{"name":"Golden Hour Photography","category":"photography","status":"researching"}}
-ACTION:{"type":"create_schedule","data":{"event_name":"Wedding ceremony","event_date":"2027-06-12","start_time":"15:00"}}
-ACTION:{"type":"navigate","data":{"path":"/Guests"}}
-ACTION:{"type":"update_guest","data":{"id":"GUEST_ID","rsvp_status":"attending"}}
-ACTION:{"type":"update_vendor","data":{"id":"VENDOR_ID","status":"booked"}}
-
-Use these field names exactly — they are the only ones that persist. Required:
-create_guest needs name; create_budget_item needs category, item_name and
-budgeted_amount; create_vendor needs name and category; create_schedule needs
-event_name, event_date and start_time.
-
-Allowed values, which must match exactly:
-  rsvp_status      pending | attending | declined | maybe   (never "confirmed")
-  budget category  venue | catering | photography | flowers | music | attire |
-                   transportation | decorations | rings | stationery | beauty |
-                   honeymoon | miscellaneous
-  vendor category  venue | catering | photography | videography | flowers |
-                   music | bakery | transportation | beauty | attire |
-                   planning | decorations | entertainment | other
-  vendor status    researching | contacted | meeting_scheduled | quoted |
-                   booked | rejected
-
-Always describe what you will do before the ACTION block. The user must confirm before anything executes.`;
+// ACTION_INSTRUCTIONS USED TO LIVE HERE, as a hand-written list of seven
+// example ACTION blocks plus their field names. It has moved to
+// src/lib/avaRequest.js and is now GENERATED from ACTION_MIRROR, because the
+// pod could not import a constant that lived inside this component and so had
+// no action mirror at all — every offer it made was unbacked by construction.
+// One list, four consumers: the prompt, the confirm card, the executor below,
+// and the post-filter that removes offers the list does not back.
 
 function extractJson(str) {
   const start = str.indexOf('{');
@@ -128,6 +110,7 @@ export default function AvaModal({ isOpen, onClose, systemPrompt, quickActions =
 
 function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -220,12 +203,29 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
     setMessages(prev => [...prev, { role: 'user', content }]);
     setLoading(true);
     try {
-      const fullPrompt = [weddingContext, systemPrompt, ACTION_INSTRUCTIONS]
-        .filter(Boolean).join('\n\n') + `\n\nUser: ${content}`;
+      // THE WHOLE FIX IS IN THIS CALL. It used to be four lines that sent the
+      // wedding context, the page's voice line and the action list — and NOT
+      // the conversation, and NOT the route. Two consecutive turns produced
+      // byte-identical prompts of 3004 characters, which is why Ava repeated
+      // herself, and neither contained "/budget" while open on the Budget page,
+      // which is why a bare "is this enough?" was answered about guests.
+      const fullPrompt = buildAvaPrompt({
+        weddingContext,
+        systemPrompt,
+        page: location.pathname,
+        messages: [...messages, { role: 'user', content }],
+        mirror: ACTION_MIRROR,
+        userText: content,
+      });
       const res = await InvokeLLM({ prompt: fullPrompt, add_context_from_internet: false });
-      const rawText = typeof res === 'string' ? res : JSON.stringify(res);
+      // `JSON.stringify(res)` was here, so an object answer rendered as
+      // {"result":"…","status":"success"} in the couple's chat bubble.
+      const rawText = unwrapLlmReply(res, 'Sorry, something went wrong. Please try again.');
       const { cleanText, actions } = parseActions(rawText);
-      setMessages(prev => [...prev, { role: 'ava', content: cleanText, actions }]);
+      // No private powers: an offer the mirror does not back never reaches
+      // the couple, whatever the prompt asked for.
+      const { text: safeText } = filterUnbackedOffers(cleanText, ACTION_MIRROR);
+      setMessages(prev => [...prev, { role: 'ava', content: safeText, actions }]);
     } catch {
       setMessages(prev => [...prev, { role: 'ava', content: 'Sorry, something went wrong. Please try again.', actions: [] }]);
     }
