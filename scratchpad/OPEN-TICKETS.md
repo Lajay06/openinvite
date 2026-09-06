@@ -1490,3 +1490,21 @@ Two cautions for whoever builds it, both real:
   · a dynamic import loop makes a crashing module harder to attribute than a
     static import does. `runModule` already catches and names crashes; keep
     that, and keep the module name in the failure line.
+
+## CLOSED 2026-09-06 — R35 guard-reachability, and the test-ci conflict class
+
+Both tickets above are closed by #680 (`76ea0dc1f01c…`): scripts/test-ci.mjs
+enumerates tests/persistence/ instead of carrying seventy-six hand-written
+imports and seventy-six runModule lines. A guard runs because it exists.
+
+The R19 plant: a throwaway failing guard, registered nowhere, turned CI red
+(1755/1756, exit 1) and was found purely by enumeration. Deleted, 1754/1754.
+
+WHAT THE CHANGE ALSO FOUND, worth keeping: the guards were never independent.
+Several api/ modules construct a Resend or Stripe client at module scope and
+throw without a key, and the old hand-written order happened to import into
+that graph through a guard that set a placeholder first. Filename order
+reversed the pair and CI went red. The placeholders are hoisted into the loader
+now. The lesson is the ordinary one: run the suite the way CI runs it —
+`env -u RESEND_API_KEY -u STRIPE_SECRET_KEY npm run test:ci` — before claiming
+an ordering change is safe.
