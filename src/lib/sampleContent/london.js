@@ -25,12 +25,22 @@ export const LONDON_IMAGES = {
     'hf_20260904_010212_d32d916a-32e0-4b43-811e-664019aaa901_rio25z', // spare portrait
     'hf_20260904_010212_1867c127-6db3-457f-8028-8ef4f7716f48_j79ul3', // 2596x1536, WAS DOUBLED (asset refresh)
   ],
-  // HERO REVERTED TO THE WIDE ASSET (owner, 2026-09-06). The Group A review
-  // swapped the wide hero with a portrait from Our Story; this puts both back.
-  // The dimension comments on these two lines were left describing the
-  // PRE-SWAP assets and were wrong for a week — every id below is measured
-  // against the Cloudinary listing now, not copied forward.
-  hero:  'hf_20260904_010212_d65f2789-58a2-4a69-8455-0980e26d7139_dgjz3l', // 2752x1536, ratio 1.792
+  // A NEW HERO (owner, 2026-09-06). The owner uploaded `composite-6` to the
+  // London folder: the panelled gallery, black tie, ivory dress — which is
+  // london's own line, "marble stairs, gilt mirrors, a city that has always
+  // known how to dress up", in one frame. 2752x1536, ratio 1.792, wide like
+  // every other hero, and measured against the Cloudinary listing rather than
+  // copied forward. Inspected at w_2752 before use: the three portrait plaques
+  // are blank brass and there is no lettering anywhere in the frame.
+  //
+  // WHAT IT DISPLACES. `…_dgjz3l` was the hero and is now UNUSED — not
+  // deleted, and still in the folder. It had nowhere to go: london carries no
+  // doubled slot for it to fill, because the asset refresh (#673) replaced the
+  // last one and the hero revert (#677) put the portrait back in Our Story.
+  // Putting it into a slot that already holds a distinct photograph would mean
+  // removing that photograph, which is the one thing this programme does not
+  // do to make room.
+  hero:  'composite-6_vh0sge', // 2752x1536, ratio 1.792
   story: [
     'hf_20260904_010121_e000fbac-491f-44b8-ad5e-9a9e2a6fae7e_bnmpgz', // 1536x2048
     'hf_20260904_010212_6e7e629c-7601-4a03-ba73-21581949a75b_gj6zfy', // 1792x2400
