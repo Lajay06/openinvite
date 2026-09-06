@@ -78,7 +78,7 @@ export const SAMPLE_MARRAKECH = {
   ],
 
   weddingPolicies: {
-    dressCode: { display: true, guidance: 'Loose and covered, in whatever colour you like best.', weatherNote: 'The courtyard is cool by six. The roof stays warm until well after midnight.' },
+    dressCode: { display: true, guidance: 'Loose and covered, in whatever color you like best.', weatherNote: 'The courtyard is cool by six. The roof stays warm until well after midnight.' },
     photography: { display: true, unplugged: true, message: 'Once the ceremony is done, photograph everything.' },
     lateArrival: { display: true, policy: 'The blue door is open all evening. Come up and find us.' },
   },

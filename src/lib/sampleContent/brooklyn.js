@@ -97,7 +97,7 @@ export const SAMPLE_BROOKLYN = {
 
   experienceGuide: {
     published: true,
-    destination: 'The neighbourhood',
+    destination: 'The neighborhood',
     editorialIntro: 'Staying the weekend? These are ours.',
     couplePicks: [{ place_id: 'sample-bk-p1', name: 'The Counter', category: 'Coffee & Bakeries', note: 'Coffee from six. Stand up, drink it, leave.' }],
     itinerary: {

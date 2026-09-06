@@ -55,7 +55,7 @@ export const SAMPLE_CAPRI = {
   welcomeMessage: '',
 
   ourStoryContent: {
-    storyText: 'We met at a lunch that ran from one in the afternoon until nearly midnight, seated at opposite ends and swapping places by the time the plates came out. Neither of us has been especially punctual since, and we have stopped apologising for it.',
+    storyText: 'We met at a lunch that ran from one in the afternoon until nearly midnight, seated at opposite ends and swapping places by the time the plates came out. Neither of us has been especially punctual since, and we have stopped apologizing for it.',
     photos: [img(CAPRI_IMAGES.story[0], 1400), img(CAPRI_IMAGES.story[1], 1400), img(CAPRI_IMAGES.story[2], 1400), img(CAPRI_IMAGES.story[3], 1400)],
     milestones: [
       { date: 'The lunch', text: 'Eleven hours, and we have never agreed on who moved seats first.' },

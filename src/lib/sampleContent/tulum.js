@@ -52,7 +52,7 @@ export const SAMPLE_TULUM = {
   welcomeMessage: '',
 
   ourStoryContent: {
-    storyText: 'We met on a trip neither of us wanted to take, both dragged along by other people. By the third day we had stopped pretending to be interested in anyone else. We have travelled badly and happily together ever since.',
+    storyText: 'We met on a trip neither of us wanted to take, both dragged along by other people. By the third day we had stopped pretending to be interested in anyone else. We have traveled badly and happily together ever since.',
     photos: [img(TULUM_IMAGES.story[0], 1400), img(TULUM_IMAGES.story[1], 1400), img(TULUM_IMAGES.story[2], 1400), img(TULUM_IMAGES.story[3], 1400)],
     milestones: [
       { date: 'The trip', text: 'Neither of us chose it. Both of us stayed an extra week.' },

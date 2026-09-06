@@ -97,7 +97,7 @@ export const SAMPLE_LONDON = {
 
   experienceGuide: {
     published: true,
-    destination: 'The neighbourhood',
+    destination: 'The neighborhood',
     editorialIntro: 'If you are making a weekend of it, these are the places we would send you first.',
     couplePicks: [{ place_id: 'sample-ln-p1', name: 'The Reading Room Cafe', category: 'Coffee & Bakeries', note: 'Open from seven, and the only decent coffee before nine.' }],
     itinerary: {
