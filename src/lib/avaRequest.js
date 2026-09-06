@@ -53,6 +53,15 @@ export const ACTION_MIRROR = [
     offer: /\b(update|mark|set|change)\b[^.?!]*\bvendor|\b(mark|set)\b[^.?!]*\b(booked|contacted|quoted|rejected|researching)\b/i },
   { type: 'create_schedule', entity: 'Schedule', label: 'add something to the schedule',
     offer: /\b(add|create|put|block|pencil)\b[^.?!]*\b(schedule|timeline|itinerary|event|day|ceremony|rehearsal)\b/i },
+  // "list" ALONE IS NOT ENOUGH, and a plant proved it. The first version of
+  // this pattern accepted a bare "list", so "add your cousin to the guest
+  // list" resolved to create_todo — a guest offer surviving the filter under
+  // another action's name, which is worse than an unbacked offer because it
+  // looks backed. The noun has to be the to-do list itself.
+  { type: 'create_todo', entity: 'Note', label: 'add something to the to-do list',
+    offer: /\b(add|create|put|make)\b[^.?!]*\b(to.?do|todo|task|checklist|reminder|to.?do list)\b/i },
+  { type: 'update_todo', entity: 'Note', label: 'update or tick off a to-do',
+    offer: /\b(tick|check|mark|complete|update|close)\b[^.?!]*\b(off|done|to.?do|todo|task|complete[d]?)\b/i },
   { type: 'navigate', entity: null, label: 'open a page',
     offer: /\b(take|bring|go|open|show|jump)\b[^.?!]*\b(page|there|to the|you to)\b/i },
 ];
@@ -64,12 +73,26 @@ export const ACTION_MIRROR = [
  * not exist, and `avaActionValidation.js` exists because of it. The prompt that
  * teaches the names and the list of actions that use them are one thing.
  */
-export const ACTION_FIELD_RULES = `Use these field names exactly — they are the only ones that persist. Required:
-create_guest needs name; create_budget_item needs category, item_name and
-budgeted_amount; create_vendor needs name and category; create_schedule needs
-event_name, event_date and start_time.
+/**
+ * FIELD RULES, PER ACTION. Was one block naming every action's fields — which
+ * meant a frame with a reduced mirror was still told "create_guest needs name",
+ * i.e. told about a power it does not have. Keyed by type now, and
+ * mirrorInstructions emits only the entries for the mirror it is given.
+ */
+export const ACTION_FIELD_RULES = {
+  create_guest:       'create_guest needs name.',
+  update_guest:       'update_guest needs id.',
+  create_budget_item: 'create_budget_item needs category, item_name and budgeted_amount.',
+  create_vendor:      'create_vendor needs name and category.',
+  update_vendor:      'update_vendor needs id.',
+  create_schedule:    'create_schedule needs event_name, event_date and start_time.',
+  create_todo:        'create_todo needs title.',
+  update_todo:        'update_todo needs id, and sets completed true to tick something off.',
+  navigate:           'navigate needs path.',
+};
 
-Allowed values, which must match exactly:
+/** Enum values a write must match exactly, named per field. */
+export const ACTION_ENUM_RULES = `Allowed values, which must match exactly:
   rsvp_status      pending | attending | declined | maybe   (never "confirmed")
   budget category  venue | catering | photography | flowers | music | attire |
                    transportation | decorations | rings | stationery | beauty |
@@ -78,7 +101,10 @@ Allowed values, which must match exactly:
                    music | bakery | transportation | beauty | attire |
                    planning | decorations | entertainment | other
   vendor status    researching | contacted | meeting_scheduled | quoted |
-                   booked | rejected`;
+                   booked | rejected
+  to-do priority   low | medium | high | urgent
+  to-do category   venue | catering | attire | photography | flowers | music |
+                   transportation | legal | guests | decorations | general`;
 
 /** Turns of conversation sent back with each request (spec 3.4, the pod history). */
 export const RECENT_TURNS = 8;
@@ -111,7 +137,10 @@ export function mirrorInstructions(mirror = ACTION_MIRROR) {
     'The couple confirms on a card before anything runs. Never say a thing is',
     'done; you have proposed it, and they decide.',
     '',
-    ACTION_FIELD_RULES,
+    'Use these field names exactly — they are the only ones that persist:',
+    ...mirror.map((a) => `  ${ACTION_FIELD_RULES[a.type] || ''}`).filter(l => l.trim()),
+    '',
+    ACTION_ENUM_RULES,
   ].join('\n');
 }
 

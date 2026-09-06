@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Sparkles, Check, AlertCircle, Loader2 } from 'lucide-react';
+import { X, Send, Sparkles } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { InvokeLLM } from '@/integrations/Core';
-import { validateAvaAction } from '@/lib/avaActionValidation';
+import AvaActionCard, { actionLabel } from '@/components/layout/AvaActionCard';
+import { executeAvaAction, filterActionsToMirror } from '@/lib/avaExecute';
+import { parseActions } from '@/lib/avaActions';
 import { base44 } from '@/api/base44Client';
 import { buildWeddingContext } from '@/lib/avaContext';
 import { buildAvaPrompt, ACTION_MIRROR, unwrapLlmReply } from '@/lib/avaRequest';
@@ -21,87 +23,12 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 // One list, four consumers: the prompt, the confirm card, the executor below,
 // and the post-filter that removes offers the list does not back.
 
-function extractJson(str) {
-  const start = str.indexOf('{');
-  if (start === -1) return null;
-  let depth = 0;
-  for (let i = start; i < str.length; i++) {
-    if (str[i] === '{') depth++;
-    else if (str[i] === '}') { depth--; if (depth === 0) return str.slice(start, i + 1); }
-  }
-  return null;
-}
-
-function parseActions(rawText) {
-  const actions = [];
-  const cleanText = rawText.replace(/ACTION:\s*(\{(?:[^{}]|\{[^{}]*\})*\})/g, (_, jsonStr) => {
-    try {
-      const parsed = JSON.parse(jsonStr);
-      if (parsed.type) {
-        actions.push({ id: Math.random().toString(36).slice(2), type: parsed.type, data: parsed.data || {}, status: 'pending' });
-        return '';
-      }
-      // eslint-disable-next-line no-empty -- best-effort text-cleanup parsing; falls through to the raw text below, never blocks the response
-    } catch {}
-    return _;
-  }).replace(/\n{3,}/g, '\n\n').trim();
-  return { cleanText, actions };
-}
-
-function actionLabel(type, data) {
-  switch (type) {
-    case 'create_guest':       return `Add "${data.name || 'guest'}" to your guest list`;
-    case 'create_budget_item': return `Add budget item: ${data.category || 'item'}${data.total_amount ? ` ($${Number(data.total_amount).toLocaleString()})` : ''}`;
-    case 'create_vendor':      return `Add ${data.name || 'vendor'} to your vendors${data.category ? ` (${data.category})` : ''}`;
-    case 'create_schedule':    return `Add to schedule: "${data.title || 'item'}"${data.time ? ` at ${data.time}` : ''}`;
-    case 'navigate':           return `Go to ${(data.path || '').replace(/^\//, '')} page`;
-    case 'update_guest':       return `Update guest record${data.rsvp_status ? ` → ${data.rsvp_status}` : ''}`;
-    case 'update_vendor':      return `Update vendor record${data.status ? ` → ${data.status}` : ''}`;
-    default:                   return `Run: ${type}`;
-  }
-}
-
-function ActionCard({ action, onConfirm, onCancel }) {
-  const STATUS_ICON = {
-    done:      <Check size={12} style={{ color: '#10B981' }} />,
-    error:     <AlertCircle size={12} style={{ color: '#E03553' }} />,
-    executing: <Loader2 size={12} className="animate-spin" style={{ color: '#9333ea' }} />,
-    cancelled: null,
-  };
-  const STATUS_TEXT = {
-    done:      'Done!',
-    error:     'Failed to execute',
-    executing: 'Executing…',
-    cancelled: 'Canceled',
-  };
-
-  return (
-    <div style={{ margin: '6px 0 4px 32px', padding: '10px 14px', border: '1px solid rgba(147,51,234,0.2)', background: 'rgba(147,51,234,0.04)', fontFamily: PJS }}>
-      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(147,51,234,0.6)', marginBottom: 5 }}>Ava wants to</div>
-      <div style={{ fontSize: 13, color: '#0A0A0A', marginBottom: action.status === 'pending' ? 10 : 6 }}>{actionLabel(action.type, action.data)}</div>
-
-      {action.status === 'pending' && (
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={onCancel}
-            style={{ padding: '5px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700, fontFamily: PJS, cursor: 'pointer', border: '1px solid rgba(10,10,10,0.15)', background: 'none', color: 'rgba(10,10,10,0.6)' }}>
-            Cancel
-          </button>
-          <button onClick={onConfirm}
-            style={{ padding: '5px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700, fontFamily: PJS, cursor: 'pointer', border: 'none', background: 'linear-gradient(135deg, #ec4899, #9333ea)', color: '#fff' }}>
-            Confirm
-          </button>
-        </div>
-      )}
-
-      {action.status !== 'pending' && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: action.status === 'done' ? '#10B981' : action.status === 'error' ? '#E03553' : 'rgba(10,10,10,0.6)', fontWeight: 600 }}>
-          {STATUS_ICON[action.status]}
-          {STATUS_TEXT[action.status]}
-        </div>
-      )}
-    </div>
-  );
-}
+/* actionLabel and ActionCard LIVED HERE, private to this file, which is why
+   the pod could not have them — Ruling 11's "until the confirm card is ported
+   to it". They are now src/components/layout/AvaActionCard.jsx, one component
+   with a `tone` prop, and the executor beneath them is
+   src/lib/avaExecute.js. Copying either into the pod would have produced two
+   code paths that write to the couple's database and drift apart. */
 
 export default function AvaModal({ isOpen, onClose, systemPrompt, quickActions = [], pageTitle = 'Ava' }) {
   if (!isOpen) return null;
@@ -144,47 +71,19 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
     if (!action) return;
     updateAction(msgIndex, actionId, { status: 'executing' });
     try {
-      if (action.type === 'navigate') {
-        navigate(action.data.path);
-        updateAction(msgIndex, actionId, { status: 'done' });
-        onClose();
-        return;
-      }
-      // Every write is validated against the schema mirror FIRST. Base44
-      // answers 200 for a write of undeclared fields and discards them, so
-      // without this the toast below reports success over a dropped write.
-      const ACTION_ENTITY = {
-        create_guest: 'Guest', create_budget_item: 'Budget',
-        create_vendor: 'Vendor', create_schedule: 'Schedule',
-        update_guest: 'Guest', update_vendor: 'Vendor',
-      };
-      const entity = ACTION_ENTITY[action.type];
-      if (!entity) {
-        updateAction(msgIndex, actionId, { status: 'error' });
-        toast.error(`Ava tried an action I don't recognize (${action.type}).`);
-        return;
-      }
-      const isUpdate = action.type.startsWith('update_');
-      const { ok, cleaned, error } = validateAvaAction(entity, action.data, { isUpdate });
+      // ONE EXECUTOR, BOTH FRAMES. The validation gate, the refuse-loudly rule
+      // and every entity write live in src/lib/avaExecute.js now; this decides
+      // only what the modal does about the result.
+      const { ok, error } = await executeAvaAction(action, {
+        entities: base44.entities, createGuest, updateGuest, navigate,
+      });
       if (!ok) {
-        // RULE 6d: refuse loudly. The old code would have written a row of
-        // nothing but defaults and called it done.
         updateAction(msgIndex, actionId, { status: 'error' });
         toast.error(error);
         return;
       }
-
-      const entityMap = {
-        create_guest:       () => createGuest(cleaned),
-        create_budget_item: () => base44.entities.Budget.create(cleaned),
-        create_vendor:      () => base44.entities.Vendor.create(cleaned),
-        create_schedule:    () => base44.entities.Schedule.create(cleaned),
-        update_guest:       () => updateGuest(action.data.id, cleaned),
-        update_vendor:      () => base44.entities.Vendor.update(action.data.id, cleaned),
-      };
-      const fn = entityMap[action.type];
-      if (fn) await fn();
       updateAction(msgIndex, actionId, { status: 'done' });
+      if (action.type === 'navigate') { onClose(); return; }
       toast.success(actionLabel(action.type, action.data));
     } catch {
       updateAction(msgIndex, actionId, { status: 'error' });
@@ -221,7 +120,10 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
       // `JSON.stringify(res)` was here, so an object answer rendered as
       // {"result":"…","status":"success"} in the couple's chat bubble.
       const rawText = unwrapLlmReply(res, 'Sorry, something went wrong. Please try again.');
-      const { cleanText, actions } = parseActions(rawText);
+      const { cleanText, actions: proposed } = parseActions(rawText);
+      // Same guard as the pod: a proposal outside the mirror never becomes a
+      // card, whatever the model emitted.
+      const actions = filterActionsToMirror(proposed, ACTION_MIRROR);
       // No private powers: an offer the mirror does not back never reaches
       // the couple, whatever the prompt asked for.
       const { text: safeText } = filterUnbackedOffers(cleanText, ACTION_MIRROR);
@@ -297,9 +199,10 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
 
               {/* Action confirmation cards */}
               {msg.actions?.map(action => (
-                <ActionCard
+                <AvaActionCard
                   key={action.id}
                   action={action}
+                  tone="light"
                   onConfirm={() => confirmAction(msgIndex, action.id)}
                   onCancel={() => cancelAction(msgIndex, action.id)}
                 />
