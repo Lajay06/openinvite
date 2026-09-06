@@ -4993,3 +4993,65 @@ silent stranding into a refusal that names the child PR. **The gate and the
 merge are already one operation there for exactly this class of reason: a rule
 that depends on remembering is the thing this programme keeps replacing with a
 mechanism.** Not built now.
+
+---
+
+## 2026-09-06 — R35: a test that no runner executes is not a gate
+
+### THE INCIDENT
+
+`tests/persistence/sample-content-never-published.mjs` — the file that carries
+the entire safety argument for sample content — was imported by **nothing**.
+
+```
+$ grep -rn "sample-content-never-published" --include="*.mjs" --include="*.json" --include="*.yml" . | grep -v node_modules
+tests/persistence/sample-content-never-published.mjs:2: * tests/persistence/sample-content-never-published.mjs
+```
+
+One hit, and it is the file's own header comment. Not `scripts/test-ci.mjs`,
+not `scripts/test-persistence.mjs`, not `ci.yml`. `runSampleContentNeverPublished`
+was exported and never called.
+
+It was written across four PRs, extended twice, cited in three PR bodies as the
+thing that makes sample content safe to have at all, and grown to 249 checks —
+and every one of those runs was a human typing a node command. It had never
+been run by CI. Not once. Its first CI run was #671.
+
+**This is the exact shape of the thing this programme keeps legislating
+against, one level up.** P2 said: DO NOT LEAVE A GATE THAT PASSES BY NOT
+RUNNING. That was written about a gate whose *assertions* were skipped. This is
+a gate whose *file* was skipped — and it is worse, because a skipped assertion
+still prints SKIPPED, while an unimported module prints nothing at all. Silence
+reads identically to a clean pass at every level: the suite is green, the count
+goes up every run, and the number simply never included this file.
+
+### THE RULE
+
+**A guard is not a gate until a runner executes it. Every guard under
+`tests/persistence/` must be reachable from `scripts/test-ci.mjs` (or, where it
+needs live credentials, from `scripts/test-persistence.mjs`), and adding the
+guard file and adding the import are ONE change, not two.**
+
+**And a guard's first CI run is the first time it has ever passed.** Local runs
+by the author prove the author ran it. They prove nothing about the branch that
+lands, the machine it lands on, or the next hundred PRs — which is the whole
+population the guard exists to police. Until CI has run it once, "the guard
+passes" is a statement about one laptop.
+
+### WHY THE OBVIOUS INSTRUMENT IS THE RIGHT ONE
+
+The mechanical version of this rule is a test that lists every
+`tests/persistence/*.mjs` and asserts each is imported by one of the two
+runners. That is a directory-versus-imports comparison, and it is cheap. It is
+NOT built here, deliberately: it would have been written in the same session as
+this ruling and by the same hand that missed the import, and a guard on guards
+that nothing runs is the identical defect recursed. Filed in OPEN-TICKETS,
+to be built in a run that can plant a failure against it — a guard that has
+never seen a failure has never been tested (R19).
+
+### WHAT ELSE THIS MAKES SUSPECT
+
+Every claim of the form "the guard asserts it" in a PR body written before
+2026-09-06 is a claim about a local run. The specific one to re-read is the
+sample-content programme's own safety argument, which was stated in #663, #665,
+#669 and #671 as a property held by a test. It is held by a test now.
