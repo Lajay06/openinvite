@@ -89,7 +89,7 @@ export const SAMPLE_KYOTO = {
   ],
 
   weddingPolicies: {
-    dressCode: { display: true, guidance: 'Grey, ivory, moss, black. Nothing that needs to be seen from across a room.', weatherNote: 'The room opens onto the garden and stays cool. A layer, even in June.' },
+    dressCode: { display: true, guidance: 'Gray, ivory, moss, black. Nothing that needs to be seen from across a room.', weatherNote: 'The room opens onto the garden and stays cool. A layer, even in June.' },
     photography: { display: true, unplugged: true, message: 'No photographs during the ceremony. The room is twenty feet across and a raised phone is the only thing anyone would look at.' },
     lateArrival: { display: true, policy: 'The garden door is open. Come around and sit at the back; nobody will turn.' },
   },
