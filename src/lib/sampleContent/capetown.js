@@ -21,11 +21,12 @@ const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
 export const CAPETOWN_IMAGES = {
-  // TWO EXTRA HOME PHOTOS (owner review, 2026-09-06). BOTH DOUBLED: the folder
-  // had one spare and the rejection consumed it. Reuse rather than an empty role.
+  // TWO EXTRA HOME PHOTOS. BOTH WERE DOUBLED — the folder had one spare and the
+  // rejection consumed it — and both are now real assets: the owner uploaded
+  // three more on 2026-09-06 and two of them are clean and unused elsewhere.
   home: [
-    'hf_20260905_005622_4606588e-5a0c-4140-8f77-e510db2b086c_mhaol4', // DOUBLED from Our Story
-    'hf_20260905_005530_30720159-1f17-4fba-9407-064eba8a85e2_c3ew71', // DOUBLED from Our Story
+    'hf_20260905_005622_29de1cbf-2a1d-4355-a4db-07da00b77ecd_sidpti', // 2400x1792, the lit table
+    'hf_20260905_005622_a1842daf-389f-4312-be65-4d71e6812a05_c9t7xc', // 1792x2400, under the vine
   ],
   hero:  'hf_20260905_005621_7edf723e-7279-4960-a23a-bf835593f80c_uhfav4', // 2003x1114
   story: [
