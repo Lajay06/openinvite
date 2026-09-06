@@ -105,11 +105,16 @@ export async function runAvaReadsTheWedding() {
   }
 
   // ── 3. VENDORS, WITH DEPOSITS, BOTH STATES ──────────────────────────────
+  // The `[id …]` between the category and the dash is deliberate and is
+  // checked on its own in ava-update-by-id.mjs: update_vendor writes
+  // Vendor.update(id, …) and this line is the only place the model can learn
+  // an id. Matched loosely here so this guard stays about the DEPOSIT, which
+  // is what it was written for.
   check('a vendor with a PAID deposit says so',
-    /Golden Hour Photography \(photography\) — booked, deposit \$2,000 PAID/.test(ctx),
+    /Golden Hour Photography \(photography\).* — booked, deposit \$2,000 PAID/.test(ctx),
     (ctx.match(/Golden Hour.*/) || ['absent'])[0]);
   check('  and one with an UNPAID deposit says so',
-    /Fleur & Stem \(flowers\) — quoted, deposit \$900 NOT paid/.test(ctx),
+    /Fleur & Stem \(flowers\).* — quoted, deposit \$900 NOT paid/.test(ctx),
     (ctx.match(/Fleur.*/) || ['absent'])[0]);
 
   // ── 4. OVERDUE TO-DOS, WITH THEIR DATES ─────────────────────────────────

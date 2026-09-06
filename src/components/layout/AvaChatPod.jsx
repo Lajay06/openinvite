@@ -163,7 +163,7 @@ function AvaChatPod({ onClose, openDetail, messages, setMessages, dismissed, set
     if (!action) return;
     updateAction(msgId, actionId, { status: 'executing' });
     try {
-      const { ok, error } = await executeAvaAction(action, { entities: base44.entities, navigate, currentPath: location.pathname, listTodos: () => getMyRecords('Note'), readWeddingDetails: getMyWeddingDetails, putWeddingFields: putMyWeddingDetails });
+      const { ok, error } = await executeAvaAction(action, { entities: base44.entities, navigate, currentPath: location.pathname, listTodos: () => getMyRecords('Note'), readWeddingDetails: getMyWeddingDetails, putWeddingFields: putMyWeddingDetails, listVendors: () => getMyRecords('Vendor'), listGuests: () => getMyRecords('Guest') });
       if (!ok) { updateAction(msgId, actionId, { status: 'error', error }); toast.error(error); return; }
       updateAction(msgId, actionId, { status: 'done' });
       if (action.type !== 'navigate') toast.success(actionLabel(action.type, action.data));

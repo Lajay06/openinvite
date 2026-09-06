@@ -123,7 +123,13 @@ export function formatWeddingContext({ guests = [], budget = [], vendors = [], s
     // guest, and so "who is Jon coming with?" is answerable.
     const host = a.isPlusOne ? guestById.get(a.hostGuestId)?.name : null;
     const name = a.isPlusOne ? `${a.name} (plus-one of ${host || 'a guest'})` : a.name;
-    return `${name} — ${parts.join(', ')}`;
+    // THE ID, because update_guest writes Guest.update(id, …) and nothing ever
+    // sent one. The model invented them and every update 404'd — the same
+    // defect as the to-do tick-off, on a second action. A plus-one is not a
+    // Guest row of its own, so it gets no id and cannot be the subject of an
+    // update; the executor refuses it by name rather than writing to its host.
+    const idTag = a.isPlusOne ? '' : ` [id ${a.id}]`;
+    return `${name}${idTag} — ${parts.join(', ')}`;
   });
   const guestListBlock = guestListLines.length
     ? `\n\nGUEST LIST — individual RSVPs, for answering questions about a specific guest by name (this is the owner's own data, in their own dashboard):\n${guestListLines.join('\n')}${attendees.length > GUEST_LIST_CAP ? `\n…and ${attendees.length - GUEST_LIST_CAP} more (use the aggregate counts above for anything beyond named lookups)` : ''}`
@@ -172,7 +178,9 @@ export function formatWeddingContext({ guests = [], budget = [], vendors = [], s
     if (v.deposit_amount) bits.push(`deposit ${money(v.deposit_amount)} ${v.deposit_paid ? 'PAID' : 'NOT paid'}`);
     else if (v.deposit_paid) bits.push('deposit paid');
     if (v.quoted_price) bits.push(`quoted ${money(v.quoted_price)}`);
-    return `${v.name || 'Unnamed'} (${v.category || 'uncategorised'}) — ${bits.join(', ')}`;
+    // Same reason as the guest ids above: update_vendor writes
+    // Vendor.update(id, …) against an id nothing had ever supplied.
+    return `${v.name || 'Unnamed'} (${v.category || 'uncategorized'})${v.id ? ` [id ${v.id}]` : ''} — ${bits.join(', ')}`;
   });
 
   // ── TO-DOS, WITH DATES, SO "WHAT IS OVERDUE" HAS AN ANSWER ─────────────

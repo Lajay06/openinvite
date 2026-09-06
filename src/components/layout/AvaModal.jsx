@@ -80,6 +80,8 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
         listTodos: () => getMyRecords('Note'),
         readWeddingDetails: getMyWeddingDetails,
         putWeddingFields: putMyWeddingDetails,
+        listVendors: () => getMyRecords('Vendor'),
+        listGuests: () => getMyRecords('Guest'),
       });
       if (!ok) {
         updateAction(msgIndex, actionId, { status: 'error', error });

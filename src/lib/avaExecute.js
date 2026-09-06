@@ -92,6 +92,33 @@ export function filterActionsToMirror(actions, mirror, currentPath) {
 const IS_UPDATE = (type) => type.startsWith('update_');
 
 /**
+ * THE ROW AN UPDATE IS ABOUT MUST EXIST BEFORE ANYTHING IS WRITTEN.
+ *
+ * update_vendor and update_guest carried the same defect the to-do tick-off
+ * did: the prompt asked for an id (avaRequest.js) and the context sent names
+ * without one (avaContextFormat.js), so the id was invented and the write
+ * 404'd — surfacing as a thrown error the frames swallowed and a card reading
+ * "Could not do that". The context now carries `[id …]` on every vendor and
+ * every guest, and this checks the model actually used one.
+ *
+ * A MISS IS NAMED, NOT SHRUGGED AT, and it names what the couple asked for
+ * rather than the id, because "I could not find a vendor called Fleur & Stem"
+ * is a sentence they can act on and a hex string is not.
+ */
+async function resolveExistingRow(list, id, { noun, asked }) {
+  const rows = (await list?.()) || [];
+  const row = id ? rows.find((r) => r.id === id) : null;
+  if (row) return { row, error: null };
+  const label = asked ? `"${asked}"` : null;
+  return {
+    row: null,
+    error: label
+      ? `I could not find a ${noun} called ${label}.`
+      : `I could not tell which ${noun} you meant.`,
+  };
+}
+
+/**
  * Validate and execute one confirmed action.
  *
  * @param {{type: string, data: object}} action
@@ -159,6 +186,19 @@ export async function executeAvaAction(action, deps) {
   const entity = ACTION_ENTITY[type];
   const { ok, cleaned, error } = validateAvaAction(entity, action.data, { isUpdate: IS_UPDATE(type) });
   if (!ok) return { ok: false, error, entity };
+
+  if (type === 'update_vendor' || type === 'update_guest') {
+    const isVendor = type === 'update_vendor';
+    const { error: missing } = await resolveExistingRow(
+      isVendor ? deps.listVendors : deps.listGuests,
+      action.data?.id,
+      { noun: isVendor ? 'vendor' : 'guest', asked: action.data?.name },
+    );
+    if (missing) return { ok: false, error: missing, entity };
+    // The name is how the row was FOUND when one was given, not what it is
+    // renamed to — the same rule the tick-off follows for titles.
+    if (action.data?.id) delete cleaned.name;
+  }
 
   // WHICH TO-DO. The model has never been able to answer this: the prompt asked
   // for an id (avaRequest.js) and the context sends titles only
