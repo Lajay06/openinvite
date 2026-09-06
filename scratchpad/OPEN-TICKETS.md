@@ -1508,3 +1508,89 @@ reversed the pair and CI went red. The placeholders are hoisted into the loader
 now. The lesson is the ordinary one: run the suite the way CI runs it —
 `env -u RESEND_API_KEY -u STRIPE_SECRET_KEY npm run test:ci` — before claiming
 an ordering change is safe.
+
+## Onboarding universe select "does nothing" — diagnosis, not yet fixed (2026-09-06)
+
+Owner report: selecting a universe in onboarding has no effect, and the
+dashboard shows kyoto.
+
+WHAT THE TRACE SHOWS. The write path is intact and the field name matches:
+
+    OnboardingStepUniverse.jsx:172   onNext({ activeUniverse: selectedUniverse || 'london' })
+    Onboarding.jsx:674               <OnboardingStepUniverse onNext={goNext} …>
+    Onboarding.jsx:344-355           goNext merges into onboardingData, calls persistDraftStep
+    Onboarding.jsx:321               buildWeddingDetailsPayload(mergedData) + onboardingDraft:true
+    onboardingSave.js:47             activeUniverse: data.activeUniverse || 'london'
+    websiteThemes.js:1411            resolveUniverseConfig reads weddingDetails.activeUniverse
+
+THERE IS NO KYOTO DEFAULT ANYWHERE IN THE READ PATH. Grep across src/ finds
+kyoto only in UNIVERSE_CONFIGS, in components keyed on the 'kyoto-vertical'
+LAYOUT, in universeCatalog's DISPLAY_NAME, and in two marketing showcase lists
+(UniverseTeaserSection.jsx:19, Universes.jsx:29). Every no-selection default in
+this path is 'london' — OnboardingStepUniverse.jsx:172 and :176, and
+onboardingSave.js:47. So the reported kyoto is NOT the empty-selection default,
+which is the single most useful fact here: it means either the record holds
+kyoto, or the surface showing it is not reading activeUniverse at all.
+
+THIS CLASS OF DEFECT WAS FIXED ONCE ALREADY, and the fix is recorded at
+OnboardingStepUniverse.jsx:42-55: tapping a tile only opened the preview and
+never called setSelectedUniverse, so Continue "silently defaulted to 'london'".
+Explore/Select buttons were added (:137-158). The comment states plainly it was
+"not a persistence bug (activeUniverse writes and reads correctly everywhere
+downstream)". The current symptom differs — kyoto, not london — so it is a
+second defect, not a regression of that one.
+
+WHAT BLOCKED THE REPRODUCTION. The render harness redirects /onboarding to
+/Dashboard, because its stubbed user reads as already onboarded
+(Onboarding.jsx:247, isOnboardingComplete(currentUser, draft)). Driving the
+wizard needs a seed whose user has onboarding incomplete — a small addition to
+scripts/lib/renderHarness.mjs, and the right first step for whoever picks this
+up. Capture at the entity boundary as before; no production writes.
+
+NEXT TWO QUESTIONS, in order:
+  1. What does the fixture record actually hold in activeUniverse? One read
+     settles whether this is a write bug or a read bug.
+  2. Which surface is "the dashboard" in the report — the studio banner, the
+     left panel's theme label, or the guest preview? WBLeftPanel.jsx:116-119
+     defaults its LABEL to 'London' when the field is absent, so a surface
+     showing kyoto is reading something else.
+
+## Story editor onto the Story tab — sized, not built (2026-09-06)
+
+WHERE IT LIVES. WBRightPanel.jsx:601-611, inside ContentTab — the right
+panel's "Content" tab (registered at :973). Three controls under an "Our story"
+label: the story textarea (:602-607), the story PhotoGrid (:608-609) and the
+MilestoneEditor (:611).
+
+WHAT THE STORY TAB CONTAINS TODAY. Nothing editable. The left panel
+(WBLeftPanel.jsx:135) lists WEDDING_PAGES (websiteThemes.js:439-450, twelve
+pages) and selecting one sets `currentPage`, which changes what the PREVIEW
+renders. The right panel is unaware of it: ContentTab takes {details, onChange}
+and shows the same global form on every page.
+
+So the owner's complaint is exact — page selection moves the preview and not
+the editor, and a couple standing on Our story still scrolls a global tab to
+find the story fields.
+
+RELOCATION OR REDESIGN: BOTH, AND THAT IS THE ANSWER.
+
+The relocation is genuinely small — pass `currentPage` into ContentTab and show
+the matching section. One prop, one filter, roughly 20 lines. AUTO-sized.
+
+It also produces a bad result, and that is what makes it a redesign. ContentTab
+has content sections for THREE of the twelve pages: The couple (:496), Home
+page (:522), Our story (:601), plus a read-only Ceremony & reception reference
+(:616) that deliberately links out to EventDetails rather than duplicating a
+write path. Filter by page and nine of twelve pages show an empty Content tab.
+
+So the real piece of work is: what does the Content tab mean once it is
+page-scoped, and what do registry / music / styling / polls / faq / stay /
+transport / experience show there — their own fields, a link to the planner
+page that already owns them, or nothing with a sentence saying why. That is a
+design question, not an engineering one, and it should be answered before any
+of it is built.
+
+SIZE, if the design lands as "page-scoped, link out where the planner owns it":
+one prop, one filter, and eight short link-out blocks of the shape
+MasterDataReferenceDark already provides. Still inside the MINOR CLASS cap.
+The cost is the decision, not the code.
