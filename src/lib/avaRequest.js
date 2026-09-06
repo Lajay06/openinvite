@@ -87,7 +87,11 @@ export const ACTION_FIELD_RULES = {
   update_vendor:      'update_vendor needs id.',
   create_schedule:    'create_schedule needs event_name, event_date and start_time.',
   create_todo:        'create_todo needs title.',
-  update_todo:        'update_todo needs id, and sets completed true to tick something off.',
+  // TITLE, NOT ID, and the reason is that nothing ever gave the model an id:
+  // the to-do block sends title, due date and priority. Asking for a field the
+  // context does not carry taught it to invent one, and every invented id
+  // 404'd. It asks for what the couple actually said instead.
+  update_todo:        'update_todo needs title — the to-do\'s title as it appears in the list above — and sets completed true to tick something off.',
   navigate:           'navigate needs path.',
 };
 
