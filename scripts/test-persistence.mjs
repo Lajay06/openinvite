@@ -21,6 +21,9 @@
  *   5. Exits 0 if all pass, 1 if any fail
  */
 
+import { readFileSync } from 'node:fs';
+import { pass, fail } from '../tests/persistence/_shared.mjs';
+import { guardFiles, guardFilesFor, LIVE_CREDENTIAL_GUARDS, STANDALONE_GUARDS } from '../tests/persistence/_registry.mjs';
 import { EMAIL, PASS, login, cleanupWeddingDetails } from '../tests/persistence/_shared.mjs';
 import { runWeddingDetails } from '../tests/persistence/wedding-details.mjs';
 import { runGuest } from '../tests/persistence/guest.mjs';
@@ -210,6 +213,35 @@ async function run() {
     // itself, or a bug in runModule) — this is the actual safety net the
     // old version was missing entirely.
     await cleanupWeddingDetails(token, recordId);
+  }
+
+  // ── THE REGISTRY IS COMPLETE ───────────────────────────────────────────────
+  //
+  // ENUMERATION HERE PROVES COVERAGE; IT DOES NOT DISPATCH. The live lane is
+  // not like the CI lane: these guards take arguments — `runRsvp(token,
+  // recordId)`, `runOwnership(token, recordId)`, `runSeatingPolish(token)` —
+  // and wedding-details must run first because it is what produces `recordId`.
+  // A directory listing cannot know an arity or an order, so the calls above
+  // stay hand-written and this asserts instead that nothing has fallen out of
+  // the list.
+  //
+  // That is the half of R35 this file needs. The failure R35 records was a
+  // guard file that no runner referenced at all; this makes that state
+  // impossible in either lane rather than only in CI.
+  {
+    const src = readFileSync(new URL(import.meta.url), 'utf8');
+    const unregistered = [...LIVE_CREDENTIAL_GUARDS].filter((f) => {
+      const runner = f.replace(/\.mjs$/, '').split('-').map((w, i) => (i === 0 ? w : w[0].toUpperCase() + w.slice(1))).join('');
+      return !src.includes(`run${runner[0].toUpperCase()}${runner.slice(1)}(`);
+    });
+    results.push(unregistered.length === 0
+      ? pass(`every live-credential guard is invoked here (${LIVE_CREDENTIAL_GUARDS.size})`, 'none missing')
+      : fail('every live-credential guard is invoked here', 'none missing', unregistered.join(', ')));
+
+    const unclassified = guardFiles().filter((f) => !LIVE_CREDENTIAL_GUARDS.has(f) && !STANDALONE_GUARDS.has(f) && !guardFilesFor('ci').includes(f));
+    results.push(unclassified.length === 0
+      ? pass('no guard file falls outside both lanes', `${guardFiles().length} files, all classified`)
+      : fail('no guard file falls outside both lanes', 'none', unclassified.join(', ')));
   }
 
   // ── Summary ───────────────────────────────────────────────────────────────

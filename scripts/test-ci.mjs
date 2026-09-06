@@ -20,82 +20,8 @@
  * Exits 0 if all pass, 1 if any fail.
  */
 
-import { runEmails } from '../tests/persistence/emails.mjs';
-import { runSpotifyTeardown } from '../tests/persistence/spotify-teardown.mjs';
-import { runBase44ReadGuard } from '../tests/persistence/base44-read-guard.mjs';
-import { runGuestEndpointGate } from '../tests/persistence/guest-endpoint-gate.mjs';
-import { runGuestLinkMinting } from '../tests/persistence/guest-link-minting.mjs';
-import { runRsvpTokenCrypto } from '../tests/persistence/rsvp-token-crypto.mjs';
-import { runRetryPolicy } from '../tests/persistence/retry-policy.mjs';
-import { runRlsCommentClaims } from '../tests/persistence/rls-comment-claims.mjs';
-import { runGuestProtectedFields } from '../tests/persistence/guest-protected-fields.mjs';
-import { runGuestPiiBlob } from '../tests/persistence/guest-pii-blob.mjs';
-import { runGuestPlaintextReaders } from '../tests/persistence/guest-plaintext-readers.mjs';
-import { runMealChoiceContract } from '../tests/persistence/meal-choice-contract.mjs';
-import { runUniverseStyling } from '../tests/persistence/universe-styling.mjs';
-import { runRateLimiting } from '../tests/persistence/rate-limiting.mjs';
-import { runHeroVideo } from '../tests/persistence/hero-video.mjs';
-import { runUniversePickerIntegrity } from '../tests/persistence/universe-picker-integrity.mjs';
-import { runSeatingChart } from '../tests/persistence/seating-chart.mjs';
-import { runStripeWebhook } from '../tests/persistence/stripe-webhook.mjs';
-import { runComponentLibrary } from '../tests/persistence/component-library.mjs';
-import { runCuratedFonts } from '../tests/persistence/curated-fonts.mjs';
-import { runBlockStylingUniverse } from '../tests/persistence/block-styling-universe.mjs';
-import { runEntranceMoment } from '../tests/persistence/entrance-moment.mjs';
-import { runModalViewportCentering } from '../tests/persistence/modal-viewport-centering.mjs';
-import { runDashboardStructure } from '../tests/persistence/dashboard-structure.mjs';
-import { runGuestbookRemoval } from '../tests/persistence/guestbook-removal.mjs';
-import { runDesignStudioEntrance } from '../tests/persistence/design-studio-entrance.mjs';
-import { runConsolidateOverview } from '../tests/persistence/consolidate-overview.mjs';
-import { runCollaboratorPageMap } from '../tests/persistence/collaborator-page-map.mjs';
-import { runCheckoutErrorHandling } from '../tests/persistence/checkout-error-handling.mjs';
-import { runGuestRsvpTally } from '../tests/persistence/guest-rsvp-tally.mjs';
-import { runPrerenderAssetRewrite } from '../tests/persistence/prerender-asset-rewrite.mjs';
-import { runOnboardingCronWindow } from '../tests/persistence/onboarding-cron-window.mjs';
-import { runSchemaDriftGuard } from '../tests/persistence/schema-drift-guard.mjs';
-import { runAvaActionValidation } from '../tests/persistence/ava-action-validation.mjs';
-import { runDailyUpdateLoadStates } from '../tests/persistence/dailyupdate-load-states.mjs';
-import { runDashboardSources } from '../tests/persistence/dashboard-sources.mjs';
-import { runPlaylistEmbedUrls } from '../tests/persistence/playlist-embed-urls.mjs';
-import { runNextUp } from '../tests/persistence/next-up.mjs';
-import { runBudgetClarity } from '../tests/persistence/budget-clarity.mjs';
-import { runSoundPreference } from '../tests/persistence/sound-preference.mjs';
-import { runWeddingSeason } from '../tests/persistence/wedding-season.mjs';
-import { runIndexingPosture } from '../tests/persistence/indexing-posture.mjs';
-import { runGuestShell } from '../tests/persistence/guest-shell.mjs';
-import { runRouteInterceptionGuard } from '../tests/persistence/route-interception-guard.mjs';
-import { runGuestTypographyParity } from '../tests/persistence/guest-typography-parity.mjs';
-import { runPublishParity } from '../tests/persistence/publish-parity.mjs';
-import { runAcceptedCopyLanded } from '../tests/persistence/accepted-copy-landed.mjs';
-import { runWeatherProxy } from '../tests/persistence/weather-proxy.mjs';
-import { runThirdPartyAssets } from '../tests/persistence/third-party-assets.mjs';
-import { runUltraGateUnification } from '../tests/persistence/ultra-gate-unification.mjs';
-import { runBannerOffset } from '../tests/persistence/banner-offset.mjs';
-import { runContactSendPath } from '../tests/persistence/contact-send-path.mjs';
-import { runMutedTextTokens } from '../tests/persistence/muted-text-tokens.mjs';
-import { runSentenceCaseChrome } from '../tests/persistence/sentence-case-chrome.mjs';
-import { runCountUpInstant } from '../tests/persistence/countup-instant.mjs';
-import { runRsvpTokenMinting } from '../tests/persistence/rsvp-token-minting.mjs';
-import { runGuestRecognition } from '../tests/persistence/guest-recognition.mjs';
-import { runClipboardActions } from '../tests/persistence/clipboard-actions.mjs';
-import { runInviteLinkIntegrity } from '../tests/persistence/invite-link-integrity.mjs';
-import { runGuestCsvExport } from '../tests/persistence/guest-csv-export.mjs';
-import { runBudgetPlanExport } from '../tests/persistence/budget-plan-export.mjs';
-import { runNotesExport } from '../tests/persistence/notes-export.mjs';
-import { runPhotoExport } from '../tests/persistence/photo-export.mjs';
-import { runGuestTelemetry } from '../tests/persistence/guest-telemetry.mjs';
-import { runStripImageGps } from '../tests/persistence/strip-image-gps.mjs';
-import { runTrialStatus } from '../tests/persistence/trial-status.mjs';
-import { runTrialServerGuard } from '../tests/persistence/trial-server-guard.mjs';
-import { runTrialClientLock } from '../tests/persistence/trial-client-lock.mjs';
-import { runIcsExport } from '../tests/persistence/ics-export.mjs';
-import { runGiftCheckout } from '../tests/persistence/gift-checkout.mjs';
-import { runGuestSafeRegistry } from '../tests/persistence/guest-safe-registry.mjs';
-import { runGuestSafeWedding } from '../tests/persistence/guest-safe-wedding.mjs';
-import { runSampleContentNeverPublished } from '../tests/persistence/sample-content-never-published.mjs';
-import { runAvaNoPrivatePowers } from '../tests/persistence/ava-no-private-powers.mjs';
-import { runNotificationBadge } from '../tests/persistence/notification-badge.mjs';
-import { runUniverseGallery } from '../tests/persistence/universe-gallery.mjs';
+
+import { loadGuards, LIVE_CREDENTIAL_GUARDS, STANDALONE_GUARDS } from '../tests/persistence/_registry.mjs';
 
 async function run() {
   console.log('\n═══════════════════════════════════════════════════════');
@@ -123,82 +49,40 @@ async function run() {
     }
   }
 
-  await runModule('runEmails', () => runEmails());
-  await runModule('runSpotifyTeardown', () => runSpotifyTeardown());
-  await runModule('runBase44ReadGuard', () => runBase44ReadGuard());
-  await runModule('runGuestEndpointGate', () => runGuestEndpointGate());
-  await runModule('runGuestLinkMinting', () => runGuestLinkMinting());
-  await runModule('runRsvpTokenCrypto', () => runRsvpTokenCrypto());
-  await runModule('runRetryPolicy', () => runRetryPolicy());
-  await runModule('runRlsCommentClaims', () => runRlsCommentClaims());
-  await runModule('runGuestProtectedFields', () => runGuestProtectedFields());
-  await runModule('runGuestPiiBlob', () => runGuestPiiBlob());
-  await runModule('runGuestPlaintextReaders', () => runGuestPlaintextReaders());
-  await runModule('runMealChoiceContract', () => runMealChoiceContract());
-  await runModule('runUniverseStyling', () => runUniverseStyling());
-  await runModule('runRateLimiting', () => runRateLimiting());
-  await runModule('runHeroVideo', () => runHeroVideo());
-  await runModule('runUniversePickerIntegrity', () => runUniversePickerIntegrity());
-  await runModule('runSeatingChart', () => runSeatingChart());
-  await runModule('runStripeWebhook', () => runStripeWebhook());
-  await runModule('runComponentLibrary', () => runComponentLibrary());
-  await runModule('runCuratedFonts', () => runCuratedFonts());
-  await runModule('runBlockStylingUniverse', () => runBlockStylingUniverse());
-  await runModule('runEntranceMoment', () => runEntranceMoment());
-  await runModule('runModalViewportCentering', () => runModalViewportCentering());
-  await runModule('runDashboardStructure', () => runDashboardStructure());
-  await runModule('runGuestbookRemoval', () => runGuestbookRemoval());
-  await runModule('runDesignStudioEntrance', () => runDesignStudioEntrance());
-  await runModule('runConsolidateOverview', () => runConsolidateOverview());
-  await runModule('runCollaboratorPageMap', () => runCollaboratorPageMap());
-  await runModule('runCheckoutErrorHandling', () => runCheckoutErrorHandling());
-  await runModule('runGuestRsvpTally', () => runGuestRsvpTally());
-  await runModule('runPrerenderAssetRewrite', () => runPrerenderAssetRewrite());
-  await runModule('runOnboardingCronWindow', () => runOnboardingCronWindow());
-  await runModule('runSchemaDriftGuard', () => runSchemaDriftGuard());
-  await runModule('runAvaActionValidation', () => runAvaActionValidation());
-  await runModule('runDailyUpdateLoadStates', () => runDailyUpdateLoadStates());
-  await runModule('runDashboardSources', () => runDashboardSources());
-  await runModule('runPlaylistEmbedUrls', () => runPlaylistEmbedUrls());
-  await runModule('runNextUp', () => runNextUp());
-  await runModule('runBudgetClarity', () => runBudgetClarity());
-  await runModule('runSoundPreference', () => runSoundPreference());
-  await runModule('runWeddingSeason', () => runWeddingSeason());
-  await runModule('runIndexingPosture', () => runIndexingPosture());
-  await runModule('runGuestShell', () => runGuestShell());
-  await runModule('runRouteInterceptionGuard', () => runRouteInterceptionGuard());
-  await runModule('runGuestTypographyParity', () => runGuestTypographyParity());
-  await runModule('runPublishParity', () => runPublishParity());
-  await runModule('runAcceptedCopyLanded', () => runAcceptedCopyLanded());
-  await runModule('runWeatherProxy', () => runWeatherProxy());
-  await runModule('runThirdPartyAssets', () => runThirdPartyAssets());
-  await runModule('runUltraGateUnification', () => runUltraGateUnification());
-  await runModule('runBannerOffset', () => runBannerOffset());
-  await runModule('runContactSendPath', () => runContactSendPath());
-  await runModule('runMutedTextTokens', () => runMutedTextTokens());
-  await runModule('runSentenceCaseChrome', () => runSentenceCaseChrome());
-  await runModule('runCountUpInstant', () => runCountUpInstant());
-  await runModule('runRsvpTokenMinting', () => runRsvpTokenMinting());
-  await runModule('runGuestRecognition', () => runGuestRecognition());
-  await runModule('runClipboardActions', () => runClipboardActions());
-  await runModule('runInviteLinkIntegrity', () => runInviteLinkIntegrity());
-  await runModule('runGuestCsvExport', () => runGuestCsvExport());
-  await runModule('runBudgetPlanExport', () => runBudgetPlanExport());
-  await runModule('runNotesExport', () => runNotesExport());
-  await runModule('runPhotoExport', () => runPhotoExport());
-  await runModule('runGuestTelemetry', () => runGuestTelemetry());
-  await runModule('runStripImageGps', () => runStripImageGps());
-  await runModule('runTrialStatus', () => runTrialStatus());
-  await runModule('runTrialServerGuard', () => runTrialServerGuard());
-  await runModule('runTrialClientLock', () => runTrialClientLock());
-  await runModule('runIcsExport', () => runIcsExport());
-  await runModule('runGiftCheckout', () => runGiftCheckout());
-  await runModule('runGuestSafeRegistry', () => runGuestSafeRegistry());
-  await runModule('runGuestSafeWedding', () => runGuestSafeWedding());
-  await runModule('runSampleContentNeverPublished', () => runSampleContentNeverPublished());
-  await runModule('runAvaNoPrivatePowers', () => runAvaNoPrivatePowers());
-  await runModule('runNotificationBadge', () => runNotificationBadge());
-  await runModule('runUniverseGallery', () => runUniverseGallery());
+  // EVERY GUARD IN THE DIRECTORY, IN FILENAME ORDER.
+  //
+  // This was seventy-six hand-written `runModule` lines, and above them
+  // seventy-six hand-written imports. Two costs, both paid twice on
+  // 2026-09-06: sample-content-never-published.mjs was in neither list and CI
+  // had never run its 249 checks (R35), and every PR that added a guard
+  // collided with the last one on exactly these lines.
+  //
+  // A guard now runs BECAUSE IT EXISTS. Adding one touches no shared file, so
+  // there is nothing left to collide on and nothing left to forget.
+  //
+  // Sorted by filename, so the order is deterministic and reviewable.
+  //
+  // THE FIRST VERSION OF THIS COMMENT SAID THE GUARDS WERE INDEPENDENT. CI
+  // proved otherwise within a minute: several api/ modules build a Resend or
+  // Stripe client at module scope, and under the old hand-written order one
+  // guard happened to import into that graph first with a placeholder key set.
+  // Filename order reversed the pair and the suite went red. The placeholders
+  // are hoisted into the loader now, so no guard's import depends on which
+  // guard imported first — see tests/persistence/_registry.mjs.
+  const guards = await loadGuards('ci');
+  for (const g of guards) {
+    if (!g.run) {
+      // A module that cannot be run is the exact thing enumeration exists to
+      // make impossible, so it fails loudly rather than being skipped.
+      console.error(`\n  ⚠️  REGISTRY ERROR in ${g.file}: ${g.error}\n`);
+      crashed.push(`${g.file}: ${g.error}`);
+      results.push(false);
+      continue;
+    }
+    await runModule(g.name, g.run);
+  }
+  console.log(`\n  ${guards.length} guard module(s) enumerated from tests/persistence/`
+    + ` — ${LIVE_CREDENTIAL_GUARDS.size} live-credential and ${STANDALONE_GUARDS.size} standalone run elsewhere.`);
 
   const passed = results.filter(Boolean).length;
   const total = results.length;
