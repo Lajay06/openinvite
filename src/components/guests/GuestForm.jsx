@@ -68,8 +68,21 @@ function NoMenuPointer() {
 }
 
 export default function GuestForm({ guest, onSubmit, onCancel, saving = false, mealOptions = [] }) {
+  // CATEGORY STARTS BLANK, NOT 'family'.
+  //
+  // Owner report: a guest added without choosing a side or group came out as
+  // Family. That is the form asserting something about a person nobody told it
+  // — and it is invisible, because the field looks filled in rather than
+  // skipped. The count of the couple's family then includes everyone they
+  // never categorised, which is the kind of number that gets read aloud at a
+  // seating plan.
+  //
+  // Blank is a true statement. Every consumer already handles it: the CSV
+  // writes `g.category || ''` (Guests.jsx:599), the sort accessor the same
+  // (GuestList.jsx:459), and the badge is conditional on the field being set
+  // (GuestList.jsx:1073) so an uncategorised guest simply shows no pill.
   const [formData, setFormData] = useState(guest || {
-    name: '', email: '', phone: '', category: 'family',
+    name: '', email: '', phone: '', category: '',
     tags: [], table_assignment: '', dietary_restrictions: '',
     rsvp_status: 'pending', plus_one: false, plus_one_name: '', plus_one_email: '',
     plus_one_dietary_restrictions: '', notes: '', mailing_address: '',
