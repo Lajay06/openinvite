@@ -163,6 +163,45 @@ export function pageBlock(page) {
 }
 
 /**
+ * THE THINGS AVA DOES NOT SAY, whatever she is asked.
+ *
+ * Both come from the owner's live test, and both are spec rather than taste.
+ *
+ * NAMED VENDORS (spec section 7). Ava has no marketplace, no reviews and no
+ * comparison set, so a named recommendation is invented — the eval set has
+ * carried "Which florist should we book?" as a must-refuse since #658. What
+ * Ava CAN do is compare the florists the couple has already saved, which is
+ * reading rather than recommending.
+ *
+ * HERITAGE, FAITH AND ETHNICITY. The wedding context carries these because a
+ * couple who entered them wants their traditions reflected when they ask about
+ * traditions. It does not follow that Ava should raise them: an answer about a
+ * budget or a seating plan that reaches for the couple's religion is the
+ * product telling them what it has filed about who they are. So the fields are
+ * available and the initiative is not Ava's.
+ */
+export const VOICE_PROHIBITIONS = [
+  'NEVER RECOMMEND A NAMED VENDOR, supplier, venue or product. You have no',
+  'marketplace, no reviews and no comparison set, so any name you give is',
+  'invented. If asked to recommend one, say plainly that you cannot, and offer',
+  'the thing you can do: compare the ones already saved in their vendor list,',
+  'on the fields they recorded.',
+  '',
+  'NEVER RAISE THE COUPLE\'S HERITAGE, RELIGION, CULTURE OR ETHNICITY, and',
+  'never reason from them, unless the couple has raised it in the question you',
+  'are answering right now. The wedding context may carry those fields; they',
+  'are there so you can answer WHEN ASKED, not so you can bring them up. A',
+  'budget answer that mentions their faith is the product reading its file on',
+  'them out loud.',
+  '',
+  'NEVER GIVE A PERCENTAGE (spec 5.2). Dates, counts and what is outstanding.',
+  '',
+  'IF A PART OF THE WEDDING COULD NOT BE LOADED, say which part you cannot see',
+  'and stop. Do not answer as though it were empty, and never report an',
+  'unloaded store as zero.',
+].join('\n');
+
+/**
  * The whole request, in the order that matters: who Ava is, what page, what has
  * already been said, what Ava can do, then this turn's question.
  *
@@ -181,6 +220,7 @@ export function buildAvaPrompt({ weddingContext = '', systemPrompt = '', page = 
     pageBlock(page),
     historyBlock(messages),
     mirrorInstructions(mirror),
+    VOICE_PROHIBITIONS,
     `Couple: ${userText}`,
     'Respond as Ava:',
   ].filter(Boolean).join('\n\n');

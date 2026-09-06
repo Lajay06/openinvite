@@ -1,0 +1,29 @@
+{
+  "weddingDetails": {
+    "id": "fixture-1",
+    "couple1Name": "Theo", "couple2Name": "Larissa", "coupleNames": "Theo & Larissa",
+    "weddingDate": "2027-06-12", "slug": "theo-and-larissa", "websiteEnabled": true,
+    "activeUniverse": "paris",
+    "mainCeremony": { "venueName": "The Town Hall", "startTime": "16:00", "address": "Second floor" },
+    "reception": { "venueName": "The Apartment", "startTime": "19:00" },
+    "budget": { "total": 154000, "categories": { "venue": 60000, "catering": 40000, "photography": 12000, "flowers": 9000, "music": 5500 } }
+  },
+  "budget": [
+    { "id": "b1", "item_name": "Venue hire", "category": "venue", "budgeted_amount": 60000, "actual_amount": 58000, "paid": true },
+    { "id": "b2", "item_name": "Catering", "category": "catering", "budgeted_amount": 40000, "actual_amount": 39450, "paid": false },
+    { "id": "b3", "item_name": "Photography", "category": "photography", "budgeted_amount": 12000, "actual_amount": 8000, "paid": true }
+  ],
+  "vendors": [
+    { "id": "v1", "name": "Golden Hour Photography", "category": "photography", "status": "booked", "deposit_amount": 2000, "deposit_paid": true, "quoted_price": 8000 },
+    { "id": "v2", "name": "Fleur & Stem", "category": "flowers", "status": "quoted", "deposit_amount": 900, "deposit_paid": false, "quoted_price": 9000 }
+  ],
+  "schedule": [
+    { "id": "s1", "event_name": "Rehearsal dinner", "event_date": "2027-06-11", "start_time": "19:00", "location": "The Apartment" }
+  ],
+  "todos": [
+    { "id": "t1", "title": "Confirm florist final count", "due_date": "2020-01-05", "completed": false, "priority": "high" },
+    { "id": "t2", "title": "Choose first dance", "due_date": "2030-01-01", "completed": false },
+    { "id": "t3", "title": "Book celebrant", "completed": true }
+  ],
+  "guests": []
+}

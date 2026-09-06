@@ -76,7 +76,13 @@ const BANNED_WORDS = [
   'theatre',
   'travelled', 'travelling',
   'cancelled',
-  'fulfil', 'fulfilled',
+  // 'fulfilled' WAS HERE AND IS NOT A BRITISH SPELLING. US "fulfill" and
+  // British "fulfil" inflect to the SAME "fulfilled" and "fulfilling" — only
+  // the bare stem differs. Listing the inflection flagged correct US prose,
+  // and it flagged `Promise.allSettled`'s own `status === 'fulfilled'`, which
+  // is a third-party identifier this guard has an allowlist for precisely
+  // because it should not be arguing with the platform.
+  'fulfil', 'fulfils', 'fulfilment',
   'grey',
   'catalogue',
   'programme',
