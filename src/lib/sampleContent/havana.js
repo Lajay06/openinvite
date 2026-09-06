@@ -64,12 +64,13 @@ export const img = (publicId, w = 1600) =>
 
 /** Role -> Cloudinary public id. Derived by the ratio rule in the header. */
 export const HAVANA_IMAGES = {
-  // TWO EXTRA HOME PHOTOS (owner review, 2026-09-06). Havana's seventh asset
-  // was rejected for generated lettering, so there is no clean spare: both are
-  // DOUBLED from Our Story, per the owner's reuse-rather-than-leave-empty rule.
+  // TWO EXTRA HOME PHOTOS. Both were DOUBLED from Our Story, because the
+  // seventh asset was rejected for generated lettering and left no spare. The
+  // owner uploaded three more on 2026-09-06; two of them take these slots and
+  // the third restores the fifth photograph the rejection cost the story grid.
   home: [
-    'hf_20260904_112950_c28145cb-425f-4060-803e-0ef8ad0474c9_okqxth', // DOUBLED from Our Story
-    'tempImageVoljjw_-_Edited_sw0lhh',                                // DOUBLED from Our Story
+    'hf_20260904_112950_e5dc81ba-8cd3-4c2f-9cfe-eb7b8243b602_jwkxcn', // 2752x1536, the street
+    'hf_20260904_112950_8e9e8dc5-fd8e-4447-b968-f147e08d3d8e_nugz0d', // 1792x2400, the teal wall
   ],
   // 2048x1152, 16:9 — the only wide landscape in the folder, so it is both
   // the hero and the share image. A 16:9 crop is already close to the 1.91:1
@@ -106,6 +107,12 @@ export const HAVANA_IMAGES = {
     'hf_20260904_112950_c28145cb-425f-4060-803e-0ef8ad0474c9_okqxth', // 1536x2752, tall
     'tempImageVoljjw_-_Edited_sw0lhh',                                // 1536x2048, the jpg
     'hf_20260904_112949_c18f011a-647f-4bc6-b75e-2752a3736efe_m3zomm', // 2048x1536, the former event card
+    // THE FIFTH PHOTOGRAPH, BACK. The grid dropped to four when `…qucu5d` was
+    // rejected for its "lolor onsy" sign and there was nothing to promote. This
+    // is one of the 2026-09-06 uploads and it is clean: a storefront whose sign
+    // reads "LOLA'S / ICES & SUNDRIES", correctly spelled and plausible, which
+    // is the distinction the rejection was ever about.
+    'hf_20260904_112949_19c2d994-a5bd-4dd7-84d1-fdf0aa3f5f57_ysevmf', // 2400x1792
   ],
 };
 
@@ -117,6 +124,11 @@ export const HAVANA_IMAGES = {
 export const SAMPLE_IMAGE_IDS = [...new Set([
   HAVANA_IMAGES.hero, HAVANA_IMAGES.share,
   HAVANA_IMAGES.experiences, HAVANA_IMAGES.story, ...HAVANA_IMAGES.gallery,
+  // HOME WAS MISSING FROM THIS COUNT. It did not show while both Home
+  // photographs were DOUBLED from the gallery — the Set collapsed them and the
+  // number happened to be right. The moment they became distinct assets the
+  // count would have been two short, and the acknowledgement counts from here.
+  ...HAVANA_IMAGES.home,
 ])];
 
 export const SAMPLE_HAVANA = {

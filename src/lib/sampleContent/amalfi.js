@@ -20,10 +20,12 @@ const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
 export const AMALFI_IMAGES = {
-  // TWO EXTRA HOME PHOTOS (owner review, 2026-09-06). One spare, one DOUBLED.
+  // TWO EXTRA HOME PHOTOS: one spare from the original folder, and one that WAS
+  // DOUBLED from Our Story until the owner's 2026-09-06 upload gave the folder
+  // a second clean spare. Asset refresh.
   home: [
     'hf_20260903_232125_2fad4206-da91-4be8-b52d-edef50dfe588_op3cr9', // spare square, the laid table
-    'hf_20260903_232125_5da0f545-7368-423a-95ed-1cdbbf90b8e3_wlxjor', // DOUBLED from Our Story
+    'hf_20260903_232125_5c529d75-b796-4a24-aa3f-e543464b3cd5_kv9sam', // 2752x1536, WAS DOUBLED (asset refresh)
   ],
   hero:  'hf_20260903_234805_e1dafa9c-c82b-4722-b83c-65208f20bf50_xxsczf', // 2752x1536
   story: [

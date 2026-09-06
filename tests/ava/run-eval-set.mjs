@@ -1,6 +1,6 @@
 import { EVAL_SET, validateEvalSet } from './eval-set.mjs';
 
-console.log('\n  Ava eval set — twenty questions, five that must be refused:\n');
+console.log('\n  Ava eval set — twenty-three questions, five that must be refused and three reported from real use:\n');
 const results = validateEvalSet(EVAL_SET);
 for (const r of results) console.log(`  ${r.ok ? '✅ PASS' : '❌ FAIL'}  ${r.name}${r.detail ? `  (${r.detail})` : ''}`);
 console.log(`\n  ${results.filter((r) => r.ok).length}/${results.length} passed`);

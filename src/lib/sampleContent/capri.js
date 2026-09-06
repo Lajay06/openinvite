@@ -21,12 +21,11 @@ const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
 export const CAPRI_IMAGES = {
-  // TWO EXTRA HOME PHOTOS (owner review, 2026-09-06). Where the folder had no
-  // clean spare the asset is DOUBLED from Our Story — the owner's rule: reuse
-  // rather than leave a role empty.
+  // BOTH WERE DOUBLED from Our Story. The owner uploaded four more assets on
+  // 2026-09-06 and these two are clean and used nowhere else.
   home: [
-    'hf_20260905_005926_ee593192-3fd1-4943-955c-17d37cf03652_vtp4ew', // DOUBLED from Our Story
-    'hf_20260905_005925_36eb96af-09cf-4625-8819-63012283f2af_hog41h', // DOUBLED from Our Story
+    'hf_20260905_005926_07214920-68b5-4ecb-9d8d-3c5130f8b8bb_jygddu', // 2752x1536, the boat
+    'hf_20260905_005926_9ff8ad93-21a0-4c2f-8f41-94cd140aa0ee_ib1qrr', // 1536x2752, the lane down to the water
   ],
   hero:  'hf_20260905_005925_eb63737a-40ce-4eb0-8c7d-dc6e7c574f11_cencw5', // 2048x1152
   story: [

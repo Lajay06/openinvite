@@ -18,12 +18,12 @@ const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
 export const LONDON_IMAGES = {
-  // TWO EXTRA HOME PHOTOS (owner review, 2026-09-06). Where the folder had no
-  // clean spare the asset is DOUBLED from Our Story — the owner's rule: reuse
-  // rather than leave a role empty.
+  // TWO EXTRA HOME PHOTOS. The second was DOUBLED from Our Story because the
+  // folder had no clean spare; the owner's 2026-09-06 upload gave it one, and
+  // it is now a real asset. Nothing distinct was removed to make room.
   home: [
     'hf_20260904_010212_d32d916a-32e0-4b43-811e-664019aaa901_rio25z', // spare portrait
-    'hf_20260904_010212_002fc4a7-ce63-4861-bdc3-c7ac4908c4ae_b4pdim', // DOUBLED from Our Story
+    'hf_20260904_010212_1867c127-6db3-457f-8028-8ef4f7716f48_j79ul3', // 2596x1536, WAS DOUBLED (asset refresh)
   ],
   hero:  'hf_20260904_010212_e9bf35e3-c220-4d78-8595-01d39c75be7e_se9wle', // 2752x1536
   story: [

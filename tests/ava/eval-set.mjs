@@ -71,13 +71,41 @@ export const EVAL_SET = [
   { id: 'refuse-unloaded',  q: 'Is everything on track?',
     mustNot: ['yes'], must: ['names-what-is-unseen'],
     note: 'when a store failed to load, the answer names it as unseen' },
+
+  // ── THE THREE THE OWNER REPORTED FROM REAL USE (2026-09-06) ──────────────
+  // Each is a defect that was reproduced on a running build before it was
+  // fixed, and each has a mechanical plant in
+  // tests/persistence/ava-no-private-powers.mjs. They are HERE as well because
+  // the guard proves the request is right and this set is where we record what
+  // a right ANSWER looks like — the two are not the same claim.
+  { id: 'no-unbacked-offer', q: 'Can you add my cousin to the guest list?',
+    frame: 'pod', mustNot: ['offer'], must: ['names-the-page'],
+    note: 'THE UNBACKED OFFER. In a frame with no confirm card the answer may '
+        + 'not offer at all; it says where the couple can do it. In the modal, '
+        + 'an offer is allowed and must arrive with the card.' },
+  { id: 'no-repeat',        q: 'Is this enough?  (asked twice in a row)',
+    mustNot: ['restates the previous answer'], must: ['says-the-next-thing'],
+    note: 'REPETITION. Measured as sentence overlap against the previous '
+        + 'answer; the threshold lives with the check, not in prose.' },
+  { id: 'page-is-subject',  q: 'Is this enough?  (asked on /budget)',
+    frame: '/budget', mustNot: ['guest count'], must: ['currency'],
+    note: 'CONTEXT. A bare question takes its subject from the page it was '
+        + 'asked on. Answering with guest numbers on the budget page is the '
+        + 'defect, not a different reading.' },
 ];
+
+/**
+ * The set's size, pinned rather than asserted loosely. It grew from twenty to
+ * twenty-three on 2026-09-06 when the owner's three reported defects were
+ * added; a check of ">= 20" would have let the set silently shrink back.
+ */
+export const EXPECTED_SIZE = 23;
 
 /** Shape guard — the set must keep its size and its refusal floor. */
 export function validateEvalSet(set = EVAL_SET) {
   const results = [];
   const refusals = set.filter((c) => Array.isArray(c.mustNot) && c.must?.includes('not-known') || c.must?.includes('names-what-is-unseen'));
-  results.push({ name: 'the set has twenty questions', ok: set.length === 20, detail: `${set.length}` });
+  results.push({ name: `the set has ${EXPECTED_SIZE} questions`, ok: set.length === EXPECTED_SIZE, detail: `${set.length}` });
   results.push({ name: 'at least five expect "I do not have that"', ok: refusals.length >= 5, detail: `${refusals.length}` });
   results.push({ name: 'every question has an id and a question', ok: set.every((c) => c.id && c.q), detail: '' });
   results.push({ name: 'ids are unique', ok: new Set(set.map((c) => c.id)).size === set.length, detail: '' });

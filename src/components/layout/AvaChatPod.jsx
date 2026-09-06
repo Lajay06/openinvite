@@ -1,6 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { buildWeddingContext } from '@/lib/avaContext';
+import { buildAvaPrompt, unwrapLlmReply } from '@/lib/avaRequest';
+import { filterUnbackedOffers } from '@/lib/avaOfferFilter';
+
+/**
+ * THE POD'S MIRROR IS EMPTY, AND THAT IS THE TRUTHFUL VALUE.
+ *
+ * Ava has no private powers. A frame's powers are the actions it can propose
+ * AND confirm, and this frame has no ACTION parser and no confirm card — the
+ * couple has nothing to press. So the honest mirror here is the empty one, and
+ * `mirrorInstructions([])` turns that into the right behaviour rather than
+ * silence: Ava says plainly that she cannot do it here and names the page where
+ * they can. `filterUnbackedOffers` then enforces it on the way out, because a
+ * prompt instruction is a request and not a guarantee.
+ *
+ * GIVING THE POD THE CARD IS THE FOLLOW-UP, and it is a real piece of work
+ * rather than an import: ActionCard is light-surfaced (#0A0A0A on white) and
+ * this pod is dark (#1A1A1A), so it is a restyle plus the executor, plus the
+ * confirm path's write. Filed, not smuggled in here.
+ */
+const POD_MIRROR = [];
 
 function AvaChatPod({ onClose }) {
   const [messages, setMessages] = useState([
@@ -43,15 +63,27 @@ function AvaChatPod({ onClose }) {
 
     try {
       const currentPage = window.location.pathname;
-      const systemPrompt = `You are Ava, the AI wedding specialist built into Openinvite — a premium wedding planning platform. You are warm, knowledgeable, concise, and personal. You help couples with wedding planning advice, timelines, their Openinvite dashboard, Guest Suite (website builder and invitation assets), guest management, budget, vendor management, vow writing, and RSVP management. The Guest Suite is where couples build their wedding website, invitation assets (Save the Date, Digital Invitation, Menu Card, Seating Chart, etc.), Experience Guide, and Policies — accessed via Design Studio → Guest Suite. Keep responses conversational and brief — 2-4 sentences unless they ask for detail. Never use emojis. Use "✦" sparingly for emphasis only. The user is currently on the ${currentPage} page of their Openinvite dashboard.\n\nUse the wedding context below to tailor every answer to this specific couple — their theme, faith/culture, venues, and universe should shape your suggestions, not just generic advice. If the couple has selected cultures and traditions, actively bring in specific, named traditions relevant to those cultures where it's genuinely useful — not just a passing mention that you're "aware" of their background. For example: suggest a Mehndi night in schedule/timeline advice for a couple with Pakistani or Indian heritage, a tea ceremony for Chinese heritage, a sofreh aghd setup for Persian/Iranian heritage — and the equivalent for whatever other cultures they've selected, drawing on real knowledge of that tradition rather than generic "consider your culture" hedging. The context includes a per-guest list (name, RSVP status, table, meal) — this is the owner's own data in their own dashboard, so answer specific questions about a named guest directly (e.g. "has X RSVP'd?", "what table is X on?") using that list, rather than deflecting to aggregate counts only.`;
-      const fullPrompt = [weddingContext, systemPrompt].filter(Boolean).join('\n\n') +
-        `\n\nConversation so far:\n${newMessages.map(m => `${m.role === 'user' ? 'User' : 'Ava'}: ${m.content}`).join('\n')}\n\nRespond as Ava:`;
+      const systemPrompt = `You are Ava, the AI wedding specialist built into Openinvite — a premium wedding planning platform. You are warm, knowledgeable, concise, and personal. You help couples with wedding planning advice, timelines, their Openinvite dashboard, Guest Suite (website builder and invitation assets), guest management, budget, vendor management, vow writing, and RSVP management. The Guest Suite is where couples build their wedding website, invitation assets (Save the Date, Digital Invitation, Menu Card, Seating Chart, etc.), Experience Guide, and Policies — accessed via Design Studio → Guest Suite. Keep responses conversational and brief — 2-4 sentences unless they ask for detail. Never use emojis. Use "✦" sparingly for emphasis only.\n\nUse the wedding context below to tailor every answer to this specific couple — their theme, faith/culture, venues, and universe should shape your suggestions, not just generic advice. If the couple has selected cultures and traditions, actively bring in specific, named traditions relevant to those cultures where it's genuinely useful — not just a passing mention that you're "aware" of their background. For example: suggest a Mehndi night in schedule/timeline advice for a couple with Pakistani or Indian heritage, a tea ceremony for Chinese heritage, a sofreh aghd setup for Persian/Iranian heritage — and the equivalent for whatever other cultures they've selected, drawing on real knowledge of that tradition rather than generic "consider your culture" hedging. The context includes a per-guest list (name, RSVP status, table, meal) — this is the owner's own data in their own dashboard, so answer specific questions about a named guest directly (e.g. "has X RSVP'd?", "what table is X on?") using that list, rather than deflecting to aggregate counts only.`;
+      // Assembled by the shared builder, so this frame and the modal are one
+      // assistant with two doors rather than two assistants. What this frame
+      // had that the modal did not — the conversation, the route — it keeps;
+      // what it never had — a declared list of what Ava can do — it now
+      // states, as the empty list, because that is what is true here.
+      const fullPrompt = buildAvaPrompt({
+        weddingContext,
+        systemPrompt,
+        page: currentPage,
+        messages: newMessages,
+        mirror: POD_MIRROR,
+        userText: text,
+      });
       const response = await base44.integrations.Core.InvokeLLM({
         model: 'claude_sonnet_4_6',
         prompt: fullPrompt,
       });
 
-      const avaReply = typeof response === 'string' ? response : (response?.result ?? "I'm having trouble responding right now. Please try again.");
+      const raw = unwrapLlmReply(response, "I'm having trouble responding right now. Please try again.");
+      const { text: avaReply } = filterUnbackedOffers(raw, POD_MIRROR);
       setMessages(prev => [...prev, { role: 'assistant', content: avaReply, id: Date.now().toString() }]);
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Something went wrong. Please try again.', id: 'error-' + Date.now() }]);

@@ -93,6 +93,7 @@ import { runGiftCheckout } from '../tests/persistence/gift-checkout.mjs';
 import { runGuestSafeRegistry } from '../tests/persistence/guest-safe-registry.mjs';
 import { runGuestSafeWedding } from '../tests/persistence/guest-safe-wedding.mjs';
 import { runSampleContentNeverPublished } from '../tests/persistence/sample-content-never-published.mjs';
+import { runAvaNoPrivatePowers } from '../tests/persistence/ava-no-private-powers.mjs';
 import { runNotificationBadge } from '../tests/persistence/notification-badge.mjs';
 
 async function run() {
@@ -194,6 +195,7 @@ async function run() {
   await runModule('runGuestSafeRegistry', () => runGuestSafeRegistry());
   await runModule('runGuestSafeWedding', () => runGuestSafeWedding());
   await runModule('runSampleContentNeverPublished', () => runSampleContentNeverPublished());
+  await runModule('runAvaNoPrivatePowers', () => runAvaNoPrivatePowers());
   await runModule('runNotificationBadge', () => runNotificationBadge());
 
   const passed = results.filter(Boolean).length;
