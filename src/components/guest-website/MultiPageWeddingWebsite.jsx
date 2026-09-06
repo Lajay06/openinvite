@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { allPageSlugs, customPageFor } from '@/lib/customPages';
+import WeddingCustomPage from './pages/WeddingCustomPage';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useReducedMotion } from 'framer-motion';
 import { resolveUniverseConfig } from '@/lib/websiteThemes';
@@ -79,7 +81,6 @@ import WeddingGoodToKnowPage from './pages/WeddingGoodToKnowPage';
 import { visibleSections } from '@/lib/goodToKnow';
 import InvitationNotAvailable from './InvitationNotAvailable';
 import { withAlwaysOnPages } from '@/lib/guestPages';
-import { WEDDING_PAGES } from '@/lib/websiteThemes';
 
 import { coupleDisplayName } from '@/lib/coupleNames';
 // Background music: reader gated OFF (owner decision, video-sound batch 4b).
@@ -215,9 +216,16 @@ export default function MultiPageWeddingWebsite() {
   // saved before rsvp/celebration were protected may still have them off, and
   // with the date and RSVP gone from the hero that would leave a guest with no
   // date and no way to reply anywhere on the site.
+  // ALL PAGE SLUGS, NOT JUST THE BUILT-IN TWELVE.
+  //
+  // withAlwaysOnPages FILTERS to the list it is given (guestPages.js:26), and
+  // it was given WEDDING_PAGES alone. So a couple's own custom slug was
+  // dropped from enabledPages here, `pageIsAvailable` below was false for it,
+  // and the route served <InvitationNotAvailable /> — the couple's own new
+  // page telling their guests the invitation is not available.
   const enabledPages = withAlwaysOnPages(
     weddingDetails.enabledPages || ['home', 'our-story', 'celebration', 'rsvp'],
-    WEDDING_PAGES.map(p => p.slug),
+    allPageSlugs(weddingDetails),
   );
   // A PAGE IS REACHABLE IF, AND ONLY IF, THE NAV WOULD LINK TO IT.
   //
@@ -267,7 +275,12 @@ export default function MultiPageWeddingWebsite() {
   // following a link to an unpublished site meets.
   if (!pageIsAvailable) return <InvitationNotAvailable />;
 
-  const PageComponent = PAGE_COMPONENTS[page] || WeddingHomePage;
+  // A custom slug resolves to the custom-page renderer, not to the home page.
+  // The `|| WeddingHomePage` fallback stays for an unknown slug, which is now
+  // unreachable anyway — pageIsAvailable above refuses anything that is
+  // neither a real page nor an available sub-page.
+  const PageComponent = PAGE_COMPONENTS[page]
+    || (customPageFor(weddingDetails, page) ? WeddingCustomPage : WeddingHomePage);
   const universeConfig = resolveUniverseConfig(weddingDetails);
 
   /**
@@ -433,6 +446,7 @@ export default function MultiPageWeddingWebsite() {
 
       {/* Navigation */}
       <WeddingWebsiteNav
+        weddingDetails={weddingDetails}
         weddingName={coupleDisplayName(weddingDetails)}
         theme={theme}
         typography={typography}
