@@ -10,6 +10,8 @@
  * navy/lemon palette, long since corrected in the real config).
  */
 import { UNIVERSE_CONFIGS } from './websiteThemes.js';
+import { getSampleWedding } from './sampleContent/index.js';
+import { subjectCropUrl } from './universeGallery.js';
 
 // Gating is config-driven: a universe is Ultra iff its own UNIVERSE_CONFIGS
 // entry declares tier: 'ultra' (feat/universes-expansion-10 — previously a
@@ -81,4 +83,59 @@ export const UNIVERSE_CATALOG = ORDER.map(id => {
 
 export function getUniverse(id) {
   return UNIVERSE_CATALOG.find(u => u.id === id) || null;
+}
+
+/**
+ * THE PICTURE MARKETING SHOWS FOR A UNIVERSE.
+ *
+ * Owner ruling 2026-09-07: the twenty-universe grid and the five-universe
+ * scroll were still serving `/universes/<id>.jpg` — local files that predate
+ * the Cloudinary folders the owner has since replaced. This returns the
+ * universe's CURRENT hero, the same photograph the design studio shows, so
+ * marketing and the product cannot drift apart.
+ *
+ * RESOLVED LAZILY, NOT BAKED INTO THE CATALOG. The first version computed it
+ * inside the UNIVERSE_CATALOG map and every universe came back with the old
+ * static: sampleContent is not initialised at the moment this module's
+ * top-level map runs, so `getSampleWedding` returned undefined twenty times
+ * and the fallback won — silently, which is the worst way for that to fail.
+ * A function called at render time has no such ordering problem.
+ *
+ * The sample URL carries `w_2048` for a full-bleed hero — four times the bytes
+ * a grid tile needs, and the wrong shape. `c_fill,g_faces:auto` takes the
+ * tile's own 3:2 crop from the master and centres it on the PEOPLE — g_auto
+ * alone cropped Kyoto's man out of his own tile, because saliency on a wide
+ * photograph of two people often picks the architecture between them.
+ * g_faces:auto falls back to g_auto by itself when no face is detected.
+ *
+ * @param {string} id
+ * @returns {string|null} a Cloudinary URL, or the local static as a fallback
+ */
+export function universeTileImage(id, { width = 1200, height = 800 } = {}) {
+  const cover = getSampleWedding(id)?.coverPhoto;
+  const cropped = cover ? subjectCropUrl(cover, { width, height }) : null;
+  return cropped || getUniverse(id)?.imageUrl || null;
+}
+
+/**
+ * THE FULL-BLEED SCROLL'S OWN WIDTH, and the ceiling is not a guess.
+ *
+ * /universes' five-universe scroll renders at the full viewport — 1440 CSS px
+ * on a desktop, so 2880 device px at 2× — while it was being served the TILE
+ * url at w_1200. That is upscaling by more than double, measured, and it is
+ * the softness the owner is looking at.
+ *
+ * 1376 IS THE SMALLEST MASTER IN THE TWENTY (tulum). Asking for more than a
+ * master has would make Cloudinary upscale and CHARGE for it — the standing
+ * bandwidth ruling, and the reason `w_1600` on a 1280px master measured 34%
+ * more bytes than no width at all. So this is the largest width guaranteed
+ * not to upscale ANY universe.
+ *
+ * It is still short of 2880. The owner is uploading 4K masters; when they
+ * land, this constant is the one line to raise.
+ */
+export const SCROLL_SAFE_WIDTH = 1376;
+
+export function universeScrollImage(id) {
+  return universeTileImage(id, { width: SCROLL_SAFE_WIDTH, height: Math.round(SCROLL_SAFE_WIDTH * 9 / 16) });
 }

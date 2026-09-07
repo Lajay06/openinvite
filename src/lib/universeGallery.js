@@ -65,11 +65,34 @@ export function publicIdOf(url) {
  * would apply in sequence and the first would already have thrown away the
  * pixels the crop wants.
  */
-export function galleryUrl(url, { width = GALLERY_WIDTH, height = GALLERY_HEIGHT } = {}) {
+export function galleryUrl(url, { width = GALLERY_WIDTH, height = GALLERY_HEIGHT, gravity } = {}) {
   const m = CLOUD_RE.exec(String(url || ''));
   if (!m) return null;
   const [, base, , publicId] = m;
-  return `${base}/c_fill,g_auto,f_auto,q_auto,w_${width},h_${height}/${publicId}`;
+  return `${base}/c_fill,g_${gravity || 'auto'},f_auto,q_auto,w_${width},h_${height}/${publicId}`;
+}
+
+/**
+ * THE CROP KEEPS THE PEOPLE IN IT.
+ *
+ * Owner, 2026-09-07: Kyoto's tile cut the man off. `g_auto` picks the most
+ * "interesting" region by saliency, which on a wide photograph of two people
+ * standing apart is often the architecture between them — so the crop lands
+ * beside the couple rather than on them.
+ *
+ * `g_faces:auto` is Cloudinary's own answer and is the right instrument: it
+ * centres on every detected face, and FALLS BACK TO g_auto by itself when it
+ * detects none. One delivery URL, no per-tile tuning, no hand-set
+ * object-position — which is the trap the how-to warns about, because a
+ * position tuned to one photograph is wrong for the next one uploaded into
+ * the same slot.
+ *
+ * The art-directed marketing HEROES keep the how-to's object-position path.
+ * Those are single, chosen images with a composition someone decided; these
+ * are twenty slots whose contents change.
+ */
+export function subjectCropUrl(url, opts = {}) {
+  return galleryUrl(url, { ...opts, gravity: 'faces:auto' });
 }
 
 /**

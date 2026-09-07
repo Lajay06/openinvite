@@ -226,7 +226,7 @@ export default function ChoosePlan() {
           </div>
           <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 12px', fontFamily: PJS }}>24-month access · one-time payment</p>
           <p style={{ fontSize: 14, lineHeight: 1.55, color: 'rgba(10,10,10,0.6)', margin: '0 0 14px', fontFamily: PJS }}>
-            Everything in Pro, plus the full digital wedding suite: website, invitations, and RSVP.
+            Everything in Pro, plus the full digital wedding suite: your guest suite, invitations, and RSVP.
           </p>
           <div style={{ height: 1, background: 'rgba(10,10,10,0.06)', marginBottom: 8 }} />
           <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', margin: '0 0 8px', letterSpacing: '0.04em', fontFamily: PJS }}>

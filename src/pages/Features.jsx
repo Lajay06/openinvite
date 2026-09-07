@@ -89,7 +89,7 @@ export default function Features() {
       <section style={{ background: "#FFFFFF", padding: "80px clamp(24px, 6vw, 80px)", textAlign: "center" }}>
         <div style={{ maxWidth: 1300, margin: "0 auto" }}>
           <p style={{ fontSize: "clamp(28px, 4vw, 52px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.2, color: "#0A0A0A", fontFamily: "Plus Jakarta Sans, sans-serif", margin: 0 }}>
-            Openinvite brings your guest list, budget, schedule, seating chart and website into one connected platform, so nothing falls through the cracks.
+            Openinvite brings your guest list, budget, schedule, seating chart and guest suite into one connected platform, so nothing falls through the cracks.
           </p>
         </div>
       </section>
