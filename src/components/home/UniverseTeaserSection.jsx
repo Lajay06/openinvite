@@ -38,7 +38,7 @@ export default function UniverseTeaserSection() {
       <div style={{ maxWidth: 1100, margin: "0 auto", textAlign: "center" }}>
         <h2 style={{
           fontSize: "clamp(32px, 5vw, 60px)", fontWeight: 700, color: "#FFFFFF",
-          lineHeight: 1.08, margin: "0 auto 20px", maxWidth: 1000,
+          letterSpacing: "-0.03em", lineHeight: 1.08, margin: "0 auto 20px", maxWidth: 1000,
           fontFamily: "'Plus Jakarta Sans', sans-serif",
           opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
           transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
@@ -67,7 +67,7 @@ export default function UniverseTeaserSection() {
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 55%, rgba(0,0,0,0) 100%)" }} />
               <p style={{
                 position: "absolute", bottom: 16, left: 16, right: 16, color: "#FFFFFF", fontWeight: 700,
-                fontSize: 18, margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontSize: 18, letterSpacing: "-0.01em", margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif",
               }}>
                 {u.name}
               </p>
@@ -80,7 +80,7 @@ export default function UniverseTeaserSection() {
           style={{
             padding: "16px 40px", borderRadius: 999, border: "none",
             background: "#E03553", color: "#FFFFFF",
-            fontSize: 14, fontWeight: 600, cursor: "pointer",
+            fontSize: 14, fontWeight: 600, letterSpacing: "0.02em", cursor: "pointer",
             fontFamily: "'Plus Jakarta Sans', sans-serif",
             opacity: visible ? 1 : 0, transition: `opacity 0.6s ${EASE} 0.2s`,
           }}

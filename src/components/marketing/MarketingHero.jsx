@@ -71,7 +71,7 @@ export default function MarketingHero({
         position: "relative", zIndex: 10, textAlign: isLeft ? "left" : "center", maxWidth,
         margin: isLeft ? "0" : "0 auto", padding: isLeft ? "0 clamp(24px, 6vw, 80px)" : "0 40px",
       }}>
-        <h1 style={{ fontSize: "clamp(36px, 5vw, 64px)", fontWeight: 700, lineHeight: 1.1, color: "#FFFFFF", fontFamily: PJS, margin: cta ? "0 0 24px" : 0 }}>
+        <h1 style={{ fontSize: "clamp(36px, 5vw, 64px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.1, color: "#FFFFFF", fontFamily: PJS, margin: cta ? "0 0 24px" : 0 }}>
           {title}
         </h1>
         {cta && <ApplePillButton href={cta.href} light={false}>{cta.label}</ApplePillButton>}

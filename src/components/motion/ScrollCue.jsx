@@ -24,7 +24,7 @@ export default function ScrollCue({ delay = 2000 }) {
         pointerEvents: 'none',
       }}
     >
-      <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>Scroll</span>
+      <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 9, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.4)' }}>Scroll</span>
       <div style={{ width: 1, height: 40, background: '#333', overflow: 'hidden' }}>
         <div style={{
           width: '100%',

@@ -29,8 +29,18 @@ const SRC = join(ROOT, 'src');
 
 /** The couple's published site and the studio previews of it. */
 const ARTWORK = /^components\/(guest-website|universe-studio|website-builder)\/|^pages\/GuestMusic\.jsx$/;
-/** Marketing and auth surfaces — display type, not dashboard chrome. */
-const MARKETING = /^components\/public\/|^pages\/(Home|Features|Ava|Universes|Pricing|About|Contact|Tour|FAQ|Gifting|GiftPurchaseSuccess|ScrollMorph|MockUniverseA|MockUniverseB|MockUniverseC|Login|ForgotPassword|ResetPassword|PrivacyPolicy|TermsOfService|CookiePolicy|DataDeletion|RefundPolicy|ChoosePlan|CollaboratorAccept)\.jsx$/;
+/**
+ * Marketing and auth surfaces — display type, not dashboard chrome.
+ *
+ * components/home, components/marketing and components/motion are on this
+ * list for a reason worth recording: the first sweep DID strip their tracking,
+ * because the exclusion named only `components/public/`. CI caught it in a
+ * way a design guard could not — the prerendered-freshness check went red,
+ * since production serves committed snapshots of those pages to crawlers and
+ * they no longer matched the source. The scope was always "the dashboard";
+ * this is that scope, stated accurately.
+ */
+const MARKETING = /^components\/(public|home|marketing|motion)\/|^pages\/(Home|Features|Ava|Universes|Pricing|About|Contact|Tour|FAQ|Gifting|GiftPurchaseSuccess|ScrollMorph|MockUniverseA|MockUniverseB|MockUniverseC|Login|ForgotPassword|ResetPassword|PrivacyPolicy|TermsOfService|CookiePolicy|DataDeletion|RefundPolicy|ChoosePlan|CollaboratorAccept)\.jsx$/;
 
 function walk(dir, out = []) {
   for (const e of readdirSync(dir)) {

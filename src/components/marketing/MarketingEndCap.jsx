@@ -139,6 +139,7 @@ export default function MarketingEndCap({
           style={{
             fontSize: "clamp(32px, 4vw, 56px)",
             fontWeight: 700,
+            letterSpacing: "-0.03em",
             color: "#FFFFFF",
             hyphens: "none",
             marginBottom: 0,

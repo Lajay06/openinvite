@@ -156,7 +156,7 @@ export default function HorizontalScrollSection() {
               
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%)" }} />
                 <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "40px 24px", color: "#fff", zIndex: 2 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.4)", marginBottom: 12 }}>{card.num}</p>
+                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.3em", color: "rgba(255,255,255,0.4)", marginBottom: 12 }}>{card.num}</p>
                   <h3 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8, hyphens: "none" }}>{card.title}</h3>
                   <p style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", marginBottom: 16 }}>{card.desc}</p>
                 </div>
@@ -279,7 +279,7 @@ export default function HorizontalScrollSection() {
                 zIndex: 10
               }}>
               
-                <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.4)", marginBottom: 16 }}>{card.num}</p>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.3em", color: "rgba(255,255,255,0.4)", marginBottom: 16 }}>{card.num}</p>
                 <h2 style={{ fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 600, marginBottom: 12, hyphens: "none", maxWidth: 500, lineHeight: 1.1 }}>
                    {card.title}
                 </h2>
@@ -318,7 +318,7 @@ export default function HorizontalScrollSection() {
               textAlign: "center"
             }}>
             
-            <h2 style={{ fontSize: "clamp(48px, 8vw, 96px)", fontWeight: 600, color: "#fff", marginBottom: 16, lineHeight: 1 }} className="text-base">
+            <h2 style={{ fontSize: "clamp(48px, 8vw, 96px)", fontWeight: 600, color: "#fff", marginBottom: 16, letterSpacing: "-0.03em", lineHeight: 1 }} className="text-base">
               40 planning tools.
             </h2>
             <p style={{ fontSize: "clamp(20px, 3vw, 32px)", fontWeight: 400, color: "rgba(255,255,255,0.6)", marginBottom: 48 }}>
