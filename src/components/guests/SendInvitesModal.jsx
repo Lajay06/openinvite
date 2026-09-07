@@ -645,7 +645,7 @@ export default function SendInvitesModal({
           flexShrink: 0,
         }}>
           <div>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0A0A0A', margin: '0 0 2px' }}>
+            <h2 style={{ fontSize: 14, fontWeight: 800, color: '#0A0A0A', margin: '0 0 2px' }}>
               Send {TYPE_LABELS[type].toLowerCase()}
             </h2>
             <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.45)', margin: 0 }}>
@@ -684,7 +684,7 @@ export default function SendInvitesModal({
             {/* ── STEP 1: Select guests ──────────────────────────────────── */}
             {step === 1 && (
               <div>
-                <h3 style={{ fontSize: 22, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
+                <h3 style={{ fontSize: 14, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
                   Who are you sending to?
                 </h3>
                 <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px' }}>
@@ -799,7 +799,7 @@ export default function SendInvitesModal({
             {/* ── STEP 2: Compose ────────────────────────────────────────── */}
             {step === 2 && (
               <div>
-                <h3 style={{ fontSize: 22, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
+                <h3 style={{ fontSize: 14, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
                   Compose your message
                 </h3>
                 <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 24px' }}>
@@ -875,7 +875,7 @@ export default function SendInvitesModal({
             {/* ── STEP 3: Choose channel ─────────────────────────────────── */}
             {step === 3 && (
               <div>
-                <h3 style={{ fontSize: 22, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
+                <h3 style={{ fontSize: 14, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
                   How would you like to send?
                 </h3>
                 <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 28px' }}>
@@ -959,7 +959,7 @@ export default function SendInvitesModal({
             {/* ── STEP 4: Review & send ──────────────────────────────────── */}
             {step === 4 && (
               <div>
-                <h3 style={{ fontSize: 22, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
+                <h3 style={{ fontSize: 14, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
                   Ready to send?
                 </h3>
                 <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 24px' }}>
@@ -1070,7 +1070,7 @@ export default function SendInvitesModal({
                 style={{
                   display: 'flex', alignItems: 'center', gap: 6, padding: '10px 18px',
                   border: '1px solid rgba(10,10,10,0.15)', background: '#FFFFFF', color: '#0A0A0A',
-                  borderRadius: 999, fontSize: 14, fontWeight: 600, cursor: 'pointer', ...F,
+                  borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer', ...F,
                 }}
               >
                 <ArrowLeft size={14} />
@@ -1091,7 +1091,7 @@ export default function SendInvitesModal({
                 style={{
                   display: 'flex', alignItems: 'center', gap: 6, padding: '10px 22px',
                   background: '#E03553', color: '#FFFFFF',
-                  border: 'none', borderRadius: 999, fontSize: 14, fontWeight: 700, cursor: 'pointer', ...F,
+                  border: 'none', borderRadius: 999, fontSize: 12, fontWeight: 700, cursor: 'pointer', ...F,
                   opacity: ((step === 1 && !canProceedStep1) || (step === 2 && !canProceedStep2)) ? 0.45 : 1,
                   transition: 'opacity 0.15s ease',
                 }}

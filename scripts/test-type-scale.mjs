@@ -39,6 +39,9 @@ const SEEDED = {
 const PAGES = [
   '/DailyUpdate', '/Guests', '/Schedule', '/Budget', '/TodoList', '/Vendors',
   '/Seating', '/Moodboard', '/Messages', '/Music', '/Polls', '/ceremony-details',
+  // The send flow is a page now, and the owner named its buttons: "Send to
+  // guests" and "Back" were huge.
+  '/SendInvites',
 ];
 
 const results = [];
@@ -81,6 +84,10 @@ for (const path of PAGES) {
         .map((n) => n.textContent.trim())
         .join(' ')
         .trim();
+      // A CHECKBOX HAS NO TEXT. Its `value` defaults to the string "on",
+      // which is not something anyone reads — the first version reported
+      // every checkbox on the send page as a 16px control called "on".
+      if (/^(checkbox|radio)$/i.test(el.getAttribute('type') || '')) continue;
       const text = own || el.value || el.getAttribute('placeholder') || '';
       if (!text) continue;
       out.push(`${size}px ${el.tagName.toLowerCase()}: ${text.slice(0, 22)}`);
