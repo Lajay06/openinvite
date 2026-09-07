@@ -52,7 +52,7 @@ import {
   renderInvitationEmail, getEmailTypeConfig, EMAIL_TYPES,
   isVideoUrl, emailBannerUrl, getBannerImageUrl, getDefaultBannerChoice,
 } from '../../src/lib/emailTemplate.js';
-import { emailPalette, PALETTE_VARIANT_IDS, BUTTON_STYLE_IDS } from '../../src/lib/emailPalette.js';
+import { emailPalette, PALETTE_VARIANT_IDS } from '../../src/lib/emailPalette.js';
 import { UNIVERSE_EMAIL_STYLES } from '../../src/lib/universeEmailStyles.js';
 import { contrastRatio } from '../../src/lib/surfaceTint.js';
 import {
