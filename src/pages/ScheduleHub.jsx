@@ -21,6 +21,7 @@ import CountUp from "@/components/shared/CountUp";
 import { sortScheduleItems } from '@/lib/scheduleOrder';
 import { buildScheduleEvents } from '@/lib/scheduleEvents';
 import ScheduleTable from '../components/schedule/ScheduleTable';
+import SubscribeCalendar from '../components/schedule/SubscribeCalendar';
 import PageConsiderations from '../components/shared/PageConsiderations';
 import { getMyInvitation, getMyWeddingDetails } from '@/lib/resolveMyWedding';
 const Schedule = base44.entities.Schedule;
@@ -288,7 +289,7 @@ export default function ScheduleHub() {
             className="btn-editorial-secondary"
             style={{ opacity: scheduleItems.length === 0 ? 0.4 : 1 }}
           >
-            Add to calendar (.ics)
+            Download a snapshot (.ics)
           </button>
           {!readOnly && (
             <button onClick={handleAddEvent} className="btn-primary">
@@ -328,7 +329,14 @@ export default function ScheduleHub() {
           }}
         />
       )}
-      {activeTab === "calendar" && <CalendarPage embedded hideChrome />}
+      {activeTab === "calendar" && (
+        <>
+          <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
+            <SubscribeCalendar />
+          </div>
+          <CalendarPage embedded hideChrome />
+        </>
+      )}
       {activeTab === "considerations" && (
         <div style={{ padding: "32px 32px 48px", maxWidth: 860 }}>
           <PageConsiderations pageKey="schedule" />
