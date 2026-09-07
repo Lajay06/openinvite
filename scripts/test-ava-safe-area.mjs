@@ -24,6 +24,9 @@ const BASE = process.env.CAPTURE_BASE_URL || 'http://localhost:5173';
 const PAGES = [
   '/DailyUpdate', '/Guests', '/Schedule', '/Budget', '/TodoList',
   '/Vendors', '/Seating', '/Moodboard', '/Messages', '/ceremony-details',
+  // The send flow is a page now, and its Next/Back live at the bottom right —
+  // the exact control the owner found behind the Ava button.
+  '/SendInvites',
 ];
 
 const results = [];

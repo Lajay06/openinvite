@@ -149,8 +149,54 @@ function WhatsAppPreview({ guest, coupleName, weddingDate, rsvpUrl }) {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
+/**
+ * The flow's frame: a full-width PAGE, or the side sheet it used to be.
+ *
+ * Both render the same children. The page keeps the sheet's column layout
+ * (`flex flex-col`) so every step inside it lays out identically — the owner's
+ * "same steps and layout logic" is not a promise, it is the same subtree.
+ */
+function Shell({ mounted, asPage, onClose, type, children }) {
+  if (asPage) {
+    return (
+      <div
+        aria-label="Send invites"
+        style={{
+          display: 'flex', flexDirection: 'column',
+          // 48px top bar; the flow owns everything below it.
+          minHeight: 'calc(100vh - 48px)', background: '#FFFFFF', ...F,
+        }}
+      >
+        {children}
+      </div>
+    );
+  }
+  return (
+    <Sheet open={mounted} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <SheetContent
+        side="right"
+        hideClose
+        title={`Send ${TYPE_LABELS[type].toLowerCase()}`}
+        aria-label="Send invites"
+        className="p-0 gap-0 flex flex-col"
+        style={{ width: 'min(94vw, 1240px)', maxWidth: 'min(94vw, 1240px)', ...F }}
+      >
+        {children}
+      </SheetContent>
+    </Sheet>
+  );
+}
+
 export default function SendInvitesModal({
   guests, onClose, onSent, initialType = 'invite', defaultFilter, initialSelectedIds, restrictEventIds,
+  // ── asPage ────────────────────────────────────────────────────────────
+  // Owner ruling 2026-09-07: send invites is its own page, full width, not a
+  // half-width panel over the guest list. The FLOW is unchanged — same four
+  // steps, same selection, same preview, same send — so this swaps the CHROME
+  // and nothing else. A second component would have been a second answer to
+  // "who are we sending to", and that is the one question this must not have
+  // two of.
+  asPage = false,
 }) {
   const { user } = useAuth();
   const [mounted, setMounted] = useState(false);
@@ -558,7 +604,10 @@ export default function SendInvitesModal({
         {previewGuest ? `Showing: ${previewGuest.name}` : 'Select a guest to preview their exact events — showing all wedding events for now.'}
       </p>
 
-      <div style={{ padding: '14px 20px', borderTop: '1px solid rgba(10,10,10,0.12)' }}>
+      {/* THE AVA CORNER IS RESERVED. As a full-width page this pane runs to
+          the bottom-right of the viewport, which is where the floating Ava
+          button sits — the same collision that hid "Next" in the panel. */}
+      <div className="oi-ava-safe" style={{ padding: '14px 20px', borderTop: '1px solid rgba(10,10,10,0.12)' }}>
         <button
           onClick={handleSendTest}
           disabled={sendingTest}
@@ -587,15 +636,7 @@ export default function SendInvitesModal({
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
-      <Sheet open={mounted} onOpenChange={(open) => { if (!open) handleClose(); }}>
-        <SheetContent
-          side="right"
-          hideClose
-          title={`Send ${TYPE_LABELS[type].toLowerCase()}`}
-          aria-label="Send invites"
-          className="p-0 gap-0 flex flex-col"
-          style={{ width: 'min(94vw, 1240px)', maxWidth: 'min(94vw, 1240px)', ...F }}
-        >
+      <Shell mounted={mounted} asPage={asPage} onClose={handleClose} type={type}>
 
         {/* Top bar */}
         <div style={{
@@ -604,16 +645,24 @@ export default function SendInvitesModal({
           flexShrink: 0,
         }}>
           <div>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0A0A0A', margin: '0 0 2px' }}>
+            <h2 style={{ fontSize: 14, fontWeight: 800, color: '#0A0A0A', margin: '0 0 2px' }}>
               Send {TYPE_LABELS[type].toLowerCase()}
             </h2>
             <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.45)', margin: 0 }}>
               Step {step} of {STEP_LABELS.length} — {STEP_LABELS[step - 1]}
             </p>
           </div>
-          <button onClick={handleClose} aria-label="Close send invites modal" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: 4, marginTop: -4 }}>
-            <X size={20} />
-          </button>
+          {/* A PAGE LEAVES, A PANEL CLOSES. An × on a full-width page reads
+              as a modal that has forgotten it is a page. */}
+          {asPage ? (
+            <button onClick={handleClose} style={{ background: 'none', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 999, cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: '6px 14px', fontSize: 12, fontWeight: 600, ...F }}>
+              Back to guest list
+            </button>
+          ) : (
+            <button onClick={handleClose} aria-label="Close send invites modal" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', padding: 4, marginTop: -4 }}>
+              <X size={20} />
+            </button>
+          )}
         </div>
 
         {/* Step indicator */}
@@ -635,7 +684,7 @@ export default function SendInvitesModal({
             {/* ── STEP 1: Select guests ──────────────────────────────────── */}
             {step === 1 && (
               <div>
-                <h3 style={{ fontSize: 22, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
+                <h3 style={{ fontSize: 14, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
                   Who are you sending to?
                 </h3>
                 <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px' }}>
@@ -750,7 +799,7 @@ export default function SendInvitesModal({
             {/* ── STEP 2: Compose ────────────────────────────────────────── */}
             {step === 2 && (
               <div>
-                <h3 style={{ fontSize: 22, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
+                <h3 style={{ fontSize: 14, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
                   Compose your message
                 </h3>
                 <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 24px' }}>
@@ -826,7 +875,7 @@ export default function SendInvitesModal({
             {/* ── STEP 3: Choose channel ─────────────────────────────────── */}
             {step === 3 && (
               <div>
-                <h3 style={{ fontSize: 22, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
+                <h3 style={{ fontSize: 14, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
                   How would you like to send?
                 </h3>
                 <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 28px' }}>
@@ -910,7 +959,7 @@ export default function SendInvitesModal({
             {/* ── STEP 4: Review & send ──────────────────────────────────── */}
             {step === 4 && (
               <div>
-                <h3 style={{ fontSize: 22, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
+                <h3 style={{ fontSize: 14, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
                   Ready to send?
                 </h3>
                 <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 24px' }}>
@@ -1021,7 +1070,7 @@ export default function SendInvitesModal({
                 style={{
                   display: 'flex', alignItems: 'center', gap: 6, padding: '10px 18px',
                   border: '1px solid rgba(10,10,10,0.15)', background: '#FFFFFF', color: '#0A0A0A',
-                  borderRadius: 999, fontSize: 14, fontWeight: 600, cursor: 'pointer', ...F,
+                  borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer', ...F,
                 }}
               >
                 <ArrowLeft size={14} />
@@ -1042,7 +1091,7 @@ export default function SendInvitesModal({
                 style={{
                   display: 'flex', alignItems: 'center', gap: 6, padding: '10px 22px',
                   background: '#E03553', color: '#FFFFFF',
-                  border: 'none', borderRadius: 999, fontSize: 14, fontWeight: 700, cursor: 'pointer', ...F,
+                  border: 'none', borderRadius: 999, fontSize: 12, fontWeight: 700, cursor: 'pointer', ...F,
                   opacity: ((step === 1 && !canProceedStep1) || (step === 2 && !canProceedStep2)) ? 0.45 : 1,
                   transition: 'opacity 0.15s ease',
                 }}
@@ -1068,8 +1117,7 @@ export default function SendInvitesModal({
             )}
           </div>
         </div>
-        </SheetContent>
-      </Sheet>
+      </Shell>
     </>
   );
 }

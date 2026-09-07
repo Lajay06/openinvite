@@ -20,7 +20,6 @@ import GuestForm from "../components/guests/GuestForm";
 import GuestList from "../components/guests/GuestList";
 import ImportGuestModal from "../components/guests/ImportGuestModal";
 import BulkActionBar from "../components/guests/BulkActionBar";
-import SendInvitesModal from "../components/guests/SendInvitesModal";
 import SetEventsModal from "../components/guests/SetEventsModal";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
@@ -135,7 +134,6 @@ export default function Guests() {
   const [collaboratorGuestsUnavailable, setCollaboratorGuestsUnavailable] = useState(false);
 
   const [selectedIds, setSelectedIds] = useState(() => new Set());
-  const [sendModalConfig, setSendModalConfig] = useState(null); // { initialSelectedIds } | { defaultFilter }
   const [setEventsGuests, setSetEventsGuests] = useState(null); // array of guests, or null
   // P2a. EventDetails asks who a newly created event is for and sends the
   // answer here, because THIS page already holds the guest list — which makes
@@ -654,22 +652,20 @@ export default function Guests() {
   const selectedGuests = guests.filter(g => selectedIds.has(g.id));
 
   /* ── Send invites ─────────────────────────────────────────────────────── */
+  // SEND IS A PAGE NOW, not a panel over this one (owner ruling 2026-09-07).
+  // The selection travels as router state, so the flow starts on exactly the
+  // guests that were ticked — and /SendInvites opened directly is simply
+  // "everyone not yet invited", which is the same default the panel had.
+  const goToSend = (config) => navigate('/SendInvites', { state: config });
+
   const openSendForSelection = () => {
     // A gate that returns silently is the same defect as an unhandled
     // rejection: the user acts, nothing happens, nothing explains. Say what it
     // needs -- consistent with the Ultra gates unified in #531.
     if (isPro) { toast('Sending invitations is part of Ultra — upgrade to invite your guests.'); return; }
-    if (selectedIds.size > 0) {
-      setSendModalConfig({ initialSelectedIds: Array.from(selectedIds) });
-    } else {
-      setSendModalConfig({ defaultFilter: 'not_invited' });
-    }
-  };
-
-  const handleSent = () => {
-    setSelectedIds(new Set());
-    setSendModalConfig(null);
-    loadGuests();
+    goToSend(selectedIds.size > 0
+      ? { initialSelectedIds: Array.from(selectedIds) }
+      : { defaultFilter: 'not_invited' });
   };
 
   /* ── Copy links (bulk) ───────────────────────────────────────────────── */
@@ -727,7 +723,7 @@ export default function Guests() {
 
   const handleSetEventsSaved = (newlyInvitedEventIds) => {
     if (autoSendAfterSetEvents && !isPro) {
-      setSendModalConfig({ initialSelectedIds: [autoSendAfterSetEvents] });
+      goToSend({ initialSelectedIds: [autoSendAfterSetEvents] });
     } else if (editingEventsGuestId && newlyInvitedEventIds?.length > 0 && !isPro) {
       const guestId = editingEventsGuestId;
       toast((t) => (
@@ -738,7 +734,7 @@ export default function Guests() {
           <button
             onClick={() => {
               toast.dismiss(t.id);
-              setSendModalConfig({ initialSelectedIds: [guestId], restrictEventIds: newlyInvitedEventIds });
+              goToSend({ initialSelectedIds: [guestId], restrictEventIds: newlyInvitedEventIds });
             }}
             className="btn-primary"
             style={{ fontSize: 12, padding: '6px 14px', whiteSpace: 'nowrap' }}
@@ -945,7 +941,7 @@ export default function Guests() {
 
           {!isCollaborating && (
             <TabsContent value="emails" className="mt-8">
-              <EmailTemplates guests={guests} onUseTemplate={(t) => setSendModalConfig({ type: t })} />
+              <EmailTemplates guests={guests} onUseTemplate={(t) => goToSend({ type: t })} />
             </TabsContent>
           )}
 
@@ -984,17 +980,6 @@ export default function Guests() {
       />
 
 
-      {sendModalConfig && (
-        <SendInvitesModal
-          guests={guests}
-          defaultFilter={sendModalConfig.defaultFilter}
-          initialSelectedIds={sendModalConfig.initialSelectedIds}
-          initialType={sendModalConfig.type}
-          restrictEventIds={sendModalConfig.restrictEventIds}
-          onClose={() => setSendModalConfig(null)}
-          onSent={handleSent}
-        />
-      )}
 
       {/* P2a: THE COUNT BEFORE THE WRITE. "Invite everyone" touches every
           Guest record on the wedding — the largest blast radius any couple
