@@ -51,12 +51,25 @@ export async function runGuestListPlusOnes() {
   check('PLANT: the meal never renders in the Contact cell',
     /\{\/\* Contact — a plus-one has none\. Empty, not borrowed\. \*\/\}\s*<TableCell \/>/.test(code('src/components/guests/GuestList.jsx')),
     'the cell is empty on purpose');
-  check('  the meal sits under the name instead',
-    /plusOneMealChoice[\s\S]{0,400}<\/TableCell>\s*\{\/\* Contact/.test(code('src/components/guests/GuestList.jsx')),
-    'where the guest’s own dietary line already is');
+  // THE NAME, AND ONLY THE NAME — owner's second look. The dietary and meal
+  // line under it is gone: "beef" sat under Harper Reid in a row whose job is
+  // to say who the plus-one IS. The meal lives in the expanded panel beside
+  // the guest's own, where the two can be read against each other.
+  check('  and the row carries no meal or dietary line at all',
+    !/plusOneMealChoice/.test(sub) && !/DietaryCell/.test(sub), 'name only');
 
-  check('  the row carries the plus-one’s OWN status, not the guest’s',
-    /plusOneRsvpStatus\(guest\)/.test(sub), 'they answer for themselves');
+  // THE SAME PILLS THE GUEST HAS — never the flat word "Pending". Owner:
+  // "it needs to have the same status pills so we can understand." One word
+  // for every plus-one at every event, in a row directly under "Ceremony ·
+  // yes · Reception · awaiting", said nothing.
+  check('  the status is the same EventChip row the guest gets',
+    /<EventChip key=\{event\.event_id\} event=\{event\} response=\{r\} \/>/.test(sub)
+      && !/PLUS_ONE_STATUS_STYLES/.test(sub), 'same component, same shape');
+  check('  for the events the plus-one is actually at',
+    /\.filter\(\(\[, r\]\) => r\.invited\)/.test(sub), 'not every event on the wedding');
+  check('  and "invited" is inherited from the guest’s own plus_ones count',
+    /const invited = \(hostResponse\.plus_ones \|\| 0\) > 0 \|\| !!own\?\.invited/.test(list),
+    'there is no separate invitation for a plus-one to accept');
   check('  the category and table are inherited from the guest',
     /CATEGORY_STYLES\[guest\.category\]/.test(sub) && /formatTableAssignment\(guest\.table_assignment\)/.test(sub),
     'they came with someone and sit with them');

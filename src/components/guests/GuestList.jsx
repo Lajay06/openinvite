@@ -62,6 +62,40 @@ export function EventChip({ event, response }) {
   return <span style={{ ...CHIP_BASE, background: '#fef9c3', color: '#854d0e' }}>{event.name} · awaiting</span>;
 }
 
+/**
+ * THE PLUS-ONE'S OWN ANSWER TO ONE EVENT.
+ *
+ * Owner ruling on review, 2026-09-07: a plus-one's status "needs to have the
+ * same status pills so we can understand" — never the flat word "Pending".
+ * They are a person at the wedding, and the question a couple is asking of
+ * them is the same question they ask of a guest: which events, and did they
+ * say yes.
+ *
+ * `plus_one_event_responses` is the API-computed mirror of the guest's own
+ * `event_responses` (see src/lib/attendees.js:100), so the shape returned here
+ * is deliberately identical to getGuestEventResponse's — EventChip renders
+ * both without knowing which it has.
+ *
+ * INVITED IS INHERITED. A plus-one comes with a guest; where the guest's own
+ * response for an event carries plus_ones > 0, the plus-one is at that event.
+ * That is the only correct reading — there is no separate invitation for a
+ * plus-one to accept.
+ */
+function plusOneEventResponse(guest, event) {
+  const own = (guest?.plus_one_event_responses || []).find(r => r.event_id === event.event_id);
+  const hostResponse = getGuestEventResponse(guest, event);
+  const invited = (hostResponse.plus_ones || 0) > 0 || !!own?.invited;
+  return {
+    event_id: event.event_id,
+    invited,
+    status: own?.status || (invited ? 'pending' : 'pending'),
+    meal_choice: own?.meal_choice ?? null,
+    plus_ones: 0,
+    plus_one_names: [],
+    responded_at: own?.responded_at || null,
+  };
+}
+
 function NotYetInvitedChip() {
   return (
     <span style={{ ...CHIP_BASE, background: 'transparent', border: '1px dashed rgba(10,10,10,0.25)', color: 'rgba(10,10,10,0.6)' }}>
@@ -1117,13 +1151,16 @@ export default function GuestList({
                 // guest.plus_one_meal_choice column last. That column is NO
                 // LONGER DEAD — the guest editor writes it — so this shows a
                 // couple-entered meal until the plus-one answers for themselves.
-                const plusOneMealChoice = mealOptionLabel(effectiveMealChoice(guest.plus_one_event_responses, guest.plus_one_meal_choice), mealOptions);
-                const poStatus = PLUS_ONE_STATUS_STYLES[plusOneRsvpStatus(guest)] || PLUS_ONE_STATUS_STYLES.pending;
                 rows.push(
                   <TableRow key={`${guest.id}-po`} style={{ background: 'rgba(10,10,10,0.015)', borderBottom: '1px solid rgba(10,10,10,0.04)' }}>
                     {/* checkbox column — a plus-one is not separately selectable */}
                     <TableCell />
-                    {/* Guest */}
+                    {/* Guest — THE NAME, AND ONLY THE NAME.
+                        The dietary and meal line under it is gone on the
+                        owner's second look: "beef" sat under Harper Reid in a
+                        row whose job is to say who the plus-one IS. The meal
+                        lives in the expanded panel, beside the guest's own,
+                        where the two can be read against each other. */}
                     <TableCell className="align-middle" style={{ paddingLeft: 52 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', userSelect: 'none', lineHeight: 1 }}>↳</span>
@@ -1131,18 +1168,6 @@ export default function GuestList({
                           {plusOneDisplayName(guest)}
                         </span>
                       </div>
-                      {(guest.plus_one_dietary_restrictions || plusOneMealChoice) && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 3, paddingLeft: 18 }}>
-                          {guest.plus_one_dietary_restrictions && (
-                            <DietaryCell value={guest.plus_one_dietary_restrictions} />
-                          )}
-                          {plusOneMealChoice && (
-                            <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
-                              {plusOneMealChoice}
-                            </span>
-                          )}
-                        </div>
-                      )}
                     </TableCell>
                     {/* Contact — a plus-one has none. Empty, not borrowed. */}
                     <TableCell />
@@ -1156,11 +1181,22 @@ export default function GuestList({
                     </TableCell>
                     {/* Tags */}
                     <TableCell className="align-middle">{tagsCell(guest)}</TableCell>
-                    {/* Status — the plus-one's OWN answer, not the guest's */}
+                    {/* Status — THE SAME PILLS THE GUEST HAS. It was one flat
+                        word, "Pending", for every plus-one at every event; the
+                        row above it showed "Ceremony · yes · Reception ·
+                        awaiting". Same chips, same component, for the events
+                        the plus-one is actually at. */}
                     <TableCell className="align-middle">
-                      <span style={{ ...dietaryPillStyle, background: poStatus.background, color: poStatus.color }}>
-                        {poStatus.label}
-                      </span>
+                      {weddingEvents.length === 0 ? (
+                        <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>
+                      ) : (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, maxWidth: 320 }}>
+                          {weddingEvents
+                            .map((event) => [event, plusOneEventResponse(guest, event)])
+                            .filter(([, r]) => r.invited)
+                            .map(([event, r]) => <EventChip key={event.event_id} event={event} response={r} />)}
+                        </div>
+                      )}
                     </TableCell>
                     {/* Last sent — an invitation goes to the guest, not the +1 */}
                     <TableCell />
