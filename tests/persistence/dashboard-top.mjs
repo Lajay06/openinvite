@@ -24,8 +24,18 @@ const code = (p) => readFileSync(join(ROOT, p), 'utf8')
   .replace(/^[^\n]*?\/\/.*$/gm, (line) => line.slice(0, line.indexOf('//')))
   .replace(/\/\*[\s\S]*?\*\//g, '');
 
-/** The five groups, in order, exactly as the calm pass names them. */
-const GROUPS = ['Foundations', 'Guests', 'The day', 'Money & vendors', 'Website & invitations'];
+/**
+ * THE GROUPS, IN ORDER — the ones that were there before #697 recut them.
+ *
+ * Owner ruling on review, 2026-09-07: revert the headings and the grouping,
+ * KEEP the collapsing. The calm pass's five (Foundations · Guests · The day ·
+ * Money & vendors · Website & invitations) are gone; what survives from that
+ * pass is the behaviour, not the taxonomy.
+ *
+ * "Guest suite" is the brand name, exactly — it was "Guest Suite" before and
+ * "Website & invitations" briefly. The owner named the spelling.
+ */
+const GROUPS = ['Planning', 'Guests', 'Style & experience', 'Vendors', 'On the day', 'Finances', 'Guest suite', 'Extras'];
 
 export async function runDashboardTop() {
   const results = [];
@@ -52,26 +62,37 @@ export async function runDashboardTop() {
   const topLabels = [...ungrouped.matchAll(/label: "([^"]+)"/g)].map((m) => m[1]);
   check('PLANT: Daily update is the first item in the sidebar',
     topLabels[0] === 'Daily update', topLabels.join(' → ') || 'none');
-  check('  with To do beside it, ungrouped',
-    topLabels[1] === 'To do', topLabels.join(' → '));
+  // TO DO WENT BACK INTO PLANNING with the revert; what stays ungrouped is
+  // Daily update (the landing page) and Event details (the judgment call the
+  // owner accepted by name).
+  check('  with Event details beside it, ungrouped',
+    topLabels[1] === 'Event details', topLabels.join(' → '));
   check('PLANT: login lands on the daily update',
     /get\('next'\) \|\| '\/DailyUpdate'/.test(code('src/pages/Login.jsx')), 'the landing page');
 
   // ── FIVE GROUPS, IN THE CALM PASS'S ORDER ───────────────────────────────
-  const groups = [...nav.matchAll(/\n    label: "([^"]+)",\n    (?:guestSuite: true,\n    )?items: \[/g)].map((m) => m[1]);
-  check('PLANT: five groups, not eight',
-    groups.length === 5, `${groups.length}: ${groups.join(' · ')}`);
-  check('  and they are the calm pass’s five, in order',
+  // Groups now declare an icon, and the guest suite declares both. The
+  // matcher has to allow either, in that order, or it silently finds none —
+  // which is a guard reporting "the groups are wrong" when they are right.
+  const groups = [...nav.matchAll(/\n    label: "([^"]+)",\n    (?:icon: \w+,\n    )?(?:guestSuite: true,\n    )?items: \[/g)].map((m) => m[1]);
+  check('PLANT: the pre-#697 groups are back',
+    groups.length === GROUPS.length, `${groups.length}: ${groups.join(' · ')}`);
+  check('  in their original order, with the guest suite named exactly',
     groups.join('|') === GROUPS.join('|'), groups.join(' · '));
+  check('PLANT: every group carries an icon, so a collapsed sidebar reads',
+    (nav.match(/\n    icon: [A-Z]\w+,/g) || []).length === GROUPS.length,
+    'eight groups, eight icons, none invented');
+  check('  and the header renders it',
+    /\{section\.icon && <section\.icon size=\{11\}/.test(nav), 'beside the label');
 
   // ── DESIGN STUDIO'S NEW HOME ────────────────────────────────────────────
-  const website = /label: "Website & invitations",[\s\S]*?items: \[([\s\S]*?)\n    \],/.exec(nav)?.[1] || '';
+  const website = /label: "Guest suite",[\s\S]*?items: \[([\s\S]*?)\n    \],/.exec(nav)?.[1] || '';
   const websiteItems = [...website.matchAll(/label: "([^"]+)"/g)].map((m) => m[1]);
-  check('PLANT: Design studio is the FIRST item of Website & invitations',
+  check('PLANT: Design studio is the FIRST item of Guest suite',
     websiteItems[0] === 'Design studio', websiteItems.join(' · '));
   check('  it keeps its Ultra treatment',
     /label: "Design studio",\s*url: "\/studio", ultraBadge: true/.test(nav)
-      && /label: "Website & invitations",\s*guestSuite: true/.test(nav),
+      && /label: "Guest suite",\s*icon: Globe,\s*guestSuite: true/.test(nav),
     'the badge on the item and the Ultra tag on the group');
   check('  and it is no longer a top-level link',
     !/label="Design studio"/.test(nav), 'one entry, not two');

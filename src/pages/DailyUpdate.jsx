@@ -370,20 +370,34 @@ export default function DailyUpdate() {
                   ))}
             </div>
 
-          </div>
+            <div style={{ background: 'rgba(10,10,10,0.06)' }} />
 
-          {/* ── THE NUMBERS, FULL WIDTH, UNDER THE COLUMNS ── */}
-          <div className="oi-daily-stats">
-            {snapCards.map((card) => (
-              <div key={card.label} className="oi-daily-stat">
-                <div style={{ fontFamily: PJS, fontSize: 40, fontWeight: 800, color: '#0A0A0A', lineHeight: 1 }}>
-                  {card.value}
-                </div>
-                <div style={{ fontFamily: PJS, fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', marginTop: 6 }}>
-                  {card.label}
-                </div>
-              </div>
-            ))}
+            {/* ── Column C: Your numbers ──────────────────────────────────
+                BACK IN THE GRID, on the owner's second look. The tiles moved
+                to a full-width row under the page when Overall was removed;
+                the row read as a separate band rather than part of the
+                briefing. Three columns, and the numbers are the third — which
+                is where a couple has been reading them since the pre-#654
+                page. 48px figures, as they were. */}
+            <div style={{ padding: '32px 0 32px 32px' }}>
+              {columnHead('Your numbers')}
+              {snapCards.map((card, i) => {
+                const isLast = i === snapCards.length - 1;
+                return (
+                  <div key={card.label} style={{
+                    paddingBottom: 24, marginBottom: isLast ? 0 : 24,
+                    borderBottom: isLast ? 'none' : '1px solid rgba(10,10,10,0.06)',
+                  }}>
+                    <div style={{ fontFamily: PJS, fontSize: 48, fontWeight: 800, color: '#0A0A0A', lineHeight: 1 }}>
+                      {card.value}
+                    </div>
+                    <div style={{ fontFamily: PJS, fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', marginTop: 4 }}>
+                      {card.label}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}

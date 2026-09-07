@@ -94,56 +94,98 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
  */
 export const UNGROUPED_ITEMS = [
   { icon: Sparkles,  label: "Daily update",  url: createPageUrl("DailyUpdate") },
-  { icon: ListTodo,  label: "To do",         url: createPageUrl("TodoList") },
+  { icon: FileText,  label: "Event details", url: "/event-details" },
 ];
 
+/**
+ * THE GROUPS ARE THE ONES THAT WERE THERE BEFORE — owner ruling on review,
+ * 2026-09-07: revert the headings and the grouping, keep the collapsing.
+ *
+ * The five-group recut (Foundations · Guests · The day · Money & vendors ·
+ * Website & invitations) is gone. What stays from that pass is the part the
+ * owner kept: every group collapsed except the first, a group holding the
+ * active page opens, and Design studio living inside the guest-suite group
+ * rather than in the top slot.
+ *
+ * THREE DIFFERENCES FROM THE PRE-#697 SIDEBAR, each of them an earlier ruling
+ * this review did not reverse:
+ *
+ *   Overall is gone, so "Planning" no longer opens with it.
+ *   Daily update is the first item in the sidebar and the landing page, so it
+ *   sits above the groups rather than second inside Planning.
+ *   Event details stays ungrouped beside it — the judgment call the owner
+ *   accepted by name.
+ *
+ * "Guest suite" is the brand name, exactly. It was "Guest Suite" before and
+ * "Website & invitations" briefly; the owner named the spelling.
+ *
+ * EVERY GROUP CARRIES AN ICON so a collapsed sidebar is readable at a glance —
+ * a column of seven identical carets tells you nothing. All eight come from
+ * the icons this file already imports; none is invented.
+ */
 export const NAV_SECTIONS = [
   {
-    label: "Foundations",
+    label: "Planning",
+    icon: LayoutDashboard,
     items: [
-      { icon: Calendar,  label: "Schedule",         url: createPageUrl("Schedule") },
-      { icon: Heart,     label: "Ceremony details", url: "/ceremony-details" },
-      { icon: Palette,   label: "Styling",          url: createPageUrl("Styling") },
-      { icon: Image,     label: "Moodboard",        url: createPageUrl("Moodboard") },
-      { icon: Lightbulb, label: "Considerations",   url: createPageUrl("Considerations") },
+      { icon: Calendar,        label: "Schedule",     url: createPageUrl("Schedule") },
+      { icon: ListTodo,        label: "To do",        url: createPageUrl("TodoList") },
     ],
   },
   {
     label: "Guests",
+    icon: Users,
     items: [
       { icon: Users,         label: "Guest list",    url: createPageUrl("Guests") },
-      { icon: LayoutGrid,    label: "Seating",       url: createPageUrl("Seating") },
-      { icon: MessageCircle, label: "Messages",      url: createPageUrl("Messages") },
-      { icon: UserCheck,     label: "Wedding party", url: "/wedding-party" },
       { icon: BarChart2,     label: "Polls & games", url: createPageUrl("Polls") },
+      { icon: MessageCircle, label: "Messages",      url: createPageUrl("Messages") },
+      { icon: LayoutGrid,    label: "Seating",       url: createPageUrl("Seating") },
+      { icon: UserCheck,     label: "Wedding party", url: "/wedding-party" },
     ],
   },
   {
-    label: "The day",
+    label: "Style & experience",
+    icon: Palette,
     items: [
-      { icon: UtensilsCrossed, label: "Food & beverage",   url: createPageUrl("FoodBeverage") },
-      { icon: Music2,          label: "Music",             url: createPageUrl("Music") },
-      { icon: Camera,          label: "Photography",       url: createPageUrl("Photography") },
-      { icon: Sparkles,        label: "Beauty",            url: createPageUrl("Beauty") },
-      { icon: FileText,        label: "Vows & speeches",   url: createPageUrl("VowsSpeeches") },
-      { icon: Car,             label: "Transport",         url: "/transport" },
-      { icon: Hotel,           label: "Accommodation",     url: "/accommodation" },
-      { icon: Phone,           label: "Emergency contact", url: "/emergency-contact" },
-      { icon: Package,         label: "Guest gifts",       url: "/wedding-favours" },
+      { icon: Image,           label: "Moodboard",       url: createPageUrl("Moodboard") },
+      { icon: Palette,         label: "Styling",         url: createPageUrl("Styling") },
+      { icon: Sparkles,        label: "Beauty",          url: createPageUrl("Beauty") },
+      { icon: UtensilsCrossed, label: "Food & beverage", url: createPageUrl("FoodBeverage") },
+      { icon: Music2,          label: "Music",           url: createPageUrl("Music") },
+      { icon: Camera,          label: "Photography",     url: createPageUrl("Photography") },
+      { icon: FileText,        label: "Vows & speeches", url: createPageUrl("VowsSpeeches") },
+      { icon: Package,         label: "Guest gifts",     url: "/wedding-favours" },
     ],
   },
   {
-    label: "Money & vendors",
+    label: "Vendors",
+    icon: Store,
     items: [
-      { icon: Wallet,      label: "Budget",      url: createPageUrl("Budget") },
-      { icon: Gift,        label: "Registry",    url: createPageUrl("Registry") },
       { icon: Store,       label: "My vendors",  url: createPageUrl("Vendors") },
       { icon: ShoppingBag, label: "Marketplace", url: createPageUrl("VendorMarketplace") },
-      { icon: Plane,       label: "Honeymoon",   url: "/honeymoon" },
     ],
   },
   {
-    label: "Website & invitations",
+    label: "On the day",
+    icon: Clock,
+    items: [
+      { icon: Heart,   label: "Ceremony details",  url: "/ceremony-details" },
+      { icon: Car,     label: "Transport",         url: "/transport" },
+      { icon: Hotel,   label: "Accommodation",     url: "/accommodation" },
+      { icon: Phone,   label: "Emergency contact", url: "/emergency-contact" },
+    ],
+  },
+  {
+    label: "Finances",
+    icon: CreditCard,
+    items: [
+      { icon: Wallet, label: "Budget",   url: createPageUrl("Budget") },
+      { icon: Gift,   label: "Registry", url: createPageUrl("Registry") },
+    ],
+  },
+  {
+    label: "Guest suite",
+    icon: Globe,
     guestSuite: true,
     items: [
       { icon: Sparkles,   label: "Design studio",   url: "/studio", ultraBadge: true },
@@ -155,6 +197,14 @@ export const NAV_SECTIONS = [
       { icon: MapPin,     label: "Experience guide",url: createPageUrl("GuestSuiteExperience") },
       { icon: ScrollText, label: "Good to know",    url: createPageUrl("GuestSuitePolicies") },
       { icon: BarChart2,  label: "Guest polls",     url: createPageUrl("GuestSuitePolls") },
+    ],
+  },
+  {
+    label: "Extras",
+    icon: StickyNote,
+    items: [
+      { icon: Plane,     label: "Honeymoon",      url: "/honeymoon" },
+      { icon: Lightbulb, label: "Considerations", url: createPageUrl("Considerations") },
     ],
   },
 ];
@@ -199,7 +249,10 @@ function GroupHeader({ section, open, onToggle }) {
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(); } }}
       style={{ display: "flex", alignItems: "center", gap: 4, padding: "0 16px", marginTop: 24, marginBottom: 2, cursor: "pointer" }}
     >
-      {section.guestSuite && <Globe size={10} style={{ color: "rgba(10,10,10,0.6)", flexShrink: 0 }} />}
+      {/* THE GROUP'S OWN ICON, so a collapsed sidebar is readable at a glance
+          — a column of identical carets tells a couple nothing about what is
+          inside each one. */}
+      {section.icon && <section.icon size={11} strokeWidth={1.8} style={{ color: "rgba(10,10,10,0.6)", flexShrink: 0 }} />}
       <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(10,10,10,0.6)", fontFamily: PJS }}>
         {section.label}
       </span>
@@ -353,13 +406,9 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
                 onClick={() => navigate(item.url.split("?")[0])}
               />
             ))}
-            <NavItem
-              icon={FileText}
-              label="Event details"
-              url="/event-details"
-              isActive={isActive("/event-details")}
-              onClick={() => navigate("/event-details")}
-            />
+            {/* Event details is in UNGROUPED_ITEMS above. It was also a
+                standalone NavItem here, and the sidebar rendered it TWICE —
+                two identical rows, one of which was the row above it. */}
           </>
         )}
 
@@ -580,29 +629,7 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
           );
         })}
 
-        {/* Event details link */}
-        {!isCollaboratorMobile && (() => {
-          const active = isActive("/event-details");
-          return (
-            <div
-              onClick={() => handleNav("/event-details")}
-              aria-label="Event details"
-              {...interactiveRowProps(() => handleNav("/event-details"))}
-              style={{
-                display: "flex", alignItems: "center", gap: 10,
-                padding: "10px 16px", cursor: "pointer",
-                borderLeft: active ? "2px solid #E03553" : "2px solid transparent",
-                background: active ? "rgba(224,53,83,0.08)" : "transparent",
-                transition: "background 0.15s ease",
-              }}
-            >
-              <FileText size={18} strokeWidth={1.8} style={{ color: active ? "#E03553" : "rgba(10,10,10,0.45)", flexShrink: 0 }} />
-              <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#E03553" : "#0A0A0A", fontFamily: PJS }}>
-                Event details
-              </span>
-            </div>
-          );
-        })()}
+        {/* Event details renders from UNGROUPED_ITEMS above, once. */}
 
         {/* Collaborator top-level items (e.g. Event details) */}
         {isCollaboratorMobile && collaboratorNavMobile.topLevel.map((item, i) => {
