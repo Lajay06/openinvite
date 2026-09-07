@@ -747,7 +747,9 @@ function LayoutShell({ children, currentPageName }) {
             background: chatOpen ? '#0A0A0A' : color.primary,
             border: 'none', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(147,51,234,0.3)',
+            // The last of the gradient on this control: the fill went solid
+            // strawberry, the shadow was still cast in the old purple.
+            boxShadow: '0 4px 12px rgba(224,53,83,0.3)',
             transition: 'transform 0.2s ease, background 0.2s ease',
             color: '#FFFFFF',
           }}

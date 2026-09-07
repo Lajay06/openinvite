@@ -1285,3 +1285,18 @@ body {
   outline: 2px solid #0A0A0A;
   outline-offset: 2px;
 }
+
+/* The daily update's editorial grid — three columns with 1px rules between,
+   as the pre-#654 page had it. Stacked below 900px: three 33% columns on a
+   390px phone is unreadable, and the old page had no mobile treatment at all
+   because it was never looked at on one. */
+.oi-daily-grid {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr 1px 1fr;
+  gap: 0;
+}
+@media (max-width: 900px) {
+  .oi-daily-grid { grid-template-columns: 1fr; }
+  .oi-daily-grid > div { padding: 28px 0 !important; }
+  .oi-daily-grid > div:empty { display: none; }
+}

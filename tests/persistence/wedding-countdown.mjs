@@ -147,11 +147,26 @@ export async function runWeddingCountdown() {
   }
 
   // ── THE PROMPT, WHICH IS WHERE THE REPORTED BUG ACTUALLY LIVED ──────────
+  //
+  // It lived in DailyUpdate.jsx, which built the whole briefing by asking a
+  // model. That page no longer asks: what is true today is computed, and the
+  // owner's reinstated daily update page renders it. So this check follows the
+  // PROPERTY to the file that still builds a prompt — avaContextFormat.js,
+  // which feeds the pod and the modal.
+  //
+  // AND THAT FILE HAD THE SAME BUG, UNCAUGHT. It carried its own
+  // `Math.ceil(... / 86400000)` and handed the model "(0 days away)" as a bare
+  // number — the fifth copy of the formula #681 removed from four, and the one
+  // Ava was actually reading. The check that used to pin one file now pins the
+  // rule everywhere a prompt is built.
   {
-    const daily = code('src/pages/DailyUpdate.jsx');
-    check('the briefing prompt sends the resolved phrase, not a bare number',
-      /countdownForPrompt\(days\)/.test(daily) && !/\(\$\{days \?\? 'unknown'\} days away\)/.test(daily),
-      'countdownForPrompt(days)');
+    const ctx = code('src/lib/avaContextFormat.js');
+    check('the prompt sends the resolved phrase, not a bare number',
+      /countdownForPrompt\(daysUntil\)/.test(ctx) && !/\(\$\{daysUntil\} days away\)/.test(ctx),
+      'countdownForPrompt(daysUntil)');
+    check('  and it does not compute the count itself',
+      !/86400000/.test(ctx) && /daysUntilWedding\(/.test(ctx),
+      'through the one comparator');
   }
 
   return results;

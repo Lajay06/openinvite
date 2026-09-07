@@ -36,27 +36,39 @@ export async function runDailyUpdateLoadStates() {
     ? pass('no data source swallows its failure with .catch(() => [])', '0 occurrences')
     : fail('a data source still discards its failure', '0 occurrences of .catch(() => [])', `${swallows} found`));
 
-  // Failures must be recorded so the render can distinguish the two cases.
-  results.push(/setFailedSources\(/.test(src)
-    ? pass('load failures are recorded, not discarded', 'setFailedSources present')
-    : fail('load failures are not recorded', 'setFailedSources(...)', 'absent'));
+  // THE PROPERTY IS UNCHANGED AND THE NAMES ARE NOT. The page was rebuilt as
+  // its own briefing page on the owner's ruling; it no longer runs a
+  // phase machine around an LLM call, so `setPhase('error')` and
+  // `failedSources` do not exist. What must still be true is exactly what this
+  // guard was written for: a failed store is RECORDED, is VISIBLE, and has a
+  // reachable retry — now through loadDashboardSources' unseen keys, which is
+  // also what the day state reads.
+  results.push(/setUnseenSources\(/.test(src)
+    ? pass('load failures are recorded, not discarded', 'setUnseenSources present')
+    : fail('load failures are not recorded', 'setUnseenSources(...)', 'absent'));
 
   // A distinct error phase, separate from ready.
-  results.push(/setPhase\(['"]error['"]\)/.test(src) && /phase === ['"]error['"]/.test(src)
-    ? pass("an 'error' phase exists and is rendered", 'set and read')
-    : fail("no distinct 'error' phase", "setPhase('error') and phase === 'error'", 'missing one or both'));
+  // The old page had a phase machine because it awaited a model. This one has
+  // a loading flag and a list of what could not be read — the same two states
+  // that mattered, without the third the LLM call needed.
+  results.push(/const \[loading, setLoading\]/.test(src) && /loading=\{loading\}/.test(src)
+    ? pass('a loading state exists and reaches the briefing', 'set and read')
+    : fail('no distinct loading state', 'a loading flag, passed to the briefing', 'missing one or both'));
 
   // The retry must actually be reachable — it was dead code before.
-  const defined = /const handleRefresh\s*=/.test(src);
-  const wired = (src.match(/onClick=\{handleRefresh\}/g) || []).length;
+  // `handleRefresh` was defined and never called — eslint reported it unused
+  // on main. The retry is the loader itself now, so "defined" and "wired"
+  // cannot drift apart: there is nothing to define separately.
+  const defined = /const load = useCallback/.test(src);
+  const wired = (src.match(/onClick=\{load\}/g) || []).length;
   results.push(defined && wired >= 1
     ? pass('the retry handler is reachable from the UI', `${wired} call site(s)`)
-    : fail('handleRefresh is defined but unreachable', 'at least one onClick={handleRefresh}', `${wired} found`));
+    : fail('the retry is defined but unreachable', 'at least one onClick={load}', `${wired} found`));
 
   // Partial failure must be surfaced, not silently folded into the numbers.
-  results.push(/failedSources\.length > 0/.test(src)
-    ? pass('partial failure is surfaced rather than presented as complete data', 'banner guarded on failedSources')
-    : fail('partial failure is invisible', 'a render branch on failedSources.length', 'absent'));
+  results.push(/unseenSources\.length > 0/.test(src)
+    ? pass('partial failure is surfaced rather than presented as complete data', 'banner guarded on unseenSources')
+    : fail('partial failure is invisible', 'a render branch on unseenSources.length', 'absent'));
 
   // ── Music page: async query results must be guarded before use ──────────
   // The music rebuild shipped `songRequests.filter(...)` inline in the filter

@@ -34,6 +34,7 @@
 // todoSort.js was extracted. Sibling-relative imports are already the
 // convention in src/lib (emailBrand.js, chunkReloadGuard.js).
 import { hasPlusOne, plusOneRsvpStatus } from './plusOne.js';
+import { resolveAttendees } from './attendees.js';
 
 export const RSVP_STATUSES = ['pending', 'attending', 'declined', 'maybe'];
 
@@ -156,4 +157,50 @@ export function tallyAttendees(attendees) {
   primaries.responded = primaries.total - primaries.pending;
   plusOnes.responded = plusOnes.total - plusOnes.pending;
   return { combined, primaries, plusOnes };
+}
+
+/**
+ * THE TWO QUANTITIES, NAMED — owner ruling, 2026-09-07.
+ *
+ * The daily update said 61 and Overall said 94 for the same wedding, and both
+ * were right about different things: Overall counted ATTENDEES (guest rows
+ * plus their plus-ones), the daily update counted GUEST ROWS. The gap is
+ * exactly the number of attending plus-ones, and every page picked one without
+ * saying which.
+ *
+ * The ruling settles it:
+ *
+ *   REPLIES ARE COUNTED PER INVITATION.   A plus-one has no invitation of its
+ *                                          own — the host replies for both —
+ *                                          so "still to reply" is guest rows.
+ *   ATTENDANCE IS COUNTED PER PERSON.      A plus-one eats a meal and takes a
+ *                                          seat, so "coming" is attendees.
+ *
+ * Both come from here, both are labelled, and no page recomputes either. A
+ * surface that says "94 have not replied" is pairing the person count with the
+ * invitation question, which is the defect this exists to make impossible.
+ *
+ * @param {Array} guests  Guest rows, as getMyGuestsWithRsvp returns them
+ * @returns {{invitations:{total:number,pending:number,replied:number,label:string},
+ *            people:{total:number,attending:number,declined:number,label:string}}}
+ */
+export function guestCounts(guests) {
+  const rows = guests || [];
+  const pending = rows.filter((g) => isPending(g)).length;
+  const { combined } = tallyAttendees(resolveAttendees(rows));
+  return {
+    invitations: {
+      total: rows.length,
+      pending,
+      replied: rows.length - pending,
+      // The word every surface must use when it prints one of these numbers.
+      label: 'invitations',
+    },
+    people: {
+      total: combined.total,
+      attending: combined.attending,
+      declined: combined.declined,
+      label: 'guests coming',
+    },
+  };
 }
