@@ -442,7 +442,7 @@ const COLUMN_COUNT = 10;
    The machinery — the numeric-aware compare, blanks-always-last, the
    asc → desc → unsorted cycle and the header itself — moved to
    src/lib/tableSort.js and components/shared/SortableHead.jsx so the
-   schedule's List tab uses this behaviour rather than a copy of it. What
+   schedule's List tab uses this behavior rather than a copy of it. What
    stays here is what is guests' own: WHICH columns sort, and how each reads
    off a row. Status sorts by the guest's overall derived state, not the raw
    per-event chip row. */

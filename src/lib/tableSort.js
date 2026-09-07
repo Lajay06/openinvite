@@ -4,7 +4,7 @@
  * The guest list's sorting lived inside GuestList.jsx, private to a
  * 1194-line component: a numeric-aware compare, a blanks-always-last rule,
  * and a header that cycles asc → desc → unsorted. The schedule's List tab
- * needs exactly that behaviour, and the owner's instruction is to consume it
+ * needs exactly that behavior, and the owner's instruction is to consume it
  * rather than fork it — so it moved here first, with GuestList importing it
  * and nothing about it changing.
  *

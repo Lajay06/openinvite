@@ -5,7 +5,7 @@
  *
  * naturalCompare, the blanks-always-last rule, the asc → desc → unsorted
  * cycle and the header itself were private to GuestList.jsx. The schedule's
- * List tab needs the same behaviour, and the owner's instruction is to consume
+ * List tab needs the same behavior, and the owner's instruction is to consume
  * it rather than fork it — so it moved to src/lib/tableSort.js and
  * components/shared/SortableHead.jsx, and GuestList imports it.
  *

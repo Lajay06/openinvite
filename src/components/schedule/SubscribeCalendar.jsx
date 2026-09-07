@@ -31,7 +31,7 @@ export default function SubscribeCalendar() {
   const [state, setState] = useState('loading');
 
   useEffect(() => {
-    let cancelled = false;
+    let stopped = false;
     (async () => {
       try {
         const res = await fetch('/api/schedule-feed-url', {
@@ -39,14 +39,14 @@ export default function SubscribeCalendar() {
         });
         if (!res.ok) throw new Error(String(res.status));
         const { url: u } = await res.json();
-        if (cancelled) return;
+        if (stopped) return;
         setUrl(u || null);
         setState(u ? 'ready' : 'unavailable');
       } catch {
-        if (!cancelled) setState('unavailable');
+        if (!stopped) setState('unavailable');
       }
     })();
-    return () => { cancelled = true; };
+    return () => { stopped = true; };
   }, []);
 
   if (state === 'loading') return null;
