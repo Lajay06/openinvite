@@ -184,8 +184,13 @@ const AuthenticatedApp = () => {
   //
   // Lowercase /dashboard still normalises, because a bookmark or a hand-typed
   // path should land somewhere rather than 404.
-  if (location.pathname === '/dashboard') {
-    return <Navigate to="/Dashboard" replace />;
+  // OVERALL IS GONE. Owner: "the Overall in planning is still there, that
+  // needs to go." Its stat tiles moved onto the daily update page, which is
+  // now the landing page, so /Dashboard — the route Overall lived on — sends
+  // couples there rather than 404ing a link they may have bookmarked.
+  // Both spellings, because a hand-typed path should land somewhere.
+  if (location.pathname === '/dashboard' || location.pathname === '/Dashboard') {
+    return <Navigate to="/DailyUpdate" replace />;
   }
 
   // ── Public pages — no auth check, render immediately ─────────────────────────

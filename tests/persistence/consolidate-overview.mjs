@@ -47,8 +47,14 @@ export async function runConsolidateOverview() {
   results.push(!/label: "Overview"/.test(sidebarSource)
     ? pass('AnimatedSidebar.jsx no longer has the "Overview" nav item', 'not found')
     : fail('AnimatedSidebar.jsx no longer has the "Overview" nav item', 'not found', 'still present'));
-  results.push(/label="Design studio"/.test(sidebarSource)
-    ? pass('AnimatedSidebar.jsx still has the "Design studio" nav item (the replacement home)', 'found')
+  // DESIGN STUDIO MOVED, IT DID NOT GO. It was a top-level NavItem beside
+  // Event details (`label="Design studio"` as a JSX prop); owner ruling
+  // 2026-09-07 puts it inside the Website & invitations group as its first
+  // item, where the Ultra treatment already lives. The property this check
+  // exists for — the replacement home for the retired Overview is reachable
+  // from the nav — is unchanged, so it now looks for the group entry.
+  results.push(/label: "Design studio",\s*url: "\/studio", ultraBadge: true/.test(sidebarSource)
+    ? pass('AnimatedSidebar.jsx still has the "Design studio" nav item (first in Website & invitations)', 'found')
     : fail('AnimatedSidebar.jsx still has the "Design studio" nav item', 'found', 'not found'));
 
   const helpSource = read('src/pages/Help.jsx');

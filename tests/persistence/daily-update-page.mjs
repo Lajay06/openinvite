@@ -46,9 +46,15 @@ export async function runDailyUpdatePage() {
     const app = code('src/App.jsx');
     check('PLANT: /DailyUpdate is no longer redirected away',
       !/pathname === '\/DailyUpdate'/.test(app), 'the route reaches the page');
-    check('  and lowercase /dashboard still normalises',
-      /pathname === '\/dashboard'/.test(app) && /<Navigate to="\/Dashboard" replace \/>/.test(app),
-      'a hand-typed path lands somewhere rather than 404');
+    // OVERALL IS GONE, so /Dashboard no longer has a page to normalise TO.
+    // Owner ruling 2026-09-07. Both spellings now land on the daily update,
+    // which is the landing page — the property is unchanged (a hand-typed or
+    // bookmarked path lands somewhere rather than 404ing), only the
+    // destination moved.
+    check('  both spellings of the retired Overall route land on the daily update',
+      /pathname === '\/dashboard' \|\| location\.pathname === '\/Dashboard'/.test(app)
+        && /<Navigate to="\/DailyUpdate" replace \/>/.test(app),
+      'a bookmarked /Dashboard is not a 404');
     const cfg = code('src/pages.config.js');
     check('  the page is still registered',
       /"DailyUpdate": DailyUpdate/.test(cfg), 'routed, not orphaned');
@@ -398,20 +404,34 @@ export async function runDailyUpdatePage() {
       !/<NextUp\b/.test(page) && !/Everything else on your list/.test(page),
       'an onboarding stepper is not a to-do');
 
-    check('PLANT: three columns, with a 1px rule between each pair',
-      /grid-template-columns: 1fr 1px 1fr 1px 1fr;/.test(css), 'the pre-#654 grid');
+    // TWO COLUMNS NOW, AND THE THIRD IS A ROW. Owner ruling 2026-09-07:
+    // Overall is removed and its stat tiles move onto this page as one
+    // full-width row under the columns, replacing the "Your numbers" column.
+    // The property this check was written for — the editorial grid is a grid
+    // with 1px rules, not three floated divs — is unchanged.
+    check('PLANT: two columns, with a 1px rule between them',
+      /grid-template-columns: 1fr 1px 1fr;/.test(css), 'This week | Ava\u2019s briefing');
     check('  stacked on a phone rather than three 33% columns at 390px',
       /@media \(max-width: 900px\)[\s\S]{0,200}grid-template-columns: 1fr;/.test(css),
       'the old page had no mobile treatment because it was never opened on one');
-    for (const [n, label] of [['A', 'This week'], ['B', 'Ava'], ['C', 'Your numbers']])
+    for (const [n, label] of [['A', 'This week'], ['B', 'Ava']])
       check(`  column ${n} is "${label}"`, page.includes(`columnHead('${label}`) || page.includes(`columnHead('${label}\\u2019s briefing')`), label);
+    check('  and there is no third column left behind',
+      !page.includes("columnHead('Your numbers')"), 'the row replaced it');
 
-    check('PLANT: the far-right column is the stats, and they are the old four',
-      page.indexOf("columnHead('Your numbers')") > page.indexOf("columnHead('This week')")
-        && /Guests coming[\s\S]{0,400}Vendors booked/.test(page),
-      'far right, in order');
-    check('  rendered at the old size',
-      /fontSize: 48, fontWeight: 800/.test(page), '48px/800, as e2c087a:753');
+    // THE STATS ARE A FULL-WIDTH ROW UNDER THE COLUMNS, and they are the
+    // UNION of Overall's four and this page's four, deduped: taking only
+    // Overall's would throw away the invitations/people split the owner ruled
+    // on in #694 and the vendor count.
+    check('PLANT: the stats are one full-width row under the columns',
+      /oi-daily-stats/.test(page) && /oi-daily-stats/.test(css)
+        && page.indexOf('oi-daily-stats') > page.indexOf("columnHead('This week')"),
+      'below the grid, not beside it');
+    check('  carrying all six labelled quantities',
+      ['Guests coming', 'People invited', 'Invitations pending', 'Budget used', 'Events planned', 'Vendors booked']
+        .every((l) => page.includes(`label: '${l}'`)), 'Overall\u2019s four and this page\u2019s, deduped');
+    check('  rendered as numerals, not chart furniture',
+      /fontSize: 40, fontWeight: 800/.test(page) && !/RSVPChart|BudgetSummary/.test(page), '40px/800, no graphs');
     // The badge is in Ava's column, once, as a badge — never the headline
     // repeated. It read "Overdue — Overdue: Book the celebrant." on the first
     // screenshot, once the headline started leading with the state word.
@@ -616,10 +636,16 @@ export async function runDailyUpdatePage() {
   // ── THE SIDEBAR ─────────────────────────────────────────────────────────
   {
     const nav = code('src/components/layout/AnimatedSidebar.jsx');
-    const planning = /label: "Planning",\s*items: \[([\s\S]*?)\],/.exec(nav)?.[1] || '';
-    const labels = [...planning.matchAll(/label: "([^"]+)"/g)].map(m => m[1]);
-    check('PLANT: Daily update is a real item, directly under Overall',
-      labels[0] === 'Overall' && labels[1] === 'Daily update', labels.join(' → '));
+    // OVERALL IS GONE AND DAILY UPDATE IS FIRST. It used to sit directly
+    // under Overall in the "Planning" group; owner ruling 2026-09-07 removes
+    // Overall and the eight groups become five, with Daily update and To do
+    // ungrouped at the top.
+    const ungrouped = /export const UNGROUPED_ITEMS = \[([\s\S]*?)\];/.exec(nav)?.[1] || '';
+    const labels = [...ungrouped.matchAll(/label: "([^"]+)"/g)].map((m) => m[1]);
+    check('PLANT: Daily update is the first item in the sidebar',
+      labels[0] === 'Daily update', labels.join(' \u2192 ') || 'no ungrouped items');
+    check('  and Overall is not in the nav at all',
+      !/label: "Overall"/.test(nav), 'removed, not hidden');
   }
 
   return results;
