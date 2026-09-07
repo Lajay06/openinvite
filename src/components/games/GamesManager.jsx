@@ -12,7 +12,7 @@ import CopyFallbackModal from '@/components/shared/CopyFallbackModal';
 const PJS = "'Plus Jakarta Sans', sans-serif";
 const genId = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36);
 
-const labelStyle = { fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px' };
+const labelStyle = { fontSize: 10, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px' };
 const inputStyle = { width: '100%', boxSizing: 'border-box', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.15)', background: 'transparent', fontFamily: PJS, fontSize: 14, color: '#0A0A0A', padding: '6px 0', outline: 'none' };
 
 function recipientSummary(q, guestCount) {
@@ -508,7 +508,7 @@ export default function GamesManager() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                       <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: 0 }}>{q.title}</p>
                       {q.is_active === false && (
-                        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', padding: '2px 8px', borderRadius: 999, background: 'rgba(10,10,10,0.05)', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Closed</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: 'rgba(10,10,10,0.05)', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Closed</span>
                       )}
                     </div>
                     <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>

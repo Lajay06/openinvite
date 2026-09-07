@@ -11,7 +11,7 @@ const PJS = font.family;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: color.textMuted,
+  color: color.textMuted,
   fontFamily: PJS,
 };
 

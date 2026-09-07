@@ -81,7 +81,7 @@ function ProductCard({ product }) {
       )}
       <div style={{ padding: '14px 16px 16px', display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
         {product.category && product.category !== 'other' && (
-          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
+          <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
             {CATEGORY_LABELS[product.category] || product.category}
           </span>
         )}
@@ -151,7 +151,7 @@ function CashFundCard({ fund }) {
           )}
         </div>
         {fund.category && fund.category !== 'custom' && (
-          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
+          <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
             {CATEGORY_LABELS[fund.category] || fund.category}
           </span>
         )}
@@ -246,7 +246,7 @@ export default function GuestSuiteRegistry() {
             {/* Registry platforms */}
             {platforms.length > 0 && (
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>
                   Registry platforms
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -258,7 +258,7 @@ export default function GuestSuiteRegistry() {
             {/* Gift items grouped by category */}
             {availableProducts.length > 0 && (
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>
                   GIFT IDEAS · {availableProducts.length} item{availableProducts.length !== 1 ? 's' : ''}
                   {products.length > availableProducts.length && (
                     <span style={{ fontWeight: 400, color: 'rgba(10,10,10,0.6)' }}>
@@ -269,7 +269,7 @@ export default function GuestSuiteRegistry() {
                 {Object.entries(productsByCategory).map(([cat, catProducts]) => (
                   <div key={cat} style={{ marginBottom: 28 }}>
                     {Object.keys(productsByCategory).length > 1 && (
-                      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 12px' }}>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 12px' }}>
                         {(CATEGORY_LABELS[cat] || cat).toUpperCase()}
                       </p>
                     )}
@@ -284,7 +284,7 @@ export default function GuestSuiteRegistry() {
             {/* Cash funds */}
             {cashFunds.length > 0 && (
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>
                   Cash funds
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

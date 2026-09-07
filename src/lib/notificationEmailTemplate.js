@@ -19,7 +19,7 @@ export function renderNotificationEmail({ title, body, link, ctaLabel = 'View in
           <!-- Headline -->
           <tr>
             <td style="padding:32px 40px 0;">
-              <p style="margin:0;font-size:22px;font-weight:700;color:${BLACK};line-height:1.3;letter-spacing:-0.01em;font-family:${FONT};">
+              <p style="margin:0;font-size:22px;font-weight:700;color:${BLACK};line-height:1.3;font-family:${FONT};">
                 ${escapeHtml(title)}
               </p>
             </td>
@@ -40,7 +40,7 @@ export function renderNotificationEmail({ title, body, link, ctaLabel = 'View in
               <table role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="background:${ACCENT};border-radius:999px;">
-                    <a href="${escapeHtml(link)}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:999px;font-family:${FONT};letter-spacing:0.01em;">
+                    <a href="${escapeHtml(link)}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:999px;font-family:${FONT};">
                       ${escapeHtml(ctaLabel)}
                     </a>
                   </td>

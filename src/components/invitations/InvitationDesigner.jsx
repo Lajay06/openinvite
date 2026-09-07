@@ -103,8 +103,7 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
             styles: { 
               fontSize: '1.25rem', 
               textAlign: 'center', 
-              color: '#64748b', 
-              letterSpacing: '0.1em'
+              color: '#64748b'
             }
           }
         ]

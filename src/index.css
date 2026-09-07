@@ -205,20 +205,17 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
   h1 {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 800;
-    letter-spacing: -0.03em;
     line-height: 1.05;
   }
 
   h2 {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 700;
-    letter-spacing: -0.02em;
   }
 
   h3 {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 600;
-    letter-spacing: -0.01em;
   }
 
   h4, h5, h6 {
@@ -237,7 +234,6 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
   .font-serif-display {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 800;
-    letter-spacing: -0.03em;
   }
   .font-sans-ui {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -248,7 +244,6 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.08em;
     color: rgba(10,10,10,0.6);
   }
 
@@ -257,7 +252,6 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 3rem;
     font-weight: 700;
-    letter-spacing: -0.03em;
     line-height: 1;
     color: #0A0A0A;
   }
@@ -289,7 +283,6 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
   .form-label {
     font-weight: 700;
     font-size: 11px;
-    letter-spacing: 0.08em;
     color: #0A0A0A;
     display: block;
     margin-bottom: 6px;
@@ -480,7 +473,6 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
     font-size: 18px;
     font-weight: 700;
     color: #0A0A0A;
-    letter-spacing: -0.01em;
   }
 
   /* Descriptor strip — #F5F5F5 bar below sub-header */
@@ -510,7 +502,6 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.08em;
     color: rgba(10,10,10,0.6);
   }
 
@@ -519,7 +510,6 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.08em;
     color: rgba(255,255,255,0.4);
   }
 
@@ -546,7 +536,6 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
     font-size: clamp(24px, 3vw, 36px);
     font-weight: 700;
     color: #0A0A0A;
-    letter-spacing: -0.03em;
     line-height: 1.1;
     margin-bottom: 4px;
   }
@@ -645,7 +634,6 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.15em;
     margin-bottom: 16px;
   }
 
@@ -672,14 +660,12 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
     font-size: 24px;
     font-weight: 700;
     color: #0A0A0A;
-    letter-spacing: -0.02em;
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   }
   .section-label {
     font-size: 11px;
     font-weight: 600;
     color: rgba(10,10,10,0.6);
-    letter-spacing: 0.06em;
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   }
   .muted {
@@ -1050,7 +1036,6 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 13px;
   font-weight: 500;
-  letter-spacing: 0.02em;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
@@ -1108,18 +1093,16 @@ body {
   font-weight: 700;
   font-size: 32px;
   color: #0A0A0A;
-  letter-spacing: -0.02em;
 }
 .stat-card-user .stat-label {
   font-weight: 600;
   font-size: 11px;
   color: rgba(10,10,10,0.6);
-  letter-spacing: 0.1em;
 }
 
 /* ── User area tables ──────────────────────────────────────── */
 .table-user thead { background: #FAFAFA; border-bottom: 1px solid #EEEEEE; }
-.table-user thead th { font-weight: 700; font-size: 11px; color: rgba(10,10,10,0.6); letter-spacing: 0.1em; }
+.table-user thead th { font-weight: 700; font-size: 11px; color: rgba(10,10,10,0.6); }
 .table-user tbody tr { background: #FFFFFF; border-bottom: 1px solid #F5F5F5; }
 .table-user tbody tr:hover { background: #FAFAFA; }
 .table-user tbody td { font-weight: 400; font-size: 14px; color: #0A0A0A; }
@@ -1175,13 +1158,11 @@ body {
   font-weight: 700;
   font-size: clamp(24px, 3vw, 36px);
   color: #0A0A0A;
-  letter-spacing: -0.02em;
 }
 .stat-card-user .stat-label {
   font-weight: 700;
   font-size: 11px;
   color: rgba(10,10,10,0.6);
-  letter-spacing: 0.08em;
 }
 
 /* ── User page fade-in (0.2s — feels instant) ──────────────── */
@@ -1242,9 +1223,16 @@ body {
   color: #FFFFFF;
   border-color: #0A0A0A;
 }
+/* HOVER IS THE BLACK PILL. Owner ruling 2026-09-07 states the three states
+   outright: selected = black pill, white text; unselected = the Theme tab's
+   outline pill; hover on unselected = black pill. This used to only darken
+   the border and the text, so hovering told a couple less than the Theme
+   tab's own pills already did — and those two surfaces are meant to be one
+   control. Matches .oi-option-pill's hover exactly. */
 .filter-pill:hover:not(.active) {
-  border-color: rgba(10,10,10,0.45);
-  color: #0A0A0A;
+  background: #0A0A0A;
+  color: #FFFFFF;
+  border-color: #0A0A0A;
 }
 
 /* ── Games print/export view (Polls & games) ──────────────────
@@ -1304,3 +1292,16 @@ body {
   .oi-daily-grid > div:empty { display: none; }
 }
 
+/* ── THE AVA CORNER IS RESERVED ────────────────────────────────────────────
+   The floating Ava button is 44px at bottom:32 right:32 (Layout.jsx), so it
+   covers a fixed corner of every page. Anything a page puts there is
+   unreachable, not merely crowded — the owner found the Send invites "Next"
+   button behind it. Any surface whose content can reach the bottom of the
+   viewport reserves the corner with this class.
+   44 (button) + 32 (its inset) + 20 (air) = 96. */
+.oi-ava-safe {
+  padding-bottom: 96px;
+}
+@media (max-width: 640px) {
+  .oi-ava-safe { padding-bottom: 88px; }
+}

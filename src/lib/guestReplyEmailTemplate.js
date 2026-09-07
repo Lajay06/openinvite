@@ -24,7 +24,7 @@ export function renderGuestReplyEmail({ guestName, coupleNames, originalMessage,
   const originalHtml = originalMessage ? `
           <tr>
             <td style="padding:24px 40px 0;">
-              <p style="margin:0 0 8px;font-size:12px;font-weight:700;color:rgba(0,0,0,0.4);letter-spacing:0.04em;font-family:${FONT};">Your message</p>
+              <p style="margin:0 0 8px;font-size:12px;font-weight:700;color:rgba(0,0,0,0.4);font-family:${FONT};">Your message</p>
               <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;background:#FAFAFA;border:1px solid rgba(0,0,0,0.06);">
                 <tr>
                   <td style="padding:14px 16px;font-size:14px;line-height:1.6;color:rgba(0,0,0,0.6);font-family:${FONT};font-style:italic;">
@@ -39,8 +39,8 @@ export function renderGuestReplyEmail({ guestName, coupleNames, originalMessage,
           <!-- Headline -->
           <tr>
             <td style="padding:32px 40px 0;">
-              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:${ACCENT};letter-spacing:0.08em;font-family:${FONT};">new reply</p>
-              <p style="margin:0;font-size:24px;font-weight:700;color:${BLACK};line-height:1.3;letter-spacing:-0.01em;font-family:${FONT};">
+              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:${ACCENT};font-family:${FONT};">new reply</p>
+              <p style="margin:0;font-size:24px;font-weight:700;color:${BLACK};line-height:1.3;font-family:${FONT};">
                 Hi ${escapeHtml(firstName)}, ${escapeHtml(couple)} replied
               </p>
             </td>

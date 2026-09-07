@@ -29,7 +29,7 @@ export function renderCollaboratorInviteEmail({ collaboratorName, coupleNames, a
   const permissionsHtml = grantedPages.length > 0 ? `
           <tr>
             <td style="padding:24px 40px 0;">
-              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:rgba(0,0,0,0.4);letter-spacing:0.04em;font-family:${FONT};">What you'll be able to help with</p>
+              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:rgba(0,0,0,0.4);font-family:${FONT};">What you'll be able to help with</p>
               <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;">
                 ${grantedPages.map(label => `
                 <tr>
@@ -45,8 +45,8 @@ export function renderCollaboratorInviteEmail({ collaboratorName, coupleNames, a
           <!-- Kicker + headline -->
           <tr>
             <td style="padding:32px 40px 0;">
-              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:${ACCENT};letter-spacing:0.08em;font-family:${FONT};">you're invited to collaborate</p>
-              <p style="margin:0;font-size:24px;font-weight:700;color:${BLACK};line-height:1.3;letter-spacing:-0.01em;font-family:${FONT};">
+              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:${ACCENT};font-family:${FONT};">you're invited to collaborate</p>
+              <p style="margin:0;font-size:24px;font-weight:700;color:${BLACK};line-height:1.3;font-family:${FONT};">
                 Hi ${escapeHtml(firstName)}, ${escapeHtml(coupleNames || 'a couple')} would love your help planning their wedding
               </p>
             </td>
@@ -68,7 +68,7 @@ ${permissionsHtml}
               <table role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="background:${ACCENT};border-radius:999px;">
-                    <a href="${escapeHtml(acceptUrl)}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:999px;font-family:${FONT};letter-spacing:0.01em;">
+                    <a href="${escapeHtml(acceptUrl)}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:999px;font-family:${FONT};">
                       Accept invitation
                     </a>
                   </td>

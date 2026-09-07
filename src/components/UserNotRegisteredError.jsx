@@ -7,7 +7,7 @@ export default function UserNotRegisteredError() {
       <div className="max-w-md w-full">
         {/* Logo */}
         <div className="mb-12">
-          <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, color: '#fff', fontSize: 24, letterSpacing: '-0.03em' }}>openinvite</h1>
+          <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, color: '#fff', fontSize: 24 }}>openinvite</h1>
         </div>
 
         {/* Icon */}

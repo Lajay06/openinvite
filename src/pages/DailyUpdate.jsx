@@ -268,7 +268,7 @@ export default function DailyUpdate() {
 
   const columnHead = (label) => (
     <div style={{ borderTop: '3px solid #0A0A0A', paddingTop: 16, marginBottom: 24 }}>
-      <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', color: '#0A0A0A' }}>{label}</span>
+      <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, color: '#0A0A0A' }}>{label}</span>
     </div>
   );
 
@@ -333,7 +333,7 @@ export default function DailyUpdate() {
               {columnHead('Ava\u2019s briefing')}
               {/* THE BADGE (ruling 6), then the paragraph. */}
               {day.badge && (
-                <p style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: '#E03553', margin: '0 0 12px' }}>
+                <p style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, color: '#E03553', margin: '0 0 12px' }}>
                   {day.badge}
                 </p>
               )}

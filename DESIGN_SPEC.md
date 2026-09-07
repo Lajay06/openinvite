@@ -237,3 +237,83 @@ that is an asset limit, not a code one, and only a larger upload lifts it.
   was role-aware, not a blanket bump — see the Typography section above
   and src/styles/tokens.js's textPlaceholder/textDisabled/iconMuted
   tokens for which value applies to which kind of text/control
+
+## The design-system sweep — owner rulings, 2026-09-07
+
+These five are rules, not preferences, and each has a guard in
+`tests/persistence/design-system-sweep.mjs`. Scope is the DASHBOARD: the
+couple's published guest site and the studio previews of it are artwork
+(see the artwork exemption), and the marketing pages are display type the
+owner has not ruled on.
+
+**One filter pill component.** Every filter or selection pill set in the
+dashboard renders through `FilterPill` (`components/shared/TableToolbar.jsx`,
+the `.filter-pill` class). Selected is the black pill; unselected is the
+light-grey outline pill Event details › Theme uses. No unselected filter
+renders as bare text, and no selection set paints itself with the primary
+colour — strawberry is for actions, and a chosen filter is not one.
+
+**Nothing below font-weight 400 in the dashboard.** No 300, no `lighter`, no
+`font-light`. The avatar dropdown (Profile & account, Notification
+preferences, Plan & billing, Help center, Log out) is 500.
+
+**No letter-spacing in the dashboard.** Owner: "I don't like the tracking, it
+doesn't suit the brand." This includes eyebrows and small-caps labels, which
+were the loudest of it. `0` and `normal` are the only permitted values and the
+allowlist is empty — there is no exception to add a file to.
+
+**Every accordion collapsed on mount, with a one-line summary in its header.**
+`DetailsSection` and `OptionAccordion` both default closed and both summarise
+their contents while collapsed. `defaultOpen` survives as a prop with no
+caller passing it, so a section holding a validation error can open itself.
+
+**CTA text colour is derived from its background**, never hard-paired
+beside it. Use `readableOn(bg, colors)` from `lib/surfaceTint.js`. The
+universe detail's "Make this my universe" was `background: colors.accent` with
+`color: colors.darkBg` — navy on black, 1.04:1 on paris, and below 4.5:1 on
+fourteen of the twenty universes.
+
+## The type scale — owner ruling, 2026-09-07
+
+**NO PAGE OR COMPONENT DECLARES ITS OWN TYPE SCALE OR BUTTON SIZE.** Owner:
+"we've already decided what the standard design size is for these pills, so
+why are these massive?"
+
+Body, input, label, pill and button sizes come from `src/styles/typeScale.js`,
+which is not a new scale invented for the rule — it is the sizes GuestList,
+DataTable, TableToolbar and the Theme tab already agreed on:
+
+    10px  row pills (status, category, tags)
+    11px  labels, column headings, filter pills
+    12px  buttons, secondary cell text
+    13px  table cells, panel body
+    14px  form inputs
+
+Five sizes for every control surface in the product. A sixth is not a design
+decision, it is a page forgetting the other five exist — which is why the
+guard tests membership of the set rather than a per-role lookup: a role may
+move within the scale, but nothing may leave it.
+
+Guarded by render (`scripts/test-type-scale.mjs`), not by grep: a page's font
+size is the sum of an inline style, a Tailwind class, a shared component's
+default and index.css's own rules, and only the browser knows which won.
+
+## Filter pills — the three states
+
+Every filter or selection row in the dashboard renders through `FilterPill`.
+
+    selected      black pill, white text
+    unselected    the Theme tab's outline pill — never bare words
+    hover         black pill
+
+**Not a filter row:** a tab strip (it changes what the page IS, and is square
+and underlined), a toolbar ACTION row (`btn-primary` / `btn-editorial-secondary`),
+and a row inside a form or dialog choosing a value for a record — To do's
+High/Medium/Low priority chips are a semantic color system and carry
+`data-not-a-filter`.
+
+`scripts/test-filter-pills.mjs` inventories these BY RENDERING every dashboard
+route. The previous pass inventoried by grepping and missed rows: a filter row
+is not a syntactic shape, it is three buttons that happen to sit beside each
+other, and the pages that had it wrong had it wrong in four different syntaxes.
+

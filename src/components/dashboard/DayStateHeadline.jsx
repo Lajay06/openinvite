@@ -43,7 +43,7 @@ export default function DayStateHeadline({ tasks, schedule, guests, budget, vend
       display: 'flex', alignItems: 'baseline', gap: 14, flexWrap: 'wrap',
     }}>
       {badge && (
-        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
           {badge}
         </span>
       )}

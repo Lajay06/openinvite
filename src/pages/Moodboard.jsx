@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { FilterPill } from '@/components/shared/TableToolbar';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords, getMyWeddingDetails } from '@/lib/resolveMyWedding';
@@ -31,7 +32,7 @@ const MoodboardItem = base44.entities.MoodboardItem;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
+  color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
   margin: 0, marginBottom: 10,
 };
@@ -357,10 +358,12 @@ export default function MoodboardPage() {
         {/* Category filter pills */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {CATEGORIES.map(cat => (
-            <button key={cat} onClick={() => setCategoryFilter(cat)}
-              style={{ padding: '5px 14px', borderRadius: 999, border: `1.5px solid ${categoryFilter === cat ? '#0A0A0A' : 'rgba(10,10,10,0.12)'}`, background: categoryFilter === cat ? '#0A0A0A' : 'transparent', color: categoryFilter === cat ? '#FFFFFF' : '#444444', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif", textTransform: 'capitalize' }}>
-              {cat === 'all' ? 'All' : cat}
-            </button>
+            <FilterPill
+              key={cat}
+              label={cat === 'all' ? 'All' : cat.charAt(0).toUpperCase() + cat.slice(1)}
+              active={categoryFilter === cat}
+              onClick={() => setCategoryFilter(cat)}
+            />
           ))}
         </div>
 

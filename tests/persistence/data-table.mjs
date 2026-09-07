@@ -73,9 +73,12 @@ export async function runDataTable() {
   }
 
   // ── ONE PILL VOCABULARY ─────────────────────────────────────────────────
-  check('the row pill is 10px/700 at 0.08em, fully rounded',
+  // 0.08em IS GONE with every other tracking value (owner, 2026-09-07). The
+  // property this check exists for is that one pill vocabulary is shared
+  // rather than copied per page; the tracking was never the point.
+  check('the row pill is 10px/700, fully rounded, and untracked',
     PILL_BASE.fontSize === 10 && PILL_BASE.fontWeight === 700
-      && PILL_BASE.letterSpacing === '0.08em' && PILL_BASE.borderRadius === 999,
+      && PILL_BASE.letterSpacing === undefined && PILL_BASE.borderRadius === 999,
     'the guest list\'s own pillBase, moved');
   check('  and the guest list uses the shared one rather than a copy',
     /PILL_BASE/.test(code('src/components/guests/GuestList.jsx'))

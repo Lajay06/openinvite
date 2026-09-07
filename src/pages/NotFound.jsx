@@ -32,7 +32,6 @@ export default function NotFound() {
           fontSize: 'clamp(72px, 15vw, 120px)',
           fontWeight: 800,
           color: '#E03553',
-          letterSpacing: '-0.04em',
           lineHeight: 1,
           margin: '0 0 24px',
         }}
@@ -46,7 +45,6 @@ export default function NotFound() {
           fontSize: 'clamp(22px, 4vw, 30px)',
           fontWeight: 700,
           color: '#0A0A0A',
-          letterSpacing: '-0.02em',
           margin: '0 0 12px',
           textAlign: 'center',
         }}

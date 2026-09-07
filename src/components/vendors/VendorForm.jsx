@@ -220,7 +220,7 @@ export default function VendorForm({ vendor, onSubmit, onCancel, defaultCategory
 
         {isPhotoOrVideo && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 24, paddingTop: 24, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
-            <Label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)' }}>
+            <Label style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)' }}>
               Photography &amp; videography details
             </Label>
 

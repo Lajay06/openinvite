@@ -14,7 +14,7 @@ import CountUp from "@/components/shared/CountUp";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
+  color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
   margin: 0, marginBottom: 10,
 };

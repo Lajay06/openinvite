@@ -137,7 +137,7 @@ const [activeTab, setActiveTab] = useState("attire");
 
           {/* Flowers Tab */}
           <TabsContent value="flowers" className="mt-8">
-            <Accordion type="multiple" className="w-full space-y-4">
+            <Accordion type="multiple" defaultValue={[]} className="w-full space-y-4">
               <DetailsSection title="Florist" icon={User} sectionKey="florist" onSave={() => handleSectionSave('flowers')} isSaving={isSaving}>
                 <VendorContactSection
                   category="flowers"
@@ -211,7 +211,7 @@ const [activeTab, setActiveTab] = useState("attire");
 
           {/* Decorations Tab */}
           <TabsContent value="decorations" className="mt-8">
-            <Accordion type="multiple" className="w-full space-y-4">
+            <Accordion type="multiple" defaultValue={[]} className="w-full space-y-4">
               <DetailsSection title="Decorator / Designer" icon={User} sectionKey="decorator" onSave={() => handleSectionSave('decorations')} isSaving={isSaving}>
                 <VendorContactSection
                   category="decorations"

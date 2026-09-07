@@ -83,7 +83,7 @@ export default function AvaActionCard({ action, tone = 'light', onConfirm, onCan
 
   return (
     <div style={{ margin: '6px 0 4px', padding: '10px 14px', border: t.border, background: t.bg, fontFamily: PJS }}>
-      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: t.eyebrow, marginBottom: 5 }}>Ava wants to</div>
+      <div style={{ fontSize: 10, fontWeight: 700, color: t.eyebrow, marginBottom: 5 }}>Ava wants to</div>
       <div style={{ fontSize: 13, color: t.text, marginBottom: action.status === 'pending' ? 10 : 6 }}>
         {actionLabel(action.type, action.data)}
       </div>

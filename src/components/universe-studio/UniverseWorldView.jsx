@@ -45,6 +45,7 @@
  * the click can ever transition its own phase to 'world', so only one
  * instance of this view (and its portal) is ever mounted at a time.
  */
+import { readableOn } from '@/lib/surfaceTint';
 import React, { useRef, useState, useEffect, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
@@ -315,7 +316,7 @@ function HeroChapter({ universe, isCurrent, prefersReducedMotion, scrollContaine
           <button
             onClick={() => onSwitchUniverse(universe.id)}
             disabled={isCurrent}
-            style={{ marginTop: 28, padding: '14px 32px', borderRadius: 999, border: 'none', background: universe.colors.accent, color: universe.colors.darkBg, fontFamily: PJS, fontSize: 15, fontWeight: 700, cursor: isCurrent ? 'default' : 'pointer', opacity: isCurrent ? 0.6 : 1 }}
+            style={{ marginTop: 28, padding: '14px 32px', borderRadius: 999, border: 'none', background: universe.colors.accent, color: readableOn(universe.colors.accent, universe.colors), fontFamily: PJS, fontSize: 15, fontWeight: 700, cursor: isCurrent ? 'default' : 'pointer', opacity: isCurrent ? 0.6 : 1 }}
           >
             {isCurrent ? 'This is your current universe' : 'Make this my universe'}
           </button>
@@ -323,7 +324,7 @@ function HeroChapter({ universe, isCurrent, prefersReducedMotion, scrollContaine
       </div>
 
       {isCurrent && (
-        <span style={{ position: 'absolute', top: 24, right: 24, fontSize: 10, fontWeight: 700, fontFamily: PJS, letterSpacing: '0.06em', color: universe.colors.darkBg, background: universe.colors.accent, padding: '5px 12px', borderRadius: 999 }}>
+        <span style={{ position: 'absolute', top: 24, right: 24, fontSize: 10, fontWeight: 700, fontFamily: PJS, letterSpacing: '0.06em', color: readableOn(universe.colors.accent, universe.colors), background: universe.colors.accent, padding: '5px 12px', borderRadius: 999 }}>
           Your current universe
         </span>
       )}
@@ -642,7 +643,7 @@ export default function UniverseWorldView({
               <button
                 onClick={() => onSwitchUniverse(universe.id)}
                 disabled={isCurrent}
-                style={{ padding: '14px 32px', borderRadius: 999, border: 'none', background: colors.accent, color: colors.darkBg, fontFamily: PJS, fontSize: 15, fontWeight: 700, cursor: isCurrent ? 'default' : 'pointer', opacity: isCurrent ? 0.6 : 1 }}
+                style={{ padding: '14px 32px', borderRadius: 999, border: 'none', background: colors.accent, color: readableOn(colors.accent, colors), fontFamily: PJS, fontSize: 15, fontWeight: 700, cursor: isCurrent ? 'default' : 'pointer', opacity: isCurrent ? 0.6 : 1 }}
               >
                 {isCurrent ? 'This is your current universe' : 'Make this my universe'}
               </button>

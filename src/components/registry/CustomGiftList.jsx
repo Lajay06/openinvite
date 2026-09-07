@@ -3,7 +3,7 @@ import { DollarSign, Edit, Trash2 } from 'lucide-react';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
+  color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -31,7 +31,7 @@ export default function CustomGiftList({ items, onEdit, onDelete, loading, readO
         return (
           <div key={item.id} style={{ background: '#FFFFFF', padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: catColor.bg, color: catColor.color, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: catColor.bg, color: catColor.color, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                 {catLabel}
               </span>
               {!readOnly && (

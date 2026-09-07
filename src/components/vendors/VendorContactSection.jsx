@@ -10,8 +10,7 @@ const Vendor = base44.entities.Vendor;
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
-  color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
+  fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
 };
 
 const STATUS_STYLES = {
@@ -117,7 +116,7 @@ export default function VendorContactSection({ category, vendorId, onVendorIdCha
               </span>
             )}
           </div>
-          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', padding: '3px 10px', borderRadius: 999, fontFamily: PJS, ...(STATUS_STYLES[selectedVendor.status] || STATUS_STYLES.researching) }}>
+          <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 999, fontFamily: PJS, ...(STATUS_STYLES[selectedVendor.status] || STATUS_STYLES.researching) }}>
             {selectedVendor.status || 'researching'}
           </span>
           <div style={{ display: 'flex', gap: 8, marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(10,10,10,0.06)' }}>

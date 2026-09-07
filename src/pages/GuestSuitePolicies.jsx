@@ -31,8 +31,7 @@ const textareaStyle = {
   boxSizing: 'border-box', fontFamily: PJS, lineHeight: 1.6, minHeight: 80, color: '#0A0A0A',
 };
 const fieldLabel = {
-  fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
-  color: 'rgba(10,10,10,0.6)', display: 'block', marginBottom: 6, fontFamily: PJS,
+  fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', display: 'block', marginBottom: 6, fontFamily: PJS,
 };
 
 function Toggle({ value, onChange }) {
@@ -258,7 +257,7 @@ export default function GuestSuitePolicies() {
 
           {/* Photography */}
           {activeTab === 'photography' && (
-          <DetailsSection title="Photography policy" icon={Camera} defaultOpen>
+          <DetailsSection title="Photography policy" icon={Camera}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
               <Toggle value={policies.photography.unplugged} onChange={v => set('photography', 'unplugged', v)} />
               <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>Unplugged ceremony (no phones during ceremony)</span>
@@ -273,7 +272,7 @@ export default function GuestSuitePolicies() {
 
           {/* Social media */}
           {activeTab === 'socialMedia' && (
-          <DetailsSection title="Social media policy" icon={Share2} defaultOpen>
+          <DetailsSection title="Social media policy" icon={Share2}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
               <Toggle value={policies.socialMedia.noCeremony} onChange={v => set('socialMedia', 'noCeremony', v)} />
               <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>No social media during ceremony</span>
@@ -298,7 +297,7 @@ export default function GuestSuitePolicies() {
 
           {/* Children */}
           {activeTab === 'children' && (
-          <DetailsSection title="Children policy" icon={Baby} defaultOpen>
+          <DetailsSection title="Children policy" icon={Baby}>
             <div>
               <label style={fieldLabel}>Policy</label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 4 }}>
@@ -324,7 +323,7 @@ export default function GuestSuitePolicies() {
 
           {/* Dietary */}
           {activeTab === 'dietary' && (
-          <DetailsSection title="Dietary & allergies" icon={Utensils} defaultOpen>
+          <DetailsSection title="Dietary & allergies" icon={Utensils}>
             <div>
               <label style={fieldLabel}>Available options</label>
               <textarea style={textareaStyle} value={policies.dietary.description} onChange={e => set('dietary', 'description', e.target.value)} placeholder="We offer vegetarian, vegan, and gluten-free options…" rows={2} />
@@ -345,7 +344,7 @@ export default function GuestSuitePolicies() {
 
           {/* Gift */}
           {activeTab === 'gifts' && (
-          <DetailsSection title="Gift policy" icon={Gift} defaultOpen>
+          <DetailsSection title="Gift policy" icon={Gift}>
             <div>
               <label style={fieldLabel}>Policy</label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 4 }}>
@@ -378,7 +377,7 @@ export default function GuestSuitePolicies() {
 
           {/* Dress code */}
           {activeTab === 'dressCode' && (
-          <DetailsSection title="Dress code" icon={Shirt} defaultOpen>
+          <DetailsSection title="Dress code" icon={Shirt}>
             <div>
               <label style={fieldLabel}>From event details</label>
               <input style={{ ...inputStyle, color: 'rgba(10,10,10,0.45)' }} value={details?.mainCeremony?.dressCode || ''} readOnly placeholder="Set in Event Details" />
@@ -397,7 +396,7 @@ export default function GuestSuitePolicies() {
 
           {/* Guest styling questionnaire */}
           {activeTab === 'styling' && (
-          <DetailsSection title="Guest styling questionnaire" icon={ClipboardList} defaultOpen>
+          <DetailsSection title="Guest styling questionnaire" icon={ClipboardList}>
             {/* AN EXPLICIT NAMED CHOICE, NOT A SWITCH.
                 This was a toggle reading "Show a quick 'what to wear'
                 questionnaire", described only by what it ADDS and silent about
@@ -452,7 +451,7 @@ export default function GuestSuitePolicies() {
 
           {/* Late arrival */}
           {activeTab === 'lateArrival' && (
-          <DetailsSection title="Late arrival" icon={Clock} defaultOpen>
+          <DetailsSection title="Late arrival" icon={Clock}>
             <div>
               <label style={fieldLabel}>Policy</label>
               <textarea style={textareaStyle} value={policies.lateArrival.policy} onChange={e => set('lateArrival', 'policy', e.target.value)} placeholder="Our ceremony begins promptly at 3:00 PM. Please arrive by 2:45 PM." rows={2} />
@@ -463,7 +462,7 @@ export default function GuestSuitePolicies() {
 
           {/* Other */}
           {activeTab === 'other' && (
-          <DetailsSection title="Other policies" icon={FileText} defaultOpen>
+          <DetailsSection title="Other policies" icon={FileText}>
             <div>
               <textarea style={textareaStyle} value={policies.other.text} onChange={e => set('other', 'text', e.target.value)} placeholder="Any additional policies or information for your guests…" rows={4} />
             </div>
@@ -478,7 +477,7 @@ export default function GuestSuitePolicies() {
           {activeTab === 'guestExperience' && (
           <>
             {SHOW_BACKGROUND_MUSIC_UI && (
-            <DetailsSection title="Background music" icon={Music} defaultOpen>
+            <DetailsSection title="Background music" icon={Music}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
                 <Toggle value={guestExperience.backgroundMusic.enabled} onChange={v => setBGMusic('enabled', v)} />
                 <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>Play music on your guest invite/website</span>
@@ -545,7 +544,7 @@ export default function GuestSuitePolicies() {
 
             <div style={{ height: 24 }} />
 
-            <DetailsSection title="Who's coming" icon={Users} defaultOpen>
+            <DetailsSection title="Who's coming" icon={Users}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
                 <Toggle value={guestExperience.showAttending} onChange={v => setGE('showAttending', v)} />
                 <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>Show who's attending</span>

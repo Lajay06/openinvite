@@ -14,8 +14,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 const genId = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36);
 
 const labelStyle = {
-  fontSize: 10, fontWeight: 700, letterSpacing: '0.1em',
-  color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px',
+  fontSize: 10, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px',
 };
 
 const POLL_TEMPLATES = [
@@ -55,11 +54,11 @@ function PollCard({ poll, onEnd, onDelete, onShare, onInsightGenerated }) {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
             <span style={{ fontSize: 18 }}>{poll.emoji}</span>
-            <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', padding: '2px 8px', border: '1px solid rgba(10,10,10,0.12)', borderRadius: 999 }}>
+            <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, color: 'rgba(10,10,10,0.6)', padding: '2px 8px', border: '1px solid rgba(10,10,10,0.12)', borderRadius: 999 }}>
               {poll.category}
             </span>
             {!poll.isActive && (
-              <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', padding: '2px 8px', background: 'rgba(10,10,10,0.04)', borderRadius: 999 }}>
+              <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, color: 'rgba(10,10,10,0.6)', padding: '2px 8px', background: 'rgba(10,10,10,0.04)', borderRadius: 999 }}>
                 Ended
               </span>
             )}
@@ -99,7 +98,7 @@ function PollCard({ poll, onEnd, onDelete, onShare, onInsightGenerated }) {
       {/* Ava insight */}
       {poll.avaInsight && (
         <div style={{ margin: '0 20px 16px', borderLeft: '2px solid #E03553', padding: '8px 12px', background: 'rgba(224,53,83,0.04)' }}>
-          <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, color: '#E03553', letterSpacing: '0.06em' }}>✦ Ava</span>
+          <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, color: '#E03553' }}>✦ Ava</span>
           <p style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '3px 0 0', lineHeight: 1.5 }}>
             {poll.avaInsight}
           </p>

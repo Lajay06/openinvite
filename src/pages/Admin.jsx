@@ -9,8 +9,7 @@ const ADMIN_EMAIL = 'lajay@openinvite.com.au';
 const PAGE_SIZE = 20;
 
 const statLabelStyle = {
-  fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
-  color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0, marginBottom: 10,
+  fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0, marginBottom: 10,
 };
 const statValueStyle = {
   fontSize: 'clamp(22px, 2.5vw, 32px)', fontWeight: 700, color: '#0A0A0A',
@@ -219,8 +218,7 @@ export default function Admin() {
                 {['Email', 'Plan', 'Amount', 'Date'].map(h => (
                   <th key={h} style={{
                     padding: '10px 16px', textAlign: 'left',
-                    fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
-                    color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
+                    fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
                     borderBottom: '1px solid rgba(10,10,10,0.12)',
                     whiteSpace: 'nowrap',
                   }}>
@@ -242,8 +240,7 @@ export default function Admin() {
                     <TableCell>{u.email}</TableCell>
                     <TableCell>
                       <span style={{
-                        fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
-                        padding: '3px 10px', borderRadius: 999, fontFamily: PJS,
+                        fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, fontFamily: PJS,
                         background: u.plan === 'ultra' ? 'linear-gradient(135deg, #7c3aed, #4f46e5)' : '#0A0A0A',
                         color: '#FFFFFF',
                       }}>
@@ -308,8 +305,7 @@ export default function Admin() {
                 {['Email', 'Plan', 'Amount', 'Date', 'Status'].map(h => (
                   <th key={h} style={{
                     padding: '10px 16px', textAlign: 'left',
-                    fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
-                    color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
+                    fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
                     borderBottom: '1px solid rgba(10,10,10,0.12)',
                     whiteSpace: 'nowrap',
                   }}>
@@ -331,8 +327,7 @@ export default function Admin() {
                     <TableCell>{p.email}</TableCell>
                     <TableCell>
                       <span style={{
-                        fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
-                        padding: '3px 10px', borderRadius: 999, fontFamily: PJS,
+                        fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, fontFamily: PJS,
                         background: p.plan === 'ultra' ? 'linear-gradient(135deg, #7c3aed, #4f46e5)' : '#0A0A0A',
                         color: '#FFFFFF',
                       }}>
@@ -343,8 +338,7 @@ export default function Admin() {
                     <TableCell muted>{formatDate(p.date)}</TableCell>
                     <TableCell>
                       <span style={{
-                        fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
-                        padding: '3px 10px', borderRadius: 999, fontFamily: PJS,
+                        fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, fontFamily: PJS,
                         background: p.status === 'paid' ? 'rgba(34,197,94,0.12)' : 'rgba(10,10,10,0.06)',
                         color: p.status === 'paid' ? '#16a34a' : 'rgba(10,10,10,0.6)',
                       }}>

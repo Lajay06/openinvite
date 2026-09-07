@@ -9,7 +9,7 @@ const STATUS_COLORS = {
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
+  color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -43,7 +43,7 @@ export default function RSVPChart({ guests }) {
     <div style={{ border: '1px solid rgba(10,10,10,0.12)', background: '#fff' }}>
       <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <p style={labelStyle}>Guest response</p>
-        <p style={{ fontSize: 24, fontWeight: 800, color: '#0A0A0A', fontFamily: PJS, letterSpacing: '-0.03em', marginTop: 4 }}>{guests.length} total</p>
+        <p style={{ fontSize: 24, fontWeight: 800, color: '#0A0A0A', fontFamily: PJS, marginTop: 4 }}>{guests.length} total</p>
       </div>
       <div style={{ padding: '24px' }}>
         <div style={{ height: 220, marginBottom: 24 }}>
@@ -93,7 +93,7 @@ export default function RSVPChart({ guests }) {
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: getColor(d.name), flexShrink: 0 }} />
                 <p style={labelStyle}>{d.name}</p>
               </div>
-              <p style={{ fontSize: 20, fontWeight: 800, color: '#0A0A0A', fontFamily: PJS, letterSpacing: '-0.03em', width: 32, textAlign: 'right' }}>{d.value}</p>
+              <p style={{ fontSize: 20, fontWeight: 800, color: '#0A0A0A', fontFamily: PJS, width: 32, textAlign: 'right' }}>{d.value}</p>
             </div>
           ))}
         </div>

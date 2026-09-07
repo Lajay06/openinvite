@@ -172,7 +172,7 @@ function BudgetPlanner({ symbol = '$', savedBudget, defaultTotal, defaultCategor
 
       {/* Total budget input */}
       <div style={{ marginBottom: 24, maxWidth: 320 }}>
-        <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', display: 'block', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <label style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', display: 'block', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Total wedding budget ({symbol})
         </label>
         <input
@@ -180,7 +180,10 @@ function BudgetPlanner({ symbol = '$', savedBudget, defaultTotal, defaultCategor
           placeholder="e.g. 50000"
           value={plan.total}
           onChange={e => setTotal(e.target.value)}
-          style={{ ...inputStyle, fontSize: 22, fontWeight: 700 }}
+          // WEIGHT, NOT SIZE. This was 22px — off the scale entirely. The
+          // total is the most important number on the page and it said so by
+          // inventing a size; it says so with weight now.
+          style={{ ...inputStyle, fontWeight: 700 }}
           onFocus={e => { e.target.style.borderBottomColor = '#E03553'; e.target.style.borderBottomWidth = '2px'; }}
           onBlur={e => { e.target.style.borderBottomColor = 'rgba(10,10,10,0.18)'; e.target.style.borderBottomWidth = '1px'; }}
         />
@@ -190,7 +193,7 @@ function BudgetPlanner({ symbol = '$', savedBudget, defaultTotal, defaultCategor
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px 32px' }}>
         {BUDGET_CATEGORIES.map(cat => (
           <div key={cat.key}>
-            <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', display: 'block', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <label style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', display: 'block', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               {cat.label}
             </label>
             <input

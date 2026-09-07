@@ -744,7 +744,7 @@ function RelevancePill() {
       padding: '2px 8px', borderRadius: 999,
       background: 'rgba(224,53,83,0.08)',
       color: '#E03553', fontSize: 11, fontWeight: 700,
-      letterSpacing: '0.04em', fontFamily: PJS,
+      fontFamily: PJS,
       flexShrink: 0,
     }}>
       Highly relevant
@@ -805,7 +805,7 @@ function AccordionItem({ item }) {
 
           {item._tips && item._tips.length > 0 && (
             <div style={{ marginTop: 18, padding: '14px 16px', background: 'rgba(10,10,10,0.03)', borderLeft: '3px solid rgba(10,10,10,0.12)' }}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px' }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px' }}>
                 Tips
               </p>
               <ul style={{ margin: 0, padding: '0 0 0 16px' }}>

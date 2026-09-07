@@ -140,7 +140,6 @@ function Pill({ value, styleMap, labelMap }) {
       display: 'inline-flex', alignItems: 'center',
       padding: '2px 8px', borderRadius: 999,
       fontSize: 10, fontWeight: 600, fontFamily: PJS,
-      letterSpacing: '0.04em',
       background: s?.background || 'transparent',
       color: s?.color || 'rgba(10,10,10,0.6)',
       border: s?.border || 'none',

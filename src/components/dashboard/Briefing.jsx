@@ -44,12 +44,12 @@ export default function Briefing({ sentence, loading, now = new Date() }) {
 
   return (
     <div style={{ background: '#FFFFFF', padding: '48px 40px 40px', borderBottom: '1px solid #E8E8E5' }}>
-      <p style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', color: '#E03553', margin: '0 0 16px' }}>
+      <p style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, color: '#E03553', margin: '0 0 16px' }}>
         {dateLabel}
       </p>
       <h1 style={{
         fontFamily: PJS, fontSize: 42, fontWeight: 800, color: '#0A0A0A',
-        letterSpacing: '-0.03em', lineHeight: 1.15, margin: 0,
+        lineHeight: 1.15, margin: 0,
       }}>
         {sentence}
       </h1>

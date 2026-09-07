@@ -11,8 +11,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 const BADGE_OPTIONS = ['Closest to venue', 'Best value', 'Where most guests are staying', 'Luxury pick', 'Budget friendly'];
 
 const sectionLabel = {
-  fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
-  color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 8, display: 'block',
+  fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 8, display: 'block',
 };
 
 function photoProxy(ref, w = 600) {
@@ -204,7 +203,7 @@ function AddPlaceCard({ destination, onAdd }) {
       {/* Search */}
       <div style={{ position: 'relative' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Search Google Places</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Search Google Places</span>
           {/* Geolocation control */}
           {geoState === 'idle' && (
             <button type="button" onClick={handleUseLocation}
@@ -291,7 +290,7 @@ function AddPlaceCard({ destination, onAdd }) {
       {/* Manual entry form */}
       {!selected && showManual && (
         <div style={{ marginTop: 14, border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, padding: '16px 16px 18px' }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>Add manually</p>
+          <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>Add manually</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px', marginBottom: 14 }}>
             <div>
               <label style={sectionLabel}>Name</label>
@@ -521,7 +520,7 @@ Badge options: "Luxury pick", "Best value", "Closest to venue", "Budget friendly
             {/* Ava suggestions */}
             {avaSuggestions.length > 0 && (
               <div style={{ marginBottom: 36 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 16px' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 16px' }}>
                   Ava's recommendations — click Add to include in your guide
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
@@ -558,7 +557,7 @@ Badge options: "Luxury pick", "Best value", "Closest to venue", "Budget friendly
             {/* Saved places */}
             {places.length > 0 ? (
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 16px' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 16px' }}>
                   {places.length} {places.length === 1 ? 'place' : 'places'} added
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>

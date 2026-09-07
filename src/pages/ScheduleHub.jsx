@@ -28,8 +28,7 @@ const Schedule = base44.entities.Schedule;
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const statLabelStyle = {
-  fontSize: 11, fontWeight: 700, letterSpacing: "0.08em",
-  color: "rgba(10,10,10,0.6)", fontFamily: PJS, margin: 0, marginBottom: 10,
+  fontSize: 11, fontWeight: 700, color: "rgba(10,10,10,0.6)", fontFamily: PJS, margin: 0, marginBottom: 10,
 };
 const statValueStyle = {
   fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 700, color: "#0A0A0A",

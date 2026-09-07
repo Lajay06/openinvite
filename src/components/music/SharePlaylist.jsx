@@ -17,8 +17,7 @@ import toast from 'react-hot-toast';
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
-  color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
+  fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
 };
 const underlineInput = {
   flex: 1, border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)',

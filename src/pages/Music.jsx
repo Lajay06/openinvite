@@ -1,3 +1,4 @@
+import { FilterPill } from '@/components/shared/TableToolbar';
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
@@ -23,7 +24,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
+  color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
   margin: 0, marginBottom: 10,
 };
@@ -521,12 +522,17 @@ export default function MusicPage() {
               </div>
 
               <div style={{ display: 'flex', gap: 8, margin: '16px 0 20px', flexWrap: 'wrap' }}>
+                {/* FILTERS, NOT ACTIONS. These were btn-primary /
+                    btn-editorial-secondary — the button vocabulary — so a
+                    chosen filter looked like a thing that would DO something.
+                    A filter narrows a list; it is a pill. */}
                 {REQUEST_TABS.map(f => (
-                  <button key={f} onClick={() => setRequestFilter(f)}
-                    className={requestFilter === f ? 'btn-primary' : 'btn-editorial-secondary'}
-                    style={{ fontSize: 12 }}>
-                    {STATUS_LABELS[f]}{' '}({requestCounts[f]})
-                  </button>
+                  <FilterPill
+                    key={f}
+                    label={`${STATUS_LABELS[f]} (${requestCounts[f]})`}
+                    active={requestFilter === f}
+                    onClick={() => setRequestFilter(f)}
+                  />
                 ))}
               </div>
 

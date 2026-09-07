@@ -16,8 +16,7 @@ const WeddingDetails = base44.entities.WeddingDetails;
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
-  color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
+  fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
 };
 const inputStyle = {
   width: '100%', border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)',
@@ -545,27 +544,27 @@ function TrialForm({ onSubmit, onCancel }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Date</label>
+            <label style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Date</label>
             <input type="date" value={data.date} onChange={e => set('date', e.target.value)}
               style={{ border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)', background: 'none', fontSize: 14, color: '#0A0A0A', fontFamily: PJS, outline: 'none', padding: '6px 0' }} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Artist name</label>
+            <label style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Artist name</label>
             <input value={data.artist} onChange={e => set('artist', e.target.value)} placeholder="Artist"
               style={{ border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)', background: 'none', fontSize: 14, color: '#0A0A0A', fontFamily: PJS, outline: 'none', padding: '6px 0', width: '100%' }} />
           </div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Look description</label>
+          <label style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Look description</label>
           <textarea value={data.lookDescription} onChange={e => set('lookDescription', e.target.value)} placeholder="Describe the look discussed…"
             style={{ border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)', background: 'none', fontSize: 14, color: '#0A0A0A', fontFamily: PJS, outline: 'none', padding: '6px 0', resize: 'vertical', minHeight: 60, width: '100%' }} />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Rating</label>
+          <label style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Rating</label>
           <StarRating value={data.rating} onChange={v => set('rating', v)} />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Notes</label>
+          <label style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Notes</label>
           <textarea value={data.notes} onChange={e => set('notes', e.target.value)} placeholder="Products used, feedback, things to change…"
             style={{ border: 'none', borderBottom: '1px solid rgba(10,10,10,0.18)', background: 'none', fontSize: 14, color: '#0A0A0A', fontFamily: PJS, outline: 'none', padding: '6px 0', resize: 'vertical', minHeight: 60, width: '100%' }} />
         </div>

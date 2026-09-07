@@ -12,7 +12,7 @@ const WeddingDetails = base44.entities.WeddingDetails;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
+  color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -190,7 +190,7 @@ export default function WeddingFavoursPage() {
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {/* Overview */}
           {activeTab === 'overview' && (
-          <DetailsSection title="Overview" icon={Gift} defaultOpen>
+          <DetailsSection title="Overview" icon={Gift}>
             <GoogleField label="Supplier / maker name" value={data.supplierName} onChange={e => update({ supplierName: e.target.value })} placeholder="e.g. Etsy shop, local maker, craft store" />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <SectionInput label="Total budget" value={data.totalBudget} onChange={e => update({ totalBudget: e.target.value })} placeholder="e.g. £500" />
@@ -218,7 +218,7 @@ export default function WeddingFavoursPage() {
 
           {/* Favour items */}
           {activeTab === 'items' && (
-          <DetailsSection title="Favour items" icon={Package} defaultOpen>
+          <DetailsSection title="Favour items" icon={Package}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {favourItems.length > 0 && (
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 2fr auto', gap: 12, marginBottom: 4 }}>
@@ -248,7 +248,7 @@ export default function WeddingFavoursPage() {
 
           {/* Packaging & display */}
           {activeTab === 'packaging' && (
-          <DetailsSection title="Packaging & display" icon={Package} defaultOpen>
+          <DetailsSection title="Packaging & display" icon={Package}>
             <SectionInput label="Packaging type" value={data.packagingType} onChange={e => update({ packagingType: e.target.value })} placeholder="e.g. kraft boxes, muslin bags, ribbon-tied" />
             <SectionInput label="Packaging supplier" value={data.packagingSupplier} onChange={e => update({ packagingSupplier: e.target.value })} placeholder="Where you're sourcing packaging" />
             <SectionInput label="Display / placement notes" isTextarea value={data.displayNotes} onChange={e => update({ displayNotes: e.target.value })} placeholder="Where favours will be placed, how they'll be arranged…" />
@@ -258,7 +258,7 @@ export default function WeddingFavoursPage() {
 
           {/* Notes */}
           {activeTab === 'notes' && (
-          <DetailsSection title="Notes" icon={FileText} defaultOpen>
+          <DetailsSection title="Notes" icon={FileText}>
             <SectionInput label="Additional notes" isTextarea value={data.additionalNotes} onChange={e => update({ additionalNotes: e.target.value })} placeholder="Anything else about wedding favours…" />
           </DetailsSection>
           )}

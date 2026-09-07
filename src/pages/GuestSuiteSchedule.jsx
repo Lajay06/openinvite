@@ -133,8 +133,7 @@ export default function GuestSuiteSchedule() {
                 {/* Date heading */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
                   <span style={{
-                    fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
-                    color: 'rgba(10,10,10,0.6)', fontFamily: PJS, whiteSpace: 'nowrap',
+                    fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, whiteSpace: 'nowrap',
                   }}>
                     {fmtDateHeading(date)}
                   </span>
@@ -190,8 +189,7 @@ export default function GuestSuiteSchedule() {
                               {item.event_name}
                             </span>
                             <span style={{
-                              fontSize: 9, fontWeight: 700, letterSpacing: '0.08em',
-                              padding: '2px 8px', borderRadius: 999, flexShrink: 0,
+                              fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 999, flexShrink: 0,
                               background: cfg.bg, color: cfg.text, fontFamily: PJS,
                             }}>
                               {cfg.label}

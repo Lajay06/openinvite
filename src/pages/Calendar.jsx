@@ -11,7 +11,7 @@ import CountUp from "@/components/shared/CountUp";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
+  color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
   margin: 0, marginBottom: 10,
 };
@@ -390,7 +390,7 @@ export default function CalendarPage({ embedded = false, hideChrome = false }) {
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{event.title}</span>
-                          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', background: es.bg, color: es.color, borderRadius: 999, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{event.type}</span>
+                          <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', background: es.bg, color: es.color, borderRadius: 999, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{event.type}</span>
                       </div>
                       {event.time && <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '0 0 2px' }}>Time: {event.time}</p>}
                       {event.description && <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>{event.description}</p>}

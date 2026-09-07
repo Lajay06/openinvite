@@ -61,7 +61,7 @@ function AccordionSection({ title, isOpen, onToggle, summary, children }) {
           textAlign: 'left', fontFamily: PJS,
         }}
       >
-        <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(10,10,10,0.6)' }}>{title}</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)' }}>{title}</span>
         <ChevronDown
           size={15}
           style={{

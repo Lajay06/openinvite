@@ -36,8 +36,7 @@ const TIME_BLOCKS = ['morning', 'afternoon', 'evening'];
 const ITINERARY_LENGTHS = [1, 3, 5];
 
 const sectionLabel = {
-  fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
-  color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 8, display: 'block',
+  fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 8, display: 'block',
 };
 
 function photoProxyUrl(ref, w = 600) {
@@ -328,7 +327,7 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
         {/* Search */}
         <div style={{ position: 'relative' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Search Google Places</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Search Google Places</span>
             {geoState === 'idle' && (
               <button type="button" onClick={handleUseLocation}
                 style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, padding: 0 }}>
@@ -422,7 +421,7 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
         {/* Manual entry form */}
         {!selectedPlace && showManual && (
           <div style={{ marginTop: 14, border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, padding: '16px 16px 18px' }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>Add manually</p>
+            <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>Add manually</p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px', marginBottom: 14 }}>
               <div>
                 <label style={sectionLabel}>Name</label>
@@ -915,7 +914,7 @@ function DayCard({ day, allSavedPlaces, onTitleChange, onAddActivity, onRemoveAc
     <div style={{ border: '1px solid rgba(10,10,10,0.12)', borderRadius: 8, overflow: 'hidden' }}>
       <div style={{ padding: '14px 20px', background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.06)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
             Day {day.day}
           </span>
           {editingTitle ? (
@@ -946,7 +945,7 @@ function DayCard({ day, allSavedPlaces, onTitleChange, onAddActivity, onRemoveAc
       <div style={{ padding: '0 20px 20px' }}>
         {TIME_BLOCKS.map((block, bi) => (
           <div key={block} style={{ paddingTop: 16, borderTop: bi > 0 ? '1px solid rgba(10,10,10,0.04)' : 'none', marginTop: bi > 0 ? 16 : 0 }}>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 4 }}>
               <Clock size={10} /> {block.charAt(0).toUpperCase() + block.slice(1)}
             </p>
             {day.blocks[block].map(activity => (

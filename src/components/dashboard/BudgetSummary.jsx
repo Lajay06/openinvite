@@ -2,14 +2,13 @@ import React from 'react';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
+  color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
 const valueStyle = {
   fontSize: 24, fontWeight: 800, color: '#0A0A0A',
-  fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: '-0.03em',
-};
+  fontFamily: "'Plus Jakarta Sans', sans-serif", };
 
 export default function BudgetSummary({ budget, stats }) {
   const categoryTotals = React.useMemo(() => {

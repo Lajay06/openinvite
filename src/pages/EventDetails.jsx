@@ -106,7 +106,7 @@ function migrateThemeFields(wd, tdEntity) {
 const PRE_WEDDING_TYPES  = ['Engagement Party', 'Bridal Shower', 'Bachelor Party', 'Bachelorette Party', 'Rehearsal Dinner', 'Welcome Cocktails', 'Other'];
 const POST_WEDDING_TYPES = ['After Party', 'Next-Day Brunch', 'Farewell Brunch', 'Thank You Reception', 'Other'];
 
-const sLabel = { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 8, display: 'block' };
+const sLabel = { fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 8, display: 'block' };
 const divider = sectionDivider;
 
 function uid() { return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`; }
@@ -422,7 +422,7 @@ function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, 
       {/* ── Info panel ───────────────────────────────────────────────────── */}
       <div className="ev-info">
         {/* Type overline */}
-        <p style={{ fontSize: 12, fontWeight: 600, color: overlineColor, fontFamily: PJS, margin: '0 0 8px', letterSpacing: '0.01em' }}>
+        <p style={{ fontSize: 12, fontWeight: 600, color: overlineColor, fontFamily: PJS, margin: '0 0 8px' }}>
           {overline}
         </p>
 

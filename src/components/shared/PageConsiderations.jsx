@@ -739,7 +739,7 @@ function AccordionItem({ item }) {
           ))}
           {item.tips && item.tips.length > 0 && (
             <div style={{ marginTop: 18, padding: '14px 16px', background: 'rgba(10,10,10,0.03)', borderLeft: '3px solid rgba(10,10,10,0.12)' }}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px' }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px' }}>
                 Tips
               </p>
               <ul style={{ margin: 0, padding: '0 0 0 16px' }}>

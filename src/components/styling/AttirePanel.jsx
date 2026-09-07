@@ -33,8 +33,7 @@ const STATUSES = [
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
-  color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
+  fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
   marginBottom: 4, display: 'block',
 };
 
@@ -433,7 +432,7 @@ export default function AttirePanel() {
   return (
     <div style={{ fontFamily: PJS, display: 'flex', flexDirection: 'column', gap: 0 }}>
 
-      <Accordion type="multiple" className="w-full space-y-4">
+      <Accordion type="multiple" defaultValue={[]} className="w-full space-y-4">
 
         {/* ── A. Outfits ────────────────────────────────────────────────────── */}
         <DetailsSection title="Outfits" icon={Shirt}>

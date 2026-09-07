@@ -10,8 +10,7 @@ import AvaButton from "@/components/shared/AvaButton";
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 600, letterSpacing: '0.06em',
-  color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 6,
+  fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 6,
 };
 
 function UInput({ label, value, onChange, placeholder = '', multiline = false }) {

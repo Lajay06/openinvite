@@ -13,7 +13,7 @@ const WeddingDetails = base44.entities.WeddingDetails;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
+  color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -219,7 +219,7 @@ export default function EntertainmentDetailsPage() {
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {/* Music & DJ */}
           {activeTab === 'music' && (
-          <DetailsSection title="Music & DJ" icon={Music4} defaultOpen>
+          <DetailsSection title="Music & DJ" icon={Music4}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <GoogleField label="Band / DJ name" value={data.bandDjName} onChange={e => update({ bandDjName: e.target.value })} placeholder="e.g. The Groove Masters" />
               <SectionInput label="Contact / booking" value={data.bandDjContact} onChange={e => update({ bandDjContact: e.target.value })} />
@@ -237,7 +237,7 @@ export default function EntertainmentDetailsPage() {
 
           {/* MC & Host */}
           {activeTab === 'mc' && (
-          <DetailsSection title="MC & host" icon={Mic2} defaultOpen>
+          <DetailsSection title="MC & host" icon={Mic2}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <SectionInput label="MC / host name" value={data.mcName} onChange={e => update({ mcName: e.target.value })} placeholder="Name of your MC or host" />
               <SectionInput label="MC contact" value={data.mcContact} onChange={e => update({ mcContact: e.target.value })} />
@@ -248,7 +248,7 @@ export default function EntertainmentDetailsPage() {
 
           {/* Extra entertainment */}
           {activeTab === 'extras' && (
-          <DetailsSection title="Entertainment extras" icon={Sparkles} defaultOpen>
+          <DetailsSection title="Entertainment extras" icon={Sparkles}>
             <PillToggle label="Photo booth" value={data.photoBooth || false} onChange={v => update({ photoBooth: v })} />
             {data.photoBooth && (
               <SectionInput label="Photo booth details" isTextarea value={data.photoBoothDetails} onChange={e => update({ photoBoothDetails: e.target.value })} placeholder="Provider, props, backdrop, print style…" />
@@ -260,7 +260,7 @@ export default function EntertainmentDetailsPage() {
 
           {/* Notes */}
           {activeTab === 'notes' && (
-          <DetailsSection title="Notes" icon={FileText} defaultOpen>
+          <DetailsSection title="Notes" icon={FileText}>
             <SectionInput label="Additional notes" isTextarea value={data.additionalNotes} onChange={e => update({ additionalNotes: e.target.value })} placeholder="Anything else about entertainment…" />
           </DetailsSection>
           )}

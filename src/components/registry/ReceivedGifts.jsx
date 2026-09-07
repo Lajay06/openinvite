@@ -14,7 +14,7 @@ const ReceivedGift = base44.entities.ReceivedGift;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
+  color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -312,7 +312,7 @@ export default function ReceivedGifts() {
                       {gift.giver_email && <p style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{gift.giver_email}</p>}
                     </td>
                     <td style={{ padding: '12px 16px' }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: dc.bg, color: dc.color, fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: dc.bg, color: dc.color, fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'inline-flex', alignItems: 'center', gap: 3 }}>
                         <DcIcon size={11} />{dc.label}
                       </span>
                     </td>

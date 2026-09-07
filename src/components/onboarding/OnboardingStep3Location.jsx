@@ -33,7 +33,6 @@ export default function OnboardingStep3Location({ onNext, data }) {
   const labelStyle = {
     fontSize: 11,
     fontWeight: 700,
-    letterSpacing: '0.06em',
     color: 'rgba(10,10,10,0.6)',
     fontFamily: PJS,
     display: 'block',

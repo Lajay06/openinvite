@@ -16,7 +16,7 @@ const CATEGORY_COLOURS = {
 };
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
+  fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -68,8 +68,7 @@ export default function UpcomingTasks({ schedule }) {
               <span style={{
                 background: colour, color: '#fff',
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
-                fontSize: 10, fontWeight: 600, letterSpacing: '0.02em',
-                padding: '3px 8px', borderRadius: 999, flexShrink: 0, marginLeft: 8,
+                fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 999, flexShrink: 0, marginLeft: 8,
               }}>
                 {ev.category?.replace(/_/g, ' ')}
               </span>
