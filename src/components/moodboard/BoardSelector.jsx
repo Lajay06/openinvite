@@ -39,7 +39,7 @@ export default function BoardSelector({ boards, activeBoard, onBoardChange, onCr
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
         {/* SELECTED IS BLACK, not strawberry. This row picked its own accent
             and was the only selection set on the dashboard that did — the
-            primary colour is for actions, and a chosen filter is not one. */}
+            primary color is for actions, and a chosen filter is not one. */}
         {boards.map(board => (
           <FilterPill key={board} label={board} active={activeBoard === board} onClick={() => onBoardChange(board)} />
         ))}
