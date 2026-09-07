@@ -103,16 +103,22 @@ export async function runDailyUpdatePage() {
     check('PLANT: both pages choose their to-dos with the same helper',
       /todosFrom\(/.test(code('src/pages/DailyUpdate.jsx')) && /todosFrom\(/.test(code('src/pages/Dashboard.jsx')),
       'the inputs are chosen once as well as resolved once');
-    // AND FROM THE SAME STORES. todosFrom cannot make two pages agree if they
-    // are handed different inputs: Overall loaded Note AND Task, the daily
-    // update page loaded Note only, and Overall named a Task as the next
-    // thing that the other page could not see. Caught on a screenshot, twice
-    // now, in opposite directions.
-    check('  and from the same two stores',
+    // AND FROM THE SAME STORE — now ONE store, not two.
+    //
+    // This check used to require Note AND Task on both pages, because the two
+    // pages had disagreed twice in opposite directions and loading the same
+    // pair was the fix. Owner ruling 2026-09-07 retires `Task` outright:
+    // nothing in src/ creates one, a to-do is a Note with view_type 'todo',
+    // and the read cost a round trip on the critical path of the page he
+    // called slow. The property the check exists for is unchanged — the two
+    // pages are handed the same inputs — so it now requires the same single
+    // store and the ABSENCE of the dead one.
+    check('  and from the same store, with the dead entity gone',
       /notes:    \(\) => getMyRecords\('Note'/.test(code('src/pages/DailyUpdate.jsx'))
-        && /tasks:    \(\) => getMyRecords\('Task'/.test(code('src/pages/DailyUpdate.jsx'))
-        && /todosFrom\(\{ notes: data\.notes, tasks: data\.tasks \}\)/.test(code('src/pages/DailyUpdate.jsx')),
-      'Note and Task, the pair Overall reads');
+        && /todosFrom\(\{ notes: data\.notes \}\)/.test(code('src/pages/DailyUpdate.jsx'))
+        && !/getMyRecords\('Task'/.test(code('src/pages/DailyUpdate.jsx'))
+        && !/getMyRecords\('Task'/.test(code('src/pages/Dashboard.jsx')),
+      'Note only, on both pages');
     check('  and neither filters view_type itself',
       !/view_type === 'todo'/.test(code('src/pages/Dashboard.jsx'))
         && !/\.filter\(\(n\) => n\.view_type/.test(code('src/pages/DailyUpdate.jsx')),

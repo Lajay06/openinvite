@@ -88,7 +88,6 @@ export default function Dashboard() {
   const [guests, setGuests] = useState([]);
   const [budget, setBudget] = useState([]);
   const [schedule, setSchedule] = useState([]);
-  const [tasks, setTasks] = useState([]);
   const [notes, setNotes] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [moodboardItems, setMoodboardItems] = useState([]);
@@ -202,7 +201,10 @@ export default function Dashboard() {
           guests:    () => getMyGuestsWithRsvp(undefined, undefined, { strict: true }),
           budget:    () => getMyRecords('Budget', undefined, undefined, { strict: true }),
           schedule:  () => getMyRecords('Schedule', undefined, undefined, { strict: true }),
-          tasks:     () => getMyRecords('Task', undefined, undefined, { strict: true }),
+          // `Task` IS A DEAD ENTITY (open ticket, closed here). Nothing in
+          // src/ creates one — a to-do is a Note with view_type 'todo', which
+          // is what TodoList.jsx:159 filters on — and nothing but this loader
+          // read one. It cost a round trip on both dashboard pages.
           notes:     () => getMyRecords('Note', undefined, undefined, { strict: true }),
           vendors:   () => getMyRecords('Vendor', undefined, undefined, { strict: true }),
           moodboard: () => getMyRecords('MoodboardItem', undefined, undefined, { strict: true }),
@@ -213,7 +215,7 @@ export default function Dashboard() {
         fetchQuestionnaireResponses(),
       ]);
       setGuests(data.guests || []); setBudget(data.budget || []); setSchedule(data.schedule || []);
-      setTasks(data.tasks || []); setNotes(data.notes || []); setVendors(data.vendors || []);
+      setNotes(data.notes || []); setVendors(data.vendors || []);
       setMoodboardItems(data.moodboard || []); setQuestionnaireResponses(questionnaireData);
       setUnseenSources(failed);
     } catch {
@@ -277,7 +279,7 @@ export default function Dashboard() {
           call resolveDayState, so they cannot disagree about the day. Overall
           keeps the stats below and its place at the top of the nav. */}
       <DayStateHeadline
-        tasks={todosFrom({ notes, tasks })} schedule={schedule} guests={guests} coupleName={coupleName} daysOut={daysOut}
+        tasks={todosFrom({ notes })} schedule={schedule} guests={guests} coupleName={coupleName} daysOut={daysOut}
         budget={budget} vendors={vendors} unseen={unseenSources} loading={loading}
       />
 
@@ -364,7 +366,7 @@ export default function Dashboard() {
         {/* Right: grey panel */}
         <div className="flex flex-col gap-6 min-w-0 border-t border-[rgba(10,10,10,0.12)] lg:border-t-0 lg:border-l lg:flex-[1_1_0]" style={{ background: '#F7F7F7', padding: '24px 20px 32px' }}>
           <UpcomingTasks schedule={schedule} />
-          <RecentActivity guests={guests} budget={budget} schedule={schedule} vendors={vendors} moodboardItems={moodboardItems} tasks={tasks} notes={notes} questionnaireResponses={questionnaireResponses} />
+          <RecentActivity guests={guests} budget={budget} schedule={schedule} vendors={vendors} moodboardItems={moodboardItems} notes={notes} questionnaireResponses={questionnaireResponses} />
         </div>
 
       </div>
