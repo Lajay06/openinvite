@@ -82,15 +82,26 @@ export async function runNextUp() {
   // ── no data means no block ──────────────────────────────────────────────
   const src = readFileSync(resolve(__dir, '../../src/pages/DailyUpdate.jsx'), 'utf8')
     .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-  // SAME PROPERTY, NEW NAMES. The page was rebuilt as its own briefing page on
-  // the owner's ruling and no longer runs a phase machine around an LLM call,
-  // so `phase === 'ready'` is gone. What must still hold is that NextUp does
-  // not render while the page is loading and does not render without a
-  // journey — a setup checklist drawn from nothing is worse than none.
-  check('DailyUpdate renders NextUp only when loaded and with a journey',
-    /!loading && journey && \(/.test(src), 'gated on both');
-  check('  and nulls the journey when the wedding record failed to load',
-    /if \(!details\) setJourney\(null\);/.test(src), 'null on failure');
+  // THE CARD IS OFF THE PAGE, on the owner's ruling: "get rid of the Next up /
+  // Build your website / Step 1 of 7 / Not now card... it is an onboarding
+  // stepper, not a to-do." So the property that mattered — never drawn from a
+  // journey that did not load — is moot on this surface, and what is pinned
+  // instead is that it really is gone and nothing quietly puts it back.
+  //
+  // UNREACHABLE, NOT ABSENT. NextUp.jsx is still in the repo and now has no
+  // caller; deleting it was not asked for. getJourneyProgress is unaffected —
+  // AvaStudio.jsx:46 still reads it, which is why the decisions below still
+  // matter and this file still runs.
+  check('DailyUpdate no longer renders NextUp',
+    !/<NextUp\b/.test(src) && !/getJourneyProgress/.test(src), 'an onboarding stepper is not a to-do');
+  {
+    let present = true;
+    try { readFileSync(resolve(__dir, '../../src/components/dashboard/NextUp.jsx')); } catch { present = false; }
+    const callers = ['src/pages/DailyUpdate.jsx', 'src/pages/Dashboard.jsx', 'src/pages/AvaStudio.jsx']
+      .filter(f => /dashboard\/NextUp/.test(readFileSync(resolve(__dir, '../..', f), 'utf8')));
+    check(present ? '  NextUp.jsx is still in the repo, with no caller' : '  NextUp.jsx has been removed',
+      callers.length === 0, callers.join(', ') || 'no caller');
+  }
 
   // ── THE SOURCE PIN ──────────────────────────────────────────────────────
   // A raw WeddingDetails read hands isComplete ciphertext (see above) and the

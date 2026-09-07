@@ -45,6 +45,7 @@
 // with nothing on it offers one of these by name — never a suggestion the
 // couple could accept and Ava could not carry out.
 import { ACTION_MIRROR } from './avaRequest.js';
+import { firstNameOrNull } from './emailGreeting.js';
 
 /** Local midnight for a Date. */
 const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
@@ -237,6 +238,12 @@ export function resolveDayState({ tasks = [], schedule = [], guests = [], budget
 
   return {
     state,
+    // The slots avaSentence drops into its two sentences. Returned rather than
+    // re-derived by the caller, so the page and Overall cannot compute them
+    // differently.
+    counts: { overdue: overdue.length, today: dueToday.length + eventsToday.length, unreplied },
+    firstOverdue: titleOf(overdue[0]),
+    firstToday: titleOf(dueToday[0] || eventsToday[0]),
     // A badge is a claim about the whole day, and there is no such claim to
     // make over a store that did not load.
     badge: STATE_BADGE[state] || null,
@@ -245,4 +252,88 @@ export function resolveDayState({ tasks = [], schedule = [], guests = [], budget
     unseen,
     next,
   };
+}
+
+
+/**
+ * AVA'S MORNING SENTENCE — two short ones, in her voice, computed not written.
+ *
+ * Owner: "The whole idea of the topic sentence is Ava is talking to you and
+ * giving you your morning update." She is — but the words come from here, per
+ * state, with the couple's own numbers dropped into slots.
+ *
+ * DETERMINISTIC ON PURPOSE, and this is the reason rather than caution: the
+ * same string is the day-state line on Overall. A model-written greeting could
+ * not be, so the two pages would drift the moment either reloaded — which is
+ * the exact defect this PR exists to close. Column B is where the model writes;
+ * the sentence at the top of the page is arithmetic.
+ *
+ * NO PERCENTAGES, NO EMOJI, NO EXCLAMATION MARKS. The greeting is by local
+ * time of day, and an address is never printed where a name goes.
+ */
+export function greetingFor(now = new Date(), fullName = null) {
+  const h = now.getHours();
+  const part = h < 12 ? 'Morning' : h < 18 ? 'Afternoon' : 'Evening';
+  const first = firstNameOrNull(fullName);
+  return first ? `${part}, ${first}.` : `${part}.`;
+}
+
+/**
+ * A to-do's title as it reads mid-sentence: "Book the celebrant" becomes "book
+ * the celebrant". Only the first letter, and only when the first word is an
+ * ordinary capitalised word — RSVP stays RSVP, and a name keeps its capital.
+ */
+export function midSentence(title) {
+  const t = String(title || '').trim();
+  if (!t) return '';
+  const first = t.split(/\s+/)[0];
+  const ordinary = /^[A-Z][a-z]+$/.test(first);
+  return ordinary ? t[0].toLowerCase() + t.slice(1) : t;
+}
+
+const onDate = (at) => {
+  const d = new Date(at);
+  const sameYear = d.getFullYear() === new Date().getFullYear();
+  return d.toLocaleDateString(undefined, sameYear
+    ? { day: 'numeric', month: 'long' }
+    : { day: 'numeric', month: 'long', year: 'numeric' });
+};
+
+/**
+ * @param {object} day    the resolved state from resolveDayState
+ * @param {object} [opts]
+ * @param {string} [opts.fullName]  the couple's display name
+ * @param {Date}   [opts.now]
+ * @returns {string} two sentences: the greeting, then the day
+ */
+export function avaSentence(day, { fullName = null, now = new Date() } = {}) {
+  const hello = greetingFor(now, fullName);
+  const d = day || {};
+  const n = d.counts || {};
+
+  if (d.state === 'unavailable') {
+    const which = (d.unseen || []).join(' and ') || 'part of your wedding';
+    return `${hello} I couldn't read your ${which} just now — try again in a moment.`;
+  }
+  if (d.state === 'overdue') {
+    const title = midSentence(d.firstOverdue);
+    const many = (n.overdue || 0) > 1;
+    if (!title) return `${hello} ${many ? 'A few things have' : 'Something has'} slipped.`;
+    return `${hello} ${many ? 'A few things have' : 'Something has'} slipped — let's start with ${title}.`;
+  }
+  if (d.state === 'today') {
+    const title = midSentence(d.firstToday);
+    const count = n.today || 0;
+    const lead = count > 1 ? `${count} things need you today` : 'One thing needs you today';
+    return title ? `${hello} ${lead}: ${title}.` : `${hello} ${lead}.`;
+  }
+  if (d.state === 'waiting') {
+    const g = n.unreplied || 0;
+    return `${hello} Nothing's on you today — you're waiting on ${g} ${g === 1 ? 'guest' : 'guests'}.`;
+  }
+  if (d.next?.title) {
+    const when = d.next.at ? ` on ${onDate(d.next.at)}` : '';
+    return `${hello} You're on track. Next up is ${midSentence(d.next.title)}${when}.`;
+  }
+  return `${hello} Fresh start — add your first to-do and I'll keep it in order.`;
 }

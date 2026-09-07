@@ -9,12 +9,13 @@ import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import AvaButton from "@/components/shared/AvaButton";
 import DayStateHeadline from "@/components/dashboard/DayStateHeadline";
 import { todosFrom } from "@/lib/dayState";
+import { coupleDisplayName } from "@/lib/coupleNames";
 import AvaModal from "@/components/layout/AvaModal";
 import RSVPChart from "../components/dashboard/RSVPChart";
 import BudgetSummary from "../components/dashboard/BudgetSummary";
 import UpcomingTasks from "../components/dashboard/UpcomingTasks";
 import RecentActivity from "../components/dashboard/RecentActivity";
-import { getMyRecords, getMyGuestsWithRsvp } from "@/lib/resolveMyWedding";
+import { getMyRecords, getMyGuestsWithRsvp, getMyWeddingDetails } from "@/lib/resolveMyWedding";
 import { loadDashboardSources, formatSourceList } from "@/lib/dashboardSources";
 import { tallyAttendees } from "@/lib/guestRsvpTally";
 import { resolveAttendees } from "@/lib/attendees";
@@ -107,6 +108,11 @@ export default function Dashboard() {
   // stops the briefing calling a FAILED store an empty one could never match.
   // loadDashboardSources returns the keys, so it now does.
   const [unseenSources, setUnseenSources] = useState([]);
+  // The couple's name, for the day-state sentence — which is the SAME string
+  // the daily update page renders, greeting included. Without it Overall would
+  // say "Morning." while the other page said "Morning, Jay.", which is two
+  // strings again.
+  const [coupleName, setCoupleName] = useState(null);
   const [avaOpen, setAvaOpen] = useState(false);
 
   const collab = useCollaboratorContext();
@@ -171,6 +177,7 @@ export default function Dashboard() {
         return;
       }
       const currentUser = await base44.auth.me();
+      getMyWeddingDetails().then((wd) => setCoupleName(coupleDisplayName(wd || {}))).catch(() => {});
       if (currentUser?.id) identify(currentUser.id, { email: currentUser.email, name: currentUser.full_name });
       // Promise.all rejected on the FIRST store that failed and discarded the
       // seven that had already succeeded — one flaky request and the whole page
@@ -255,7 +262,7 @@ export default function Dashboard() {
           call resolveDayState, so they cannot disagree about the day. Overall
           keeps the stats below and its place at the top of the nav. */}
       <DayStateHeadline
-        tasks={todosFrom({ notes, tasks })} schedule={schedule} guests={guests}
+        tasks={todosFrom({ notes, tasks })} schedule={schedule} guests={guests} coupleName={coupleName}
         budget={budget} vendors={vendors} unseen={unseenSources} loading={loading}
       />
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { resolveDayState } from '@/lib/dayState';
+import { resolveDayState, avaSentence } from '@/lib/dayState';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -18,7 +18,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
  * `headline` string off the same `resolveDayState` call, so the two pages
  * cannot disagree about the day even in principle.
  */
-export default function DayStateHeadline({ tasks, schedule, guests, budget, vendors, unseen = [], loading }) {
+export default function DayStateHeadline({ tasks, schedule, guests, budget, vendors, unseen = [], coupleName = null, loading }) {
   if (loading) {
     return (
       <div style={{ padding: '20px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
@@ -30,8 +30,12 @@ export default function DayStateHeadline({ tasks, schedule, guests, budget, vend
   // The FIRST line as well as the headline, so Overall's one line paves
   // forward too: "Clear this week." on its own is the same dead end the owner
   // reviewed, one page over.
-  const { badge, headline, lines } = resolveDayState({ tasks, schedule, guests, budget, vendors, unseen });
-  const forward = lines[0]?.text || null;
+  const day = resolveDayState({ tasks, schedule, guests, budget, vendors, unseen });
+  const { badge } = day;
+  // THE SAME STRING the daily update page shows, from the same call. Not a
+  // summary of it and not a shorter version of its reasoning.
+  const headline = avaSentence(day, { fullName: coupleName });
+  const forward = day.lines[0]?.text || null;
 
   return (
     <div style={{

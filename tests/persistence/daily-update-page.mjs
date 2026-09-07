@@ -18,6 +18,8 @@ import { pass, fail } from './_shared.mjs';
 import { resolveDayState, rowDate, STATE_BADGE, todosFrom } from '../../src/lib/dayState.js';
 import { countdownLabel } from '../../src/lib/weddingCountdown.js';
 import { ACTION_MIRROR } from '../../src/lib/avaRequest.js';
+import { validateTracking, authoredTracking, TRACKING_REQUEST } from '../../src/lib/avaTracking.js';
+import { avaSentence, greetingFor, midSentence } from '../../src/lib/dayState.js';
 import { readFileSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -68,11 +70,13 @@ export async function runDailyUpdatePage() {
     check('PLANT: both surfaces resolve the day through the one function',
       /resolveDayState\(/.test(pageSrc) && /resolveDayState\(/.test(headline),
       'one source, rendered twice');
-    check('  and the hero renders what it is handed, deciding nothing',
-      !/resolveDayState\(/.test(briefing) && /day\.headline/.test(briefing),
+    check('  and the hero renders the sentence it is handed, deciding nothing',
+      !/resolveDayState\(/.test(briefing) && /\{sentence\}/.test(briefing),
       'the precedence lives in dayState.js and nowhere else');
-    check('  the page resolves it exactly once',
-      (pageSrc.match(/resolveDayState\(/g) || []).length === 1, 'not once per column');
+    check('  and Overall renders that same sentence, greeting included',
+      /avaSentence\(day, \{ fullName: coupleName \}\)/.test(headline)
+        && /avaSentence\(day, \{ fullName: coupleName \}\)/.test(pageSrc),
+      'one string, two pages');
     check('  Overall renders the headline, not a second briefing',
       /<DayStateHeadline/.test(code('src/pages/Dashboard.jsx'))
         && !/<Briefing/.test(code('src/pages/Dashboard.jsx')),
@@ -198,8 +202,8 @@ export async function runDailyUpdatePage() {
         && on({ unseen: ['the to-do list'] }).headline === 'Some of today could not be read.'
         && on({ unseen: ['the to-do list'] }).badge === null,
       'the headline said "Nothing planned yet" over a failed load — the same false all-clear, one line up');
-    check('  and Overall carries the forward line too, not the headline alone',
-      /const forward = lines\[0\]\?\.text/.test(code('src/components/dashboard/DayStateHeadline.jsx')),
+    check('  and Overall carries the forward line too, not the sentence alone',
+      /const forward = day\.lines\[0\]\?\.text/.test(code('src/components/dashboard/DayStateHeadline.jsx')),
       'the dead end was one page wide, not one');
     check('every badge word is the spec\'s',
       JSON.stringify(Object.values(STATE_BADGE)) === JSON.stringify(['Overdue', 'Today', 'Waiting', 'Clear']),
@@ -282,23 +286,32 @@ export async function runDailyUpdatePage() {
     check('  the far-right stats column carries the pre-#654 four',
       ['Guests confirmed', 'RSVP pending', 'Budget used', 'Vendors booked'].every(l => page.includes(l)),
       'restored');
-    check('  and no generated briefing is asked for',
-      !/InvokeLLM|smartSuggestions|emotionalNote|forgottenDetail/.test(page),
-      'what is true today is computed, not written');
+    // THE MODEL WRITES EXACTLY ONE THING ON THIS PAGE, and it is the tracking
+    // paragraph in column B — owner's ruling. The old eleven generated fields
+    // stay gone, and the topic sentence stays arithmetic, because Overall
+    // renders it too.
+    check('  the model writes the tracking paragraph and nothing else',
+      /InvokeLLM/.test(page) && /TRACKING_REQUEST/.test(page)
+        && !/smartSuggestions|emotionalNote|forgottenDetail/.test(page)
+        && (page.match(/InvokeLLM/g) || []).length === 1,
+      'one call, one paragraph');
+    check('  and the topic sentence is never model-written',
+      /avaSentence\(/.test(page) && !/headline: .*InvokeLLM/.test(page),
+      'a sentence two pages share cannot be rewritten on either');
   }
 
   // ── THE QUICK POINTS THAT WERE KEPT ─────────────────────────────────────
   {
     const page = code('src/pages/DailyUpdate.jsx');
     for (const [what, re] of [
-      ['the countdown',        /countdownLabel\(days\)/],
-      // The greeting is gone with the layout: the old page printed the couple's
-      // name and the date in the masthead instead, and that is what came back.
-      ['the couple name and date', /\{coupleName\}[\s\S]{0,400}\{dateLabel\}/],
+      ['the countdown',        /countdownLabel\(daysUntilWedding/],
+      // The masthead is gone on the owner's ruling — "get rid of the
+      // Openinvite daily banner with the name, there is too much going on" —
+      // and the header bar above already carries the name and the countdown.
+      // The greeting survives as the first half of the topic sentence.
+      ['the greeting, in the sentence', /avaSentence\(day, \{ fullName: coupleName \}\)/],
       ['today\'s date',        /toLocaleDateString/],
-      ['what to do first',     /<NextUp\b/],
       ['what could not be read', /formatSourceList\(unseenSources\)/],
-      ['one Ava entry point',  /<AvaButton\b/],
     ]) check(`kept from the old page: ${what}`, re.test(page), 'carried over');
     // COUNTED AS ENTRY POINTS, not as components. The first build of the
     // empty-Clear line rendered its own "Ask Ava" button inside the briefing,
@@ -309,8 +322,14 @@ export async function runDailyUpdatePage() {
     // what is counted. Counting <AvaButton> as well double-counts the one
     // button, which is how this check first reported 2 for a correct page.
     const entryPoints = surfaces.reduce((n, src) => n + (src.match(/openAva\(/g) || []).length, 0);
-    check('  and exactly one Ava entry point on the page (spec 3.3)',
-      entryPoints === 1, `${entryPoints} across the page and the briefing`);
+    // ZERO ON THE PAGE ITSELF, on the owner's ruling: "get rid of any Ask Ava
+    // buttons". The floating button in Layout.jsx is the entry point, which
+    // still satisfies spec 3.3 — exactly one way to reach one action.
+    check('  and no Ask Ava button on the page at all',
+      entryPoints === 0, `${entryPoints} across the page and the briefing`);
+    check('  the floating button is still there to be the one entry point',
+      /aria-label=\{chatOpen \? 'Close Ava' : 'Chat with Ava'\}/.test(code('src/Layout.jsx')),
+      'Layout.jsx, bottom right');
   }
 
   // ── PLANT: THE "HAPPY 0 DAY" FAMILY IS STILL GREEN ──────────────────────
@@ -340,12 +359,17 @@ export async function runDailyUpdatePage() {
 
     check('PLANT: the big topic sentence is an h1 at the top, above the columns',
       /<h1 style=\{\{[\s\S]{0,160}fontSize: 42[\s\S]{0,160}fontWeight: 800/.test(hero)
-        && /\{day\.headline\}/.test(hero),
+        && /\{sentence\}/.test(hero),
       "42px/800, as e2c087a:574 had it");
-    check('  under the old eyebrow',
-      /Today&apos;s edition/.test(hero), "\"Today's edition\", in strawberry");
+    check('PLANT: nothing above it and nothing under it',
+      !/Today&apos;s edition/.test(hero) && !/day\.lines\[0\]/.test(hero)
+        && !/Openinvite daily/.test(page),
+      'no eyebrow, no sub-line, no masthead — "there is too much going on"');
     check('  and the hero comes before the grid on the page',
-      page.indexOf('<Briefing day={day}') < page.indexOf('oi-daily-grid'), 'top of the page');
+      page.indexOf('<Briefing sentence=') < page.indexOf('oi-daily-grid'), 'top of the page');
+    check('PLANT: the onboarding stepper is gone',
+      !/<NextUp\b/.test(page) && !/Everything else on your list/.test(page),
+      'an onboarding stepper is not a to-do');
 
     check('PLANT: three columns, with a 1px rule between each pair',
       /grid-template-columns: 1fr 1px 1fr 1px 1fr;/.test(css), 'the pre-#654 grid');
@@ -368,9 +392,114 @@ export async function runDailyUpdatePage() {
       /\{day\.badge\}\n/.test(page) && !/\$\{day\.badge\} \\u2014 \$\{day\.headline\}/.test(page)
         && (page.match(/day\.headline/g) || []).length === 0,
       'the hero owns the sentence; the column owns the badge');
-    check('  the masthead carries the countdown through the shared module',
-      /countdownLabel\(days\)/.test(page) && !/days > 0 \? `\$\{days\} days to go`/.test(page),
-      'the old pill printed the raw number and said "Today\'s the day" forever after');
+    check('  the countdown still comes through the shared module',
+      /countdownLabel\(daysUntilWedding/.test(page) && !/86400000|Math\.ceil\(/.test(page),
+      'it feeds the tracking paragraph now that the masthead pill is gone');
+  }
+
+  // ── THE TOPIC SENTENCE IS AVA TALKING ───────────────────────────────────
+  //
+  // Owner: "The whole idea of the topic sentence is Ava is talking to you and
+  // giving you your morning update." Two short sentences — a greeting by local
+  // time of day, then the state — computed per state with the couple's own
+  // numbers, because Overall renders the same string.
+  {
+    const at = (h) => new Date(2026, 8, 7, h);
+    check('PLANT: the greeting follows the local time of day',
+      greetingFor(at(9), 'Jay Galaxy') === 'Morning, Jay.'
+        && greetingFor(at(14), 'Jay Galaxy') === 'Afternoon, Jay.'
+        && greetingFor(at(20), 'Jay Galaxy') === 'Evening, Jay.',
+      [9, 14, 20].map(h => greetingFor(at(h), 'Jay Galaxy')).join(' '));
+    check('  with no name, it is the greeting alone',
+      greetingFor(at(9), null) === 'Morning.', greetingFor(at(9), null));
+    check('  and never an address where a name goes',
+      greetingFor(at(9), 'la.jay06@gmail.com') === 'Morning.', 'the welcome-email rule');
+
+    const say = (o) => avaSentence(resolveDayState({ now: at(9), ...o }), { fullName: 'Jay Galaxy', now: at(9) });
+    const forms = {
+      overdue: say({ tasks: [{ title: 'Book the celebrant', due_date: '2026-09-01' }, { title: 'Order the cake', due_date: '2026-09-02' }] }),
+      today:   say({ tasks: [{ title: 'Confirm the florist count', due_date: '2026-09-07' }] }),
+      waiting: say({ guests: Array(61).fill({ rsvp_status: 'pending' }) }),
+      clear:   say({ budget: [{}], vendors: [{}], tasks: [{ title: 'The florist', due_date: '2026-09-21' }] }),
+      empty:   say({ budget: [{}], vendors: [{}] }),
+      unseen:  say({ unseen: ['to-dos'] }),
+    };
+    check('PLANT: Overdue speaks like Ava, and names the first one',
+      forms.overdue === "Morning, Jay. A few things have slipped — let's start with book the celebrant.", forms.overdue);
+    check('  and Today names the one thing',
+      forms.today === 'Morning, Jay. One thing needs you today: confirm the florist count.', forms.today);
+    check('  Waiting counts who it is waiting on',
+      forms.waiting === "Morning, Jay. Nothing's on you today — you're waiting on 61 guests.", forms.waiting);
+    check('  Clear says on track and what is next',
+      /^Morning, Jay\. You're on track\. Next up is the florist on /.test(forms.clear), forms.clear);
+    check('  an empty wedding gets a fresh start',
+      forms.empty === "Morning, Jay. Fresh start — add your first to-do and I'll keep it in order.", forms.empty);
+    check('  and an unreadable store says so rather than claiming a clear day',
+      forms.unseen === "Morning, Jay. I couldn't read your to-dos just now — try again in a moment.", forms.unseen);
+    check('  a title reads mid-sentence, without mangling an acronym or a name',
+      midSentence('Book the celebrant') === 'book the celebrant'
+        && midSentence('RSVP chase') === 'RSVP chase'
+        && midSentence("McKinley's deposit") === "McKinley's deposit",
+      'lowercased naturally');
+    check('  no percentages, no exclamation marks, no emoji in any of them',
+      Object.values(forms).every(t => !/%|!/.test(t) && !/[\u{1F300}-\u{1FAFF}]/u.test(t)), 'six forms');
+  }
+
+  // ── COLUMN B: ONE PARAGRAPH, EXACTLY THREE KEY POINTS ───────────────────
+  //
+  // Owner: "The second pillar with Ava's briefing used to have really good
+  // information about how we are tracking overall but as a paragraph. Three
+  // key points should always be there."
+  //
+  // "Always" is only a rule if something counts them. Each point is bolded, so
+  // the count is the number of bold spans, and a percentage is refused outright
+  // (spec 5.2). A paragraph that fails is not shown — the authored one is,
+  // which is #648 in its original form: Ava does not speak when there is
+  // nothing to read, and she does not speak badly rather than not at all.
+  {
+    const good = '**115 days to go**. **61 of 120 guests** have not replied, and **2 things overdue**.';
+    check('PLANT: a paragraph with two key points is refused',
+      validateTracking('**115 days to go**. **61 guests** have not replied.').ok === false,
+      validateTracking('**115 days to go**. **61 guests** have not replied.').error);
+    check('PLANT: a paragraph with a percentage is refused',
+      validateTracking('**115 days**. **61 guests** out. Budget is **64%** used.').ok === false,
+      validateTracking('**115 days**. **61 guests** out. Budget is **64%** used.').error);
+    check('  four points is refused too — exactly three, not at least three',
+      validateTracking('**a**. **b**. **c**. **d**.').ok === false, '4 is not 3');
+    check('  and an exclamation mark, and an emoji',
+      validateTracking('**a**. **b**. **c**!').ok === false
+        && validateTracking('**a**. **b**. **c** 🎉').ok === false, 'chrome rules hold here too');
+    check('  a good paragraph passes',
+      validateTracking(good).ok === true && validateTracking(good).points === 3, '3 points, no percentage');
+
+    const authored = authoredTracking({ countdown: '115 days to go', unreplied: 61, overdue: 2, guests: 120 });
+    check('PLANT: the authored fallback is itself three points and passes its own check',
+      validateTracking(authored).ok === true,
+      'the stand-in cannot be worse than what it stands in for');
+    check('  and it names the store it could not read',
+      /could not read your the guest list/.test(authoredTracking({ unseen: ['the guest list'] })),
+      'a failed store is named, never counted as empty');
+    check('  with three points still, from what it could see',
+      validateTracking(authoredTracking({ unseen: ['the guest list'] })).points === 3, 'three either way');
+
+    // The request goes through the ONE builder, with the constraints stated.
+    const page = code('src/pages/DailyUpdate.jsx');
+    check('the paragraph is asked for through buildAvaPrompt',
+      /buildAvaPrompt\(\{ weddingContext/.test(page) && /userText: TRACKING_REQUEST/.test(page),
+      'the same builder every other Ava request uses');
+    check('  and the request states every constraint',
+      /EXACTLY THREE/.test(TRACKING_REQUEST) && /NEVER a percentage/.test(TRACKING_REQUEST)
+        && /do not name a vendor/.test(TRACKING_REQUEST) && /heritage, culture or religion/.test(TRACKING_REQUEST)
+        && /Do not offer to do anything/.test(TRACKING_REQUEST),
+      'three points, no percentages, no promises, no vendors, no heritage');
+    check('  a failing reply is replaced rather than shown',
+      /validateTracking\(reply\)\.ok \? reply\.trim\(\) : authoredTracking\(facts\)/.test(page),
+      'not shown badly');
+    check('  and a wedding with nothing in it is never asked at all (#648)',
+      /nothingToRead/.test(page) && /if \(nothingToRead\) \{[\s\S]{0,300}setTracking\(authoredTracking/.test(page),
+      'Ava does not speak when there is nothing to read');
+    check('  bold comes through avaMarkdown, never dangerouslySetInnerHTML',
+      /parseAvaText\(tracking\)/.test(page) && !/dangerouslySetInnerHTML/.test(page), 'parsed, not injected');
   }
 
   // ── THE AVA PILL IS SOLID STRAWBERRY ────────────────────────────────────
@@ -379,11 +508,24 @@ export async function runDailyUpdatePage() {
   // still on the old pink-to-purple gradient, which reads as a different
   // product sitting on ours. Both named, both checked — a plant on the pill
   // alone found nothing to fail against until this existed.
-  for (const f of ['src/components/shared/AvaButton.jsx', 'src/Layout.jsx']) {
-    const src = code(f);
-    const gradients = (src.match(/linear-gradient\(135deg, #ec4899, #9333ea\)/g) || []).length;
-    check(`PLANT: ${f.split('/').pop()} uses solid strawberry, not the gradient`,
-      gradients === 0 && /#E03553/.test(src), gradients ? `${gradients} gradient(s) left` : '#E03553');
+  {
+    const btn = code('src/components/shared/AvaButton.jsx');
+    check('PLANT: AvaButton is solid strawberry, not the gradient',
+      !/linear-gradient\(135deg, #ec4899, #9333ea\)/.test(btn) && /#E03553/.test(btn), '#E03553');
+
+    // THE FLOATING BUTTON, and only it. The first pass changed Layout.jsx:276
+    // — which is the AVATAR, not an Ava surface, and nobody asked for it. The
+    // check has to name the control rather than the file, or it will bless the
+    // wrong element again.
+    const layout = code('src/Layout.jsx');
+    const floating = /aria-label=\{chatOpen \? 'Close Ava' : 'Chat with Ava'\}[\s\S]{0,900}?\}\}/.exec(layout)?.[0] || '';
+    check('PLANT: the floating Ava button is solid, shadow included',
+      /background: chatOpen \? '#0A0A0A' : color\.primary/.test(floating)
+        && !/linear-gradient/.test(floating) && !/rgba\(147,51,234/.test(floating),
+      floating ? 'fill and shadow' : 'button not found');
+    check('  and the avatar was left alone',
+      /linear-gradient\(135deg, #ec4899, #9333ea\)/.test(layout),
+      'not an Ava surface, and not named');
   }
 
   // ── THE SIDEBAR ─────────────────────────────────────────────────────────

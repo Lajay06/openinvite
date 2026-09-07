@@ -2,19 +2,18 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
 import { loadDashboardSources, formatSourceList } from '@/lib/dashboardSources';
-import { daysUntilWedding, countdownLabel, countdownSentence } from '@/lib/weddingCountdown';
+import { daysUntilWedding, countdownLabel } from '@/lib/weddingCountdown';
 import { isAttending } from '@/lib/guestRsvpTally';
-import { getJourneyProgress } from '@/lib/setupJourney';
-import { getTrialStatus } from '@/lib/trialStatus';
 import { coupleDisplayName } from '@/lib/coupleNames';
 import { useCollaboratorContext } from '@/lib/collaboratorContext';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import Briefing from '@/components/dashboard/Briefing';
-import { todosFrom, resolveDayState } from '@/lib/dayState';
-import NextUp from '@/components/dashboard/NextUp';
-import AvaButton from '@/components/shared/AvaButton';
-import { openAva } from '@/lib/avaOpen';
-import { useNavigate, Link } from 'react-router-dom';
+import { todosFrom, resolveDayState, avaSentence } from '@/lib/dayState';
+import { parseAvaText } from '@/lib/avaMarkdown';
+import { buildAvaPrompt, unwrapLlmReply } from '@/lib/avaRequest';
+import { buildWeddingContext } from '@/lib/avaContext';
+import { TRACKING_REQUEST, validateTracking, authoredTracking } from '@/lib/avaTracking';
+import { Link } from 'react-router-dom';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -53,11 +52,8 @@ const LINK_LABEL = {
  *   the countdown            days to go, via #681's countdownLabel — the whole
  *                            point of that PR was that four surfaces each
  *                            computed it themselves and three got it wrong
- *   the greeting             "Good morning, Ada" — time of day and a first
- *                            name, never an address (emailGreeting's rule)
- *   today's date             the couple's own locale, spelled out
+ *   the greeting             now the first half of the topic sentence itself
  *   what needs you           the three lines, from the one resolved state
- *   what to do first         NextUp, the setup journey, unchanged
  *   what could not be read   named, with a retry
  *
  * DROPPED, each for a stated reason:
@@ -73,7 +69,6 @@ const LINK_LABEL = {
  *                            "Quick tips" in the sidebar. Nothing is orphaned
  */
 export default function DailyUpdate() {
-  const navigate = useNavigate();
   const collab = useCollaboratorContext();
   const isCollaborating = !!collab.ownerUserId;
 
@@ -83,9 +78,11 @@ export default function DailyUpdate() {
   const [tasks, setTasks] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [wd, setWd] = useState(null);
-  const [journey, setJourney] = useState(null);
   const [unseenSources, setUnseenSources] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Column B's paragraph. null while it is being read; a string once there is
+  // one to show, authored or model-written.
+  const [tracking, setTracking] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -131,19 +128,39 @@ export default function DailyUpdate() {
 
       const details = await getMyWeddingDetails().catch(() => null);
       setWd(details);
-      // NULLED WHEN THE RECORD DID NOT LOAD, not left at its last value. A
-      // stale journey is a claim about setup progress that nothing behind it
-      // supports — the same class as calling an unloaded store an empty one.
-      if (!details) setJourney(null);
-      if (details) {
-        let storedUser = null;
-        try { storedUser = JSON.parse(localStorage.getItem('oi_user') || 'null'); } catch { storedUser = null; }
-        const me = storedUser || await base44.auth.me().catch(() => null);
-        const { trialActive } = getTrialStatus(me);
-        setJourney(getJourneyProgress(details, {
-          guests: data.guests || [], budget: data.budget || [], vendors: data.vendors || [],
-        }, { plan: me?.plan, trialActive }));
+
+      // ── COLUMN B: how the wedding is tracking, in one paragraph ─────────
+      //
+      // THE ONLY MODEL CALL ON THIS PAGE, through the same builder every other
+      // Ava request uses. Nothing else depends on its words, so it can be
+      // prose; the sentence at the top cannot be, because Overall renders it
+      // too.
+      const facts = {
+        countdown: countdownLabel(daysUntilWedding(details?.weddingDate)), unreplied: (data.guests || []).filter((g) => !g.rsvp_status || g.rsvp_status === 'pending').length,
+        overdue: resolveDayState({ tasks: todosFrom({ notes: data.notes, tasks: data.tasks }) }).counts.overdue, guests: (data.guests || []).length, unseen: failed,
+      };
+      const nothingToRead = !facts.guests && !(data.budget || []).length && !(data.vendors || []).length
+        && !(data.schedule || []).length && !todosFrom({ notes: data.notes, tasks: data.tasks }).length;
+      if (nothingToRead) {
+        // #648, in its original form: Ava does not speak when there is nothing
+        // to read. An authored paragraph, from the same numbers, and no call.
+        setTracking(authoredTracking(facts));
+      } else {
+        try {
+          const weddingContext = await buildWeddingContext();
+          const reply = unwrapLlmReply(await base44.integrations.Core.InvokeLLM({
+            model: 'claude_sonnet_4_6',
+            prompt: buildAvaPrompt({ weddingContext, page: '/DailyUpdate', mirror: [], userText: TRACKING_REQUEST }),
+          }), '');
+          // A PARAGRAPH THAT FAILS THE CHECK IS NOT SHOWN. Three points is
+          // only a rule if something counts them, and a percentage is barred
+          // outright (spec 5.2). The authored one stands in.
+          setTracking(validateTracking(reply).ok ? reply.trim() : authoredTracking(facts));
+        } catch {
+          setTracking(authoredTracking(facts));
+        }
       }
+
     } catch (err) {
       // A `finally` WITHOUT A CATCH was the whole bug this page exists not to
       // have. loadDashboardSources' strict readers throw when they cannot
@@ -157,6 +174,7 @@ export default function DailyUpdate() {
       // (spec 9.1) and the page says so.
       console.error('[DailyUpdate] load failed:', err?.message);
       setUnseenSources(['guests', 'budget', 'schedule', 'notes', 'tasks', 'vendors']);
+      setTracking(authoredTracking({ unseen: ['guests', 'budget', 'schedule', 'to-dos', 'vendors'] }));
     } finally {
       setLoading(false);
     }
@@ -203,45 +221,13 @@ export default function DailyUpdate() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF', color: '#0A0A0A' }}>
       <DashboardPageHeader title="Daily update" subtitle="Your wedding planning briefing" />
 
-      {/* ── SECTION 1: Masthead ── */}
-      <div style={{
-        background: '#FFFFFF', padding: '20px 40px', borderBottom: '1px solid #E8E8E5',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap',
-      }}>
-        <span style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: 'rgba(10,10,10,0.6)' }}>
-          Openinvite daily
-        </span>
-        <div style={{ textAlign: 'center' }}>
-          {coupleName && (
-            <div style={{ fontFamily: PJS, fontSize: 13, fontWeight: 700, color: '#0A0A0A', letterSpacing: '0.04em' }}>{coupleName}</div>
-          )}
-          <div style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.06em', marginTop: coupleName ? 2 : 0 }}>
-            {dateLabel}
-          </div>
-        </div>
-        {/* countdownLabel returns null once the wedding has passed, so nothing
-            counts backwards and nothing reads "Today's the day" forever (#681).
-            The old pill printed `${daysUntil} days to go` directly. */}
-        {countdownLabel(days) ? (
-          <div style={{
-            background: '#E03553', color: '#FFFFFF', borderRadius: 999, padding: '6px 16px',
-            fontFamily: PJS, fontSize: 12, fontWeight: 700, letterSpacing: '0.04em', whiteSpace: 'nowrap',
-          }}>
-            {countdownLabel(days)}
-          </div>
-        ) : <div style={{ width: 120 }} />}
-      </div>
-
       {/* ── SECTION 2: Hero headline, the big topic sentence ── */}
-      <Briefing day={day} loading={loading} />
+      <Briefing sentence={avaSentence(day, { fullName: coupleName })} loading={loading} />
 
-      {/* Orientation layer. STILL HERE, and reported rather than removed: the
-          owner asked for this card to go, and it was on the pre-#654 page too
-          (e2c087a:594-604), which the same instruction says to restore
-          exactly. Held for a ruling. */}
-      {!loading && journey && (
-        <NextUp journey={journey} daysUntil={days} onGo={(step) => navigate(step.route)} />
-      )}
+      {/* The "Next up / Build your website" card is gone on the owner's
+          ruling: an onboarding stepper is not a to-do, and it sat between the
+          sentence and the columns pushing both down. It was on the pre-#654
+          page (e2c087a:594-604); the ruling supersedes that. */}
 
       {!loading && unseenSources.length > 0 && (
         <div style={{
@@ -290,28 +276,19 @@ export default function DailyUpdate() {
             {/* ── Column B: Ava's briefing ── */}
             <div style={{ padding: '32px' }}>
               {columnHead('Ava\u2019s briefing')}
-              {/* THE BADGE, and not the headline again. It read
-                  "Overdue — Overdue: Book the celebrant." once the headline
-                  started leading with the state word — a stutter, and a repeat
-                  of the sentence already set 42px high at the top of the page.
-                  Ruling 6 keeps the badge; this is where it survives a glance. */}
+              {/* THE BADGE (ruling 6), then the paragraph. */}
               {day.badge && (
-                <p style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: '#E03553', margin: '0 0 10px' }}>
+                <p style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: '#E03553', margin: '0 0 12px' }}>
                   {day.badge}
                 </p>
               )}
-              <p style={{ fontFamily: PJS, fontSize: 15, fontWeight: 600, color: '#0A0A0A', margin: 0, lineHeight: 1.4 }}>
-                {countdownSentence(days) || 'Your wedding date is not set yet.'}
+              <p style={{ fontFamily: PJS, fontSize: 15, color: '#0A0A0A', margin: 0, lineHeight: 1.6 }}>
+                {tracking === null
+                  ? <span style={{ color: 'rgba(10,10,10,0.6)' }}>Reading your wedding…</span>
+                  : parseAvaText(tracking).map((t, i) => (
+                      <span key={i} style={t.bold ? { fontWeight: 700 } : undefined}>{t.text}</span>
+                    ))}
               </p>
-              {unseenSources.length > 0 && (
-                <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '12px 0 0', lineHeight: 1.5 }}>
-                  {formatSourceList(unseenSources)} could not be read, so this is not the whole picture.
-                </p>
-              )}
-              {/* The page's ONE Ava entry point (spec 3.3), in Ava's own column. */}
-              <div style={{ marginTop: 20 }}>
-                <AvaButton label="Ask Ava about today" onClick={() => openAva({ page: '/DailyUpdate' })} />
-              </div>
             </div>
 
             <div style={{ background: 'rgba(10,10,10,0.06)' }} />
