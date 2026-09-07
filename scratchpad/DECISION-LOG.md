@@ -5056,6 +5056,23 @@ Every claim of the form "the guard asserts it" in a PR body written before
 sample-content programme's own safety argument, which was stated in #663, #665,
 #669 and #671 as a property held by a test. It is held by a test now.
 
+### OCCURRENCES
+
+1. **2026-09-06:** `sample-content-never-published.mjs` was imported by nothing —
+   249 checks, four PRs, never run by CI once. The incident above.
+2. **2026-09-07:** `run-sheet-view.mjs` matched `_registry.mjs`'s `f.startsWith('run-')`
+   wrapper-exclusion predicate and was skipped. 26 checks; 2198/2198 read exactly
+   like 2224/2224. A wrapper is now identified by what it wraps.
+3. **2026-09-08:** prerendered-freshness exited 0 on main with an empty diff range;
+   guard now falls back to full compare (PR #709).
+
+The three share one shape and it is worth naming: **a gate that produces no
+output when it does not run.** An unimported module prints nothing, a skipped
+file prints nothing, and a diff-based check with an empty range prints a tick.
+In all three the suite stayed green and the count simply never included the
+thing. A guard should be loud about having had no input — silence must never be
+spelled the same way as a pass.
+
 ---
 
 ## 2026-09-07 — R38: a merge authorization is its five marks, not its heading
