@@ -82,8 +82,24 @@ export const STANDALONE_GUARDS = new Set([
   'nav-rsvp-visible.mjs',
 ]);
 
-/** Not guards: the shared helpers and the standalone wrappers themselves. */
-const NOT_A_GUARD = (f) => f === '_shared.mjs' || f === '_registry.mjs' || f.startsWith('run-');
+/**
+ * Not guards: the shared helpers, and the wrapper for a STANDALONE guard.
+ *
+ * R35 AGAIN, 2026-09-07, AND IT COST THE SAME WAY. This predicate used to read
+ * `f.startsWith('run-')`, meaning "a run-*.mjs file is a wrapper". It is not a
+ * rule about wrappers, it is a rule about a PREFIX, and `run-sheet-view.mjs` —
+ * 26 checks, the whole proof that the run sheet is a filter and not a second
+ * store — matched it. CI enumerated the directory, skipped the file, printed
+ * nothing, and 2198/2198 read exactly like 2224/2224. The guard the owner's
+ * rejection was answered with had never run once.
+ *
+ * A wrapper is now identified by what it wraps: `run-x.mjs` is a wrapper only
+ * when `x.mjs` is a STANDALONE guard that exists. Anything else called
+ * `run-*.mjs` is a guard and RUNS — the safe default this file already argues
+ * for two paragraphs above, finally applied to its own exclusion list.
+ */
+const NOT_A_GUARD = (f) => f === '_shared.mjs' || f === '_registry.mjs'
+  || (f.startsWith('run-') && STANDALONE_GUARDS.has(f.slice(4)));
 
 /** Every guard filename in the directory, sorted — the run order is the sort. */
 export function guardFiles() {

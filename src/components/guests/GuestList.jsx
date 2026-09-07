@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, ChevronDown, ChevronRight, CalendarPlus, Pencil, MessageCircle } from "lucide-react";
@@ -7,6 +7,9 @@ import { getGuestEventResponse, effectiveMealChoice, mealOptionLabel } from "@/l
 import GuestAvatar from "@/components/shared/GuestAvatar";
 import { interactiveDivProps } from '@/lib/a11y';
 import { hasPlusOne, plusOneRsvpStatus, plusOneDisplayName } from '@/lib/plusOne';
+import { naturalCompare, sortRows, nextSortState } from '@/lib/tableSort';
+import DataTable from '@/components/shared/DataTable';
+import { PILL_BASE } from '@/lib/tablePills';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -27,19 +30,11 @@ export const CATEGORY_OPTIONS = [
   { value: 'partners_friends',label: "Partner's friends" },
 ];
 
-const pillBase = {
-  display: 'inline-block',
-  fontFamily: PJS,
-  fontSize: 10,
-  fontWeight: 700,
-  letterSpacing: '0.08em',
-  padding: '3px 9px',
-  borderRadius: 999,
-  whiteSpace: 'nowrap',
-};
-
+// The pill vocabulary is shared now (R37): PILL_BASE is this object, moved to
+// DataTable so a Type on the schedule reads as the same object as a Category
+// here rather than as a badge of its own invention.
 const BadgePill = ({ style, children }) => (
-  <span style={{ ...pillBase, ...style }}>{children}</span>
+  <span style={{ ...PILL_BASE, ...style }}>{children}</span>
 );
 
 /* ── Per-event status chip — DESIGN_SPEC badge colours ───────────────────── */
@@ -437,15 +432,13 @@ const selectStyle = {
 const COLUMN_COUNT = 10;
 
 /* ── Sortable columns ──────────────────────────────────────────────────────
-   Name/Table use a natural (numeric-aware) string compare so "Table 2"
-   sorts before "Table 10". Status sorts by the guest's overall derived
-   state, not the raw per-event chip row. Blank values always sort to the
-   end, in both directions — the default (unsorted) order is untouched
-   until a column header is clicked. */
-function naturalCompare(a, b) {
-  return String(a || '').localeCompare(String(b || ''), undefined, { numeric: true, sensitivity: 'base' });
-}
-
+   The machinery — the numeric-aware compare, blanks-always-last, the
+   asc → desc → unsorted cycle and the header itself — moved to
+   src/lib/tableSort.js and components/shared/SortableHead.jsx so the
+   schedule's List tab uses this behavior rather than a copy of it. What
+   stays here is what is guests' own: WHICH columns sort, and how each reads
+   off a row. Status sorts by the guest's overall derived state, not the raw
+   per-event chip row. */
 const STATUS_SORT_RANK = { attending: 0, pending: 1, declined: 2 };
 
 function guestStatusSortKey(guest) {
@@ -460,42 +453,6 @@ const SORTABLE_COLUMNS = {
   status:   { getValue: g => guestStatusSortKey(g), compare: (a, b) => a - b },
   table:    { getValue: g => g.table_assignment || '', compare: naturalCompare },
 };
-
-function sortGuests(guests, sortState) {
-  if (!sortState?.field) return guests;
-  const { getValue, compare } = SORTABLE_COLUMNS[sortState.field];
-  const dir = sortState.direction === 'desc' ? -1 : 1;
-  return [...guests].sort((a, b) => {
-    const va = getValue(a);
-    const vb = getValue(b);
-    const aBlank = va === '' || va == null;
-    const bBlank = vb === '' || vb == null;
-    if (aBlank && bBlank) return 0;
-    if (aBlank) return 1;  // blanks always last, regardless of direction
-    if (bBlank) return -1;
-    return compare(va, vb) * dir;
-  });
-}
-
-/** Clickable column header — cycles asc → desc → unsorted (back to default order). */
-function SortableHead({ field, label, sortState, onSort }) {
-  const active = sortState?.field === field;
-  const direction = active ? sortState.direction : null;
-  return (
-    <TableHead
-      onClick={() => onSort(field)}
-      style={{ cursor: 'pointer', userSelect: 'none' }}
-      title={`Sort by ${label.toLowerCase()}`}
-    >
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-        {label}
-        <span style={{ fontSize: 10, color: active ? '#E03553' : 'rgba(10,10,10,0.25)', lineHeight: 1 }}>
-          {active ? (direction === 'desc' ? '▼' : '▲') : '⇅'}
-        </span>
-      </span>
-    </TableHead>
-  );
-}
 
 const SkeletonRows = () => (
   <>
@@ -771,14 +728,10 @@ export default function GuestList({
   // Cycles a column through asc → desc → unsorted (back to the default,
   // caller-provided order) — clicking a different column always starts at asc.
   const handleSort = (field) => {
-    setSortState(prev => {
-      if (prev.field !== field) return { field, direction: 'asc' };
-      if (prev.direction === 'asc') return { field, direction: 'desc' };
-      return { field: null, direction: 'asc' };
-    });
+    setSortState(prev => nextSortState(field, prev));
   };
 
-  const sortedGuests = sortGuests(guests, sortState);
+  const sortedGuests = sortRows(guests, sortState, SORTABLE_COLUMNS);
 
   const toggleExpanded = (guestId) => {
     setExpandedGuestIds(prev => {
@@ -949,34 +902,34 @@ export default function GuestList({
 
   const allVisibleSelected = guests.length > 0 && guests.every(g => selectedIds?.has(g.id));
 
+  // R37: the FRAME comes from the shared shell — container border, header
+  // band, scroll wrapper, the 36px checkbox column and the 48px actions
+  // column. The BODY stays here, because it is not a flat map: rows expand
+  // into per-event sub-rows and a persistent quick-add row sits under them.
+  const COLUMNS = [
+    { key: 'name',     label: 'Guest',     sortable: true },
+    { key: 'contact',  label: 'Contact' },
+    { key: 'category', label: 'Category',  sortable: true },
+    { key: 'tags',     label: 'Tags' },
+    { key: 'status',   label: 'Status',    sortable: true },
+    { key: 'lastSent', label: 'Last sent' },
+    { key: 'table',    label: 'Table',     sortable: true },
+    { key: 'plusOne',  label: '+1' },
+  ];
+
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.12)', overflow: 'hidden' }}>
-      <div style={{ overflowX: 'auto' }}>
-        <Table>
-          <TableHeader>
-            <TableRow style={{ background: '#FAFAFA' }}>
-              <TableHead style={{ width: 36 }}>
-                {!readOnly && (
-                  <input
-                    type="checkbox"
-                    checked={allVisibleSelected}
-                    onChange={() => onToggleSelectAll && onToggleSelectAll(guests.map(g => g.id))}
-                    style={{ width: 14, height: 14, accentColor: '#E03553' }}
-                  />
-                )}
-              </TableHead>
-              <SortableHead field="name" label="Guest" sortState={sortState} onSort={handleSort} />
-              <TableHead>Contact</TableHead>
-              <SortableHead field="category" label="Category" sortState={sortState} onSort={handleSort} />
-              <TableHead>Tags</TableHead>
-              <SortableHead field="status" label="Status" sortState={sortState} onSort={handleSort} />
-              <TableHead>Last sent</TableHead>
-              <SortableHead field="table" label="Table" sortState={sortState} onSort={handleSort} />
-              <TableHead>+1</TableHead>
-              <TableHead style={{ width: 48 }} />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+    <DataTable
+      columns={COLUMNS}
+      rows={guests}
+      rowKey={(g) => g.id}
+      sortState={sortState}
+      onSort={handleSort}
+      selectedIds={selectedIds || new Set()}
+      onToggleSelect={onToggleSelect}
+      onToggleSelectAll={onToggleSelectAll}
+      readOnly={readOnly}
+      actions
+    >
             {loading ? <SkeletonRows /> : sortedGuests.flatMap((guest) => {
               const rows = [];
               const isExpanded = expandedGuestIds.has(guest.id);
@@ -1186,9 +1139,6 @@ export default function GuestList({
             {!loading && onQuickAdd && (
               <AddGuestRow onQuickAdd={onQuickAdd} columnCount={COLUMN_COUNT} />
             )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+    </DataTable>
   );
 }

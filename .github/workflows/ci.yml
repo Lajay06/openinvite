@@ -316,6 +316,23 @@ jobs:
           # inside a try/catch that could not fire — toLocaleDateString RETURNS
           # "Invalid Date" rather than throwing. Source review read it as
           # defended. Only a render shows the text a guest actually gets.
+          # R37: one table shell for every list-shaped surface. The static
+          # half (data-table.mjs, in test:ci) proves the pages IMPORT it; only
+          # a render proves they look the same, because src/index.css's
+          # `* { font-family: … !important }` and a Tailwind class three layers
+          # up decide the cell. Same server, no extra boot.
+          if [ $TEST_EXIT -eq 0 ]; then
+            CAPTURE_BASE_URL=http://localhost:4173 npm run test:table-typography
+            TEST_EXIT=$?
+          fi
+          # THE TAB HAS TO MOUNT. The run sheet went to the error boundary on
+          # the owner's own record while every source check was green: no test
+          # had ever rendered that tab WITH ROWS IN IT, and the crash needed
+          # rows. Source checks cannot see this class at all.
+          if [ $TEST_EXIT -eq 0 ]; then
+            CAPTURE_BASE_URL=http://localhost:4173 npm run test:schedule-tabs
+            TEST_EXIT=$?
+          fi
           if [ $TEST_EXIT -eq 0 ]; then
             CAPTURE_BASE_URL=http://localhost:4173 npm run test:guest-no-invalid-date
 
