@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, Trash2, Music } from 'lucide-react';
-import { TRANSITION_OPTIONS, SCROLL_ANIMATION_OPTIONS, normalizeUniverseKey } from '@/lib/websiteThemes';
+import { normalizeUniverseKey } from '@/lib/websiteThemes';
+
+/**
+ * The two states the published site actually has. SCROLL_ANIMATION_OPTIONS
+ * offers three — none · subtle · dramatic — and `isMotionEnabled` reads only
+ * `!== 'none'`, so two of them render the same site. A stored 'dramatic'
+ * still reads as on; it just cannot be chosen any more.
+ */
+const SCROLL_MOTION_OPTIONS = [
+  { id: 'subtle', name: 'On', mood: 'Refined', description: 'Sections fade up as your guests scroll' },
+  { id: 'none', name: 'Off', mood: 'Instant', description: 'Content appears immediately' },
+];
 import { CURATED_FONTS, FONT_CATALOG, UNIVERSE_DEFAULT_FONT_IDS, universePairingPresets } from '@/lib/curatedFonts';
 import { useWebsitePasswordGate } from '@/lib/websitePasswordGate';
 import toast from 'react-hot-toast';
@@ -145,9 +156,16 @@ function FontDropdown({ value, onChange, previewSize = 14 }) {
         type="button"
         onClick={toggle}
         style={{
+          // THE APP'S SMALL CONTROL, in this panel's palette. The dashboard
+          // select is 11px, 3px/8px padding and fully rounded
+          // (TableToolbar's SELECT_TRIGGER); this was a 7px/10px square box,
+          // a second control language inside the same product. The font
+          // PREVIEW keeps its own size — showing a face at 11px would defeat
+          // the point of previewing it.
           width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-          padding: '7px 10px', border: '1px solid rgba(255,255,255,0.15)', background: open ? 'rgba(255,255,255,0.08)' : 'transparent',
-          cursor: 'pointer', color: '#FFFFFF', fontFamily: 'inherit', minWidth: 0,
+          padding: '3px 10px', borderRadius: 999,
+          border: '1px solid rgba(255,255,255,0.15)', background: open ? 'rgba(255,255,255,0.08)' : 'transparent',
+          cursor: 'pointer', color: '#FFFFFF', fontFamily: 'inherit', fontSize: 11, fontWeight: 600, minWidth: 0,
         }}
       >
         <span style={{ ...labelStyle, fontFamily: active?.family, fontSize: previewSize, lineHeight: 1.3 }}>
@@ -302,14 +320,26 @@ function DesignTab({ details, onChange, universeTheme }) {
         </p>
       </div>
       <Divider />
+      {/* ── ANIMATIONS ────────────────────────────────────────────────────
+          PAGE TRANSITION IS GONE, on the owner's ruling: "if the active
+          universe dictates them, don't let users see that."
+          MultiPageWeddingWebsite.jsx reads
+          `universeConfig?.pageTransition ?? weddingDetails.pageTransition`,
+          and ALL TWENTY universes declare one — so the couple's choice was
+          never once read. Four options that did nothing.
+
+          SCROLL ANIMATION STAYS, because it does do something, but not what
+          it claimed. `isMotionEnabled` is the only reader and it tests
+          `!== 'none'`, so "Subtle" and "Dramatic" are the same site. It is
+          the on/off switch it always was, now labelled as one. */}
       <SLabel>Animations</SLabel>
-      <div style={{ marginBottom: 10 }}>
-        <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Page transition</p>
-        <PillGroup options={TRANSITION_OPTIONS} value={details.pageTransition || 'fade'} onChange={v => onChange('pageTransition', v)} />
-      </div>
       <div>
         <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Scroll animation</p>
-        <PillGroup options={SCROLL_ANIMATION_OPTIONS} value={details.scrollAnimation || 'subtle'} onChange={v => onChange('scrollAnimation', v)} />
+        <PillGroup
+          options={SCROLL_MOTION_OPTIONS}
+          value={details.scrollAnimation === 'none' ? 'none' : 'subtle'}
+          onChange={v => onChange('scrollAnimation', v)}
+        />
       </div>
     </div>
   );

@@ -207,6 +207,7 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
                   padding: '6px 16px', cursor: 'pointer',
                   background: active ? 'rgba(255,255,255,0.06)' : hovered ? 'rgba(255,255,255,0.04)' : 'transparent',
                   borderLeft: active ? '2px solid #E03553' : '2px solid transparent',
+                  opacity: enabledPages.includes(page.slug) ? 1 : 0.4,
                   transition: 'background 0.1s',
                 }}
               >
@@ -218,6 +219,12 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
                   color: active || hovered ? '#FFFFFF' : 'rgba(255,255,255,0.5)',
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>{page.name}</span>
+                {/* A CUSTOM PAGE TOGGLES LIKE ANY OTHER PAGE. Owner ruling
+                    2026-09-07. It had a delete and nothing else, so the only
+                    way to take one off the site was to destroy it — and the
+                    row sat beside eleven built-ins that all toggle. Same
+                    `enabledPages` list, same control. */}
+                <Toggle enabled={enabledPages.includes(page.slug)} onToggle={() => toggle(page.slug)} label={page.name} />
                 <button
                   onClick={e => handleDeleteCustomPage(e, page.slug)}
                   aria-label={`Delete ${page.name}`}
