@@ -19,6 +19,8 @@ import ComponentLibraryModal from '@/components/website-builder/ComponentLibrary
 import { newBlock } from '@/components/guest-website/blocks/blockTypes';
 
 import { syncWeddingAddress } from '@/lib/weddingAddress';
+import WBEmailPreview from '@/components/website-builder/WBEmailPreview';
+import { templatesOf, saveTemplates, EDITOR_TEMPLATES, SAVE_FAILURE_MESSAGE } from '@/lib/emailTemplateStore';
 const UNIVERSE_THEMES = {
   london: {
     name: 'London',
@@ -285,6 +287,26 @@ export default function StudioWebsite({ onBack }) {
   const [selectedBlockRef, setSelectedBlockRef] = useState(null); // { page, blockId } | null
   const [canvasMode, setCanvasMode] = useState('edit'); // 'edit' | 'preview'
 
+  // ── THE FIVE EMAILS ────────────────────────────────────────────────────
+  //
+  // `selectedEmail` is { entryId, type } | null and is the SAME KIND of
+  // selection as `currentPage`: it says what the canvas is showing. The two
+  // are mutually exclusive — selecting a page in the left panel clears it,
+  // selecting an email in the right panel takes the canvas over — because a
+  // canvas shows one thing.
+  //
+  // `emailDraft` is deliberately NOT part of `details`, and that is the whole
+  // safety mechanism. `details` is autosaved every two seconds through
+  // WRITABLE_FIELDS and toasts "Saved" on any 200, while
+  // WeddingDetails.emailTemplates does not exist in the Base44 schema yet and
+  // is accepted-then-discarded. Riding the autosave would put "Saved" on
+  // screen over words that had already been thrown away. The draft therefore
+  // lives here, is written only by saveEmails() below, and that write proves
+  // itself by reading back.
+  const [selectedEmail, setSelectedEmail] = useState(null);
+  const [emailDraft, setEmailDraft] = useState(() => templatesOf(null));
+  const [emailSave, setEmailSave] = useState({ status: 'idle' });
+
   // MediaLibraryContext lives here (not inside WBRightPanel) because the
   // on-canvas block editor (the right-panel block editor below) also
   // renders MediaPicker fields (photo/gallery/couple-intro/etc. block
@@ -333,6 +355,10 @@ export default function StudioWebsite({ onBack }) {
       setDetails({ ...DEFAULT });
       detailsRef.current = { ...DEFAULT };
     }
+    // Seeded from the record, normalized. When the field does not exist this
+    // is every template empty, which is exactly right: empty means "the
+    // defaults send", and the panel shows those defaults pre-filled.
+    setEmailDraft(templatesOf(existing));
   }, [existing]);
 
   // THE ADDRESS IS NOT GENERATED HERE ANY MORE.
@@ -483,6 +509,38 @@ export default function StudioWebsite({ onBack }) {
     clearSelectedBlock();
   };
 
+  const updateEmailField = (type, patch) => {
+    setEmailDraft(prev => ({ ...prev, [type]: { ...(prev?.[type] || {}), ...patch } }));
+    setEmailSave({ status: 'idle' });
+  };
+
+  /**
+   * Write the five, then prove they are there.
+   *
+   * saveTemplates() writes, re-reads the record and compares field by field.
+   * A Base44 200 means the request was accepted, not that the field was kept
+   * — so a "Saved" that trusted the status code would be a lie on this field
+   * today. When the round-trip fails, the draft is untouched: whatever the
+   * couple typed is still in the boxes, and they are told plainly why.
+   */
+  const saveEmails = async () => {
+    setEmailSave({ status: 'saving' });
+    const result = await saveTemplates({
+      update: (id, patch) => base44.entities.WeddingDetails.update(id, patch),
+      reload: () => getMyWeddingDetails(),
+      id: existing?.id,
+      templates: emailDraft,
+    });
+    if (result.ok) {
+      setEmailSave({ status: 'saved' });
+      return;
+    }
+    setEmailSave({
+      status: 'failed',
+      message: SAVE_FAILURE_MESSAGE[result.reason] || 'That did not save. Your words are still here.',
+    });
+  };
+
   const doSave = async (showToast = true) => {
     setIsSaving(true);
     setSaveStatus('saving');
@@ -607,7 +665,7 @@ export default function StudioWebsite({ onBack }) {
           details={details}
           onChange={updateField}
           currentPage={currentPage}
-          onPageChange={(p) => setCurrentPage(p)}
+          onPageChange={(p) => { setCurrentPage(p); setSelectedEmail(null); }}
         />
 
         {/* CENTER PREVIEW */}
@@ -619,7 +677,11 @@ export default function StudioWebsite({ onBack }) {
             <div style={{ position: 'absolute', left: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22C55E', flexShrink: 0 }} />
               <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 220 }}>
-                openinvite.com.au/w/{details.slug || 'your-wedding'}/{currentPage !== 'home' ? currentPage : ''}
+                {/* An email has no address. Leaving the site URL up while the
+                    canvas shows an invitation would label the wrong thing. */}
+                {selectedEmail
+                  ? 'Email · 600px'
+                  : `openinvite.com.au/w/${details.slug || 'your-wedding'}/${currentPage !== 'home' ? currentPage : ''}`}
               </span>
             </div>
             {/* Device + Edit/Preview pills */}
@@ -660,7 +722,9 @@ export default function StudioWebsite({ onBack }) {
                 <Sparkles size={12} strokeWidth={1.5} /> Replay entrance
               </button>
               <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.4)' }}>
-                {allPageLabels[currentPage] || currentPage}
+                {selectedEmail
+                  ? (EDITOR_TEMPLATES.find(e => e.id === selectedEmail.entryId)?.label || 'Email')
+                  : (allPageLabels[currentPage] || currentPage)}
               </span>
             </div>
           </div>
@@ -679,6 +743,9 @@ export default function StudioWebsite({ onBack }) {
               flexShrink: 0,
               display: 'flex', flexDirection: 'column',
             }}>
+              {selectedEmail ? (
+                <WBEmailPreview details={details} template={emailDraft?.[selectedEmail.type]} type={selectedEmail.type} />
+              ) : (
               <PreviewContent
                 universeTheme={universeTheme} details={details} currentPage={currentPage}
                 onPageChange={(slug) => { setCurrentPage(slug); clearSelectedBlock(); }}
@@ -690,6 +757,7 @@ export default function StudioWebsite({ onBack }) {
                 onSelectBlock={id => selectBlock(currentPage, id)}
                 selectedBlockId={selectedBlockRef?.page === currentPage ? selectedBlockRef.blockId : null}
               />
+              )}
             </div>
           </div>
         </div>
@@ -709,6 +777,12 @@ export default function StudioWebsite({ onBack }) {
             onUpdateSelectedBlockStyle={updateSelectedBlockStyle}
             onDeleteSelectedBlock={deleteSelectedBlock}
             onClearSelectedBlock={clearSelectedBlock}
+            emailDraft={emailDraft}
+            selectedEmail={selectedEmail}
+            onSelectEmail={(sel) => { setSelectedEmail(sel); if (sel) clearSelectedBlock(); }}
+            onEmailChange={updateEmailField}
+            emailSave={emailSave}
+            onSaveEmails={saveEmails}
           />
         </div>
       </div>

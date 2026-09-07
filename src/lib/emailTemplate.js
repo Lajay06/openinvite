@@ -25,10 +25,33 @@
 
 import { getUniverseEmailStyle } from './universeEmailStyles.js';
 import { EMAIL_LOGO_MARK_URL } from './emailBrand.js';
+import { emailPalette, normalizeVariant, normalizeButtonStyle } from './emailPalette.js';
 
 const SANS_FALLBACK = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
 const TYPE_CONFIG = {
+  // THE SAVE THE DATE IS THE ONE THAT ARRIVES FIRST, and it asks for nothing.
+  //
+  // Openinvite already has a save-the-date — SaveTheDatePreview.jsx, a
+  // printable asset the couple downloads. What it did not have was a way to
+  // SEND one, so the announcement went out as an "invitation" with the RSVP
+  // link attached, months before there was anything to reply to.
+  //
+  // It carries the date and the doorway and stops there: no events, no RSVP,
+  // because the answer is not being asked for yet. Nothing else in the send
+  // path needed changing — `type` is passed straight through api/send-invites
+  // to this table, and EMAIL_TYPES is derived from these keys, so the compose
+  // pane and the gallery picked it up the moment the entry existed.
+  save_the_date: {
+    kicker: 'Save the date',
+    showEvents: false,
+    showDate: true,
+    showRsvp: true,
+    ctaLabel: 'See our website',
+    footerNoun: 'announcement',
+    defaultMessage: (firstName, coupleNames) =>
+      `Dear ${firstName},\n\nWe're getting married, and we would love for you to be there. The full invitation will follow — for now, please keep the day free.\n\n${coupleNames || ''}`.trim(),
+  },
   // THE INVITATION IS A DOORWAY, NOT A DOCUMENT. Every detail carried here is
   // a reason the guest does not need to open the website, and the website is
   // the product — the ceremony and reception blocks meant the entrance the
@@ -104,6 +127,10 @@ export function getEmailTypeConfig(type) {
  * drawer always has somewhere correct to load from.
  */
 const TYPE_COMPOSE_DEFAULTS = {
+  save_the_date: {
+    subject: '[Couple names] are getting married — save the date',
+    body: "Hi [Guest name],\n\nWe're getting married on [Wedding date], and we would love for you to be there. The full invitation will follow — for now, please keep the day free.\n\n[Couple names]",
+  },
   invite: {
     subject: "You're invited to [Couple names]'s wedding",
     body: "Hi [Guest name],\n\nWe'd love for you to celebrate with us on [Wedding date]. Click below to view your invitation and RSVP.\n\nWe can't wait to see you!\n\n[Couple names]",
@@ -138,16 +165,72 @@ export function getTypeComposeDefaults(type) {
  * if the chosen source has no photo, the banner is simply omitted rather
  * than substituting a different (surprising) image.
  */
+export function isVideoUrl(url) {
+  const u = String(url || '').trim().toLowerCase();
+  if (!u) return false;
+  if (/\.(mp4|webm|mov|m4v|ogv|avi)(\?|#|$)/.test(u)) return true;
+  if (/\/video\/upload\//.test(u)) return true;                       // Cloudinary video delivery
+  if (/youtube\.com|youtu\.be|vimeo\.com|player\.vimeo/.test(u)) return true;
+  return false;
+}
+
+const CLOUDINARY_IMAGE_RE = /^(https?:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload)\/([^/]*)\/(.+)$/;
+
+/**
+ * THE BANNER IS A PORTRAIT, SO IT IS CROPPED TO THE FACES.
+ *
+ * A 600x220 email banner is a letterbox — one fifth the height of the photo it
+ * comes from. Cloudinary's default center crop takes the middle fifth, which
+ * on a wedding photograph is reliably the couple's waists. `g_faces:auto`
+ * finds the faces and falls back to `g_auto` (subject detection) when there
+ * are none, so a venue shot still crops sensibly.
+ *
+ * The transform is REPLACED, not appended: the stored URL already carries
+ * `w_1400`, and a chained transform would crop pixels that had already been
+ * thrown away. Anything that is not a Cloudinary image URL is returned
+ * unchanged — an external photo still works, it simply is not re-cropped.
+ *
+ * @param {string} url
+ * @param {{width?: number, height?: number}} [size]
+ */
+export function emailBannerUrl(url, { width = 1200, height = 440 } = {}) {
+  const raw = String(url || '').trim();
+  if (!raw || isVideoUrl(raw)) return null;
+  const m = CLOUDINARY_IMAGE_RE.exec(raw);
+  if (!m) return raw;
+  const [, base, , publicId] = m;
+  return `${base}/c_fill,g_faces:auto,f_auto,q_auto,w_${width},h_${height}/${publicId}`;
+}
+
+/**
+ * A VIDEO IS NEVER AN EMAIL BANNER. Owner ruling, restated on review
+ * 2026-09-07: "no video in any email".
+ *
+ * A wedding's `coverPhoto` is a URL, and nothing about the field stops it
+ * being a .mp4, a Cloudinary /video/upload/ delivery, or a YouTube link — the
+ * couple's hero can be any of those. Dropped into the banner's <img src>, that
+ * is a broken image in every mail client on earth, and in the preview it was
+ * the site's video playing inside an email.
+ *
+ * No email client plays video reliably; several strip the element outright.
+ * So the banner refuses one rather than degrading into a broken picture, and
+ * the email simply has no banner — which the renderer already handles, because
+ * "none" has always been a valid choice.
+ */
 export function getBannerImageUrl({ coverPhoto, venuePhotoUrl } = {}, choice) {
-  if (choice === 'venue') return venuePhotoUrl || null;
-  if (choice === 'wedding') return coverPhoto || null;
-  return null;
+  const picked = choice === 'venue' ? venuePhotoUrl
+    : choice === 'wedding' ? coverPhoto
+      : null;
+  if (!picked || isVideoUrl(picked)) return null;
+  return picked;
 }
 
 /** First available source, for initialising the compose pane's control. */
 export function getDefaultBannerChoice({ coverPhoto, venuePhotoUrl } = {}) {
-  if (coverPhoto) return 'wedding';
-  if (venuePhotoUrl) return 'venue';
+  // A video cover is not a default banner either — offering it would put a
+  // broken image in front of the couple and call it their invitation.
+  if (coverPhoto && !isVideoUrl(coverPhoto)) return 'wedding';
+  if (venuePhotoUrl && !isVideoUrl(venuePhotoUrl)) return 'venue';
   return 'none';
 }
 
@@ -204,10 +287,27 @@ export function renderInvitationEmail({
   siteUrl,
   weddingDate,
   bannerImageUrl,
+  design,
 }) {
   const cfg = getEmailTypeConfig(type);
   const style = getUniverseEmailStyle(universeId);
-  const { bgTint, cardBg, textColor, accent, fontDisplay, fontBody, divider } = style;
+  // ── THE COUPLE'S CHOICE, MADE OF THEIR OWN UNIVERSE ────────────────────
+  //
+  // Owner ruling 2026-09-07, rejecting the four color buttons the first
+  // attempt shipped: the couple picks a VARIANT and a BUTTON STYLE, never a
+  // color. Both are rearrangements of colors the universe already owns —
+  // see emailPalette.js for why that is the whole point.
+  //
+  // Unset falls through to `default` / `solid`, so a wedding that has never
+  // opened the Emails section renders exactly as it did before.
+  const variant = normalizeVariant(design?.paletteVariant);
+  const buttonStyle = normalizeButtonStyle(design?.buttonStyle);
+  const pal = emailPalette(style, variant);
+  const { pageBg, cardBg, ink, inkMuted, inkFaint, hairline, accent, onAccent } = pal;
+  const { fontDisplay, fontBody, divider } = style;
+  // The old names, kept where the markup below reads better with them.
+  const bgTint = pageBg;
+  const textColor = ink;
 
   const firstName = guestName ? guestName.split(' ')[0] : 'there';
   const message = personalMessage || cfg.defaultMessage(firstName, coupleNames);
@@ -221,8 +321,8 @@ export function renderInvitationEmail({
           <tr>
             <td style="padding:20px 40px 0;">
               <p style="margin:0 0 3px;font-family:${fontDisplay};font-weight:400;font-size:19px;color:${textColor};">${escapeHtml(ev.name)}</p>
-              ${metaLine ? `<p style="margin:0;font-size:14px;color:rgba(0,0,0,0.55);font-family:${fontBody};">${escapeHtml(metaLine)}</p>` : ''}
-              ${ev.venue ? `<p style="margin:2px 0 0;font-size:14px;color:rgba(0,0,0,0.55);font-family:${fontBody};">${escapeHtml(ev.venue)}</p>` : ''}
+              ${metaLine ? `<p style="margin:0;font-size:14px;color:${inkMuted};font-family:${fontBody};">${escapeHtml(metaLine)}</p>` : ''}
+              ${ev.venue ? `<p style="margin:2px 0 0;font-size:14px;color:${inkMuted};font-family:${fontBody};">${escapeHtml(ev.venue)}</p>` : ''}
             </td>
           </tr>`;
   }).join('') : '';
@@ -245,7 +345,7 @@ export function renderInvitationEmail({
   const messageHtml = message ? `
           <tr>
             <td style="padding:28px 40px 0;">
-              <p style="margin:0;font-size:15px;line-height:1.7;color:rgba(0,0,0,0.68);font-family:${fontBody};">${nl2br(message)}</p>
+              <p style="margin:0;font-size:15px;line-height:1.7;color:${inkMuted};font-family:${fontBody};">${nl2br(message)}</p>
             </td>
           </tr>` : '';
 
@@ -259,23 +359,48 @@ export function renderInvitationEmail({
             </td>
           </tr>` : '';
 
+  // ── THE BUTTON ─────────────────────────────────────────────────────────
+  //
+  // SOLID fills with the accent and takes its label FROM the accent — never
+  // fixed white, which is what the hard-coded `color:#FFFFFF` was. Measured
+  // across the twenty universes, fourteen of them failed 4.5:1 that way and
+  // paris rendered at 1.04:1: near-black text on a near-black button.
+  //
+  // OUTLINE is a hairline in the accent with the accent as the label, so it
+  // reads on a light card and a dark one alike. The border lives on the <td>
+  // rather than the <a> because Outlook drops border-radius from an inline
+  // anchor and keeps it on a table cell.
+  const ctaCellStyle = buttonStyle === 'outline'
+    ? `border:1px solid ${accent};border-radius:999px;`
+    : `background:${accent};border-radius:999px;`;
+  const ctaLabelColor = buttonStyle === 'outline' ? accent : onAccent;
+
   const ctaHtml = (cfg.showRsvp && ctaUrl) ? `
           <tr>
             <td style="padding:32px 40px 0;">
               <table role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="background:${accent};border-radius:999px;">
-                    <a href="${ctaUrl}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:999px;font-family:${fontBody};">
+                  <td style="${ctaCellStyle}">
+                    <a href="${ctaUrl}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:700;color:${ctaLabelColor};text-decoration:none;border-radius:999px;font-family:${fontBody};">
                       ${escapeHtml(cfg.ctaLabel)}
                     </a>
                   </td>
                 </tr>
               </table>
-              <p style="margin:16px 0 0;font-size:12px;color:rgba(0,0,0,0.4);word-break:break-all;font-family:${fontBody};">
+              <p style="margin:16px 0 0;font-size:12px;color:${inkFaint};word-break:break-all;font-family:${fontBody};">
                 Or copy this link: ${escapeHtml(ctaUrl)}
               </p>
             </td>
           </tr>` : '';
+
+  // THE MARK IS A DARK PNG, so on a dark card it is a dark square at half
+  // opacity — which is to say, nothing. `filter: invert()` is not reliable in
+  // Outlook, and there is no light version of the file, so the dark variants
+  // drop the glyph and keep the words: the attribution survives, an invisible
+  // smudge does not.
+  const markCellHtml = pal.isDarkCard ? '' : `                  <td style="padding:0 5px 0 0;vertical-align:middle;">
+                    <img src="${EMAIL_LOGO_MARK_URL}" width="11" height="11" alt="" style="display:block;width:11px;height:11px;opacity:0.5;" />
+                  </td>`;
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -289,7 +414,7 @@ export function renderInvitationEmail({
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${bgTint};padding:40px 16px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:${cardBg};border:1px solid rgba(0,0,0,0.08);">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:${cardBg};border:1px solid ${hairline};">
 ${bannerHtml}
           <!-- Kicker + headline (no Openinvite branding up top — this email is from
                the couple, not the platform; the couple's names are the focus) -->
@@ -314,22 +439,20 @@ ${ctaHtml}
           <!-- Footer -->
           <tr>
             <td style="padding:32px 40px 0;">
-              <div style="height:1px;background:rgba(0,0,0,0.06);"></div>
+              <div style="height:1px;background:${hairline};"></div>
             </td>
           </tr>
           <tr>
             <td style="padding:20px 40px 36px;">
-              <p style="margin:0 0 14px;font-size:12px;line-height:1.6;color:rgba(0,0,0,0.35);font-family:${fontBody};">
+              <p style="margin:0 0 14px;font-size:12px;line-height:1.6;color:${inkFaint};font-family:${fontBody};">
                 You received this ${cfg.footerNoun} because someone added you to their guest list on openinvite.com.au.<br />
                 If you think this was sent in error, you can ignore this email.
               </p>
               <table cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
-                  <td style="padding:0 5px 0 0;vertical-align:middle;">
-                    <img src="${EMAIL_LOGO_MARK_URL}" width="11" height="11" alt="" style="display:block;width:11px;height:11px;opacity:0.5;" />
-                  </td>
+${markCellHtml}
                   <td style="vertical-align:middle;">
-                    <p style="margin:0;font-size:11px;color:rgba(0,0,0,0.35);font-family:${fontBody};">Powered by Openinvite</p>
+                    <p style="margin:0;font-size:11px;color:${inkFaint};font-family:${fontBody};">Powered by Openinvite</p>
                   </td>
                 </tr>
               </table>
