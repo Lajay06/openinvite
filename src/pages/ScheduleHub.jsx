@@ -406,48 +406,32 @@ export default function ScheduleHub() {
           <CalendarPage embedded hideChrome />
         </>
       )}
-      {activeTab === "runsheet" && (() => {
-        // WEDDING-DAY EVENTS ONLY, DEDUPED BY NAME.
-        //
-        // The owner saw "First dance" twice. It is not a rendering bug: they
-        // are two Schedule ROWS with the same event_name — the entity has no
-        // uniqueness on it and nothing has ever stopped a couple, an import or
-        // Ava's create_schedule from writing the same name twice. A select
-        // with two identical options is unusable, so the first row of each
-        // name wins and the rest are dropped from the PICKER. Nothing is
-        // deleted: the duplicates are still rows, still in List, still on the
-        // Calendar, where they can be seen and merged.
-        const dayEvents = sortScheduleItems(scheduleItems.filter(
-          i => !weddingDate || String(i.event_date || "").slice(0, 10) === String(weddingDate).slice(0, 10)));
-        const seen = new Set();
-        const pickable = dayEvents.filter(e => {
-          const key = String(e.event_name || "").trim().toLowerCase();
-          if (seen.has(key)) return false;
-          seen.add(key);
-          return true;
-        });
-        const chosen = pickable.find(i => i.id === runSheetEventId) || pickable[0] || null;
-        return (
-          <RunSheet
-            key={chosen?.id}
-            events={pickable}
-            eventId={chosen?.id}
-            onPickEvent={setRunSheetEventId}
-            event={chosen}
-            items={chosen?.run_sheet}
-            readOnly={readOnly}
-            onSave={async (items) => {
-              // WRITE, THEN READ BACK. Base44 answers 200 for a write of an
-              // undeclared field and discards it, so the only way to know
-              // whether run_sheet exists is to ask for it again.
-              await Schedule.update(chosen.id, { run_sheet: items });
-              const fresh = await Schedule.get(chosen.id);
-              loadItems();
-              return fresh?.run_sheet;
-            }}
-          />
-        );
-      })()}
+      {activeTab === "runsheet" && (
+        <RunSheet
+          scheduleItems={scheduleItems}
+          category={runSheetEventId}
+          onPickEvent={setRunSheetEventId}
+          readOnly={readOnly}
+          loading={loadingStats}
+          onEdit={handleEditEvent}
+          onDelete={(r) => handleDelete(r.id)}
+          onAdd={(ev) => {
+            // PRE-TAGGED AND PRE-DATED. A moment added from the reception's run
+            // sheet is a reception row on the reception's day; asking again
+            // would be asking a question the page already knows the answer to.
+            setEditingItem({ category: ev.key, event_date: ev.date });
+            setShowForm(true);
+          }}
+          onReorder={async (a, b) => {
+            // ORDER IS THE TIME. Two rows swap start_time, so the clock and
+            // the order can never disagree — which a separate order column
+            // would eventually let them do.
+            await Schedule.update(a.id, { start_time: b.start_time });
+            await Schedule.update(b.id, { start_time: a.start_time });
+            loadItems();
+          }}
+        />
+      )}
 
       {activeTab === "considerations" && (
         <div style={{ padding: "32px 32px 48px", maxWidth: 860 }}>

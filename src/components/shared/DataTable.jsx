@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal } from 'lucide-react';
 import SortableHead from '@/components/shared/SortableHead';
-import { PILL_BASE } from '@/lib/tablePills';
+import { PILL_BASE, CELL_TEXT } from '@/lib/tablePills';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -33,7 +33,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
  * Category on the guest list rather than as a filled red badge that shouts.
  */
 
-export { PILL_BASE, OUTLINE_PILL, CELL_STRONG, CELL_MUTED, CELL_NOWRAP } from '@/lib/tablePills';
+export { PILL_BASE, OUTLINE_PILL, CELL_TEXT, CELL_STRONG, CELL_MUTED, CELL_NOWRAP } from '@/lib/tablePills';
 
 /** The row-level pill, from the shared vocabulary. */
 export const Pill = ({ style, children }) => (
@@ -142,7 +142,9 @@ export default function DataTable({
                     </TableCell>
                   )}
                   {columns.map((c) => (
-                    <TableCell key={c.key} style={c.cellStyle}>{c.render ? c.render(row) : row[c.key]}</TableCell>
+                    <TableCell key={c.key} style={{ ...CELL_TEXT, ...c.cellStyle }}>
+                      {c.render ? c.render(row) : row[c.key]}
+                    </TableCell>
                   ))}
                   {actions && (
                     <TableCell className="text-right">

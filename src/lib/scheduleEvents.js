@@ -280,3 +280,69 @@ export function groupEventsByDay(events = []) {
   if (undated.length) days.push({ date: null, events: undated });
   return days;
 }
+
+
+/**
+ * ── THE RUN SHEET IS A VIEW, NOT A STORE ───────────────────────────────────
+ *
+ * Owner: "create a list of events and then in the create event pop up give it
+ * a tag area where it is either planning or event. Then you put it all in the
+ * list and if it is an event it is on the run sheet."
+ *
+ * So a Schedule row either belongs to an EVENT or is a PLANNING item, and the
+ * run sheet is that filter over rows that already exist. The nested
+ * `run_sheet` array is gone with its guard and its library — a second store
+ * for the same facts, which would have needed a Base44 field the owner no
+ * longer has to add.
+ *
+ * `category` CARRIES IT, unchanged. It is already a nine-value enum on the
+ * entity, already on the form, and already what the stat tiles count. Base44
+ * does not enforce enums (gotcha #20), so a couple's own event name would
+ * store — but inventing free text where a declared field exists is how two
+ * spellings of "Reception" end up as two events, so the enum stands and
+ * PLANNING_CATEGORIES names the ones that are not events.
+ */
+
+/** Categories that are preparation for the day rather than part of it. */
+export const PLANNING_CATEGORIES = new Set(['pre_wedding', 'rehearsal', 'preparation', 'transportation', 'photography']);
+
+export const CATEGORY_LABEL = {
+  ceremony: 'Ceremony', reception: 'Reception', photography: 'Photography',
+  preparation: 'Preparation', transportation: 'Transport', rehearsal: 'Rehearsal',
+  pre_wedding: 'Pre-wedding', post_wedding: 'Post-wedding', other: 'Other',
+};
+
+/** True when this row is part of an event rather than a planning item. */
+export function isEventRow(row) {
+  return !!row?.category && !PLANNING_CATEGORIES.has(row.category);
+}
+
+/**
+ * The events that actually exist in the couple's rows — never a fixed list.
+ * "if there are multiple events it needs to be smart to know it and then
+ * enable the user to select the specific event."
+ *
+ * @returns {Array<{key:string, label:string, count:number, date:string}>}
+ *          most rows first, so the default selection is the fullest one.
+ */
+export function eventsInSchedule(scheduleItems = []) {
+  const byCat = new Map();
+  for (const r of scheduleItems) {
+    if (!isEventRow(r)) continue;
+    const k = r.category;
+    if (!byCat.has(k)) byCat.set(k, { key: k, label: CATEGORY_LABEL[k] || k, count: 0, date: r.event_date || '' });
+    const e = byCat.get(k);
+    e.count += 1;
+    // The event's day is its earliest dated row.
+    if (r.event_date && (!e.date || r.event_date < e.date)) e.date = r.event_date;
+  }
+  return [...byCat.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+}
+
+/** One event's rows, in time order. */
+export function runSheetFor(scheduleItems = [], category) {
+  return scheduleItems
+    .filter((r) => isEventRow(r) && r.category === category)
+    .slice()
+    .sort((a, b) => String(a.start_time || '').localeCompare(String(b.start_time || '')));
+}

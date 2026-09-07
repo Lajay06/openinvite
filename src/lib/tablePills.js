@@ -36,6 +36,15 @@ export const OUTLINE_PILL = {
  * and left others to inherit, which is how two tables drift apart while both
  * "use the same component". These three are the whole vocabulary.
  */
-export const CELL_STRONG = { fontWeight: 600, color: '#0A0A0A' };
-export const CELL_MUTED  = { color: 'rgba(10,10,10,0.6)' };
+/**
+ * 13px, NOT 14. The <td> inherits 14px in both tables — which is why a
+ * computed-style check on the CELL passed while the owner could see the
+ * schedule was bigger. The guest list never shows text at that size: every
+ * name, email and table number sits in a nested span at 13px, and the cell's
+ * own 14px is never painted. Reading the leaf rather than the cell is what
+ * found it, and it is what the guard reads now.
+ */
+export const CELL_TEXT   = { fontSize: 13, lineHeight: '20px', color: '#0A0A0A' };
+export const CELL_STRONG = { ...CELL_TEXT, fontWeight: 600 };
+export const CELL_MUTED  = { ...CELL_TEXT, fontWeight: 400, color: 'rgba(10,10,10,0.6)' };
 export const CELL_NOWRAP = { whiteSpace: 'nowrap' };

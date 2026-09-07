@@ -115,10 +115,15 @@ export async function runDataTable() {
       /select=\{events\.length > 0/.test(rs) && !/filter-pill/.test(rs)
         && !/background: active \? '#E03553'/.test(rs),
       'one control, not one per event');
-    check('  Save run sheet is the toolbar\'s primary action, right',
-      /actions=\{!readOnly && event/.test(rs) && /Save run sheet/.test(rs), 'in the toolbar');
-    check('  the add row is a row inside the table body',
-      /footerRow=\{!readOnly/.test(rs) && /\+ Add a moment/.test(rs), 'not a button floating under it');
+    // NO SAVE BUTTON ANY MORE, and no add row inside the body: the run sheet
+    // is a VIEW of Schedule rows now, so a moment is created through the same
+    // dialog every other row uses and saved the moment that dialog is
+    // submitted. "Add a moment" is the toolbar's primary action.
+    check('  "Add a moment" is the toolbar\'s primary action, right',
+      /actions=\{!readOnly && active/.test(rs) && /\+ Add a moment/.test(rs), 'in the toolbar');
+    check('  and there is nothing left to "save" separately',
+      !/Save run sheet/.test(rs) && !/footerRow/.test(rs),
+      'a view of rows that are already saved');
     check('  and reorder moved into the "···" column',
       /label: 'Move up'/.test(rs) && /label: 'Move down'/.test(rs) && !/<ChevronUp/.test(rs),
       'the actions column the shell already has');
@@ -141,12 +146,14 @@ export async function runDataTable() {
         && /label: "On the timeline"/.test(hub) && /label: "To-dos due"/.test(hub)
         && /on the day · \$\{timelineStats\.around\} around it/.test(hub),
       'label, figure, and a sub-line only where it earns one');
-    check('PLANT: the run sheet picker is deduped by event name',
-      /const seen = new Set\(\)/.test(hub) && /seen\.has\(key\)/.test(hub),
-      'two rows named "First dance" would give two identical options');
-    check('  and nothing is deleted to achieve it',
-      !/Schedule\.delete\(e\.id\)/.test(hub) || /handleDelete/.test(hub),
-      'the duplicates stay in List and on the Calendar, where they can be merged');
+    // THE DEDUPE IS GONE WITH THE PICKER IT WAS FOR. The select lists EVENTS
+    // (categories) now, not individual rows, so two rows named "First dance"
+    // are two moments inside one event rather than two identical options —
+    // which is what they always were, and what the old picker made confusing.
+    check('PLANT: the picker lists events, not rows',
+      /eventsInSchedule\(scheduleItems\)/.test(code('src/components/schedule/RunSheet.jsx'))
+        && !/const seen = new Set\(\)/.test(hub),
+      'two rows named the same thing are two moments, not two events');
   }
 
   // ── ONE TOOLBAR ─────────────────────────────────────────────────────────

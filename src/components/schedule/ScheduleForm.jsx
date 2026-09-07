@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X } from "lucide-react";
+import { PLANNING_CATEGORIES } from '@/lib/scheduleEvents';
 
 const CATEGORIES = [
   { value: "ceremony",       label: "Ceremony" },
@@ -50,14 +51,29 @@ export default function ScheduleForm({ item, onSubmit, onCancel }) {
             <Input id="event_name" value={formData.event_name} onChange={e => set('event_name', e.target.value)} placeholder="Event or activity name" required />
           </div>
 
+          {/* THIS IS — the owner's tag area. A row is either preparation for
+              the day or part of an event, and that one answer decides whether
+              it appears on a run sheet. Same dialog, same modal standard. */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <Label>Category</Label>
+            <Label>This is</Label>
             <Select value={formData.category} onValueChange={v => set('category', v)}>
-              <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Planning item or part of an event" /></SelectTrigger>
               <SelectContent>
-                {CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                <SelectGroup>
+                  <SelectLabel>Planning item</SelectLabel>
+                  {CATEGORIES.filter(c => PLANNING_CATEGORIES.has(c.value))
+                    .map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                </SelectGroup>
+                <SelectGroup>
+                  <SelectLabel>Part of an event</SelectLabel>
+                  {CATEGORIES.filter(c => !PLANNING_CATEGORIES.has(c.value))
+                    .map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                </SelectGroup>
               </SelectContent>
             </Select>
+            <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>
+              Anything tagged as part of an event appears on that event's run sheet.
+            </p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

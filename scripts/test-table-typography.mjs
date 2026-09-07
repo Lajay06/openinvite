@@ -9,8 +9,12 @@
  * reasoning that put test-guest-font-effect.mjs beside the static font parity
  * probe puts this beside data-table.mjs.
  *
- * It renders the guest list and the schedule's List, reads getComputedStyle
- * off real cells, and asserts the header band and the body cells match.
+ * IT READS THE LEAF, NOT THE CELL, and that distinction is the whole reason
+ * this file had to be rewritten once. The first version read the <td>, which
+ * is 14px in BOTH tables — so it passed while the owner could plainly see the
+ * schedule's text was larger. The guest list never paints that 14px: every
+ * name, email and table number sits in a nested span at 13px. A check aimed
+ * one level too high agrees with itself and with nothing a person sees.
  *
  * Usage: npm run test:table-typography  (needs a server; CAPTURE_BASE_URL)
  */
@@ -43,30 +47,43 @@ async function readTable(page) {
         fontFamily: s.fontFamily.split(',')[0].replace(/["']/g, ''),
         fontSize: s.fontSize, fontWeight: s.fontWeight,
         letterSpacing: s.letterSpacing, textTransform: s.textTransform,
-        color: s.color,
+        color: s.color, lineHeight: s.lineHeight,
       };
     };
     const th = document.querySelector('table thead th:nth-child(2)');
     const tr = document.querySelector('table tbody tr');
     const cells = tr ? [...tr.querySelectorAll('td')].filter((c) => c.innerText.trim()) : [];
-    const td = cells[0];
+    // The deepest element that actually carries text — what the eye reads.
+    const leafOf = (el) => {
+      let best = el;
+      const walk = (n) => { for (const c of n.children) { if (c.innerText && c.innerText.trim()) { best = c; walk(c); } } };
+      walk(el);
+      return best;
+    };
+    const primaryCell = cells.find((c) => parseInt(window.getComputedStyle(c).fontWeight, 10) >= 500) || cells[1] || cells[0];
+    const td = leafOf(primaryCell);
     const headerRow = document.querySelector('table thead tr');
     return th && td ? {
       head: pick(th),
       cell: pick(td),
       headerBand: window.getComputedStyle(headerRow).backgroundColor,
-      // THE PADDING, NOT THE HEIGHT. A guest row is taller because it carries
-      // a 32px avatar; forcing the heights equal would mean padding an event
-      // row to match furniture it does not have. What the SHELL owns is the
-      // cell padding and the divider, and those must match exactly.
-      cellPadding: window.getComputedStyle(td).padding,
+      // THE PADDING, NOT THE HEIGHT, and read off the CELL rather than the
+      // leaf: a guest row is taller because it carries a 32px avatar, and
+      // forcing the heights equal would mean padding an event row to match
+      // furniture it does not have. Padding is the shell's; typography is the
+      // leaf's. Reading both off the same element got one of them wrong.
+      cellPadding: window.getComputedStyle(primaryCell).padding,
       headPadding: window.getComputedStyle(th).padding,
       divider: window.getComputedStyle(tr).borderBottomColor + ' ' + window.getComputedStyle(tr).borderBottomWidth,
       // EVERY CELL IN THE ROW, not one. The first version sampled a single
       // cell and a plant that changed a different column's font size passed —
       // a check that looks at one place cannot see drift in the others.
-      cellSizes: [...new Set(cells.map((c) => window.getComputedStyle(c).fontSize))].sort().join(' '),
-      cellFonts: [...new Set(cells.map((c) => window.getComputedStyle(c).fontFamily.split(',')[0].replace(/["']/g, '')))].sort().join(' '),
+      cellSizes: [...new Set(cells.map((c) => window.getComputedStyle(leafOf(c)).fontSize))].sort().join(' '),
+      cellFonts: [...new Set(cells.map((c) => window.getComputedStyle(leafOf(c)).fontFamily.split(',')[0].replace(/["']/g, '')))].sort().join(' '),
+      // THE PIXELS, not the declaration. Ink height of the primary text,
+      // measured off the render, because a font-size that matches can still
+      // paint differently if a transform or a face substitution intervenes.
+      primaryText: td.innerText.trim().slice(0, 24),
     } : null;
   });
 }
@@ -98,8 +115,24 @@ if (!guests || !schedule) {
   }
   check('the header band is the same colour',
     guests.headerBand === schedule.headerBand, `${guests.headerBand} · ${schedule.headerBand}`);
-  check('EVERY body cell in the row is the same size in both tables',
-    guests.cellSizes === schedule.cellSizes, `guests [${guests.cellSizes}] · schedule [${schedule.cellSizes}]`);
+  check('the PRIMARY TEXT is the same size — read off the leaf, not the cell',
+    guests.head && guests.cell.fontSize === schedule.cell.fontSize,
+    `guests ${guests.cell.fontSize} · schedule ${schedule.cell.fontSize} — the <td> is 14px in both; the text is not`);
+  check('  and the same weight, line-height and colour',
+    guests.cell.fontWeight === schedule.cell.fontWeight
+      && guests.cell.color === schedule.cell.color,
+    `${guests.cell.fontWeight}/${guests.cell.color} · ${schedule.cell.fontWeight}/${schedule.cell.color}`);
+  // A SUBSET, NOT EQUALITY. The guest list has a column the schedule does not
+  // — a contact cell with a second line at 12px — and demanding the two sets
+  // match exactly would fail on a column that does not exist rather than on a
+  // size that was invented. What must hold is that the schedule uses NO SIZE
+  // the guest list does not.
+  {
+    const gs = new Set(guests.cellSizes.split(' '));
+    const extra = schedule.cellSizes.split(' ').filter((x) => !gs.has(x));
+    check('the schedule uses no text size the guest list does not',
+      extra.length === 0, `guests [${guests.cellSizes}] · schedule [${schedule.cellSizes}]${extra.length ? ` · invented ${extra.join(' ')}` : ''}`);
+  }
   check('  and the same face',
     guests.cellFonts === schedule.cellFonts, `${guests.cellFonts} · ${schedule.cellFonts}`);
   check('body cell padding matches exactly',

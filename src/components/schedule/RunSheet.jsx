@@ -1,125 +1,101 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import DataTable from '@/components/shared/DataTable';
 import TableToolbar from '@/components/shared/TableToolbar';
-import { TableCell, TableRow } from '@/components/ui/table';
-import { newRunSheetItem, normalizeRunSheet, moveRunSheetItem, runSheetRoundTripped } from '@/lib/runSheet';
+import { CELL_STRONG, CELL_MUTED, CELL_NOWRAP } from '@/lib/tablePills';
+import { eventsInSchedule, runSheetFor } from '@/lib/scheduleEvents';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
-const CELL = {
-  border: 'none', borderBottom: '1px solid rgba(10,10,10,0.12)', background: 'none',
-  fontFamily: PJS, fontSize: 14, color: '#0A0A0A', outline: 'none', padding: '4px 0', width: '100%',
-};
+
+/** "3:00 PM" from "15:00". */
+function timeLabel(t) {
+  if (!t) return '—';
+  const [h, m] = String(t).split(':').map(Number);
+  if (Number.isNaN(h)) return t;
+  return `${h % 12 || 12}:${String(m || 0).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
+}
+
+/** Shifts a "HH:MM" by n minutes, for the reorder. */
+function shift(time, minutes) {
+  const [h, m] = String(time || '00:00').split(':').map(Number);
+  const total = Math.max(0, Math.min(24 * 60 - 1, (h || 0) * 60 + (m || 0) + minutes));
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+}
 
 /**
- * SCHEDULE › RUN SHEET — one event's order of proceedings, on the shared shell.
+ * SCHEDULE › RUN SHEET — one event's order of proceedings.
  *
- * Owner: "Same for run sheet... The wall of pills goes." One select naming the
- * wedding-day events, and the rows in the same table as everything else.
+ * Owner: "run sheet is literally order of events for the specific event…
+ * it should just have a filter for the event so it could be wedding,
+ * reception, recovery etc… if there are multiple events it needs to be smart
+ * to know it and then enable the user to select the specific event."
  *
- * ── IT REFUSES TO SAVE INTO A FIELD THAT IS NOT THERE ──────────────────────
+ * ── IT IS A VIEW OF THE LIST, NOT A SECOND STORE ───────────────────────────
  *
- * Schedule.run_sheet does not exist on the live entity yet. Base44 accepts a
- * write of an undeclared field with 200 and discards it, so a couple would
- * type out their whole ceremony, see a success toast, and find it gone. The
- * save writes, reads back and compares; on a mismatch it says so and keeps
- * what they typed on screen.
+ * Every row here is a Schedule row that is also in List. There is no
+ * `run_sheet` field, no nested array, and nothing to keep in step — which is
+ * why the couple's edits show up in both places without either being told to
+ * refresh, and why the owner does not need to add a Base44 field after all.
+ *
+ * The select lists the events that ACTUALLY EXIST in their rows, most rows
+ * first, so a wedding with one event never asks and a wedding with four opens
+ * on the fullest.
  */
-export default function RunSheet({ events = [], eventId, onPickEvent, event, items, onSave, readOnly }) {
-  const [rows, setRows] = useState(() => normalizeRunSheet(items));
-  const [status, setStatus] = useState(null);
-  const [saving, setSaving] = useState(false);
-
-  const update = (id, field, value) =>
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
-
-  const save = async () => {
-    setSaving(true);
-    setStatus(null);
-    try {
-      const readBack = await onSave(normalizeRunSheet(rows));
-      const { ok, reason } = runSheetRoundTripped(rows, readBack);
-      setStatus(ok
-        ? { tone: 'ok', text: 'Saved.' }
-        // NAMED, not "something went wrong". A couple can act on "it is not
-        // switched on"; they cannot act on a shrug.
-        : { tone: 'bad', text: `Run sheet isn't switched on yet — ${reason}. Nothing was saved.` });
-    } catch (err) {
-      setStatus({ tone: 'bad', text: `Run sheet isn't switched on yet — ${err?.message || 'the save was refused'}. Nothing was saved.` });
-    } finally {
-      setSaving(false);
-    }
-  };
+export default function RunSheet({ scheduleItems = [], category, onPickEvent, onEdit, onDelete, onAdd, onReorder, readOnly, loading }) {
+  const events = useMemo(() => eventsInSchedule(scheduleItems), [scheduleItems]);
+  const active = events.find((e) => e.key === category) || events[0] || null;
+  const rows = useMemo(() => (active ? runSheetFor(scheduleItems, active.key) : []), [scheduleItems, active]);
+  const [busy, setBusy] = useState(false);
 
   const COLUMNS = [
-    { key: 'time', label: 'Time', width: 110, cellStyle: { whiteSpace: 'nowrap' },
-      render: (r) => <input type="time" value={r.time} disabled={readOnly} style={CELL} onChange={(e) => update(r.id, 'time', e.target.value)} /> },
-    { key: 'item', label: 'Item', cellStyle: { fontWeight: 600 },
-      render: (r) => <input value={r.item} placeholder="Processional" disabled={readOnly} style={{ ...CELL, fontWeight: 600 }} onChange={(e) => update(r.id, 'item', e.target.value)} /> },
-    { key: 'who', label: 'Who', width: 180,
-      render: (r) => <input value={r.who} placeholder="Celebrant" disabled={readOnly} style={CELL} onChange={(e) => update(r.id, 'who', e.target.value)} /> },
-    { key: 'notes', label: 'Notes',
-      render: (r) => <input value={r.notes} placeholder="Music cued" disabled={readOnly} style={CELL} onChange={(e) => update(r.id, 'notes', e.target.value)} /> },
+    { key: 'start_time', label: 'Time', width: 110, cellStyle: { ...CELL_MUTED, ...CELL_NOWRAP }, render: (r) => timeLabel(r.start_time) },
+    { key: 'event_name', label: 'Item', cellStyle: CELL_STRONG, render: (r) => r.event_name },
+    { key: 'responsible_person', label: 'Who', width: 180, cellStyle: CELL_MUTED, render: (r) => r.responsible_person || '—' },
+    { key: 'notes', label: 'Notes', cellStyle: CELL_MUTED, render: (r) => r.notes || r.description || '—' },
   ];
 
-  const addRow = () => setRows((prev) => [...prev, newRunSheetItem(prev)]);
+  const move = async (row, dir) => {
+    const i = rows.findIndex((r) => r.id === row.id);
+    const j = i + (dir === 'up' ? -1 : 1);
+    if (i < 0 || j < 0 || j >= rows.length) return;
+    setBusy(true);
+    // ORDER IS THE TIME, because that is what a run sheet is. Swapping two
+    // rows swaps their start times rather than writing a separate order
+    // column that could disagree with the clock beside it.
+    try { await onReorder(row, rows[j]); } finally { setBusy(false); }
+  };
 
   return (
     <div style={{ padding: '24px 32px 48px', display: 'flex', flexDirection: 'column', gap: 24 }}>
       <TableToolbar
         select={events.length > 0 ? {
-          value: eventId || '', onChange: onPickEvent, placeholder: 'Pick an event',
-          options: events.map((e) => ({ value: e.id, label: e.event_name })),
+          value: active?.key || '', onChange: onPickEvent, placeholder: 'Pick an event',
+          options: events.map((e) => ({ value: e.key, label: `${e.label} (${e.count})` })),
         } : null}
-        actions={!readOnly && event ? (
-          <>
-            {status && (
-              <span style={{ fontFamily: PJS, fontSize: 13, alignSelf: 'center',
-                color: status.tone === 'ok' ? '#10B981' : '#E03553' }}>
-                {status.text}
-              </span>
-            )}
-            <button className="btn-primary" onClick={save} disabled={saving}>
-              {saving ? 'Saving…' : 'Save run sheet'}
-            </button>
-          </>
+        actions={!readOnly && active ? (
+          <button className="btn-primary" onClick={() => onAdd(active)}>+ Add a moment</button>
         ) : null}
       />
 
-      {!event ? (
-        <p style={{ fontFamily: PJS, fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: 0 }}>
-          No events on the wedding day yet. Add one and its run sheet lives here.
+      {!active ? (
+        <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0 }}>
+          No events yet. Add one from List and tag it as part of an event — its run sheet appears here.
         </p>
       ) : (
         <DataTable
           columns={COLUMNS}
           rows={rows}
-          empty="Nothing in this run sheet yet — add the first moment below."
-          actions={(r) => {
-            const i = rows.findIndex((x) => x.id === r.id);
-            return readOnly ? [] : [
-              { label: 'Move up', onClick: () => setRows(moveRunSheetItem(rows, r.id, 'up')), disabled: i === 0 },
-              { label: 'Move down', onClick: () => setRows(moveRunSheetItem(rows, r.id, 'down')), disabled: i === rows.length - 1 },
-              { label: 'Delete', onClick: () => setRows(normalizeRunSheet(rows.filter((x) => x.id !== r.id))), danger: true },
-            ];
-          }}
-          footerRow={!readOnly && (
-            // THE ADD ROW IS A ROW, in the table's own style — not a button
-            // floating under it. Same reason the guest list's quick-add sits
-            // inside its body.
-            <TableRow>
-              <TableCell colSpan={COLUMNS.length + 1}>
-                <button
-                  onClick={addRow}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                    fontFamily: PJS, fontSize: 13, fontWeight: 600, color: '#E03553' }}
-                >
-                  + Add a moment
-                </button>
-              </TableCell>
-            </TableRow>
-          )}
+          loading={loading || busy}
+          empty={`Nothing in the ${active.label.toLowerCase()} run sheet yet — “Add a moment” puts the first thing on it.`}
+          actions={(r) => (readOnly ? [] : [
+            { label: 'Edit', onClick: () => onEdit(r) },
+            { label: 'Move up', onClick: () => move(r, 'up'), disabled: rows[0]?.id === r.id },
+            { label: 'Move down', onClick: () => move(r, 'down'), disabled: rows[rows.length - 1]?.id === r.id },
+            { label: 'Delete', onClick: () => onDelete(r), danger: true },
+          ])}
         />
       )}
     </div>
   );
 }
+
+export { shift };

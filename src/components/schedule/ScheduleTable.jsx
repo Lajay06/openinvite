@@ -99,8 +99,8 @@ export default function ScheduleTable({ events = [], onEdit, onDelete, onOpen, l
   const rows = sortRows(base, sortState, COLUMN_SORTS);
 
   const COLUMNS = [
-    { key: 'date',  label: 'Date',  sortable: true, cellStyle: CELL_NOWRAP, render: (e) => dateLabel(e.date) },
-    { key: 'time',  label: 'Time',  sortable: true, cellStyle: CELL_NOWRAP, render: (e) => timeLabel(e.time) },
+    { key: 'date',  label: 'Date',  sortable: true, cellStyle: { ...CELL_MUTED, ...CELL_NOWRAP }, render: (e) => dateLabel(e.date) },
+    { key: 'time',  label: 'Time',  sortable: true, cellStyle: { ...CELL_MUTED, ...CELL_NOWRAP }, render: (e) => timeLabel(e.time) },
     { key: 'title', label: 'Event', sortable: true, cellStyle: CELL_STRONG, render: (e) => e.title },
     { key: 'when',  label: 'Type',  sortable: true, render: (e) => <Pill style={TYPE_INK[e.when] || OUTLINE_PILL}>{WHEN_LABEL[e.when] || '—'}</Pill> },
     {
