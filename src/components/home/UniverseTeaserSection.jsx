@@ -8,7 +8,7 @@
  */
 import { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { UNIVERSE_CATALOG } from "@/lib/universeCatalog";
+import { UNIVERSE_CATALOG, universeTileImage } from "@/lib/universeCatalog";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
@@ -43,13 +43,13 @@ export default function UniverseTeaserSection() {
           opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(16px)",
           transition: `opacity 0.7s ${EASE}, transform 0.7s ${EASE}`,
         }}>
-          One aesthetic vision, from your invitation to your thank you notes.
+          One aesthetic vision, from your invitation to your RSVP.
         </h2>
         <p style={{
           fontSize: 17, color: "rgba(255,255,255,0.55)", lineHeight: 1.6, maxWidth: 700, margin: "0 auto 56px",
           opacity: visible ? 1 : 0, transition: `opacity 0.7s ${EASE} 0.1s`,
         }}>
-          Choose a universe and every piece of your wedding follows it, automatically.
+          Choose a universe and your invitation, wedding website and RSVP follow it, automatically.
         </p>
 
         <div style={{
@@ -60,7 +60,7 @@ export default function UniverseTeaserSection() {
           {PREVIEW.map((u) => (
             <div key={u.id} style={{ position: "relative", aspectRatio: "3 / 4", overflow: "hidden" }}>
               <img
-                src={u.imageUrl}
+                src={universeTileImage(u.id) || u.imageUrl}
                 alt={`The ${u.name} universe`}
                 style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
               />

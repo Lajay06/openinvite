@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicNav from '@/components/public/PublicNav';
 import PublicFooter from '@/components/public/PublicFooter';
-import { UNIVERSE_CATALOG } from '@/lib/universeCatalog';
+import { UNIVERSE_CATALOG, universeTileImage } from '@/lib/universeCatalog';
 import { useMarketingSeo } from '@/hooks/useMarketingSeo';
 import MarketingHero from '@/components/marketing/MarketingHero';
 import { responsivePhoto, ENDCAP_SIZES } from '@/lib/marketingImage';
@@ -33,7 +33,7 @@ const prefersReducedMotion = () =>
 
 function UniverseTile({ universe, index }) {
   const [hovered, setHovered] = useState(false);
-  const image = universe.imageUrl || FALLBACK_IMAGE[universe.id];
+  const image = universeTileImage(universe.id) || FALLBACK_IMAGE[universe.id];
   const swatches = [
     { color: universe.colors.darkBg, label: 'Ground' },
     { color: universe.colors.lightBg, label: 'Paper' },
@@ -147,7 +147,7 @@ function UniverseCrossfadeShowcase({ universes }) {
     <div ref={containerRef} style={{ position: 'relative', height: `${universes.length * 100}vh` }}>
       <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', background: '#0A0A0A' }}>
         {universes.map((u, i) => {
-          const img = u.imageUrl || FALLBACK_IMAGE[u.id];
+          const img = universeTileImage(u.id) || FALLBACK_IMAGE[u.id];
           return (
             <img
               key={u.id}
@@ -231,34 +231,34 @@ const Universes = () => {
     document.getElementById('assets-section')?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // INVITATION-FIRST. Owner ruling 2026-09-07: this block promised ten pieces
+  // — signage, guest tags, thank-you notes, a print-ready PDF — and the
+  // product makes three things: the invitation, the website and the RSVP.
+  // Copy that names what does not exist is not aspiration, it is a bill the
+  // product cannot pay.
   const assets = [
-    { name: 'Save the Date', description: 'Your first announcement. Set the tone before anything else.' },
-    { name: 'Digital Invitation', description: 'The full invitation suite, linking directly to your wedding website.' },
-    { name: 'RSVP Page', description: 'Every RSVP flows straight into your guest list, styled to match.' },
-    { name: 'Menu Card', description: 'A menu as considered as the meal it describes.' },
-    { name: 'Seating Chart', description: 'Live from your guest list. Always accurate.' },
-    { name: 'Motion Graphic', description: 'Your universe, brought to life for screens and stories.' },
-    { name: 'Instagram Story Kit', description: 'Five story formats sized and ready to share.' },
-    { name: 'Welcome Signage', description: 'Large format print-ready signage for your venue entrance.' },
-    { name: 'Guest Tags', description: 'Beautifully designed name tags, print-ready in minutes.' },
-    { name: 'Thank You Notes', description: 'Personalized post-wedding cards, ready to send.' },
+    { name: 'Your invitation', description: 'The piece your guests open first, in your universe\u2019s color, type and photography.' },
+    { name: 'Your wedding website', description: 'Every page a guest needs — the day, the place, the answers — dressed the same way.' },
+    { name: 'Your RSVP', description: 'Replies come straight back to your guest list, styled to match the invitation that asked.' },
   ];
 
+  // THREE POINTS, EACH ONE TRUE. The third used to promise a print-ready PDF
+  // export, which does not exist; the second counted "all 10 assets".
   const editorFeatures = [
     {
       number: '01',
-      title: 'Live preview',
-      body: 'See every change as you make it. The asset editor updates in real time, so what you see is exactly what your guests receive.',
+      title: 'Set it once',
+      body: 'Set your names, date and venue once. They flow through your invitation, website and RSVP.',
     },
     {
       number: '02',
-      title: 'Your details, everywhere',
-      body: 'Set your names, date and venue once in your planner. They flow through all 10 assets automatically. Change one thing, everything updates.',
+      title: 'Change anything, any time',
+      body: 'Change anything, any time. Every page updates together.',
     },
     {
       number: '03',
-      title: 'Download and share',
-      body: 'Export any asset as a print-ready PDF or high-resolution PNG. Share digitally or hand to your printer.',
+      title: 'No account for your guests',
+      body: 'Guests never need an account. One link opens everything.',
     },
   ];
 
@@ -289,12 +289,12 @@ const Universes = () => {
             fontFamily: 'Plus Jakarta Sans, sans-serif',
             margin: 0,
           }}>
-            A universe is a complete visual system, one typography, color palette and mood, that carries across all 10 pieces of your wedding suite.
+            A universe is a complete visual system — one typography, color palette and mood — that carries across your invitation, your wedding website and your RSVP.
           </p>
         </div>
       </section>
 
-      {/* SECTION 3: THE 10 ASSETS */}
+      {/* SECTION 3: WHAT A UNIVERSE DRESSES */}
       <section id="assets-section" data-animate style={{
         background: '#0A0A0A',
         padding: '100px 80px',
@@ -314,7 +314,7 @@ const Universes = () => {
             letterSpacing: '-0.01em',
             margin: '0 0 12px',
           }}>
-            10 pieces. One vision.
+            One invitation. Twenty worlds.
           </h2>
           <p style={{
             fontSize: 14,
@@ -324,15 +324,16 @@ const Universes = () => {
             maxWidth: 600,
             fontFamily: 'Plus Jakarta Sans',
           }}>
-            Every universe includes all 10 pieces, personalized with your names, date and venue. Edit each one in the asset editor or let Ava fill them for you.
+            Choose a universe and your invitation, wedding website and RSVP take its color, type and photography — all from one set of details.
           </p>
 
-          {/* 2 -> 5 columns only (never 3 or 4) — those don't divide 10
-              pieces evenly, so the last row was left with 1-2 orphaned
-              tiles instead of aligning flush with the grid's right edge. */}
+          {/* THREE, so one column each on a phone and three across on a
+              desktop. The old rule was "2 or 5, never 3 or 4" because those
+              did not divide TEN evenly and orphaned the last row; three
+              divides three. */}
           <style>{`
-            .assets-grid { grid-template-columns: repeat(2, 1fr); }
-            @media (min-width: 900px) { .assets-grid { grid-template-columns: repeat(5, 1fr); } }
+            .assets-grid { grid-template-columns: 1fr; }
+            @media (min-width: 900px) { .assets-grid { grid-template-columns: repeat(3, 1fr); } }
           `}</style>
           <div className="assets-grid" style={{
             display: 'grid',

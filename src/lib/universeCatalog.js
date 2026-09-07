@@ -10,6 +10,8 @@
  * navy/lemon palette, long since corrected in the real config).
  */
 import { UNIVERSE_CONFIGS } from './websiteThemes.js';
+import { getSampleWedding } from './sampleContent/index.js';
+import { galleryUrl } from './universeGallery.js';
 
 // Gating is config-driven: a universe is Ultra iff its own UNIVERSE_CONFIGS
 // entry declares tier: 'ultra' (feat/universes-expansion-10 — previously a
@@ -81,4 +83,33 @@ export const UNIVERSE_CATALOG = ORDER.map(id => {
 
 export function getUniverse(id) {
   return UNIVERSE_CATALOG.find(u => u.id === id) || null;
+}
+
+/**
+ * THE PICTURE MARKETING SHOWS FOR A UNIVERSE.
+ *
+ * Owner ruling 2026-09-07: the twenty-universe grid and the five-universe
+ * scroll were still serving `/universes/<id>.jpg` — local files that predate
+ * the Cloudinary folders the owner has since replaced. This returns the
+ * universe's CURRENT hero, the same photograph the design studio shows, so
+ * marketing and the product cannot drift apart.
+ *
+ * RESOLVED LAZILY, NOT BAKED INTO THE CATALOG. The first version computed it
+ * inside the UNIVERSE_CATALOG map and every universe came back with the old
+ * static: sampleContent is not initialised at the moment this module's
+ * top-level map runs, so `getSampleWedding` returned undefined twenty times
+ * and the fallback won — silently, which is the worst way for that to fail.
+ * A function called at render time has no such ordering problem.
+ *
+ * The sample URL carries `w_2048` for a full-bleed hero — four times the bytes
+ * a grid tile needs, and the wrong shape. `c_fill,g_auto` takes the tile's own
+ * 3:2 crop from the master instead of scaling a wide image down.
+ *
+ * @param {string} id
+ * @returns {string|null} a Cloudinary URL, or the local static as a fallback
+ */
+export function universeTileImage(id) {
+  const cover = getSampleWedding(id)?.coverPhoto;
+  const cropped = cover ? galleryUrl(cover, { width: 1200, height: 800 }) : null;
+  return cropped || getUniverse(id)?.imageUrl || null;
 }
