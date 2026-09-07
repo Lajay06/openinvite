@@ -262,7 +262,7 @@ export default function OnboardingStepUniverse({ onNext, data }) {
           <button
             onClick={handleContinue}
             disabled={!selectedUniverse}
-            className="px-8 py-3 rounded-full text-white text-sm font-medium tracking-widest bg-[#E03553] hover:bg-black active:bg-neutral-900 transition-colors duration-150 disabled:opacity-30 disabled:cursor-default disabled:bg-[rgba(10,10,10,0.18)] disabled:hover:bg-[rgba(10,10,10,0.18)]"
+            className="px-8 py-3 rounded-full text-white text-sm font-medium bg-[#E03553] hover:bg-black active:bg-neutral-900 transition-colors duration-150 disabled:opacity-30 disabled:cursor-default disabled:bg-[rgba(10,10,10,0.18)] disabled:hover:bg-[rgba(10,10,10,0.18)]"
           >
             Continue →
           </button>

@@ -123,12 +123,34 @@ export async function runDesignSystemSweep() {
         const v = m[1].trim();
         if (v !== '0' && v !== 'normal') tracked.push(`${p}: ${v}`);
       }
+      // TAILWIND SPELLS IT `tracking-…`, and the first sweep did not look for
+      // it — so nineteen tracked classes survived in the ui/ primitives that
+      // every form, table and menu in the dashboard is built from. A rule
+      // enforced in one syntax is enforced nowhere.
+      for (const m of s.matchAll(/\btracking-(?:\[[^\]]+\]|tight|tighter|wide|wider|widest)/g)) {
+        tracked.push(`${p}: ${m[0]}`);
+      }
     }
     // THE ALLOWLIST IS EMPTY, and that is the ruling: "Only exception: none."
     check('PLANT: no tracking anywhere in the dashboard',
       tracked.length === 0, tracked.slice(0, 8).join(' · ') || `${DASHBOARD.length} files clean`);
     check('  including the eyebrows, which were the loudest of it',
       !/letterSpacing/.test(src('components/dashboard/Briefing.jsx')), 'the daily update’s date line');
+    // CLAUDE.md already barred text-transform: uppercase in product chrome.
+    // The ui/ primitives carried it as a Tailwind class — Label, TableHead,
+    // Badge, SelectLabel — so every form label, every column heading and
+    // every badge in the dashboard shouted, and the sentence-case guard
+    // could not see it because it reads STRINGS, not classes.
+    {
+      const shouting = [];
+      for (const [p, s] of DASHBOARD) {
+        for (const m of s.matchAll(/\buppercase\b/g)) {
+          if (/^components\/ui\//.test(p) || /^components\/onboarding\//.test(p)) shouting.push(p);
+        }
+      }
+      check('PLANT: the shared primitives do not shout',
+        shouting.length === 0, [...new Set(shouting)].join(' · ') || 'Label · TableHead · Badge · SelectLabel');
+    }
   }
 
   // ── 4. ACCORDIONS ───────────────────────────────────────────────────────
@@ -146,9 +168,15 @@ export async function runDesignSystemSweep() {
     check('  and a collapsed section says what is in it',
       /summaryText \|\| 'Not set yet'/.test(src('components/event-details/DetailsSection.jsx')),
       'a one-line summary in the header');
-    check('  the selection accordion was already collapsed and summarised',
-      /useState\(null\); \/\/ rule 1: collapsed by default/.test(src('components/shared/OptionAccordion.jsx')),
-      'OptionAccordion, unchanged');
+    // OptionAccordion still starts collapsed. It gained ONE named exception —
+    // a create form may open its first section, because a new record has
+    // nothing to summarise and its required field must be visible — and that
+    // is a caller-named key, not an opt-out: everything else still starts
+    // shut, and the default is unchanged.
+    check('  the selection accordion still starts collapsed',
+      /useState\(initialOpenKey\); \/\/ rule 1: collapsed by default/.test(src('components/shared/OptionAccordion.jsx'))
+        && /initialOpenKey = null,/.test(src('components/shared/OptionAccordion.jsx')),
+      'OptionAccordion, default unchanged');
   }
 
   // ── 5. CTA CONTRAST ─────────────────────────────────────────────────────

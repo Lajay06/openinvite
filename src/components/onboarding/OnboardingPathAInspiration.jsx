@@ -183,7 +183,7 @@ export default function OnboardingPathAInspiration({ onNext, data }) {
         <button
           onClick={handleSubmit}
           disabled={uploading}
-          className="px-8 py-3 rounded-full text-white text-sm font-medium tracking-widest bg-[#E03553] hover:bg-black active:bg-neutral-900 transition-colors duration-150 disabled:opacity-50"
+          className="px-8 py-3 rounded-full text-white text-sm font-medium bg-[#E03553] hover:bg-black active:bg-neutral-900 transition-colors duration-150 disabled:opacity-50"
         >
           {uploading ? 'Uploading...' : 'Continue →'}
         </button>

@@ -37,9 +37,9 @@ const CAROUSEL_IMAGES = [
 
 // Field-label treatment for the auth forms.
 //
-// src/components/ui/label.jsx forces `uppercase` (plus font-bold and the
+// src/components/ui/label.jsx forces `` (plus font-bold and the
 // 0.08em tracking that only exists to space out caps) on every <Label> in
-// the product. DESIGN_SPEC.md:6 and :180 forbid uppercase outright, but that
+// the product. DESIGN_SPEC.md:6 and :180 forbid outright, but that
 // primitive has 25 importers and all but Register/Login are dashboard or
 // website-builder surfaces — restyling it is a product-wide change, not an
 // auth one. So the auth pages override it here instead.
@@ -58,7 +58,7 @@ const CAROUSEL_IMAGES = [
 // to, and that near-miss is exactly the kind of drift this constant exists
 // to prevent.
 export const AUTH_LABEL_CLASS =
-  "normal-case font-semibold tracking-[0.06em] text-[rgba(10,10,10,0.6)]";
+  "normal-case font-semibold text-[rgba(10,10,10,0.6)]";
 
 // showNav/images/image/bare/contentMaxWidth are additive — every existing
 // caller (Login/Register/ForgotPassword/ResetPassword) passes none of them
@@ -124,7 +124,7 @@ export default function AuthLayout({ title, subtitle, footer, children, showNav 
                   className="h-6 w-auto mx-auto mb-4"
                   style={{ filter: "brightness(0)" }}
                 />
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>
+                <h1 className="text-2xl font-bold text-foreground">{title}</h1>
                 {subtitle && <p className="text-muted-foreground text-sm mt-1">{subtitle}</p>}
               </div>
               {/* Card: 0 border-radius, no box-shadow — DESIGN_SPEC's card rules.
