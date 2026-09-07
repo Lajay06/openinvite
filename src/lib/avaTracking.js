@@ -16,44 +16,92 @@
  * prohibitions, the wedding context and the mirror all apply without a second
  * copy of any of them.
  *
- * ── THREE POINTS, AND THAT IS CHECKABLE ────────────────────────────────────
+ * ── THREE BLOCKS, NOT THREE POINTS IN A PARAGRAPH ──────────────────────────
  *
- * "Three key points should always be there" is only a rule if something can
- * count them. Each point is bolded, so `validateTracking` counts bold spans —
- * exactly three, no more and no fewer — and refuses a percentage outright
- * (spec 5.2). A paragraph that fails is not shown: the authored one is, which
- * is #648's rule in its original form. Ava does not speak when there is
- * nothing to read, and she does not speak badly rather than not at all.
+ * Owner: "The briefing is better however you have three points in one
+ * paragraph. They should be their own points." So each is its own block — a
+ * bold lead phrase of at most six words, then one plain sentence — and the
+ * validator requires exactly that shape, three times.
+ *
+ * "Always" is only a rule if something can count them. A block that is a bare
+ * sentence, a fourth block, a lead of nine words, a percentage, a person count
+ * paired with the word "replied" — each fails, and a reply that fails is not
+ * shown. The authored fallback is in the same shape, so the stand-in can never
+ * be worse than what it stands in for. That is #648 in its original form: Ava
+ * does not speak when there is nothing to read, and she does not speak badly
+ * rather than not at all.
  */
-import { parseAvaText } from './avaMarkdown.js';
 
 /** What Ava is asked for. Appended as the couple's turn by buildAvaPrompt. */
 export const TRACKING_REQUEST = [
-  'Write ONE short paragraph — four sentences at most — on how this wedding is tracking overall.',
+  'Write a short briefing on how this wedding is tracking overall.',
   '',
-  'It must contain EXACTLY THREE key points and no more. Bold each one with **double asterisks** and nothing else in the paragraph.',
-  'Every point must be a real number or date from the wedding context above: how far out the date is, how many guests have not replied, how many things are overdue, when the next event is, or money in dollars.',
+  'Write EXACTLY THREE separate blocks, one per line, and no more.',
+  'Each block is a bold lead phrase of at most six words in **double asterisks**, then ONE plain sentence after it on the same line.',
+  'Every block must be built on a real number or date from the wedding context above: how far out the date is, how many guests have not replied, how many things are overdue, when the next event is, or money in dollars.',
   '',
   'NEVER a percentage of anything. NEVER an exclamation mark. NEVER an emoji.',
   'Do not offer to do anything, do not name a vendor to hire, and do not mention heritage, culture or religion.',
-  'If part of the wedding could not be read, say which part in the paragraph and still give three points from what you can see.',
+  'REPLIES ARE COUNTED PER INVITATION and ATTENDANCE PER PERSON. Never say that a number of guests or people "have not replied" — that count is invitations.',
+  'If part of the wedding could not be read, say which part and still give three blocks from what you can see.',
 ].join('\n');
+
+const LEAD_WORD_CAP = 6;
+
+/**
+ * Split a reply into blocks. One block per non-empty line, each expected to be
+ * `**Lead phrase** Then one sentence.`
+ *
+ * @param {string} text
+ * @returns {Array<{lead:string, body:string}>}
+ */
+export function parseTrackingBlocks(text) {
+  return String(text || '')
+    .split(/\n+/)
+    // A LIST MARKER, BUT NEVER THE BOLD. `[-*\u2022]` ate the first asterisk of
+    // `**Lead**`, so every well-formed block parsed as a bare sentence and the
+    // authored fallback failed its own validator. A single `*` is a bullet; a
+    // doubled one is the lead.
+    .map((line) => line.trim().replace(/^(?:[-\u2022]|\*(?!\*))\s*/, ''))
+    .filter(Boolean)
+    .map((line) => {
+      const m = /^\*\*(.+?)\*\*\s*(.*)$/.exec(line);
+      return m ? { lead: m[1].trim(), body: m[2].trim() } : { lead: '', body: line };
+    });
+}
 
 /**
  * @param {string} text
- * @returns {{ok: boolean, points: number, error: string|null}}
+ * @returns {{ok: boolean, blocks: Array, error: string|null}}
  */
 export function validateTracking(text) {
   const raw = String(text || '').trim();
-  if (!raw) return { ok: false, points: 0, error: 'empty' };
-  if (/\d\s*%|\bper ?cent\b/i.test(raw)) return { ok: false, points: 0, error: 'a percentage' };
-  if (/!/.test(raw)) return { ok: false, points: 0, error: 'an exclamation mark' };
+  if (!raw) return { ok: false, blocks: [], error: 'empty' };
+  if (/\d\s*%|\bper ?cent\b/i.test(raw)) return { ok: false, blocks: [], error: 'a percentage' };
+  if (/!/.test(raw)) return { ok: false, blocks: [], error: 'an exclamation mark' };
   // The emoji rule is about PRESENTATION: U+FE0F is the tell, plus the
   // pictographic blocks. ✦ and ✓ are text-presentation marks and stay.
-  if (/️|[\u{1F300}-\u{1FAFF}]/u.test(raw)) return { ok: false, points: 0, error: 'an emoji' };
-  const points = parseAvaText(raw).filter((t) => t.bold).length;
-  if (points !== 3) return { ok: false, points, error: `${points} key point${points === 1 ? '' : 's'}, not three` };
-  return { ok: true, points, error: null };
+  if (/️|[\u{1F300}-\u{1FAFF}]/u.test(raw)) return { ok: false, blocks: [], error: 'an emoji' };
+
+  const blocks = parseTrackingBlocks(raw);
+  if (blocks.length !== 3) {
+    return { ok: false, blocks, error: `${blocks.length} block${blocks.length === 1 ? '' : 's'}, not three` };
+  }
+  const bare = blocks.find((b) => !b.lead);
+  if (bare) return { ok: false, blocks, error: 'a block with no bold lead' };
+  const longLead = blocks.find((b) => b.lead.split(/\s+/).length > LEAD_WORD_CAP);
+  if (longLead) return { ok: false, blocks, error: `a lead of ${longLead.lead.split(/\s+/).length} words` };
+  const noBody = blocks.find((b) => !b.body);
+  if (noBody) return { ok: false, blocks, error: 'a lead with no sentence under it' };
+
+  // THE NUMBERS RULING, enforced in the copy: replies are per INVITATION.
+  // A sentence that pairs a person count with "replied" is the 94-vs-61 defect
+  // said out loud, and it is the one thing a model is most likely to get wrong
+  // because both numbers are in its context.
+  const mixed = blocks.find((b) => /\b(guests?|people|attending|coming)\b[^.]*\b(replied|reply|rsvp)/i.test(`${b.lead} ${b.body}`));
+  if (mixed) return { ok: false, blocks, error: 'a person count paired with "replied" — replies are per invitation' };
+
+  return { ok: true, blocks, error: null };
 }
 
 /**
@@ -67,16 +115,17 @@ export function validateTracking(text) {
  * @param {number} facts.guests
  * @param {string[]} facts.unseen
  */
-export function authoredTracking({ countdown = null, unreplied = 0, overdue = 0, guests = 0, unseen = [] } = {}) {
-  const missing = unseen.length
-    ? `I could not read your ${unseen.join(' and ')}, so this is not the whole picture. `
-    : '';
-  const when = countdown ? `**${countdown}**` : '**Your date is not set yet**';
-  const replies = guests
-    ? `**${unreplied} of ${guests} guests** have not replied`
-    : '**No guests on the list yet**';
-  const behind = overdue
-    ? `**${overdue} thing${overdue === 1 ? '' : 's'} overdue**`
-    : '**Nothing overdue**';
-  return `${missing}${when}. ${replies}, and ${behind}.`;
+export function authoredTracking({ countdown = null, invitationsPending = 0, invitations = 0, peopleAttending = 0, overdue = 0, unseen = [] } = {}) {
+  const missing = unseen.length ? ` I could not read your ${unseen.join(' and ')}, so this is not the whole picture.` : '';
+  const when = countdown
+    ? `**${countdown}** That is the horizon everything else is measured against.${missing}`
+    : `**Your date is not set yet** Everything else is easier to judge once it is.${missing}`;
+  // INVITATIONS for replies, PEOPLE for attendance — never the other way round.
+  const replies = invitations
+    ? `**${invitationsPending} of ${invitations} invitations** are still to reply, and ${peopleAttending} ${peopleAttending === 1 ? 'guest is' : 'guests are'} confirmed as coming.`
+    : '**No invitations sent yet** Adding your guest list is what starts the replies.';
+  const work = overdue
+    ? `**${overdue} thing${overdue === 1 ? '' : 's'} to pick up** They are at the top of This week, in order.`
+    : '**Nothing waiting on you** Your list is clear for today.';
+  return [when, replies, work].join('\n');
 }

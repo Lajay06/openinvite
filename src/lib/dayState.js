@@ -116,7 +116,7 @@ function dueLabel(at) {
  * @param {Date}   [input.now]     injected, so a guard can pick the day
  * @returns {{state:string, badge:string|null, headline:string, lines:Array<{text:string,to:string}>, unseen:string[], next:object|null}}
  */
-export function resolveDayState({ tasks = [], schedule = [], guests = [], budget = [], vendors = [], unseen = [], now = new Date() } = {}) {
+export function resolveDayState({ tasks = [], schedule = [], guests = [], budget = [], vendors = [], unseen = [], daysOut = null, now = new Date() } = {}) {
   const today = startOfDay(now);
 
   const open = tasks.filter((t) => !t.completed);
@@ -207,7 +207,10 @@ export function resolveDayState({ tasks = [], schedule = [], guests = [], budget
     candidates.push({ text: `${eventsToday.length} on the schedule today.`, to: '/Schedule' });
   }
   if (unreplied > 0) {
-    candidates.push({ text: `${unreplied} guest${unreplied === 1 ? ' has' : 's have'} not replied.`, to: '/Guests' });
+    // INVITATIONS, named. A plus-one has no invitation of its own, so this is
+    // guest rows — and saying "guests" here is what let the 94 and the 61 sit
+    // on two pages describing the same wedding.
+    candidates.push({ text: `${unreplied} invitation${unreplied === 1 ? '' : 's'} still to reply.`, to: '/Guests' });
   }
   // An UNSEEN store is not an empty one — saying "No budget set" over a fetch
   // that failed is the lie section 5.3 exists to prevent.
@@ -241,7 +244,14 @@ export function resolveDayState({ tasks = [], schedule = [], guests = [], budget
     // The slots avaSentence drops into its two sentences. Returned rather than
     // re-derived by the caller, so the page and Overall cannot compute them
     // differently.
-    counts: { overdue: overdue.length, today: dueToday.length + eventsToday.length, unreplied },
+    counts: {
+      overdue: overdue.length,
+      today: dueToday.length + eventsToday.length,
+      unreplied,
+      // Named, because the sentence prints it: replies are per INVITATION.
+      invitationsPending: unreplied,
+    },
+    daysOut,
     firstOverdue: titleOf(overdue[0]),
     firstToday: titleOf(dueToday[0] || eventsToday[0]),
     // A badge is a claim about the whole day, and there is no such claim to
@@ -310,26 +320,32 @@ export function avaSentence(day, { fullName = null, now = new Date() } = {}) {
   const hello = greetingFor(now, fullName);
   const d = day || {};
   const n = d.counts || {};
+  // "115 days out" — through the shared module, never computed here.
+  const out = d.daysOut != null ? `${d.daysOut} days out` : null;
 
   if (d.state === 'unavailable') {
     const which = (d.unseen || []).join(' and ') || 'part of your wedding';
     return `${hello} I couldn't read your ${which} just now — try again in a moment.`;
   }
+  // THE IMPERATIVE GOES AFTER THE DASH, as the action. Spliced mid-sentence it
+  // read "let's start with book the celebrant" — a verb where a noun belongs.
   if (d.state === 'overdue') {
     const title = midSentence(d.firstOverdue);
-    const many = (n.overdue || 0) > 1;
-    if (!title) return `${hello} ${many ? 'A few things have' : 'Something has'} slipped.`;
-    return `${hello} ${many ? 'A few things have' : 'Something has'} slipped — let's start with ${title}.`;
+    const lead = out ? `${out} and there's a clear first move today` : "There's a clear first move today";
+    return title ? `${hello} ${lead} — ${title}.` : `${hello} ${lead}.`;
   }
   if (d.state === 'today') {
     const title = midSentence(d.firstToday);
     const count = n.today || 0;
-    const lead = count > 1 ? `${count} things need you today` : 'One thing needs you today';
-    return title ? `${hello} ${lead}: ${title}.` : `${hello} ${lead}.`;
+    const lead = count > 1 ? `${count} things today and you're ahead` : "One thing today and you're ahead";
+    return title ? `${hello} ${lead} — ${title}.` : `${hello} ${lead}.`;
   }
   if (d.state === 'waiting') {
-    const g = n.unreplied || 0;
-    return `${hello} Nothing's on you today — you're waiting on ${g} ${g === 1 ? 'guest' : 'guests'}.`;
+    // INVITATIONS, not people: a plus-one has no invitation of its own and the
+    // host replies for both (guestCounts, guestRsvpTally.js).
+    const inv = n.invitationsPending || 0;
+    const tail = out ? `, and that's normal at ${out}` : '';
+    return `${hello} Nothing on you today — ${inv} ${inv === 1 ? 'invitation is' : 'invitations are'} still to reply${tail}.`;
   }
   if (d.next?.title) {
     const when = d.next.at ? ` on ${onDate(d.next.at)}` : '';
@@ -337,3 +353,13 @@ export function avaSentence(day, { fullName = null, now = new Date() } = {}) {
   }
   return `${hello} Fresh start — add your first to-do and I'll keep it in order.`;
 }
+
+/**
+ * WORDS THE TOP LINE MAY NOT USE — owner ruling: "The top line needs to give
+ * the user confidence and not anxiety."
+ *
+ * Exported so the guard checks the same list the copy is written against,
+ * rather than a second one that can drift from it. Counts belong in Column A;
+ * the sentence names the priority and the horizon.
+ */
+export const ANXIOUS_WORDS = ['slipped', 'overdue', 'behind', 'missed', 'late'];

@@ -3,16 +3,15 @@ import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
 import { loadDashboardSources, formatSourceList } from '@/lib/dashboardSources';
 import { daysUntilWedding, countdownLabel } from '@/lib/weddingCountdown';
-import { isAttending } from '@/lib/guestRsvpTally';
+import { guestCounts } from '@/lib/guestRsvpTally';
 import { coupleDisplayName } from '@/lib/coupleNames';
 import { useCollaboratorContext } from '@/lib/collaboratorContext';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import Briefing from '@/components/dashboard/Briefing';
 import { todosFrom, resolveDayState, avaSentence } from '@/lib/dayState';
-import { parseAvaText } from '@/lib/avaMarkdown';
 import { buildAvaPrompt, unwrapLlmReply } from '@/lib/avaRequest';
 import { buildWeddingContext } from '@/lib/avaContext';
-import { TRACKING_REQUEST, validateTracking, authoredTracking } from '@/lib/avaTracking';
+import { TRACKING_REQUEST, validateTracking, authoredTracking, parseTrackingBlocks } from '@/lib/avaTracking';
 import { Link } from 'react-router-dom';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -136,10 +135,13 @@ export default function DailyUpdate() {
       // prose; the sentence at the top cannot be, because Overall renders it
       // too.
       const facts = {
-        countdown: countdownLabel(daysUntilWedding(details?.weddingDate)), unreplied: (data.guests || []).filter((g) => !g.rsvp_status || g.rsvp_status === 'pending').length,
-        overdue: resolveDayState({ tasks: todosFrom({ notes: data.notes, tasks: data.tasks }) }).counts.overdue, guests: (data.guests || []).length, unseen: failed,
+        countdown: countdownLabel(daysUntilWedding(details?.weddingDate)),
+        ...(() => { const c = guestCounts(data.guests || []);
+          return { invitationsPending: c.invitations.pending, invitations: c.invitations.total, peopleAttending: c.people.attending }; })(),
+        overdue: resolveDayState({ tasks: todosFrom({ notes: data.notes, tasks: data.tasks }) }).counts.overdue,
+        unseen: failed,
       };
-      const nothingToRead = !facts.guests && !(data.budget || []).length && !(data.vendors || []).length
+      const nothingToRead = !facts.invitations && !(data.budget || []).length && !(data.vendors || []).length
         && !(data.schedule || []).length && !todosFrom({ notes: data.notes, tasks: data.tasks }).length;
       if (nothingToRead) {
         // #648, in its original form: Ava does not speak when there is nothing
@@ -192,21 +194,24 @@ export default function DailyUpdate() {
 
   // ONE COMPUTATION, and the whole page reads it — the hero's sentence, the
   // first column's lines and Overall's one-liner are all this object.
-  const day = resolveDayState({ tasks, schedule, guests, budget, vendors, unseen: unseenSources });
+  const day = resolveDayState({ tasks, schedule, guests, budget, vendors, unseen: unseenSources, daysOut: days });
 
   // THE FAR-RIGHT COLUMN, as it was. Same four labels the pre-#654 page showed
   // (e2c087a:476-481) and the same arithmetic (e2c087a:329-333), with the two
   // dead column names dropped: `total_amount` and `spent_amount` do not exist
   // on Budget and were only ever reached through their own `||` fallbacks.
-  const confirmedGuests = guests.filter(isAttending).length;
-  const pendingGuests   = guests.filter((g) => !g.rsvp_status || g.rsvp_status === 'pending').length;
+  // TWO NAMED QUANTITIES, FROM ONE HELPER. Replies per INVITATION, attendance
+  // per PERSON — the owner's ruling on the 94-vs-61 split. Nothing here counts
+  // guests itself, which is how the two pages came to disagree.
+  const counts = guestCounts(guests);
   const totalBudget     = budget.reduce((n, b) => n + (b.budgeted_amount || 0), 0);
   const budgetSpent     = budget.reduce((n, b) => n + (b.actual_amount || 0), 0);
   const budgetPercent   = totalBudget ? Math.round((budgetSpent / totalBudget) * 100) : 0;
   const bookedVendors   = vendors.filter((v) => v.status === 'booked').length;
   const snapCards = [
-    { label: 'Guests confirmed', value: String(confirmedGuests) },
-    { label: 'RSVP pending',     value: String(pendingGuests) },
+    // Each tile says WHICH quantity it is showing.
+    { label: 'Guests coming',        value: String(counts.people.attending) },
+    { label: 'Invitations pending',  value: String(counts.invitations.pending) },
     { label: 'Budget used',      value: `${budgetPercent}%` },
     { label: 'Vendors booked',   value: `${bookedVendors}/${vendors.length}` },
   ];
@@ -282,13 +287,21 @@ export default function DailyUpdate() {
                   {day.badge}
                 </p>
               )}
-              <p style={{ fontFamily: PJS, fontSize: 15, color: '#0A0A0A', margin: 0, lineHeight: 1.6 }}>
-                {tracking === null
-                  ? <span style={{ color: 'rgba(10,10,10,0.6)' }}>Reading your wedding…</span>
-                  : parseAvaText(tracking).map((t, i) => (
-                      <span key={i} style={t.bold ? { fontWeight: 700 } : undefined}>{t.text}</span>
-                    ))}
-              </p>
+              {tracking === null
+                ? <p style={{ fontFamily: PJS, fontSize: 15, color: 'rgba(10,10,10,0.6)', margin: 0 }}>Reading your wedding…</p>
+                : parseTrackingBlocks(tracking).map((b, i, all) => (
+                    <div key={i} style={{
+                      paddingBottom: 18, marginBottom: i === all.length - 1 ? 0 : 18,
+                      borderBottom: i === all.length - 1 ? 'none' : '1px solid rgba(10,10,10,0.06)',
+                    }}>
+                      <p style={{ fontFamily: PJS, fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: 0, lineHeight: 1.35 }}>
+                        {b.lead}
+                      </p>
+                      <p style={{ fontFamily: PJS, fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '6px 0 0', lineHeight: 1.55 }}>
+                        {b.body}
+                      </p>
+                    </div>
+                  ))}
             </div>
 
             <div style={{ background: 'rgba(10,10,10,0.06)' }} />

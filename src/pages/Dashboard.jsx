@@ -10,6 +10,7 @@ import AvaButton from "@/components/shared/AvaButton";
 import DayStateHeadline from "@/components/dashboard/DayStateHeadline";
 import { todosFrom } from "@/lib/dayState";
 import { coupleDisplayName } from "@/lib/coupleNames";
+import { daysUntilWedding } from "@/lib/weddingCountdown";
 import AvaModal from "@/components/layout/AvaModal";
 import RSVPChart from "../components/dashboard/RSVPChart";
 import BudgetSummary from "../components/dashboard/BudgetSummary";
@@ -17,7 +18,7 @@ import UpcomingTasks from "../components/dashboard/UpcomingTasks";
 import RecentActivity from "../components/dashboard/RecentActivity";
 import { getMyRecords, getMyGuestsWithRsvp, getMyWeddingDetails } from "@/lib/resolveMyWedding";
 import { loadDashboardSources, formatSourceList } from "@/lib/dashboardSources";
-import { tallyAttendees } from "@/lib/guestRsvpTally";
+import { tallyAttendees, guestCounts } from "@/lib/guestRsvpTally";
 import { resolveAttendees } from "@/lib/attendees";
 import { useCollaboratorContext, hasPagePermission } from "@/lib/collaboratorContext";
 import CountUp from "@/components/shared/CountUp";
@@ -113,6 +114,11 @@ export default function Dashboard() {
   // say "Morning." while the other page said "Morning, Jay.", which is two
   // strings again.
   const [coupleName, setCoupleName] = useState(null);
+  // The horizon the sentence opens with. Without it Overall said "There's a
+  // clear first move today" while the daily update said "300 days out and
+  // there's a clear first move today" — the same call, two strings, because
+  // one caller left an input out.
+  const [daysOut, setDaysOut] = useState(null);
   const [avaOpen, setAvaOpen] = useState(false);
 
   const collab = useCollaboratorContext();
@@ -177,7 +183,10 @@ export default function Dashboard() {
         return;
       }
       const currentUser = await base44.auth.me();
-      getMyWeddingDetails().then((wd) => setCoupleName(coupleDisplayName(wd || {}))).catch(() => {});
+      getMyWeddingDetails().then((wd) => {
+        setCoupleName(coupleDisplayName(wd || {}));
+        setDaysOut(daysUntilWedding(wd?.weddingDate));
+      }).catch(() => {});
       if (currentUser?.id) identify(currentUser.id, { email: currentUser.email, name: currentUser.full_name });
       // Promise.all rejected on the FIRST store that failed and discarded the
       // seven that had already succeeded — one flaky request and the whole page
@@ -225,7 +234,13 @@ export default function Dashboard() {
     // silently counted an unset/undefined status as "responded" — every
     // sibling tally in the app treats a falsy status as not-yet-responded.
     const { combined } = tallyAttendees(resolveAttendees(guests));
-    const { total: totalGuests, responded, attending, declined } = combined;
+    const { responded, declined } = combined;
+    // ONE HELPER, TWO NAMED QUANTITIES — replies per INVITATION, attendance per
+    // PERSON. This page read the person count and the daily update read the
+    // guest rows, so the same wedding was 94 here and 61 there.
+    const c = guestCounts(guests);
+    const totalGuests = c.people.total;
+    const attending = c.people.attending;
     const totalBudget = budget.reduce((s, i) => s + (i.budgeted_amount || 0), 0);
     const totalSpent = budget.reduce((s, i) => s + (i.actual_amount || 0), 0);
     const budgetPercentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
@@ -237,8 +252,8 @@ export default function Dashboard() {
   }, [guests, budget]);
 
   const STAT_CARDS = [
-    { label: 'Total guests', value: stats.totalGuests, suffix: '', url: 'Guests' },
-    { label: 'Attending', value: stats.attending, suffix: '', url: 'Guests' },
+    { label: 'Guests coming', value: stats.attending, suffix: '', url: 'Guests' },
+    { label: 'People invited', value: stats.totalGuests, suffix: '', url: 'Guests' },
     { label: 'Budget used', value: Math.round(stats.budgetPercentage), suffix: '%', url: 'Budget' },
     { label: 'Events planned', value: schedule.length, suffix: '', url: 'Schedule' },
   ];
@@ -262,7 +277,7 @@ export default function Dashboard() {
           call resolveDayState, so they cannot disagree about the day. Overall
           keeps the stats below and its place at the top of the nav. */}
       <DayStateHeadline
-        tasks={todosFrom({ notes, tasks })} schedule={schedule} guests={guests} coupleName={coupleName}
+        tasks={todosFrom({ notes, tasks })} schedule={schedule} guests={guests} coupleName={coupleName} daysOut={daysOut}
         budget={budget} vendors={vendors} unseen={unseenSources} loading={loading}
       />
 

@@ -18,8 +18,9 @@ import { pass, fail } from './_shared.mjs';
 import { resolveDayState, rowDate, STATE_BADGE, todosFrom } from '../../src/lib/dayState.js';
 import { countdownLabel } from '../../src/lib/weddingCountdown.js';
 import { ACTION_MIRROR } from '../../src/lib/avaRequest.js';
-import { validateTracking, authoredTracking, TRACKING_REQUEST } from '../../src/lib/avaTracking.js';
-import { avaSentence, greetingFor, midSentence } from '../../src/lib/dayState.js';
+import { validateTracking, authoredTracking, TRACKING_REQUEST, parseTrackingBlocks } from '../../src/lib/avaTracking.js';
+import { guestCounts } from '../../src/lib/guestRsvpTally.js';
+import { avaSentence, greetingFor, midSentence, ANXIOUS_WORDS } from '../../src/lib/dayState.js';
 import { readFileSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -77,6 +78,13 @@ export async function runDailyUpdatePage() {
       /avaSentence\(day, \{ fullName: coupleName \}\)/.test(headline)
         && /avaSentence\(day, \{ fullName: coupleName \}\)/.test(pageSrc),
       'one string, two pages');
+    // THE SAME CALL WITH A MISSING INPUT IS A DIFFERENT STRING. Overall said
+    // "There's a clear first move today" while the daily update said "300 days
+    // out and there's a clear first move today", because only one passed the
+    // horizon. Caught on a screenshot, not by the check above.
+    check('  and both pass the horizon into it, not just one',
+      /daysOut: days/.test(pageSrc) && /daysOut \}\)/.test(headline) && /daysOut=\{daysOut\}/.test(code('src/pages/Dashboard.jsx')),
+      'same call, same inputs');
     check('  Overall renders the headline, not a second briefing',
       /<DayStateHeadline/.test(code('src/pages/Dashboard.jsx'))
         && !/<Briefing/.test(code('src/pages/Dashboard.jsx')),
@@ -283,9 +291,12 @@ export async function runDailyUpdatePage() {
       avaCopy.every(t => !/%|percent/i.test(t)), avaCopy.filter(t => /%/.test(t)).join(' | ') || 'none');
     // AND THE STATS COLUMN IS BACK, by the owner's ruling: "far right column
     // had stats. It was great before." Same four labels the pre-#654 page had.
-    check('  the far-right stats column carries the pre-#654 four',
-      ['Guests confirmed', 'RSVP pending', 'Budget used', 'Vendors booked'].every(l => page.includes(l)),
-      'restored');
+    // Same four tiles, LABELLED BY WHICH QUANTITY THEY SHOW — owner ruling.
+    // "Guests confirmed" over a row count and "RSVP pending" over a person
+    // count are the two halves of the 94-vs-61 defect.
+    check('  the far-right stats column carries the four, each naming its quantity',
+      ['Guests coming', 'Invitations pending', 'Budget used', 'Vendors booked'].every(l => page.includes(l)),
+      'restored, and named');
     // THE MODEL WRITES EXACTLY ONE THING ON THIS PAGE, and it is the tracking
     // paragraph in column B — owner's ruling. The old eleven generated fields
     // stay gone, and the topic sentence stays arithmetic, because Overall
@@ -361,10 +372,20 @@ export async function runDailyUpdatePage() {
       /<h1 style=\{\{[\s\S]{0,160}fontSize: 42[\s\S]{0,160}fontWeight: 800/.test(hero)
         && /\{sentence\}/.test(hero),
       "42px/800, as e2c087a:574 had it");
-    check('PLANT: nothing above it and nothing under it',
+    check('PLANT: the top line runs the full width, not condensed to 800px',
+      !/maxWidth: 800/.test(hero),
+      '"there is so much space for the top line so let it go wider"');
+    check('PLANT: an eyebrow above it carries today\'s date, and only that',
+      /\{dateLabel\}/.test(hero) && /function todayLabel/.test(hero)
+        && /weekday: 'long'/.test(hero) && !/year/.test(hero),
+      '"Monday 7 September" — weekday, day, month, no year');
+    check('  and it is the old eyebrow\'s style',
+      /fontSize: 10, fontWeight: 700, letterSpacing: '0\.15em', color: '#E03553'/.test(hero),
+      'small, letterspaced, strawberry');
+    check('  nothing else above it and nothing under it',
       !/Today&apos;s edition/.test(hero) && !/day\.lines\[0\]/.test(hero)
         && !/Openinvite daily/.test(page),
-      'no eyebrow, no sub-line, no masthead — "there is too much going on"');
+      'no sub-line, no masthead — "there is too much going on"');
     check('  and the hero comes before the grid on the page',
       page.indexOf('<Briefing sentence=') < page.indexOf('oi-daily-grid'), 'top of the page');
     check('PLANT: the onboarding stepper is gone',
@@ -381,7 +402,7 @@ export async function runDailyUpdatePage() {
 
     check('PLANT: the far-right column is the stats, and they are the old four',
       page.indexOf("columnHead('Your numbers')") > page.indexOf("columnHead('This week')")
-        && /Guests confirmed[\s\S]{0,400}Vendors booked/.test(page),
+        && /Guests coming[\s\S]{0,400}Vendors booked/.test(page),
       'far right, in order');
     check('  rendered at the old size',
       /fontSize: 48, fontWeight: 800/.test(page), '48px/800, as e2c087a:753');
@@ -415,7 +436,7 @@ export async function runDailyUpdatePage() {
     check('  and never an address where a name goes',
       greetingFor(at(9), 'la.jay06@gmail.com') === 'Morning.', 'the welcome-email rule');
 
-    const say = (o) => avaSentence(resolveDayState({ now: at(9), ...o }), { fullName: 'Jay Galaxy', now: at(9) });
+    const say = (o) => avaSentence(resolveDayState({ now: at(9), daysOut: 115, ...o }), { fullName: 'Jay Galaxy', now: at(9) });
     const forms = {
       overdue: say({ tasks: [{ title: 'Book the celebrant', due_date: '2026-09-01' }, { title: 'Order the cake', due_date: '2026-09-02' }] }),
       today:   say({ tasks: [{ title: 'Confirm the florist count', due_date: '2026-09-07' }] }),
@@ -424,12 +445,20 @@ export async function runDailyUpdatePage() {
       empty:   say({ budget: [{}], vendors: [{}] }),
       unseen:  say({ unseen: ['to-dos'] }),
     };
-    check('PLANT: Overdue speaks like Ava, and names the first one',
-      forms.overdue === "Morning, Jay. A few things have slipped — let's start with book the celebrant.", forms.overdue);
-    check('  and Today names the one thing',
-      forms.today === 'Morning, Jay. One thing needs you today: confirm the florist count.', forms.today);
-    check('  Waiting counts who it is waiting on',
-      forms.waiting === "Morning, Jay. Nothing's on you today — you're waiting on 61 guests.", forms.waiting);
+    check('PLANT: Overdue leads with the horizon and the priority, not the failure',
+      forms.overdue === "Morning, Jay. 115 days out and there's a clear first move today — book the celebrant.",
+      forms.overdue);
+    check('  and Today says they are ahead',
+      forms.today === "Morning, Jay. One thing today and you're ahead — confirm the florist count.", forms.today);
+    check('  Waiting counts INVITATIONS and says it is normal',
+      forms.waiting === "Morning, Jay. Nothing on you today — 61 invitations are still to reply, and that's normal at 115 days out.",
+      forms.waiting);
+    check('PLANT: no anxious word ever reaches the top line',
+      Object.values(forms).every(t => !ANXIOUS_WORDS.some(w => new RegExp(`\\b${w}\\b`, 'i').test(t))),
+      ANXIOUS_WORDS.join(', ') + ' — counts belong in Column A');
+    check('  and the imperative is the action after the dash, never spliced mid-sentence',
+      / — book the celebrant\.$/.test(forms.overdue) && !/with book the celebrant/.test(forms.overdue),
+      'a verb where a noun belongs read as a typo');
     check('  Clear says on track and what is next',
       /^Morning, Jay\. You're on track\. Next up is the florist on /.test(forms.clear), forms.clear);
     check('  an empty wedding gets a fresh start',
@@ -445,61 +474,111 @@ export async function runDailyUpdatePage() {
       Object.values(forms).every(t => !/%|!/.test(t) && !/[\u{1F300}-\u{1FAFF}]/u.test(t)), 'six forms');
   }
 
-  // ── COLUMN B: ONE PARAGRAPH, EXACTLY THREE KEY POINTS ───────────────────
+  // ── COLUMN B: THREE SEPARATE BLOCKS ─────────────────────────────────────
   //
-  // Owner: "The second pillar with Ava's briefing used to have really good
-  // information about how we are tracking overall but as a paragraph. Three
-  // key points should always be there."
-  //
-  // "Always" is only a rule if something counts them. Each point is bolded, so
-  // the count is the number of bold spans, and a percentage is refused outright
-  // (spec 5.2). A paragraph that fails is not shown — the authored one is,
-  // which is #648 in its original form: Ava does not speak when there is
-  // nothing to read, and she does not speak badly rather than not at all.
+  // Owner: "you have three points in one paragraph. They should be their own
+  // points." Each block is a bold lead of at most six words and one plain
+  // sentence, and the validator requires exactly that, three times.
   {
-    const good = '**115 days to go**. **61 of 120 guests** have not replied, and **2 things overdue**.';
-    check('PLANT: a paragraph with two key points is refused',
-      validateTracking('**115 days to go**. **61 guests** have not replied.').ok === false,
-      validateTracking('**115 days to go**. **61 guests** have not replied.').error);
-    check('PLANT: a paragraph with a percentage is refused',
-      validateTracking('**115 days**. **61 guests** out. Budget is **64%** used.').ok === false,
-      validateTracking('**115 days**. **61 guests** out. Budget is **64%** used.').error);
-    check('  four points is refused too — exactly three, not at least three',
-      validateTracking('**a**. **b**. **c**. **d**.').ok === false, '4 is not 3');
-    check('  and an exclamation mark, and an emoji',
-      validateTracking('**a**. **b**. **c**!').ok === false
-        && validateTracking('**a**. **b**. **c** 🎉').ok === false, 'chrome rules hold here too');
-    check('  a good paragraph passes',
-      validateTracking(good).ok === true && validateTracking(good).points === 3, '3 points, no percentage');
+    const good = [
+      '**115 days to go** That is the horizon everything else is measured against.',
+      '**21 of 61 invitations** are still to reply, and 40 guests are confirmed as coming.',
+      '**2 things to pick up** They are at the top of This week, in order.',
+    ].join('\n');
+    check('PLANT: a briefing with two blocks is refused',
+      validateTracking('**A** one.\n**B** two.').ok === false,
+      validateTracking('**A** one.\n**B** two.').error);
+    check('PLANT: a briefing with a percentage is refused',
+      validateTracking('**A** one.\n**B** 64% used.\n**C** three.').ok === false,
+      validateTracking('**A** one.\n**B** 64% used.\n**C** three.').error);
+    check('PLANT: a person count paired with "replied" is refused',
+      validateTracking('**A** one.\n**B** 94 guests have not replied.\n**C** three.').ok === false
+        && /per invitation/.test(validateTracking('**A** one.\n**B** 94 guests have not replied.\n**C** three.').error),
+      'the 94-vs-61 defect, said out loud');
+    check('  a paragraph rather than blocks is refused',
+      validateTracking('**A** one. **B** two. **C** three.').ok === false, 'one line is one block');
+    check('  a block with no bold lead is refused',
+      validateTracking('**A** one.\nplain line.\n**C** three.').ok === false, 'every block leads');
+    check('  and a lead over six words is refused',
+      /a lead of 7 words/.test(validateTracking('**One two three four five six seven** x.\n**B** y.\n**C** z.').error || ''),
+      'a lead phrase, not a sentence in bold');
+    check('  four blocks is refused too — exactly three',
+      validateTracking('**A** a.\n**B** b.\n**C** c.\n**D** d.').ok === false, '4 is not 3');
+    check('  a well-formed briefing passes, bullets and all',
+      validateTracking(good).ok === true
+        && validateTracking('- **A** a.\n- **B** b.\n- **C** c.').ok === true,
+      'three blocks, each led');
+    check('  and the bullet strip does not eat the bold',
+      parseTrackingBlocks('- **A** a.')[0].lead === 'A',
+      'a single * is a bullet; a doubled one is the lead');
 
-    const authored = authoredTracking({ countdown: '115 days to go', unreplied: 61, overdue: 2, guests: 120 });
-    check('PLANT: the authored fallback is itself three points and passes its own check',
+    const authored = authoredTracking({ countdown: '115 days to go', invitationsPending: 21, invitations: 61, peopleAttending: 40, overdue: 2 });
+    check('PLANT: the authored fallback passes its own validator',
       validateTracking(authored).ok === true,
-      'the stand-in cannot be worse than what it stands in for');
-    check('  and it names the store it could not read',
-      /could not read your the guest list/.test(authoredTracking({ unseen: ['the guest list'] })),
-      'a failed store is named, never counted as empty');
-    check('  with three points still, from what it could see',
-      validateTracking(authoredTracking({ unseen: ['the guest list'] })).points === 3, 'three either way');
+      validateTracking(authored).error || 'the stand-in cannot be worse than what it stands in for');
+    check('  it counts replies per invitation and attendance per person',
+      /invitations\*\* are still to reply/.test(authored) && /guests are confirmed as coming/.test(authored),
+      'both named, never mixed');
+    check('  and it names the store it could not read, with three blocks still',
+      /could not read your the guest list/.test(authoredTracking({ unseen: ['the guest list'] }))
+        && validateTracking(authoredTracking({ unseen: ['the guest list'] })).ok === true,
+      'three either way');
 
-    // The request goes through the ONE builder, with the constraints stated.
     const page = code('src/pages/DailyUpdate.jsx');
-    check('the paragraph is asked for through buildAvaPrompt',
+    check('the briefing is asked for through buildAvaPrompt',
       /buildAvaPrompt\(\{ weddingContext/.test(page) && /userText: TRACKING_REQUEST/.test(page),
       'the same builder every other Ava request uses');
-    check('  and the request states every constraint',
-      /EXACTLY THREE/.test(TRACKING_REQUEST) && /NEVER a percentage/.test(TRACKING_REQUEST)
-        && /do not name a vendor/.test(TRACKING_REQUEST) && /heritage, culture or religion/.test(TRACKING_REQUEST)
-        && /Do not offer to do anything/.test(TRACKING_REQUEST),
-      'three points, no percentages, no promises, no vendors, no heritage');
+    check('  and the request states every constraint, the numbers ruling included',
+      /EXACTLY THREE separate blocks/.test(TRACKING_REQUEST) && /at most six words/.test(TRACKING_REQUEST)
+        && /NEVER a percentage/.test(TRACKING_REQUEST) && /do not name a vendor/.test(TRACKING_REQUEST)
+        && /heritage, culture or religion/.test(TRACKING_REQUEST)
+        && /REPLIES ARE COUNTED PER INVITATION/.test(TRACKING_REQUEST),
+      'shape, tone and the two quantities');
     check('  a failing reply is replaced rather than shown',
       /validateTracking\(reply\)\.ok \? reply\.trim\(\) : authoredTracking\(facts\)/.test(page),
       'not shown badly');
-    check('  and a wedding with nothing in it is never asked at all (#648)',
+    check('  a wedding with nothing in it is never asked at all (#648)',
       /nothingToRead/.test(page) && /if \(nothingToRead\) \{[\s\S]{0,300}setTracking\(authoredTracking/.test(page),
       'Ava does not speak when there is nothing to read');
-    check('  bold comes through avaMarkdown, never dangerouslySetInnerHTML',
-      /parseAvaText\(tracking\)/.test(page) && !/dangerouslySetInnerHTML/.test(page), 'parsed, not injected');
+    check('  and the blocks render as blocks, never as injected HTML',
+      /parseTrackingBlocks\(tracking\)/.test(page) && !/dangerouslySetInnerHTML/.test(page),
+      'parsed, not injected');
+  }
+
+  // ── THE TWO NAMED QUANTITIES, EVERYWHERE ────────────────────────────────
+  //
+  // Owner ruling: replies per INVITATION, attendance per PERSON, every surface
+  // says which, and one helper owns both. This is the 94-vs-61 defect closed at
+  // its source rather than at four call sites.
+  {
+    const guests = Array.from({ length: 61 }, (_, i) => ({
+      id: `g${i}`, rsvp_status: i < 40 ? 'attending' : 'pending',
+      ...(i < 33 ? { plus_one_attending: true, plus_one_name: `P${i}` } : {}),
+    }));
+    const c = guestCounts(guests);
+    check('PLANT: replies are per invitation, attendance per person',
+      c.invitations.total === 61 && c.invitations.pending === 21 && c.people.total === 94 && c.people.attending === 40,
+      `${c.invitations.total} invitations, ${c.people.total} people`);
+    check('  and each carries the word a surface must print',
+      c.invitations.label === 'invitations' && c.people.label === 'guests coming', 'labelled at the source');
+    for (const f of ['src/pages/DailyUpdate.jsx', 'src/pages/Dashboard.jsx']) {
+      const src = code(f);
+      check(`  ${f.split('/').pop()} reads the helper and recomputes neither`,
+        /guestCounts\(/.test(src)
+          && !/guests\.filter\(isAttending\)/.test(src)
+          && !/guests\.filter\(\(g\) => !g\.rsvp_status/.test(src),
+        'no page counts guests itself');
+    }
+    check('PLANT: a stat tile never labels the invitation count as guests',
+      !/label: 'Guests[^']*',\s*value: String\(counts\.invitations/.test(code('src/pages/DailyUpdate.jsx')),
+      'attendance is people, replies are invitations');
+    check("Column A says invitations, not guests, about replies",
+      /invitation\$\{unreplied === 1 \? '' : 's'\} still to reply/.test(code('src/lib/dayState.js')),
+      'the words that let 94 and 61 sit on two pages');
+    check("and Ava's context passes both, labelled",
+      /REPLIES ARE COUNTED PER INVITATION and ATTENDANCE PER PERSON/.test(code('src/lib/avaContextFormat.js'))
+        && /Invitations: \$\{counts\.invitations\.total\}/.test(code('src/lib/avaContextFormat.js')),
+      'so Ava can never say "94 guests have not replied"');
   }
 
   // ── THE AVA PILL IS SOLID STRAWBERRY ────────────────────────────────────

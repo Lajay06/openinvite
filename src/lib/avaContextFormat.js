@@ -10,7 +10,7 @@
  * can seed it from a fixture and check every number against the Budget page's
  * own computation. See tests/persistence/ava-reads-the-wedding.mjs.
  */
-import { tallyAttendees } from './guestRsvpTally.js';
+import { tallyAttendees, guestCounts } from './guestRsvpTally.js';
 import { resolveAttendees, MEAL_CHOSEN } from './attendees.js';
 import { mealOptionLabel } from './weddingEvents.js';
 import { coupleDisplayName } from './coupleNames.js';
@@ -72,7 +72,14 @@ export function formatWeddingContext({ guests = [], budget = [], vendors = [], s
   // not exist in the schema and could never match — always counted 0.
   const attendees = resolveAttendees(guests);
   const { combined } = tallyAttendees(attendees);
-  const { attending: confirmed, pending, total: totalAttendees } = combined;
+  const { attending: confirmed, total: totalAttendees } = combined;
+  // REPLIES ARE PER INVITATION — owner ruling, 2026-09-07. `combined.pending`
+  // is the PERSON count, so this line handed Ava the number of people whose
+  // reply is outstanding and called it "not yet replied". A plus-one has no
+  // invitation of its own and never replies; the host replies for both. Ava was
+  // one sentence away from telling a couple that 94 guests had not replied to
+  // 61 invitations. Both quantities go in now, each labelled.
+  const counts = guestCounts(guests);
   // ── BUDGET, IN THE BUDGET PAGE'S OWN FIELDS AND ITS OWN WORDS ──────────
   //
   // This read `total_amount` and `spent_amount`. NEITHER FIELD EXISTS on the
@@ -226,7 +233,9 @@ Style universe: ${universe || 'Not set'}${venueLines ? `\n${venueLines}` : ''}${
 
 ${expectedGuestLine ? expectedGuestLine + '\n' : ''}GUESTS — state the population behind the number (spec 5.1). The canonical
 form is "${totalAttendees} people, which is ${guests.length} guests plus ${Math.max(0, totalAttendees - guests.length)} plus ones".
-Attending: ${confirmed} | Not yet replied: ${pending}${guestListBlock}
+REPLIES ARE COUNTED PER INVITATION and ATTENDANCE PER PERSON — never mix them.
+Invitations: ${counts.invitations.total} sent, ${counts.invitations.pending} still to reply.
+People coming: ${confirmed} of ${totalAttendees}.${guestListBlock}
 
 BUDGET — two stores, named as the Budget page names them (spec 5.1):
 ${plan
