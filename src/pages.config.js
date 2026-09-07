@@ -65,6 +65,7 @@ const FoodBeverage = lazyWithReload(() => import('./pages/FoodBeverage'));
 const Honeymoon = lazyWithReload(() => import('./pages/Honeymoon'));
 const Transport = lazyWithReload(() => import('./pages/Transport'));
 const ScheduleHub = lazyWithReload(() => import('./pages/ScheduleHub'));
+const SendInvites = lazyWithReload(() => import('./pages/SendInvites'));
 const TasksHub = lazyWithReload(() => import('./pages/TasksHub'));
 const Considerations = lazyWithReload(() => import('./pages/Considerations'));
 const Dashboard = lazyWithReload(() => import('./pages/Dashboard'));
@@ -125,6 +126,7 @@ export const PAGES = {
     "GuestSuiteExperience": GuestSuiteExperience,
     "GuestSuitePolicies": GuestSuitePolicies,
     "Guests": Guests,
+    "SendInvites": SendInvites,
     "Home": Home,
     "Invitations": Invitations,
     "Messages": Messages,
