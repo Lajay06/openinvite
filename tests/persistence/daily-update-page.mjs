@@ -132,21 +132,39 @@ export async function runDailyUpdatePage() {
     check('PLANT: Clear with something ahead reads "Clear this week."',
       clear.state === 'clear' && clear.badge === 'Clear' && clear.headline === 'Clear this week.',
       clear.headline);
+    // LOCALE-INDEPENDENT, deliberately. The first version of these three
+    // checks pinned "12 October" — the order this machine prints — and went
+    // red on the runner, which prints "October 12". A check that only passes
+    // in one locale is not a check, the same lesson the countdown plant
+    // learned in one timezone. The TITLE is matched exactly, because that is
+    // the part that must come from the fixture; the date is matched by its
+    // parts, in either order.
+    const dayAndMonth = (text, day, month) =>
+      new RegExp(`\\b${day}\\b`).test(text) && new RegExp(month, 'i').test(text);
     check('  and the first line is the next to-do, by name and date, FROM THE FIXTURE',
-      clear.lines[0]?.text === 'Next up: Book the car, 12 October.',
+      /^Next up: Book the car, /.test(clear.lines[0]?.text || '')
+        && dayAndMonth(clear.lines[0].text, 12, 'October'),
       clear.lines[0]?.text);
     check('  a to-do with no date says so without inventing one',
       on({ budget: [{}], vendors: [{}], tasks: [{ title: 'Book the car' }] }).lines[0]?.text === 'Next up: Book the car.',
       'no date, no date');
-    check('  and a date in another year carries the year',
-      /Next up: Final dress fitting, 1 June 2027\./.test(
-        on({ budget: [{}], vendors: [{}], tasks: [{ title: 'Final dress fitting', due_date: '2027-06-01' }] }).lines[0]?.text || ''),
-      'the year only when it differs');
-    check('  the NEAREST to-do wins, not the first in the array',
-      on({ budget: [{}], vendors: [{}], tasks: [
+    {
+      const nextYear = on({ budget: [{}], vendors: [{}], tasks: [{ title: 'Final dress fitting', due_date: '2027-06-01' }] }).lines[0]?.text || '';
+      check('  and a date in another year carries the year',
+        /^Next up: Final dress fitting, /.test(nextYear) && dayAndMonth(nextYear, 1, 'June') && /2027/.test(nextYear),
+        nextYear);
+      const thisYear = clear.lines[0]?.text || '';
+      check('  while a date in this year does not',
+        !/\b20\d\d\b/.test(thisYear), thisYear);
+    }
+    {
+      const nearest = on({ budget: [{}], vendors: [{}], tasks: [
         { title: 'Later thing', due_date: '2026-12-01' },
         { title: 'Sooner thing', due_date: '2026-09-20' },
-      ] }).lines[0]?.text === 'Next up: Sooner thing, 20 September.', 'by due date');
+      ] }).lines[0]?.text || '';
+      check('  the NEAREST to-do wins, not the first in the array',
+        /^Next up: Sooner thing, /.test(nearest) && dayAndMonth(nearest, 20, 'September'), nearest);
+    }
     check('  and a SCHEDULE event is not offered as the next thing to do',
       on({ budget: [{}], vendors: [{}], schedule: [{ event_name: 'Menu tasting', event_date: '2026-09-20' }] })
         .lines.every(l => !/Menu tasting/.test(l.text)),
