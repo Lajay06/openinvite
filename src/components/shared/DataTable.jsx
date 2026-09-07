@@ -106,9 +106,12 @@ export default function DataTable({
                 </TableHead>
               )}
               {columns.map((c) => (
+                // `headStyle` exists so a column can align its HEADER with its
+                // cells — a centred number column with a left-aligned heading
+                // reads as two columns.
                 c.sortable && onSort
-                  ? <SortableHead key={c.key} field={c.key} label={c.label} sortState={sortState} onSort={onSort} />
-                  : <TableHead key={c.key} style={c.width ? { width: c.width } : undefined}>{c.label}</TableHead>
+                  ? <SortableHead key={c.key} field={c.key} label={c.label} sortState={sortState} onSort={onSort} style={c.headStyle} />
+                  : <TableHead key={c.key} style={{ ...(c.width ? { width: c.width } : null), ...c.headStyle }}>{c.label}</TableHead>
               ))}
               {actions && <TableHead style={{ width: 48 }} />}
             </TableRow>

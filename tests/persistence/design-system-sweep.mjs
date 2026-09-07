@@ -171,7 +171,7 @@ export async function runDesignSystemSweep() {
       'No letter-spacing in the dashboard',
       'Nothing below font-weight 400',
       'Every accordion collapsed on mount',
-      'CTA text colour is derived from its background',
+      'CTA text color is derived from its background',
       'One filter pill component',
     ]) check(`DESIGN_SPEC.md carries "${phrase}"`, spec.includes(phrase), 'the rule, written down');
   }

@@ -12,13 +12,13 @@ import { TableHead } from '@/components/ui/table';
  * The carets are text-presentation marks — ▲ ▼ ⇅ inherit our typeface and
  * currentColor, so they are not emoji under the presentation rule.
  */
-export default function SortableHead({ field, label, sortState, onSort }) {
+export default function SortableHead({ field, label, sortState, onSort, style }) {
   const active = sortState?.field === field;
   const direction = active ? sortState.direction : null;
   return (
     <TableHead
       onClick={() => onSort(field)}
-      style={{ cursor: 'pointer', userSelect: 'none' }}
+      style={{ cursor: 'pointer', userSelect: 'none', ...style }}
       title={`Sort by ${label.toLowerCase()}`}
     >
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
