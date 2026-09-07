@@ -16,6 +16,7 @@ import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import { base44 } from "@/api/base44Client";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import AmountInput from "@/components/shared/AmountInput";
 import { getMyRecords, getMyWeddingDetails } from "@/lib/resolveMyWedding";
 import { useCollaboratorContext } from "@/lib/collaboratorContext";
 import { useAvaFocus } from "@/hooks/useAvaFocus";
@@ -172,20 +173,25 @@ function BudgetPlanner({ symbol = '$', savedBudget, defaultTotal, defaultCategor
 
       {/* Total budget input */}
       <div style={{ marginBottom: 24, maxWidth: 320 }}>
+        {/* THE SYMBOL IS NOT IN THE LABEL ANY MORE. It used to read "Total
+            wedding budget ($)", which tells a couple the currency only while
+            they have not typed — and the placeholder did the same. The prefix
+            is now inside the field, permanently. */}
         <label style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', display: 'block', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          Total wedding budget ({symbol})
+          Total wedding budget
         </label>
-        <input
-          type="number"
-          placeholder="e.g. 50000"
+        <AmountInput
+          ariaLabel="Total wedding budget"
+          placeholder="50000"
+          step="1"
           value={plan.total}
           onChange={e => setTotal(e.target.value)}
-          // WEIGHT, NOT SIZE. This was 22px — off the scale entirely. The
-          // total is the most important number on the page and it said so by
-          // inventing a size; it says so with weight now.
-          style={{ ...inputStyle, fontWeight: 700 }}
-          onFocus={e => { e.target.style.borderBottomColor = '#E03553'; e.target.style.borderBottomWidth = '2px'; }}
-          onBlur={e => { e.target.style.borderBottomColor = 'rgba(10,10,10,0.18)'; e.target.style.borderBottomWidth = '1px'; }}
+          // WEIGHT, NOT SIZE. This was 22px — off the scale entirely (owner
+          // ruling: no page declares its own type scale). The total is the
+          // most important number on the page and it said so by inventing a
+          // size; it says so with weight now.
+          inputStyle={{ fontWeight: 700 }}
+          symbolStyle={{ fontWeight: 700 }}
         />
       </div>
 
@@ -196,14 +202,12 @@ function BudgetPlanner({ symbol = '$', savedBudget, defaultTotal, defaultCategor
             <label style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', display: 'block', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               {cat.label}
             </label>
-            <input
-              type="number"
-              placeholder={`${symbol}0`}
+            <AmountInput
+              ariaLabel={cat.label}
+              placeholder="0"
+              step="1"
               value={plan.categories[cat.key] || ''}
               onChange={e => setCat(cat.key, e.target.value)}
-              style={inputStyle}
-              onFocus={e => { e.target.style.borderBottomColor = '#E03553'; e.target.style.borderBottomWidth = '2px'; }}
-              onBlur={e => { e.target.style.borderBottomColor = 'rgba(10,10,10,0.18)'; e.target.style.borderBottomWidth = '1px'; }}
             />
           </div>
         ))}
