@@ -273,3 +273,47 @@ universe detail's "Make this my universe" was `background: colors.accent` with
 `color: colors.darkBg` — navy on black, 1.04:1 on paris, and below 4.5:1 on
 fourteen of the twenty universes.
 
+## The type scale — owner ruling, 2026-09-07
+
+**NO PAGE OR COMPONENT DECLARES ITS OWN TYPE SCALE OR BUTTON SIZE.** Owner:
+"we've already decided what the standard design size is for these pills, so
+why are these massive?"
+
+Body, input, label, pill and button sizes come from `src/styles/typeScale.js`,
+which is not a new scale invented for the rule — it is the sizes GuestList,
+DataTable, TableToolbar and the Theme tab already agreed on:
+
+    10px  row pills (status, category, tags)
+    11px  labels, column headings, filter pills
+    12px  buttons, secondary cell text
+    13px  table cells, panel body
+    14px  form inputs
+
+Five sizes for every control surface in the product. A sixth is not a design
+decision, it is a page forgetting the other five exist — which is why the
+guard tests membership of the set rather than a per-role lookup: a role may
+move within the scale, but nothing may leave it.
+
+Guarded by render (`scripts/test-type-scale.mjs`), not by grep: a page's font
+size is the sum of an inline style, a Tailwind class, a shared component's
+default and index.css's own rules, and only the browser knows which won.
+
+## Filter pills — the three states
+
+Every filter or selection row in the dashboard renders through `FilterPill`.
+
+    selected      black pill, white text
+    unselected    the Theme tab's outline pill — never bare words
+    hover         black pill
+
+**Not a filter row:** a tab strip (it changes what the page IS, and is square
+and underlined), a toolbar ACTION row (`btn-primary` / `btn-editorial-secondary`),
+and a row inside a form or dialog choosing a value for a record — To do's
+High/Medium/Low priority chips are a semantic color system and carry
+`data-not-a-filter`.
+
+`scripts/test-filter-pills.mjs` inventories these BY RENDERING every dashboard
+route. The previous pass inventoried by grepping and missed rows: a filter row
+is not a syntactic shape, it is three buttons that happen to sit beside each
+other, and the pages that had it wrong had it wrong in four different syntaxes.
+

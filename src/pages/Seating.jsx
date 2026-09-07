@@ -1,3 +1,4 @@
+import { FilterPill } from '@/components/shared/TableToolbar';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords, getMyGuestsWithRsvp, getMyWeddingDetails } from '@/lib/resolveMyWedding';
@@ -1317,10 +1318,13 @@ export default function SeatingPage() {
                 {/* Filter pills */}
                 <div style={{ padding: '12px 16px 10px', borderBottom: '1px solid rgba(10,10,10,0.12)', flexShrink: 0 }}>
                   <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-                    {['all', 'unassigned', 'assigned'].map(f => (
-                      <Pill key={f} label={f} active={guestFilter === f} onClick={() => setGuestFilter(f)} />
+                    {/* THE SHARED PILL, and sentence case with it: this row
+                        read "all · unassigned · assigned" in lower case
+                        because a local Pill printed the raw filter key. */}
+                    {[['all', 'All'], ['unassigned', 'Unassigned'], ['assigned', 'Assigned']].map(([f, label]) => (
+                      <FilterPill key={f} label={label} active={guestFilter === f} onClick={() => setGuestFilter(f)} />
                     ))}
-                    <Pill label="attending only" active={attendingOnly} onClick={() => setAttendingOnly(v => !v)} />
+                    <FilterPill label="Attending only" active={attendingOnly} onClick={() => setAttendingOnly(v => !v)} />
                   </div>
                 </div>
 

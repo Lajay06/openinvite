@@ -347,6 +347,17 @@ jobs:
             CAPTURE_BASE_URL=http://localhost:4173 npm run test:ava-safe-area
             TEST_EXIT=$?
           fi
+          # No page declares its own type scale or button size, and every
+          # filter row is the shared pill. Both are render questions: the
+          # previous pill inventory was done by grepping and missed rows.
+          if [ $TEST_EXIT -eq 0 ]; then
+            CAPTURE_BASE_URL=http://localhost:4173 npm run test:type-scale
+            TEST_EXIT=$?
+          fi
+          if [ $TEST_EXIT -eq 0 ]; then
+            CAPTURE_BASE_URL=http://localhost:4173 npm run test:filter-pills
+            TEST_EXIT=$?
+          fi
           if [ $TEST_EXIT -eq 0 ]; then
             CAPTURE_BASE_URL=http://localhost:4173 npm run test:guest-no-invalid-date
 

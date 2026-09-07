@@ -346,8 +346,13 @@ export default function TodoList({ embedded = false }) {
                   fontFamily: PJS, outline: 'none', padding: '6px 0', width: 118,
                 }}
               />
-              {/* Priority chips */}
-              <div style={{ display: 'flex', gap: 4 }}>
+              {/* Priority chips.
+                  NOT A FILTER ROW, and marked so the render guard agrees:
+                  these choose a VALUE for the to-do being written, and their
+                  colors carry the meaning (low/medium/high). Blacking them
+                  out to match the filter pills would delete that meaning —
+                  the owner kept them by name. */}
+              <div data-not-a-filter="priority" style={{ display: 'flex', gap: 4 }}>
                 {SETTABLE_PRIORITIES.map(p => (
                   <button
                     key={p}
@@ -372,20 +377,13 @@ export default function TodoList({ embedded = false }) {
               </button>
             </div>
 
-            {/* Filter tabs */}
-            <div style={{ display: 'flex', marginBottom: 0, borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
+            {/* A FILTER ROW, NOT A TAB STRIP. All / Active / Completed
+                narrows one list; it does not change what the page is. It
+                rendered as underlined words, which is the "unselected filter
+                as bare text" the owner named. */}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
               {['All', 'Active', 'Completed'].map(f => (
-                <button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  style={{
-                    padding: '8px 18px', background: 'transparent', border: 'none',
-                    cursor: 'pointer', fontSize: 13, fontWeight: 600, fontFamily: PJS,
-                    color: filter === f ? '#E03553' : '#444444',
-                    borderBottom: filter === f ? '2px solid #E03553' : '2px solid transparent',
-                    marginBottom: -1, transition: 'color 0.13s',
-                  }}
-                >{f}</button>
+                <FilterPill key={f} label={f} active={filter === f} onClick={() => setFilter(f)} />
               ))}
             </div>
 

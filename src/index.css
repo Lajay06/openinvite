@@ -1223,9 +1223,16 @@ body {
   color: #FFFFFF;
   border-color: #0A0A0A;
 }
+/* HOVER IS THE BLACK PILL. Owner ruling 2026-09-07 states the three states
+   outright: selected = black pill, white text; unselected = the Theme tab's
+   outline pill; hover on unselected = black pill. This used to only darken
+   the border and the text, so hovering told a couple less than the Theme
+   tab's own pills already did — and those two surfaces are meant to be one
+   control. Matches .oi-option-pill's hover exactly. */
 .filter-pill:hover:not(.active) {
-  border-color: rgba(10,10,10,0.45);
-  color: #0A0A0A;
+  background: #0A0A0A;
+  color: #FFFFFF;
+  border-color: #0A0A0A;
 }
 
 /* ── Games print/export view (Polls & games) ──────────────────

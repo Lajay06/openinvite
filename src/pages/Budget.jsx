@@ -180,7 +180,10 @@ function BudgetPlanner({ symbol = '$', savedBudget, defaultTotal, defaultCategor
           placeholder="e.g. 50000"
           value={plan.total}
           onChange={e => setTotal(e.target.value)}
-          style={{ ...inputStyle, fontSize: 22, fontWeight: 700 }}
+          // WEIGHT, NOT SIZE. This was 22px — off the scale entirely. The
+          // total is the most important number on the page and it said so by
+          // inventing a size; it says so with weight now.
+          style={{ ...inputStyle, fontWeight: 700 }}
           onFocus={e => { e.target.style.borderBottomColor = '#E03553'; e.target.style.borderBottomWidth = '2px'; }}
           onBlur={e => { e.target.style.borderBottomColor = 'rgba(10,10,10,0.18)'; e.target.style.borderBottomWidth = '1px'; }}
         />
