@@ -19,8 +19,7 @@ const TRANSPORT_TYPES = [
 ];
 
 const sectionLabel = {
-  fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
-  color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 8, display: 'block',
+  fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 8, display: 'block',
 };
 
 function photoProxy(ref, w = 600) {
@@ -105,7 +104,7 @@ function NoteCard({ note, onRemove, onEdit }) {
           </div>
         ) : (
           <>
-            {note.title && <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 3px', letterSpacing: '0.05em' }}>{note.title}</p>}
+            {note.title && <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 3px' }}>{note.title}</p>}
             <p style={{ fontSize: 13, color: '#0A0A0A', fontFamily: PJS, margin: 0, lineHeight: 1.6 }}>{note.text}</p>
           </>
         )}
@@ -382,7 +381,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
             {/* Ava suggestions */}
             {avaSuggestions.length > 0 && (
               <div style={{ marginBottom: 36 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 16px' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 16px' }}>
                   Ava's suggestions — add what's relevant
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -422,7 +421,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
               {/* Search */}
               <div style={{ position: 'relative' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Search Google Places</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Search Google Places</span>
                   {/* Geolocation control */}
                   {geoState === 'idle' && (
                     <button type="button" onClick={handleUseLocation}
@@ -507,7 +506,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
               {/* Manual entry form */}
               {!selectedPlace && showManual && (
                 <div style={{ marginTop: 14, border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, padding: '16px 16px 18px' }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>Add manually</p>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 14px' }}>Add manually</p>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px', marginBottom: 14 }}>
                     <div>
                       <label style={sectionLabel}>Name</label>
@@ -587,7 +586,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
             {/* Saved places */}
             {places.length > 0 && (
               <div style={{ marginBottom: 36 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 16px' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 16px' }}>
                   Getting here — {places.length} location{places.length !== 1 ? 's' : ''}
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
@@ -598,7 +597,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
 
             {/* Transport notes */}
             <div style={{ marginBottom: 36 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 16px' }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 16px' }}>
                 Transport tips & notes
               </p>
 

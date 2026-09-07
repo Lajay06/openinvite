@@ -47,8 +47,7 @@ const pillBase = {
   padding: '2px 8px',
   borderRadius: 999,
   fontFamily: "'Plus Jakarta Sans', sans-serif",
-  fontSize: 10, fontWeight: 600, letterSpacing: '0.04em',
-  whiteSpace: 'nowrap',
+  fontSize: 10, fontWeight: 600, whiteSpace: 'nowrap',
 };
 
 const BadgePill = ({ style, children }) => (

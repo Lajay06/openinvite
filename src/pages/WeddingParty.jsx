@@ -17,7 +17,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
+  color: 'rgba(10,10,10,0.6)',
   fontFamily: PJS,
 };
 
@@ -139,8 +139,7 @@ function GuestSearch({ value, guests, onSelect, onClear, placeholder = 'Type a n
           fontSize: 11, fontFamily: PJS, fontWeight: 500,
           padding: '4px 9px', borderRadius: 5,
           pointerEvents: 'none', whiteSpace: 'nowrap', zIndex: 400,
-          letterSpacing: '0.01em',
-        }}>
+          }}>
           Type @ to search your guest list
         </div>
       )}
@@ -431,7 +430,7 @@ export default function WeddingPartyPage() {
             separate tabs a couple used to have to bounce between. */}
         {activeTab === 'keyRoles' && (
         <>
-        <DetailsSection title="Key roles" icon={Crown} defaultOpen>
+        <DetailsSection title="Key roles" icon={Crown}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <span style={labelStyle}>Maid of honor / best person</span>
@@ -517,7 +516,7 @@ export default function WeddingPartyPage() {
 
         {/* Notes */}
         {activeTab === 'notes' && (
-        <DetailsSection title="Notes" icon={FileText} defaultOpen>
+        <DetailsSection title="Notes" icon={FileText}>
           <SectionInput label="Additional notes" isTextarea value={data.notes} onChange={e => update({ notes: e.target.value })} placeholder="Attire details, group photos, rehearsal dinner notes…" />
         </DetailsSection>
         )}

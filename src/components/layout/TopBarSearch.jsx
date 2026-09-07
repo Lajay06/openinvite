@@ -168,7 +168,7 @@ export default function TopBarSearch() {
             </div>
           ) : groups.map(group => (
             <div key={group.type}>
-              <div style={{ padding: '8px 14px 4px', fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
+              <div style={{ padding: '8px 14px 4px', fontSize: 10, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                 {group.label}
               </div>
               {group.items.map(item => {

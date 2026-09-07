@@ -391,9 +391,14 @@ export async function runDailyUpdatePage() {
       /\{dateLabel\}/.test(hero) && /function todayLabel/.test(hero)
         && /weekday: 'long'/.test(hero) && !/year/.test(hero),
       '"Monday 7 September" — weekday, day, month, no year');
-    check('  and it is the old eyebrow\'s style',
-      /fontSize: 10, fontWeight: 700, letterSpacing: '0\.15em', color: '#E03553'/.test(hero),
-      'small, letterspaced, strawberry');
+    // NO TRACKING. Owner ruling 2026-09-07: "I don't like the tracking, it
+    // doesn't suit the brand", with no exception for eyebrows or small-caps
+    // labels. The eyebrow keeps its size, weight and colour; the 0.15em is
+    // gone, here and in every other dashboard declaration.
+    check('  and it is the eyebrow\'s style, without the tracking',
+      /fontSize: 10, fontWeight: 700, color: '#E03553'/.test(hero)
+        && !/letterSpacing/.test(hero),
+      'small, strawberry, no letterspacing');
     check('  nothing else above it and nothing under it',
       !/Today&apos;s edition/.test(hero) && !/day\.lines\[0\]/.test(hero)
         && !/Openinvite daily/.test(page),

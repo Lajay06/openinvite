@@ -15,7 +15,7 @@ const SEASON_OPTIONS     = ['Autumn', 'Spring', 'Summer', 'Winter'];
 const SETTING_OPTIONS    = ['Indoor', 'Mix of both', 'Outdoor'];
 
 const headingStyle = { fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 14px' };
-const subLabelStyle = { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px', display: 'block' };
+const subLabelStyle = { fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px', display: 'block' };
 
 export default function ThemeSection({ theme, onSave, readOnly = false }) {
   const [local, setLocal] = useState({

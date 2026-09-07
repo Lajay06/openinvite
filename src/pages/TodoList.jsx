@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { FilterPill } from '@/components/shared/TableToolbar';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
 import toast from 'react-hot-toast';
-import { Plus, Trash2, CheckSquare, Square, List, Columns, Edit3, Calendar, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, CheckSquare, Square, Edit3, Calendar, ChevronUp, ChevronDown } from 'lucide-react';
 import DashboardPageHeader from '../components/layout/DashboardPageHeader';
 import { PRIORITY, SETTABLE_PRIORITIES, SORT_KEYS, DEFAULT_SORT, normalizePriority, nextSort, sortTasks } from '@/lib/todoSort';
 
@@ -13,7 +14,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
+  color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
 };
 
 const KANBAN_COLS = ['Ideas', 'In progress', 'Done'];
@@ -68,8 +69,7 @@ function dueDateTone(task) {
 }
 
 const headerCellStyle = {
-  fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
-  color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
+  fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
   padding: '10px 12px 10px 0', textAlign: 'left', whiteSpace: 'nowrap',
 };
 
@@ -95,8 +95,7 @@ function SortableHeader({ label, sortKey, sort, onSort, width }) {
         style={{
           display: 'inline-flex', alignItems: 'center', gap: 4,
           background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-          font: 'inherit', letterSpacing: 'inherit',
-          color: active ? '#0A0A0A' : 'rgba(10,10,10,0.6)',
+          font: 'inherit', color: active ? '#0A0A0A' : 'rgba(10,10,10,0.6)',
         }}
       >
         {label}
@@ -292,23 +291,8 @@ export default function TodoList({ embedded = false }) {
         {/* View toggle + progress */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
           <div style={{ display: 'flex', gap: 6 }}>
-            {[['list', 'List', List], ['kanban', 'Kanban', Columns]].map(([v, lbl, Icon]) => (
-              <button
-                key={v}
-                onClick={() => setView(v)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '7px 16px', borderRadius: 999,
-                  background: view === v ? '#0A0A0A' : 'rgba(10,10,10,0.06)',
-                  color: view === v ? '#FFFFFF' : '#444444',
-                  border: 'none', cursor: 'pointer',
-                  fontSize: 13, fontWeight: 600, fontFamily: PJS,
-                  transition: 'all 0.15s',
-                }}
-              >
-                <Icon size={14} />
-                {lbl}
-              </button>
+            {[['list', 'List'], ['kanban', 'Kanban']].map(([v, lbl]) => (
+              <FilterPill key={v} label={lbl} active={view === v} onClick={() => setView(v)} />
             ))}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>

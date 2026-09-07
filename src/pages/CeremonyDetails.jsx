@@ -14,7 +14,7 @@ const WeddingDetails = base44.entities.WeddingDetails;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
+  color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -271,7 +271,7 @@ export default function CeremonyDetailsPage() {
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {/* Celebrant */}
           {activeTab === 'celebrant' && (
-          <DetailsSection title="Celebrant" icon={UserCheck} defaultOpen>
+          <DetailsSection title="Celebrant" icon={UserCheck} summary={[cel.name, cel.type]}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <GoogleField label="Celebrant name" value={cel.name} onChange={e => updateNested('celebrant', { name: e.target.value })} placeholder="e.g. Rev. Sarah Connelly" />
               <SectionInput label="Title" value={cel.title} onChange={e => updateNested('celebrant', { title: e.target.value })} placeholder="e.g. Rev., Dr., Mx." />
@@ -298,7 +298,7 @@ export default function CeremonyDetailsPage() {
 
           {/* Legal */}
           {activeTab === 'legal' && (
-          <DetailsSection title="Legal" icon={Scale} defaultOpen>
+          <DetailsSection title="Legal" icon={Scale} summary={[lic.type, lic.number && `No. ${lic.number}`]}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <SectionInput label="Marriage license issuing office" value={lic.issuingOffice} onChange={e => updateNested('license', { issuingOffice: e.target.value })} placeholder="Registry office name" />
               <SectionInput label="License number" value={lic.licenseNumber} onChange={e => updateNested('license', { licenseNumber: e.target.value })} />
@@ -327,7 +327,7 @@ export default function CeremonyDetailsPage() {
 
           {/* Ceremony */}
           {activeTab === 'ceremony' && (
-          <DetailsSection title="Ceremony" icon={Heart} defaultOpen>
+          <DetailsSection title="Ceremony" icon={Heart} summary={[data.vowsNotes && 'Vows noted', data.orderOfServiceNotes && 'Order of service noted']}>
             <SectionInput label="Ceremony type" value={data.ceremonyType} onChange={e => update({ ceremonyType: e.target.value })} placeholder="e.g. religious, civil, humanist, unity ceremony" />
             <SectionInput label="Ceremony music" isTextarea value={data.ceremonyMusic} onChange={e => update({ ceremonyMusic: e.target.value })} placeholder="Processional, recessional, interlude songs, live band or DJ…" />
             <SectionInput label="Ceremony readings" isTextarea value={data.ceremonyReadings} onChange={e => update({ ceremonyReadings: e.target.value })} placeholder="Readers, passages, poems, scripture…" />
@@ -342,7 +342,7 @@ export default function CeremonyDetailsPage() {
 
           {/* Notes */}
           {activeTab === 'notes' && (
-          <DetailsSection title="Notes" icon={FileText} defaultOpen>
+          <DetailsSection title="Notes" icon={FileText} summary={data.additionalNotes ? 'Notes added' : ''}>
             <SectionInput label="Additional ceremony notes" isTextarea value={data.additionalNotes} onChange={e => update({ additionalNotes: e.target.value })} placeholder="Anything else about the ceremony…" />
           </DetailsSection>
           )}

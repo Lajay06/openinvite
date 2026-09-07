@@ -166,7 +166,7 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
         {/* Quick actions */}
         {quickActions.length > 0 && messages.length === 0 && (
           <div style={{ padding: '14px 20px 10px', borderBottom: '1px solid rgba(10,10,10,0.12)', flexShrink: 0 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 8 }}>Quick actions</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 8 }}>Quick actions</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {quickActions.map(action => (
                 <button key={action} onClick={() => sendMessage(action)} disabled={loading}

@@ -50,7 +50,7 @@ export default function ScheduleDayList({ events = [], onEdit, emptyNote }) {
       {days.map(({ date, events: dayEvents }) => (
         <section key={date}>
           <h3 style={{
-            fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'none',
+            fontSize: 12, fontWeight: 700, textTransform: 'none',
             color: 'rgba(10,10,10,0.6)', margin: '0 0 10px',
           }}>
             {date ? dayLabel(date) : 'No date yet'}

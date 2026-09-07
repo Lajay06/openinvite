@@ -43,7 +43,6 @@ const FeatureSectionHeading = React.forwardRef(function FeatureSectionHeading(
         style={{
           fontSize: "clamp(32px, 4vw, 56px)",
           fontWeight: 700,
-          letterSpacing: "-0.02em",
           lineHeight: 1.1,
           color,
           marginBottom: 24,

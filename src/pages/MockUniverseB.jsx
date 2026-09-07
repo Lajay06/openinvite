@@ -12,6 +12,7 @@
  * universe" action. Ultra worlds show the lock and an upgrade path here
  * instead of the reveal.
  */
+import { readableOn } from '@/lib/surfaceTint';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Crown, Loader2, ArrowLeft, Lock } from 'lucide-react';
@@ -48,7 +49,7 @@ function WorldPage({ universe, isCurrent, weddingDetails, guests, onBack, naviga
           {universe.name}
         </h1>
         {isCurrent && !locked && (
-          <span style={{ position: 'absolute', top: 20, right: 20, fontSize: 10, fontWeight: 700, fontFamily: PJS, letterSpacing: '0.08em', color: universe.colors.darkBg, background: universe.colors.accent, padding: '5px 12px', borderRadius: 999 }}>
+          <span style={{ position: 'absolute', top: 20, right: 20, fontSize: 10, fontWeight: 700, fontFamily: PJS, letterSpacing: '0.08em', color: readableOn(universe.colors.accent, universe.colors), background: universe.colors.accent, padding: '5px 12px', borderRadius: 999 }}>
             Your current universe
           </span>
         )}
@@ -87,7 +88,7 @@ function WorldPage({ universe, isCurrent, weddingDetails, guests, onBack, naviga
           <div>
             <button
               onClick={() => mockActionToast('Make this my universe')}
-              style={{ padding: '12px 28px', borderRadius: 999, border: 'none', background: universe.colors.accent, color: universe.colors.darkBg, fontFamily: PJS, fontSize: 14, fontWeight: 700, cursor: 'pointer' }}
+              style={{ padding: '12px 28px', borderRadius: 999, border: 'none', background: universe.colors.accent, color: readableOn(universe.colors.accent, universe.colors), fontFamily: PJS, fontSize: 14, fontWeight: 700, cursor: 'pointer' }}
             >
               Make this my universe
             </button>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FilterPill } from '@/components/shared/TableToolbar';
 import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { base44 } from '@/api/base44Client';
@@ -30,7 +31,7 @@ const GuestMessage = base44.entities.GuestMessage;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
+  color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
   margin: 0, marginBottom: 10,
 };
@@ -235,10 +236,7 @@ export default function MessagesPage() {
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
           {FILTERS.map(f => (
-            <button key={f.key} onClick={() => setFilterStatus(f.key)}
-              style={{ padding: '5px 14px', borderRadius: 999, border: `1.5px solid ${filterStatus === f.key ? '#0A0A0A' : 'rgba(10,10,10,0.12)'}`, background: filterStatus === f.key ? '#0A0A0A' : 'transparent', color: filterStatus === f.key ? '#FFFFFF' : '#444444', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              {f.label}
-            </button>
+            <FilterPill key={f.key} label={f.label} active={filterStatus === f.key} onClick={() => setFilterStatus(f.key)} />
           ))}
         </div>
       </div>
@@ -259,11 +257,11 @@ export default function MessagesPage() {
                     <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                       {message.guest_name}
                     </span>
-                      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: message.read ? 'rgba(10,10,10,0.06)' : 'rgba(224,53,83,0.1)', color: message.read ? '#444444' : '#E03553', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: message.read ? 'rgba(10,10,10,0.06)' : 'rgba(224,53,83,0.1)', color: message.read ? '#444444' : '#E03553', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                         {message.read ? 'Read' : 'New'}
                       </span>
                     {message.replied && (
-                        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 999, background: 'rgba(107,119,0,0.1)', color: '#6b7700', fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'flex', alignItems: 'center', gap: 3 }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: 'rgba(107,119,0,0.1)', color: '#6b7700', fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'flex', alignItems: 'center', gap: 3 }}>
                           <CheckCheck size={10} />Replied
                         </span>
                     )}

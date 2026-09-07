@@ -68,7 +68,8 @@
     "test:ava-eval-set": "node tests/ava/run-eval-set.mjs",
     "test:table-typography": "node scripts/test-table-typography.mjs",
     "test:schedule-tabs": "node scripts/test-schedule-tabs-render.mjs",
-    "test:daily-update-paint": "node scripts/test-daily-update-paint.mjs"
+    "test:daily-update-paint": "node scripts/test-daily-update-paint.mjs",
+    "test:ava-safe-area": "node scripts/test-ava-safe-area.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.48",

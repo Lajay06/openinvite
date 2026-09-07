@@ -62,7 +62,7 @@ export default function UniverseMiniHero() {
         position: "relative", zIndex: 2, textAlign: "center", padding: "0 clamp(24px, 6vw, 80px)", maxWidth: 1100
       }}>
         <h2 style={{
-          fontSize: "clamp(36px, 6vw, 72px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.06,
+          fontSize: "clamp(36px, 6vw, 72px)", fontWeight: 700, lineHeight: 1.06,
           color: "#FFFFFF", margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif",
           // No dark overlay behind this photo anymore — a text-shadow (not
           // a full-bleed tint) keeps the headline legible against the

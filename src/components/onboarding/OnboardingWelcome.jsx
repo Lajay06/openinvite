@@ -9,7 +9,7 @@ export default function OnboardingWelcome({ onNext }) {
       {/* Headline */}
       <h1 style={{
         fontSize: 52, fontWeight: 800,
-        letterSpacing: '-0.03em', lineHeight: 1.1,
+        lineHeight: 1.1,
         color: '#0A0A0A',
         fontFamily: PJS, margin: '0 0 24px',
       }}>

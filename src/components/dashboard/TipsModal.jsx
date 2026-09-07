@@ -94,7 +94,7 @@ export default function TipsModal({ onClose }) {
           {/* Content */}
           <div style={{ flex: 1, padding: 32, minHeight: 280, display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'auto' }}>
             <div key={key} style={{ animation: 'tipSlideIn 0.3s ease' }}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: 'Plus Jakarta Sans', margin: '0 0 12px' }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: 'Plus Jakarta Sans', margin: '0 0 12px' }}>
                 Tip {currentTip + 1} of {tips.length}
               </p>
               <h3 style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', lineHeight: 1.3, marginBottom: 16, marginTop: 0, fontFamily: 'Plus Jakarta Sans' }}>

@@ -62,18 +62,18 @@ function PageShell({ coupleName, dateStr, venue, theme, typography, universeConf
   return (
     <div style={{ minHeight: '100dvh', background: theme.lightBg, ...F }}>
       <div style={{ maxWidth: 520, margin: '0 auto', padding: '48px 24px 80px' }}>
-        <p style={{ fontSize: 13, fontWeight: 800, color: theme.lightText, letterSpacing: '-0.02em', marginBottom: 48 }}>
+        <p style={{ fontSize: 13, fontWeight: 800, color: theme.lightText, marginBottom: 48 }}>
           openinvite
         </p>
         {/* Wedding header */}
         <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(wedding)}>
           <div style={{ marginBottom: 36 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: theme.accent, letterSpacing: '0.12em', marginBottom: 8, ...F }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: theme.accent, marginBottom: 8, ...F }}>
               YOU'RE INVITED
             </p>
             <h1 style={{
               fontSize: 28, fontWeight: typography.headingWeight, fontStyle: typography.headingStyle,
-              color: theme.lightText, letterSpacing: '-0.03em', lineHeight: 1.2, margin: '0 0 10px',
+              color: theme.lightText, lineHeight: 1.2, margin: '0 0 10px',
               fontFamily: typography.headingFont,
             }}>
               {coupleName || 'A Wedding'}
@@ -716,8 +716,8 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
     return (
       <div style={{ ...shellOuter(theme), minHeight: embedded ? 220 : '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', ...F }}>
         <div style={{ textAlign: 'center', maxWidth: 400 }}>
-          <p style={{ fontSize: 13, fontWeight: 700, color: theme.accent, letterSpacing: '0.1em', marginBottom: 12 }}>Invitation not found</p>
-          <h1 style={{ fontSize: 24, fontWeight: typography.headingWeight, fontFamily: typography.headingFont, color: theme.lightText, marginBottom: 12, letterSpacing: '-0.02em' }}>This link has expired or is invalid</h1>
+          <p style={{ fontSize: 13, fontWeight: 700, color: theme.accent, marginBottom: 12 }}>Invitation not found</p>
+          <h1 style={{ fontSize: 24, fontWeight: typography.headingWeight, fontFamily: typography.headingFont, color: theme.lightText, marginBottom: 12 }}>This link has expired or is invalid</h1>
           <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6 }}>Please contact the couple directly for a new invitation link.</p>
         </div>
       </div>
@@ -735,7 +735,7 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
                 that repeated the date and venue the page already shows. A
                 guest who has just replied needs to be told their reply landed,
                 once. */}
-            <h2 style={{ fontSize: 26, fontWeight: typography.headingWeight, color: theme.lightText, marginBottom: 14, letterSpacing: '-0.02em', fontFamily: typography.headingFont }}>
+            <h2 style={{ fontSize: 26, fontWeight: typography.headingWeight, color: theme.lightText, marginBottom: 14, fontFamily: typography.headingFont }}>
               {anyAttending ? `We can't wait to celebrate with you!` : 'Thank you for letting us know'}
             </h2>
             {/* One line, in the universe's own display face. Only for guests
@@ -816,10 +816,10 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
         {/* Heading */}
         <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(wedding)}>
           <div style={{ marginBottom: 28 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: theme.accent, letterSpacing: '0.12em', marginBottom: 8, ...F }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: theme.accent, marginBottom: 8, ...F }}>
               ONE MORE THING…
             </p>
-            <h2 style={{ fontSize: 22, fontWeight: typography.headingWeight, color: theme.lightText, letterSpacing: '-0.02em', lineHeight: 1.2, marginBottom: 8, fontFamily: typography.headingFont }}>
+            <h2 style={{ fontSize: 22, fontWeight: typography.headingWeight, color: theme.lightText, lineHeight: 1.2, marginBottom: 8, fontFamily: typography.headingFont }}>
               {coupleName ? `A few questions from ${coupleName}` : 'A few questions'}
             </h2>
             <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, margin: 0, ...F }}>
@@ -891,13 +891,13 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
             the couple's name on screen twice. */}
         {!embedded && (<>
         {/* Logo */}
-        <p style={{ fontSize: 13, fontWeight: 800, color: theme.lightText, letterSpacing: '-0.02em', marginBottom: 48 }}>openinvite</p>
+        <p style={{ fontSize: 13, fontWeight: 800, color: theme.lightText, marginBottom: 48 }}>openinvite</p>
 
         {/* Header */}
         <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(wedding)}>
           <div style={{ marginBottom: 40 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: theme.accent, letterSpacing: '0.12em', marginBottom: 10 }}>YOU'RE INVITED</p>
-            <h1 style={{ fontSize: 32, fontWeight: typography.headingWeight, fontFamily: typography.headingFont, color: theme.lightText, letterSpacing: '-0.03em', lineHeight: 1.15, marginBottom: 12 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: theme.accent, marginBottom: 10 }}>YOU'RE INVITED</p>
+            <h1 style={{ fontSize: 32, fontWeight: typography.headingWeight, fontFamily: typography.headingFont, color: theme.lightText, lineHeight: 1.15, marginBottom: 12 }}>
               {coupleName || 'A Wedding'}
             </h1>
             {dateStr && <p style={{ fontSize: 15, color: 'rgba(10,10,10,0.6)', marginBottom: 4 }}>{dateStr}</p>}
@@ -952,8 +952,7 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
                     color: opt.yes ? theme.lightBg : theme.accent,
                     fontFamily: typography.headingFont,
                     fontWeight: typography.headingWeight || 600,
-                    fontSize: 19, letterSpacing: '-0.01em',
-                    opacity: primarySaving ? 0.6 : 1,
+                    fontSize: 19, opacity: primarySaving ? 0.6 : 1,
                     transition: 'opacity 0.15s ease',
                   }}
                 >

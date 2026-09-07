@@ -237,3 +237,39 @@ that is an asset limit, not a code one, and only a larger upload lifts it.
   was role-aware, not a blanket bump — see the Typography section above
   and src/styles/tokens.js's textPlaceholder/textDisabled/iconMuted
   tokens for which value applies to which kind of text/control
+
+## The design-system sweep — owner rulings, 2026-09-07
+
+These five are rules, not preferences, and each has a guard in
+`tests/persistence/design-system-sweep.mjs`. Scope is the DASHBOARD: the
+couple's published guest site and the studio previews of it are artwork
+(see the artwork exemption), and the marketing pages are display type the
+owner has not ruled on.
+
+**One filter pill component.** Every filter or selection pill set in the
+dashboard renders through `FilterPill` (`components/shared/TableToolbar.jsx`,
+the `.filter-pill` class). Selected is the black pill; unselected is the
+light-grey outline pill Event details › Theme uses. No unselected filter
+renders as bare text, and no selection set paints itself with the primary
+colour — strawberry is for actions, and a chosen filter is not one.
+
+**Nothing below font-weight 400 in the dashboard.** No 300, no `lighter`, no
+`font-light`. The avatar dropdown (Profile & account, Notification
+preferences, Plan & billing, Help center, Log out) is 500.
+
+**No letter-spacing in the dashboard.** Owner: "I don't like the tracking, it
+doesn't suit the brand." This includes eyebrows and small-caps labels, which
+were the loudest of it. `0` and `normal` are the only permitted values and the
+allowlist is empty — there is no exception to add a file to.
+
+**Every accordion collapsed on mount, with a one-line summary in its header.**
+`DetailsSection` and `OptionAccordion` both default closed and both summarise
+their contents while collapsed. `defaultOpen` survives as a prop with no
+caller passing it, so a section holding a validation error can open itself.
+
+**CTA text colour is derived from its background**, never hard-paired
+beside it. Use `readableOn(bg, colors)` from `lib/surfaceTint.js`. The
+universe detail's "Make this my universe" was `background: colors.accent` with
+`color: colors.darkBg` — navy on black, 1.04:1 on paris, and below 4.5:1 on
+fourteen of the twenty universes.
+

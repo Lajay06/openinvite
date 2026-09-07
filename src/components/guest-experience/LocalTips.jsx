@@ -105,7 +105,7 @@ export default function LocalTips({ weddingCity }) {
       </div>
 
       <div className="border-t border-gray-200">
-        <Accordion type="multiple" className="w-full">
+        <Accordion type="multiple" defaultValue={[]} className="w-full">
           {tipsCategories.map((category, index) => (
             <AccordionItem 
               key={index} 

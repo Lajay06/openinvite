@@ -14,7 +14,7 @@ const WeddingDetails = base44.entities.WeddingDetails;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
+  color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -225,7 +225,7 @@ export default function HoneymoonPage() {
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {/* Travel */}
           {activeTab === 'travel' && (
-          <DetailsSection title="Travel" icon={Plane} defaultOpen>
+          <DetailsSection title="Travel" icon={Plane}>
             <GoogleField label="Destination" value={data.destination} onChange={e => update({ destination: e.target.value })} placeholder="e.g. Bali, Maldives, Tuscany" />
             <SectionInput label="Departure airport" value={data.departureAirport} onChange={e => update({ departureAirport: e.target.value })} placeholder="e.g. LHR, JFK, SYD" />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
@@ -249,7 +249,7 @@ export default function HoneymoonPage() {
 
           {/* Accommodation */}
           {activeTab === 'accommodation' && (
-          <DetailsSection title="Accommodation" icon={Hotel} defaultOpen>
+          <DetailsSection title="Accommodation" icon={Hotel}>
             <GoogleField label="Hotel / resort name" value={data.hotelName} onChange={e => update({ hotelName: e.target.value })} placeholder="e.g. Four Seasons Bali" />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <SectionInput label="Booking reference" value={data.bookingReference} onChange={e => update({ bookingReference: e.target.value })} />
@@ -270,7 +270,7 @@ export default function HoneymoonPage() {
 
           {/* Planning */}
           {activeTab === 'planning' && (
-          <DetailsSection title="Planning" icon={Map} defaultOpen>
+          <DetailsSection title="Planning" icon={Map}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <label style={labelStyle}>Budget</label>
               <input type="number" value={data.budget || ''} onChange={e => update({ budget: e.target.value })}
@@ -287,7 +287,7 @@ export default function HoneymoonPage() {
 
           {/* Notes */}
           {activeTab === 'notes' && (
-          <DetailsSection title="Notes" icon={FileText} defaultOpen>
+          <DetailsSection title="Notes" icon={FileText}>
             <SectionInput label="Additional notes" isTextarea value={data.notes} onChange={e => update({ notes: e.target.value })} placeholder="Anything else about the honeymoon…" />
           </DetailsSection>
           )}

@@ -11,7 +11,7 @@ import AvaButton from '@/components/shared/AvaButton';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
+  color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -214,7 +214,7 @@ export default function EmergencyContactPage() {
           {/* Contacts tab: primary + backup + venue */}
           {activeTab === 'contacts' && (
           <>
-          <DetailsSection title="On-the-day contact" icon={Phone} defaultOpen>
+          <DetailsSection title="On-the-day contact" icon={Phone}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <SectionInput label="Name" value={primary.name} onChange={e => updateNested('primary', { name: e.target.value })} placeholder="Full name" />
               <SectionInput label="Phone" value={primary.phone} onChange={e => updateNested('primary', { phone: e.target.value })} placeholder="+1 555 000 0000" />
@@ -222,7 +222,7 @@ export default function EmergencyContactPage() {
             <SectionInput label="Role / relationship" value={primary.role} onChange={e => updateNested('primary', { role: e.target.value })} placeholder="e.g. Maid of honor, wedding planner" />
           </DetailsSection>
 
-          <DetailsSection title="Backup contact" icon={Users} defaultOpen>
+          <DetailsSection title="Backup contact" icon={Users}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <SectionInput label="Name" value={backup.name} onChange={e => updateNested('backup', { name: e.target.value })} placeholder="Full name" />
               <SectionInput label="Phone" value={backup.phone} onChange={e => updateNested('backup', { phone: e.target.value })} placeholder="+1 555 000 0000" />
@@ -230,7 +230,7 @@ export default function EmergencyContactPage() {
             <SectionInput label="Role / relationship" value={backup.role} onChange={e => updateNested('backup', { role: e.target.value })} placeholder="e.g. Best man, parent" />
           </DetailsSection>
 
-          <DetailsSection title="Venue contact" icon={Building2} defaultOpen>
+          <DetailsSection title="Venue contact" icon={Building2}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <SectionInput label="Venue coordinator name" value={venue.name} onChange={e => updateNested('venue', { name: e.target.value })} />
               <SectionInput label="Phone" value={venue.phone} onChange={e => updateNested('venue', { phone: e.target.value })} placeholder="+1 555 000 0000" />
@@ -241,7 +241,7 @@ export default function EmergencyContactPage() {
 
           {/* Vendor contacts */}
           {activeTab === 'vendors' && (
-          <DetailsSection title="Key vendors on the day" icon={Phone} defaultOpen>
+          <DetailsSection title="Key vendors on the day" icon={Phone}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {vendorContacts.map((v, i) => (
                 <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 12, alignItems: 'flex-end' }}>
@@ -266,7 +266,7 @@ export default function EmergencyContactPage() {
 
           {/* Notes */}
           {activeTab === 'notes' && (
-          <DetailsSection title="Notes" icon={FileText} defaultOpen>
+          <DetailsSection title="Notes" icon={FileText}>
             <SectionInput label="Other emergency notes" isTextarea value={data.otherNotes} onChange={e => update({ otherNotes: e.target.value })} placeholder="Medical contacts, allergy kit location, nearby hospital…" />
           </DetailsSection>
           )}

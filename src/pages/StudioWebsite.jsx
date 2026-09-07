@@ -538,7 +538,7 @@ export default function StudioWebsite({ onBack }) {
           {onBack ? 'Design Studio' : 'Guest suite'}
         </button>
         <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 8, pointerEvents: 'none' }}>
-          <span style={{ fontSize: 13, fontWeight: 500, color: '#FFFFFF', letterSpacing: '0.01em' }}>Website builder</span>
+          <span style={{ fontSize: 13, fontWeight: 500, color: '#FFFFFF' }}>Website builder</span>
           {details?.displayFont && (
             <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: 999 }}>
               {FONT_OPTIONS.find(f => f.value === details.displayFont)?.label || details.displayFont.replace(/['"]/g, '').split(',')[0]}

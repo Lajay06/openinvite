@@ -15,7 +15,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
+  color: 'rgba(10,10,10,0.6)',
   fontFamily: PJS,
 };
 
@@ -264,7 +264,7 @@ export default function AccommodationPage() {
         {/* Properties tab */}
         {activeTab === 'properties' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <DetailsSection title="Accommodation options" icon={MapPin} defaultOpen>
+            <DetailsSection title="Accommodation options" icon={MapPin}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {properties.length === 0 && (
                   <div style={{ padding: '32px 0', textAlign: 'center', border: '1px dashed rgba(10,10,10,0.15)' }}>
@@ -287,7 +287,7 @@ export default function AccommodationPage() {
                       {property.address && <p style={{ margin: '0 0 6px', fontSize: 12, color: '#444444', fontFamily: PJS }}>{property.address}</p>}
                       <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                         {property.tags?.slice(0, 3).map(tag => (
-                          <span key={tag} style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '2px 8px', background: 'rgba(10,10,10,0.06)', borderRadius: 999, color: '#444444', fontFamily: PJS }}>{tag}</span>
+                          <span key={tag} style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', background: 'rgba(10,10,10,0.06)', borderRadius: 999, color: '#444444', fontFamily: PJS }}>{tag}</span>
                         ))}
                       </div>
                     </div>
@@ -305,7 +305,7 @@ export default function AccommodationPage() {
         {/* Overview tab */}
         {activeTab === 'overview' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <DetailsSection title="Overview" icon={Hotel} defaultOpen>
+            <DetailsSection title="Overview" icon={Hotel}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <label style={labelStyle}>Suggested check-in date</label>
@@ -324,7 +324,7 @@ export default function AccommodationPage() {
         {/* Notes tab */}
         {activeTab === 'notes' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <DetailsSection title="Notes" icon={FileText} defaultOpen>
+            <DetailsSection title="Notes" icon={FileText}>
               <SectionInput label="Additional accommodation notes" isTextarea value={accom.additionalNotes} onChange={e => update({ additionalNotes: e.target.value })} placeholder="Anything else guests should know about accommodation…" />
             </DetailsSection>
           </div>

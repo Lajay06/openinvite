@@ -95,7 +95,7 @@ export default function SetEventsModal({ guests, weddingEvents, onUpdate, onClos
       <DialogContent hideClose title="Set events" className="p-0 gap-0" style={{ width: 'min(90vw, 420px)', maxWidth: 'min(90vw, 420px)', ...F }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '20px 20px 0' }}>
           <div>
-            <h2 style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', margin: '0 0 2px', letterSpacing: '-0.01em' }}>
+            <h2 style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', margin: '0 0 2px' }}>
               Set events
             </h2>
             <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', margin: 0 }}>

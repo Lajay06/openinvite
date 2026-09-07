@@ -106,7 +106,7 @@ function UniverseGridTile({ universe, index, isSelected, onExplore, onSelectTile
         <p style={{ fontSize: 10, fontStyle: 'italic', color: 'rgba(255,255,255,0.6)', margin: '0 0 4px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           {universe.tagline}
         </p>
-        <h3 style={{ fontSize: 'clamp(16px, 1.4vw, 20px)', fontWeight: 700, color: '#FFFFFF', letterSpacing: '-0.01em', margin: '0 0 6px', lineHeight: 1.1 }}>
+        <h3 style={{ fontSize: 'clamp(16px, 1.4vw, 20px)', fontWeight: 700, color: '#FFFFFF', margin: '0 0 6px', lineHeight: 1.1 }}>
           {universe.name}
         </h3>
 

@@ -72,8 +72,7 @@ const TABS = [
 ];
 
 const labelStyle = {
-  fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
-  color: 'rgba(10,10,10,0.6)', fontFamily: PJS, display: 'block', marginBottom: 6,
+  fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, display: 'block', marginBottom: 6,
 };
 
 const sectionTitleStyle = {
@@ -386,7 +385,7 @@ function BillingTab({ user }) {
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
         <span style={{
-          fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', fontFamily: PJS,
+          fontSize: 11, fontWeight: 700, fontFamily: PJS,
           color: plan === 'free' ? 'rgba(10,10,10,0.6)' : '#FFFFFF',
           background: plan === 'ultra' ? 'linear-gradient(135deg, #FBBF24, #F59E0B)' : plan === 'pro' ? '#0A0A0A' : 'rgba(10,10,10,0.08)',
           padding: '4px 12px', borderRadius: 999,
@@ -507,7 +506,7 @@ function BillingTab({ user }) {
       )}
 
       <div>
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', margin: '0 0 12px', fontFamily: PJS }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', margin: '0 0 12px', fontFamily: PJS }}>
           {plan === 'free' ? "What's included in your free trial" : `What's included in ${planLabel}`}
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

@@ -40,8 +40,8 @@ const wrapStyle = {
   borderTop: `1px solid ${RULE}`, borderBottom: `1px solid ${RULE}`,
   borderLeft: '3px solid #E03553', padding: '28px 40px', background: '#FFFFFF',
 };
-const eyebrow = { fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: MUTED, fontFamily: PJS };
-const titleStyle = { fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', color: INK, fontFamily: PJS, margin: '10px 0 6px' };
+const eyebrow = { fontSize: 11, fontWeight: 700, color: MUTED, fontFamily: PJS };
+const titleStyle = { fontSize: 22, fontWeight: 800, color: INK, fontFamily: PJS, margin: '10px 0 6px' };
 const whyStyle = { fontSize: 14, color: MUTED, lineHeight: 1.6, maxWidth: 560, margin: 0, fontFamily: PJS };
 const rowStyle = { display: 'flex', alignItems: 'center', gap: 14, padding: '11px 0', borderBottom: `1px solid ${RULE}`, fontSize: 14, fontFamily: PJS, color: INK };
 const lockStyle = { fontSize: 11, borderRadius: 999, padding: '3px 9px', border: `1px solid ${RULE}`, color: MUTED, fontFamily: PJS };

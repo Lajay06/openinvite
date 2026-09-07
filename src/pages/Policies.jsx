@@ -152,7 +152,7 @@ export default function PoliciesPage() {
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
-              <Label style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Policy</Label>
+              <Label style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Policy</Label>
               <Select value={d.childrenPolicy?.policy} onValueChange={v => handleUpdate('childrenPolicy', 'policy', v)}>
                 <SelectTrigger className="mt-2"><SelectValue placeholder="Select a policy" /></SelectTrigger>
                 <SelectContent>
@@ -176,7 +176,7 @@ export default function PoliciesPage() {
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
-              <Label style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Policy</Label>
+              <Label style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Policy</Label>
               <Select value={d.plusOnePolicy?.policy} onValueChange={v => handleUpdate('plusOnePolicy', 'policy', v)}>
                 <SelectTrigger className="mt-2"><SelectValue placeholder="Select a policy" /></SelectTrigger>
                 <SelectContent>
@@ -200,7 +200,7 @@ export default function PoliciesPage() {
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
-              <Label style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Policy</Label>
+              <Label style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Policy</Label>
               <Select value={d.photographyPolicy?.policy} onValueChange={v => handleUpdate('photographyPolicy', 'policy', v)}>
                 <SelectTrigger className="mt-2"><SelectValue placeholder="Select a policy" /></SelectTrigger>
                 <SelectContent>
@@ -224,7 +224,7 @@ export default function PoliciesPage() {
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
-              <Label style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Policy</Label>
+              <Label style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Policy</Label>
               <Select value={d.socialMediaPolicy?.policy} onValueChange={v => handleUpdate('socialMediaPolicy', 'policy', v)}>
                 <SelectTrigger className="mt-2"><SelectValue placeholder="Select a policy" /></SelectTrigger>
                 <SelectContent>
@@ -250,7 +250,7 @@ export default function PoliciesPage() {
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
-              <Label style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Policy</Label>
+              <Label style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Policy</Label>
               <Select value={d.giftPolicy?.policy} onValueChange={v => handleUpdate('giftPolicy', 'policy', v)}>
                 <SelectTrigger className="mt-2"><SelectValue placeholder="Select a policy" /></SelectTrigger>
                 <SelectContent>
@@ -275,7 +275,7 @@ export default function PoliciesPage() {
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
-              <Label style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Policy</Label>
+              <Label style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Policy</Label>
               <Select value={d.unpluggedPolicy?.policy} onValueChange={v => handleUpdate('unpluggedPolicy', 'policy', v)}>
                 <SelectTrigger className="mt-2"><SelectValue placeholder="Select a policy" /></SelectTrigger>
                 <SelectContent>

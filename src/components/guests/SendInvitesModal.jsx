@@ -111,7 +111,7 @@ function StepIndicator({ current }) {
               <span style={{
                 fontSize: 10, fontWeight: active ? 700 : 500,
                 color: active ? '#0A0A0A' : done ? '#22C55E' : 'rgba(10,10,10,0.6)',
-                letterSpacing: '0.02em', whiteSpace: 'nowrap',
+                whiteSpace: 'nowrap',
                 transition: 'color 0.2s ease',
               }}>
                 {label}
@@ -135,7 +135,7 @@ function WhatsAppPreview({ guest, coupleName, weddingDate, rsvpUrl }) {
   const message = buildWhatsAppMessage(guest, coupleName, weddingDate, rsvpUrl);
   return (
     <div style={{ padding: 20 }}>
-      <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', margin: '0 0 10px', ...F }}>
+      <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', margin: '0 0 10px', ...F }}>
         WHATSAPP MESSAGE {guest?.phone ? `— TO ${guest.phone}` : '(NO PHONE ON FILE)'}
       </p>
       <div style={{
@@ -531,7 +531,7 @@ export default function SendInvitesModal({
       borderLeft: '1px solid rgba(10,10,10,0.12)', background: '#FAFAFA',
     }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
-        <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', margin: '0 0 4px', ...F }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', margin: '0 0 4px', ...F }}>
           Live preview
         </p>
         {channel !== 'whatsapp' && (
@@ -604,7 +604,7 @@ export default function SendInvitesModal({
           flexShrink: 0,
         }}>
           <div>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0A0A0A', margin: '0 0 2px', letterSpacing: '-0.02em' }}>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0A0A0A', margin: '0 0 2px' }}>
               Send {TYPE_LABELS[type].toLowerCase()}
             </h2>
             <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.45)', margin: 0 }}>
@@ -635,7 +635,7 @@ export default function SendInvitesModal({
             {/* ── STEP 1: Select guests ──────────────────────────────────── */}
             {step === 1 && (
               <div>
-                <h3 style={{ fontSize: 22, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
+                <h3 style={{ fontSize: 22, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
                   Who are you sending to?
                 </h3>
                 <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px' }}>
@@ -697,7 +697,7 @@ export default function SendInvitesModal({
                       onChange={toggleAll}
                       style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#E03553', flexShrink: 0 }}
                     />
-                    <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.45)', letterSpacing: '0.06em' }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.45)' }}>
                       {allFilteredSelected ? 'Deselect all' : 'Select all'} ({filteredGuests.length})
                     </span>
                   </div>
@@ -750,7 +750,7 @@ export default function SendInvitesModal({
             {/* ── STEP 2: Compose ────────────────────────────────────────── */}
             {step === 2 && (
               <div>
-                <h3 style={{ fontSize: 22, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
+                <h3 style={{ fontSize: 22, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
                   Compose your message
                 </h3>
                 <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 24px' }}>
@@ -766,7 +766,7 @@ export default function SendInvitesModal({
                 </div>
 
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', marginBottom: 6 }}>Subject line</label>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', marginBottom: 6 }}>Subject line</label>
                   <input
                     type="text"
                     value={subject}
@@ -779,7 +779,7 @@ export default function SendInvitesModal({
                   />
                 </div>
                 <div style={{ marginBottom: 20 }}>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', marginBottom: 6 }}>Message body</label>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', marginBottom: 6 }}>Message body</label>
                   <textarea
                     value={messageBody}
                     onChange={e => { setMessageBody(e.target.value); setBodyEdited(true); }}
@@ -794,7 +794,7 @@ export default function SendInvitesModal({
 
                 {/* Banner image control */}
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', marginBottom: 6 }}>Banner image</label>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', marginBottom: 6 }}>Banner image</label>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                     {[
                       { val: 'wedding', label: 'Wedding photo', disabled: !hasWeddingPhoto },
@@ -826,7 +826,7 @@ export default function SendInvitesModal({
             {/* ── STEP 3: Choose channel ─────────────────────────────────── */}
             {step === 3 && (
               <div>
-                <h3 style={{ fontSize: 22, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
+                <h3 style={{ fontSize: 22, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
                   How would you like to send?
                 </h3>
                 <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 28px' }}>
@@ -910,7 +910,7 @@ export default function SendInvitesModal({
             {/* ── STEP 4: Review & send ──────────────────────────────────── */}
             {step === 4 && (
               <div>
-                <h3 style={{ fontSize: 22, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
+                <h3 style={{ fontSize: 22, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
                   Ready to send?
                 </h3>
                 <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 24px' }}>
@@ -926,15 +926,15 @@ export default function SendInvitesModal({
                       { label: 'Type', value: TYPE_LABELS[type] },
                     ].map(s => (
                       <div key={s.label} style={{ textAlign: 'center' }}>
-                        <p style={{ fontSize: 18, fontWeight: 800, color: '#0A0A0A', margin: '0 0 2px', letterSpacing: '-0.02em', ...F }}>{s.value}</p>
-                        <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', margin: 0, letterSpacing: '0.06em', ...F }}>{s.label.toUpperCase()}</p>
+                        <p style={{ fontSize: 18, fontWeight: 800, color: '#0A0A0A', margin: '0 0 2px', ...F }}>{s.value}</p>
+                        <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', margin: 0, ...F }}>{s.label.toUpperCase()}</p>
                       </div>
                     ))}
                   </div>
 
                   {/* Guest list */}
                   <div style={{ padding: '12px 20px 16px', borderTop: '1px solid rgba(10,10,10,0.12)' }}>
-                    <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', margin: '0 0 8px', ...F }}>Sending to</p>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', margin: '0 0 8px', ...F }}>Sending to</p>
                     <div style={{ maxHeight: 220, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
                       {selectedGuests.map(g => (
                         <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -951,7 +951,7 @@ export default function SendInvitesModal({
 
                 {/* What happens next */}
                 <div style={{ background: '#F7F7F7', borderRadius: 10, padding: '16px 20px' }}>
-                  <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.08em', margin: '0 0 12px', ...F }}>What happens next</p>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(10,10,10,0.6)', margin: '0 0 12px', ...F }}>What happens next</p>
                   {[
                     'Each guest gets a unique personal RSVP link',
                     'RSVPs will appear in your guest list automatically',
@@ -995,9 +995,13 @@ export default function SendInvitesModal({
           </div>
         )}
 
-        {/* Footer navigation */}
-        <div style={{
-          padding: '16px 32px', borderTop: '1px solid rgba(10,10,10,0.12)',
+        {/* Footer navigation.
+            THE AVA CORNER IS RESERVED. This panel is half-width and anchored
+            right, so its "Next" sat directly under the floating Ava button and
+            could not be clicked — the owner found it. The right padding clears
+            the button's 44px + 32px inset; the class carries the bottom. */}
+        <div className="oi-ava-safe" style={{
+          padding: '16px 96px 16px 32px', borderTop: '1px solid rgba(10,10,10,0.12)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           flexShrink: 0, background: '#FFFFFF',
         }}>

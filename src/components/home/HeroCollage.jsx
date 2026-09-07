@@ -16,7 +16,6 @@ const prefersReducedMotion = () =>
 const HEADLINE_STYLE = {
   fontSize: "clamp(40px, 5vw, 64px)",
   fontWeight: 600,
-  letterSpacing: "-0.02em",
   lineHeight: 1.1,
   color: "#FFFFFF",
   margin: 0,

@@ -40,8 +40,7 @@ const BadgePill = ({ style, children }) => (
 /* ── Per-event status chip — DESIGN_SPEC badge colours ───────────────────── */
 const CHIP_BASE = {
   display: 'inline-flex', alignItems: 'center',
-  fontFamily: PJS, fontSize: 10, fontWeight: 600, letterSpacing: '0.02em',
-  padding: '2px 8px', borderRadius: 999, whiteSpace: 'nowrap',
+  fontFamily: PJS, fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 999, whiteSpace: 'nowrap',
 };
 
 // Exported for Seating.jsx (PR6) — its per-event guest pool reuses the
@@ -246,7 +245,6 @@ const dietaryPillStyle = {
   fontFamily: PJS,
   fontSize: 9,
   fontWeight: 700,
-  letterSpacing: '0.06em',
   padding: '2px 7px',
   borderRadius: 999,
   whiteSpace: 'nowrap',
@@ -536,7 +534,7 @@ function DietaryField({ guest, onUpdate, readOnly }) {
 
   return (
     <div style={{ marginBottom: 16 }}>
-      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, display: 'block', marginBottom: 6 }}>
+      <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, display: 'block', marginBottom: 6 }}>
         Dietary requirements
       </span>
       {readOnly ? (
@@ -582,7 +580,7 @@ function RsvpDetailRow({ guest, weddingEvents, onEditEvents, onUpdate, readOnly,
               borderBottom: '1px solid rgba(10,10,10,0.12)', alignItems: 'center',
             }}>
               {['Event', 'Invited', 'Status', 'Meal', 'Plus-one', 'Responded'].map(h => (
-                <span key={h} style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>{h}</span>
+                <span key={h} style={{ fontSize: 10, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>{h}</span>
               ))}
             </div>
             {weddingEvents.map((event, i) => {

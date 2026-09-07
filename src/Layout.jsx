@@ -20,9 +20,9 @@ import { daysUntilWedding, countdownLabel } from '@/lib/weddingCountdown';
 import { color, font, radius, shadow } from '@/styles/tokens';
 
 /**
- * The toast's one coloured element. Size and weight are shared by all three
+ * The toast's one colored element. Size and weight are shared by all three
  * variants so that swapping the mark cannot shift the layout — the only thing
- * that changes between success, error and info is this colour.
+ * that changes between success, error and info is this color.
  */
 const TOAST_MARK = {
   fontSize: 15,
@@ -129,9 +129,9 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
   // nothing left to catch; an unexpected throw should surface rather than be
   // hidden, and the root error boundary + client-error beacon will report it.
   useEffect(() => {
-    let cancelled = false;
-    getWeddingWeather(weddingDetails).then(r => { if (!cancelled) setWeatherResult(r); });
-    return () => { cancelled = true; };
+    let canceled = false;
+    getWeddingWeather(weddingDetails).then(r => { if (!canceled) setWeatherResult(r); });
+    return () => { canceled = true; };
   }, [weddingDetails?.mainCeremony?.address, weddingDetails?.reception?.address, weddingDetails?.weddingDate]);
 
   const WEATHER_ICONS = { Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning };
@@ -170,9 +170,9 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
   const pinkDot = <span style={{ color: '#ec4899', fontFamily: PJS, lineHeight: 1, flexShrink: 0 }}>·</span>;
 
   return (
-    // Three equal-ended columns, NOT flex + an absolutely positioned centre.
+    // Three equal-ended columns, NOT flex + an absolutely positioned center.
     //
-    // The centre pill used to be `position:absolute; left:50%`, i.e. out of
+    // The center pill used to be `position:absolute; left:50%`, i.e. out of
     // flow. That meant the left group had nothing bounding it: it grew past
     // the pill and drew UNDERNEATH it, and because the pill paints later it
     // simply swallowed the tail of the text. The left group's own
@@ -183,7 +183,7 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
     //
     // As a grid track, the same boundary becomes a real edge, so the existing
     // overflow/ellipsis finally have something to act against. Equal `1fr`
-    // tracks keep the pill centred by construction rather than by arithmetic,
+    // tracks keep the pill centerd by construction rather than by arithmetic,
     // which is why this is a grid and not a `max-width: calc(50% - 110px)`:
     // that 110 is half the pill's intrinsic width and would rot silently the
     // first time the pill's padding changed.
@@ -196,7 +196,7 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
     // is only a bell and a 36px avatar today, so track 3 is mostly empty; if
     // anything is ever added there, the left track shrinks by the same amount
     // and the couple name starts truncating earlier. That is the trade for
-    // keeping the pill centred.
+    // keeping the pill centerd.
     //
     // `lg:grid`, not an inline display: the `hidden` class is what keeps this
     // bar off mobile, and an inline `display` would beat the class and render
@@ -255,7 +255,7 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
       </div>
 
       {/* Center: search pill. In flow now — it is the `auto` track. No
-          overflow on this wrapper: the results panel is 320px wide and centred
+          overflow on this wrapper: the results panel is 320px wide and centerd
           on a 220px pill, so it deliberately overhangs 50px each side. */}
       <div>
         <TopBarSearch />
@@ -297,25 +297,25 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
               )}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate('/account')} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
+            <DropdownMenuItem onClick={() => navigate('/account')} style={{ fontFamily: PJS, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
               <User size={14} style={{ marginRight: 8, color: 'rgba(10,10,10,0.5)' }} />
               Profile & account
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/account?tab=notifications')} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
+            <DropdownMenuItem onClick={() => navigate('/account?tab=notifications')} style={{ fontFamily: PJS, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
               <Bell size={14} style={{ marginRight: 8, color: 'rgba(10,10,10,0.5)' }} />
               Notification preferences
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/account?tab=billing')} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
+            <DropdownMenuItem onClick={() => navigate('/account?tab=billing')} style={{ fontFamily: PJS, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
               <CreditCard size={14} style={{ marginRight: 8, color: 'rgba(10,10,10,0.5)' }} />
               Plan & billing
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate('/help')} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer' }}>
+            <DropdownMenuItem onClick={() => navigate('/help')} style={{ fontFamily: PJS, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
               <HelpCircle size={14} style={{ marginRight: 8, color: 'rgba(10,10,10,0.5)' }} />
-              Help centre
+              Help center
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout} style={{ fontFamily: PJS, fontSize: 13, cursor: 'pointer', color: '#E03553' }}>
+            <DropdownMenuItem onClick={handleLogout} style={{ fontFamily: PJS, fontSize: 13, fontWeight: 500, cursor: 'pointer', color: '#E03553' }}>
               <LogOut size={14} style={{ marginRight: 8, color: '#E03553' }} />
               Log out
             </DropdownMenuItem>
@@ -554,16 +554,16 @@ function LayoutShell({ children, currentPageName }) {
       {/* THE TOAST, IN THE APP'S OWN TOKENS.
           It was a black rectangle — #111 ground, white text, square corners —
           with react-hot-toast's stock icon on it: a filled GREEN CIRCLE with a
-          white tick, a colour that appears nowhere else in this product. Two
+          white tick, a color that appears nowhere else in this product. Two
           things were wrong with it. The ground and the corner belonged to no
-          system we own, and the only coloured element on screen was a library
+          system we own, and the only colored element on screen was a library
           default.
 
           Now: our surface, our border, our text, our radius token, and the
           mark in the accent. The mark is a TEXT-PRESENTATION glyph (✓ / ✗),
           which CLAUDE.md names explicitly as not-an-emoji — it inherits our
-          typeface and takes currentColor, so it is ours to colour rather than
-          a drawn asset with a colour baked in.
+          typeface and takes currentColor, so it is ours to color rather than
+          a drawn asset with a color baked in.
 
           THE VARIANTS DIFFER BY THE MARK AND NOTHING ELSE. Same ground, same
           border, same radius, same shadow, same position, same type. Copy is

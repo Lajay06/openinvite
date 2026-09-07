@@ -57,7 +57,7 @@ export function renderWeeklyDigestEmail({
   const activityHtml = (pollActivity > 0 || questionnaireActivity > 0) ? `
           <tr>
             <td style="padding:24px 40px 0;">
-              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:rgba(0,0,0,0.4);letter-spacing:0.04em;font-family:${FONT};">This week's activity</p>
+              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:rgba(0,0,0,0.4);font-family:${FONT};">This week's activity</p>
               <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;">
                 ${pollActivity > 0 ? `<tr><td style="padding:4px 0;font-size:14px;color:${BLACK};font-family:${FONT};"><span style="color:${ACCENT};">&bull;</span>&nbsp; ${pollActivity} poll response${pollActivity === 1 ? '' : 's'}</td></tr>` : ''}
                 ${questionnaireActivity > 0 ? `<tr><td style="padding:4px 0;font-size:14px;color:${BLACK};font-family:${FONT};"><span style="color:${ACCENT};">&bull;</span>&nbsp; ${questionnaireActivity} questionnaire response${questionnaireActivity === 1 ? '' : 's'}</td></tr>` : ''}
@@ -68,7 +68,7 @@ export function renderWeeklyDigestEmail({
   const actionsHtml = (recommendedActions && recommendedActions.length > 0) ? `
           <tr>
             <td style="padding:24px 40px 0;">
-              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:rgba(0,0,0,0.4);letter-spacing:0.04em;font-family:${FONT};">This week</p>
+              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:rgba(0,0,0,0.4);font-family:${FONT};">This week</p>
               <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;">
                 ${recommendedActions.map(a => `
                 <tr>
@@ -84,8 +84,8 @@ export function renderWeeklyDigestEmail({
           <!-- Headline -->
           <tr>
             <td style="padding:32px 40px 0;">
-              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:${ACCENT};letter-spacing:0.08em;font-family:${FONT};">weekly wrap-up</p>
-              <p style="margin:0;font-size:24px;font-weight:700;color:${BLACK};line-height:1.3;letter-spacing:-0.01em;font-family:${FONT};">
+              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:${ACCENT};font-family:${FONT};">weekly wrap-up</p>
+              <p style="margin:0;font-size:24px;font-weight:700;color:${BLACK};line-height:1.3;font-family:${FONT};">
                 Hi ${escapeHtml(coupleNames || 'there')}, here's your week
               </p>
             </td>
@@ -102,7 +102,7 @@ export function renderWeeklyDigestEmail({
           <!-- Running totals -->
           <tr>
             <td style="padding:24px 40px 0;">
-              <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:rgba(0,0,0,0.4);letter-spacing:0.04em;font-family:${FONT};">Guest list totals</p>
+              <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:rgba(0,0,0,0.4);font-family:${FONT};">Guest list totals</p>
               <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;">
                 ${statRow('Attending', totals.attending)}
                 ${statRow('Declined', totals.declined)}
@@ -121,7 +121,7 @@ ${activityHtml}
               <table role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="background:${ACCENT};border-radius:999px;">
-                    <a href="${escapeHtml(accountUrl.replace('/account', '/Guests'))}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:999px;font-family:${FONT};letter-spacing:0.01em;">
+                    <a href="${escapeHtml(accountUrl.replace('/account', '/Guests'))}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:999px;font-family:${FONT};">
                       View your guest list
                     </a>
                   </td>

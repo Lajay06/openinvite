@@ -574,7 +574,7 @@ export default function Onboarding() {
         }}
       >
         <div style={{ width: '100%', maxWidth: 420 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.02em', margin: '0 0 12px', fontFamily: PJS }}>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#0A0A0A', margin: '0 0 12px', fontFamily: PJS }}>
             Something went wrong.
           </h1>
           <p style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(10,10,10,0.6)', margin: '0 0 32px', fontFamily: PJS }}>
@@ -621,7 +621,7 @@ export default function Onboarding() {
             backgroundRepeat: 'no-repeat',
           }}
         />
-        <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, letterSpacing: '-0.01em' }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>
           Openinvite
         </span>
       </div>

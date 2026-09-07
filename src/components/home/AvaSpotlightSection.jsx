@@ -73,8 +73,7 @@ function AnimatedRow({ row, delay }) {
         fontFamily: PJS,
         margin: 0,
         lineHeight: 1.2,
-        letterSpacing: "-0.02em",
-      }}>
+        }}>
         {row.heading}
       </h3>
       <p style={{
@@ -113,7 +112,6 @@ export default function AvaSpotlightSection() {
           // lines was the explicit instruction, so the type match gives way.
           fontSize: "clamp(32px, 3.33vw, 48px)",
           fontWeight: 700,
-          letterSpacing: "-0.03em",
           lineHeight: 1.08,
           color: "#FFFFFF",
           // 672 -> 1200, which is the cap the parent div already imposes, so

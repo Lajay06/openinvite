@@ -16,7 +16,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
+  color: 'rgba(10,10,10,0.6)',
   fontFamily: PJS,
 };
 
@@ -194,7 +194,7 @@ export default function TransportPage() {
         {/* Overview tab */}
         {activeTab === 'overview' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <DetailsSection title="Overview" icon={MapPin} defaultOpen>
+            <DetailsSection title="Overview" icon={MapPin}>
               <Field label="Note for your wedding party">
                 <textarea style={{ ...inputStyle, minHeight: 80, resize: 'vertical' }}
                   value={transport.coupleNote || ''}
@@ -221,7 +221,7 @@ export default function TransportPage() {
         {/* Parking tab */}
         {activeTab === 'parking' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <DetailsSection title="Parking" icon={Car} defaultOpen>
+            <DetailsSection title="Parking" icon={Car}>
               <PillToggle label="Parking available at venue" value={parking.venueParking || false} onChange={v => updateParking({ venueParking: v })} />
               {parking.venueParking && (
                 <SectionInput label="Venue parking notes" isTextarea value={parking.venueParkingNotes} onChange={e => updateParking({ venueParkingNotes: e.target.value })} placeholder="e.g. 200 spaces, free for guests" />
@@ -256,7 +256,7 @@ export default function TransportPage() {
         {/* Public transport tab */}
         {activeTab === 'public-transport' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <DetailsSection title="Public transport" icon={Bus} defaultOpen>
+            <DetailsSection title="Public transport" icon={Bus}>
               <SectionInput label="General notes" isTextarea value={pt.generalNotes} onChange={e => updatePublicTransport({ generalNotes: e.target.value })} placeholder="e.g. Services run until midnight. Night buses available after that." />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -294,7 +294,7 @@ export default function TransportPage() {
         {/* Rideshare tab */}
         {activeTab === 'rideshare' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <DetailsSection title="Rideshare & taxi" icon={Car} defaultOpen>
+            <DetailsSection title="Rideshare & taxi" icon={Car}>
               <SectionInput label="Suggested pickup location" value={rs.pickupLocation} onChange={e => updateRideshare({ pickupLocation: e.target.value })} placeholder="e.g. Main entrance on Church St" />
               <SectionInput label="Suggested drop-off location" value={rs.dropoffLocation} onChange={e => updateRideshare({ dropoffLocation: e.target.value })} placeholder="e.g. Drop off on King St" />
               <SectionInput label="Late-night note" value={rs.lateNightNote} onChange={e => updateRideshare({ lateNightNote: e.target.value })} placeholder="e.g. Ubers can be limited after 11pm" />
@@ -309,7 +309,7 @@ export default function TransportPage() {
               <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 12px' }}>Transport vendors</p>
               <VendorRosterSection category="transportation" categoryLabel="transportation" />
             </div>
-            <DetailsSection title="Couple-arranged transport" icon={Truck} defaultOpen>
+            <DetailsSection title="Couple-arranged transport" icon={Truck}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {shuttles.map((shuttle, i) => (
                   <div key={shuttle.id} style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '16px 18px' }}>
@@ -372,7 +372,7 @@ export default function TransportPage() {
         {/* Notes tab */}
         {activeTab === 'notes' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <DetailsSection title="Notes" icon={FileText} defaultOpen>
+            <DetailsSection title="Notes" icon={FileText}>
               <SectionInput label="Additional transport notes" isTextarea value={transport.freeTextNotes} onChange={e => update({ freeTextNotes: e.target.value })} placeholder="Any other transport details for your wedding party…" />
             </DetailsSection>
           </div>

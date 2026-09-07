@@ -33,7 +33,7 @@ function AboutTab({ vendor, details }) {
       )}
       {details?.types?.length > 0 && (
         <div>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 8 }}>Listed as</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: 8 }}>Listed as</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {details.types.filter(t => !['point_of_interest', 'establishment'].includes(t)).slice(0, 6).map(t => (
               <span key={t} style={{ fontSize: 12, color: '#0A0A0A', background: 'rgba(10,10,10,0.06)', padding: '4px 10px', borderRadius: 999, fontFamily: PJS }}>{t.replace(/_/g, ' ')}</span>
@@ -53,7 +53,7 @@ function ReviewsTab({ vendor, details }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-        <div style={{ fontSize: 40, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, letterSpacing: '-0.03em', lineHeight: 1 }}>
+        <div style={{ fontSize: 40, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, lineHeight: 1 }}>
           {vendor.rating != null ? vendor.rating : '—'}
         </div>
         <div>
@@ -193,7 +193,7 @@ export default function VendorProfileModal({ vendor, onClose, onSave, isSaved })
         <div style={{ padding: '20px 28px 0' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', letterSpacing: '-0.02em' }}>{vendor.name}</div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A' }}>{vendor.name}</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 5, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 11, fontWeight: 600, color: '#E03553', background: 'rgba(224,53,83,0.1)', padding: '2px 9px', borderRadius: 999 }}>{vendor.category}</span>
                 {vendor.location && (

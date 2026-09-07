@@ -135,8 +135,7 @@ export default function StudioHub() {
                     {card.badge && (
                       <span style={{
                         display: 'inline-flex', alignItems: 'center', gap: 5,
-                        fontSize: 11, fontWeight: 700, letterSpacing: '0.02em',
-                        padding: '5px 12px', borderRadius: 999,
+                        fontSize: 11, fontWeight: 700, padding: '5px 12px', borderRadius: 999,
                         background: 'rgba(0,0,0,0.45)', color: '#FFFFFF',
                       }}>
                         {BadgeIcon && <BadgeIcon size={11} color="#F59E0B" />}
@@ -145,12 +144,12 @@ export default function StudioHub() {
                     )}
                   </div>
 
-                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.7)', margin: '0 0 6px' }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.7)', margin: '0 0 6px' }}>
                     {card.kicker}
                   </p>
                   <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
                     <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: 'clamp(20px, 1.8vw, 26px)', fontWeight: 700, color: '#FFFFFF', margin: '0 0 6px', letterSpacing: '-0.01em', lineHeight: 1.15 }}>
+                      <p style={{ fontSize: 'clamp(20px, 1.8vw, 26px)', fontWeight: 700, color: '#FFFFFF', margin: '0 0 6px', lineHeight: 1.15 }}>
                         {card.title}
                       </p>
                       <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', margin: 0, lineHeight: 1.4 }}>

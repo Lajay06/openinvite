@@ -320,8 +320,7 @@ function NavItem({ icon: Icon, label, url, onClick, isActive, showBadge, disable
       </span>
       {showBadge && (
         <span style={{
-          fontSize: 8, fontWeight: 800, letterSpacing: "0.06em",
-          background: "linear-gradient(135deg, #FBBF24, #F59E0B)",
+          fontSize: 8, fontWeight: 800, background: "linear-gradient(135deg, #FBBF24, #F59E0B)",
           color: "#FFFFFF", padding: "2px 5px", borderRadius: 3, flexShrink: 0,
           fontFamily: PJS,
         }}>
@@ -688,8 +687,7 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
                     </span>
                     {item.ultraBadge && !canAccessUltraMobile && (
                       <span style={{
-                        fontSize: 9, fontWeight: 800, letterSpacing: "0.06em",
-                        background: "linear-gradient(135deg, #FBBF24, #F59E0B)",
+                        fontSize: 9, fontWeight: 800, background: "linear-gradient(135deg, #FBBF24, #F59E0B)",
                         color: "#FFFFFF", padding: "2px 6px", borderRadius: 3, flexShrink: 0,
                         fontFamily: PJS,
                       }}>

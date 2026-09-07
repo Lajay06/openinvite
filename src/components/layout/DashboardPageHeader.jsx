@@ -18,7 +18,7 @@ export default function DashboardPageHeader({ title, subtitle, actions }) {
            a 390 screen). Shared chrome, so every page with a long subtitle had
            it. */}
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 min-w-0">
-        <h1 style={{ fontSize: 18, fontWeight: 600, color: '#0A0A0A', margin: 0, fontFamily: PJS, letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
+        <h1 style={{ fontSize: 18, fontWeight: 600, color: '#0A0A0A', margin: 0, fontFamily: PJS, whiteSpace: 'nowrap' }}>
           {title}
         </h1>
         {subtitle && (

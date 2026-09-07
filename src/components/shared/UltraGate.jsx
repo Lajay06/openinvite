@@ -44,8 +44,8 @@ export default function UltraGate({
           <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'linear-gradient(135deg, #FBBF24, #F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
             <Crown size={28} color="#FFFFFF" strokeWidth={1.8} />
           </div>
-          <p style={{ fontSize: 11, fontWeight: 800, color: '#F59E0B', letterSpacing: '0.12em', margin: '0 0 10px', ...F }}>Ultra feature</p>
-          <h2 style={{ fontSize: 24, fontWeight: 800, color: '#0A0A0A', margin: '0 0 12px', letterSpacing: '-0.02em', lineHeight: 1.2, ...F }}>
+          <p style={{ fontSize: 11, fontWeight: 800, color: '#F59E0B', margin: '0 0 10px', ...F }}>Ultra feature</p>
+          <h2 style={{ fontSize: 24, fontWeight: 800, color: '#0A0A0A', margin: '0 0 12px', lineHeight: 1.2, ...F }}>
             {heading}
           </h2>
           <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', lineHeight: 1.7, margin: '0 0 32px', ...F }}>
@@ -53,7 +53,7 @@ export default function UltraGate({
           </p>
           <button
             onClick={() => navigate('/account')}
-            style={{ width: '100%', padding: '14px 24px', border: 'none', borderRadius: 999, background: 'linear-gradient(135deg, #FBBF24, #F59E0B)', color: '#FFFFFF', fontSize: 15, fontWeight: 800, cursor: 'pointer', ...F, letterSpacing: '0.01em', marginBottom: 16 }}
+            style={{ width: '100%', padding: '14px 24px', border: 'none', borderRadius: 999, background: 'linear-gradient(135deg, #FBBF24, #F59E0B)', color: '#FFFFFF', fontSize: 15, fontWeight: 800, cursor: 'pointer', ...F, marginBottom: 16 }}
           >
             Upgrade to Ultra
           </button>

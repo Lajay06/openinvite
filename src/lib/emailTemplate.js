@@ -234,7 +234,7 @@ export function renderInvitationEmail({
   const dateHtml = inviteDateStr ? `
           <tr>
             <td style="padding:22px 40px 0;text-align:center;">
-              <p style="margin:0;font-family:${fontDisplay};font-weight:400;font-size:19px;color:${textColor};letter-spacing:0.01em;">${escapeHtml(inviteDateStr)}</p>
+              <p style="margin:0;font-family:${fontDisplay};font-weight:400;font-size:19px;color:${textColor};">${escapeHtml(inviteDateStr)}</p>
             </td>
           </tr>` : '';
 
@@ -265,7 +265,7 @@ export function renderInvitationEmail({
               <table role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="background:${accent};border-radius:999px;">
-                    <a href="${ctaUrl}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:999px;font-family:${fontBody};letter-spacing:0.01em;">
+                    <a href="${ctaUrl}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:999px;font-family:${fontBody};">
                       ${escapeHtml(cfg.ctaLabel)}
                     </a>
                   </td>
@@ -295,7 +295,7 @@ ${bannerHtml}
                the couple, not the platform; the couple's names are the focus) -->
           <tr>
             <td style="padding:${bannerImageUrl ? '36px' : '44px'} 40px 0;">
-              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:${accent};letter-spacing:0.14em;font-family:${fontBody};">${escapeHtml(cfg.kicker)}</p>
+              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:${accent};font-family:${fontBody};">${escapeHtml(cfg.kicker)}</p>
               <h1 style="margin:0;font-family:${fontDisplay};font-weight:400;font-size:32px;color:${textColor};line-height:1.15;">${escapeHtml(coupleNames || 'The Wedding')}</h1>
             </td>
           </tr>

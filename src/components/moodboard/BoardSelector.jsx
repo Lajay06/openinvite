@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import { FilterPill } from '@/components/shared/TableToolbar';
 import { Input } from '@/components/ui/input';
 import { Plus, Folder } from 'lucide-react';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
-  letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)',
+  color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -36,11 +37,11 @@ export default function BoardSelector({ boards, activeBoard, onBoardChange, onCr
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {/* SELECTED IS BLACK, not strawberry. This row picked its own accent
+            and was the only selection set on the dashboard that did — the
+            primary colour is for actions, and a chosen filter is not one. */}
         {boards.map(board => (
-          <button key={board} onClick={() => onBoardChange(board)}
-            style={{ padding: '6px 14px', borderRadius: 999, border: `1.5px solid ${activeBoard === board ? '#E03553' : 'rgba(10,10,10,0.12)'}`, background: activeBoard === board ? '#E03553' : 'transparent', color: activeBoard === board ? '#FFFFFF' : '#444444', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'flex', alignItems: 'center', gap: 5 }}>
-            <Folder size={11} />{board}
-          </button>
+          <FilterPill key={board} label={board} active={activeBoard === board} onClick={() => onBoardChange(board)} />
         ))}
       </div>
 

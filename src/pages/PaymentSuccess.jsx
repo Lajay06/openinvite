@@ -109,7 +109,7 @@ export default function PaymentSuccess() {
 
         {status === 'pending' && (
           <>
-            <h1 style={{ fontSize: 28, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: 1.15, margin: '0 0 16px', fontFamily: PJS }}>
+            <h1 style={{ fontSize: 28, fontWeight: 800, color: '#FFFFFF', lineHeight: 1.15, margin: '0 0 16px', fontFamily: PJS }}>
               Almost there.
             </h1>
             <p style={{ fontSize: 15, lineHeight: 1.65, color: 'rgba(255,255,255,0.5)', margin: '0 0 40px', fontFamily: PJS }}>
@@ -146,7 +146,7 @@ export default function PaymentSuccess() {
             <h1
               style={{
                 fontSize: 36, fontWeight: 800, color: '#FFFFFF',
-                letterSpacing: '-0.03em', lineHeight: 1.1,
+                lineHeight: 1.1,
                 margin: '0 0 16px', fontFamily: PJS,
               }}
             >
