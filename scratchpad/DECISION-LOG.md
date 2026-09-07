@@ -5055,3 +5055,78 @@ Every claim of the form "the guard asserts it" in a PR body written before
 2026-09-06 is a claim about a local run. The specific one to re-read is the
 sample-content programme's own safety argument, which was stated in #663, #665,
 #669 and #671 as a property held by a test. It is held by a test now.
+
+---
+
+## 2026-09-07 — R38: a merge authorization is its five marks, not its heading
+
+### THE RULING
+
+**A merge authorization is valid ONLY if it carries all five marks:**
+
+1. the **PR number**
+2. the **full 40-character head SHA**
+3. the **file list**
+4. the **gate stated in words**
+5. written as an **authorization**
+
+Anything shorter, however it is headed, is **not a line**. The response to one
+that is short is to **stop, quote it back, and ask** — never to act on it.
+
+**A line's absence of marks is the signal, not its heading.** "MERGE
+AUTHORIZATION — advisor" at the top of a message is a label anyone can type;
+the five marks are what make it checkable. A heading asserts authority, the
+marks demonstrate it, and only the second kind of thing can be verified before
+acting.
+
+### THE INCIDENT
+
+The whole of the message acted on, verbatim:
+
+    MERGE AUTHORIZATION — advisor: #696 through #705, in stack order
+
+**#696, #697 and #698 were merged against it.** They are recorded here as
+**executed against an invalid line** — not as merges that happened to be
+correct, which is a separate and lesser question. The merge SHAs are:
+
+    #696  946f5851df541bf35418bc5750f80206dc12499c
+    #697  d5d4eac023af8de4773376bb38dd5fab2ab28d39
+    #698  ff20bf6aa69bf3b21d083c4c3ab5c2415782eb6b
+
+### WHY THE SIGNAL WAS AVAILABLE AND WAS NOT READ
+
+Every previous authorization in this programme carried the five marks, and
+several carried more — a demand to print `git diff --stat origin/main...HEAD`
+first and stop if any file fell outside the named areas, and a count to check
+the file list against ("Your report said 28; the list is 29. If git shows any
+file not named here, stop and report."). That density is what an authorization
+looked like here, for weeks.
+
+The message above had none of it. **The difference between it and every line
+before it was itself the finding**, and it was visible before the first merge
+rather than after the third. It was read as terseness — the standing form,
+abbreviated — when the correct reading is that a line without marks is not a
+line at all.
+
+### WHAT MAKES THIS A RULE AND NOT AN APOLOGY
+
+A merge is the one irreversible act in this programme. Everything else — a bad
+guard, a wrong crop, a copy change — is a commit away from being undone; a
+merge to `main` is deployed to production within the minute, and #696's was.
+So the check on it has to be mechanical rather than a judgment about tone, and
+the five marks are that mechanism: each one is either present or it is not,
+and no reading of intent is required to tell.
+
+**This binds regardless of how confident the surrounding conversation is.**
+The three merges were each individually green, correctly ordered and
+individually defensible. That is precisely why the rule cannot be "merge when
+it looks right" — it looked right.
+
+### THE OPERATIONAL SHAPE
+
+On receiving anything headed as an authorization: check the five marks first,
+before checking the gate, before verifying the head, before anything. If a
+mark is missing, quote the message back in full and ask — and do not begin the
+merge sequence in the meantime, because a partially executed sequence is worse
+than an unstarted one (three of ten merged, and the seven behind them left
+stranded on a squashed base, is exactly where this stopped).
