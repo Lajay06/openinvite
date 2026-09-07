@@ -57,6 +57,48 @@ console.log('\n  Every filter row is the shared pill:\n');
 const browser = await chromium.launch();
 const found = [];
 
+// ── THE STATES, READ OFF THE PAINT ─────────────────────────────────────────
+//
+// BY BACKGROUND, NOT BY BORDER, and that distinction is the whole reason this
+// section was rewritten. The previous version asserted `borderColor` was an
+// rgba(10,10,10,…) value and passed — while every unselected pill in the
+// product rendered as BARE TEXT. getComputedStyle still reports a border
+// COLOUR when border-style is `none`, and index.css:1045's
+// `[class*="pill"] { border: none !important }` had stripped the width off
+// every pill in the tree. A colour with no width paints nothing, so the guard
+// was reading a value no person could see.
+//
+// A background cannot be faked that way: it is either painted or it is not.
+
+/** The Theme tab's unselected pill — the reference every other row must match. */
+async function themeUnselected() {
+  const ctx = await seededContext(browser, { width: 1440, height: 1000, seed: SEEDED });
+  const page = await ctx.newPage();
+  await page.goto(`${BASE}/event-details`, { waitUntil: 'domcontentloaded', timeout: 45000 }).catch(() => {});
+  await page.waitForTimeout(3500);
+  await page.getByRole('button', { name: /^Theme/i }).first().click().catch(() => {});
+  await page.waitForTimeout(1500);
+  for (const t of ["What's the aesthetic?", 'Atmosphere', 'Season']) {
+    const el = page.getByText(t, { exact: true }).first();
+    if (await el.count()) { await el.click().catch(() => {}); await page.waitForTimeout(800); }
+  }
+  const out = await page.evaluate(() => {
+    const off = [...document.querySelectorAll('.filter-pill')].find((p) => !p.classList.contains('active'));
+    if (!off) return null;
+    const cs = getComputedStyle(off);
+    return { bg: cs.backgroundColor, fg: cs.color, radius: cs.borderTopLeftRadius };
+  });
+  await ctx.close();
+  return out;
+}
+
+const REFERENCE = await themeUnselected();
+check('the Theme tab’s unselected pill is a painted fill, not bare text',
+  !!REFERENCE && REFERENCE.bg !== 'rgba(0, 0, 0, 0)' && REFERENCE.bg !== 'transparent',
+  REFERENCE ? `${REFERENCE.bg} / ${REFERENCE.fg}` : 'no pill found on the Theme tab');
+check('  and it is the shared class, so the two cannot diverge',
+  !!REFERENCE, 'Event details › Theme renders .filter-pill');
+
 for (const path of PAGES) {
   const ctx = await seededContext(browser, { width: 1440, height: 950, seed: SEEDED });
   const page = await ctx.newPage();
@@ -97,10 +139,26 @@ for (const path of PAGES) {
     broken.length === 0,
     broken.length ? broken.map((r) => r.bad.slice(0, 3).join(' · ')).join(' | ') : `${out.length} row(s)`);
   if (broken.length) found.push(`${path}: ${broken.map((r) => r.labels.join('/')).join(' | ')}`);
+
+  // AND WHAT AN UNSELECTED PILL ACTUALLY PAINTS, on this page, against the
+  // Theme tab's own value. This is the check the owner asked for: not "is it
+  // the right class" — #698 proved a pill can wear the class and render as
+  // nothing — but "is the background the reference background, and is it
+  // painted at all".
+  const paint = await page.evaluate(() => {
+    const off = [...document.querySelectorAll('.filter-pill')].filter((p) => !p.classList.contains('active'));
+    return [...new Set(off.map((p) => getComputedStyle(p).backgroundColor))];
+  });
+  if (paint.length) {
+    check(`  its unselected pills paint ${REFERENCE ? REFERENCE.bg : 'the reference'}`,
+      paint.every((bg) => bg === (REFERENCE && REFERENCE.bg)), paint.join(' · '));
+    check('  and none of them is transparent',
+      paint.every((bg) => bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent'), paint.join(' · '));
+  }
   await ctx.close();
 }
 
-// ── THE THREE STATES, READ OFF THE STYLESHEET ──────────────────────────────
+
 {
   const ctx = await seededContext(browser, { width: 1440, height: 950, seed: SEEDED });
   const page = await ctx.newPage();
@@ -110,15 +168,12 @@ for (const path of PAGES) {
     const pills = [...document.querySelectorAll('.filter-pill')];
     const on = pills.find((p) => p.classList.contains('active'));
     const off = pills.find((p) => !p.classList.contains('active'));
-    const read = (el) => (el ? { bg: getComputedStyle(el).backgroundColor, fg: getComputedStyle(el).color, bd: getComputedStyle(el).borderColor } : null);
+    const read = (el) => (el ? { bg: getComputedStyle(el).backgroundColor, fg: getComputedStyle(el).color } : null);
     return { on: read(on), off: read(off) };
   });
   check('selected is the black pill, white text',
     states.on && states.on.bg === 'rgb(10, 10, 10)' && states.on.fg === 'rgb(255, 255, 255)',
     states.on ? `${states.on.bg} / ${states.on.fg}` : 'no active pill');
-  check('  unselected is the outline pill, not bare words',
-    states.off && states.off.bg === 'rgba(0, 0, 0, 0)' && /rgba?\(10, 10, 10/.test(states.off.bd),
-    states.off ? `${states.off.bg} on ${states.off.bd}` : 'no inactive pill');
   await ctx.close();
 }
 
