@@ -7,6 +7,8 @@ import { getGuestEventResponse, effectiveMealChoice, mealOptionLabel } from "@/l
 import GuestAvatar from "@/components/shared/GuestAvatar";
 import { interactiveDivProps } from '@/lib/a11y';
 import { hasPlusOne, plusOneRsvpStatus, plusOneDisplayName } from '@/lib/plusOne';
+import { naturalCompare, sortRows, nextSortState } from '@/lib/tableSort';
+import SortableHead from '@/components/shared/SortableHead';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -437,15 +439,13 @@ const selectStyle = {
 const COLUMN_COUNT = 10;
 
 /* ── Sortable columns ──────────────────────────────────────────────────────
-   Name/Table use a natural (numeric-aware) string compare so "Table 2"
-   sorts before "Table 10". Status sorts by the guest's overall derived
-   state, not the raw per-event chip row. Blank values always sort to the
-   end, in both directions — the default (unsorted) order is untouched
-   until a column header is clicked. */
-function naturalCompare(a, b) {
-  return String(a || '').localeCompare(String(b || ''), undefined, { numeric: true, sensitivity: 'base' });
-}
-
+   The machinery — the numeric-aware compare, blanks-always-last, the
+   asc → desc → unsorted cycle and the header itself — moved to
+   src/lib/tableSort.js and components/shared/SortableHead.jsx so the
+   schedule's List tab uses this behaviour rather than a copy of it. What
+   stays here is what is guests' own: WHICH columns sort, and how each reads
+   off a row. Status sorts by the guest's overall derived state, not the raw
+   per-event chip row. */
 const STATUS_SORT_RANK = { attending: 0, pending: 1, declined: 2 };
 
 function guestStatusSortKey(guest) {
@@ -460,42 +460,6 @@ const SORTABLE_COLUMNS = {
   status:   { getValue: g => guestStatusSortKey(g), compare: (a, b) => a - b },
   table:    { getValue: g => g.table_assignment || '', compare: naturalCompare },
 };
-
-function sortGuests(guests, sortState) {
-  if (!sortState?.field) return guests;
-  const { getValue, compare } = SORTABLE_COLUMNS[sortState.field];
-  const dir = sortState.direction === 'desc' ? -1 : 1;
-  return [...guests].sort((a, b) => {
-    const va = getValue(a);
-    const vb = getValue(b);
-    const aBlank = va === '' || va == null;
-    const bBlank = vb === '' || vb == null;
-    if (aBlank && bBlank) return 0;
-    if (aBlank) return 1;  // blanks always last, regardless of direction
-    if (bBlank) return -1;
-    return compare(va, vb) * dir;
-  });
-}
-
-/** Clickable column header — cycles asc → desc → unsorted (back to default order). */
-function SortableHead({ field, label, sortState, onSort }) {
-  const active = sortState?.field === field;
-  const direction = active ? sortState.direction : null;
-  return (
-    <TableHead
-      onClick={() => onSort(field)}
-      style={{ cursor: 'pointer', userSelect: 'none' }}
-      title={`Sort by ${label.toLowerCase()}`}
-    >
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-        {label}
-        <span style={{ fontSize: 10, color: active ? '#E03553' : 'rgba(10,10,10,0.25)', lineHeight: 1 }}>
-          {active ? (direction === 'desc' ? '▼' : '▲') : '⇅'}
-        </span>
-      </span>
-    </TableHead>
-  );
-}
 
 const SkeletonRows = () => (
   <>
@@ -771,14 +735,10 @@ export default function GuestList({
   // Cycles a column through asc → desc → unsorted (back to the default,
   // caller-provided order) — clicking a different column always starts at asc.
   const handleSort = (field) => {
-    setSortState(prev => {
-      if (prev.field !== field) return { field, direction: 'asc' };
-      if (prev.direction === 'asc') return { field, direction: 'desc' };
-      return { field: null, direction: 'asc' };
-    });
+    setSortState(prev => nextSortState(field, prev));
   };
 
-  const sortedGuests = sortGuests(guests, sortState);
+  const sortedGuests = sortRows(guests, sortState, SORTABLE_COLUMNS);
 
   const toggleExpanded = (guestId) => {
     setExpandedGuestIds(prev => {
