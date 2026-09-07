@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import DataTable from '@/components/shared/DataTable';
 import TableToolbar from '@/components/shared/TableToolbar';
 import { Pill } from '@/components/shared/DataTable';
-import { OUTLINE_PILL, CELL_STRONG, CELL_MUTED, CELL_NOWRAP } from '@/lib/tablePills';
+import { OUTLINE_PILL, CELL_STRONG, CELL_MUTED, CELL_SECONDARY, CELL_NOWRAP } from '@/lib/tablePills';
 import { naturalCompare, sortRows, nextSortState } from '@/lib/tableSort';
 import { WHEN_LABEL, WHEN_RANK, ROW_HOME } from '@/lib/scheduleEvents';
 
@@ -99,8 +99,8 @@ export default function ScheduleTable({ events = [], onEdit, onDelete, onOpen, l
   const rows = sortRows(base, sortState, COLUMN_SORTS);
 
   const COLUMNS = [
-    { key: 'date',  label: 'Date',  sortable: true, cellStyle: { ...CELL_MUTED, ...CELL_NOWRAP }, render: (e) => dateLabel(e.date) },
-    { key: 'time',  label: 'Time',  sortable: true, cellStyle: { ...CELL_MUTED, ...CELL_NOWRAP }, render: (e) => timeLabel(e.time) },
+    { key: 'date',  label: 'Date',  sortable: true, cellStyle: { ...CELL_SECONDARY, ...CELL_NOWRAP }, render: (e) => dateLabel(e.date) },
+    { key: 'time',  label: 'Time',  sortable: true, cellStyle: { ...CELL_SECONDARY, ...CELL_NOWRAP }, render: (e) => timeLabel(e.time) },
     { key: 'title', label: 'Event', sortable: true, cellStyle: CELL_STRONG, render: (e) => e.title },
     { key: 'when',  label: 'Type',  sortable: true, render: (e) => <Pill style={TYPE_INK[e.when] || OUTLINE_PILL}>{WHEN_LABEL[e.when] || '—'}</Pill> },
     {

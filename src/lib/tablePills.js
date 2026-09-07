@@ -46,5 +46,26 @@ export const OUTLINE_PILL = {
  */
 export const CELL_TEXT   = { fontSize: 13, lineHeight: '20px', color: '#0A0A0A' };
 export const CELL_STRONG = { ...CELL_TEXT, fontWeight: 600 };
-export const CELL_MUTED  = { ...CELL_TEXT, fontWeight: 400, color: 'rgba(10,10,10,0.6)' };
+
+/**
+ * SECONDARY CELL — 12px, 600, muted. The guest list's email and phone.
+ *
+ * THE WEIGHT IS 600 AND IT IS MEASURED, not chosen. Owner: the schedule's Time
+ * column "is rendering in a light weight we never use". He is right, and the
+ * declaration is what misled every check: the guest list sets NO font-weight on
+ * those spans, so the eye sees whatever the table paints — and every guest-list
+ * leaf computes to 600 (its body carries the weight). The schedule declared
+ * `fontWeight: 400` explicitly and so painted lighter than anything beside it.
+ * Measured at 1440 on this build, first body row:
+ *
+ *   guest list  email/phone   12px / 600 / muted
+ *   run sheet   Time          13px / 400 / muted     ← the light weight
+ *
+ * 600 IS THEREFORE THE FLOOR for every cell in the shell. Nothing below it,
+ * which is what the typography guard now enforces with a planted 300.
+ */
+export const CELL_SECONDARY = { ...CELL_TEXT, fontSize: 12, fontWeight: 600, color: 'rgba(10,10,10,0.6)' };
+
+/** Muted body text at the primary size — same weight floor, one step larger. */
+export const CELL_MUTED  = { ...CELL_TEXT, fontWeight: 600, color: 'rgba(10,10,10,0.6)' };
 export const CELL_NOWRAP = { whiteSpace: 'nowrap' };

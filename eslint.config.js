@@ -109,6 +109,14 @@ export default [
       "no-use-before-define": ["error", { "functions": false, "classes": true, "variables": true }],
       "no-empty": ["error", { allowEmptyCatch: false }],
       "no-unused-vars": "off",
+      // THE THIRD INSTANCE OF THE SAME CLASS, 2026-09-07. `no-undef` does not
+      // see JSX component names — `<SelectGroup>` is a JSXIdentifier, not an
+      // Identifier reference — so ScheduleForm.jsx used SelectGroup and
+      // SelectLabel without importing them, `npm run build` passed, `npm run
+      // lint` passed, and the edit dialog threw `ReferenceError: SelectGroup
+      // is not defined` the moment a couple clicked "···" › Edit. Same shape
+      // as #406 and #429, one rule away from being caught for free.
+      "react/jsx-no-undef": "error",
       "react/jsx-uses-vars": "error",
       "react/jsx-uses-react": "error",
       "unused-imports/no-unused-imports": "error",

@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal } from 'lucide-react';
 import SortableHead from '@/components/shared/SortableHead';
-import { PILL_BASE, CELL_TEXT } from '@/lib/tablePills';
+import { PILL_BASE, CELL_TEXT, CELL_SECONDARY } from '@/lib/tablePills';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -33,7 +33,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
  * Category on the guest list rather than as a filled red badge that shouts.
  */
 
-export { PILL_BASE, OUTLINE_PILL, CELL_TEXT, CELL_STRONG, CELL_MUTED, CELL_NOWRAP } from '@/lib/tablePills';
+export { PILL_BASE, OUTLINE_PILL, CELL_TEXT, CELL_STRONG, CELL_MUTED, CELL_SECONDARY, CELL_NOWRAP } from '@/lib/tablePills';
 
 /** The row-level pill, from the shared vocabulary. */
 export const Pill = ({ style, children }) => (
@@ -136,6 +136,20 @@ export default function DataTable({
             )}
             {!children && !loading && (rows || []).map((row) => {
               const id = rowKey(row);
+              // A GROUP HEADING IS A ROW OF THIS TABLE, not a second table.
+              // The run sheet's "All" view interleaves one of these before
+              // each event's moments; it wears the header band and the
+              // secondary cell style, so grouping costs the shell one row
+              // shape rather than the page a bespoke layout.
+              if (row.__heading) {
+                return (
+                  <TableRow key={id} style={{ background: '#FAFAFA' }}>
+                    <TableCell colSpan={span} style={{ ...CELL_SECONDARY, padding: '6px 8px' }}>
+                      {row.__heading}
+                    </TableCell>
+                  </TableRow>
+                );
+              }
               const rowActions = typeof actions === 'function' ? actions(row) : actions;
               return (
                 <TableRow key={id} style={rowStyle?.(row)}>

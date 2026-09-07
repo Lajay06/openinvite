@@ -60,7 +60,15 @@ async function readTable(page) {
       walk(el);
       return best;
     };
-    const primaryCell = cells.find((c) => parseInt(window.getComputedStyle(c).fontWeight, 10) >= 500) || cells[1] || cells[0];
+    // THE PRIMARY CELL IS THE LARGEST TEXT IN THE ROW, not the heaviest.
+    // It used to be "the first cell at weight >= 500", which worked only while
+    // the schedule's secondary cells were lighter than its primary — i.e. only
+    // while the bug the owner reported was present. With the weight floor
+    // applied every cell is 600, and that heuristic picked the Date column and
+    // reported a 12px/13px mismatch as a typography failure.
+    const sizeOf = (el) => parseFloat(window.getComputedStyle(leafOf(el)).fontSize) || 0;
+    const primaryCell = cells.slice().sort((a, b) => sizeOf(b) - sizeOf(a)
+      || Number(window.getComputedStyle(leafOf(b)).fontWeight) - Number(window.getComputedStyle(leafOf(a)).fontWeight))[0];
     // No row means no table — report that, don't throw inside evaluate. A page
     // that failed to load used to crash the walker on `undefined.children`,
     // and a stack trace reads like a broken guard rather than a missing table.
@@ -84,6 +92,12 @@ async function readTable(page) {
       // a check that looks at one place cannot see drift in the others.
       cellSizes: [...new Set(cells.map((c) => window.getComputedStyle(leafOf(c)).fontSize))].sort().join(' '),
       cellFonts: [...new Set(cells.map((c) => window.getComputedStyle(leafOf(c)).fontFamily.split(',')[0].replace(/["']/g, '')))].sort().join(' '),
+      // EVERY WEIGHT PAINTED IN THE ROW. The owner saw the schedule's Time
+      // column "in a light weight we never use" — 400 against a guest list
+      // that paints 600 everywhere, because the guest list sets no weight on
+      // its secondary spans and the schedule declared one. A size check cannot
+      // see this; only the weights can.
+      cellWeights: [...new Set(cells.map((c) => Number(window.getComputedStyle(leafOf(c)).fontWeight)))].sort((a, b) => a - b),
       // THE PIXELS, not the declaration. Ink height of the primary text,
       // measured off the render, because a font-size that matches can still
       // paint differently if a transform or a face substitution intervenes.
@@ -172,6 +186,18 @@ if (!guests || !schedule) {
   }
   check('  and the same face',
     guests.cellFonts === schedule.cellFonts, `${guests.cellFonts} · ${schedule.cellFonts}`);
+  // THE WEIGHT FLOOR. The shell's secondary cell — the guest list's email and
+  // phone — is the lightest weight this product paints in a table. Nothing in
+  // the schedule may go below it.
+  {
+    const floor = Math.min(...guests.cellWeights);
+    const lightest = Math.min(...schedule.cellWeights);
+    check('no cell is lighter than the shell’s secondary weight',
+      Number.isFinite(floor) && lightest >= floor,
+      `guest list floor ${floor} · schedule lightest ${lightest} (schedule weights ${schedule.cellWeights.join(' ')})`);
+    check('  and the guest list’s own floor is the 600 the secondary cell declares',
+      floor === 600, `measured ${floor} — email and phone, 12px`);
+  }
   check('body cell padding matches exactly',
     guests.cellPadding === schedule.cellPadding, `${guests.cellPadding} · ${schedule.cellPadding}`);
   check('header cell padding matches exactly',

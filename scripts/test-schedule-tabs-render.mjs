@@ -107,6 +107,41 @@ for (const tab of TABS) {
   check(`"${tab}" renders with 21 rows seeded`, !broke && errors.length === 0,
     broke ? 'ERROR BOUNDARY' : (errors[0] || 'no page errors'));
 
+  // ── EVERY "···" ACTION, ACTUALLY CLICKED ──────────────────────────────
+  //
+  // MOUNTING IS NOT USING. The tab rendered and the owner still hit an error,
+  // because the crash was behind the row menu. A guard that only mounts sees
+  // none of it, so this opens the menu on the first row and clicks every item
+  // in it, on every tab that has one.
+  const menus = await page.locator('table tbody tr button:has(svg)').count().catch(() => 0);
+  if (menus > 0) {
+    const labels = await (async () => {
+      await page.locator('table tbody tr button:has(svg)').first().click().catch(() => {});
+      await page.waitForTimeout(400);
+      const items = await page.locator('[role="menuitem"]').allInnerTexts().catch(() => []);
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(200);
+      return items;
+    })();
+    check(`  "${tab}" row menu opens`, labels.length > 0, labels.join(' · ') || 'no menu items');
+    for (const label of labels) {
+      errors.length = 0;
+      await page.locator('table tbody tr button:has(svg)').first().click().catch(() => {});
+      await page.waitForTimeout(350);
+      const item = page.locator('[role="menuitem"]', { hasText: new RegExp(`^${label}$`) }).first();
+      const disabled = await item.getAttribute('data-disabled').catch(() => null);
+      if (disabled !== null) { await page.keyboard.press('Escape'); continue; }
+      await item.click().catch(() => {});
+      await page.waitForTimeout(1200);
+      const broke = await boundary();
+      check(`  "${tab}" › ··· › ${label}`, !broke && errors.length === 0,
+        broke ? `ERROR BOUNDARY${errors[0] ? ` — ${errors[0]}` : ''}` : (errors[0] || 'no page errors'));
+      // Close whatever it opened, so the next action starts from the table.
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(500);
+    }
+  }
+
   // The run sheet's CONTENT, asserted while it is the open tab. Checked here
   // rather than after the loop: clicking back to it from Considerations did
   // not switch tabs reliably, and a check that reads the wrong tab's text
@@ -118,8 +153,32 @@ for (const tab of TABS) {
     check('  in time order, earliest first',
       body.indexOf('Cocktail hour') < body.indexOf('Grand entrance')
         && body.indexOf('Grand entrance') < body.indexOf('Cake cutting'), '4:00 PM · 6:00 PM · 8:15 PM');
-    check('  and the event select names each event with its count',
-      /Reception \(\d+\)/.test(body), (/Reception \(\d+\)/.exec(body) || [])[0] || 'no select');
+    // THE PICKER IS A PILL ROW, the guest list's control, not a dropdown.
+    const pills = await page.locator('.filter-pill').allInnerTexts().catch(() => []);
+    check('  the event picker is the shared pill row',
+      pills.length > 0, pills.join(' · ') || 'no .filter-pill in the toolbar');
+    check('  "All" comes first, with the total across every event',
+      pills[0] === 'All (15)', pills[0] || '—');
+    check('  one pill per event that has rows, in the order the wedding runs',
+      pills.join(' · ') === 'All (15) · Ceremony (1) · Reception (11) · Other (1) · Post-wedding (2)',
+      pills.join(' · '));
+    check('  and the fullest event is the one that opens',
+      /Reception/.test(await page.locator('.filter-pill.active').first().innerText().catch(() => '')),
+      'most rows first, so the busiest run sheet is the one you land on');
+
+    // "All" — every event's rows, grouped, with a heading row per event.
+    await page.locator('.filter-pill', { hasText: /^All/ }).first().click().catch(() => {});
+    await page.waitForTimeout(900);
+    const allBody = await page.locator('table').first().innerText();
+    check('  "All" groups every event under a heading row',
+      ['Ceremony (1)', 'Reception (11)', 'Other (1)', 'Post-wedding (2)'].every((h) => allBody.includes(h)),
+      'headings inside the same table');
+    check('  and the headings sit above their own event’s moments',
+      allBody.indexOf('Ceremony (1)') < allBody.indexOf('Reception (11)')
+        && allBody.indexOf('Reception (11)') < allBody.indexOf('Post-wedding (2)'), 'in wedding order');
+    check('  every event’s rows are present under All',
+      allBody.includes('Grand entrance') && allBody.includes('Recovery brunch') && allBody.includes('Ceremony'),
+      '15 moments across four events');
   }
 }
 

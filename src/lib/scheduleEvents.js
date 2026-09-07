@@ -28,7 +28,7 @@
  * an RSVP deadline do not happen anywhere. The list omits the line rather than
  * printing a blank label.
  */
-import { sortScheduleItems } from './scheduleOrder.js';
+import { sortScheduleItems, compareScheduleItems } from './scheduleOrder.js';
 
 /** Normalized events from every source the Schedule page reads. Pure. */
 /**
@@ -355,11 +355,14 @@ export function eventsInSchedule(scheduleItems = []) {
   for (const r of scheduleItems) {
     if (!isEventRow(r)) continue;
     const k = r.category;
-    if (!byCat.has(k)) byCat.set(k, { key: k, label: CATEGORY_LABEL[k] || String(k), count: 0, date: r.event_date || '' });
+    if (!byCat.has(k)) byCat.set(k, { key: k, label: CATEGORY_LABEL[k] || String(k), count: 0, date: r.event_date || '', first: r });
     const e = byCat.get(k);
     e.count += 1;
     // The event's day is its earliest dated row.
     if (r.event_date && (!e.date || r.event_date < e.date)) e.date = r.event_date;
+    // And its place in the day is that row's time — two events on the same
+    // date order by when they start, not by the first letter of their name.
+    if (compareScheduleItems(r, e.first) < 0) e.first = r;
   }
   return [...byCat.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
 }

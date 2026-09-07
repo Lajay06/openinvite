@@ -111,10 +111,28 @@ export async function runDataTable() {
       /selectedIds=\{selectedIds\}/.test(table), 'the shell\'s column');
 
     const rs = code('src/components/schedule/RunSheet.jsx');
-    check('PLANT: the run sheet\'s wall of pills is one select',
-      /select=\{events\.length > 0/.test(rs) && !/filter-pill/.test(rs)
-        && !/background: active \? '#E03553'/.test(rs),
-      'one control, not one per event');
+    // THE PICKER IS A PILL ROW — owner ruling 2026-09-07, reversing the
+    // earlier "one select, not a wall of pills". The objection then was to a
+    // BESPOKE wall of hand-styled pills; the answer now is the shell's own
+    // `filter-pill` row, the same control the List and the guest list use, so
+    // there is no second visual vocabulary either way.
+    check('PLANT: the run sheet\'s event picker is the shared pill row',
+      /filters=\{events\.length > 0 \? \[/.test(rs) && /activeFilter=\{picked\}/.test(rs)
+        && !/select=\{/.test(rs) && !/background: active \? '#E03553'/.test(rs),
+      'TableToolbar filters, not a dropdown and not bespoke pills');
+    check('  "All" is first and carries the total across every event',
+      /\{ val: ALL, label: `All \(\$\{events\.reduce\(\(n, e\) => n \+ e\.count, 0\)\}\)` \}/.test(rs),
+      'All (15) · Ceremony (1) · Reception (11) · …');
+    check('  the pills run in wedding order, the default selection by size',
+      /compareScheduleItems\(a\.first, b\.first\)/.test(rs) && /events\[0\]\?\.key/.test(rs),
+      'ordered chronologically; the fullest event opens');
+    check('  "All" groups the rows under a heading row of the same shell',
+      /__heading: `\$\{e\.label\} \(\$\{e\.count\}\)`/.test(rs)
+        && /row\.__heading/.test(code('src/components/shared/DataTable.jsx')),
+      'one row shape in the shell, not a table per event');
+    check('  and Move up/down is off under All',
+      /disabled: showingAll \|\| moments\[0\]\?\.id === r\.id/.test(rs),
+      'the neighbour of the last ceremony row is the first reception row');
     // NO SAVE BUTTON ANY MORE, and no add row inside the body: the run sheet
     // is a VIEW of Schedule rows now, so a moment is created through the same
     // dialog every other row uses and saved the moment that dialog is
