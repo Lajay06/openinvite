@@ -11,7 +11,7 @@
  */
 import { UNIVERSE_CONFIGS } from './websiteThemes.js';
 import { getSampleWedding } from './sampleContent/index.js';
-import { galleryUrl } from './universeGallery.js';
+import { subjectCropUrl } from './universeGallery.js';
 
 // Gating is config-driven: a universe is Ultra iff its own UNIVERSE_CONFIGS
 // entry declares tier: 'ultra' (feat/universes-expansion-10 — previously a
@@ -102,14 +102,40 @@ export function getUniverse(id) {
  * A function called at render time has no such ordering problem.
  *
  * The sample URL carries `w_2048` for a full-bleed hero — four times the bytes
- * a grid tile needs, and the wrong shape. `c_fill,g_auto` takes the tile's own
- * 3:2 crop from the master instead of scaling a wide image down.
+ * a grid tile needs, and the wrong shape. `c_fill,g_faces:auto` takes the
+ * tile's own 3:2 crop from the master and centres it on the PEOPLE — g_auto
+ * alone cropped Kyoto's man out of his own tile, because saliency on a wide
+ * photograph of two people often picks the architecture between them.
+ * g_faces:auto falls back to g_auto by itself when no face is detected.
  *
  * @param {string} id
  * @returns {string|null} a Cloudinary URL, or the local static as a fallback
  */
-export function universeTileImage(id) {
+export function universeTileImage(id, { width = 1200, height = 800 } = {}) {
   const cover = getSampleWedding(id)?.coverPhoto;
-  const cropped = cover ? galleryUrl(cover, { width: 1200, height: 800 }) : null;
+  const cropped = cover ? subjectCropUrl(cover, { width, height }) : null;
   return cropped || getUniverse(id)?.imageUrl || null;
+}
+
+/**
+ * THE FULL-BLEED SCROLL'S OWN WIDTH, and the ceiling is not a guess.
+ *
+ * /universes' five-universe scroll renders at the full viewport — 1440 CSS px
+ * on a desktop, so 2880 device px at 2× — while it was being served the TILE
+ * url at w_1200. That is upscaling by more than double, measured, and it is
+ * the softness the owner is looking at.
+ *
+ * 1376 IS THE SMALLEST MASTER IN THE TWENTY (tulum). Asking for more than a
+ * master has would make Cloudinary upscale and CHARGE for it — the standing
+ * bandwidth ruling, and the reason `w_1600` on a 1280px master measured 34%
+ * more bytes than no width at all. So this is the largest width guaranteed
+ * not to upscale ANY universe.
+ *
+ * It is still short of 2880. The owner is uploading 4K masters; when they
+ * land, this constant is the one line to raise.
+ */
+export const SCROLL_SAFE_WIDTH = 1376;
+
+export function universeScrollImage(id) {
+  return universeTileImage(id, { width: SCROLL_SAFE_WIDTH, height: Math.round(SCROLL_SAFE_WIDTH * 9 / 16) });
 }

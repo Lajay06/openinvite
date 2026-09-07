@@ -11,7 +11,7 @@
  * places, so they can never drift apart again.
  *
  * ULTRA_EXTRAS is additive to Pro, matching Pricing.jsx's own TABLE_ROWS
- * gating: wedding website, digital invitations, online RSVP, premium
+ * gating: the guest suite, digital invitations, online RSVP, premium
  * themes, and the guest suite are Ultra-only. Nothing here should ever
  * name a feature the product doesn't actually have.
  */
@@ -31,8 +31,8 @@ export const PRO_FEATURES = [
 ];
 
 export const ULTRA_EXTRAS = [
-  "Wedding website builder",
-  "Universes (20 wedding website styles)",
+  "Guest suite builder",
+  "Universes (20 guest suite styles)",
   "Digital invitations via email & WhatsApp",
   "Online RSVP pages for guests",
   "Guest suite: accommodation, transport & experience guide",

@@ -26,7 +26,7 @@ export const ORGANIZATION_LOGO = `${SITE_URL}/openinvite-logo.png`;
 // route -> { title, description }. Title is used as-is (already sentence
 // case, no trailing site-name suffix needed since the brand name is
 // already the first word). Description targets ~150-160 characters,
-// working in "wedding planning platform", "wedding website builder", "digital
+// working in "wedding planning platform", "guest suite builder", "digital
 // wedding invitations" or "pay once" where it reads naturally for that page.
 export const MARKETING_PAGE_SEO = {
   '/': {
@@ -35,11 +35,11 @@ export const MARKETING_PAGE_SEO = {
     // subtext on Home (src/components/home/HeroCollage.jsx); now lives only
     // here and in public/llms.txt so the exact wording stays crawler-facing
     // without duplicating on the visible page.
-    description: 'Openinvite is a wedding planning platform with a one-time payment: planning tools, guest management, digital invitations, a wedding website and an AI assistant.',
+    description: 'Openinvite is a wedding planning platform with a one-time payment: planning tools, guest management, digital invitations, a guest suite and an AI assistant.',
   },
   '/features': {
     title: 'Openinvite | Features',
-    description: "Explore Openinvite's wedding planning features: guest management, budget tracking, a wedding website builder, digital wedding invitations and 20 design themes, all in one platform.",
+    description: "Explore Openinvite's wedding planning features: guest management, budget tracking, a guest suite builder, digital wedding invitations and 20 design themes, all in one platform.",
   },
   '/ava': {
     title: 'Openinvite | Ava',
@@ -47,11 +47,11 @@ export const MARKETING_PAGE_SEO = {
   },
   '/universes': {
     title: 'Openinvite | Universes',
-    description: "Choose from 20 fully designed wedding website themes in Openinvite. Each universe sets the fonts, colors and style for your wedding website, invitations and printed pieces.",
+    description: "Choose from 20 fully designed guest suite themes in Openinvite. Each universe sets the fonts, colors and style for your guest suite, invitations and printed pieces.",
   },
   '/pricing': {
     title: 'Openinvite | Pricing',
-    description: "Openinvite pricing is a one-time payment, not a subscription. See what's included in the Pro and Ultra plans for your wedding planning platform and wedding website.",
+    description: "Openinvite pricing is a one-time payment, not a subscription. See what's included in the Pro and Ultra plans for your wedding planning platform and your guest suite.",
   },
   '/gifting': {
     title: 'Openinvite | Gifting',
@@ -59,7 +59,7 @@ export const MARKETING_PAGE_SEO = {
   },
   '/contact': {
     title: 'Openinvite | Contact',
-    description: "Get in touch with Openinvite. We're here to help with questions about wedding planning, your wedding website or your account.",
+    description: "Get in touch with Openinvite. We're here to help with questions about wedding planning, your guest suite or your account.",
   },
   '/about': {
     title: 'Openinvite | About',
@@ -71,7 +71,7 @@ export const MARKETING_PAGE_SEO = {
   },
   '/terms-of-service': {
     title: 'Openinvite | Terms of service',
-    description: 'Read the terms of service for using Openinvite, the wedding planning platform and wedding website builder.',
+    description: 'Read the terms of service for using Openinvite, the wedding planning platform and guest suite builder.',
   },
   '/login': {
     title: 'Openinvite | Log in',

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicNav from '@/components/public/PublicNav';
 import PublicFooter from '@/components/public/PublicFooter';
-import { UNIVERSE_CATALOG, universeTileImage } from '@/lib/universeCatalog';
+import { UNIVERSE_CATALOG, universeTileImage, universeScrollImage } from '@/lib/universeCatalog';
 import { useMarketingSeo } from '@/hooks/useMarketingSeo';
 import MarketingHero from '@/components/marketing/MarketingHero';
 import { responsivePhoto, ENDCAP_SIZES } from '@/lib/marketingImage';
@@ -33,7 +33,12 @@ const prefersReducedMotion = () =>
 
 function UniverseTile({ universe, index }) {
   const [hovered, setHovered] = useState(false);
-  const image = universeTileImage(universe.id) || FALLBACK_IMAGE[universe.id];
+  // THE TILE IS 3:4, SO ASK CLOUDINARY FOR 3:4. It was asking for a 3:2
+  // image and letting CSS `object-fit: cover` crop it to portrait — and
+  // object-position defaults to CENTER, which is what cut Kyoto's man out of
+  // his own tile. Cropping at the CDN means g_faces decides, on the aspect
+  // that is actually shown, instead of the browser slicing blind.
+  const image = universeTileImage(universe.id, { width: 900, height: 1200 }) || FALLBACK_IMAGE[universe.id];
   const swatches = [
     { color: universe.colors.darkBg, label: 'Ground' },
     { color: universe.colors.lightBg, label: 'Paper' },
@@ -147,7 +152,8 @@ function UniverseCrossfadeShowcase({ universes }) {
     <div ref={containerRef} style={{ position: 'relative', height: `${universes.length * 100}vh` }}>
       <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', background: '#0A0A0A' }}>
         {universes.map((u, i) => {
-          const img = universeTileImage(u.id) || FALLBACK_IMAGE[u.id];
+          // FULL-BLEED, so it gets the scroll's width rather than a tile's.
+          const img = universeScrollImage(u.id) || FALLBACK_IMAGE[u.id];
           return (
             <img
               key={u.id}
@@ -238,27 +244,30 @@ const Universes = () => {
   // product cannot pay.
   const assets = [
     { name: 'Your invitation', description: 'The piece your guests open first, in your universe\u2019s color, type and photography.' },
-    { name: 'Your wedding website', description: 'Every page a guest needs — the day, the place, the answers — dressed the same way.' },
+    { name: 'Your guest suite', description: 'Every page a guest needs — the day, the place, the answers — dressed the same way.' },
     { name: 'Your RSVP', description: 'Replies come straight back to your guest list, styled to match the invitation that asked.' },
   ];
 
   // THREE POINTS, EACH ONE TRUE. The third used to promise a print-ready PDF
   // export, which does not exist; the second counted "all 10 assets".
+  // THREE POINTS, EACH TWO TO THREE LINES — the owner's copy, verbatim. They
+  // were one line each and read as captions; a claim a couple is meant to
+  // believe needs room to say what it means.
   const editorFeatures = [
     {
       number: '01',
-      title: 'Set it once',
-      body: 'Set your names, date and venue once. They flow through your invitation, website and RSVP.',
+      title: 'Set it once.',
+      body: 'Your names, your date, your venue: entered once in your planner. They flow through your invitation, your guest suite and your RSVP, so nothing is typed twice and nothing drifts.',
     },
     {
       number: '02',
-      title: 'Change anything, any time',
-      body: 'Change anything, any time. Every page updates together.',
+      title: 'Change anything, any time.',
+      body: 'Move the ceremony, add a brunch, rename a page. Every screen your guests see updates together the moment you save.',
     },
     {
       number: '03',
-      title: 'No account for your guests',
-      body: 'Guests never need an account. One link opens everything.',
+      title: 'No account for your guests.',
+      body: 'One link opens everything: the invitation, the details, the RSVP. Guests never sign up and never set a password, and nothing about them is ever sold.',
     },
   ];
 
@@ -289,7 +298,7 @@ const Universes = () => {
             fontFamily: 'Plus Jakarta Sans, sans-serif',
             margin: 0,
           }}>
-            A universe is a complete visual system — one typography, color palette and mood — that carries across your invitation, your wedding website and your RSVP.
+            A universe is a complete visual system — one typography, color palette and mood — that carries across your invitation, your guest suite and your RSVP.
           </p>
         </div>
       </section>
@@ -314,7 +323,7 @@ const Universes = () => {
             letterSpacing: '-0.01em',
             margin: '0 0 12px',
           }}>
-            One invitation. Twenty worlds.
+            One invitation. Twenty universes.
           </h2>
           <p style={{
             fontSize: 14,
@@ -324,7 +333,7 @@ const Universes = () => {
             maxWidth: 600,
             fontFamily: 'Plus Jakarta Sans',
           }}>
-            Choose a universe and your invitation, wedding website and RSVP take its color, type and photography — all from one set of details.
+            Choose a universe and your invitation, guest suite and RSVP take its color, type and photography — all from one set of details.
           </p>
 
           {/* THREE, so one column each on a phone and three across on a

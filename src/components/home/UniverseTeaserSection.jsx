@@ -49,7 +49,7 @@ export default function UniverseTeaserSection() {
           fontSize: 17, color: "rgba(255,255,255,0.55)", lineHeight: 1.6, maxWidth: 700, margin: "0 auto 56px",
           opacity: visible ? 1 : 0, transition: `opacity 0.7s ${EASE} 0.1s`,
         }}>
-          Choose a universe and your invitation, wedding website and RSVP follow it, automatically.
+          Choose a universe and your invitation, guest suite and RSVP follow it, automatically.
         </p>
 
         <div style={{
@@ -60,7 +60,9 @@ export default function UniverseTeaserSection() {
           {PREVIEW.map((u) => (
             <div key={u.id} style={{ position: "relative", aspectRatio: "3 / 4", overflow: "hidden" }}>
               <img
-                src={universeTileImage(u.id) || u.imageUrl}
+                // 3:4, like the tile it is — cropped at the CDN on the faces rather
+                //  than sliced blind by object-fit.
+                src={universeTileImage(u.id, { width: 900, height: 1200 }) || u.imageUrl}
                 alt={`The ${u.name} universe`}
                 style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
               />

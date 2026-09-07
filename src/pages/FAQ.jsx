@@ -16,7 +16,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 const FAQS = [
   {
     q: "What is Openinvite?",
-    a: "Openinvite is a wedding planning app and wedding website builder for couples. It combines guest management, budget tracking, a wedding website, digital wedding invitations and an AI wedding assistant called Ava in one platform, for a single one-time payment instead of a subscription.",
+    a: "Openinvite is a wedding planning app and guest suite builder for couples. It combines guest management, budget tracking, a guest suite your guests can visit, digital wedding invitations and an AI wedding assistant called Ava in one platform, for a single one-time payment instead of a subscription.",
   },
   {
     q: "How much does it cost? Is it really one payment?",
@@ -24,11 +24,11 @@ const FAQS = [
   },
   {
     q: "What's included in Pro versus Ultra?",
-    a: "Pro covers the full wedding planning toolkit: guest and RSVP management, budget tracking, vendor management, a seating planner, a schedule and Ava, the AI assistant. Ultra includes everything in Pro plus the digital suite: a wedding website with premium design themes, digital invitations, and online RSVP pages for guests.",
+    a: "Pro covers the full wedding planning toolkit: guest and RSVP management, budget tracking, vendor management, a seating planner, a schedule and Ava, the AI assistant. Ultra includes everything in Pro plus the digital suite: a guest suite with premium design themes, digital invitations, and online RSVP pages for guests.",
   },
   {
     q: "What are design universes?",
-    a: "Design universes are Openinvite's fully designed wedding website themes. There are 20 universes to choose from, each setting the fonts, colors and style for your wedding website, invitations and printed pieces, inspired by destinations like Tulum, Kyoto and Paris.",
+    a: "Design universes are Openinvite's fully designed guest suite themes. There are 20 universes to choose from, each setting the fonts, colors and style for your guest suite, invitations and printed pieces, inspired by destinations like Tulum, Kyoto and Paris.",
   },
   {
     q: "Who is Ava?",
