@@ -127,14 +127,37 @@ export default function WeddingWebsiteNav({ weddingDetails, weddingName, theme, 
   // pageLinks came first so the couple's own enabledPages order won the
   // position, which meant the nav read differently on every site. Ruling R12
   // fixes the order; a page a couple has not enabled simply does not appear.
-  const NAV_ORDER = [
+  // ── THE COUPLE'S OWN ORDER, WITH R12'S SAFETY KEPT ────────────────────
+  //
+  // Owner ruling on review, 2026-09-07: pages are reorderable in the editor,
+  // and that order drives the tabs, the site navigation and the published
+  // site. This supersedes the fixed NAV_ORDER above — but NOT the reason it
+  // existed. R12 pinned RSVP to position four because appended-last is what a
+  // tail-slice takes first, and on a 390px screen the reply ended up behind
+  // "More", two taps deep. That defect does not stop being a defect because
+  // the order is now the couple's.
+  //
+  // So: the couple's `enabledPages` order decides everything, and RSVP is
+  // still placed inside the visible slice. A couple who drags RSVP to the end
+  // gets it at the end of the DRAWER, where nothing is hidden — and still
+  // reachable in the top row, which is the property the guard tests by name.
+  //
+  // `enabledPages` is an ARRAY and has always been one; nothing new is stored.
+  // The editor writes the order into it, so there is no second source to keep
+  // in step and no schema change.
+  const FALLBACK_ORDER = [
     'home', 'our-story', 'celebration', 'rsvp', 'stay', 'transport',
     'experience', 'styling', 'polls', 'music', 'faq', 'good-to-know',
   ];
+  const coupleOrder = Array.isArray(enabledPages) && enabledPages.length ? enabledPages : FALLBACK_ORDER;
   const orderOf = (l) => {
-    const i = NAV_ORDER.indexOf(l.key);
-    // An unknown key sorts after the known ones rather than to the front.
-    return i === -1 ? NAV_ORDER.length : i;
+    const i = coupleOrder.indexOf(l.key);
+    if (i !== -1) return i;
+    // A sub-link (Stay, Getting here) is not a page in enabledPages, so it
+    // falls back to the fixed order — after the couple's pages, in the shape
+    // the site has always had.
+    const f = FALLBACK_ORDER.indexOf(l.key);
+    return coupleOrder.length + (f === -1 ? FALLBACK_ORDER.length : f);
   };
   const seen = new Set();
   const rest = [...pageLinks.filter(l => l.key !== 'rsvp'), ...subLinks]
@@ -145,12 +168,18 @@ export default function WeddingWebsiteNav({ weddingDetails, weddingName, theme, 
       return true;
     })
     .sort((a, b) => orderOf(a) - orderOf(b));
-  // RSVP takes its place in the order (index 3 of NAV_ORDER, so fourth) rather
-  // than being appended. `ordered` is the single list the slice is taken from,
-  // so the visible row reads exactly as NAV_ORDER does.
+  // RSVP TAKES ITS PLACE IN THE COUPLE'S ORDER, and is held inside the
+  // visible slice if that order would push it out. `ordered` is the single
+  // list the slice is taken from, so the visible row reads as the couple
+  // arranged it — with the one exception the 390px guard exists for.
+  const rsvpAt = rsvpLink ? Math.max(0, coupleOrder.indexOf('rsvp')) : -1;
+  const withoutRsvp = rest;
+  const at = rsvpLink
+    ? Math.min(rsvpAt === -1 ? 3 : rsvpAt, MAX_VISIBLE_LINKS - 1, withoutRsvp.length)
+    : 0;
   const ordered = rsvpLink
-    ? [...rest.slice(0, 3), rsvpLink, ...rest.slice(3)]
-    : rest;
+    ? [...withoutRsvp.slice(0, at), rsvpLink, ...withoutRsvp.slice(at)]
+    : withoutRsvp;
   const visibleLinks = ordered.slice(0, MAX_VISIBLE_LINKS);
   const overflowLinks = ordered.slice(MAX_VISIBLE_LINKS);
   // The mobile drawer lists everything, so it takes the full ordered set —

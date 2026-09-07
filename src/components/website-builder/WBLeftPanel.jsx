@@ -96,6 +96,57 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
     onPageChange(page.slug);
   };
 
+  // ── REORDER ────────────────────────────────────────────────────────────
+  //
+  // Owner ruling on review, 2026-09-07: pages are reorderable, built-ins and
+  // custom alike, and the order drives the tabs, the site navigation and the
+  // published site.
+  //
+  // IT IS STORED IN `enabledPages`, WHICH IS ALREADY AN ARRAY. No new field,
+  // no schema change: the order a couple drags into is the order of that list,
+  // and WeddingWebsiteNav reads the same list. One source; nothing to keep in
+  // step. A page that is switched OFF is not in enabledPages at all, so it
+  // holds no position — which is correct: it is not on the site.
+  //
+  // HOME STAYS FIRST. It is the page a link opens on, and a site whose first
+  // page is "Good to know" is a site with no front door. The drop handler
+  // refuses index 0 rather than the row refusing to be picked up, so dragging
+  // Home is possible and simply lands it back where it was — a control that
+  // silently does nothing is worse than one that visibly returns.
+  const [dragSlug, setDragSlug] = useState(null);
+  const [dropSlug, setDropSlug] = useState(null);
+
+  const orderedSlugs = enabledPages;
+
+  const moveTo = (from, to) => {
+    if (!from || from === to) return;
+    const list = [...orderedSlugs];
+    const i = list.indexOf(from);
+    const j = list.indexOf(to);
+    if (i === -1 || j === -1) return;
+    list.splice(i, 1);
+    list.splice(j, 0, from);
+    // Home first, always.
+    const home = list.indexOf('home');
+    if (home > 0) { list.splice(home, 1); list.unshift('home'); }
+    onChange('enabledPages', list);
+  };
+
+  /** The props every draggable page row shares. */
+  const dragProps = (slug) => ({
+    draggable: true,
+    onDragStart: () => setDragSlug(slug),
+    onDragEnd: () => { setDragSlug(null); setDropSlug(null); },
+    onDragOver: (e) => { e.preventDefault(); if (dropSlug !== slug) setDropSlug(slug); },
+    onDrop: (e) => { e.preventDefault(); moveTo(dragSlug, slug); setDragSlug(null); setDropSlug(null); },
+    'aria-grabbed': dragSlug === slug ? 'true' : undefined,
+  });
+
+  /** A row being dragged over shows where it would land. */
+  const dropStyle = (slug) => (dropSlug === slug && dragSlug && dragSlug !== slug
+    ? { boxShadow: 'inset 0 2px 0 0 #E03553' }
+    : null);
+
   const handleDeleteCustomPage = (e, slug) => {
     e.stopPropagation();
     onChange('customPages', customPages.filter(p => p.slug !== slug));
@@ -132,7 +183,18 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
 
       <div style={{ overflow: 'hidden', maxHeight: pagesOpen ? '2000px' : '0px', transition: 'max-height 0.2s ease' }}>
       <div>
-        {WEDDING_PAGES.map(({ slug, label, icon }) => {
+        {/* IN THE COUPLE'S ORDER. WEDDING_PAGES is the catalog of what exists;
+            enabledPages is the order they arranged. Pages that are switched
+            off keep the catalog's order, after the ones that are on — they
+            have no position on a site they are not part of. */}
+        {[...WEDDING_PAGES].sort((a, b) => {
+          const ia = enabledPages.indexOf(a.slug);
+          const ib = enabledPages.indexOf(b.slug);
+          if (ia === -1 && ib === -1) return 0;
+          if (ia === -1) return 1;
+          if (ib === -1) return -1;
+          return ia - ib;
+        }).map(({ slug, label, icon }) => {
           const active = currentPage === slug;
           const enabled = enabledPages.includes(slug);
           const hovered = hoveredPage === slug;
@@ -142,9 +204,11 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
               key={slug}
               onClick={() => { if (clickable) onPageChange(slug); }}
               {...interactiveDivProps(clickable ? () => onPageChange(slug) : null, { label })}
+              {...(enabled ? dragProps(slug) : {})}
               onMouseEnter={() => { if (!active && clickable) setHoveredPage(slug); }}
               onMouseLeave={() => setHoveredPage(null)}
               style={{
+                ...(dropStyle(slug) || {}),
                 display: 'flex', alignItems: 'center', gap: 8,
                 padding: '6px 16px',
                 cursor: clickable ? 'pointer' : 'default',
@@ -200,13 +264,16 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
                 key={page.slug}
                 onClick={() => onPageChange(page.slug)}
                 {...interactiveDivProps(() => onPageChange(page.slug), { label: page.name })}
+                {...(enabledPages.includes(page.slug) ? dragProps(page.slug) : {})}
                 onMouseEnter={() => { if (!active) setHoveredPage(page.slug); }}
                 onMouseLeave={() => setHoveredPage(null)}
                 style={{
+                  ...(dropStyle(page.slug) || {}),
                   display: 'flex', alignItems: 'center', gap: 8,
                   padding: '6px 16px', cursor: 'pointer',
                   background: active ? 'rgba(255,255,255,0.06)' : hovered ? 'rgba(255,255,255,0.04)' : 'transparent',
                   borderLeft: active ? '2px solid #E03553' : '2px solid transparent',
+                  opacity: enabledPages.includes(page.slug) ? 1 : 0.4,
                   transition: 'background 0.1s',
                 }}
               >
@@ -218,6 +285,12 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
                   color: active || hovered ? '#FFFFFF' : 'rgba(255,255,255,0.5)',
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>{page.name}</span>
+                {/* A CUSTOM PAGE TOGGLES LIKE ANY OTHER PAGE. Owner ruling
+                    2026-09-07. It had a delete and nothing else, so the only
+                    way to take one off the site was to destroy it — and the
+                    row sat beside eleven built-ins that all toggle. Same
+                    `enabledPages` list, same control. */}
+                <Toggle enabled={enabledPages.includes(page.slug)} onToggle={() => toggle(page.slug)} label={page.name} />
                 <button
                   onClick={e => handleDeleteCustomPage(e, page.slug)}
                   aria-label={`Delete ${page.name}`}

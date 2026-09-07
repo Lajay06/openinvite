@@ -26,13 +26,26 @@ export async function runNavRsvpVisible() {
   const check = (n, ok, d) => results.push(ok ? pass(n, d) : fail(n, 'see name', d));
   console.log('\n  Guest nav — the reply is never behind "More":\n');
 
+  // ── THE ORDER IS THE COUPLE'S NOW, AND THIS STILL HOLDS ────────────────
+  //
+  // Owner ruling 2026-09-07: pages are reorderable, and the couple's order
+  // drives the guest site's navigation. `NAV_ORDER` became `FALLBACK_ORDER` —
+  // the shape a site with no stored order falls back to, and the shape
+  // sub-links (Stay, Getting here) still use, since those are not pages.
+  //
+  // THE PROPERTY IS UNCHANGED, and it is the reason R12 existed at all:
+  // appended-last is what a tail-slice takes FIRST, so on a 390px screen the
+  // reply ended up behind "More", two taps deep. A couple may now drag RSVP
+  // anywhere they like; the nav still PLACES it inside the visible slice.
+  // So this checks the clamp rather than a fixed index — the guarantee moved
+  // from a constant to an expression, and the expression is what to test.
   const maxMatch = /MAX_VISIBLE_LINKS\s*=\s*(\d+)/.exec(src);
-  const orderMatch = /const NAV_ORDER = \[([\s\S]*?)\]/.exec(src);
+  const orderMatch = /const FALLBACK_ORDER = \[([\s\S]*?)\]/.exec(src);
 
   // A GUARD THAT CANNOT FIND ITS INPUT MUST FAIL, NOT PASS.
   if (!maxMatch || !orderMatch) {
-    check('the nav still declares MAX_VISIBLE_LINKS and NAV_ORDER', false,
-      `MAX=${!!maxMatch} NAV_ORDER=${!!orderMatch}`);
+    check('the nav still declares MAX_VISIBLE_LINKS and FALLBACK_ORDER', false,
+      `MAX=${!!maxMatch} FALLBACK_ORDER=${!!orderMatch}`);
     return results;
   }
 
@@ -40,9 +53,19 @@ export async function runNavRsvpVisible() {
   const order = [...orderMatch[1].matchAll(/'([a-z-]+)'/g)].map((m) => m[1]);
   const rsvpIndex = order.indexOf('rsvp');
 
-  check('NAV_ORDER contains rsvp', rsvpIndex > -1, `index ${rsvpIndex}`);
-  check(`rsvp is inside the visible slice of ${max}`, rsvpIndex > -1 && rsvpIndex < max,
+  check('the fallback order contains rsvp', rsvpIndex > -1, `index ${rsvpIndex}`);
+  check(`rsvp is inside the visible slice of ${max} on a site with no stored order`,
+    rsvpIndex > -1 && rsvpIndex < max,
     `rsvp at position ${rsvpIndex + 1}, slice shows ${max}`);
+  // AND ON A SITE WITH ONE. Wherever the couple dragged RSVP, its insertion
+  // point is clamped below the last visible slot — this is the line that now
+  // carries R12's guarantee.
+  check('rsvp is clamped into the visible slice whatever the couple chose',
+    /Math\.min\(rsvpAt === -1 \? 3 : rsvpAt, MAX_VISIBLE_LINKS - 1, withoutRsvp\.length\)/.test(src),
+    'the guarantee is an expression now, not a constant');
+  check('  and the couple’s own order decides everything else',
+    /const coupleOrder = Array\.isArray\(enabledPages\) && enabledPages\.length \? enabledPages : FALLBACK_ORDER/.test(src),
+    'their arrangement, with one safety');
 
   // The worst case is a wedding with every page enabled: nothing can push RSVP
   // further right than its own index, so index < max is sufficient — but only
