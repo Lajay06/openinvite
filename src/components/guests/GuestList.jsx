@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, ChevronDown, ChevronRight, CalendarPlus, Pencil, MessageCircle } from "lucide-react";
@@ -8,7 +8,8 @@ import GuestAvatar from "@/components/shared/GuestAvatar";
 import { interactiveDivProps } from '@/lib/a11y';
 import { hasPlusOne, plusOneRsvpStatus, plusOneDisplayName } from '@/lib/plusOne';
 import { naturalCompare, sortRows, nextSortState } from '@/lib/tableSort';
-import SortableHead from '@/components/shared/SortableHead';
+import DataTable from '@/components/shared/DataTable';
+import { PILL_BASE } from '@/lib/tablePills';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -29,19 +30,11 @@ export const CATEGORY_OPTIONS = [
   { value: 'partners_friends',label: "Partner's friends" },
 ];
 
-const pillBase = {
-  display: 'inline-block',
-  fontFamily: PJS,
-  fontSize: 10,
-  fontWeight: 700,
-  letterSpacing: '0.08em',
-  padding: '3px 9px',
-  borderRadius: 999,
-  whiteSpace: 'nowrap',
-};
-
+// The pill vocabulary is shared now (R37): PILL_BASE is this object, moved to
+// DataTable so a Type on the schedule reads as the same object as a Category
+// here rather than as a badge of its own invention.
 const BadgePill = ({ style, children }) => (
-  <span style={{ ...pillBase, ...style }}>{children}</span>
+  <span style={{ ...PILL_BASE, ...style }}>{children}</span>
 );
 
 /* ── Per-event status chip — DESIGN_SPEC badge colours ───────────────────── */
@@ -909,34 +902,34 @@ export default function GuestList({
 
   const allVisibleSelected = guests.length > 0 && guests.every(g => selectedIds?.has(g.id));
 
+  // R37: the FRAME comes from the shared shell — container border, header
+  // band, scroll wrapper, the 36px checkbox column and the 48px actions
+  // column. The BODY stays here, because it is not a flat map: rows expand
+  // into per-event sub-rows and a persistent quick-add row sits under them.
+  const COLUMNS = [
+    { key: 'name',     label: 'Guest',     sortable: true },
+    { key: 'contact',  label: 'Contact' },
+    { key: 'category', label: 'Category',  sortable: true },
+    { key: 'tags',     label: 'Tags' },
+    { key: 'status',   label: 'Status',    sortable: true },
+    { key: 'lastSent', label: 'Last sent' },
+    { key: 'table',    label: 'Table',     sortable: true },
+    { key: 'plusOne',  label: '+1' },
+  ];
+
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.12)', overflow: 'hidden' }}>
-      <div style={{ overflowX: 'auto' }}>
-        <Table>
-          <TableHeader>
-            <TableRow style={{ background: '#FAFAFA' }}>
-              <TableHead style={{ width: 36 }}>
-                {!readOnly && (
-                  <input
-                    type="checkbox"
-                    checked={allVisibleSelected}
-                    onChange={() => onToggleSelectAll && onToggleSelectAll(guests.map(g => g.id))}
-                    style={{ width: 14, height: 14, accentColor: '#E03553' }}
-                  />
-                )}
-              </TableHead>
-              <SortableHead field="name" label="Guest" sortState={sortState} onSort={handleSort} />
-              <TableHead>Contact</TableHead>
-              <SortableHead field="category" label="Category" sortState={sortState} onSort={handleSort} />
-              <TableHead>Tags</TableHead>
-              <SortableHead field="status" label="Status" sortState={sortState} onSort={handleSort} />
-              <TableHead>Last sent</TableHead>
-              <SortableHead field="table" label="Table" sortState={sortState} onSort={handleSort} />
-              <TableHead>+1</TableHead>
-              <TableHead style={{ width: 48 }} />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+    <DataTable
+      columns={COLUMNS}
+      rows={guests}
+      rowKey={(g) => g.id}
+      sortState={sortState}
+      onSort={handleSort}
+      selectedIds={selectedIds || new Set()}
+      onToggleSelect={onToggleSelect}
+      onToggleSelectAll={onToggleSelectAll}
+      readOnly={readOnly}
+      actions
+    >
             {loading ? <SkeletonRows /> : sortedGuests.flatMap((guest) => {
               const rows = [];
               const isExpanded = expandedGuestIds.has(guest.id);
@@ -1146,9 +1139,6 @@ export default function GuestList({
             {!loading && onQuickAdd && (
               <AddGuestRow onQuickAdd={onQuickAdd} columnCount={COLUMN_COUNT} />
             )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+    </DataTable>
   );
 }

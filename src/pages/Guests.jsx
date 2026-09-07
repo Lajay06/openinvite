@@ -9,11 +9,9 @@ import { useAvaFocus } from "@/hooks/useAvaFocus";
 import { tallyAttendees, isAttending, isDeclined, isPending, isAwaitingPrimary } from "@/lib/guestRsvpTally";
 import { resolveAttendees } from "@/lib/attendees";
 const Guest = base44.entities.Guest;
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, Send, Copy, CalendarCheck } from "lucide-react";
+import { Send, Copy, CalendarCheck } from "lucide-react";
 import toast from 'react-hot-toast';
 import { useAuth } from "@/lib/AuthContext";
 import { color } from "@/styles/tokens";
@@ -35,6 +33,7 @@ import { fetchGuestLinks } from '@/lib/guestLinks';
 import { copyFromPromise } from '@/lib/copyToClipboard';
 import CopyFallbackModal from '@/components/shared/CopyFallbackModal';
 import { createGuest, updateGuest, deleteGuest } from '@/lib/guestWrites';
+import TableToolbar from '@/components/shared/TableToolbar';
 
 // Guarded on the pattern already used by src/lib/app-params.js: read the
 // environment at module load only when there IS one. Browser behavior is
@@ -76,16 +75,8 @@ async function backfillMissingTokens(guests) {
 
 
 
-function FilterPill({ label, active, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`filter-pill${active ? ' active' : ''}`}
-    >
-      {label}
-    </button>
-  );
-}
+// FilterPill moved to components/shared/TableToolbar.jsx (R37) so the
+// schedule's pills are this control rather than one that resembles it.
 
 const statLabelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -173,7 +164,7 @@ export default function Guests() {
     navigate(location.pathname, { replace: true, state: {} });
     const t = setTimeout(() => setHighlightedGuestId(null), 2000);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [location.state?.highlightId]);
 
   useEffect(() => { loadGuests(); }, [isCollaborating]);
@@ -838,39 +829,22 @@ export default function Guests() {
           </TabsList>
 
           <TabsContent value="guests" className="mt-8 space-y-6">
-            {/* Search + filter row */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-              <div style={{ position: 'relative', flex: '1 1 240px', maxWidth: 360 }}>
-                <Search size={13} style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', color: 'rgba(10,10,10,0.45)', pointerEvents: 'none' }} />
-                <Input
-                  placeholder="Search by name or email…"
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  style={{ paddingLeft: 20 }}
-                />
-              </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {FILTERS.map(f => (
-                  <FilterPill key={f.val} label={f.label} active={activeFilter === f.val} onClick={() => setActiveFilter(f.val)} />
-                ))}
-              </div>
-              {weddingEvents.length > 1 && (
-                <Select value={eventFilter} onValueChange={setEventFilter}>
-                  <SelectTrigger
-                    style={{ flexShrink: 0 }}
-                    className="w-auto flex-none gap-1 rounded-full border border-[rgba(10,10,10,0.15)] px-2 py-[3px] text-[11px] font-semibold text-[rgba(10,10,10,0.6)] data-[placeholder]:text-[rgba(10,10,10,0.6)] data-[placeholder]:font-semibold hover:border-[rgba(10,10,10,0.45)] hover:text-[#0A0A0A] focus:border focus:border-[rgba(10,10,10,0.15)] focus:outline-none"
-                  >
-                    <SelectValue placeholder="All events" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All events</SelectItem>
-                    {weddingEvents.map(event => (
-                      <SelectItem key={event.event_id} value={event.event_id}>{event.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
+            {/* Search + filter row — the shared toolbar (R37). */}
+            <TableToolbar
+              search={searchTerm}
+              onSearch={setSearchTerm}
+              searchPlaceholder="Search by name or email…"
+              filters={FILTERS}
+              activeFilter={activeFilter}
+              onFilter={setActiveFilter}
+              select={weddingEvents.length > 1 ? {
+                value: eventFilter,
+                onChange: setEventFilter,
+                placeholder: 'All events',
+                options: [{ value: 'all', label: 'All events' },
+                  ...weddingEvents.map(e => ({ value: e.event_id, label: e.name }))],
+              } : null}
+            />
 
             {/* Selection bar */}
             {selectionBarVisible && (

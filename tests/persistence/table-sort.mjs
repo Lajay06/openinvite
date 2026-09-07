@@ -118,9 +118,15 @@ export async function runTableSort() {
   // ── CONSUMED, NOT FORKED ────────────────────────────────────────────────
   {
     const gl = code('src/components/guests/GuestList.jsx');
+    // The HEADER moved again with R37: DataTable renders SortableHead now, so
+    // GuestList imports the sort machinery and the shell, and no longer the
+    // header directly. Both routes end at the same component.
     check('GuestList imports the shared sort rather than keeping its own',
-      /from '@\/lib\/tableSort'/.test(gl) && /from '@\/components\/shared\/SortableHead'/.test(gl),
+      /from '@\/lib\/tableSort'/.test(gl) && /from '@\/components\/shared\/DataTable'/.test(gl),
       'consumed');
+    check('  and the shell is what renders the sortable headers',
+      /from '@\/components\/shared\/SortableHead'/.test(code('src/components/shared/DataTable.jsx')),
+      'one header component, reached through the shell');
     check('  and no copy of the machinery is left behind on the page',
       !/function naturalCompare/.test(gl) && !/function sortGuests/.test(gl)
         && !/function SortableHead/.test(gl),
