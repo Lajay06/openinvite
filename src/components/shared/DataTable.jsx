@@ -33,7 +33,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
  * Category on the guest list rather than as a filled red badge that shouts.
  */
 
-export { PILL_BASE, OUTLINE_PILL } from '@/lib/tablePills';
+export { PILL_BASE, OUTLINE_PILL, CELL_STRONG, CELL_MUTED, CELL_NOWRAP } from '@/lib/tablePills';
 
 /** The row-level pill, from the shared vocabulary. */
 export const Pill = ({ style, children }) => (
@@ -66,9 +66,15 @@ export default function DataTable({
   columns, rows, rowKey = (r) => r.id, sortState, onSort,
   selectedIds, onToggleSelect, onToggleSelectAll,
   actions, empty, footerRow, loading, rowStyle, readOnly, children,
+  // A ROW THAT CANNOT BE ACTED ON GETS NO CHECKBOX, rather than one that
+  // does nothing. The schedule's timeline carries rows read from the to-do
+  // list, the vendors and the wedding record; selecting those here would
+  // offer a bulk action on data this page does not own.
+  isSelectable,
 }) {
   const selectable = !!selectedIds;
-  const allSelected = (rows || []).length > 0 && (rows || []).every((r) => selectedIds.has(rowKey(r)));
+  const selectableRows = (rows || []).filter((r) => !isSelectable || isSelectable(r));
+  const allSelected = selectableRows.length > 0 && selectableRows.every((r) => selectedIds.has(rowKey(r)));
   const span = columns.length + (selectable ? 1 : 0) + (actions ? 1 : 0);
 
   return (
@@ -83,7 +89,7 @@ export default function DataTable({
                     <input
                       type="checkbox"
                       checked={allSelected}
-                      onChange={() => onToggleSelectAll?.((rows || []).map(rowKey))}
+                      onChange={() => onToggleSelectAll?.(selectableRows.map(rowKey))}
                       style={{ width: 14, height: 14, accentColor: '#E03553' }}
                     />
                   )}
@@ -125,12 +131,14 @@ export default function DataTable({
                 <TableRow key={id} style={rowStyle?.(row)}>
                   {selectable && (
                     <TableCell className="align-middle">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.has(id)}
-                        onChange={() => onToggleSelect?.(id)}
-                        style={{ width: 14, height: 14, accentColor: '#E03553' }}
-                      />
+                      {(!isSelectable || isSelectable(row)) && (
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(id)}
+                          onChange={() => onToggleSelect?.(id)}
+                          style={{ width: 14, height: 14, accentColor: '#E03553' }}
+                        />
+                      )}
                     </TableCell>
                   )}
                   {columns.map((c) => (

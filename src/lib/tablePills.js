@@ -24,3 +24,18 @@ export const OUTLINE_PILL = {
   color: 'rgba(10,10,10,0.6)',
   border: '1px solid rgba(10,10,10,0.15)',
 };
+
+
+/**
+ * CELL TYPOGRAPHY (R37) — the guest list's, so a schedule row and a guest row
+ * are the same object at a glance.
+ *
+ * The guest list never set a font-size on a cell: it inherits the ui/table
+ * default, and only ever varies WEIGHT for the primary column and COLOUR for
+ * the secondary ones. The schedule's first pass set 14px inline on some cells
+ * and left others to inherit, which is how two tables drift apart while both
+ * "use the same component". These three are the whole vocabulary.
+ */
+export const CELL_STRONG = { fontWeight: 600, color: '#0A0A0A' };
+export const CELL_MUTED  = { color: 'rgba(10,10,10,0.6)' };
+export const CELL_NOWRAP = { whiteSpace: 'nowrap' };

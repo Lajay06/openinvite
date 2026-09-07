@@ -114,14 +114,20 @@ export async function runScheduleListFirst() {
     for (const [what, id] of [
       ['the schedule rows',    'schedule-s1'],
       ['the wedding day',      'wedding-day'],
-      ['the RSVP deadline',    'rsvp-deadline'],
-      ['a vendor contract',    'vendor-v1'],
-      ['a vendor booking',     'vendor-booking-v2'],
-      ['a vendor meeting',     'vendor-meeting-v2'],
+      // The RSVP deadline is a DEADLINE row now, with its own pill and its own
+      // id — it was a plain 'wedding' row and appeared twice once the deadline
+      // source landed.
+      ['the RSVP deadline',    'deadline-rsvp'],
+      // The vendor rows carry which DATE they are now — one id per field
+      // rather than three shapes of id — so a row reads "Florist — meeting"
+      // instead of three rows that all say "Florist".
+      ['a vendor contract',    'vendor-contract_date-v1'],
+      ['a vendor booking',     'vendor-booking_date-v2'],
+      ['a vendor meeting',     'vendor-meeting_date-v2'],
       ['a custom entry',       'custom-1'],
     ]) check(`${what} is still there`, ids.includes(id), id);
     check('  a vendor meeting keeps its time off the timestamp',
-      events.find(e => e.id === 'vendor-meeting-v2')?.time === '14:30', 'from 2027-02-14T14:30:00');
+      events.find(e => e.id === 'vendor-meeting_date-v2')?.time === '14:30', 'from 2027-02-14T14:30:00');
   }
 
   // ── THE LIST'S OWN SHAPE ────────────────────────────────────────────────
@@ -140,8 +146,8 @@ export async function runScheduleListFirst() {
       'a null time stringifies to "null" and sorts after "18:00" on a plain compare');
     check('the list carries location where there is one and blank where there is not',
       events.find(e => e.id === 'schedule-s1').location === 'The Old Observatory'
-        && events.find(e => e.id === 'rsvp-deadline').location === '',
-      'a vendor contract date does not happen anywhere');
+        && events.find(e => e.id === 'deadline-rsvp').location === '',
+      'a deadline does not happen anywhere');
   }
 
   // ── THE PAGE OPENS ON THE LIST, AND THE BUILDER IS UNREACHABLE ──────────
@@ -292,8 +298,10 @@ export async function runScheduleListFirst() {
     check('  and with no wedding date set, everything reads as planning',
       whenRelativeTo('2027-07-03', null) === 'planning', 'never guessed');
     const ev = buildScheduleEvents({ ...FIXTURE, weddingDate: '2027-07-03' });
-    check('  every event carries it, whatever source it came from',
-      ev.every((e) => ['planning', 'wedding-day', 'after'].includes(e.when)),
+    // SIX TYPES NOW, not three: the timeline carries to-dos, vendor dates and
+    // deadlines, and each keeps its own Type wherever it falls in the year.
+    check('  every event carries a Type, whatever source it came from',
+      ev.every((e) => ['planning', 'wedding-day', 'after', 'todo', 'vendor', 'deadline'].includes(e.when)),
       `${ev.length} events, all stamped`);
   }
 

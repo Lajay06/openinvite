@@ -2,9 +2,9 @@ import React, { useMemo, useState } from 'react';
 import DataTable from '@/components/shared/DataTable';
 import TableToolbar from '@/components/shared/TableToolbar';
 import { Pill } from '@/components/shared/DataTable';
-import { OUTLINE_PILL } from '@/lib/tablePills';
+import { OUTLINE_PILL, CELL_STRONG, CELL_MUTED, CELL_NOWRAP } from '@/lib/tablePills';
 import { naturalCompare, sortRows, nextSortState } from '@/lib/tableSort';
-import { WHEN_LABEL, WHEN_RANK } from '@/lib/scheduleEvents';
+import { WHEN_LABEL, WHEN_RANK, ROW_HOME } from '@/lib/scheduleEvents';
 
 /**
  * SCHEDULE › LIST — the same table as the guest list, on the same shell (R37).
@@ -57,23 +57,26 @@ const TYPE_INK = {
   planning:      { ...OUTLINE_PILL },
   'wedding-day': { ...OUTLINE_PILL, color: '#E03553', borderColor: 'rgba(224,53,83,0.45)' },
   after:         { ...OUTLINE_PILL, color: '#803D81', borderColor: 'rgba(128,61,129,0.45)' },
+  todo:          { ...OUTLINE_PILL, color: '#0A1930', borderColor: 'rgba(10,25,48,0.45)' },
+  vendor:        { ...OUTLINE_PILL },
+  deadline:      { ...OUTLINE_PILL, color: '#E03553', borderColor: 'rgba(224,53,83,0.45)' },
 };
 
-const MUTED = { color: 'rgba(10,10,10,0.6)' };
+/** Every Type, in the order the wedding runs and then by where it comes from. */
+const TYPE_ORDER = ['planning', 'wedding-day', 'after', 'todo', 'vendor', 'deadline'];
 
-export default function ScheduleTable({ events = [], onEdit, onDelete, loading }) {
+export default function ScheduleTable({ events = [], onEdit, onDelete, onOpen, loading }) {
   const [sortState, setSortState] = useState({ field: 'date', direction: 'asc' });
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [locationFilter, setLocationFilter] = useState('all');
   const [selectedIds, setSelectedIds] = useState(new Set());
 
-  const counts = useMemo(() => ({
-    all: events.length,
-    planning: events.filter((e) => e.when === 'planning').length,
-    'wedding-day': events.filter((e) => e.when === 'wedding-day').length,
-    after: events.filter((e) => e.when === 'after').length,
-  }), [events]);
+  const counts = useMemo(() => {
+    const c = { all: events.length };
+    for (const t of TYPE_ORDER) c[t] = events.filter((e) => e.when === t).length;
+    return c;
+  }, [events]);
 
   const locations = useMemo(
     () => [...new Set(events.map((e) => e.location).filter(Boolean))].sort((a, b) => naturalCompare(a, b)),
@@ -96,16 +99,21 @@ export default function ScheduleTable({ events = [], onEdit, onDelete, loading }
   const rows = sortRows(base, sortState, COLUMN_SORTS);
 
   const COLUMNS = [
-    { key: 'date',  label: 'Date',  sortable: true, cellStyle: { whiteSpace: 'nowrap' }, render: (e) => dateLabel(e.date) },
-    { key: 'time',  label: 'Time',  sortable: true, cellStyle: { whiteSpace: 'nowrap' }, render: (e) => timeLabel(e.time) },
-    { key: 'title', label: 'Event', sortable: true, cellStyle: { fontWeight: 600 }, render: (e) => e.title },
+    { key: 'date',  label: 'Date',  sortable: true, cellStyle: CELL_NOWRAP, render: (e) => dateLabel(e.date) },
+    { key: 'time',  label: 'Time',  sortable: true, cellStyle: CELL_NOWRAP, render: (e) => timeLabel(e.time) },
+    { key: 'title', label: 'Event', sortable: true, cellStyle: CELL_STRONG, render: (e) => e.title },
     { key: 'when',  label: 'Type',  sortable: true, render: (e) => <Pill style={TYPE_INK[e.when] || OUTLINE_PILL}>{WHEN_LABEL[e.when] || '—'}</Pill> },
-    { key: 'location', label: 'Location', sortable: true, cellStyle: MUTED, render: (e) => e.location || '—' },
+    {
+      // LOCATION OR SOURCE. A to-do has no venue; what it has is a home, and
+      // naming it is more use than an em dash.
+      key: 'location', label: 'Location', sortable: true, cellStyle: CELL_MUTED,
+      render: (e) => e.location || (e.readOnly ? e.source : '') || '—',
+    },
     {
       key: 'notes', label: 'Notes', sortable: true,
       // ONE LINE, WITH THE WHOLE THING ON HOVER. A note that wraps to four
       // lines makes every other row in the table taller than it needs to be.
-      cellStyle: { ...MUTED, maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+      cellStyle: { ...CELL_MUTED, maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
       render: (e) => {
         const text = e.notes || e.description || '';
         return <span title={text || undefined}>{text || '—'}</span>;
@@ -127,9 +135,7 @@ export default function ScheduleTable({ events = [], onEdit, onDelete, loading }
         searchPlaceholder="Search by event or location…"
         filters={[
           { val: 'all', label: `All (${counts.all})` },
-          { val: 'planning', label: `Planning (${counts.planning})` },
-          { val: 'wedding-day', label: `Wedding day (${counts['wedding-day']})` },
-          { val: 'after', label: `After (${counts.after})` },
+          ...TYPE_ORDER.map((t) => ({ val: t, label: `${WHEN_LABEL[t]} (${counts[t]})` })),
         ]}
         activeFilter={typeFilter}
         onFilter={setTypeFilter}
@@ -151,16 +157,21 @@ export default function ScheduleTable({ events = [], onEdit, onDelete, loading }
         empty={events.length
           ? 'Nothing matches that search.'
           : 'Nothing on the schedule yet — use “Add event” to put the first thing on it.'}
-        actions={(e) => (
-          // Only the couple's own schedule rows can be edited; the rest are
-          // read-outs of data that lives on another page.
-          e.type === 'schedule'
-            ? [
+        // A ROW THIS PAGE DOES NOT OWN GETS NO CHECKBOX. Selecting a to-do
+        // here would offer a bulk action on the to-do list.
+        isSelectable={(e) => e.type === 'schedule'}
+        actions={(e) => {
+          // The couple's own schedule rows are edited here. Everything else is
+          // edited at home, and the row offers the way there and nothing else.
+          if (e.type === 'schedule') {
+            return [
               ...(onEdit ? [{ label: 'Edit', onClick: () => onEdit(e) }] : []),
               ...(onDelete ? [{ label: 'Delete', onClick: () => onDelete(e), danger: true }] : []),
-            ]
-            : []
-        )}
+            ];
+          }
+          const home = ROW_HOME[e.kind];
+          return home && onOpen ? [{ label: home.label, onClick: () => onOpen(home.to) }] : [];
+        }}
       />
     </div>
   );

@@ -81,6 +81,12 @@ export default function ScheduleHub() {
   // The wedding date, for the List's Type column: an event before it is
   // planning, on it is the wedding day, after it is after.
   const [weddingDate, setWeddingDate] = useState(null);
+  // The wider timeline's other stores (R37 step B). Note only — `Task` is a
+  // dead entity, and retiring its loads elsewhere is its own open ticket.
+  const [todos, setTodos]             = useState([]);
+  const [wd, setWd]                   = useState(null);
+  const [customPages, setCustomPages] = useState([]);
+  const [liveStreams, setLiveStreams] = useState([]);
   // Which event's order of proceedings is on screen. The run sheet is PER
   // EVENT — "run sheet is literally order of events for the specific event".
   const [runSheetEventId, setRunSheetEventId] = useState(null);
@@ -143,7 +149,13 @@ export default function ScheduleHub() {
         setScheduleItems(data);
         setVendors(vendorRows);
         setInvitation(inv);
-        getMyWeddingDetails().then((wd) => setWeddingDate(wd?.weddingDate || inv?.wedding_date || null)).catch(() => {});
+        getMyWeddingDetails().then((details) => {
+          setWd(details || null);
+          setWeddingDate(details?.weddingDate || inv?.wedding_date || null);
+        }).catch(() => {});
+        getMyRecords('Note').then((n) => setTodos(n || [])).catch(() => {});
+        getMyRecords('CustomEventPage').then((c) => setCustomPages(c || [])).catch(() => {});
+        getMyRecords('LiveStream').then((l) => setLiveStreams(l || [])).catch(() => {});
       }
     } catch {
       toast.error("Failed to load schedule");
@@ -156,8 +168,8 @@ export default function ScheduleHub() {
   // schedule rows only, exactly as the calendar already restricted itself.
   // Same reasoning, one place now: Calendar.jsx:49.
   const events = React.useMemo(
-    () => buildScheduleEvents({ scheduleItems, vendors, invitation, weddingDate }),
-    [scheduleItems, vendors, invitation, weddingDate],
+    () => buildScheduleEvents({ scheduleItems, vendors, invitation, weddingDate, todos, wd, customPages, liveStreams }),
+    [scheduleItems, vendors, invitation, weddingDate, todos, wd, customPages, liveStreams],
   );
 
   // ── Stats (mirrors Schedule.jsx STAT_CARDS) ───────────────────────────────
@@ -175,14 +187,42 @@ export default function ScheduleHub() {
   // THE GUEST LIST'S TILES EXACTLY — label, 48px figure, and a sub-line only
   // where it earns one. "11 on the day · 10 around it" is a fact the bare
   // total does not carry; "Ceremony 1" would be a sub-line about nothing.
+  // HONEST ABOUT THE WIDER SET. "Total events" over a list that now includes
+  // to-dos and vendor dates would be a count of a different thing than the
+  // word says. The tiles count what the List actually shows, and the sub-lines
+  // say what the figure is made of.
+  const timelineStats = React.useMemo(() => {
+    const by = (t) => events.filter(e => e.when === t).length;
+    return {
+      total: events.length,
+      onTheDay: by('wedding-day'),
+      around: by('planning') + by('after'),
+      todo: by('todo'),
+      vendor: by('vendor'),
+      deadline: by('deadline'),
+      scheduleRows: scheduleItems.length,
+    };
+  }, [events, scheduleItems]);
+
   const STAT_CARDS = [
     {
-      label: "Total events", value: stats.total,
-      sub: stats.total ? `${stats.onTheDay} on the day · ${stats.total - stats.onTheDay} around it` : null,
+      label: "On the timeline", value: timelineStats.total,
+      sub: timelineStats.total
+        ? `${timelineStats.onTheDay} on the day · ${timelineStats.around} around it`
+        : null,
     },
-    { label: "Ceremony",     value: stats.ceremony },
-    { label: "Reception",    value: stats.reception },
-    { label: "Other events", value: stats.other },
+    {
+      label: "Your events", value: timelineStats.scheduleRows,
+      sub: timelineStats.scheduleRows ? "the ones you add and edit here" : null,
+    },
+    {
+      label: "To-dos due", value: timelineStats.todo,
+      sub: timelineStats.todo ? "open, with a date" : null,
+    },
+    {
+      label: "Vendor dates", value: timelineStats.vendor,
+      sub: timelineStats.deadline ? `${timelineStats.deadline} deadline${timelineStats.deadline === 1 ? '' : 's'} too` : null,
+    },
   ];
 
   // ── Export CSV ────────────────────────────────────────────────────────────
@@ -354,6 +394,7 @@ export default function ScheduleHub() {
             if (item) handleEditEvent(item);
           }}
           onDelete={readOnly ? undefined : (e) => handleDelete(e.sourceId)}
+          onOpen={(to) => navigate(to)}
         />
       )}
 

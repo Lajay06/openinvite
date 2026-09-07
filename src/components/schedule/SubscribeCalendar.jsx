@@ -82,7 +82,8 @@ export default function SubscribeCalendar() {
         Copy subscribe link
       </button>
       <span style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.6)' }}>
-        Google refreshes subscribed calendars every few hours.
+        Your subscribed calendar carries your schedule events; to-dos and
+        deadlines stay here. Google refreshes subscribed calendars every few hours.
       </span>
     </div>
   );

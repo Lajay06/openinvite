@@ -93,12 +93,15 @@ export async function runDataTable() {
   // ── THE SCHEDULE'S OWN TOOLBAR (R37) ────────────────────────────────────
   {
     const table = code('src/components/schedule/ScheduleTable.jsx');
-    check('PLANT: List has search, four counted pills and a locations select',
+    // SIX PILLS NOW, generated from TYPE_ORDER rather than written out — the
+    // ruling widened the timeline to to-dos, vendor dates and deadlines.
+    check('PLANT: List has search, six counted pills and a locations select',
       /searchPlaceholder="Search by event or location…"/.test(table)
-        && /All \(\$\{counts\.all\}\)/.test(table) && /Planning \(\$\{counts\.planning\}\)/.test(table)
-        && /Wedding day \(\$\{counts\['wedding-day'\]\}\)/.test(table) && /After \(\$\{counts\.after\}\)/.test(table)
+        && /val: 'all', label: `All \(\$\{counts\.all\}\)`/.test(table)
+        && /TYPE_ORDER\.map\(\(t\) => \(\{ val: t, label: `\$\{WHEN_LABEL\[t\]\} \(\$\{counts\[t\]\}\)` \}\)\)/.test(table)
+        && /const TYPE_ORDER = \['planning', 'wedding-day', 'after', 'todo', 'vendor', 'deadline'\]/.test(table)
         && /placeholder: 'All locations'/.test(table),
-      'All (n) · Planning (n) · Wedding day (n) · After (n) · All locations ▾');
+      'All (n) · Planning · Wedding day · After · To do · Vendor · Deadline · All locations ▾');
     check('  every column is sortable',
       (table.match(/sortable: true/g) || []).length === 6, 'six of six');
     check('  Notes is one line, with the whole thing on hover',
@@ -131,9 +134,12 @@ export async function runDataTable() {
       /Visible to guests in your Guest Suite/.test(hub) && !/✨ Visible/.test(hub)
         && /padding: "0 32px 14px"/.test(hub),
       'a note about the page, not a control');
-    check('PLANT: the stat tiles are the guest list\'s, sub-line included',
+    // The tiles count what the List actually SHOWS. "Total events" over a
+    // list that now includes to-dos would name a different thing than it counts.
+    check('PLANT: the stat tiles are the guest list\'s, and honest about the wider set',
       /statLabelStyle/.test(hub) && /statValueStyle/.test(hub) && /\{s\.sub && !loadingStats/.test(hub)
-        && /on the day · \$\{stats\.total - stats\.onTheDay\} around it/.test(hub),
+        && /label: "On the timeline"/.test(hub) && /label: "To-dos due"/.test(hub)
+        && /on the day · \$\{timelineStats\.around\} around it/.test(hub),
       'label, figure, and a sub-line only where it earns one');
     check('PLANT: the run sheet picker is deduped by event name',
       /const seen = new Set\(\)/.test(hub) && /seen\.has\(key\)/.test(hub),
