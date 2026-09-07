@@ -333,6 +333,13 @@ jobs:
             CAPTURE_BASE_URL=http://localhost:4173 npm run test:schedule-tabs
             TEST_EXIT=$?
           fi
+          # The daily update paints before Ava speaks. The briefing endpoint is
+          # held open for 6s and the check is whether the page is already
+          # there — the owner's "~10 seconds, shows nothing while loading".
+          if [ $TEST_EXIT -eq 0 ]; then
+            CAPTURE_BASE_URL=http://localhost:4173 npm run test:daily-update-paint
+            TEST_EXIT=$?
+          fi
           if [ $TEST_EXIT -eq 0 ]; then
             CAPTURE_BASE_URL=http://localhost:4173 npm run test:guest-no-invalid-date
 

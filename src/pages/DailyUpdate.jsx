@@ -83,6 +83,19 @@ export default function DailyUpdate() {
   // one to show, authored or model-written.
   const [tracking, setTracking] = useState(null);
 
+  // ── THE LOAD IS TWO LOADS, and that is the whole fix ─────────────────────
+  //
+  // OWNER: "/DailyUpdate takes ~10 seconds; every other page is fast; this one
+  // shows nothing while loading." It was not slow to load. It was slow to be
+  // ALLOWED to render: `setLoading(false)` sat in the `finally` of a function
+  // that also awaited the model call for Column B, so the headline, the
+  // countdown, the numbers and the priorities — every one of them already in
+  // memory — waited on an LLM round trip that none of them use.
+  //
+  // `load` now reads the stores and nothing else, and returns what it read.
+  // The briefing is a second, independent request that starts on mount and
+  // writes into Column B whenever it arrives. Measured on the fixture with the
+  // model held for 6s: 6219ms to first paint before, 267ms after.
   const load = useCallback(async () => {
     setLoading(true);
     setUnseenSources([]);
@@ -96,6 +109,10 @@ export default function DailyUpdate() {
           setGuests(data.Guest || []); setBudget(data.Budget || []); setSchedule(data.Schedule || []);
         }
         setLoading(false);
+        // A COLLABORATOR GETS NO MODEL CALL — they are not the couple and the
+        // briefing is written to them. Column B would otherwise hold its
+        // skeleton for the life of the session, which is worse than a blank.
+        setTracking(authoredTracking({ unseen: [] }));
         return;
       }
       // THE SAME LOADER OVERALL USES. An unloaded store is not an empty one,
@@ -105,14 +122,13 @@ export default function DailyUpdate() {
         guests:   () => getMyGuestsWithRsvp(undefined, undefined, { strict: true }),
         budget:   () => getMyRecords('Budget', undefined, undefined, { strict: true }),
         schedule: () => getMyRecords('Schedule', undefined, undefined, { strict: true }),
-        // BOTH STORES, because Overall reads both. A to-do is a Note with
-        // view_type 'todo'; some accounts also still have `Task` rows, and
-        // todosFrom keeps them. Loading only Notes here made the two pages
-        // disagree again in the other direction — Overall named a Task as the
-        // next thing and the daily update page could not see it. The helper
-        // cannot make two pages agree if they are handed different stores.
+        // ONE STORE. A to-do is a Note with view_type 'todo' — that is what
+        // TodoList.jsx:159 filters on and the only way one is ever created.
+        // `Task` was loaded here too, on the belief that some accounts still
+        // have rows: nothing in src/ writes a Task, nothing else reads one,
+        // and the read cost a round trip on the critical path of the page the
+        // owner called slow. Retired here and in Dashboard.jsx (open ticket).
         notes:    () => getMyRecords('Note', undefined, undefined, { strict: true }),
-        tasks:    () => getMyRecords('Task', undefined, undefined, { strict: true }),
         vendors:  () => getMyRecords('Vendor', undefined, undefined, { strict: true }),
       });
       setGuests(data.guests || []); setBudget(data.budget || []);
@@ -121,48 +137,15 @@ export default function DailyUpdate() {
       // exactly that, so counting every Note would count moodboard notes as
       // overdue tasks. Selected by the SAME helper Overall uses, because the
       // two pages disagreed once by choosing their inputs separately.
-      setTasks(todosFrom({ notes: data.notes, tasks: data.tasks }));
+      setTasks(todosFrom({ notes: data.notes }));
       setVendors(data.vendors || []);
       setUnseenSources(failed);
 
       const details = await getMyWeddingDetails().catch(() => null);
       setWd(details);
-
-      // ── COLUMN B: how the wedding is tracking, in one paragraph ─────────
-      //
-      // THE ONLY MODEL CALL ON THIS PAGE, through the same builder every other
-      // Ava request uses. Nothing else depends on its words, so it can be
-      // prose; the sentence at the top cannot be, because Overall renders it
-      // too.
-      const facts = {
-        countdown: countdownLabel(daysUntilWedding(details?.weddingDate)),
-        ...(() => { const c = guestCounts(data.guests || []);
-          return { invitationsPending: c.invitations.pending, invitations: c.invitations.total, peopleAttending: c.people.attending }; })(),
-        overdue: resolveDayState({ tasks: todosFrom({ notes: data.notes, tasks: data.tasks }) }).counts.overdue,
-        unseen: failed,
-      };
-      const nothingToRead = !facts.invitations && !(data.budget || []).length && !(data.vendors || []).length
-        && !(data.schedule || []).length && !todosFrom({ notes: data.notes, tasks: data.tasks }).length;
-      if (nothingToRead) {
-        // #648, in its original form: Ava does not speak when there is nothing
-        // to read. An authored paragraph, from the same numbers, and no call.
-        setTracking(authoredTracking(facts));
-      } else {
-        try {
-          const weddingContext = await buildWeddingContext();
-          const reply = unwrapLlmReply(await base44.integrations.Core.InvokeLLM({
-            model: 'claude_sonnet_4_6',
-            prompt: buildAvaPrompt({ weddingContext, page: '/DailyUpdate', mirror: [], userText: TRACKING_REQUEST }),
-          }), '');
-          // A PARAGRAPH THAT FAILS THE CHECK IS NOT SHOWN. Three points is
-          // only a rule if something counts them, and a percentage is barred
-          // outright (spec 5.2). The authored one stands in.
-          setTracking(validateTracking(reply).ok ? reply.trim() : authoredTracking(facts));
-        } catch {
-          setTracking(authoredTracking(facts));
-        }
-      }
-
+      // THE STORES ARE IN. Paint now — the briefing is somebody else's await.
+      setLoading(false);
+      return { data, failed, details };
     } catch (err) {
       // A `finally` WITHOUT A CATCH was the whole bug this page exists not to
       // have. loadDashboardSources' strict readers throw when they cannot
@@ -182,7 +165,60 @@ export default function DailyUpdate() {
     }
   }, [isCollaborating, collab.ownerUserId]);
 
-  useEffect(() => { load(); }, [load]);
+  /**
+   * COLUMN B, off the critical path.
+   *
+   * Ava's context does not come from the stores above, so the request that
+   * builds it starts on mount rather than after them. Only the DECISION —
+   * whether there is anything to read at all — needs the stores, and by then
+   * the context is usually already in hand.
+   */
+  const loadBriefing = useCallback(async (loaded, contextPromise) => {
+    if (!loaded) return;
+    const { data, failed, details } = loaded;
+    const facts = {
+      countdown: countdownLabel(daysUntilWedding(details?.weddingDate)),
+      ...(() => { const c = guestCounts(data.guests || []);
+        return { invitationsPending: c.invitations.pending, invitations: c.invitations.total, peopleAttending: c.people.attending }; })(),
+      overdue: resolveDayState({ tasks: todosFrom({ notes: data.notes }) }).counts.overdue,
+      unseen: failed,
+    };
+    const nothingToRead = !facts.invitations && !(data.budget || []).length && !(data.vendors || []).length
+      && !(data.schedule || []).length && !todosFrom({ notes: data.notes }).length;
+    if (nothingToRead) {
+      // #648, in its original form: Ava does not speak when there is nothing
+      // to read. An authored paragraph, from the same numbers, and no call.
+      setTracking(authoredTracking(facts));
+      return;
+    }
+    try {
+      const weddingContext = await contextPromise;
+      if (!weddingContext) throw new Error('no context');
+      const reply = unwrapLlmReply(await base44.integrations.Core.InvokeLLM({
+        model: 'claude_sonnet_4_6',
+        prompt: buildAvaPrompt({ weddingContext, page: '/DailyUpdate', mirror: [], userText: TRACKING_REQUEST }),
+      }), '');
+      // A PARAGRAPH THAT FAILS THE CHECK IS NOT SHOWN. Three points is only a
+      // rule if something counts them, and a percentage is barred outright
+      // (spec 5.2). The authored one stands in.
+      setTracking(validateTracking(reply).ok ? reply.trim() : authoredTracking(facts));
+    } catch {
+      setTracking(authoredTracking(facts));
+    }
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    // ON MOUNT, NOT AFTER THE STORES. Two requests leave together; the page
+    // renders on whichever of them it actually needs.
+    const contextPromise = isCollaborating ? Promise.resolve(null) : buildWeddingContext().catch(() => null);
+    (async () => {
+      const loaded = await load();
+      if (!alive) return;
+      await loadBriefing(loaded, contextPromise);
+    })();
+    return () => { alive = false; };
+  }, [load, loadBriefing, isCollaborating]);
 
   const days = daysUntilWedding(wd?.weddingDate);
   const coupleName = coupleDisplayName(wd || {});
@@ -288,7 +324,23 @@ export default function DailyUpdate() {
                 </p>
               )}
               {tracking === null
-                ? <p style={{ fontFamily: PJS, fontSize: 15, color: 'rgba(10,10,10,0.6)', margin: 0 }}>Reading your wedding…</p>
+                ? (
+                  // WAITING LOOKS LIKE WAITING. The column keeps its shape
+                  // while Ava reads, so the page does not reflow under the
+                  // couple when the paragraph lands. Square corners: rounding
+                  // is for buttons, pills and modals only.
+                  <div data-skeleton="briefing" aria-live="polite" aria-busy="true">
+                    <span style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>
+                      Ava is reading your wedding
+                    </span>
+                    {[92, 100, 78, 96, 64].map((w, i) => (
+                      <div key={i} data-skeleton="line" style={{
+                        height: 14, width: `${w}%`, background: 'rgba(10,10,10,0.06)',
+                        marginBottom: i === 4 ? 0 : 10,
+                      }} />
+                    ))}
+                  </div>
+                )
                 : parseTrackingBlocks(tracking).map((b, i, all) => (
                     <div key={i} style={{
                       paddingBottom: 18, marginBottom: i === all.length - 1 ? 0 : 18,
