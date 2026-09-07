@@ -256,6 +256,26 @@ export function SummaryChip({ label, faceFamily = font.family, skin = DASHBOARD_
  * while `ThemeSection.jsx` renders it compact. Identical content, two sizes,
  * because nobody had written the rule down. Under this rule both are compact.
  */
+/**
+ * THE THEME TAB'S PILL IS THE FILTER PILL. One class, one source of truth.
+ *
+ * Owner, 2026-09-07: "the Theme tab consumes FilterPill too so they can never
+ * diverge again." They had diverged in the worst way — both rendered as bare
+ * text, and each was cited as the other's reference.
+ *
+ * WHY THIS ONE HAD TO CHANGE RATHER THAN JUST THE OTHER. It declared
+ * `border: 1px solid rgba(10,10,10,0.18)` inline and never painted it:
+ * index.css:1045's `[class*="pill"] { border: none !important }` matches
+ * `oi-option-pill` and strips it. The measured result was
+ * `background: rgba(0,0,0,0)`, `border: 0px none` — a transparent box. Every
+ * "make it match the Theme tab" instruction has therefore been an instruction
+ * to match nothing.
+ *
+ * The `.oi-option-pill` class stays ON the element: its hover, active and
+ * focus-visible rules in index.css are still the ones this control wants, and
+ * they are keyed on it. What is gone is the second, private idea of what an
+ * unselected pill looks like.
+ */
 export function OptionPill({ label, selected, onClick, faceFamily = font.family, disabled = false, size = 'default' }) {
   const compact = size === 'compact';
   return (
@@ -264,18 +284,17 @@ export function OptionPill({ label, selected, onClick, faceFamily = font.family,
       onClick={onClick}
       disabled={disabled}
       aria-pressed={selected}
-      className={`oi-option-pill${selected ? ' oi-option-pill--selected' : ''}`}
+      className={`filter-pill${selected ? ' active' : ''} oi-option-pill${selected ? ' oi-option-pill--selected' : ''}`}
       style={{
         display: 'inline-flex', alignItems: 'center', gap: compact ? 5 : 6,
+        // The Theme tab's pills sit in a roomier context than a table
+        // toolbar's, so they keep their own padding and face. Everything that
+        // says SELECTED or NOT — the fill, the text colour, the radius — comes
+        // from .filter-pill and is not restated here.
         padding: compact ? '5px 12px' : '8px 16px',
-        borderRadius: 999,
-        border: `1px solid ${selected ? color.black : 'rgba(10,10,10,0.18)'}`,
-        background: selected ? color.black : 'transparent',
-        color: selected ? '#FFFFFF' : color.textMuted,
-        fontSize: compact ? 11 : 12, fontWeight: 500, fontFamily: faceFamily,
+        fontSize: compact ? 11 : 12,
+        fontFamily: faceFamily,
         cursor: disabled ? 'not-allowed' : 'pointer',
-        transition: 'all 0.15s',
-        whiteSpace: 'nowrap',
       }}
     >
       {/* Reserved slot: present in layout whether or not it is shown, so

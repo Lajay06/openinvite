@@ -1205,13 +1205,43 @@ body {
   background-size: 128px 128px;
 }
 /* ── Filter pill — standard filter/tab pill ─────────────────── */
+/* ── THE ONE PILL, AND WHY IT IS A FILL RATHER THAN AN OUTLINE ──────────────
+   Owner, production, 2026-09-07: Schedule's unselected filters "render as
+   bare text". They did, and so did the Theme tab they were supposed to match
+   — measured in the harness, an unselected pill on both computed to
+   `background: rgba(0,0,0,0)` and `border: 0px none`.
+
+   THE BORDER WAS NEVER PAINTING. index.css:1045 carries
+
+       [class*="pill"], … { border: none !important; outline: none !important; }
+
+   and `[class*="pill"]` matches BOTH `.filter-pill` and `.oi-option-pill`.
+   `!important` beats the class rule below and beats OptionPill's inline
+   border alike, so every outline pill in the product has been a transparent
+   box with invisible text furniture for as long as that rule has existed.
+
+   So the unselected state is a FILL. A background survives that rule; a
+   border cannot, and a control whose visibility depends on losing a
+   specificity fight is not a control. rgba(10,10,10,0.06) is the grey the
+   product already uses for a quiet chip (OptionAccordion's chipBg) — this is
+   not a new colour, it is the one that was already meant.
+
+   #698's GUARD PASSED ON THIS. It asserted `borderColor` was an
+   rgba(10,10,10,…) value, and getComputedStyle still reports a border COLOUR
+   when border-style is none — a colour with no width paints nothing. The
+   replacement guard reads background-color, which is what a person sees.
+
+   THREE STATES, and the Theme tab consumes this same class so they cannot
+   diverge again:
+     unselected  light-grey fill, muted text
+     selected    black fill, white text
+     hover       black fill, white text                                     */
 .filter-pill {
   font-size: 11px;
   padding: 3px 8px;
   border-radius: 999px;
   font-weight: 600;
-  border: 1px solid rgba(10,10,10,0.15);
-  background: transparent;
+  background: rgba(10,10,10,0.06);
   color: rgba(10,10,10,0.6);
   cursor: pointer;
   transition: all 0.15s;
@@ -1221,7 +1251,6 @@ body {
 .filter-pill.active {
   background: #0A0A0A;
   color: #FFFFFF;
-  border-color: #0A0A0A;
 }
 /* HOVER IS THE BLACK PILL. Owner ruling 2026-09-07 states the three states
    outright: selected = black pill, white text; unselected = the Theme tab's
@@ -1232,7 +1261,6 @@ body {
 .filter-pill:hover:not(.active) {
   background: #0A0A0A;
   color: #FFFFFF;
-  border-color: #0A0A0A;
 }
 
 /* ── Games print/export view (Polls & games) ──────────────────

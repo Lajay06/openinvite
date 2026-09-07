@@ -67,9 +67,17 @@ export async function runDesignSystemSweep() {
     check('PLANT: the shared pill has a black selected state',
       /\.filter-pill\.active \{[^}]*background: #0A0A0A;[^}]*color: #FFFFFF;/.test(css),
       'selected = black pill');
-    check('  and an unselected state that is a pill, not bare text',
-      /\.filter-pill \{[^}]*border: 1px solid rgba\(10,10,10,0\.15\);[^}]*background: transparent;/.test(css),
-      'the Theme tab’s outline, shared');
+    // A FILL, NOT AN OUTLINE — and this check asserted the outline that never
+    // painted. index.css:1045's `[class*="pill"] { border: none !important }`
+    // matches `.filter-pill`, so the 1px border this used to require was
+    // stripped on every pill in the product: transparent background, no
+    // border, bare text on Schedule and on the Theme tab alike. A source
+    // check cannot see that a rule lost a specificity fight; the render guard
+    // (scripts/test-filter-pills.mjs) reads the painted background instead.
+    check('  and an unselected state that is a painted fill, not bare text',
+      /\.filter-pill \{[^}]*background: rgba\(10,10,10,0\.06\);/.test(css)
+        && !/\.filter-pill \{[^}]*background: transparent;/.test(css),
+      'a background survives that !important; a border cannot');
     // THE BESPOKE ROWS THE OWNER NAMED, each converted rather than restyled.
     for (const [file, what] of [
       ['pages/Messages.jsx', 'Messages status'],
