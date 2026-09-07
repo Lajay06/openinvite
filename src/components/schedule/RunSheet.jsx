@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
-import { ChevronUp, ChevronDown, Trash2 } from 'lucide-react';
+import DataTable from '@/components/shared/DataTable';
+import TableToolbar from '@/components/shared/TableToolbar';
+import { TableCell, TableRow } from '@/components/ui/table';
 import { newRunSheetItem, normalizeRunSheet, moveRunSheetItem, runSheetRoundTripped } from '@/lib/runSheet';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 const CELL = {
   border: 'none', borderBottom: '1px solid rgba(10,10,10,0.12)', background: 'none',
-  fontFamily: PJS, fontSize: 14, color: '#0A0A0A', outline: 'none', padding: '6px 0', width: '100%',
+  fontFamily: PJS, fontSize: 14, color: '#0A0A0A', outline: 'none', padding: '4px 0', width: '100%',
 };
 
 /**
- * ONE EVENT'S ORDER OF PROCEEDINGS — time · item · who · notes.
+ * SCHEDULE › RUN SHEET — one event's order of proceedings, on the shared shell.
  *
- * This is what the deleted visual timeline was for, without its overlapping
- * blocks: a plain ordered list, edited in place, reordered by two arrows. A
- * ceremony is a sequence, not a set of rectangles competing for the same
- * minutes.
+ * Owner: "Same for run sheet... The wall of pills goes." One select naming the
+ * wedding-day events, and the rows in the same table as everything else.
  *
  * ── IT REFUSES TO SAVE INTO A FIELD THAT IS NOT THERE ──────────────────────
  *
@@ -22,9 +22,9 @@ const CELL = {
  * write of an undeclared field with 200 and discards it, so a couple would
  * type out their whole ceremony, see a success toast, and find it gone. The
  * save writes, reads back and compares; on a mismatch it says so and keeps
- * what they typed on screen rather than clearing it.
+ * what they typed on screen.
  */
-export default function RunSheet({ event, items, onSave, readOnly }) {
+export default function RunSheet({ events = [], eventId, onPickEvent, event, items, onSave, readOnly }) {
   const [rows, setRows] = useState(() => normalizeRunSheet(items));
   const [status, setStatus] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -40,7 +40,7 @@ export default function RunSheet({ event, items, onSave, readOnly }) {
       const { ok, reason } = runSheetRoundTripped(rows, readBack);
       setStatus(ok
         ? { tone: 'ok', text: 'Saved.' }
-        // NAMED, not "something went wrong". The couple can act on "it is not
+        // NAMED, not "something went wrong". A couple can act on "it is not
         // switched on"; they cannot act on a shrug.
         : { tone: 'bad', text: `Run sheet isn't switched on yet — ${reason}. Nothing was saved.` });
     } catch (err) {
@@ -50,73 +50,75 @@ export default function RunSheet({ event, items, onSave, readOnly }) {
     }
   };
 
-  if (!event) {
-    return (
-      <p style={{ fontFamily: PJS, fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: 0 }}>
-        Pick an event above to write its run sheet.
-      </p>
-    );
-  }
+  const COLUMNS = [
+    { key: 'time', label: 'Time', width: 110, cellStyle: { whiteSpace: 'nowrap' },
+      render: (r) => <input type="time" value={r.time} disabled={readOnly} style={CELL} onChange={(e) => update(r.id, 'time', e.target.value)} /> },
+    { key: 'item', label: 'Item', cellStyle: { fontWeight: 600 },
+      render: (r) => <input value={r.item} placeholder="Processional" disabled={readOnly} style={{ ...CELL, fontWeight: 600 }} onChange={(e) => update(r.id, 'item', e.target.value)} /> },
+    { key: 'who', label: 'Who', width: 180,
+      render: (r) => <input value={r.who} placeholder="Celebrant" disabled={readOnly} style={CELL} onChange={(e) => update(r.id, 'who', e.target.value)} /> },
+    { key: 'notes', label: 'Notes',
+      render: (r) => <input value={r.notes} placeholder="Music cued" disabled={readOnly} style={CELL} onChange={(e) => update(r.id, 'notes', e.target.value)} /> },
+  ];
+
+  const addRow = () => setRows((prev) => [...prev, newRunSheetItem(prev)]);
 
   return (
-    <div style={{ fontFamily: PJS }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '90px 1fr 160px 1fr 72px', gap: 12, alignItems: 'center',
-        paddingBottom: 8, borderBottom: '3px solid #0A0A0A' }}>
-        {['Time', 'Item', 'Who', 'Notes', ''].map((h) => (
-          <span key={h} style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', color: '#0A0A0A' }}>{h}</span>
-        ))}
-      </div>
+    <div style={{ padding: '24px 32px 48px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <TableToolbar
+        select={events.length > 0 ? {
+          value: eventId || '', onChange: onPickEvent, placeholder: 'Pick an event',
+          options: events.map((e) => ({ value: e.id, label: e.event_name })),
+        } : null}
+        actions={!readOnly && event ? (
+          <>
+            {status && (
+              <span style={{ fontFamily: PJS, fontSize: 13, alignSelf: 'center',
+                color: status.tone === 'ok' ? '#10B981' : '#E03553' }}>
+                {status.text}
+              </span>
+            )}
+            <button className="btn-primary" onClick={save} disabled={saving}>
+              {saving ? 'Saving…' : 'Save run sheet'}
+            </button>
+          </>
+        ) : null}
+      />
 
-      {rows.length === 0 && (
-        <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '20px 0' }}>
-          Nothing in this run sheet yet. Add the first moment below.
+      {!event ? (
+        <p style={{ fontFamily: PJS, fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: 0 }}>
+          No events on the wedding day yet. Add one and its run sheet lives here.
         </p>
-      )}
-
-      {rows.map((r, i) => (
-        <div key={r.id} style={{ display: 'grid', gridTemplateColumns: '90px 1fr 160px 1fr 72px', gap: 12,
-          alignItems: 'center', padding: '4px 0' }}>
-          <input type="time" value={r.time} disabled={readOnly} style={CELL}
-            onChange={(e) => update(r.id, 'time', e.target.value)} />
-          <input value={r.item} placeholder="Processional" disabled={readOnly} style={CELL}
-            onChange={(e) => update(r.id, 'item', e.target.value)} />
-          <input value={r.who} placeholder="Celebrant" disabled={readOnly} style={CELL}
-            onChange={(e) => update(r.id, 'who', e.target.value)} />
-          <input value={r.notes} placeholder="Music cued" disabled={readOnly} style={CELL}
-            onChange={(e) => update(r.id, 'notes', e.target.value)} />
-          {!readOnly && (
-            <span style={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-              <button aria-label="Move up" disabled={i === 0} onClick={() => setRows(moveRunSheetItem(rows, r.id, 'up'))}
-                style={{ background: 'none', border: 'none', cursor: i === 0 ? 'default' : 'pointer', opacity: i === 0 ? 0.3 : 1, padding: 2 }}>
-                <ChevronUp size={14} />
-              </button>
-              <button aria-label="Move down" disabled={i === rows.length - 1} onClick={() => setRows(moveRunSheetItem(rows, r.id, 'down'))}
-                style={{ background: 'none', border: 'none', cursor: i === rows.length - 1 ? 'default' : 'pointer', opacity: i === rows.length - 1 ? 0.3 : 1, padding: 2 }}>
-                <ChevronDown size={14} />
-              </button>
-              <button aria-label="Remove" onClick={() => setRows(normalizeRunSheet(rows.filter((x) => x.id !== r.id)))}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'rgba(10,10,10,0.45)' }}>
-                <Trash2 size={13} />
-              </button>
-            </span>
+      ) : (
+        <DataTable
+          columns={COLUMNS}
+          rows={rows}
+          empty="Nothing in this run sheet yet — add the first moment below."
+          actions={(r) => {
+            const i = rows.findIndex((x) => x.id === r.id);
+            return readOnly ? [] : [
+              { label: 'Move up', onClick: () => setRows(moveRunSheetItem(rows, r.id, 'up')), disabled: i === 0 },
+              { label: 'Move down', onClick: () => setRows(moveRunSheetItem(rows, r.id, 'down')), disabled: i === rows.length - 1 },
+              { label: 'Delete', onClick: () => setRows(normalizeRunSheet(rows.filter((x) => x.id !== r.id))), danger: true },
+            ];
+          }}
+          footerRow={!readOnly && (
+            // THE ADD ROW IS A ROW, in the table's own style — not a button
+            // floating under it. Same reason the guest list's quick-add sits
+            // inside its body.
+            <TableRow>
+              <TableCell colSpan={COLUMNS.length + 1}>
+                <button
+                  onClick={addRow}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                    fontFamily: PJS, fontSize: 13, fontWeight: 600, color: '#E03553' }}
+                >
+                  + Add a moment
+                </button>
+              </TableCell>
+            </TableRow>
           )}
-        </div>
-      ))}
-
-      {!readOnly && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 20, flexWrap: 'wrap' }}>
-          <button className="btn-editorial-secondary" onClick={() => setRows([...rows, newRunSheetItem(rows)])}>
-            Add a moment
-          </button>
-          <button className="btn-primary" onClick={save} disabled={saving}>
-            {saving ? 'Saving…' : 'Save run sheet'}
-          </button>
-          {status && (
-            <span style={{ fontSize: 13, color: status.tone === 'ok' ? '#10B981' : '#E03553' }}>
-              {status.text}
-            </span>
-          )}
-        </div>
+        />
       )}
     </div>
   );

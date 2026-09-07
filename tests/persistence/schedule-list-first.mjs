@@ -204,17 +204,20 @@ export async function runScheduleListFirst() {
   // are src/lib/tableSort.js, which is where they moved out of GuestList.jsx.
   {
     const table = code('src/components/schedule/ScheduleTable.jsx');
-    check('PLANT: the List is a table using the shared sort',
-      /from '@\/lib\/tableSort'/.test(table) && /from '@\/components\/shared\/SortableHead'/.test(table)
-        && /<Table>/.test(table),
-      'the same sort the guest list has');
+    // R37: the table markup itself moved to the shared shell, so this checks
+    // that the List goes THROUGH it rather than that it renders <Table> itself.
+    check('PLANT: the List is a table using the shared shell and the shared sort',
+      /from '@\/lib\/tableSort'/.test(table) && /from '@\/components\/shared\/DataTable'/.test(table)
+        && /<DataTable/.test(table),
+      'the same shell and the same sort as the guest list');
     check('  and defines no compare of its own',
       !/function naturalCompare/.test(table) && !/localeCompare/.test(table),
       'one implementation, not two that drift');
-    check('  six columns: Date, Time, Event, Type, Location, Notes',
-      /\['date', 'Date'\], \['time', 'Time'\], \['title', 'Event'\],/.test(table)
-        && /\['when', 'Type'\], \['location', 'Location'\], \['notes', 'Notes'\]/.test(table),
-      'in that order');
+    {
+      const labels = [...table.matchAll(/key: '(\w+)',\s*label: '([^']+)'/g)].map((m) => m[2]);
+      check('  six columns: Date, Time, Event, Type, Location, Notes',
+        labels.join(' · ') === 'Date · Time · Event · Type · Location · Notes', labels.join(' · '));
+    }
     check('  and it is the default tab',
       /useState\("list"\)/.test(code('src/pages/ScheduleHub.jsx')), 'the page opens on it');
 

@@ -7,8 +7,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
-import AvaButton from "@/components/shared/AvaButton";
-import AvaModal from "@/components/layout/AvaModal";
 import ScheduleForm from "../components/schedule/ScheduleForm";
 import CalendarPage from "./Calendar";
 import { base44 } from "@/api/base44Client";
@@ -25,6 +23,7 @@ import SubscribeCalendar from '../components/schedule/SubscribeCalendar';
 import RunSheet from '../components/schedule/RunSheet';
 import PageConsiderations from '../components/shared/PageConsiderations';
 import { getMyInvitation, getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import TableToolbar from '@/components/shared/TableToolbar';
 const Schedule = base44.entities.Schedule;
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -92,8 +91,6 @@ export default function ScheduleHub() {
   const [showForm,    setShowForm]    = useState(false);
   const [editingItem, setEditingItem] = useState(null);
 
-  // ── Ava modal ─────────────────────────────────────────────────────────────
-  const [avaOpen, setAvaOpen] = useState(false);
 
   // ── Active tab state ──────────────────────────────────────────────────────
   const [runsheetView, setRunsheetView] = useState("list");
@@ -121,7 +118,7 @@ export default function ScheduleHub() {
   // removing surface, and this is the one thing it costs.
   useEffect(() => {
     if (location.state?.highlightId) setRunsheetView('list');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [location.state?.highlightId]);
 
   // ── Load schedule items ───────────────────────────────────────────────────
@@ -169,14 +166,23 @@ export default function ScheduleHub() {
     const ceremony  = scheduleItems.filter(i => i.category === "ceremony").length;
     const reception = scheduleItems.filter(i => i.category === "reception").length;
     const other     = total - ceremony - reception;
-    return { total, ceremony, reception, other };
-  }, [scheduleItems]);
+    const onTheDay  = weddingDate
+      ? scheduleItems.filter(i => String(i.event_date || '').slice(0, 10) === String(weddingDate).slice(0, 10)).length
+      : 0;
+    return { total, ceremony, reception, other, onTheDay };
+  }, [scheduleItems, weddingDate]);
 
+  // THE GUEST LIST'S TILES EXACTLY — label, 48px figure, and a sub-line only
+  // where it earns one. "11 on the day · 10 around it" is a fact the bare
+  // total does not carry; "Ceremony 1" would be a sub-line about nothing.
   const STAT_CARDS = [
-    { label: "Total events",   value: stats.total },
-    { label: "Ceremony",       value: stats.ceremony },
-    { label: "Reception",      value: stats.reception },
-    { label: "Other events",   value: stats.other },
+    {
+      label: "Total events", value: stats.total,
+      sub: stats.total ? `${stats.onTheDay} on the day · ${stats.total - stats.onTheDay} around it` : null,
+    },
+    { label: "Ceremony",     value: stats.ceremony },
+    { label: "Reception",    value: stats.reception },
+    { label: "Other events", value: stats.other },
   ];
 
   // ── Export CSV ────────────────────────────────────────────────────────────
@@ -208,6 +214,17 @@ export default function ScheduleHub() {
   // ── Add / Edit handlers ───────────────────────────────────────────────────
   const handleAddEvent  = () => { setEditingItem(null); setShowForm(true); };
   const handleEditEvent = (item) => { setEditingItem(item); setShowForm(true); };
+  const handleDelete = async (id) => {
+    if (!id) return;
+    const tid = toast.loading('Deleting…');
+    try {
+      await Schedule.delete(id);
+      toast.success('Event deleted', { id: tid });
+      loadItems();
+    } catch {
+      toast.error('Could not delete that event', { id: tid });
+    }
+  };
 
   const handleFormSubmit = async (itemData) => {
     const tid = toast.loading(editingItem?.id ? "Updating…" : "Adding event…");
@@ -247,20 +264,25 @@ export default function ScheduleHub() {
         title="Schedule"
         subtitle="Calendar and run sheet for your wedding"
       />
+      {/* A NOTE ABOUT THE PAGE, not a control in a row of controls — it was a
+          pill sitting beside the buttons, which is where a thing you can press
+          belongs. Nothing here is pressable. */}
+      <p style={{ margin: 0, padding: "0 32px 14px", fontFamily: PJS, fontSize: 12, color: "rgba(10,10,10,0.6)" }}>
+        Visible to guests in your Guest Suite
+      </p>
 
       {/* 2 ── Stat strip — identical wrapper to Budget */}
       <div className="flex flex-wrap w-full" style={{ borderBottom: "1px solid rgba(10,10,10,0.12)" }}>
         {STAT_CARDS.map((s, i) => (
-          <div
-            key={s.label}
-            className="grow shrink basis-1/2 min-w-0 lg:flex-1"
-            style={{ padding: "24px 32px", minHeight: 80, borderRadius: 0, boxShadow: "none", borderRight: i < STAT_CARDS.length - 1 ? "1px solid rgba(10,10,10,0.12)" : "none" }}
-          >
+          <div key={s.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: "24px 32px", minHeight: 80, borderRight: i < STAT_CARDS.length - 1 ? "1px solid rgba(10,10,10,0.12)" : "none", borderRadius: 0, boxShadow: "none" }}>
             <p style={statLabelStyle}>{s.label}</p>
             {loadingStats
-              ? <div style={{ width: 60, height: 32, background: "rgba(10,10,10,0.06)" }} />
+              ? <div style={{ width: 60, height: 36, background: "rgba(10,10,10,0.06)" }} />
               : <p style={statValueStyle}><CountUp to={s.value} /></p>
             }
+            {s.sub && !loadingStats && (
+              <p style={{ fontSize: 11, color: "rgba(10,10,10,0.6)", fontFamily: PJS, margin: "4px 0 0" }}>{s.sub}</p>
+            )}
           </div>
         ))}
       </div>
@@ -271,12 +293,11 @@ export default function ScheduleHub() {
         style={{ borderBottom: "1px solid rgba(10,10,10,0.12)" }}
       >
         {/* Left: Ava button + Guest Suite notice */}
-        <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-          <AvaButton label="Ask Ava to build your wedding timeline" onClick={() => setAvaOpen(true)} />
-          <span style={{ fontSize: 12, color: "rgba(10,10,10,0.45)", fontFamily: PJS }}>
-            ✨ Visible to guests in your Guest Suite
-          </span>
-        </div>
+        {/* The Ava pill is gone: Ava's one entry point on every page is the
+            floating button (spec 3.3, and the same ruling the daily update
+            got). The Guest Suite line moved under the page title, where it is
+            a note about the page rather than a control in a row of controls. */}
+        <div />
 
         {/* Right: Export + Add */}
         <div className="flex flex-wrap items-center gap-[10px]">
@@ -332,66 +353,60 @@ export default function ScheduleHub() {
             const item = scheduleItems.find(i => i.id === e.sourceId);
             if (item) handleEditEvent(item);
           }}
+          onDelete={readOnly ? undefined : (e) => handleDelete(e.sourceId)}
         />
       )}
+
       {activeTab === "calendar" && (
         <>
-          <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
-            <SubscribeCalendar />
+          <div style={{ padding: '20px 32px 16px' }}>
+            <TableToolbar actions={<SubscribeCalendar />} />
           </div>
           <CalendarPage embedded hideChrome />
         </>
       )}
-      {activeTab === "runsheet" && (
-        <div style={{ padding: "28px 32px 48px" }}>
-          {/* The wedding-day events, in time order — a run sheet belongs to a
-              ceremony or a reception, not to a vendor contract date. */}
-          {(() => {
-            const dayEvents = sortScheduleItems(
-              scheduleItems.filter(i => !weddingDate || String(i.event_date || '').slice(0, 10) === String(weddingDate).slice(0, 10)));
-            const chosen = dayEvents.find(i => i.id === runSheetEventId) || dayEvents[0] || null;
-            return (
-              <>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
-                  {dayEvents.length === 0 && (
-                    <span style={{ fontFamily: PJS, fontSize: 14, color: 'rgba(10,10,10,0.6)' }}>
-                      No events on the wedding day yet. Add one and its run sheet lives here.
-                    </span>
-                  )}
-                  {dayEvents.map(ev => {
-                    const active = chosen?.id === ev.id;
-                    return (
-                      <button key={ev.id} onClick={() => setRunSheetEventId(ev.id)} style={{
-                        borderRadius: 999, padding: '6px 14px', fontFamily: PJS, fontSize: 12, fontWeight: 600,
-                        cursor: 'pointer', border: active ? 'none' : '1px solid rgba(10,10,10,0.45)',
-                        background: active ? '#E03553' : 'transparent', color: active ? '#FFFFFF' : '#0A0A0A',
-                      }}>
-                        {ev.event_name}
-                      </button>
-                    );
-                  })}
-                </div>
-                <RunSheet
-                  key={chosen?.id}
-                  event={chosen}
-                  items={chosen?.run_sheet}
-                  readOnly={readOnly}
-                  onSave={async (items) => {
-                    // WRITE, THEN READ BACK. Base44 answers 200 for a write of
-                    // an undeclared field and discards it, so the only way to
-                    // know whether run_sheet exists is to ask for it again.
-                    await Schedule.update(chosen.id, { run_sheet: items });
-                    const fresh = await Schedule.get(chosen.id);
-                    setRefreshKey(k => k + 1);
-                    loadItems();
-                    return fresh?.run_sheet;
-                  }}
-                />
-              </>
-            );
-          })()}
-        </div>
-      )}
+      {activeTab === "runsheet" && (() => {
+        // WEDDING-DAY EVENTS ONLY, DEDUPED BY NAME.
+        //
+        // The owner saw "First dance" twice. It is not a rendering bug: they
+        // are two Schedule ROWS with the same event_name — the entity has no
+        // uniqueness on it and nothing has ever stopped a couple, an import or
+        // Ava's create_schedule from writing the same name twice. A select
+        // with two identical options is unusable, so the first row of each
+        // name wins and the rest are dropped from the PICKER. Nothing is
+        // deleted: the duplicates are still rows, still in List, still on the
+        // Calendar, where they can be seen and merged.
+        const dayEvents = sortScheduleItems(scheduleItems.filter(
+          i => !weddingDate || String(i.event_date || "").slice(0, 10) === String(weddingDate).slice(0, 10)));
+        const seen = new Set();
+        const pickable = dayEvents.filter(e => {
+          const key = String(e.event_name || "").trim().toLowerCase();
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+        const chosen = pickable.find(i => i.id === runSheetEventId) || pickable[0] || null;
+        return (
+          <RunSheet
+            key={chosen?.id}
+            events={pickable}
+            eventId={chosen?.id}
+            onPickEvent={setRunSheetEventId}
+            event={chosen}
+            items={chosen?.run_sheet}
+            readOnly={readOnly}
+            onSave={async (items) => {
+              // WRITE, THEN READ BACK. Base44 answers 200 for a write of an
+              // undeclared field and discards it, so the only way to know
+              // whether run_sheet exists is to ask for it again.
+              await Schedule.update(chosen.id, { run_sheet: items });
+              const fresh = await Schedule.get(chosen.id);
+              loadItems();
+              return fresh?.run_sheet;
+            }}
+          />
+        );
+      })()}
 
       {activeTab === "considerations" && (
         <div style={{ padding: "32px 32px 48px", maxWidth: 860 }}>
@@ -410,13 +425,6 @@ export default function ScheduleHub() {
         </DialogContent>
       </Dialog>
 
-      <AvaModal
-        isOpen={avaOpen}
-        onClose={() => setAvaOpen(false)}
-        pageTitle="Wedding timeline expert"
-        systemPrompt="You are Ava, a wedding day timeline expert. Help build a realistic wedding day schedule."
-        quickActions={["Build me a wedding day timeline", "How long should each part take?", "What time should I start getting ready?", "Add buffer time suggestions"]}
-      />
     </div>
   );
 }

@@ -35,6 +35,8 @@ const code = (p) => readFileSync(join(ROOT, p), 'utf8')
  */
 const CONSUMERS = [
   'src/components/guests/GuestList.jsx',
+  'src/components/schedule/ScheduleTable.jsx',
+  'src/components/schedule/RunSheet.jsx',
 ];
 
 export async function runDataTable() {
@@ -81,6 +83,66 @@ export async function runDataTable() {
     'one vocabulary');
 
 
+  check('PLANT: the schedule\'s Type is an outlined pill, not a filled badge',
+    /OUTLINE_PILL/.test(code('src/components/schedule/ScheduleTable.jsx'))
+      && !/background: '#E03553', color: '#FFFFFF'/.test(code('src/components/schedule/ScheduleTable.jsx')),
+    'a Type reads as a Category, not as a shout');
+  check('  and its pill comes from the shell, not a local span',
+    /<Pill style=/.test(code('src/components/schedule/ScheduleTable.jsx')), 'one pill component');
+
+  // ── THE SCHEDULE'S OWN TOOLBAR (R37) ────────────────────────────────────
+  {
+    const table = code('src/components/schedule/ScheduleTable.jsx');
+    check('PLANT: List has search, four counted pills and a locations select',
+      /searchPlaceholder="Search by event or location…"/.test(table)
+        && /All \(\$\{counts\.all\}\)/.test(table) && /Planning \(\$\{counts\.planning\}\)/.test(table)
+        && /Wedding day \(\$\{counts\['wedding-day'\]\}\)/.test(table) && /After \(\$\{counts\.after\}\)/.test(table)
+        && /placeholder: 'All locations'/.test(table),
+      'All (n) · Planning (n) · Wedding day (n) · After (n) · All locations ▾');
+    check('  every column is sortable',
+      (table.match(/sortable: true/g) || []).length === 6, 'six of six');
+    check('  Notes is one line, with the whole thing on hover',
+      /textOverflow: 'ellipsis', whiteSpace: 'nowrap'/.test(table) && /title=\{text \|\| undefined\}/.test(table),
+      'a four-line note makes every other row taller');
+    check('  and selection checkboxes are on',
+      /selectedIds=\{selectedIds\}/.test(table), 'the shell\'s column');
+
+    const rs = code('src/components/schedule/RunSheet.jsx');
+    check('PLANT: the run sheet\'s wall of pills is one select',
+      /select=\{events\.length > 0/.test(rs) && !/filter-pill/.test(rs)
+        && !/background: active \? '#E03553'/.test(rs),
+      'one control, not one per event');
+    check('  Save run sheet is the toolbar\'s primary action, right',
+      /actions=\{!readOnly && event/.test(rs) && /Save run sheet/.test(rs), 'in the toolbar');
+    check('  the add row is a row inside the table body',
+      /footerRow=\{!readOnly/.test(rs) && /\+ Add a moment/.test(rs), 'not a button floating under it');
+    check('  and reorder moved into the "···" column',
+      /label: 'Move up'/.test(rs) && /label: 'Move down'/.test(rs) && !/<ChevronUp/.test(rs),
+      'the actions column the shell already has');
+  }
+
+  // ── THE HUB (R37 items 4-6) ─────────────────────────────────────────────
+  {
+    const hub = code('src/pages/ScheduleHub.jsx');
+    check('PLANT: the gradient Ava pill is gone from the page',
+      !/<AvaButton/.test(hub) && !/AvaModal/.test(hub),
+      'Ava\'s one entry point is the floating button');
+    check('  and the Guest Suite line is a note under the title, not a pill in the action row',
+      /Visible to guests in your Guest Suite/.test(hub) && !/✨ Visible/.test(hub)
+        && /padding: "0 32px 14px"/.test(hub),
+      'a note about the page, not a control');
+    check('PLANT: the stat tiles are the guest list\'s, sub-line included',
+      /statLabelStyle/.test(hub) && /statValueStyle/.test(hub) && /\{s\.sub && !loadingStats/.test(hub)
+        && /on the day · \$\{stats\.total - stats\.onTheDay\} around it/.test(hub),
+      'label, figure, and a sub-line only where it earns one');
+    check('PLANT: the run sheet picker is deduped by event name',
+      /const seen = new Set\(\)/.test(hub) && /seen\.has\(key\)/.test(hub),
+      'two rows named "First dance" would give two identical options');
+    check('  and nothing is deleted to achieve it',
+      !/Schedule\.delete\(e\.id\)/.test(hub) || /handleDelete/.test(hub),
+      'the duplicates stay in List and on the Calendar, where they can be merged');
+  }
+
   // ── ONE TOOLBAR ─────────────────────────────────────────────────────────
   check('the toolbar is search left, pills, a select, actions right',
     /placeholder=\{searchPlaceholder\}/.test(toolbar) && /filter-pill/.test(toolbar)
@@ -88,7 +150,7 @@ export async function runDataTable() {
     'the row above every table');
   check('  the pills are the guest list\'s own class, not a new one',
     /className=\{`filter-pill\$\{active \? ' active' : ''\}`\}/.test(toolbar), '.filter-pill');
-  for (const f of ['src/pages/Guests.jsx']) {
+  for (const f of ['src/pages/Guests.jsx', 'src/pages/ScheduleHub.jsx']) {
     const src = code(f);
     check(`PLANT: ${f.split('/').pop()} uses the shared toolbar`,
       /from '@\/components\/shared\/TableToolbar'/.test(src), 'consumed');
