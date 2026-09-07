@@ -88,18 +88,15 @@ const INLINE = /(\.sort\(.*\b(start_time|event_date)\b)|9999-12-31/;
 for (const f of files) {
   const r = relative(ROOT, f);
   if (r === 'src/lib/scheduleOrder.js') continue;
-  // A NAMED ALLOWANCE, WITH ITS REASON — never a category-wide pass.
-  // DayChart receives one day's items, already grouped by event_date by its
-  // parent, so sorting by time alone is correct there. Verified at the call
-  // site (WeddingDayTimelineBuilder.jsx: dayGroups -> <DayChart items={items}>)
-  // rather than assumed from the name.
-  // Keyed on the CODE, not a line number — adding one import above it
-  // invalidated a line-number allowance immediately.
-  const ALLOWED = {
-    'src/components/schedule/WeddingDayTimelineBuilder.jsx': [
-      '[...items].sort((a, b) => timeToMinutes(a.start_time) - timeToMinutes(b.start_time)),',
-    ],
-  };
+  // NO NAMED ALLOWANCES, and the empty object is the record of that.
+  //
+  // There was one: DayChart inside WeddingDayTimelineBuilder.jsx sorted a
+  // single day's items by time alone, which was correct there because its
+  // parent had already grouped by event_date. That file is deleted — the
+  // owner removed the visual builder — so the allowance is dead, and a dead
+  // allowance is worse than none: it is a hole nobody is watching, waiting for
+  // a file of that name to exist again.
+  const ALLOWED = {};
   for (const [i, line] of readFileSync(f, 'utf8').split('\n').entries()) {
     if (line.trimStart().startsWith('*') || line.trimStart().startsWith('//')) continue;
     if (!INLINE.test(line)) continue;

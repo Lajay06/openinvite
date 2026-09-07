@@ -11,7 +11,6 @@ import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import ScheduleForm from "../components/schedule/ScheduleForm";
 import CalendarPage from "./Calendar";
-import SchedulePage from "./Schedule";
 import { base44 } from "@/api/base44Client";
 import { getMyRecords } from "@/lib/resolveMyWedding";
 import { useCollaboratorContext } from "@/lib/collaboratorContext";
@@ -20,6 +19,10 @@ import toast from "react-hot-toast";
 import CountUp from "@/components/shared/CountUp";
 
 import { sortScheduleItems } from '@/lib/scheduleOrder';
+import { buildScheduleEvents } from '@/lib/scheduleEvents';
+import ScheduleDayList from '../components/schedule/ScheduleDayList';
+import PageConsiderations from '../components/shared/PageConsiderations';
+import { getMyInvitation } from '@/lib/resolveMyWedding';
 const Schedule = base44.entities.Schedule;
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -33,10 +36,31 @@ const statValueStyle = {
 };
 
 
+/**
+ * THE PAGE OPENS AS A LIST.
+ *
+ * Owner ruling: "Get rid of the visual builder and have the calendar as a list
+ * of events with an option to view it as calendar view. It is too much."
+ *
+ * It was four tabs — Calendar, Visual builder, Run sheet, Considerations —
+ * and three of them were the same events drawn three ways, defaulting to the
+ * one with the most machinery in it. The couple's first question is "what is
+ * happening and when", and a drag-and-drop hour grid answers it last.
+ *
+ * List is first and is the default. Calendar is the one toggle. Considerations
+ * stays because it is not a view of the events at all — it is the page's own
+ * notes, and every planner page has one; removing it was not asked for.
+ *
+ * THE BUILDER IS GONE, on the owner's word after seeing the screenshots.
+ * WeddingDayTimelineBuilder.jsx went with it, and so did the two views nothing
+ * else reached — ScheduleTimeline ("Timeline view", already unreachable before
+ * this change) and ScheduleList (the old run sheet table) — along with
+ * Schedule.jsx, which by then held nothing but a wrapper around the notes this
+ * file now renders itself.
+ */
 const TABS = [
+  { key: "list",           label: "List" },
   { key: "calendar",       label: "Calendar" },
-  { key: "visual",         label: "Visual builder" },
-  { key: "list",           label: "Run sheet" },
   { key: "considerations", label: "Considerations" },
 ];
 
@@ -46,6 +70,12 @@ export default function ScheduleHub() {
 
   // ── Shared schedule data (for stat strip, Export CSV, Add event) ──────────
   const [scheduleItems, setScheduleItems] = useState([]);
+  // The list and the calendar read ONE set of events, so "the list shows every
+  // event the calendar shows" is a property rather than a coincidence. The
+  // calendar aggregated five sources and the run sheet read one; they could
+  // never have agreed. See src/lib/scheduleEvents.js.
+  const [vendors, setVendors]         = useState([]);
+  const [invitation, setInvitation]   = useState(null);
   const [loadingStats, setLoadingStats]   = useState(true);
   const [refreshKey, setRefreshKey]       = useState(0);
 
@@ -57,7 +87,7 @@ export default function ScheduleHub() {
   const [avaOpen, setAvaOpen] = useState(false);
 
   // ── Active tab state ──────────────────────────────────────────────────────
-  const [runsheetView, setRunsheetView] = useState("calendar");
+  const [runsheetView, setRunsheetView] = useState("list");
   const isCalendar = location.pathname === "/Calendar";
   const activeTab  = isCalendar ? "calendar" : runsheetView;
 
@@ -69,12 +99,17 @@ export default function ScheduleHub() {
   // reasoning as Guests/Budget; see BASE44_PLATFORM_NOTES.md).
   const readOnly = isCollaborating;
 
-  // Arriving from Recent activity with a run sheet event to land on — the
-  // Hub drives the tab externally via activeView, so SchedulePage's own
-  // "switch to list tab" effect has no effect here (its internal activeTab
-  // state is shadowed). Flip to the Run sheet tab; SchedulePage's own
-  // location.state.highlightId effect (unaffected by this) does the actual
-  // scroll/highlight/clear once it mounts under that tab.
+  // Arriving from Recent activity with an event to land on: show the list,
+  // which is now where events are read.
+  //
+  // THE HIGHLIGHT ITSELF IS LOST, and that is a real consequence of this
+  // change rather than an oversight. The scroll-to-and-flash lived in
+  // ScheduleList.jsx, the old run sheet table, which nothing mounts any more.
+  // The deep link still lands on the list with the event on it — one screen,
+  // in day order — so it is a dimmer version of the same answer, not a broken
+  // one. Restoring it means teaching ScheduleDayList the same scrollToItemId /
+  // highlightedItemId pair; not done here because the ruling was about
+  // removing surface, and this is the one thing it costs.
   useEffect(() => {
     if (location.state?.highlightId) setRunsheetView('list');
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -94,14 +129,29 @@ export default function ScheduleHub() {
         const { data } = await res.json();
         setScheduleItems(sortScheduleItems(data.Schedule));
       } else {
-        const data = await getMyRecords('Schedule', "start_time");
+        const [data, vendorRows, inv] = await Promise.all([
+          getMyRecords('Schedule', "start_time"),
+          getMyRecords('Vendor').catch(() => []),
+          getMyInvitation().catch(() => null),
+        ]);
         setScheduleItems(data);
+        setVendors(vendorRows);
+        setInvitation(inv);
       }
     } catch {
       toast.error("Failed to load schedule");
     }
     setLoadingStats(false);
   };
+
+  // Vendor and Invitation are NOT part of the 'Schedule' collaborator
+  // permission — Vendor has its own key — so a collaborator's list carries the
+  // schedule rows only, exactly as the calendar already restricted itself.
+  // Same reasoning, one place now: Calendar.jsx:49.
+  const events = React.useMemo(
+    () => buildScheduleEvents({ scheduleItems, vendors, invitation }),
+    [scheduleItems, vendors, invitation],
+  );
 
   // ── Stats (mirrors Schedule.jsx STAT_CARDS) ───────────────────────────────
   const stats = React.useMemo(() => {
@@ -147,6 +197,7 @@ export default function ScheduleHub() {
 
   // ── Add / Edit handlers ───────────────────────────────────────────────────
   const handleAddEvent  = () => { setEditingItem(null); setShowForm(true); };
+  const handleEditEvent = (item) => { setEditingItem(item); setShowForm(true); };
 
   const handleFormSubmit = async (itemData) => {
     const tid = toast.loading(editingItem?.id ? "Updating…" : "Adding event…");
@@ -263,14 +314,22 @@ export default function ScheduleHub() {
       </div>
 
       {/* 5 ── Tab content */}
+      {activeTab === "list" && (
+        <div style={{ padding: "32px 32px 48px" }}>
+          <ScheduleDayList
+            events={events}
+            onEdit={readOnly ? undefined : (e) => {
+              const item = scheduleItems.find(i => i.id === e.sourceId);
+              if (item) handleEditEvent(item);
+            }}
+          />
+        </div>
+      )}
       {activeTab === "calendar" && <CalendarPage embedded hideChrome />}
-      {activeTab !== "calendar" && (
-        <SchedulePage
-          embedded
-          hideChrome
-          activeView={activeTab}
-          refreshKey={refreshKey}
-        />
+      {activeTab === "considerations" && (
+        <div style={{ padding: "32px 32px 48px", maxWidth: 860 }}>
+          <PageConsiderations pageKey="schedule" />
+        </div>
       )}
 
       {/* Add / Edit form modal */}

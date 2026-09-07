@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Plus, X, Download, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import toast from 'react-hot-toast';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import { getMyInvitation, getMyRecords } from '@/lib/resolveMyWedding';
+import { buildScheduleEvents } from '@/lib/scheduleEvents';
 import { useCollaboratorContext } from '@/lib/collaboratorContext';
 import CountUp from "@/components/shared/CountUp";
 
@@ -29,6 +30,8 @@ const MONTH_NAMES = ["January", "February", "March", "April", "May", "June",
 
 export default function CalendarPage({ embedded = false, hideChrome = false }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  // Set once, when the events land, unless the couple has already moved.
+  const monthSettled = useRef(false);
   const [showEventForm, setShowEventForm] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [events, setEvents] = useState([]);
@@ -42,6 +45,31 @@ export default function CalendarPage({ embedded = false, hideChrome = false }) {
   const readOnly = isCollaborating;
 
   useEffect(() => { loadAllEvents(); }, [isCollaborating]);
+
+  /**
+   * OPEN WHERE THE EVENTS ARE.
+   *
+   * The grid opened on today's month and a wedding is typically a year out, so
+   * the calendar's first screen was an empty September while the list beside
+   * it showed three events in July. "The same events in a calendar view" is
+   * not true of a view that lands nowhere near them.
+   *
+   * Jumps to the month of the next event from today, or — if everything is in
+   * the past — the most recent one. Runs once: a couple who pages to another
+   * month is not dragged back by a late-arriving fetch.
+   */
+  useEffect(() => {
+    if (monthSettled.current || !events.length) return;
+    monthSettled.current = true;
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const dated = events.filter(e => e.date).map(e => e.date).sort();
+    const target = dated.find(d => d >= todayKey) || dated[dated.length - 1];
+    if (!target) return;
+    const [y, m] = target.split('-').map(Number);
+    // LOCAL midnight: new Date('2027-07-03') is UTC midnight and reads as June
+    // for every couple west of Greenwich, which would open the wrong month.
+    setCurrentMonth(new Date(y, m - 1, 1));
+  }, [events]);
 
   const loadAllEvents = async () => {
     setLoading(true);
@@ -66,64 +94,12 @@ export default function CalendarPage({ embedded = false, hideChrome = false }) {
             getMyInvitation().catch(() => null),
           ]);
 
-      const allEvents = [];
-
-      if (invitation?.wedding_date) {
-        allEvents.push({
-          id: 'wedding-day',
-          title: `Wedding day: ${invitation.couple_names || 'Your wedding'}`,
-          date: invitation.wedding_date, time: '',
-          description: 'Your special day!', type: 'wedding'
-        });
-        if (invitation.rsvp_deadline) {
-          allEvents.push({
-            id: 'rsvp-deadline', title: 'RSVP deadline',
-            date: invitation.rsvp_deadline, time: '',
-            description: 'Last day for guest RSVPs', type: 'wedding'
-          });
-        }
-      }
-
-      scheduleItems.forEach(item => {
-        if (item.event_date) {
-          allEvents.push({
-            id: `schedule-${item.id}`, title: item.event_name,
-            date: item.event_date, time: item.start_time || '',
-            description: item.description || '', type: 'schedule'
-          });
-        }
-      });
-
-      vendors.forEach(vendor => {
-        if (vendor.contract_date) {
-          allEvents.push({
-            id: `vendor-${vendor.id}`, title: `${vendor.name} contract`,
-            date: vendor.contract_date, time: '',
-            description: `${vendor.category} vendor contract signed`, type: 'vendor'
-          });
-        }
-        // booking_date/meeting_date were Photographer-only fields before
-        // the PR3b consolidation — now on Vendor, so this loop (already
-        // iterating every vendor for contract_date) picks them up for any
-        // category that sets them, not just photography/videography.
-        if (vendor.booking_date) {
-          allEvents.push({
-            id: `vendor-booking-${vendor.id}`, title: `${vendor.name} booking`,
-            date: vendor.booking_date, time: vendor.start_time || '',
-            description: `${vendor.category} session`, type: 'photography'
-          });
-        }
-        if (vendor.meeting_date) {
-          allEvents.push({
-            id: `vendor-meeting-${vendor.id}`, title: `Meeting: ${vendor.name}`,
-            date: vendor.meeting_date.split('T')[0],
-            time: vendor.meeting_date.split('T')[1]?.substring(0, 5) || '',
-            description: 'Consultation meeting', type: 'photography'
-          });
-        }
-      });
-
-      setEvents([...allEvents, ...customEvents]);
+      // ONE BUILDER, BOTH VIEWS. This block used to construct the five
+      // sources inline, and the run sheet next door read Schedule records
+      // only — so the two views of one page disagreed about what an event was
+      // and no check could have said otherwise. src/lib/scheduleEvents.js is
+      // now the single answer; the list renders exactly what this renders.
+      setEvents(buildScheduleEvents({ scheduleItems, vendors, invitation, customEvents }));
     } catch (error) {
       console.error("Error loading events:", error);
       toast.error("Failed to load events");
@@ -141,7 +117,12 @@ export default function CalendarPage({ embedded = false, hideChrome = false }) {
   };
 
   const getEventsForDate = (date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    // FROM THE LOCAL PARTS, never toISOString(). The cell Date is constructed
+    // at LOCAL midnight; toISOString() converts to UTC, so east of Greenwich
+    // the 4th's cell reported itself as the 3rd and every event rendered one
+    // day late — the seeded ceremony of Saturday 3 July sat under Sunday 4.
+    // Same class as the countdown bug: a date-only value crossing a timezone.
+    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     return events.filter(event => event.date === dateStr);
   };
 
@@ -254,7 +235,13 @@ export default function CalendarPage({ embedded = false, hideChrome = false }) {
 
       {/* Ava button + toolbar row */}
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
-        <AvaButton label="Ask Ava to plan your wedding calendar" onClick={() => setAvaOpen(true)} />
+        {/* Not when embedded: the Hub renders "Ask Ava to build your wedding
+            timeline" a few pixels above this, opening a modal about the same
+            page. Two Ava buttons in one viewport is the "too much" the owner
+            named. The Add event button below STAYS — it creates a
+            calendar-only custom event, which the Hub's own Add event (a
+            Schedule record) cannot do. */}
+        {!hideChrome && <AvaButton label="Ask Ava to plan your wedding calendar" onClick={() => setAvaOpen(true)} />}
         <div className="flex flex-wrap items-center gap-[10px]">
           <button onClick={exportToICalendar} disabled={events.length === 0}
             className="btn-editorial-secondary"
