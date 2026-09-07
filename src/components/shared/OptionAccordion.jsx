@@ -78,8 +78,16 @@ export function OptionAccordion({
   // TRUE by default, so every selection surface keeps rule 4 exactly as it was.
   // A content accordion — one with nothing to choose — passes false.
   showEmptyState = true,
+  // RULE 1 HAS ONE NAMED EXCEPTION AND IT IS NOT AN OPT-OUT. A CREATE form
+  // has nothing to summarise — every section would read "Not set yet" — and
+  // its required field would be behind a shut section, so a couple opening
+  // "Add guest" would see six closed rows and nowhere to type a name. The
+  // caller may name ONE section to start open; everything else still starts
+  // collapsed, and an EDIT form passes nothing, because there the summaries
+  // are the point.
+  initialOpenKey = null,
 }) {
-  const [openKey, setOpenKey] = useState(null); // rule 1: collapsed by default
+  const [openKey, setOpenKey] = useState(initialOpenKey); // rule 1: collapsed by default
   const toggle = (key) => setOpenKey((cur) => (cur === key ? null : key)); // rule 2
   const resolved = { ...DASHBOARD_SKIN, ...(skin || {}) };
   return (

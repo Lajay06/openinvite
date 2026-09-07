@@ -217,7 +217,7 @@ export default function OnboardingPathAVendors({ onNext, data }) {
       >
         <button
           onClick={() => onNext()}
-          className="px-8 py-3 rounded-full text-white text-sm font-medium tracking-widest bg-[#E03553] hover:bg-black active:bg-neutral-900 transition-colors duration-150"
+          className="px-8 py-3 rounded-full text-white text-sm font-medium bg-[#E03553] hover:bg-black active:bg-neutral-900 transition-colors duration-150"
         >
           Continue →
         </button>

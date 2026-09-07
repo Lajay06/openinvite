@@ -17,7 +17,7 @@ export default function UserNotRegisteredError() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
             </svg>
           </div>
-          <h2 className="text-white text-3xl font-bold tracking-tight mb-3">Access restricted.</h2>
+          <h2 className="text-white text-3xl font-bold mb-3">Access restricted.</h2>
           <p className="text-[rgba(255,255,255,0.5)] text-sm leading-relaxed">
             Your account isn't registered for this app. Please contact the administrator to request access, or try a different account.
           </p>

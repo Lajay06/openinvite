@@ -1,3 +1,5 @@
+import { OptionAccordion, OptionAccordionSection } from '@/components/shared/OptionAccordion';
+import { mealOptionLabel } from '@/lib/weddingEvents';
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -192,9 +194,33 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
   return (
       <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData); }}>
 
-        {/* ── 2-column grid ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px 32px' }}>
+        {/* ── THE MODAL STANDARD, AND THIS IS THE REFERENCE ────────────────
+            Owner ruling 2026-09-07. Fifteen fields in one flat two-column
+            grid asked a couple to read the whole form to add a name. They are
+            now sections, collapsed, each header carrying a gray pill summary
+            of what is inside it — so the shape of the record is legible before
+            anything is opened, and a couple adding a guest opens one section.
 
+            OptionAccordion is the shared component, not a fork: it already
+            collapses by default, already renders the summary chips, and is
+            already what Event details › Theme uses. Extending the standard
+            means using it. */}
+        <OptionAccordion
+          headingSize={13}
+          headingWeight={700}
+          // A NEW GUEST HAS NOTHING TO SUMMARISE. "No info" under all six
+          // sections is noise on a create form, and the required name field
+          // must be somewhere a couple can see it.
+          showEmptyState={!!guest}
+          initialOpenKey={guest ? null : 'personal'}
+        >
+
+          <OptionAccordionSection
+            sectionKey="personal"
+            title="Personal details"
+            summary={[formData.name, formData.email, formData.category?.replace(/_/g, ' ')].filter(Boolean)}
+          >
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px 28px' }}>
           {/* Row 1: Name + Email */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <Label htmlFor="name">Full name *</Label>
@@ -241,6 +267,15 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
               </SelectContent>
             </Select>
           </div>
+            </div>
+          </OptionAccordionSection>
+
+          <OptionAccordionSection
+            sectionKey="menu"
+            title="Menu choices"
+            summary={[mealOptionLabel(formData.meal_choice, mealOptions)].filter(Boolean)}
+          >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <Label>
               Meal choice{' '}
@@ -259,6 +294,11 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
             ) : <NoMenuPointer />}
           </div>
 
+            </div>
+          </OptionAccordionSection>
+
+          <OptionAccordionSection sectionKey="tags" title="Tags" summary={formData.tags || []}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {/* Tags — full width */}
           <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: 10 }}>
             <Label htmlFor="tags">
@@ -323,11 +363,15 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
               </div>
             )}
           </div>
-        </div>
+            </div>
+          </OptionAccordionSection>
 
-        {/* ── Extra fields ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 24, paddingTop: 24, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
-
+          <OptionAccordionSection
+            sectionKey="dietary"
+            title="Dietary"
+            summary={dietarySelected}
+          >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {/* Dietary restrictions — pill buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <Label>
@@ -370,6 +414,15 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
             )}
           </div>
 
+            </div>
+          </OptionAccordionSection>
+
+          <OptionAccordionSection
+            sectionKey="plusone"
+            title="Plus one"
+            summary={formData.plus_one ? [formData.plus_one_name || 'Invited'] : []}
+          >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {/* Plus one */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Checkbox id="plus_one" checked={formData.plus_one} onCheckedChange={v => set('plus_one', v)} />
@@ -452,6 +505,15 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
             </>
           )}
 
+            </div>
+          </OptionAccordionSection>
+
+          <OptionAccordionSection
+            sectionKey="address"
+            title="Address & notes"
+            summary={[formData.mailing_address && 'Address added', formData.notes && 'Notes added'].filter(Boolean)}
+          >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {/* Postal address.
 
               ONE FREE-TEXT BLOCK, never line1/city/state/postcode. A structured
@@ -486,7 +548,10 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
             <Label htmlFor="notes">Notes</Label>
             <Textarea id="notes" value={formData.notes} onChange={e => set('notes', e.target.value)} placeholder="Additional notes about this guest" />
           </div>
-        </div>
+            </div>
+          </OptionAccordionSection>
+
+        </OptionAccordion>
 
         {/* Footer */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(10,10,10,0.12)' }}>

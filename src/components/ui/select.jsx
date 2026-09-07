@@ -75,7 +75,7 @@ SelectContent.displayName = SelectPrimitive.Content.displayName
 const SelectLabel = React.forwardRef(({ className, ...props }, ref) => (
   <SelectPrimitive.Label
     ref={ref}
-    className={cn("px-2 py-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[rgba(10,10,10,0.6)]", className)}
+    className={cn("px-2 py-1.5 text-[11px] font-bold text-[rgba(10,10,10,0.6)]", className)}
     {...props} />
 ))
 SelectLabel.displayName = SelectPrimitive.Label.displayName
