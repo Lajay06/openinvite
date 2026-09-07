@@ -197,7 +197,7 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
         {/* ── THE MODAL STANDARD, AND THIS IS THE REFERENCE ────────────────
             Owner ruling 2026-09-07. Fifteen fields in one flat two-column
             grid asked a couple to read the whole form to add a name. They are
-            now sections, collapsed, each header carrying a grey pill summary
+            now sections, collapsed, each header carrying a gray pill summary
             of what is inside it — so the shape of the record is legible before
             anything is opened, and a couple adding a guest opens one section.
 
