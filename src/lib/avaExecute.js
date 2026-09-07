@@ -25,7 +25,7 @@
  * Budget page's expense list already reads, and a plan write waits for the
  * validator to grow rather than slipping past it.
  */
-import { validateAvaAction } from './avaActionValidation.js';
+import { validateAvaAction, validateNestedWrite } from './avaActionValidation.js';
 import { matchTodoByTitle } from './todoMatch.js';
 
 /**
@@ -53,6 +53,8 @@ export const ACTION_ENTITY = {
   create_schedule: 'Schedule',
   create_todo: 'Note',
   update_todo: 'Note',
+  // The PLAN, not an expense line: WeddingDetails.budget.categories.<key>.
+  set_budget_allocation: 'WeddingDetails',
   navigate: null,
 };
 
@@ -90,6 +92,33 @@ export function filterActionsToMirror(actions, mirror, currentPath) {
 const IS_UPDATE = (type) => type.startsWith('update_');
 
 /**
+ * THE ROW AN UPDATE IS ABOUT MUST EXIST BEFORE ANYTHING IS WRITTEN.
+ *
+ * update_vendor and update_guest carried the same defect the to-do tick-off
+ * did: the prompt asked for an id (avaRequest.js) and the context sent names
+ * without one (avaContextFormat.js), so the id was invented and the write
+ * 404'd — surfacing as a thrown error the frames swallowed and a card reading
+ * "Could not do that". The context now carries `[id …]` on every vendor and
+ * every guest, and this checks the model actually used one.
+ *
+ * A MISS IS NAMED, NOT SHRUGGED AT, and it names what the couple asked for
+ * rather than the id, because "I could not find a vendor called Fleur & Stem"
+ * is a sentence they can act on and a hex string is not.
+ */
+async function resolveExistingRow(list, id, { noun, asked }) {
+  const rows = (await list?.()) || [];
+  const row = id ? rows.find((r) => r.id === id) : null;
+  if (row) return { row, error: null };
+  const label = asked ? `"${asked}"` : null;
+  return {
+    row: null,
+    error: label
+      ? `I could not find a ${noun} called ${label}.`
+      : `I could not tell which ${noun} you meant.`,
+  };
+}
+
+/**
  * Validate and execute one confirmed action.
  *
  * @param {{type: string, data: object}} action
@@ -120,9 +149,56 @@ export async function executeAvaAction(action, deps) {
     return { ok: true, error: null, entity: null };
   }
 
+  // THE ONE NESTED WRITE, and it does not go through the top-level checker
+  // because the top-level checker cannot see it. `budget` IS a declared field,
+  // so an object with a misspelled category inside passes every check there and
+  // is stored intact — nothing refuses it and nothing reads it, and the couple
+  // gets a success toast over a Budget page that did not change.
+  if (type === 'set_budget_allocation') {
+    const category = String(action.data?.category || '').toLowerCase().trim();
+    // The model emits "3500", "$3,500" and 3500 interchangeably. Coerced BEFORE
+    // the rule runs, so the rule stays strict about what may be stored: a value
+    // that is not a number after this is not a number at all.
+    //
+    // ONLY IF THERE IS A DIGIT IN IT. Stripping non-numerics from "lots" leaves
+    // "", and Number("") is 0 — so the friendly coercion turned a word into a
+    // ZERO ALLOCATION and wrote it. Caught by its own guard before this shipped;
+    // a strings-to-numbers convenience that silently invents a number is worse
+    // than no convenience.
+    const raw = action.data?.amount;
+    const amount = typeof raw === 'string' && /[0-9]/.test(raw)
+      ? Number(raw.replace(/[^0-9.-]/g, ''))
+      : raw;
+    const v = validateNestedWrite('WeddingDetails.budget.categories', category, amount);
+    if (!v.ok) return { ok: false, error: v.error, entity: 'WeddingDetails' };
+
+    // READ, MERGE, WRITE. The plan is one encrypted column holding all thirteen
+    // keys; writing only the changed one would erase the other twelve.
+    const wd = await deps.readWeddingDetails?.();
+    if (!wd) return { ok: false, error: 'I could not read your budget plan.', entity: 'WeddingDetails' };
+    const plan = wd.budget || {};
+    await deps.putWeddingFields({
+      budget: { total: plan.total ?? null, categories: { ...(plan.categories || {}), [category]: amount } },
+    });
+    return { ok: true, error: null, entity: 'WeddingDetails' };
+  }
+
   const entity = ACTION_ENTITY[type];
   const { ok, cleaned, error } = validateAvaAction(entity, action.data, { isUpdate: IS_UPDATE(type) });
   if (!ok) return { ok: false, error, entity };
+
+  if (type === 'update_vendor' || type === 'update_guest') {
+    const isVendor = type === 'update_vendor';
+    const { error: missing } = await resolveExistingRow(
+      isVendor ? deps.listVendors : deps.listGuests,
+      action.data?.id,
+      { noun: isVendor ? 'vendor' : 'guest', asked: action.data?.name },
+    );
+    if (missing) return { ok: false, error: missing, entity };
+    // The name is how the row was FOUND when one was given, not what it is
+    // renamed to — the same rule the tick-off follows for titles.
+    if (action.data?.id) delete cleaned.name;
+  }
 
   // WHICH TO-DO. The model has never been able to answer this: the prompt asked
   // for an id (avaRequest.js) and the context sends titles only

@@ -20,6 +20,7 @@ import { getMyRecords, getMyWeddingDetails } from "@/lib/resolveMyWedding";
 import { useCollaboratorContext } from "@/lib/collaboratorContext";
 import { useAvaFocus } from "@/hooks/useAvaFocus";
 import CountUp from "@/components/shared/CountUp";
+import { BUDGET_CATEGORIES } from '@/lib/budgetCategories';
 const Budget = base44.entities.Budget;
 
 function FilterPill({ label, active, onClick }) {
@@ -59,21 +60,6 @@ const CATEGORIES = [
 //
 // This list must stay a superset-match with CATEGORIES above (minus "all").
 // Pinned by tests/persistence/budget-clarity.mjs.
-const BUDGET_CATEGORIES = [
-  { key: 'venue', label: 'Venue' },
-  { key: 'catering', label: 'Catering' },
-  { key: 'photography', label: 'Photography' },
-  { key: 'flowers', label: 'Flowers' },
-  { key: 'music', label: 'Music' },
-  { key: 'attire', label: 'Attire' },
-  { key: 'transportation', label: 'Transport' },
-  { key: 'decorations', label: 'Decorations' },
-  { key: 'rings', label: 'Rings' },
-  { key: 'stationery', label: 'Stationery' },
-  { key: 'beauty', label: 'Beauty' },
-  { key: 'honeymoon', label: 'Honeymoon' },
-  { key: 'miscellaneous', label: 'Miscellaneous' },
-];
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 

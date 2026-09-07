@@ -168,6 +168,29 @@ export const API_DERIVED_ON_WEDDING_RESPONSE = new Set([
   'locked', 'passwordProtected', 'customGifts', 'registryProducts',
 ]);
 
+/**
+ * ENCRYPTED AT REST, AN OBJECT IN THE HAND.
+ *
+ * WeddingDetails.budget and its five siblings are declared `string` in the
+ * entity mirror, and that declaration is right: what Base44 stores is
+ * AES-256-GCM ciphertext. What every consumer READS is the decrypted object,
+ * because /api/my-wedding-details decrypts on the way out — and the harness
+ * stub serves seed.WeddingDetails[0] as that endpoint's body.
+ *
+ * So a seed can never carry a realistic value for any of these: the object the
+ * page actually reads fails the storage schema, and the string that passes it
+ * is not something any page can read. Checking the decrypted shape against the
+ * ciphertext column is the same category error API_DERIVED_ON_WEDDING_RESPONSE
+ * already covers for computed fields, one column over.
+ *
+ * The list is IMPORTED rather than retyped, so a seventh encrypted field
+ * cannot appear and be missed here. From api/_lib/ and NOT from the endpoint
+ * itself: importing the handler ran its module scope inside this harness's
+ * import graph and left it cached, which turned trial-server-guard's
+ * "expired trial + POST is REJECTED" red on CI while every local check passed.
+ */
+import { ENCRYPTED_FIELDS } from '../../api/_lib/encryptedFields.js';
+
 export function assertSeedMatchesSchemas(seed, extra = {}) {
   const schemas = loadEntitySchemas();
   const problems = [], drift = [];
@@ -176,7 +199,17 @@ export function assertSeedMatchesSchemas(seed, extra = {}) {
       (SCHEMA_DRIFT[driftKey(p.path)] ? drift : problems).push(p);
     }
   };
-  for (const [name, rows] of Object.entries(seed)) check(name, rows);
+  // The seed IS the decrypted response for WeddingDetails, so an encrypted
+  // field's value is checked as the object it will be read as — which the
+  // string column cannot describe — rather than not at all.
+  const decryptedShape = (rows) => (Array.isArray(rows) ? rows : [rows]).map((r) => {
+    const c = { ...r };
+    for (const k of ENCRYPTED_FIELDS) if (k in c && typeof c[k] === 'object') delete c[k];
+    return c;
+  });
+  for (const [name, rows] of Object.entries(seed)) {
+    check(name, name === 'WeddingDetails' ? decryptedShape(rows) : rows);
+  }
   // `extra` is the API-response fixture. Strip the derived fields before
   // checking the rest of its shape against the entity.
   for (const [name, rows] of Object.entries(extra)) {
