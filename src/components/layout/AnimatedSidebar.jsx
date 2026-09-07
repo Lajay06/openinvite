@@ -68,21 +68,73 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 // Exported so TopBarSearch.jsx can search "pages/sections by name" against
 // the exact same list the sidebar renders — one source of truth, no risk of
 // a page existing in one but not the other.
+/**
+ * THE FIVE GROUPS — the calm pass's PR2, applied.
+ *
+ * Owner ruling 2026-09-07. Eight groups became five, off the proposal recorded
+ * in DECISION-LOG.md (2026-09-04): Foundations · Guests · The day ·
+ * Money & vendors · Website & invitations. Nothing was invented here; the
+ * mapping is that list against the real inventory.
+ *
+ * WHAT MOVED, AND THE TWO THINGS THE PROPOSAL LEFT OPEN:
+ *
+ *   "Daily update has no home in the five groups." It is now the FIRST item in
+ *   the sidebar and the landing page, ungrouped, above the groups — which is
+ *   the slot Overall used to hold. Overall is gone (owner: "the Overall in
+ *   planning is still there, that needs to go").
+ *
+ *   "Event details" is not in the proposal either. It was a top-level link
+ *   beside Design studio, and it stays ungrouped beside To do rather than
+ *   being filed under a group that would bury the page a couple opens first.
+ *   JUDGMENT CALL, marked in the PR.
+ *
+ * Design studio leaves the top slot for Website & invitations, as its first
+ * item — it is Ultra-only, and that is the group that already carries the
+ * Ultra treatment on its label.
+ */
+export const UNGROUPED_ITEMS = [
+  { icon: Sparkles,  label: "Daily update",  url: createPageUrl("DailyUpdate") },
+  { icon: FileText,  label: "Event details", url: "/event-details" },
+];
+
+/**
+ * THE GROUPS ARE THE ONES THAT WERE THERE BEFORE — owner ruling on review,
+ * 2026-09-07: revert the headings and the grouping, keep the collapsing.
+ *
+ * The five-group recut (Foundations · Guests · The day · Money & vendors ·
+ * Website & invitations) is gone. What stays from that pass is the part the
+ * owner kept: every group collapsed except the first, a group holding the
+ * active page opens, and Design studio living inside the guest-suite group
+ * rather than in the top slot.
+ *
+ * THREE DIFFERENCES FROM THE PRE-#697 SIDEBAR, each of them an earlier ruling
+ * this review did not reverse:
+ *
+ *   Overall is gone, so "Planning" no longer opens with it.
+ *   Daily update is the first item in the sidebar and the landing page, so it
+ *   sits above the groups rather than second inside Planning.
+ *   Event details stays ungrouped beside it — the judgment call the owner
+ *   accepted by name.
+ *
+ * "Guest suite" is the brand name, exactly. It was "Guest Suite" before and
+ * "Website & invitations" briefly; the owner named the spelling.
+ *
+ * EVERY GROUP CARRIES AN ICON so a collapsed sidebar is readable at a glance —
+ * a column of seven identical carets tells you nothing. All eight come from
+ * the icons this file already imports; none is invented.
+ */
 export const NAV_SECTIONS = [
   {
     label: "Planning",
+    icon: LayoutDashboard,
     items: [
-      // Overall stays at the top of the nav (owner's standing rule); Daily
-      // update sits directly under it, where it is a real destination again
-      // rather than a label that redirected to the row above it.
-      { icon: LayoutDashboard, label: "Overall",      url: createPageUrl("Dashboard") },
-      { icon: Sparkles,        label: "Daily update", url: createPageUrl("DailyUpdate") },
       { icon: Calendar,        label: "Schedule",     url: createPageUrl("Schedule") },
       { icon: ListTodo,        label: "To do",        url: createPageUrl("TodoList") },
     ],
   },
   {
     label: "Guests",
+    icon: Users,
     items: [
       { icon: Users,         label: "Guest list",    url: createPageUrl("Guests") },
       { icon: BarChart2,     label: "Polls & games", url: createPageUrl("Polls") },
@@ -93,6 +145,7 @@ export const NAV_SECTIONS = [
   },
   {
     label: "Style & experience",
+    icon: Palette,
     items: [
       { icon: Image,           label: "Moodboard",       url: createPageUrl("Moodboard") },
       { icon: Palette,         label: "Styling",         url: createPageUrl("Styling") },
@@ -106,6 +159,7 @@ export const NAV_SECTIONS = [
   },
   {
     label: "Vendors",
+    icon: Store,
     items: [
       { icon: Store,       label: "My vendors",  url: createPageUrl("Vendors") },
       { icon: ShoppingBag, label: "Marketplace", url: createPageUrl("VendorMarketplace") },
@@ -113,6 +167,7 @@ export const NAV_SECTIONS = [
   },
   {
     label: "On the day",
+    icon: Clock,
     items: [
       { icon: Heart,   label: "Ceremony details",  url: "/ceremony-details" },
       { icon: Car,     label: "Transport",         url: "/transport" },
@@ -122,27 +177,31 @@ export const NAV_SECTIONS = [
   },
   {
     label: "Finances",
+    icon: CreditCard,
     items: [
       { icon: Wallet, label: "Budget",   url: createPageUrl("Budget") },
       { icon: Gift,   label: "Registry", url: createPageUrl("Registry") },
     ],
   },
   {
-    label: "Guest Suite",
+    label: "Guest suite",
+    icon: Globe,
     guestSuite: true,
     items: [
+      { icon: Sparkles,   label: "Design studio",   url: "/studio", ultraBadge: true },
       { icon: Clock,      label: "Schedule",        url: createPageUrl("GuestSuiteSchedule") },
       { icon: HelpCircle, label: "Q&A",             url: createPageUrl("QandA") },
       { icon: Gift,       label: "Registry",        url: createPageUrl("GuestSuiteRegistry") },
       { icon: Hotel,      label: "Accommodation",   url: createPageUrl("GuestSuiteAccommodation") },
       { icon: Car,        label: "Transport",       url: createPageUrl("GuestSuiteTransport") },
       { icon: MapPin,     label: "Experience guide",url: createPageUrl("GuestSuiteExperience") },
-      { icon: ScrollText, label: "Good to know",   url: createPageUrl("GuestSuitePolicies") },
+      { icon: ScrollText, label: "Good to know",    url: createPageUrl("GuestSuitePolicies") },
       { icon: BarChart2,  label: "Guest polls",     url: createPageUrl("GuestSuitePolls") },
     ],
   },
   {
     label: "Extras",
+    icon: StickyNote,
     items: [
       { icon: Plane,     label: "Honeymoon",      url: "/honeymoon" },
       { icon: Lightbulb, label: "Considerations", url: createPageUrl("Considerations") },
@@ -152,38 +211,68 @@ export const NAV_SECTIONS = [
 
 // ── Shared style helpers ──────────────────────────────────────────────────────
 
-const sectionLabelStyle = {
-  fontSize: 10,
-  fontWeight: 700,
-  color: "rgba(10,10,10,0.6)",
-  letterSpacing: "0.06em",
-  padding: "0 16px",
-  marginTop: 24,
-  marginBottom: 2,
-  display: "block",
-  fontFamily: PJS,
-};
 
-function SectionLabel({ section }) {
-  if (section.guestSuite) {
-    return (
-      <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "0 16px", marginTop: 24, marginBottom: 2 }}>
-        <Globe size={10} style={{ color: "rgba(10,10,10,0.6)", flexShrink: 0 }} />
-        <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(10,10,10,0.6)", letterSpacing: "0.06em", fontFamily: PJS }}>
-          {section.label}
-        </span>
+/**
+ * A GROUP OPENS WHEN IT HAS SOMETHING TO SAY.
+ *
+ * Owner: every group collapsed by default except the first, and a group
+ * holding the page you are on opens. That last clause is the one that makes
+ * the rule usable rather than annoying — you never land on a page whose own
+ * group is shut, and the nav does not reset itself around you as you move.
+ *
+ * The state is per mount and deliberately not persisted: a remembered
+ * accordion is a different feature, and a couple who opens four groups and
+ * comes back tomorrow to four open groups has the eight-group sidebar again.
+ */
+function useGroupOpen(sections, isActive, holdsActive) {
+  const firstOpen = React.useMemo(() => {
+    const open = {};
+    sections.forEach((sec, i) => { open[sec.label] = i === 0 || holdsActive(sec); });
+    return open;
+    // Recomputed when the active page changes so the new page's group opens.
+  }, [sections, holdsActive]);
+  const [manual, setManual] = React.useState({});
+  const isOpen = (sec) => (sec.label in manual ? manual[sec.label] : firstOpen[sec.label]);
+  const toggle = (sec) => setManual((m) => ({ ...m, [sec.label]: !isOpen(sec) }));
+  return { isOpen, toggle };
+}
+
+/** The group's header row: its label, and a caret that says which way it is. */
+function GroupHeader({ section, open, onToggle }) {
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      aria-expanded={open}
+      aria-label={section.label}
+      onClick={onToggle}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(); } }}
+      style={{ display: "flex", alignItems: "center", gap: 4, padding: "0 16px", marginTop: 24, marginBottom: 2, cursor: "pointer" }}
+    >
+      {/* THE GROUP'S OWN ICON, so a collapsed sidebar is readable at a glance
+          — a column of identical carets tells a couple nothing about what is
+          inside each one. */}
+      {section.icon && <section.icon size={11} strokeWidth={1.8} style={{ color: "rgba(10,10,10,0.6)", flexShrink: 0 }} />}
+      <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(10,10,10,0.6)", fontFamily: PJS }}>
+        {section.label}
+      </span>
+      {section.guestSuite && (
         <span style={{
-          fontSize: 8, fontWeight: 800, letterSpacing: "0.06em",
+          fontSize: 8, fontWeight: 800,
           background: "linear-gradient(135deg, #FBBF24, #F59E0B)",
           color: "#FFFFFF", padding: "1px 4px", borderRadius: 3, flexShrink: 0,
           fontFamily: PJS,
         }}>
           Ultra
         </span>
-      </div>
-    );
-  }
-  return <span style={sectionLabelStyle}>{section.label}</span>;
+      )}
+      {/* A text-presentation caret, not an emoji glyph: it inherits the
+          typeface and currentColor, which is the rule's actual test. */}
+      <span aria-hidden="true" style={{ marginLeft: "auto", fontSize: 9, color: "rgba(10,10,10,0.45)", fontFamily: PJS }}>
+        {open ? "\u25BC" : "\u25B6"}
+      </span>
+    </div>
+  );
 }
 
 function NavItem({ icon: Icon, label, url, onClick, isActive, showBadge, disabled, disabledTooltip }) {
@@ -270,6 +359,19 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
     return location.pathname === path || location.pathname.startsWith(path + "/");
   };
 
+  // AFTER isActive, NOT BEFORE IT — the #429 class, caught again. The first
+  // version of this block sat beside `visibleSections`, forty lines above
+  // `const isActive = …`, and every dashboard page threw "Cannot access 'y'
+  // before initialization" into the error boundary. `npm run lint` passed:
+  // this file is inside the no-use-before-define carve-out, so the rule that
+  // exists for exactly this was not looking. The render guard found it.
+  const holdsActive = React.useCallback(
+    (sec) => (sec.items || []).some((it) => isActive(it.url)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [location.pathname],
+  );
+  const groupOpen = useGroupOpen(visibleSections, isActive, holdsActive);
+
   return (
     <div
       style={{
@@ -291,21 +393,22 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
 
         {!isCollaborator && (
           <>
-            <NavItem
-              icon={Sparkles}
-              label="Design studio"
-              url="/studio"
-              isActive={isActive("/studio")}
-              onClick={() => navigate("/studio")}
-              showBadge={isProPlan}
-            />
-            <NavItem
-              icon={FileText}
-              label="Event details"
-              url="/event-details"
-              isActive={isActive("/event-details")}
-              onClick={() => navigate("/event-details")}
-            />
+            {/* DAILY UPDATE IS THE FIRST ITEM and the landing page. Design
+                studio left this slot for the Website & invitations group,
+                where its Ultra treatment already lives. */}
+            {UNGROUPED_ITEMS.map((item) => (
+              <NavItem
+                key={item.label}
+                icon={item.icon}
+                label={item.label}
+                url={item.url}
+                isActive={isActive(item.url)}
+                onClick={() => navigate(item.url.split("?")[0])}
+              />
+            ))}
+            {/* Event details is in UNGROUPED_ITEMS above. It was also a
+                standalone NavItem here, and the sidebar rendered it TWICE —
+                two identical rows, one of which was the row above it. */}
           </>
         )}
 
@@ -325,10 +428,11 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
         {/* Nav sections */}
         {visibleSections.map((section, si) => {
           const guestSuiteDisabled = section.guestSuite && isProPlan;
+          const open = groupOpen.isOpen(section);
           return (
             <div key={si}>
-              <SectionLabel section={section} />
-              {section.items.map((item, ii) => (
+              <GroupHeader section={section} open={open} onToggle={() => groupOpen.toggle(section)} />
+              {open && section.items.map((item, ii) => (
                 <NavItem
                   key={ii}
                   icon={item.icon}
@@ -467,6 +571,19 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
     return location.pathname === path || location.pathname.startsWith(path + "/");
   };
 
+  // AFTER isActive, NOT BEFORE IT — the #429 class, caught again. The first
+  // version of this block sat beside `visibleSections`, forty lines above
+  // `const isActive = …`, and every dashboard page threw "Cannot access 'y'
+  // before initialization" into the error boundary. `npm run lint` passed:
+  // this file is inside the no-use-before-define carve-out, so the rule that
+  // exists for exactly this was not looking. The render guard found it.
+  const holdsActiveMobile = React.useCallback(
+    (sec) => (sec.items || []).some((it) => isActive(it.url)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [location.pathname],
+  );
+  const groupOpenMobile = useGroupOpen(visibleSectionsMobile, isActive, holdsActiveMobile);
+
   const handleNav = (url) => {
     navigate(url.split("?")[0]);
     onClose?.();
@@ -486,14 +603,16 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
       {/* Nav */}
       <div style={{ flex: 1, overflowY: "auto", paddingBottom: 8 }}>
 
-        {/* Design studio link */}
-        {!isCollaboratorMobile && (() => {
-          const active = isActive("/studio");
+        {/* DAILY UPDATE FIRST, then To do — the ungrouped items. Design
+            studio moved into Website & invitations. */}
+        {!isCollaboratorMobile && UNGROUPED_ITEMS.map((item) => {
+          const active = isActive(item.url);
           return (
             <div
-              onClick={() => handleNav("/studio")}
-              aria-label="Design studio"
-              {...interactiveRowProps(() => handleNav("/studio"))}
+              key={item.label}
+              onClick={() => handleNav(item.url)}
+              aria-label={item.label}
+              {...interactiveRowProps(() => handleNav(item.url))}
               style={{
                 display: "flex", alignItems: "center", gap: 10,
                 padding: "10px 16px", cursor: "pointer",
@@ -502,47 +621,15 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
                 transition: "background 0.15s ease",
               }}
             >
-              <Sparkles size={18} strokeWidth={1.8} style={{ color: active ? "#E03553" : "rgba(10,10,10,0.45)", flexShrink: 0 }} />
+              <item.icon size={18} strokeWidth={1.8} style={{ color: active ? "#E03553" : "rgba(10,10,10,0.45)", flexShrink: 0 }} />
               <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#E03553" : "#0A0A0A", fontFamily: PJS, flex: 1 }}>
-                Design studio
+                {item.label}
               </span>
-              {isProPlanMobile && (
-                <span style={{
-                  fontSize: 9, fontWeight: 800, letterSpacing: "0.06em",
-                  background: "linear-gradient(135deg, #FBBF24, #F59E0B)",
-                  color: "#FFFFFF", padding: "2px 6px", borderRadius: 3, flexShrink: 0,
-                  fontFamily: PJS,
-                }}>
-                  Ultra
-                </span>
-              )}
             </div>
           );
-        })()}
+        })}
 
-        {/* Event details link */}
-        {!isCollaboratorMobile && (() => {
-          const active = isActive("/event-details");
-          return (
-            <div
-              onClick={() => handleNav("/event-details")}
-              aria-label="Event details"
-              {...interactiveRowProps(() => handleNav("/event-details"))}
-              style={{
-                display: "flex", alignItems: "center", gap: 10,
-                padding: "10px 16px", cursor: "pointer",
-                borderLeft: active ? "2px solid #E03553" : "2px solid transparent",
-                background: active ? "rgba(224,53,83,0.08)" : "transparent",
-                transition: "background 0.15s ease",
-              }}
-            >
-              <FileText size={18} strokeWidth={1.8} style={{ color: active ? "#E03553" : "rgba(10,10,10,0.45)", flexShrink: 0 }} />
-              <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#E03553" : "#0A0A0A", fontFamily: PJS }}>
-                Event details
-              </span>
-            </div>
-          );
-        })()}
+        {/* Event details renders from UNGROUPED_ITEMS above, once. */}
 
         {/* Collaborator top-level items (e.g. Event details) */}
         {isCollaboratorMobile && collaboratorNavMobile.topLevel.map((item, i) => {
@@ -571,29 +658,12 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
 
         {visibleSectionsMobile.map((section, si) => {
           const guestSuiteDisabled = section.guestSuite && isProPlanMobile;
+          const open = groupOpenMobile.isOpen(section);
           return (
             <div key={si}>
-              {/* Section label */}
-              {section.guestSuite ? (
-                <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "0 16px", marginTop: 24, marginBottom: 2 }}>
-                  <Globe size={10} style={{ color: "rgba(10,10,10,0.6)", flexShrink: 0 }} />
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(10,10,10,0.6)", letterSpacing: "0.06em", fontFamily: PJS }}>
-                    {section.label}
-                  </span>
-                  <span style={{
-                    fontSize: 8, fontWeight: 800, letterSpacing: "0.06em",
-                    background: "linear-gradient(135deg, #FBBF24, #F59E0B)",
-                    color: "#FFFFFF", padding: "1px 4px", borderRadius: 3, flexShrink: 0,
-                    fontFamily: PJS,
-                  }}>
-                    Ultra
-                  </span>
-                </div>
-              ) : (
-                <span style={sectionLabelStyle}>{section.label}</span>
-              )}
+              <GroupHeader section={section} open={open} onToggle={() => groupOpenMobile.toggle(section)} />
 
-              {section.items.map((item, ii) => {
+              {open && section.items.map((item, ii) => {
                 const active = !guestSuiteDisabled && isActive(item.url);
                 return (
                   <div

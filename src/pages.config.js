@@ -15,8 +15,7 @@
  *
  *   export const PAGES = {
  *       "HomePage": HomePage,
- *       "Dashboard": Dashboard,
- *       "Settings": Settings,
+ *    *       "Settings": Settings,
  *   }
  *
  *   export const pagesConfig = {
@@ -114,7 +113,6 @@ export const PAGES = {
     "Calendar": ScheduleHub,
     "Checklist": TasksHub,
     "Considerations": Considerations,
-    "Dashboard": Dashboard,
     "EventDetails": EventDetails,
     "Features": Features,
     "GuestExperience": GuestExperience,

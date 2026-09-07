@@ -46,9 +46,15 @@ export async function runDailyUpdatePage() {
     const app = code('src/App.jsx');
     check('PLANT: /DailyUpdate is no longer redirected away',
       !/pathname === '\/DailyUpdate'/.test(app), 'the route reaches the page');
-    check('  and lowercase /dashboard still normalises',
-      /pathname === '\/dashboard'/.test(app) && /<Navigate to="\/Dashboard" replace \/>/.test(app),
-      'a hand-typed path lands somewhere rather than 404');
+    // OVERALL IS GONE, so /Dashboard no longer has a page to normalise TO.
+    // Owner ruling 2026-09-07. Both spellings now land on the daily update,
+    // which is the landing page — the property is unchanged (a hand-typed or
+    // bookmarked path lands somewhere rather than 404ing), only the
+    // destination moved.
+    check('  both spellings of the retired Overall route land on the daily update',
+      /pathname === '\/dashboard' \|\| location\.pathname === '\/Dashboard'/.test(app)
+        && /<Navigate to="\/DailyUpdate" replace \/>/.test(app),
+      'a bookmarked /Dashboard is not a 404');
     const cfg = code('src/pages.config.js');
     check('  the page is still registered',
       /"DailyUpdate": DailyUpdate/.test(cfg), 'routed, not orphaned');
@@ -398,20 +404,38 @@ export async function runDailyUpdatePage() {
       !/<NextUp\b/.test(page) && !/Everything else on your list/.test(page),
       'an onboarding stepper is not a to-do');
 
+    // TWO COLUMNS NOW, AND THE THIRD IS A ROW. Owner ruling 2026-09-07:
+    // Overall is removed and its stat tiles move onto this page as one
+    // full-width row under the columns, replacing the "Your numbers" column.
+    // The property this check was written for — the editorial grid is a grid
+    // with 1px rules, not three floated divs — is unchanged.
+    // THREE COLUMNS AGAIN, on the owner's second look. The tiles were briefly
+    // a full-width row under the page; that read as a separate band rather
+    // than part of the briefing, so "Your numbers" is the third column again —
+    // which is where a couple has been reading them since the pre-#654 page.
     check('PLANT: three columns, with a 1px rule between each pair',
-      /grid-template-columns: 1fr 1px 1fr 1px 1fr;/.test(css), 'the pre-#654 grid');
+      /grid-template-columns: 1fr 1px 1fr 1px 1fr;/.test(css), 'This week | Ava\u2019s briefing | Your numbers');
     check('  stacked on a phone rather than three 33% columns at 390px',
       /@media \(max-width: 900px\)[\s\S]{0,200}grid-template-columns: 1fr;/.test(css),
       'the old page had no mobile treatment because it was never opened on one');
     for (const [n, label] of [['A', 'This week'], ['B', 'Ava'], ['C', 'Your numbers']])
       check(`  column ${n} is "${label}"`, page.includes(`columnHead('${label}`) || page.includes(`columnHead('${label}\\u2019s briefing')`), label);
+    check('  and the full-width row is gone',
+      !page.includes('oi-daily-stats') && !css.includes('.oi-daily-stats'), 'the column replaced it');
 
-    check('PLANT: the far-right column is the stats, and they are the old four',
+    // THE STATS ARE A FULL-WIDTH ROW UNDER THE COLUMNS, and they are the
+    // UNION of Overall's four and this page's four, deduped: taking only
+    // Overall's would throw away the invitations/people split the owner ruled
+    // on in #694 and the vendor count.
+    check('PLANT: the stats are the far-right column, after the other two',
       page.indexOf("columnHead('Your numbers')") > page.indexOf("columnHead('This week')")
-        && /Guests coming[\s\S]{0,400}Vendors booked/.test(page),
-      'far right, in order');
-    check('  rendered at the old size',
-      /fontSize: 48, fontWeight: 800/.test(page), '48px/800, as e2c087a:753');
+        && page.indexOf("columnHead('Your numbers')") > page.indexOf("columnHead('Ava"),
+      'third of three');
+    check('  carrying all six labelled quantities',
+      ['Guests coming', 'People invited', 'Invitations pending', 'Budget used', 'Events planned', 'Vendors booked']
+        .every((l) => page.includes(`label: '${l}'`)), 'Overall\u2019s four and this page\u2019s, deduped');
+    check('  rendered as numerals at the old size, not chart furniture',
+      /fontSize: 48, fontWeight: 800/.test(page) && !/RSVPChart|BudgetSummary/.test(page), '48px/800, no graphs');
     // The badge is in Ava's column, once, as a badge — never the headline
     // repeated. It read "Overdue — Overdue: Book the celebrant." on the first
     // screenshot, once the headline started leading with the state word.
@@ -451,24 +475,33 @@ export async function runDailyUpdatePage() {
       empty:   say({ budget: [{}], vendors: [{}] }),
       unseen:  say({ unseen: ['to-dos'] }),
     };
-    check('PLANT: Overdue leads with the horizon and the priority, not the failure',
-      forms.overdue === "Morning, Jay. 115 days out and there's a clear first move today — book the celebrant.",
+    // THE OWNER REWROTE ALL SIX, 2026-09-07: "make people feel comfortable
+    // first." Every form now PLACES THE COUPLE before it names the work — how
+    // far out they are and that they are fine — where the previous set opened
+    // with the task ("There's a clear first move today"), which is a to-do
+    // list talking rather than a person. The strings below are his, exactly.
+    check('PLANT: Overdue places the couple first, then names the move',
+      forms.overdue === "Morning, Jay. 115 days out and we're well on track. Today's first move: book the celebrant.",
       forms.overdue);
-    check('  and Today says they are ahead',
-      forms.today === "Morning, Jay. One thing today and you're ahead — confirm the florist count.", forms.today);
+    check('  and Today says they are ahead before it says the one thing',
+      forms.today === "Morning, Jay. 115 days out and you're ahead. Today's one thing: confirm the florist count.",
+      forms.today);
     check('  Waiting counts INVITATIONS and says it is normal',
-      forms.waiting === "Morning, Jay. Nothing on you today — 61 invitations are still to reply, and that's normal at 115 days out.",
+      forms.waiting === "Morning, Jay. 115 days out and nothing's on you today — 61 invitations are still to reply, which is normal.",
       forms.waiting);
     check('PLANT: no anxious word ever reaches the top line',
       Object.values(forms).every(t => !ANXIOUS_WORDS.some(w => new RegExp(`\\b${w}\\b`, 'i').test(t))),
       ANXIOUS_WORDS.join(', ') + ' — counts belong in Column A');
-    check('  and the imperative is the action after the dash, never spliced mid-sentence',
-      / — book the celebrant\.$/.test(forms.overdue) && !/with book the celebrant/.test(forms.overdue),
+    // The imperative is still its own clause rather than spliced mid-sentence
+    // — "let's start with book the celebrant" put a verb where a noun belongs.
+    // It sits after a colon now instead of a dash, which is the same property.
+    check('  and the imperative is its own clause, never spliced mid-sentence',
+      /: book the celebrant\.$/.test(forms.overdue) && !/with book the celebrant/.test(forms.overdue),
       'a verb where a noun belongs read as a typo');
     check('  Clear says on track and what is next',
-      /^Morning, Jay\. You're on track\. Next up is the florist on /.test(forms.clear), forms.clear);
+      /^Morning, Jay\. 115 days out and you're on track\. Next up: the florist, /.test(forms.clear), forms.clear);
     check('  an empty wedding gets a fresh start',
-      forms.empty === "Morning, Jay. Fresh start — add your first to-do and I'll keep it in order.", forms.empty);
+      forms.empty === "Morning, Jay. Fresh start. Add your first to-do and I'll keep it in order.", forms.empty);
     check('  and an unreadable store says so rather than claiming a clear day',
       forms.unseen === "Morning, Jay. I couldn't read your to-dos just now — try again in a moment.", forms.unseen);
     check('  a title reads mid-sentence, without mangling an acronym or a name',
@@ -616,10 +649,16 @@ export async function runDailyUpdatePage() {
   // ── THE SIDEBAR ─────────────────────────────────────────────────────────
   {
     const nav = code('src/components/layout/AnimatedSidebar.jsx');
-    const planning = /label: "Planning",\s*items: \[([\s\S]*?)\],/.exec(nav)?.[1] || '';
-    const labels = [...planning.matchAll(/label: "([^"]+)"/g)].map(m => m[1]);
-    check('PLANT: Daily update is a real item, directly under Overall',
-      labels[0] === 'Overall' && labels[1] === 'Daily update', labels.join(' → '));
+    // OVERALL IS GONE AND DAILY UPDATE IS FIRST. It used to sit directly
+    // under Overall in the "Planning" group; owner ruling 2026-09-07 removes
+    // Overall and the eight groups become five, with Daily update and To do
+    // ungrouped at the top.
+    const ungrouped = /export const UNGROUPED_ITEMS = \[([\s\S]*?)\];/.exec(nav)?.[1] || '';
+    const labels = [...ungrouped.matchAll(/label: "([^"]+)"/g)].map((m) => m[1]);
+    check('PLANT: Daily update is the first item in the sidebar',
+      labels[0] === 'Daily update', labels.join(' \u2192 ') || 'no ungrouped items');
+    check('  and Overall is not in the nav at all',
+      !/label: "Overall"/.test(nav), 'removed, not hidden');
   }
 
   return results;

@@ -244,12 +244,26 @@ export default function DailyUpdate() {
   const budgetSpent     = budget.reduce((n, b) => n + (b.actual_amount || 0), 0);
   const budgetPercent   = totalBudget ? Math.round((budgetSpent / totalBudget) * 100) : 0;
   const bookedVendors   = vendors.filter((v) => v.status === 'booked').length;
+  // ── THE NUMBERS ROW — Overall's tiles, now living here ──────────────────
+  //
+  // Overall is gone (owner: "the Overall in planning is still there, that
+  // needs to go") and its four stat tiles moved onto this page as ONE
+  // full-width row under the columns, replacing the "Your numbers" column.
+  //
+  // SIX TILES, NOT FOUR, and that is a judgment call marked in the PR.
+  // Overall showed Guests coming · People invited · Budget used · Events
+  // planned; this page showed Guests coming · Invitations pending · Budget
+  // used · Vendors booked. Taking only Overall's four would throw away the
+  // invitations/people split the owner ruled on (#694, the 94-vs-61 answer)
+  // and the vendor count. The union is six, deduped, each labelled with WHICH
+  // quantity it is — which was the whole point of that ruling.
   const snapCards = [
-    // Each tile says WHICH quantity it is showing.
-    { label: 'Guests coming',        value: String(counts.people.attending) },
-    { label: 'Invitations pending',  value: String(counts.invitations.pending) },
-    { label: 'Budget used',      value: `${budgetPercent}%` },
-    { label: 'Vendors booked',   value: `${bookedVendors}/${vendors.length}` },
+    { label: 'Guests coming',       value: String(counts.people.attending) },
+    { label: 'People invited',      value: String(counts.people.total) },
+    { label: 'Invitations pending', value: String(counts.invitations.pending) },
+    { label: 'Budget used',         value: `${budgetPercent}%` },
+    { label: 'Events planned',      value: String(schedule.length) },
+    { label: 'Vendors booked',      value: `${bookedVendors}/${vendors.length}` },
   ];
 
   const columnHead = (label) => (
@@ -358,20 +372,26 @@ export default function DailyUpdate() {
 
             <div style={{ background: 'rgba(10,10,10,0.06)' }} />
 
-            {/* ── Column C: Your numbers ── */}
+            {/* ── Column C: Your numbers ──────────────────────────────────
+                BACK IN THE GRID, on the owner's second look. The tiles moved
+                to a full-width row under the page when Overall was removed;
+                the row read as a separate band rather than part of the
+                briefing. Three columns, and the numbers are the third — which
+                is where a couple has been reading them since the pre-#654
+                page. 48px figures, as they were. */}
             <div style={{ padding: '32px 0 32px 32px' }}>
               {columnHead('Your numbers')}
               {snapCards.map((card, i) => {
                 const isLast = i === snapCards.length - 1;
                 return (
-                  <div key={i} style={{
+                  <div key={card.label} style={{
                     paddingBottom: 24, marginBottom: isLast ? 0 : 24,
                     borderBottom: isLast ? 'none' : '1px solid rgba(10,10,10,0.06)',
                   }}>
-                    <div style={{ fontFamily: PJS, fontSize: 48, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.04em', lineHeight: 1 }}>
+                    <div style={{ fontFamily: PJS, fontSize: 48, fontWeight: 800, color: '#0A0A0A', lineHeight: 1 }}>
                       {card.value}
                     </div>
-                    <div style={{ fontFamily: PJS, fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', marginTop: 4 }}>
+                    <div style={{ fontFamily: PJS, fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', marginTop: 4 }}>
                       {card.label}
                     </div>
                   </div>

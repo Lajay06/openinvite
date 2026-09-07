@@ -323,35 +323,45 @@ export function avaSentence(day, { fullName = null, now = new Date() } = {}) {
   // "115 days out" — through the shared module, never computed here.
   const out = d.daysOut != null ? `${d.daysOut} days out` : null;
 
+  // ── THE FORMS, AS THE OWNER WROTE THEM ─────────────────────────────────
+  //
+  // "make people feel comfortable first." Every form now opens by placing the
+  // couple — how far out they are and that they are fine — and only then names
+  // the one move. The previous set led with the WORK ("There's a clear first
+  // move today"), which is a to-do list talking, not a person.
+  //
+  // Deterministic, and the same string on both pages that render it: these are
+  // templates with the couple's own numbers in the slots, never model output.
+  // Where `out` is unknown (no wedding date yet) each form drops its horizon
+  // clause rather than printing "null days out".
+
   if (d.state === 'unavailable') {
     const which = (d.unseen || []).join(' and ') || 'part of your wedding';
     return `${hello} I couldn't read your ${which} just now — try again in a moment.`;
   }
-  // THE IMPERATIVE GOES AFTER THE DASH, as the action. Spliced mid-sentence it
-  // read "let's start with book the celebrant" — a verb where a noun belongs.
   if (d.state === 'overdue') {
     const title = midSentence(d.firstOverdue);
-    const lead = out ? `${out} and there's a clear first move today` : "There's a clear first move today";
-    return title ? `${hello} ${lead} — ${title}.` : `${hello} ${lead}.`;
+    const lead = out ? `${out} and we're well on track` : "We're well on track";
+    return title ? `${hello} ${lead}. Today's first move: ${title}.` : `${hello} ${lead}.`;
   }
   if (d.state === 'today') {
     const title = midSentence(d.firstToday);
-    const count = n.today || 0;
-    const lead = count > 1 ? `${count} things today and you're ahead` : "One thing today and you're ahead";
-    return title ? `${hello} ${lead} — ${title}.` : `${hello} ${lead}.`;
+    const lead = out ? `${out} and you're ahead` : "You're ahead";
+    return title ? `${hello} ${lead}. Today's one thing: ${title}.` : `${hello} ${lead}.`;
   }
   if (d.state === 'waiting') {
     // INVITATIONS, not people: a plus-one has no invitation of its own and the
     // host replies for both (guestCounts, guestRsvpTally.js).
     const inv = n.invitationsPending || 0;
-    const tail = out ? `, and that's normal at ${out}` : '';
-    return `${hello} Nothing on you today — ${inv} ${inv === 1 ? 'invitation is' : 'invitations are'} still to reply${tail}.`;
+    const lead = out ? `${out} and nothing's on you today` : "Nothing's on you today";
+    return `${hello} ${lead} — ${inv} ${inv === 1 ? 'invitation is' : 'invitations are'} still to reply, which is normal.`;
   }
   if (d.next?.title) {
-    const when = d.next.at ? ` on ${onDate(d.next.at)}` : '';
-    return `${hello} You're on track. Next up is ${midSentence(d.next.title)}${when}.`;
+    const when = d.next.at ? `, ${onDate(d.next.at)}` : '';
+    const lead = out ? `${out} and you're on track` : "You're on track";
+    return `${hello} ${lead}. Next up: ${midSentence(d.next.title)}${when}.`;
   }
-  return `${hello} Fresh start — add your first to-do and I'll keep it in order.`;
+  return `${hello} Fresh start. Add your first to-do and I'll keep it in order.`;
 }
 
 /**

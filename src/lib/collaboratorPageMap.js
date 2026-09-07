@@ -46,8 +46,14 @@
  */
 
 export const COLLABORATOR_PAGE_MAP = {
+  // THE KEY AND pageName STAY 'Dashboard'. They are the wire format:
+  // DailyUpdate.jsx asks api/collaborator-data.js for `page=Dashboard`, and
+  // renaming them would break a permission grant already stored against that
+  // string. Only where it POINTS and what it is CALLED changed — Overall was
+  // removed on the owner's ruling (2026-09-07) and its route redirects to the
+  // daily update, which has its own collaborator branch.
   'Dashboard': {
-    pageName: 'Dashboard', route: '/Dashboard', navLabel: 'Overall', navSection: 'Planning', icon: 'LayoutDashboard',
+    pageName: 'Dashboard', route: '/DailyUpdate', navLabel: 'Daily update', navSection: 'Planning', icon: 'LayoutDashboard',
     entities: ['Guest', 'Budget', 'Schedule'],
   },
   'Guests': {

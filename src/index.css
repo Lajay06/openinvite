@@ -1290,6 +1290,9 @@ body {
    as the pre-#654 page had it. Stacked below 900px: three 33% columns on a
    390px phone is unreadable, and the old page had no mobile treatment at all
    because it was never looked at on one. */
+/* Three columns: This week | Ava's briefing | Your numbers. Overall's tiles
+   live in the third one — they were briefly a full-width row under the page
+   and that read as a separate band rather than part of the briefing. */
 .oi-daily-grid {
   display: grid;
   grid-template-columns: 1fr 1px 1fr 1px 1fr;
@@ -1300,3 +1303,4 @@ body {
   .oi-daily-grid > div { padding: 28px 0 !important; }
   .oi-daily-grid > div:empty { display: none; }
 }
+
