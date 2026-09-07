@@ -67,6 +67,47 @@ export async function runGuestSuiteEditor() {
       /from '@\/lib\/customPages'/.test(code(f)), 'not WEDDING_PAGES');
   }
 
+  // ── PAGES ARE REORDERABLE ───────────────────────────────────────────────
+  //
+  // Owner ruling on review, 2026-09-07. WHERE THE ORDER IS STORED, reported
+  // before building it: `enabledPages`, which is ALREADY AN ARRAY and always
+  // has been. No new field, no schema change — the order a couple drags into
+  // is the order of that list, and WeddingWebsiteNav reads the same list.
+  //
+  // THIS SUPERSEDES RULING R12's fixed NAV_ORDER, but not the reason R12
+  // existed: appended-last is what a tail-slice takes first, so on a 390px
+  // screen the reply ended up behind "More", two taps deep. RSVP is still
+  // placed inside the visible slice; the couple's order decides everything
+  // else, and the drawer lists it exactly as they arranged it.
+  {
+    const left = code('src/components/website-builder/WBLeftPanel.jsx');
+    const nav = code('src/components/guest-website/WeddingWebsiteNav.jsx');
+
+    check('PLANT: the order lives in enabledPages, an existing array',
+      /onChange\('enabledPages', list\)/.test(left) && /const orderedSlugs = enabledPages/.test(left),
+      'no new field');
+    check('PLANT: built-in pages and custom pages are both draggable',
+      (left.match(/dragProps\(/g) || []).length >= 2, 'two CALL sites — the built-in list and the custom list — from one handler');
+    check('  Home cannot be dragged off the front',
+      /const home = list\.indexOf\('home'\);/.test(left) && /list\.unshift\('home'\)/.test(left),
+      'a site whose first page is "Good to know" has no front door');
+    check('  and the editor list renders in the couple\u2019s order',
+      /\[\.\.\.WEDDING_PAGES\]\.sort\(/.test(left) && /enabledPages\.indexOf\(a\.slug\)/.test(left),
+      'the catalog sorted by the stored order');
+    check('  a row shows where a drop would land',
+      /boxShadow: 'inset 0 2px 0 0 #E03553'/.test(left), 'not a silent drag');
+
+    check('PLANT: the guest site navigation reads the couple\u2019s order',
+      /const coupleOrder = Array\.isArray\(enabledPages\) && enabledPages\.length \? enabledPages : FALLBACK_ORDER/.test(nav)
+        && /coupleOrder\.indexOf\(l\.key\)/.test(nav),
+      'the same list the editor writes');
+    check('  with the fixed order as the fallback for a site that has none',
+      /const FALLBACK_ORDER = \[/.test(nav), 'and for sub-links, which are not pages');
+    check('PLANT: RSVP is still held inside the visible slice',
+      /Math\.min\(rsvpAt === -1 \? 3 : rsvpAt, MAX_VISIBLE_LINKS - 1, withoutRsvp\.length\)/.test(nav),
+      'R12\u2019s reason survives its ordering');
+  }
+
   // ── CONTROLS THAT DO NOTHING ARE NOT SHOWN ──────────────────────────────
   {
     const right = code('src/components/website-builder/WBRightPanel.jsx');
