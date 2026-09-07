@@ -1,3 +1,4 @@
+import AmountInput from '@/components/shared/AmountInput';
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -79,28 +80,22 @@ export default function BudgetForm({ item, onSubmit, onCancel }) {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <Label htmlFor="budgeted_amount">Budgeted amount *</Label>
-            <Input
+            <AmountInput
               id="budgeted_amount"
-              type="number"
-              step="0.01"
-              min="0"
+              ariaLabel="Budgeted amount"
               value={formData.budgeted_amount}
               onChange={e => set('budgeted_amount', e.target.value)}
-              placeholder="0.00"
               required
             />
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <Label htmlFor="actual_amount">Actual amount</Label>
-            <Input
+            <AmountInput
               id="actual_amount"
-              type="number"
-              step="0.01"
-              min="0"
+              ariaLabel="Actual amount"
               value={formData.actual_amount}
               onChange={e => set('actual_amount', e.target.value)}
-              placeholder="0.00"
             />
           </div>
 

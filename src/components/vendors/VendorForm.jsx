@@ -1,3 +1,4 @@
+import AmountInput from '@/components/shared/AmountInput';
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -183,7 +184,7 @@ export default function VendorForm({ vendor, onSubmit, onCancel, defaultCategory
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <Label htmlFor="quoted_price">Quoted price</Label>
-            <Input id="quoted_price" type="number" step="0.01" min="0" value={formData.quoted_price} onChange={e => set('quoted_price', e.target.value)} placeholder="0.00" />
+            <AmountInput id="quoted_price" ariaLabel="Quoted price" value={formData.quoted_price} onChange={e => set('quoted_price', e.target.value)} />
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -236,7 +237,7 @@ export default function VendorForm({ vendor, onSubmit, onCancel, defaultCategory
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <Label htmlFor="starting_price">Starting price</Label>
-                <Input id="starting_price" type="number" step="0.01" min="0" value={formData.starting_price} onChange={e => set('starting_price', e.target.value)} placeholder="0.00" />
+                <AmountInput id="starting_price" ariaLabel="Starting price" value={formData.starting_price} onChange={e => set('starting_price', e.target.value)} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <Label htmlFor="package_selected">Package selected</Label>
@@ -267,7 +268,7 @@ export default function VendorForm({ vendor, onSubmit, onCancel, defaultCategory
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <Label htmlFor="deposit_amount">Deposit amount</Label>
-                <Input id="deposit_amount" type="number" step="0.01" min="0" value={formData.deposit_amount} onChange={e => set('deposit_amount', e.target.value)} placeholder="0.00" />
+                <AmountInput id="deposit_amount" ariaLabel="Deposit amount" value={formData.deposit_amount} onChange={e => set('deposit_amount', e.target.value)} />
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -294,7 +295,7 @@ export default function VendorForm({ vendor, onSubmit, onCancel, defaultCategory
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <Label htmlFor="travel_fee">Travel fee</Label>
-                <Input id="travel_fee" type="number" step="0.01" min="0" value={formData.travel_fee} onChange={e => set('travel_fee', e.target.value)} placeholder="0.00" />
+                <AmountInput id="travel_fee" ariaLabel="Travel fee" value={formData.travel_fee} onChange={e => set('travel_fee', e.target.value)} />
               </div>
             </div>
 
