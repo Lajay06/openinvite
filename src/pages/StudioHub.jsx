@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { Globe, Sparkles, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { getUniverse } from '@/lib/universeCatalog';
+import { getSampleWedding } from '@/lib/sampleContent';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { interactiveDivProps } from '@/lib/a11y';
 import { useAuth } from '@/lib/AuthContext';
@@ -32,12 +33,17 @@ export default function StudioHub() {
   }, []);
 
 
-  const universe = getUniverse(wedding?.activeUniverse || 'london');
-  const universeImage = universe?.imageUrl || null;
+  const universeId = wedding?.activeUniverse || 'london';
+  const universe = getUniverse(universeId);
+  // THE CURRENT HERO, NOT THE OLD PHOTO. `catalog.imageUrl` is a local static
+  // (`/universes/paris.jpg`) that predates the Cloudinary folders; the
+  // universe's own sample wedding carries the hero the couple actually sees
+  // everywhere else. Owner ruling 2026-09-07. The static stays as a fallback
+  // so a universe with no sample still shows something.
+  const universeImage = getSampleWedding(universeId)?.coverPhoto || universe?.imageUrl || null;
 
   const cards = [
     {
-      icon: Globe,
       kicker: 'Website & guest experience',
       title: 'Guest Suite',
       subtitle: 'Build your wedding website, invitation assets, and guest experience.',
@@ -46,7 +52,6 @@ export default function StudioHub() {
       action: () => navigate('/studio/guest-suite'),
     },
     {
-      icon: Sparkles,
       kicker: 'Style & aesthetic',
       title: 'My Universe',
       subtitle: 'Choose the aesthetic for your entire suite — invitations, website, and every design piece.',
@@ -90,7 +95,6 @@ export default function StudioHub() {
             opacity: loading ? 0.5 : 1, transition: 'opacity 0.3s',
           }}>
           {cards.map((card, i) => {
-            const Icon = card.icon;
             const BadgeIcon = card.badgeIcon;
             return (
               <motion.div
@@ -125,13 +129,12 @@ export default function StudioHub() {
                   position: 'relative', height: '100%', display: 'flex', flexDirection: 'column',
                   justifyContent: 'flex-end', padding: '24px', boxSizing: 'border-box',
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'auto' }}>
-                    <div style={{
-                      width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.15)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                    }}>
-                      <Icon size={20} color="#FFFFFF" strokeWidth={1.5} />
-                    </div>
+                  {/* NO ICON MEDALLION. Owner ruling 2026-09-07: the circled
+                      icon top-left of both cards is gone. The photograph is
+                      the card — a translucent disc over it added a second
+                      focal point and told the couple nothing the title did
+                      not. The badge keeps its place at the right. */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 'auto' }}>
                     {card.badge && (
                       <span style={{
                         display: 'inline-flex', alignItems: 'center', gap: 5,

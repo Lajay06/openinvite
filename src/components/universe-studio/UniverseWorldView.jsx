@@ -48,6 +48,7 @@
 import { readableOn } from '@/lib/surfaceTint';
 import React, { useRef, useState, useEffect, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { loadUniverseFont } from '@/lib/lazyUniverseFonts';
 import MinimalMasthead from '@/components/guest-website/layouts/MinimalMasthead';
@@ -97,6 +98,12 @@ import { universeGallery } from '@/lib/universeGallery';
 // gallery tiles is deliberately ours rather than the universe's: it is a
 // structural rule, the same weight on every one of the twenty grounds.
 import { color as appColor } from '@/styles/tokens';
+/** A crumb is a control that looks like text — no chrome of its own. */
+const CRUMB = {
+  background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+  fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 12, fontWeight: 600, color: '#FFFFFF',
+};
+
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const MASTHEAD_BY_LAYOUT = {
@@ -388,6 +395,7 @@ export default function UniverseWorldView({
   const showUpgrade = universe.isUltra && !canAccessUltra && !isCurrent;
   const motifLarge = MOTIF_LARGE[universe.id];
   const { colors, typography } = universe;
+  const navigate = useNavigate();
   const scrollContainerRef = useRef(null);
 
   // Opening a world is a deliberate, immediate need for its real font (not
@@ -439,8 +447,8 @@ export default function UniverseWorldView({
   }, [onBack]);
 
   const backButton = (
-    <button
-      onClick={onBack}
+    <nav
+      aria-label="Breadcrumb"
       style={{
         // top clears the app's fixed 48px top bar (plus the 36px trial
         // banner, when present) with room to spare — 20px collided with
@@ -449,20 +457,31 @@ export default function UniverseWorldView({
         // needing to know which chapter is currently in view.
         //
         // zIndex must clear whatever this view's own full-screen container
-        // uses (2000, when escapeLayout — see below) as well as the
-        // sidebar (60 was only ever chosen to beat the sidebar's own 40;
-        // see the escapeLayout history note above the component for how
-        // that stacking-context bug was originally found and fixed).
+        // uses (2000, when escapeLayout), as well as the sidebar.
         position: 'fixed', top: 96, left: 232, zIndex: escapeLayout ? 2001 : 60,
         display: 'flex', alignItems: 'center', gap: 6,
         background: 'rgba(10,10,10,0.55)', backdropFilter: 'blur(8px)',
         border: '1px solid rgba(255,255,255,0.18)', borderRadius: 999, padding: '7px 16px',
-        cursor: 'pointer', fontFamily: PJS, fontSize: 12, fontWeight: 600, color: '#FFFFFF',
+        fontFamily: PJS, fontSize: 12, fontWeight: 600, color: '#FFFFFF',
         ...backButtonStyle,
       }}
     >
-      ← All universes
-    </button>
+      {/* A BREADCRUMB, NOT A BACK BUTTON. Owner ruling 2026-09-07: from a
+          universe detail there was no way back to the Design studio landing
+          at all — the single "← All universes" control returned to the wall
+          and nowhere else. Each crumb is its own control now, and the page
+          you are on is not a link.
+
+          A <nav> of three buttons rather than one button containing three:
+          a button inside a button is invalid markup and the inner control
+          stops being clickable, which is the same lesson OptionAccordion's
+          `action` prop already carries. */}
+      <button type="button" onClick={() => navigate('/studio')} style={CRUMB}>Design studio</button>
+      <span aria-hidden="true" style={{ opacity: 0.5 }}>›</span>
+      <button type="button" onClick={onBack} style={CRUMB}>My universe</button>
+      <span aria-hidden="true" style={{ opacity: 0.5 }}>›</span>
+      <span aria-current="page" style={{ opacity: 0.75 }}>{universe.name || universe.id}</span>
+    </nav>
   );
 
   const chapters = (
@@ -585,7 +604,10 @@ export default function UniverseWorldView({
               <p style={{ fontSize: 11, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.5, margin: '0 0 12px' }}>
                 Heading — {typography.headingFont?.replace(/["']/g, '').split(',')[0]}
               </p>
-              <p style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(2.4rem, 6vw, 4.4rem)', color: colors.lightText, margin: 0, lineHeight: 1.05 }}>
+              <p
+                className="oi-universe-face--heading"
+                style={{ '--oi-heading-font': typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(2.4rem, 6vw, 4.4rem)', color: colors.lightText, margin: 0, lineHeight: 1.05 }}
+              >
                 Aa Bb Cc
               </p>
             </div>
@@ -593,7 +615,10 @@ export default function UniverseWorldView({
               <p style={{ fontSize: 11, fontWeight: 600, fontFamily: PJS, color: colors.lightText, opacity: 0.5, margin: '0 0 12px' }}>
                 Body — {typography.bodyFont?.replace(/["']/g, '').split(',')[0]}
               </p>
-              <p style={{ fontFamily: typography.bodyFont, fontSize: 18, color: colors.lightText, opacity: 0.85, margin: 0, lineHeight: 1.6 }}>
+              <p
+                className="oi-universe-face--body"
+                style={{ '--oi-body-font': typography.bodyFont, fontSize: 18, color: colors.lightText, opacity: 0.85, margin: 0, lineHeight: 1.6 }}
+              >
                 The quick brown fox jumps over the lazy dog.
               </p>
             </div>
