@@ -86,10 +86,14 @@ const DialogFooter = ({
 )
 DialogFooter.displayName = "DialogFooter"
 
+// ON THE TYPE SCALE. `text-lg` is 18px, which is off it — the owner's rule
+// is that no component declares its own size, and a modal is the surface
+// where that was loudest ("family / friends is massive"). 14px is the top of
+// the scale; the title carries its weight instead of its size.
 const DialogTitle = React.forwardRef(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn("text-lg font-semibold leading-none", className)}
+    className={cn("text-[14px] font-bold leading-none", className)}
     {...props} />
 ))
 DialogTitle.displayName = DialogPrimitive.Title.displayName

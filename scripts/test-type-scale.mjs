@@ -68,6 +68,12 @@ for (const path of PAGES) {
       if (r.width === 0 || r.height === 0) continue;          // not rendered
       const cs = getComputedStyle(el);
       if (cs.visibility === 'hidden' || cs.display === 'none') continue;
+      // SCREEN-READER FURNITURE IS NOT PAINTED. Radix renders a visually
+      // hidden <select> for form semantics and an sr-only "Close" label; both
+      // sit at the browser's default 16px and neither is ever seen. A guard
+      // that fails on them is failing on the accessibility layer.
+      if (el.closest('.sr-only') || el.getAttribute('aria-hidden') === 'true') continue;
+      if (r.width <= 1 || r.height <= 1) continue;
       const size = Math.round(parseFloat(cs.fontSize));
       if (scale.includes(size)) continue;
       // ITS OWN TEXT, NOT ITS DESCENDANTS'. The first version used innerText,
