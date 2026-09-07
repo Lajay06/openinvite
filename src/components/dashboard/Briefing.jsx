@@ -35,12 +35,25 @@ export default function Briefing({ tasks, schedule, guests, budget, vendors, uns
   }
 
   const { badge, headline, lines, unseen: missing } = resolveDayState({ tasks, schedule, guests, budget, vendors, unseen });
+  // THE LINE NAMES AN AVA ACTION; IT DOES NOT ADD A SECOND AVA BUTTON.
+  //
+  // The first build gave the empty-wedding line its own "Ask Ava" control, and
+  // the screenshot showed the result: two ways to open the same pod on one
+  // page. Spec 3.3 is exactly about that — "exactly one Ava entry point per
+  // page", written because vows and speeches had four ways to reach one
+  // action. The page's own Ava button is that entry point and it is a few
+  // pixels below; the line says what to ask it for.
   const action = lines[0]?.to || '/TodoList';
   const actionLabel = lines[0]?.to === '/Guests' ? 'Open guest list'
     : lines[0]?.to === '/Schedule' ? 'Open schedule'
     : lines[0]?.to === '/Budget' ? 'Open budget'
     : lines[0]?.to === '/Vendors' ? 'Open vendors'
     : 'Open to do';
+  const BUTTON = {
+    display: 'inline-flex', marginTop: 18, background: '#E03553', color: '#FFFFFF',
+    borderRadius: 999, padding: '10px 22px', fontSize: 14, fontWeight: 700,
+    fontFamily: PJS, textDecoration: 'none', border: 'none', cursor: 'pointer',
+  };
 
   return (
     <div style={{ padding: '28px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
@@ -66,16 +79,7 @@ export default function Briefing({ tasks, schedule, guests, budget, vendors, uns
         </p>
       )}
 
-      <Link
-        to={action}
-        style={{
-          display: 'inline-flex', marginTop: 18, background: '#E03553', color: '#FFFFFF',
-          borderRadius: 999, padding: '10px 22px', fontSize: 14, fontWeight: 700,
-          fontFamily: PJS, textDecoration: 'none',
-        }}
-      >
-        {actionLabel}
-      </Link>
+      <Link to={action} style={BUTTON}>{actionLabel}</Link>
     </div>
   );
 }

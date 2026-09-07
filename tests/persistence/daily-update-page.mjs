@@ -17,6 +17,7 @@
 import { pass, fail } from './_shared.mjs';
 import { resolveDayState, rowDate, STATE_BADGE, todosFrom } from '../../src/lib/dayState.js';
 import { countdownLabel } from '../../src/lib/weddingCountdown.js';
+import { ACTION_MIRROR } from '../../src/lib/avaRequest.js';
 import { readFileSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -83,6 +84,16 @@ export async function runDailyUpdatePage() {
     check('PLANT: both pages choose their to-dos with the same helper',
       /todosFrom\(/.test(code('src/pages/DailyUpdate.jsx')) && /todosFrom\(/.test(code('src/pages/Dashboard.jsx')),
       'the inputs are chosen once as well as resolved once');
+    // AND FROM THE SAME STORES. todosFrom cannot make two pages agree if they
+    // are handed different inputs: Overall loaded Note AND Task, the daily
+    // update page loaded Note only, and Overall named a Task as the next
+    // thing that the other page could not see. Caught on a screenshot, twice
+    // now, in opposite directions.
+    check('  and from the same two stores',
+      /notes:    \(\) => getMyRecords\('Note'/.test(code('src/pages/DailyUpdate.jsx'))
+        && /tasks:    \(\) => getMyRecords\('Task'/.test(code('src/pages/DailyUpdate.jsx'))
+        && /todosFrom\(\{ notes: data\.notes, tasks: data\.tasks \}\)/.test(code('src/pages/DailyUpdate.jsx')),
+      'Note and Task, the pair Overall reads');
     check('  and neither filters view_type itself',
       !/view_type === 'todo'/.test(code('src/pages/Dashboard.jsx'))
         && !/\.filter\(\(n\) => n\.view_type/.test(code('src/pages/DailyUpdate.jsx')),
@@ -112,14 +123,59 @@ export async function runDailyUpdatePage() {
     const waiting = on({ guests: [{ rsvp_status: 'pending' }, {}] });
     check('waiting names what is waited on',
       waiting.state === 'waiting' && /Waiting on 2 replies/.test(waiting.headline), waiting.headline);
-    const clear = on({ budget: [{}], vendors: [{}], schedule: [{ event_name: 'Menu tasting', event_date: '2026-09-20' }] });
-    check('PLANT: "Nothing needs you today" is a valid state',
-      clear.state === 'clear' && clear.badge === 'Clear' && /^Nothing needs you today\./.test(clear.headline),
+    // CLEAR PAVES FORWARD — the owner's review of tulumtest. "Nothing this
+    // week" over an empty brief reads as "done, nothing can be done", which
+    // for a wedding a year out is the opposite of true. Both Clear shapes are
+    // exercised below, from FIXTURE data, so the title and the date cannot be
+    // authored text that happens to match.
+    const clear = on({ budget: [{}], vendors: [{}], tasks: [{ title: 'Book the car', due_date: '2026-10-12' }] });
+    check('PLANT: Clear with something ahead reads "Clear this week."',
+      clear.state === 'clear' && clear.badge === 'Clear' && clear.headline === 'Clear this week.',
       clear.headline);
-    check('  and it says what is next, and when it is',
-      /Next is Menu tasting/.test(clear.headline), 'spec 9.1: a Clear headline is about what is next');
-    check('  with nothing at all, it still says it plainly',
-      on({ budget: [{}], vendors: [{}] }).headline === 'Nothing needs you today.', 'no invention');
+    check('  and the first line is the next to-do, by name and date, FROM THE FIXTURE',
+      clear.lines[0]?.text === 'Next up: Book the car, 12 October.',
+      clear.lines[0]?.text);
+    check('  a to-do with no date says so without inventing one',
+      on({ budget: [{}], vendors: [{}], tasks: [{ title: 'Book the car' }] }).lines[0]?.text === 'Next up: Book the car.',
+      'no date, no date');
+    check('  and a date in another year carries the year',
+      /Next up: Final dress fitting, 1 June 2027\./.test(
+        on({ budget: [{}], vendors: [{}], tasks: [{ title: 'Final dress fitting', due_date: '2027-06-01' }] }).lines[0]?.text || ''),
+      'the year only when it differs');
+    check('  the NEAREST to-do wins, not the first in the array',
+      on({ budget: [{}], vendors: [{}], tasks: [
+        { title: 'Later thing', due_date: '2026-12-01' },
+        { title: 'Sooner thing', due_date: '2026-09-20' },
+      ] }).lines[0]?.text === 'Next up: Sooner thing, 20 September.', 'by due date');
+    check('  and a SCHEDULE event is not offered as the next thing to do',
+      on({ budget: [{}], vendors: [{}], schedule: [{ event_name: 'Menu tasting', event_date: '2026-09-20' }] })
+        .lines.every(l => !/Menu tasting/.test(l.text)),
+      'a ceremony is something that happens to you, not a task you have not finished');
+
+    const empty = on({ budget: [{}], vendors: [{}] });
+    check('PLANT: Clear with NO to-dos at all reads "Nothing planned yet."',
+      empty.state === 'clear' && empty.headline === 'Nothing planned yet.', empty.headline);
+    check('  and offers one thing AVA CAN ACTUALLY DO',
+      empty.lines[0]?.ava === 'create_todo'
+        && ACTION_MIRROR.some(a => a.type === empty.lines[0].ava)
+        && /Ask Ava to add the first thing to your to-do list\./.test(empty.lines[0].text),
+      empty.lines[0]?.text);
+    check('  with no percentages and nothing emotional in it',
+      !/%|congratul|exciting|wonderful|journey/i.test(empty.lines[0]?.text || ''), 'facts and an offer');
+
+    check('PLANT: the brief is never blank on a Clear day',
+      clear.lines.length > 0 && empty.lines.length > 0
+        && on({ budget: [{ id: 'b' }], vendors: [{ id: 'v' }], tasks: [] }).lines.length > 0,
+      'one of the two forward lines always applies');
+
+    check('PLANT: a store that failed is UNAVAILABLE, never Clear',
+      on({ unseen: ['the to-do list'] }).state === 'unavailable'
+        && on({ unseen: ['the to-do list'] }).headline === 'Some of today could not be read.'
+        && on({ unseen: ['the to-do list'] }).badge === null,
+      'the headline said "Nothing planned yet" over a failed load — the same false all-clear, one line up');
+    check('  and Overall carries the forward line too, not the headline alone',
+      /const forward = lines\[0\]\?\.text/.test(code('src/components/dashboard/DayStateHeadline.jsx')),
+      'the dead end was one page wide, not one');
     check('every badge word is the spec\'s',
       JSON.stringify(Object.values(STATE_BADGE)) === JSON.stringify(['Overdue', 'Today', 'Waiting', 'Clear']),
       Object.values(STATE_BADGE).join(' → '));
@@ -157,7 +213,7 @@ export async function runDailyUpdatePage() {
     // `finally` and no `catch`, so a strict reader's throw escaped and the
     // page rendered "Nothing needs you today" over data it had never read.
     check('a load that throws marks every store unseen rather than reporting Clear',
-      /catch \(err\)[\s\S]{0,600}setUnseenSources\(\['guests', 'budget', 'schedule', 'tasks', 'vendors'\]\)/
+      /catch \(err\)[\s\S]{0,600}setUnseenSources\(\['guests', 'budget', 'schedule', 'notes', 'tasks', 'vendors'\]\)/
         .test(code('src/pages/DailyUpdate.jsx')),
       'no badge, and it says what it could not see');
     check('  an unseen store is not called an empty one',
@@ -204,8 +260,17 @@ export async function runDailyUpdatePage() {
       ['what could not be read', /formatSourceList\(unseenSources\)/],
       ['one Ava entry point',  /<AvaButton\b/],
     ]) check(`kept from the old page: ${what}`, re.test(page), 'carried over');
-    const avaButtons = (page.match(/<AvaButton\b/g) || []).length;
-    check('  and exactly one of them (spec 3.3)', avaButtons === 1, `${avaButtons}`);
+    // COUNTED AS ENTRY POINTS, not as components. The first build of the
+    // empty-Clear line rendered its own "Ask Ava" button inside the briefing,
+    // which a `<AvaButton` count could not see — two ways to open one pod on
+    // one page, which is the whole subject of spec 3.3. Both spellings count.
+    const surfaces = [page, code('src/components/dashboard/Briefing.jsx')];
+    // Every entry point ends in openAva(), whatever renders it — so that is
+    // what is counted. Counting <AvaButton> as well double-counts the one
+    // button, which is how this check first reported 2 for a correct page.
+    const entryPoints = surfaces.reduce((n, src) => n + (src.match(/openAva\(/g) || []).length, 0);
+    check('  and exactly one Ava entry point on the page (spec 3.3)',
+      entryPoints === 1, `${entryPoints} across the page and the briefing`);
   }
 
   // ── PLANT: THE "HAPPY 0 DAY" FAMILY IS STILL GREEN ──────────────────────

@@ -100,7 +100,14 @@ export default function DailyUpdate() {
         guests:   () => getMyGuestsWithRsvp(undefined, undefined, { strict: true }),
         budget:   () => getMyRecords('Budget', undefined, undefined, { strict: true }),
         schedule: () => getMyRecords('Schedule', undefined, undefined, { strict: true }),
-        tasks:    () => getMyRecords('Note', undefined, undefined, { strict: true }),
+        // BOTH STORES, because Overall reads both. A to-do is a Note with
+        // view_type 'todo'; some accounts also still have `Task` rows, and
+        // todosFrom keeps them. Loading only Notes here made the two pages
+        // disagree again in the other direction — Overall named a Task as the
+        // next thing and the daily update page could not see it. The helper
+        // cannot make two pages agree if they are handed different stores.
+        notes:    () => getMyRecords('Note', undefined, undefined, { strict: true }),
+        tasks:    () => getMyRecords('Task', undefined, undefined, { strict: true }),
         vendors:  () => getMyRecords('Vendor', undefined, undefined, { strict: true }),
       });
       setGuests(data.guests || []); setBudget(data.budget || []);
@@ -109,7 +116,7 @@ export default function DailyUpdate() {
       // exactly that, so counting every Note would count moodboard notes as
       // overdue tasks. Selected by the SAME helper Overall uses, because the
       // two pages disagreed once by choosing their inputs separately.
-      setTasks(todosFrom({ notes: data.tasks }));
+      setTasks(todosFrom({ notes: data.notes, tasks: data.tasks }));
       setVendors(data.vendors || []);
       setUnseenSources(failed);
 
@@ -140,7 +147,7 @@ export default function DailyUpdate() {
       // Everything is unseen when nothing was read, so there is no badge
       // (spec 9.1) and the page says so.
       console.error('[DailyUpdate] load failed:', err?.message);
-      setUnseenSources(['guests', 'budget', 'schedule', 'tasks', 'vendors']);
+      setUnseenSources(['guests', 'budget', 'schedule', 'notes', 'tasks', 'vendors']);
     } finally {
       setLoading(false);
     }

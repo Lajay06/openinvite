@@ -27,7 +27,11 @@ export default function DayStateHeadline({ tasks, schedule, guests, budget, vend
     );
   }
 
-  const { badge, headline } = resolveDayState({ tasks, schedule, guests, budget, vendors, unseen });
+  // The FIRST line as well as the headline, so Overall's one line paves
+  // forward too: "Clear this week." on its own is the same dead end the owner
+  // reviewed, one page over.
+  const { badge, headline, lines } = resolveDayState({ tasks, schedule, guests, budget, vendors, unseen });
+  const forward = lines[0]?.text || null;
 
   return (
     <div style={{
@@ -42,6 +46,11 @@ export default function DayStateHeadline({ tasks, schedule, guests, budget, vend
       <span style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>
         {headline}
       </span>
+      {forward && (
+        <span style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
+          {forward}
+        </span>
+      )}
       <Link to="/DailyUpdate" style={{ fontSize: 13, fontWeight: 600, color: '#E03553', fontFamily: PJS, textDecoration: 'none' }}>
         Daily update
       </Link>

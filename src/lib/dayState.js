@@ -41,6 +41,11 @@
  * countdown and the schedule calendar each needed.
  */
 
+// The action mirror is the list of things Ava can ACTUALLY do. A Clear day
+// with nothing on it offers one of these by name — never a suggestion the
+// couple could accept and Ava could not carry out.
+import { ACTION_MIRROR } from './avaRequest.js';
+
 /** Local midnight for a Date. */
 const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 
@@ -87,6 +92,18 @@ export const STATE_BADGE = { overdue: 'Overdue', today: 'Today', waiting: 'Waiti
 
 const titleOf = (r) => r?.title || r?.name || r?.event_name || null;
 
+/** The set of action types Ava can actually execute. */
+const CAN_DO = new Set(ACTION_MIRROR.map((a) => a.type));
+
+/** "12 October" from a local-midnight timestamp — the year only when it differs. */
+function dueLabel(at) {
+  const d = new Date(at);
+  const sameYear = d.getFullYear() === new Date().getFullYear();
+  return d.toLocaleDateString(undefined, sameYear
+    ? { day: 'numeric', month: 'long' }
+    : { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
 /**
  * @param {object} input
  * @param {Array}  input.tasks     Note rows with view_type 'todo'
@@ -108,29 +125,54 @@ export function resolveDayState({ tasks = [], schedule = [], guests = [], budget
   const eventsToday = schedule.filter((e) => rowDate(e) === today);
   const unreplied = guests.filter((g) => !g.rsvp_status || g.rsvp_status === 'pending').length;
 
-  const state = overdue.length > 0 ? 'overdue'
+  // A DAY WITH A STORE MISSING IS NOT A CLEAR DAY, it is a day we could not
+  // read. Spec 9.1: "if the day state cannot be resolved because data did not
+  // load, there is no badge at all, and the briefing says what cannot be
+  // seen." The badge was already suppressed; the HEADLINE still said "Nothing
+  // planned yet", which is the same false all-clear one line up.
+  //
+  // The lines below still carry what WAS read — a to-do we can see is overdue
+  // is worth saying even when the guest list failed. What is withheld is the
+  // claim about the whole day.
+  const state = unseen.length ? 'unavailable'
+    : overdue.length > 0 ? 'overdue'
     : (dueToday.length > 0 || eventsToday.length > 0) ? 'today'
     : unreplied > 0 ? 'waiting'
     : 'clear';
 
-  // WHAT IS NEXT, AND WHEN — the subject the spec's table requires of a Clear
-  // headline. The soonest thing ahead of today, from either store.
-  const ahead = [...open, ...schedule]
+  // WHAT IS NEXT — the nearest TO-DO by due date after today, from the same
+  // store Overall reads (todosFrom, below: Notes with view_type 'todo').
+  //
+  // To-dos only, and not the schedule. "Next up" is something the couple does;
+  // a ceremony on the schedule is something that happens to them, and offering
+  // it as the next thing to do reads as a task they have somehow not finished.
+  const ahead = open
     .map((r) => ({ row: r, at: rowDate(r) }))
     .filter((x) => x.at !== null && x.at > today)
     .sort((a, b) => a.at - b.at);
-  const next = ahead.length ? { title: titleOf(ahead[0].row), at: ahead[0].at } : null;
+  // An undated open to-do is still what is next when nothing else is dated —
+  // it just cannot say when.
+  const undated = open.filter((t) => rowDate(t) === null);
+  const nextRow = ahead[0]?.row || undated[0] || null;
+  const next = nextRow ? { title: titleOf(nextRow), at: ahead[0]?.row === nextRow ? ahead[0].at : null } : null;
 
   // THE HEADLINE IS ABOUT THE STATE'S SUBJECT, always — never a second opinion.
-  const headline = state === 'overdue'
+  const headline = state === 'unavailable'
+      ? `Some of today could not be read.`
+    : state === 'overdue'
       ? (titleOf(overdue[0]) ? `${titleOf(overdue[0])} is overdue.` : 'Something is overdue.')
     : state === 'today'
       ? (titleOf(dueToday[0] || eventsToday[0]) ? `${titleOf(dueToday[0] || eventsToday[0])} is today.` : 'Something is due today.')
     : state === 'waiting'
       ? `Waiting on ${unreplied} ${unreplied === 1 ? 'reply' : 'replies'}.`
+    // CLEAR MUST PAVE FORWARD. It read "Nothing needs you today" over an empty
+    // brief, and the owner's review of tulumtest is the reason that changed:
+    // it reads as "done — nothing can be done", which is the opposite of true
+    // for a wedding a year out. Clear is a state about THIS WEEK, and it
+    // always carries the next thing.
     : next?.title
-      ? `Nothing needs you today. Next is ${next.title}.`
-      : 'Nothing needs you today.';
+      ? 'Clear this week.'
+      : 'Nothing planned yet.';
 
   // FACTS ONLY, IN PRIORITY ORDER, AND THE CAP IS ONE LINE.
   //
@@ -170,13 +212,30 @@ export function resolveDayState({ tasks = [], schedule = [], guests = [], budget
   if (vendors.length === 0 && !unseen.includes('vendors')) {
     candidates.push({ text: 'No vendors added. They live on the Vendors page.', to: '/Vendors' });
   }
+  // THE BRIEF IS NEVER BLANK ON A CLEAR DAY. One of these two always applies:
+  // the next to-do by name and date, or — with no to-dos at all — one thing
+  // Ava can actually do about it.
+  if (state === 'clear' && !unseen.length) {
+    if (next?.title) {
+      candidates.unshift({
+        text: next.at ? `Next up: ${next.title}, ${dueLabel(next.at)}.` : `Next up: ${next.title}.`,
+        to: '/TodoList',
+      });
+    } else if (CAN_DO.has('create_todo')) {
+      // Named from the mirror, not authored: if create_todo ever leaves Ava's
+      // powers, this offer leaves with it rather than becoming a promise the
+      // couple can accept and Ava cannot keep.
+      candidates.unshift({ text: 'Ask Ava to add the first thing to your to-do list.', to: '/TodoList', ava: 'create_todo' });
+    }
+  }
+
   const lines = candidates.slice(0, 3);
 
   return {
     state,
     // A badge is a claim about the whole day, and there is no such claim to
     // make over a store that did not load.
-    badge: unseen.length ? null : STATE_BADGE[state],
+    badge: STATE_BADGE[state] || null,
     headline,
     lines,
     unseen,
