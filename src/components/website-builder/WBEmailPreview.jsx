@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { renderInvitationEmail, emailBannerUrl } from '@/lib/emailTemplate';
 import { personalMessageFrom, subjectFrom, designOf } from '@/lib/emailTemplateStore';
 import { normalizeUniverseKey } from '@/lib/websiteThemes';
+import { coupleDisplayName } from '@/lib/coupleNames';
 
 /**
  * THE CANVAS, SHOWING AN EMAIL INSTEAD OF A PAGE.
@@ -38,9 +39,10 @@ export default function WBEmailPreview({ details, template, type, width = 600 })
   const design = designOf(template, { coverPhoto: details?.coverPhoto });
 
   const { html, subject } = useMemo(() => {
-    const coupleNames = details?.coupleNames
-      || [details?.couple1Name, details?.couple2Name].filter(Boolean).join(' & ')
-      || 'The Wedding';
+    // ONE OWNER FOR THE COUPLE'S NAME. `coupleNames` is the DERIVED copy and
+    // the partner fields are the truth; joining them by hand here would be a
+    // second answer to a question 40+ surfaces already ask one function.
+    const coupleNames = coupleDisplayName(details) || 'The Wedding';
     const rendered = renderInvitationEmail({
       universeId,
       type,
