@@ -3,20 +3,29 @@ import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
 import { loadDashboardSources, formatSourceList } from '@/lib/dashboardSources';
 import { daysUntilWedding, countdownLabel, countdownSentence } from '@/lib/weddingCountdown';
+import { isAttending } from '@/lib/guestRsvpTally';
 import { getJourneyProgress } from '@/lib/setupJourney';
 import { getTrialStatus } from '@/lib/trialStatus';
 import { coupleDisplayName } from '@/lib/coupleNames';
-import { firstNameOrNull } from '@/lib/emailGreeting';
 import { useCollaboratorContext } from '@/lib/collaboratorContext';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import Briefing from '@/components/dashboard/Briefing';
-import { todosFrom } from '@/lib/dayState';
+import { todosFrom, resolveDayState } from '@/lib/dayState';
 import NextUp from '@/components/dashboard/NextUp';
 import AvaButton from '@/components/shared/AvaButton';
 import { openAva } from '@/lib/avaOpen';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
+
+/** What the link under each line in "This week" says. */
+const LINK_LABEL = {
+  '/TodoList': 'Open to do',
+  '/Guests': 'Open guest list',
+  '/Schedule': 'Open schedule',
+  '/Budget': 'Open budget',
+  '/Vendors': 'Open vendors',
+};
 
 /**
  * DAILY UPDATE — AVA'S HOME (spec 3.1), reinstated as its own page.
@@ -157,71 +166,179 @@ export default function DailyUpdate() {
 
   const days = daysUntilWedding(wd?.weddingDate);
   const coupleName = coupleDisplayName(wd || {});
-  // NEVER AN ADDRESS WHERE A NAME GOES — the welcome-email rule, same reason.
-  const first = firstNameOrNull(coupleName);
-  const hour = new Date().getHours();
-  const partOfDay = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
-  const greeting = first ? `Good ${partOfDay}, ${first}.` : `Good ${partOfDay}.`;
+  // The masthead prints the couple's name, as the old page did — and never an
+  // address in its place (the welcome-email rule, same reason).
   const dateLabel = new Date().toLocaleDateString(undefined, {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
 
-  return (
-    <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-      <DashboardPageHeader title="Daily update" subtitle="What needs you today" />
+  // ONE COMPUTATION, and the whole page reads it — the hero's sentence, the
+  // first column's lines and Overall's one-liner are all this object.
+  const day = resolveDayState({ tasks, schedule, guests, budget, vendors, unseen: unseenSources });
 
-      {/* Greeting, date and the countdown — the orientation line. countdownLabel
-          returns null once the wedding has passed, so nothing counts backwards
-          and nothing says "Today's the day" forever after (#681). */}
+  // THE FAR-RIGHT COLUMN, as it was. Same four labels the pre-#654 page showed
+  // (e2c087a:476-481) and the same arithmetic (e2c087a:329-333), with the two
+  // dead column names dropped: `total_amount` and `spent_amount` do not exist
+  // on Budget and were only ever reached through their own `||` fallbacks.
+  const confirmedGuests = guests.filter(isAttending).length;
+  const pendingGuests   = guests.filter((g) => !g.rsvp_status || g.rsvp_status === 'pending').length;
+  const totalBudget     = budget.reduce((n, b) => n + (b.budgeted_amount || 0), 0);
+  const budgetSpent     = budget.reduce((n, b) => n + (b.actual_amount || 0), 0);
+  const budgetPercent   = totalBudget ? Math.round((budgetSpent / totalBudget) * 100) : 0;
+  const bookedVendors   = vendors.filter((v) => v.status === 'booked').length;
+  const snapCards = [
+    { label: 'Guests confirmed', value: String(confirmedGuests) },
+    { label: 'RSVP pending',     value: String(pendingGuests) },
+    { label: 'Budget used',      value: `${budgetPercent}%` },
+    { label: 'Vendors booked',   value: `${bookedVendors}/${vendors.length}` },
+  ];
+
+  const columnHead = (label) => (
+    <div style={{ borderTop: '3px solid #0A0A0A', paddingTop: 16, marginBottom: 24 }}>
+      <span style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', color: '#0A0A0A' }}>{label}</span>
+    </div>
+  );
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#FFFFFF', color: '#0A0A0A' }}>
+      <DashboardPageHeader title="Daily update" subtitle="Your wedding planning briefing" />
+
+      {/* ── SECTION 1: Masthead ── */}
       <div style={{
-        padding: '22px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)',
-        display: 'flex', alignItems: 'baseline', gap: 16, flexWrap: 'wrap',
+        background: '#FFFFFF', padding: '20px 40px', borderBottom: '1px solid #E8E8E5',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap',
       }}>
-        <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>{greeting}</span>
-        <span style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>{dateLabel}</span>
-        {countdownLabel(days) && (
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
-            {countdownSentence(days) || countdownLabel(days)}
-          </span>
-        )}
+        <span style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: 'rgba(10,10,10,0.6)' }}>
+          Openinvite daily
+        </span>
+        <div style={{ textAlign: 'center' }}>
+          {coupleName && (
+            <div style={{ fontFamily: PJS, fontSize: 13, fontWeight: 700, color: '#0A0A0A', letterSpacing: '0.04em' }}>{coupleName}</div>
+          )}
+          <div style={{ fontFamily: PJS, fontSize: 11, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.06em', marginTop: coupleName ? 2 : 0 }}>
+            {dateLabel}
+          </div>
+        </div>
+        {/* countdownLabel returns null once the wedding has passed, so nothing
+            counts backwards and nothing reads "Today's the day" forever (#681).
+            The old pill printed `${daysUntil} days to go` directly. */}
+        {countdownLabel(days) ? (
+          <div style={{
+            background: '#E03553', color: '#FFFFFF', borderRadius: 999, padding: '6px 16px',
+            fontFamily: PJS, fontSize: 12, fontWeight: 700, letterSpacing: '0.04em', whiteSpace: 'nowrap',
+          }}>
+            {countdownLabel(days)}
+          </div>
+        ) : <div style={{ width: 120 }} />}
       </div>
 
-      {/* THE BRIEFING. One state, computed once (spec 9.1), rendered here in
-          full and on Overall as a single headline. */}
-      <Briefing
-        tasks={tasks} schedule={schedule} guests={guests}
-        budget={budget} vendors={vendors} unseen={unseenSources} loading={loading}
-      />
+      {/* ── SECTION 2: Hero headline, the big topic sentence ── */}
+      <Briefing day={day} loading={loading} />
+
+      {/* Orientation layer. STILL HERE, and reported rather than removed: the
+          owner asked for this card to go, and it was on the pre-#654 page too
+          (e2c087a:594-604), which the same instruction says to restore
+          exactly. Held for a ruling. */}
+      {!loading && journey && (
+        <NextUp journey={journey} daysUntil={days} onGo={(step) => navigate(step.route)} />
+      )}
 
       {!loading && unseenSources.length > 0 && (
         <div style={{
-          padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)',
+          background: '#FFFFFF', padding: '16px 40px', borderBottom: '1px solid #E8E8E5',
           display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap',
         }}>
-          <span style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
-            Your {formatSourceList(unseenSources)} could not be loaded.
+          <span style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)' }}>
+            Your {formatSourceList(unseenSources)} could not be loaded, so today&apos;s numbers are incomplete.
           </span>
-          <button
-            onClick={load}
-            style={{
-              border: '1px solid rgba(10,10,10,0.45)', background: 'transparent', color: '#0A0A0A',
-              borderRadius: 999, padding: '6px 14px', fontFamily: PJS, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-            }}
-          >
+          <button onClick={load} style={{
+            border: '1px solid rgba(10,10,10,0.45)', background: 'transparent', color: '#0A0A0A',
+            borderRadius: 999, padding: '6px 14px', fontFamily: PJS, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+          }}>
             Try again
           </button>
         </div>
       )}
 
-      {/* What to do first, for a wedding that has not been set up yet. */}
-      {!loading && journey && (
-        <NextUp journey={journey} onGo={(step) => navigate(step.route)} />
-      )}
+      {/* ── SECTION 3: Editorial grid — three columns, 1px rules between ── */}
+      {!loading && (
+        <div style={{ background: '#FFFFFF', padding: '0 40px' }}>
+          <div className="oi-daily-grid">
 
-      {/* ONE Ava entry point on this page (spec 3.3), and it opens the pod. */}
-      <div style={{ padding: '24px 32px' }}>
-        <AvaButton label="Ask Ava about today" onClick={() => openAva({ page: '/DailyUpdate' })} />
-      </div>
+            {/* ── Column A: This week ── */}
+            <div style={{ padding: '32px 32px 32px 0' }}>
+              {columnHead('This week')}
+              {day.lines.length ? day.lines.map((l, i) => (
+                <div key={i} style={{
+                  paddingBottom: 20, marginBottom: i === day.lines.length - 1 ? 0 : 20,
+                  borderBottom: i === day.lines.length - 1 ? 'none' : '1px solid rgba(10,10,10,0.06)',
+                }}>
+                  <p style={{ fontFamily: PJS, fontSize: 16, fontWeight: 700, color: '#0A0A0A', margin: 0, lineHeight: 1.3 }}>
+                    {l.text}
+                  </p>
+                  <Link to={l.to} style={{ fontFamily: PJS, fontSize: 13, fontWeight: 600, color: '#E03553', textDecoration: 'none', display: 'inline-block', marginTop: 6 }}>
+                    {LINK_LABEL[l.to] || 'Open'}
+                  </Link>
+                </div>
+              )) : (
+                <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0 }}>Nothing on your list this week.</p>
+              )}
+            </div>
+
+            <div style={{ background: 'rgba(10,10,10,0.06)' }} />
+
+            {/* ── Column B: Ava's briefing ── */}
+            <div style={{ padding: '32px' }}>
+              {columnHead('Ava\u2019s briefing')}
+              {/* THE BADGE, and not the headline again. It read
+                  "Overdue — Overdue: Book the celebrant." once the headline
+                  started leading with the state word — a stutter, and a repeat
+                  of the sentence already set 42px high at the top of the page.
+                  Ruling 6 keeps the badge; this is where it survives a glance. */}
+              {day.badge && (
+                <p style={{ fontFamily: PJS, fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: '#E03553', margin: '0 0 10px' }}>
+                  {day.badge}
+                </p>
+              )}
+              <p style={{ fontFamily: PJS, fontSize: 15, fontWeight: 600, color: '#0A0A0A', margin: 0, lineHeight: 1.4 }}>
+                {countdownSentence(days) || 'Your wedding date is not set yet.'}
+              </p>
+              {unseenSources.length > 0 && (
+                <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '12px 0 0', lineHeight: 1.5 }}>
+                  {formatSourceList(unseenSources)} could not be read, so this is not the whole picture.
+                </p>
+              )}
+              {/* The page's ONE Ava entry point (spec 3.3), in Ava's own column. */}
+              <div style={{ marginTop: 20 }}>
+                <AvaButton label="Ask Ava about today" onClick={() => openAva({ page: '/DailyUpdate' })} />
+              </div>
+            </div>
+
+            <div style={{ background: 'rgba(10,10,10,0.06)' }} />
+
+            {/* ── Column C: Your numbers ── */}
+            <div style={{ padding: '32px 0 32px 32px' }}>
+              {columnHead('Your numbers')}
+              {snapCards.map((card, i) => {
+                const isLast = i === snapCards.length - 1;
+                return (
+                  <div key={i} style={{
+                    paddingBottom: 24, marginBottom: isLast ? 0 : 24,
+                    borderBottom: isLast ? 'none' : '1px solid rgba(10,10,10,0.06)',
+                  }}>
+                    <div style={{ fontFamily: PJS, fontSize: 48, fontWeight: 800, color: '#0A0A0A', letterSpacing: '-0.04em', lineHeight: 1 }}>
+                      {card.value}
+                    </div>
+                    <div style={{ fontFamily: PJS, fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', marginTop: 4 }}>
+                      {card.label}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

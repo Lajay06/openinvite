@@ -273,7 +273,9 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
             <button
               style={{
                 width: 36, height: 36, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #ec4899, #9333ea)',
+                // Solid strawberry, matching AvaButton and every other Ava
+                // surface. The gradient was the last of the old pink-to-purple.
+                background: '#E03553',
                 border: 'none', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: '#fff', fontSize: 13, fontWeight: 700, fontFamily: PJS,

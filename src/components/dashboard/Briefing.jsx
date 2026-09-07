@@ -1,85 +1,52 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { resolveDayState } from '@/lib/dayState';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 /**
- * The briefing block — badge, headline, up to three lines, one action.
+ * THE HERO — the big topic sentence at the top of the daily update.
  *
- * ── IT DECIDES NOTHING ─────────────────────────────────────────────────────
+ * The owner rejected the previous layout and named what he wanted back:
+ * "three columns, big topic sentence at the top, far right column had stats."
+ * This is the top of that page, restored from the pre-#654 file
+ * (src/pages/DailyUpdate.jsx at e2c087a, lines 524-590): an eyebrow reading
+ * "Today's edition" in strawberry, a 42px/800 headline, and one line under it.
  *
- * Every judgment moved to src/lib/dayState.js, which has no React in it. This
- * file renders. That split is what lets Overall's one-line version and the
- * daily update page read the SAME resolved state rather than two copies of the
- * same reasoning, and what lets a guard in plain Node check that they do.
- *
- * ── AVA WOULD RATHER BE VISIBLY LIMITED THAN QUIETLY WRONG ─────────────────
- *
- * `unseen` names the stores that did not load. A store that failed to fetch is
- * NOT an empty store, and the difference matters most on the screen that
- * summarises everything: "Nothing needs you today" computed from a failed
- * request is a lie the couple has no way to detect. When something is unseen
- * there is no badge at all (spec 9.1) and the block says what it could not see.
- *
- * One headline, at most three lines, one action. No percentages, no progress,
- * no pleasantries, no congratulation.
+ * WHAT CHANGED UNDER IT, and nothing else. The old headline was written by a
+ * model on every load — eleven generated fields, cached per day. This one is
+ * `day.headline` off resolveDayState, so the sentence at the top of this page
+ * and the sentence on Overall are the same string from the same computation
+ * and cannot disagree. The look is the old page's; the brain is the one this
+ * PR built.
  */
-export default function Briefing({ tasks, schedule, guests, budget, vendors, unseen = [], loading }) {
+export default function Briefing({ day, loading }) {
   if (loading) {
     return (
-      <div style={{ padding: '28px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
-        <div style={{ width: 180, height: 22, background: 'rgba(10,10,10,0.06)' }} />
+      <div style={{ background: '#FFFFFF', padding: '48px 40px 40px', borderBottom: '1px solid #E8E8E5', minHeight: 140 }}>
+        <div style={{ width: 120, height: 12, background: 'rgba(10,10,10,0.06)', marginBottom: 20 }} />
+        <div style={{ width: 420, height: 40, background: 'rgba(10,10,10,0.06)' }} />
       </div>
     );
   }
 
-  const { badge, headline, lines, unseen: missing } = resolveDayState({ tasks, schedule, guests, budget, vendors, unseen });
-  // THE LINE NAMES AN AVA ACTION; IT DOES NOT ADD A SECOND AVA BUTTON.
-  //
-  // The first build gave the empty-wedding line its own "Ask Ava" control, and
-  // the screenshot showed the result: two ways to open the same pod on one
-  // page. Spec 3.3 is exactly about that — "exactly one Ava entry point per
-  // page", written because vows and speeches had four ways to reach one
-  // action. The page's own Ava button is that entry point and it is a few
-  // pixels below; the line says what to ask it for.
-  const action = lines[0]?.to || '/TodoList';
-  const actionLabel = lines[0]?.to === '/Guests' ? 'Open guest list'
-    : lines[0]?.to === '/Schedule' ? 'Open schedule'
-    : lines[0]?.to === '/Budget' ? 'Open budget'
-    : lines[0]?.to === '/Vendors' ? 'Open vendors'
-    : 'Open to do';
-  const BUTTON = {
-    display: 'inline-flex', marginTop: 18, background: '#E03553', color: '#FFFFFF',
-    borderRadius: 999, padding: '10px 22px', fontSize: 14, fontWeight: 700,
-    fontFamily: PJS, textDecoration: 'none', border: 'none', cursor: 'pointer',
-  };
-
   return (
-    <div style={{ padding: '28px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
-      {badge && (
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 8px' }}>
-          {badge}
-        </p>
-      )}
-      <p style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em', color: '#0A0A0A', fontFamily: PJS, margin: '0 0 10px' }}>
-        {headline}
+    <div style={{ background: '#FFFFFF', padding: '48px 40px 40px', borderBottom: '1px solid #E8E8E5' }}>
+      <p style={{ fontFamily: PJS, fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', color: '#E03553', margin: '0 0 16px' }}>
+        Today&apos;s edition
       </p>
-
-      {lines.map((l, i) => (
-        <p key={i} style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 4px' }}>
-          {l.text}
-        </p>
-      ))}
-
-      {/* Named as unseen, never counted as empty. */}
-      {missing.length > 0 && (
-        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '10px 0 0' }}>
-          {missing.join(' and ')} could not be loaded, so this is not the whole picture.
+      <h1 style={{
+        fontFamily: PJS, fontSize: 42, fontWeight: 800, color: '#0A0A0A',
+        letterSpacing: '-0.03em', lineHeight: 1.15, maxWidth: 800, margin: 0,
+      }}>
+        {day.headline}
+      </h1>
+      {day.lines[0] && (
+        <p style={{
+          fontFamily: PJS, fontSize: 16, fontWeight: 400, color: '#444444',
+          lineHeight: 1.6, maxWidth: 680, marginTop: 16, marginBottom: 0,
+        }}>
+          {day.lines[0].text}
         </p>
       )}
-
-      <Link to={action} style={BUTTON}>{actionLabel}</Link>
     </div>
   );
 }

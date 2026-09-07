@@ -159,10 +159,14 @@ export function resolveDayState({ tasks = [], schedule = [], guests = [], budget
   // THE HEADLINE IS ABOUT THE STATE'S SUBJECT, always — never a second opinion.
   const headline = state === 'unavailable'
       ? `Some of today could not be read.`
+    // LABEL FIRST, THEN THE THING. "Book the celebrant is overdue." reads as a
+    // sentence about a sentence — the owner's note. The old page's headline was
+    // model-written and had no authored form to inherit, so this is the plainest
+    // one that keeps the subject the state's own subject (spec 9.1).
     : state === 'overdue'
-      ? (titleOf(overdue[0]) ? `${titleOf(overdue[0])} is overdue.` : 'Something is overdue.')
+      ? (titleOf(overdue[0]) ? `Overdue: ${titleOf(overdue[0])}.` : 'Something is overdue.')
     : state === 'today'
-      ? (titleOf(dueToday[0] || eventsToday[0]) ? `${titleOf(dueToday[0] || eventsToday[0])} is today.` : 'Something is due today.')
+      ? (titleOf(dueToday[0] || eventsToday[0]) ? `Today: ${titleOf(dueToday[0] || eventsToday[0])}.` : 'Something is due today.')
     : state === 'waiting'
       ? `Waiting on ${unreplied} ${unreplied === 1 ? 'reply' : 'replies'}.`
     // CLEAR MUST PAVE FORWARD. It read "Nothing needs you today" over an empty

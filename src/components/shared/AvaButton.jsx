@@ -15,7 +15,10 @@ export default function AvaButton({ label, onClick, seedQuestion, pageContext })
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 6,
         borderRadius: 999, padding: '7px 14px',
-        background: 'linear-gradient(135deg, #ec4899, #9333ea)',
+        // SOLID STRAWBERRY, not a gradient. Every other Ava surface is
+        // #E03553; this pill and the floating button were the two left on the
+        // old pink-to-purple gradient, which reads as a different product.
+        background: '#E03553',
         color: '#fff', fontSize: 12, fontWeight: 600, fontFamily: PJS,
         border: 'none', cursor: 'pointer',
         transition: 'transform 0.15s ease',

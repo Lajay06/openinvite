@@ -59,13 +59,20 @@ export async function runDailyUpdatePage() {
   {
     const briefing = code('src/components/dashboard/Briefing.jsx');
     const headline = code('src/components/dashboard/DayStateHeadline.jsx');
-    check('PLANT: both renderings call resolveDayState',
-      /resolveDayState\(/.test(briefing) && /resolveDayState\(/.test(headline),
+    // The page resolves ONCE and hands the object down — the hero, the three
+    // columns and Overall's one-liner are all the same `day`. Briefing.jsx no
+    // longer calls the resolver at all now that the layout is the old page's;
+    // it takes what it is given, which is a stronger version of the property,
+    // not a weaker one.
+    const pageSrc = code('src/pages/DailyUpdate.jsx');
+    check('PLANT: both surfaces resolve the day through the one function',
+      /resolveDayState\(/.test(pageSrc) && /resolveDayState\(/.test(headline),
       'one source, rendered twice');
-    check('  and neither decides anything itself',
-      !/const state = /.test(briefing) && !/const state = /.test(headline)
-        && !/overdue\.length > 0 \?/.test(briefing) && !/overdue\.length > 0 \?/.test(headline),
+    check('  and the hero renders what it is handed, deciding nothing',
+      !/resolveDayState\(/.test(briefing) && /day\.headline/.test(briefing),
       'the precedence lives in dayState.js and nowhere else');
+    check('  the page resolves it exactly once',
+      (pageSrc.match(/resolveDayState\(/g) || []).length === 1, 'not once per column');
     check('  Overall renders the headline, not a second briefing',
       /<DayStateHeadline/.test(code('src/pages/Dashboard.jsx'))
         && !/<Briefing/.test(code('src/pages/Dashboard.jsx')),
@@ -114,12 +121,12 @@ export async function runDailyUpdatePage() {
   {
     const overdue = on({ tasks: [{ title: 'Order invitations', due_date: '2026-09-01' }], guests: [{ rsvp_status: 'pending' }] });
     check('overdue outranks waiting, and the headline names the oldest item',
-      overdue.state === 'overdue' && overdue.badge === 'Overdue' && /Order invitations is overdue/.test(overdue.headline),
+      overdue.state === 'overdue' && overdue.badge === 'Overdue' && overdue.headline === 'Overdue: Order invitations.',
       overdue.headline);
     const today = on({ tasks: [{ title: 'Call the venue', due_date: '2026-09-06' }] });
     check('due today reads Today on the badge, not "Due today"',
-      today.badge === 'Today' && /Call the venue is today/.test(today.headline),
-      `${today.badge} — the spec's table says Today; the file said "Due today"`);
+      today.badge === 'Today' && today.headline === 'Today: Call the venue.',
+      `${today.badge} / ${today.headline} — "Book the celebrant is overdue." read as a sentence about a sentence`);
     const waiting = on({ guests: [{ rsvp_status: 'pending' }, {}] });
     check('waiting names what is waited on',
       waiting.state === 'waiting' && /Waiting on 2 replies/.test(waiting.headline), waiting.headline);
@@ -224,8 +231,8 @@ export async function runDailyUpdatePage() {
     const blind = on({ unseen: ['the to-do list'] });
     check('a store that did not load means no badge at all',
       blind.badge === null, 'a badge is a claim about the whole day');
-    check('  and the block says what it could not see',
-      /missing\.join\(' and '\)/.test(code('src/components/dashboard/Briefing.jsx')),
+    check('  and the page says what it could not see',
+      /formatSourceList\(unseenSources\)/.test(code('src/pages/DailyUpdate.jsx')),
       'named, never counted as empty');
     // A LOAD THAT THREW IS NOT A CLEAR DAY. The first build of the page had a
     // `finally` and no `catch`, so a strict reader's throw escaped and the
@@ -257,11 +264,24 @@ export async function runDailyUpdatePage() {
     const strings = parts.flatMap(src => [...src.matchAll(/'([^'\n]{4,})'|"([^"\n]{4,})"|`([^`\n]{4,})`/g)].map(m => m[1] || m[2] || m[3]));
     const shouty = strings.filter(s => /!/.test(s) && !/!==|!=/.test(s));
     check('no exclamation marks anywhere on these surfaces', shouty.length === 0, shouty.join(' | ') || 'none');
-    const pct = strings.filter(s => /\d\s*%|percent|Budget used/.test(s));
-    check('  and no percentages (spec 5.2)', pct.length === 0, pct.join(' | ') || 'none');
-    check('  the snapshot cards did not come back',
-      !/Guests confirmed|RSVP pending|Vendors booked/.test(page),
-      'the stats stay on Overall, which keeps them');
+    // SPEC 5.2 IS ABOUT WHAT AVA SAYS — "No percentages, ever, in anything Ava
+    // says" — not about a stat card. This check forbade the string anywhere on
+    // the page, which is why it went red when the owner asked for the
+    // "Your numbers" column back; Overall's own strip has shown "Budget used
+    // 0%" throughout. Scoped to Ava's copy: the resolved headline and lines.
+    const avaCopy = [
+      on({ tasks: [{ title: 'X', due_date: '2026-09-01' }] }),
+      on({ guests: [{ rsvp_status: 'pending' }] }),
+      on({ budget: [{}], vendors: [{}] }),
+      on({ budget: [{}], vendors: [{}], tasks: [{ title: 'Y', due_date: '2026-10-12' }] }),
+    ].flatMap(d => [d.headline, ...d.lines.map(l => l.text)]);
+    check('  no percentages in anything Ava says (spec 5.2)',
+      avaCopy.every(t => !/%|percent/i.test(t)), avaCopy.filter(t => /%/.test(t)).join(' | ') || 'none');
+    // AND THE STATS COLUMN IS BACK, by the owner's ruling: "far right column
+    // had stats. It was great before." Same four labels the pre-#654 page had.
+    check('  the far-right stats column carries the pre-#654 four',
+      ['Guests confirmed', 'RSVP pending', 'Budget used', 'Vendors booked'].every(l => page.includes(l)),
+      'restored');
     check('  and no generated briefing is asked for',
       !/InvokeLLM|smartSuggestions|emotionalNote|forgottenDetail/.test(page),
       'what is true today is computed, not written');
@@ -272,7 +292,9 @@ export async function runDailyUpdatePage() {
     const page = code('src/pages/DailyUpdate.jsx');
     for (const [what, re] of [
       ['the countdown',        /countdownLabel\(days\)/],
-      ['the greeting',         /Good \$\{partOfDay\}/],
+      // The greeting is gone with the layout: the old page printed the couple's
+      // name and the date in the masthead instead, and that is what came back.
+      ['the couple name and date', /\{coupleName\}[\s\S]{0,400}\{dateLabel\}/],
       ['today\'s date',        /toLocaleDateString/],
       ['what to do first',     /<NextUp\b/],
       ['what could not be read', /formatSourceList\(unseenSources\)/],
@@ -303,6 +325,65 @@ export async function runDailyUpdatePage() {
     check('  1 day is "Tomorrow", not "1 days to go"', countdownLabel(1) === 'Tomorrow', countdownLabel(1));
     check('  and after the wedding there is no label at all',
       countdownLabel(-1) === null, 'nothing counts backwards, nothing says it forever');
+  }
+
+  // ── THE LAYOUT THE OWNER NAMED ──────────────────────────────────────────
+  //
+  // "just have it like it was before with three columns, big topic sentence at
+  // the top, far right column had stats. It was great before." Pinned against
+  // the pre-#654 file (src/pages/DailyUpdate.jsx at e2c087a) so a later tidy
+  // cannot quietly flatten it again.
+  {
+    const page = code('src/pages/DailyUpdate.jsx');
+    const hero = code('src/components/dashboard/Briefing.jsx');
+    const css = readFileSync(join(ROOT, 'src/index.css'), 'utf8');
+
+    check('PLANT: the big topic sentence is an h1 at the top, above the columns',
+      /<h1 style=\{\{[\s\S]{0,160}fontSize: 42[\s\S]{0,160}fontWeight: 800/.test(hero)
+        && /\{day\.headline\}/.test(hero),
+      "42px/800, as e2c087a:574 had it");
+    check('  under the old eyebrow',
+      /Today&apos;s edition/.test(hero), "\"Today's edition\", in strawberry");
+    check('  and the hero comes before the grid on the page',
+      page.indexOf('<Briefing day={day}') < page.indexOf('oi-daily-grid'), 'top of the page');
+
+    check('PLANT: three columns, with a 1px rule between each pair',
+      /grid-template-columns: 1fr 1px 1fr 1px 1fr;/.test(css), 'the pre-#654 grid');
+    check('  stacked on a phone rather than three 33% columns at 390px',
+      /@media \(max-width: 900px\)[\s\S]{0,200}grid-template-columns: 1fr;/.test(css),
+      'the old page had no mobile treatment because it was never opened on one');
+    for (const [n, label] of [['A', 'This week'], ['B', 'Ava'], ['C', 'Your numbers']])
+      check(`  column ${n} is "${label}"`, page.includes(`columnHead('${label}`) || page.includes(`columnHead('${label}\\u2019s briefing')`), label);
+
+    check('PLANT: the far-right column is the stats, and they are the old four',
+      page.indexOf("columnHead('Your numbers')") > page.indexOf("columnHead('This week')")
+        && /Guests confirmed[\s\S]{0,400}Vendors booked/.test(page),
+      'far right, in order');
+    check('  rendered at the old size',
+      /fontSize: 48, fontWeight: 800/.test(page), '48px/800, as e2c087a:753');
+    // The badge is in Ava's column, once, as a badge — never the headline
+    // repeated. It read "Overdue — Overdue: Book the celebrant." on the first
+    // screenshot, once the headline started leading with the state word.
+    check('  the badge appears once and does not restate the headline',
+      /\{day\.badge\}\n/.test(page) && !/\$\{day\.badge\} \\u2014 \$\{day\.headline\}/.test(page)
+        && (page.match(/day\.headline/g) || []).length === 0,
+      'the hero owns the sentence; the column owns the badge');
+    check('  the masthead carries the countdown through the shared module',
+      /countdownLabel\(days\)/.test(page) && !/days > 0 \? `\$\{days\} days to go`/.test(page),
+      'the old pill printed the raw number and said "Today\'s the day" forever after');
+  }
+
+  // ── THE AVA PILL IS SOLID STRAWBERRY ────────────────────────────────────
+  //
+  // Owner: the pill and the floating button were the last two Ava surfaces
+  // still on the old pink-to-purple gradient, which reads as a different
+  // product sitting on ours. Both named, both checked — a plant on the pill
+  // alone found nothing to fail against until this existed.
+  for (const f of ['src/components/shared/AvaButton.jsx', 'src/Layout.jsx']) {
+    const src = code(f);
+    const gradients = (src.match(/linear-gradient\(135deg, #ec4899, #9333ea\)/g) || []).length;
+    check(`PLANT: ${f.split('/').pop()} uses solid strawberry, not the gradient`,
+      gradients === 0 && /#E03553/.test(src), gradients ? `${gradients} gradient(s) left` : '#E03553');
   }
 
   // ── THE SIDEBAR ─────────────────────────────────────────────────────────
