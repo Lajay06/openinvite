@@ -28,6 +28,7 @@
  * an RSVP deadline do not happen anywhere. The list omits the line rather than
  * printing a blank label.
  */
+import { sortScheduleItems } from './scheduleOrder.js';
 
 /** Normalized events from every source the Schedule page reads. Pure. */
 /**
@@ -339,10 +340,15 @@ export function eventsInSchedule(scheduleItems = []) {
   return [...byCat.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
 }
 
-/** One event's rows, in time order. */
+/**
+ * One event's rows, in time order — THROUGH THE ONE COMPARATOR.
+ *
+ * It sorted on start_time with localeCompare, which is right for a zero-padded
+ * "09:00" and wrong for "9:00": that sorts AFTER "17:00" lexicographically,
+ * which is the exact defect scheduleOrder.js exists to end and which its guard
+ * caught on this commit. A run sheet that puts the 9am item after the 5pm one
+ * is worse than no run sheet.
+ */
 export function runSheetFor(scheduleItems = [], category) {
-  return scheduleItems
-    .filter((r) => isEventRow(r) && r.category === category)
-    .slice()
-    .sort((a, b) => String(a.start_time || '').localeCompare(String(b.start_time || '')));
+  return sortScheduleItems(scheduleItems.filter((r) => isEventRow(r) && r.category === category));
 }

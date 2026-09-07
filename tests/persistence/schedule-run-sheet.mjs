@@ -1,5 +1,5 @@
 /**
- * tests/persistence/run-sheet-view.mjs
+ * tests/persistence/schedule-run-sheet.mjs
  *
  * THE RUN SHEET IS A VIEW OF THE LIST, NOT A SECOND STORE.
  *
@@ -45,7 +45,7 @@ const ROWS = [
   { id: 'h', event_name: 'Rehearsal',       category: 'rehearsal',    event_date: '2027-07-02', start_time: '17:00' },
 ];
 
-export async function runRunSheetView() {
+export async function runScheduleRunSheet() {
   const results = [];
   const check = (name, cond, detail) => results.push(cond ? pass(name, detail) : fail(name, 'see name', detail));
 
@@ -66,6 +66,17 @@ export async function runRunSheetView() {
       eventsInSchedule(ROWS).map((e) => e.label).join(' · '));
     check('  rows come out in time order',
       reception.map((r) => r.start_time).join() === '19:00,20:00,21:00', 'a run sheet is a clock');
+    // The plant that caught the first version of runSheetFor: it sorted
+    // start_time with localeCompare, so an unpadded "9:00" came out AFTER
+    // "17:00" and the morning ran last. sortScheduleItems is the one
+    // comparator that knows a time is not a word.
+    const unpadded = runSheetFor([
+      { id: 'p', event_name: 'Late',  category: 'reception', event_date: DAY, start_time: '17:00' },
+      { id: 'q', event_name: 'Early', category: 'reception', event_date: DAY, start_time: '9:00' },
+    ], 'reception');
+    check('PLANT: an unpadded "9:00" still runs before "17:00"',
+      unpadded.map((r) => r.event_name).join(' then ') === 'Early then Late',
+      unpadded.map((r) => r.start_time).join(' → '));
     check('  and the planning/event split is one predicate, used everywhere',
       isEventRow(ROWS[2]) === true && isEventRow(ROWS[6]) === false,
       'the dialog groups by it, the run sheet filters by it, the event list is built from it');

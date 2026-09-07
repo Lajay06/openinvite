@@ -61,6 +61,10 @@ async function readTable(page) {
       return best;
     };
     const primaryCell = cells.find((c) => parseInt(window.getComputedStyle(c).fontWeight, 10) >= 500) || cells[1] || cells[0];
+    // No row means no table — report that, don't throw inside evaluate. A page
+    // that failed to load used to crash the walker on `undefined.children`,
+    // and a stack trace reads like a broken guard rather than a missing table.
+    if (!primaryCell) return null;
     const td = leafOf(primaryCell);
     const headerRow = document.querySelector('table thead tr');
     return th && td ? {
@@ -84,6 +88,39 @@ async function readTable(page) {
       // measured off the render, because a font-size that matches can still
       // paint differently if a transform or a face substitution intervenes.
       primaryText: td.innerText.trim().slice(0, 24),
+      // ── THE GLYPHS, MEASURED ────────────────────────────────────────────
+      //
+      // THE OWNER WAS RIGHT AND THIS FILE'S FIRST TWO VERSIONS WERE WRONG, so
+      // the third stops asking the browser what it INTENDED and measures what
+      // it DREW. Two numbers, neither of them a declared value:
+      //
+      //   inkAscent — the cap-height of the actual painted glyphs, from
+      //   TextMetrics.actualBoundingBoxAscent with the leaf's RESOLVED font
+      //   shorthand. If the face substitutes, or a size is scaled by a
+      //   transform up the tree, the ink moves and this number moves with it;
+      //   fontSize does not.
+      //
+      //   textBox — the height of the text node's own client rect via a
+      //   Range, not the element's. The schedule's leaf is a flex container as
+      //   tall as the whole row (45px), so its box says nothing about where
+      //   the glyphs are; the Range says exactly.
+      //
+      // Verified against a screenshot at 1440 on this commit: both tables
+      // measure a 10px cap-height in a 16px text box, and the crops are in the
+      // PR. That is the evidence "getComputedStyle says 13px" could not give.
+      ...(() => {
+        const cs = window.getComputedStyle(td);
+        const ctx = document.createElement('canvas').getContext('2d');
+        ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} / ${cs.lineHeight} ${cs.fontFamily}`;
+        const m = ctx.measureText('H');
+        const node = [...td.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim());
+        const rg = document.createRange(); rg.selectNodeContents(node || td);
+        return {
+          inkAscent: Math.round(m.actualBoundingBoxAscent * 100) / 100,
+          textBox: Math.round(rg.getBoundingClientRect().height * 100) / 100,
+          resolvedFont: ctx.font,
+        };
+      })(),
     } : null;
   });
 }
@@ -141,6 +178,25 @@ if (!guests || !schedule) {
     guests.headPadding === schedule.headPadding, `${guests.headPadding} · ${schedule.headPadding}`);
   check('and the row divider is the same',
     guests.divider === schedule.divider, `${guests.divider} · ${schedule.divider}`);
+  // MEASURED INK, NOT A DECLARED SIZE — the check the owner's rejection asked
+  // for. Both of these passed at 13px/13px while the schedule still looked
+  // bigger, because the earlier guard read the <td>; both would still have
+  // caught the version where it genuinely was bigger, because ink follows the
+  // paint.
+  // `undefined === undefined` IS TRUE, and the first version of these three
+  // read guests.cell.inkAscent — a property that does not exist, because the
+  // metrics hang off the table object, not the picked style. All three printed
+  // PASS and "undefinedpx". A measurement check must fail when it measured
+  // nothing, so every one of them requires a number first.
+  const measured = (v) => typeof v === 'number' && v > 0;
+  check('the PAINTED cap-height is the same, not just the declared size',
+    measured(guests.inkAscent) && guests.inkAscent === schedule.inkAscent,
+    `guests ${guests.inkAscent}px · schedule ${schedule.inkAscent}px of ink for a capital`);
+  check('  and the text sits in a box of the same height',
+    measured(guests.textBox) && guests.textBox === schedule.textBox,
+    `guests ${guests.textBox}px · schedule ${schedule.textBox}px — the row heights differ (an avatar), the text box must not`);
+  check('  and the browser resolved the same font shorthand for both',
+    !!guests.resolvedFont && guests.resolvedFont === schedule.resolvedFont, guests.resolvedFont);
 }
 
 const passed = results.filter(Boolean).length;
