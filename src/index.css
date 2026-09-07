@@ -51,6 +51,21 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
 }
 
+/* ── Universe type specimen ───────────────────────────────────────────
+   THE SAME LOCK, THE SAME ESCAPE. The `*` rule above beats any inline
+   `style={{ fontFamily }}` with !important, which is why the universe
+   detail's Typography section rendered all twenty universes in Plus Jakarta
+   Sans while its own label said "Heading — Bodoni Moda". The specimen is the
+   one place on that page whose whole job is to show the face, so it gets the
+   custom-property escape the guest site already uses — scoped to the
+   specimen, not to the studio, so the chrome around it stays PJS. */
+.oi-universe-face--heading {
+  font-family: var(--oi-heading-font, 'Plus Jakarta Sans', sans-serif) !important;
+}
+.oi-universe-face--body {
+  font-family: var(--oi-body-font, 'Plus Jakarta Sans', sans-serif) !important;
+}
+
 /* ── Guest-website font scope ─────────────────────────────────────── */
 /* The * rule above locks every element to PJS with !important, beating
    any inline style={{ fontFamily }}. To let the chosen typography pairing

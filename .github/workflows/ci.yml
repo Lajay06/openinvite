@@ -356,6 +356,11 @@ jobs:
           fi
           if [ $TEST_EXIT -eq 0 ]; then
             CAPTURE_BASE_URL=http://localhost:4173 npm run test:filter-pills
+          # Every universe shows its own face. A source check passes on this
+          # forever — the JSX declares the face and index.css's `*` rule
+          # overrules it with !important. Only the render knows which won.
+          if [ $TEST_EXIT -eq 0 ]; then
+            CAPTURE_BASE_URL=http://localhost:4173 npm run test:universe-typography
             TEST_EXIT=$?
           fi
           if [ $TEST_EXIT -eq 0 ]; then

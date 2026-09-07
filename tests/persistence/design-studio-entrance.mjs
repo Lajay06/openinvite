@@ -489,7 +489,14 @@ export async function runDesignStudioEntrance() {
   // that subtree — and was silently unclickable. See the non-escaping-path
   // assertion above for the fix; assert here that the independent portal
   // is gone (not just moved) so it can't quietly come back.
-  const backButtonIsButton = /const backButton = \(\s*\n\s*<button/.test(worldViewSource);
+  // IT IS A <nav> NOW, NOT A <button>. Owner ruling 2026-09-07 replaced the
+  // single "← All universes" control with a breadcrumb — Design studio › My
+  // universe › <name> — because from a universe detail there was no way back
+  // to the studio landing at all. The property this check exists for is
+  // unchanged: whatever the control IS, it must be inside the portalled
+  // subtree rather than portalled a second, independent time, or it sits
+  // outside the full-screen layer and is silently unclickable.
+  const backButtonIsButton = /const backButton = \(\s*\n\s*<nav/.test(worldViewSource);
   const independentPortalGone = !/if \(!escapeLayout\)[\s\S]*?createPortal\(backButton, document\.body\)/.test(worldViewSource);
   const escapeLayoutPortalsBackButton = /return createPortal\(\s*\n\s*<div[\s\S]{0,400}\{backButton\}[\s\S]{0,400}document\.body/.test(worldViewSource);
   results.push(backButtonIsButton && independentPortalGone && escapeLayoutPortalsBackButton

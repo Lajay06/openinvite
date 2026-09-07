@@ -71,7 +71,8 @@
     "test:daily-update-paint": "node scripts/test-daily-update-paint.mjs",
     "test:ava-safe-area": "node scripts/test-ava-safe-area.mjs",
     "test:type-scale": "node scripts/test-type-scale.mjs",
-    "test:filter-pills": "node scripts/test-filter-pills.mjs"
+    "test:filter-pills": "node scripts/test-filter-pills.mjs",
+    "test:universe-typography": "node scripts/test-universe-typography.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.48",
