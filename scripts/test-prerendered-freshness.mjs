@@ -34,9 +34,15 @@
  * a marketing page is known to import shared pieces from, not just the
  * page files themselves.
  *
+ * WHEN THERE IS NO DIFF, IT RENDERS INSTEAD. On main — or on a branch with no
+ * commits of its own — the range is empty and the question above has no
+ * answer. Rather than pass, the guard falls back to rendering every
+ * prerendered route from current source and comparing bodies; see
+ * fullCompare() at the bottom. R35's third occurrence is exactly this hole.
+ *
  * Usage: node scripts/test-prerendered-freshness.mjs
- * Exits 0 if fresh (or nothing marketing-relevant changed, or no diff base
- * is available — e.g. a shallow/orphan local checkout), 1 if stale.
+ * Exits 0 if fresh, 1 if stale. A missing diff base (shallow/orphan checkout)
+ * now falls through to the full compare rather than skipping.
  */
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
@@ -165,6 +171,171 @@ function assertNoStaleMarketingDeps() {
   console.log(`  ✓ All ${WATCHED.length} watched sources are reachable from marketing (${seen.size} modules from ${roots} entry points).`);
 }
 
+/**
+ * ── THE FALLBACK: A GATE THAT IS SILENT ON MAIN IS NOT A GATE ──────────────
+ *
+ * R35, third occurrence, 2026-09-08. Everything above is diff-based: it asks
+ * "did this change touch a marketing source without touching prerendered/".
+ * That question has no answer when there is no diff — standing on main, or on
+ * a branch with no commits yet, `origin/main...HEAD` is empty and the guard
+ * printed `✓ … nothing to check` and exited 0.
+ *
+ * It did exactly that on main at 93ef159, immediately after #707 merged, while
+ * prerendered/login and prerendered/register were genuinely stale: #703 had
+ * removed `tracking-tight` from AuthLayout.jsx, and #707's snapshot had been
+ * generated before #703 landed. Two PRs, each fresh against its own base,
+ * combining into a stale main — the one shape a diff can never see, because
+ * neither diff contained the staleness.
+ *
+ * So when the range is empty the guard stops asking about a diff and asks the
+ * only question that still means something: RENDER EVERY PAGE FROM CURRENT
+ * SOURCE AND COMPARE IT TO WHAT IS COMMITTED. That is slower — it needs a
+ * build and a browser — which is why it is the fallback and not the default.
+ * It is also the only form of this check that can be trusted on main.
+ *
+ * ── WHAT IS COMPARED, AND WHAT IS NORMALISED ──────────────────────────────
+ *
+ * Only `<div id="root">`: the rendered page. Everything outside it is <head>,
+ * and <head> changes on every single build — Vite content-hashes the bundle
+ * filenames, so `index-CqpPR-m5.js` becomes `index-BBzHMgkF.js` with no source
+ * change at all. Comparing whole files would fail on every run and teach
+ * people to ignore it.
+ *
+ * Both sides are serialised the same way, which is what makes them
+ * comparable: the committed files were produced by Playwright's
+ * `page.content()`, and so is the live side here.
+ *
+ * Inside the body, two things are normalised, each because it varies without
+ * the page varying:
+ *   - `/assets/<name>-<hash>.<ext>` → `/assets/<name>.<ext>`. An <img> or
+ *     <source> inside the body carries the same per-build hash as <head>.
+ *   - runs of whitespace between tags → a single space. React's output is
+ *     stable, but the serialiser's line breaking is not worth a false red.
+ * Nothing else. Class names, attributes, text and element order are compared
+ * exactly, because those are the things a stale snapshot gets wrong — the
+ * incident this guard exists for was a stale hero, and the drift found on
+ * 2026-09-08 was a single class name.
+ */
+function sliceRootBody(html) {
+  const start = html.indexOf('<div id="root">');
+  if (start === -1) return null;
+  // Walk to the matching close by counting divs. A regex cannot do this: the
+  // document is minified onto a handful of lines, so `.*` runs past </div>
+  // and swallows the trailing <script> tags — which carry the asset hashes,
+  // which is how a first attempt at this reported three pages as differing
+  // when only two did.
+  let depth = 0;
+  const tag = /<(\/?)div\b[^>]*>/g;
+  tag.lastIndex = start;
+  let m;
+  while ((m = tag.exec(html)) !== null) {
+    depth += m[1] ? -1 : 1;
+    if (depth === 0) return html.slice(start, m.index + m[0].length);
+  }
+  return null;
+}
+
+function normaliseBody(body) {
+  return body
+    .replace(/\/assets\/([A-Za-z0-9_]+)-[A-Za-z0-9_-]{6,}\.(js|css|png|jpg|jpeg|svg|webp|woff2?)/g, '/assets/$1.$2')
+    .replace(/>\s+</g, '> <')
+    .trim();
+}
+
+async function fullCompare() {
+  const { chromium } = await import('playwright');
+  const { spawn } = await import('node:child_process');
+  const { MARKETING_ROUTES } = await import('./marketingRoutes.mjs');
+  const { blockRemoteImages } = await import('./lib/blockRemoteImages.mjs');
+  const { resolve } = await import('node:path');
+
+  const ROOT = process.cwd();
+  const PORT = 4791; // distinct from prerender.mjs's 4790 — both may run in one job
+  const BASE = `http://localhost:${PORT}`;
+
+  if (!existsSync(resolve(ROOT, 'dist/index.html'))) {
+    console.error('  ✗ dist/index.html not found — the full compare needs a build.');
+    console.error('    Run `npm run build` first (CI builds before this step).\n');
+    process.exit(1);
+  }
+
+  const preview = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'],
+    { cwd: ROOT, stdio: 'ignore' });
+
+  const up = async () => {
+    for (let i = 0; i < 60; i++) {
+      try { const r = await fetch(BASE); if (r.ok) return true; } catch { /* not yet */ }
+      await new Promise((r) => setTimeout(r, 500));
+    }
+    return false;
+  };
+  if (!(await up())) {
+    preview.kill();
+    console.error('  ✗ preview server never came up.\n');
+    process.exit(1);
+  }
+
+  const browser = await chromium.launch();
+  const stale = [];
+  const missing = [];
+  let compared = 0;
+
+  for (const route of MARKETING_ROUTES) {
+    const file = route === '/' ? 'prerendered/index.html'
+      : `prerendered/${route.replace(/^\//, '')}/index.html`;
+    if (!existsSync(file)) { missing.push(file); continue; }
+
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    await blockRemoteImages(ctx);
+    const page = await ctx.newPage();
+    try {
+      await page.goto(`${BASE}${route}`, { waitUntil: 'networkidle', timeout: 30000 });
+      // Same explicit beat prerender.mjs waits: useMarketingSeo() and the
+      // page's own content both land inside React's mount.
+      await page.waitForTimeout(500);
+      const liveBody = sliceRootBody(await page.content());
+      const fileBody = sliceRootBody(readFileSync(file, 'utf8'));
+      if (liveBody === null || fileBody === null) {
+        stale.push(`${file} — could not locate <div id="root">`);
+      } else if (normaliseBody(liveBody) !== normaliseBody(fileBody)) {
+        const a = normaliseBody(fileBody), b = normaliseBody(liveBody);
+        let i = 0; while (i < a.length && i < b.length && a[i] === b[i]) i++;
+        stale.push(`${file}\n          committed:  …${a.slice(Math.max(0, i - 40), i + 60)}…\n          rendered:   …${b.slice(Math.max(0, i - 40), i + 60)}…`);
+      }
+      compared++;
+    } catch (err) {
+      stale.push(`${file} — render failed: ${err.message.split('\n')[0]}`);
+    }
+    await ctx.close();
+  }
+
+  await browser.close();
+  preview.kill();
+
+  if (missing.length > 0) {
+    console.error(`\n  ✗ ${missing.length} marketing route(s) have no committed snapshot:\n`);
+    missing.forEach((f) => console.error(`      ${f}`));
+  }
+  if (stale.length > 0) {
+    console.error(`\n  ✗ ${stale.length} of ${compared} prerendered page(s) do NOT match current source:\n`);
+    stale.forEach((s) => console.error(`      ${s}`));
+    console.error('\n  Production serves these snapshots as static HTML to crawlers and');
+    console.error('  no-JS clients. Run `npm run build:prerender` and commit the files');
+    console.error('  that actually changed body content (asset-hash-only churn in the');
+    console.error('  <head> is not a change and should not be committed).\n');
+    console.log('───────────────────────────────────────────────────────\n');
+    process.exit(1);
+  }
+  if (missing.length > 0) {
+    console.log('───────────────────────────────────────────────────────\n');
+    process.exit(1);
+  }
+
+  console.log(`  ✓ Full compare: all ${compared} prerendered page bodies match current source.`);
+  console.log('───────────────────────────────────────────────────────\n');
+  process.exit(0);
+}
+
 function git(cmd) {
   return execSync(`git ${cmd}`, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
 }
@@ -200,33 +371,66 @@ function resolveDiffBase() {
 }
 
 const base = resolveDiffBase();
-if (base === null) {
-  console.log('[prerender-freshness] No diff base available — skipping (nothing to compare against).');
-  process.exit(0);
-}
 
-let changed;
+let changed = null;
 // COVERAGE REPORTING (2026-08-30): keep the resolved range so every success
 // line can state what was compared. A pass that names no input is
 // indistinguishable from a pass that had none.
 let resolvedRange = null;
-try {
-  const range = process.env.GITHUB_EVENT_NAME === 'push' ? `${base}..HEAD` : `${base}...HEAD`;
-  resolvedRange = range;
-  changed = git(`diff --name-only ${range}`).split('\n').filter(Boolean);
-} catch (err) {
-  console.warn(`[prerender-freshness] Diff against ${base} failed: ${err.message.split('\n')[0]} — skipping.`);
-  process.exit(0);
+if (base !== null) {
+  try {
+    const range = process.env.GITHUB_EVENT_NAME === 'push' ? `${base}..HEAD` : `${base}...HEAD`;
+    resolvedRange = range;
+    changed = git(`diff --name-only ${range}`).split('\n').filter(Boolean);
+  } catch (err) {
+    console.warn(`[prerender-freshness] Diff against ${base} failed: ${err.message.split('\n')[0]}.`);
+    changed = null;
+  }
 }
-
-const marketingSourceChanged = changed.filter((f) => MARKETING_SOURCE_PATTERNS.some((re) => re.test(f)));
-const prerenderedChanged = changed.some((f) => f.startsWith('prerendered/'));
 
 console.log('\n═══════════════════════════════════════════════════════');
 console.log('  Prerendered freshness guard');
 console.log('═══════════════════════════════════════════════════════\n');
 
 assertNoStaleMarketingDeps();
+
+// AN EMPTY RANGE IS NOT A CLEAN RANGE. `changed === null` is no diff base at
+// all; `changed.length === 0` is a base that resolved to HEAD itself. Both
+// mean the diff question is unanswerable, and both used to exit 0.
+const emptyRange = changed === null || changed.length === 0;
+
+// AND ON MAIN, THE DIFF IS THE WRONG QUESTION EVEN WHEN IT IS NON-EMPTY.
+//
+// This is the part the 2026-09-08 incident actually turned on, and the empty
+// range alone would not have caught it. ci.yml runs on `push: [main]`, so the
+// merge of #707 arrived here with `before..HEAD` = its own squash — which
+// touched marketing sources AND prerendered/, and therefore passed. It passed
+// while main was stale.
+//
+// The staleness was not IN any diff. #703 removed `tracking-tight` from
+// AuthLayout.jsx and updated nothing prerendered (correctly — AuthLayout is
+// not in MARKETING_SOURCE_PATTERNS). #707 regenerated the snapshots, from a
+// tree that predated #703. Each PR was internally consistent; main was not.
+// No pairwise diff can see that, because the defect exists only in the
+// combination — which is precisely what main IS.
+//
+// So on main the guard always renders. It is the one branch where being slow
+// and certain beats being fast and wrong, and the one branch production is
+// actually served from.
+const onMain = process.env.GITHUB_EVENT_NAME === 'push'
+  && (process.env.GITHUB_REF === 'refs/heads/main' || process.env.GITHUB_REF_NAME === 'main');
+
+if (emptyRange || onMain) {
+  const why = changed === null ? 'No diff base available'
+    : emptyRange ? `${resolvedRange} is empty`
+      : 'On main — a diff cannot see staleness that only exists in the combination of two PRs';
+  console.log(`  ℹ ${why}.`);
+  console.log('    Falling back to a full render-and-compare of every prerendered page.\n');
+  await fullCompare();
+}
+
+const marketingSourceChanged = changed.filter((f) => MARKETING_SOURCE_PATTERNS.some((re) => re.test(f)));
+const prerenderedChanged = changed.some((f) => f.startsWith('prerendered/'));
 
 if (marketingSourceChanged.length === 0) {
   console.log(`  ✓ No marketing-relevant source files in ${resolvedRange} (${changed.length} file(s) changed overall) — nothing to check.`);
