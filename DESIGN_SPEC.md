@@ -19,7 +19,7 @@
   (textMuted/textPlaceholder/textDisabled/iconMuted) — use these instead
   of hand-rolling a new alpha
 
-## Colours
+## Colors
 - Brand red/pink: #E03553
 - Purple: #9333ea  
 - Gradient (Ava, avatar): linear-gradient(135deg, #ec4899, #9333ea)
@@ -104,7 +104,7 @@
 - Border-radius: 999px
 - Font-size: 10px, font-weight: 600, letter-spacing: 0.02em
 - Padding: 2px 7px
-- Status colours:
+- Status colors:
   Confirmed/complete: background #dcfce7, color #166534
   Pending: background #fef9c3, color #854d0e
   Declined/cancelled: background #fee2e2, color #991b1b
@@ -159,7 +159,7 @@ Reference implementation: `src/pages/Onboarding.jsx` + `src/components/onboardin
   step, `welcome` through `completion`, including the `pathA-*` detail
   steps. There is no dark mode for the wizard chrome; the old per-step
   `theme`/`isDark` prop was removed, not just left at `'light'`.
-- Text colours follow the same tokens as the dashboard: `#0A0A0A` primary,
+- Text colors follow the same tokens as the dashboard: `#0A0A0A` primary,
   `rgba(10,10,10,0.6)` muted, `rgba(10,10,10,0.58)` placeholders,
   `rgba(10,10,10,0.18)` default borders.
 - Universe picker tiles (`OnboardingStepUniverse.jsx`'s `UniverseGridTile`)
@@ -180,7 +180,7 @@ Reference implementation: `src/pages/Onboarding.jsx` + `src/components/onboardin
 - The old "wedding website appearance" Dark/Light toggle on the universe
   step has been removed entirely (accept-pass round 2). It set
   `websiteMode` on the couple's *published wedding website* theme, but
-  `resolveColors()` gives the selected universe's own colours unconditional
+  `resolveColors()` gives the selected universe's own colors unconditional
   priority over it (see `BASE44_PLATFORM_NOTES.md`), so the toggle never
   had any visible effect anywhere — it read as a dead control. `websiteMode`
   still defaults to `'dark'` and is still written to `WeddingDetails` on
@@ -251,7 +251,7 @@ dashboard renders through `FilterPill` (`components/shared/TableToolbar.jsx`,
 the `.filter-pill` class). Selected is the black pill; unselected is the
 light-grey outline pill Event details › Theme uses. No unselected filter
 renders as bare text, and no selection set paints itself with the primary
-colour — strawberry is for actions, and a chosen filter is not one.
+color — strawberry is for actions, and a chosen filter is not one.
 
 **Nothing below font-weight 400 in the dashboard.** No 300, no `lighter`, no
 `font-light`. The avatar dropdown (Profile & account, Notification
@@ -267,7 +267,7 @@ allowlist is empty — there is no exception to add a file to.
 their contents while collapsed. `defaultOpen` survives as a prop with no
 caller passing it, so a section holding a validation error can open itself.
 
-**CTA text colour is derived from its background**, never hard-paired
+**CTA text color is derived from its background**, never hard-paired
 beside it. Use `readableOn(bg, colors)` from `lib/surfaceTint.js`. The
 universe detail's "Make this my universe" was `background: colors.accent` with
 `color: colors.darkBg` — navy on black, 1.04:1 on paris, and below 4.5:1 on

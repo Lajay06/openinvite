@@ -75,7 +75,7 @@ export function contrastRatio(fg, bg) {
  *     aspen      #2A2E31 on #3D5A46  =  1.79:1
  *     …fourteen of twenty below 4.5:1
  *
- * This picks, from the palette's own two text colours, whichever actually
+ * This picks, from the palette's own two text colors, whichever actually
  * separates from the background, and falls back to plain black or white when
  * neither reaches the threshold — a universe's palette is the couple's design,
  * but an unreadable button is nobody's design.
@@ -83,7 +83,7 @@ export function contrastRatio(fg, bg) {
  * @param {string} bg          the button's background
  * @param {object} colors      the universe palette (darkBg / lightBg / darkText / lightText)
  * @param {number} minRatio    4.5 for normal text, 3 for large (WCAG 1.4.3)
- * @returns {string} a hex colour that clears `minRatio` against `bg` where possible
+ * @returns {string} a hex color that clears `minRatio` against `bg` where possible
  */
 export function readableOn(bg, colors = {}, minRatio = 4.5) {
   const candidates = [colors.darkBg, colors.lightBg, colors.darkText, colors.lightText, '#0A0A0A', '#FFFFFF']
@@ -93,7 +93,7 @@ export function readableOn(bg, colors = {}, minRatio = 4.5) {
   for (const c of candidates) {
     const r = contrastRatio(c, bg);
     if (r === null) continue;
-    // The FIRST candidate that clears the bar wins, so a palette colour is
+    // The FIRST candidate that clears the bar wins, so a palette color is
     // preferred over black or white whenever one is legible.
     if (r >= minRatio) return c;
     if (r > bestRatio) { bestRatio = r; best = c; }

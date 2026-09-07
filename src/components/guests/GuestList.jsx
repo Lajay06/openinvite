@@ -588,6 +588,12 @@ function RsvpDetailRow({ guest, weddingEvents, onEditEvents, onUpdate, readOnly,
               const plusOneText = r.plus_ones > 0
                 ? ((r.plus_one_names || []).filter(Boolean).join(', ') || `${r.plus_ones} guest${r.plus_ones > 1 ? 's' : ''}`)
                 : '—';
+              // The plus-one's own choice, through the SAME ranking the row
+              // above the table uses: their per-event overlay first, the flat
+              // couple-entered column last.
+              const plusOneMeal = mealOptionLabel(
+                effectiveMealChoice(guest.plus_one_event_responses, guest.plus_one_meal_choice), mealOptions,
+              );
               return (
                 <div
                   key={event.event_id}
@@ -607,8 +613,16 @@ function RsvpDetailRow({ guest, weddingEvents, onEditEvents, onUpdate, readOnly,
                   <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>
                     {r.invited && r.meal_choice ? mealOptionLabel(r.meal_choice, mealOptions) : '—'}
                   </span>
-                  <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>
-                    {r.invited ? plusOneText : '—'}
+                  {/* THE PLUS-ONE READS LIKE THE GUEST. The Meal column two
+                      cells left shows the guest's choice; this showed only a
+                      NAME, so a couple checking who eats what had to look in
+                      two different shapes. Same helper, same label function,
+                      same 12px/#444444 — the plus-one's meal under their name. */}
+                  <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <span>{r.invited ? plusOneText : '—'}</span>
+                    {r.invited && r.plus_ones > 0 && plusOneMeal && (
+                      <span style={{ color: 'rgba(10,10,10,0.6)' }}>{plusOneMeal}</span>
+                    )}
                   </span>
                   <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                     {r.invited ? fmtRespondedAt(r.responded_at) : '—'}
@@ -911,7 +925,7 @@ export default function GuestList({
     { key: 'tags',     label: 'Tags' },
     { key: 'status',   label: 'Status',    sortable: true },
     { key: 'lastSent', label: 'Last sent' },
-    { key: 'table',    label: 'Table',     sortable: true },
+    { key: 'table',    label: 'Table',     sortable: true, headStyle: { textAlign: 'center' } },
     { key: 'plusOne',  label: '+1' },
   ];
 
@@ -1046,8 +1060,8 @@ export default function GuestList({
                     <LastSentCell guest={guest} />
                   </TableCell>
 
-                  {/* ── Table ── */}
-                  <TableCell className="align-middle">
+                  {/* ── Table — centred, because it is a number ── */}
+                  <TableCell className="align-middle" style={{ textAlign: 'center' }}>
                     {textCell(guest, 'table_assignment',
                       <span style={{ fontSize: 13, color: '#444444', fontFamily: PJS }}>
                         {formatTableAssignment(guest.table_assignment) || '—'}
@@ -1083,7 +1097,20 @@ export default function GuestList({
                 </TableRow>
               );
 
-              /* ── Plus one sub-row ── */
+              /* ── Plus one sub-row ──────────────────────────────────
+                 THE SAME COLUMNS AS THE ROW ABOVE IT, and this is the fix.
+                 It used to be three colSpans — name over 2, diet + meal over
+                 3, then the rest blank — so the plus-one's MEAL CHOICE landed
+                 under the Contact heading. The owner read "Beef" as a phone
+                 number for Harper Reid's plus-one, which is exactly what the
+                 table said it was.
+
+                 A plus-one now renders cell for cell against the guest:
+                 name · (no contact) · category · tags · status · table.
+                 They have no contact details of their own on the record, so
+                 that cell is deliberately empty rather than filled with
+                 something else. Dietary and meal move under the name, where
+                 the guest's own dietary line already sits. */
               if (guest.plus_one) {
                 // Plus-one meal: effectiveMealChoice ranks the plus-one's own
                 // per-event overlay first and the flat
@@ -1091,21 +1118,21 @@ export default function GuestList({
                 // LONGER DEAD — the guest editor writes it — so this shows a
                 // couple-entered meal until the plus-one answers for themselves.
                 const plusOneMealChoice = mealOptionLabel(effectiveMealChoice(guest.plus_one_event_responses, guest.plus_one_meal_choice), mealOptions);
-                const hasDietOrMeal = guest.plus_one_dietary_restrictions || plusOneMealChoice;
+                const poStatus = PLUS_ONE_STATUS_STYLES[plusOneRsvpStatus(guest)] || PLUS_ONE_STATUS_STYLES.pending;
                 rows.push(
                   <TableRow key={`${guest.id}-po`} style={{ background: 'rgba(10,10,10,0.015)', borderBottom: '1px solid rgba(10,10,10,0.04)' }}>
-                    <TableCell colSpan={2} style={{ paddingTop: 5, paddingBottom: 5, paddingLeft: 52 }}>
+                    {/* checkbox column — a plus-one is not separately selectable */}
+                    <TableCell />
+                    {/* Guest */}
+                    <TableCell className="align-middle" style={{ paddingLeft: 52 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', userSelect: 'none', lineHeight: 1 }}>↳</span>
-                        <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, fontStyle: 'italic' }}>
-                          {guest.plus_one_name || 'Plus one'}
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
+                          {plusOneDisplayName(guest)}
                         </span>
                       </div>
-                    </TableCell>
-                    {/* Dietary + meal choice — previously hidden entirely for plus-ones */}
-                    <TableCell colSpan={3}>
-                      {hasDietOrMeal ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                      {(guest.plus_one_dietary_restrictions || plusOneMealChoice) && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 3, paddingLeft: 18 }}>
                           {guest.plus_one_dietary_restrictions && (
                             <DietaryCell value={guest.plus_one_dietary_restrictions} />
                           )}
@@ -1115,12 +1142,37 @@ export default function GuestList({
                             </span>
                           )}
                         </div>
-                      ) : (
-                        <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>
                       )}
                     </TableCell>
-                    {/* Remaining columns empty */}
-                    <TableCell colSpan={COLUMN_COUNT - 5} />
+                    {/* Contact — a plus-one has none. Empty, not borrowed. */}
+                    <TableCell />
+                    {/* Category — inherited from the guest they came with */}
+                    <TableCell className="align-middle">
+                      {guest.category ? (
+                        <BadgePill style={CATEGORY_STYLES[guest.category] || CATEGORY_STYLES.family}>
+                          {guest.category.replace(/_/g, ' ')}
+                        </BadgePill>
+                      ) : <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>}
+                    </TableCell>
+                    {/* Tags */}
+                    <TableCell className="align-middle">{tagsCell(guest)}</TableCell>
+                    {/* Status — the plus-one's OWN answer, not the guest's */}
+                    <TableCell className="align-middle">
+                      <span style={{ ...dietaryPillStyle, background: poStatus.background, color: poStatus.color }}>
+                        {poStatus.label}
+                      </span>
+                    </TableCell>
+                    {/* Last sent — an invitation goes to the guest, not the +1 */}
+                    <TableCell />
+                    {/* Table — they sit where the guest sits */}
+                    <TableCell className="align-middle" style={{ textAlign: 'center' }}>
+                      <span style={{ fontSize: 13, color: '#444444', fontFamily: PJS }}>
+                        {formatTableAssignment(guest.table_assignment) || '—'}
+                      </span>
+                    </TableCell>
+                    {/* +1 column, and the actions column */}
+                    <TableCell />
+                    <TableCell />
                   </TableRow>
                 );
               }
