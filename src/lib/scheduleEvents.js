@@ -30,7 +30,30 @@
  */
 
 /** Normalized events from every source the Schedule page reads. Pure. */
-export function buildScheduleEvents({ scheduleItems = [], vendors = [], invitation = null, customEvents = [] } = {}) {
+/**
+ * WHICH SIDE OF THE WEDDING AN EVENT SITS ON.
+ *
+ * The List's Type column, and the one thing the couple sorts by that is not a
+ * field on any row: a dress fitting in March and the ceremony in July are the
+ * same shape of record and mean entirely different things. Compared as
+ * date-only strings, so no timezone can move an event across the boundary.
+ */
+export function whenRelativeTo(dateStr, weddingDate) {
+  if (!dateStr) return 'planning';
+  if (!weddingDate) return 'planning';
+  const d = String(dateStr).slice(0, 10);
+  const w = String(weddingDate).slice(0, 10);
+  if (d === w) return 'wedding-day';
+  return d < w ? 'planning' : 'after';
+}
+
+export const WHEN_LABEL = { planning: 'Planning', 'wedding-day': 'Wedding day', after: 'After' };
+// The order the Type column sorts in: the way the wedding actually runs, not
+// alphabetically, where "After" would come first.
+export const WHEN_RANK = { planning: 0, 'wedding-day': 1, after: 2 };
+
+export function buildScheduleEvents({ scheduleItems = [], vendors = [], invitation = null, customEvents = [], weddingDate = null } = {}) {
+  const bigDay = weddingDate || invitation?.wedding_date || null;
   const events = [];
 
   if (invitation?.wedding_date) {
@@ -66,6 +89,7 @@ export function buildScheduleEvents({ scheduleItems = [], vendors = [], invitati
       description: item.description || '',
       category: item.category || '',
       responsible: item.responsible_person || '',
+      notes: item.notes || '',
       type: 'schedule',
       sourceId: item.id,
     });
@@ -100,7 +124,9 @@ export function buildScheduleEvents({ scheduleItems = [], vendors = [], invitati
     }
   }
 
-  return [...events, ...customEvents];
+  // STAMPED ON THE WAY OUT, once, so every source gets the same treatment and
+  // no caller has to remember to classify a vendor date.
+  return [...events, ...customEvents].map((e) => ({ ...e, when: whenRelativeTo(e.date, bigDay) }));
 }
 
 /**

@@ -20,9 +20,9 @@ import CountUp from "@/components/shared/CountUp";
 
 import { sortScheduleItems } from '@/lib/scheduleOrder';
 import { buildScheduleEvents } from '@/lib/scheduleEvents';
-import ScheduleDayList from '../components/schedule/ScheduleDayList';
+import ScheduleTable from '../components/schedule/ScheduleTable';
 import PageConsiderations from '../components/shared/PageConsiderations';
-import { getMyInvitation } from '@/lib/resolveMyWedding';
+import { getMyInvitation, getMyWeddingDetails } from '@/lib/resolveMyWedding';
 const Schedule = base44.entities.Schedule;
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -76,6 +76,9 @@ export default function ScheduleHub() {
   // never have agreed. See src/lib/scheduleEvents.js.
   const [vendors, setVendors]         = useState([]);
   const [invitation, setInvitation]   = useState(null);
+  // The wedding date, for the List's Type column: an event before it is
+  // planning, on it is the wedding day, after it is after.
+  const [weddingDate, setWeddingDate] = useState(null);
   const [loadingStats, setLoadingStats]   = useState(true);
   const [refreshKey, setRefreshKey]       = useState(0);
 
@@ -137,6 +140,7 @@ export default function ScheduleHub() {
         setScheduleItems(data);
         setVendors(vendorRows);
         setInvitation(inv);
+        getMyWeddingDetails().then((wd) => setWeddingDate(wd?.weddingDate || inv?.wedding_date || null)).catch(() => {});
       }
     } catch {
       toast.error("Failed to load schedule");
@@ -149,8 +153,8 @@ export default function ScheduleHub() {
   // schedule rows only, exactly as the calendar already restricted itself.
   // Same reasoning, one place now: Calendar.jsx:49.
   const events = React.useMemo(
-    () => buildScheduleEvents({ scheduleItems, vendors, invitation }),
-    [scheduleItems, vendors, invitation],
+    () => buildScheduleEvents({ scheduleItems, vendors, invitation, weddingDate }),
+    [scheduleItems, vendors, invitation, weddingDate],
   );
 
   // ── Stats (mirrors Schedule.jsx STAT_CARDS) ───────────────────────────────
@@ -315,15 +319,14 @@ export default function ScheduleHub() {
 
       {/* 5 ── Tab content */}
       {activeTab === "list" && (
-        <div style={{ padding: "32px 32px 48px" }}>
-          <ScheduleDayList
-            events={events}
-            onEdit={readOnly ? undefined : (e) => {
-              const item = scheduleItems.find(i => i.id === e.sourceId);
-              if (item) handleEditEvent(item);
-            }}
-          />
-        </div>
+        <ScheduleTable
+          events={events}
+          loading={loadingStats}
+          onEdit={readOnly ? undefined : (e) => {
+            const item = scheduleItems.find(i => i.id === e.sourceId);
+            if (item) handleEditEvent(item);
+          }}
+        />
       )}
       {activeTab === "calendar" && <CalendarPage embedded hideChrome />}
       {activeTab === "considerations" && (

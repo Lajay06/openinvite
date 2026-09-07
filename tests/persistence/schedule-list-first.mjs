@@ -24,7 +24,8 @@
  * not ABSENT, so it will stay honest either side of that decision.
  */
 import { pass, fail } from './_shared.mjs';
-import { buildScheduleEvents, groupEventsByDay } from '../../src/lib/scheduleEvents.js';
+import { buildScheduleEvents, groupEventsByDay, whenRelativeTo, WHEN_RANK, WHEN_LABEL } from '../../src/lib/scheduleEvents.js';
+import { naturalCompare, sortRows } from '../../src/lib/tableSort.js';
 import { readFileSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -190,6 +191,113 @@ export async function runScheduleListFirst() {
     check('  and the schedule-order guard keeps no allowance for a file that is gone',
       /const ALLOWED = \{\};/.test(readFileSync(join(ROOT, 'scripts/test-schedule-order.mjs'), 'utf8')),
       'a dead allowance is a hole nobody is watching');
+  }
+
+  // ── THE LIST IS A SORTABLE TABLE, ON THE GUEST LIST'S OWN SORT ──────────
+  //
+  // Owner: "All I need is List as a table that can sort like Guest List."
+  // Consumed, not forked: the compare, the blanks rule and the header cycle
+  // are src/lib/tableSort.js, which is where they moved out of GuestList.jsx.
+  {
+    const table = code('src/components/schedule/ScheduleTable.jsx');
+    check('PLANT: the List is a table using the shared sort',
+      /from '@\/lib\/tableSort'/.test(table) && /from '@\/components\/shared\/SortableHead'/.test(table)
+        && /<Table>/.test(table),
+      'the same sort the guest list has');
+    check('  and defines no compare of its own',
+      !/function naturalCompare/.test(table) && !/localeCompare/.test(table),
+      'one implementation, not two that drift');
+    check('  six columns: Date, Time, Event, Type, Location, Notes',
+      /\['date', 'Date'\], \['time', 'Time'\], \['title', 'Event'\],/.test(table)
+        && /\['when', 'Type'\], \['location', 'Location'\], \['notes', 'Notes'\]/.test(table),
+      'in that order');
+    check('  and it is the default tab',
+      /useState\("list"\)/.test(code('src/pages/ScheduleHub.jsx')), 'the page opens on it');
+
+    // EVERY COLUMN SORTS, in both directions, against orders computed here
+    // rather than asserted from memory.
+    const COLUMNS = {
+      date:     { getValue: (e) => e.date || '', compare: naturalCompare },
+      time:     { getValue: (e) => e.time || '', compare: naturalCompare },
+      title:    { getValue: (e) => e.title || '', compare: naturalCompare },
+      when:     { getValue: (e) => (e.when ? WHEN_RANK[e.when] : null), compare: (a, b) => a - b },
+      location: { getValue: (e) => e.location || '', compare: naturalCompare },
+      notes:    { getValue: (e) => e.notes || e.description || '', compare: naturalCompare },
+    };
+    const ROWS = [
+      { id: 'a', date: '2027-07-03', time: '15:00', title: 'Ceremony',      when: 'wedding-day', location: 'Observatory', notes: 'Arrive early' },
+      { id: 'b', date: '2027-03-02', time: '09:00', title: 'Dress fitting', when: 'planning',    location: '',            notes: '' },
+      { id: 'c', date: '2027-07-04', time: '10:00', title: 'Brunch',        when: 'after',       location: 'Tavern',      notes: 'Casual' },
+      { id: 'd', date: '2027-07-03', time: '09:00', title: 'Hair and makeup', when: 'wedding-day', location: 'The house', notes: '' },
+    ];
+    const order = (field, direction) => sortRows(ROWS, { field, direction }, COLUMNS).map((r) => r.id).join('');
+    // WRITTEN OUT IN FULL, and three of the six were wrong the first time —
+    // I worked them out by hand and the guard corrected me on date, title and
+    // location. Literals rather than a second sort, because a check that
+    // recomputes the thing it is checking proves only that the code agrees
+    // with itself.
+    for (const [field, asc] of [
+      ['date', 'badc'],     // b is March; a and d tie on 3 July, stable, a first
+      ['time', 'bdca'],     // 09:00 twice, then 10:00, then 15:00
+      ['title', 'cabd'],    // Brunch, Ceremony, Dress fitting, Hair and makeup
+      ['when', 'badc'],     // planning, wedding day (a then d), after
+      ['location', 'acdb'], // Observatory, Tavern, The house, then the blank
+      ['notes', 'ac'],      // Arrive early, Casual, then the two blanks
+    ]) {
+      const got = order(field, 'asc');
+      check(`PLANT: sorting by ${field} ascending`, got.startsWith(asc), `${got} (expected to start ${asc})`);
+      check(`  and by ${field} descending`,
+        order(field, 'desc') !== got && order(field, 'desc').length === ROWS.length,
+        order(field, 'desc'));
+    }
+    check('PLANT: Type sorts the way the wedding runs, not alphabetically',
+      order('when', 'asc') === 'badc' && WHEN_RANK.planning < WHEN_RANK['wedding-day']
+        && WHEN_RANK['wedding-day'] < WHEN_RANK.after,
+      `${WHEN_LABEL.planning} → ${WHEN_LABEL['wedding-day']} → ${WHEN_LABEL.after}`);
+    check('  Date sorts on the stored string, never the printed label',
+      /getValue: \(e\) => e\.date \|\| ''/.test(table) && !/dateLabel\(e\.date\)[^\n]*getValue/.test(table),
+      '"7 September" against "12 March" is a lexical coin toss');
+    check('  and rows with a blank column fall to the end, both ways',
+      order('location', 'asc').endsWith('b') && order('location', 'desc').endsWith('b'),
+      'the shared blanks rule');
+  }
+
+  // ── AN EVENT KNOWS WHICH SIDE OF THE WEDDING IT IS ON ───────────────────
+  {
+    check('PLANT: planning, wedding day and after are told apart by date',
+      whenRelativeTo('2027-03-02', '2027-07-03') === 'planning'
+        && whenRelativeTo('2027-07-03', '2027-07-03') === 'wedding-day'
+        && whenRelativeTo('2027-07-04', '2027-07-03') === 'after',
+      'the Type column');
+    // BOTH EDGES OF THE DAY, because one alone only fires in half the world.
+    // A parse-then-toISOString implementation pushes 00:30 back a day east of
+    // Greenwich and 23:30 forward a day west of it, so whichever way the
+    // runner's clock is set, one of these two breaks. The source pin below
+    // covers the one machine where neither does — UTC exactly.
+    check('  compared as date-only strings, so no timezone moves an event',
+      whenRelativeTo('2027-07-03T00:30:00', '2027-07-03') === 'wedding-day'
+        && whenRelativeTo('2027-07-03T23:30:00', '2027-07-03') === 'wedding-day',
+      'both ends of the day stay on the day');
+    check('  and it slices the string rather than parsing it into an instant',
+      /const d = String\(dateStr\)\.slice\(0, 10\);/.test(code('src/lib/scheduleEvents.js'))
+        && !/new Date\(dateStr\)/.test(code('src/lib/scheduleEvents.js')),
+      'the check that holds even on a runner set to UTC');
+    check('  and with no wedding date set, everything reads as planning',
+      whenRelativeTo('2027-07-03', null) === 'planning', 'never guessed');
+    const ev = buildScheduleEvents({ ...FIXTURE, weddingDate: '2027-07-03' });
+    check('  every event carries it, whatever source it came from',
+      ev.every((e) => ['planning', 'wedding-day', 'after'].includes(e.when)),
+      `${ev.length} events, all stamped`);
+  }
+
+  // ── THE DAY LIST IT REPLACES ────────────────────────────────────────────
+  {
+    let present = true;
+    try { readFileSync(join(ROOT, 'src/components/schedule/ScheduleDayList.jsx')); } catch { present = false; }
+    const callers = ['src/pages/ScheduleHub.jsx', 'src/pages/Calendar.jsx']
+      .filter((f) => /ScheduleDayList/.test(code(f)));
+    check(present ? 'ScheduleDayList is still in the repo, with no caller' : 'ScheduleDayList has been removed',
+      callers.length === 0, callers.join(', ') || 'the table replaced it; deleting it was not asked for');
   }
 
   // ── THE CALENDAR LANDS WHERE THE EVENTS ARE, ON THE RIGHT DAY ───────────
