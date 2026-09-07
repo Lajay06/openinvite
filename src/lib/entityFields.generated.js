@@ -807,6 +807,7 @@ export const ENTITY_FIELDS = {
       "location",
       "notes",
       "responsible_person",
+      "run_sheet",
       "start_time"
     ],
     "required": [

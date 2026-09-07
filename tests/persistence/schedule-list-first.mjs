@@ -148,8 +148,12 @@ export async function runScheduleListFirst() {
   {
     const hub = code('src/pages/ScheduleHub.jsx');
     const tabs = [...(/const TABS = \[([\s\S]*?)\];/.exec(hub)?.[1] || '').matchAll(/key: "([a-z]+)"/g)].map(m => m[1]);
-    check('PLANT: the tab bar is List, Calendar, Considerations — in that order',
-      JSON.stringify(tabs) === JSON.stringify(['list', 'calendar', 'considerations']), tabs.join(', '));
+    // THREE VIEWS NOW, on the owner's later direction: "List... Calendar...
+    // Then run sheet is literally order of events for the specific event."
+    // Considerations stays — it is the page's notes, not a view of the events.
+    check('PLANT: the tab bar is List, Calendar, Run sheet, Considerations — in that order',
+      JSON.stringify(tabs) === JSON.stringify(['list', 'calendar', 'runsheet', 'considerations']),
+      tabs.join(', '));
     check('  and the page opens on the list',
       /useState\("list"\)/.test(hub), 'not on the grid with the most machinery in it');
     check('PLANT: "visual" is not a reachable tab',

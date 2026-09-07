@@ -22,6 +22,7 @@ import { sortScheduleItems } from '@/lib/scheduleOrder';
 import { buildScheduleEvents } from '@/lib/scheduleEvents';
 import ScheduleTable from '../components/schedule/ScheduleTable';
 import SubscribeCalendar from '../components/schedule/SubscribeCalendar';
+import RunSheet from '../components/schedule/RunSheet';
 import PageConsiderations from '../components/shared/PageConsiderations';
 import { getMyInvitation, getMyWeddingDetails } from '@/lib/resolveMyWedding';
 const Schedule = base44.entities.Schedule;
@@ -62,6 +63,7 @@ const statValueStyle = {
 const TABS = [
   { key: "list",           label: "List" },
   { key: "calendar",       label: "Calendar" },
+  { key: "runsheet",       label: "Run sheet" },
   { key: "considerations", label: "Considerations" },
 ];
 
@@ -80,6 +82,9 @@ export default function ScheduleHub() {
   // The wedding date, for the List's Type column: an event before it is
   // planning, on it is the wedding day, after it is after.
   const [weddingDate, setWeddingDate] = useState(null);
+  // Which event's order of proceedings is on screen. The run sheet is PER
+  // EVENT — "run sheet is literally order of events for the specific event".
+  const [runSheetEventId, setRunSheetEventId] = useState(null);
   const [loadingStats, setLoadingStats]   = useState(true);
   const [refreshKey, setRefreshKey]       = useState(0);
 
@@ -337,6 +342,57 @@ export default function ScheduleHub() {
           <CalendarPage embedded hideChrome />
         </>
       )}
+      {activeTab === "runsheet" && (
+        <div style={{ padding: "28px 32px 48px" }}>
+          {/* The wedding-day events, in time order — a run sheet belongs to a
+              ceremony or a reception, not to a vendor contract date. */}
+          {(() => {
+            const dayEvents = sortScheduleItems(
+              scheduleItems.filter(i => !weddingDate || String(i.event_date || '').slice(0, 10) === String(weddingDate).slice(0, 10)));
+            const chosen = dayEvents.find(i => i.id === runSheetEventId) || dayEvents[0] || null;
+            return (
+              <>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
+                  {dayEvents.length === 0 && (
+                    <span style={{ fontFamily: PJS, fontSize: 14, color: 'rgba(10,10,10,0.6)' }}>
+                      No events on the wedding day yet. Add one and its run sheet lives here.
+                    </span>
+                  )}
+                  {dayEvents.map(ev => {
+                    const active = chosen?.id === ev.id;
+                    return (
+                      <button key={ev.id} onClick={() => setRunSheetEventId(ev.id)} style={{
+                        borderRadius: 999, padding: '6px 14px', fontFamily: PJS, fontSize: 12, fontWeight: 600,
+                        cursor: 'pointer', border: active ? 'none' : '1px solid rgba(10,10,10,0.45)',
+                        background: active ? '#E03553' : 'transparent', color: active ? '#FFFFFF' : '#0A0A0A',
+                      }}>
+                        {ev.event_name}
+                      </button>
+                    );
+                  })}
+                </div>
+                <RunSheet
+                  key={chosen?.id}
+                  event={chosen}
+                  items={chosen?.run_sheet}
+                  readOnly={readOnly}
+                  onSave={async (items) => {
+                    // WRITE, THEN READ BACK. Base44 answers 200 for a write of
+                    // an undeclared field and discards it, so the only way to
+                    // know whether run_sheet exists is to ask for it again.
+                    await Schedule.update(chosen.id, { run_sheet: items });
+                    const fresh = await Schedule.get(chosen.id);
+                    setRefreshKey(k => k + 1);
+                    loadItems();
+                    return fresh?.run_sheet;
+                  }}
+                />
+              </>
+            );
+          })()}
+        </div>
+      )}
+
       {activeTab === "considerations" && (
         <div style={{ padding: "32px 32px 48px", maxWidth: 860 }}>
           <PageConsiderations pageKey="schedule" />

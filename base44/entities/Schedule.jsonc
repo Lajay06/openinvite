@@ -49,6 +49,21 @@
       "default": "other",
       "description": "Event category"
     },
+    "run_sheet": {
+      "type": "array",
+      "description": "Order of proceedings within this event. Owner-added 2026-09-07; until it exists on the live entity, Base44 accepts a write with 200 and discards it, so the UI probes before it saves.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id":    { "type": "string" },
+          "time":  { "type": "string" },
+          "item":  { "type": "string" },
+          "who":   { "type": "string" },
+          "notes": { "type": "string" },
+          "order": { "type": "number" }
+        }
+      }
+    },
     "notes": {
       "type": "string",
       "description": "Additional notes"
