@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import DataTable from '@/components/shared/DataTable';
 import TableToolbar from '@/components/shared/TableToolbar';
 import { CELL_STRONG, CELL_MUTED, CELL_NOWRAP } from '@/lib/tablePills';
-import { eventsInSchedule, runSheetFor } from '@/lib/scheduleEvents';
+import { eventsInSchedule, runSheetFor, unplaceableCount } from '@/lib/scheduleEvents';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -44,6 +44,10 @@ export default function RunSheet({ scheduleItems = [], category, onPickEvent, on
   const events = useMemo(() => eventsInSchedule(scheduleItems), [scheduleItems]);
   const active = events.find((e) => e.key === category) || events[0] || null;
   const rows = useMemo(() => (active ? runSheetFor(scheduleItems, active.key) : []), [scheduleItems, active]);
+  // ROWS WE COULD NOT READ ARE ADMITTED TO, NOT SWALLOWED. Skipping them
+  // silently would be the same failure as crashing, only quieter: the couple
+  // would count their items and find one missing with nothing to explain it.
+  const unplaceable = useMemo(() => unplaceableCount(scheduleItems), [scheduleItems]);
   const [busy, setBusy] = useState(false);
 
   const COLUMNS = [
@@ -76,6 +80,14 @@ export default function RunSheet({ scheduleItems = [], category, onPickEvent, on
         ) : null}
       />
 
+      {unplaceable > 0 && (
+        <p style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0 }}>
+          {unplaceable === 1
+            ? '1 item couldn’t be placed on a run sheet — it has no event tag. Open it from List and choose what it is.'
+            : `${unplaceable} items couldn’t be placed on a run sheet — they have no event tag. Open them from List and choose what they are.`}
+        </p>
+      )}
+
       {!active ? (
         <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0 }}>
           No events yet. Add one from List and tag it as part of an event — its run sheet appears here.
@@ -85,7 +97,7 @@ export default function RunSheet({ scheduleItems = [], category, onPickEvent, on
           columns={COLUMNS}
           rows={rows}
           loading={loading || busy}
-          empty={`Nothing in the ${active.label.toLowerCase()} run sheet yet — “Add a moment” puts the first thing on it.`}
+          empty={`Nothing in the ${String(active.label).toLowerCase()} run sheet yet — “Add a moment” puts the first thing on it.`}
           actions={(r) => (readOnly ? [] : [
             { label: 'Edit', onClick: () => onEdit(r) },
             { label: 'Move up', onClick: () => move(r, 'up'), disabled: rows[0]?.id === r.id },

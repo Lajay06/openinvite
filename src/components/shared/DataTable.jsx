@@ -72,9 +72,19 @@ export default function DataTable({
   // offer a bulk action on data this page does not own.
   isSelectable,
 }) {
+  // SELECTION IS OPTIONAL AND THIS LINE FORGOT IT. `selectable` is computed
+  // from whether the caller passed `selectedIds` — and then the next line
+  // dereferenced `selectedIds.has` regardless, so ANY consumer that renders
+  // rows without a selection model threw
+  // `Cannot read properties of undefined (reading 'has')` and the page went to
+  // the error boundary. The run sheet is exactly that consumer: a run sheet
+  // has no bulk actions, so it passes no selection, and the owner's Schedule
+  // has rows — which is the second half of the condition. An empty run sheet
+  // never crashed, so every empty-state check passed.
   const selectable = !!selectedIds;
   const selectableRows = (rows || []).filter((r) => !isSelectable || isSelectable(r));
-  const allSelected = selectableRows.length > 0 && selectableRows.every((r) => selectedIds.has(rowKey(r)));
+  const allSelected = selectable && selectableRows.length > 0
+    && selectableRows.every((r) => selectedIds.has(rowKey(r)));
   const span = columns.length + (selectable ? 1 : 0) + (actions ? 1 : 0);
 
   return (

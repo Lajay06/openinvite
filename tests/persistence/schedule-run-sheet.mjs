@@ -23,6 +23,7 @@
 import { pass, fail } from './_shared.mjs';
 import {
   isEventRow, eventsInSchedule, runSheetFor, PLANNING_CATEGORIES, CATEGORY_LABEL,
+  isPlaceableRow, unplaceableCount,
 } from '../../src/lib/scheduleEvents.js';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
@@ -97,6 +98,87 @@ export async function runScheduleRunSheet() {
       eventsInSchedule([ROWS[0]]).length === 1, 'no question asked when there is no choice');
     check('  and a wedding with no event rows resolves none',
       eventsInSchedule([ROWS[6]]).length === 0, 'the tab says so rather than showing an empty table');
+  }
+
+  // ── THE SHAPES A LIVE RECORD ACTUALLY HAS, AND THE ONES IT COULD ────────
+  //
+  // R33. The owner's Run sheet tab went to the error boundary on his own data
+  // while this guard was green, so the fixture now carries the shapes that
+  // record actually has — read from it, read-only — plus every shape the enum
+  // does not stop Base44 storing (gotcha #20).
+  //
+  // What the live john-suzanne record has, in 21 rows: responsible_person,
+  // description, end_time and location NULL on every row (not absent — null),
+  // notes null on 15, two rows both named "First dance" under different tags,
+  // three days, and an `is_sample` field the repo's mirror does not declare.
+  // Every category was a valid enum string and every time was zero-padded, so
+  // NONE of the malformed shapes below caused the crash — the crash was
+  // DataTable dereferencing a selection model the run sheet does not pass,
+  // and it needed only rows. These are here because the next record might.
+  {
+    const day = '2027-07-03';
+    const ev = (over) => ({ id: 'x', event_name: 'Thing', category: 'reception', event_date: day, start_time: '10:00', ...over });
+
+    check('PLANT: a null category is unplaceable, not a crash',
+      isPlaceableRow(ev({ category: null })) === false && isEventRow(ev({ category: null })) === false,
+      'and it is counted, not dropped in silence');
+    check('PLANT: an absent category too',
+      isPlaceableRow({ id: 'y', event_name: 'No tag' }) === false, 'the field can simply not be there');
+    check('PLANT: a NUMBER category is unplaceable',
+      isPlaceableRow(ev({ category: 5 })) === false,
+      'CATEGORY_LABEL misses it, the label falls back to the raw value, and .toLowerCase() throws on a number');
+    check('PLANT: an OBJECT category is unplaceable',
+      isPlaceableRow(ev({ category: { value: 'reception' } })) === false, 'Base44 does not enforce the enum');
+    check('PLANT: a blank-string category is unplaceable',
+      isPlaceableRow(ev({ category: '   ' })) === false, 'whitespace is not a tag');
+    check('  and every one of them is COUNTED for the note',
+      unplaceableCount([ev({ category: null }), ev({ category: 5 }), ev({ category: '  ' }), ev({})]) === 3,
+      '"3 items couldn\u2019t be placed" — the run sheet says so on the page');
+    check('PLANT: an unrecognised STRING category is still an event, named after itself',
+      isPlaceableRow(ev({ category: 'Recovery brunch' })) === true
+        && eventsInSchedule([ev({ category: 'Recovery brunch' })])[0].label === 'Recovery brunch',
+      'data the couple typed is worth showing; data we cannot read is worth admitting to');
+    check('  and its label is a STRING whatever the key was',
+      eventsInSchedule([ev({ category: 'Recovery brunch' })]).every((e) => typeof e.label === 'string'),
+      'the empty state lowercases it');
+
+    check('PLANT: rows with no event_date still place and sort last',
+      runSheetFor([ev({ id: 'a', event_date: null, start_time: '08:00' }), ev({ id: 'b', start_time: '23:00' })], 'reception')
+        .map((r) => r.id).join() === 'b,a',
+      'an undated item is not day zero');
+    check('PLANT: a missing start_time sorts last within its day, not first',
+      runSheetFor([ev({ id: 'a', start_time: null }), ev({ id: 'b', start_time: '09:00' })], 'reception')
+        .map((r) => r.id).join() === 'b,a', 'absent is not midnight');
+    check('PLANT: two rows with the SAME NAME stay two rows',
+      runSheetFor([ev({ id: 'a', event_name: 'First dance', start_time: '20:05' }),
+        ev({ id: 'b', event_name: 'First dance', start_time: '20:30' })], 'reception').length === 2,
+      'the live record has exactly this pair — anything keyed on the name collapses them');
+    check('PLANT: responsible_person and notes are NULL on every live row',
+      runSheetFor([ev({ responsible_person: null, notes: null, description: null })], 'reception').length === 1,
+      'null, not absent — the shape the record actually has');
+  }
+
+  // ── THE SHELL DOES NOT REQUIRE A SELECTION MODEL ────────────────────────
+  //
+  // THE CRASH ITSELF. `selectable` is computed from whether the caller passed
+  // `selectedIds`; the very next line then called `selectedIds.has(...)`
+  // unconditionally. The run sheet passes no selection model, so the tab threw
+  // as soon as it had one row — and only then, which is why every empty-state
+  // check passed. The render guard (scripts/test-schedule-tabs-render.mjs)
+  // is what actually catches this class; this pins the line so a refactor
+  // cannot quietly reintroduce it.
+  {
+    const dt = code('src/components/shared/DataTable.jsx');
+    check('PLANT: allSelected is guarded by `selectable`',
+      /const allSelected = selectable\s*&&/.test(dt),
+      'no selection model, no dereference');
+    check('  and the run sheet still passes none',
+      !/selectedIds/.test(code('src/components/schedule/RunSheet.jsx')),
+      'a run sheet has no bulk actions — the shell must cope');
+    check('  the tab renders an unplaceable-row note rather than swallowing them',
+      /unplaceableCount/.test(code('src/components/schedule/RunSheet.jsx'))
+        && /couldn\u2019t be placed/.test(code('src/components/schedule/RunSheet.jsx')),
+      'skipped and counted, never a try/catch');
   }
 
   // ── THE TAG IS THE ONE FIELD, NOT A NEW ONE ─────────────────────────────

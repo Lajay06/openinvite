@@ -313,9 +313,33 @@ export const CATEGORY_LABEL = {
   pre_wedding: 'Pre-wedding', post_wedding: 'Post-wedding', other: 'Other',
 };
 
+/**
+ * A row can be placed on the board at all — its tag is a usable string.
+ *
+ * WHAT "UNPLACEABLE" MEANS, AND WHY IT IS NOT AN ERROR. Base44 does not
+ * enforce the category enum (gotcha #20), and nothing stops an older row, an
+ * import or a future writer from carrying `null`, a number, or a value nobody
+ * declared. A tag that is not a string cannot name an event: `CATEGORY_LABEL`
+ * misses it, the label falls back to the raw value, and something downstream
+ * calls `.toLowerCase()` on a number. So the rule is one predicate, applied
+ * once, and a row that fails it is SKIPPED AND COUNTED rather than thrown at.
+ *
+ * An unrecognised STRING is still placeable — it becomes an event named after
+ * itself. Data the couple typed is worth showing under its own name; data we
+ * cannot read at all is worth admitting to.
+ */
+export function isPlaceableRow(row) {
+  return typeof row?.category === 'string' && row.category.trim() !== '';
+}
+
+/** How many rows carry no usable tag — for the note the run sheet shows. */
+export function unplaceableCount(scheduleItems = []) {
+  return (scheduleItems || []).filter((r) => !isPlaceableRow(r)).length;
+}
+
 /** True when this row is part of an event rather than a planning item. */
 export function isEventRow(row) {
-  return !!row?.category && !PLANNING_CATEGORIES.has(row.category);
+  return isPlaceableRow(row) && !PLANNING_CATEGORIES.has(row.category);
 }
 
 /**
@@ -331,7 +355,7 @@ export function eventsInSchedule(scheduleItems = []) {
   for (const r of scheduleItems) {
     if (!isEventRow(r)) continue;
     const k = r.category;
-    if (!byCat.has(k)) byCat.set(k, { key: k, label: CATEGORY_LABEL[k] || k, count: 0, date: r.event_date || '' });
+    if (!byCat.has(k)) byCat.set(k, { key: k, label: CATEGORY_LABEL[k] || String(k), count: 0, date: r.event_date || '' });
     const e = byCat.get(k);
     e.count += 1;
     // The event's day is its earliest dated row.

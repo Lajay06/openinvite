@@ -34,8 +34,12 @@ const NO_DAY = '9999-12-31';
  * @param {string} aTime 24-hour time (HH:MM), or falsy
  */
 export function compareDayThenTime(aDay, aTime, bDay, bTime) {
-  const da = aDay || NO_DAY;
-  const db = bDay || NO_DAY;
+  // STRING(), because a stored day is not guaranteed to be one. Base44 keeps
+  // the field a string, but nothing stops a caller passing a Date or a number
+  // — and `(20261231).localeCompare` is not a function, which is a crash in a
+  // comparator rather than a wrong order.
+  const da = String(aDay || NO_DAY);
+  const db = String(bDay || NO_DAY);
   if (da !== db) return da.localeCompare(db);
   return minutes(aTime) - minutes(bTime);
 }
