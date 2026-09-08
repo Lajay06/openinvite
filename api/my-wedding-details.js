@@ -149,7 +149,77 @@ async function getMyWedding(callerId) {
     : null;
 }
 
-async function handleGet(req, res, caller) {
+/**
+ * ── HEALING A LEGACY ROW ON READ ───────────────────────────────────────────
+ *
+ * `dayVendorContacts` was redeclared `array` -> `string` in PR #446. Nothing
+ * rewrote the rows already holding `[]`, and Base44 validates the MERGED
+ * record rather than the patch — so every one of those rows became
+ * permanently unwritable, and every future save failed citing a field the
+ * writer never touched (BASE44_PLATFORM_NOTES.md:197). Measured 2026-09-08:
+ * 15 of 21 WeddingDetails rows, one of them a real person's.
+ *
+ * WHY HERE. The repair has to be a write that passes RLS, and
+ * WeddingDetails scopes `update` to `created_by_id == {{user.id}}`. An
+ * admin key is not a user: an admin-key PUT was tried under authorization on
+ * 2026-09-08 and refused 403 on the first row, for every row. The only
+ * credential that can rewrite a couple's record is the couple's own token —
+ * and this endpoint already holds one and already knows how to encrypt these
+ * six fields. There is nowhere else the repair can live.
+ *
+ * WHY ON READ. A frozen row cannot be fixed by the couple doing anything,
+ * because everything they might do is a write, and every write fails. The
+ * read is the only interaction left that still works.
+ *
+ * SAFETY. Only the caller's own row (RLS enforces it; the assert below states
+ * it). Only ENCRYPTED_FIELDS. Only values `decryptField` already treats as
+ * legacy plaintext — anything non-string — so a healthy row makes ZERO
+ * writes and a healed row is never healed twice. The value written is the
+ * row's own current value through the same `encryptPayload` a normal save
+ * uses, so no data changes meaning. A failed heal is logged and swallowed:
+ * a read must not start failing because a repair could not be attempted.
+ */
+async function healLegacyEncryptedFields(wedding, caller, callerToken) {
+  const legacy = ENCRYPTED_FIELDS.filter((f) => {
+    const v = wedding[f];
+    // `undefined`/`null` are absent, not legacy. A string is already
+    // ciphertext. Everything else — array, object, number, boolean — is a
+    // pre-encryption value that will fail whole-record validation.
+    return v !== undefined && v !== null && typeof v !== 'string';
+  });
+  if (legacy.length === 0) return null;                       // healthy row: no write, ever
+
+  // RLS already guarantees this; asserting it means a future refactor that
+  // loses the ownership filter fails loudly here instead of writing to
+  // somebody else's record.
+  if (wedding.created_by_id !== caller.id) {
+    console.error(`[heal-legacy] refusing: row ${wedding.id} is not owned by caller ${caller.id}`);
+    return null;
+  }
+  if (!callerToken) {
+    console.error('[heal-legacy] no caller token on the request — cannot heal');
+    return null;
+  }
+
+  const payload = {};
+  for (const f of legacy) payload[f] = encryptPayload(wedding[f]);
+
+  try {
+    await callerFetch('PUT', `/apps/${BASE44_APP_ID}/entities/WeddingDetails/${wedding.id}`, callerToken, payload);
+  } catch (err) {
+    // `Base44 PUT … failed (422): …` — the status is in the message.
+    const status = /\((\d{3})\)/.exec(err.message)?.[1] || 'error';
+    for (const f of legacy) console.error(`[heal-legacy] ${f} ${status}`);
+    return null;                                              // return the unhealed row
+  }
+  console.warn(`[heal-legacy] repaired ${legacy.join(', ')} on ${wedding.id}`);
+
+  // Re-read so the caller gets the healed row, not the one we just replaced.
+  const fresh = await adminFetch('GET', `/apps/${BASE44_APP_ID}/entities/WeddingDetails/${wedding.id}`);
+  return fresh || null;
+}
+
+async function handleGet(req, res, caller, callerToken) {
   // Same "more than one real record" telemetry getMyWeddingDetails() used
   // to log client-side (the "Alex & Sam" incident) — moved server-side,
   // one central place instead of every browser tab independently warning.
@@ -162,7 +232,12 @@ async function handleGet(req, res, caller) {
     : null;
   if (!wedding) return res.status(200).json(null);
 
-  const decrypted = { ...wedding };
+  // Repair before decrypting: a healed row's fields are ciphertext, and
+  // decryptField turns them back into the same values the legacy row held.
+  const healed = await healLegacyEncryptedFields(wedding, caller, callerToken);
+  const source = healed || wedding;
+
+  const decrypted = { ...source };
   for (const field of ENCRYPTED_FIELDS) {
     if (field in decrypted) decrypted[field] = decryptField(decrypted[field]);
   }
@@ -173,7 +248,7 @@ async function handleGet(req, res, caller) {
   // attacker something to crack offline. The UI needs one bit, not the value:
   // is a credential set? Hence websitePasswordIsSet.
   for (const field of HASHED_FIELDS) delete decrypted[field];
-  decrypted.websitePasswordIsSet = !!wedding.websitePassword?.trim();
+  decrypted.websitePasswordIsSet = !!source.websitePassword?.trim();
 
   return res.status(200).json(decrypted);
 }
@@ -273,7 +348,11 @@ export default async function handler(req, res) {
   if (rejectIfTrialExpired(req, res, caller)) return;
 
   try {
-    if (req.method === 'GET') return await handleGet(req, res, caller);
+    if (req.method === 'GET') {
+      // The heal below writes with the CALLER's token, exactly as PUT does.
+      const callerToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+      return await handleGet(req, res, caller, callerToken);
+    }
     if (req.method === 'PUT') {
       const callerToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
       return await handlePut(req, res, caller, callerToken);
