@@ -5147,3 +5147,33 @@ mark is missing, quote the message back in full and ask — and do not begin the
 merge sequence in the meantime, because a partially executed sequence is worse
 than an unstarted one (three of ten merged, and the seven behind them left
 stranded on a squashed base, is exactly where this stopped).
+
+---
+
+## 2026-09-08 — 7870358 shipped with no CI run
+
+**GitHub concurrency pending-slot displacement; main now keyed per SHA.**
+
+`cancel-in-progress: false` does not let runs overlap, it serialises them, and
+a concurrency group holds exactly ONE pending run. A third arrival does not
+queue behind the second — it takes the pending slot and cancels whatever was
+waiting in it. Three merges inside eleven minutes was enough: `ace9e83` was
+running, `7870358` went pending, `390852f` arrived and displaced it. `7870358`
+was deployed to production with zero jobs ever started.
+
+The block's own comment claimed the opposite ("two main runs can now overlap
+when merges land close together"). That was the intent and never the
+behaviour, which is the part worth keeping: a config's stated intent and its
+effect had drifted apart silently, and nothing compared them.
+
+The Main CI watchdog worked exactly as designed — it fired and failed with
+`CI on main concluded 'cancelled' for 7870358 — main is UNVERIFIED`. It was
+first reported here as having been skipped; that was a misreading of the run
+list, since a `workflow_run` run is filed under the workflow's head SHA at
+trigger time, not under the commit it is announcing. The alarm was never the
+problem.
+
+Fixed in #721: main is grouped per commit, so every SHA has a group of its own
+with nothing to queue behind and nothing to displace it. PR branches keep
+their per-ref group and their cancellation. `tests/persistence/ci-concurrency.mjs`
+evaluates the expression both ways round so the key cannot quietly revert.
