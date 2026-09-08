@@ -38,6 +38,8 @@
 import React, { useState } from 'react';
 import { Plus, ChevronUp, ChevronDown, Trash2 } from 'lucide-react';
 import SectionReveal from '../SectionReveal';
+import MediaOverlay from '../MediaOverlay';
+import { blockOverlayOf } from '@/lib/heroDisplay';
 import { isMotionEnabled } from '@/lib/universeStyling';
 import { detectHeroVideoType, youtubeInlineEmbedUrl, vimeoInlineEmbedUrl } from '@/lib/heroVideo';
 import { blockLabel } from './blockTypes';
@@ -286,25 +288,37 @@ function ListBlock({ content, theme, typography, editable, style }) {
 }
 
 // ── Media ─────────────────────────────────────────────────────────
-function PhotoBlock({ content, theme, typography, editable }) {
+// THE MARK GOES OVER THE MEDIA, NOT OVER THE CAPTION. The positioned wrapper
+// is the image alone, so the overlay's percentages are of the picture — the
+// same contract MediaOverlay documents for the hero, where position is a
+// percentage of the container and therefore survives a re-crop. Wrapping the
+// whole figure would measure the mark against the caption's height too, and
+// it would drift as soon as a caption wrapped onto a second line.
+function PhotoBlock({ content, theme, typography, editable, overlay }) {
   if (!content.url) {
     return editable ? <EmptyPlaceholder theme={theme} typography={typography} label="Image — click to choose a photo" /> : null;
   }
   return (
     <figure style={{ margin: 0, maxWidth: 720, marginLeft: 'auto', marginRight: 'auto' }}>
+      <div style={{ position: 'relative' }}>
       <img src={content.url} alt={content.caption || ''} loading="lazy" style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }} />
+      <MediaOverlay overlay={overlay} />
+      </div>
       {content.caption && <figcaption style={{ fontSize: 13, color: theme.lightText, opacity: 0.6, textAlign: 'center', marginTop: 10 }}>{content.caption}</figcaption>}
     </figure>
   );
 }
 
-function FullWidthImageBlock({ content, theme, typography, editable }) {
+function FullWidthImageBlock({ content, theme, typography, editable, overlay }) {
   if (!content.url) {
     return editable ? <EmptyPlaceholder theme={theme} typography={typography} label="Full-width image — click to choose a photo" /> : null;
   }
   return (
     <figure style={{ margin: '0 -24px' }}>
+      <div style={{ position: 'relative' }}>
       <img src={content.url} alt={content.caption || ''} loading="lazy" style={{ width: '100%', height: 'auto', maxHeight: 560, display: 'block', objectFit: 'cover' }} />
+      <MediaOverlay overlay={overlay} />
+      </div>
       {content.caption && <figcaption style={{ fontSize: 13, textAlign: 'center', marginTop: 10, opacity: 0.6 }}>{content.caption}</figcaption>}
     </figure>
   );
@@ -354,16 +368,21 @@ function GalleryBlock({ content, theme, typography, editable }) {
   );
 }
 
-function VideoBlock({ content, theme, typography, editable }) {
+function VideoBlock({ content, theme, typography, editable, overlay }) {
   const video = content.url ? detectHeroVideoType(content.url) : null;
   if (!video) {
     return editable ? <EmptyPlaceholder theme={theme} typography={typography} label="Video — click to add a YouTube, Vimeo, or .mp4 URL" /> : null;
   }
   if (video.type === 'file') {
     return (
-      <video controls playsInline preload="metadata" style={{ width: '100%', maxWidth: 900, display: 'block', margin: '0 auto' }}>
-        <source src={video.url} />
-      </video>
+      <div style={{ position: 'relative', maxWidth: 900, margin: '0 auto' }}>
+        <video controls playsInline preload="metadata" style={{ width: '100%', display: 'block' }}>
+          <source src={video.url} />
+        </video>
+        {/* pointer-events are off on the mark, so the player's own controls
+            stay reachable underneath it. */}
+        <MediaOverlay overlay={overlay} />
+      </div>
     );
   }
   // INLINE builders, never the hero-background ones. A body video is
@@ -373,6 +392,7 @@ function VideoBlock({ content, theme, typography, editable }) {
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', aspectRatio: '16/9', position: 'relative' }}>
       <iframe src={embedUrl} title="Video" allow="encrypted-media; fullscreen; picture-in-picture" allowFullScreen style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }} />
+      <MediaOverlay overlay={overlay} />
     </div>
   );
 }
@@ -848,7 +868,7 @@ export default function UniverseBlocks({ blocks, weddingDetails, theme, typograp
             <div style={wrapperStyle}>
               {/* The reading inset. Full-bleed background, contained words. */}
               <div style={{ padding: '0 24px' }}>
-              <Renderer content={block.content || {}} theme={effectiveTheme} typography={typography} universeConfig={universeConfig} weddingDetails={weddingDetails} editable={editable} style={block.style} />
+              <Renderer content={block.content || {}} theme={effectiveTheme} typography={typography} universeConfig={universeConfig} weddingDetails={weddingDetails} editable={editable} style={block.style} overlay={blockOverlayOf(block)} />
             </div>
             </div>
           </SectionReveal>

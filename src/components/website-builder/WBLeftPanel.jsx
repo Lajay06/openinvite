@@ -6,6 +6,7 @@ import NewPageModal from './NewPageModal';
 import { ALWAYS_ON_PAGES } from '@/lib/guestPages';
 import { EDITOR_TEMPLATES, isWritten } from '@/lib/emailTemplateStore';
 import { orderedCustomPages } from '@/lib/customPages';
+import PillSwitch from './PillSwitch';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -17,31 +18,6 @@ const PAGE_ICONS = {
 function PageIcon({ name, active }) {
   const Icon = PAGE_ICONS[name] || FileText;
   return <Icon size={13} strokeWidth={1.5} color={active ? '#FFFFFF' : 'rgba(255,255,255,0.4)'} fill="none" />;
-}
-
-function Toggle({ enabled, onToggle, label }) {
-  return (
-    <button
-      onClick={e => { e.stopPropagation(); onToggle(); }}
-      aria-label={label ? `Toggle ${label}` : 'Toggle'}
-      aria-pressed={enabled}
-      style={{
-        width: 28, height: 16, borderRadius: 999, border: 'none', cursor: 'pointer',
-        background: enabled ? '#E03553' : '#2C2C2E',
-        position: 'relative', flexShrink: 0, padding: 0, outline: 'none',
-        transition: 'background 0.2s ease',
-      }}
-    >
-      <div style={{
-        position: 'absolute',
-        width: 12, height: 12, borderRadius: '50%',
-        background: '#FFFFFF',
-        top: 2, left: 2,
-        transform: enabled ? 'translateX(12px)' : 'translateX(0)',
-        transition: 'transform 0.2s ease',
-      }} />
-    </button>
-  );
 }
 
 function SLabel({ children, onClick, isOpen }) {
@@ -214,7 +190,7 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
               }}>{label}</span>
 
               {!ALWAYS_ON_PAGES.includes(slug) ? (
-                <Toggle enabled={enabled} onToggle={() => toggle(slug)} label={label} />
+                <PillSwitch enabled={enabled} onToggle={() => toggle(slug)} label={label} />
               ) : (
                 // Not "Req". An abbreviation of a word the couple never used is
                 // not an explanation, and a dead toggle would be worse still.
@@ -276,7 +252,7 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
                     way to take one off the site was to destroy it — and the
                     row sat beside eleven built-ins that all toggle. Same
                     `enabledPages` list, same control. */}
-                <Toggle enabled={enabledPages.includes(page.slug)} onToggle={() => toggle(page.slug)} label={page.name} />
+                <PillSwitch enabled={enabledPages.includes(page.slug)} onToggle={() => toggle(page.slug)} label={page.name} />
                 <button
                   onClick={e => handleDeleteCustomPage(e, page.slug)}
                   aria-label={`Delete ${page.name}`}

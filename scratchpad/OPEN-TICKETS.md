@@ -1779,3 +1779,36 @@ layout, so it is a package with its own renders and its own accept, not a
 line to slip into a preview fix.
 
 Not started.
+
+---
+
+# DROP heroOverlay AND blockOverlays FROM WeddingDetails
+
+Filed 2026-09-08, on the day they were declared (#717).
+
+**Both are declared, both are unused, and neither should have been asked for.**
+They were listed as a schema need for P2 before the code was checked. It turned
+out the hero already had an overlay — `homeContent.overlay`, with size,
+position and scrim, shipped and in use — and a block can carry its own,
+because `homeContent.blocks` and `customPageContent[slug].blocks` are inside
+bare objects that keep whatever nested keys they are handed.
+
+**Why the existing homes are the right ones, so this is a removal and not a
+migration back:**
+
+- `heroOverlay` would need a migration. Every couple who has already placed a
+  monogram has it at `homeContent.overlay`; moving the store loses it unless
+  the move is written, verified and run, for no gain.
+- `blockOverlays`, as a map keyed by block id, **orphans on delete**. An
+  overlay stored on the block itself moves, copies and deletes with it. A side
+  map slowly fills with entries for blocks that no longer exist and nothing
+  ever cleans them up.
+
+**Cost of leaving them:** none measurable. Both are bare objects, absent from
+every live record, and nothing reads or writes them. They are noise in the
+schema, not a risk.
+
+**Do this at the owner's next Base44 visit**, not as a chat prompt of its own —
+then delete the two declarations from `base44/entities/WeddingDetails.jsonc`
+and regenerate `entityFields.generated.js` in the same PR that confirms they
+are gone live.

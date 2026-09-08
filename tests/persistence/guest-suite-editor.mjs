@@ -50,8 +50,13 @@ export async function runGuestSuiteEditor() {
       customPagesOf({ customPages: [{ name: 'no slug' }, null] }).length === 0, 'the guard in the helper');
 
     const left = code('src/components/website-builder/WBLeftPanel.jsx');
+    // PillSwitch, not Toggle. The control was lifted out of WBLeftPanel into
+    // its own file when the right panel needed the same switch, and renamed
+    // there because SectionEditorFields already exports a DIFFERENT `Toggle`
+    // — the larger light-surface one. This assertion is still the same
+    // property: the same enabledPages list, the same control as the built-ins.
     check('PLANT: a custom page toggles on and off like every other page',
-      /<Toggle enabled=\{enabledPages\.includes\(page\.slug\)\} onToggle=\{\(\) => toggle\(page\.slug\)\}/.test(left),
+      /<PillSwitch enabled=\{enabledPages\.includes\(page\.slug\)\} onToggle=\{\(\) => toggle\(page\.slug\)\}/.test(left),
       'the same enabledPages list, the same control');
     check('  and a disabled one reads as disabled',
       /opacity: enabledPages\.includes\(page\.slug\) \? 1 : 0\.4/.test(left), 'as the built-ins do');
