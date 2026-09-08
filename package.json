@@ -77,7 +77,8 @@
     "test:universe-breadcrumb": "node scripts/test-universe-breadcrumb.mjs",
     "test:builder-custom-pages": "node scripts/test-builder-custom-pages.mjs",
     "test:full-preview-devices": "node scripts/test-full-preview-devices.mjs",
-    "test:custom-page-blocks": "node scripts/test-custom-page-blocks.mjs"
+    "test:custom-page-blocks": "node scripts/test-custom-page-blocks.mjs",
+    "test:hero-toggles": "node scripts/test-hero-toggles.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.48",

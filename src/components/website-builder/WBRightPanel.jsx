@@ -34,6 +34,10 @@ import {
   EDITOR_TEMPLATES, FIELD_LABELS, defaultsFor, lockedRowsFor,
   designOf, publicIdOf,
 } from '@/lib/emailTemplateStore';
+import PillSwitch from './PillSwitch';
+import { heroShowsNames, heroShowsDate, universeHeroRendersDate, OVERLAY_BLOCK_TYPES } from '@/lib/heroDisplay';
+import { formatWeddingDate } from '@/lib/guestDate';
+import { resolveUniverseConfig } from '@/lib/universeStyling';
 
 // Background music: writing surface HIDDEN (owner decision, video-sound batch).
 // guestExperienceSettings.backgroundMusic had two sources: 'curated' (the mood
@@ -854,6 +858,9 @@ function EditedElsewhere({ label, href }) {
 }
 
 function ContentTab({ details, onChange, currentPage = 'home' }) {
+  // The universe CONFIG, not the theme: the layout is what decides whether
+  // this universe's hero prints a date at all, and only the config carries it.
+  const universeConfig = resolveUniverseConfig(details);
   const updateNested = (field, key, value) => {
     onChange(field, { ...(details?.[field] || {}), [key]: value });
   };
@@ -887,32 +894,63 @@ function ContentTab({ details, onChange, currentPage = 'home' }) {
     <div>
       {CONTENT_HOME.includes(currentPage) && (<>
       <SLabel>The couple</SLabel>
-      {/* TWO FIELDS, NOT ONE. This was a single "Couple names" input writing
-          `coupleNames` — the DERIVED copy — while EventDetails wrote the
-          partner fields. Two writers, two answers, and the copy is what 40+
-          surfaces read. Splitting it here means the builder and EventDetails
-          now edit the same truth. */}
-      <UInputDark
-        label="Partner 1 name"
-        value={details?.couple1Name || ''}
-        onChange={v => onChange('couple1Name', v)}
-        placeholder="Sarah"
-      />
-      <UInputDark
-        label="Partner 2 name"
-        value={details?.couple2Name || ''}
-        onChange={v => onChange('couple2Name', v)}
-        placeholder="James"
-      />
-      <UInputDark
+      {/* READ-ONLY HERE, AND THAT IS A REVERSAL. These were editable inputs,
+          split into two fields on purpose so that "the builder and
+          EventDetails now edit the same truth" — the reasoning is worth
+          keeping in view because the owner has now reversed it: Event details
+          writes them, every other surface reads them. Two writers for one
+          value is the thing being removed, not the thing being protected. */}
+      <ReadOnlyRow label="Partner 1 name" value={details?.couple1Name} empty="Not set yet" />
+      <ReadOnlyRow label="Partner 2 name" value={details?.couple2Name} empty="Not set yet" />
+      <ReadOnlyRow
         label="Wedding date"
-        type="date"
-        value={details?.weddingDate}
-        onChange={v => onChange('weddingDate', v)}
+        value={formatWeddingDate(details?.weddingDate, 'en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+        empty="Not set yet"
       />
+      <a
+        href="/event-details"
+        style={{ display: 'inline-block', marginBottom: 14, fontSize: 12, fontWeight: 500, color: '#E03553', textDecoration: 'none' }}
+      >
+        Edit in Event details
+      </a>
       <Divider />
 
       <SLabel>Home page</SLabel>
+      {/* THE THREE SWITCHES. Absent means ON — see heroDisplay.js — so this
+          panel reads `!== false` and never a truthy test: a switch that has
+          never been touched must not read as off, or every existing hero
+          loses its names the day this ships. */}
+      <SwitchRow
+        label="Show names"
+        hint="Your names across the hero"
+        enabled={heroShowsNames(details)}
+        onToggle={() => updateNested('homeContent', 'showNames', !heroShowsNames(details))}
+      />
+      {/* Only where a date is actually printed. Nineteen of the twenty
+          universes carry no date in the hero at all — the date/venue/RSVP
+          strip left it deliberately — so on those this switch would be a
+          control the couple could turn with nothing to show for it. */}
+      {universeHeroRendersDate(universeConfig) ? (
+        <SwitchRow
+          label="Show date"
+          hint="The wedding date under your names"
+          enabled={heroShowsDate(details)}
+          onToggle={() => updateNested('homeContent', 'showDate', !heroShowsDate(details))}
+        />
+      ) : (
+        <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: '0 0 12px' }}>
+          This universe keeps the date off the hero. It is on your celebration page.
+        </p>
+      )}
+      <SwitchRow
+        label="Show mark"
+        hint="Your monogram over the hero"
+        enabled={details?.homeContent?.overlay?.enabled !== false}
+        onToggle={() => updateNested('homeContent', 'overlay', {
+          ...(details?.homeContent?.overlay || {}),
+          enabled: details?.homeContent?.overlay?.enabled === false,
+        })}
+      />
       <MediaPicker
         label="Hero photo"
         value={details?.coverPhoto}
@@ -1331,7 +1369,107 @@ function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
 // (feat/component-library), which lives outside this panel, so ownership
 // moved up to the one place both can share it.
 
-export default function WBRightPanel({ details, theme, universeTheme, onChange, rightTab, onRightTabChange, currentPage, selectedBlock, onUpdateSelectedBlockContent, onUpdateSelectedBlockStyle, onDeleteSelectedBlock, onClearSelectedBlock, emailDraft, selectedEmail, onEmailChange, emailSave, onSaveEmails }) {
+/**
+ * A labelled switch, at the builder's own control scale — nothing here is
+ * larger than a page-row label.
+ */
+function SwitchRow({ label, hint, enabled, onToggle }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+      <div>
+        <p style={{ margin: 0, fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.75)' }}>{label}</p>
+        {hint && <p style={{ margin: '2px 0 0', fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>{hint}</p>}
+      </div>
+      <PillSwitch enabled={enabled} onToggle={onToggle} label={label} />
+    </div>
+  );
+}
+
+/**
+ * A field the builder shows but does not own. Partner names and the wedding
+ * date are written on Event details, and this panel used to write them too —
+ * deliberately, so that "the builder and EventDetails now edit the same
+ * truth" (the note still above the fields it replaced). The owner has
+ * reversed that: one page writes them, every other page reads them. The value
+ * is still shown here, because a couple looking at their hero needs to see
+ * what is on it, and the link is how they change it.
+ */
+function ReadOnlyRow({ label, value, empty }) {
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <p style={{ margin: '0 0 4px', fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)' }}>{label}</p>
+      <p style={{ margin: 0, fontSize: 13, color: value ? '#FFFFFF' : 'rgba(255,255,255,0.3)' }}>{value || empty}</p>
+    </div>
+  );
+}
+
+/**
+ * THE SAME MARK, ON A BLOCK. Identical control to the hero's — same picker,
+ * same size/position/scrim dials, same on/off switch — because it is the same
+ * thing on a different surface, and a couple who has learned it once should
+ * not meet a second dialect of it.
+ *
+ * Photo, full-width image and video only (OVERLAY_BLOCK_TYPES). A gallery is a
+ * grid of pictures with no single surface to centre a mark over, so it is left
+ * out rather than given a control whose result would depend on the column
+ * count.
+ */
+function BlockOverlayPanel({ block, updateOverlay }) {
+  const overlay = block.overlay || {};
+  const set = (key, value) => updateOverlay({ ...overlay, [key]: value });
+  return (
+    <>
+      <SLabel>Mark over this {block.type === 'video' ? 'video' : 'image'}</SLabel>
+      <SwitchRow
+        label="Show mark"
+        enabled={overlay.enabled !== false}
+        onToggle={() => set('enabled', overlay.enabled === false)}
+      />
+      <MediaPicker
+        label="Monogram or mark"
+        value={overlay.url}
+        onChange={v => set('url', v)}
+        aspectRatio="16/9"
+      />
+      {overlay.url && (
+        <div style={{ marginBottom: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {[
+            { key: 'scale', label: 'Size',   min: 5, max: 90,  def: 30, suffix: '% of width' },
+            { key: 'x',     label: 'Across', min: 0, max: 100, def: 50, suffix: '%' },
+            { key: 'y',     label: 'Down',   min: 0, max: 100, def: 50, suffix: '%' },
+            { key: 'scrim', label: 'Darken image behind it', min: 0, max: 80, def: 0, suffix: '%' },
+          ].map(f => {
+            const cur = overlay[f.key];
+            // DOWN DEFAULTS TO 50 HERE, NOT 14. The hero's 14 was measured
+            // against twenty mastheads whose names sit in the middle of it;
+            // a block has no text of its own to clear, so the mark belongs in
+            // the centre of the picture.
+            const val = Number.isFinite(cur) ? cur : f.def;
+            return (
+              <label key={f.key} style={{ display: 'block' }}>
+                <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>{f.label}</span>
+                  <span style={{ fontVariantNumeric: 'tabular-nums' }}>{val}{f.suffix === '%' ? '%' : ` ${f.suffix}`}</span>
+                </span>
+                <input
+                  type="range" min={f.min} max={f.max} value={val}
+                  onChange={e => set(f.key, Number(e.target.value))}
+                  style={{ width: '100%', accentColor: '#E03553' }}
+                />
+              </label>
+            );
+          })}
+          <button
+            onClick={() => updateOverlay(undefined)}
+            style={{ alignSelf: 'flex-start', fontSize: 12, color: 'rgba(255,255,255,0.7)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+          >Remove mark</button>
+        </div>
+      )}
+    </>
+  );
+}
+
+export default function WBRightPanel({ details, theme, universeTheme, onChange, rightTab, onRightTabChange, currentPage, selectedBlock, onUpdateSelectedBlockContent, onUpdateSelectedBlockStyle, onUpdateSelectedBlockOverlay, onDeleteSelectedBlock, onClearSelectedBlock, emailDraft, selectedEmail, onEmailChange, emailSave, onSaveEmails }) {
 
   return (
     <>
@@ -1352,6 +1490,12 @@ export default function WBRightPanel({ details, theme, universeTheme, onChange, 
                 <>
                   <Divider />
                   <BlockStylePanel block={selectedBlock} theme={theme} universeTheme={universeTheme} updateStyle={onUpdateSelectedBlockStyle} />
+                </>
+              )}
+              {OVERLAY_BLOCK_TYPES.includes(selectedBlock.type) && (
+                <>
+                  <Divider />
+                  <BlockOverlayPanel block={selectedBlock} updateOverlay={onUpdateSelectedBlockOverlay} />
                 </>
               )}
             </div>

@@ -1348,3 +1348,14 @@ body {
 @media (max-width: 640px) {
   .oi-ava-safe { padding-bottom: 88px; }
 }
+
+/* THE HERO NAMES SWITCH (P2). One rule, twenty layouts.
+   Every Masthead prints the couple's names in an h1 beside a kicker that is
+   universe copy and must stay, so "names off" cannot hide the Masthead and
+   cannot be an empty string — three layouts render spans inside that h1, so
+   it would not even be empty. WeddingHomePage.jsx wraps only the Masthead in
+   this class; scripts/test-hero-toggles.mjs checks the contract on every
+   universe rather than trusting it. */
+.wb-hero-names-off h1 {
+  display: none;
+}

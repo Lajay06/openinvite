@@ -500,6 +500,21 @@ export default function StudioWebsite({ onBack }) {
   // key to undefined removes the override key entirely rather than storing
   // an explicit "unset" value, so an untouched block's `style` stays absent
   // and resolves to the type's own default look.
+  // The mark over a media block, stored ON the block. A side map keyed by
+  // block id would orphan its entries the moment a block was deleted; an
+  // overlay on the block moves, copies and deletes with it. `undefined`
+  // removes the key rather than storing an empty object, the same way an
+  // untouched block carries no `style`.
+  const updateBlockOverlayOnPage = (page, id, overlay) => {
+    setPageBlocks(page, getPageBlocks(page).map(b => {
+      if (b.id !== id) return b;
+      const next = { ...b };
+      if (overlay === undefined) delete next.overlay;
+      else next.overlay = overlay;
+      return next;
+    }));
+  };
+
   const updateBlockStyleOnPage = (page, id, key, value) => {
     const next = getPageBlocks(page).map(b => {
       if (b.id !== id) return b;
@@ -529,6 +544,11 @@ export default function StudioWebsite({ onBack }) {
   const updateSelectedBlockContent = (key, value) => {
     if (!selectedBlockRef) return;
     updateBlockContentOnPage(selectedBlockRef.page, selectedBlockRef.blockId, key, value);
+  };
+
+  const updateSelectedBlockOverlay = (overlay) => {
+    if (!selectedBlockRef) return;
+    updateBlockOverlayOnPage(selectedBlockRef.page, selectedBlockRef.blockId, overlay);
   };
 
   const updateSelectedBlockStyle = (key, value) => {
@@ -819,6 +839,7 @@ export default function StudioWebsite({ onBack }) {
             selectedBlock={selectedBlock}
             onUpdateSelectedBlockContent={updateSelectedBlockContent}
             onUpdateSelectedBlockStyle={updateSelectedBlockStyle}
+            onUpdateSelectedBlockOverlay={updateSelectedBlockOverlay}
             onDeleteSelectedBlock={deleteSelectedBlock}
             onClearSelectedBlock={clearSelectedBlock}
             emailDraft={emailDraft}

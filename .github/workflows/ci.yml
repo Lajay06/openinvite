@@ -352,6 +352,23 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
 
+      # Every universe, because "names off" is one CSS rule resting on an
+      # assumption held across twenty layout files: the h1 in a Masthead is
+      # the couple's names. The kicker check is what separates hiding the
+      # names from hiding the masthead.
+      - name: The hero switches, on every universe
+        run: |
+          npx vite preview --port 4184 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4184 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4184 npm run test:hero-toggles
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       - name: The universe breadcrumb says where it goes
         run: |
           npx vite preview --port 4180 --strictPort &

@@ -34,6 +34,7 @@ import SeoulFooter from '../layouts/SeoulFooter';
 import ShanghaiMasthead from '../layouts/ShanghaiMasthead';
 import ShanghaiFooter from '../layouts/ShanghaiFooter';
 import MediaOverlay from '../MediaOverlay';
+import { heroShowsNames, heroShowsDate, heroOverlayOf } from '@/lib/heroDisplay';
 
 import { coupleDisplayName } from '@/lib/coupleNames';
 /** Formats weddingDate for display, or null if unset/unparseable — never
@@ -262,11 +263,35 @@ function HeroBackground({ coverPhoto, heroVideoUrl, prefersReduced, overlay }) {
  * is its own Masthead/Footer (arch framing, sunburst, thistle, etc.), not
  * a bespoke DOM shape.
  */
+/**
+ * THE NAMES SWITCH, and why it is a wrapper rather than a prop.
+ *
+ * Every one of the twenty heroes prints the couple's names in an `h1` inside
+ * its own Masthead, next to a kicker that is universe COPY and must stay. So
+ * "names off" cannot be done by hiding the Masthead, and passing it an empty
+ * string leaves an empty `h1` holding its own line-height open — three of the
+ * layouts render spans and an ampersand inside that `h1`, so they would not
+ * even be empty.
+ *
+ * One class on the element that wraps ONLY the Masthead, and one rule in
+ * index.css, hides exactly the names on all twenty without editing nineteen
+ * layout files. The contract it rests on — the `h1` in a Masthead is the
+ * couple's names — is checked on every universe by
+ * scripts/test-hero-toggles.mjs rather than assumed.
+ */
+function HeroNames({ show, children }) {
+  return (
+    <div style={{ width: '100%' }} className={show ? undefined : 'wb-hero-names-off'}>
+      {children}
+    </div>
+  );
+}
+
 function GenericMastheadHero({ Masthead, Footer, weddingDetails, theme, typography, universeConfig, copy, prefersReduced, formattedDate, venueFallback }) {
   return (
     <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <HeroBackground overlay={weddingDetails.homeContent?.overlay} coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
+        <HeroBackground overlay={heroOverlayOf(weddingDetails)} coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
         <div style={{ position: 'absolute', inset: 0, backgroundColor: `${theme.darkBg}45` }} />
 
         <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '120px 32px 60px' }}>
@@ -276,7 +301,7 @@ function GenericMastheadHero({ Masthead, Footer, weddingDetails, theme, typograp
             transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.55), ease: universeConfig?.motion?.ease }}
             style={{ width: '100%' }}
           >
-            <Masthead coupleNames={coupleDisplayName(weddingDetails)} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} accentColor={theme.accent} />
+            <HeroNames show={heroShowsNames(weddingDetails)}><Masthead coupleNames={coupleDisplayName(weddingDetails)} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} accentColor={theme.accent} /></HeroNames>
           </motion.div>
         </div>
 
@@ -342,7 +367,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
     return (
       <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          <HeroBackground overlay={weddingDetails.homeContent?.overlay} coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
+          <HeroBackground overlay={heroOverlayOf(weddingDetails)} coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
           <div style={{ position: 'absolute', inset: 0, backgroundColor: `${theme.darkBg}60` }} />
 
           <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '140px 40px 80px' }}>
@@ -352,7 +377,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
               transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.7), ease: universeConfig?.motion?.ease }}
               style={{ width: '100%' }}
             >
-              <ParisMasthead coupleNames={coupleDisplayName(weddingDetails)} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} />
+              <HeroNames show={heroShowsNames(weddingDetails)}><ParisMasthead coupleNames={coupleDisplayName(weddingDetails)} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} /></HeroNames>
             </motion.div>
           </div>
 
@@ -374,7 +399,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
     return (
       <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          <HeroBackground overlay={weddingDetails.homeContent?.overlay} coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
+          <HeroBackground overlay={heroOverlayOf(weddingDetails)} coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
           <div style={{ position: 'absolute', inset: 0, backgroundColor: `${theme.darkBg}45` }} />
 
           <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '120px 32px 60px' }}>
@@ -384,7 +409,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
               transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.55), ease: universeConfig?.motion?.ease }}
               style={{ width: '100%' }}
             >
-              <CapriMasthead coupleNames={coupleDisplayName(weddingDetails)} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} accentColor={theme.accent} />
+              <HeroNames show={heroShowsNames(weddingDetails)}><CapriMasthead coupleNames={coupleDisplayName(weddingDetails)} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} accentColor={theme.accent} /></HeroNames>
             </motion.div>
           </div>
 
@@ -406,7 +431,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
     return (
       <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          <HeroBackground overlay={weddingDetails.homeContent?.overlay} coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
+          <HeroBackground overlay={heroOverlayOf(weddingDetails)} coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
           <div style={{ position: 'absolute', inset: 0, backgroundColor: `${theme.darkBg}55` }} />
 
           <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', alignItems: 'center', padding: '150px 48px 90px' }}>
@@ -416,7 +441,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
               transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.6), ease: universeConfig?.motion?.ease }}
               style={{ width: '100%', maxWidth: 900 }}
             >
-              <MykonosMasthead coupleNames={coupleDisplayName(weddingDetails)} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} accentColor={theme.accent} />
+              <HeroNames show={heroShowsNames(weddingDetails)}><MykonosMasthead coupleNames={coupleDisplayName(weddingDetails)} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} accentColor={theme.accent} /></HeroNames>
             </motion.div>
           </div>
 
@@ -436,7 +461,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
     return (
       <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          <HeroBackground overlay={weddingDetails.homeContent?.overlay} coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
+          <HeroBackground overlay={heroOverlayOf(weddingDetails)} coverPhoto={weddingDetails.coverPhoto} heroVideoUrl={weddingDetails.heroVideoUrl} prefersReduced={prefersReduced} />
           <div style={{ position: 'absolute', inset: 0, backgroundColor: `${theme.darkBg}60` }} />
 
           <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', alignItems: 'center', padding: '140px 48px 80px' }}>
@@ -445,7 +470,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.75), ease: universeConfig?.motion?.ease }}
             >
-              <CapeTownMasthead coupleNames={coupleDisplayName(weddingDetails)} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} />
+              <HeroNames show={heroShowsNames(weddingDetails)}><CapeTownMasthead coupleNames={coupleDisplayName(weddingDetails)} kicker={copy.heroKicker} theme={theme} typography={typography} textColor={theme.lightBg} /></HeroNames>
             </motion.div>
           </div>
 
@@ -466,7 +491,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
       <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <HeroBackground
-            overlay={weddingDetails.homeContent?.overlay}
+            overlay={heroOverlayOf(weddingDetails)}
             coverPhoto={weddingDetails.coverPhoto}
             heroVideoUrl={weddingDetails.heroVideoUrl}
             prefersReduced={prefersReduced}
@@ -479,13 +504,13 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.8), ease: universeConfig?.motion?.ease }}
             >
-              <KyotoMasthead
+              <HeroNames show={heroShowsNames(weddingDetails)}><KyotoMasthead
                 coupleNames={coupleDisplayName(weddingDetails)}
                 kicker={copy.heroKicker}
                 theme={theme}
                 typography={typography}
                 textColor={theme.lightBg}
-              />
+              /></HeroNames>
             </motion.div>
           </div>
 
@@ -506,7 +531,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
       <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <HeroBackground
-            overlay={weddingDetails.homeContent?.overlay}
+            overlay={heroOverlayOf(weddingDetails)}
             coverPhoto={weddingDetails.coverPhoto}
             heroVideoUrl={weddingDetails.heroVideoUrl}
             prefersReduced={prefersReduced}
@@ -520,14 +545,14 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
               transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.4), ease: universeConfig?.motion?.ease }}
               style={{ width: '100%' }}
             >
-              <BrooklynMasthead
+              <HeroNames show={heroShowsNames(weddingDetails)}><BrooklynMasthead
                 coupleNames={coupleDisplayName(weddingDetails)}
                 kicker={copy.heroKicker}
                 theme={theme}
                 typography={typography}
                 textColor={theme.lightBg}
                 accentColor={theme.accent}
-              />
+              /></HeroNames>
             </motion.div>
           </div>
 
@@ -548,7 +573,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
       <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <HeroBackground
-            overlay={weddingDetails.homeContent?.overlay}
+            overlay={heroOverlayOf(weddingDetails)}
             coverPhoto={weddingDetails.coverPhoto}
             heroVideoUrl={weddingDetails.heroVideoUrl}
             prefersReduced={prefersReduced}
@@ -562,13 +587,13 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
               transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.9), ease: universeConfig?.motion?.ease }}
               style={{ width: '100%', maxWidth: 900, margin: '0 auto' }}
             >
-              <BaliMasthead
+              <HeroNames show={heroShowsNames(weddingDetails)}><BaliMasthead
                 coupleNames={coupleDisplayName(weddingDetails)}
                 kicker={copy.heroKicker}
                 theme={theme}
                 typography={typography}
                 textColor={theme.lightBg}
-              />
+              /></HeroNames>
             </motion.div>
           </div>
 
@@ -591,7 +616,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
       <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <HeroBackground
-            overlay={weddingDetails.homeContent?.overlay}
+            overlay={heroOverlayOf(weddingDetails)}
             coverPhoto={weddingDetails.coverPhoto}
             heroVideoUrl={weddingDetails.heroVideoUrl}
             prefersReduced={prefersReduced}
@@ -605,13 +630,13 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
               transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.95) }}
               style={{ width: '100%' }}
             >
-              <MinimalMasthead
+              <HeroNames show={heroShowsNames(weddingDetails)}><MinimalMasthead
                 coupleNames={coupleDisplayName(weddingDetails)}
                 kicker={copy.heroKicker}
                 theme={theme}
                 typography={typography}
                 textColor={theme.lightBg}
-              />
+              /></HeroNames>
             </motion.div>
           </div>
 
@@ -632,7 +657,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
       <div style={{ backgroundColor: theme.darkBg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <HeroBackground
-            overlay={weddingDetails.homeContent?.overlay}
+            overlay={heroOverlayOf(weddingDetails)}
             coverPhoto={weddingDetails.coverPhoto}
             heroVideoUrl={weddingDetails.heroVideoUrl}
             prefersReduced={prefersReduced}
@@ -646,13 +671,13 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
               transition={{ duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.85) }}
               style={{ width: '100%', maxWidth: 1100, margin: '0 auto' }}
             >
-              <EditorialMasthead
+              <HeroNames show={heroShowsNames(weddingDetails)}><EditorialMasthead
                 coupleNames={coupleDisplayName(weddingDetails)}
                 kicker={copy.heroKicker}
                 theme={theme}
                 typography={typography}
                 textColor={theme.lightBg}
-              />
+              /></HeroNames>
             </motion.div>
           </div>
 
@@ -684,7 +709,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
         }}
       >
         <HeroBackground
-          overlay={weddingDetails.homeContent?.overlay}
+          overlay={heroOverlayOf(weddingDetails)}
           coverPhoto={weddingDetails.coverPhoto}
           heroVideoUrl={weddingDetails.heroVideoUrl}
           prefersReduced={prefersReduced}
@@ -712,6 +737,11 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
             color: theme.lightBg
           }}
         >
+          {/* Switched off, these are not rendered empty — an h1 or a p with
+              nothing in it keeps its own margins and leaves a gap the couple
+              cannot explain. This hero is the ONLY one that prints a date;
+              see universeHeroRendersDate. */}
+          {heroShowsNames(weddingDetails) && (
           <h1
             style={{
               fontFamily: typography.headingFont,
@@ -725,7 +755,9 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
           >
             {coupleDisplayName(weddingDetails)}
           </h1>
+          )}
 
+          {heroShowsDate(weddingDetails) && (
           <p
             style={{
               fontFamily: typography.bodyFont,
@@ -737,6 +769,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
           >
             {formattedDate || 'Date to be announced'}
           </p>
+          )}
 
           {/* Nothing renders when there is no tagline — an empty container
               would leave its margins behind as an unexplained gap. */}
