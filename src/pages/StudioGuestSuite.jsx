@@ -85,9 +85,14 @@ export default function StudioGuestSuite() {
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'flex', flexDirection: 'column' }}>
 
       {/* TOP BAR */}
+      {/* zIndex 40, NOT 100. The shared modal wrapper paints at z-50, so any
+          page chrome above it covers the top of every dialog opened from this
+          page — its edge and the dimming both. That is what hid the full-page
+          preview's toolbar in the builder (#716); this is the same inversion
+          on this page. 40 still clears the content that scrolls under it. */}
       <div style={{
         height: 56, flexShrink: 0, background: '#FFFFFF', borderBottom: '1px solid #EEEEEE',
-        display: 'flex', alignItems: 'center', padding: '0 20px', gap: 12, position: 'sticky', top: 0, zIndex: 100,
+        display: 'flex', alignItems: 'center', padding: '0 20px', gap: 12, position: 'sticky', top: 0, zIndex: 40,
       }}>
         <button
           onClick={() => navigate('/studio')}

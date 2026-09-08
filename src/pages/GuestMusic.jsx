@@ -183,7 +183,12 @@ export default function GuestMusic() {
       }}
     >
       {/* Nav */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 100, height: 56, background: 'rgba(10,10,10,0.95)', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', padding: '0 16px' }}>
+      {/* zIndex 40 for the same reason as StudioGuestSuite's top bar: the
+          shared modal wrapper paints at z-50 and page chrome must sit below
+          it. Nothing exercises this file today — App.jsx does not route it
+          (see the note there) — so this is the class being kept consistent,
+          not a fix anyone can see. */}
+      <div style={{ position: 'sticky', top: 0, zIndex: 40, height: 56, background: 'rgba(10,10,10,0.95)', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', padding: '0 16px' }}>
         <Link to={`/w/${weddingSlug}`} style={{ color: '#FFFFFF', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 600 }}>
           <ChevronLeft size={16} /> Back
         </Link>
