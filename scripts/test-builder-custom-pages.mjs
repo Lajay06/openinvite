@@ -11,7 +11,12 @@
  * Usage: npm run test:builder-custom-pages  (needs a server; CAPTURE_BASE_URL)
  */
 import { chromium } from 'playwright';
+import { readFileSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { seededContext, SEED } from './lib/renderHarness.mjs';
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 const BASE = process.env.CAPTURE_BASE_URL || 'http://localhost:5173';
 
@@ -110,6 +115,28 @@ const browser = await chromium.launch();
       parseFloat(cta.radius) >= 99 && cta.weight === '600', `${cta.radius} / ${cta.weight}`);
   }
   await ctx.close();
+}
+
+// ── (b) THE PUBLISH MODAL'S TWO CTAs ────────────────────────────────────
+//
+// Rendered rather than grepped where possible, but PublishModal opens over a
+// live publish path, so the two assertions that matter are made differently:
+// the FILL is checked in source (it is a literal, and there is nothing to
+// interpret), and the HANDLER is checked in source too, because the whole
+// point of the change is that the button's behaviour did not move. A render
+// test that clicked Publish would publish.
+{
+  const src = readFileSync(resolve(ROOT, 'src/components/website-builder/PublishModal.jsx'), 'utf8');
+  check('PublishModal carries no gradient', !/linear-gradient/.test(src),
+    `${(src.match(/linear-gradient/g) || []).length} found`);
+  check('  and its CTAs are the brand strawberry',
+    (src.match(/background: '#E03553'/g) || []).length >= 1
+      && /websiteEnabled \? 'transparent' : '#E03553'/.test(src),
+    'solid #E03553');
+  // THE HANDLER IS UNTOUCHED. This is the check the owner asked for by name:
+  // recolouring a button must not move what it does.
+  check('  and Publish still calls togglePublish', /onClick=\{togglePublish\}/.test(src),
+    'same handler');
 }
 
 await browser.close();
