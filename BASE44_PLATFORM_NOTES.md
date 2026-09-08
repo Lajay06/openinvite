@@ -1157,3 +1157,25 @@ which is what made the recovery clean: `git reset --hard HEAD` discarded the
 merge and `stash@{0}` was still intact.
 
 Read a file from a stash with `git show stash@{0}:<path>`. It mutates nothing.
+
+## `is_sample` is not a Base44 field, and must never become one
+
+Sample content is marked in memory and never in the database. `getSampleWedding`
+returns an object whose `__sample: true` is redefined **non-enumerable** on the
+way out, so `JSON.stringify` drops it and the marker cannot ride a save into a
+record (`src/lib/sampleContent/index.js`).
+
+**Why this is a platform note and not a code comment.** The obvious
+implementation is a declared boolean — `is_sample` on WeddingDetails — and it
+is the wrong one twice over. A row carrying a true `is_sample` is a row every
+reader must remember to filter, and this codebase has already learned what
+happens when a field's meaning lives in the readers rather than the data: the
+`dayVendorContacts` freeze, where one row holding a value that disagreed with
+its declared type made every write to that record fail citing a field the
+writer never touched. And a marker that CAN be stored eventually is: a
+non-enumerable property cannot be, structurally, which is the difference
+between a rule and a promise.
+
+So: do not declare `is_sample`. If a future package needs to know whether a
+record is sample-backed, it is a question about the code path that produced it,
+not a column.
