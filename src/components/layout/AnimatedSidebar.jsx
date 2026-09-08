@@ -314,7 +314,7 @@ function GroupHeader({ section, open, onToggle }) {
           the shape every other disclosure in the product draws. One icon,
           rotated: ChevronDown is the open state and -90deg is the closed one,
           which is ChevronRight without a second import to keep in step.
-          Sized and coloured off the group label beside it, not off a value of
+          Sized and colored off the group label beside it, not off a value of
           its own. */}
       <ChevronDown
         aria-hidden="true"

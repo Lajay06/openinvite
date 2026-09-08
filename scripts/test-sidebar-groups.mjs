@@ -56,7 +56,7 @@ const readGroups = (page) => page.evaluate((groups) => {
     const cs = svg ? getComputedStyle(svg) : null;
     out[label] = {
       expanded: el.getAttribute('aria-expanded') === 'true',
-      // The label's own size and colour, to compare the indicator against.
+      // The label's own size and color, to compare the indicator against.
       labelStyle: (() => { const s = el.querySelector('span'); const c = s && getComputedStyle(s); return c ? { size: c.fontSize, color: c.color } : null; })(),
       icon: svg ? { cls: svg.getAttribute('class') || '', w: svg.getAttribute('width'), color: cs.color, transform: cs.transform } : null,
       text: (el.innerText || ''),
@@ -95,7 +95,7 @@ const browser = await chromium.launch();
     check('  it is turned -90 degrees while closed',
       !!one.icon && /matrix\(0, -1, 1, 0/.test(one.icon.transform),
       one.icon ? one.icon.transform : 'no transform');
-    check('  it is the size and colour of the label beside it',
+    check('  it is the size and color of the label beside it',
       !!one.icon && one.icon.w === '10' && one.labelStyle && one.icon.color === one.labelStyle.color,
       one.icon ? `${one.icon.w}px ${one.icon.color} vs label ${one.labelStyle?.size} ${one.labelStyle?.color}` : 'no svg');
 
@@ -109,7 +109,7 @@ const browser = await chromium.launch();
   } else {
     for (const n of ['  on a first load with nothing stored, every one of them is closed',
       '  the indicator is a chevron, not a text glyph', '  it is turned -90 degrees while closed',
-      '  it is the size and colour of the label beside it',
+      '  it is the size and color of the label beside it',
       '  and no arrow glyph is left anywhere in the sidebar']) check(n, false, 'no group headers');
   }
   await ctx.close();

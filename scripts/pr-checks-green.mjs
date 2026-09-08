@@ -81,7 +81,30 @@ const NOT_RUN  = ['SKIPPED', 'NEUTRAL'];
  *
  * @returns {{ok: boolean, mode: string, lines: string[]}}
  */
-export function evaluate(rows, maySkip = MAY_SKIP, mustBePresent = MUST_BE_PRESENT) {
+export function evaluate(rows, maySkip = MAY_SKIP, mustBePresent = MUST_BE_PRESENT, mergeable = null) {
+  // ── THE CONFLICT CASE COMES FIRST, AND IT IS NOT AN ABSENT CHECK ──────────
+  //
+  // A pull_request run is built on the PR's MERGE REF, refs/pull/<n>/merge —
+  // the commit GitHub makes by merging the head into the base. A PR that
+  // CONFLICTS with its base has no such ref, so GitHub creates no run at all:
+  // not pending, not failed, absent.
+  //
+  // The refusal below would still catch it, and did, twice. What it got wrong
+  // was the REASON: "wait and re-run before hunting for a broken workflow"
+  // sends you to look at a workflow, and at a clock, when the answer is a
+  // rebase. The first theory this produced was a timing race, and the test
+  // that killed it cost most of an hour. So this is checked first and named.
+  if (mergeable === 'CONFLICTING') {
+    return { ok: false, mode: 'conflicting', lines: [
+      'CONFLICTING — no merge ref, no CI run will ever exist; rebase.',
+      '',
+      'A pull_request run is built on refs/pull/<n>/merge. This PR does not',
+      'merge cleanly, so that ref does not exist and GitHub creates no run —',
+      'which reads as a missing check and is not one. Waiting will not help.',
+      '',
+      '  git fetch origin && git rebase origin/main   # then resolve and push'] };
+  }
+
   if (rows.length === 0) return { ok: false, mode: 'no-checks', lines: ['no checks reported yet'] };
 
   const running = rows.filter(r => !TERMINAL.includes(r.state));
@@ -96,9 +119,14 @@ export function evaluate(rows, maySkip = MAY_SKIP, mustBePresent = MUST_BE_PRESE
       'A workflow that never ran reports nothing, and a gate that only inspects',
       'the rows it was handed calls that green. Absence is not success.',
       '',
-      'MEASURED: GitHub can take 5+ minutes to CREATE a run — during that window',
-      'the check is absent rather than PENDING, and this is what you see. Refusing',
-      'is still correct; wait and re-run before hunting for a broken workflow.'] };
+      'FIRST: is this PR mergeable? A conflicting PR has no merge ref, so no',
+      'run is ever created and this is exactly what you see. That was the cause',
+      'both times it has happened. `gh pr view <n> --json mergeable` — if it',
+      'says CONFLICTING, rebase; nothing else will fix it.',
+      '',
+      'ONLY THEN the clock: GitHub can take 5+ minutes to CREATE a run, and',
+      'during that window the check is absent rather than PENDING. Refusing is',
+      'still correct; wait and re-run.'] };
   }
 
   const failing = rows.filter(r => !NOT_RUN.includes(r.state) && r.state !== 'SUCCESS');
@@ -125,7 +153,7 @@ export function evaluate(rows, maySkip = MAY_SKIP, mustBePresent = MUST_BE_PRESE
 if (process.argv[1] && process.argv[1].endsWith('pr-checks-green.mjs')) {
   let payload;
   try {
-    payload = JSON.parse(execSync(`gh pr view ${pr} --json statusCheckRollup`, { encoding: 'utf8' }));
+    payload = JSON.parse(execSync(`gh pr view ${pr} --json statusCheckRollup,mergeable`, { encoding: 'utf8' }));
   } catch (err) {
     console.error(`could not read checks for PR ${pr}: ${err.message.split('\n')[0]}`);
     process.exit(2);
@@ -135,7 +163,7 @@ if (process.argv[1] && process.argv[1].endsWith('pr-checks-green.mjs')) {
     state: c.conclusion || c.state || 'UNKNOWN',
   }));
   for (const r of rows) console.log(`  ${String(r.state).padEnd(12)} ${r.name}`);
-  const v = evaluate(rows);
+  const v = evaluate(rows, MAY_SKIP, MUST_BE_PRESENT, payload.mergeable || null);
   console.log('');
   for (const l of v.lines) console.log(l);
   process.exit(v.ok ? 0 : 1);
