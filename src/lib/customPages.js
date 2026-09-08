@@ -72,6 +72,35 @@ export function pageLabel(weddingDetails, slug) {
   return custom ? (custom.name || custom.slug) : null;
 }
 
+/**
+ * The couple's custom pages IN THE ORDER THEY ARRANGED THEM.
+ *
+ * The order lives in `enabledPages`, which is what the left panel's drag
+ * writes and what the built-in rows already sort by — the `customPages` array
+ * is a catalog of what exists, not a running order, exactly as WEDDING_PAGES
+ * is for the built-ins.
+ *
+ * That split is why reordering appeared not to save. The drag DID write
+ * `enabledPages` and Base44 DID keep it; the custom rows simply rendered in
+ * `customPages` array order and ignored it, so the couple dragged a page,
+ * saw it snap back, and reasonably concluded nothing had persisted. One
+ * sort, in the one place every caller can share.
+ *
+ * A page not in `enabledPages` is switched off. It keeps the catalog's order,
+ * after the ones that are on — it has no position on a site it is not part of.
+ */
+export function orderedCustomPages(weddingDetails) {
+  const order = Array.isArray(weddingDetails?.enabledPages) ? weddingDetails.enabledPages : [];
+  return [...customPagesOf(weddingDetails)].sort((a, b) => {
+    const ia = order.indexOf(a.slug);
+    const ib = order.indexOf(b.slug);
+    if (ia === -1 && ib === -1) return 0;
+    if (ia === -1) return 1;
+    if (ib === -1) return -1;
+    return ia - ib;
+  });
+}
+
 /** The custom page record for a slug, or null if it is a built-in or unknown. */
 export function customPageFor(weddingDetails, slug) {
   if (WEDDING_PAGES.some(p => p.slug === slug)) return null;
