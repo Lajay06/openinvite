@@ -58,6 +58,8 @@ export const LIVE_CREDENTIAL_GUARDS = new Set([
   // Cloudinary, not Base44: it verifies HERO_MASTERS against the real assets,
   // which is the one thing the CI-lane hero guard cannot know.
   'hero-masters-live.mjs',
+  // Signs up a real account and sends a real email. The owner runs it.
+  'run-launch-smoke.mjs',
   'collaborator-invite.mjs',
   'endpoint-auth.mjs',
   'guest.mjs',
