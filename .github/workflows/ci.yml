@@ -369,6 +369,23 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
 
+      # Collapsed by default, remembered per device, and a chevron rather than
+      # a text caret. All three are claims about the rendered DOM after a
+      # mount — and the memory is checked by RELOADING, since reading state
+      # back without one proves only that it is in memory.
+      - name: The sidebar groups open shut and remember what you open
+        run: |
+          npx vite preview --port 4185 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4185 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4185 npm run test:sidebar-groups
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       - name: The universe breadcrumb says where it goes
         run: |
           npx vite preview --port 4180 --strictPort &

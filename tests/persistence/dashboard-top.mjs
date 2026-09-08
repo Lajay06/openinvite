@@ -98,18 +98,31 @@ export async function runDashboardTop() {
     !/label="Design studio"/.test(nav), 'one entry, not two');
 
   // ── COLLAPSE DEFAULTS ───────────────────────────────────────────────────
-  check('PLANT: every group is collapsed except the first',
-    /open\[sec\.label\] = i === 0 \|\| holdsActive\(sec\)/.test(nav),
-    'index 0 open, the rest shut');
+  // OWNER RULING, REVISED 2026-09-08: every group is collapsed on first load,
+  // the first one included. The clause this replaces — `i === 0 ||` — was the
+  // whole of what changed; the active-page clause below is untouched and is
+  // the reason the revision does not make the sidebar annoying.
+  check('PLANT: every group is collapsed on a first load',
+    /open\[sec\.label\] = holdsActive\(sec\)/.test(nav) && !/i === 0 \|\|/.test(nav),
+    'nothing opens by position');
   check('  and a group holding the active page opens',
     /holdsActive\(sec\)/.test(nav) && /\(sec\.items \|\| \[\]\)\.some\(\(it\) => isActive\(it\.url\)\)/.test(nav),
     'you never land on a page whose own group is shut');
   check('  the items render only when the group is open',
     (nav.match(/\{open && section\.items\.map/g) || []).length === 2,
     'both the desktop and the mobile renderer');
+  // The caret pair (U+25BC / U+25B6) is gone: owner ruling 2026-09-08, the
+  // indicator is the same lucide ChevronDown the rest of the dashboard uses,
+  // rotated -90deg when closed. Those glyphs were never an emoji violation —
+  // that rule is about presentation, not about a block — they were simply not
+  // the shape everything else draws. The RENDERED chevron, its rotation, and
+  // the absence of any stray arrow are checked in scripts/test-sidebar-groups.mjs.
   check('  and the header says which way it is',
-    /aria-expanded=\{open\}/.test(nav) && /\\u25BC/.test(nav) && /\\u25B6/.test(nav),
-    'a text-presentation caret, not an emoji');
+    /aria-expanded=\{open\}/.test(nav) && /<ChevronDown/.test(nav) && /rotate\(-90deg\)/.test(nav),
+    'a chevron, rotated');
+  check('  and the couple’s choice is remembered per device',
+    /localStorage\.setItem\(GROUP_OPEN_KEY/.test(nav) && /localStorage\.getItem\(GROUP_OPEN_KEY/.test(nav),
+    'read and written in localStorage, not on the record');
 
   return results;
 }
