@@ -288,6 +288,23 @@ jobs:
       # Needs the same preview server and browser as the guards above. The
       # resume path it checks was written long ago and inert until c832e9e
       # declared onboardingDraft — so this is the first CI run it has ever had.
+      # The breadcrumb's WORDS and its painted-ness, on two universe routes.
+      # Each hides the other's failure: right words behind an overlay reads
+      # correct in the DOM; wrong words on screen reads correct in a
+      # screenshot.
+      - name: The universe breadcrumb says where it goes
+        run: |
+          npx vite preview --port 4180 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4180 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4180 npm run test:universe-breadcrumb
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       - name: Onboarding resumes where the couple left it
         run: |
           npx vite preview --port 4179 --strictPort &
