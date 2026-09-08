@@ -1845,3 +1845,50 @@ that will not fix itself by uploading a bigger file.
 Until then `heroFocus.amalfi` stays at `47% center`, and the entry in
 `heroMasters.js` for the old public id stays with it — both go in the same PR
 that confirms the new master is live.
+
+---
+
+# SECOND PR HEAD WITH NO ACTIONS RUN — IS THE pull_request TRIGGER BEING DROPPED?
+
+Filed 2026-09-08.
+
+**Twice now a pushed PR head has produced no CI run at all.** Not a pending
+check, not a failure — no workflow run exists for the SHA under any event,
+and the commit's check-runs API returns only the two Vercel entries.
+
+  454e9b2  on #705
+  9da7bcb  on #723
+
+`pr:green` refuses on exactly this and its message is the right one: absence
+is not success. A gate that reads an absent check as green is the failure
+this whole class exists to prevent, so the refusal is working. What is not
+working is whatever should have created the run.
+
+**What the two have in common.** Both were pushed shortly after a push to a
+DIFFERENT branch. `9da7bcb` went up minutes after #722's merge commit landed
+on main and started main's own CI run. Both were also small commits on a
+branch whose previous head had a completed, successful run.
+
+**What has been ruled out.** `ci.yml`'s trigger is a bare `on: pull_request`
+with no `paths` or `paths-ignore`, so a docs-only change is not being
+filtered out by configuration. The workflow file itself was unchanged
+between the head that ran and the head that did not.
+
+**Not ruled out**, and worth measuring rather than guessing:
+
+- Actions dropping or coalescing a `synchronize` event while another run for
+  the same repository is starting.
+- Something in the repository's Actions settings or usage limits that
+  silently declines to create a run rather than queueing one.
+- A race between the push and the PR's merge-ref being updated.
+
+**Why it matters more than the inconvenience.** The remedy each time was an
+empty commit, which moves the head and voids whatever merge authorization
+named the old one. That is a real cost in a manual-mode programme: every
+occurrence burns a line and a round trip. It also means a branch can sit
+looking merge-ready with two green checks and no build at all, which is
+exactly the shape of a gate that passes by not running.
+
+**Next step:** capture the push timestamp, the other branch's push
+timestamp, and the Actions run list at the moment of the miss, the next time
+it happens. Three occurrences with times would probably identify it.
