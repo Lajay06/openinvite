@@ -101,6 +101,26 @@ export function orderedCustomPages(weddingDetails) {
   });
 }
 
+/**
+ * A CUSTOM PAGE'S BLOCKS LIVE IN `customPageContent`, NOT ON THE PAGE RECORD.
+ *
+ * NewPageModal stored `sections: []` on the page itself and WeddingCustomPage
+ * read `page.blocks`, and neither could ever have worked: `customPages` is
+ * declared as an array of objects WITH `properties` (id, name, slug,
+ * template), and Base44 strips every key a properties-bearing schema does not
+ * declare. `sections` is absent from every live record for that reason.
+ *
+ * `customPageContent` is declared as a BARE object, which keeps whatever
+ * nested keys it is handed — the same reason `homeContent.blocks` persists.
+ * So the blocks are stored beside the catalog, keyed by slug, and the catalog
+ * stays a catalog. Round-tripped against the live entity before this was
+ * written; see the mirror PR.
+ */
+export function customPageBlocks(weddingDetails, slug) {
+  const blocks = weddingDetails?.customPageContent?.[slug]?.blocks;
+  return Array.isArray(blocks) ? blocks : [];
+}
+
 /** The custom page record for a slug, or null if it is a built-in or unknown. */
 export function customPageFor(weddingDetails, slug) {
   if (WEDDING_PAGES.some(p => p.slug === slug)) return null;

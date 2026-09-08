@@ -532,6 +532,7 @@ export default function MultiPageWeddingWebsite() {
               See UNIVERSE_EXPERIENCE_DIAGNOSTIC.md. */}
           <PageComponent
             weddingDetails={weddingDetails}
+            currentPage={page}
             theme={theme}
             typography={typography}
             universeConfig={universeConfig}

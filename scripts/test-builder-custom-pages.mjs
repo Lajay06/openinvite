@@ -4,9 +4,9 @@
  * button, and an affordance you can see without hunting for it.
  *
  * Three of the four things the owner reported. The fourth — adding blocks to
- * a custom page — is NOT here, and deliberately: it cannot be built without a
- * schema addition, and a guard asserting a control that silently drops its
- * writes would be worse than no guard. See the PR body.
+ * a custom page — waited on a schema addition, since a guard asserting a
+ * control that silently drops its writes would be worse than no guard. The
+ * field exists now and that half lives in test-custom-page-blocks.mjs.
  *
  * Usage: npm run test:builder-custom-pages  (needs a server; CAPTURE_BASE_URL)
  */

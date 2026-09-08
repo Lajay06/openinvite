@@ -17,6 +17,7 @@ import { MediaLibraryContext } from '@/components/website-builder/SectionEditorF
 import MediaLibraryModal from '@/components/website-builder/MediaLibraryModal';
 import ComponentLibraryModal from '@/components/website-builder/ComponentLibraryModal';
 import { newBlock } from '@/components/guest-website/blocks/blockTypes';
+import { customPageFor, customPageBlocks } from '@/lib/customPages';
 
 import { syncWeddingAddress } from '@/lib/weddingAddress';
 import WBEmailPreview from '@/components/website-builder/WBEmailPreview';
@@ -245,6 +246,11 @@ const WRITABLE_FIELDS = [
   'guestExperienceSettings',
   'photosContent',
   'customPages',
+  // Where a custom page's blocks live. Absent from this list the field would
+  // be dropped from every save payload, and the couple's blocks would survive
+  // exactly until the next autosave — the same silent loss the undeclared
+  // field caused, moved one layer up.
+  'customPageContent',
   // 'assetContent' is RETAINED here although nothing writes it any more. The
   // asset feature was removed in Wave 2; dropping the field from this payload
   // would strand whatever a couple already has stored the next time anything
@@ -422,17 +428,44 @@ export default function StudioWebsite({ onBack }) {
   // same Save/autosave path, just a second entry point.
   const PAGE_CONTENT_FIELD = { home: 'homeContent', 'our-story': 'ourStoryContent', celebration: 'celebrationContent' };
 
+  // A CUSTOM PAGE STORES ITS BLOCKS IN customPageContent, KEYED BY SLUG.
+  //
+  // It cannot store them on its own record: `customPages` declares its item
+  // properties (id, name, slug, template) and Base44 strips every key such a
+  // schema does not name — which is why `sections: []` is absent from every
+  // live record and why this half of the package waited for a field. The one
+  // the owner declared is a BARE object, so it keeps whatever nested keys it
+  // is handed, exactly as homeContent.blocks does.
+  //
+  // Before this, both helpers below simply gave up on a slug they did not
+  // recognise: getPageBlocks returned [] and setPageBlocks returned without
+  // writing. So the canvas offered a custom page no blocks and quietly
+  // discarded any it was given.
+  const isCustomPage = (page) => !PAGE_CONTENT_FIELD[page] && !!customPageFor(detailsRef.current, page);
+
   const getPageBlocks = (page) => {
+    if (isCustomPage(page)) return customPageBlocks(detailsRef.current, page);
     const field = PAGE_CONTENT_FIELD[page];
     return field ? (detailsRef.current?.[field]?.blocks || []) : [];
   };
 
   const setPageBlocks = (page, nextBlocks) => {
+    const ordered = nextBlocks.map((b, i) => ({ ...b, order: i }));
+    if (isCustomPage(page)) {
+      setDetailsAndMark(prev => ({
+        ...prev,
+        customPageContent: {
+          ...(prev.customPageContent || {}),
+          [page]: { ...(prev.customPageContent?.[page] || {}), blocks: ordered },
+        },
+      }));
+      return;
+    }
     const field = PAGE_CONTENT_FIELD[page];
     if (!field) return;
     setDetailsAndMark(prev => ({
       ...prev,
-      [field]: { ...(prev[field] || {}), blocks: nextBlocks.map((b, i) => ({ ...b, order: i })) },
+      [field]: { ...(prev[field] || {}), blocks: ordered },
     }));
   };
 
