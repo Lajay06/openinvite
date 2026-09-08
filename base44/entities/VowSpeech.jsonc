@@ -26,6 +26,9 @@
     "notes": {
       "type": "string",
       "description": "Private notes or prompts for the speech."
+    },
+    "pin_hash": {
+      "type": "string"
     }
   },
   "required": [
