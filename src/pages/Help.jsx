@@ -61,7 +61,7 @@ const ARTICLES = {
       </ul>
       <h3 style={S.h3}>How to save</h3>
       <p style={S.p}>Changes auto-save after 1.5 seconds. You'll see "Saving..." then "Saved ✓" in the top bar.</p>
-      <div style={S.tip}><p style={S.tipText}><strong>Important:</strong> Never enter venue details by typing them manually — always use the Google Places search so the address, coordinates, and place ID are saved correctly. This enables map embeds on your wedding website.</p></div>
+      <div style={S.tip}><p style={S.tipText}><strong>Important:</strong> Never enter venue details by typing them manually — always use the Google Places search so the address, coordinates, and place ID are saved correctly. This enables map embeds on your guest suite.</p></div>
     </div>
   ),
   'Understanding the dashboard': (
@@ -124,7 +124,7 @@ const ARTICLES = {
       <p style={S.p}>Ava is the AI wedding specialist built into every part of Openinvite. Ava's powered by Claude, one of the world's most advanced AI models.</p>
       <h3 style={S.h3}>Website building</h3>
       <ul style={S.ul}>
-        <li style={S.li}>Auto-fill your entire wedding website from your planning details in one click</li>
+        <li style={S.li}>Auto-fill your entire guest suite from your planning details in one click</li>
         <li style={S.li}>Write your love story, welcome message, and FAQ</li>
         <li style={S.li}>Suggest section layouts and content for each page</li>
       </ul>
@@ -159,7 +159,7 @@ const ARTICLES = {
   ),
   "Using Ava's Studio step-by-step": (
     <div>
-      <p style={S.p}>Ava's Studio is a guided, one-step-at-a-time builder for your wedding website and Guest Suite assets. It's designed to remove overwhelm — you focus on one thing, Ava handles the rest.</p>
+      <p style={S.p}>Ava's Studio is a guided, one-step-at-a-time builder for your guest suite. It's designed to remove overwhelm — you focus on one thing, Ava handles the rest.</p>
       <h3 style={S.h3}>How to open it</h3>
       <ol style={S.ol}>
         <li style={S.li}>Click "Design Studio" in the sidebar</li>
@@ -175,13 +175,13 @@ const ARTICLES = {
       <p style={S.p}>The guided flow has 10 steps, one at a time: cover photo, welcome message, love story, ceremony details (auto-filled from Event Details), reception details (auto-filled), RSVP settings, travel and accommodation, registry, music, and FAQ.</p>
       <p style={S.p}>At each step: Ava gives you a prompt and a hint; a live mini-preview shows your changes in real time; "✦ Use Ava's suggestion" fills the field with a smart default; "Skip for now" moves forward without filling; "← Previous" goes back without losing progress.</p>
       <h3 style={S.h3}>Creating assets with Ava</h3>
-      <p style={S.p}>The asset flow covers all 10 Guest Suite pieces one at a time. Same pattern — one question, live preview, Ava's suggestion available at each step.</p>
+      <p style={S.p}>The asset flow covers each part of the Guest Suite one at a time. Same pattern — one question, live preview, Ava's suggestion available at each step.</p>
       <div style={S.tip}><p style={S.tipText}><strong>Light/Dark mode toggle:</strong> available on the Ava's Studio home screen.</p></div>
     </div>
   ),
   'Auto-filling your website with Ava': (
     <div>
-      <p style={S.p}>The "✦ Auto-Fill with Ava" button in the Guest Suite reads all your planning data and generates complete content for every page of your wedding website in about 10–15 seconds.</p>
+      <p style={S.p}>The "✦ Auto-Fill with Ava" button in the Guest Suite reads all your planning data and generates complete content for every page of your guest suite in about 10–15 seconds.</p>
       <h3 style={S.h3}>How to use it</h3>
       <ol style={S.ol}>
         <li style={S.li}>Open Design Studio → Guest Suite</li>
@@ -230,7 +230,7 @@ const ARTICLES = {
   ),
   'Adding sections to your website': (
     <div>
-      <p style={S.p}>Your wedding website is built from blocks — individual content pieces you add, reorder, and customize for each page. There are 24 block types across 5 categories.</p>
+      <p style={S.p}>Your guest suite website is built from blocks — individual content pieces you add, reorder, and customize for each page. There are 24 block types across 5 categories.</p>
       <h3 style={S.h3}>How to add a block</h3>
       <ol style={S.ol}>
         <li style={S.li}>Open Design Studio → Guest Suite → Website tab</li>
@@ -260,7 +260,7 @@ const ARTICLES = {
   ),
   'Choosing a theme and typography': (
     <div>
-      <p style={S.p}>Your theme and typography define the visual identity of your wedding website. Changes apply instantly across all pages in the preview.</p>
+      <p style={S.p}>Your theme and typography define the visual identity of your guest suite. Changes apply instantly across all pages in the preview.</p>
       <h3 style={S.h3}>Themes (21 available)</h3>
       <p style={S.p}>Themes control your color palette — dark background, light background, and accent color. Notable themes include: LONDON, STILL (Obsidian dark, Linen light — LONDON's default), DUSK (Deep brown, Warm cream, Gold), SAGE (Dark green, Sage, Forest), BLUSH (Dark plum, Blush, Rose), NOIR (Black, Pure white, Red), plus SLATE, IVORY, MIDNIGHT, TERRA, FOREST, CORAL, LAVENDER, BRONZE, ARCTIC, DESERT, PLUM, JADE, CHARCOAL, CHAMPAGNE, and OBSIDIAN.</p>
       <h3 style={S.h3}>How to change theme</h3>
@@ -294,7 +294,7 @@ const ARTICLES = {
   ),
   'Setting up your RSVP page': (
     <div>
-      <p style={S.p}>Your RSVP page lets guests respond to your invitation directly on your wedding website. Responses are collected in your Guest List automatically.</p>
+      <p style={S.p}>Your RSVP page lets guests respond to your invitation directly on your guest suite. Responses are collected in your Guest List automatically.</p>
       <h3 style={S.h3}>How to set up RSVP</h3>
       <ol style={S.ol}>
         <li style={S.li}>In the Guest Suite → Website tab, select "RSVP" from the left panel page list (toggle it on if off)</li>
@@ -316,7 +316,7 @@ const ARTICLES = {
   ),
   'Publishing and sharing your site': (
     <div>
-      <p style={S.p}>Publishing makes your wedding website live at openinvite.com.au/w/your-names so guests can visit it.</p>
+      <p style={S.p}>Publishing makes your guest suite live at openinvite.com.au/w/your-names so guests can visit it.</p>
       <h3 style={S.h3}>How to publish</h3>
       <ol style={S.ol}>
         <li style={S.li}>Open the Guest Suite website builder</li>
@@ -337,39 +337,33 @@ const ARTICLES = {
       </ul>
       <h3 style={S.h3}>Password protection</h3>
       <p style={S.p}>Enable in Publish modal → Website tab. Guests see a password entry screen before your site loads. The preview links in your own dashboard skip that screen for you, because you are signed in as the owner — the same link does nothing for anyone else.</p>
-      <div style={S.tip}><p style={S.tipText}><strong>Privacy:</strong> Toggle "Hide from Search" to prevent Google from indexing your wedding website.</p></div>
+      <div style={S.tip}><p style={S.tipText}><strong>Privacy:</strong> Toggle "Hide from Search" to prevent Google from indexing your guest suite.</p></div>
     </div>
   ),
   'What is the Guest Suite?': (
     <div>
-      <p style={S.p}>The Guest Suite is your complete wedding invitation and design collection — 10 pieces, all designed around your chosen universe aesthetic and personalized with your wedding details.</p>
-      <h3 style={S.h3}>The 10 pieces</h3>
+      <p style={S.p}>The Guest Suite is everything your guests see &mdash; your website and the emails that point at it, all designed around your chosen universe and filled in from your wedding details.</p>
+      <h3 style={S.h3}>What it holds</h3>
       <ol style={S.ol}>
-        <li style={S.li}><strong>Save the Date</strong> — your first announcement to guests, with a photo of you both</li>
-        <li style={S.li}><strong>Digital Invitation</strong> — the full invitation design, links directly to your wedding website</li>
-        <li style={S.li}><strong>RSVP Page</strong> — a styled response page connected to your guest list</li>
-        <li style={S.li}><strong>Menu Card</strong> — typeset dinner menu for each table or place setting</li>
-        <li style={S.li}><strong>Seating Chart</strong> — displays guest table assignments, pulls live from your guest list</li>
-        <li style={S.li}><strong>Motion Graphic</strong> — an animated digital asset for sharing on screens or digitally</li>
-        <li style={S.li}><strong>Instagram Story Kit</strong> — 5 story designs sized for Instagram/Facebook stories</li>
-        <li style={S.li}><strong>Welcome Signage</strong> — large format A1 print-ready signage for your venue entrance</li>
-        <li style={S.li}><strong>Guest Tags</strong> — business card sized name tags, 6 per A4 sheet, print-ready</li>
-        <li style={S.li}><strong>Thank You Notes</strong> — personalized post-wedding thank you cards</li>
+        <li style={S.li}><strong>Your website</strong> &mdash; up to twelve pages (Home, Our Story, Celebration, RSVP, Registry, Music, Styling, Polls, FAQ, Stay, Getting here, Experiences), plus any pages you add yourself. Home and RSVP always stay on.</li>
+        <li style={S.li}><strong>Six emails</strong> &mdash; Save the date, Invitation, Update, Reminder, and two Thank yous, one for guests who are coming and one for those who cannot.</li>
+        <li style={S.li}><strong>Good to know</strong> &mdash; your policies and expectations, shown to guests as a section of the site.</li>
+        <li style={S.li}><strong>Share</strong> &mdash; the link, a QR code, and a message ready to send.</li>
       </ol>
-      <h3 style={S.h3}>How all 10 pieces are personalized</h3>
-      <p style={S.p}>Every piece reads from your Event Details: your names, wedding date, venue name, and address. Change your date in Event Details — all 10 assets update automatically.</p>
+      <h3 style={S.h3}>How all of it is personalized</h3>
+      <p style={S.p}>Every page and every email reads from your Event Details: your names, wedding date, venue name, and address. Change your date in Event Details and it updates everywhere.</p>
       <h3 style={S.h3}>How to access the Guest Suite</h3>
       <ol style={S.ol}>
         <li style={S.li}>Click "Design Studio" in the sidebar</li>
         <li style={S.li}>Click "Guest Suite" — this takes you to the universe selection page</li>
         <li style={S.li}>Select your universe — click a card to preview the full experience</li>
-        <li style={S.li}>Once a universe is selected, your 10 assets are available to edit, download, and share</li>
+        <li style={S.li}>Once a universe is selected, your website and emails are available to edit and share</li>
       </ol>
     </div>
   ),
   'Choosing and switching universes': (
     <div>
-      <p style={S.p}>Your universe defines the complete aesthetic of all 10 Guest Suite pieces — colors, typography, layout style, and mood. You choose one universe that applies across everything.</p>
+      <p style={S.p}>Your universe defines the complete aesthetic of the whole Guest Suite — colors, typography, layout style, and mood. You choose one universe that applies across everything.</p>
       <h3 style={S.h3}>Available universes (all 10 are live)</h3>
       <ul style={S.ul}>
         <li style={S.li}><strong>London</strong> — Classical Grandeur. Deep black, warm linen, Cormorant Garamond typography. Inspired by London's grand hotels and Georgian townhouses.</li>
@@ -391,7 +385,7 @@ const ARTICLES = {
         <li style={S.li}>Go to Design Studio → Guest Suite</li>
         <li style={S.li}>Click a different universe card (available ones)</li>
         <li style={S.li}>Preview and select</li>
-        <li style={S.li}>Your active universe updates — all 10 assets switch to the new aesthetic instantly</li>
+        <li style={S.li}>Your active universe updates — your website and emails switch to the new aesthetic instantly</li>
         <li style={S.li}>Any content you've entered (text, photos) is preserved — only the visual design changes</li>
       </ol>
       <div style={S.tip}><p style={S.tipText}><strong>What changes when you switch:</strong> Typography, color palette, layout styles, section backgrounds across all assets. <strong>What doesn't change:</strong> Your couple names, wedding date, venue, photos, and any custom text you've written.</p></div>
@@ -488,7 +482,7 @@ const ARTICLES = {
   ),
   'Tracking RSVPs and responses': (
     <div>
-      <p style={S.p}>Openinvite automatically collects RSVPs when guests respond via your wedding website. You can also manually record responses for guests who reply by phone, text, or email.</p>
+      <p style={S.p}>Openinvite automatically collects RSVPs when guests respond via your guest suite. You can also manually record responses for guests who reply by phone, text, or email.</p>
       <h3 style={S.h3}>How RSVPs work</h3>
       <ol style={S.ol}>
         <li style={S.li}>Guest visits your website and finds the RSVP page</li>
@@ -750,7 +744,7 @@ const helpCategories = [
   {
     icon: 'Globe',
     title: 'Website builder',
-    description: 'Build and publish your wedding website',
+    description: 'Build and publish your guest suite',
     articles: [
       { title: 'Adding sections to your website', time: '3 min read' },
       { title: 'Choosing a theme and typography', time: '2 min read' },
