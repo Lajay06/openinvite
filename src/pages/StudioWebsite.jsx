@@ -585,7 +585,15 @@ export default function StudioWebsite({ onBack }) {
     <div style={{ height: '100vh', overflow: 'hidden', fontFamily: "'Plus Jakarta Sans',sans-serif", background: '#1C1C1E', display: 'flex', flexDirection: 'column' }}>
 
       {/* TOP BAR */}
-      <div style={{ height: 48, flexShrink: 0, background: '#1C1C1E', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', gap: 16, position: 'sticky', top: 0, zIndex: 100 }}>
+      {/* zIndex 40, NOT 100. The shared modal wrapper paints at z-50, so a
+          header above it covered the full-page preview's own toolbar — the
+          device toggles were on screen, clickable, and invisible, which is
+          exactly what "the preview only shows desktop" looked like. Radix
+          drops pointer-events on the page behind an open dialog, so the
+          toggles still answered the mouse; only the paint was wrong, and
+          only a pixel read can see that. 40 still clears everything in the
+          builder (the panels sit beside the header, never under it). */}
+      <div style={{ height: 48, flexShrink: 0, background: '#1C1C1E', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', gap: 16, position: 'sticky', top: 0, zIndex: 40 }}>
         <button
           onClick={() => onBack ? onBack() : navigate('/studio/guest-suite/assets')}
           style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 500, padding: 0, display: 'flex', alignItems: 'center', gap: 4, transition: 'color 0.15s' }}

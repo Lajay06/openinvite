@@ -1,4 +1,4 @@
-/* global document, getComputedStyle */
+/* global document, getComputedStyle, Image */
 /**
  * THE FULL-PAGE PREVIEW SHOWS THE SAME THREE DEVICES THE CANVAS DOES.
  *
@@ -21,6 +21,21 @@
  * same icons, at the same widths as the canvas. So each width is measured on
  * BOTH surfaces in the same run and compared, and only the literal 390 — the
  * one number the report named — is also pinned outright.
+ *
+ * ── AND IT IS ACTUALLY ON SCREEN ────────────────────────────────────────────
+ *
+ * The first version of this guard passed on a build where the toolbar was
+ * invisible. The builder's own header was sticky at z-index 100 and the shared
+ * modal wrapper paints at 50, so the header covered the preview's toolbar:
+ * the device toggles were present, measurable, and answered every click,
+ * because Radix drops pointer-events on the page behind an open dialog — so
+ * elementFromPoint named the toggle while the pixels showed the header. That
+ * IS what the report described. Widths and hit-testing both read correct.
+ *
+ * So the toolbar's colour is read off a screenshot: the page is asked to
+ * decode the capture into a canvas and hand back the pixel. #0A0A0A is the
+ * toolbar, rgb(28,28,30) is the header that used to be over it. A guard that
+ * cannot tell those apart cannot see the defect it exists for.
  *
  * ── PRESENCE BEFORE PROPERTIES ──────────────────────────────────────────────
  *
@@ -74,6 +89,28 @@ const frameBox = (page, scope) => page.evaluate((which) => {
  * toolbar's own Preview button — that one carries a Monitor icon too, and
  * clicking it by icon opens the very dialog this is trying to measure against.
  */
+/**
+ * The colour actually painted at a point, read from a real capture. The
+ * browser decodes its own screenshot, so no image dependency is needed and
+ * nothing about the page is disturbed to take the measurement.
+ */
+async function pixelAt(page, x, y) {
+  const shot = await page.screenshot({ clip: { x: 0, y: 0, width: 1440, height: 48 } });
+  return page.evaluate(([b64, px, py]) => new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = img.width; c.height = img.height;
+      const g = c.getContext('2d');
+      g.drawImage(img, 0, 0);
+      const d = g.getImageData(px, py, 1, 1).data;
+      resolve(`rgb(${d[0]}, ${d[1]}, ${d[2]})`);
+    };
+    img.onerror = () => resolve('undecodable');
+    img.src = `data:image/png;base64,${b64}`;
+  }), [shot.toString('base64'), x, y]);
+}
+
 const canvasToggle = (page, icon) =>
   page.locator(`button:has(svg.${icon})`).filter({ hasNotText: /\S/ }).first();
 
@@ -90,6 +127,13 @@ const canvas = {};
 const canvasOpened = await frameBox(page, 'canvas');
 check('the builder canvas rendered a page frame', !!canvasOpened,
   canvasOpened ? `${canvasOpened.w}x${canvasOpened.h}` : 'no white frame in the canvas');
+
+// The header dropped below the modal layer to stop covering the preview. It
+// still has to sit above the canvas that scrolls under it, and the same pixel
+// read that caught the covering says so: #1C1C1E, with nothing over it.
+const headerPixel = await pixelAt(page, 10, 24);
+check('with no preview open, the builder header is what is painted at the top',
+  headerPixel === 'rgb(28, 28, 30)', headerPixel);
 
 for (const d of DEVICES) {
   const hit = await canvasToggle(page, d.icon).click().then(() => true).catch(() => false);
@@ -109,6 +153,16 @@ check('the top-right Preview opens the full-page preview', dialogOpen,
   dialogOpen ? 'dialog on screen' : 'no dialog');
 
 if (dialogOpen) {
+  // THE TOOLBAR IS THE THING YOU SEE, not the thing that answers a click.
+  // Two samples either side of the device pills, both inside the toolbar's
+  // own 48px band. #0A0A0A is the toolbar; rgb(28, 28, 30) is the builder
+  // header that used to paint over it.
+  const left = await pixelAt(page, 10, 24);
+  const right = await pixelAt(page, 1430, 24);
+  check('the preview toolbar is the thing painted at the top of the screen',
+    left === 'rgb(10, 10, 10)' && right === 'rgb(10, 10, 10)',
+    `left ${left} · right ${right}`);
+
   for (const d of DEVICES) {
     const btn = page.locator(`[role="dialog"] button:has(svg.${d.icon})`).first();
     const present = await btn.count() > 0;
