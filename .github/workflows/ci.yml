@@ -402,6 +402,22 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
 
+      # Four states, and the last two are the ones a container query can
+      # break: a real phone, which must be unchanged, and a real desktop,
+      # which a query firing at every width would hand a hamburger.
+      - name: The guest nav follows its frame, not the window
+        run: |
+          npx vite preview --port 4188 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4188 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4188 npm run test:guest-nav-container
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       - name: The universe breadcrumb says where it goes
         run: |
           npx vite preview --port 4180 --strictPort &
