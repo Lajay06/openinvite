@@ -1688,3 +1688,34 @@ until a reload.
 
 NOT BUILT. The session's budget went to the two AUTO items above it. This is
 the next thing to pick up and the report is written so it can be started cold.
+
+---
+
+# ONBOARDING RESUME — the sentinel fired (2026-09-08)
+
+`tests/persistence/onboarding-not-locked-out.mjs` carried a deliberate
+tripwire: it asserted that `Onboarding.jsx` writes `onboardingDraft` /
+`onboardingStepIndex` **and** that the entity schema does not declare them.
+Its own comment said what it was for — "if the fields are ever added, this
+check is the thing that says the resume path is now worth wiring up."
+
+**It fired on 2026-09-08.** `c832e9e` (base44-builder[bot], pushed direct to
+main with no PR) declared both fields, so the assertion flipped and reported
+`the schema now has them — wire up the resume path`.
+
+The sentinel is RETIRED rather than loosened: the assertion is deleted and a
+one-line comment in its place names the date, the commit, and the PR that
+does the work. Retiring is correct here and loosening would not have been —
+the check had done its whole job the moment it went red, and a check that has
+served its purpose should be removed by the change that answers it, not
+weakened to keep a suite green.
+
+**The work: #712, `feat/onboarding-resume`.** On sign-in with
+`onboardingDraft` true, land the couple at `onboardingStepIndex` with their
+answers so far intact; clear the draft on completion. No change to what
+onboarding asks or in what order.
+
+**Why it mattered.** Until the fields existed, Base44 accepted both writes
+with a 200 and discarded them (gotcha #5), so resume-after-refresh silently
+restarted from the first step — the couple's answers were still on the
+record, but the wizard did not know where they had got to.
