@@ -1874,6 +1874,21 @@ with no `paths` or `paths-ignore`, so a docs-only change is not being
 filtered out by configuration. The workflow file itself was unchanged
 between the head that ran and the head that did not.
 
+**LEADING HYPOTHESIS (advisor, 2026-09-08).** A `pull_request` run is built
+on the PR's MERGE REF — the commit GitHub makes by merging the head into the
+base. A push that lands while main is changing can find that ref unavailable,
+and rather than queueing, GitHub creates no run at all.
+
+The timings on this occurrence fit it exactly:
+
+  main's run on 9fa23ce   started 09:47:56, still in progress at 10:02
+  9da7bcb pushed          ~09:47   — during it. No run.
+  6733057 pushed           09:58   — during it. No run.
+
+Both misses on this branch land inside one main run, and the head before them
+(4ac0252, pushed while main was quiet) got its run and passed. That is three
+data points in the same direction on one afternoon.
+
 **Not ruled out**, and worth measuring rather than guessing:
 
 - Actions dropping or coalescing a `synchronize` event while another run for
@@ -1889,6 +1904,13 @@ occurrence burns a line and a round trip. It also means a branch can sit
 looking merge-ready with two green checks and no build at all, which is
 exactly the shape of a gate that passes by not running.
 
-**Next step:** capture the push timestamp, the other branch's push
-timestamp, and the Actions run list at the moment of the miss, the next time
-it happens. Three occurrences with times would probably identify it.
+**THE TEST, run on this occurrence:** wait for main's run to complete, then
+push again with main quiet and note whether a run appears within five
+minutes. A run that appears promptly on a quiet main, having twice failed to
+appear on a busy one, is as close to proof as this can get without GitHub's
+own logs.
+
+**The rule that follows, whatever the cause turns out to be:** never push a
+PR head while a main run is in progress. Wait for main to settle. It costs a
+few minutes; the alternative costs a merge authorization and a round trip
+every time it happens. Recorded in DECISION-LOG.md.
