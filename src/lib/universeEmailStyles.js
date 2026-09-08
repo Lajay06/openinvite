@@ -58,6 +58,15 @@ export const UNIVERSE_EMAIL_STYLES = Object.fromEntries(
     bgTint: u.colors.lightBg,
     cardBg: '#FFFFFF',
     textColor: u.colors.lightText,
+    // THE DARK HALF, carried alongside the light one. The comment at the top
+    // of this file is still true — the DEFAULT body ground is never `darkBg`,
+    // because a dark email risks Outlook/Gmail dark-mode auto-inversion. But
+    // the couple's palette variant (emailPalette.js) can now ASK for the dark
+    // half explicitly, and it has to come from the universe's own config
+    // rather than be computed by darkening the light one: a darkened tint
+    // would be our color, not theirs.
+    darkBg: u.colors.darkBg,
+    darkText: u.colors.darkText,
     accent: u.colors.accent,
     fontDisplay: fontDisplayStack(u.typography.headingFont),
     fontBody: fontBodyStack(),

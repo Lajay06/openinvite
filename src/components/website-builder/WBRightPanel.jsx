@@ -28,6 +28,12 @@ import { TEXT_COLOR_OPTIONS, BACKGROUND_OPTIONS, SPACING_OPTIONS, JUSTIFY_CAPABL
 import { interactiveDivProps } from '@/lib/a11y';
 import { loadFontFamilies, familiesFromGoogleSpec } from '@/lib/selfHostedFonts';
 import { flattenOver, readableInkOn, contrastRatio } from '@/lib/surfaceTint';
+import { getUniverseEmailStyle } from '@/lib/universeEmailStyles';
+import { emailPalette, PALETTE_VARIANTS, BUTTON_STYLES } from '@/lib/emailPalette';
+import {
+  EDITOR_TEMPLATES, FIELD_LABELS, defaultsFor, lockedRowsFor,
+  designOf, publicIdOf,
+} from '@/lib/emailTemplateStore';
 
 // Background music: writing surface HIDDEN (owner decision, video-sound batch).
 // guestExperienceSettings.backgroundMusic had two sources: 'curated' (the mood
@@ -341,6 +347,301 @@ function DesignTab({ details, onChange, universeTheme }) {
           onChange={v => onChange('scrollAnimation', v)}
         />
       </div>
+
+    </div>
+  );
+}
+
+// ── EMAILS: THE SECTION AT THE BOTTOM OF THE DESIGN TAB ────────
+//
+// Owner ruling 2026-09-07, rejecting a standalone /Emails page with four
+// color buttons on it: "this editor needs to be in the design studio like I
+// asked. Just have it in the right panel and then enable similar design
+// controls."
+//
+// SIMILAR CONTROLS MEANS THE SAME CONTROLS. Every primitive below is the one
+// the rest of this panel already uses — SLabel for the heading, FLabel for a
+// field, PillGroup for a choice, MediaPicker for a photograph, the same
+// 10/11/12/13 sizes, the same 999px pills. Nothing here declares a size or a
+// button of its own (global rule, src/styles/typeScale.js). The section is
+// meant to read as though it had always been part of the panel, because
+// structurally it is: it is the last section of DesignTab, below Animations.
+
+/**
+ * The palette variant control — FOUR REAL PREVIEWS, not four color buttons.
+ *
+ * A color button was the thing the owner rejected: it says nothing about what
+ * the email will look like, and it invites a couple to leave their universe.
+ * Each swatch here is a miniature of the actual email — page ground, card,
+ * two ink lines and the button — built from the same emailPalette() the
+ * renderer uses, so what a couple picks from is what they get.
+ */
+function EmailPaletteSwatches({ emailStyle, value, onChange }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+      {PALETTE_VARIANTS.map(v => {
+        const pal = emailPalette(emailStyle, v.id);
+        const sel = (value || 'default') === v.id;
+        return (
+          <button
+            key={v.id}
+            onClick={() => onChange(v.id)}
+            aria-pressed={sel}
+            style={{
+              padding: 0, cursor: 'pointer', background: 'transparent', fontFamily: 'inherit',
+              border: '1px solid ' + (sel ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.15)'),
+              display: 'block', textAlign: 'left',
+            }}
+          >
+            <div style={{ background: pal.pageBg, padding: 6 }}>
+              <div style={{ background: pal.cardBg, padding: '7px 7px 8px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div style={{ height: 3, width: '68%', background: pal.ink }} />
+                <div style={{ height: 2, width: '90%', background: pal.inkMuted }} />
+                <div style={{ height: 2, width: '80%', background: pal.inkMuted }} />
+                <div style={{
+                  marginTop: 3, height: 8, width: 34, borderRadius: 999,
+                  background: pal.accent,
+                }} />
+              </div>
+            </div>
+            <span style={{
+              display: 'block', padding: '5px 7px', fontSize: 11, fontWeight: 600,
+              color: sel ? '#FFFFFF' : 'rgba(255,255,255,0.5)',
+            }}>
+              {v.label}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** One read-only row: a value the couple can see and cannot change. */
+function LockedRow({ label, value }) {
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 4px' }}>{label}</p>
+      <div style={{ padding: '6px 8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+        <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.45 }}>{value}</p>
+      </div>
+      <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', margin: '4px 0 0' }}>Default — can’t be changed</p>
+    </div>
+  );
+}
+
+/**
+ * One editable field, pre-filled with its default and saying so.
+ *
+ * Owner: "clearly advise the default wording vs what they can change." The
+ * default is not a placeholder — a placeholder disappears the moment you type
+ * a space and leaves a couple unsure what will send. It is the real value,
+ * present in the box, with the hint below it until they change it. Reset puts
+ * it back.
+ */
+function EmailField({ label, value, fallback, onChange, rows = 0 }) {
+  const isDefault = !value || value === fallback;
+  const shown = value || fallback;
+  const common = {
+    value: shown,
+    onChange: e => onChange(e.target.value),
+    style: {
+      // 12px, the page-row label's size — the ceiling for this panel
+      // (owner ruling 2026-09-08: nothing here larger than a page row).
+      width: '100%', border: '1px solid rgba(255,255,255,0.08)', padding: '6px 8px', fontSize: 12,
+      color: '#FFFFFF', outline: 'none', fontFamily: 'inherit', background: 'rgba(255,255,255,0.08)',
+      boxSizing: 'border-box', borderRadius: 0, resize: rows ? 'vertical' : undefined,
+    },
+    onFocus: e => { e.target.style.borderColor = '#E03553'; },
+    onBlur: e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; },
+  };
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, margin: '0 0 6px' }}>
+        <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: 0 }}>{label}</p>
+        {!isDefault && (
+          <button
+            onClick={() => onChange('')}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E03553', fontSize: 11, fontWeight: 600, fontFamily: 'inherit', padding: 0 }}
+          >
+            Reset
+          </button>
+        )}
+      </div>
+      {rows ? <textarea rows={rows} {...common} /> : <input type="text" {...common} />}
+      <p style={{ fontSize: 10, color: isDefault ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.3)', margin: '4px 0 0' }}>
+        {isDefault ? 'Default wording — edit to make it yours' : 'Your wording'}
+      </p>
+    </div>
+  );
+}
+
+/**
+ * The five, and the design controls for whichever is selected.
+ *
+ * Selecting one in the LEFT panel switches the CANVAS;
+ * selecting a page in the left panel clears it and the canvas goes back. That
+ * is the whole navigation model, and it is the one the builder already has for
+ * pages — a selection in a panel, a canvas that follows it.
+ */
+function EmailsSection({ details, emailDraft, selectedEmail, onEmailChange, emailSave, onSaveEmails }) {
+  const universeKey = normalizeUniverseKey(details?.activeUniverse) || 'london';
+  const emailStyle = getUniverseEmailStyle(universeKey);
+  const universeDefaults = UNIVERSE_DEFAULT_FONT_IDS[universeKey] || UNIVERSE_DEFAULT_FONT_IDS.london;
+  const headingLabel = CURATED_FONTS[details?.fontOverride?.headingFontId || universeDefaults.headingFontId]?.label
+    || 'Universe default';
+
+  const type = selectedEmail.type;
+  const entry = EDITOR_TEMPLATES.find(e => e.types.includes(type)) || EDITOR_TEMPLATES[1];
+  const label = entry.types.length > 1
+    ? `${entry.label} (${entry.typeLabels[type].toLowerCase()})`
+    : entry.label;
+  const template = emailDraft?.[type] || {};
+  const design = designOf(template, { coverPhoto: details?.coverPhoto });
+
+  return (
+    <div>
+      {/* THE LIST IS NOT HERE ANY MORE. Owner ruling 2026-09-08: the five
+          emails are left-panel rows, like pages, and this panel edits
+          whichever one is selected — so it names it and gets on with the
+          controls. A list here as well would be two places to choose from. */}
+      <SLabel>{label}</SLabel>
+
+      <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Banner photo</p>
+      <MediaPicker
+        value={design.bannerUrl}
+        onChange={v => onEmailChange(type, { bannerUrl: v || '', bannerPublicId: publicIdOf(v) })}
+        aspectRatio="600/220"
+      />
+      <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', margin: '-8px 0 14px', lineHeight: 1.5 }}>
+        {design.bannerIsOwn
+          ? 'Cropped to the faces in the photo.'
+          : 'Using your website’s hero photo. Pick another, or upload one, to change just this email.'}
+      </p>
+
+      <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Palette</p>
+      <EmailPaletteSwatches
+        emailStyle={emailStyle}
+        value={design.paletteVariant}
+        onChange={v => onEmailChange(type, { paletteVariant: v })}
+      />
+      <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', margin: '6px 0 14px', lineHeight: 1.5 }}>
+        Every option is made of {emailStyle.name}’s own colors.
+      </p>
+
+      <div style={{ marginBottom: 14 }}>
+        <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Button</p>
+        <PillGroup
+          options={BUTTON_STYLES.map(b => ({ id: b.id, name: b.label }))}
+          value={design.buttonStyle}
+          onChange={v => onEmailChange(type, { buttonStyle: v })}
+        />
+      </div>
+
+      {/* Typography is the universe's, stated the way the panel states it
+          above — a read-only line, not a control. An email cannot load a web
+          font anyway; it renders in the universe's face where the client has
+          it and in its declared fallback where it does not. */}
+      <div style={{ marginBottom: 14 }}>
+        <p style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Typography</p>
+        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', margin: 0 }}>
+          {headingLabel} — follows your universe
+        </p>
+      </div>
+
+      <EmailSaveRow state={emailSave} onSave={onSaveEmails} />
+    </div>
+  );
+}
+
+/**
+ * THE SAVE THAT PROVES ITSELF, and the reason it is not the page's Save.
+ *
+ * StudioWebsite autosaves WRITABLE_FIELDS every two seconds and toasts "Saved"
+ * on any 200. `emailTemplates` is deliberately NOT in that list: Base44
+ * accepts an unknown field with a 200 and discards it, so riding the autosave
+ * would put "Saved" on screen over words that no longer exist anywhere.
+ *
+ * This button writes, reads back, and compares (saveTemplates in
+ * emailTemplateStore.js). When the field has not been switched on it says so
+ * in plain words and the draft stays exactly where it is — nothing typed is
+ * ever lost, and nothing is ever reported as saved that was not.
+ */
+function EmailSaveRow({ state, onSave }) {
+  const status = state?.status || 'idle';
+  return (
+    <div style={{ marginTop: 4 }}>
+      <button
+        onClick={onSave}
+        disabled={status === 'saving'}
+        style={{
+          // THE SAME BUTTON THE PANEL ALREADY HAS. The Universe block's
+          // "Change" is padding 5px 12px / 11px / 600 / 999px, so this is
+          // too — one primary button height in this panel, not two.
+          // nowrap, because the height parity above is only true while the
+          // label fits on one line: at 390 "Save wording & design" wrapped and
+          // the button grew to 43px against the primary's 28px.
+          width: '100%', padding: '5px 12px', border: 'none', borderRadius: 999,
+          background: '#E03553', color: '#FFFFFF', cursor: status === 'saving' ? 'default' : 'pointer',
+          fontSize: 11, fontWeight: 600, fontFamily: 'inherit', opacity: status === 'saving' ? 0.6 : 1,
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}
+      >
+        {status === 'saving' ? 'Saving…' : 'Save email'}
+      </button>
+      {status === 'saved' && (
+        <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', margin: '6px 0 0' }}>Saved.</p>
+      )}
+      {status === 'failed' && (
+        <p style={{ fontSize: 11, color: '#E03553', margin: '6px 0 0', lineHeight: 1.5 }}>{state.message}</p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * The Content tab for the selected email — every field, and which of them the
+ * couple owns.
+ */
+function EmailContentTab({ emailDraft, selectedEmail, onEmailChange, emailSave, onSaveEmails }) {
+  // The two thank-yous are two left-panel rows now, so the tab names the one
+  // that is selected rather than offering a switch of its own.
+  const entry = EDITOR_TEMPLATES.find(e => e.types.includes(selectedEmail.type)) || EDITOR_TEMPLATES[1];
+  const type = selectedEmail.type;
+  const heading = entry.types.length > 1
+    ? `${entry.label} (${entry.typeLabels[type].toLowerCase()})`
+    : entry.label;
+  const template = emailDraft?.[type] || {};
+  const defaults = defaultsFor(type);
+
+  return (
+    <div>
+      <SLabel>{heading}</SLabel>
+
+      <EmailField label={FIELD_LABELS.subject} value={template.subject} fallback={defaults.subject}
+        onChange={v => onEmailChange(type, { subject: v })} />
+      <EmailField label={FIELD_LABELS.greeting} value={template.greeting} fallback={defaults.greeting}
+        onChange={v => onEmailChange(type, { greeting: v })} />
+      <EmailField label={FIELD_LABELS.body} value={template.body} fallback={defaults.body} rows={4}
+        onChange={v => onEmailChange(type, { body: v })} />
+      <EmailField label={FIELD_LABELS.signOff} value={template.signOff} fallback={defaults.signOff} rows={2}
+        onChange={v => onEmailChange(type, { signOff: v })} />
+
+      <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', margin: '0 0 14px', lineHeight: 1.5 }}>
+        [Guest name], [Couple names] and [Wedding date] are filled in for each guest when the email sends.
+      </p>
+
+      <Divider />
+      <SLabel>Fixed parts</SLabel>
+      <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', margin: '-4px 0 10px', lineHeight: 1.5 }}>
+        These keep the email working. They are shown so you know what your guests see.
+      </p>
+      {lockedRowsFor(type).map(row => (
+        <LockedRow key={row.key} label={row.label} value={row.value} />
+      ))}
+
+      <Divider />
+      <EmailSaveRow state={emailSave} onSave={onSaveEmails} />
     </div>
   );
 }
@@ -1030,7 +1331,7 @@ function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
 // (feat/component-library), which lives outside this panel, so ownership
 // moved up to the one place both can share it.
 
-export default function WBRightPanel({ details, theme, universeTheme, onChange, rightTab, onRightTabChange, currentPage, selectedBlock, onUpdateSelectedBlockContent, onUpdateSelectedBlockStyle, onDeleteSelectedBlock, onClearSelectedBlock }) {
+export default function WBRightPanel({ details, theme, universeTheme, onChange, rightTab, onRightTabChange, currentPage, selectedBlock, onUpdateSelectedBlockContent, onUpdateSelectedBlockStyle, onDeleteSelectedBlock, onClearSelectedBlock, emailDraft, selectedEmail, onEmailChange, emailSave, onSaveEmails }) {
 
   return (
     <>
@@ -1075,9 +1376,32 @@ export default function WBRightPanel({ details, theme, universeTheme, onChange, 
             </div>
             <div style={{ flex: 1, padding: 16, overflowY: 'auto' }}>
               {rightTab === 'design' ? (
-                <DesignTab details={details} onChange={onChange} universeTheme={universeTheme} />
+                selectedEmail ? (
+                  // THE PANEL EDITS WHAT THE CANVAS IS SHOWING. An email is
+                  // selected in the left panel exactly as a page is, so the
+                  // Design tab shows that email's design rather than the
+                  // site's — the same rule the Content tab already follows.
+                  <EmailsSection
+                    details={details} emailDraft={emailDraft} selectedEmail={selectedEmail}
+                    onEmailChange={onEmailChange} emailSave={emailSave} onSaveEmails={onSaveEmails}
+                  />
+                ) : (
+                  <DesignTab details={details} onChange={onChange} universeTheme={universeTheme} />
+                )
               ) : rightTab === 'content' ? (
-                <ContentTab details={details} onChange={onChange} currentPage={currentPage} />
+                // WHEN AN EMAIL IS SELECTED, CONTENT IS THAT EMAIL'S. The
+                // canvas is showing the email, so the Content tab has to be
+                // about the thing on the canvas — a Content tab describing a
+                // page the couple cannot see is the tab lying about itself.
+                selectedEmail ? (
+                  <EmailContentTab
+                    emailDraft={emailDraft} selectedEmail={selectedEmail}
+                    onEmailChange={onEmailChange}
+                    emailSave={emailSave} onSaveEmails={onSaveEmails}
+                  />
+                ) : (
+                  <ContentTab details={details} onChange={onChange} currentPage={currentPage} />
+                )
               ) : (
                 <SettingsTab details={details} onChange={onChange} />
               )}
