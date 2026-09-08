@@ -5177,3 +5177,51 @@ Fixed in #721: main is grouped per commit, so every SHA has a group of its own
 with nothing to queue behind and nothing to displace it. PR branches keep
 their per-ref group and their cancellation. `tests/persistence/ci-concurrency.mjs`
 evaluates the expression both ways round so the key cannot quietly revert.
+
+---
+
+## 2026-09-08 — a PR that conflicts with its base gets no CI run at all
+
+**Check mergeable, not the clock.**
+
+A `pull_request` run is built on the PR's merge ref, `refs/pull/<n>/merge` —
+the commit GitHub makes by merging the head into the base. When the PR
+conflicts with its base that ref does not exist, so **GitHub creates no run**:
+not a pending check, not a failure, absent. Twice in one afternoon a pushed
+head produced nothing — `454e9b2` on #705, then `9da7bcb`, `6733057` and
+`7227e75` on #723 — and the conflicting file was OPEN-TICKETS.md, where #722
+appended one ticket and #723 appended two at the same end of the same file.
+
+**The wrong theory, and what killed it.** Both misses happened while a main
+run was in progress, so the first explanation was a timing race and the first
+rule written was "never push a PR head while a main run is in progress". That
+rule is wrong and would have sent people to a clock forever. The test:
+`7227e75` was pushed with main completely quiet and still had no run nine
+minutes later, while a different branch pushed seven minutes after that got
+its run in thirty-three seconds. Timing was a coincidence of when the
+conflicting commit landed on main.
+
+**The instrument held throughout.** `pr:green` refuses on an absent check —
+"absence is not success" — and that refusal is the only reason nothing was
+merged. What it could not do was say WHY, and its message named the clock, so
+the diagnosis took an hour it should not have. Fixed in #725: mergeable is
+read first and the refusal says `CONFLICTING — no merge ref, no CI run will
+ever exist; rebase`.
+
+---
+
+## 2026-09-08 — stage by path, never `git add -A`, on any branch
+
+A `git add -A` while fixing a spelling error swept two files belonging to
+another branch into #724. The authorized file list said five paths; the PR
+carried seven, so the merge was refused and the head had to be corrected —
+the second void authorization on that PR in a row, both mine.
+
+This is the same shape `check-docs-only-on-main.mjs` was written for on
+2026-09-05, when a `git add -A` staged the whole working tree into a commit
+titled "docs: D-READ" and pushed product code to main under a docs heading.
+**That guard covers pushes to main. Nothing covers a branch.**
+
+On a branch the file-list mark in the merge authorization is the only net, and
+it catches the mistake AFTER a head has been pushed and a line has been
+issued — which costs a round trip every time. `git add <path>` costs nothing.
