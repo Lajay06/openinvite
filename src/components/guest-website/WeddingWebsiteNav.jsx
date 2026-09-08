@@ -218,7 +218,11 @@ export default function WeddingWebsiteNav({ weddingDetails, weddingName, theme, 
         </button>
 
         {/* Desktop nav — bounded width regardless of how many pages are enabled */}
-        <div className="hidden md:flex items-center" style={{ gap: 20, minWidth: 0 }}>
+        {/* `oi-nav-desktop` is a CONTAINER query hook, added beside the
+            viewport classes rather than replacing them — see index.css. The
+            Tailwind pair stays as the fallback so a surface with no container
+            ancestor behaves exactly as it does today. */}
+        <div className="hidden md:flex items-center oi-nav-desktop" style={{ gap: 20, minWidth: 0 }}>
           {visibleLinks.map(link => renderLink(link))}
 
           {overflowLinks.length > 0 && (
@@ -249,7 +253,7 @@ export default function WeddingWebsiteNav({ weddingDetails, weddingName, theme, 
         {/* Mobile menu button */}
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="md:hidden ml-auto"
+          className="md:hidden ml-auto oi-nav-mobile"
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={mobileOpen}
           // M-4: the glyph is 20px and the button was the glyph. This is the

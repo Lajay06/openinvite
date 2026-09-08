@@ -1359,3 +1359,30 @@ body {
 .wb-hero-names-off h1 {
   display: none;
 }
+
+/* THE GUEST NAV FOLLOWS THE FRAME, NOT THE WINDOW.
+   The builder renders the guest site inside a 390px frame while the browser
+   window is 1440, and a media query reads the WINDOW. So the phone preview
+   painted the desktop navigation: the frame was the right width and the site
+   inside it was laid out for a screen four times wider.
+   `.wb-guest-root` is the root of the rendered guest site in both builder
+   surfaces (canvas and full-page preview), so making it the container is the
+   whole of the change.
+   ADDITIVE, DELIBERATELY. The Tailwind `md:` pair stays on both elements as
+   the fallback: on a surface with no container ancestor — the published site
+   in a real browser window — nothing here applies and the behaviour is
+   unchanged. `!important` because Tailwind's display utilities are what these
+   override, and equal specificity would leave the outcome to source order.
+   Measured by scripts/test-guest-nav-container.mjs. */
+.wb-guest-root {
+  container-type: inline-size;
+  container-name: guestsite;
+}
+@container guestsite (max-width: 767px) {
+  .oi-nav-desktop { display: none !important; }
+  .oi-nav-mobile { display: inline-flex !important; }
+}
+@container guestsite (min-width: 768px) {
+  .oi-nav-desktop { display: flex !important; }
+  .oi-nav-mobile { display: none !important; }
+}

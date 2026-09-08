@@ -1752,7 +1752,7 @@ assume is written down rather than remembered.
 
 ---
 
-# GUEST-SITE NAV PAINTS DESKTOP INSIDE THE 390 CANVAS FRAME
+# GUEST-SITE NAV PAINTS DESKTOP INSIDE THE 390 CANVAS FRAME — CLOSED
 
 Filed 2026-09-08, found while measuring the full-page preview for P3 (#716).
 
@@ -1772,13 +1772,16 @@ defect: the canvas and the full-page preview agree with each other and both
 disagree with a real phone. A couple checking their site on phone is being
 shown something no guest will see.
 
-**The fix is container queries** — `@container` on the frame with the nav's
-breakpoints keyed to it, rather than to the viewport. That reaches into a
-guest-facing component and changes how the published site computes its own
-layout, so it is a package with its own renders and its own accept, not a
-line to slip into a preview fix.
+**Closed 2026-09-08.** `@container` on `.wb-guest-root` — the root of the
+rendered guest site in both builder surfaces — with `oi-nav-desktop` and
+`oi-nav-mobile` hooks added BESIDE the Tailwind `md:` pair rather than
+replacing it. So the published site in a real browser window has no container
+ancestor, nothing applies, and its behaviour is untouched; the builder's frame
+is a container and the nav inside it collapses at 390.
 
-Not started.
+The guard checks four states, and the last two are the ones a container query
+can break: a real 390 viewport, which must still get the hamburger, and a real
+1440 viewport, which a query firing at every width would hand one.
 
 ---
 
