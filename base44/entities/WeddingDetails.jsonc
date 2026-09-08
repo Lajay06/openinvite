@@ -190,10 +190,13 @@
         }
       }
     },
+    // Step 2b: ciphertext at rest. Original shape kept in the description
+    // rather than in `properties`, because the stored value is now a string.
     "celebrant": {
       "type": "string",
       "description": "AES-256-GCM ciphertext (api/_lib/questionnaireCrypto.js) of the original {name, title, phone, email, type, notes} object, fix/weddingdetails-field-encryption Step 2b. Written only via api/my-wedding-details.js (PUT) by src/pages/CeremonyDetails.jsx, which no longer writes this field directly. Decrypted server-side only, by that same endpoint's GET. Mixed rows are expected and permanent: legacy plaintext rows are still objects and pass through that endpoint's typeof-string discriminator untouched. There is no backfill \u2014 a row converts to ciphertext the first time CeremonyDetails saves it."
     },
+    // Step 2b: ciphertext at rest — see the celebrant note above.
     "license": {
       "type": "string",
       "description": "AES-256-GCM ciphertext (api/_lib/questionnaireCrypto.js) of the original {issuingOffice, applicationDate, issueDate, expiryDate, licenseNumber, witnessesRequired, notes} object, fix/weddingdetails-field-encryption Step 2b. Written only via api/my-wedding-details.js (PUT) by src/pages/CeremonyDetails.jsx. Decrypted server-side only, by that same endpoint's GET. Mixed rows are expected and permanent: legacy plaintext rows are still objects and pass through that endpoint's typeof-string discriminator untouched. There is no backfill \u2014 a row converts to ciphertext the first time CeremonyDetails saves it."
@@ -264,6 +267,10 @@
     "ceremonyReadings": {
       "type": "string"
     },
+    // The six below exist in the live schema but were missing from this
+    // mirror entirely (found during the Step 2b sync). All plaintext, all
+    // written by src/pages/CeremonyDetails.jsx alongside the encrypted
+    // celebrant/license pair.
     "ceremonyType": {
       "type": "string"
     },
@@ -304,6 +311,8 @@
     "accommodationNotes": {
       "type": "string"
     },
+    // Step 2a: ciphertext at rest. This mirror said "object" until Step 2b —
+    // live has been "string" since #436. Drift, now corrected.
     "contactPerson": {
       "type": "string",
       "description": "AES-256-GCM ciphertext (api/_lib/questionnaireCrypto.js) of the original {name, phone} object, fix/weddingdetails-field-encryption Step 2a. No known writer in the app (verified via repo-wide grep) \u2014 encrypted at rest defensively regardless, which is also why no row has ever held a plaintext value. Decrypted server-side only, by api/my-wedding-details.js's GET. Mixed rows are handled by that endpoint's typeof-string discriminator; there is no backfill and none is needed (see scratchpad/DECISION-LOG.md, Step 2a closed as already-satisfied)."
@@ -337,6 +346,9 @@
       "type": "string",
       "description": "scrypt hash of the public wedding site's gate credential, format scrypt$<saltHex>$<digestHex> (api/_lib/websitePasswordHash.js), Step 2b stage (iii). A HASH, not ciphertext: every other sensitive field here is AES-256-GCM because the couple must read it back, but this one is only ever asked 'does this candidate match?', so it is never recoverable. Written and verified only via api/my-wedding-details.js / api/wedding-by-slug.js; NEVER returned to the client \u2014 the GET exposes a websitePasswordIsSet boolean instead. The scrypt$ prefix is the migrated-vs-legacy discriminator, because unlike the encrypted fields the legacy plaintext here is itself a string, so the typeof-string test used elsewhere cannot work here. Per-value random salt, so two couples choosing the same password do not share a digest. NOT the on/off switch \u2014 see websitePasswordEnabled."
     },
+    // Declared live 2026-08-17. PublishModal.jsx had been writing this since
+    // it shipped and Base44 silently dropped it every time (undeclared field,
+    // canonical gotcha #5) — the toggle appeared to work and forgot on reload.
     "websitePasswordEnabled": {
       "type": "boolean",
       "default": false,
@@ -627,6 +639,10 @@
     },
     "music": {
       "type": "object",
+      // spotifyConnected and spotifyUserId were UNDECLARED 2026-08-18 (music
+      // rebuild): zero readers, residue of the Step 2b/2c Spotify teardown.
+      // Per gotcha #5 any stored values are hidden rather than erased, which is
+      // the intended outcome — nothing reads them either way.
       "properties": {
         "guestRequestsEnabled": {
           "type": "boolean",
@@ -685,8 +701,16 @@
             }
           }
         }
+      // spotifyConnection (the OAuth accessToken/refreshToken store) was
+      // removed from the live schema in the Step 2b/2c teardown, but stayed
+      // in this mirror until 2026-08-18 — a PHANTOM: declared here, absent
+      // live. The opposite drift direction from the six fields #483 found
+      // missing, and worse in kind, because a mirror that over-declares makes
+      // the drop-scanner blind to a real drop on that path.
       }
     },
+    // Step 2a: ciphertext at rest. This mirror said "object" until Step 2b —
+    // live has been "string" since #436. Drift, now corrected.
     "budget": {
       "type": "string",
       "description": "AES-256-GCM ciphertext (api/_lib/questionnaireCrypto.js) of the couple's overall budget plan \u2014 the original {total, categories:{venue, catering, photography, flowers, music, attire, transportation, honeymoon}} object from the Budget page's 'Save plan' section, distinct from the itemized Budget entity records the rest of that page tracks. fix/weddingdetails-field-encryption Step 2a. Written only via api/my-wedding-details.js (PUT, field: 'budget') by src/pages/Budget.jsx's BudgetPlanner. Decrypted server-side only, by that same endpoint's GET. Mixed rows are handled by that endpoint's typeof-string discriminator; there is no backfill and none is needed (see scratchpad/DECISION-LOG.md, Step 2a closed as already-satisfied)."
@@ -807,10 +831,14 @@
         }
       }
     },
+    // Step 2b: ciphertext at rest — see the celebrant note above.
     "emergencyContacts": {
       "type": "string",
       "description": "AES-256-GCM ciphertext (api/_lib/questionnaireCrypto.js) of the original wedding-day emergency contacts {primary, backup, venue, otherNotes} object, fix/weddingdetails-field-encryption Step 2b. Written only via api/my-wedding-details.js (PUT) by src/pages/EmergencyContact.jsx, which no longer writes this field directly. Decrypted server-side only, by that same endpoint's GET. Never returned to a guest \u2014 also listed in NEVER_RETURN_FIELDS in api/_lib/guestSafeWedding.js. Mixed rows are expected and permanent: legacy plaintext rows are still objects and pass through that endpoint's typeof-string discriminator untouched. There is no backfill \u2014 a row converts to ciphertext the first time EmergencyContact saves it."
     },
+    // Step 2b: ciphertext at rest. Note this one's legacy plaintext shape is
+    // an ARRAY, not an object — still not a string, so the same
+    // typeof-string discriminator holds.
     "dayVendorContacts": {
       "type": "string",
       "description": "AES-256-GCM ciphertext (api/_lib/questionnaireCrypto.js) of the original key-vendor-contacts array of {name, phone, role} objects, fix/weddingdetails-field-encryption Step 2b. Written only via api/my-wedding-details.js (PUT) by src/pages/EmergencyContact.jsx, which no longer writes this field directly. Decrypted server-side only, by that same endpoint's GET. Never returned to a guest \u2014 also listed in NEVER_RETURN_FIELDS in api/_lib/guestSafeWedding.js. Mixed rows are expected and permanent: legacy plaintext rows are still arrays and pass through that endpoint's typeof-string discriminator untouched. There is no backfill \u2014 a row converts to ciphertext the first time EmergencyContact saves it."
@@ -915,6 +943,11 @@
         }
       }
     },
+    // ── Synced from live 2026-08-18 (schema-scanner refresh) ────────────────
+    // These six were declared in Base44 but had never been mirrored here. The
+    // drop-scanner now reads this file rather than an embedded snapshot, so a
+    // mirror gap reports as a false-positive DROPPED finding — which is exactly
+    // what assetContent did until this sync.
     "assetContent": {
       "type": "object",
       "description": "Ava Studio stationery content, keyed by asset type. Written by src/components/studio/guest-suite/StudioAssetsTab.jsx (the schema description still names the older AvaStudioAssets.jsx writer).",
