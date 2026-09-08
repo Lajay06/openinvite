@@ -1,3 +1,4 @@
+/* global document */
 /**
  * scripts/test-prerendered-freshness.mjs
  *
@@ -34,15 +35,31 @@
  * a marketing page is known to import shared pieces from, not just the
  * page files themselves.
  *
- * WHEN THERE IS NO DIFF, IT RENDERS INSTEAD. On main — or on a branch with no
- * commits of its own — the range is empty and the question above has no
- * answer. Rather than pass, the guard falls back to rendering every
- * prerendered route from current source and comparing bodies; see
- * fullCompare() at the bottom. R35's third occurrence is exactly this hole.
+ * THAT DIFF IS NO LONGER THE VERDICT. It is printed as a note — when the render
+ * below fails, the changed marketing sources are the first thing anyone wants
+ * to see — and then it stops mattering.
+ *
+ * WHAT DECIDES IS THE RENDER, ON EVERY RUN. All fourteen marketing routes are
+ * rendered from current source and each page's <div id="root"> compared to the
+ * committed file; see fullCompare() at the bottom. ONE PATH, deliberately:
+ *
+ *   - A diff answers "did this change forget to regenerate". That is a
+ *     different question from "is what is committed what the source produces",
+ *     and only the second is what production serves. R35's third occurrence:
+ *     the guard exited 0 on main with an empty range while two pages were
+ *     stale, and #707's merge push passed a NON-empty diff while main was
+ *     stale — because the staleness lived in the combination of #703 and
+ *     #707, and no pairwise diff can see that.
+ *
+ *   - A guard that renders only on main is not gated before merge. The
+ *     first version of this fallback ran on main only, so the PR that added it
+ *     never executed it, and it reached main unable to launch a browser. Now a
+ *     PR proves the same property main is held to, with the same code.
+ *
+ * Needs a browser, so in ci.yml this step runs AFTER the Playwright install.
  *
  * Usage: node scripts/test-prerendered-freshness.mjs
- * Exits 0 if fresh, 1 if stale. A missing diff base (shallow/orphan checkout)
- * now falls through to the full compare rather than skipping.
+ * Exits 0 if every page body matches, 1 if any differs or cannot be rendered.
  */
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
@@ -172,7 +189,7 @@ function assertNoStaleMarketingDeps() {
 }
 
 /**
- * ── THE FALLBACK: A GATE THAT IS SILENT ON MAIN IS NOT A GATE ──────────────
+ * ── THE CHECK: RENDER IT AND COMPARE IT ────────────────────────────────────
  *
  * R35, third occurrence, 2026-09-08. Everything above is diff-based: it asks
  * "did this change touch a marketing source without touching prerendered/".
@@ -187,11 +204,10 @@ function assertNoStaleMarketingDeps() {
  * combining into a stale main — the one shape a diff can never see, because
  * neither diff contained the staleness.
  *
- * So when the range is empty the guard stops asking about a diff and asks the
- * only question that still means something: RENDER EVERY PAGE FROM CURRENT
- * SOURCE AND COMPARE IT TO WHAT IS COMMITTED. That is slower — it needs a
- * build and a browser — which is why it is the fallback and not the default.
- * It is also the only form of this check that can be trusted on main.
+ * So the guard stopped asking about a diff and asks the only question that
+ * means anything: RENDER EVERY PAGE FROM CURRENT SOURCE AND COMPARE IT TO WHAT
+ * IS COMMITTED. It is slower — it needs a build and a browser — and it is the
+ * only form of this check that can be trusted, so it is what runs, every time.
  *
  * ── WHAT IS COMPARED, AND WHAT IS NORMALISED ──────────────────────────────
  *
@@ -238,6 +254,28 @@ function sliceRootBody(html) {
 function normaliseBody(body) {
   return body
     .replace(/\/assets\/([A-Za-z0-9_]+)-[A-Za-z0-9_-]{6,}\.(js|css|png|jpg|jpeg|svg|webp|woff2?)/g, '/assets/$1.$2')
+    // A TRANSITION CAUGHT MID-FLIGHT IS NOT A DIFFERENCE.
+    //
+    // The reveal animations write their current opacity into the inline style
+    // as they run: `opacity: 0.5; transition: opacity 0.4s`. Whatever value is
+    // there at capture time is an accident of when the screenshot happened,
+    // and the committed snapshots hold arbitrary mid-flight values for the
+    // same reason — prerender.mjs captures on the same 500ms beat.
+    //
+    // Measured before this line existed: three consecutive runs of the same
+    // unchanged source gave `features` failing, then `index` failing, then a
+    // clean pass. A guard that flaps is worse than no guard, because the first
+    // red is investigated and the second is ignored.
+    //
+    // NARROW ON PURPOSE: only an `opacity` that sits in the same style
+    // attribute as a `transition` is blanked. A static `opacity: 0` — an
+    // element deliberately hidden — carries no transition and is still
+    // compared exactly.
+    .replace(/style="([^"]*)"/g, (whole, decls) => (
+      /transition\s*:/.test(decls)
+        ? `style="${decls.replace(/opacity\s*:\s*[\d.]+/g, 'opacity: <animating>')}"`
+        : whole
+    ))
     .replace(/>\s+</g, '> <')
     .trim();
 }
@@ -275,7 +313,30 @@ async function fullCompare() {
     process.exit(1);
   }
 
-  const browser = await chromium.launch();
+  // A MISSING BROWSER IS A CONFIGURATION FAULT, AND IT MUST SAY SO.
+  //
+  // The first CI run of this fallback died on `browserType.launch: Executable
+  // doesn't exist` with a raw stack trace, because the step sat 170 lines
+  // before `npx playwright install` in the same job. The failure was correct —
+  // the guard genuinely could not check anything — but it read like the guard
+  // itself was broken rather than like a step in the wrong place.
+  //
+  // It still FAILS (a check that cannot run must never report a pass; that is
+  // this whole file's subject), it just explains itself.
+  let browser;
+  try {
+    browser = await chromium.launch();
+  } catch (err) {
+    preview.kill();
+    console.error('  ✗ The full compare needs a browser and none is installed.\n');
+    console.error(`      ${String(err.message).split('\n')[0]}\n`);
+    console.error('    This guard renders every marketing route whenever a diff cannot');
+    console.error('    answer the question (an empty range, or any run on main). In CI it');
+    console.error('    must therefore run AFTER the Playwright install step, not before.');
+    console.error('    Locally: npx playwright install chromium\n');
+    console.log('───────────────────────────────────────────────────────\n');
+    process.exit(1);
+  }
   const stale = [];
   const missing = [];
   let compared = 0;
@@ -293,6 +354,16 @@ async function fullCompare() {
       // Same explicit beat prerender.mjs waits: useMarketingSeo() and the
       // page's own content both land inside React's mount.
       await page.waitForTimeout(500);
+      // Then let the entrance animations finish where they will. This narrows
+      // the window the normaliser has to cover rather than replacing it — some
+      // reveals are driven by IntersectionObserver and never start off-screen,
+      // so waiting alone can never be sufficient. Bounded and best-effort: a
+      // page that keeps something running forever must not hang the guard.
+      await page.waitForFunction(
+        () => !document.getAnimations || document.getAnimations()
+          .every((a) => a.playState === 'finished' || a.playState === 'idle'),
+        { timeout: 3000 },
+      ).catch(() => {});
       const liveBody = sliceRootBody(await page.content());
       const fileBody = sliceRootBody(readFileSync(file, 'utf8'));
       if (liveBody === null || fileBody === null) {
@@ -394,66 +465,39 @@ console.log('══════════════════════�
 
 assertNoStaleMarketingDeps();
 
-// AN EMPTY RANGE IS NOT A CLEAN RANGE. `changed === null` is no diff base at
-// all; `changed.length === 0` is a base that resolved to HEAD itself. Both
-// mean the diff question is unanswerable, and both used to exit 0.
-const emptyRange = changed === null || changed.length === 0;
-
-// AND ON MAIN, THE DIFF IS THE WRONG QUESTION EVEN WHEN IT IS NON-EMPTY.
+// ── THE DIFF IS NOW A NOTE, NOT A VERDICT ─────────────────────────────────
 //
-// This is the part the 2026-09-08 incident actually turned on, and the empty
-// range alone would not have caught it. ci.yml runs on `push: [main]`, so the
-// merge of #707 arrived here with `before..HEAD` = its own squash — which
-// touched marketing sources AND prerendered/, and therefore passed. It passed
-// while main was stale.
+// It used to decide pass/fail, and that is the defect: a diff answers "did
+// this change forget to regenerate", which is a different question from "is
+// what is committed what the source produces". Only the second one is what
+// production serves, and only the second one survives two PRs combining.
 //
-// The staleness was not IN any diff. #703 removed `tracking-tight` from
-// AuthLayout.jsx and updated nothing prerendered (correctly — AuthLayout is
-// not in MARKETING_SOURCE_PATTERNS). #707 regenerated the snapshots, from a
-// tree that predated #703. Each PR was internally consistent; main was not.
-// No pairwise diff can see that, because the defect exists only in the
-// combination — which is precisely what main IS.
+// Kept because it is genuinely useful to READ — when the render below fails,
+// the first thing anyone wants is the list of marketing sources that moved.
+// It is printed and then it stops mattering.
+if (changed === null) {
+  console.log('  ℹ No diff base available — no changed-file list to report.');
+} else {
+  const marketingSourceChanged = changed.filter((f) => MARKETING_SOURCE_PATTERNS.some((re) => re.test(f)));
+  const prerenderedChanged = changed.some((f) => f.startsWith('prerendered/'));
+  if (changed.length === 0) {
+    console.log(`  ℹ ${resolvedRange} is empty — nothing changed to report.`);
+  } else if (marketingSourceChanged.length === 0) {
+    console.log(`  ℹ ${resolvedRange}: ${changed.length} file(s) changed, none of them a marketing source.`);
+  } else {
+    console.log(`  ℹ ${resolvedRange}: ${marketingSourceChanged.length} marketing source file(s) changed${prerenderedChanged ? ', and prerendered/ was updated too' : ', and prerendered/ was NOT updated'}:`);
+    marketingSourceChanged.forEach((f) => console.log(`      ${f}`));
+  }
+}
+console.log('');
+
+// ── AND THE RENDER IS THE VERDICT, ON EVERY RUN ───────────────────────────
 //
-// So on main the guard always renders. It is the one branch where being slow
-// and certain beats being fast and wrong, and the one branch production is
-// actually served from.
-const onMain = process.env.GITHUB_EVENT_NAME === 'push'
-  && (process.env.GITHUB_REF === 'refs/heads/main' || process.env.GITHUB_REF_NAME === 'main');
-
-if (emptyRange || onMain) {
-  const why = changed === null ? 'No diff base available'
-    : emptyRange ? `${resolvedRange} is empty`
-      : 'On main — a diff cannot see staleness that only exists in the combination of two PRs';
-  console.log(`  ℹ ${why}.`);
-  console.log('    Falling back to a full render-and-compare of every prerendered page.\n');
-  await fullCompare();
-}
-
-const marketingSourceChanged = changed.filter((f) => MARKETING_SOURCE_PATTERNS.some((re) => re.test(f)));
-const prerenderedChanged = changed.some((f) => f.startsWith('prerendered/'));
-
-if (marketingSourceChanged.length === 0) {
-  console.log(`  ✓ No marketing-relevant source files in ${resolvedRange} (${changed.length} file(s) changed overall) — nothing to check.`);
-  console.log('───────────────────────────────────────────────────────\n');
-  process.exit(0);
-}
-
-if (prerenderedChanged) {
-  console.log(`  ✓ ${marketingSourceChanged.length} marketing source file(s) in ${resolvedRange} (${changed.length} changed overall), and prerendered/ was updated in the same diff.`);
-  console.log('───────────────────────────────────────────────────────\n');
-  process.exit(0);
-}
-
-console.error('  ✗ Marketing source changed but prerendered/ was not updated:\n');
-marketingSourceChanged.forEach((f) => console.error(`      ${f}`));
-console.error('');
-console.error('  Production serves prerendered/ snapshots as static HTML to crawlers');
-console.error("  and no-JS clients — vercel.json's buildCommand only APPLIES those");
-console.error('  committed snapshots (scripts/apply-prerendered.mjs), it never');
-console.error('  regenerates them. A real browser still looks correct (React');
-console.error('  re-renders over the stale HTML on mount), which is exactly why this');
-console.error('  class of bug ships unnoticed without a check like this one.\n');
-console.error('  Run `npm run build:prerender` locally and commit the updated');
-console.error('  prerendered/ files in this same PR.\n');
-console.log('───────────────────────────────────────────────────────\n');
-process.exit(1);
+// One path, always. Not "diff on a PR, render on main" — that shape meant the
+// code main depends on was never exercised by the PR that changed it, which
+// is exactly how a fallback shipped that could not launch a browser. A guard
+// whose important half only runs after merge has no pre-merge gate at all.
+//
+// So every run renders all fourteen routes and compares bodies. A PR now
+// proves the same property main will be held to, using the same code.
+await fullCompare();
