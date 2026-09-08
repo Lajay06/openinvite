@@ -478,7 +478,12 @@ export default function UniverseWorldView({
           `action` prop already carries. */}
       <button type="button" onClick={() => navigate('/studio')} style={CRUMB}>Design studio</button>
       <span aria-hidden="true" style={{ opacity: 0.5 }}>›</span>
-      <button type="button" onClick={onBack} style={CRUMB}>My universe</button>
+      {/* "All universes", NOT "My universe". Owner, 2026-09-08. This crumb's
+          onClick is onBack, which returns to the WALL — every universe, not
+          the couple's own one. The label named the wrong destination, and on
+          the current universe's own page it read as a link back to the page
+          you were already on. A crumb has to say where it goes. */}
+      <button type="button" onClick={onBack} style={CRUMB}>All universes</button>
       <span aria-hidden="true" style={{ opacity: 0.5 }}>›</span>
       <span aria-current="page" style={{ opacity: 0.75 }}>{universe.name || universe.id}</span>
     </nav>
