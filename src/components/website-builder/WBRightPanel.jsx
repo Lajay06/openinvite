@@ -667,6 +667,22 @@ function SettingsTab({ details, onChange }) {
   });
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const siteUrl = details.slug ? `${origin}/w/${details.slug}` : '';
+
+  // The QR is drawn from the address, in the browser. `qrcode` is imported
+  // lazily so the encoder is not in the builder's entry bundle for the two
+  // tabs that never show one.
+  const [qrSvg, setQrSvg] = useState('');
+  useEffect(() => {
+    let live = true;
+    if (!siteUrl) { setQrSvg(''); return undefined; }
+    import('qrcode')
+      .then((qr) => qr.toString(siteUrl, { type: 'svg', margin: 1, width: 120, color: { dark: '#FFFFFF', light: '#00000000' } }))
+      .then((svg) => { if (live) setQrSvg(svg); })
+      // A QR that cannot be drawn leaves its space empty rather than throwing
+      // the panel away. Nothing else on this tab depends on it.
+      .catch(() => { if (live) setQrSvg(''); });
+    return () => { live = false; };
+  }, [siteUrl]);
   const copyLink = () => {
     if (!siteUrl) { toast.error('Set a URL slug first.'); return; }
     navigator.clipboard.writeText(siteUrl).catch(() => {});
@@ -726,11 +742,11 @@ function SettingsTab({ details, onChange }) {
       )}
       <Divider />
       <SLabel>Status</SLabel>
-      <Toggle label={`Website is ${details.websiteEnabled ? 'Live' : 'Hidden'}`} value={details.websiteEnabled} onChange={v => onChange('websiteEnabled', v)} />
+      <Toggle tone="dark" label={`Website is ${details.websiteEnabled ? 'Live' : 'Hidden'}`} value={details.websiteEnabled} onChange={v => onChange('websiteEnabled', v)} />
       <Divider />
       {SHOW_BACKGROUND_MUSIC_UI && (<>
       <SLabel>Background music</SLabel>
-      <Toggle label="Play music on your invite/website" value={backgroundMusic.enabled} onChange={v => setBGMusic({ enabled: v })} />
+      <Toggle tone="dark" label="Play music on your invite/website" value={backgroundMusic.enabled} onChange={v => setBGMusic({ enabled: v })} />
       {backgroundMusic.enabled && (
         <div style={{ marginTop: 10 }}>
           {backgroundMusic.url ? (
@@ -758,7 +774,7 @@ function SettingsTab({ details, onChange }) {
       </>)}
       <Divider />
       <SLabel>Password protection</SLabel>
-      <Toggle label="Require password" value={passwordGate.wantsProtection} onChange={passwordGate.toggle} />
+      <Toggle tone="dark" label="Require password" value={passwordGate.wantsProtection} onChange={passwordGate.toggle} />
       {passwordGate.wantsProtection && (
         <>
           <UInput label={passwordGate.hasStoredPassword ? 'New password' : 'Password'} type="password" value={passwordGate.password} onChange={passwordGate.setPassword} onCommit={passwordGate.commitPassword} />
@@ -782,8 +798,16 @@ function SettingsTab({ details, onChange }) {
             style={{ width: '100%', padding: '10px 0', border: 'none', background: '#25D366', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, borderRadius: 999, marginBottom: 12, fontFamily: 'inherit' }}>
             Share on WhatsApp
           </button>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <img src={`https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(siteUrl)}&size=120x120&margin=8`} width={120} height={120} alt="QR" />
+          {/* GENERATED HERE, NOT FETCHED. This was an <img> pointing at
+              api.qrserver.com with the couple's wedding address in the query
+              string — so every render of this tab handed a private URL to a
+              service we do not run, and the code silently rendered nothing
+              when that service was blocked or down. Same size, same place,
+              no request. */}
+          <div style={{ display: 'flex', justifyContent: 'center' }} aria-hidden="true">
+            {qrSvg
+              ? <div style={{ width: 120, height: 120 }} dangerouslySetInnerHTML={{ __html: qrSvg }} />
+              : <div style={{ width: 120, height: 120 }} />}
           </div>
         </>
       )}

@@ -39,10 +39,25 @@ export function AddBtn({ children, onClick }) {
   );
 }
 
-export function Toggle({ label, value, onChange }) {
+/**
+ * `tone` EXISTS BECAUSE THIS CONTROL IS ON TWO SURFACES.
+ *
+ * The label was a flat `#333`, which is fine on the light editors this was
+ * written for and unreadable on the builder's dark right panel: measured at
+ * 1.35:1 against #1C1C1E, where WCAG AA wants 4.5:1. A couple could not read
+ * "Website is Live" or "Require password" at all.
+ *
+ * NOT `color: inherit`, which would have been the tidier answer. The three
+ * light call sites' ambient colour could not be measured in the render lane —
+ * their toggles sit behind a tab this pass could not reach — and changing
+ * three surfaces on an assumption to fix a fourth is how a contrast fix
+ * becomes a regression somewhere nobody looked. The default is byte-identical
+ * to what those three render today.
+ */
+export function Toggle({ label, value, onChange, tone = 'light' }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 12, marginBottom: 4 }}>
-      <span style={{ fontSize: 13, color: '#333' }}>{label}</span>
+      <span style={{ fontSize: 13, color: tone === 'dark' ? 'rgba(255,255,255,0.75)' : '#333' }}>{label}</span>
       <button onClick={() => onChange(!value)} aria-label={label ? `Toggle ${label}` : 'Toggle'} aria-pressed={value} style={{ width: 38, height: 21, borderRadius: 11, border: 'none', cursor: 'pointer', flexShrink: 0, background: value ? '#E03553' : '#DDD', position: 'relative', transition: 'background 0.2s' }}>
         <div style={{ position: 'absolute', width: 17, height: 17, borderRadius: '50%', background: '#fff', top: 2, left: value ? 19 : 2, transition: 'left 0.2s' }} />
       </button>

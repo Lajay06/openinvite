@@ -79,7 +79,8 @@
     "test:full-preview-devices": "node scripts/test-full-preview-devices.mjs",
     "test:custom-page-blocks": "node scripts/test-custom-page-blocks.mjs",
     "test:hero-toggles": "node scripts/test-hero-toggles.mjs",
-    "test:sidebar-groups": "node scripts/test-sidebar-groups.mjs"
+    "test:sidebar-groups": "node scripts/test-sidebar-groups.mjs",
+    "test:settings-tab": "node scripts/test-settings-tab.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.48",
@@ -178,6 +179,7 @@
     "lucide-react": "^0.475.0",
     "next-themes": "^0.4.4",
     "posthog-js": "^1.376.0",
+    "qrcode": "^1.5.4",
     "react": "^18.2.0",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.2.0",
