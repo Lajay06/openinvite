@@ -286,7 +286,27 @@ export async function saveTemplates({ update, reload, id, templates }) {
   try {
     await update(id, { emailTemplates: templates });
   } catch (err) {
-    return { ok: false, reason: 'write-failed', error: err?.message || String(err) };
+    // A REFUSAL IS NOT A FAILURE, and telling a couple to try again when the
+    // record is refusing every write is advice that cannot work.
+    //
+    // Base44 validates the MERGED record, not the patch: a row holding any
+    // value that disagrees with its declared type refuses every write,
+    // whatever it changes, citing a field the writer never touched
+    // (BASE44_PLATFORM_NOTES.md:197). On 2026-09-08 that was 15 of 21
+    // WeddingDetails rows. A 422 here says nothing about the email wording —
+    // it says the record needs repairing, and the dashboard's own read now
+    // repairs it (api/my-wedding-details.js's heal).
+    //
+    // The status is read off the error rather than assumed: the SDK surfaces
+    // it as `.status`, and the server path formats it into the message as
+    // `failed (422)`.
+    const status = err?.status ?? Number(/\((\d{3})\)/.exec(err?.message || '')?.[1]) ?? null;
+    return {
+      ok: false,
+      reason: status === 422 ? 'write-refused' : 'write-failed',
+      status: status || undefined,
+      error: err?.message || String(err),
+    };
   }
   // THE READ-BACK IS THE POINT. A 200 from Base44 means the request was
   // accepted, not that the field was kept.
@@ -305,9 +325,23 @@ export async function saveTemplates({ update, reload, id, templates }) {
   return same ? { ok: true } : { ok: false, reason: 'not-switched-on' };
 }
 
-/** What the couple is told when a save did not survive the round-trip. */
+/**
+ * What the couple is told when a save did not survive the round-trip.
+ *
+ * `write-refused` and `write-failed` are deliberately different. A failure is
+ * worth retrying — a network blip, a slow response. A REFUSAL is not: Base44
+ * has rejected the whole record, and it will reject it identically on the
+ * next attempt and the one after. "Try again" is the one thing that must not
+ * be said there.
+ *
+ * What does work is a reload, because the dashboard's read now repairs the
+ * record on the way past (api/my-wedding-details.js). So the wording sends
+ * the couple to the thing that actually fixes it, and promises their words
+ * survive the trip — which they do: the draft is untouched by a failed save.
+ */
 export const SAVE_FAILURE_MESSAGE = {
   'no-record': 'There is no wedding record to save to yet.',
+  'write-refused': 'Your wedding record needs a quick refresh before this can save. Reopen your dashboard — that repairs it — then come back and save. Nothing you have written is lost.',
   'write-failed': 'That did not save. Your words are still here — try again.',
   'read-back-failed': 'Saved, but we could not read it back to confirm. Your words are still here.',
   'not-switched-on': 'Email wording is not switched on for your account yet. Nothing was lost — what you wrote is still here.',

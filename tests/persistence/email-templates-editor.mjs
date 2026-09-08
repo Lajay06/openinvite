@@ -58,7 +58,7 @@ import { contrastRatio } from '../../src/lib/surfaceTint.js';
 import {
   EDITOR_TEMPLATES, TEMPLATE_TYPES, TEMPLATE_FIELDS, defaultsFor, defaultFor,
   lockedRowsFor, designOf, personalMessageFrom, subjectFrom, isDefault, isWritten,
-  templatesOf, saveTemplates, publicIdOf, emptyTemplate,
+  templatesOf, saveTemplates, publicIdOf, emptyTemplate, SAVE_FAILURE_MESSAGE,
 } from '../../src/lib/emailTemplateStore.js';
 
 const UNIVERSE_IDS = Object.keys(UNIVERSE_EMAIL_STYLES);
@@ -391,6 +391,37 @@ export async function runEmailTemplatesEditor() {
   });
   t('a read-back that throws is not reported as saved either',
     threwOnRead.ok === false && threwOnRead.reason === 'read-back-failed', JSON.stringify(threwOnRead));
+
+  // A REFUSAL IS NOT A FAILURE. Base44 validates the merged record, so a row
+  // holding a legacy value refuses every write identically, for ever. Telling
+  // the couple to "try again" there is advice that cannot work — the two
+  // cases must reach different words.
+  const refused422 = await saveTemplates({
+    id: 'wd1',
+    update: async () => { throw Object.assign(new Error('Unprocessable'), { status: 422 }); },
+    reload: async () => ({}), templates: draft,
+  });
+  t('a 422 is reported as a REFUSAL, not a failure',
+    refused422.reason === 'write-refused' && refused422.status === 422, JSON.stringify(refused422.reason));
+  const refusedText = await saveTemplates({
+    id: 'wd1',
+    update: async () => { throw new Error('Base44 PUT /entities/WeddingDetails/x failed (422): {}'); },
+    reload: async () => ({}), templates: draft,
+  });
+  t('  including when the status is only in the message text',
+    refusedText.reason === 'write-refused', refusedText.reason);
+  const plainFail = await saveTemplates({
+    id: 'wd1', update: async () => { throw new Error('Failed to fetch'); },
+    reload: async () => ({}), templates: draft,
+  });
+  t('  while a network error stays a retryable failure',
+    plainFail.reason === 'write-failed', plainFail.reason);
+  t('the refusal wording never says "try again"',
+    !/try again/i.test(SAVE_FAILURE_MESSAGE['write-refused']), 'it sends them to the dashboard instead');
+  t('  and does say their words are safe',
+    /nothing you have written is lost/i.test(SAVE_FAILURE_MESSAGE['write-refused']));
+  t('  while the retryable failure still does say try again',
+    /try again/i.test(SAVE_FAILURE_MESSAGE['write-failed']));
 
   t('no record at all is reported rather than written into the void',
     (await saveTemplates({ id: null, update: async () => {}, reload: async () => ({}), templates: draft })).reason === 'no-record');
