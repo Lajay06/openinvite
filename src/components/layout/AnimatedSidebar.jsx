@@ -54,7 +54,7 @@ function buildCollaboratorNav(permissions) {
   }
   return { topLevel, sections: [...sections.entries()].map(([label, items]) => ({ label, items })) };
 }
-import { BarChart2, Calendar, Camera, Car, Clock, CreditCard, FileText, Gift, Globe, Heart, HelpCircle, Hotel, Image, LayoutDashboard, LayoutGrid, Lightbulb, ListTodo, LogOut, MapPin, MessageCircle, Music2, Package, Palette, Phone, Plane, ScrollText, Send, ShoppingBag, Sparkles, StickyNote, Store, UserCheck, UserPlus, Users, UtensilsCrossed, Wallet } from 'lucide-react';
+import { BarChart2, Calendar, Camera, Car, ChevronDown, Clock, CreditCard, FileText, Gift, Globe, Heart, HelpCircle, Hotel, Image, LayoutDashboard, LayoutGrid, Lightbulb, ListTodo, LogOut, MapPin, MessageCircle, Music2, Package, Palette, Phone, Plane, ScrollText, Send, ShoppingBag, Sparkles, StickyNote, Store, UserCheck, UserPlus, Users, UtensilsCrossed, Wallet } from 'lucide-react';
 
 // Maps collaboratorPageMap.js's icon name strings to the actual lucide
 // components — kept out of that shared file so it stays framework-neutral
@@ -212,28 +212,70 @@ export const NAV_SECTIONS = [
 // ── Shared style helpers ──────────────────────────────────────────────────────
 
 
+/** Where a device remembers which groups this couple keeps open. */
+export const GROUP_OPEN_KEY = 'oi_sidebar_groups';
+
+/**
+ * PER DEVICE, NOT PER ACCOUNT. localStorage, deliberately: which groups a
+ * couple keeps open is a property of the machine they are sitting at, not of
+ * the wedding. The same couple on a laptop and a phone want different answers,
+ * and a field on the record would give them one.
+ *
+ * EVERY READ AND WRITE IS GUARDED. A private window, cleared site data, or a
+ * browser set to block storage makes the accessor itself throw, and a sidebar
+ * that cannot render because it could not read a preference is a worse failure
+ * than a sidebar that forgot one.
+ */
+function readStoredGroups() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(GROUP_OPEN_KEY) || '{}');
+    return raw && typeof raw === 'object' ? raw : {};
+  } catch { return {}; }
+}
+function writeStoredGroups(next) {
+  try { localStorage.setItem(GROUP_OPEN_KEY, JSON.stringify(next)); } catch { /* storage refused; the session still works */ }
+}
+
 /**
  * A GROUP OPENS WHEN IT HAS SOMETHING TO SAY.
  *
- * Owner: every group collapsed by default except the first, and a group
- * holding the page you are on opens. That last clause is the one that makes
- * the rule usable rather than annoying — you never land on a page whose own
- * group is shut, and the nav does not reset itself around you as you move.
+ * Owner ruling, revised 2026-09-08: the groups are COLLAPSED ON FIRST LOAD —
+ * all of them. The previous rule kept the first group open, and that is the
+ * clause being removed; the sentence it was written with is worth keeping in
+ * view, because the OTHER clause survives deliberately.
  *
- * The state is per mount and deliberately not persisted: a remembered
+ * A GROUP HOLDING THE PAGE YOU ARE ON STILL OPENS. That is what makes the
+ * rule usable rather than annoying — you never land on a page whose own group
+ * is shut, and the nav does not reset itself around you as you move. The
+ * revision named the first-group exception and said nothing about this one,
+ * so this one stays. On the landing page — Daily update, which is ungrouped
+ * and where a couple actually starts — nothing holds the active page and
+ * every group is therefore closed, which is the first load the ruling is
+ * about.
+ *
+ * AND NOW IT IS REMEMBERED. The old note here said the opposite: "a remembered
  * accordion is a different feature, and a couple who opens four groups and
- * comes back tomorrow to four open groups has the eight-group sidebar again.
+ * comes back tomorrow to four open groups has the eight-group sidebar again."
+ * That was a real objection and the owner has overruled it. What answers it is
+ * the DEFAULT: a couple who has never touched a group gets all of them closed
+ * on every device, so the sidebar only grows for someone who chose to grow it.
  */
 function useGroupOpen(sections, isActive, holdsActive) {
-  const firstOpen = React.useMemo(() => {
+  const [stored, setStored] = React.useState(readStoredGroups);
+
+  const defaults = React.useMemo(() => {
     const open = {};
-    sections.forEach((sec, i) => { open[sec.label] = i === 0 || holdsActive(sec); });
+    sections.forEach((sec) => { open[sec.label] = holdsActive(sec); });
     return open;
     // Recomputed when the active page changes so the new page's group opens.
   }, [sections, holdsActive]);
-  const [manual, setManual] = React.useState({});
-  const isOpen = (sec) => (sec.label in manual ? manual[sec.label] : firstOpen[sec.label]);
-  const toggle = (sec) => setManual((m) => ({ ...m, [sec.label]: !isOpen(sec) }));
+
+  const isOpen = (sec) => (sec.label in stored ? stored[sec.label] : defaults[sec.label]);
+  const toggle = (sec) => setStored((prev) => {
+    const next = { ...prev, [sec.label]: !isOpen(sec) };
+    writeStoredGroups(next);
+    return next;
+  });
   return { isOpen, toggle };
 }
 
@@ -266,11 +308,26 @@ function GroupHeader({ section, open, onToggle }) {
           Ultra
         </span>
       )}
-      {/* A text-presentation caret, not an emoji glyph: it inherits the
-          typeface and currentColor, which is the rule's actual test. */}
-      <span aria-hidden="true" style={{ marginLeft: "auto", fontSize: 9, color: "rgba(10,10,10,0.45)", fontFamily: PJS }}>
-        {open ? "\u25BC" : "\u25B6"}
-      </span>
+      {/* THE SAME CHEVRON THE REST OF THE DASHBOARD USES. It was a pair of
+          text-presentation carets (U+25BC / U+25B6) — legitimate under the
+          emoji rule, which is about presentation rather than block, but not
+          the shape every other disclosure in the product draws. One icon,
+          rotated: ChevronDown is the open state and -90deg is the closed one,
+          which is ChevronRight without a second import to keep in step.
+          Sized and coloured off the group label beside it, not off a value of
+          its own. */}
+      <ChevronDown
+        aria-hidden="true"
+        size={10}
+        strokeWidth={2}
+        style={{
+          marginLeft: "auto",
+          flexShrink: 0,
+          color: "rgba(10,10,10,0.6)",
+          transform: open ? "rotate(0deg)" : "rotate(-90deg)",
+          transition: "transform 0.15s ease",
+        }}
+      />
     </div>
   );
 }
