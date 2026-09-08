@@ -92,6 +92,7 @@ import ShanghaiMasthead from '@/components/guest-website/layouts/ShanghaiMasthea
 import ShanghaiCloud from '@/components/guest-website/layouts/ShanghaiCloud';
 
 import { sampleHeroImage } from '@/lib/sampleContent/mergeSample';
+import { heroFocus } from '@/lib/heroFocus';
 import { universeGallery } from '@/lib/universeGallery';
 // The app's own border value. Imported as appColor because `colors` in this
 // file already means the UNIVERSE's palette, and the hairline between the
@@ -280,6 +281,7 @@ function HeroChapter({ universe, isCurrent, prefersReducedMotion, scrollContaine
           alt=""
           style={{
             position: 'absolute', inset: '-10% 0', width: '100%', height: '120%', objectFit: 'cover',
+            objectPosition: heroFocus(universe.id),
             y: prefersReducedMotion ? 0 : parallaxY,
           }}
         />

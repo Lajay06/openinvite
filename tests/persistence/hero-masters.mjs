@@ -37,6 +37,7 @@ import { pass, fail } from './_shared.mjs';
 import { sampleUniverseIds, getSampleWedding } from '../../src/lib/sampleContent/index.js';
 import { universeScrollImage } from '../../src/lib/universeCatalog.js';
 import { HERO_MASTERS, HERO_TARGET_WIDTH, heroPublicId, heroMasterWidth } from '../../src/lib/heroMasters.js';
+import { HERO_FOCUS, HERO_FOCUS_DEFAULT, heroFocus } from '../../src/lib/heroFocus.js';
 import { readFileSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -109,6 +110,33 @@ export async function runHeroMasters() {
       !HEROES_JPG.test(pid), pid.slice(0, 34) + '…');
   }
   check('nothing else is exempt', NOT_RESHOT.length === 1, NOT_RESHOT.join(', '));
+
+  // ── WHERE THE HERO IS CROPPED FROM ────────────────────────────────────────
+  //
+  // The crop is done by CSS, not by Cloudinary: the delivery is 16:9 and each
+  // surface object-fits it into a container of its own shape, so on a phone
+  // the browser takes the slice and object-position picks it. Three surfaces
+  // render a hero that way and all three must ask heroFocus, or a universe is
+  // framed correctly in two places and centred blind in the third.
+  const HERO_SURFACES = [
+    'src/pages/Universes.jsx',
+    'src/components/universe-studio/UniverseBanner.jsx',
+    'src/components/universe-studio/UniverseWorldView.jsx',
+  ];
+  for (const f of HERO_SURFACES) {
+    const src = readFileSync(join(ROOT, f), 'utf8');
+    check(`${f.split('/').pop()} takes its object-position from heroFocus`,
+      /objectPosition: heroFocus\(/.test(src),
+      /objectPosition:/.test(src) ? (src.match(/objectPosition: [^,\n]+/) || [''])[0] : 'no objectPosition at all');
+  }
+
+  // An override is a claim that someone looked at that photograph. Every one
+  // has to name a universe that exists, or it is silently doing nothing.
+  for (const id of Object.keys(HERO_FOCUS)) {
+    check(`the ${id} focus override names a real universe`, ids.includes(id), HERO_FOCUS[id]);
+  }
+  check('every other universe is centred', ids.filter((id) => heroFocus(id) !== HERO_FOCUS_DEFAULT).join(', ') === Object.keys(HERO_FOCUS).join(', '),
+    `overridden: ${Object.keys(HERO_FOCUS).join(', ') || 'none'}`);
 
   // THE PRERENDERED PAGE IS A SEPARATE ARTIFACT and goes stale on its own:
   // it is generated, committed, and served as-is. A swap that never reached
