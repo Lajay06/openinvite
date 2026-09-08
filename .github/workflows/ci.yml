@@ -305,6 +305,22 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
 
+      # The builder has two preview surfaces, each with its own copy of the
+      # device list and the widths. This measures both in one run and compares
+      # them, so the next divergence is a red run rather than a report.
+      - name: The full-page preview offers the devices the canvas does
+        run: |
+          npx vite preview --port 4182 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4182 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4182 npm run test:full-preview-devices
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       - name: The universe breadcrumb says where it goes
         run: |
           npx vite preview --port 4180 --strictPort &
