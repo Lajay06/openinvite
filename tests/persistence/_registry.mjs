@@ -55,6 +55,9 @@ const DIR = resolve(dirname(fileURLToPath(import.meta.url)));
  */
 export const LIVE_CREDENTIAL_GUARDS = new Set([
   'anonymous-endpoints.mjs',
+  // Cloudinary, not Base44: it verifies HERO_MASTERS against the real assets,
+  // which is the one thing the CI-lane hero guard cannot know.
+  'hero-masters-live.mjs',
   'collaborator-invite.mjs',
   'endpoint-auth.mjs',
   'guest.mjs',

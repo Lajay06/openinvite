@@ -17,6 +17,7 @@
  * clean spares, so BOTH Home photographs are real spares and NOTHING is
  * doubled here.
  */
+import { heroDeliveryWidth } from '../heroMasters.js';
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
@@ -27,7 +28,7 @@ export const MONACO_IMAGES = {
     'hf_20260904_063711_f85315ec-38f4-458c-b0fa-b941c150e135_rec1vm', // spare landscape, the harbor
     'hf_20260904_063711_b3d46f9b-fbda-4f16-9afa-485b0bfe42dc_yc1mhb', // spare portrait, the steps
   ],
-  hero:  'hf_20260904_063711_22bc52f2-a946-449a-9fd8-aa923b5d034a_hqz8ba', // 2752x1536
+  hero:  'monaco-hero_kwfou0', // heroes-jpg 4096x2294, ratio 1.786
   story: [
     'hf_20260904_063518_aaa43bad-66a2-419e-ae69-769dd313232f_xg0qm1', // 1536x2048
     'hf_20260904_063711_59bb3a1e-4e93-4c48-bf44-722aeda29ff2_fopeap', // 1792x2400
@@ -44,7 +45,11 @@ export const SAMPLE_MONACO = {
   activeUniverse: 'monaco',
   websiteMode: 'light',
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls', 'experience'],
-  coverPhoto: img(MONACO_IMAGES.hero, 2048),
+  // THE HERO SLOT, at the master's own ceiling. It was a flat 2048 into a
+  // hero that renders 2880 device pixels wide at 1440@2x — the softness
+  // the 4K masters were shot to remove. heroDeliveryWidth never asks for
+  // more than the master holds, so nothing upscales.
+  coverPhoto: img(MONACO_IMAGES.hero, heroDeliveryWidth(MONACO_IMAGES.hero)),
 
   mainCeremony: { venueName: 'The terrace above the port', address: 'Top of the steps, past the second gate', startTime: '19:00', time: '19:00' },
   reception: { venueName: 'The lower deck', address: 'Berth 14, and it does not leave', startTime: '21:00', time: '21:00' },

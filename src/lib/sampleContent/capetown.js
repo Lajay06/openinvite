@@ -17,6 +17,7 @@
  * NO spare for Home, so both Home photographs are DOUBLED from Our Story.
  * See the PR body for the table and the rejection.
  */
+import { heroDeliveryWidth } from '../heroMasters.js';
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
@@ -28,7 +29,7 @@ export const CAPETOWN_IMAGES = {
     'hf_20260905_005622_29de1cbf-2a1d-4355-a4db-07da00b77ecd_sidpti', // 2400x1792, the lit table
     'hf_20260905_005622_a1842daf-389f-4312-be65-4d71e6812a05_c9t7xc', // 1792x2400, under the vine
   ],
-  hero:  'hf_20260905_005621_7edf723e-7279-4960-a23a-bf835593f80c_uhfav4', // 2003x1114
+  hero:  'cape-town-hero_zwhvzb', // heroes-jpg 4096x2294, ratio 1.786
   story: [
     'hf_20260905_005621_ae8a68d1-affe-428e-8301-f19ee7e38110_gqsbbm', // 1536x2048
     'hf_20260905_005530_30720159-1f17-4fba-9407-064eba8a85e2_c3ew71', // 1536x2048
@@ -45,7 +46,11 @@ export const SAMPLE_CAPETOWN = {
   activeUniverse: 'capetown',
   websiteMode: 'light',
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls', 'experience'],
-  coverPhoto: img(CAPETOWN_IMAGES.hero, 2048),
+  // THE HERO SLOT, at the master's own ceiling. It was a flat 2048 into a
+  // hero that renders 2880 device pixels wide at 1440@2x — the softness
+  // the 4K masters were shot to remove. heroDeliveryWidth never asks for
+  // more than the master holds, so nothing upscales.
+  coverPhoto: img(CAPETOWN_IMAGES.hero, heroDeliveryWidth(CAPETOWN_IMAGES.hero)),
 
   mainCeremony: { venueName: 'The Old Cellar', address: 'The estate, at the end of the gravel road', startTime: '16:30', time: '16:30' },
   reception: { venueName: 'Under the oak', address: 'The estate, at the end of the gravel road', startTime: '18:30', time: '18:30' },

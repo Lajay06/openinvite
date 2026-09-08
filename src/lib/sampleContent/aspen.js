@@ -16,6 +16,7 @@
  * all six used, none rejected). Six assets, six roles, no spare — so BOTH Home
  * photographs are DOUBLED from Our Story.
  */
+import { heroDeliveryWidth } from '../heroMasters.js';
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
@@ -26,7 +27,7 @@ export const ASPEN_IMAGES = {
     'hf_20260905_024502_4d83f52a-6e0b-4646-8139-ecb322b66c97_wvmeaa', // DOUBLED from Our Story
     'hf_20260905_024408_5ea5126e-9788-4fb3-8940-a0601f02f0b2_vgnvzm', // DOUBLED from Our Story
   ],
-  hero:  'hf_20260905_024502_708157cd-fe8b-4f61-81fa-647f8c1c8125_chakrw', // 2752x1536
+  hero:  'aspen-hero_ldlksr', // heroes-jpg 4096x2294, ratio 1.786
   story: [
     'hf_20260905_024408_5ea5126e-9788-4fb3-8940-a0601f02f0b2_vgnvzm', // 1536x2048
     'hf_20260905_024501_a377409a-d5cf-4466-9eab-4fbf74a2d127_eitv21', // 1536x2048
@@ -43,7 +44,11 @@ export const SAMPLE_ASPEN = {
   activeUniverse: 'aspen',
   websiteMode: 'light',
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls', 'experience'],
-  coverPhoto: img(ASPEN_IMAGES.hero, 2048),
+  // THE HERO SLOT, at the master's own ceiling. It was a flat 2048 into a
+  // hero that renders 2880 device pixels wide at 1440@2x — the softness
+  // the 4K masters were shot to remove. heroDeliveryWidth never asks for
+  // more than the master holds, so nothing upscales.
+  coverPhoto: img(ASPEN_IMAGES.hero, heroDeliveryWidth(ASPEN_IMAGES.hero)),
 
   mainCeremony: { venueName: 'The clearing above the lodge', address: 'Ten minutes up, on foot or by sled', startTime: '15:30', time: '15:30' },
   reception: { venueName: 'The lodge', address: 'Back down the same track', startTime: '18:00', time: '18:00' },

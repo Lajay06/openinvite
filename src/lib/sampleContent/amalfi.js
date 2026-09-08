@@ -16,6 +16,7 @@
  * clean spare covers the first Home photograph; the second is DOUBLED from
  * Our Story. See the PR body for the table.
  */
+import { heroDeliveryWidth } from '../heroMasters.js';
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
@@ -44,7 +45,11 @@ export const SAMPLE_AMALFI = {
   activeUniverse: 'amalfi',
   websiteMode: 'light',
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls', 'experience'],
-  coverPhoto: img(AMALFI_IMAGES.hero, 2048),
+  // THE HERO SLOT, at the master's own ceiling. It was a flat 2048 into a
+  // hero that renders 2880 device pixels wide at 1440@2x — the softness
+  // the 4K masters were shot to remove. heroDeliveryWidth never asks for
+  // more than the master holds, so nothing upscales.
+  coverPhoto: img(AMALFI_IMAGES.hero, heroDeliveryWidth(AMALFI_IMAGES.hero)),
 
   mainCeremony: { venueName: 'The lemon terrace', address: 'The top of the garden, above the road', startTime: '17:00', time: '17:00' },
   reception: { venueName: 'The lower terrace', address: 'The same garden, one flight down', startTime: '19:00', time: '19:00' },

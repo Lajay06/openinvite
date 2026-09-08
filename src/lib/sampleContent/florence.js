@@ -19,6 +19,7 @@
  * Experiences in its place, which leaves one spare, so the first Home photograph
  * is that spare and the second is DOUBLED from Our Story.
  */
+import { heroDeliveryWidth } from '../heroMasters.js';
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
@@ -29,7 +30,7 @@ export const FLORENCE_IMAGES = {
     'hf_20260905_002214_429e2213-24cf-4816-a7e5-d1c831c03ac5_q8nmoe', // spare portrait, the wall above the city
     'hf_20260905_002214_399c4e2d-77e4-413b-bbde-2ef07ffb4f8f_pq7npc', // DOUBLED from Our Story
   ],
-  hero:  'hf_20260905_002214_1399c6db-0ddd-4088-9526-39183bd49209_xrv2pd', // 2752x1536
+  hero:  'florence-hero_in9ez4', // heroes-jpg 4096x2294, ratio 1.786
   story: [
     'hf_20260905_002213_2eaa3582-4a16-4ed9-8555-e5215af5952f_ag4mfk', // 1536x2048
     'hf_20260905_002102_cf3cd26e-c033-41cf-878c-2ff1c59e046f_c3yhxm', // 1536x2048
@@ -47,7 +48,11 @@ export const SAMPLE_FLORENCE = {
   activeUniverse: 'florence',
   websiteMode: 'light',
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls', 'experience'],
-  coverPhoto: img(FLORENCE_IMAGES.hero, 2048),
+  // THE HERO SLOT, at the master's own ceiling. It was a flat 2048 into a
+  // hero that renders 2880 device pixels wide at 1440@2x — the softness
+  // the 4K masters were shot to remove. heroDeliveryWidth never asks for
+  // more than the master holds, so nothing upscales.
+  coverPhoto: img(FLORENCE_IMAGES.hero, heroDeliveryWidth(FLORENCE_IMAGES.hero)),
 
   mainCeremony: { venueName: 'The olive terrace', address: 'Behind the farmhouse, up the track', startTime: '18:00', time: '18:00' },
   reception: { venueName: 'The long table under the pergola', address: 'The same terrace, ten steps over', startTime: '20:00', time: '20:00' },

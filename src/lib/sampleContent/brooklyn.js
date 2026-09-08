@@ -14,6 +14,7 @@
  * neon reads as a garbled near-trademark brand mark; the stoop portrait took
  * its place. Recorded in the PR body.
  */
+import { heroDeliveryWidth } from '../heroMasters.js';
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
@@ -32,7 +33,7 @@ export const BROOKLYN_IMAGES = {
   // The dimension comments on these two lines were left describing the
   // PRE-SWAP assets and were wrong for a week — every id below is measured
   // against the Cloudinary listing now, not copied forward.
-  hero:  'hf_20260904_090213_add0b2d6-8dcc-44ce-8360-762925a327c7_g5eb7y', // 2752x1536, ratio 1.792
+  hero:  'brooklyn-hero_u3jq3l', // heroes-jpg 4096x2294, ratio 1.786
   story: [
     'hf_20260904_090059_18da7a9c-eefa-4e7b-8779-86cdcc3b15e8_q418v1', // 1536x2048, back in Our Story
     'hf_20260904_090213_dcaa917a-e117-4610-8618-a399139999a4_jv74kl', // 1792x2400
@@ -49,7 +50,11 @@ export const SAMPLE_BROOKLYN = {
   activeUniverse: 'brooklyn',
   websiteMode: 'light',
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls', 'experience'],
-  coverPhoto: img(BROOKLYN_IMAGES.hero, 2048),
+  // THE HERO SLOT, at the master's own ceiling. It was a flat 2048 into a
+  // hero that renders 2880 device pixels wide at 1440@2x — the softness
+  // the 4K masters were shot to remove. heroDeliveryWidth never asks for
+  // more than the master holds, so nothing upscales.
+  coverPhoto: img(BROOKLYN_IMAGES.hero, heroDeliveryWidth(BROOKLYN_IMAGES.hero)),
 
   mainCeremony: { venueName: 'The Warehouse', address: 'Under the tracks', startTime: '16:00', time: '16:00' },
   reception: { venueName: 'The Back Room', address: 'Under the tracks', startTime: '18:00', time: '18:00' },

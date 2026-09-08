@@ -18,6 +18,7 @@
  * ruled. Nothing is left over, so BOTH Home photographs are DOUBLED from
  * Our Story. None rejected.
  */
+import { heroDeliveryWidth } from '../heroMasters.js';
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
@@ -28,7 +29,7 @@ export const EDINBURGH_IMAGES = {
     'hf_20260905_003402_a97ceed9-415f-4b3e-9a40-07db9a40433e_h1pxon', // DOUBLED from Our Story
     'hf_20260905_003402_187eb61b-190a-4b83-9442-2ba7b49260c9_dchwij', // DOUBLED from Our Story
   ],
-  hero:  'hf_20260905_003402_f063e865-c831-4dd9-bab0-f70baae902a9_xqqyyj', // 1994x1080
+  hero:  'edinburgh-hero_jfsxk4', // heroes-jpg 4096x2294, ratio 1.786
   story: [
     'hf_20260905_003309_d0e94bb4-3a5f-4c36-ad16-5190121866ec_tthf7e', // 1536x1713
     'hf_20260905_003402_335cc9f8-11f5-483a-959d-5d924f185a9b_gba6q7', // 1536x2048
@@ -46,7 +47,11 @@ export const SAMPLE_EDINBURGH = {
   activeUniverse: 'edinburgh',
   websiteMode: 'light',
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls', 'experience'],
-  coverPhoto: img(EDINBURGH_IMAGES.hero, 2048),
+  // THE HERO SLOT, at the master's own ceiling. It was a flat 2048 into a
+  // hero that renders 2880 device pixels wide at 1440@2x — the softness
+  // the 4K masters were shot to remove. heroDeliveryWidth never asks for
+  // more than the master holds, so nothing upscales.
+  coverPhoto: img(EDINBURGH_IMAGES.hero, heroDeliveryWidth(EDINBURGH_IMAGES.hero)),
 
   mainCeremony: { venueName: 'The chapel on the estate', address: 'Up the avenue, past the gate lodge', startTime: '14:00', time: '14:00' },
   reception: { venueName: 'The great hall', address: 'The main house, through the front door', startTime: '17:00', time: '17:00' },
