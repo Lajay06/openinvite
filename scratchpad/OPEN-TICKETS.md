@@ -1749,3 +1749,33 @@ an admin key. That is a different feature, not a tightening of this one:
 
 Not started. Filed so the gap between what the lock is and what a couple might
 assume is written down rather than remembered.
+
+---
+
+# GUEST-SITE NAV PAINTS DESKTOP INSIDE THE 390 CANVAS FRAME
+
+Filed 2026-09-08, found while measuring the full-page preview for P3 (#716).
+
+**The frame narrows and the site inside does not.** Set the builder to phone
+and the page frame measures exactly 390 — canvas and full-page preview both.
+The guest site rendered inside it still paints its desktop navigation, because
+its only responsive rule is `md:` in `WeddingWebsiteNav.jsx`, and a media
+query reads the BROWSER VIEWPORT, not the element it happens to be inside. The
+viewport is 1440, so `md:` applies, and the nav lays out for a screen almost
+four times the width of the frame it is drawn in.
+
+At a genuine 390 viewport the same page renders its mobile nav with the
+hamburger, so nothing is broken about the site — only about previewing it.
+
+**Both preview surfaces have this identically**, which is why it is not a P3
+defect: the canvas and the full-page preview agree with each other and both
+disagree with a real phone. A couple checking their site on phone is being
+shown something no guest will see.
+
+**The fix is container queries** — `@container` on the frame with the nav's
+breakpoints keyed to it, rather than to the viewport. That reaches into a
+guest-facing component and changes how the published site computes its own
+layout, so it is a package with its own renders and its own accept, not a
+line to slip into a preview fix.
+
+Not started.
