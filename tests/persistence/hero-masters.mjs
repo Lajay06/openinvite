@@ -135,8 +135,38 @@ export async function runHeroMasters() {
   for (const id of Object.keys(HERO_FOCUS)) {
     check(`the ${id} focus override names a real universe`, ids.includes(id), HERO_FOCUS[id]);
   }
-  check('every other universe is centred', ids.filter((id) => heroFocus(id) !== HERO_FOCUS_DEFAULT).join(', ') === Object.keys(HERO_FOCUS).join(', '),
-    `overridden: ${Object.keys(HERO_FOCUS).join(', ') || 'none'}`);
+  // SETS, NOT JOINED STRINGS. The first version compared
+  // ids.filter(...).join() against Object.keys(HERO_FOCUS).join(), which made
+  // the check ORDER-dependent: it went red the moment an entry was added in a
+  // place other than the end, with a message about universes being centred
+  // when every universe was in fact correct. A guard that fails on the shape
+  // of its own comparison teaches people to ignore it.
+  // A RATCHET, AND IT IS DELIBERATELY A LIST OF NAMES.
+  //
+  // Everything else here checks that the map is WELL FORMED. Nothing can check
+  // that it is COMPLETE: "the couple is whole and mid-frame at 390" is a fact
+  // about a photograph, and the one instrument that could judge it — face
+  // detection — was measured on all twenty and is wrong in both directions.
+  // It finds no face at all in brooklyn, kyoto, monaco or seoul, and in havana
+  // it finds four, counting two bystanders as part of the subject and dragging
+  // the computed centre from 50% to 37%.
+  //
+  // So deleting an entry is invisible: the universe falls back to centre and
+  // every check still passes, which is exactly what happened when this plant
+  // was first run. This list is what makes that deletion loud. It is not a
+  // restatement of the map — it is the record of which universes a human
+  // looked at and ruled on, and changing it has to be a decision.
+  const OWNER_RULED = ['amalfi', 'bali', 'brooklyn', 'havana', 'kyoto', 'monaco', 'mykonos', 'shanghai', 'taj'];
+  const declaredNow = Object.keys(HERO_FOCUS).sort();
+  check('every universe the owner ruled on still has its focus entry',
+    OWNER_RULED.every((id) => declaredNow.includes(id)),
+    OWNER_RULED.filter((id) => !declaredNow.includes(id)).join(', ') || `all ${OWNER_RULED.length} present`);
+
+  const overridden = ids.filter((id) => heroFocus(id) !== HERO_FOCUS_DEFAULT).sort();
+  const declared = Object.keys(HERO_FOCUS).sort();
+  check('every universe that is not centred is one this map declares',
+    overridden.length === declared.length && overridden.every((id, i) => id === declared[i]),
+    `overridden: ${overridden.join(', ') || 'none'}`);
 
   // THE PRERENDERED PAGE IS A SEPARATE ARTIFACT and goes stale on its own:
   // it is generated, committed, and served as-is. A swap that never reached
