@@ -166,7 +166,10 @@ export default function PublishModal({ onClose, details, onUpdate }) {
                     padding: '8px 20px', fontWeight: 700, fontSize: 13, fontFamily: 'inherit',
                     cursor: hasRealSlug ? 'pointer' : 'not-allowed',
                     opacity: hasRealSlug ? 1 : 0.4,
-                    background: details?.websiteEnabled ? 'transparent' : 'linear-gradient(135deg, #E03553, #803D81)',
+                    // Solid #E03553, not the pink/purple ramp. Same button,
+                    // same togglePublish handler, same disabled rule — only
+                    // the fill changes (owner ruling 2026-09-08).
+                    background: details?.websiteEnabled ? 'transparent' : '#E03553',
                     color: details?.websiteEnabled ? '#E03553' : '#FFF',
                     border: details?.websiteEnabled ? '1px solid #E03553' : 'none',
                   }}
@@ -280,7 +283,7 @@ export default function PublishModal({ onClose, details, onUpdate }) {
 
                   <a
                     href={`mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailMessage)}`}
-                    style={{ display: 'block', textAlign: 'center', width: '100%', padding: '14px', background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFF', border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'none', boxSizing: 'border-box' }}
+                    style={{ display: 'block', textAlign: 'center', width: '100%', padding: '14px', background: '#E03553', color: '#FFF', border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'none', boxSizing: 'border-box' }}
                   >
                     Open in Email App
                   </a>

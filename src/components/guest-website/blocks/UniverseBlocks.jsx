@@ -611,14 +611,24 @@ export const RENDERERS = {
   'wedding-party': WeddingPartyBlock,
 };
 
-// Round 8 ask #10: back to hover-only (this had been made always-visible
-// by feat/canvas-builder, which reserved a permanent 28px slot between
-// every pair of blocks — sections never actually touched, even with the
-// outer stack's own gap set to 0 for editable mode). Collapsed by default
-// to a thin, effectively invisible hoverable strip so sections butt up
-// against each other; hovering (or focusing, for keyboard/touch users who
-// can't hover) expands it to the same dashed-line-plus-button affordance,
-// still reachable at the same boundary, just not reserving space when idle.
+// ALWAYS VISIBLE IN EDIT MODE. Owner ruling 2026-09-08, and it reverses
+// Round 8 ask #10 deliberately rather than by accident — so the history is
+// worth keeping straight:
+//
+//   feat/canvas-builder made this always-visible with a permanent 28px slot.
+//   Round 8 collapsed it to a hover-only 8px strip, because that slot meant
+//   sections never actually touched even with the editable stack's gap at 0.
+//   The complaint was the SPACE, not the visibility.
+//
+// So it is visible again, and the space objection is answered a different
+// way: the slot stays 8px at rest and the affordance is drawn INSIDE it,
+// centred on the boundary, at a muted strength. Sections still butt up
+// against each other; the couple can still see where a block can go without
+// hunting for it with the cursor. Hover and focus strengthen it to full and
+// grow the slot, exactly as before.
+//
+// This component only renders when `editable`, so "always" is scoped to edit
+// mode already — preview is untouched.
 function InsertPoint({ index, onRequestInsert, theme }) {
   const [active, setActive] = useState(false);
   return (
@@ -633,15 +643,23 @@ function InsertPoint({ index, onRequestInsert, theme }) {
         transition: 'height 0.12s ease',
       }}
     >
-      <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', borderTop: `1px dashed ${theme.lightText}30`, opacity: active ? 1 : 0, transition: 'opacity 0.12s ease' }} />
+      <div style={{
+        position: 'absolute', left: 0, right: 0, top: '50%',
+        borderTop: `1px dashed ${theme.lightText}30`,
+        opacity: active ? 1 : 0.5, transition: 'opacity 0.12s ease',
+      }} />
       <button
         onClick={() => onRequestInsert(index)}
         style={{
           position: 'relative', zIndex: 1, width: 26, height: 26, borderRadius: '50%', border: 'none',
           background: theme.accent, color: theme.darkBg, display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
-          opacity: active ? 1 : 0, transform: active ? 'scale(1)' : 'scale(0.6)',
-          pointerEvents: active ? 'auto' : 'none',
+          // Painted at rest, so the control is findable without a cursor; the
+          // scale keeps it out of the way until it is wanted. pointerEvents
+          // stays on at all times now — an affordance you can see and cannot
+          // click is worse than one you cannot see.
+          opacity: active ? 1 : 0.55, transform: active ? 'scale(1)' : 'scale(0.72)',
+          pointerEvents: 'auto',
           transition: 'opacity 0.12s ease, transform 0.12s ease',
         }}
         title="Add a section"

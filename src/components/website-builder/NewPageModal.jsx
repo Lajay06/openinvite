@@ -116,15 +116,24 @@ export default function NewPageModal({ onClose, onCreate, weddingSlug }) {
 
           {/* Actions */}
           <div style={{ display: 'flex', gap: 10 }}>
+            {/* THE BUILDER'S OWN BUTTON HEIGHT. Every primary in this panel is
+                a 999px pill at 8px vertical padding and weight 600; these two
+                were 6px-cornered, 11px-tall and weight 700, which made the one
+                modal a couple reaches from the left panel the only place in
+                the builder with a different button. */}
             <button onClick={onClose} style={{
-              flex: 1, padding: '11px 0', border: '1px solid #DDD', borderRadius: 6,
+              flex: 1, padding: '8px 0', border: '1px solid #DDD', borderRadius: 999,
               background: 'transparent', color: '#555', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
             }}>Cancel</button>
             <button onClick={handleCreate} disabled={!name.trim() || !slug.trim()} style={{
-              flex: 2, padding: '11px 0', border: 'none', borderRadius: 6,
-              background: name.trim() && slug.trim() ? 'linear-gradient(135deg,#E03553,#803D81)' : '#DDD',
-              color: '#fff', fontSize: 13, fontWeight: 700, cursor: name.trim() && slug.trim() ? 'pointer' : 'default', fontFamily: 'inherit',
-            }}>Create Page</button>
+              flex: 2, padding: '8px 0', border: 'none', borderRadius: 999,
+              // THE BRAND IS ONE COLOUR, not a gradient. #E03553 solid, the
+              // same strawberry the Ava pills and every other builder primary
+              // use — the pink/purple ramp here was the last of an older look
+              // and read as a different product inside the same panel.
+              background: name.trim() && slug.trim() ? '#E03553' : '#DDD',
+              color: '#fff', fontSize: 13, fontWeight: 600, cursor: name.trim() && slug.trim() ? 'pointer' : 'default', fontFamily: 'inherit',
+            }}>Create page</button>
           </div>
         </div>
       </DialogContent>

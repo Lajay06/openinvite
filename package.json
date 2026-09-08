@@ -74,7 +74,8 @@
     "test:filter-pills": "node scripts/test-filter-pills.mjs",
     "test:universe-typography": "node scripts/test-universe-typography.mjs",
     "test:onboarding-resume": "node scripts/test-onboarding-resume.mjs",
-    "test:universe-breadcrumb": "node scripts/test-universe-breadcrumb.mjs"
+    "test:universe-breadcrumb": "node scripts/test-universe-breadcrumb.mjs",
+    "test:builder-custom-pages": "node scripts/test-builder-custom-pages.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.48",

@@ -5,6 +5,7 @@ import { interactiveDivProps } from '@/lib/a11y';
 import NewPageModal from './NewPageModal';
 import { ALWAYS_ON_PAGES } from '@/lib/guestPages';
 import { EDITOR_TEMPLATES, isWritten } from '@/lib/emailTemplateStore';
+import { orderedCustomPages } from '@/lib/customPages';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -78,7 +79,8 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
   const [pagesOpen, setPagesOpen] = useState(true);
 
   const enabledPages = details.enabledPages || ['home', 'our-story', 'celebration', 'rsvp'];
-  const customPages = details.customPages || [];
+  // IN THE COUPLE'S ORDER, the same question the built-in rows ask.
+  const customPages = orderedCustomPages(details);
 
   const toggle = (slug) => {
     if (ALWAYS_ON_PAGES.includes(slug)) return;
