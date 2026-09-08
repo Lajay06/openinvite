@@ -653,7 +653,7 @@ export default function Onboarding() {
         <OnboardingWelcome onNext={goNext} />
       )}
       {currentStep === 'names' && (
-        <OnboardingStep1Names onNext={goNext} />
+        <OnboardingStep1Names onNext={goNext} data={onboardingData} />
       )}
       {currentStep === 'date' && (
         <OnboardingStep2Date onNext={goNext} data={onboardingData} />

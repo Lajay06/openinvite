@@ -285,6 +285,22 @@ jobs:
       # The guard was right and its placement was wrong. It stays a required
       # step; it simply runs after Chromium exists. The diff path costs the
       # same wherever it sits, and the fallback cannot run anywhere earlier.
+      # Needs the same preview server and browser as the guards above. The
+      # resume path it checks was written long ago and inert until c832e9e
+      # declared onboardingDraft — so this is the first CI run it has ever had.
+      - name: Onboarding resumes where the couple left it
+        run: |
+          npx vite preview --port 4179 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4179 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4179 npm run test:onboarding-resume
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       - name: Prerendered freshness guard
         env:
           GH_EVENT_BEFORE: ${{ github.event.before }}

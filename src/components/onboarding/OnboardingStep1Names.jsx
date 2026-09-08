@@ -3,9 +3,15 @@ import { motion } from 'framer-motion';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-export default function OnboardingStep1Names({ onNext }) {
-  const [name1, setName1] = useState('');
-  const [name2, setName2] = useState('');
+export default function OnboardingStep1Names({ onNext, data }) {
+  // SEEDED FROM THE DRAFT, like every other step. This one alone took no
+  // `data` prop and started both fields empty, so a couple resuming an
+  // unfinished sign-up stepped back to "Hi, my name is" and found their own
+  // names gone — the record still held them, the wizard just never asked.
+  // Invisible until c832e9e declared onboardingDraft and resume began to
+  // work at all.
+  const [name1, setName1] = useState(data?.couple1Name || '');
+  const [name2, setName2] = useState(data?.couple2Name || '');
   const [focus1, setFocus1] = useState(false);
   const [focus2, setFocus2] = useState(false);
 

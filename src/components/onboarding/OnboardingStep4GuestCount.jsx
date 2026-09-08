@@ -10,9 +10,20 @@ const CARDS = [
 ];
 
 export default function OnboardingStep4GuestCount({ onNext, data }) {
-  const [selected, setSelected] = useState('');
+  // The tile the couple picked, and the number they typed if they typed one.
+  // This step already received `data` and used it for nothing: a resumed
+  // session showed three unselected tiles and an empty box, which reads as
+  // "answer this again" rather than "here is what you said".
+  //
+  // The two are kept apart on purpose. guestType is the tile; guestCount is
+  // the number handleSubmit derives from the tile when no custom count was
+  // typed. Seeding the box from a derived 50/100/200 would put a number in
+  // front of the couple that they never entered.
+  const [selected, setSelected] = useState(data?.guestType || '');
   const [hoveredCard, setHoveredCard] = useState('');
-  const [customCount, setCustomCount] = useState('');
+  const [customCount, setCustomCount] = useState(
+    data?.guestType ? '' : (data?.guestCount != null ? String(data.guestCount) : ''),
+  );
   const textPrimary = '#0A0A0A';
   const textMuted = 'rgba(10,10,10,0.6)';
   const inputBorder = 'rgba(10,10,10,0.18)';
