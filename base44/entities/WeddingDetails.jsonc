@@ -1349,6 +1349,23 @@
     },
     "pageTransitionOverride": {
       "type": "string"
+    },
+    // Declared live 2026-09-08. BARE OBJECTS, deliberately: a declared object
+    // with no `properties` keeps every nested key it is handed, while one that
+    // declares `properties` strips the rest — which is why `homeContent.blocks`
+    // persists and `customPages[].sections` is absent from every live record.
+    // All three hold a map keyed by something the couple made up (a page slug,
+    // a block id), so there is no key set to declare and declaring one would
+    // throw the values away. Round-tripped on a throwaway sentinel row before
+    // this was written: each nested key came back verbatim.
+    "customPageContent": {
+      "type": "object"
+    },
+    "heroOverlay": {
+      "type": "object"
+    },
+    "blockOverlays": {
+      "type": "object"
     }
   },
   "rls": {
