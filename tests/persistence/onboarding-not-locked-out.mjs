@@ -111,22 +111,7 @@ export async function runOnboardingNotLockedOut() {
       'not its own version of the question');
   }
 
-  // ── THE FIELD THAT IS NOT THERE ─────────────────────────────────────────
-  // Onboarding.jsx still writes onboardingDraft and onboardingStepIndex, and
-  // Base44 still discards them, so resume-after-refresh does not resume — it
-  // restarts from the first step. That is a smaller harm than a lockout and
-  // it needs a schema change to fix, so the writes stay and this records the
-  // state of it. If the fields are ever added, this check is the thing that
-  // says the resume path is now worth wiring up.
-  {
-    const onb = code('src/pages/Onboarding.jsx');
-    const writes = /onboardingDraft: true, onboardingStepIndex: stepIndex/.test(onb);
-    const schema = readFileSync(join(ROOT, 'base44/entities/WeddingDetails.jsonc'), 'utf8');
-    const inSchema = /"onboardingDraft"/.test(schema);
-    check('the resume fields are written but not in the entity schema',
-      writes && !inSchema,
-      inSchema ? 'the schema now has them — wire up the resume path' : 'OPEN: needs the owner to add them in Base44');
-  }
+  // SENTINEL RETIRED: it fired 2026-09-08 when c832e9e declared onboardingDraft and onboardingStepIndex; the resume path is wired in #712.
 
   // ── THE SEED THAT MAKES ANY OF THIS REPRODUCIBLE ────────────────────────
   //
