@@ -1,5 +1,4 @@
 import React, { Suspense } from 'react'
-import { Toaster } from "@/components/ui/toaster"
 import ScrollToTop from "@/components/ScrollToTop"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -406,7 +405,6 @@ function App() {
               <AuthenticatedApp />
             </Suspense>
           </Router>
-          <Toaster />
           <VisualEditAgent />
         </CurrencyProvider>
       </QueryClientProvider>

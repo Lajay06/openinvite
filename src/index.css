@@ -1056,9 +1056,18 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
   text-decoration: none;
 }
 
-/* ── Pill button border nuclear removal ────────────────────── */
-[class*="pill"],
-[class*="apple-pill"],
+/* ── Pill button border removal ─────────────────────────────
+   NAMED CLASSES, NOT `[class*="pill"]`. The wildcard matched anything with
+   "pill" anywhere in its class attribute, which is how it silently swallowed
+   `.oi-option-pill`'s border and left every outline pill in the product a
+   transparent box — the defect written up at the OptionPill comment below.
+   A selector that matches by substring matches things nobody has written yet.
+   These four are every pill class in the tree, listed so that adding a fifth
+   is a decision instead of an accident. */
+.apple-pill-btn,
+.filter-pill,
+.oi-option-pill,
+.s5-pill,
 button[style*="border-radius: 100px"],
 button[style*="border-radius:100px"],
 a[style*="border-radius: 100px"],
