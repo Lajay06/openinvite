@@ -1386,3 +1386,39 @@ body {
   .oi-nav-desktop { display: flex !important; }
   .oi-nav-mobile { display: none !important; }
 }
+
+/* THE BUILDER'S TOP BAR AT PHONE WIDTH.
+   The title is absolutely centred, so it is out of flow and knows nothing
+   about the button groups either side of it: at 390 "Website builder" was
+   painted straight through Save and Share. Below 640 the bar is allowed to
+   grow a second row and the title returns to normal flow at the top of it.
+   Nothing here applies above 640, so the desktop bar is byte-identical.
+   Measured by scripts/test-builder-header-390.mjs, which asserts no pair of
+   header items overlaps at 390 and that the bar is still one 48px row at
+   1440.
+
+
+   !important IS LOAD-BEARING HERE, not laziness. Both elements carry inline
+   `style` attributes — the bar's own `height: 48` and the title's
+   `position: absolute` — and an inline style beats any selector. Without it
+   the rule parses, matches, and changes nothing, which is exactly what the
+   first version of this did: matchMedia said true, the rule was in the
+   stylesheet, and the title stayed absolute. The alternative is lifting those
+   two declarations out of the JSX, which is a larger edit to a file this
+   package does not otherwise need to restructure. */
+@media (max-width: 640px) {
+  .wb-builder-header {
+    height: auto !important;
+    min-height: 48px;
+    flex-wrap: wrap;
+    padding: 8px 12px !important;
+    row-gap: 6px;
+  }
+  .wb-builder-header .wb-builder-title {
+    position: static !important;
+    transform: none !important;
+    order: -1;
+    width: 100%;
+    justify-content: center;
+  }
+}

@@ -646,7 +646,7 @@ export default function StudioWebsite({ onBack }) {
           toggles still answered the mouse; only the paint was wrong, and
           only a pixel read can see that. 40 still clears everything in the
           builder (the panels sit beside the header, never under it). */}
-      <div style={{ height: 48, flexShrink: 0, background: '#1C1C1E', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', gap: 16, position: 'sticky', top: 0, zIndex: 40 }}>
+      <div className="wb-builder-header" style={{ height: 48, flexShrink: 0, background: '#1C1C1E', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', gap: 16, position: 'sticky', top: 0, zIndex: 40 }}>
         <button
           onClick={() => onBack ? onBack() : navigate('/studio/guest-suite/assets')}
           style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 500, padding: 0, display: 'flex', alignItems: 'center', gap: 4, transition: 'color 0.15s' }}
@@ -656,7 +656,12 @@ export default function StudioWebsite({ onBack }) {
           <ChevronLeft size={14} />
           {onBack ? 'Design Studio' : 'Guest suite'}
         </button>
-        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 8, pointerEvents: 'none' }}>
+        {/* CENTRED BY TAKING IT OUT OF FLOW, which is why it collided. Absolute
+            centring ignores the two button groups either side, so at phone
+            width "Website builder" was drawn straight through Save and Share.
+            The class puts it back in flow on its own row below 640px — see
+            index.css. Desktop is untouched: no rule applies above that. */}
+        <div className="wb-builder-title" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 8, pointerEvents: 'none' }}>
           <span style={{ fontSize: 13, fontWeight: 500, color: '#FFFFFF' }}>Website builder</span>
           {details?.displayFont && (
             <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: 999 }}>

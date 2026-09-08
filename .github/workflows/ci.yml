@@ -414,6 +414,19 @@ jobs:
             sleep 1
           done
           CAPTURE_BASE_URL=http://localhost:4188 npm run test:guest-nav-container
+      # Two pieces of text in the same pixels is checkable; "does it look
+      # right" is not. Every pair of leaf items in the bar is compared, at
+      # both widths, and the desktop shape is pinned so a phone fix cannot
+      # quietly restyle it.
+      - name: Nothing in the builder header overlaps at 390
+        run: |
+          npx vite preview --port 4187 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4187 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4187 npm run test:builder-header-390
           STATUS=$?
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
