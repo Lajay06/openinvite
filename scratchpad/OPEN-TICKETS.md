@@ -1719,3 +1719,33 @@ onboarding asks or in what order.
 with a 200 and discarded them (gotcha #5), so resume-after-refresh silently
 restarted from the first step — the couple's answers were still on the
 record, but the wizard did not know where they had got to.
+
+---
+
+# VOWS ENCRYPTED AT REST WITH A PIN-DERIVED KEY — post-launch
+
+Filed 2026-09-08, alongside the per-vow PIN lock (#706).
+
+**What shipped is a screen lock.** The PIN is stored only as a scrypt hash and
+the unlock is server-side and rate-limited, but `VowSpeech.content` is
+ordinary text: the page loads the record through the normal client path, so
+the words reach the browser before any PIN is entered. RLS keeps the record to
+its owner; the PIN keeps it off a screen someone else is looking at. The UI
+says exactly that and never says "private", "secure", "encrypted" or "vault".
+
+**The upgrade is real encryption at rest**, with the key derived from the PIN
+rather than held by us — so the words are unreadable without it, including to
+an admin key. That is a different feature, not a tightening of this one:
+
+- It needs `content` to become ciphertext, which is a field-type change, and
+  BASE44_PLATFORM_NOTES.md's own ruling says a type change must rewrite every
+  existing row in the same operation or strand every row it skips.
+- It removes the recovery path. Today "Remove lock" gets a couple back in;
+  with a PIN-derived key a forgotten PIN means the words are gone. That is an
+  owner decision about what a couple is allowed to lose, not an implementation
+  detail.
+- It needs the reveal to be a server round-trip that returns decrypted text,
+  which is the read endpoint this deliberately did not build.
+
+Not started. Filed so the gap between what the lock is and what a couple might
+assume is written down rather than remembered.

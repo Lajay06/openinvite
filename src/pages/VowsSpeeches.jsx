@@ -43,10 +43,14 @@ function PinInput({ value, onChange, onSubmit, autoFocus, label }) {
 /**
  * What stands in for a locked item's text.
  *
- * IT SAYS WHAT THE LOCK IS. The record is already private to this account —
- * VowSpeech RLS scopes read to its owner — so this lock is for the person
- * beside you, not for anyone on the internet. Saying so is the difference
- * between a couple who understands the feature and one who over-trusts it.
+ * IT SAYS WHAT THE LOCK IS. Only this account can load the record — VowSpeech
+ * RLS scopes read to its owner — so this lock is for the person beside you,
+ * not for anyone on the internet. Saying so is the difference between a
+ * couple who understands the feature and one who over-trusts it.
+ *
+ * The copy never says "private", "secure", "encrypted" or "vault" (owner
+ * ruling 2026-09-08). The words are stored as ordinary text; every one of
+ * those four would promise something else.
  */
 function LockedPane({ pin, busy, error, onPin, onSubmit }) {
   return (
@@ -71,8 +75,12 @@ function LockedPane({ pin, busy, error, onPin, onSubmit }) {
       )}
       <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.45)', fontFamily: PJS_F, margin: '4px 0 0', lineHeight: 1.6 }}>
         Forgotten it? Use “Remove lock” above — there is no way to recover a PIN.
-        This lock hides the words on screen; your vows are already private to
-        your own account.
+        {/* WHAT IT DOES, NOT WHAT IT SOUNDS LIKE. Owner ruling 2026-09-08:
+            never "private", "secure", "encrypted" or "vault". The words are
+            stored as ordinary text and this keeps them off a screen someone
+            else is looking at — saying anything stronger would invite the
+            couple to trust it with something it does not protect. */}
+        {' '}This keeps your words off the screen when someone else is looking.
       </p>
     </div>
   );
@@ -427,7 +435,8 @@ export default function VowsSpeechesPage() {
               Lock “{selectedItem.title}”
             </p>
             <p style={{ fontSize: 13, color: '#444444', fontFamily: PJS_F, margin: 0, lineHeight: 1.6 }}>
-              Choose 4 to 6 digits. You will need it to read this one again.
+              Choose 4 to 6 digits. You will need it to read this one again, and
+              it keeps this one off the screen when someone else is looking.
               {/* Said before they commit, not after they forget. */}
               {' '}There is no way to recover it — only to remove the lock.
             </p>

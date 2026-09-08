@@ -159,7 +159,39 @@ export async function runVowsPinLock() {
     check('an empty hash is not a lock', !isLocked('') && !isLocked(null) && !isLocked(undefined));
   }
 
-  // ── 8. AN UNAUTHENTICATED CALLER GETS NOWHERE ───────────────────────────
+  // ── 8. TEN TRIES, THEN THE DOOR STOPS ANSWERING ─────────────────────────
+  //
+  // scrypt makes each guess expensive, which raises the PRICE of a brute
+  // force without capping it. A million candidates at a few hundred
+  // milliseconds is still a weekend. The limit is what turns that into
+  // decades, and it costs an honest couple nothing — nobody mistypes their
+  // own four digits ten times in a quarter of an hour.
+  {
+    const locked = { ...ROW, id: 'v-rate', pin_hash: await hashPin('4821') };
+    const codes = [];
+    for (let i = 0; i < 11; i++) {
+      const r = await call({ id: 'v-rate', action: 'unlock', pin: '0000' }, { row: locked });
+      codes.push(r.res.statusCode);
+    }
+    check('the first ten wrong tries are refused normally',
+      codes.slice(0, 10).every((c) => c === 401), codes.slice(0, 10).join(','));
+    check('  and the eleventh is refused with 429', codes[10] === 429, `#11 -> ${codes[10]}`);
+
+    // AND THE LIMIT MUST NOT LOCK OUT THE RIGHT PIN ON A DIFFERENT VOW.
+    // The bucket is per vow, so one item's exhausted allowance cannot shut
+    // the couple out of another.
+    const other = { ...ROW, id: 'v-other', pin_hash: await hashPin('4821') };
+    const fresh = await call({ id: 'v-other', action: 'unlock', pin: '4821' }, { row: other });
+    check('  a different vow is unaffected by another’s limit',
+      fresh.res.statusCode === 200 && fresh.res.body?.ok === true, `HTTP ${fresh.res.statusCode}`);
+
+    // Clearing is the only way back in, so it must never be rate-limited.
+    const rescue = await call({ id: 'v-rate', action: 'clear' }, { row: locked });
+    check('  and the recovery path still works while limited',
+      rescue.res.statusCode === 200 && rescue.res.body?.locked === false, `HTTP ${rescue.res.statusCode}`);
+  }
+
+  // ── 9. AN UNAUTHENTICATED CALLER GETS NOWHERE ───────────────────────────
   {
     const r = await call({ id: 'v1', action: 'unlock', pin: '4821' }, { row: ROW, user: null });
     check('an unauthenticated caller is refused', r.res.statusCode === 401 && r.writes.length === 0,

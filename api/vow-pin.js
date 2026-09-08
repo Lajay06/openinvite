@@ -16,7 +16,8 @@
  *
  * A SCREEN LOCK, not an access-control boundary, and the UI says so too.
  * VowSpeech RLS already scopes read to `created_by_id = {{user.id}}`, so the
- * text is private to the couple's account whatever the PIN does. The lock
+ * text is only loadable by the couple's own account whatever the PIN does,
+ * and the words themselves are stored as ordinary text. The lock
  * exists for the other case — a partner leaning over the laptop — and the
  * page reads the record through the ordinary client path, so a determined
  * account-holder can reach the content through devtools. Claiming more than
@@ -38,10 +39,12 @@
  *
  * Body: { id, action: 'set' | 'unlock' | 'clear', pin? }
  *   set    — pin required. Stores the hash. 200 { locked: true }
- *   unlock — pin required. 200 { ok: true } or 401 { ok: false }
+ *   unlock — pin required. 200 { ok: true }, 401 { ok: false }, or 429 after
+ *            ten wrong tries on the same vow from one IP in fifteen minutes
  *   clear  — no pin. Removes the lock. 200 { locked: false }
  */
 import { verifyBase44User } from './_lib/auth.js';
+import { checkRateLimit, getClientIp } from './_lib/security.js';
 import { hashPin, verifyPin, isValidPin, isLocked } from './_lib/vowPinHash.js';
 
 const BASE44_API = 'https://base44.app/api';
@@ -97,6 +100,29 @@ export default async function handler(req, res) {
 
     // unlock
     if (!isLocked(item.pin_hash)) return res.status(200).json({ ok: true, locked: false });
+
+    // ── A LIMIT, BECAUSE SLOWNESS IS A COST ARGUMENT AND NOT A LIMIT ──────
+    //
+    // A 4-6 digit PIN is at most a million candidates. scrypt makes each
+    // guess expensive, which raises the price of a brute force without
+    // capping it — and this endpoint is reachable by anyone holding the
+    // couple's own session, which is precisely the person the lock exists to
+    // slow down. Ten tries per quarter of an hour turns a million candidates
+    // into decades and costs an honest couple nothing: nobody mistypes their
+    // own four digits ten times in fifteen minutes.
+    //
+    // The bucket is PER VOW as well as per IP, so an attacker cannot spend
+    // one item's allowance probing another, and a couple locked out of one
+    // vow can still open a different one.
+    //
+    // ONLY THE UNLOCK BRANCH. `set` and `clear` are already gated by owning
+    // the record, and rate-limiting `clear` would make the recovery path —
+    // the only way back in — the thing that stops working under pressure.
+    const { limited } = checkRateLimit(getClientIp(req), `vow-pin:${id}`, 10, 15 * 60_000);
+    if (limited) {
+      return res.status(429).json({ ok: false, error: 'Too many tries. Wait a few minutes and try again.' });
+    }
+
     const ok = await verifyPin(item.pin_hash, pin);
     return res.status(ok ? 200 : 401).json({ ok });
   } catch (err) {
