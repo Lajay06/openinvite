@@ -60,7 +60,9 @@ export const EDITOR_TEMPLATES = [
     id: 'thank_you',
     label: 'Thank you',
     types: ['thank_you_attending', 'thank_you_declined'],
-    typeLabels: { thank_you_attending: 'Coming', thank_you_declined: "Can't make it" },
+    // The owner's own words for these two rows (2026-09-08). They read as
+    // labels for the REPLY, which is what distinguishes the two emails.
+    typeLabels: { thank_you_attending: 'Attending', thank_you_declined: 'Declined' },
   },
 ];
 

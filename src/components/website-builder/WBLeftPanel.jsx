@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Plus, LayoutDashboard, BookOpen, Star, Mail, MapPin, Gift, Music, Camera, HelpCircle, FileText, Heart, Sparkles, BarChart2 } from 'lucide-react';
 import { WEDDING_PAGES } from '@/lib/websiteThemes';
-import { resolveColors } from '@/lib/universeStyling';
 import { interactiveDivProps } from '@/lib/a11y';
 import NewPageModal from './NewPageModal';
 import { ALWAYS_ON_PAGES } from '@/lib/guestPages';
+import { EDITOR_TEMPLATES, isWritten } from '@/lib/emailTemplateStore';
 
-import { resolveUniverseConfig } from '@/lib/universeStyling';
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 
@@ -72,10 +70,10 @@ function Divider() {
   return <div style={{ height: 1, background: 'rgba(255,255,255,0.12)', margin: '8px 0' }} />;
 }
 
-export default function WBLeftPanel({ details, onChange, currentPage, onPageChange }) {
+export default function WBLeftPanel({ details, onChange, currentPage, onPageChange, emailDraft, selectedEmail, onSelectEmail }) {
   const [showNewPage, setShowNewPage] = useState(false);
-  const navigate = useNavigate();
   const [hoveredPage, setHoveredPage] = useState(null);
+  const [hoveredEmail, setHoveredEmail] = useState(null);
   const [hoverNewPage, setHoverNewPage] = useState(false);
   const [pagesOpen, setPagesOpen] = useState(true);
 
@@ -153,20 +151,6 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
     onChange('enabledPages', enabledPages.filter(s => s !== slug));
     if (currentPage === slug) onPageChange('home');
   };
-
-  // A universe's own colours take priority over the legacy activeTheme
-  // lookup — see resolveColors() (fix/universe-palettes).
-  const theme = resolveColors(details);
-  // The universe's OWN name, through the same resolver every other surface
-  // uses. This previously title-cased `activeUniverse` and, when that was
-  // absent, fell back to the LEGACY `activeTheme` — so a record with no
-  // universe showed "Still" here while WBRightPanel showed "London" for the
-  // same record. Two fallbacks disagreeing about what absence means, on one
-  // screen. resolveUniverseConfig defaults to london, and now both do.
-  const themeLabel = resolveUniverseConfig(details)?.name
-    || (details?.activeUniverse
-      ? details.activeUniverse.charAt(0).toUpperCase() + details.activeUniverse.slice(1)
-      : 'London');
 
   return (
     <div style={{
@@ -323,44 +307,70 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
       </div>
       </div>{/* end pages collapsible */}
 
-      {/* ── Universe ──
-          ONE PILL, replacing the Design and Assets sections.
+      {/* ── Emails ──
+          THE SAME KIND OF THING AS A PAGE, SO THE SAME ROW.
 
-          Design held two rows, and BOTH "Change →" links already navigated to
-          /studio/universe — never two destinations, only two labels. The second
-          row displayed `details.activeTypography`, which NOTHING writes and
-          which curatedFonts.js already documents as "permanently dead code":
-          resolveTypography gives the universe unconditional priority. It showed
-          a pairing name with no bearing on what rendered.
+          Owner ruling 2026-09-08: the email list belongs in the left panel,
+          under Pages and New page, below the divider. A left-panel row is
+          what the builder means by "a thing the canvas can show" — the
+          canvas follows the selection and the right panel edits it — and an
+          email is exactly that. Putting it in the right panel made it look
+          like a setting of the page you were on.
 
-          The real typography control is unaffected — it lives in the RIGHT
-          panel as `fontOverride` (any of 30 fonts per role, per-universe
-          pairing presets).
+          Row vocabulary is the page row's, not a near-miss: 6px 16px padding,
+          8px gap, a 13px icon in a flex-shrink-0 slot, a 12px/500 label, the
+          same active fill and 2px accent left border, the same hover. If the
+          page rows change, these follow, because they are the same values
+          read off the same rules.
 
-          WHEN A CONTROL REPLACES A READOUT, IT MUST CARRY THE READOUT: the
-          universe name was the only true information this section held, so the
-          pill says it. */}
+          THE UNIVERSE PILL IS GONE from this panel (same ruling). It was a
+          link to /studio/universe wearing a readout; the universe is chosen
+          in the Design tab's own Universe block, which carries the name and
+          a Change button already. */}
       <Divider />
-      <div style={{ padding: '12px 16px' }}>
-        <div
-          onClick={() => navigate('/studio/universe')}
-          {...interactiveDivProps(() => navigate('/studio/universe'), { label: `${themeLabel} — Change universe` })}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)'; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; }}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
-            border: '1px solid rgba(255,255,255,0.15)', borderRadius: 999,
-            padding: '7px 14px', transition: 'border-color 0.15s',
-          }}
-        >
-          <div style={{ display: 'flex', width: 16, height: 16, overflow: 'hidden', flexShrink: 0, border: '1px solid rgba(255,255,255,0.15)' }}>
-            <div style={{ flex: 1, background: theme.darkBg }} />
-            <div style={{ flex: 1, background: theme.lightBg }} />
+      <SLabel>Emails</SLabel>
+      {EDITOR_TEMPLATES.flatMap(entry => entry.types.map(type => {
+        // Thank you is two emails; each gets its own row rather than a
+        // switch buried inside the panel, because the left panel is a list
+        // of what the canvas can show and both of these are things it shows.
+        const label = entry.types.length > 1
+          ? `${entry.label} (${entry.typeLabels[type].toLowerCase()})`
+          : entry.label;
+        const active = selectedEmail?.type === type;
+        const hovered = hoveredEmail === type;
+        const select = () => onSelectEmail?.({ entryId: entry.id, type });
+        return (
+          <div
+            key={type}
+            onClick={select}
+            {...interactiveDivProps(select, { label })}
+            onMouseEnter={() => { if (!active) setHoveredEmail(type); }}
+            onMouseLeave={() => setHoveredEmail(null)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '6px 16px', cursor: 'pointer',
+              background: active ? 'rgba(255,255,255,0.06)' : hovered ? 'rgba(255,255,255,0.04)' : 'transparent',
+              borderLeft: active ? '2px solid #E03553' : '2px solid transparent',
+              transition: 'background 0.1s',
+            }}
+          >
+            <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+              <Mail size={13} strokeWidth={1.5} color={active ? '#FFFFFF' : 'rgba(255,255,255,0.4)'} fill="none" />
+            </div>
+            <span style={{
+              flex: 1, fontSize: 12, fontWeight: 500, fontFamily: PJS,
+              color: active || hovered ? '#FFFFFF' : 'rgba(255,255,255,0.5)',
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>{label}</span>
+            {isWritten(emailDraft?.[type], type) && (
+              <span
+                title="You have edited this email"
+                style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', fontWeight: 600, fontFamily: PJS, letterSpacing: '0.04em', flexShrink: 0 }}
+              >Edited</span>
+            )}
           </div>
-          <span style={{ fontSize: 12, color: '#FFFFFF', fontWeight: 600, fontFamily: PJS }}>{themeLabel}</span>
-          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginLeft: 'auto', fontFamily: PJS, flexShrink: 0 }}>Change universe</span>
-        </div>
-      </div>
+        );
+      }))}
 
       <div style={{ flex: 1, minHeight: 12 }} />
 

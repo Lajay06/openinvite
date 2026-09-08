@@ -664,8 +664,11 @@ export default function StudioWebsite({ onBack }) {
         <WBLeftPanel
           details={details}
           onChange={updateField}
-          currentPage={currentPage}
+          currentPage={selectedEmail ? null : currentPage}
           onPageChange={(p) => { setCurrentPage(p); setSelectedEmail(null); }}
+          emailDraft={emailDraft}
+          selectedEmail={selectedEmail}
+          onSelectEmail={(sel) => { setSelectedEmail(sel); clearSelectedBlock(); }}
         />
 
         {/* CENTER PREVIEW */}
@@ -779,7 +782,6 @@ export default function StudioWebsite({ onBack }) {
             onClearSelectedBlock={clearSelectedBlock}
             emailDraft={emailDraft}
             selectedEmail={selectedEmail}
-            onSelectEmail={(sel) => { setSelectedEmail(sel); if (sel) clearSelectedBlock(); }}
             onEmailChange={updateEmailField}
             emailSave={emailSave}
             onSaveEmails={saveEmails}
