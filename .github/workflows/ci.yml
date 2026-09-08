@@ -24,8 +24,22 @@ on:
 # INTENDED BEHAVIOUR CHANGE: two main runs can now overlap when merges land
 # close together. They are different commits and both deserve verifying, so
 # that is the point rather than a side effect.
+#
+# THAT INTENT WAS NOT WHAT THE CONFIG DID, and it cost a run on 2026-09-08.
+# Turning cancel-in-progress off does not let runs overlap — it SERIALISES
+# them, and a concurrency group holds exactly ONE pending run. A third arrival
+# does not queue behind the second; it takes the pending slot and CANCELS the
+# run already waiting in it. Three merges inside eleven minutes was enough:
+# ace9e83 was running, 7870358 went pending, 390852f arrived and displaced it.
+# 7870358 shipped to production with zero jobs ever started. The watchdog said
+# so, loudly and correctly — the config was the thing that was wrong.
+#
+# So main is keyed PER COMMIT. Every main SHA gets a group of its own, which
+# has nothing to queue behind and nothing to displace it, and the overlap the
+# comment above always intended is what actually happens now. PR branches keep
+# their per-ref group and their cancellation, which is where it earns its keep.
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
