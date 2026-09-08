@@ -1385,6 +1385,8 @@ body {
 @container guestsite (min-width: 768px) {
   .oi-nav-desktop { display: flex !important; }
   .oi-nav-mobile { display: none !important; }
+}
+
 /* THE BUILDER'S TOP BAR AT PHONE WIDTH.
    The title is absolutely centred, so it is out of flow and knows nothing
    about the button groups either side of it: at 390 "Website builder" was
