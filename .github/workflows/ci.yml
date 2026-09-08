@@ -81,14 +81,6 @@ jobs:
       # row without anyone running `npm run build:prerender` — production
       # kept serving pre-batch, stale static HTML to crawlers/no-JS clients
       # at every touched route while a real browser (client-side React
-      # re-render over the stale snapshot) looked completely correct. See
-      # scripts/test-prerendered-freshness.mjs for the full incident note
-      # and exactly what this checks.
-      - name: Prerendered freshness guard
-        env:
-          GH_EVENT_BEFORE: ${{ github.event.before }}
-        run: npm run test:prerendered-freshness
-
       # Static source analysis, no credentials — same shape as the
       # prerendered freshness guard above, for the dashboard + universe
       # builder US-English spelling sweep (D9, 2026-08-04). Fails if a
@@ -279,6 +271,24 @@ jobs:
       - name: Install Playwright OS dependencies
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
+
+      # MOVED HERE FROM BEFORE THE BUILD STEPS, 2026-09-08, because it now
+      # needs a browser and this is the first point in the job that has one.
+      #
+      # #709 gave this guard a fallback: when a diff cannot answer the
+      # question — an empty range, or any run on main — it renders all
+      # fourteen marketing routes and compares bodies. That fallback fired on
+      # main immediately after #709 merged and crashed on
+      # `browserType.launch: Executable doesn't exist`, because it sat at line
+      # 87, one hundred and seventy lines before `npx playwright install`.
+      #
+      # The guard was right and its placement was wrong. It stays a required
+      # step; it simply runs after Chromium exists. The diff path costs the
+      # same wherever it sits, and the fallback cannot run anywhere earlier.
+      - name: Prerendered freshness guard
+        env:
+          GH_EVENT_BEFORE: ${{ github.event.before }}
+        run: npm run test:prerendered-freshness
 
       # Serves this PR's own build (not production — CAPTURE_BASE_URL
       # defaults to https://openinvite.com.au otherwise, which would test

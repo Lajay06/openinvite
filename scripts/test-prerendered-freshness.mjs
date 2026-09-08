@@ -275,7 +275,30 @@ async function fullCompare() {
     process.exit(1);
   }
 
-  const browser = await chromium.launch();
+  // A MISSING BROWSER IS A CONFIGURATION FAULT, AND IT MUST SAY SO.
+  //
+  // The first CI run of this fallback died on `browserType.launch: Executable
+  // doesn't exist` with a raw stack trace, because the step sat 170 lines
+  // before `npx playwright install` in the same job. The failure was correct —
+  // the guard genuinely could not check anything — but it read like the guard
+  // itself was broken rather than like a step in the wrong place.
+  //
+  // It still FAILS (a check that cannot run must never report a pass; that is
+  // this whole file's subject), it just explains itself.
+  let browser;
+  try {
+    browser = await chromium.launch();
+  } catch (err) {
+    preview.kill();
+    console.error('  ✗ The full compare needs a browser and none is installed.\n');
+    console.error(`      ${String(err.message).split('\n')[0]}\n`);
+    console.error('    This guard renders every marketing route whenever a diff cannot');
+    console.error('    answer the question (an empty range, or any run on main). In CI it');
+    console.error('    must therefore run AFTER the Playwright install step, not before.');
+    console.error('    Locally: npx playwright install chromium\n');
+    console.log('───────────────────────────────────────────────────────\n');
+    process.exit(1);
+  }
   const stale = [];
   const missing = [];
   let compared = 0;
