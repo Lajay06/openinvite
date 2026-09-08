@@ -1812,3 +1812,36 @@ schema, not a risk.
 then delete the two declarations from `base44/entities/WeddingDetails.jsonc`
 and regenerate `entityFields.generated.js` in the same PR that confirms they
 are gone live.
+
+---
+
+# AMALFI — RE-SHOOT FOR RESOLUTION AND FRAMING
+
+Filed 2026-09-08, alongside the 4K hero masters (#723).
+
+**It is the one universe of twenty with no new hero.** Nineteen are
+4096x2294 in `heroes-jpg`; amalfi keeps `hf_20260903_234805_…_xxsczf` at
+2752x1536. That is enough for the desktop hero and it is the reason the
+per-universe width map exists at all — a flat 2880 would upscale amalfi and
+Cloudinary charges for the privilege.
+
+**And it is the one universe where the framing rule cannot be met.** The
+standing rule is "at 390x844 the couple is whole and mid-frame; at 1440 the
+composition does not visibly move". A phone shows a quarter of a 16:9
+picture's width — 25.8% here — and amalfi's couple spans 33-63%, thirty per
+cent. The subject is WIDER THAN THE WINDOW, so somebody loses something at
+every possible object-position. Centred it is the man's entire left arm;
+`47% center` splits the loss to roughly two per cent a side, which the owner
+has accepted as the best available.
+
+No other universe has this problem: the next widest subject is brooklyn at
+24%, which fits with under a per cent of margin either side.
+
+**So the re-shoot wants two things at once** — a 4096-wide master like the
+other nineteen, and a composition whose couple sits inside about a quarter
+of the frame's width so a phone can hold both of them. The second is the one
+that will not fix itself by uploading a bigger file.
+
+Until then `heroFocus.amalfi` stays at `47% center`, and the entry in
+`heroMasters.js` for the old public id stays with it — both go in the same PR
+that confirms the new master is live.
