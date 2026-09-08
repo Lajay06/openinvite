@@ -75,7 +75,8 @@
     "test:universe-typography": "node scripts/test-universe-typography.mjs",
     "test:onboarding-resume": "node scripts/test-onboarding-resume.mjs",
     "test:universe-breadcrumb": "node scripts/test-universe-breadcrumb.mjs",
-    "test:builder-custom-pages": "node scripts/test-builder-custom-pages.mjs"
+    "test:builder-custom-pages": "node scripts/test-builder-custom-pages.mjs",
+    "test:full-preview-devices": "node scripts/test-full-preview-devices.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.48",
