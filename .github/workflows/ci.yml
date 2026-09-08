@@ -386,6 +386,22 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
 
+      # P4's audit, kept as a gate. Five controls exercised, plus the one
+      # thing source review cannot see: a control can work perfectly and be
+      # unreadable, and the two values live in different components.
+      - name: The builder Settings tab works and can be read
+        run: |
+          npx vite preview --port 4186 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4186 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4186 npm run test:settings-tab
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       - name: The universe breadcrumb says where it goes
         run: |
           npx vite preview --port 4180 --strictPort &
