@@ -10,6 +10,7 @@
  * navy/lemon palette, long since corrected in the real config).
  */
 import { UNIVERSE_CONFIGS } from './websiteThemes.js';
+import { heroDeliveryWidth } from './heroMasters.js';
 import { getSampleWedding } from './sampleContent/index.js';
 import { subjectCropUrl } from './universeGallery.js';
 
@@ -118,24 +119,26 @@ export function universeTileImage(id, { width = 1200, height = 800 } = {}) {
 }
 
 /**
- * THE FULL-BLEED SCROLL'S OWN WIDTH, and the ceiling is not a guess.
+ * THE FULL-BLEED SCROLL'S OWN WIDTH, PER UNIVERSE.
  *
  * /universes' five-universe scroll renders at the full viewport — 1440 CSS px
- * on a desktop, so 2880 device px at 2× — while it was being served the TILE
- * url at w_1200. That is upscaling by more than double, measured, and it is
- * the softness the owner is looking at.
+ * on a desktop, so 2880 device px at 2x.
  *
- * 1376 IS THE SMALLEST MASTER IN THE TWENTY (tulum). Asking for more than a
- * master has would make Cloudinary upscale and CHARGE for it — the standing
- * bandwidth ruling, and the reason `w_1600` on a 1280px master measured 34%
- * more bytes than no width at all. So this is the largest width guaranteed
- * not to upscale ANY universe.
+ * THIS USED TO BE ONE NUMBER: SCROLL_SAFE_WIDTH = 1376, the smallest master
+ * across the twenty (tulum's), because asking for more than a master holds
+ * makes Cloudinary upscale and CHARGE for it — `w_1600` on a 1280px master
+ * measured 34% MORE bytes than no width at all, for no more detail. One safe
+ * number is correct for the smallest universe and wasteful for the other
+ * nineteen, and with 4K masters now in nineteen folders it was the single
+ * biggest cause of the softness the owner is looking at.
  *
- * It is still short of 2880. The owner is uploading 4K masters; when they
- * land, this constant is the one line to raise.
+ * The ceiling is now each universe's own master — see heroMasters.js. The
+ * comment above SCROLL_SAFE_WIDTH said it was "the one line to raise when
+ * they land"; raising it was not enough, because amalfi has not been re-shot
+ * and a flat 2880 would upscale it.
  */
-export const SCROLL_SAFE_WIDTH = 1376;
-
 export function universeScrollImage(id) {
-  return universeTileImage(id, { width: SCROLL_SAFE_WIDTH, height: Math.round(SCROLL_SAFE_WIDTH * 9 / 16) });
+  const cover = getSampleWedding(id)?.coverPhoto;
+  const width = heroDeliveryWidth(cover);
+  return universeTileImage(id, { width, height: Math.round(width * 9 / 16) });
 }

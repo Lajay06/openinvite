@@ -16,6 +16,7 @@
  * clean spare covers the first Home photograph; the second is DOUBLED from
  * Our Story. See the PR body for the table.
  */
+import { heroDeliveryWidth } from '../heroMasters.js';
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
@@ -27,7 +28,7 @@ export const SEDONA_IMAGES = {
     'hf_20260904_232810_b7223883-26ec-49bb-accc-019f65d4e968_f2anum', // spare portrait, the rim at dawn
     'hf_20260904_232810_fe62f568-ddc0-4edb-9337-2658f1a1c7f2_fuxjlf', // 2752x1536, WAS DOUBLED (asset refresh)
   ],
-  hero:  'hf_20260904_232810_5dc31a5b-654f-4e78-b377-d2c7f0a8dbc3_vf8rug', // 2048x1152
+  hero:  'sedona-hero_lhnjr0', // heroes-jpg 4096x2294, ratio 1.786
   story: [
     'hf_20260904_232809_6378d8a2-60b7-45cc-9ae1-625438f90a9a_izgvvo', // 1536x2048
     'hf_20260904_232811_96ffa0e3-4aac-494c-9134-84c30b49e39f_dpinsl', // 1792x2400
@@ -44,7 +45,11 @@ export const SAMPLE_SEDONA = {
   activeUniverse: 'sedona',
   websiteMode: 'light',
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls', 'experience'],
-  coverPhoto: img(SEDONA_IMAGES.hero, 2048),
+  // THE HERO SLOT, at the master's own ceiling. It was a flat 2048 into a
+  // hero that renders 2880 device pixels wide at 1440@2x — the softness
+  // the 4K masters were shot to remove. heroDeliveryWidth never asks for
+  // more than the master holds, so nothing upscales.
+  coverPhoto: img(SEDONA_IMAGES.hero, heroDeliveryWidth(SEDONA_IMAGES.hero)),
 
   mainCeremony: { venueName: 'The wash below the rim', address: 'Twelve miles out, the last four unpaved', startTime: '17:30', time: '17:30' },
   reception: { venueName: 'The ranch yard', address: 'Back at the house, a mile from the wash', startTime: '19:00', time: '19:00' },

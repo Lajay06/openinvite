@@ -18,6 +18,7 @@
  * universe rather than the landscape the earlier shortfall would have forced.
  * One clean spare covers the first Home photograph; the second is DOUBLED.
  */
+import { heroDeliveryWidth } from '../heroMasters.js';
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
@@ -27,7 +28,7 @@ export const TAJ_IMAGES = {
     'hf_20260904_055315_bc8a7f4e-0267-491e-b876-97e78368ce8d_z3aft2', // spare portrait, the water garden
     'hf_20260904_055316_4efc8628-77ed-4737-83bd-d0715cf99d43_eoixpp', // DOUBLED from Our Story
   ],
-  hero:  'hf_20260904_055315_77451a49-7860-4638-a425-f1467b9cbfec_y3zgk6', // 2752x1536
+  hero:  'taj-hero_xrxxhf', // heroes-jpg 4096x2294, ratio 1.786
   story: [
     'hf_20260904_055222_ddd6efc3-5dd7-4cbe-8d46-5ac6c7f66ff4_hf0lgp', // 1536x2048
     'hf_20260904_055316_fe1ed42d-2e2e-447f-b244-80bb0cbb21dd_hly7ic', // 1792x2400
@@ -44,7 +45,11 @@ export const SAMPLE_TAJ = {
   activeUniverse: 'taj',
   websiteMode: 'light',
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls', 'experience'],
-  coverPhoto: img(TAJ_IMAGES.hero, 2048),
+  // THE HERO SLOT, at the master's own ceiling. It was a flat 2048 into a
+  // hero that renders 2880 device pixels wide at 1440@2x — the softness
+  // the 4K masters were shot to remove. heroDeliveryWidth never asks for
+  // more than the master holds, so nothing upscales.
+  coverPhoto: img(TAJ_IMAGES.hero, heroDeliveryWidth(TAJ_IMAGES.hero)),
 
   mainCeremony: { venueName: 'The marble pavilion', address: 'The far end of the water garden', startTime: '17:00', time: '17:00' },
   reception: { venueName: 'The courtyard', address: 'Through the arch, behind the pavilion', startTime: '19:30', time: '19:30' },

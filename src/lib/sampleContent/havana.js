@@ -52,6 +52,7 @@
  * a loanword to do that work.
  */
 
+import { heroDeliveryWidth } from '../heroMasters.js';
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 
 /**
@@ -75,7 +76,7 @@ export const HAVANA_IMAGES = {
   // 2048x1152, 16:9 — the only wide landscape in the folder, so it is both
   // the hero and the share image. A 16:9 crop is already close to the 1.91:1
   // that og:image wants.
-  hero:        'hf_20260904_112949_7fd20c50-b661-46c5-8c59-cef0e3b7d9e5_mqzaga',
+  hero:  'havana-hero_sl8fyk', // heroes-jpg 4096x2294, ratio 1.786
   share:       'hf_20260904_112949_7fd20c50-b661-46c5-8c59-cef0e3b7d9e5_mqzaga',
   // NO `eventCard` ROLE. R31: #650 removed the location photo from every
   // Celebration event block deliberately, and Celebration has no other image
@@ -147,7 +148,15 @@ export const SAMPLE_HAVANA = {
   // experiences image sits on.
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls', 'experience'],
 
-  coverPhoto: img(HAVANA_IMAGES.hero, 2048),
+  // THE HERO SLOT, at the master's own ceiling. It was a flat 2048 into a
+
+  // hero that renders 2880 device pixels wide at 1440@2x — the softness
+
+  // the 4K masters were shot to remove. heroDeliveryWidth never asks for
+
+  // more than the master holds, so nothing upscales.
+
+  coverPhoto: img(HAVANA_IMAGES.hero, heroDeliveryWidth(HAVANA_IMAGES.hero)),
 
   mainCeremony: {
     venueName: 'The Sample Rooms',

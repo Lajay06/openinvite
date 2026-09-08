@@ -22,6 +22,7 @@
  * not get easier because the script is one we read less confidently. It was the
  * folder's only spare, so BOTH Home photographs are DOUBLED from Our Story.
  */
+import { heroDeliveryWidth } from '../heroMasters.js';
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
@@ -32,7 +33,7 @@ export const SHANGHAI_IMAGES = {
     'hf_20260905_002911_aa25ebed-bf05-4b03-8a5e-37b13203181d_zqam5f', // DOUBLED from Our Story
     'hf_20260905_002721_b09968b5-48aa-43ca-ad4f-76ac3cee3ccf_ly1f2r', // DOUBLED from Our Story
   ],
-  hero:  'hf_20260905_002911_e119056e-5f1f-45ce-86a1-e38f71bdc00a_d0fbu2', // 2752x1536
+  hero:  'shanghai-hero_bkvfnb', // heroes-jpg 4096x2294, ratio 1.786
   story: [
     'hf_20260905_002721_b09968b5-48aa-43ca-ad4f-76ac3cee3ccf_ly1f2r', // 1536x2048
     'hf_20260905_002910_fe94fd73-0768-48a2-8283-e61d7666758f_rpuyhg', // 1536x2048
@@ -50,7 +51,11 @@ export const SAMPLE_SHANGHAI = {
   activeUniverse: 'shanghai',
   websiteMode: 'light',
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls', 'experience'],
-  coverPhoto: img(SHANGHAI_IMAGES.hero, 2048),
+  // THE HERO SLOT, at the master's own ceiling. It was a flat 2048 into a
+  // hero that renders 2880 device pixels wide at 1440@2x — the softness
+  // the 4K masters were shot to remove. heroDeliveryWidth never asks for
+  // more than the master holds, so nothing upscales.
+  coverPhoto: img(SHANGHAI_IMAGES.hero, heroDeliveryWidth(SHANGHAI_IMAGES.hero)),
 
   mainCeremony: { venueName: 'The forty-first floor', address: 'The tower on the corner, north lobby', startTime: '18:30', time: '18:30' },
   reception: { venueName: 'The same floor, east room', address: 'Through the doors behind you', startTime: '20:00', time: '20:00' },

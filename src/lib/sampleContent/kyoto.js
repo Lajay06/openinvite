@@ -22,6 +22,7 @@
  * corridor takes its place in Our Story, and both Home photographs are real
  * spares, so NOTHING is doubled here.
  */
+import { heroDeliveryWidth } from '../heroMasters.js';
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
@@ -31,7 +32,7 @@ export const KYOTO_IMAGES = {
     'hf_20260905_000552_c4179722-4919-4cf2-8b14-0d6b1c5e411a_jn432w', // 2048x1152, the lantern
     'hf_20260905_000552_c1f98b22-c502-44ce-87be-4dacbb3a40b0_owe8rh', // 2048x2048, the tray
   ],
-  hero:  'hf_20260905_000552_520a1d94-bc5b-414f-b2dc-c2ea5c10eddd_joe95w', // 2752x1536
+  hero:  'kyoto-hero_ozomyb', // heroes-jpg 4096x2294, ratio 1.786
   story: [
     'hf_20260905_000552_2cca659c-1fe7-4200-bbf4-0c2bc5ae3681_io8hta', // 1536x2752, replaces the rejected print
     'hf_20260905_000552_544553cf-c442-4d7c-83eb-29a3675ec794_onvvkl', // 1536x2048
@@ -48,7 +49,11 @@ export const SAMPLE_KYOTO = {
   activeUniverse: 'kyoto',
   websiteMode: 'light',
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls', 'experience'],
-  coverPhoto: img(KYOTO_IMAGES.hero, 2048),
+  // THE HERO SLOT, at the master's own ceiling. It was a flat 2048 into a
+  // hero that renders 2880 device pixels wide at 1440@2x — the softness
+  // the 4K masters were shot to remove. heroDeliveryWidth never asks for
+  // more than the master holds, so nothing upscales.
+  coverPhoto: img(KYOTO_IMAGES.hero, heroDeliveryWidth(KYOTO_IMAGES.hero)),
 
   mainCeremony: { venueName: 'The garden room', address: 'The last house on the lane', startTime: '10:00', time: '10:00' },
   reception: { venueName: 'The same room', address: 'The last house on the lane', startTime: '12:00', time: '12:00' },

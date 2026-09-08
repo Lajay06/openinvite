@@ -14,6 +14,7 @@
  * Assets read from the owner's Cloudinary folder `London` (7 assets) and
  * allocated by aspect ratio. See the PR body for the table.
  */
+import { heroDeliveryWidth } from '../heroMasters.js';
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
@@ -40,7 +41,7 @@ export const LONDON_IMAGES = {
   // Putting it into a slot that already holds a distinct photograph would mean
   // removing that photograph, which is the one thing this programme does not
   // do to make room.
-  hero:  'composite-6_vh0sge', // 2752x1536, ratio 1.792
+  hero:  'london-hero_htbyky', // heroes-jpg 4096x2294, ratio 1.786
   story: [
     'hf_20260904_010121_e000fbac-491f-44b8-ad5e-9a9e2a6fae7e_bnmpgz', // 1536x2048
     'hf_20260904_010212_6e7e629c-7601-4a03-ba73-21581949a75b_gj6zfy', // 1792x2400
@@ -57,7 +58,11 @@ export const SAMPLE_LONDON = {
   activeUniverse: 'london',
   websiteMode: 'light',
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls', 'experience'],
-  coverPhoto: img(LONDON_IMAGES.hero, 2048),
+  // THE HERO SLOT, at the master's own ceiling. It was a flat 2048 into a
+  // hero that renders 2880 device pixels wide at 1440@2x — the softness
+  // the 4K masters were shot to remove. heroDeliveryWidth never asks for
+  // more than the master holds, so nothing upscales.
+  coverPhoto: img(LONDON_IMAGES.hero, heroDeliveryWidth(LONDON_IMAGES.hero)),
 
   mainCeremony: { venueName: 'The Reading Room', address: 'A square with plane trees', startTime: '15:00', time: '15:00' },
   reception: { venueName: 'The Long Gallery', address: 'A square with plane trees', startTime: '18:00', time: '18:00' },

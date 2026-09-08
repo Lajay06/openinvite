@@ -23,6 +23,7 @@
  * is clean: a carved window in an ochre wall, no lettering anywhere in frame.
  * The role is filled from that, and the itinerary has its photograph.
  */
+import { heroDeliveryWidth } from '../heroMasters.js';
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
@@ -34,7 +35,7 @@ export const MARRAKECH_IMAGES = {
     'hf_20260904_083147_a83e571e-f649-4e1c-869a-a40cc5af10b1_v2tqmy', // DOUBLED from Our Story
     'hf_20260904_083147_229c83c7-ec9b-4848-8571-4994529817ae_gph1qg', // DOUBLED from Our Story
   ],
-  hero:  'hf_20260904_083147_551c1338-3fce-4cec-8dbd-39179722c4ff_gtwtzg', // 2752x1536
+  hero:  'marrakech-hero_sbciuz', // heroes-jpg 4096x2294, ratio 1.786
   story: [
     'hf_20260904_083051_2ab83be9-6958-4117-9df4-ec3c48685524_nwvein', // 1536x2048
     'hf_20260904_083147_a83e571e-f649-4e1c-869a-a40cc5af10b1_v2tqmy', // 1792x2400
@@ -53,7 +54,11 @@ export const SAMPLE_MARRAKECH = {
   activeUniverse: 'marrakech',
   websiteMode: 'light',
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls', 'experience'],
-  coverPhoto: img(MARRAKECH_IMAGES.hero, 2048),
+  // THE HERO SLOT, at the master's own ceiling. It was a flat 2048 into a
+  // hero that renders 2880 device pixels wide at 1440@2x — the softness
+  // the 4K masters were shot to remove. heroDeliveryWidth never asks for
+  // more than the master holds, so nothing upscales.
+  coverPhoto: img(MARRAKECH_IMAGES.hero, heroDeliveryWidth(MARRAKECH_IMAGES.hero)),
 
   mainCeremony: { venueName: 'The Courtyard', address: 'Behind the blue door', startTime: '17:30', time: '17:30' },
   reception: { venueName: 'The Roof', address: 'Behind the blue door', startTime: '20:00', time: '20:00' },

@@ -15,6 +15,7 @@
  * None rejected. Both Home photographs come from real spares, so NOTHING is
  * doubled here. One asset is left unused and named in the PR body.
  */
+import { heroDeliveryWidth } from '../heroMasters.js';
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
@@ -25,7 +26,7 @@ export const MYKONOS_IMAGES = {
     'hf_20260904_090923_f1e18ca9-e860-46f7-9b7a-68d1b50d3799_wvizty', // spare landscape
     'hf_20260904_090923_44ee9a1e-e351-4354-8d95-aa894a00be7f_arcb8g', // spare wide
   ],
-  hero:  'hf_20260904_090923_b58ff759-bc2c-4735-9af8-1b4069e585b1_bhqfgl', // 2752x1536
+  hero:  'mykonos-hero_koouyg', // heroes-jpg 4096x2294, ratio 1.786
   story: [
     'hf_20260904_090757_2d90ddf0-bdd6-4cff-9fa0-98f25d9126ba_xak6aq', // 1536x2048
     'hf_20260904_091123_615a0401-1836-4426-b699-13c6b9a2cd66_s1binz', // 1536x2048
@@ -42,7 +43,11 @@ export const SAMPLE_MYKONOS = {
   activeUniverse: 'mykonos',
   websiteMode: 'light',
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls', 'experience'],
-  coverPhoto: img(MYKONOS_IMAGES.hero, 2048),
+  // THE HERO SLOT, at the master's own ceiling. It was a flat 2048 into a
+  // hero that renders 2880 device pixels wide at 1440@2x — the softness
+  // the 4K masters were shot to remove. heroDeliveryWidth never asks for
+  // more than the master holds, so nothing upscales.
+  coverPhoto: img(MYKONOS_IMAGES.hero, heroDeliveryWidth(MYKONOS_IMAGES.hero)),
 
   mainCeremony: { venueName: 'The white chapel', address: 'Above the north cove', startTime: '18:00', time: '18:00' },
   reception: { venueName: 'The terrace', address: 'Below the chapel, down forty steps', startTime: '20:00', time: '20:00' },

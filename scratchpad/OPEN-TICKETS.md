@@ -1812,3 +1812,215 @@ schema, not a risk.
 then delete the two declarations from `base44/entities/WeddingDetails.jsonc`
 and regenerate `entityFields.generated.js` in the same PR that confirms they
 are gone live.
+
+---
+
+# AMALFI — RE-SHOOT FOR RESOLUTION AND FRAMING
+
+Filed 2026-09-08, alongside the 4K hero masters (#723).
+
+**It is the one universe of twenty with no new hero.** Nineteen are
+4096x2294 in `heroes-jpg`; amalfi keeps `hf_20260903_234805_…_xxsczf` at
+2752x1536. That is enough for the desktop hero and it is the reason the
+per-universe width map exists at all — a flat 2880 would upscale amalfi and
+Cloudinary charges for the privilege.
+
+**And it is the one universe where the framing rule cannot be met.** The
+standing rule is "at 390x844 the couple is whole and mid-frame; at 1440 the
+composition does not visibly move". A phone shows a quarter of a 16:9
+picture's width — 25.8% here — and amalfi's couple spans 33-63%, thirty per
+cent. The subject is WIDER THAN THE WINDOW, so somebody loses something at
+every possible object-position. Centred it is the man's entire left arm;
+`47% center` splits the loss to roughly two per cent a side, which the owner
+has accepted as the best available.
+
+No other universe has this problem: the next widest subject is brooklyn at
+24%, which fits with under a per cent of margin either side.
+
+**So the re-shoot wants two things at once** — a 4096-wide master like the
+other nineteen, and a composition whose couple sits inside about a quarter
+of the frame's width so a phone can hold both of them. The second is the one
+that will not fix itself by uploading a bigger file.
+
+Until then `heroFocus.amalfi` stays at `47% center`, and the entry in
+`heroMasters.js` for the old public id stays with it — both go in the same PR
+that confirms the new master is live.
+
+---
+
+# A PR THAT CONFLICTS WITH ITS BASE GETS NO CI RUN AT ALL — CLOSED
+
+Filed 2026-09-08, closed the same day.
+
+**The symptom.** Twice a pushed PR head produced no CI run: not a pending
+check, not a failure — no workflow run existed for the SHA under any event,
+and the commit carried only its two Vercel checks.
+
+  454e9b2  on #705
+  9da7bcb, 6733057, 7227e75  on #723
+
+**The cause.** A `pull_request` run is built on the PR's MERGE REF,
+`refs/pull/<n>/merge` — the commit GitHub makes by merging the head into the
+base. **When the PR conflicts with its base, that ref does not exist, so
+GitHub creates no run.** #723 was `mergeable=CONFLICTING`,
+`mergeStateStatus=DIRTY`, and the conflict was this very file: #722 appended a
+ticket to the end of OPEN-TICKETS.md and #723 appended two, and two appends at
+end-of-file conflict.
+
+**The wrong hypothesis, and how it was killed.** The first theory was timing —
+both misses happened while a main run was in progress, so the merge ref was
+presumed briefly unavailable. It fit three data points and was wrong. The test
+that killed it: 7227e75 was pushed at 10:06:03 with main completely quiet and
+still had no run nine minutes later, while a different branch pushed at
+10:13:41 got its run in thirty-three seconds. Timing was a coincidence of when
+the conflicting commit landed on main, not a cause.
+
+  4ac0252  pushed 09:32, before #722 merged   → mergeable  → run, passed
+  9da7bcb  pushed 09:47, after #722 merged    → CONFLICTING → no run
+  7227e75  pushed 10:06, main quiet            → CONFLICTING → no run
+  d3af777  a different branch, 10:13           → mergeable  → run in 33s
+
+**Why it matters more than the inconvenience.** A branch in this state
+presents as merge-ready: two green Vercel checks, no build, and nothing saying
+why. `pr:green` refuses on the absent check — "absence is not success" — and
+that refusal is the only reason it was never merged. But the message sends you
+looking for a broken workflow when the answer is a rebase, and each occurrence
+costs a merge authorization and a round trip.
+
+**Closed by** `fix/pr-green-mergeable`: pr:green now reads the PR's mergeable
+state first and says "CONFLICTING — no merge ref, no CI run will ever exist;
+rebase" before it reports anything about absent checks. The rule is in
+DECISION-LOG.md: check mergeable, not the clock.
+
+# DROP heroOverlay AND blockOverlays FROM WeddingDetails
+
+Filed 2026-09-08, on the day they were declared (#717).
+
+**Both are declared, both are unused, and neither should have been asked for.**
+They were listed as a schema need for P2 before the code was checked. It turned
+out the hero already had an overlay — `homeContent.overlay`, with size,
+position and scrim, shipped and in use — and a block can carry its own,
+because `homeContent.blocks` and `customPageContent[slug].blocks` are inside
+bare objects that keep whatever nested keys they are handed.
+
+**Why the existing homes are the right ones, so this is a removal and not a
+migration back:**
+
+- `heroOverlay` would need a migration. Every couple who has already placed a
+  monogram has it at `homeContent.overlay`; moving the store loses it unless
+  the move is written, verified and run, for no gain.
+- `blockOverlays`, as a map keyed by block id, **orphans on delete**. An
+  overlay stored on the block itself moves, copies and deletes with it. A side
+  map slowly fills with entries for blocks that no longer exist and nothing
+  ever cleans them up.
+
+**Cost of leaving them:** none measurable. Both are bare objects, absent from
+every live record, and nothing reads or writes them. They are noise in the
+schema, not a risk.
+
+**Do this at the owner's next Base44 visit**, not as a chat prompt of its own —
+then delete the two declarations from `base44/entities/WeddingDetails.jsonc`
+and regenerate `entityFields.generated.js` in the same PR that confirms they
+are gone live.
+
+---
+
+# AMALFI — RE-SHOOT FOR RESOLUTION AND FRAMING
+
+Filed 2026-09-08, alongside the 4K hero masters (#723).
+
+**It is the one universe of twenty with no new hero.** Nineteen are
+4096x2294 in `heroes-jpg`; amalfi keeps `hf_20260903_234805_…_xxsczf` at
+2752x1536. That is enough for the desktop hero and it is the reason the
+per-universe width map exists at all — a flat 2880 would upscale amalfi and
+Cloudinary charges for the privilege.
+
+**And it is the one universe where the framing rule cannot be met.** The
+standing rule is "at 390x844 the couple is whole and mid-frame; at 1440 the
+composition does not visibly move". A phone shows a quarter of a 16:9
+picture's width — 25.8% here — and amalfi's couple spans 33-63%, thirty per
+cent. The subject is WIDER THAN THE WINDOW, so somebody loses something at
+every possible object-position. Centred it is the man's entire left arm;
+`47% center` splits the loss to roughly two per cent a side, which the owner
+has accepted as the best available.
+
+No other universe has this problem: the next widest subject is brooklyn at
+24%, which fits with under a per cent of margin either side.
+
+**So the re-shoot wants two things at once** — a 4096-wide master like the
+other nineteen, and a composition whose couple sits inside about a quarter
+of the frame's width so a phone can hold both of them. The second is the one
+that will not fix itself by uploading a bigger file.
+
+Until then `heroFocus.amalfi` stays at `47% center`, and the entry in
+`heroMasters.js` for the old public id stays with it — both go in the same PR
+that confirms the new master is live.
+
+---
+
+# SECOND PR HEAD WITH NO ACTIONS RUN — IS THE pull_request TRIGGER BEING DROPPED?
+
+Filed 2026-09-08.
+
+**Twice now a pushed PR head has produced no CI run at all.** Not a pending
+check, not a failure — no workflow run exists for the SHA under any event,
+and the commit's check-runs API returns only the two Vercel entries.
+
+  454e9b2  on #705
+  9da7bcb  on #723
+
+`pr:green` refuses on exactly this and its message is the right one: absence
+is not success. A gate that reads an absent check as green is the failure
+this whole class exists to prevent, so the refusal is working. What is not
+working is whatever should have created the run.
+
+**What the two have in common.** Both were pushed shortly after a push to a
+DIFFERENT branch. `9da7bcb` went up minutes after #722's merge commit landed
+on main and started main's own CI run. Both were also small commits on a
+branch whose previous head had a completed, successful run.
+
+**What has been ruled out.** `ci.yml`'s trigger is a bare `on: pull_request`
+with no `paths` or `paths-ignore`, so a docs-only change is not being
+filtered out by configuration. The workflow file itself was unchanged
+between the head that ran and the head that did not.
+
+**LEADING HYPOTHESIS (advisor, 2026-09-08).** A `pull_request` run is built
+on the PR's MERGE REF — the commit GitHub makes by merging the head into the
+base. A push that lands while main is changing can find that ref unavailable,
+and rather than queueing, GitHub creates no run at all.
+
+The timings on this occurrence fit it exactly:
+
+  main's run on 9fa23ce   started 09:47:56, still in progress at 10:02
+  9da7bcb pushed          ~09:47   — during it. No run.
+  6733057 pushed           09:58   — during it. No run.
+
+Both misses on this branch land inside one main run, and the head before them
+(4ac0252, pushed while main was quiet) got its run and passed. That is three
+data points in the same direction on one afternoon.
+
+**Not ruled out**, and worth measuring rather than guessing:
+
+- Actions dropping or coalescing a `synchronize` event while another run for
+  the same repository is starting.
+- Something in the repository's Actions settings or usage limits that
+  silently declines to create a run rather than queueing one.
+- A race between the push and the PR's merge-ref being updated.
+
+**Why it matters more than the inconvenience.** The remedy each time was an
+empty commit, which moves the head and voids whatever merge authorization
+named the old one. That is a real cost in a manual-mode programme: every
+occurrence burns a line and a round trip. It also means a branch can sit
+looking merge-ready with two green checks and no build at all, which is
+exactly the shape of a gate that passes by not running.
+
+**THE TEST, run on this occurrence:** wait for main's run to complete, then
+push again with main quiet and note whether a run appears within five
+minutes. A run that appears promptly on a quiet main, having twice failed to
+appear on a busy one, is as close to proof as this can get without GitHub's
+own logs.
+
+**The rule that follows, whatever the cause turns out to be:** never push a
+PR head while a main run is in progress. Wait for main to settle. It costs a
+few minutes; the alternative costs a merge authorization and a round trip
+every time it happens. Recorded in DECISION-LOG.md.

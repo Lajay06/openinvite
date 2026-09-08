@@ -15,6 +15,7 @@
  * Cloudinary folder `Seoul` (7 assets, all seven used, none rejected). One clean
  * spare covers the first Home photograph; the second is DOUBLED from Our Story.
  */
+import { heroDeliveryWidth } from '../heroMasters.js';
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
@@ -24,7 +25,7 @@ export const SEOUL_IMAGES = {
     'hf_20260904_003531_29231782-4077-43f3-975f-eb448f8784d2_zbxap0', // spare landscape, the pale room
     'hf_20260904_003531_83d75295-31ce-4182-a49a-5231c2180a6a_uwal5s', // DOUBLED from Our Story
   ],
-  hero:  'hf_20260904_003531_655b801e-9e3f-4576-985b-605f86d57233_qibrk0', // 2752x1536
+  hero:  'seoul-hero_lbj8ji', // heroes-jpg 4096x2294, ratio 1.786
   story: [
     'hf_20260904_003531_7cc5d0d8-6c44-46b3-b927-d2349110b50c_kb7l6d', // 1792x2400
     'hf_20260904_003531_198b0388-7fde-44ef-b99c-be80f9fd6736_l5jrva', // 1792x2400
@@ -41,7 +42,11 @@ export const SAMPLE_SEOUL = {
   activeUniverse: 'seoul',
   websiteMode: 'light',
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls', 'experience'],
-  coverPhoto: img(SEOUL_IMAGES.hero, 2048),
+  // THE HERO SLOT, at the master's own ceiling. It was a flat 2048 into a
+  // hero that renders 2880 device pixels wide at 1440@2x — the softness
+  // the 4K masters were shot to remove. heroDeliveryWidth never asks for
+  // more than the master holds, so nothing upscales.
+  coverPhoto: img(SEOUL_IMAGES.hero, heroDeliveryWidth(SEOUL_IMAGES.hero)),
 
   mainCeremony: { venueName: 'The upper room', address: 'Fifth floor, the one with no windows on the street side', startTime: '11:00', time: '11:00' },
   reception: { venueName: 'The long room', address: 'Same floor, through the glass', startTime: '12:30', time: '12:30' },

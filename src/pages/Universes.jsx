@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import PublicNav from '@/components/public/PublicNav';
 import PublicFooter from '@/components/public/PublicFooter';
 import { UNIVERSE_CATALOG, universeTileImage, universeScrollImage } from '@/lib/universeCatalog';
+import { heroFocus } from '@/lib/heroFocus';
 import { useMarketingSeo } from '@/hooks/useMarketingSeo';
 import MarketingHero from '@/components/marketing/MarketingHero';
 import { responsivePhoto, ENDCAP_SIZES } from '@/lib/marketingImage';
@@ -161,7 +162,11 @@ function UniverseCrossfadeShowcase({ universes }) {
               alt=""
               loading={i === 0 ? 'eager' : 'lazy'}
               style={{
-                position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center',
+                position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+                // NOT always centre. The delivery is 16:9 and this container
+                // is the viewport, so on a phone the BROWSER takes the crop
+                // and object-position decides which slice — see heroFocus.js.
+                objectPosition: heroFocus(u.id),
                 zIndex: 1, opacity: i === activeIndex ? 1 : 0, transition: 'opacity 0.8s ease',
               }}
             />

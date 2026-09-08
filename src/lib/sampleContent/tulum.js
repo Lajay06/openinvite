@@ -14,6 +14,7 @@
  * life carries generated lettering reading "Mees Liscal ine"; the landscape
  * palapa interior took its place. Recorded in the PR body.
  */
+import { heroDeliveryWidth } from '../heroMasters.js';
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
@@ -36,7 +37,7 @@ export const TULUM_IMAGES = {
   // The dimension comments on these two lines were left describing the
   // PRE-SWAP assets and were wrong for a week — every id below is measured
   // against the Cloudinary listing now, not copied forward.
-  hero:  'hf_20260905_001735_9b9e69ff-59cb-4240-be11-ecc1fe022da0_bxwjjj', // 1376x768, ratio 1.792
+  hero:  'tulum-hero_pfdffd', // heroes-jpg 4096x2294, ratio 1.786
   story: [
     'hf_20260905_001643_d8992ec0-b2cc-480a-8c6c-8c5fb0e915bb_umafkq', // 1536x2048, back in Our Story
     'hf_20260905_001735_92fb56d4-9f40-4c89-bdcd-b9c053124180_ntt8vs', // 1536x2048
@@ -53,7 +54,11 @@ export const SAMPLE_TULUM = {
   activeUniverse: 'tulum',
   websiteMode: 'light',
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls', 'experience'],
-  coverPhoto: img(TULUM_IMAGES.hero, 2048),
+  // THE HERO SLOT, at the master's own ceiling. It was a flat 2048 into a
+  // hero that renders 2880 device pixels wide at 1440@2x — the softness
+  // the 4K masters were shot to remove. heroDeliveryWidth never asks for
+  // more than the master holds, so nothing upscales.
+  coverPhoto: img(TULUM_IMAGES.hero, heroDeliveryWidth(TULUM_IMAGES.hero)),
 
   mainCeremony: { venueName: 'The Palm House', address: 'At the end of the sand road', startTime: '16:30', time: '16:30' },
   reception: { venueName: 'The Long Table', address: 'At the end of the sand road', startTime: '19:00', time: '19:00' },

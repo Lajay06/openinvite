@@ -35,6 +35,7 @@ import FlorenceVine from '@/components/guest-website/layouts/FlorenceVine';
 import SeoulOrb from '@/components/guest-website/layouts/SeoulOrb';
 import ShanghaiCloud from '@/components/guest-website/layouts/ShanghaiCloud';
 import { sampleHeroImage } from '@/lib/sampleContent/mergeSample';
+import { heroFocus } from '@/lib/heroFocus';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -86,7 +87,7 @@ function ImageBanner({ universe, isCurrent, prefersReducedMotion }) {
         initial={false}
         whileHover={prefersReducedMotion ? undefined : { scale: 1.045 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: heroFocus(universe.id) }}
       />
       {/* Scrim only where text sits — not a full-image darken */}
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 45%, rgba(0,0,0,0.58) 100%)', pointerEvents: 'none' }} />

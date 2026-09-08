@@ -15,6 +15,7 @@
  * Cloudinary folder `Paris` (7 assets, all seven used, none rejected).
  * Allocated by aspect ratio; see the PR body for the table.
  */
+import { heroDeliveryWidth } from '../heroMasters.js';
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
@@ -25,7 +26,7 @@ export const PARIS_IMAGES = {
     'hf_20260904_123849_d641a821-a324-4ef9-b3dc-03d033ed5db4_xle05g', // spare wide, the colonnade
     'hf_20260904_123848_cdab9013-a29a-4c7c-8c14-fabf32e78f62_utpnbk', // DOUBLED from Our Story
   ],
-  hero:  'hf_20260904_123850_a39bf422-02b2-4805-befd-ccd6c1139130_uebis7', // 2752x1536
+  hero:  'paris-hero_afhg5f', // heroes-jpg 4096x2294, ratio 1.786
   story: [
     'hf_20260904_123708_71453781-5b8b-4d03-9242-3bb1c390293e_lstirz', // 1536x2048
     'hf_20260904_123848_cdab9013-a29a-4c7c-8c14-fabf32e78f62_utpnbk', // 1792x2400
@@ -42,7 +43,11 @@ export const SAMPLE_PARIS = {
   activeUniverse: 'paris',
   websiteMode: 'light',
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls', 'experience'],
-  coverPhoto: img(PARIS_IMAGES.hero, 2048),
+  // THE HERO SLOT, at the master's own ceiling. It was a flat 2048 into a
+  // hero that renders 2880 device pixels wide at 1440@2x — the softness
+  // the 4K masters were shot to remove. heroDeliveryWidth never asks for
+  // more than the master holds, so nothing upscales.
+  coverPhoto: img(PARIS_IMAGES.hero, heroDeliveryWidth(PARIS_IMAGES.hero)),
 
   mainCeremony: { venueName: 'The Town Hall', address: 'Second floor, the room with the tall windows', startTime: '16:00', time: '16:00' },
   reception: { venueName: 'The Apartment', address: 'Fourth floor, and no elevator', startTime: '19:00', time: '19:00' },

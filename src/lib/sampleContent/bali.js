@@ -31,6 +31,7 @@
  * the menu board reading "RGRAARA". Both Home photographs are real spares, so
  * nothing is doubled; one clean asset is left unused.
  */
+import { heroDeliveryWidth } from '../heroMasters.js';
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 export const img = (publicId, w = 1600) => `${CLOUD}/f_auto,q_auto,w_${w}/${publicId}`;
 
@@ -40,7 +41,7 @@ export const BALI_IMAGES = {
     'hf_20260905_095507_0842f0f9-82bb-462a-9756-c6d1b1cb4486_po7vnk', // 1792x2400, the grill after dark
     'hf_20260905_115640_90811331-2b10-4026-b352-bc32855b64bf_be3lok', // 2048x2048, the note on the hood
   ],
-  hero:  'hf_20260905_114656_c94dff5a-3f2e-43c6-abfd-d55c77c76c97_fqo4ps', // 2752x1536
+  hero:  'bali-hero_qvcc3j', // heroes-jpg 4096x2294, ratio 1.786
   story: [
     'hf_20260905_095412_dca878b7-903b-4d2c-b5f2-8e1f7ecd69cd_dzpjvc', // 1536x2048
     'hf_20260905_095506_2193232b-7c56-4af6-90f8-beda26082dc6_zoty4z', // 1792x2400, replaces the rejected board
@@ -57,7 +58,11 @@ export const SAMPLE_BALI = {
   activeUniverse: 'bali',
   websiteMode: 'light',
   enabledPages: ['home', 'our-story', 'celebration', 'rsvp', 'registry', 'music', 'faq', 'stay', 'transport', 'polls', 'experience'],
-  coverPhoto: img(BALI_IMAGES.hero, 2048),
+  // THE HERO SLOT, at the master's own ceiling. It was a flat 2048 into a
+  // hero that renders 2880 device pixels wide at 1440@2x — the softness
+  // the 4K masters were shot to remove. heroDeliveryWidth never asks for
+  // more than the master holds, so nothing upscales.
+  coverPhoto: img(BALI_IMAGES.hero, heroDeliveryWidth(BALI_IMAGES.hero)),
 
   mainCeremony: { venueName: 'The black sand beach', address: 'The end of the track, past the last food stall', startTime: '17:00', time: '17:00' },
   reception: { venueName: 'The long table under the trees', address: 'Back up the track, five minutes', startTime: '19:00', time: '19:00' },
