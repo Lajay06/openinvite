@@ -146,8 +146,14 @@ export default function RealWebsitePreview({ details: ownDetails, currentPage = 
         onNavigate={onNavigate}
       />
 
+      {/* currentPage, because a custom page cannot find itself without it.
+          WeddingCustomPage looks its own record up by slug and returns null
+          when it cannot — so the page a couple had just created rendered the
+          nav and then nothing at all, on the canvas and on the published
+          site alike. Every built-in page component ignores this prop. */}
       <PageComponent
         weddingDetails={details}
+        currentPage={currentPage}
         theme={theme}
         typography={typography}
         universeConfig={universeConfig}

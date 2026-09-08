@@ -12,16 +12,21 @@
  * UniverseBlocks renderer the home page uses (WeddingHomePage.jsx:822), so it
  * inherits every universe's typography and marks with no per-universe work.
  *
- * A BLANK PAGE RENDERS BLANK, deliberately. NewPageModal stores
- * `sections: []` and offers five templates that no renderer consumes; wiring
- * those to real layouts is a feature and is filed, not invented here. What a
- * couple gets today is a real, reachable, navigable page with their title on
- * it — which is what was missing.
+ * A BLANK PAGE RENDERS BLANK, deliberately. NewPageModal offers five
+ * templates that no renderer consumes; wiring those to real layouts is a
+ * feature and is filed, not invented here. In the builder a blank page is not
+ * empty though — UniverseBlocks renders its insert affordance whenever
+ * `editable`, so the page opens asking to be filled.
+ *
+ * THE BLOCKS COME FROM `customPageContent`, keyed by slug, not from the page
+ * record. `page.blocks` could never have persisted: `customPages` declares its
+ * item `properties`, and Base44 strips every key such a schema does not name.
+ * See customPageBlocks in lib/customPages.js.
  */
 import React from 'react';
 import GuestPageHeading from '../GuestPageHeading';
 import UniverseBlocks from '../blocks/UniverseBlocks';
-import { customPageFor } from '@/lib/customPages';
+import { customPageFor, customPageBlocks } from '@/lib/customPages';
 
 export default function WeddingCustomPage(props) {
   const { weddingDetails, theme, typography, universeConfig, currentPage } = props;
@@ -40,7 +45,7 @@ export default function WeddingCustomPage(props) {
         />
       </div>
       <UniverseBlocks
-        blocks={page.blocks}
+        blocks={customPageBlocks(weddingDetails, currentPage)}
         weddingDetails={weddingDetails}
         theme={theme}
         typography={typography}

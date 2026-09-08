@@ -335,6 +335,23 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
 
+      # The other half of the same report, which needed a schema field before
+      # it could be built. Checks the canvas, the SAVE PAYLOAD, and the
+      # published site, because the render bug lived in two components and a
+      # pass that only looked at the builder would have missed the guest's.
+      - name: A custom page opens with an add control and keeps what it is given
+        run: |
+          npx vite preview --port 4183 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4183 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4183 npm run test:custom-page-blocks
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       - name: The universe breadcrumb says where it goes
         run: |
           npx vite preview --port 4180 --strictPort &
