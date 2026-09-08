@@ -44,10 +44,24 @@
  * skipped. Without that, a preview that never opened would satisfy every
  * comparison below by measuring nothing twice.
  *
+ * ── AND THE SAME INVERSION ON THE OTHER PAGES THAT HAD IT ───────────────────
+ *
+ * The cover was not a preview bug, it was page chrome outranking the modal
+ * layer, and two more pages carried the identical `zIndex: 100` sticky header.
+ * They have no full-page preview to measure, so the last section stands a
+ * PROBE at the modal layer's own z-index — read out of dialog.jsx rather than
+ * typed here, so it cannot drift from the wrapper it stands for — and reads
+ * the pixel. Chrome that paints over the probe would paint over a dialog.
+ *
  * Usage: npm run test:full-preview-devices  (needs a server; CAPTURE_BASE_URL)
  */
 import { chromium } from 'playwright';
+import { readFileSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { seededContext, SEED } from './lib/renderHarness.mjs';
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 const BASE = process.env.CAPTURE_BASE_URL || 'http://localhost:5173';
 
@@ -94,8 +108,8 @@ const frameBox = (page, scope) => page.evaluate((which) => {
  * browser decodes its own screenshot, so no image dependency is needed and
  * nothing about the page is disturbed to take the measurement.
  */
-async function pixelAt(page, x, y) {
-  const shot = await page.screenshot({ clip: { x: 0, y: 0, width: 1440, height: 48 } });
+async function pixelAt(page, x, y, height = 48) {
+  const shot = await page.screenshot({ clip: { x: 0, y: 0, width: 1440, height } });
   return page.evaluate(([b64, px, py]) => new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {
@@ -202,6 +216,68 @@ if (dialogOpen) {
 }
 
 await ctx.close();
+
+// ── the same inversion, on the pages that shared it ─────────────────────────
+//
+// THE MODAL LAYER'S Z-INDEX IS READ, NOT TYPED. dialog.jsx is the one place
+// that decides what a dialog paints at; a number copied here would go stale
+// the moment someone changed it there, and the guard would keep passing
+// against a layer that no longer exists.
+const dialogSrc = readFileSync(resolve(ROOT, 'src/components/ui/dialog.jsx'), 'utf8');
+const modalZ = (() => {
+  const m = dialogSrc.match(/fixed inset-0 z-(\d+) bg-black/);
+  return m ? Number(m[1]) : null;
+})();
+check('the modal layer\u2019s z-index can be read off dialog.jsx', modalZ !== null,
+  modalZ === null ? 'the overlay class no longer matches — this guard is measuring nothing' : `z-${modalZ}`);
+
+/**
+ * Stands a probe at the modal layer and reports what is painted over it.
+ * Portalled to <body> so it shares the root stacking context a Radix dialog
+ * portals into, and given a colour nothing in the product uses.
+ */
+async function chromeUnderModalLayer(page, z) {
+  await page.evaluate((zi) => {
+    const el = document.createElement('div');
+    el.id = 'modal-layer-probe';
+    el.style.cssText = `position:fixed;left:0;top:0;width:100%;height:80px;background:rgb(0,255,0);z-index:${zi};pointer-events:none`;
+    document.body.appendChild(el);
+  }, z);
+  await page.waitForTimeout(400);
+  const painted = await pixelAt(page, 20, 20, 80);
+  await page.evaluate(() => document.getElementById('modal-layer-probe')?.remove());
+  return painted;
+}
+
+const PAGES_THAT_HAD_IT = [
+  { label: 'the guest suite\u2019s top bar', path: '/studio/guest-suite/policies', expect: 'Guest Suite' },
+];
+
+if (modalZ !== null) {
+  for (const p of PAGES_THAT_HAD_IT) {
+    const c = await seededContext(browser, { width: 1440, height: 900, seed: SEED });
+    const pg = await c.newPage();
+    await pg.goto(`${BASE}${p.path}`, { waitUntil: 'domcontentloaded', timeout: 45000 }).catch(() => {});
+    await pg.waitForTimeout(4500);
+
+    // PRESENCE BEFORE PROPERTIES: a page that never rendered its header has
+    // nothing over the probe either, and would pass by being empty.
+    const text = await pg.evaluate(() => document.body.innerText || '');
+    const rendered = text.includes(p.expect);
+    check(`${p.label} rendered`, rendered,
+      rendered ? p.path : `${p.path} — "${p.expect}" is not on the page`);
+
+    if (rendered) {
+      const painted = await chromeUnderModalLayer(pg, modalZ);
+      check(`  and nothing it paints sits above the modal layer`,
+        painted === 'rgb(0, 255, 0)', painted === 'rgb(0, 255, 0)' ? `probe at z-${modalZ} is on top` : `${painted} is painted over a z-${modalZ} overlay`);
+    } else {
+      check(`  and nothing it paints sits above the modal layer`, false, 'the page did not render');
+    }
+    await c.close();
+  }
+}
+
 await browser.close();
 
 const passed = results.filter(Boolean).length;
