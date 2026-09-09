@@ -402,6 +402,22 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
 
+      # The corners, at minimum and maximum zoom. The middle of the frame was
+      # never the broken part — a guard that sampled it would have passed on
+      # every build this fixes.
+      - name: The seating grid reaches the edge of the frame at every zoom
+        run: |
+          npx vite preview --port 4190 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4190 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4190 npm run test:seating-canvas
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       # Four states, and the last two are the ones a container query can
       # break: a real phone, which must be unchanged, and a real desktop,
       # which a query firing at every width would hand a hamburger.

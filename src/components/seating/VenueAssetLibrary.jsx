@@ -17,10 +17,20 @@ const SHAPES = [
   { name: 'Large circle',    type: 'large-circle',    Icon: Circle, width: 120, height: 120 },
 ];
 
+// THE SIDEBAR'S GROUP LABEL, because that is what these are. "Venue assets"
+// and "Basic shapes" head a list of rows in a left rail, exactly like
+// "Planning" and "Guests" do — and they were carrying NO fontSize at all, so
+// they inherited 16px and rendered larger than every row beneath them, larger
+// than the panel's own header, and larger than anything in the sidebar four
+// inches to their left. AnimatedSidebar's group label is the canon: 10px, 700,
+// rgba(10,10,10,0.6). Copied deliberately rather than approximated.
 const sectionLabel = {
+  display: 'block',
+  fontSize: 10,
+  fontWeight: 700,
   color: 'rgba(10,10,10,0.6)',
   fontFamily: "'Plus Jakarta Sans', sans-serif",
-  padding: '10px 16px 4px',
+  padding: '14px 16px 4px',
 };
 
 function AssetButton({ label, Icon, onClick }) {
