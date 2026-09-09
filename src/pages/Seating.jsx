@@ -143,15 +143,32 @@ export default function SeatingPage() {
   const MAX_ZOOM = 2;
 
   // ── Dot grid, derived from zoom ────────────────────────────────────────
-  // Both grid layers are painted INSIDE the scaled canvas, so a fixed pitch
-  // and dot radius shrink with it. At MIN_ZOOM 0.4 the 1.5px dot rendered at
-  // 0.6 screen px on a 9.6px pitch — sub-pixel at 13% alpha, which is why
-  // the grid appeared to disappear rather than merely thin out. Counter-
-  // scaling the dot alone would have left a 9.6px pitch, which reads as
-  // noise, so the pitch steps too: the on-screen band lands at 18-30px
-  // across the whole 0.4-2.0 zoom range instead of collapsing.
-  const gridDotPx = +(1.5 / zoom).toFixed(2);
+  // Pitch in CANVAS units, stepped so the on-screen band lands at 18-30px
+  // across the whole 0.4-2.0 range instead of collapsing: a fixed pitch
+  // inside a scaled box reads as noise at 2x and as nothing at 0.4x.
   const gridPitchPx = 24 * (zoom < 0.75 ? 2 : zoom >= 1.5 ? 0.5 : 1);
+
+  // THE GRID BELONGS TO THE VIEWPORT, NOT TO THE CANVAS.
+  //
+  // It used to be painted on the scaled canvas div, which is 1400 wide and
+  // shrinks with the zoom. At MIN_ZOOM the canvas covers 40% of its own width
+  // and the rest of the frame — most of what a couple is looking at — was
+  // bare. The grid did not fade at the edge; it stopped, at a hard line
+  // partway across the workspace.
+  //
+  // So the pattern moves to the scrolling frame, which always fills the space,
+  // and is expressed in SCREEN pixels keyed to the zoom: pitch × zoom, and a
+  // dot of a constant 1.5px rather than 1.5/zoom counter-scaled inside a box
+  // that then scales it back. `background-attachment: local` anchors the
+  // pattern to the content origin, which is the canvas's own top-left, so the
+  // dots stay on the canvas's coordinates through scroll and zoom alike.
+  const gridScreenPitch = +(gridPitchPx * zoom).toFixed(2);
+  const canvasGrid = {
+    backgroundImage: 'radial-gradient(circle, rgba(10,10,10,0.13) 1.5px, transparent 1.5px)',
+    backgroundSize: `${gridScreenPitch}px ${gridScreenPitch}px`,
+    backgroundAttachment: 'local',
+    backgroundColor: '#FAFAFA',
+  };
 
   // Measured render scale of the canvas, including the zoom transform.
   // getBoundingClientRect is used rather than ResizeObserver's contentRect
@@ -1002,7 +1019,7 @@ export default function SeatingPage() {
 
           {/* Centre: Canvas */}
           <div
-            style={{ flex: 1, position: 'relative', overflow: 'auto', cursor: draggingItem ? 'grabbing' : 'default' }}
+            style={{ flex: 1, position: 'relative', overflow: 'auto', cursor: draggingItem ? 'grabbing' : 'default', ...canvasGrid }}
             onMouseMove={handleCanvasMouseMove}
             onMouseUp={handleCanvasMouseUp}
             onMouseLeave={handleCanvasMouseUp}
@@ -1015,9 +1032,13 @@ export default function SeatingPage() {
                 transformOrigin: 'top left',
                 transform: `scale(${zoom})`,
                 position: 'relative',
+                // The grid is the FRAME's now, so the canvas paints only the
+                // venue image when there is one and stays transparent when
+                // there is not — a background here would sit on top of the
+                // frame's grid and reinstate the hard edge at 40%.
                 ...(venueImageUrl
                   ? { backgroundImage: `url(${venueImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-                  : { backgroundImage: `radial-gradient(circle, rgba(10,10,10,0.13) ${gridDotPx}px, transparent ${gridDotPx}px)`, backgroundSize: `${gridPitchPx}px ${gridPitchPx}px`, backgroundColor: '#FAFAFA' }
+                  : null
                 ),
               }}
               onClick={(e) => { if (e.target === e.currentTarget) { setSelectedTableId(null); setSelectedSeatIndex(null); } }}
@@ -1029,6 +1050,9 @@ export default function SeatingPage() {
                    of the two when missed: a 1px dot at 8% alpha rendered
                    at 0.4 screen px was invisible well before the other. */
                 <div style={{ position: 'absolute', inset: 0, backgroundImage: `radial-gradient(circle, rgba(10,10,10,0.08) ${+(1 / zoom).toFixed(2)}px, transparent ${+(1 / zoom).toFixed(2)}px)`, backgroundSize: `${gridPitchPx}px ${gridPitchPx}px`, pointerEvents: 'none' }} />
+                /* This one stays on the canvas and stays counter-scaled: it
+                   is registered to the venue image, which is the canvas's own
+                   background, so it has to scale with it. */
               )}
 
               {/* Tables — this event's only */}
