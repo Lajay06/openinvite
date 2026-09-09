@@ -5254,3 +5254,122 @@ a journey step reporting a login failure because it never found a form to fill.
 Both are a gate reporting on the wrong signal. This one cost a wrong diagnosis
 sent upstream before it cost anything else, which is the expensive part — the
 advisor issued an instruction based on it.
+
+---
+
+## 2026-09-10 — a relabel is not a stop: the smoke reported steps it had run
+
+The launch smoke printed this and exited:
+
+```
+FAIL  2 · reaches the end of onboarding
+----  3 · chooses a universe        (not reached)
+----  4 · edits one piece of text   (not reached)
+...
+----  9 · the dashboard counts one invitation  (not reached)
+```
+
+**It had reached them.** The run went on to choose a universe, edit the home
+tagline, publish the site, add a guest and call `/api/send-invites` — and sent
+a real invitation to a real address. The report said "not reached" for every
+one of them.
+
+`check` was the whole of it:
+
+```js
+const check = (name, ok, detail) => {
+  if (broken) {
+    results.push({ name, ok: false, detail: `not reached — ${broken} failed` });
+    console.log(`  ----  ${name}  (not reached)`);
+    return;                       // <- returns from CHECK, not from the journey
+  }
+  ...
+};
+```
+
+It annotated the RESULT and the script kept executing. Nothing downstream of a
+failure was guarded, because the guarding lived in the reporting function.
+
+**How it was caught, which is the part worth keeping.** Not by reading the code
+— by the couple's own dashboard. It read "1 invitation still to reply" and
+"People invited 1" where the same account had read 0/0 an hour before. The
+product's own state contradicted the report, and the report was the thing that
+was wrong.
+
+**THE RULE. A check that fails must halt execution, not annotate it.** A failed
+check throws; the journey stops where it broke; the steps after it are filled
+in from a declared list afterwards, counted as failures and named honestly.
+"Not reached" now means not executed, because it is now the only way that line
+can be printed.
+
+**Why it is worse than a wrong pass.** A wrong pass is a claim nobody checked.
+This was a claim that CONTRADICTED WHAT THE RUN HAD DONE, and the side effects
+— a published site, an email to a real inbox — landed invisibly while the
+output insisted nothing had happened. On a live account, with a real address,
+the report is the only thing standing between a test and a person's inbox.
+
+Sibling of the vacuous-catch entry above it: that one is a step swallowing its
+own failure, this one is a suite swallowing the consequences of a failure it
+correctly detected. Both let a run walk on past the point where it stopped
+meaning anything.
+
+---
+
+## 2026-09-10 — an upstream outage blocks; it never passes
+
+Every CI run in the repo failed for about two hours at one step:
+
+```
+npx playwright install-deps chromium
+E: Failed to fetch https://dl.google.com/linux/chrome-stable/deb/dists/
+   stable/main/binary-amd64/Packages.gz  Hash Sum mismatch
+```
+
+Google's apt index was serving a file whose hash did not match its own Release
+file. `apt-get update` failed, and took the step, the job and every PR with it.
+
+**THE FIX REMOVES THE SOURCE. It does not tolerate the error.**
+
+```yaml
+- name: Remove Google's apt source
+  run: sudo rm -f /etc/apt/sources.list.d/google-chrome*.list \
+                  /etc/apt/sources.list.d/google-chrome*.sources
+```
+
+The runner image ships that source configured for Chrome-the-browser.
+Playwright installs its own Chromium and needs Ubuntu packages — libnss3,
+libasound2 and the rest. **The Google source contributed nothing to this repo
+and never had.** We were not depending on it; we were merely carrying it, and
+carrying it is what broke us.
+
+**What was NOT done, and why the distinction is the entry.** `|| true`,
+`continue-on-error`, a swallowed `apt-get` exit — each would have turned the
+build green, and each would have made the next real outage invisible. If
+Ubuntu's own archive goes down the browser lane still cannot run and this job
+still fails. A gate that goes green when its dependency is unavailable is not a
+gate; it is a gate-shaped thing that reports the weather.
+
+The rule generalises past apt: **when an upstream dependency fails, either stop
+depending on it or stay red. Never keep the dependency and hide the failure.**
+
+**AND THE SECOND HALF, WHICH IS WHY IT TOOK TWO HOURS TO SEE.** The OS deps
+were installed two different ways:
+
+```yaml
+if: cache-hit != 'true'   ->  playwright install --with-deps chromium
+if: cache-hit == 'true'   ->  playwright install-deps chromium
+```
+
+Two ways to do one thing, and the outage broke only the second. So #736 went
+GREEN on a cold cache and #739, #740 and #741 went RED on a warm one — **on
+identical code**. That looked like flakiness in the PRs, and cost five re-runs
+across four branches before the pattern was visible.
+
+The OS deps are never in the cache; they live in system package directories,
+not `~/.cache/ms-playwright`. Every run needs them, so every run now installs
+them the same way, unconditionally. The browser BINARY is the only thing the
+cache holds and the only step left that is conditional.
+
+**The corollary.** Two code paths that must agree, chosen by a cache hit, will
+diverge — and they will diverge on the axis nobody tests, because a cache hit
+is not a thing a test controls. Where one path suffices, keep one.
