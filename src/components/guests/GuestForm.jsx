@@ -206,8 +206,12 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
             already what Event details › Theme uses. Extending the standard
             means using it. */}
         <OptionAccordion
-          headingSize={13}
+          // A SECTION TITLE IS NOT LARGER THAN A ROW LABEL. At 13 in an 18px
+          // rhythm the seven headings were the tallest type in the dialog and
+          // the form itself was below the fold. `dense` halves the rhythm.
+          headingSize={12}
           headingWeight={700}
+          dense
           // A NEW GUEST HAS NOTHING TO SUMMARISE. "No info" under all six
           // sections is noise on a create form, and the required name field
           // must be somewhere a couple can see it.
