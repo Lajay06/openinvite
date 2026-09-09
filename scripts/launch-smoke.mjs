@@ -331,14 +331,37 @@ try {
   // is a guess about someone else's network, and a guess that is usually
   // right is the worst kind. The screenshot taken moments later showed the
   // button plainly, which is how the race was spotted.
+  //
+  // THE JOURNEY IS NOT IDEMPOTENT, AND THE STEP IS ABOUT THE OUTCOME.
+  // The second run on the same account found no confirm button at all: the
+  // first run had chosen Paris, so the page now reads "This is your current
+  // universe" behind a "Your current universe" badge. The button being absent
+  // was the product working, and the step said "no confirm control found".
+  //
+  // What this step means is "the couple has a universe", not "a button was
+  // clicked". So both states are accepted — but not blindly: if the confirm
+  // control IS there it must be clicked and the click must succeed, and if it
+  // is not, the already-chosen state must be VISIBLE. A page showing neither
+  // still fails.
   const confirm = page.getByRole('button', { name: 'Make this my universe', exact: true });
-  await confirm.first().waitFor({ state: 'visible', timeout: 20000 }).catch(() => {});
+  const already = page.getByText('This is your current universe');
+  await Promise.race([
+    confirm.first().waitFor({ state: 'visible', timeout: 20000 }),
+    already.first().waitFor({ state: 'visible', timeout: 20000 }),
+  ]).catch(() => {});
   const confirms = await confirm.count();
-  const chose = confirms > 0 && await confirm.first()
-    .click({ timeout: 8000 }).then(() => true).catch(() => false);
+  let chose = false;
+  let how = 'neither a confirm control nor a chosen state on the page';
+  if (confirms > 0) {
+    chose = await confirm.first().click({ timeout: 8000 }).then(() => true).catch(() => false);
+    how = chose ? `paris, chosen here (${confirms} confirm control(s))` : 'the confirm control would not take a click';
+  } else if (await already.count() > 0) {
+    chose = true;
+    how = 'paris, already this account\u2019s universe from an earlier run';
+  }
   await page.waitForTimeout(3000);
   await shot(page, 'universe');
-  check('3 · chooses a universe', chose, chose ? `paris (${confirms} confirm control(s) on the page)` : 'no confirm control found');
+  check('3 · chooses a universe', chose, how);
 
   // ── 4. build: one text edit and one photo ─────────────────────────────────
   await page.goto(`${BASE}/website-editor`, { waitUntil: 'domcontentloaded', timeout: 60000 });
