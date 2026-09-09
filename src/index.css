@@ -1431,3 +1431,52 @@ body {
     justify-content: center;
   }
 }
+
+/* ── The modal scale ─────────────────────────────────────────────────────────
+ *
+ * A dialog is a small window onto a big form, and this one was built at page
+ * scale: 45px inputs under 11px labels under 56px section headers, with the
+ * required name field pushed below the fold on a laptop. Measured against the
+ * guest list behind it, the modal's controls were half again as tall as the
+ * page's own primary button (32px) and its type ran to 16px where the page
+ * tops out at 14.
+ *
+ * ONE CLASS, NOT A CHANGED PRIMITIVE. `Label`, `Input` and `Select` are
+ * shared by every form in the product, so moving their defaults would rescale
+ * every dialog at once — which is the intended destination, but not in the
+ * same commit as the one dialog the owner asked to see first. A modal opts in
+ * by carrying `oi-modal-scale`, and the second commit is one class per
+ * dialog, reviewable at a glance.
+ *
+ * `!important` is here because the values it overrides are Tailwind utility
+ * classes of equal specificity emitted after this file, not because the rules
+ * are fighting inline styles.
+ */
+.oi-modal-scale label {
+  font-size: 12px !important;
+}
+.oi-modal-scale input:not([type='checkbox']):not([type='radio']),
+.oi-modal-scale select,
+.oi-modal-scale textarea {
+  font-size: 13px !important;
+  padding-top: 7px !important;
+  padding-bottom: 7px !important;
+}
+/* The builder's control height, which is also the sidebar row's and the page
+   primary's: nothing in a dialog stands taller than the chrome around it. */
+.oi-modal-scale input:not([type='checkbox']):not([type='radio']),
+.oi-modal-scale textarea {
+  min-height: 34px;
+}
+.oi-modal-scale textarea {
+  min-height: 56px;
+}
+/* The Radix select trigger is a button, not a <select>, so the input rules
+   above never reached it: it stayed at 14px in a 45px row beside 13px fields
+   in 35px ones. Targeted by its role, which is what it actually is. */
+.oi-modal-scale [role='combobox'] {
+  font-size: 13px !important;
+  padding-top: 7px !important;
+  padding-bottom: 7px !important;
+  min-height: 34px;
+}
