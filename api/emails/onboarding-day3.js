@@ -44,7 +44,7 @@ export function onboardingDay3Email({ name, email }) {
               <table width="100%" cellpadding="0" cellspacing="0">
                 ${[
                   { q: '"How much should I budget for florals for 80 guests?"' },
-                  { q: '"Draft a wedding website welcome message in our style."' },
+                  { q: '"Draft a guest suite welcome message in our style."' },
                   { q: '"What questions should I ask a photographer?"' },
                   { q: '"Write a thank-you note for our venue deposit."' },
                   { q: '"How do we handle dietary restrictions on our RSVP?"' },

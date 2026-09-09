@@ -455,10 +455,10 @@ const CONSIDERATIONS = {
       tag: 'Guest care',
       body: [
         'Your guests need practical information well before the wedding day: venue address and directions, parking or transport options, accommodation suggestions, dress code, and what to expect from the day.',
-        'A wedding website is the most efficient way to share this. Send the link with your invitation, and update it as logistics are confirmed.',
+        'A guest suite is the most efficient way to share this. Send the link with your invitation, and update it as logistics are confirmed.',
       ],
       tips: [
-        'Include a FAQ section on your wedding website',
+        'Include a FAQ section on your guest suite',
         "Send a 'getting there' guide to all guests one week before",
         'Nominate someone to be the guest contact on the day for queries',
       ],

@@ -352,7 +352,7 @@ export default function AvaStudioWebsite() {
       const coupleName = coupleDisplayName(details);
       try {
         const story = await base44.integrations.Core.InvokeLLM({
-          prompt: `Write a warm, personal 3-paragraph love story for a wedding website. Keep it genuine and heartfelt, not cheesy. Couple: ${coupleName}. Wedding date: ${details?.weddingDate || 'upcoming'}. Wedding style: ${JSON.stringify(details?.weddingStyle || [])}. Any notes: ${details?.coupleStory || 'none provided'}. Write in first person plural ("We..."). Keep each paragraph 2-3 sentences. End on the wedding. Output only the story text, no headings.`,
+          prompt: `Write a warm, personal 3-paragraph love story for a guest suite. Keep it genuine and heartfelt, not cheesy. Couple: ${coupleName}. Wedding date: ${details?.weddingDate || 'upcoming'}. Wedding style: ${JSON.stringify(details?.weddingStyle || [])}. Any notes: ${details?.coupleStory || 'none provided'}. Write in first person plural ("We..."). Keep each paragraph 2-3 sentences. End on the wedding. Output only the story text, no headings.`,
         });
         updateField('coupleStory', story);
         toast.success("✦ Ava wrote this for you — make it yours.");

@@ -24,7 +24,7 @@
  * down, a malformed slug, anything thrown — returns the ORIGINAL shell bytes
  * unchanged. This function sits in front of 100% of guest traffic, and the
  * worst outcome it may produce is today's behavior. It must never be the
- * reason a wedding website does not load.
+ * reason a guest suite does not load.
  */
 import { coupleDisplayName } from './_lib/coupleNames.js';
 // SERVER-SAFE BY CONSTRUCTION: sampleContent/{index,bali,havana}.js and

@@ -353,7 +353,7 @@ export default function UniverseStudio() {
         onClose={() => setAvaOpen(false)}
         pageTitle="Design & guest experience advisor"
         systemPrompt="You are Ava, helping a couple with both their wedding's visual design (universe/theme choice, website, invitations, print pieces) and their overall guest experience (RSVP flow, guest communication, making guests feel welcome)."
-        quickActions={["Which universe suits our wedding style?", "What should go on my wedding website?", "How do I write a great RSVP message?", "Tips for making guests feel welcome"]}
+        quickActions={["Which universe suits our wedding style?", "What should go on my guest suite?", "How do I write a great RSVP message?", "Tips for making guests feel welcome"]}
       />
     </div>
   );

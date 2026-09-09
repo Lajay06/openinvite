@@ -92,10 +92,10 @@ export async function runPublishParity() {
   // exists while the sentence still names a section that does not is only
   // half fixed.
   const promiseFiles = ['src/pages/GuestSuitePolicies.jsx', 'src/components/studio/guest-suite/PoliciesTab.jsx'];
-  const liars = promiseFiles.filter((f) => /Policies section of your wedding website/.test(read(f)));
+  const liars = promiseFiles.filter((f) => /Policies section of your guest suite/.test(read(f)));
   check('no dashboard copy still promises a "Policies section"',
     liars.length === 0, liars.join(', ') || 'both updated');
-  const namesReal = promiseFiles.every((f) => /Good to know section of your wedding website/.test(read(f)));
+  const namesReal = promiseFiles.every((f) => /Good to know section of your guest suite/.test(read(f)));
   check('  and both name the section that now exists',
     namesReal, promiseFiles.length + ' surfaces');
 

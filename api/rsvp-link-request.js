@@ -2,7 +2,7 @@
  * POST /api/rsvp-link-request
  *
  * Public, unauthenticated endpoint backing the RSVP section on a couple's
- * published wedding website. That embed has no guest identity (unlike
+ * published guest suite. That embed has no guest identity (unlike
  * /rsvp/:token, which is the canonical per-guest RSVP flow guests receive via
  * their invite). A visitor can enter their email; if it matches a guest on
  * THIS wedding, we email them their existing personal RSVP link via Resend.

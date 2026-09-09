@@ -227,7 +227,7 @@ const ARTICLES = {
   ),
   'Adding sections to your website': (
     <div>
-      <p style={S.p}>Your guest suite website is built from blocks — individual content pieces you add, reorder, and customize for each page. There are 24 block types across 5 categories.</p>
+      <p style={S.p}>Your guest suite is built from blocks — individual content pieces you add, reorder, and customize for each page. There are 24 block types across 5 categories.</p>
       <h3 style={S.h3}>How to add a block</h3>
       <ol style={S.ol}>
         <li style={S.li}>Open Design Studio → Guest Suite → Website tab</li>
@@ -316,7 +316,7 @@ const ARTICLES = {
       <p style={S.p}>Publishing makes your guest suite live at openinvite.com.au/w/your-names so guests can visit it.</p>
       <h3 style={S.h3}>How to publish</h3>
       <ol style={S.ol}>
-        <li style={S.li}>Open the Guest Suite website builder</li>
+        <li style={S.li}>Open the guest suite builder</li>
         <li style={S.li}>Click "Publish" in the top-right corner</li>
         <li style={S.li}>The Publish modal opens — click "Publish Now"</li>
         <li style={S.li}>Your site is immediately live</li>

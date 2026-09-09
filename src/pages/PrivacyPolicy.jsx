@@ -57,7 +57,7 @@ export default function PrivacyPolicy() {
           <div style={DIV} />
 
           <h2 style={H2}>1. Who this policy covers</h2>
-          <p style={P}>Openinvite is used by two kinds of people: <strong>couples</strong> (account holders who plan a wedding and pay for the service) and <strong>guests</strong> (people a couple invites, who interact with the couple's published wedding website, RSVP form, and related pages; guests do not create an Openinvite account).</p>
+          <p style={P}>Openinvite is used by two kinds of people: <strong>couples</strong> (account holders who plan a wedding and pay for the service) and <strong>guests</strong> (people a couple invites, who interact with the couple's published guest suite, RSVP form, and related pages; guests do not create an Openinvite account).</p>
 
           <div style={DIV} />
           <h2 style={H2}>2. What we collect</h2>

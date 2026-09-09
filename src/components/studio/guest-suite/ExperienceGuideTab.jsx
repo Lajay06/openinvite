@@ -1139,7 +1139,7 @@ function PublishTab({ details, guide, destination, onSaveField, onGenerateIntro,
               Your guide is hidden
             </h3>
             <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 24px', fontFamily: PJS, lineHeight: 1.6, maxWidth: 380, marginLeft: 'auto', marginRight: 'auto' }}>
-              When published, a "Guide" link appears in your wedding website navigation.
+              When published, a "Guide" link appears in your guest suite navigation.
             </p>
             <button onClick={() => onSaveField('published', true)} className="btn-primary" style={{ fontSize: 14, padding: '10px 28px' }}>
               Publish guide
@@ -1150,7 +1150,7 @@ function PublishTab({ details, guide, destination, onSaveField, onGenerateIntro,
             <div>
               <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', margin: '0 0 2px', fontFamily: PJS }}>Guide is live</p>
               <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.45)', margin: 0, fontFamily: PJS }}>
-                Guests can access this from your wedding website navigation.
+                Guests can access this from your guest suite navigation.
               </p>
             </div>
             <Switch checked={true} onCheckedChange={v => onSaveField('published', v)} />

@@ -82,7 +82,7 @@ export default function PoliciesTab({ details }) {
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', margin: '0 0 8px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Wedding Policies</h2>
-        <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: 0 }}>Set clear expectations for your guests. These can be displayed on your wedding website and included in your Experience Guide.</p>
+        <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: 0 }}>Set clear expectations for your guests. These can be displayed on your guest suite and included in your Experience Guide.</p>
       </div>
 
       {/* Photography */}
@@ -208,7 +208,7 @@ export default function PoliciesTab({ details }) {
       </PolicySection>
 
       <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', marginBottom: 16, marginTop: 8, fontStyle: 'italic' }}>
-        Anything marked "Display on website" appears in the Good to know section of your wedding website.
+        Anything marked "Display on website" appears in the Good to know section of your guest suite.
       </p>
 
       <button

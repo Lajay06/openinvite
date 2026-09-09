@@ -62,7 +62,7 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
 
   const generateMagicRecommendations = async () => {
     setIsGeneratingRecommendations(true);
-    const toastId = toast.loading('Creating your wedding website...');
+    const toastId = toast.loading('Creating your guest suite...');
     
     try {
       const sections = [];
@@ -318,7 +318,7 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
                       Ava website builder
                     </h3>
                     <p className="text-[rgba(10,10,10,0.6)] text-sm mb-4 leading-relaxed">
-                      Generate a complete wedding website using your event details, including real hotel recommendations.
+                      Generate a complete guest suite using your event details, including real hotel recommendations.
                     </p>
                     <Button
                       onClick={generateMagicRecommendations}

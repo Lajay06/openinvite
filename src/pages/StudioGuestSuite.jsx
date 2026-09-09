@@ -68,7 +68,7 @@ export default function StudioGuestSuite() {
   if (!canAccess) return (
     <UltraGate
       heading="Guest suite is an Ultra feature"
-      description="Build your wedding website, manage guest accommodations, create your experience guide, and share your digital suite — all in one place."
+      description="Build your guest suite, manage guest accommodations, create your experience guide, and share your digital suite — all in one place."
     />
   );
 

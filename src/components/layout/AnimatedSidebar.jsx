@@ -498,7 +498,7 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
                   onClick={() => navigate(item.url.split("?")[0])}
                   showBadge={item.ultraBadge && !canAccessUltra}
                   disabled={guestSuiteDisabled}
-                  disabledTooltip="Upgrade to Ultra to unlock your wedding website"
+                  disabledTooltip="Upgrade to Ultra to unlock your guest suite"
                 />
               ))}
             </div>
@@ -725,7 +725,7 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
                   <div
                     key={ii}
                     onClick={guestSuiteDisabled ? undefined : () => handleNav(item.url)}
-                    title={guestSuiteDisabled ? "Upgrade to Ultra to unlock your wedding website" : undefined}
+                    title={guestSuiteDisabled ? "Upgrade to Ultra to unlock your guest suite" : undefined}
                     aria-label={item.label}
                     {...interactiveRowProps(() => handleNav(item.url), guestSuiteDisabled)}
                     style={{

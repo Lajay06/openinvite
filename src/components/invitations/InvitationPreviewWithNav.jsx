@@ -249,7 +249,7 @@ export default function InvitationPreviewWithNav({ invitation, weddingDetails, o
             {/* Logo/Title */}
             <div className="flex-shrink-0">
               <span className="text-lg font-semibold text-[#0A0A0A]">
-                {invitation?.couple_names || 'Wedding Website'}
+                {invitation?.couple_names || 'Guest suite'}
               </span>
             </div>
 

@@ -56,7 +56,7 @@ export default function DataDeletion() {
               <li>All wedding details and planning data</li>
               <li>Your guest list, RSVP, and guestbook data</li>
               <li>Budget, vendor, seating, checklist, and schedule data</li>
-              <li>Your published wedding website, if you created one</li>
+              <li>Your published guest suite, if you created one</li>
               <li>Your AI assistant conversation history</li>
             </ul>
             <p style={{ fontSize: 14, lineHeight: 1.7, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>

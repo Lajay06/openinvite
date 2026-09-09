@@ -571,7 +571,7 @@ export default function GuestSuitePolicies() {
         </div>
 
         <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '20px 0 16px', fontStyle: 'italic', fontFamily: PJS }}>
-          Anything marked "Display on website" appears in the Good to know section of your wedding website.
+          Anything marked "Display on website" appears in the Good to know section of your guest suite.
         </p>
 
         <button
