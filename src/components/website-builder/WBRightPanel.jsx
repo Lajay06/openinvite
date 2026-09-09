@@ -1535,7 +1535,10 @@ export default function WBRightPanel({ details, theme, universeTheme, onChange, 
         ) : (
           <>
             {/* Design / Content / Settings tabs */}
-            <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0, position: 'sticky', top: 0, background: '#1C1C1E', zIndex: 10 }}>
+            {/* `wb-right-tabs` is a width hook for index.css. At 390 the panel
+                is 147px and these three labels need 149 at their inline 13px,
+                so Settings ran off the edge of the screen. */}
+            <div className="wb-right-tabs" style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0, position: 'sticky', top: 0, background: '#1C1C1E', zIndex: 10 }}>
               {[{ id: 'design', label: 'Design' }, { id: 'content', label: 'Content' }, { id: 'settings', label: 'Settings' }].map(tab => (
                 <button key={tab.id} onClick={() => onRightTabChange(tab.id)} style={{ flex: 1, height: 44, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: rightTab === tab.id ? '#FFFFFF' : 'rgba(255,255,255,0.35)', borderBottom: rightTab === tab.id ? '2px solid #FFFFFF' : '2px solid transparent', fontFamily: 'inherit' }}>
                   {tab.label}

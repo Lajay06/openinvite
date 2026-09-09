@@ -418,7 +418,7 @@ jobs:
       # right" is not. Every pair of leaf items in the bar is compared, at
       # both widths, and the desktop shape is pinned so a phone fix cannot
       # quietly restyle it.
-      - name: Nothing in the builder header overlaps at 390
+      - name: Nothing in the builder overflows itself at 390
         run: |
           npx vite preview --port 4187 --strictPort &
           SERVER_PID=$!

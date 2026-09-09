@@ -1431,3 +1431,24 @@ body {
     justify-content: center;
   }
 }
+
+/* THE RIGHT PANEL'S TABS AT PHONE WIDTH.
+   Measured at 390: the panel is 147px and Design + Content + Settings need
+   149 at their inline 13px, so the row overflowed and Settings ran past the
+   edge of the screen — the three labels read as one word. Eleven px fits the
+   three in 127 with room to spare.
+   `!important` for the same reason as the header rule above: the size is an
+   inline style on each button, and an inline style beats any selector.
+   `min-width: 0` lets flex actually divide the row; without it a flex child
+   will not shrink below its content and the size change alone would not be
+   enough on a narrower panel.
+   Nothing here applies above 640. Measured by
+   scripts/test-builder-header-390.mjs. */
+@media (max-width: 640px) {
+  .wb-right-tabs button {
+    font-size: 11px !important;
+    min-width: 0;
+    padding-left: 2px;
+    padding-right: 2px;
+  }
+}

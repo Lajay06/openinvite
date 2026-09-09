@@ -1,6 +1,9 @@
 /* global document, getComputedStyle */
 /**
- * NOTHING IN THE BUILDER'S TOP BAR OVERLAPS ANYTHING ELSE.
+ * NOTHING IN THE BUILDER OVERFLOWS ITSELF AT PHONE WIDTH.
+ *
+ * Two places, both found by looking at 390 rather than by reading source: the
+ * top bar's title, and the right panel's tab row.
  *
  * At 390 the title was drawn straight through Save and Share. It is centred
  * with `position: absolute; left: 50%`, which takes it out of flow — so it
@@ -21,6 +24,15 @@
  * 48px row and the title is still absolutely positioned. A fix that quietly
  * restyled the desktop bar to solve the phone would pass an overlap check on
  * both widths and be wrong.
+ *
+ * ── AND THE RIGHT PANEL'S TABS ──────────────────────────────────────────────
+ *
+ * Measured at 390: the panel is 147px and Design + Content + Settings need 149
+ * at their inline 13px, so the row overflowed and Settings ran past the edge of
+ * the screen — the three labels read as one word. The check is that each tab
+ * ends inside the viewport AND that no label is clipped inside its own button,
+ * because shrinking the row without shrinking the text would satisfy the first
+ * and hide the words.
  *
  * Usage: npm run test:builder-header-390  (needs a server; CAPTURE_BASE_URL)
  */
@@ -97,6 +109,35 @@ for (const width of [390, 1440]) {
     check(`  and nothing in it overlaps anything else`, false, 'no header');
     check('  width-specific checks', false, 'no header');
     check('  width-specific checks', false, 'no header');
+  }
+
+  // ── the right panel's tab row ─────────────────────────────────────────────
+  const tabs = await page.evaluate((vw) => {
+    const btns = [...document.querySelectorAll('.wb-right-tabs button')];
+    if (!btns.length) return null;
+    return {
+      count: btns.length,
+      panel: Math.round(btns[0].parentElement.getBoundingClientRect().width),
+      // A label wider than the button it sits in is a clipped word, which is
+      // what shrinking the row without shrinking the text would produce.
+      clipped: btns.filter((b) => b.scrollWidth > Math.ceil(b.getBoundingClientRect().width)).map((b) => b.innerText.trim()),
+      pastEdge: btns.filter((b) => Math.round(b.getBoundingClientRect().right) > vw).map((b) => b.innerText.trim()),
+      size: getComputedStyle(btns[0]).fontSize,
+    };
+  }, width);
+  check(`${width}: the right panel shows its three tabs`, !!tabs && tabs.count === 3,
+    tabs ? `${tabs.count} in ${tabs.panel}px` : 'no tab row');
+  if (tabs) {
+    check('  none of them runs past the edge of the screen', tabs.pastEdge.length === 0,
+      tabs.pastEdge.join(', ') || 'all inside');
+    check('  and no label is clipped inside its own button', tabs.clipped.length === 0,
+      tabs.clipped.join(', ') || `all readable at ${tabs.size}`);
+    if (width === 1440) {
+      check('  the desktop tabs are still 13px', tabs.size === '13px', tabs.size);
+    }
+  } else {
+    check('  none of them runs past the edge of the screen', false, 'no tab row');
+    check('  and no label is clipped inside its own button', false, 'no tab row');
   }
   await ctx.close();
 }
