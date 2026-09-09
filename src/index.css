@@ -1451,6 +1451,13 @@ body {
  * `!important` is here because the values it overrides are Tailwind utility
  * classes of equal specificity emitted after this file, not because the rules
  * are fighting inline styles.
+ *
+ * TWELVE, NOT THIRTEEN. The first pass set fields at 13px against a stated
+ * ceiling of 14. Measured, the guest list's own primary is 12px in a 32px row,
+ * and the word for what this dialog should be was "much smaller" — so the
+ * ceiling is the real row text, and every field, label and select trigger in
+ * the dialog sits at it. Labels keep their weight for hierarchy, the way the
+ * sidebar does it.
  */
 .oi-modal-scale label {
   font-size: 12px !important;
@@ -1458,7 +1465,7 @@ body {
 .oi-modal-scale input:not([type='checkbox']):not([type='radio']),
 .oi-modal-scale select,
 .oi-modal-scale textarea {
-  font-size: 13px !important;
+  font-size: 12px !important;
   padding-top: 7px !important;
   padding-bottom: 7px !important;
 }
@@ -1475,7 +1482,7 @@ body {
    above never reached it: it stayed at 14px in a 45px row beside 13px fields
    in 35px ones. Targeted by its role, which is what it actually is. */
 .oi-modal-scale [role='combobox'] {
-  font-size: 13px !important;
+  font-size: 12px !important;
   padding-top: 7px !important;
   padding-bottom: 7px !important;
   min-height: 34px;
