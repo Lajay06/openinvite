@@ -297,6 +297,16 @@ try {
     await next.click().catch(() => {});
     await page.waitForTimeout(1800);
   }
+  // WAIT FOR THE DESTINATION, NOT FOR A NUMBER OF SECONDS. Login lands on
+  // /choose-plan, which is "the single, account-state-gated landing point for
+  // every successful auth" — and for an account past the plan step it
+  // immediately redirects on. Sampling the URL during that hop read
+  // `/choose-plan?next=%2FDailyUpdate` and failed step 2 on a product that was
+  // working; the run before it, on the same account and the same build,
+  // passed. A fixed wait that is usually long enough is the worst kind, and
+  // this is the second place in this file to learn it.
+  await page.waitForURL((u) => !/\/(choose-plan|login|register)\b/.test(u.pathname), { timeout: 30000 })
+    .catch(() => {});
   await shot(page, 'onboarding-end');
   // ARRIVAL, not absence. "the url is not /onboarding" is true of a browser
   // that never got past the register page.
