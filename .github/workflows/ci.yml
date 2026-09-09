@@ -477,6 +477,23 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
 
+      # Measured from paint, not from source: what a label is painted ON is
+      # decided by an ancestor several levels up, so the label's own color was
+      # never the whole story. Every <label> in the right panel, on all four of
+      # its surfaces, because the defect was in a shared primitive.
+      - name: Every label in the builder's right panel can be read
+        run: |
+          npx vite preview --port 4189 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4189 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4189 npm run test:design-tab-contrast
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       - name: The universe breadcrumb says where it goes
         run: |
           npx vite preview --port 4180 --strictPort &

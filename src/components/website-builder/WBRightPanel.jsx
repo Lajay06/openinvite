@@ -20,7 +20,7 @@ import { base44 } from '@/api/base44Client';
 import { validateUploadFile } from '@/lib/uploadValidation';
 import {
   FLabel, UInput, MediaPicker,
-  Toggle, Divider, AddBtn,
+  Toggle, Divider, AddBtn, PanelTone,
 } from './SectionEditorFields';
 import { BlockFields } from './BlockFields';
 import { blockLabel } from '@/components/guest-website/blocks/blockTypes';
@@ -1247,12 +1247,17 @@ function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
     const t = theme || {};
     const isHex = /^#[0-9a-fA-F]{6}$/.test(style.background);
     const bgOpt = BACKGROUND_OPTIONS.find(o => o.value === style.background);
+    // A CUSTOM TEXT COLOR IS WARNED ABOUT TOO. The picker was added beside the
+    // background's; had this kept looking only in TEXT_COLOR_OPTIONS, the one
+    // way to choose an arbitrary ink would have been the one way to choose it
+    // unwarned — a hole opened by the control that most needs the warning.
+    const isTextHex = /^#[0-9a-fA-F]{6}$/.test(style.textColor || '');
     const txOpt = TEXT_COLOR_OPTIONS.find(o => o.value === style.textColor);
-    if ((!bgOpt && !isHex) || !txOpt) return null;
+    if ((!bgOpt && !isHex) || (!txOpt && !isTextHex)) return null;
     const rawBg = isHex ? style.background : bgOpt.resolve(t);
     const ground = t.lightBg || '#FFFFFF';
     const solid = flattenOver(rawBg, ground);
-    const ink = flattenOver(txOpt.resolve(t), solid);
+    const ink = flattenOver(isTextHex ? style.textColor : txOpt.resolve(t), solid);
     const ratio = contrastRatio(ink, solid);
     if (ratio >= 4.5) return null;
     const auto = readableInkOn(rawBg, t, ground);
@@ -1272,6 +1277,35 @@ function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
       </div>
     );
   })();
+
+  // THE SAME ESCAPE HATCH FOR BOTH COLORS, written once. It was here for the
+  // background only: swatches for the text, swatches AND a picker for the
+  // ground. So a couple could paint any background they liked and then had to
+  // find an ink for it among ten tokens. `hint` is the only difference between
+  // the two rows, which is the argument for it being one function.
+  const customColorRow = (key, label, hint, fallback) => {
+    const isHex = /^#[0-9a-fA-F]{6}$/.test(style[key] || '');
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+        <input
+          type="color"
+          aria-label={label}
+          value={isHex ? style[key] : fallback}
+          onChange={e => updateStyle(key, e.target.value)}
+          style={{ width: 34, height: 34, padding: 0, border: '1px solid rgba(255,255,255,0.15)', background: 'none', cursor: 'pointer' }}
+        />
+        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>
+          {isHex ? <>Custom <code>{style[key]}</code></> : hint}
+        </span>
+        {isHex && (
+          <button
+            onClick={() => updateStyle(key, undefined)}
+            style={{ marginLeft: 'auto', fontSize: 12, color: 'rgba(255,255,255,0.7)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+          >Clear</button>
+        )}
+      </div>
+    );
+  };
 
   const colorSwatchGrid = (options, activeValue, key) => (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6, marginBottom: 14 }}>
@@ -1322,32 +1356,13 @@ function BlockStylePanel({ block, theme, universeTheme, updateStyle }) {
         <>
           <FLabel>Text color</FLabel>
           {colorSwatchGrid(TEXT_COLOR_OPTIONS, style.textColor, 'textColor')}
+          {/* THE ESCAPE HATCH, alongside the swatches rather than instead of
+              them: the swatches stay the fast path. */}
+          {customColorRow('textColor', 'Custom text color', 'Or pick any text color', (theme && theme.lightText) || '#0A0A0A')}
 
           <FLabel>Background</FLabel>
           {colorSwatchGrid(BACKGROUND_OPTIONS, style.background, 'background')}
-          {/* THE ESCAPE HATCH, alongside the swatches rather than instead of
-              them: the swatches stay the fast path. Text color adapts to
-              whatever is picked, so an arbitrary background still reads. */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-            <input
-              type="color"
-              aria-label="Custom background color"
-              value={/^#[0-9a-fA-F]{6}$/.test(style.background || '') ? style.background : ((theme && theme.lightBg) || '#FFFFFF')}
-              onChange={e => updateStyle('background', e.target.value)}
-              style={{ width: 34, height: 34, padding: 0, border: '1px solid rgba(255,255,255,0.15)', background: 'none', cursor: 'pointer' }}
-            />
-            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>
-              {/^#[0-9a-fA-F]{6}$/.test(style.background || '')
-                ? <>Custom <code>{style.background}</code></>
-                : 'Or pick any color'}
-            </span>
-            {/^#[0-9a-fA-F]{6}$/.test(style.background || '') && (
-              <button
-                onClick={() => updateStyle('background', undefined)}
-                style={{ marginLeft: 'auto', fontSize: 12, color: 'rgba(255,255,255,0.7)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-              >Clear</button>
-            )}
-          </div>
+          {customColorRow('background', 'Custom background color', 'Or pick any color', (theme && theme.lightBg) || '#FFFFFF')}
           {contrastWarning}
         </>
       )}
@@ -1496,7 +1511,12 @@ function BlockOverlayPanel({ block, updateOverlay }) {
 export default function WBRightPanel({ details, theme, universeTheme, onChange, rightTab, onRightTabChange, currentPage, selectedBlock, onUpdateSelectedBlockContent, onUpdateSelectedBlockStyle, onUpdateSelectedBlockOverlay, onDeleteSelectedBlock, onClearSelectedBlock, emailDraft, selectedEmail, onEmailChange, emailSave, onSaveEmails }) {
 
   return (
-    <>
+    // THE PANEL DECLARES ITS GROUND ONCE. Every FLabel below — the block
+    // editor's, the Design tab's fonts, every UInput label in Content and
+    // Settings — used to paint rgba(10,10,10,0.6) on #1C1C1E, which measures
+    // 1.12:1 from paint. One provider is what makes each of them, and any
+    // added later, right without a prop at the call site.
+    <PanelTone tone="dark">
       <div style={{ width: '100%', flexShrink: 0, background: '#1C1C1E', borderLeft: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', overflowY: selectedBlock ? 'hidden' : 'auto', zIndex: 50, height: '100%', color: '#FFFFFF' }}>
 
         {selectedBlock ? (
@@ -1577,6 +1597,6 @@ export default function WBRightPanel({ details, theme, universeTheme, onChange, 
           </>
         )}
       </div>
-    </>
+    </PanelTone>
   );
 }
