@@ -78,6 +78,12 @@ export function OptionAccordion({
   // TRUE by default, so every selection surface keeps rule 4 exactly as it was.
   // A content accordion — one with nothing to choose — passes false.
   showEmptyState = true,
+  // DENSE IS A SCALE, NOT A SKIN. Rule 7's 18px rhythm is right for a page,
+  // where an accordion is the whole column. Inside a modal that has to hold
+  // seven sections and a form above the fold it makes 56px rows out of 20px
+  // of type, and the section headers end up the tallest thing in the dialog.
+  // A modal passes `dense`; every page surface is untouched.
+  dense = false,
   // RULE 1 HAS ONE NAMED EXCEPTION AND IT IS NOT AN OPT-OUT. A CREATE form
   // has nothing to summarise — every section would read "Not set yet" — and
   // its required field would be behind a shut section, so a couple opening
@@ -93,7 +99,7 @@ export function OptionAccordion({
   return (
     <AccordionCtx.Provider value={{
       openKey, toggle, headingSize, headingWeight, headingStyle,
-      faceFamily, bodyFamily: bodyFamily || faceFamily, skin: resolved, showEmptyState,
+      faceFamily, bodyFamily: bodyFamily || faceFamily, skin: resolved, showEmptyState, dense,
     }}>
       <div style={{ borderTop: `1px solid ${resolved.ruleColor}` }}>{children}</div>
     </AccordionCtx.Provider>
@@ -134,7 +140,7 @@ export function OptionAccordion({
 export function OptionAccordionSection({ sectionKey, title, summary = [], action = null, children }) {
   const ctx = useContext(AccordionCtx);
   if (!ctx) throw new Error('OptionAccordionSection must be inside an OptionAccordion');
-  const { openKey, toggle, headingSize, headingWeight, headingStyle, faceFamily, bodyFamily, skin, showEmptyState } = ctx;
+  const { openKey, toggle, headingSize, headingWeight, headingStyle, faceFamily, bodyFamily, skin, showEmptyState, dense } = ctx;
   const isOpen = openKey === sectionKey;
 
   return (
@@ -147,14 +153,14 @@ export function OptionAccordionSection({ sectionKey, title, summary = [], action
         style={{
           flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           background: 'none', border: 'none', cursor: 'pointer',
-          padding: '18px 0',           // rule 7: the rhythm
+          padding: dense ? '9px 0' : '18px 0',   // rule 7: the rhythm, halved in a modal
           textAlign: 'left', fontFamily: faceFamily,
         }}
       >
         {/* rule 3: the page's own size and weight, sentence case, left */}
         <span style={{ fontSize: headingSize, fontWeight: headingWeight, fontStyle: headingStyle, color: skin.headingColor }}>{title}</span>
         <ChevronDown
-          size={16}
+          size={dense ? 13 : 16}
           aria-hidden="true"
           style={{
             color: skin.chevronColor, flexShrink: 0,
@@ -168,7 +174,7 @@ export function OptionAccordionSection({ sectionKey, title, summary = [], action
 
       {/* rule 5 — a collapsed section must still tell you what you decided */}
       {!isOpen && summary.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, paddingBottom: 16 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, paddingBottom: dense ? 10 : 16 }}>
           {summary.map((s, i) => <SummaryChip key={i} label={s} faceFamily={bodyFamily} skin={skin} />)}
         </div>
       )}
@@ -189,7 +195,7 @@ export function OptionAccordionSection({ sectionKey, title, summary = [], action
             transition={{ duration: 0.2, ease: 'easeInOut' }}
             style={{ overflow: 'hidden' }}
           >
-            <div style={{ paddingBottom: 20 }}>{children}</div>
+            <div style={{ paddingBottom: dense ? 12 : 20 }}>{children}</div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -477,6 +477,21 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
 
+      # A dialog is not bigger than the page behind it. Measured against that
+      # page's own primary button, read live rather than pinned.
+      - name: The Add guest dialog is at the page's scale
+        run: |
+          npx vite preview --port 4192 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4192 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4192 npm run test:modal-scale
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       - name: The universe breadcrumb says where it goes
         run: |
           npx vite preview --port 4180 --strictPort &

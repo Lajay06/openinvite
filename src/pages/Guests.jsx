@@ -893,7 +893,7 @@ export default function Guests() {
             )}
 
             <Dialog open={showForm} onOpenChange={(open) => { if (!open) { setShowForm(false); setEditingGuest(null); } }}>
-              <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+              <DialogContent className="oi-modal-scale max-w-2xl max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>{editingGuest ? 'Edit guest' : 'Add new guest'}</DialogTitle>
                 </DialogHeader>
