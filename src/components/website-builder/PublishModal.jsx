@@ -363,7 +363,13 @@ export default function PublishModal({ onClose, details, onUpdate }) {
               </div>
 
               <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', marginTop: 24, lineHeight: 1.6, maxWidth: 400, margin: '24px auto 0' }}>
-                Print on your Save the Dates, Menu Cards, or Welcome Signage so guests can easily find your website.
+                {/* IT NAMED THREE THINGS THAT DO NOT EXIST. Save the Dates,
+                    Menu Cards and Welcome Signage were removed in Wave 2 —
+                    the same overpromise R5 took out of Help and Quick tips,
+                    sitting two lines under the emoji this commit is here to
+                    remove. The product makes an invitation, a guest suite and
+                    an RSVP; a QR belongs on the first of those. */}
+                Print it on your invitation, or anything else you are sending, so guests can open the site without typing an address.
               </p>
                 </>
               )}
