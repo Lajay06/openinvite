@@ -46,7 +46,7 @@ export default function StudioHub() {
     {
       kicker: 'Website & guest experience',
       title: 'Guest Suite',
-      subtitle: 'Build your wedding website, invitation assets, and guest experience.',
+      subtitle: 'Build your guest suite, your invitation and your RSVP.',
       image: wedding?.coverPhoto || universeImage,
       badge: wedding?.websiteEnabled ? 'Live' : 'Draft',
       action: () => navigate('/studio/guest-suite'),
