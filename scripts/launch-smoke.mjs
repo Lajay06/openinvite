@@ -397,7 +397,19 @@ try {
     const m = (document.body.innerText || '').match(/openinvite\.com\.au\/w\/([a-z0-9-]+)/i);
     return m ? m[1] : '';
   });
-  check('5 · publishes, and the address exists', !!slug, slug ? `/w/${slug}` : 'no slug on the page');
+  // THE ADDRESS IS FETCHED, NOT PATTERN-MATCHED. `/w/your-wedding` came back
+  // from a run and read as a pass: it is the PLACEHOLDER this product prints
+  // when a couple has no slug (`details?.slug || 'your-wedding'`), and it
+  // matched the regex perfectly. "The address exists" has to mean the address
+  // answers, so the published page is requested and required to return 200.
+  const live = slug
+    ? await page.evaluate(async (u) => {
+      const r = await fetch(u, { redirect: 'follow' }).catch(() => null);
+      return r ? r.status : 0;
+    }, `${BASE}/w/${slug}`)
+    : 0;
+  check('5 · publishes, and the address exists', !!slug && live === 200,
+    slug ? `/w/${slug} -> HTTP ${live}` : 'no slug on the page');
   await shot(page, 'published');
 
   // ── 6. one guest ──────────────────────────────────────────────────────────
@@ -423,19 +435,22 @@ try {
   await page.getByRole('button', { name: 'Send invites', exact: true }).click({ timeout: 8000 }).catch(() => {});
   await page.waitForTimeout(2500);
   await shot(page, 'send-modal');
-  // A WIZARD, NOT A BUTTON. The send flow surveyed as: pick a template
-  // (Invitation), pick an audience (Not yet invited / All guests), then Next,
-  // and only then a send. So it is walked rather than guessed at, and each
-  // step is optional — a flow that has already advanced past one of these
-  // simply has no such control, and the loop moves on.
-  const send = page.getByRole('dialog');
-  for (const name of ['Invitation', 'Not yet invited', 'Next']) {
-    await send.getByRole('button', { name, exact: true }).click({ timeout: 4000 }).catch(() => {});
-    await page.waitForTimeout(1200);
+  // A FOUR-STEP PAGE, NOT A DIALOG. "Send invites" is a full-page wizard —
+  // Select guests, Compose, Channel, Review & send — with one "Next" carrying
+  // it between them and a "Send to N guests" at the end. Scoping to
+  // getByRole('dialog') found nothing at all, because there is no dialog.
+  //
+  // Invitation and "Not yet invited" are the defaults on step 1, and the two
+  // test guests arrive pre-selected, so nothing needs choosing before Next.
+  for (let i = 0; i < 3; i++) {
+    await page.getByRole('button', { name: 'Next', exact: true })
+      .click({ timeout: 8000 }).catch(() => {});
+    await page.waitForTimeout(1500);
   }
-  await shot(page, 'send-step-2');
-  await send.getByRole('button', { name: /^send( invitations?| now)?$/i }).last()
-    .click({ timeout: 8000 }).catch(() => {});
+  await shot(page, 'send-review');
+  // "Send to 2 guests" — the count is in the label, so it is matched by shape.
+  await page.getByRole('button', { name: /^Send to \d+ guests?$/ })
+    .click({ timeout: 10000 }).catch(() => {});
   await page.waitForTimeout(9000);
   const ok = sends.find((s) => s.status === 200);
   check('7 · the send API accepts the invitation', !!ok,
