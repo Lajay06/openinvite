@@ -14,12 +14,18 @@
  * title is exempt because a dialog has to say what it is; everything else in
  * it is a form, and a form is smaller than the page it interrupts.
  *
- * A DISCREPANCY IS REPORTED RATHER THAN RESOLVED. The instruction gives the
- * guest-list primary as 14px. Measured on the running product it is 12px, in
- * a 32px row. So this asserts the owner's stated ceiling of 14 — the number
- * that was ruled on — and prints what the primary actually measures beside it,
- * so the two can be reconciled by whoever owns the ruling rather than quietly
- * by the guard.
+ * THE CEILING IS MEASURED, NOT WRITTEN DOWN. The instruction first gave the
+ * guest-list primary as 14px; on the running product it is 12px in a 32px row,
+ * and the word for what this dialog should be was "much smaller". So the
+ * ceiling is read off "+ Add guest" at run time and applied to everything in
+ * the dialog except its title. A guard holding 14 would pass a dialog half
+ * again the size of the page behind it — the thing being fixed; a guard
+ * holding 12 would go green on a page whose own primary had moved.
+ *
+ * CONTROL TEXT COUNTS. An <input>'s value is not a text node, so the element
+ * walk below cannot see it, and the first version measured labels and buttons
+ * while 13px fields sat between them unchecked. Controls are read separately,
+ * by computed font-size, against the same ceiling.
  *
  * ── VISIBLE TEXT ONLY, AND THAT IS NOT PEDANTRY ─────────────────────────────
  *
@@ -34,7 +40,6 @@ import { chromium } from 'playwright';
 import { seededContext } from './lib/renderHarness.mjs';
 
 const BASE = process.env.CAPTURE_BASE_URL || 'http://localhost:5173';
-const CEILING = 14;          // the owner's stated size for the guest-list primary
 const LABEL = 12;            // "labels 12px"
 const CONTROL_MAX = 38;      // the builder's control height, with a pixel of slack
 
@@ -90,6 +95,18 @@ const modal = await page.evaluate(() => {
     .map(e => ({
       what: (e.getAttribute('aria-label') || e.placeholder || e.textContent || e.tagName).replace(/\s+/g, ' ').trim().slice(0, 28),
       h: Math.round(e.getBoundingClientRect().height),
+      // The size a couple's own typing renders at. Not visible to the text
+      // walk above, because a value is a property and not a text node.
+      //
+      // ONLY WHERE THE ELEMENT'S OWN FONT-SIZE IS WHAT PAINTS. A section
+      // header is a <button> at 16px whose only text lives in a 12px span:
+      // nothing renders at 16 and nobody can see it, and measuring the
+      // wrapper flagged all six of them plus the sr-only "Close". Buttons
+      // are already covered by the text walk, which reads the span that
+      // actually paints. What is left is the fields, where the value IS the
+      // element's own text.
+      size: /^(INPUT|TEXTAREA)$/.test(e.tagName) ? parseFloat(getComputedStyle(e).fontSize) : null,
+      checkbox: e.type === 'checkbox' || e.type === 'radio',
       type: e.type || e.tagName.toLowerCase(),
     }))
     .filter(c => c.h >= 6);
@@ -114,10 +131,16 @@ if (!modal) { await browser.close(); process.exit(1); }
 check('  and it has a title', !!modal.title, modal.title || 'none');
 check('  and its fields', modal.labels.length >= 5, `${modal.labels.length} labels, ${modal.controls.length} controls`);
 
-// ── the measure ─────────────────────────────────────────────────────────────
+// ── the measure, against the page's own primary ─────────────────────────────
+const CEILING = primary ? primary.size : LABEL;
 const tooBig = modal.text.filter(t => !t.isTitle && t.size > CEILING);
-check(`nothing but the title is larger than ${CEILING}px`, tooBig.length === 0,
+check(`nothing but the title is larger than the page primary (${CEILING}px)`, tooBig.length === 0,
   tooBig.length ? tooBig.map(t => `"${t.t}" ${t.size}px`).join(', ') : `${modal.text.length} pieces checked`);
+
+const sized = modal.controls.filter(c => !c.checkbox && c.size !== null);
+const bigControls = sized.filter(c => c.size > CEILING);
+check(`  and no field's own text is either`, bigControls.length === 0,
+  bigControls.length ? bigControls.map(c => `"${c.what}" ${c.size}px`).join(', ') : `${sized.length} field(s) checked`);
 
 for (const l of modal.labels) {
   check(`  label "${l.t}" is ${LABEL}px`, l.size === LABEL, `${l.size}px`);
