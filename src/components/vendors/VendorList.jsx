@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit2, Trash2, Briefcase, Phone, Mail, Star, DollarSign, ExternalLink, FolderOpen } from "lucide-react";
+import DataTable from '@/components/shared/DataTable';
+import { Edit2, Trash2, Briefcase, Phone, Mail, Star, DollarSign, ExternalLink, FolderOpen } from "lucide-react";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -41,11 +39,15 @@ const CATEGORY_LABELS = {
   decorations: "Decorations", entertainment: "Entertainment", other: "Other",
 };
 
-// Round 8 ask #12: sortable columns, same interaction as GuestList.jsx's
-// SortableHead (click cycles asc -> desc -> unsorted/default order) — kept
-// as a near-identical copy rather than a shared import since the two
-// tables' column sets and value shapes differ enough that a shared
-// abstraction would need its own indirection layer for little benefit.
+// Round 8 ask #12 kept a near-identical copy of GuestList's SortableHead
+// here, on the argument that "the two tables' column sets and value shapes
+// differ enough that a shared abstraction would need its own indirection
+// layer for little benefit". The shared shell exists now and the column sets
+// go through it as data, so the copy is gone and the sort behaviour is
+// whatever the shell does — which is the point of having one.
+//
+// The SORT ORDER stays here: rank a status, natural-compare a name, blanks
+// last. That is vendor knowledge, not table knowledge.
 function naturalCompare(a, b) {
   return String(a || '').localeCompare(String(b || ''), undefined, { numeric: true, sensitivity: 'base' });
 }
@@ -75,25 +77,6 @@ function sortVendors(vendors, sortState) {
   });
 }
 
-/** Clickable column header — cycles asc → desc → unsorted (back to default order). */
-function SortableHead({ field, label, sortState, onSort, style }) {
-  const active = sortState?.field === field;
-  const direction = active ? sortState.direction : null;
-  return (
-    <TableHead
-      onClick={() => onSort(field)}
-      style={{ cursor: 'pointer', userSelect: 'none', ...style }}
-      title={`Sort by ${label.toLowerCase()}`}
-    >
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-        {label}
-        <span style={{ fontSize: 10, color: active ? '#E03553' : 'rgba(10,10,10,0.25)', lineHeight: 1 }}>
-          {active ? (direction === 'desc' ? '▼' : '▲') : '⇅'}
-        </span>
-      </span>
-    </TableHead>
-  );
-}
 
 function domainFromWebsite(website) {
   if (!website) return null;
@@ -176,10 +159,81 @@ function FavouriteStar({ vendor, onToggle }) {
   );
 }
 
+/**
+ * The inline detail — a row of the same table, not a layer over it.
+ *
+ * ONLY WHAT IS NOT ALREADY IN THE ROW. Repeating the phone number a couple can
+ * already see two lines up is how a detail view teaches people to ignore it.
+ * Contact, category, status, price and website are columns; this is the rest
+ * of what they entered, and nothing invented for the sake of filling space.
+ *
+ * A vendor with none of these gets a sentence saying so and the way to add
+ * them, which is the same rule every empty surface in this product follows.
+ */
+function VendorDetail({ vendor, onEdit, onManage }) {
+  const money = (v) => `$${Number(v).toLocaleString()}`;
+  const fields = [
+    ['Address', vendor.address],
+    ['Booking date', vendor.booking_date],
+    ['Meeting date', vendor.meeting_date],
+    ['Package', vendor.package_selected],
+    ['Deposit', vendor.deposit_amount ? `${money(vendor.deposit_amount)}${vendor.deposit_paid ? ' — paid' : ' — not paid yet'}` : null],
+    ['Contract', vendor.contract_signed ? `Signed${vendor.contract_date ? ` ${vendor.contract_date}` : ''}` : null],
+    ['Payment schedule', vendor.payment_schedule],
+    ['Services', vendor.services_offered],
+    ['Style', vendor.style],
+    ['Instagram', vendor.instagram],
+    ['Special requests', vendor.special_requests],
+    ['Notes', vendor.notes],
+  ].filter(([, v]) => v !== null && v !== undefined && String(v).trim() !== '');
+
+  return (
+    <div style={{ padding: '14px 16px 16px 46px', fontFamily: PJS }}>
+      {fields.length === 0 ? (
+        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0 }}>
+          Nothing else recorded for {vendor.name} yet. Edit to add dates, a deposit, or your notes.
+        </p>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px 24px' }}>
+          {fields.map(([label, value]) => (
+            <div key={label}>
+              <p style={{ fontSize: 10, fontWeight: 700, color: 'rgba(10,10,10,0.6)', margin: '0 0 2px' }}>{label}</p>
+              <p style={{ fontSize: 12, color: '#0A0A0A', margin: 0, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{value}</p>
+            </div>
+          ))}
+        </div>
+      )}
+      {(onEdit || onManage) && (
+        <div style={{ display: 'flex', gap: 14, marginTop: 12 }}>
+          {onEdit && (
+            <button type="button" onClick={() => onEdit(vendor)}
+              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#E03553', fontFamily: PJS }}>
+              Edit
+            </button>
+          )}
+          {onManage && (
+            <button type="button" onClick={() => onManage(vendor)}
+              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#E03553', fontFamily: PJS }}>
+              Manage
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function VendorList({ vendors, onEdit, onDelete, onManage, onToggleFavourite, scrollToVendorId, highlightedVendorId }) {
-  const rowRefs = useRef(new Map());
+  const wrapRef = useRef(null);
   const scrolledForId = useRef(null);
   const [sortState, setSortState] = useState({ field: null, direction: 'asc' });
+  const [expandedIds, setExpandedIds] = useState(() => new Set());
+
+  const toggleExpand = (id) => setExpandedIds((prev) => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
 
   // Cycles a column through asc → desc → unsorted (back to the default,
   // caller-provided order) — clicking a different column always starts at asc.
@@ -193,169 +247,137 @@ export default function VendorList({ vendors, onEdit, onDelete, onManage, onTogg
 
   // Same pattern as GuestList's scrollToGuestId — scrolls a search result's
   // row into view once it actually exists in `vendors`, fires once per id.
+  // The row is found by the shell's `data-row-id`, which is why that attribute
+  // is on every row rather than being a prop only this page passes.
   useEffect(() => {
     if (!scrollToVendorId || scrolledForId.current === scrollToVendorId) return;
-    const el = rowRefs.current.get(scrollToVendorId);
+    const el = wrapRef.current?.querySelector(`[data-row-id="${scrollToVendorId}"]`);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       scrolledForId.current = scrollToVendorId;
     }
   }, [scrollToVendorId, vendors]);
 
-  if (vendors.length === 0) {
-    return (
-      <div style={{ padding: '64px 32px', textAlign: 'center', border: '1px solid rgba(10,10,10,0.06)' }}>
-        <Briefcase size={24} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 12px', display: 'block' }} />
-        <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0 }}>
-          No vendors match your filters.
-        </p>
-      </div>
-    );
-  }
+  const dash = (n = 12) => <span style={{ fontSize: n, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>;
+
+  const columns = [
+    {
+      key: 'favourite', label: '', width: 32,
+      render: (vendor) => <FavouriteStar vendor={vendor} onToggle={onToggleFavourite} />,
+    },
+    {
+      key: 'name', label: 'Vendor', sortable: true,
+      render: (vendor) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <VendorLogo vendor={vendor} />
+          <div style={{ minWidth: 0 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: 0, fontFamily: PJS, whiteSpace: 'nowrap' }}>
+              {vendor.name}
+            </p>
+            {vendor.contact_person && (
+              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '2px 0 0', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+                {vendor.contact_person}
+              </p>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'category', label: 'Category', sortable: true,
+      render: (vendor) => (vendor.category
+        ? <Pill value={vendor.category} styleMap={CATEGORY_STYLES} labelMap={CATEGORY_LABELS} />
+        : dash()),
+    },
+    {
+      key: 'status', label: 'Status', sortable: true,
+      render: (vendor) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {vendor.status ? <Pill value={vendor.status} styleMap={STATUS_STYLES} labelMap={STATUS_LABELS} /> : dash()}
+          {(vendor.rating || vendor.google_rating) && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, color: '#0A0A0A', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+              <Star size={11} style={{ color: '#6b7700', fill: '#DDF762', flexShrink: 0 }} />
+              {vendor.rating || vendor.google_rating}
+            </span>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'contact', label: 'Contact',
+      render: (vendor) => ((vendor.phone || vendor.email) ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {vendor.phone && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <Phone size={11} style={{ color: 'rgba(10,10,10,0.45)', flexShrink: 0 }} />
+              <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS, whiteSpace: 'nowrap' }}>{vendor.phone}</span>
+            </div>
+          )}
+          {vendor.email && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <Mail size={11} style={{ color: 'rgba(10,10,10,0.45)', flexShrink: 0 }} />
+              <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS, whiteSpace: 'nowrap' }}>{vendor.email}</span>
+            </div>
+          )}
+        </div>
+      ) : dash()),
+    },
+    {
+      key: 'website', label: 'Website',
+      render: (vendor) => (vendor.website ? (
+        <a href={vendor.website} target="_blank" rel="noopener noreferrer"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, color: '#E03553', fontFamily: PJS, textDecoration: 'none', fontWeight: 600, whiteSpace: 'nowrap' }}>
+          Visit <ExternalLink size={10} />
+        </a>
+      ) : dash()),
+    },
+    {
+      key: 'cost', label: 'Price', sortable: true,
+      render: (vendor) => (vendor.quoted_price ? (
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+          <DollarSign size={11} style={{ color: 'rgba(10,10,10,0.45)' }} />
+          <span style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+            {Number(vendor.quoted_price).toLocaleString()}
+          </span>
+        </div>
+      ) : dash(13)),
+    },
+  ];
+
+  // Hidden entirely (not disabled-looking) when nothing is passed, e.g. a
+  // read-only collaborator. MANAGE STAYS: the chevron is now how a couple
+  // reads a vendor, and Manage is how they work on one.
+  const actions = (vendor) => [
+    ...(onManage ? [{ label: 'Manage', icon: FolderOpen, onClick: () => onManage(vendor) }] : []),
+    ...(onEdit ? [{ label: 'Edit', icon: Edit2, onClick: () => onEdit(vendor) }] : []),
+    ...(onDelete ? [{ label: 'Delete', icon: Trash2, danger: true, onClick: () => onDelete(vendor.id) }] : []),
+  ];
 
   return (
-    <div style={{ border: '1px solid rgba(10,10,10,0.12)', overflow: 'hidden' }}>
-      <div style={{ overflowX: 'auto' }}>
-        <Table>
-          <TableHeader>
-            <TableRow style={{ background: '#FAFAFA' }}>
-              <TableHead style={{ width: 32 }} />
-              <SortableHead field="name" label="Vendor" sortState={sortState} onSort={handleSort} />
-              <SortableHead field="category" label="Category" sortState={sortState} onSort={handleSort} />
-              <SortableHead field="status" label="Status" sortState={sortState} onSort={handleSort} />
-              <TableHead>Contact</TableHead>
-              <TableHead>Website</TableHead>
-              <SortableHead field="cost" label="Price" sortState={sortState} onSort={handleSort} />
-              <TableHead style={{ width: 48 }} />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sortVendors(vendors, sortState).map((vendor) => (
-              <TableRow
-                key={vendor.id}
-                ref={el => { if (el) rowRefs.current.set(vendor.id, el); else rowRefs.current.delete(vendor.id); }}
-                style={{
-                  background: vendor.id === highlightedVendorId ? 'rgba(224,53,83,0.12)' : undefined,
-                  transition: 'background 1.2s ease',
-                }}
-              >
-                {/* Favourite star */}
-                <TableCell className="align-middle">
-                  <FavouriteStar vendor={vendor} onToggle={onToggleFavourite} />
-                </TableCell>
-
-                {/* Vendor — logo + name + contact person, same shape as GuestList's avatar + name cell */}
-                <TableCell className="align-middle">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <VendorLogo vendor={vendor} />
-                    <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: 0, fontFamily: PJS, whiteSpace: 'nowrap' }}>
-                        {vendor.name}
-                      </p>
-                      {vendor.contact_person && (
-                        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '2px 0 0', fontFamily: PJS, whiteSpace: 'nowrap' }}>
-                          {vendor.contact_person}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </TableCell>
-
-                <TableCell className="align-middle">
-                  {vendor.category ? <Pill value={vendor.category} styleMap={CATEGORY_STYLES} labelMap={CATEGORY_LABELS} /> : <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>}
-                </TableCell>
-
-                <TableCell className="align-middle">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    {vendor.status ? <Pill value={vendor.status} styleMap={STATUS_STYLES} labelMap={STATUS_LABELS} /> : <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>}
-                    {(vendor.rating || vendor.google_rating) && (
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, color: '#0A0A0A', fontFamily: PJS, whiteSpace: 'nowrap' }}>
-                        <Star size={11} style={{ color: '#6b7700', fill: '#DDF762', flexShrink: 0 }} />
-                        {vendor.rating || vendor.google_rating}
-                      </span>
-                    )}
-                  </div>
-                </TableCell>
-
-                <TableCell className="align-middle">
-                  {vendor.phone || vendor.email ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      {vendor.phone && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                          <Phone size={11} style={{ color: 'rgba(10,10,10,0.45)', flexShrink: 0 }} />
-                          <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS, whiteSpace: 'nowrap' }}>{vendor.phone}</span>
-                        </div>
-                      )}
-                      {vendor.email && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                          <Mail size={11} style={{ color: 'rgba(10,10,10,0.45)', flexShrink: 0 }} />
-                          <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS, whiteSpace: 'nowrap' }}>{vendor.email}</span>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>
-                  )}
-                </TableCell>
-
-                <TableCell className="align-middle">
-                  {vendor.website ? (
-                    <a href={vendor.website} target="_blank" rel="noopener noreferrer"
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12, color: '#E03553', fontFamily: PJS, textDecoration: 'none', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                      Visit <ExternalLink size={10} />
-                    </a>
-                  ) : (
-                    <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>
-                  )}
-                </TableCell>
-
-                <TableCell className="align-middle">
-                  {vendor.quoted_price ? (
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
-                      <DollarSign size={11} style={{ color: 'rgba(10,10,10,0.45)' }} />
-                      <span style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', fontFamily: PJS, whiteSpace: 'nowrap' }}>
-                        {Number(vendor.quoted_price).toLocaleString()}
-                      </span>
-                    </div>
-                  ) : (
-                    <span style={{ fontSize: 13, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>
-                  )}
-                </TableCell>
-
-                {/* Actions — hidden entirely (not disabled-looking) when nothing is passed, e.g. a read-only collaborator */}
-                <TableCell className="align-middle">
-                  {(onManage || onEdit || onDelete) && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" style={{ width: 28, height: 28 }}>
-                          <MoreHorizontal size={14} />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {onManage && (
-                          <DropdownMenuItem onClick={() => onManage(vendor)}>
-                            <FolderOpen size={13} style={{ marginRight: 8 }} />Manage
-                          </DropdownMenuItem>
-                        )}
-                        {onEdit && (
-                          <DropdownMenuItem onClick={() => onEdit(vendor)}>
-                            <Edit2 size={13} style={{ marginRight: 8 }} />Edit
-                          </DropdownMenuItem>
-                        )}
-                        {onDelete && (
-                          <DropdownMenuItem onClick={() => onDelete(vendor.id)} style={{ color: '#E03553' }}>
-                            <Trash2 size={13} style={{ marginRight: 8 }} />Delete
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+    <div ref={wrapRef}>
+      <DataTable
+        columns={columns}
+        rows={sortVendors(vendors, sortState)}
+        rowKey={(v) => v.id}
+        sortState={sortState}
+        onSort={handleSort}
+        actions={actions}
+        rowStyle={(vendor) => ({
+          background: vendor.id === highlightedVendorId ? 'rgba(224,53,83,0.12)' : undefined,
+          transition: 'background 1.2s ease',
+        })}
+        expandable
+        expandedIds={expandedIds}
+        onToggleExpand={toggleExpand}
+        expandLabel={(vendor, open) => (open ? `Hide ${vendor.name}'s details` : `Show ${vendor.name}'s details`)}
+        renderDetail={(vendor) => <VendorDetail vendor={vendor} onEdit={onEdit} onManage={onManage} />}
+        empty={(
+          <>
+            <Briefcase size={24} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 12px', display: 'block' }} />
+            No vendors match your filters.
+          </>
+        )}
+      />
     </div>
   );
 }

@@ -78,6 +78,7 @@
     "test:builder-custom-pages": "node scripts/test-builder-custom-pages.mjs",
     "test:full-preview-devices": "node scripts/test-full-preview-devices.mjs",
     "test:custom-page-blocks": "node scripts/test-custom-page-blocks.mjs",
+    "test:table-row-expand": "node scripts/test-table-row-expand.mjs",
     "test:hero-toggles": "node scripts/test-hero-toggles.mjs",
     "test:sidebar-groups": "node scripts/test-sidebar-groups.mjs",
     "test:settings-tab": "node scripts/test-settings-tab.mjs",
