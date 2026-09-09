@@ -180,14 +180,14 @@ export const SAMPLE_HAVANA = {
 
   homeContent: {
     blocks: [
-      { id: 'h1', type: 'heading', order: 0, content: { text: 'One evening, one long room', kicker: 'The night' } },
+      { id: 'h1', type: 'heading', order: 0, content: { text: 'A courtyard, a band, and the whole evening', kicker: 'The night' } , style: { align: 'center' } },
       { id: 'h2', type: 'paragraph', order: 1, content: {
-        text: 'We are getting married in a courtyard, and afterward everyone goes upstairs and stays there. The band is loud, the room is warm, and nobody is expected to leave early.',
-      } },
+        text: 'We are marrying downstairs and going up when the music starts. The room is warm, the band is loud, and nobody is expected to leave early. Wear something you can dance in.',
+      }, style: { align: 'center' } },
       { id: 'h3', type: 'quote', order: 2, content: {
         text: 'Wear something you can dance in. That is the only instruction.',
         attribution: 'Sample & Couple',
-      } },
+      }, style: { align: 'center' } },
       { id: 'h4', type: 'photo', order: 3, content: { url: img(HAVANA_IMAGES.home[0], 1400) } },
       { id: 'h5', type: 'photo', order: 4, content: { url: img(HAVANA_IMAGES.home[1], 1400) } },
 

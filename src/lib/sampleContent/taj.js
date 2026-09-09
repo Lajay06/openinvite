@@ -56,11 +56,11 @@ export const SAMPLE_TAJ = {
 
   homeContent: {
     blocks: [
-      { id: 'tj1', type: 'heading', order: 0, content: { text: 'Three days, and only one of them formal', kicker: 'The days' } },
+      { id: 'tj1', type: 'heading', order: 0, content: { text: 'Three days, and only one of them formal', kicker: 'The days' } , style: { align: 'center' } },
       { id: 'tj2', type: 'paragraph', order: 1, content: {
-        text: 'There is a long dinner on the Friday, the ceremony and the courtyard on the Saturday, and a slow breakfast on the Sunday for anyone still here. Only the Saturday asks anything of you. Come to as much of it as suits you and we will be glad of whichever you choose.',
-      } },
-      { id: 'tj3', type: 'quote', order: 2, content: { text: 'Our families have waited a long time for this. Please let them feed you.', attribution: 'Priya & Arjun' } },
+        text: 'There is a long dinner, then the ceremony and the courtyard, then a slow breakfast for anyone still with us. Only the middle of it asks anything of you. Come to as much as suits you and we will be glad of whichever you choose.',
+      }, style: { align: 'center' } },
+      { id: 'tj3', type: 'quote', order: 2, content: { text: 'Our families have waited a long time for this. Please let them feed you.', attribution: 'Priya & Arjun' } , style: { align: 'center' } },
       { id: 'tj4', type: 'photo', order: 3, content: { url: img(TAJ_IMAGES.home[0], 1400) } },
       { id: 'tj5', type: 'photo', order: 4, content: { url: img(TAJ_IMAGES.home[1], 1400) } },
     ],

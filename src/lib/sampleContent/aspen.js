@@ -55,11 +55,11 @@ export const SAMPLE_ASPEN = {
 
   homeContent: {
     blocks: [
-      { id: 'as1', type: 'heading', order: 0, content: { text: 'Half past three, outside, in the snow', kicker: 'The day' } },
+      { id: 'as1', type: 'heading', order: 0, content: { text: 'Up the mountain, in the snow', kicker: 'The day' } , style: { align: 'center' } },
       { id: 'as2', type: 'paragraph', order: 1, content: {
-        text: 'The ceremony is in the clearing above the lodge and it takes fifteen minutes, which is about as long as anyone will want to stand still up there. Dinner is at six, indoors, black tie, with the fire going. Boots up, shoes in a bag.',
-      } },
-      { id: 'as3', type: 'quote', order: 2, content: { text: 'Fifteen minutes of cold, and then the whole evening warm.', attribution: 'Elsa & Tomas' } },
+        text: 'We are marrying outside, in the cold, because that is where this place is at its best. Afterward there is a fire, a long table and nowhere else any of us has to be. Bring boots and something warm; everything else we have covered.',
+      }, style: { align: 'center' } },
+      { id: 'as3', type: 'quote', order: 2, content: { text: 'A little cold, and then the whole evening warm.', attribution: 'Elsa & Tomas' } , style: { align: 'center' } },
       { id: 'as4', type: 'photo', order: 3, content: { url: img(ASPEN_IMAGES.home[0], 1400) } },
       { id: 'as5', type: 'photo', order: 4, content: { url: img(ASPEN_IMAGES.home[1], 1400) } },
     ],
