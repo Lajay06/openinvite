@@ -1,7 +1,7 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, ChevronDown, ChevronRight } from 'lucide-react';
 import SortableHead from '@/components/shared/SortableHead';
 import { PILL_BASE, CELL_TEXT, CELL_SECONDARY } from '@/lib/tablePills';
 
@@ -71,6 +71,21 @@ export default function DataTable({
   // list, the vendors and the wedding record; selecting those here would
   // offer a bulk action on data this page does not own.
   isSelectable,
+  // ── THE ROW THAT OPENS ─────────────────────────────────────────────────
+  //
+  // The guest list has had this since the day its detail popup was removed:
+  // a chevron in the first cell, and the detail as a row of the same table
+  // rather than a layer over it. It is the standard now, so it lives in the
+  // shell — one implementation, one chevron, one aria-label convention, and
+  // a page that wants it passes a renderer rather than rebuilding it.
+  //
+  // `expandable` may be a predicate: a group heading or a read-only row has
+  // nothing to open, and a chevron that does nothing is worse than none.
+  expandable,
+  expandedIds,
+  onToggleExpand,
+  renderDetail,
+  expandLabel = (row, open) => (open ? 'Hide details' : 'Show details'),
 }) {
   // SELECTION IS OPTIONAL AND THIS LINE FORGOT IT. `selectable` is computed
   // from whether the caller passed `selectedIds` — and then the next line
@@ -85,7 +100,13 @@ export default function DataTable({
   const selectableRows = (rows || []).filter((r) => !isSelectable || isSelectable(r));
   const allSelected = selectable && selectableRows.length > 0
     && selectableRows.every((r) => selectedIds.has(rowKey(r)));
-  const span = columns.length + (selectable ? 1 : 0) + (actions ? 1 : 0);
+  // Same defensive shape as `selectable` above, and for the same reason: the
+  // crash that comment describes came from deriving a flag from one prop and
+  // then dereferencing another.
+  const canExpand = !!expandable && !!renderDetail;
+  const rowExpands = (row) => canExpand && (typeof expandable === 'function' ? expandable(row) : true);
+  const isOpen = (id) => canExpand && !!expandedIds && expandedIds.has(id);
+  const span = columns.length + (selectable ? 1 : 0) + (actions ? 1 : 0) + (canExpand ? 1 : 0);
 
   return (
     <div style={{ border: '1px solid rgba(10,10,10,0.12)', overflow: 'hidden' }}>
@@ -105,6 +126,7 @@ export default function DataTable({
                   )}
                 </TableHead>
               )}
+              {canExpand && <TableHead style={{ width: 28 }} />}
               {columns.map((c) => (
                 // `headStyle` exists so a column can align its HEADER with its
                 // cells — a centred number column with a left-aligned heading
@@ -154,8 +176,30 @@ export default function DataTable({
                 );
               }
               const rowActions = typeof actions === 'function' ? actions(row) : actions;
+              const open = isOpen(id);
               return (
-                <TableRow key={id} style={rowStyle?.(row)}>
+                <React.Fragment key={id}>
+                {/* EVERY ROW CARRIES ITS ID. A page that needs to scroll a
+                    search result into view used to keep its own Map of refs;
+                    one attribute on the shell replaces that for every
+                    consumer, present and future, and costs no API. */}
+                <TableRow data-row-id={id} style={rowStyle?.(row)}>
+                  {canExpand && (
+                    <TableCell className="align-middle" style={{ width: 28, paddingRight: 0 }}>
+                      {rowExpands(row) && (
+                        <button
+                          type="button"
+                          onClick={() => onToggleExpand?.(id)}
+                          title={expandLabel(row, open)}
+                          aria-label={expandLabel(row, open)}
+                          aria-expanded={open}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, display: 'flex', alignItems: 'center', color: 'rgba(10,10,10,0.6)' }}
+                        >
+                          {open ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+                        </button>
+                      )}
+                    </TableCell>
+                  )}
                   {selectable && (
                     <TableCell className="align-middle">
                       {(!isSelectable || isSelectable(row)) && (
@@ -199,6 +243,18 @@ export default function DataTable({
                     </TableCell>
                   )}
                 </TableRow>
+                {open && (
+                  // THE DETAIL IS A ROW OF THIS TABLE, not a layer over it.
+                  // A popup covers the list you were reading; a row pushes it
+                  // down and stays anchored to the thing it describes, which
+                  // is why the guest list stopped using one.
+                  <TableRow style={{ background: '#FAFAFA' }}>
+                    <TableCell colSpan={span} style={{ padding: 0 }}>
+                      {renderDetail(row)}
+                    </TableCell>
+                  </TableRow>
+                )}
+                </React.Fragment>
               );
             })}
             {footerRow}
