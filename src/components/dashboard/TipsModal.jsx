@@ -5,7 +5,7 @@ const tips = [
   {
     number: '01',
     title: 'Pick a universe — your whole look, everywhere.',
-    body: "Design Studio has 20 fully designed style universes to choose from. Your pick sets the fonts, colors, textures, and the entrance moment guests see the instant they open your site — and it carries through your website, invitations, and every asset automatically.",
+    body: "Design Studio has 20 fully designed style universes to choose from. Your pick sets the fonts, colors, textures, and the entrance moment guests see the instant they open your site — and it carries through your invitation, your guest suite and your RSVP automatically.",
     cta: 'Nice',
   },
   {

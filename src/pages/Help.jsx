@@ -21,7 +21,7 @@ const ARTICLES = {
       <p style={S.p}>Onboarding is a step-by-step conversational flow that collects your key wedding details and sets up your account. It takes about 3–5 minutes.</p>
       <h3 style={S.h3}>The steps</h3>
       <ol style={S.ol}>
-        <li style={S.li}><strong>Enter your names</strong> — Partner 1 and Partner 2 first names. These appear across your website, Guest Suite assets, and all personalized content.</li>
+        <li style={S.li}><strong>Enter your names</strong> — Partner 1 and Partner 2 first names. These appear across your guest suite, your invitation, your emails, and all personalized content.</li>
         <li style={S.li}><strong>Set your wedding date</strong> — Use the date picker to select your date. This drives your countdown timer, checklist deadlines, and Ava's timeline suggestions.</li>
         <li style={S.li}><strong>Add your venue</strong> — Search using Google Places to find your ceremony venue. Start typing and select from the dropdown. The address auto-fills.</li>
         <li style={S.li}><strong>Guest count</strong> — Choose Intimate (under 50), Celebration (50–150), or Grand (150+), then enter your specific number. This helps Ava calibrate your budget and checklist.</li>
@@ -36,7 +36,7 @@ const ARTICLES = {
   ),
   'Setting up your Event Details': (
     <div>
-      <p style={S.p}>Event Details is the master source of truth for your wedding. Any detail you enter here flows automatically to your website, Guest Suite assets, checklist, and Ava's responses.</p>
+      <p style={S.p}>Event Details is the master source of truth for your wedding. Any detail you enter here flows automatically to your guest suite, your emails, your checklist, and Ava's responses.</p>
       <h3 style={S.h3}>What lives in Event Details</h3>
       <ul style={S.ul}>
         <li style={S.li}>Partner names (drives all personalized content)</li>
@@ -167,15 +167,12 @@ const ARTICLES = {
       </ol>
       <h3 style={S.h3}>The home screen shows</h3>
       <ul style={S.ul}>
-        <li style={S.li}>Your progress: Website Pages (X of 9) and Assets (X of 10)</li>
-        <li style={S.li}>Two paths: Build Website or Create Assets</li>
+        <li style={S.li}>Your progress through the guided flow</li>
         <li style={S.li}>"Let Ava decide what's next" — Ava analyzes your progress and recommends the next action</li>
       </ul>
       <h3 style={S.h3}>Building your website with Ava</h3>
       <p style={S.p}>The guided flow has 10 steps, one at a time: cover photo, welcome message, love story, ceremony details (auto-filled from Event Details), reception details (auto-filled), RSVP settings, travel and accommodation, registry, music, and FAQ.</p>
       <p style={S.p}>At each step: Ava gives you a prompt and a hint; a live mini-preview shows your changes in real time; "✦ Use Ava's suggestion" fills the field with a smart default; "Skip for now" moves forward without filling; "← Previous" goes back without losing progress.</p>
-      <h3 style={S.h3}>Creating assets with Ava</h3>
-      <p style={S.p}>The asset flow covers each part of the Guest Suite one at a time. Same pattern — one question, live preview, Ava's suggestion available at each step.</p>
       <div style={S.tip}><p style={S.tipText}><strong>Light/Dark mode toggle:</strong> available on the Ava's Studio home screen.</p></div>
     </div>
   ),
@@ -364,19 +361,14 @@ const ARTICLES = {
   'Choosing and switching universes': (
     <div>
       <p style={S.p}>Your universe defines the complete aesthetic of the whole Guest Suite — colors, typography, layout style, and mood. You choose one universe that applies across everything.</p>
-      <h3 style={S.h3}>Available universes (all 10 are live)</h3>
-      <ul style={S.ul}>
-        <li style={S.li}><strong>London</strong> — Classical Grandeur. Deep black, warm linen, Cormorant Garamond typography. Inspired by London's grand hotels and Georgian townhouses.</li>
-        <li style={S.li}><strong>Tulum</strong> — Desert Bloom</li>
-        <li style={S.li}><strong>Kyoto</strong> — Zen & Ceremony</li>
-        <li style={S.li}><strong>Capri</strong> — Italian Coast</li>
-        <li style={S.li}><strong>Marrakech</strong> — Spice & Gold</li>
-        <li style={S.li}><strong>Brooklyn</strong> — Industrial Edge</li>
-        <li style={S.li}><strong>Bali</strong> — Sacred Garden</li>
-        <li style={S.li}><strong>Paris</strong> — Haussmann Romance</li>
-        <li style={S.li}><strong>Cape Town</strong> — Wild & Free</li>
-        <li style={S.li}><strong>Mykonos</strong> — Aegean Blue</li>
-      </ul>
+      {/* NOT A CATALOG. This listed ten universes by name when twenty are
+          live, so it was wrong the day the eleventh shipped and would be
+          wrong again the day the twenty-first does. The count is stated
+          because a couple wants to know the scale; the names are not,
+          because the page that has them is one click away and cannot go
+          stale. */}
+      <h3 style={S.h3}>Twenty universes are live</h3>
+      <p style={S.p}>Each one is a complete look — its own typography, palette, textures, motion and entrance moment — ranging from classical (London, Paris, Florence) through coastal (Amalfi, Capri, Mykonos) to desert (Marrakech, Sedona) and urban (Brooklyn, Shanghai). Design Studio &rarr; All universes shows every one, with a full preview of what a guest would see.</p>
       <h3 style={S.h3}>How to choose your universe</h3>
       <p style={S.p}>During onboarding: the universe selection step is built into the flow. Click any card to preview the full universe experience, then click "Select [Universe]" to choose it.</p>
       <p style={S.p}>After onboarding: Design Studio → Guest Suite → click a universe card → preview → "Select [Universe]."</p>
@@ -388,64 +380,7 @@ const ARTICLES = {
         <li style={S.li}>Your active universe updates — your website and emails switch to the new aesthetic instantly</li>
         <li style={S.li}>Any content you've entered (text, photos) is preserved — only the visual design changes</li>
       </ol>
-      <div style={S.tip}><p style={S.tipText}><strong>What changes when you switch:</strong> Typography, color palette, layout styles, section backgrounds across all assets. <strong>What doesn't change:</strong> Your couple names, wedding date, venue, photos, and any custom text you've written.</p></div>
-    </div>
-  ),
-  'Editing your Save the Date': (
-    <div>
-      <p style={S.p}>Your Save the Date is the first piece guests receive — it announces your wedding and sets the aesthetic tone. In Openinvite, it's a digital asset you can download as a PNG, share directly, or print.</p>
-      <h3 style={S.h3}>How to edit it</h3>
-      <p style={S.p}><strong>Option A — Guest Suite:</strong> Design Studio → Guest Suite → Assets tab → click "Save the Date." Edit button opens the full editor.</p>
-      <p style={S.p}><strong>Option B — Ava's Studio:</strong> Design Studio → Ava's Studio → Create Assets. The Save the Date is step 1 of 10.</p>
-      <h3 style={S.h3}>Content fields</h3>
-      <ul style={S.ul}>
-        <li style={S.li}><strong>Photo:</strong> click the media picker to select from your library or upload a new photo. Landscape photos (16:9) work best for the cinematic hero layout.</li>
-        <li style={S.li}><strong>Overlay strength:</strong> slider 0–80% — controls how much the dark overlay dims your photo</li>
-        <li style={S.li}><strong>Main text:</strong> defaults to "Save the Date" — editable</li>
-        <li style={S.li}><strong>Subtitle:</strong> e.g. "Formal invitation to follow" — appears below the date</li>
-      </ul>
-      <h3 style={S.h3}>Auto-populated from Event Details (read-only)</h3>
-      <ul style={S.ul}>
-        <li style={S.li}>Your couple names</li>
-        <li style={S.li}>Wedding date</li>
-        <li style={S.li}>Venue name</li>
-      </ul>
-      <h3 style={S.h3}>Style options</h3>
-      <ul style={S.ul}>
-        <li style={S.li}><strong>Layout:</strong> Centered / Split / Minimal / Bold</li>
-        <li style={S.li}><strong>Background:</strong> Photo / Dark / Light</li>
-        <li style={S.li}><strong>Letter spacing:</strong> slider</li>
-      </ul>
-      <div style={S.tip}><p style={S.tipText}><strong>Downloading:</strong> Click "Download PNG" in the right panel or asset grid. The download generates a high-resolution version of the current design.</p></div>
-    </div>
-  ),
-  'Downloading and printing assets': (
-    <div>
-      <p style={S.p}>Every asset in your Guest Suite can be downloaded for digital sharing or professional printing.</p>
-      <h3 style={S.h3}>Download formats</h3>
-      <ul style={S.ul}>
-        <li style={S.li}><strong>PDF:</strong> print-ready, real physical size — Save the Date, Digital Invitation, Menu Card, Seating Chart, RSVP Card, Welcome Signage, Guest Tags, Thank You Notes</li>
-        <li style={S.li}><strong>PNG:</strong> digital-only, sized for their platform — Instagram Story Kit, Motion Graphic</li>
-      </ul>
-      <h3 style={S.h3}>How to download</h3>
-      <ol style={S.ol}>
-        <li style={S.li}>In the Guest Suite → Assets tab, click any asset card</li>
-        <li style={S.li}>Click "Download" in the asset editor or the ↓ button on the card</li>
-      </ol>
-      <h3 style={S.h3}>Print specifications</h3>
-      <ul style={S.ul}>
-        <li style={S.li}><strong>Menu Card:</strong> A5 (148 × 210mm) portrait, 3mm bleed included in PDF</li>
-        <li style={S.li}><strong>Welcome Signage:</strong> A1 (594 × 841mm) portrait, print at 100%</li>
-        <li style={S.li}><strong>Guest Tags:</strong> A4 (210 × 297mm) with 6 tags per sheet, 3mm bleed, cut marks included</li>
-        <li style={S.li}><strong>Save the Date:</strong> A5 landscape or standard postcard size (148 × 105mm)</li>
-        <li style={S.li}><strong>Thank You Notes:</strong> A6 (105 × 148mm), double-sided</li>
-      </ul>
-      <h3 style={S.h3}>Recommended print providers (Australia)</h3>
-      <ul style={S.ul}>
-        <li style={S.li}>Canva Print, Officeworks Print & Copy, Vistaprint, Snapfish — all accept PDF uploads</li>
-        <li style={S.li}>For premium: Momento, Nulab, Printing for Less</li>
-      </ul>
-      <div style={S.tip}><p style={S.tipText}><strong>Digital sharing:</strong> The Instagram Story Kit assets are pre-sized to 1080 × 1920px for Stories. Share PNG files directly via WhatsApp, Instagram, or email.</p></div>
+      <div style={S.tip}><p style={S.tipText}><strong>What changes when you switch:</strong> Typography, color palette, layout styles and section backgrounds, everywhere they are used. <strong>What doesn't change:</strong> Your couple names, wedding date, venue, photos, and any custom text you've written.</p></div>
     </div>
   ),
   'Importing guests from a spreadsheet': (
@@ -516,7 +451,7 @@ const ARTICLES = {
   ),
   'Setting up your seating chart': (
     <div>
-      <p style={S.p}>The Seating page lets you organize your guests into tables. Your seating chart in the Guest Suite (the printed asset) pulls from this data automatically.</p>
+      <p style={S.p}>The Seating page lets you organize your guests into tables.</p>
       <h3 style={S.h3}>Setting up tables</h3>
       <ol style={S.ol}>
         <li style={S.li}>Go to Seating in the sidebar</li>
@@ -535,8 +470,6 @@ const ARTICLES = {
         <li style={S.li}>Table capacity and current count (e.g. "6 of 8 seated")</li>
         <li style={S.li}>Visual warnings when a table exceeds capacity</li>
       </ul>
-      <h3 style={S.h3}>The Guest Suite Seating Chart asset</h3>
-      <p style={S.p}>Once your seating is set up, your Seating Chart asset pulls this data live. It displays guest names alphabetically (or by table) with the table name next to each guest. Download as a PDF or PNG — ready to print or display at your venue entrance.</p>
       <h3 style={S.h3}>Seeing who's who while you seat people</h3>
       <p style={S.p}>Guest tags (college friends, work, family, and so on — set from the Guest List) show up next to each name in the seating panel and on hover over a seat, so you can tell who people are and group them sensibly without switching back to the guest list.</p>
       <div style={S.tip}><p style={S.tipText}><strong>Tip:</strong> Finalise your seating 2 weeks before the wedding when most RSVPs are in. Before that, use the seating page to plan approximate groupings.</p></div>
@@ -755,12 +688,10 @@ const helpCategories = [
   {
     icon: 'Mail',
     title: 'Guest Suite',
-    description: 'Your invitation and print collection',
+    description: 'Everything your guests see',
     articles: [
       { title: 'What is the Guest Suite?', time: '2 min read' },
       { title: 'Choosing and switching universes', time: '3 min read' },
-      { title: 'Editing your Save the Date', time: '3 min read' },
-      { title: 'Downloading and printing assets', time: '2 min read' },
     ]
   },
   {

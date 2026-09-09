@@ -202,7 +202,7 @@ export default function OnboardingStepUniverse({ onNext, data }) {
           animate={{ opacity: 1, y: 0 }}
           style={{ fontSize: 16, color: textPrimary, lineHeight: 1.6, margin: '0 0 8px', maxWidth: 640 }}
         >
-          Now let's choose the aesthetic for your entire wedding, your invitations, website, and every piece of design will follow this style.
+          Now let's choose the aesthetic for your wedding. Your invitation, your guest suite and your RSVP all follow the style you pick.
         </motion.p>
 
         <motion.p
