@@ -325,7 +325,14 @@ try {
   // one query and picking either was a coin toss. Here it is one control
   // rendered twice, so either does the same thing. The count is asserted so
   // that a page which grows a third, different button does not pass silently.
+  //
+  // AND IT IS WAITED FOR, NOT SLEPT PAST. With `waitForTimeout(3000)` the
+  // count read 0 on one run and 2 on the next, on the same page: a fixed wait
+  // is a guess about someone else's network, and a guess that is usually
+  // right is the worst kind. The screenshot taken moments later showed the
+  // button plainly, which is how the race was spotted.
   const confirm = page.getByRole('button', { name: 'Make this my universe', exact: true });
+  await confirm.first().waitFor({ state: 'visible', timeout: 20000 }).catch(() => {});
   const confirms = await confirm.count();
   const chose = confirms > 0 && await confirm.first()
     .click({ timeout: 8000 }).then(() => true).catch(() => false);
