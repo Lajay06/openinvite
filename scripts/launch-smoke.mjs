@@ -314,11 +314,24 @@ try {
   // written from imagination rather than from the page, and the fourth to
   // report a working product as broken. Every locator below now names a
   // string that was surveyed on the real screen.
-  const chose = await page.getByRole('button', { name: 'Make this my universe', exact: true })
+  // TWO OF THEM, AND THAT IS FINE. The universe page offers the same call to
+  // action twice — once over the hero, once at the foot — so a strict-mode
+  // locator throws on two matches and the catch below turned that into "no
+  // confirm control found". A working page, reported broken, for the fifth
+  // time in this file.
+  //
+  // `.first()` is right HERE and was wrong at the login form, and the
+  // difference is the whole lesson: there, two DIFFERENT controls answered to
+  // one query and picking either was a coin toss. Here it is one control
+  // rendered twice, so either does the same thing. The count is asserted so
+  // that a page which grows a third, different button does not pass silently.
+  const confirm = page.getByRole('button', { name: 'Make this my universe', exact: true });
+  const confirms = await confirm.count();
+  const chose = confirms > 0 && await confirm.first()
     .click({ timeout: 8000 }).then(() => true).catch(() => false);
   await page.waitForTimeout(3000);
   await shot(page, 'universe');
-  check('3 · chooses a universe', chose, chose ? 'paris' : 'no confirm control found');
+  check('3 · chooses a universe', chose, chose ? `paris (${confirms} confirm control(s) on the page)` : 'no confirm control found');
 
   // ── 4. build: one text edit and one photo ─────────────────────────────────
   await page.goto(`${BASE}/website-editor`, { waitUntil: 'domcontentloaded', timeout: 60000 });
