@@ -416,6 +416,22 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
 
+      # "Clicking the chevron shows more" is true of a popup too, so the
+      # SHAPE is what is asserted: a <tr>, in the same table, with no dialog
+      # on the page afterwards.
+      - name: The vendor detail is a row of the table, not a popup
+        run: |
+          npx vite preview --port 4193 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4193 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4193 npm run test:table-row-expand
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       # P4's audit, kept as a gate. Five controls exercised, plus the one
       # thing source review cannot see: a control can work perfectly and be
       # unreadable, and the two values live in different components.
