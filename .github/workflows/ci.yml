@@ -273,18 +273,48 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
+      # GOOGLE'S APT SOURCE IS NOT A DEPENDENCY OF ANYTHING HERE, and on
+      # 2026-09-09 it took every run in this repo down with it:
+      #
+      #   E: Failed to fetch https://dl.google.com/linux/chrome-stable/deb/
+      #      dists/stable/main/binary-amd64/Packages.gz  Hash Sum mismatch
+      #
+      # The runner image ships that source configured for Chrome-the-browser.
+      # Playwright installs its own Chromium and needs only Ubuntu packages —
+      # libnss3, libasound2 and the rest — so the Google source contributes
+      # nothing and `apt-get update` fails the whole step when its index is
+      # bad. Removing it removes the dependency, rather than teaching the job
+      # to ignore a failure.
+      #
+      # NOT `|| true`, NOT continue-on-error, NOT a swallowed apt exit. If
+      # Ubuntu's own archive is down the browser lane still cannot run and
+      # this job still fails — an upstream outage blocks, it never passes.
+      # The fix removes a source we never needed; it does not make failure
+      # look like success.
+      #
+      # Both filename shapes: apt is migrating from one-line `.list` files to
+      # deb822 `.sources`, and a fix that only knows the old spelling stops
+      # working the day the runner image switches — silently, and looking
+      # exactly like the outage it was written for.
+      - name: Remove Google's apt source
+        run: sudo rm -f /etc/apt/sources.list.d/google-chrome*.list /etc/apt/sources.list.d/google-chrome*.sources
+
+      # ONE INSTALL-DEPS, ON BOTH PATHS. It used to run only on a cache HIT,
+      # while a cache MISS got its deps via `install --with-deps` — two ways
+      # to do one thing, and they diverged: the outage above broke only the
+      # warm path, so a cold-cache run went green and a warm one failed on
+      # identical code. The OS deps are never in the cache (they live in
+      # system package directories, not ~/.cache/ms-playwright), so every run
+      # needs them and every run now installs them the same way.
+      - name: Install Playwright OS dependencies
+        run: npx playwright install-deps chromium
+
+      # The browser BINARY is the only thing the cache holds, so this is the
+      # only step that is conditional. No --with-deps: the step above owns
+      # that, for both paths.
       - name: Install Playwright Chromium
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
-
-      # Chromium's own binary is restored from cache above, but its OS-level
-      # shared library dependencies (installed via --with-deps) are NOT part
-      # of that cache — they live in system package directories, not
-      # ~/.cache/ms-playwright. A cache hit still needs them installed on
-      # this fresh runner, just not re-downloading the (large) browser.
-      - name: Install Playwright OS dependencies
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium
+        run: npx playwright install chromium
 
       # MOVED HERE FROM BEFORE THE BUILD STEPS, 2026-09-08, because it now
       # needs a browser and this is the first point in the job that has one.
