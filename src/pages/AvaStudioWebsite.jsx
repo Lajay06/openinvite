@@ -382,7 +382,9 @@ export default function AvaStudioWebsite() {
     return (
       <div style={{ minHeight: '100vh', background: bg, fontFamily: sans, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center', padding: '0 40px' }}>
-          <div style={{ fontSize: 72, marginBottom: 24 }}>🎉</div>
+          {/* A 72px party popper drawn by the operating system's emoji font,
+              on the one screen this product has that is purely a moment. The
+              heading carries it; nothing replaces the glyph. */}
           <h2 style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, color: fg, margin: '0 0 16px' }}>Your website is ready!</h2>
           <p style={{ fontSize: 16, color: sub, margin: '0 0 40px' }}>{coupleName} · openinvite.com.au/w/{details?.slug || 'your-wedding'}</p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>

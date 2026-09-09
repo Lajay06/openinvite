@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Globe, Link2, Mail, QrCode, MessageCircle, Smartphone, Facebook } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { fetchGuestLinks } from '@/lib/guestLinks';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -33,6 +34,39 @@ export default function PublishModal({ onClose, details, onUpdate }) {
   // Vercel preview, www., etc.), never a stale/wrong domain.
   const siteHost = typeof window !== 'undefined' ? window.location.host : 'openinvite.com.au';
   const siteUrl = hasRealSlug ? `${siteHost}/w/${details.slug}` : null;
+
+  // ── THE QR IS DRAWN HERE, NOT FETCHED ──────────────────────────────────
+  //
+  // It came from api.qrserver.com, in two places: an <img> for the 180px
+  // preview and a download link for the 500px PNG. Both put THE COUPLE'S
+  // PRIVATE ADDRESS in a query string to a third party we have no agreement
+  // with — every time the tab was opened, and again on every download. A
+  // guest-suite URL is the one thing a couple hands out deliberately and to
+  // people they chose; sending it to a stranger's logs is not ours to do.
+  // #726 moved the builder panel's QR to a local encoder for exactly this
+  // reason and this modal was missed.
+  //
+  // `qrcode` is imported lazily, as it is there: the encoder stays out of the
+  // entry bundle for the three tabs that never draw one. SVG for the preview
+  // so it stays sharp at any size, and a PNG data URI for the download,
+  // because "print this on your invitation" wants a raster file.
+  const [qrSvg, setQrSvg] = useState('');
+  const [qrPng, setQrPng] = useState('');
+  useEffect(() => {
+    let live = true;
+    if (!siteUrl) { setQrSvg(''); setQrPng(''); return undefined; }
+    const url = `https://${siteUrl}`;
+    import('qrcode')
+      .then(async (qr) => {
+        const svg = await qr.toString(url, { type: 'svg', margin: 1, width: 180, color: { dark: '#0A0A0A', light: '#FFFFFF' } });
+        const png = await qr.toDataURL(url, { margin: 1, width: 500, color: { dark: '#0A0A0A', light: '#FFFFFF' } });
+        if (live) { setQrSvg(svg); setQrPng(png); }
+      })
+      // A QR that cannot be drawn leaves its space empty rather than throwing
+      // the modal away. The address is on the page above it either way.
+      .catch(() => { if (live) { setQrSvg(''); setQrPng(''); } });
+    return () => { live = false; };
+  }, [siteUrl]);
 
   const togglePublish = async () => {
     const next = { websiteEnabled: !details?.websiteEnabled };
@@ -109,20 +143,26 @@ export default function PublishModal({ onClose, details, onUpdate }) {
     `We're so excited to share our wedding website with you!\n\nVisit: https://${siteUrl || `${siteHost}/w/`}\n\nWe can't wait to celebrate with you.\n\nWith love,\n${couple1} & ${couple2}`
   );
 
+  // ICONS, NOT EMOJI. These were a globe, a chain link, an envelope with a
+  // variation selector and a black square — four glyphs from four different
+  // platform emoji fonts, at whatever size and colour the OS decided, sitting
+  // inside type we control to the pixel. lucide draws them in currentColor at
+  // a size we choose, which is the whole reason the rest of the product uses
+  // it. "QR Code" was also the only Title Case tab of the four.
   const TABS = [
-    { id: 'website', label: '🌐 Website' },
-    { id: 'share', label: '🔗 Share' },
-    { id: 'email', label: '✉️ Email' },
-    { id: 'qr', label: '⬛ QR Code' },
+    { id: 'website', label: 'Website', Icon: Globe },
+    { id: 'share', label: 'Share', Icon: Link2 },
+    { id: 'email', label: 'Email', Icon: Mail },
+    { id: 'qr', label: 'QR code', Icon: QrCode },
   ];
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent hideClose title="Share Your Wedding" className="w-[620px] max-w-[620px] max-h-[88vh] p-0 gap-0 flex flex-col overflow-hidden">
+      <DialogContent hideClose title="Share your wedding" className="w-[620px] max-w-[620px] max-h-[88vh] p-0 gap-0 flex flex-col overflow-hidden">
 
         {/* Header */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #EEE', display: 'flex', alignItems: 'center' }}>
-          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, flex: 1 }}>Share Your Wedding</h3>
+          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, flex: 1 }}>Share your wedding</h3>
           <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: 'rgba(10,10,10,0.45)', lineHeight: 1 }}>×</button>
         </div>
 
@@ -140,7 +180,10 @@ export default function PublishModal({ onClose, details, onUpdate }) {
                 cursor: 'pointer', fontFamily: 'inherit',
               }}
             >
-              {t.label}
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <t.Icon size={13} strokeWidth={1.8} aria-hidden="true" />
+                {t.label}
+              </span>
             </button>
           ))}
         </div>
@@ -242,13 +285,13 @@ export default function PublishModal({ onClose, details, onUpdate }) {
                   <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>SHARE VIA</p>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                     {[
-                      { label: 'WhatsApp', icon: '💬', action: () => window.open(`https://wa.me/?text=${encodeURIComponent(`You're invited! https://${siteUrl}`)}`) },
-                      { label: 'Email', icon: '✉️', action: () => setTab('email') },
-                      { label: 'SMS', icon: '📱', action: () => window.open(`sms:?body=${encodeURIComponent(`You're invited! https://${siteUrl}`)}`) },
-                      { label: 'Facebook', icon: '📘', action: () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://${siteUrl}`)}`) },
+                      { label: 'WhatsApp', Icon: MessageCircle, action: () => window.open(`https://wa.me/?text=${encodeURIComponent(`You're invited! https://${siteUrl}`)}`) },
+                      { label: 'Email', Icon: Mail, action: () => setTab('email') },
+                      { label: 'SMS', Icon: Smartphone, action: () => window.open(`sms:?body=${encodeURIComponent(`You're invited! https://${siteUrl}`)}`) },
+                      { label: 'Facebook', Icon: Facebook, action: () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://${siteUrl}`)}`) },
                     ].map(opt => (
                       <button key={opt.label} onClick={opt.action} style={{ padding: '14px', border: '1px solid #EEE', background: '#FFF', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 14, fontWeight: 600, fontFamily: 'inherit' }}>
-                        <span>{opt.icon}</span>
+                        <opt.Icon size={16} strokeWidth={1.8} aria-hidden="true" style={{ color: 'rgba(10,10,10,0.6)' }} />
                         <span>{opt.label}</span>
                       </button>
                     ))}
@@ -300,19 +343,18 @@ export default function PublishModal({ onClose, details, onUpdate }) {
                 <>
               <p style={{ fontSize: 14, color: '#555', marginBottom: 24 }}>Guests can scan this QR code to instantly open your wedding website.</p>
 
-              <div style={{ width: 200, height: 200, margin: '0 auto 24px', border: '1px solid #EEE', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFF' }}>
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`https://${siteUrl}`)}&color=0A0A0A&bgcolor=FFFFFF`}
-                  alt="QR Code"
-                  style={{ width: 180, height: 180 }}
-                />
-              </div>
+              <div
+                role="img"
+                aria-label={`QR code for ${siteUrl}`}
+                style={{ width: 200, height: 200, margin: '0 auto 24px', border: '1px solid #EEE', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFF' }}
+                dangerouslySetInnerHTML={{ __html: qrSvg }}
+              />
 
               <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', marginBottom: 24, fontFamily: 'monospace' }}>{siteUrl}</p>
 
               <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
                 <a
-                  href={`https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(`https://${siteUrl}`)}&color=0A0A0A&bgcolor=FFFFFF`}
+                  href={qrPng || undefined}
                   download="wedding-qr-code.png"
                   style={{ padding: '10px 24px', background: '#0A0A0A', color: '#FFF', textDecoration: 'none', fontSize: 13, fontWeight: 600, fontFamily: 'inherit' }}
                 >
