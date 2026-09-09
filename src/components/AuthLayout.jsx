@@ -28,10 +28,24 @@ import { ImageSlider } from "@/components/ui/ImageSlider";
 // brightness(0) invert(1)). The form side's background is bg-background, a
 // light off-white, so brightness(0) forces it to solid black here — same
 // treatment as PublicFooter.jsx on its own white background.
+// SLIDES 1 AND 3 REPLACED, owner 2026-09-10, identified by public id rather
+// than by position: the two SNOWBOUND assets were the couple in the snow in a
+// red jacket (…ID12431_yunnan) and the indoor couple under the yellow blanket
+// with mugs (…ID12430_hmrv0c). Same names, different photographs — a positional
+// swap would have been a coin toss.
+//
+// ONE SOURCE, SIX PAGES. Nothing passes its own `images`, so this constant is
+// the carousel on Register, Login, ForgotPassword, OAuthConsent, Gifting and
+// AvaStudio alike. The instruction was to change the register page unless they
+// share a source; they do, so this changes all six and that is named here
+// rather than discovered later.
+//
+// The transformation chain is untouched — f_auto,q_auto and no width, exactly
+// as it was. See the PR for what that costs now the masters are larger.
 const CAROUSEL_IMAGES = [
-  "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_SNOWBOUND_Daniel_Far%C3%B2_Photos_ID12431_yunnan.jpg",
+  "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/hf_20260904_090213_dcaa917a-e117-4610-8618-a399139999a4_jv74kl",
   "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Teen_Spirit__Marlen_Stahlhuth_Photos_ID14324_zqa5rg.jpg",
-  "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_SNOWBOUND_Daniel_Far%C3%B2_Photos_ID12430_hmrv0c.jpg",
+  "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/hf_20260905_095507_0842f0f9-82bb-462a-9756-c6d1b1cb4486_po7vnk",
   "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14166_tqzysj.jpg",
 ];
 
