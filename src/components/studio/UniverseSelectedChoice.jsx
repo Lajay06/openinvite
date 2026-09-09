@@ -28,12 +28,12 @@ export default function UniverseSelectedChoice({ universe, coupleName, onClose }
           {universe.name}
         </h2>
         <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)' }}>
-          Applied to all 10 assets in your Guest Suite
+          Applied across your guest suite
         </p>
       </div>
 
       <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 28 }}>
-        Ready to build your wedding website?
+        Ready to build your guest suite?
       </p>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16, maxWidth: 320, width: '100%' }}>
@@ -52,7 +52,7 @@ export default function UniverseSelectedChoice({ universe, coupleName, onClose }
           </div>
           <p style={{ fontSize: 16, fontWeight: 700, color: '#FFFFFF', margin: '0 0 8px' }}>Website Builder</p>
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', lineHeight: 1.6, margin: '0 0 20px' }}>
-            Full creative control. Edit every section, page, and asset yourself.
+            Full creative control. Edit every page and every section yourself.
           </p>
         </div>
       </div>

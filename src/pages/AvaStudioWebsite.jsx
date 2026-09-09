@@ -389,9 +389,9 @@ export default function AvaStudioWebsite() {
             <button onClick={() => navigate('/studio/guest-suite/share')} style={{ padding: '14px 32px', background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFF', border: 'none', fontWeight: 700, cursor: 'pointer', fontSize: 14, fontFamily: sans }}>
               Share with Guests →
             </button>
-            <button onClick={() => navigate('/studio/ava/assets')} style={{ padding: '14px 32px', border: `1px solid ${fg}`, background: 'transparent', color: fg, fontWeight: 700, cursor: 'pointer', fontSize: 14, fontFamily: sans }}>
-              Create Assets →
-            </button>
+            {/* "Create Assets" pointed at /studio/ava/assets, which has no
+                route: the button 404'd. The asset flow it led to was removed,
+                and the Help page describing it goes with this commit. */}
           </div>
         </div>
       </div>
