@@ -276,8 +276,13 @@ try {
   await page.waitForTimeout(4000);
   await page.getByText(/^Paris$/).first().click().catch(() => {});
   await page.waitForTimeout(3000);
-  const chose = await page.getByRole('button', { name: /use this universe|choose|select|make this mine/i }).first()
-    .click().then(() => true).catch(() => false);
+  // THE LABEL, READ OFF THE PRODUCT. This looked for /make this mine/ and the
+  // button reads "Make this my universe" — the fourth selector in this file
+  // written from imagination rather than from the page, and the fourth to
+  // report a working product as broken. Every locator below now names a
+  // string that was surveyed on the real screen.
+  const chose = await page.getByRole('button', { name: 'Make this my universe', exact: true })
+    .click({ timeout: 8000 }).then(() => true).catch(() => false);
   await page.waitForTimeout(3000);
   await shot(page, 'universe');
   check('3 · chooses a universe', chose, chose ? 'paris' : 'no confirm control found');
@@ -287,7 +292,13 @@ try {
   await page.waitForTimeout(6000);
   await page.getByRole('button', { name: 'Content', exact: true }).first().click().catch(() => {});
   await page.waitForTimeout(1500);
-  const tagline = page.getByRole('textbox', { name: /tagline/i }).first();
+  // BY PLACEHOLDER, because the field has no accessible name to query by.
+  // The Content tab's TAGLINE is an FLabel — a <label> with no htmlFor and no
+  // wrapped control — so `getByRole('textbox', {name:/tagline/i})` matches
+  // nothing, and it is a textarea rather than an input besides. Recorded as a
+  // product finding in the PR: none of that panel's fields is programmatically
+  // labelled, which is an accessibility defect as well as a test problem.
+  const tagline = page.getByPlaceholder('A line to welcome your guests').first();
   const typed = await tagline.fill('We would love you there.').then(() => true).catch(() => false);
   await page.waitForTimeout(1200);
   check('4 · edits one piece of text', typed, 'the home tagline');
@@ -301,7 +312,10 @@ try {
   await page.getByRole('button', { name: /^Publish$/ }).first().click().catch(() => {});
   await page.waitForTimeout(2500);
   await shot(page, 'publish-modal');
-  await page.getByRole('button', { name: /publish|go live|make live/i }).last().click().catch(() => {});
+  // "Publish Now", exactly. `.last()` over /publish|go live|make live/ picked
+  // whichever button happened to sit last in the DOM — the modal also carries
+  // Unpublish, and the page behind it carries Publish.
+  await page.getByRole('button', { name: 'Publish Now', exact: true }).click({ timeout: 8000 }).catch(() => {});
   await page.waitForTimeout(4000);
   slug = await page.evaluate(() => {
     const m = (document.body.innerText || '').match(/openinvite\.com\.au\/w\/([a-z0-9-]+)/i);
@@ -313,22 +327,39 @@ try {
   // ── 6. one guest ──────────────────────────────────────────────────────────
   await page.goto(`${BASE}/guests`, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.waitForTimeout(4000);
-  await page.getByRole('button', { name: /add guest|add a guest|new guest/i }).first().click().catch(() => {});
+  await page.getByRole('button', { name: '+ Add guest', exact: true }).click({ timeout: 8000 }).catch(() => {});
   await page.waitForTimeout(1500);
-  await page.getByRole('textbox', { name: /name/i }).first().fill(GUEST_NAME).catch(() => {});
-  await page.getByRole('textbox', { name: /email/i }).first().fill(GUEST_EMAIL).catch(() => {});
+  // This modal DOES label its fields — <label for="name">, <label for="email">
+  // — so they are addressed the way a screen reader would. Everything is
+  // scoped to the dialog: the page behind it has a search box that answers to
+  // /name/ too.
+  const dialog = page.getByRole('dialog');
+  await dialog.getByLabel(/full name/i).fill(GUEST_NAME).catch(() => {});
+  await dialog.getByLabel(/^email/i).fill(GUEST_EMAIL).catch(() => {});
   await shot(page, 'guest-form');
-  await page.getByRole('button', { name: /^(save|add|create)$/i }).first().click().catch(() => {});
+  await dialog.getByRole('button', { name: 'Add guest', exact: true }).click({ timeout: 8000 }).catch(() => {});
   await page.waitForTimeout(3500);
   const added = (await page.getByText(GUEST_NAME).count()) > 0;
   check('6 · adds one guest', added, GUEST_EMAIL);
   await shot(page, 'guest-added');
 
   // ── 7. send the invitation ────────────────────────────────────────────────
-  await page.getByRole('button', { name: /send invit/i }).first().click().catch(() => {});
+  await page.getByRole('button', { name: 'Send invites', exact: true }).click({ timeout: 8000 }).catch(() => {});
   await page.waitForTimeout(2500);
   await shot(page, 'send-modal');
-  await page.getByRole('button', { name: /^(send|send invitations?|send now)$/i }).last().click().catch(() => {});
+  // A WIZARD, NOT A BUTTON. The send flow surveyed as: pick a template
+  // (Invitation), pick an audience (Not yet invited / All guests), then Next,
+  // and only then a send. So it is walked rather than guessed at, and each
+  // step is optional — a flow that has already advanced past one of these
+  // simply has no such control, and the loop moves on.
+  const send = page.getByRole('dialog');
+  for (const name of ['Invitation', 'Not yet invited', 'Next']) {
+    await send.getByRole('button', { name, exact: true }).click({ timeout: 4000 }).catch(() => {});
+    await page.waitForTimeout(1200);
+  }
+  await shot(page, 'send-step-2');
+  await send.getByRole('button', { name: /^send( invitations?| now)?$/i }).last()
+    .click({ timeout: 8000 }).catch(() => {});
   await page.waitForTimeout(9000);
   const ok = sends.find((s) => s.status === 200);
   check('7 · the send API accepts the invitation', !!ok,
