@@ -5225,3 +5225,32 @@ titled "docs: D-READ" and pushed product code to main under a docs heading.
 On a branch the file-list mark in the merge authorization is the only net, and
 it catches the mistake AFTER a head has been pushed and a line has been
 issued — which costs a round trip every time. `git add <path>` costs nothing.
+
+---
+
+## 2026-09-10 — a blanket catch on a step whose failure is the result is a vacuous pass
+
+The launch smoke's step 1 filled neither credential field and reported a login
+failure. The screenshot showed an empty email box and the password's
+eight-bullet PLACEHOLDER; the placeholder was read as a filled value, and the
+diagnosis reported to the advisor was that the email input had no accessible
+name. **That was wrong.** The input carries `<label for="email">Email</label>`,
+and `getByRole('textbox', {name:/email/i})` matches it on production and
+locally.
+
+**The cause was the script.** A fixed `waitForTimeout(2500)` was not enough for
+production to hydrate, so both inputs were absent when `fill()` ran — and every
+interaction carried `.catch(() => {})`, which turned "the element does not
+exist" into silence and let the run walk on to a login that could never
+succeed.
+
+**The rule.** A step whose failure IS the result may not swallow its own
+errors. Wait for the element, let the interaction throw, and assert the state
+it was supposed to produce.
+
+**Why it belongs beside the mergeable entry.** It is the same defect one layer
+down: `pr:green` refusing an absent check because "absence is not success", and
+a journey step reporting a login failure because it never found a form to fill.
+Both are a gate reporting on the wrong signal. This one cost a wrong diagnosis
+sent upstream before it cost anything else, which is the expensive part — the
+advisor issued an instruction based on it.
