@@ -262,7 +262,10 @@ export default function VendorList({ vendors, onEdit, onDelete, onManage, onTogg
 
   const columns = [
     {
-      key: 'favourite', label: '', width: 32,
+      // US spelling on the new key. The surrounding props are
+      // \`onToggleFavourite\`/\`FavouriteStar\` — pre-existing drift this package
+      // does not rename, but a line this commit writes obeys the rule.
+      key: 'favorite', label: '', width: 32,
       render: (vendor) => <FavouriteStar vendor={vendor} onToggle={onToggleFavourite} />,
     },
     {
