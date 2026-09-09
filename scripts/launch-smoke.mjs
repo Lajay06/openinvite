@@ -203,7 +203,19 @@ try {
     await shot(page, 'login-filled');
     check('0 · the login form accepts both credentials', filled,
       filled ? 'email and password both non-empty' : 'a field would not take a value');
-    await page.getByRole('button', { name: /^log ?in$/i }).first().click();
+    // SCOPED TO THE FORM, and `.first()` is why this is the third selector in
+    // this file to pick the wrong element. `getByRole('button', {name:/log
+    // in/i})` matches TWO things on this page: the header's icon-only button,
+    // whose aria-label is "Log in" and which is FIRST in the DOM, and the
+    // form's submit. The run filled both fields correctly, clicked the header
+    // icon, re-navigated to /login, and photographed an empty form — which
+    // looks exactly like a rejected password. The credentials were fine: the
+    // Base44 login endpoint returns a token for them.
+    //
+    // A `.first()` on an ambiguous query is a coin toss that reports as a
+    // product failure. Every interaction in this journey is scoped to the form
+    // or the dialog it belongs to.
+    await page.locator('form').getByRole('button', { name: /^log ?in$/i }).click();
     // Wait for the navigation the login causes, not for a guessed number of
     // seconds. A login that never leaves /login fails the check below rather
     // than passing on a slow network.
@@ -223,7 +235,9 @@ try {
   const pwCount = await pw.count();
   for (let i = 0; i < pwCount; i++) await pw.nth(i).fill(PASSWORD).catch(() => {});
   await shot(page, 'register-filled');
-  await page.getByRole('button', { name: /sign up|create|register|get started/i }).first().click().catch(() => {});
+  // Scoped to the form for the same reason: the header carries a "Get started"
+  // button that matches this query and sits earlier in the DOM.
+  await page.locator('form').getByRole('button', { name: /create account|sign up|register/i }).first().click().catch(() => {});
   await page.waitForTimeout(6000);
   await shot(page, 'after-signup');
   // THE ACCOUNT IS MADE, AND THEN THE MAILBOX IS ASKED FOR. Distinguished
