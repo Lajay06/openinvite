@@ -133,16 +133,49 @@ let shotN = 0;
  * after the first failure every remaining step is recorded as NOT REACHED and
  * counted as a failure, without pretending it was measured.
  */
+/**
+ * NOT REACHED HAS TO MEAN NOT EXECUTED, AND IT DID NOT.
+ *
+ * The first version only RELABELLED. `check` saw `broken` and printed "not
+ * reached" — while the script carried straight on clicking, publishing, adding
+ * a guest and calling /api/send-invites. A run whose report read "stopped at
+ * step 2, steps 3-9 not reached" had in fact published a site and SENT A REAL
+ * INVITATION to a real address; the couple's own dashboard showed "1
+ * invitation pending" afterwards, which is how it was caught.
+ *
+ * That is the same defect as the vacuous catch, one level up: a report
+ * describing a journey the run did not take. It is worse than a wrong pass,
+ * because the side effects land on a live account invisibly.
+ *
+ * So a failed check now THROWS. The journey stops where it broke, and the
+ * remaining steps are filled in from STEPS afterwards — recorded as failures,
+ * named honestly, and genuinely not run.
+ */
+class Stop extends Error {}
+
+/** Every step, in order, so a run that stops can say what it did not do. */
+const STEPS = [
+  '0 · the login form accepts both credentials',
+  SUPPLIED ? '1 · signs in as a pre-verified alias (signup skipped — OTP gate)' : '1 · signs up',
+  '2 · reaches the end of onboarding',
+  '3 · chooses a universe',
+  '4 · edits one piece of text',
+  '  and a photo slot is offered',
+  '5 · publishes, and the address exists',
+  '6 · adds one guest',
+  '7 · the send API accepts the invitation',
+  '  and an invitation link exists to open',
+  '8 · the invitation link opens as that guest',
+  '  and replies',
+  '9 · the dashboard counts one invitation',
+  '  and one reply',
+];
+
 let broken = null;
 const check = (name, ok, detail) => {
-  if (broken) {
-    results.push({ name, ok: false, detail: `not reached — ${broken} failed` });
-    console.log(`  ----  ${name}  (not reached)`);
-    return;
-  }
   results.push({ name, ok, detail });
   console.log(`  ${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? `  (${detail})` : ''}`);
-  if (!ok) broken = name;
+  if (!ok) { broken = name; throw new Stop(name); }
 };
 const shot = async (page, label) => {
   shotN += 1;
@@ -414,8 +447,20 @@ try {
   check('9 · the dashboard counts one invitation', /\b1\b[\s\S]{0,40}(invitation|invited)/i.test(counts), 'from the rendered dashboard');
   check('  and one reply', /\b1\b[\s\S]{0,40}(repl|coming|confirmed)/i.test(counts), 'from the rendered dashboard');
 } catch (err) {
-  check('the run completed without throwing', false, String(err.message || err).slice(0, 140));
-  await shot(page, 'threw');
+  if (!(err instanceof Stop)) {
+    // A throw is its own result, and it stops the journey the same way.
+    results.push({ name: 'the run completed without throwing', ok: false, detail: String(err.message || err).slice(0, 140) });
+    console.log(`  FAIL  the run completed without throwing  (${String(err.message || err).slice(0, 140)})`);
+    broken = broken || 'an unhandled error';
+  }
+  await shot(page, 'stopped');
+  // Everything after the break, named and counted, and genuinely not run.
+  const done = new Set(results.map((r) => r.name));
+  for (const name of STEPS) {
+    if (done.has(name)) continue;
+    results.push({ name, ok: false, detail: `not reached — ${broken} failed` });
+    console.log(`  ----  ${name}  (not reached)`);
+  }
 }
 
 await couple.close();
