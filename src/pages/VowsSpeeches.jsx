@@ -281,12 +281,14 @@ export default function VowsSpeechesPage() {
                 <div style={{ padding: '48px 24px', textAlign: 'center' }}>
                   {activeTab === 'vows' ? <Heart size={32} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 12px' }} /> : <Mic size={32} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 12px' }} />}
                   <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 6 }}>No {activeTab} yet</p>
-                  <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 16 }}>Start writing or ask Ava for help</p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    <button onClick={() => { setSelectedItem(null); setIsEditing(true); }} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
-                      <Plus size={11} />Write manually
-                    </button>
-                  </div>
+                  {/* NO BUTTON HERE. The page had three ways to start writing —
+                      this one, one in the middle, and the pair in the top bar —
+                      and the top bar is on screen the whole time, so the other
+                      two were repetition rather than reach. Owner ruling,
+                      2026-09-10. The sentence now says where the controls are
+                      rather than carrying its own copy of them: an empty state
+                      still has to say what to do first. */}
+                  <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>Use the buttons above to write, or ask Ava</p>
                 </div>
               ) : (
                 listItems.map(item => (
@@ -404,12 +406,7 @@ export default function VowsSpeechesPage() {
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 32, textAlign: 'center' }}>
                 <Mic size={48} style={{ color: 'rgba(10,10,10,0.3)', marginBottom: 16 }} />
                 <p style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 8 }}>Ready to write your perfect words?</p>
-                <p style={{ fontSize: 14, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 24 }}>Select an item from the list, or create a new one</p>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <button onClick={() => { setSelectedItem(null); setIsEditing(true); }} className="btn-primary" style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Plus size={12} />Write manually
-                  </button>
-                </div>
+                <p style={{ fontSize: 14, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>Select an item from the list, or start a new one from the buttons above</p>
               </div>
             )}
           </div>
