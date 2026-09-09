@@ -54,11 +54,11 @@ export const SAMPLE_MYKONOS = {
 
   homeContent: {
     blocks: [
-      { id: 'mk1', type: 'heading', order: 0, content: { text: 'Six at sunset, then down to the water', kicker: 'The day' } },
+      { id: 'mk1', type: 'heading', order: 0, content: { text: 'A small chapel, then down to the water', kicker: 'The day' } , style: { align: 'center' } },
       { id: 'mk2', type: 'paragraph', order: 1, content: {
-        text: 'The chapel holds forty people and we are inviting exactly forty. Dinner is on the terrace below it, forty steps down, and it goes until the music stops. Nothing else is scheduled.',
-      } },
-      { id: 'mk3', type: 'quote', order: 2, content: { text: 'Wear white if you want. We are not precious about it.', attribution: 'Sofia & Alex' } },
+        text: 'We are marrying in a chapel above the sea and eating on the terrace below it. It goes until the music stops and nothing else is arranged. Wear white if you want.',
+      }, style: { align: 'center' } },
+      { id: 'mk3', type: 'quote', order: 2, content: { text: 'Wear white if you want. We are not precious about it.', attribution: 'Sofia & Alex' } , style: { align: 'center' } },
       { id: 'mk4', type: 'photo', order: 3, content: { url: img(MYKONOS_IMAGES.home[0], 1400) } },
       { id: 'mk5', type: 'photo', order: 4, content: { url: img(MYKONOS_IMAGES.home[1], 1400) } },
     ],

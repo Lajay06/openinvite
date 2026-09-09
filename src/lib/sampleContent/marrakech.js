@@ -65,11 +65,11 @@ export const SAMPLE_MARRAKECH = {
 
   homeContent: {
     blocks: [
-      { id: 'mk1', type: 'heading', order: 0, content: { text: 'A courtyard, and then the roof', kicker: 'The evening' } },
+      { id: 'mk1', type: 'heading', order: 0, content: { text: 'A courtyard, and then the roof', kicker: 'The evening' } , style: { align: 'center' } },
       { id: 'mk2', type: 'paragraph', order: 1, content: {
-        text: 'We are marrying downstairs as the heat goes out of the day, and eating upstairs once it is dark. The stairs are the only difficult part and somebody will help you with them.',
-      } },
-      { id: 'mk3', type: 'quote', order: 2, content: { text: 'Stay for the whole evening. It only gets better after ten.', attribution: 'Yasmin & Idris' } },
+        text: 'We are marrying downstairs as the heat goes out of the day, and eating upstairs once it is dark. The stairs are the only difficult part and somebody will help you with them. Stay for the whole evening.',
+      }, style: { align: 'center' } },
+      { id: 'mk3', type: 'quote', order: 2, content: { text: 'Stay for the whole evening. It only gets better.', attribution: 'Yasmin & Idris' } , style: { align: 'center' } },
       { id: 'mk4', type: 'photo', order: 3, content: { url: img(MARRAKECH_IMAGES.home[0], 1400) } },
       { id: 'mk5', type: 'photo', order: 4, content: { url: img(MARRAKECH_IMAGES.home[1], 1400) } },
 

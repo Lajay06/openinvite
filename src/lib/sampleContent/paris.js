@@ -54,11 +54,11 @@ export const SAMPLE_PARIS = {
 
   homeContent: {
     blocks: [
-      { id: 'pr1', type: 'heading', order: 0, content: { text: 'A short ceremony and a long table', kicker: 'The day' } },
+      { id: 'pr1', type: 'heading', order: 0, content: { text: 'A short ceremony and a long table', kicker: 'The day' } , style: { align: 'center' } },
       { id: 'pr2', type: 'paragraph', order: 1, content: {
-        text: 'The ceremony takes twenty minutes and the dinner takes the rest of the evening. We are keeping the first part small and the second part open, so if you can only make one of them, make it dinner.',
-      } },
-      { id: 'pr3', type: 'quote', order: 2, content: { text: 'We would rather you were comfortable than impressed.', attribution: 'Margot & Theo' } },
+        text: 'We are keeping the first part small and the second part open. If you can only come to one of them, come to dinner. We would rather you were comfortable than impressed.',
+      }, style: { align: 'center' } },
+      { id: 'pr3', type: 'quote', order: 2, content: { text: 'We would rather you were comfortable than impressed.', attribution: 'Margot & Theo' } , style: { align: 'center' } },
       { id: 'pr4', type: 'photo', order: 3, content: { url: img(PARIS_IMAGES.home[0], 1400) } },
       { id: 'pr5', type: 'photo', order: 4, content: { url: img(PARIS_IMAGES.home[1], 1400) } },
     ],

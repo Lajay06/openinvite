@@ -100,14 +100,14 @@ export const SAMPLE_OMISSION_FIXTURE = {
 
   homeContent: {
     blocks: [
-      { id: 's1', type: 'heading', order: 0, content: { text: 'Two days, one long table', kicker: 'The weekend' } },
+      { id: 's1', type: 'heading', order: 0, content: { text: 'Two days, one long table', kicker: 'The weekend' } , style: { align: 'center' } },
       { id: 's2', type: 'paragraph', order: 1, content: {
         text: 'We are getting married on a hillside above the river, and we would like you there for the whole of it. Everything you need is on these pages: where to be, when to be there, and where to sleep afterward.',
-      } },
+      }, style: { align: 'center' } },
       { id: 's3', type: 'quote', order: 2, content: {
         text: 'Come early. Stay late. Bring nothing but yourselves.',
         attribution: 'Sample & Couple',
-      } },
+      }, style: { align: 'center' } },
     ],
   },
 

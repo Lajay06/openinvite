@@ -69,11 +69,11 @@ export const SAMPLE_BALI = {
 
   homeContent: {
     blocks: [
-      { id: 'bl1', type: 'heading', order: 0, content: { text: 'Five on the sand, and then as long as you like', kicker: 'The day' } },
+      { id: 'bl1', type: 'heading', order: 0, content: { text: 'Barefoot, by the water', kicker: 'The day' } , style: { align: 'center' } },
       { id: 'bl2', type: 'paragraph', order: 1, content: {
-        text: 'The ceremony is at five on the beach at the end of the track, barefoot, and it takes about ten minutes. Dinner is under the trees from seven and there is no closing time. Come in the morning if you want the water to yourself, and borrow a board from the rack.',
-      } },
-      { id: 'bl3', type: 'quote', order: 2, content: { text: 'Nobody is dressed up and nobody is on time. That is the arrangement.', attribution: 'Sienna & Marlo' } },
+        text: 'We are marrying on the sand and eating under the trees afterward. Come early if you want the ocean to yourself, and stay as long as the evening holds you. Shoes are optional and mostly a nuisance.',
+      }, style: { align: 'center' } },
+      { id: 'bl3', type: 'quote', order: 2, content: { text: 'Nobody is dressed up and nobody is in a hurry. That is the arrangement.', attribution: 'Sienna & Marlo' } , style: { align: 'center' } },
       { id: 'bl4', type: 'photo', order: 3, content: { url: img(BALI_IMAGES.home[0], 1400) } },
       { id: 'bl5', type: 'photo', order: 4, content: { url: img(BALI_IMAGES.home[1], 1400) } },
     ],
