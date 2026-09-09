@@ -42,3 +42,25 @@ scripts/capture/output/
 tests/motion/bundle.js
 tests/motion/bundle.css
 tests/motion/frames/
+
+# Screenshots are a run's OUTPUT, not source. The launch smoke writes a numbered
+# set to scratchpad/launch-smoke/ on every run, browser guards drop stills
+# beside their scratch scripts, and none of it is worth a diff — it is a
+# megabyte of PNG that changes on every execution and means nothing a week
+# later.
+#
+# It came within one `git add -A` of a commit. The standing rule is to stage by
+# path, and that rule held; but a rule is the only thing that was holding, and
+# a rule is a person remembering. This is the instrument.
+#
+# NARROW ON PURPOSE — by extension, not by directory. scratchpad/ holds 38
+# tracked files, DECISION-LOG.md among them, and that is the point of the
+# folder: the reasoning lives there. Ignoring the directory would have quietly
+# untracked the log the moment someone re-cloned.
+scratchpad/**/*.png
+scratchpad/**/*.jpg
+scratchpad/**/*.jpeg
+scratchpad/**/*.webp
+scratchpad/**/*.gif
+scratchpad/**/*.mp4
+scratchpad/**/*.webm
