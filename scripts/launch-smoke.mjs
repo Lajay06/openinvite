@@ -177,22 +177,37 @@ try {
   if (RETURNING) {
     await page.goto(`${BASE}/login`, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForTimeout(2500);
-    // BY TYPE, NOT BY ROLE NAME. The login form's email input has no
-    // accessible name the role query can match — its label is a sibling, not
-    // an association — so getByRole('textbox', {name:/email/i}) matched
-    // nothing and filled nothing, while the password (queried by type) filled
-    // fine. The first run against the pre-verified account failed on an empty
-    // email field with the password already in place, which is what that
-    // asymmetry looks like from the outside.
-    const emailField = page.locator('input[type="email"], input[name="email"], input[placeholder*="@"]').first();
-    await emailField.fill(ACCOUNT).catch(() => {});
-    await page.locator('input[type="password"]').first().fill(PASSWORD).catch(() => {});
-    // Proves the field actually took it, without printing the value.
-    const emailLen = await emailField.inputValue().then((v) => v.length).catch(() => 0);
+    // WAIT FOR THE FIELD, DO NOT SLEEP AT IT.
+    //
+    // The first run against the pre-verified account filled NEITHER field —
+    // the screenshot shows the email empty and the password showing its
+    // eight-bullet placeholder, not a value. I read that as an accessibility
+    // problem and reported it as one. It was not: the email input carries
+    // `<label for="email">Email</label>`, and getByRole('textbox',
+    // {name:/email/i}) matches exactly one element on production and locally.
+    //
+    // The real cause was this file. A fixed `waitForTimeout(2500)` was not
+    // enough for production to hydrate, so both inputs were absent when fill()
+    // ran — and every interaction here carried `.catch(() => {})`, which turned
+    // "the element does not exist" into silence and let the run continue to a
+    // login that could never succeed. A blanket catch on a step whose failure
+    // IS the result is the same defect as counting an absent check as green.
+    const emailField = page.locator('input[type="email"]').first();
+    await emailField.waitFor({ state: 'visible', timeout: 30000 });
+    await emailField.fill(ACCOUNT);
+    const pwField = page.locator('input[type="password"]').first();
+    await pwField.waitFor({ state: 'visible', timeout: 30000 });
+    await pwField.fill(PASSWORD);
+    // Both took a value. Lengths only — neither value is ever printed.
+    const filled = (await emailField.inputValue()).length > 0 && (await pwField.inputValue()).length > 0;
     await shot(page, 'login-filled');
-    if (emailLen === 0) console.log('    (the email field did not accept a value)');
-    await page.getByRole('button', { name: /log ?in|sign ?in|continue/i }).first().click().catch(() => {});
-    await page.waitForTimeout(7000);
+    check('0 · the login form accepts both credentials', filled,
+      filled ? 'email and password both non-empty' : 'a field would not take a value');
+    await page.getByRole('button', { name: /^log ?in$/i }).first().click();
+    // Wait for the navigation the login causes, not for a guessed number of
+    // seconds. A login that never leaves /login fails the check below rather
+    // than passing on a slow network.
+    await page.waitForURL((u) => !/\/(login|register)\b/.test(u.pathname), { timeout: 45000 }).catch(() => {});
     const inside = !/\/(login|register)\b/.test(page.url());
     check('1 · signs in as a pre-verified alias (signup skipped — OTP gate)', inside, page.url());
     await shot(page, 'after-login');
