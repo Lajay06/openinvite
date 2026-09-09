@@ -73,7 +73,7 @@
  *   node scripts/launch-smoke.mjs
  */
 import { chromium } from 'playwright';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync, existsSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -87,17 +87,38 @@ const GUEST_NAME = 'Notification Test';
 
 const stamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 12);
 /**
- * A pre-verified account, or a fresh one to attempt. Both must be a
- * `la.jay06+…` alias: the named-record rule is absolute, and an alias is the
- * only shape this script will accept.
+ * The pre-verified account, from the environment or .env.local. Two names,
+ * BASE44_SMOKE_EMAIL and BASE44_SMOKE_PASSWORD, matching the other credential
+ * pairs in that file.
+ *
+ * NEITHER VALUE IS EVER PRINTED. The address is shown masked and the password
+ * is not shown at all — this script writes a log a human reads and pastes, and
+ * a credential in a transcript is a credential in a transcript.
  */
-const SUPPLIED = process.env.SMOKE_ACCOUNT || '';
+function fromEnvFile(name) {
+  if (process.env[name]) return process.env[name];
+  for (const f of ['.env.local', '.env']) {
+    const path = resolve(ROOT, f);
+    if (!existsSync(path)) continue;
+    for (const line of readFileSync(path, 'utf8').split('\n')) {
+      const i = line.indexOf('=');
+      if (i < 0 || line.slice(0, i).trim() !== name) continue;
+      const v = line.slice(i + 1).trim();
+      if (v) return v;   // a bare key overrides nothing
+    }
+  }
+  return '';
+}
+const mask = (e) => String(e).replace(/^(.{4})[^@]*(@.*)$/, '$1***$2');
+
+const SUPPLIED = fromEnvFile('BASE44_SMOKE_EMAIL');
+// The named-record rule is absolute, and an alias is the only shape accepted.
 if (SUPPLIED && !/^la\.jay06\+[a-z0-9]+@gmail\.com$/i.test(SUPPLIED)) {
-  console.error(`  REFUSING: ${SUPPLIED} is not a la.jay06+alias address.`);
+  console.error('  REFUSING: BASE44_SMOKE_EMAIL is not a la.jay06+alias address.');
   process.exit(2);
 }
 const ACCOUNT = SUPPLIED || `la.jay06+smoke${stamp}@gmail.com`;
-const PASSWORD = process.env.SMOKE_PASSWORD || `Smoke!${stamp}aA1`;
+const PASSWORD = fromEnvFile('BASE44_SMOKE_PASSWORD') || `Smoke!${stamp}aA1`;
 const RETURNING = !!SUPPLIED;
 
 const results = [];
@@ -132,7 +153,7 @@ const shot = async (page, label) => {
 
 mkdirSync(SHOTS, { recursive: true });
 console.log(`\n  The stranger's journey — ${BASE}`);
-console.log(`  account: ${ACCOUNT}`);
+console.log(`  account: ${mask(ACCOUNT)}${RETURNING ? ' (pre-verified)' : ' (new)'}`);
 console.log(`  guest:   ${GUEST_EMAIL}\n`);
 
 const browser = await chromium.launch();
@@ -156,9 +177,20 @@ try {
   if (RETURNING) {
     await page.goto(`${BASE}/login`, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForTimeout(2500);
-    await page.getByRole('textbox', { name: /email/i }).first().fill(ACCOUNT).catch(() => {});
+    // BY TYPE, NOT BY ROLE NAME. The login form's email input has no
+    // accessible name the role query can match — its label is a sibling, not
+    // an association — so getByRole('textbox', {name:/email/i}) matched
+    // nothing and filled nothing, while the password (queried by type) filled
+    // fine. The first run against the pre-verified account failed on an empty
+    // email field with the password already in place, which is what that
+    // asymmetry looks like from the outside.
+    const emailField = page.locator('input[type="email"], input[name="email"], input[placeholder*="@"]').first();
+    await emailField.fill(ACCOUNT).catch(() => {});
     await page.locator('input[type="password"]').first().fill(PASSWORD).catch(() => {});
+    // Proves the field actually took it, without printing the value.
+    const emailLen = await emailField.inputValue().then((v) => v.length).catch(() => 0);
     await shot(page, 'login-filled');
+    if (emailLen === 0) console.log('    (the email field did not accept a value)');
     await page.getByRole('button', { name: /log ?in|sign ?in|continue/i }).first().click().catch(() => {});
     await page.waitForTimeout(7000);
     const inside = !/\/(login|register)\b/.test(page.url());
