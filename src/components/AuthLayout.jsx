@@ -40,13 +40,23 @@ import { ImageSlider } from "@/components/ui/ImageSlider";
 // share a source; they do, so this changes all six and that is named here
 // rather than discovered later.
 //
-// The transformation chain is untouched — f_auto,q_auto and no width, exactly
-// as it was. See the PR for what that costs now the masters are larger.
+// w_1440,c_limit ADDED, owner 2026-09-10. The chain was f_auto,q_auto with no
+// width, so Cloudinary served the whole master re-encoded — fine while every
+// asset was 1280 wide, and 899KB of extra payload on the signup page the
+// moment two of them became 1792x2400. 1440 is the slot: this carousel renders
+// 720 CSS px, which is 1440 device pixels at 2x.
+//
+// c_limit IS NOT DECORATION. `w_1440` on its own UPSCALES the two slides that
+// are still 1280 wide, and Cloudinary charges for it: measured 2026-09-10,
+// slide 2 went 396KB -> 433KB and slide 4 118KB -> 151KB for no more detail.
+// That is the #670 finding again — `w_1600` on a 1280 master cost 34% more
+// bytes than no width at all. c_limit caps without ever enlarging, which is
+// the same idiom the marketing pages already use.
 const CAROUSEL_IMAGES = [
-  "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/hf_20260904_090213_dcaa917a-e117-4610-8618-a399139999a4_jv74kl",
-  "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Teen_Spirit__Marlen_Stahlhuth_Photos_ID14324_zqa5rg.jpg",
-  "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/hf_20260905_095507_0842f0f9-82bb-462a-9756-c6d1b1cb4486_po7vnk",
-  "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14166_tqzysj.jpg",
+  "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_1440,c_limit/hf_20260904_090213_dcaa917a-e117-4610-8618-a399139999a4_jv74kl",
+  "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_1440,c_limit/DTS_Teen_Spirit__Marlen_Stahlhuth_Photos_ID14324_zqa5rg.jpg",
+  "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_1440,c_limit/hf_20260905_095507_0842f0f9-82bb-462a-9756-c6d1b1cb4486_po7vnk",
+  "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_1440,c_limit/DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14166_tqzysj.jpg",
 ];
 
 // Field-label treatment for the auth forms.

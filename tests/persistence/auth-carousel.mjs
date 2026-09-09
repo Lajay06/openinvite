@@ -61,8 +61,15 @@ export async function runAuthCarousel() {
 
   // The chain was to be left alone.
   const chains = [...new Set(urls.map((u) => (u.split('/upload/')[1] || '').split('/')[0]))];
-  check('  every slide keeps the transformation chain it had',
-    chains.length === 1 && chains[0] === 'f_auto,q_auto', chains.join(' · '));
+  // ONE CHAIN, A WIDTH, AND c_limit. Without a width Cloudinary serves the
+  // whole master and the two new 1792x2400 slides cost 899KB more than the
+  // 1280px assets they replaced. Without c_limit the width UPSCALES the two
+  // slides that are still 1280 — measured, 396->433KB and 118->151KB for no
+  // more detail, which is #670's finding a second time. Both halves are
+  // asserted, because a chain with the width and no cap is worse than the
+  // chain this replaced.
+  check('  every slide shares one chain, and it caps at the slot without enlarging',
+    chains.length === 1 && chains[0] === 'f_auto,q_auto,w_1440,c_limit', chains.join(' · '));
 
   // ONE SOURCE, SIX PAGES — and nothing may quietly opt out of it.
   const pages = readdirSync(join(ROOT, 'src/pages')).filter((f) => f.endsWith('.jsx'));
