@@ -2027,3 +2027,45 @@ own logs.
 PR head while a main run is in progress. Wait for main to settle. It costs a
 few minutes; the alternative costs a merge authorization and a round trip
 every time it happens. Recorded in DECISION-LOG.md.
+
+---
+
+# BUDGETLIST ONTO THE DataTable SHELL (R37) — post-launch
+
+**Logged 2026-09-10, no code.** Raised while reporting #740 (the chevron-expand
+row pattern moving into the shared shell) — the question "do Vendors, schedule
+and budget all use the shell?" turned out to have three yeses and one no.
+
+**What is on the shell today.** After #740, four surfaces render through
+`src/components/shared/DataTable.jsx`:
+
+    src/components/guests/GuestList.jsx
+    src/components/schedule/RunSheet.jsx
+    src/components/schedule/ScheduleTable.jsx
+    src/components/vendors/VendorList.jsx      ← migrated by #740
+
+**What is not.** `src/components/budget/BudgetList.jsx` still builds its own
+`<Table>` from `@/components/ui/table` with nineteen hand-written
+`TableRow`/`TableCell` uses and its own `DropdownMenu` for row actions. It was
+never in the R37 enumeration, and #740 does not touch it.
+
+**Why it is worth doing, and why it is not urgent.** The shell is where the
+frame, the header band, the column widths, the empty state, the sort behaviour
+and now the expand-into-a-row live. Every surface off the shell is a surface
+where those decisions get made again, slightly differently — which is exactly
+how VendorList ended up with its own copy of `SortableHead` and a comment
+arguing the copy was worth keeping. Nothing about the budget page is BROKEN
+today; it simply carries the cost that the shell exists to remove.
+
+**Prerequisite, so this does not become the same argument twice.** The
+migration must move the table SHAPE and leave the budget's own knowledge in
+the page — the currency prefix, the over-budget row styling, the category
+grouping. VendorList's sort order stayed in VendorList for the same reason:
+ranking a vendor status is vendor knowledge, not table knowledge.
+
+**Scope guess:** one file, roughly the size of #740's VendorList change (about
+250 lines of markup becoming a columns array), plus a browser guard asserting
+the rows carry the shell's `data-row-id` and that the over-budget styling
+survives the move.
+
+**Not started. No code has been written for this.**
