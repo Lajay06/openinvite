@@ -1961,9 +1961,11 @@ that confirms the new master is live.
 
 ---
 
-# SECOND PR HEAD WITH NO ACTIONS RUN — IS THE pull_request TRIGGER BEING DROPPED?
+# SECOND PR HEAD WITH NO ACTIONS RUN — CLOSED, AND ITS RULE RETIRED
 
-Filed 2026-09-08.
+Filed 2026-09-08. Closed 2026-09-10 — see the note at the end: the cause was
+a conflicting base, not a busy main, and the rule this ticket proposed was
+wrong. DECISION-LOG.md 8be1644 supersedes it.
 
 **Twice now a pushed PR head has produced no CI run at all.** Not a pending
 check, not a failure — no workflow run exists for the SHA under any event,
@@ -2017,16 +2019,20 @@ occurrence burns a line and a round trip. It also means a branch can sit
 looking merge-ready with two green checks and no build at all, which is
 exactly the shape of a gate that passes by not running.
 
-**THE TEST, run on this occurrence:** wait for main's run to complete, then
-push again with main quiet and note whether a run appears within five
-minutes. A run that appears promptly on a quiet main, having twice failed to
-appear on a busy one, is as close to proof as this can get without GitHub's
-own logs.
+**CLOSED — AND THE RULE THIS TICKET PROPOSED WAS WRONG.** The cause was not
+timing: a PR that CONFLICTS with its base has no `refs/pull/<n>/merge`, so
+GitHub creates no run at all. `7227e75` was pushed with main completely quiet
+and still had no run nine minutes later, which is what killed the theory.
+#721 keyed main's concurrency per SHA, so a PR push can neither displace a
+main run nor be displaced by one. **The check before a push is `mergeable`,
+not the clock** — see DECISION-LOG.md 8be1644, "a PR that conflicts with its
+base gets no CI run at all", which supersedes this ticket entirely.
 
-**The rule that follows, whatever the cause turns out to be:** never push a
-PR head while a main run is in progress. Wait for main to settle. It costs a
-few minutes; the alternative costs a merge authorization and a round trip
-every time it happens. Recorded in DECISION-LOG.md.
+This paragraph replaces the rule that used to stand here ("never push a PR
+head while a main run is in progress"). It was quoted back as live guidance
+on 2026-09-10 and cost a wait that the log had already retired, which is the
+argument for retiring a superseded rule in place rather than leaving it to be
+found.
 
 ---
 
