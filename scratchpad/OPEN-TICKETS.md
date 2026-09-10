@@ -1961,9 +1961,11 @@ that confirms the new master is live.
 
 ---
 
-# SECOND PR HEAD WITH NO ACTIONS RUN — IS THE pull_request TRIGGER BEING DROPPED?
+# SECOND PR HEAD WITH NO ACTIONS RUN — CLOSED, AND ITS RULE RETIRED
 
-Filed 2026-09-08.
+Filed 2026-09-08. Closed 2026-09-10 — see the note at the end: the cause was
+a conflicting base, not a busy main, and the rule this ticket proposed was
+wrong. DECISION-LOG.md 8be1644 supersedes it.
 
 **Twice now a pushed PR head has produced no CI run at all.** Not a pending
 check, not a failure — no workflow run exists for the SHA under any event,
@@ -2017,13 +2019,59 @@ occurrence burns a line and a round trip. It also means a branch can sit
 looking merge-ready with two green checks and no build at all, which is
 exactly the shape of a gate that passes by not running.
 
-**THE TEST, run on this occurrence:** wait for main's run to complete, then
-push again with main quiet and note whether a run appears within five
-minutes. A run that appears promptly on a quiet main, having twice failed to
-appear on a busy one, is as close to proof as this can get without GitHub's
-own logs.
+**CLOSED — AND THE RULE THIS TICKET PROPOSED WAS WRONG.** The cause was not
+timing: a PR that CONFLICTS with its base has no `refs/pull/<n>/merge`, so
+GitHub creates no run at all. `7227e75` was pushed with main completely quiet
+and still had no run nine minutes later, which is what killed the theory.
+#721 keyed main's concurrency per SHA, so a PR push can neither displace a
+main run nor be displaced by one. **The check before a push is `mergeable`,
+not the clock** — see DECISION-LOG.md 8be1644, "a PR that conflicts with its
+base gets no CI run at all", which supersedes this ticket entirely.
 
-**The rule that follows, whatever the cause turns out to be:** never push a
-PR head while a main run is in progress. Wait for main to settle. It costs a
-few minutes; the alternative costs a merge authorization and a round trip
-every time it happens. Recorded in DECISION-LOG.md.
+This paragraph replaces the rule that used to stand here ("never push a PR
+head while a main run is in progress"). It was quoted back as live guidance
+on 2026-09-10 and cost a wait that the log had already retired, which is the
+argument for retiring a superseded rule in place rather than leaving it to be
+found.
+
+---
+
+# BUDGETLIST ONTO THE DataTable SHELL (R37) — post-launch
+
+**Logged 2026-09-10, no code.** Raised while reporting #740 (the chevron-expand
+row pattern moving into the shared shell) — the question "do Vendors, schedule
+and budget all use the shell?" turned out to have three yeses and one no.
+
+**What is on the shell today.** After #740, four surfaces render through
+`src/components/shared/DataTable.jsx`:
+
+    src/components/guests/GuestList.jsx
+    src/components/schedule/RunSheet.jsx
+    src/components/schedule/ScheduleTable.jsx
+    src/components/vendors/VendorList.jsx      ← migrated by #740
+
+**What is not.** `src/components/budget/BudgetList.jsx` still builds its own
+`<Table>` from `@/components/ui/table` with nineteen hand-written
+`TableRow`/`TableCell` uses and its own `DropdownMenu` for row actions. It was
+never in the R37 enumeration, and #740 does not touch it.
+
+**Why it is worth doing, and why it is not urgent.** The shell is where the
+frame, the header band, the column widths, the empty state, the sort behaviour
+and now the expand-into-a-row live. Every surface off the shell is a surface
+where those decisions get made again, slightly differently — which is exactly
+how VendorList ended up with its own copy of `SortableHead` and a comment
+arguing the copy was worth keeping. Nothing about the budget page is BROKEN
+today; it simply carries the cost that the shell exists to remove.
+
+**Prerequisite, so this does not become the same argument twice.** The
+migration must move the table SHAPE and leave the budget's own knowledge in
+the page — the currency prefix, the over-budget row styling, the category
+grouping. VendorList's sort order stayed in VendorList for the same reason:
+ranking a vendor status is vendor knowledge, not table knowledge.
+
+**Scope guess:** one file, roughly the size of #740's VendorList change (about
+250 lines of markup becoming a columns array), plus a browser guard asserting
+the rows carry the shell's `data-row-id` and that the over-budget styling
+survives the move.
+
+**Not started. No code has been written for this.**
