@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile';
-import { ChevronDown, ChevronUp, MessageCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, MessageCircle, BarChart2 } from 'lucide-react';
 import SectionReveal from '../SectionReveal';
 import GuestPageHeading from '../GuestPageHeading';
 import { isMotionEnabled } from '@/lib/universeStyling';
@@ -414,7 +414,7 @@ export default function WeddingPollsPage({ weddingDetails, theme, typography, un
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 32px 80px' }}>
         {polls.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '80px 0' }}>
-            <p style={{ fontSize: 36, marginBottom: 16 }}>🗳️</p>
+            <BarChart2 size={32} strokeWidth={1.5} aria-hidden="true" style={{ margin: '0 auto 16px', display: 'block' }} />
             <h2 style={{
               fontSize: 18,
               fontWeight: 700,

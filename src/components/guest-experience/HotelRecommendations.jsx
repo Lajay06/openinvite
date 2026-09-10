@@ -306,7 +306,7 @@ export default function HotelRecommendations({ weddingLocation, weddingCity }) {
       )}
 
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h3 className="text-sm font-semibold text-[#0A0A0A] mb-2">💡 Booking Tips</h3>
+        <h3 className="text-sm font-semibold text-[#0A0A0A] mb-2">Booking tips</h3>
         <ul className="space-y-1 text-xs text-[rgba(10,10,10,0.6)]">
           <li>• Book early to get the best rates and availability</li>
           <li>• Mention you're attending our wedding - some hotels offer group discounts</li>

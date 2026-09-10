@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Copy, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -10,9 +10,12 @@ import toast from 'react-hot-toast';
  * link never worked. Now inline on the Music page's Share block, built from the
  * wedding's own slug.
  *
- * QR follows the house pattern (api.qrserver.com), matching PublishModal and
- * StudioShareTab. Swapping all four sites to local generation is a logged
- * backlog ticket and deliberately NOT done here.
+ * The QR is drawn locally by `qrcode`. It used to follow "the house pattern"
+ * — api.qrserver.com, matching PublishModal and StudioShareTab — with a
+ * comment here calling the swap "a logged backlog ticket and deliberately NOT
+ * done". That ticket is closed: all five sites are local now. The house
+ * pattern was sending couples' addresses and guests' phone numbers to a
+ * third party, which is a bad thing for a house pattern to be.
  */
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -27,6 +30,16 @@ const underlineInput = {
 
 export default function SharePlaylist({ slug }) {
   const [copied, setCopied] = useState(false);
+  const [qrSvg, setQrSvg] = useState('');
+  useEffect(() => {
+    let live = true;
+    if (!slug) { setQrSvg(''); return undefined; }
+    import('qrcode')
+      .then((qr) => qr.toString(`${window.location.origin}/w/${slug}/music`, { type: 'svg', margin: 1, width: 180, color: { dark: '#0A0A0A', light: '#FFFFFF' } }))
+      .then((svg) => { if (live) setQrSvg(svg); })
+      .catch(() => { if (live) setQrSvg(''); });
+    return () => { live = false; };
+  }, [slug]);
 
   // No slug means the couple has not published a site yet, so there is no guest
   // URL to share. Say that rather than offering a link that 404s.
@@ -40,7 +53,6 @@ export default function SharePlaylist({ slug }) {
   }
 
   const shareUrl = `${window.location.origin}/w/${slug}/music`;
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(shareUrl)}&color=0A0A0A&bgcolor=FFFFFF`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(shareUrl);
@@ -62,12 +74,11 @@ export default function SharePlaylist({ slug }) {
 
       <div style={{ marginTop: 28 }}>
         <p style={{ ...labelStyle, marginBottom: 10 }}>QR code</p>
-        <img
-          src={qrUrl}
-          alt={`QR code linking to ${shareUrl}`}
-          width={180}
-          height={180}
-          style={{ display: 'block', border: '1px solid rgba(10,10,10,0.12)' }}
+        <div
+          role="img"
+          aria-label={`QR code linking to ${shareUrl}`}
+          style={{ width: 180, height: 180, display: 'block', border: '1px solid rgba(10,10,10,0.12)' }}
+          dangerouslySetInnerHTML={{ __html: qrSvg }}
         />
         <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginTop: 10 }}>
           Print it for the tables so guests can request a song from their seat.

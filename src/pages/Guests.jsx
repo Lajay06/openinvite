@@ -246,7 +246,7 @@ export default function Guests() {
         if (created) {
           toast.success(`Created table "${tableName}" (capacity ${DEFAULT_TABLE_CAPACITY}) and seated the guest`);
         } else if (grewCapacityTo) {
-          toast(`${tableName} grew to ${grewCapacityTo} seats to fit everyone assigned`, { icon: '⚠️' });
+          toast.error(`${tableName} grew to ${grewCapacityTo} seats to fit everyone assigned`);
         }
       }
       loadGuests();

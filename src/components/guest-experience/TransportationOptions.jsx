@@ -138,7 +138,7 @@ export default function TransportationOptions({ weddingLocation, weddingCity }) 
                   {option.tips && (
                     <div className="p-2 bg-blue-50 rounded border border-blue-200 mb-2">
                       <p className="text-xs text-blue-800">
-                        <span className="font-semibold">💡 Tip:</span> {option.tips}
+                        <span className="font-semibold">Tip:</span> {option.tips}
                       </p>
                     </div>
                   )}

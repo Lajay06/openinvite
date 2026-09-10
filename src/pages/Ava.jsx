@@ -169,9 +169,9 @@ function StatCell({ stat, index, inView }) {
 
 // ── How it works cards ────────────────────────────────────────
 const HOW_CARDS = [
-{ num: "01", step: "LEARNS", heading: "Understands your wedding", body: "From the moment you start, Ava absorbs your details: your style, your priorities, your story, your budget. The more you plan, the smarter Ava gets.", icon: "🧠" },
-{ num: "02", step: "PLANS", heading: "Builds your entire plan", body: "Ava auto-generates your personalized checklist, fills in your guest suite, flags budget risks, and creates seating suggestions, all based on your specific wedding.", icon: "📅" },
-{ num: "03", step: "DELIVERS", heading: "Handles the details", body: "When something needs attention, Ava surfaces it. When you're stuck, Ava suggests. When it's time to write your vows, Ava helps you find the words.", icon: "✦" }];
+{ num: "01", step: "LEARNS", heading: "Understands your wedding", body: "From the moment you start, Ava absorbs your details: your style, your priorities, your story, your budget. The more you plan, the smarter Ava gets." },
+{ num: "02", step: "PLANS", heading: "Builds your entire plan", body: "Ava auto-generates your personalized checklist, fills in your guest suite, flags budget risks, and creates seating suggestions, all based on your specific wedding." },
+{ num: "03", step: "DELIVERS", heading: "Handles the details", body: "When something needs attention, Ava surfaces it. When you're stuck, Ava suggests. When it's time to write your vows, Ava helps you find the words." }];
 
 
 // ── Comparison table ──────────────────────────────────────────

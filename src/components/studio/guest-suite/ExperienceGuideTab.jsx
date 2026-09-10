@@ -825,7 +825,7 @@ Rules:
         },
       }));
 
-      toast('Fetching photos…', { icon: '🖼️', duration: 2000 });
+      toast.loading('Fetching photos…', { duration: 2000 });
       const enriched = await enrichScheduleWithPhotos(rawSchedule, allSavedPlaces, destination);
       setSchedule(enriched);
       toast.success('Itinerary ready — review and save');

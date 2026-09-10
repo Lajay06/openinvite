@@ -55,34 +55,30 @@ const ASTRAL = /[\u{1F000}-\u{1FAFF}]/u;
 const VS16 = /️/;
 
 /**
- * file → the glyphs it still carries, and why it has not been swept yet.
- * A CEILING, not a permission: dropping an emoji from one of these is good and
- * the guard will ask for the entry to go.  Dated 2026-09-09.
+ * THE THREE THAT STAY, each by ruling rather than by backlog.
+ *
+ * The list was twenty-three. Twenty are gone — meaningful marks became lucide
+ * icons, decoration was simply removed, and the toasts moved to the library's
+ * own error/loading variants instead of overriding their icon.
+ *
+ * These three are not drift:
+ *
+ *   avaTracking.js  contains the regex that DETECTS emoji. Sweeping it would
+ *                   delete the detector.
+ *   DevReset.jsx    a developer-only reset log. Nobody outside this repo sees
+ *                   it, so "our surfaces" does not reach it.
+ *   Polls.jsx       `emoji:` is a DATA field a couple picks for their own poll
+ *                   category, shown to their guests on their own page. Owner
+ *                   ruling: a couple's own content, like their photos — data,
+ *                   not chrome.
+ *
+ * It is still a CEILING, not a permission: an entry that stops being needed
+ * FAILS, so even these three cannot rot.  Dated 2026-09-10.
  */
 const RATCHET = {
   'src/lib/avaTracking.js': 'contains the pattern that DETECTS emoji — the same shape as this file',
-  'src/pages/Polls.jsx': 'emoji is a DATA field a couple picks for their own poll category — needs a ruling, not a sweep',
-  'src/components/messages/WhatsAppCompose.jsx': 'message templates a couple sends themselves',
-  'src/components/guest-experience/InteractiveMap.jsx': 'map pin glyphs — need real icons, a design job',
-  'src/components/guest-experience/RestaurantRecommendations.jsx': 'a tip lamp',
-  'src/components/guest-experience/HotelRecommendations.jsx': 'a tip lamp',
-  'src/components/guest-experience/TransportationOptions.jsx': 'a tip lamp',
-  'src/components/guest-website/MultiPageWeddingWebsite.jsx': 'the password-gate padlock — chrome on a guest surface',
-  'src/components/guest-website/pages/WeddingPollsPage.jsx': 'an empty-state ballot box',
-  'src/components/games/GamesManager.jsx': 'an empty-state die',
-  'src/components/games/GamesPage.jsx': 'a locked-state padlock',
-  'src/components/guests/ImportGuestModal.jsx': 'a toast warning sign',
-  'src/components/guests/SendInvitesModal.jsx': 'a love letter in the WhatsApp template',
-  'src/components/studio/guest-suite/ExperienceGuideTab.jsx': 'a toast picture frame',
-  'src/components/studio/guest-suite/StudioShareTab.jsx': 'share-row glyphs — the same fix as PublishModal, next package',
-  'src/components/vendors/VendorDetailPanel.jsx': 'a document page',
-  'src/components/website-builder/SectionEditorFields.jsx': 'the media picker’s picture frame',
-  'src/lib/trialErrorToast.js': 'an unlocked padlock in a toast',
-  'src/pages/Ava.jsx': 'marketing step glyphs',
-  'src/pages/AvaStudioWebsite.jsx': 'the media picker’s picture frame at line 73',
-  'src/pages/DevReset.jsx': 'warning signs in a dev-only log',
-  'src/pages/Guests.jsx': 'a toast warning sign',
-  'src/pages/RefundPolicy.jsx': 'policy card glyphs',
+  'src/pages/DevReset.jsx': 'a developer-only reset log; nobody outside this repo sees it',
+  'src/pages/Polls.jsx': 'a couple picks one for their own poll category and their guests see it — their content, like their photos, not our chrome',
 };
 
 const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'coverage']);
@@ -146,6 +142,23 @@ export async function runNoEmoji() {
   const pre = [...dirty.keys()].filter((f) => f.startsWith('prerendered/'));
   check('no emoji reached the prerendered HTML', pre.length === 0,
     pre.length ? pre.join(', ') : `${files('prerendered').length} pages`);
+
+  // ── AND WHILE WE ARE READING EVERY FILE ANYWAY ────────────────────────────
+  //
+  // Not an emoji rule, and it is here because of how it was found: this sweep
+  // uncovered the THIRD api.qrserver.com call in the product — a 400px
+  // download in StudioShareTab, sibling to the 160px preview beside it and to
+  // the two #743 removed from PublishModal. Each sent a couple's private
+  // guest-suite address to a third party we have no agreement with, and each
+  // was found by someone reading that file for an unrelated reason.
+  //
+  // Three instances found three separate times is a pattern, not bad luck, so
+  // the fourth is caught by a machine. `qrcode` is a dependency; there is no
+  // reason to fetch a QR from anywhere.
+  const leaks = scanned.filter((f) => /qrserver\.com\/v1/.test(
+    readFileSync(join(ROOT, f), 'utf8').split('\n').filter((l) => !/^\s*(\/\/|\*)/.test(l)).join('\n')));
+  check('no QR is fetched from a third party', leaks.length === 0,
+    leaks.length ? leaks.join(', ') : 'drawn locally by `qrcode`, everywhere');
 
   return results;
 }

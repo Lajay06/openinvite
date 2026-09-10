@@ -43,7 +43,7 @@ function PasswordGateSimple({ slug, onUnlock }) {
   return (
     <div style={{ minHeight: '100vh', background: '#0A0A0A', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <div style={{ maxWidth: 340, width: '100%', textAlign: 'center' }}>
-        <p style={{ fontSize: 24, marginBottom: 8 }}>🔒</p>
+        <Lock size={24} strokeWidth={1.6} aria-hidden="true" style={{ margin: '0 auto 8px', display: 'block' }} />
         <h2 style={{ color: '#fff', fontSize: 20, fontWeight: 700, marginBottom: 8 }}>This site is password protected</h2>
         <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, marginBottom: 24 }}>Enter the password to continue</p>
         <input type="password" value={val} onChange={e => { setVal(e.target.value); setError(false); }} onKeyDown={e => e.key === 'Enter' && submit()}
@@ -83,6 +83,7 @@ import InvitationNotAvailable from './InvitationNotAvailable';
 import { withAlwaysOnPages } from '@/lib/guestPages';
 
 import { coupleDisplayName } from '@/lib/coupleNames';
+import { Lock } from 'lucide-react';
 // Background music: reader gated OFF (owner decision, video-sound batch 4b).
 // The same SHOW_BACKGROUND_MUSIC_UI flag that hides the two writing surfaces
 // (GuestSuitePolicies.jsx, WBRightPanel.jsx). Hiding the writers does not

@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { interactiveDivProps } from '@/lib/a11y';
 
 import { coupleDisplayName } from '@/lib/coupleNames';
+import { ImageIcon } from 'lucide-react';
 const sans = "'Plus Jakarta Sans', sans-serif";
 
 // ── Shared primitives ─────────────────────────────────────────
@@ -70,7 +71,7 @@ function AvaMediaPicker({ label, value, onChange, mode }) {
           onMouseEnter={e => { e.currentTarget.style.borderColor = '#E03553'; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = dark ? 'rgba(255,255,255,0.15)' : '#DDDDDD'; }}
         >
-          <div style={{ fontSize: 28, marginBottom: 8 }}>🖼</div>
+          <ImageIcon size={24} strokeWidth={1.5} aria-hidden="true" style={{ margin: '0 auto 8px', display: 'block' }} />
           <p style={{ fontSize: 13, color: dark ? 'rgba(255,255,255,0.4)' : 'rgba(10,10,10,0.6)', margin: 0 }}>Click to select a photo</p>
         </div>
       )}

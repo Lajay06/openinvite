@@ -1,5 +1,5 @@
 import React, { useState, useRef, useContext, createContext } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, ImageIcon } from 'lucide-react';
 import DatePicker from '@/components/shared/DatePicker';
 import { interactiveDivProps } from '@/lib/a11y';
 
@@ -212,7 +212,7 @@ export function MediaPicker({ label, value, onChange, aspectRatio = '16/9' }) {
           onMouseEnter={e => { e.currentTarget.style.borderColor = '#E03553'; e.currentTarget.style.background = 'rgba(224,53,83,0.03)'; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = '#DDDDDD'; e.currentTarget.style.background = '#FAFAFA'; }}
         >
-          <div style={{ fontSize: 26, marginBottom: 8 }}>🖼</div>
+          <ImageIcon size={22} strokeWidth={1.5} aria-hidden="true" style={{ margin: '0 auto 8px', display: 'block', color: 'rgba(10,10,10,0.45)' }} />
           <p style={{ fontSize: 12, fontWeight: 600, color: '#444', margin: '0 0 3px' }}>Click to select from library</p>
           <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: 0 }}>or drag and drop a file</p>
         </div>

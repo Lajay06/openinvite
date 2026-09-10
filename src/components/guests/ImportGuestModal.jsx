@@ -80,7 +80,10 @@ export default function ImportGuestModal({ onClose, onImported }) {
       if (importedCount > 0) parts.push(`${importedCount} imported`);
       if (duplicates.length > 0) parts.push(`${duplicates.length} skipped (already on your list)`);
       if (failed.length > 0) parts.push(`${failed.length} failed`);
-      toast(parts.join(' · '), { id: tid, icon: duplicates.length > 0 || failed.length > 0 ? '⚠️' : undefined });
+      // THE LIBRARY'S OWN VARIANT, not an icon override. `toast.error` draws its
+      // mark in our type; an `icon:` override drew the platform's.
+      const troubled = duplicates.length > 0 || failed.length > 0;
+      (troubled ? toast.error : toast.success)(parts.join(' · '), { id: tid });
       setRows(prev => prev.map(r => {
         if (failed.includes(r._rowIndex)) return { ...r, _error: 'Failed to save' };
         if (duplicates.includes(r._rowIndex)) return { ...r, _error: 'Already on your guest list — skipped' };
