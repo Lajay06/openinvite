@@ -50,6 +50,7 @@ export default function PublishModal({ onClose, details, onUpdate }) {
   // entry bundle for the three tabs that never draw one. SVG for the preview
   // so it stays sharp at any size, and a PNG data URI for the download,
   // because "print this on your invitation" wants a raster file.
+  const [refusal, setRefusal] = useState('');
   const [qrSvg, setQrSvg] = useState('');
   const [qrPng, setQrPng] = useState('');
   useEffect(() => {
@@ -88,7 +89,20 @@ export default function PublishModal({ onClose, details, onUpdate }) {
     if (next.websiteEnabled) {
       const settled = await syncWeddingAddress(details.id);
       if (settled.changed && settled.slug) onUpdate({ slug: settled.slug });
+
+      // AND IT REFUSES IF THERE IS STILL NO ADDRESS. This settled the address
+      // and then published regardless: `update()` was unconditional, so a
+      // record with no names — `claim-slug` answering `{slug: null, reason:
+      // 'no-names'}` — went live at an address that does not exist. The
+      // button above is disabled without a slug, but a disabled button is a
+      // hint, not a gate; the write is the gate.
+      const address = settled.slug || details.slug;
+      if (!address) {
+        setRefusal('Add your names first so your guest suite has an address.');
+        return;
+      }
     }
+    setRefusal('');
 
     await base44.entities.WeddingDetails.update(details.id, next);
     onUpdate(next);
@@ -220,6 +234,15 @@ export default function PublishModal({ onClose, details, onUpdate }) {
                   {details?.websiteEnabled ? 'Unpublish' : 'Publish Now'}
                 </button>
               </div>
+
+              {refusal && (
+                <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '10px 12px', marginBottom: 20, background: 'rgba(224,53,83,0.08)', border: '1px solid rgba(224,53,83,0.3)', fontSize: 13, lineHeight: 1.5 }}>
+                  <span>
+                    {refusal}{' '}
+                    <a href="/EventDetails" style={{ color: '#E03553', fontWeight: 600 }}>Event details</a>
+                  </span>
+                </div>
+              )}
 
               {/* URL */}
               <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>YOUR URL</p>
