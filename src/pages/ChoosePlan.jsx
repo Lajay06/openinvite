@@ -6,6 +6,8 @@ import { Loader2 } from 'lucide-react';
 import { track } from '@/lib/analytics';
 import { startCheckout } from '@/lib/checkoutSession';
 import { PRO_FEATURES, ULTRA_EXTRAS } from '@/lib/planFeatures';
+import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { needsOnboarding } from '@/lib/needsOnboarding';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -62,7 +64,15 @@ export default function ChoosePlan() {
       if (user && !user.plan_step_completed) {
         base44.auth.updateMe({ plan_step_completed: true }).catch(() => {});
       }
-      navigate(next, { replace: true });
+      // A record with no address AND no names never finished the wizard, and
+      // nothing else in the product will offer it again. Onboarding.jsx
+      // resumes where it left off (#712), so this is a redirect, not a
+      // restart. A read and a route; nothing is written.
+      getMyWeddingDetails()
+        .then((wedding) => navigate(needsOnboarding(wedding) ? '/onboarding' : next, { replace: true }))
+        // A record we cannot read is not a reason to strand anyone on this
+        // page: the dashboard is the safe answer, exactly as before.
+        .catch(() => navigate(next, { replace: true }));
       return;
     }
     setChecking(false);

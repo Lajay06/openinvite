@@ -185,7 +185,11 @@ const DEFAULT = {
   coupleNames: '',
   weddingDate: '',
   slug: '',
-  websiteEnabled: true,
+  // FALSE, AND NOT WRITABLE. See WRITABLE_FIELDS below — publishing is a
+  // choice, not a default. `{ ...DEFAULT, ...existing }` means a record that
+  // already carries `websiteEnabled: true` keeps it; a record that carries
+  // nothing now reads as not-published, which is the truth about it.
+  websiteEnabled: false,
   // websitePassword is deliberately NOT here, and websitePasswordEnabled is
   // deliberately not in WRITABLE_FIELDS below. Both are written only through
   // /api/my-wedding-details (src/lib/websitePasswordGate.js), because the
@@ -241,7 +245,26 @@ const DEFAULT = {
 // keystroke, and the couple would race themselves through half-typed names.
 // The studio still SUGGESTS an address locally; PublishModal claims it.
 const WRITABLE_FIELDS = [
-  ...Object.keys(DEFAULT).filter(k => k !== 'slug'),
+  // `slug` AND `websiteEnabled` ARE BOTH CLAIMS, NOT CONTENT.
+  //
+  // slug was excluded on 2026-08-26, after this page's 2-second autosave was
+  // caught persisting a wedding's public address keystroke by keystroke. The
+  // rule written down that day was "an address is claimed, not stored:
+  // anything a couple can hold only one of, that strangers depend on, cannot
+  // ride a general-purpose save."
+  //
+  // `websiteEnabled` is the same kind of thing and was left in. DEFAULT had
+  // it TRUE, so `{ ...DEFAULT, ...existing }` gave every record without the
+  // field a `true`, and the next autosave persisted it. A couple who opened
+  // the builder and typed one character PUBLISHED THEIR SITE — no button, no
+  // modal, no decision. That is how smoke01 came to read
+  // `websiteEnabled: true, slug: null`: nothing ever published it.
+  //
+  // Excluded here rather than defaulted to false alone, because a default is
+  // a guess about the record and an exclusion is a fact about this page:
+  // the builder does not own whether a site is live. The two publish controls
+  // do, and both now refuse without an address.
+  ...Object.keys(DEFAULT).filter(k => k !== 'slug' && k !== 'websiteEnabled'),
   'fontOverride',
   'guestExperienceSettings',
   'photosContent',
@@ -626,6 +649,12 @@ export default function StudioWebsite({ onBack }) {
     ...Object.fromEntries((details?.customPages || []).map(p => [p.slug, p.name])),
   };
 
+  // LIVE IS BOTH HALVES. websiteEnabled says the couple chose to go live; the
+  // slug says there is an address to go live AT. UniverseWorldView already
+  // gates on exactly this pair, for exactly this reason — and two live
+  // records were measured with websiteEnabled true and an empty slug.
+  const isLive = Boolean(details?.websiteEnabled && details?.slug);
+
   if (isLoading || details === null) return (
     <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1C1C1E' }}>
       <div style={{ width: 24, height: 24, border: '2px solid rgba(255,255,255,0.08)', borderTopColor: '#E03553', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
@@ -743,15 +772,32 @@ export default function StudioWebsite({ onBack }) {
           {/* Device switcher toolbar */}
           <div style={{ height: 48, background: '#2C2C2E', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 16px', flexShrink: 0, position: 'relative' }}>
             {/* URL indicator — left */}
+            {/* A PLACEHOLDER IS NOT AN ADDRESS, AND A GREEN DOT IS A CLAIM.
+                This printed `openinvite.com.au/w/your-wedding/` — the literal
+                fallback string — beside a dot that was green unconditionally.
+                A couple with no address was shown one, and told it was live.
+                The dot is green only when the site is BOTH published and
+                reachable; otherwise there is no address to print and the bar
+                says so, with the way to fix it. */}
             <div style={{ position: 'absolute', left: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22C55E', flexShrink: 0 }} />
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: isLive ? '#22C55E' : 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
               <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 220 }}>
                 {/* An email has no address. Leaving the site URL up while the
                     canvas shows an invitation would label the wrong thing. */}
                 {selectedEmail
                   ? 'Email · 600px'
-                  : `openinvite.com.au/w/${details.slug || 'your-wedding'}/${currentPage !== 'home' ? currentPage : ''}`}
+                  : details.slug
+                    ? `openinvite.com.au/w/${details.slug}/${currentPage !== 'home' ? currentPage : ''}`
+                    : 'No address yet'}
               </span>
+              {!selectedEmail && !details.slug && (
+                <button
+                  onClick={() => navigate('/EventDetails')}
+                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 11, color: '#E03553', fontFamily: 'inherit', whiteSpace: 'nowrap' }}
+                >
+                  Add your names
+                </button>
+              )}
             </div>
             {/* Device + Edit/Preview pills */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

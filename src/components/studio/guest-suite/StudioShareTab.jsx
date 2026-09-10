@@ -67,6 +67,13 @@ export default function StudioShareTab({ details: propDetails }) {
 
   const togglePublish = async () => {
     const next = !details?.websiteEnabled;
+    // THE SECOND PUBLISH CONTROL, AND IT HAD NO GATE AT ALL — not even the
+    // disabled button the modal has. A couple with no names could go live
+    // here at an address that does not exist.
+    if (next && !details?.slug) {
+      toast.error('Add your names first so your guest suite has an address.');
+      return;
+    }
     await updateField('websiteEnabled', next);
     toast.success(next ? 'Website is now live!' : 'Website hidden');
   };
@@ -117,18 +124,29 @@ export default function StudioShareTab({ details: propDetails }) {
 
   if (!details) return <div style={{ padding: 40, textAlign: 'center', color: 'rgba(10,10,10,0.6)', fontFamily: sans }}>Loading…</div>;
 
-  const siteUrl = `${window.location.origin}/w/${details.slug || 'your-wedding'}`;
+  // NOT A PLACEHOLDER. This was `details.slug || 'your-wedding'`, and unlike
+  // the builder's address bar it is not display-only: siteUrl is what the
+  // WhatsApp, SMS and Facebook share actions send, and what the QR encodes.
+  // A couple with no address could hand guests
+  // `openinvite.com.au/w/your-wedding` over three channels. Empty now, and
+  // every surface below asks whether there is one.
+  const siteUrl = details.slug ? `${window.location.origin}/w/${details.slug}` : '';
+  const hasAddress = !!details.slug;
 
   return (
     <div style={{ fontFamily: sans }}>
       {/* STATUS BANNER */}
       <div style={{ padding: '20px 40px', background: details?.websiteEnabled ? 'rgba(34,197,94,0.06)' : '#FAFAFA', borderBottom: '1px solid #EEEEEE', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-        <div style={{ width: 10, height: 10, borderRadius: '50%', background: details?.websiteEnabled ? '#22C55E' : '#DDDDDD', flexShrink: 0 }} />
+        <div style={{ width: 10, height: 10, borderRadius: '50%', background: (details?.websiteEnabled && hasAddress) ? '#22C55E' : '#DDDDDD', flexShrink: 0 }} />
         <div style={{ flex: 1, minWidth: 180 }}>
-          <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: '#0A0A0A' }}>{details?.websiteEnabled ? 'Your website is live' : 'Your website is not published yet'}</p>
-          <p style={{ margin: 0, fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: 'monospace' }}>{siteUrl}</p>
+          <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: '#0A0A0A' }}>
+            {!hasAddress ? 'No address yet' : details?.websiteEnabled ? 'Your website is live' : 'Your website is not published yet'}
+          </p>
+          <p style={{ margin: 0, fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: hasAddress ? 'monospace' : sans }}>
+            {hasAddress ? siteUrl : <>Add your names in <a href="/EventDetails" style={{ color: '#E03553', fontWeight: 600 }}>Event details</a> and your address follows.</>}
+          </p>
         </div>
-        <button onClick={togglePublish} style={{ padding: '10px 24px', background: details?.websiteEnabled ? 'transparent' : 'linear-gradient(135deg, #E03553, #803D81)', color: details?.websiteEnabled ? '#E03553' : '#FFF', border: details?.websiteEnabled ? '1px solid #E03553' : 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: sans }}>
+        <button onClick={togglePublish} disabled={!hasAddress && !details?.websiteEnabled} style={{ padding: '10px 24px', background: details?.websiteEnabled ? 'transparent' : 'linear-gradient(135deg, #E03553, #803D81)', color: details?.websiteEnabled ? '#E03553' : '#FFF', border: details?.websiteEnabled ? '1px solid #E03553' : 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: sans }}>
           {details?.websiteEnabled ? 'Unpublish' : 'Publish Website'}
         </button>
         {details?.websiteEnabled && details?.slug && (
@@ -143,7 +161,7 @@ export default function StudioShareTab({ details: propDetails }) {
         <div style={{ width: 300, flexShrink: 0, marginRight: 24 }}>
           <div style={{ border: '1px solid #EEEEEE', padding: 20, marginBottom: 16 }}>
             <div style={{ display: 'flex', marginBottom: 12 }}>
-              <div style={{ flex: 1, padding: '10px 12px', background: '#F8F8F8', fontSize: 12, color: '#444', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', borderBottom: '1px solid #DDD' }}>openinvite.com.au/w/{details?.slug || 'your-wedding'}</div>
+              <div style={{ flex: 1, padding: '10px 12px', background: '#F8F8F8', fontSize: 12, color: '#444', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', borderBottom: '1px solid #DDD' }}>openinvite.com.au/w/{details?.slug || '\u2026'}</div>
               <button onClick={copyLink} style={{ padding: '10px 16px', background: '#0A0A0A', color: '#FFF', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sans, whiteSpace: 'nowrap' }}>{copied ? '✓ Copied' : 'Copy'}</button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
@@ -272,7 +290,7 @@ export default function StudioShareTab({ details: propDetails }) {
         <div style={{ width: 280, flexShrink: 0 }}>
           <div style={{ border: '1px solid #EEEEEE', padding: 20, marginBottom: 16, textAlign: 'center' }}>
             <img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(siteUrl)}&color=0A0A0A&bgcolor=FFFFFF`} alt="QR Code" style={{ width: 160, height: 160, display: 'block', margin: '0 auto 12px' }} />
-            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 16px', fontFamily: 'monospace', wordBreak: 'break-all' }}>openinvite.com.au/w/{details?.slug || 'your-wedding'}</p>
+            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 16px', fontFamily: 'monospace', wordBreak: 'break-all' }}>openinvite.com.au/w/{details?.slug || '\u2026'}</p>
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={downloadQR} style={{ flex: 1, padding: '10px', background: '#0A0A0A', color: '#FFF', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sans }}>Download</button>
               <button onClick={() => window.print()} style={{ flex: 1, padding: '10px', border: '1px solid #0A0A0A', background: 'transparent', color: '#0A0A0A', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sans }}>Print</button>

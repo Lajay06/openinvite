@@ -386,7 +386,14 @@ export default function AvaStudioWebsite() {
               on the one screen this product has that is purely a moment. The
               heading carries it; nothing replaces the glyph. */}
           <h2 style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, color: fg, margin: '0 0 16px' }}>Your website is ready!</h2>
-          <p style={{ fontSize: 16, color: sub, margin: '0 0 40px' }}>{coupleName} · openinvite.com.au/w/{details?.slug || 'your-wedding'}</p>
+          {/* "You're live!" over a placeholder address is two claims, both
+              false. If there is no slug there is no address, and the screen
+              says what to do about it instead of inventing one. */}
+          <p style={{ fontSize: 16, color: sub, margin: '0 0 40px' }}>
+            {details?.slug
+              ? <>{coupleName} · openinvite.com.au/w/{details.slug}</>
+              : <>{coupleName} · no address yet — add your names in <a href="/EventDetails" style={{ color: '#E03553', fontWeight: 600 }}>Event details</a></>}
+          </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <button onClick={() => navigate('/studio/guest-suite/share')} style={{ padding: '14px 32px', background: 'linear-gradient(135deg, #E03553, #803D81)', color: '#FFF', border: 'none', fontWeight: 700, cursor: 'pointer', fontSize: 14, fontFamily: sans }}>
               Share with Guests →
