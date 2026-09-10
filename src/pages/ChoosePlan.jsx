@@ -42,7 +42,6 @@ function isPastPlanStep(user) {
   return !!(user?.plan_step_completed || user?.onboardingCompleted || user?.plan === 'pro' || user?.plan === 'ultra');
 }
 
-
 export default function ChoosePlan() {
   const navigate = useNavigate();
   const { user, isLoadingAuth } = useAuth();

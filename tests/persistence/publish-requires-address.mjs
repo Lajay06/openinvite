@@ -101,6 +101,25 @@ export async function runPublishRequiresAddress() {
     'websiteEnabled AND slug');
   check('  and the Share tab\'s does', /details\?\.websiteEnabled && hasAddress/.test(share), 'same pair');
 
+  // ── 4b. THE STUDIO AND THE GUEST SIDE MUST READ THE FIELD THE SAME WAY ────
+  //
+  // The default flip only makes sense if an ABSENT websiteEnabled means "not
+  // live" on the server too. It does, and it already did: all three guest
+  // routes ask `!== true`, not `=== false`, so undefined fails the gate.
+  //
+  // That is what made the old default a DISAGREEMENT rather than merely a bad
+  // guess: the studio said live, the server returned 404. Pinned here because
+  // a later `=== false` anywhere in this list would reopen it silently — the
+  // studio would be right and the guest side would start serving records
+  // nobody published.
+  for (const f of ['api/wedding-by-slug.js', 'api/guest-page.js', 'api/wedding-poll-results.js']) {
+    const src = code(read(f));
+    const strict = /websiteEnabled !== true/.test(src);
+    const loose = /websiteEnabled === false|!wedding\.websiteEnabled/.test(src);
+    check(`${f.split('/').pop()} treats an absent websiteEnabled as not live`, strict && !loose,
+      strict ? (loose ? 'also has a loose read' : '!== true') : 'no strict read found');
+  }
+
   // ── 5. re-entry: routing only, and the precondition ───────────────────────
   const plan = read('src/pages/ChoosePlan.jsx');
   // ITS OWN MODULE, for the reason onboardingComplete.js has one: inside the
