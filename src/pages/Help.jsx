@@ -178,7 +178,7 @@ const ARTICLES = {
   ),
   'Auto-filling your website with Ava': (
     <div>
-      <p style={S.p}>The "✦ Auto-Fill with Ava" button in the Guest Suite reads all your planning data and generates complete content for every page of your guest suite in about 10–15 seconds.</p>
+      <p style={S.p}>The "✦ Auto-Fill with Ava" button in the Guest Suite reads all your planning data and generates complete content for every page in about 10–15 seconds.</p>
       <h3 style={S.h3}>How to use it</h3>
       <ol style={S.ol}>
         <li style={S.li}>Open Design Studio → Guest Suite</li>
