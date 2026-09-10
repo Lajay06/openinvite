@@ -7,9 +7,33 @@ import { interactiveDivProps } from '@/lib/a11y';
 export const MediaLibraryContext = createContext(null);
 export const useMediaLibrary = () => useContext(MediaLibraryContext);
 
+// ── Panel tone ────────────────────────────────────────────────
+//
+// THE LABEL HAS TO KNOW WHAT IT IS PAINTED ON. These primitives were written
+// for a light editor and hard-coded a near-black label. The builder's right
+// panel is #1C1C1E, and every FLabel in it — TEXT COLOR, BACKGROUND, SIZE,
+// ALIGNMENT, SPACING, HEADING FONT, BODY FONT, and every UInput/UTextarea
+// label — was painting rgba(10,10,10,0.6) on it. Measured from paint:
+// 1.12:1. Not "hard to read": invisible. The controls looked like unlabelled
+// grids of swatches, which is why the Text color section read as absent.
+//
+// A CONTEXT, NOT A PROP AT EVERY CALL SITE. There are more than a dozen
+// FLabels in that panel and three of them are inside shared primitives the
+// panel does not call directly. Threading a `tone` prop through all of them
+// would fix the ones someone remembered. The panel declares its tone once and
+// every label inside it — present and future — is right by default.
+export const PanelToneContext = createContext('light');
+export const usePanelTone = () => useContext(PanelToneContext);
+export function PanelTone({ tone, children }) {
+  return <PanelToneContext.Provider value={tone}>{children}</PanelToneContext.Provider>;
+}
+
 // ── Shared Primitives ──────────────────────────────────────────
 export function FLabel({ children, style = {} }) {
-  return <label style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(10,10,10,0.6)', display: 'block', marginBottom: 5, ...style }}>{children}</label>;
+  // 0.7 composites to rgb(187,187,188) on #1C1C1E — 8.7:1, and inside the
+  // 60-80% band the owner set for a label on this panel.
+  const color = usePanelTone() === 'dark' ? 'rgba(255,255,255,0.7)' : 'rgba(10,10,10,0.6)';
+  return <label style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color, display: 'block', marginBottom: 5, ...style }}>{children}</label>;
 }
 
 /** onCommit (optional) fires on blur, for callers that debounce onChange and

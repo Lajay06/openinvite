@@ -797,7 +797,15 @@ const SPACING_PRESETS = Object.fromEntries(SPACING_OPTIONS.map(o => [o.value, o.
 function resolveBlockStyle(style, theme) {
   const s = style || {};
   const textColorKey = LEGACY_TEXT_COLOR_ALIASES[s.textColor] || s.textColor;
-  const textColor = (textColorKey && TEXT_COLOR_TOKENS[textColorKey]) ? TEXT_COLOR_TOKENS[textColorKey](theme) : theme.lightText;
+  // A RAW HEX INK, for the same reason the background has one, and it has to
+  // be resolved HERE or the picker beside the swatches is a control with no
+  // visible effect: an unrecognised key falls through to theme.lightText, so
+  // the couple would pick a color, see the swatch change, and watch the words
+  // stay exactly as they were.
+  const isCustomTextHex = typeof textColorKey === 'string' && /^#[0-9a-fA-F]{6}$/.test(textColorKey);
+  const textColor = isCustomTextHex
+    ? textColorKey
+    : (textColorKey && TEXT_COLOR_TOKENS[textColorKey]) ? TEXT_COLOR_TOKENS[textColorKey](theme) : theme.lightText;
 
   const backgroundKey = s.background != null && LEGACY_BACKGROUND_ALIASES[s.background] !== undefined ? LEGACY_BACKGROUND_ALIASES[s.background] : s.background;
   // A RAW HEX is the escape hatch: the swatches are the fast path, the picker
