@@ -251,7 +251,7 @@ const ALL_ITEMS = [
     relevance: p => p.isDestination || p.isOutdoor || p.isMultiDay ? 'HIGH' : 'MEDIUM',
     body: p => {
       if (p.isDestination) return [
-        'At a destination wedding, you are responsible for giving guests enough information to make their own travel decisions — and enough lead time to get good prices. Send save-the-dates 12 months out for international destinations, and include a travel information page on your guest suite.',
+        'At a destination wedding, you are responsible for giving guests enough information to make their own travel decisions — and enough lead time to get good prices. Send save-the-dates 12 months out for international destinations, and include a travel information page in your guest suite.',
         'Negotiate a room block at your chosen hotel or resort. Even if you cannot guarantee the rooms, a block gives guests a discounted rate and keeps them in the same location — which is invaluable for atmosphere and logistics.',
         'Consider whether you want to arrange group airport transfers, and whether local activities between wedding events will be guided or self-directed.',
       ];
@@ -265,7 +265,7 @@ const ALL_ITEMS = [
       ];
     },
     tips: () => [
-      'Include a transport information section on your guest suite with maps, parking details, and shuttle timetables.',
+      'Include a transport information section in your guest suite with maps, parking details, and shuttle timetables.',
       'Arrange a vehicle for the couple — do not rely on a guest or vendor.',
     ],
     why: p => p.isDestination ? 'Destination weddings require guests to invest significant time and money. Making the logistics easy is how you honor that commitment.' : 'Transport confusion causes stress for guests and delays your timeline. Clear, proactive communication prevents it.',
@@ -343,7 +343,7 @@ const ALL_ITEMS = [
     relevance: () => 'HIGH',
     body: p => {
       if (p.isDestination) return [
-        'For a destination wedding, your RSVP process needs to provide guests with enough information to book travel and accommodation. Send save-the-dates at least 12 months in advance, and include a travel FAQ page on your guest suite from the start.',
+        'For a destination wedding, your RSVP process needs to provide guests with enough information to book travel and accommodation. Send save-the-dates at least 12 months in advance, and include a travel FAQ page in your guest suite from the start.',
         'Your RSVP form should collect: attendance confirmation, dietary requirements, song requests if you want them, and any accessibility needs. For a destination event, also ask which pre-wedding activities guests plan to attend.',
       ];
       if (p.isIntimate) return [

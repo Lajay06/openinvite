@@ -458,7 +458,7 @@ const CONSIDERATIONS = {
         'A guest suite is the most efficient way to share this. Send the link with your invitation, and update it as logistics are confirmed.',
       ],
       tips: [
-        'Include a FAQ section on your guest suite',
+        'Include a FAQ section in your guest suite',
         "Send a 'getting there' guide to all guests one week before",
         'Nominate someone to be the guest contact on the day for queries',
       ],

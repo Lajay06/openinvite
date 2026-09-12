@@ -34,7 +34,7 @@ function DisplayToggle({ value, onChange }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 16, paddingTop: 16, borderTop: '1px solid #F5F5F5' }}>
       <Toggle value={value} onChange={onChange} />
-      <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Display on website</span>
+      <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Show in guest suite</span>
     </div>
   );
 }
@@ -82,7 +82,7 @@ export default function PoliciesTab({ details }) {
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
         <h2 style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', margin: '0 0 8px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Wedding Policies</h2>
-        <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: 0 }}>Set clear expectations for your guests. These can be displayed on your guest suite and included in your Experience Guide.</p>
+        <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: 0 }}>Set clear expectations for your guests. These can be displayed in your guest suite and included in your Experience Guide.</p>
       </div>
 
       {/* Photography */}
@@ -208,7 +208,7 @@ export default function PoliciesTab({ details }) {
       </PolicySection>
 
       <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', marginBottom: 16, marginTop: 8, fontStyle: 'italic' }}>
-        Anything marked "Display on website" appears in the Good to know section of your guest suite.
+        Anything marked "Show in guest suite" appears in the Good to know section of your guest suite.
       </p>
 
       <button

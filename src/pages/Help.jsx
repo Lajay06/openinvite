@@ -61,7 +61,7 @@ const ARTICLES = {
       </ul>
       <h3 style={S.h3}>How to save</h3>
       <p style={S.p}>Changes auto-save after 1.5 seconds. You'll see "Saving..." then "Saved ✓" in the top bar.</p>
-      <div style={S.tip}><p style={S.tipText}><strong>Important:</strong> Never enter venue details by typing them manually — always use the Google Places search so the address, coordinates, and place ID are saved correctly. This enables map embeds on your guest suite.</p></div>
+      <div style={S.tip}><p style={S.tipText}><strong>Important:</strong> Never enter venue details by typing them manually — always use the Google Places search so the address, coordinates, and place ID are saved correctly. This enables map embeds in your guest suite.</p></div>
     </div>
   ),
   'Understanding the dashboard': (
@@ -291,7 +291,7 @@ const ARTICLES = {
   ),
   'Setting up your RSVP page': (
     <div>
-      <p style={S.p}>Your RSVP page lets guests respond to your invitation directly on your guest suite. Responses are collected in your Guest List automatically.</p>
+      <p style={S.p}>Your RSVP page lets guests respond to your invitation directly in your guest suite. Responses are collected in your Guest List automatically.</p>
       <h3 style={S.h3}>How to set up RSVP</h3>
       <ol style={S.ol}>
         <li style={S.li}>In the Guest Suite → Website tab, select "RSVP" from the left panel page list (toggle it on if off)</li>
