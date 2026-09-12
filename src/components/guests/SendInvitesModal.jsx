@@ -36,7 +36,7 @@ function buildWhatsAppMessage(guest, coupleName, weddingDate, rsvpUrl) {
   const dateStr = weddingDate
     ? new Date(weddingDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })
     : '';
-  return `Hi ${name}! 💌 You're invited to ${coupleName ? `${coupleName}'s wedding` : 'our wedding'}${dateStr ? ` on ${dateStr}` : ''}. Please RSVP here: ${rsvpUrl}`;
+  return `Hi ${name}! You're invited to ${coupleName ? `${coupleName}'s wedding` : 'our wedding'}${dateStr ? ` on ${dateStr}` : ''}. Please RSVP here: ${rsvpUrl}`;
 }
 
 function buildWhatsAppUrl(guest, coupleName, weddingDate, token) {

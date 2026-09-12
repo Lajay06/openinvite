@@ -11,11 +11,13 @@ const UL  = { fontSize: 15, lineHeight: 1.75, color: 'rgba(10,10,10,0.75)', font
 const LK  = { color: '#E03553', textDecoration: 'none' };
 const DIV = { borderTop: '1px solid rgba(10,10,10,0.06)', marginTop: 48 };
 
-function PolicyCard({ icon, title, children }) {
+// THE ICON SLOT IS GONE, not filled with something else. A party popper, a
+// pair of scales and a refresh arrow, at 22px, on the page that explains
+// refunds under Australian Consumer Law. The headings say what each card is.
+function PolicyCard({ title, children }) {
   return (
     <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '24px 28px', marginBottom: 12 }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-        <div style={{ fontSize: 22, flexShrink: 0, lineHeight: 1 }}>{icon}</div>
         <div>
           <div style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, marginBottom: 8 }}>{title}</div>
           {children}
@@ -38,16 +40,16 @@ export default function RefundPolicy() {
             Pro and Ultra are one-time purchases, not subscriptions. Refunds are provided as required by law.
           </p>
 
-          <PolicyCard icon="🎉" title="Free trial">
+          <PolicyCard title="Free trial">
             <p style={{ ...P, marginBottom: 0 }}>No charge, no refund needed. Try the full product free before you buy.</p>
           </PolicyCard>
 
-          <PolicyCard icon="⚖️" title="Your rights under Australian Consumer Law">
+          <PolicyCard title="Your rights under Australian Consumer Law">
             <p style={P}>Openinvite is an Australian business, and our products come with guarantees that cannot be excluded under the Australian Consumer Law. You are entitled to a refund, replacement, or other remedy for a major failure, and to compensation for any other reasonably foreseeable loss or damage. You are also entitled to have the service repaired or remedied within a reasonable time if it fails to be of acceptable quality, and this failure does not amount to a major failure.</p>
             <p style={{ ...P, marginBottom: 0 }}>If you purchase Pro (US$49) or Ultra (US$99) and believe you're entitled to a refund under these guarantees, contact us and we'll assess your request.</p>
           </PolicyCard>
 
-          <PolicyCard icon="🔄" title="Material service changes">
+          <PolicyCard title="Material service changes">
             <p style={{ ...P, marginBottom: 0 }}>If we materially remove a feature you specifically purchased a plan for, contact us within a reasonable time of that change for a case-by-case refund assessment. Minor updates, redesigns, or improvements do not qualify.</p>
           </PolicyCard>
 

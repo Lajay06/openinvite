@@ -23,7 +23,7 @@ export function isTrialExpiredError(err) {
 }
 
 export function showTrialExpiredToast() {
-  toast(TRIAL_EXPIRED_MESSAGE, { icon: '🔓', duration: 8000 });
+  toast.error(TRIAL_EXPIRED_MESSAGE, { duration: 8000 });
 }
 
 /** Returns true when handled, so callers can skip their generic error path. */

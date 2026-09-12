@@ -235,7 +235,7 @@ export default function RestaurantRecommendations({ weddingLocation, weddingCity
       )}
 
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h3 className="text-sm font-semibold text-[#0A0A0A] mb-2">💡 Dining Tips</h3>
+        <h3 className="text-sm font-semibold text-[#0A0A0A] mb-2">Dining tips</h3>
         <ul className="space-y-1 text-xs text-[rgba(10,10,10,0.6)]">
           <li>• Make reservations in advance for popular spots</li>
           <li>• Ask your hotel concierge for insider recommendations</li>

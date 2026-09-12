@@ -29,11 +29,16 @@ const inputStyle = {
   boxSizing: 'border-box',
 };
 
+// A STARTING POINT, NOT A VOICE. These are edited before they are sent, in a
+// box the couple types in — so a waving hand, a ring, a party popper and
+// praying hands were us deciding how four of their messages sound. The words
+// stay; the couple can add whatever they like on top, which is the difference
+// between a template and a costume.
 const TEMPLATES = [
-  { id: "rsvp", name: "RSVP reminder", template: "Hi {guest_name}! 👋 We'd love to know if you can make it to our wedding on {wedding_date}. Please RSVP: {rsvp_link} 💍" },
-  { id: "save_date", name: "Save the date", template: "Hi {guest_name}! We're getting married! 🎉 Save the date: {wedding_date} at {venue}. Formal invitation coming soon!" },
-  { id: "details", name: "Event details", template: "Hi {guest_name}! Here are the details for our wedding 💍\nDate: {wedding_date}\nCeremony: {ceremony_time} at {ceremony_venue}\nReception: {reception_time} at {reception_venue}" },
-  { id: "thank_you", name: "Thank you", template: "Hi {guest_name}! Thank you so much for celebrating with us 🙏 It meant the world to have you there. With love, {couple_names}" },
+  { id: "rsvp", name: "RSVP reminder", template: "Hi {guest_name}! We'd love to know if you can make it to our wedding on {wedding_date}. Please RSVP: {rsvp_link}" },
+  { id: "save_date", name: "Save the date", template: "Hi {guest_name}! We're getting married. Save the date: {wedding_date} at {venue}. Formal invitation coming soon." },
+  { id: "details", name: "Event details", template: "Hi {guest_name}! Here are the details for our wedding.\nDate: {wedding_date}\nCeremony: {ceremony_time} at {ceremony_venue}\nReception: {reception_time} at {reception_venue}" },
+  { id: "thank_you", name: "Thank you", template: "Hi {guest_name}! Thank you so much for celebrating with us. It meant the world to have you there. With love, {couple_names}" },
   { id: "custom", name: "Custom message", template: "" },
 ];
 

@@ -150,7 +150,7 @@ export default function GamesPage() {
   if (data && data.isActive === false) {
     return (
       <Centered>
-        <p style={{ fontSize: 32, margin: '0 0 12px' }}>🔒</p>
+        <Lock size={28} strokeWidth={1.6} aria-hidden="true" style={{ margin: '0 auto 12px', display: 'block' }} />
         <p style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', margin: '0 0 6px' }}>This game has closed</p>
         <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)' }}>It's no longer accepting answers.</p>
       </Centered>

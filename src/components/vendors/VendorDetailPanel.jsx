@@ -269,7 +269,7 @@ export default function VendorDetailPanel({ vendor, onClose }) {
               {showLogForm && logForm.document_url && (
                 <div style={{ background: '#FAFAFA', border: '1px solid rgba(10,10,10,0.12)', padding: 16, marginBottom: 16 }}>
                   <p style={{ fontSize: 12, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '0 0 12px' }}>
-                    📄 {logForm.document_name}
+                    <FileText size={13} strokeWidth={1.6} aria-hidden="true" style={{ verticalAlign: -2, marginRight: 5, color: 'rgba(10,10,10,0.45)' }} />{logForm.document_name}
                   </p>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 20px', marginBottom: 12 }}>
                     <div>
@@ -302,7 +302,7 @@ export default function VendorDetailPanel({ vendor, onClose }) {
                     <div>
                       {logs.filter(l => l.type === 'document').map(log => (
                         <div key={log.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: '1px solid rgba(10,10,10,0.06)' }}>
-                          <span style={{ fontSize: 16, flexShrink: 0 }}>📄</span>
+                          <FileText size={15} strokeWidth={1.6} aria-hidden="true" style={{ flexShrink: 0, color: 'rgba(10,10,10,0.45)' }} />
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <p style={{ fontSize: 12, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>{log.subject}</p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 3 }}>

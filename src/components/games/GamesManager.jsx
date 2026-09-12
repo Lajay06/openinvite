@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
 import { resolveRecipients } from '@/lib/questionnaireRecipients';
 import toast from 'react-hot-toast';
-import { Plus, X, ChevronLeft, Printer, Link2, Loader2, Check, Clock, Trash2 } from 'lucide-react';
+import { Plus, X, ChevronLeft, Printer, Link2, Loader2, Check, Clock, Trash2, Dices } from 'lucide-react';
 import { fetchGuestLinks } from '@/lib/guestLinks';
 import { copyFromPromise } from '@/lib/copyToClipboard';
 import CopyFallbackModal from '@/components/shared/CopyFallbackModal';
@@ -487,7 +487,7 @@ export default function GamesManager() {
 
       {questionnaires.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 0' }}>
-          <p style={{ fontSize: 32, margin: '0 0 12px' }}>🎲</p>
+          <Dices size={28} strokeWidth={1.5} aria-hidden="true" style={{ margin: '0 auto 12px', display: 'block' }} />
           <p style={{ fontFamily: PJS, fontSize: 15, fontWeight: 600, color: '#0A0A0A', margin: '0 0 6px' }}>No games yet</p>
           <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 24px' }}>
             Create a private questionnaire for quizzes, the shoe game, or anything guests answer just for the two of you.

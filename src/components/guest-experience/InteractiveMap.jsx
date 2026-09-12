@@ -42,11 +42,35 @@ const createCustomIcon = (color, iconHtml) => {
   });
 };
 
-const ceremonyIcon = createCustomIcon('#ec4899', '💒');
-const receptionIcon = createCustomIcon('#8b5cf6', '🎉');
-const hotelIcon = createCustomIcon('#3b82f6', '🏨');
-const restaurantIcon = createCustomIcon('#10b981', '🍽️');
-const activityIcon = createCustomIcon('#f59e0b', '📸');
+// LUCIDE'S OWN PATHS, INLINED — not emoji, and not a new dependency.
+//
+// The pins were a wedding chapel, a party popper, a hotel, cutlery and a
+// camera, drawn by whatever emoji font the guest's device happens to ship. A
+// map is the one surface where the marks ARE the information, so five glyphs
+// from five different platform fonts is the worst place to leave it.
+//
+// They cannot be <Church /> components: `createCustomIcon` builds a Leaflet
+// divIcon from an HTML STRING, so React never renders here. Rendering to
+// markup would mean pulling react-dom/server into a map's bundle. The paths
+// below are copied verbatim from node_modules/lucide-react — church,
+// party-popper, hotel, utensils, camera — so the map uses the same drawing as
+// every other icon in the product, at a size and colour we choose.
+const lucide = (paths) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
+
+const PIN = {
+  church: '<path d="M10 9h4"/><path d="M12 7v5"/><path d="M14 22v-4a2 2 0 0 0-4 0v4"/><path d="M18 22V5.618a1 1 0 0 0-.553-.894l-4.553-2.277a2 2 0 0 0-1.788 0L6.553 4.724A1 1 0 0 0 6 5.618V22"/><path d="m18 7 3.447 1.724a1 1 0 0 1 .553.894V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9.618a1 1 0 0 1 .553-.894L6 7"/>',
+  party: '<path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11c-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z"/>',
+  hotel: '<path d="M10 22v-6.57"/><path d="M12 11h.01"/><path d="M12 7h.01"/><path d="M14 15.43V22"/><path d="M15 16a5 5 0 0 0-6 0"/><path d="M16 11h.01"/><path d="M16 7h.01"/><path d="M8 11h.01"/><path d="M8 7h.01"/><rect x="4" y="2" width="16" height="20" rx="2"/>',
+  utensils: '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
+  camera: '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+};
+
+const ceremonyIcon = createCustomIcon('#ec4899', lucide(PIN.church));
+const receptionIcon = createCustomIcon('#8b5cf6', lucide(PIN.party));
+const hotelIcon = createCustomIcon('#3b82f6', lucide(PIN.hotel));
+const restaurantIcon = createCustomIcon('#10b981', lucide(PIN.utensils));
+const activityIcon = createCustomIcon('#f59e0b', lucide(PIN.camera));
 
 export default function InteractiveMap({ 
   weddingDetails, 

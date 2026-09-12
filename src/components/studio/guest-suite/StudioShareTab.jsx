@@ -65,6 +65,28 @@ export default function StudioShareTab({ details: propDetails }) {
     }));
   });
 
+  // The QR is drawn in the browser, lazily, so the encoder is not in this
+  // tab's bundle until there is an address to encode.
+  //
+  // FROM THE SLUG, NOT FROM `siteUrl`. #745 has since made siteUrl empty
+  // without an address, so the two now agree — but a QR is the last place a
+  // placeholder should ever reach, because it is scanned by a guest who has
+  // no idea it was ever a guess. Read from the slug directly, so this holds
+  // whatever siteUrl is doing. No slug, no code.
+  const [qrSvg, setQrSvg] = useState('');
+  useEffect(() => {
+    let live = true;
+    if (!details?.slug) { setQrSvg(''); return undefined; }
+    const url = `${window.location.origin}/w/${details.slug}`;
+    import('qrcode')
+      .then((qr) => qr.toString(url, { type: 'svg', margin: 1, width: 160, color: { dark: '#0A0A0A', light: '#FFFFFF' } }))
+      .then((svg) => { if (live) setQrSvg(svg); })
+      // A QR that cannot be drawn leaves its space empty rather than throwing
+      // the tab away. The address is printed above it either way.
+      .catch(() => { if (live) setQrSvg(''); });
+    return () => { live = false; };
+  }, [details?.slug]);
+
   const togglePublish = async () => {
     const next = !details?.websiteEnabled;
     // THE SECOND PUBLISH CONTROL, AND IT HAD NO GATE AT ALL — not even the
@@ -86,9 +108,17 @@ export default function StudioShareTab({ details: propDetails }) {
     toast.success('Link copied!');
   };
 
-  const downloadQR = () => {
-    const url = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(`${window.location.origin}/w/${details?.slug}`)}&color=0A0A0A&bgcolor=FFFFFF`;
-    const a = document.createElement('a'); a.href = url; a.download = 'wedding-qr.png'; a.click();
+  // A THIRD api.qrserver.com CALL, found by the emoji guard's own scan rather
+  // than by looking: the 160px preview above was one, and this download was
+  // another. Same encoder, same reason — the address is not ours to send.
+  const downloadQR = async () => {
+    if (!details?.slug) return;
+    const qr = await import('qrcode');
+    const png = await qr.toDataURL(`${window.location.origin}/w/${details.slug}`, {
+      margin: 1, width: 400, color: { dark: '#0A0A0A', light: '#FFFFFF' },
+    }).catch(() => '');
+    if (!png) { toast.error('That QR could not be drawn.'); return; }
+    const a = document.createElement('a'); a.href = png; a.download = 'wedding-qr.png'; a.click();
   };
 
   const toggleGuest = (id) => setSelectedGuests(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -166,13 +196,17 @@ export default function StudioShareTab({ details: propDetails }) {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {[
-                { label: 'WhatsApp', bg: '#25D366', icon: '💬', action: () => window.open(`https://wa.me/?text=${encodeURIComponent(`You're invited to our wedding! View our website: ${siteUrl}`)}`) },
-                { label: 'Facebook', bg: '#1877F2', icon: 'f', action: () => window.open(`https://facebook.com/sharer/sharer.php?u=${encodeURIComponent(siteUrl)}`) },
-                { label: 'SMS', bg: '#0A84FF', icon: '✉', action: () => window.open(`sms:?body=${encodeURIComponent(`You're invited! ${siteUrl}`)}`) },
-                { label: 'Copy Link', bg: '#0A0A0A', icon: '🔗', action: copyLink },
+                // NO GLYPHS. A speech balloon, a lowercase f, a bare envelope
+                // and a chain link — four marks from four sources on four
+                // buttons that already say what they are. Each button keeps
+                // its brand colour, which is the part that identifies it.
+                { label: 'WhatsApp', bg: '#25D366', action: () => window.open(`https://wa.me/?text=${encodeURIComponent(`You're invited to our wedding! View our website: ${siteUrl}`)}`) },
+                { label: 'Facebook', bg: '#1877F2', action: () => window.open(`https://facebook.com/sharer/sharer.php?u=${encodeURIComponent(siteUrl)}`) },
+                { label: 'SMS', bg: '#0A84FF', action: () => window.open(`sms:?body=${encodeURIComponent(`You're invited! ${siteUrl}`)}`) },
+                { label: 'Copy Link', bg: '#0A0A0A', action: copyLink },
               ].map(opt => (
                 <button key={opt.label} onClick={opt.action} style={{ padding: '10px', background: opt.bg, color: '#FFF', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center', fontFamily: sans }}>
-                  <span>{opt.icon}</span>{opt.label}
+                  {opt.label}
                 </button>
               ))}
             </div>
@@ -289,7 +323,16 @@ export default function StudioShareTab({ details: propDetails }) {
         {/* RIGHT — QR */}
         <div style={{ width: 280, flexShrink: 0 }}>
           <div style={{ border: '1px solid #EEEEEE', padding: 20, marginBottom: 16, textAlign: 'center' }}>
-            <img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(siteUrl)}&color=0A0A0A&bgcolor=FFFFFF`} alt="QR Code" style={{ width: 160, height: 160, display: 'block', margin: '0 auto 12px' }} />
+            {/* DRAWN HERE, NOT FETCHED — the second instance of the same
+                standing prohibition #726 and #743 closed elsewhere. This sent
+                the couple's private address to api.qrserver.com every time
+                the tab rendered. Same lazy `qrcode` encoder as PublishModal. */}
+            <div
+              role="img"
+              aria-label={`QR code for ${siteUrl}`}
+              style={{ width: 160, height: 160, display: 'block', margin: '0 auto 12px' }}
+              dangerouslySetInnerHTML={{ __html: qrSvg }}
+            />
             <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 16px', fontFamily: 'monospace', wordBreak: 'break-all' }}>openinvite.com.au/w/{details?.slug || '\u2026'}</p>
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={downloadQR} style={{ flex: 1, padding: '10px', background: '#0A0A0A', color: '#FFF', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sans }}>Download</button>

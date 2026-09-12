@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Download, X } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
@@ -6,11 +6,30 @@ const WHATSAPP_GREEN = "#25D366";
 
 function WhatsAppQRModal({ phoneNumber, onClose }) {
   const qrValue = `https://wa.me/${phoneNumber}`;
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrValue)}`;
+
+  // THIS ONE SENT A PHONE NUMBER. The others leaked a guest-suite address,
+  // which is at least something the couple hands out on purpose; this put a
+  // WhatsApp number in a query string to a third party every time the modal
+  // opened, and again on every download. Drawn in the browser now, from the
+  // same `qrcode` dependency the product already ships.
+  const [qrSvg, setQrSvg] = useState('');
+  const [qrPng, setQrPng] = useState('');
+  useEffect(() => {
+    let live = true;
+    import('qrcode')
+      .then(async (qr) => {
+        const svg = await qr.toString(qrValue, { type: 'svg', margin: 1, width: 200, color: { dark: '#0A0A0A', light: '#FFFFFF' } });
+        const png = await qr.toDataURL(qrValue, { margin: 1, width: 400, color: { dark: '#0A0A0A', light: '#FFFFFF' } });
+        if (live) { setQrSvg(svg); setQrPng(png); }
+      })
+      .catch(() => { if (live) { setQrSvg(''); setQrPng(''); } });
+    return () => { live = false; };
+  }, [qrValue]);
 
   const downloadQR = () => {
+    if (!qrPng) return;
     const link = document.createElement("a");
-    link.href = qrUrl;
+    link.href = qrPng;
     link.download = "whatsapp-qr-code.png";
     link.click();
   };
@@ -30,7 +49,7 @@ function WhatsAppQRModal({ phoneNumber, onClose }) {
         </p>
 
         <div style={{ background: '#FFFFFF', padding: 16, border: '1px solid rgba(10,10,10,0.12)', marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
-          <img src={qrUrl} alt="WhatsApp QR Code" style={{ width: 200, height: 200 }} />
+          <div role="img" aria-label={`WhatsApp QR code for ${phoneNumber}`} style={{ width: 200, height: 200 }} dangerouslySetInnerHTML={{ __html: qrSvg }} />
         </div>
 
         <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 20 }}>{phoneNumber}</p>
