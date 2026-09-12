@@ -1,7 +1,7 @@
 /**
  * Openinvite Design System Reference
  * This file documents the canonical design tokens for the platform
- * Use these values across all UI components (excluding wedding website guest pages)
+ * Use these values across all UI components (excluding the guest suite's own pages)
  */
 
 export const BRAND_COLOURS = {

@@ -10,7 +10,7 @@ import { visibleSections } from '@/lib/goodToKnow';
  *
  * D-1b. The dashboard has promised, in its own helper text, that policies
  * marked "Display on website" would appear in "the Policies section of your
- * wedding website and Experience Guide". NEITHER DESTINATION EXISTED.
+ * guest suite and Experience Guide". NEITHER DESTINATION EXISTED.
  * `weddingPolicies` was read by exactly two files in the repo — this page's
  * absence, and `WeddingStylePage` reading `stylingQuestionnaire.enabled` — and
  * nothing anywhere read a policy's `display` flag. A couple could toggle

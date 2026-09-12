@@ -55,7 +55,7 @@ export function renderGuestReplyEmail({ guestName, coupleNames, originalMessage,
 
 ${originalHtml}
           <tr><td style="padding:24px 0 0;"></td></tr>
-${emailFooterRow(`This is a reply to a message you sent through ${escapeHtml(couple)}'s wedding website.`)}
+${emailFooterRow(`This is a reply to a message you sent through ${escapeHtml(couple)}'s guest suite.`)}
 ${poweredByRow()}`;
 
   return { subject, html: emailShell({ title: subject, bodyRowsHtml, showHeader: false }) };

@@ -126,7 +126,7 @@ about Ava taking a write action on camera.
   genuinely filled-in content (real Sydney hotels, real ratings).
 - **Shot 4** ("invitation builder"): originally `/Invitations`, but this
   account has never created an Invitation record, so that route only shows
-  the blank "Create your wedding website" first-run wizard — and clicking
+  the blank "Create your guest suite" first-run wizard — and clicking
   through it would create data. `/website-editor` is the drag-and-drop
   site builder, already fully populated for this wedding (active Kyoto
   universe, real pages, real settings) — a truer "builder in use" shot.
