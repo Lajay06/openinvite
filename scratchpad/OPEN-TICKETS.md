@@ -2075,3 +2075,15 @@ the rows carry the shell's `data-row-id` and that the over-budget styling
 survives the move.
 
 **Not started. No code has been written for this.**
+
+## EventDetails form to the modal scale standard
+
+R1b brought every labelled form DIALOG to the scale of the page it opens over
+(`oi-modal-scale`, `scripts/test-modal-scale.mjs`,
+`tests/persistence/modal-scale-class.mjs`). `src/pages/EventDetails.jsx:281`
+holds nine captions in a dialog the standard does not cover: it is a
+page-sized form rather than a modal over a list, and the owner ruled it out of
+the sweep. It is listed in that guard's `EXEMPT` with this reason, so it is
+covered by a decision rather than by an oversight.
+
+Post-launch. No code until then.
