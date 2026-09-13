@@ -5373,3 +5373,30 @@ cache holds and the only step left that is conditional.
 **The corollary.** Two code paths that must agree, chosen by a cache hit, will
 diverge — and they will diverge on the axis nobody tests, because a cache hit
 is not a thing a test controls. Where one path suffices, keep one.
+
+---
+
+## 2026-09-13 — Never discard a working-tree change without reading its diff
+
+A background script that plants a fault, runs a guard, and restores the file
+was killed mid-run for memory. It left `scripts/test-modal-scale.mjs` modified.
+I read "modified, and a plant script just died" as "the plant is still in
+there", ran `git checkout -- scripts/test-modal-scale.mjs`, and destroyed
+fifty lines of uncommitted rewrite — the work that had just taken the guard
+from 72 seconds to 10.
+
+The tell was on screen and I did not read it. `git diff --stat` printed **51
+insertions**. The plant was a one-line substitution. A one-line plant does not
+produce fifty-one insertions, and two seconds of looking would have said so.
+
+**The rule: never discard a working-tree change without reading its diff. A
+killed script leaves the tree dirty with work, not with noise.** The dirt and
+the work are the same colour in `git status`; only the diff tells them apart.
+`git status --porcelain` says a file changed, which is precisely the question
+being asked and precisely not the answer.
+
+**The corollary, which is cheaper than the rule.** Commit before planting. A
+plant run mutates the working tree by design, so the tree is the one place the
+work must not be while it runs. Had the rewrite been committed — even as
+`wip` — `checkout --` would have restored it instead of deleting it, and the
+plant would have had nothing of mine to take with it.
