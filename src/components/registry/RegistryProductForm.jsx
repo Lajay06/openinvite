@@ -38,7 +38,7 @@ export default function RegistryProductForm({ item, onSubmit, onClose }) {
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent hideClose title={item ? 'Edit product' : 'Add product'} className="max-w-[560px] max-h-[90vh] overflow-y-auto p-0 gap-0">
+      <DialogContent hideClose title={item ? 'Edit product' : 'Add product'} className="oi-modal-scale max-w-[560px] max-h-[90vh] overflow-y-auto p-0 gap-0">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)', position: 'sticky', top: 0, background: '#FFFFFF', zIndex: 1 }}>
           <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             {item ? 'Edit product' : 'Add product'}

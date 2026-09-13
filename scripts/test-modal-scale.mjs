@@ -1,4 +1,4 @@
-/* global document, getComputedStyle, innerHeight */
+/* global document, getComputedStyle */
 /**
  * A DIALOG IS NOT BIGGER THAN THE PAGE BEHIND IT.
  *
@@ -10,17 +10,17 @@
  *
  * ── THE MEASURE IS THE OWNER'S, AND SO IS THE EXEMPTION ─────────────────────
  *
- * "No text larger than the guest-list primary, except the modal title." The
- * title is exempt because a dialog has to say what it is; everything else in
- * it is a form, and a form is smaller than the page it interrupts.
+ * "No text larger than the page's primary, except the modal title." The title
+ * is exempt because a dialog has to say what it is; everything else in it is a
+ * form, and a form is smaller than the page it interrupts.
  *
  * THE CEILING IS MEASURED, NOT WRITTEN DOWN. The instruction first gave the
  * guest-list primary as 14px; on the running product it is 12px in a 32px row,
  * and the word for what this dialog should be was "much smaller". So the
- * ceiling is read off "+ Add guest" at run time and applied to everything in
- * the dialog except its title. A guard holding 14 would pass a dialog half
- * again the size of the page behind it — the thing being fixed; a guard
- * holding 12 would go green on a page whose own primary had moved.
+ * ceiling is read off each page's own primary at run time and applied to
+ * everything in the dialog except its title. A guard holding 14 would pass a
+ * dialog half again the size of the page behind it — the thing being fixed; a
+ * guard holding 12 would go green on a page whose own primary had moved.
  *
  * CONTROL TEXT COUNTS. An <input>'s value is not a text node, so the element
  * walk below cannot see it, and the first version measured labels and buttons
@@ -34,14 +34,75 @@
  * neither is on screen. A guard counting them would demand changes to text
  * nobody can see, which is how a rule gets a reputation for being wrong.
  *
+ * ── SEVEN DIALOGS, ONE MEASURE ──────────────────────────────────────────────
+ *
+ * Add guest was the first, not the only one. The same table now drives every
+ * labelled form dialog in registry and moodboard, each opened on its own page
+ * and measured against that page's own primary. tests/persistence/
+ * modal-scale-class.mjs is the other half: it enumerates the dialogs from
+ * source so a new one cannot be added without either carrying the class or
+ * failing, which is the part a browser walk over a fixed list cannot do.
+ *
  * Usage: npm run test:modal-scale  (needs a server; CAPTURE_BASE_URL)
  */
 import { chromium } from 'playwright';
-import { seededContext } from './lib/renderHarness.mjs';
+import { seededContext, SEED } from './lib/renderHarness.mjs';
 
 const BASE = process.env.CAPTURE_BASE_URL || 'http://localhost:5173';
 const LABEL = 12;            // "labels 12px"
 const CONTROL_MAX = 38;      // the builder's control height, with a pixel of slack
+/**
+ * A TEXTAREA IS NOT A CONTROL THAT GREW. Add guest has no textarea, so the
+ * single ceiling above went unquestioned until the registry forms came in and
+ * reported three 56px "controls" — which is `.oi-modal-scale textarea`'s own
+ * min-height, doing exactly what it was written to do. A note field is two
+ * lines because a note is two lines. It is measured against that, not against
+ * a single-line row, and it still has a ceiling: a textarea that has grown to
+ * a page of its own is the defect this file exists about.
+ */
+const TEXTAREA_MAX = 60;
+
+/**
+ * RegistryProduct ships empty in the shared seed, and "Mark as purchased" is
+ * reachable only from a product card. One row is added HERE rather than in
+ * renderHarness so no other guard's counts move; the fields are the entity's
+ * own, which is what assertSeedMatchesSchemas checks on the way in.
+ */
+const seed = {
+  ...SEED,
+  // The grid filters on `board_name === activeBoard`, and Moodboard opens on
+  // "Main board". The shared seed's two items sit on Flowers and Table, so the
+  // page renders its empty state and there is no card to edit. One item is
+  // moved onto the default board HERE, for the same reason as the product
+  // below: no other guard's counts move.
+  MoodboardItem: SEED.MoodboardItem.map((m, i) => (i === 0 ? { ...m, board_name: 'Main board' } : m)),
+  RegistryProduct: [{
+    id: 'rp1',
+    name: 'Copper saucepan',
+    description: 'The 18cm one.',
+    price: 129,
+    category: 'kitchen',
+    quantity_requested: 2,
+    quantity_purchased: 0,
+    created_by: 'fixture@example.com',
+  }],
+};
+
+/**
+ * `primary` is the page's own primary button, read by its exact text: the
+ * ceiling is what this dialog opens over, not a number written down here.
+ * `open` is how a couple reaches the dialog. `labels` is the presence floor —
+ * properties asserted over an unopened dialog are an empty read wearing a pass.
+ */
+const MODALS = [
+  { page: '/Guests',    primary: '+ Add guest',      open: '+ Add guest',      name: 'Add guest',          labels: 5, footer: ['Cancel', 'Add guest', 'Save changes'] },
+  { page: '/Registry',  primary: 'Add cash fund',    open: 'Add platform',     name: 'Add platform link',  labels: 4 },
+  { page: '/Registry',  primary: 'Add cash fund',    open: 'Add product',      name: 'Add product',        labels: 8 },
+  { page: '/Registry',  primary: 'Add cash fund',    open: 'Add cash fund',    name: 'Add cash fund',      labels: 5 },
+  { page: '/Registry',  primary: 'Add cash fund',    open: 'Mark as purchased', name: 'Mark as purchased', labels: 3, tab: 'Products (1)' },
+  { page: '/Moodboard', primary: 'Add inspiration',  open: 'Add inspiration',  name: 'Add inspiration',    labels: 5 },
+  { page: '/Moodboard', primary: 'Add inspiration',  open: { label: 'Edit' },  name: 'Edit item',          labels: 3 },
+];
 
 const results = [];
 const check = (name, ok, detail) => {
@@ -49,42 +110,40 @@ const check = (name, ok, detail) => {
   console.log(`  ${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? `  (${detail})` : ''}`);
 };
 
-const browser = await chromium.launch();
-const ctx = await seededContext(browser, { width: 1440, height: 900 });
-const page = await ctx.newPage();
-await page.goto(`${BASE}/Guests`, { waitUntil: 'domcontentloaded', timeout: 45000 }).catch(() => {});
-await page.waitForTimeout(6000);
-
-console.log('\n  The Add guest dialog, at the page\'s scale\n');
-
-const primary = await page.evaluate(() => {
-  const b = [...document.querySelectorAll('button')].find(x => x.textContent.trim() === '+ Add guest');
+/** Read a page's own primary. Runs before anything is opened. */
+const readPrimary = (page, text) => page.evaluate((t) => {
+  const b = [...document.querySelectorAll('button')]
+    .find(x => x.textContent.replace(/\s+/g, ' ').trim() === t && x.getBoundingClientRect().height >= 6);
   if (!b) return null;
   const r = b.getBoundingClientRect();
   return { size: parseFloat(getComputedStyle(b).fontSize), height: Math.round(r.height) };
-});
-check('the guest list\'s own primary was measured', !!primary,
-  primary ? `"+ Add guest" is ${primary.size}px in a ${primary.height}px row — the instruction says 14px` : 'not found');
+}, text);
 
-await page.getByRole('button', { name: '+ Add guest', exact: true }).click({ timeout: 8000 }).catch(() => {});
-await page.waitForTimeout(2200);
-
-const modal = await page.evaluate(() => {
+/** Everything the measure needs, read off the open dialog in one pass. */
+const readDialog = (page) => page.evaluate(() => {
   const dlg = document.querySelector('[role="dialog"]');
   if (!dlg) return null;
-  const title = dlg.querySelector('h1, h2, h3');
+  // THE TITLE, WITHOUT GUESSING. Every dialog passes `title` to the shared
+  // wrapper, which renders it as the sr-only element the dialog is labelled
+  // by. Most of these modals ALSO draw a visible heading with the same words
+  // (sometimes a prefix of them: "Edit item" under "Edit item — Peonies").
+  // Matching on that text is exact where a "largest font in the header band"
+  // heuristic would be a rule the owner never made. The first match in
+  // document order is the heading; a later button repeating the title's words
+  // is a button.
+  const labelled = dlg.getAttribute('aria-labelledby');
+  const titleText = (labelled && document.getElementById(labelled)?.textContent || '').replace(/\s+/g, ' ').trim();
+  let titleSeen = false;
   const text = [];
   const walk = (el) => {
     if ([...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) {
       const r = el.getBoundingClientRect();
       // On screen, with a real box. sr-only text is 1px tall and clipped.
       if (r.height >= 6 && r.width >= 6) {
-        text.push({
-          t: el.innerText.replace(/\s+/g, ' ').trim().slice(0, 34),
-          tag: el.tagName.toLowerCase(),
-          size: parseFloat(getComputedStyle(el).fontSize),
-          isTitle: el === title,
-        });
+        const t = el.innerText.replace(/\s+/g, ' ').trim();
+        const isTitle = !titleSeen && t.length >= 5 && titleText.startsWith(t);
+        if (isTitle) titleSeen = true;
+        text.push({ t: t.slice(0, 34), tag: el.tagName.toLowerCase(), size: parseFloat(getComputedStyle(el).fontSize), isTitle });
       }
       return;
     }
@@ -119,47 +178,80 @@ const modal = await page.evaluate(() => {
   // inventing a rule the owner did not make. A combobox is excluded by role.
   const sections = [...dlg.querySelectorAll('button[aria-expanded]:not([role="combobox"])')]
     .map(b => ({ t: b.innerText.replace(/\s+/g, ' ').trim(), h: Math.round(b.getBoundingClientRect().height), size: parseFloat(getComputedStyle(b.querySelector('span') || b).fontSize) }));
-  const footer = [...dlg.querySelectorAll('button')]
-    .filter(b => ['Cancel', 'Add guest', 'Save changes'].includes(b.textContent.trim()))
-    .map(b => ({ t: b.textContent.trim(), h: Math.round(b.getBoundingClientRect().height), size: parseFloat(getComputedStyle(b).fontSize) }));
-  return { title: title ? title.innerText.trim() : null, text, controls, labels, sections, footer };
+  return { title: titleText || null, text, controls, labels, sections };
 });
 
-// PRESENCE BEFORE PROPERTIES: an unopened dialog has nothing too large in it.
-check('the dialog opened', !!modal && modal.text.length > 6, modal ? `${modal.text.length} pieces of visible text` : 'no dialog');
-if (!modal) { await browser.close(); process.exit(1); }
-check('  and it has a title', !!modal.title, modal.title || 'none');
-check('  and its fields', modal.labels.length >= 5, `${modal.labels.length} labels, ${modal.controls.length} controls`);
+const browser = await chromium.launch();
+const ctx = await seededContext(browser, { width: 1440, height: 900, seed });
+const page = await ctx.newPage();
 
-// ── the measure, against the page's own primary ─────────────────────────────
-const CEILING = primary ? primary.size : LABEL;
-const tooBig = modal.text.filter(t => !t.isTitle && t.size > CEILING);
-check(`nothing but the title is larger than the page primary (${CEILING}px)`, tooBig.length === 0,
-  tooBig.length ? tooBig.map(t => `"${t.t}" ${t.size}px`).join(', ') : `${modal.text.length} pieces checked`);
-
-const sized = modal.controls.filter(c => !c.checkbox && c.size !== null);
-const bigControls = sized.filter(c => c.size > CEILING);
-check(`  and no field's own text is either`, bigControls.length === 0,
-  bigControls.length ? bigControls.map(c => `"${c.what}" ${c.size}px`).join(', ') : `${sized.length} field(s) checked`);
-
-for (const l of modal.labels) {
-  check(`  label "${l.t}" is ${LABEL}px`, l.size === LABEL, `${l.size}px`);
-}
-
-const rowLabel = LABEL;
-for (const sec of modal.sections) {
-  check(`  section "${sec.t}" is no larger than a row label`, sec.size <= rowLabel, `${sec.size}px`);
-  check(`    and its row is no taller than a control`, sec.h <= CONTROL_MAX, `${sec.h}px`);
-}
-
-const tall = modal.controls.filter(c => c.h > CONTROL_MAX);
-check(`every control is ${CONTROL_MAX}px or shorter`, tall.length === 0,
-  tall.length ? tall.map(c => `"${c.what}" ${c.h}px`).join(', ') : `${modal.controls.length} controls checked`);
-
-if (primary) {
-  for (const b of modal.footer) {
-    check(`  "${b.t}" is the page primary's height`, b.h === primary.height, `${b.h}px vs ${primary.height}px`);
+let at = null;
+for (const m of MODALS) {
+  console.log(`\n  ${m.name}, at ${m.page}'s scale\n`);
+  if (at !== m.page) {
+    await page.goto(`${BASE}${m.page}`, { waitUntil: 'domcontentloaded', timeout: 45000 }).catch(() => {});
+    await page.waitForTimeout(6000);
+    at = m.page;
   }
+
+  const primary = await readPrimary(page, m.primary);
+  check(`${m.page}'s own primary was measured`, !!primary,
+    primary ? `"${m.primary}" is ${primary.size}px in a ${primary.height}px row` : 'not found');
+
+  if (m.tab) {
+    await page.getByRole('tab', { name: m.tab, exact: true }).click({ timeout: 8000 }).catch(() => {});
+    await page.waitForTimeout(1200);
+  }
+  const opener = typeof m.open === 'string'
+    ? page.getByRole('button', { name: m.open, exact: true })
+    : page.getByRole('button', { name: m.open.label, exact: true });
+  await opener.first().click({ timeout: 8000 }).catch(() => {});
+  await page.waitForTimeout(2200);
+
+  const modal = await readDialog(page);
+
+  // PRESENCE BEFORE PROPERTIES: an unopened dialog has nothing too large in it.
+  check('the dialog opened', !!modal && modal.text.length > 2, modal ? `${modal.text.length} pieces of visible text` : 'no dialog');
+  if (!modal) continue;
+  check('  and it has a title', !!modal.title, modal.title || 'none');
+  check('  and its fields', modal.labels.length >= m.labels, `${modal.labels.length} labels (floor ${m.labels}), ${modal.controls.length} controls`);
+  check('  and the visible heading was matched to it', modal.text.some(t => t.isTitle),
+    modal.text.filter(t => t.isTitle).map(t => `"${t.t}" ${t.size}px`).join(', ') || 'no visible heading carries the title text');
+
+  // ── the measure, against the page's own primary ───────────────────────────
+  const CEILING = primary ? primary.size : LABEL;
+  const tooBig = modal.text.filter(t => !t.isTitle && t.size > CEILING);
+  check(`nothing but the title is larger than the page primary (${CEILING}px)`, tooBig.length === 0,
+    tooBig.length ? tooBig.map(t => `"${t.t}" ${t.size}px`).join(', ') : `${modal.text.length} pieces checked`);
+
+  const sized = modal.controls.filter(c => !c.checkbox && c.size !== null);
+  const bigControls = sized.filter(c => c.size > CEILING);
+  check('  and no field\'s own text is either', bigControls.length === 0,
+    bigControls.length ? bigControls.map(c => `"${c.what}" ${c.size}px`).join(', ') : `${sized.length} field(s) checked`);
+
+  const offLabel = modal.labels.filter(l => l.size !== LABEL);
+  check(`  every label is ${LABEL}px`, offLabel.length === 0,
+    offLabel.length ? offLabel.map(l => `"${l.t}" ${l.size}px`).join(', ') : `${modal.labels.length} labels checked`);
+
+  for (const sec of modal.sections) {
+    check(`  section "${sec.t}" is no larger than a row label`, sec.size <= LABEL, `${sec.size}px`);
+    check('    and its row is no taller than a control', sec.h <= CONTROL_MAX, `${sec.h}px`);
+  }
+
+  const ceilingFor = (c) => (c.type === 'textarea' ? TEXTAREA_MAX : CONTROL_MAX);
+  const tall = modal.controls.filter(c => c.h > ceilingFor(c));
+  check(`every control is ${CONTROL_MAX}px or shorter, a note field ${TEXTAREA_MAX}`, tall.length === 0,
+    tall.length ? tall.map(c => `"${c.what}" ${c.h}px`).join(', ') : `${modal.controls.length} controls checked`);
+
+  if (primary && m.footer) {
+    const footer = modal.controls.filter(c => m.footer.includes(c.what));
+    for (const b of footer) {
+      check(`  "${b.what}" is the page primary's height`, b.h === primary.height, `${b.h}px vs ${primary.height}px`);
+    }
+  }
+
+  await page.keyboard.press('Escape').catch(() => {});
+  await page.waitForTimeout(900);
 }
 
 await browser.close();

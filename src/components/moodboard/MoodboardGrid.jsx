@@ -30,7 +30,7 @@ const CATEGORY_COLORS = {
 function EditItemModal({ item, editData, setEditData, onSave, onClose }) {
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent hideClose title={`Edit item — ${item.title}`} className="max-w-[440px] p-0 gap-0">
+      <DialogContent hideClose title={`Edit item — ${item.title}`} className="oi-modal-scale max-w-[440px] p-0 gap-0">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
           <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Edit item</span>
           <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={14} /></button>
@@ -50,8 +50,8 @@ function EditItemModal({ item, editData, setEditData, onSave, onClose }) {
           </div>
         </div>
         <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.12)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-          <button onClick={onClose} className="btn-editorial-secondary" style={{ fontSize: 13 }}>Cancel</button>
-          <button onClick={onSave} className="btn-primary" style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <button onClick={onClose} className="btn-editorial-secondary" style={{ fontSize: 12 }}>Cancel</button>
+          <button onClick={onSave} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
             <Save size={13} />Save
           </button>
         </div>

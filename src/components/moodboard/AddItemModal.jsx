@@ -28,7 +28,7 @@ export default function AddItemModal({ onClose, onAddItem, categories }) {
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent hideClose title="Add inspiration" className="max-w-[680px] max-h-[90vh] overflow-y-auto p-0 gap-0">
+      <DialogContent hideClose title="Add inspiration" className="oi-modal-scale max-w-[680px] max-h-[90vh] overflow-y-auto p-0 gap-0">
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -88,9 +88,9 @@ export default function AddItemModal({ onClose, onAddItem, categories }) {
         </div>
 
         <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.12)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-          <button onClick={onClose} className="btn-editorial-secondary" style={{ fontSize: 13 }}>Cancel</button>
+          <button onClick={onClose} className="btn-editorial-secondary" style={{ fontSize: 12 }}>Cancel</button>
           <button onClick={handleSubmit} disabled={!formData.title || !formData.image_url} className="btn-primary"
-            style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, opacity: !formData.title || !formData.image_url ? 0.5 : 1 }}>
+            style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, opacity: !formData.title || !formData.image_url ? 0.5 : 1 }}>
             <Save size={13} />Add to moodboard
           </button>
         </div>
