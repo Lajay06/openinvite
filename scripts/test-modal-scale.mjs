@@ -102,6 +102,10 @@ const MODALS = [
   { page: '/Registry',  primary: 'Add cash fund',    open: 'Mark as purchased', name: 'Mark as purchased', labels: 3, tab: 'Products (1)' },
   { page: '/Moodboard', primary: 'Add inspiration',  open: 'Add inspiration',  name: 'Add inspiration',    labels: 5 },
   { page: '/Moodboard', primary: 'Add inspiration',  open: { label: 'Edit' },  name: 'Edit item',          labels: 3 },
+  { page: '/Vendors',   primary: '+ Add vendor',     open: '+ Add vendor',     name: 'Add vendor',         labels: 8 },
+  { page: '/Schedule',  primary: '+ Add event',      open: '+ Add event',      name: 'Add event',          labels: 6 },
+  { page: '/Budget',    primary: '+ Add expense',    open: '+ Add expense',    name: 'Add expense',        labels: 5 },
+  { page: '/Seating',   primary: 'Add table',        open: 'Add table',        name: 'Add table',          labels: 3 },
 ];
 
 const results = [];
@@ -185,28 +189,68 @@ const browser = await chromium.launch();
 const ctx = await seededContext(browser, { width: 1440, height: 900, seed });
 const page = await ctx.newPage();
 
+/**
+ * WAIT FOR THE THING, NOT FOR THE CLOCK.
+ *
+ * The first version slept 6s after every navigation, 2.2s after every open and
+ * 0.9s after every close, because one dialog on one page could afford it. At
+ * eleven dialogs across seven pages that is over a minute of the job doing
+ * nothing, and the job's budget is 20 minutes against a suite that already
+ * runs 19 and a half. It went over and GitHub reported the timeout as
+ * "cancelled", which reads like a race and is not one.
+ *
+ * Every sleep below is now a wait for the state the next line needs: the
+ * page's own primary to be on screen, the dialog to be open, the dialog to be
+ * gone. A slow runner waits longer and a fast one does not wait at all, which
+ * is also why these are more reliable than the numbers they replace.
+ */
+const settled = (locator, state) => locator.waitFor({ state, timeout: 20000 }).then(() => true, () => false);
+
+/**
+ * A DIALOG MEASURED WHILE IT IS STILL ARRIVING IS NOT THE DIALOG.
+ *
+ * Radix scales and fades its content in. Waiting only for "visible" catches it
+ * at the START of that, and the first run without the sleeps read Add guest's
+ * footer buttons at 30px against a 32px primary — a failure invented entirely
+ * by the measurement. The 2.2s sleep was approximating this condition; this IS
+ * the condition. Raced against a ceiling so a forever-animating spinner
+ * somewhere on the page cannot hang the run.
+ */
+const stillMoving = () => Promise.race([
+  page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {}))).then(() => true)),
+  new Promise((r) => setTimeout(() => r(false), 5000)),
+]).catch(() => false);
+
+/** Gone means no dialog in the document, not "this handle detached". */
+const dialogGone = () => page.waitForFunction(() => !document.querySelector('[role="dialog"]'), null, { timeout: 20000 })
+  .then(() => true, () => false);
+
 let at = null;
 for (const m of MODALS) {
   console.log(`\n  ${m.name}, at ${m.page}'s scale\n`);
   if (at !== m.page) {
     await page.goto(`${BASE}${m.page}`, { waitUntil: 'domcontentloaded', timeout: 45000 }).catch(() => {});
-    await page.waitForTimeout(6000);
     at = m.page;
   }
+  // The primary is both the ceiling and the signal that the page has finished
+  // arriving: it is rendered by the same authenticated read the rest waits on.
+  await settled(page.getByRole('button', { name: m.primary, exact: true }).first(), 'visible');
 
   const primary = await readPrimary(page, m.primary);
   check(`${m.page}'s own primary was measured`, !!primary,
     primary ? `"${m.primary}" is ${primary.size}px in a ${primary.height}px row` : 'not found');
 
   if (m.tab) {
-    await page.getByRole('tab', { name: m.tab, exact: true }).click({ timeout: 8000 }).catch(() => {});
-    await page.waitForTimeout(1200);
+    const tab = page.getByRole('tab', { name: m.tab, exact: true });
+    await tab.click({ timeout: 8000 }).catch(() => {});
   }
   const opener = typeof m.open === 'string'
     ? page.getByRole('button', { name: m.open, exact: true })
     : page.getByRole('button', { name: m.open.label, exact: true });
+  await settled(opener.first(), 'visible');
   await opener.first().click({ timeout: 8000 }).catch(() => {});
-  await page.waitForTimeout(2200);
+  await settled(page.locator('[role="dialog"]').first(), 'visible');
+  await stillMoving();
 
   const modal = await readDialog(page);
 
@@ -250,8 +294,13 @@ for (const m of MODALS) {
     }
   }
 
+  // PRESENCE BEFORE PROPERTIES, ON THE WAY OUT TOO. A dialog left open swallows
+  // the next opener's click, and the next iteration then measures the PREVIOUS
+  // dialog against this one's expectations — which is exactly what happened:
+  // "Add platform link" was checked against Add product's caption floor and
+  // read as a form with half its fields missing.
   await page.keyboard.press('Escape').catch(() => {});
-  await page.waitForTimeout(900);
+  check('  and it closes again', await dialogGone(), 'nothing left open behind it');
 }
 
 await browser.close();

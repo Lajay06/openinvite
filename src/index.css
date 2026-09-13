@@ -1487,3 +1487,10 @@ body {
   padding-bottom: 7px !important;
   min-height: 34px;
 }
+/* The currency prefix in front of an amount. It has no size of its own, so it
+   inherited the page's and painted at 16px beside the 12px figure it belongs
+   to — in "Add vendor" and "Add expense" both. A prefix is part of the field,
+   not a heading over it. */
+.oi-modal-scale .oi-amount-symbol {
+  font-size: 12px !important;
+}

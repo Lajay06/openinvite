@@ -593,7 +593,7 @@ export default function BudgetPage() {
 
       {/* Add / Edit Expense modal */}
       <Dialog open={showForm} onOpenChange={(open) => { if (!open) { setShowForm(false); setEditingItem(null); } }}>
-        <DialogContent hideClose title={editingItem ? 'Edit expense' : 'Add expense'} className="max-w-[600px] max-h-[90vh] overflow-y-auto p-0 gap-0">
+        <DialogContent hideClose title={editingItem ? 'Edit expense' : 'Add expense'} className="oi-modal-scale max-w-[600px] max-h-[90vh] overflow-y-auto p-0 gap-0">
           <BudgetForm
             item={editingItem}
             onSubmit={handleSubmit}

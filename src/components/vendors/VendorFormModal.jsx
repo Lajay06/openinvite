@@ -12,7 +12,7 @@ import VendorForm from './VendorForm';
 export default function VendorFormModal({ open, vendor, defaultCategory, onSubmit, onCancel }) {
   return (
     <Dialog open={open} onOpenChange={(next) => { if (!next) onCancel(); }}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="oi-modal-scale max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{vendor?.id ? 'Edit vendor' : 'Add vendor'}</DialogTitle>
         </DialogHeader>

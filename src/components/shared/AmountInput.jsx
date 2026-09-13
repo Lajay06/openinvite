@@ -38,6 +38,14 @@ export default function AmountInput({
         // and a screen reader reading "dollar" before every amount is noise.
         // The unit is announced through aria-label on the input instead.
         aria-hidden="true"
+        // A HANDLE, SO THE MODAL SCALE CAN REACH IT. The symbol carries no
+        // size of its own and inherits the page's, which is how it came to
+        // paint at 16px beside a 12px amount inside "Add vendor" and "Add
+        // expense" — the field obeyed .oi-modal-scale and the prefix in front
+        // of it did not. The rule that sizes it lives with the rest of the
+        // modal scale in index.css; outside a modal this class selects
+        // nothing and the symbol still inherits, unchanged.
+        className="oi-amount-symbol"
         style={{ fontFamily: PJS, color: 'rgba(10,10,10,0.6)', flexShrink: 0, ...symbolStyle }}
       >
         {symbol}
