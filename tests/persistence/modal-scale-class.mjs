@@ -51,13 +51,12 @@ const EXEMPT = new Map([
     'a page-sized form, not a modal at page scale — OPEN-TICKETS, post-launch'],
 ]);
 
-/** Should carry it, does not yet. This set only shrinks. */
-const PENDING = new Map([
-  ['src/components/vendors/VendorFormModal.jsx', 'R1b-b, vendors and planning'],
-  ['src/pages/ScheduleHub.jsx',                  'R1b-b, vendors and planning'],
-  ['src/pages/Budget.jsx',                       'R1b-b, vendors and planning'],
-  ['src/components/seating/AddTableModal.jsx',   'R1b-b, vendors and planning'],
-]);
+/**
+ * Should carry it, does not yet. This set only shrinks — and as of R1b-b it is
+ * empty, which is the state it was built to reach. A new entry here is a
+ * promise with a package name on it, not a place to park a dialog.
+ */
+const PENDING = new Map([]);
 
 /**
  * Components from the shared ui kit. Following them would count the <Input>

@@ -440,7 +440,7 @@ export default function ScheduleHub() {
 
       {/* Add / Edit form modal */}
       <Dialog open={!readOnly && showForm} onOpenChange={(open) => { if (!open) { setShowForm(false); setEditingItem(null); } }}>
-        <DialogContent hideClose title={editingItem ? 'Edit event' : 'Add event'} className="max-w-[600px] max-h-[90vh] overflow-y-auto p-0 gap-0">
+        <DialogContent hideClose title={editingItem ? 'Edit event' : 'Add event'} className="oi-modal-scale max-w-[600px] max-h-[90vh] overflow-y-auto p-0 gap-0">
           <ScheduleForm
             item={editingItem}
             onSubmit={handleFormSubmit}
