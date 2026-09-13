@@ -46,7 +46,19 @@ jobs:
   test:
     name: Build & test
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # 35, NOT 20. On 2026-09-13 a PR went red with Build & test = CANCELLED,
+    # which reads like a concurrency race and was not one: the job had run out
+    # of its 20 minutes. main's own runs were taking 19m30s — 97% of the budget
+    # — and had been at 18m40s before that, so the margin was already under a
+    # minute and the next guard to be added was going to spend it whoever added
+    # it. A timeout is there to stop a hang, not to ration a suite that is
+    # honestly getting longer; at 20 it had become a tax on adding coverage,
+    # paid in a failure mode that names the wrong cause.
+    #
+    # This buys time, it does not fix the shape. The serial lane is the real
+    # cost — see OPEN-TICKETS, "split the browser guards into a parallel CI
+    # job".
+    timeout-minutes: 35
     steps:
       - name: Checkout
         uses: actions/checkout@v4
