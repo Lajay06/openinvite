@@ -122,7 +122,7 @@ export default function RegistryProductList({ items, onEdit, onDelete, onPurchas
       </div>
 
       <Dialog open={!!purchaseProduct} onOpenChange={(open) => { if (!open) setPurchaseProduct(null); }}>
-        <DialogContent hideClose title="Mark as purchased" className="max-w-[400px] p-0 gap-0">
+        <DialogContent hideClose title="Mark as purchased" className="oi-modal-scale max-w-[400px] p-0 gap-0">
           {purchaseProduct && (
             <>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>

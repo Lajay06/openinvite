@@ -45,7 +45,7 @@ export default function CustomGiftForm({ item, onSubmit, onClose }) {
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent hideClose title={item ? 'Edit cash fund' : 'Create cash fund'} className="max-w-[480px] p-0 gap-0">
+      <DialogContent hideClose title={item ? 'Edit cash fund' : 'Create cash fund'} className="oi-modal-scale max-w-[480px] p-0 gap-0">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
           <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             {item ? 'Edit cash fund' : 'Create cash fund'}
