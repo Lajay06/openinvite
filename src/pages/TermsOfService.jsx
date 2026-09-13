@@ -36,7 +36,7 @@ export default function TermsOfService() {
 
           <div style={DIV} />
           <h2 style={H2}>2. Who these terms apply to</h2>
-          <p style={P}><strong>Couples</strong> create an Openinvite account, purchase a plan, and use the platform to plan their wedding and manage their guest list. <strong>Guests</strong> are the people a couple invites — guests interact with a couple's published wedding website, RSVP form, and related pages without creating their own account, using a private link the couple sends them.</p>
+          <p style={P}><strong>Couples</strong> create an Openinvite account, purchase a plan, and use the platform to plan their wedding and manage their guest list. <strong>Guests</strong> are the people a couple invites — guests interact with a couple's published guest suite, RSVP form, and related pages without creating their own account, using a private link the couple sends them.</p>
           <p style={P}>These terms govern both roles. A couple is responsible for their guests' use of the guest-facing pages the couple has published, in the same way a host is responsible for an event they organize.</p>
 
           <div style={DIV} />
@@ -46,7 +46,7 @@ export default function TermsOfService() {
             <li>Guest list management and per-event RSVP tracking</li>
             <li>Budget, vendor, seating, schedule, and checklist tools</li>
             <li>AI-powered planning assistance via Ava and other in-app assistants</li>
-            <li>A wedding website builder and guest song requests</li>
+            <li>A guest suite builder and guest song requests</li>
           </ul>
           <p style={P}>We may modify, add, or discontinue individual features at any time. We will not discontinue the core service you paid for during your 24-month access period without reasonable notice.</p>
 

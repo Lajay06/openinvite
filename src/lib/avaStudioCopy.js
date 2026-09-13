@@ -93,7 +93,7 @@ const TEMPLATES = {
     const names = coupleNames(wedding);
     return {
       todo: names ? `${names}'s website is ready — time to go live.` : `Your website is ready — time to go live.`,
-      done: names ? `You're live! ${names}'s wedding website is out in the world.` : `You're live! Your wedding website is out in the world.`,
+      done: names ? `You're live! ${names}'s guest suite is out in the world.` : `You're live! Your guest suite is out in the world.`,
     };
   },
   budget: (wedding) => {

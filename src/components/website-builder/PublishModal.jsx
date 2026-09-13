@@ -154,7 +154,7 @@ export default function PublishModal({ onClose, details, onUpdate }) {
 
   const [emailSubject, setEmailSubject] = useState(`${couple1} & ${couple2}'s Wedding — Save the Date`);
   const [emailMessage, setEmailMessage] = useState(
-    `We're so excited to share our wedding website with you!\n\nVisit: https://${siteUrl || `${siteHost}/w/`}\n\nWe can't wait to celebrate with you.\n\nWith love,\n${couple1} & ${couple2}`
+    `We're so excited to share our guest suite with you!\n\nVisit: https://${siteUrl || `${siteHost}/w/`}\n\nWe can't wait to celebrate with you.\n\nWith love,\n${couple1} & ${couple2}`
   );
 
   // ICONS, NOT EMOJI. These were a globe, a chain link, an envelope with a
@@ -293,7 +293,7 @@ export default function PublishModal({ onClose, details, onUpdate }) {
                 <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', marginBottom: 0 }}>Set your website's URL on the <strong>Website</strong> tab first — sharing needs a real link to send.</p>
               ) : (
                 <>
-                  <p style={{ fontSize: 14, color: '#555', marginBottom: 20 }}>Share your wedding website with family and friends.</p>
+                  <p style={{ fontSize: 14, color: '#555', marginBottom: 20 }}>Share your guest suite with family and friends.</p>
 
                   {/* Copy link */}
                   <div style={{ display: 'flex', marginBottom: 24 }}>
@@ -330,7 +330,7 @@ export default function PublishModal({ onClose, details, onUpdate }) {
                 <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', marginBottom: 0 }}>Set your website's URL on the <strong>Website</strong> tab first — the invitation needs a real link to send.</p>
               ) : (
                 <>
-                  <p style={{ fontSize: 14, color: '#555', marginBottom: 20 }}>Send your wedding website link directly to guests by email.</p>
+                  <p style={{ fontSize: 14, color: '#555', marginBottom: 20 }}>Send your guest suite link directly to guests by email.</p>
 
                   <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>SUBJECT</p>
                   <input
@@ -364,7 +364,7 @@ export default function PublishModal({ onClose, details, onUpdate }) {
                 <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)' }}>Set your website's URL on the <strong>Website</strong> tab first — the QR code needs a real link to encode.</p>
               ) : (
                 <>
-              <p style={{ fontSize: 14, color: '#555', marginBottom: 24 }}>Guests can scan this QR code to instantly open your wedding website.</p>
+              <p style={{ fontSize: 14, color: '#555', marginBottom: 24 }}>Guests can scan this QR code to instantly open your guest suite.</p>
 
               <div
                 role="img"

@@ -57,7 +57,7 @@ function DisplayToggle({ value, onChange }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(10,10,10,0.06)' }}>
       <Toggle value={value} onChange={onChange} />
-      <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Display on website</span>
+      <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Show in guest suite</span>
     </div>
   );
 }
@@ -571,7 +571,7 @@ export default function GuestSuitePolicies() {
         </div>
 
         <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '20px 0 16px', fontStyle: 'italic', fontFamily: PJS }}>
-          Anything marked "Display on website" appears in the Good to know section of your wedding website.
+          Anything marked "Show in guest suite" appears in the Good to know section of your guest suite.
         </p>
 
         <button

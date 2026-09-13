@@ -177,9 +177,9 @@ Reference implementation: `src/pages/Onboarding.jsx` + `src/components/onboardin
   owner first — it has flipped both ways once already. Every OTHER card in
   the wizard (`OnboardingStep4GuestCount`'s tiles, `OnboardingStep8Fork`'s
   cards, etc.) stays light — this is scoped to the universe grid only.
-- The old "wedding website appearance" Dark/Light toggle on the universe
+- The old "guest suite appearance" Dark/Light toggle on the universe
   step has been removed entirely (accept-pass round 2). It set
-  `websiteMode` on the couple's *published wedding website* theme, but
+  `websiteMode` on the couple's *published guest suite* theme, but
   `resolveColors()` gives the selected universe's own colors unconditional
   priority over it (see `BASE44_PLATFORM_NOTES.md`), so the toggle never
   had any visible effect anywhere — it read as a dead control. `websiteMode`

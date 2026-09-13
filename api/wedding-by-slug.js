@@ -17,7 +17,7 @@
  * unprotected site — so the common path is unchanged.
  *
  * Public, unauthenticated endpoint backing every page of a couple's
- * published wedding website. Resolves a wedding by its public slug using
+ * published guest suite. Resolves a wedding by its public slug using
  * the server-side admin key, and returns ONLY an explicit allowlist of
  * guest-safe fields (see api/_lib/guestSafeWedding.js) — never
  * websitePassword, emergencyContacts, dayVendorContacts, or any other

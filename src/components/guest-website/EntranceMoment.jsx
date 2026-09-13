@@ -179,7 +179,7 @@ export default function EntranceMoment({ weddingSlug, weddingDetails, theme, typ
 
   return (
     <Dialog open onOpenChange={(next) => { if (!next) skip(); }}>
-      <DialogContent fullBleed hideClose title="Wedding website entrance" className="p-0 bg-transparent border-none" onClick={skip} onTouchStart={skip}>
+      <DialogContent fullBleed hideClose title="Guest suite entrance" className="p-0 bg-transparent border-none" onClick={skip} onTouchStart={skip}>
     <div
       role="button"
       aria-label="Skip entrance animation"

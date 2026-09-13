@@ -30,7 +30,7 @@ const NICE_TO_HAVE_DEFAULT = [
   'Arrange flowers and florals',
   'Book hair and makeup',
   'Plan honeymoon',
-  'Create wedding website',
+  'Create guest suite',
   'Arrange transport',
 ];
 

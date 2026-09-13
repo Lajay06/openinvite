@@ -2,7 +2,7 @@
 
 The all-in-one wedding planning platform — guests, budget, schedule,
 invitations, and 20 aesthetic "universes" for a couple's guest-facing
-wedding website. Production: **[openinvite.com.au](https://openinvite.com.au)**.
+guest suite. Production: **[openinvite.com.au](https://openinvite.com.au)**.
 
 ## Stack
 

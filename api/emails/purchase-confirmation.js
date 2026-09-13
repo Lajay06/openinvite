@@ -10,7 +10,7 @@ export function purchaseConfirmationEmail({ plan, email, name }) {
   const planLabel = plan === 'ultra' ? 'Ultra' : 'Pro';
   const planPrice = plan === 'ultra' ? 'US$99' : 'US$49';
   const planExtras = plan === 'ultra'
-    ? 'Everything in Pro, plus the wedding website builder, premium universe themes, digital invitations, and online RSVP for guests.'
+    ? 'Everything in Pro, plus the guest suite builder, premium universe themes, digital invitations, and online RSVP for guests.'
     : 'Complete wedding planning: guest and RSVP management, budget tracking, vendor tools, seating planner, Ava AI, and more.';
 
   const bodyRowsHtml = `

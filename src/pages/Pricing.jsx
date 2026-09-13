@@ -49,7 +49,7 @@ const FAQS = [
   },
   {
     q: "What's the difference between Pro and Ultra?",
-    a: "Pro includes everything you need to plan your wedding: guests, budget, vendors, seating, timeline, and more. Ultra adds the digital suite: your guest suite, invitations, online RSVP, and universes.",
+    a: "Pro includes everything you need to plan your wedding: guests, budget, vendors, seating, timeline, and more. Ultra adds the guest suite, invitations, online RSVP, and all twenty universes.",
   },
   {
     q: "Can I upgrade from Pro to Ultra later?",

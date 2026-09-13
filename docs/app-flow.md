@@ -40,7 +40,7 @@ Sidebar nav (`src/components/layout/AnimatedSidebar.jsx`'s `NAV_SECTIONS`), two 
 - **Guest Suite** (Ultra-gated) — Schedule `/GuestSuiteSchedule`, Q&A `/QandA`, Registry `/GuestSuiteRegistry`, Accommodation `/GuestSuiteAccommodation`, Transport `/GuestSuiteTransport`, Live stream `/GuestSuiteLiveStream`, Experience guide `/GuestSuiteExperience`, Policies `/GuestSuitePolicies`, Guest polls `/GuestSuitePolls`
 - **Extras** — Honeymoon `/honeymoon`, Considerations `/Considerations`
 
-**Design Studio** (`/studio`) fans out to: Universe picker `/studio/universe` (20 style "universes", Ultra-gated), Guest Suite website builder `/studio/guest-suite` (tabs: website / assets / policies / share — the "share" tab is where a couple flips `websiteEnabled` live), and a live-preview link to their own site.
+**Design Studio** (`/studio`) fans out to: Universe picker `/studio/universe` (20 style "universes", Ultra-gated), guest suite builder `/studio/guest-suite` (tabs: website / assets / policies / share — the "share" tab is where a couple flips `websiteEnabled` live), and a live-preview link to their own site.
 
 **Ava Studio** (`/studio/ava`) — a guided 7-step setup journey (build website → add guests → turn on RSVP → publish website → set budget → add vendors → plan the day) with live completion detection. Currently **parked/unlinked from navigation** (no sidebar entry) — reachable only by direct URL; the code is intact for a post-launch rebuild.
 

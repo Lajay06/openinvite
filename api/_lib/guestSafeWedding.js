@@ -276,4 +276,4 @@ export async function guestGateBlocks(wedding, candidate, tag) {
 }
 
 /** Shown to a guest whose session lost the password. Sentence case, no jargon. */
-export const GUEST_GATE_MESSAGE = 'This wedding website is password protected. Please reload the page and enter the password, then try again.';
+export const GUEST_GATE_MESSAGE = 'This guest suite is password protected. Please reload the page and enter the password, then try again.';

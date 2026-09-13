@@ -24,7 +24,7 @@ const FAQS = [
   },
   {
     q: "What's included in Pro versus Ultra?",
-    a: "Pro covers the full wedding planning toolkit: guest and RSVP management, budget tracking, vendor management, a seating planner, a schedule and Ava, the AI assistant. Ultra includes everything in Pro plus the digital suite: a guest suite with premium design themes, digital invitations, and online RSVP pages for guests.",
+    a: "Pro covers the full wedding planning toolkit: guest and RSVP management, budget tracking, vendor management, a seating planner, a schedule and Ava, the AI assistant. Ultra includes everything in Pro plus a guest suite with premium design themes, digital invitations, and online RSVP pages for guests.",
   },
   {
     q: "What are design universes?",
