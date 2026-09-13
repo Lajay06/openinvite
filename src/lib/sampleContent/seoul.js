@@ -53,11 +53,11 @@ export const SAMPLE_SEOUL = {
 
   homeContent: {
     blocks: [
-      { id: 'sl1', type: 'heading', order: 0, content: { text: 'Eleven in the morning, and finished by four', kicker: 'The day' } },
+      { id: 'sl1', type: 'heading', order: 0, content: { text: 'One room, one meal, one afternoon', kicker: 'The day' } , style: { align: 'center' } },
       { id: 'sl2', type: 'paragraph', order: 1, content: {
-        text: 'The ceremony is at eleven and lasts twenty minutes. Lunch is at half past twelve and runs to about three. We have kept it to one room, one meal and one afternoon on purpose, so that nobody has to give up a whole day or arrange a night away.',
-      } },
-      { id: 'sl3', type: 'quote', order: 2, content: { text: 'Forty people, one room, four hours. We wanted to be able to speak to all of you.', attribution: 'Hana & Jun' } },
+        text: 'We are marrying in the morning and eating together straight afterward. We have kept it deliberately short so that nobody gives up a whole day or arranges a night away. We wanted to be able to speak to all of you.',
+      }, style: { align: 'center' } },
+      { id: 'sl3', type: 'quote', order: 2, content: { text: 'One room, one meal. We wanted to be able to speak to all of you.', attribution: 'Hana & Jun' } , style: { align: 'center' } },
       { id: 'sl4', type: 'photo', order: 3, content: { url: img(SEOUL_IMAGES.home[0], 1400) } },
       { id: 'sl5', type: 'photo', order: 4, content: { url: img(SEOUL_IMAGES.home[1], 1400) } },
     ],

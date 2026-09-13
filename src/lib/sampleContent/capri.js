@@ -56,11 +56,11 @@ export const SAMPLE_CAPRI = {
 
   homeContent: {
     blocks: [
-      { id: 'cp1', type: 'heading', order: 0, content: { text: 'A long lunch that forgot to end', kicker: 'The day' } },
+      { id: 'cp1', type: 'heading', order: 0, content: { text: 'A long lunch that forgot to end', kicker: 'The day' } , style: { align: 'center' } },
       { id: 'cp2', type: 'paragraph', order: 1, content: {
-        text: 'We are marrying on a terrace in the late afternoon, and then we are eating outside for as long as the evening allows. There is more food than anyone needs and no speeches you have to sit still for.',
-      } },
-      { id: 'cp3', type: 'quote', order: 2, content: { text: 'Come hungry. That is the only preparation.', attribution: 'Beatrix & Elio' } },
+        text: 'We are marrying on a terrace above the sea and eating outside for as long as the evening allows. There is more food than anyone needs and nothing you have to sit still for. Come hungry.',
+      }, style: { align: 'center' } },
+      { id: 'cp3', type: 'quote', order: 2, content: { text: 'Come hungry. That is the only preparation.', attribution: 'Beatrix & Elio' } , style: { align: 'center' } },
       { id: 'cp4', type: 'photo', order: 3, content: { url: img(CAPRI_IMAGES.home[0], 1400) } },
       { id: 'cp5', type: 'photo', order: 4, content: { url: img(CAPRI_IMAGES.home[1], 1400) } },
 

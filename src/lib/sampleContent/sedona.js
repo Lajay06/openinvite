@@ -56,11 +56,11 @@ export const SAMPLE_SEDONA = {
 
   homeContent: {
     blocks: [
-      { id: 'sd1', type: 'heading', order: 0, content: { text: 'Half past five, when the rock turns', kicker: 'The day' } },
+      { id: 'sd1', type: 'heading', order: 0, content: { text: 'Out in the desert, when the rock turns', kicker: 'The day' } , style: { align: 'center' } },
       { id: 'sd2', type: 'paragraph', order: 1, content: {
-        text: 'We are marrying out in the wash at half past five because that is when the light comes off the rim, and it lasts about forty minutes. Dinner is back at the house afterward, outside, with the fire going. Bring a jacket. The desert takes the heat back the moment the sun is down.',
-      } },
-      { id: 'sd3', type: 'quote', order: 2, content: { text: 'We are not asking anybody to hike. We are asking everybody to stand still for ten minutes.', attribution: 'Wren & Cal' } },
+        text: 'We are marrying in the wash while the light is coming off the rim, and going back to the house afterward for a fire and something to eat. Bring a jacket. The desert takes its heat back the moment the sun is down.',
+      }, style: { align: 'center' } },
+      { id: 'sd3', type: 'quote', order: 2, content: { text: 'We are not asking anybody to hike. Only to stand still for a moment.', attribution: 'Wren & Cal' } , style: { align: 'center' } },
       { id: 'sd4', type: 'photo', order: 3, content: { url: img(SEDONA_IMAGES.home[0], 1400) } },
       { id: 'sd5', type: 'photo', order: 4, content: { url: img(SEDONA_IMAGES.home[1], 1400) } },
     ],

@@ -60,11 +60,11 @@ export const SAMPLE_KYOTO = {
 
   homeContent: {
     blocks: [
-      { id: 'ky1', type: 'heading', order: 0, content: { text: 'Ten in the morning, twenty people', kicker: 'The day' } },
+      { id: 'ky1', type: 'heading', order: 0, content: { text: 'A small room, and a quiet morning', kicker: 'The day' } , style: { align: 'center' } },
       { id: 'ky2', type: 'paragraph', order: 1, content: {
-        text: 'We are marrying in a room that holds twenty, and eating in it afterward. There is one course at a time and no speeches. We will be finished by three.',
-      } },
-      { id: 'ky3', type: 'quote', order: 2, content: { text: 'We asked twenty people. That is the whole of the plan.', attribution: 'Mika & Ren' } },
+        text: 'We are marrying in a room that holds only the people in it, and eating there afterward. It is deliberately unhurried and deliberately small. We would rather speak to each of you than perform at all of you.',
+      }, style: { align: 'center' } },
+      { id: 'ky3', type: 'quote', order: 2, content: { text: 'We asked the people we most wanted beside us. That is the whole of the plan.', attribution: 'Mika & Ren' } , style: { align: 'center' } },
       { id: 'ky4', type: 'photo', order: 3, content: { url: img(KYOTO_IMAGES.home[0], 1400) } },
       { id: 'ky5', type: 'photo', order: 4, content: { url: img(KYOTO_IMAGES.home[1], 1400) } },
     ],

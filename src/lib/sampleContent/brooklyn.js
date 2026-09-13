@@ -61,11 +61,11 @@ export const SAMPLE_BROOKLYN = {
 
   homeContent: {
     blocks: [
-      { id: 'bk1', type: 'heading', order: 0, content: { text: 'One room, one night', kicker: 'The wedding' } },
+      { id: 'bk1', type: 'heading', order: 0, content: { text: 'One room, one night, all of us in it', kicker: 'The wedding' } , style: { align: 'center' } },
       { id: 'bk2', type: 'paragraph', order: 1, content: {
-        text: 'Short ceremony at four. Food at six. Dancing until they throw us out. That is the whole plan and there is not a second half we are keeping from you.',
-      } },
-      { id: 'bk3', type: 'quote', order: 2, content: { text: 'Come as you are. We mean it.', attribution: 'Frankie & Dev' } },
+        text: 'We are marrying in a room under the tracks and staying there for the rest of the night. There is no second half we are keeping from you and no part of it you need to prepare for. Come as you are.',
+      }, style: { align: 'center' } },
+      { id: 'bk3', type: 'quote', order: 2, content: { text: 'Come as you are. We mean it.', attribution: 'Frankie & Dev' } , style: { align: 'center' } },
       { id: 'bk4', type: 'photo', order: 3, content: { url: img(BROOKLYN_IMAGES.home[0], 1400) } },
       { id: 'bk5', type: 'photo', order: 4, content: { url: img(BROOKLYN_IMAGES.home[1], 1400) } },
 

@@ -59,11 +59,11 @@ export const SAMPLE_FLORENCE = {
 
   homeContent: {
     blocks: [
-      { id: 'fl1', type: 'heading', order: 0, content: { text: 'Six on the terrace, and dinner when it is ready', kicker: 'The day' } },
+      { id: 'fl1', type: 'heading', order: 0, content: { text: 'Among the olives, and then the long table', kicker: 'The day' } , style: { align: 'center' } },
       { id: 'fl2', type: 'paragraph', order: 1, content: {
-        text: 'The ceremony is at six among the olives, and dinner is at the long table afterward, at whatever hour the kitchen says it is ready. We have deliberately not planned the middle of the evening. Somebody usually brings a guitar and we have never known that to go badly.',
-      } },
-      { id: 'fl3', type: 'quote', order: 2, content: { text: 'There is no schedule after six. That is not an oversight.', attribution: 'Chiara & Sandro' } },
+        text: 'We are marrying on the terrace and eating at the long table afterward, whenever the kitchen decides it is ready. We have deliberately not planned the middle of the evening. Somebody usually brings a guitar and we have never known that to go badly.',
+      }, style: { align: 'center' } },
+      { id: 'fl3', type: 'quote', order: 2, content: { text: 'There is no schedule. That is not an oversight.', attribution: 'Chiara & Sandro' } , style: { align: 'center' } },
       { id: 'fl4', type: 'photo', order: 3, content: { url: img(FLORENCE_IMAGES.home[0], 1400) } },
       { id: 'fl5', type: 'photo', order: 4, content: { url: img(FLORENCE_IMAGES.home[1], 1400) } },
     ],

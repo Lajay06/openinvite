@@ -56,11 +56,11 @@ export const SAMPLE_AMALFI = {
 
   homeContent: {
     blocks: [
-      { id: 'am1', type: 'heading', order: 0, content: { text: 'Five in the afternoon, and nothing after it in a hurry', kicker: 'The day' } },
+      { id: 'am1', type: 'heading', order: 0, content: { text: 'Come and take your time with us', kicker: 'The day' } , style: { align: 'center' } },
       { id: 'am2', type: 'paragraph', order: 1, content: {
-        text: 'We are marrying on the terrace where the trees are, and eating one flight below it when the sun comes off the water. Dinner is five courses and takes four hours, which is the point rather than an apology. Whatever is left of the evening after that is yours.',
-      } },
-      { id: 'am3', type: 'quote', order: 2, content: { text: 'Nobody has ever regretted a long lunch. We are extending the principle.', attribution: 'Rosa & Nico' } },
+        text: 'We are marrying above the water, where the lemon trees are, and eating outside afterward. There is nothing to rush toward and nothing to dress up for beyond your own comfort. Bring your appetite and let the evening go where it wants.',
+      }, style: { align: 'center' } },
+      { id: 'am3', type: 'quote', order: 2, content: { text: 'Nobody has ever regretted a long lunch. We are extending the principle.', attribution: 'Rosa & Nico' } , style: { align: 'center' } },
       { id: 'am4', type: 'photo', order: 3, content: { url: img(AMALFI_IMAGES.home[0], 1400) } },
       { id: 'am5', type: 'photo', order: 4, content: { url: img(AMALFI_IMAGES.home[1], 1400) } },
     ],

@@ -56,11 +56,11 @@ export const SAMPLE_MONACO = {
 
   homeContent: {
     blocks: [
-      { id: 'mn1', type: 'heading', order: 0, content: { text: 'Seven on the terrace, nine on the water', kicker: 'The evening' } },
+      { id: 'mn1', type: 'heading', order: 0, content: { text: 'Above the harbour, and then out on the water', kicker: 'The evening' } , style: { align: 'center' } },
       { id: 'mn2', type: 'paragraph', order: 1, content: {
-        text: 'The ceremony is at seven, above the port, and takes fifteen minutes. Dinner is at nine, on the water, and the boat does not leave the berth. Between the two there are two hours, a bar and the last of the light.',
-      } },
-      { id: 'mn3', type: 'quote', order: 2, content: { text: 'Black tie, and flat shoes in your bag. There are ninety steps.', attribution: 'Livia & Max' } },
+        text: 'We are marrying on a terrace over the port and eating on the water afterward. Between the two there is a bar and the last of the light. Black tie, and something flat in your bag for the steps.',
+      }, style: { align: 'center' } },
+      { id: 'mn3', type: 'quote', order: 2, content: { text: 'Black tie, and flat shoes in your bag.', attribution: 'Livia & Max' } , style: { align: 'center' } },
       { id: 'mn4', type: 'photo', order: 3, content: { url: img(MONACO_IMAGES.home[0], 1400) } },
       { id: 'mn5', type: 'photo', order: 4, content: { url: img(MONACO_IMAGES.home[1], 1400) } },
     ],

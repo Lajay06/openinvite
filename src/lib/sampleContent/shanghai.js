@@ -62,11 +62,11 @@ export const SAMPLE_SHANGHAI = {
 
   homeContent: {
     blocks: [
-      { id: 'sh1', type: 'heading', order: 0, content: { text: 'Half past six, forty-one floors up', kicker: 'The evening' } },
+      { id: 'sh1', type: 'heading', order: 0, content: { text: 'High above the river, when the city turns on', kicker: 'The evening' } , style: { align: 'center' } },
       { id: 'sh2', type: 'paragraph', order: 1, content: {
-        text: 'The ceremony is at half past six, when the river turns on. It takes eighteen minutes. Dinner is at eight in the room behind, ten courses, and the last of them arrives at about half past eleven.',
-      } },
-      { id: 'sh3', type: 'quote', order: 2, content: { text: 'Be in the north lobby by six. The elevators take four minutes and we are not holding them.', attribution: 'Vivian & Hao' } },
+        text: 'We are marrying as the light comes up along the water and eating in the room behind it. Dress for a good night out. Everything after that is ours to worry about, not yours.',
+      }, style: { align: 'center' } },
+      { id: 'sh3', type: 'quote', order: 2, content: { text: 'Dress for a good night out. We will handle the rest.', attribution: 'Vivian & Hao' } , style: { align: 'center' } },
       { id: 'sh4', type: 'photo', order: 3, content: { url: img(SHANGHAI_IMAGES.home[0], 1400) } },
       { id: 'sh5', type: 'photo', order: 4, content: { url: img(SHANGHAI_IMAGES.home[1], 1400) } },
     ],

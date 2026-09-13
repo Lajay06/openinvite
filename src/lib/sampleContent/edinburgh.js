@@ -58,11 +58,11 @@ export const SAMPLE_EDINBURGH = {
 
   homeContent: {
     blocks: [
-      { id: 'ed1', type: 'heading', order: 0, content: { text: 'Two in the afternoon, while there is still light', kicker: 'The day' } },
+      { id: 'ed1', type: 'heading', order: 0, content: { text: 'While there is still light', kicker: 'The day' } , style: { align: 'center' } },
       { id: 'ed2', type: 'paragraph', order: 1, content: {
-        text: 'It gets dark here at four in the winter, which is why the ceremony is at two and why everything after it happens indoors with the fires lit. Dinner is at six and the hall stays open long after. There is nowhere to be afterward and no reason to leave early.',
-      } },
-      { id: 'ed3', type: 'quote', order: 2, content: { text: 'It will be cold and it will be dark and we would not have it any other way.', attribution: 'Fiona & Callum' } },
+        text: 'We are marrying in the afternoon and moving indoors to the fires afterward. It will be cold and it will get dark early, and that is exactly why we chose it. There is nowhere to be after and no reason to leave.',
+      }, style: { align: 'center' } },
+      { id: 'ed3', type: 'quote', order: 2, content: { text: 'It will be cold and it will be dark and we would not have it any other way.', attribution: 'Fiona & Callum' } , style: { align: 'center' } },
       { id: 'ed4', type: 'photo', order: 3, content: { url: img(EDINBURGH_IMAGES.home[0], 1400) } },
       { id: 'ed5', type: 'photo', order: 4, content: { url: img(EDINBURGH_IMAGES.home[1], 1400) } },
     ],
