@@ -5645,3 +5645,54 @@ Nothing broke it this week; it has been failing for every couple who ever
 pressed Send, and it took a smoke run that printed the endpoint's own error
 body to see it — before that the step reported a bare `500`, which names the
 floor and not the room.
+
+---
+
+## 2026-09-14 — every plant runs in a fresh process; a module cache turns a red plant green
+
+#755's first plant run reported this:
+
+```
+baseline: 18/18 pass, 0 FAIL
+  X  the original .data?.map is restored
+    edit landed: yes  ->  0 FAIL of 18 (NO RED — blind here)
+  Y  the provider error is no longer read first
+    edit landed: yes  ->  0 FAIL of 18 (NO RED — blind here)
+  Z  a refused batch reports a send anyway
+    edit landed: yes  ->  0 FAIL of 18 (NO RED — blind here)
+```
+
+Three plants, all landed, all green. Re-run one plant at a time in a fresh
+process, the same three read 6, 4 and 2 FAIL.
+
+**The runner was importing the GUARD with a cache-busting query and leaving the
+SUBJECT cached.** The guard does `await import('../../api/send-invites.js')`;
+Node resolved that once, and every plant afterwards ran against the handler as
+it had been at first load. The file on disk was edited, `edit landed: yes` was
+true, and the code under test never changed.
+
+**The rule: every plant runs in a fresh process.** Not a fresh import, not a
+busted specifier on the outer module — a new process, because the cache that
+matters is the one holding whatever the guard imports transitively, and that is
+not a thing the plant runner can see.
+
+**Why R19 nearly failed here of all places.** The plant-and-assert-the-edit
+discipline (#745: "plants must assert their own edit landed") was followed
+exactly, and it passed: the edit HAD landed. That check answers "did I change
+the file", and the question it looks like it answers is "did I change what
+ran". Those came apart for the first time here, and the honest report was
+three plants that proved nothing about a guard defending a defect as old as the
+repository.
+
+**The general form.** A plant is an experiment, and an experiment needs the
+subject to be the thing you changed. Anything that can serve a stale copy —
+a module cache, a built bundle, a preview server that has not rebuilt, a
+warm CDN — sits between the edit and the measurement and will quietly answer
+from before. `npm run build` before a browser-guard plant is the same rule
+wearing different clothes; this entry is the process-level statement of it.
+
+**And it fails in the dangerous direction.** A stale subject makes a plant look
+GREEN, which reads as "the guard did not notice", which is the finding you
+would act on — except the guard never saw anything to notice. A blind guard
+that has been "tested" is worse than one that has not, because nobody looks
+again.
