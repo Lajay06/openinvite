@@ -1,4 +1,4 @@
-/* global document, window */
+/* global document, window, localStorage */
 /**
  * scripts/launch-smoke.mjs — THE STRANGER'S JOURNEY, END TO END.
  *
@@ -121,6 +121,17 @@ const ACCOUNT = SUPPLIED || `la.jay06+smoke${stamp}@gmail.com`;
 const PASSWORD = fromEnvFile('BASE44_SMOKE_PASSWORD') || `Smoke!${stamp}aA1`;
 const RETURNING = !!SUPPLIED;
 
+// The couple the wizard is completed as. Two names, because the product asks
+// for two and derives the address from both: slugRootFromNames joins them with
+// the word "and", so these produce `smoke-and-alias` — NOT `smoke-alias`,
+// which is what slugifying the display string "Smoke & Alias" would give and
+// is not a path any code takes.
+// VITE_BASE44_APP_ID, the name every server endpoint here reads.
+const APP_ID = fromEnvFile('VITE_BASE44_APP_ID') || process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
+
+const COUPLE1 = 'Smoke';
+const COUPLE2 = 'Alias';
+
 const results = [];
 let shotN = 0;
 /**
@@ -152,6 +163,51 @@ let shotN = 0;
  * named honestly, and genuinely not run.
  */
 class Stop extends Error {}
+
+/**
+ * THE RUN PUTS A SITE ON THE INTERNET, SO THE RUN TAKES IT DOWN AGAIN.
+ *
+ * Step 5 publishes smoke-and-alias to openinvite.com.au, and before this
+ * existed it stayed published — between runs, indefinitely, a test fixture
+ * live at a real address on the production domain.
+ *
+ * It unpublishes the way the couple would: smoke01's OWN token, read from the
+ * browser it is already signed into, against its own record. Not the admin
+ * key, which would let this reach records that are not the account's, and
+ * which no normal action uses.
+ *
+ * It runs from the `finally`, not the happy path. A journey that stops at step
+ * 7 has already published at step 5 — the run that leaves a site up is
+ * precisely the run that went wrong.
+ */
+async function unpublish(page) {
+  try {
+    const r = await page.evaluate(async (appId) => {
+      const token = localStorage.getItem('base44_access_token');
+      if (!token) return { ok: false, why: 'no token in the browser' };
+      const h = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+      const list = await fetch(`https://base44.app/api/apps/${appId}/entities/WeddingDetails`, { headers: h })
+        .then((x) => x.json()).catch(() => null);
+      const rows = Array.isArray(list) ? list : (list?.data || list?.results || []);
+      // The record the product itself resolves to: most recently created.
+      const mine = rows.slice().sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0];
+      if (!mine) return { ok: false, why: 'no record to unpublish' };
+      const res = await fetch(`https://base44.app/api/apps/${appId}/entities/WeddingDetails/${mine.id}`, {
+        method: 'PUT', headers: h, body: JSON.stringify({ websiteEnabled: false }),
+      });
+      if (!res.ok) return { ok: false, why: `PUT ${res.status}`, id: mine.id };
+      // READ BACK. A 200 on a write is not evidence the field holds the value.
+      const after = await fetch(`https://base44.app/api/apps/${appId}/entities/WeddingDetails/${mine.id}`, { headers: h })
+        .then((x) => x.json()).catch(() => null);
+      return { ok: after?.websiteEnabled === false, why: `websiteEnabled=${JSON.stringify(after?.websiteEnabled)}`, id: mine.id, slug: after?.slug };
+    }, APP_ID);
+    console.log(`  teardown: ${r.ok ? 'unpublished' : 'DID NOT UNPUBLISH'} — ${r.why}${r.slug ? ` (/w/${r.slug})` : ''}${r.id ? ` on ${r.id}` : ''}`);
+    return r.ok;
+  } catch (e) {
+    console.log(`  teardown: DID NOT UNPUBLISH — ${String(e.message || e).slice(0, 120)}`);
+    return false;
+  }
+}
 
 /** Every step, in order, so a run that stops can say what it did not do. */
 const STEPS = [
@@ -291,12 +347,67 @@ try {
   // ── 2. onboarding ─────────────────────────────────────────────────────────
   // Driven by role, never by nth-child: the wizard's steps differ in shape and
   // a positional selector would pass by clicking the wrong control.
-  for (let i = 0; i < 14; i++) {
-    const next = page.getByRole('button', { name: /^(next|continue|finish|done|let's go|get started)$/i }).first();
-    if (await next.count() === 0) break;
-    await next.click().catch(() => {});
+  //
+  // ── THE LOOP NEVER RAN, AND THE STEP PASSED ANYWAY ────────────────────────
+  //
+  // Two faults, compounding. The advance button reads "Continue →" and the
+  // pattern was anchored `/^(next|continue|…)$/` — the arrow is part of the
+  // accessible name, so nothing ever matched. And step 1 hides its Continue
+  // until BOTH names are typed, which this never did, so there was no button
+  // to match in the first place. `count() === 0` then `break`, on the first
+  // iteration, every run.
+  //
+  // Step 2 still passed, because its assertion is about the URL and a
+  // returning account lands on /DailyUpdate regardless. So the record came out
+  // of "onboarding" with no couple on it — which is precisely the shape that
+  // made a wedding publish to an address that did not exist, and the reason
+  // claim-slug answers {slug: null, reason: 'no-names'}.
+  //
+  // The wizard is now actually driven: the names are typed, the advance
+  // matches the button that exists, optional steps take their own skip, and
+  // the number of screens crossed is reported so a loop that does nothing
+  // cannot look like a loop that finished.
+  // GO WHERE THE WIZARD IS. Login lands on the dashboard for an account that
+  // is past the plan step, and the loop below was reading whatever screen that
+  // happened to be. The wizard is at /onboarding; an account that has already
+  // finished it is redirected away, and that redirect is a RESULT — it says
+  // this alias cannot be used to test a first run — not something to paper
+  // over with a wait.
+  await page.goto(`${BASE}/onboarding`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await page.waitForTimeout(3500);
+  const atWizard = /\/onboarding\b/.test(new URL(page.url()).pathname);
+  await shot(page, 'onboarding-entry');
+
+  const typeName = async (placeholder, value) => {
+    const f = page.getByPlaceholder(placeholder).first();
+    if (await f.count() === 0) return false;
+    await f.fill(value);
+    return (await f.inputValue()) === value;
+  };
+  const named = (await typeName('Your name', COUPLE1)) && (await typeName("Partner's name", COUPLE2));
+  await shot(page, 'onboarding-names');
+
+  // "Continue →", "Next →", "Let's go →" — and the arrow is in the name.
+  const ADVANCE = /^(next|continue|finish|done|let's go|get started)\b/i;
+  // Every optional step offers its own way past, and each is worded for its
+  // own question rather than a generic Skip.
+  const SKIP = /^(we haven't set a date yet|not sure yet|skip|i'll do this later|maybe later)\b/i;
+  let crossed = 0;
+  for (let i = 0; i < 24; i++) {
+    const next = page.getByRole('button', { name: ADVANCE }).first();
+    if (await next.count() > 0) {
+      await next.click().catch(() => {});
+      crossed += 1;
+    } else {
+      const skip = page.getByRole('button', { name: SKIP }).first();
+      if (await skip.count() === 0) break;
+      await skip.click().catch(() => {});
+      crossed += 1;
+    }
     await page.waitForTimeout(1800);
+    if (!/\/onboarding\b/.test(new URL(page.url()).pathname)) break;
   }
+  await shot(page, 'onboarding-crossed');
   // WAIT FOR THE DESTINATION, NOT FOR A NUMBER OF SECONDS. Login lands on
   // /choose-plan, which is "the single, account-state-gated landing point for
   // every successful auth" — and for an account past the plan step it
@@ -312,7 +423,12 @@ try {
   // that never got past the register page.
   const onboarded = /\/(DailyUpdate|dashboard|studio)/i.test(page.url())
     || (await page.getByText(/daily update|your wedding planning briefing/i).count()) > 0;
-  check('2 · reaches the end of onboarding', onboarded, page.url());
+  // PRESENCE BEFORE PROPERTIES. "Arrived at the dashboard" is true of an
+  // account that was already past onboarding and never filled anything in, so
+  // the names and the screens crossed are part of the verdict, not decoration.
+  check('2 · reaches the end of onboarding', onboarded && atWizard && named && crossed > 0,
+    `${page.url()} — wizard ${atWizard ? 'reached' : 'REDIRECTED AWAY (account already onboarded)'}, `
+    + `names ${named ? `typed as ${COUPLE1} & ${COUPLE2}` : 'NOT TYPED'}, ${crossed} screen(s) crossed`);
 
   // ── 3. a universe ─────────────────────────────────────────────────────────
   await page.goto(`${BASE}/studio/universe`, { waitUntil: 'domcontentloaded', timeout: 60000 });
@@ -529,6 +645,12 @@ try {
     results.push({ name, ok: false, detail: `not reached — ${broken} failed` });
     console.log(`  ----  ${name}  (not reached)`);
   }
+} finally {
+  // NOT A STEP, AND STILL A RESULT. Teardown is not part of the journey being
+  // measured, but a run that leaves a site published on the production domain
+  // has not finished, so it is recorded and it can fail the run.
+  const down = await unpublish(page);
+  results.push({ name: 'teardown · the site is not left live', ok: down, detail: down ? 'websiteEnabled=false, read back' : 'still published — unpublish by hand' });
 }
 
 await couple.close();
