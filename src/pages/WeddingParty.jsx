@@ -11,6 +11,7 @@ import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyGuestsWithRsvp } from "@/lib/resolveMyWedding";
 import { isAttending } from "@/lib/guestRsvpTally";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
 const WeddingDetails = base44.entities.WeddingDetails;
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -339,7 +340,7 @@ export default function WeddingPartyPage() {
         if (recordId) {
           await WeddingDetails.update(recordId, full);
         } else {
-          const c = await WeddingDetails.create(full);
+          const c = await createMyWeddingDetails(full);
           setRecordId(c.id);
           latestRef.current = { ...full, id: c.id };
         }

@@ -14,6 +14,7 @@ import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccessUltra } from '@/lib/trialStatus';
+import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
 const WeddingDetails = base44.entities.WeddingDetails;
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -114,7 +115,7 @@ export default function FoodBeveragePage() {
         if (recordId) {
           await WeddingDetails.update(recordId, full);
         } else {
-          const c = await WeddingDetails.create(full);
+          const c = await createMyWeddingDetails(full);
           setRecordId(c.id);
           latestRef.current = { ...full, id: c.id };
         }

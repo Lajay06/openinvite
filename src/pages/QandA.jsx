@@ -6,6 +6,7 @@ import { Loader2, Trash2 } from "lucide-react";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { OptionAccordion, OptionAccordionSection } from '@/components/shared/OptionAccordion';
 import AvaButton from "@/components/shared/AvaButton";
+import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -78,7 +79,7 @@ export default function QandA() {
       if (recordId) {
         await base44.entities.WeddingDetails.update(recordId, { qna: newQna });
       } else {
-        const created = await base44.entities.WeddingDetails.create({ qna: newQna });
+        const created = await createMyWeddingDetails({ qna: newQna });
         setRecordId(created.id);
       }
     } catch {

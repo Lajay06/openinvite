@@ -13,6 +13,7 @@ import DetailsSection from "../components/event-details/DetailsSection";
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
 import CountUp from "@/components/shared/CountUp";
+import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
 const WeddingDetails = base44.entities.WeddingDetails;
 
 const labelStyle = {
@@ -66,7 +67,7 @@ export default function PhotographyPage() {
     const toastId = toast.loading('Saving photography details...');
     try {
       if (!detailsId) {
-        const newDetails = await WeddingDetails.create({ photography: details.photography });
+        const newDetails = await createMyWeddingDetails({ photography: details.photography });
         setDetailsId(newDetails.id);
       } else {
         await WeddingDetails.update(detailsId, { photography: details.photography });

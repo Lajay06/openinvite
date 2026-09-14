@@ -61,8 +61,15 @@ export async function runOnboardingResumesExisting() {
 
   // ── 1. adoption is by ownership ───────────────────────────────────────────
   // `draft` is getMyWeddingDetails() — the same record the dashboard resolves.
-  check('  it resolves the account\'s own record', /const draft = await getMyWeddingDetails\(\)/.test(src),
-    'getMyWeddingDetails(), the resolver every surface uses');
+  // STRICTLY, as of the chokepoint. The read used to be
+  // `getMyWeddingDetails().catch(() => null)`, which swallowed a failure into
+  // the same null that means "no record" — so a failed read adopted nothing
+  // and the first step advance created a duplicate, the very defect this file
+  // is about arriving by the other door.
+  check('  it resolves the account\'s own record, strictly',
+    /const draft = await getMyWeddingDetails\(\{ strict: true \}\)/.test(src)
+    && !/getMyWeddingDetails\(\)\.catch\(\(\) => null\)/.test(src),
+    'getMyWeddingDetails({ strict: true }) — a failed read is the error state, not a null');
   const adopts = /if \(draft\) \{[^}]*draftWeddingIdRef\.current = draft\.id;[^}]*setDraftWeddingId\(draft\.id\);[^}]*\}/s.test(src);
   check('  and adopts its id whenever one exists', adopts, adopts ? 'if (draft) — no flag in the condition' : 'the id is not adopted unconditionally');
   // THE DEFECT ITSELF, named so it cannot come back wearing the same shape.
@@ -75,14 +82,26 @@ export async function runOnboardingResumesExisting() {
     /draftWeddingIdRef\.current = draft\.id;/.test(src), 'no window between the read and the first write');
 
   // ── 2. create is reachable only with nothing to adopt ─────────────────────
-  const creates = [...src.matchAll(/WeddingDetails\.create\(/g)].length;
-  check('  the wizard has exactly the two creates it is allowed', creates === 2,
-    `${creates} WeddingDetails.create call(s) — the draft create and the final save`);
-  // Each sits in the else of an `if (<an id>)`.
-  const guardedDraft = /if \(draftWeddingIdRef\.current\) \{\s*await WeddingDetails\.update\([\s\S]{0,200}?\} else \{\s*const created = await WeddingDetails\.create\(/.test(src);
-  check('    the draft create runs only with no record adopted', guardedDraft, 'if (draftWeddingIdRef.current) update else create');
-  const guardedFinal = /if \(weddingId\) \{\s*await WeddingDetails\.update\([\s\S]{0,200}?\} else \{\s*const created = await WeddingDetails\.create\(/.test(src);
-  check('    and the final save the same way', guardedFinal, 'if (weddingId) update else create');
+  // THE WIZARD NO LONGER CREATES ANYTHING ITSELF. Both sites route through
+  // createMyWeddingDetails, which re-reads at write time and refuses to create
+  // when a record exists — so the wizard's own `if (id) update else …` is now
+  // the outer of two guards rather than the only one.
+  //
+  // The direct-create count is pinned at zero rather than two: a bare
+  // WeddingDetails.create reappearing here would bypass the chokepoint while
+  // every check below still passed.
+  const directCreates = [...src.matchAll(/WeddingDetails\.create\(/g)].length;
+  check('  the wizard creates nothing directly', directCreates === 0,
+    `${directCreates} bare WeddingDetails.create call(s) — the chokepoint owns creation`);
+  const viaHelper = [...src.matchAll(/createMyWeddingDetails\(/g)].length;
+  check('    and routes its two writes through the chokepoint', viaHelper >= 2,
+    `${viaHelper} createMyWeddingDetails call(s) — the draft write and the final save`);
+  // Each still sits in the else of an `if (<an id>)`: the chokepoint is the
+  // second line of defence, not a reason to drop the first.
+  const guardedDraft = /if \(draftWeddingIdRef\.current\) \{\s*await WeddingDetails\.update\([\s\S]{0,200}?\} else \{\s*const created = await createMyWeddingDetails\(/.test(src);
+  check('    the draft write still prefers the adopted id', guardedDraft, 'if (draftWeddingIdRef.current) update else helper');
+  const guardedFinal = /if \(weddingId\) \{\s*await WeddingDetails\.update\([\s\S]{0,200}?\} else \{\s*const created = await createMyWeddingDetails\(/.test(src);
+  check('    and the final save the same way', guardedFinal, 'if (weddingId) update else helper');
 
   // ── 3. the re-entry path ends on the same record (#745) ───────────────────
   //

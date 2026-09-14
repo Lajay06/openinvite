@@ -22,6 +22,7 @@ import { customPageFor, customPageBlocks } from '@/lib/customPages';
 import { syncWeddingAddress } from '@/lib/weddingAddress';
 import WBEmailPreview from '@/components/website-builder/WBEmailPreview';
 import { templatesOf, saveTemplates, EDITOR_TEMPLATES, SAVE_FAILURE_MESSAGE } from '@/lib/emailTemplateStore';
+import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
 const UNIVERSE_THEMES = {
   london: {
     name: 'London',
@@ -629,7 +630,7 @@ export default function StudioWebsite({ onBack }) {
       if (existing?.id) {
         await base44.entities.WeddingDetails.update(existing.id, payload);
       } else {
-        await base44.entities.WeddingDetails.create(payload);
+        await createMyWeddingDetails(payload);
       }
       setUnsaved(false);
       setSaveStatus('saved');

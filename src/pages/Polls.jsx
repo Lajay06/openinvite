@@ -8,6 +8,7 @@ import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from "@/components/shared/AvaButton";
 import GamesManager from "@/components/games/GamesManager";
 import { interactiveDivProps } from '@/lib/a11y';
+import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -334,7 +335,7 @@ export default function Polls() {
       if (recordId) {
         await base44.entities.WeddingDetails.update(recordId, { polls: newPolls });
       } else if (record) {
-        const created = await base44.entities.WeddingDetails.create({ polls: newPolls });
+        const created = await createMyWeddingDetails({ polls: newPolls });
         setRecordId(created.id);
       }
     } catch {

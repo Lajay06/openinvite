@@ -9,6 +9,7 @@ import { base44 } from "@/api/base44Client";
 import AvaButton from '@/components/shared/AvaButton';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
 const WeddingDetails = base44.entities.WeddingDetails;
 
 const labelStyle = {
@@ -162,7 +163,7 @@ export default function EntertainmentDetailsPage() {
         if (recordId) {
           await WeddingDetails.update(recordId, full);
         } else {
-          const c = await WeddingDetails.create(full);
+          const c = await createMyWeddingDetails(full);
           setRecordId(c.id);
           latestRef.current = { ...full, id: c.id };
         }

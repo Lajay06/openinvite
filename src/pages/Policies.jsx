@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { InvokeLLM } from "@/integrations/Core";
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
 const WeddingDetails = base44.entities.WeddingDetails;
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -101,7 +102,7 @@ export default function PoliciesPage() {
     try {
       let currentDetailsId = detailsId;
       if (!currentDetailsId) {
-        const newDetails = await WeddingDetails.create(details);
+        const newDetails = await createMyWeddingDetails(details);
         setDetailsId(newDetails.id);
         currentDetailsId = newDetails.id;
       } else {
