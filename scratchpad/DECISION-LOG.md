@@ -5447,3 +5447,52 @@ started downstream of a step that was never true.
 not a stop, and a blanket catch on a step whose failure is the result. All
 three are a report describing a journey the run did not take. This one is the
 quietest, because nothing about it ever looked wrong.
+
+---
+
+## 2026-09-14 — read-then-create with nothing to read is the duplicate-record shape
+
+Onboarding adopted the account's wedding only when the record carried
+`onboardingDraft: true`:
+
+```js
+if (draft?.onboardingDraft) { setDraftWeddingId(draft.id); … }
+```
+
+`draft` was already the right record — `getMyWeddingDetails()` resolves the
+same one the dashboard does. The flag was an extra condition on top of it, and
+when it was absent the id stayed null and the next write created a second
+record. Measured on production: an account with two flagless records entered
+`/onboarding`, advanced one screen, and came out with three.
+
+**The rule: any find-or-create must look up by OWNER, not by flag.** A flag
+answers a question about a workflow — where were they up to, is this finished,
+which path did they take. Which row belongs to this account is a question about
+ownership, and ownership is the only key that is always present. Key the lookup
+on anything narrower and the find fails whenever that narrower thing is absent
+for any reason at all — a row made by another surface, a flag already cleared,
+a write that set the fields but not the marker — and a find that fails does not
+error. It creates.
+
+**Base44 makes it unrecoverable.** No entity declares uniqueness and there is
+no conditional write (BASE44_PLATFORM_NOTES), so nothing at the platform layer
+refuses the second row. The duplicate is not detected, not reported, and not
+repairable by retrying.
+
+**AND THE SECOND ROW IS A SUBSTITUTION, NOT AN EXTRA.** This is the part that
+makes it severe rather than untidy. Every surface resolves the couple's wedding
+as the NEWEST owned record — `resolveMyWedding`'s `mostRecent` and
+`api/my-wedding-details`' `getMyWedding`, both `sort(b.created_date -
+a.created_date)[0]`. A new row is always newer. So it silently becomes the
+wedding, and the row holding everything the couple had entered stops being
+resolved anywhere: not shown, not editable, not reachable except by an admin
+read. It is not deleted. It is orphaned, which is worse, because deletion
+leaves a trace and this leaves none.
+
+**Where else this shape lives.** There are 22 client-side
+`WeddingDetails.create` call sites plus `api/my-wedding-details.js:318`, each
+its own read-then-create. `src/lib/resolveMyWedding.js:76` already records the
+same class from the other direction — *"Two sequential calls on a first-ever
+save would each find no record and each create one"* — fixed locally by
+batching. Twenty-three copies of a check that cannot be made safe by tightening
+any one of them; OPEN-TICKETS carries the chokepoint.
