@@ -165,6 +165,20 @@ let shotN = 0;
 class Stop extends Error {}
 
 /**
+ * An observation that is not a gate. Printed, never counted, never throws.
+ *
+ * Reserved for things the RUN could not cover rather than things the PRODUCT
+ * got wrong — a distinction this file needs because a failed check stops the
+ * journey, and stopping on "onboarding only happens once" would report seven
+ * working steps as unreached.
+ */
+const notes = [];
+const note = (name, ok, detail) => {
+  notes.push({ name, ok, detail });
+  console.log(`  ${ok ? 'NOTE' : 'GAP '}  ${name}  (${detail})`);
+};
+
+/**
  * THE RUN PUTS A SITE ON THE INTERNET, SO THE RUN TAKES IT DOWN AGAIN.
  *
  * Step 5 publishes smoke-and-alias to openinvite.com.au, and before this
@@ -186,12 +200,23 @@ async function unpublish(page) {
       const token = localStorage.getItem('base44_access_token');
       if (!token) return { ok: false, why: 'no token in the browser' };
       const h = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
-      const list = await fetch(`https://base44.app/api/apps/${appId}/entities/WeddingDetails`, { headers: h })
-        .then((x) => x.json()).catch(() => null);
-      const rows = Array.isArray(list) ? list : (list?.data || list?.results || []);
-      // The record the product itself resolves to: most recently created.
-      const mine = rows.slice().sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0];
-      if (!mine) return { ok: false, why: 'no record to unpublish' };
+      // ── OWNER-SCOPED, THROUGH THE PRODUCT'S OWN RESOLVER ────────────────
+      //
+      // This listed the WHOLE WeddingDetails collection and took the newest.
+      // The caller's token can read rows it does not own, so on 2026-09-14 it
+      // resolved a DIFFERENT COUPLE'S record — created minutes earlier by
+      // another account — and sent it a PUT. Base44's RLS answered 403 and
+      // nothing was written, but the refusal came from the platform, not from
+      // this script, and a teardown must not be relying on that.
+      //
+      // It is the exact defect src/lib/resolveMyWedding.js was written to fix
+      // ("previously this was resolved as WeddingDetails.list()[0] … Any other
+      // account creating a newer record made it appear on every other user's
+      // dashboard"), reproduced here by hand. /api/my-wedding-details filters
+      // by created_by_id server-side and cannot return someone else's row.
+      const mine = await fetch('/api/my-wedding-details', { headers: h })
+        .then((x) => (x.ok ? x.json() : null)).catch(() => null);
+      if (!mine?.id) return { ok: false, why: 'no record of my own to unpublish' };
       const res = await fetch(`https://base44.app/api/apps/${appId}/entities/WeddingDetails/${mine.id}`, {
         method: 'PUT', headers: h, body: JSON.stringify({ websiteEnabled: false }),
       });
@@ -209,6 +234,32 @@ async function unpublish(page) {
   }
 }
 
+/**
+ * The dashboard's own counts, read as numbers rather than matched as a string.
+ *
+ * The check used to be /\b1\b …(invitation|invited)/ — a literal ONE. That is
+ * true only of an account with exactly one guest, which the smoke account
+ * stopped being several runs ago, and it is the "measuring the fixture" shape
+ * again: an assertion about the state a run happens to start in rather than
+ * about what the run did. Counts are captured before the guest is added and
+ * again at the end, and the step asserts they MOVED.
+ */
+const countsOn = async (page) => page.evaluate(() => {
+  const t = (document.body.innerText || '').replace(/\s+/g, ' ');
+  const near = (words) => {
+    const m = t.match(new RegExp(`(\\d+)\\s*(?:[a-z ]{0,12})?(?:${words})`, 'i'))
+      || t.match(new RegExp(`(?:${words})[^0-9]{0,20}(\\d+)`, 'i'));
+    return m ? Number(m[1]) : null;
+  };
+  // THE DASHBOARD'S OWN LABELS, not words that sound like them. The loose
+  // pattern matched "6 invitations still to reply" from the headline — which
+  // is invitations PENDING and legitimately need not change when a guest who
+  // was already invited replies — and reported "invited 6 -> 6" on a run that
+  // had worked. "Your numbers" is where the figures live: People invited,
+  // Guests coming.
+  return { invited: near('People invited'), replied: near('Guests coming') };
+});
+
 /** Every step, in order, so a run that stops can say what it did not do. */
 const STEPS = [
   '0 · the login form accepts both credentials',
@@ -223,8 +274,8 @@ const STEPS = [
   '  and an invitation link exists to open',
   '8 · the invitation link opens as that guest',
   '  and replies',
-  '9 · the dashboard counts one invitation',
-  '  and one reply',
+  '9 · the dashboard counts the invitation this run sent',
+  '  and the reply this run made',
 ];
 
 let broken = null;
@@ -253,9 +304,9 @@ const page = await couple.newPage();
 const sends = [];
 page.on('response', async (r) => {
   if (!/\/api\/send-invites/.test(r.url())) return;
-  let body = null;
-  try { body = await r.json(); } catch { /* not json */ }
-  sends.push({ status: r.status(), body });
+  let body = null, text = null;
+  try { body = await r.json(); } catch { text = await r.text().catch(() => null); }
+  sends.push({ status: r.status(), body, text: text ? text.slice(0, 300) : null });
 });
 
 let rsvpUrl = '';
@@ -378,80 +429,127 @@ try {
   const atWizard = /\/onboarding\b/.test(new URL(page.url()).pathname);
   await shot(page, 'onboarding-entry');
 
-  // FILL WHAT THIS SCREEN ASKS, THEN ADVANCE — in that order, every screen.
+  // ── THE WIZARD, MODELLED BY ITS SCREENS ───────────────────────────────────
   //
-  // The first version typed the names once, before the loop, and reported
-  // "wizard reached, names NOT TYPED, 1 screen crossed". It was right to:
-  // /onboarding opens on the WELCOME screen, which has no name fields at all.
-  // The names are the screen after it. A wizard is a sequence of different
-  // questions and there is no single moment before it at which to answer one.
-  const typeName = async (placeholder, value) => {
-    const f = page.getByPlaceholder(placeholder).first();
-    if (await f.count() === 0) return false;
-    await f.fill(value);
-    return (await f.inputValue()) === value;
-  };
+  // A generic "click the first plausible button" loop was tried and abandoned.
+  // It stalled on four different screens in four runs, and each stall was a
+  // real shape it could not know about: welcome has no fields, names hides
+  // Continue until both are filled, guest count has no Continue at all because
+  // choosing IS continuing, and wedding type is an accordion whose Continue
+  // appears only after a selection — so the first non-Back button there is a
+  // section toggle that advances nothing.
+  //
+  // Worse, a loop that clicks something and checks nothing is the instrument
+  // that produced the vacuous pass this step is being fixed for. Guessing
+  // harder does not make it honest.
+  //
+  // So the eight screens are named, from src/pages/Onboarding.jsx's own STEPS
+  // and the components it renders. Each says how to RECOGNISE it and what a
+  // couple DOES on it. A screen that does not appear is skipped and recorded;
+  // a screen nobody modelled stops the run and prints what was on it, which is
+  // the only honest thing to do with a wizard that has grown a step.
   let named = false;
 
-  // "Continue →", "Next →", "Let's go →" — and the arrow is in the name.
-  const ADVANCE = /^(next|continue|finish|done|let's go|get started)\b/i;
-  // Every optional step offers its own way past, and each is worded for its
-  // own question rather than a generic Skip.
-  const SKIP = /^(we haven't set a date yet|not sure yet|skip|i'll do this later|maybe later)\b/i;
-  // WHERE THE WIZARD SAYS IT IS. Every screen prints "Step N of 8", which is
-  // the only honest progress signal available: a click that does not change it
-  // did not advance anything. Without this the choice fallback below clicked
-  // the first button on the same screen twenty-four times and reported
-  // twenty-four screens crossed.
-  const whereAmI = async () => {
-    const t = await page.evaluate(() => (document.body.innerText.match(/Step\s+\d+\s+of\s+\d+/i) || [''])[0]);
-    return `${new URL(page.url()).pathname}|${t}`;
-  };
+  /**
+   * The wizard animates each screen in (framer-motion), and a click landing
+   * mid-transition hits where the control WAS. This waits for the animations
+   * to finish rather than for a number of milliseconds — raced against a
+   * ceiling so a spinner elsewhere on the page cannot hang the run.
+   */
+  const stillMoving = () => Promise.race([
+    page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {}))).then(() => true)),
+    new Promise((r) => setTimeout(() => r(false), 5000)),
+  ]).catch(() => false);
 
-  let crossed = 0;
-  let stalledAt = null;
-  for (let i = 0; i < 24; i++) {
-    const before = await whereAmI();
-    // The names screen hides its Continue until both fields hold a value, so
-    // this has to happen before the button is looked for, not after.
-    if (!named && await page.getByPlaceholder('Your name').count() > 0) {
-      named = (await typeName('Your name', COUPLE1)) && (await typeName("Partner's name", COUPLE2));
-      await shot(page, 'onboarding-names');
-      await page.waitForTimeout(600);
-    }
-    const next = page.getByRole('button', { name: ADVANCE }).first();
-    if (await next.count() > 0) {
-      await next.click().catch(() => {});
-      crossed += 1;
-    } else {
-      const skip = page.getByRole('button', { name: SKIP }).first();
-      if (await skip.count() > 0) {
-        await skip.click().catch(() => {});
-        crossed += 1;
-      } else {
-        // A SCREEN WHOSE OPTIONS ARE ITS ADVANCE. "How many guests are you
-        // expecting?" offers Intimate / Celebration / Grand and no Continue at
-        // all — choosing IS continuing, which is how a couple crosses it and
-        // how this must too. The run halted here on step 4 of 8 looking for a
-        // button that the screen had no reason to have.
-        //
-        // Back is excluded by name because it is the one button on these
-        // screens that is not a choice, and going back would loop forever.
-        const choices = page.getByRole('button').filter({ hasNotText: /^\s*(←\s*)?back\s*$/i });
-        const n = await choices.count();
-        if (n === 0) break;
-        await choices.first().click().catch(() => {});
-        crossed += 1;
-      }
-    }
-    await page.waitForTimeout(1800);
+  const SCREENS = [
+    { name: 'welcome',
+      at: () => page.getByRole('button', { name: 'Get started', exact: true }),
+      act: async (l) => l.click() },
+
+    { name: 'names',
+      at: () => page.getByPlaceholder('Your name'),
+      act: async () => {
+        await page.getByPlaceholder('Your name').fill(COUPLE1);
+        await page.getByPlaceholder("Partner's name").fill(COUPLE2);
+        named = (await page.getByPlaceholder('Your name').inputValue()) === COUPLE1
+          && (await page.getByPlaceholder("Partner's name").inputValue()) === COUPLE2;
+        // Continue only renders once both hold a value — that is the screen's
+        // own rule, and waiting for it is how this step proves it obeyed it.
+        await page.getByRole('button', { name: /^Continue/ }).first().click();
+      } },
+
+    // Date and location are genuinely optional and each offers its own way
+    // past, worded for its own question rather than a generic Skip. The smoke
+    // takes those: a wedding with no date is a real thing a couple has.
+    { name: 'date',
+      at: () => page.getByRole('button', { name: /^We haven't set a date yet/ }),
+      act: async (l) => l.click() },
+
+    { name: 'location',
+      at: () => page.getByRole('button', { name: /^Not sure yet/ }),
+      act: async (l) => l.click() },
+
+    { name: 'guestCount',
+      at: () => page.getByText('How many guests are you expecting?'),
+      act: async () => page.getByRole('button', { name: 'Celebration', exact: false }).first().click() },
+
+    { name: 'weddingType',
+      at: () => page.getByRole('button', { name: /^Vibe$/ }),
+      act: async (l) => {
+        // Open a section, choose one pill, and only then does Continue exist.
+        await l.click();
+        await page.waitForTimeout(500);
+        const pills = page.getByRole('button').filter({ hasNotText: /Vibe|Style|Ceremony type|Back|Continue/ });
+        if (await pills.count() > 0) await pills.first().click();
+        await page.waitForTimeout(400);
+        await page.getByRole('button', { name: /^Continue/ }).first().click();
+      } },
+
+    { name: 'ava',
+      at: () => page.getByRole('button', { name: /^Got it, let's go/ }),
+      act: async (l) => l.click() },
+
+    { name: 'universe',
+      at: () => page.getByRole('button', { name: /^Skip for now/ }),
+      act: async (l) => l.click() },
+
+    // TWO BUTTONS BOTH READ "Select", and picking the wrong one takes the
+    // five-screen path instead of finishing. Scoped to the card that carries
+    // the heading, never .first() — the same lesson as the login form, where
+    // an ambiguous query clicked the header icon and photographed an empty
+    // page that looked exactly like a rejected password.
+    { name: 'fork',
+      at: () => page.getByText('Get started now', { exact: true }),
+      act: async () => {
+        const card = page.locator('div').filter({ hasText: /^Get started now/ }).last();
+        await card.getByRole('button', { name: 'Select', exact: true }).click();
+      } },
+
+    // The last screen arrives after the fork's own save, so it is slower than
+    // the rest and gets its own budget.
+    { name: 'completion',
+      at: () => page.getByRole('button', { name: /^Let's go/ }),
+      wait: 20000,
+      act: async (l) => l.click() },
+  ];
+
+  const crossedNames = [];
+  let unknownScreen = null;
+  for (const screen of SCREENS) {
     if (!/\/onboarding\b/.test(new URL(page.url()).pathname)) break;
-    // NO PROGRESS IS A STOP, NOT A REASON TO TRY AGAIN. A run that keeps
-    // clicking a screen it cannot leave produces a large number and no
-    // journey; the screen it is stuck on is the finding.
-    if (await whereAmI() === before) { stalledAt = before; break; }
+    const l = screen.at().first();
+    // A short wait, not a long one: this asks "is this screen up", and the
+    // answer is usually no for the screens that are not this one.
+    const here = await l.waitFor({ state: 'visible', timeout: screen.wait || 6000 }).then(() => true, () => false);
+    if (!here) continue;
+    await screen.act(l).catch((e) => { unknownScreen = `${screen.name}: ${String(e.message).slice(0, 80)}`; });
+    crossedNames.push(screen.name);
+    await page.waitForTimeout(1600);
+    await stillMoving();
   }
+  const crossed = crossedNames.length;
   await shot(page, 'onboarding-crossed');
+
   // WAIT FOR THE DESTINATION, NOT FOR A NUMBER OF SECONDS. Login lands on
   // /choose-plan, which is "the single, account-state-gated landing point for
   // every successful auth" — and for an account past the plan step it
@@ -462,7 +560,28 @@ try {
   // this is the second place in this file to learn it.
   await page.waitForURL((u) => !/\/(choose-plan|login|register)\b/.test(u.pathname), { timeout: 30000 })
     .catch(() => {});
+  // AND WAIT FOR THE WIZARD'S OWN EXIT, which is a second navigation. The
+  // completion screen sends the couple on by itself, and the first version of
+  // this asked "are we still in the wizard" BEFORE that had happened — so a
+  // run that finished onboarding correctly reported "STALLED on an unmodelled
+  // screen: You're all set, Smoke." The screen it named was the last one,
+  // doing exactly what it is for. Asking a question before the answer can be
+  // true is the same defect as asserting one that was already true.
+  await page.waitForURL((u) => !/\/onboarding\b/.test(u.pathname), { timeout: 30000 }).catch(() => {});
   await shot(page, 'onboarding-end');
+
+  // A SCREEN NOBODY MODELLED IS A RESULT, NOT A SHRUG. If the run is STILL in
+  // the wizard once it has had its chance to leave, the wizard has a step this
+  // file does not know about, and the report has to say which.
+  let stalledAt = unknownScreen;
+  if (!stalledAt && /\/onboarding\b/.test(new URL(page.url()).pathname)) {
+    const heading = await page.evaluate(() => {
+      const h = document.querySelector('h1, h2, h3');
+      const step = (document.body.innerText.match(/Step\s+\d+\s+of\s+\d+/i) || [''])[0];
+      return `${step} "${(h?.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 60)}"`;
+    });
+    stalledAt = `an unmodelled screen — ${heading}`;
+  }
   // ARRIVAL, not absence. "the url is not /onboarding" is true of a browser
   // that never got past the register page.
   const onboarded = /\/(DailyUpdate|dashboard|studio)/i.test(page.url())
@@ -480,21 +599,73 @@ try {
   // So the step asserts the outcome it is actually for: it started inside the
   // wizard, it left the wizard, and the couple is on the record afterwards.
   // All three are false before the step and true after, which is the test.
-  const onRecord = await page.evaluate(async (appId) => {
+  const onRecord = await page.evaluate(async () => {
     const token = localStorage.getItem('base44_access_token');
     if (!token) return null;
-    const rows = await fetch(`https://base44.app/api/apps/${appId}/entities/WeddingDetails`,
-      { headers: { Authorization: `Bearer ${token}` } }).then((x) => x.json()).catch(() => null);
-    const list = Array.isArray(rows) ? rows : (rows?.data || rows?.results || []);
-    const mine = list.slice().sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0];
-    return mine ? { id: mine.id, names: [mine.couple1Name, mine.couple2Name].filter(Boolean), draft: mine.onboardingDraft } : null;
-  }, APP_ID);
+    // OWNER-SCOPED. The unfiltered list here read another couple's record and
+    // reported their names as this account's — see the teardown's own note.
+    const mine = await fetch('/api/my-wedding-details', { headers: { Authorization: `Bearer ${token}` } })
+      .then((x) => (x.ok ? x.json() : null)).catch(() => null);
+    return mine?.id ? { id: mine.id, names: [mine.couple1Name, mine.couple2Name].filter(Boolean), draft: mine.onboardingDraft } : null;
+  });
   const couple = (onRecord?.names || []).join(' & ');
-  check('2 · reaches the end of onboarding',
-    atWizard && onboarded && crossed > 0 && couple === `${COUPLE1} & ${COUPLE2}`,
-    `${page.url()} — wizard ${atWizard ? 'entered' : 'REDIRECTED AWAY'}, ${crossed} screen(s) crossed`
-    + `${stalledAt ? `, STALLED on ${stalledAt}` : ''}, record ${onRecord?.id || 'none'} holds ${couple ? `"${couple}"` : 'NO NAMES'}`
-    + `${named ? ' (typed by this run)' : ' (from a resumed draft)'}`);
+  // ── TWO QUESTIONS, BECAUSE ONBOARDING HAPPENS ONCE ────────────────────────
+  //
+  // "Has this couple completed onboarding" and "does the wizard work" are not
+  // the same question, and conflating them made this step unanswerable.
+  //
+  // Onboarding is a once-per-account journey. Once the smoke account finished
+  // it — which it did, crossing five screens and claiming smoke-and-alias —
+  // /onboarding correctly redirects it away forever, and a step demanding
+  // "screens were crossed" can never pass again. The OTP gate means there is
+  // one account, so there is no fresh one to use.
+  //
+  // Collapsing that into a pass would be the vacuous assertion this file was
+  // just fixed for: "the account is onboarded" is true before the step runs.
+  // Collapsing it into a failure is worse — it stops the journey at step 2 and
+  // reports steps 3-9 as unreached on a product where they work.
+  //
+  // So: the OUTCOME is step 2, and it is a real precondition for everything
+  // after it. Whether the wizard was exercised is its own line, and it is a
+  // pass only when this run actually drove it.
+  const outcome = onboarded && couple === `${COUPLE1} & ${COUPLE2}`;
+  check('2 · reaches the end of onboarding', outcome,
+    `${page.url()} — record ${onRecord?.id || 'none'} holds ${couple ? `"${couple}"` : 'NO NAMES'}`
+    + `, draft ${onRecord?.draft === false ? 'cleared' : JSON.stringify(onRecord?.draft)}`);
+  // A NOTE, NOT A CHECK, AND THE DIFFERENCE MATTERS.
+  //
+  // A failed check THROWS and stops the journey — deliberately, so that "not
+  // reached" means not executed. That is right for a broken product and wrong
+  // here: the wizard not being re-runnable is the product working correctly,
+  // and halting on it reports steps 3-9 as unreached on a build where they are
+  // fine. It is a limit on what this run could COVER, not a defect it found.
+  //
+  // It is still printed, and still says plainly that nothing here exercised
+  // the wizard, because a coverage gap that is invisible is how a suite ends
+  // up green over code nobody has run.
+  note('the wizard itself was exercised by this run', atWizard && crossed > 0 && !stalledAt,
+    atWizard
+      ? `${crossed} screen(s) crossed: ${crossedNames.join(' -> ') || 'none'}${stalledAt ? `, STALLED on ${stalledAt}` : ''}`
+      : 'redirected away — this account finished onboarding on an earlier run, and it only happens once');
+  note('the names were typed by this run', named, named ? `${COUPLE1} & ${COUPLE2}` : 'they were already on the record');
+
+  // The baseline, read before this run adds a guest or sends anything, so
+  // step 9 can assert movement rather than a number.
+  //
+  // AND IT WAITS FOR THE NUMBERS. The first version read immediately after the
+  // wizard's redirect and got `invited=null, replied=null` — the dashboard had
+  // not rendered its counts yet — so step 9 compared null to 6 and failed on a
+  // product that was working. A baseline that is not there is not a baseline;
+  // reading it too early is the same "asked before the answer could be true"
+  // mistake as the unmodelled-screen verdict, one step along.
+  await page.goto(`${BASE}/DailyUpdate`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  let dashBefore = { invited: null, replied: null };
+  for (let i = 0; i < 15; i++) {
+    dashBefore = await countsOn(page);
+    if (dashBefore.invited !== null && dashBefore.replied !== null) break;
+    await page.waitForTimeout(2000);
+  }
+  console.log(`  dashboard before: invited=${dashBefore.invited}, replied=${dashBefore.replied}`);
 
   // ── 3. a universe ─────────────────────────────────────────────────────────
   await page.goto(`${BASE}/studio/universe`, { waitUntil: 'domcontentloaded', timeout: 60000 });
@@ -594,12 +765,28 @@ try {
   // when a couple has no slug (`details?.slug || 'your-wedding'`), and it
   // matched the regex perfectly. "The address exists" has to mean the address
   // answers, so the published page is requested and required to return 200.
-  const live = slug
-    ? await page.evaluate(async (u) => {
-      const r = await fetch(u, { redirect: 'follow' }).catch(() => null);
-      return r ? r.status : 0;
-    }, `${BASE}/w/${slug}`)
-    : 0;
+  // VISITED, NOT FETCHED, AND FROM A BROWSER THAT IS NOT SIGNED IN.
+  //
+  // The in-page fetch read HTTP 0 on a site that was live. Login lands on
+  // www.openinvite.com.au and BASE is the apex, so the couple's tab was asking
+  // a different origin and CORS refused it — the probe's own failure, reported
+  // in the shape of a dead address.
+  //
+  // Navigating is both immune to that and closer to the truth: a guest does
+  // not fetch the page, they open it, and they open it as a stranger. A fresh
+  // context with no token is what proves the address works for someone who is
+  // not the couple — an authenticated read could pass on a site no guest can
+  // see.
+  let live = 0;
+  if (slug) {
+    const strangerCtx = await browser.newContext();
+    const stranger = await strangerCtx.newPage();
+    const resp = await stranger.goto(`${BASE}/w/${slug}`, { waitUntil: 'domcontentloaded', timeout: 45000 })
+      .catch(() => null);
+    live = resp ? resp.status() : 0;
+    await shot(stranger, 'published-as-a-stranger');
+    await strangerCtx.close();
+  }
   check('5 · publishes, and the address exists', !!slug && live === 200,
     slug ? `/w/${slug} -> HTTP ${live}` : 'no slug on the page');
   await shot(page, 'published');
@@ -644,26 +831,63 @@ try {
   await page.getByRole('button', { name: /^Send to \d+ guests?$/ })
     .click({ timeout: 10000 }).catch(() => {});
   await page.waitForTimeout(9000);
-  const ok = sends.find((s) => s.status === 200);
+  // A BARE STATUS IS NOT A DIAGNOSIS. This reported "500" and nothing else,
+  // which names the floor the failure happened on and not the room. The
+  // endpoint's own error body is what says why, so it is printed — and when
+  // the body is not JSON, the raw text is, because "not json" was the other
+  // thing this could silently swallow.
+  const ok = sends.find((x) => x.status === 200);
+  const failed = sends.filter((x) => x.status !== 200);
   check('7 · the send API accepts the invitation', !!ok,
-    ok ? `HTTP 200 ${JSON.stringify(ok.body).slice(0, 90)}` : sends.map((s) => s.status).join(',') || 'no /api/send-invites call');
+    ok ? `HTTP 200 ${JSON.stringify(ok.body).slice(0, 90)}`
+      : failed.length
+        ? failed.map((x) => `HTTP ${x.status} ${JSON.stringify(x.body ?? x.text ?? null).slice(0, 220)}`).join(' | ')
+        : 'no /api/send-invites call was made at all');
   await shot(page, 'sent');
 
   // The token URL, read from the guest's own row rather than from an inbox.
+  let linkWhy = null;
   rsvpUrl = await page.evaluate(() => {
     const m = (document.body.innerText || '').match(/https?:\/\/[^\s]*[?&]rsvp=[A-Za-z0-9_-]+/);
     return m ? m[0] : '';
   });
-  if (!rsvpUrl && slug) {
-    const token = await page.evaluate(async () => {
-      const r = await fetch('/api/my-guest-links').catch(() => null);
-      if (!r || !r.ok) return '';
+  // ── THE FALLBACK WAS WRONG IN FOUR WAYS, AND ALL FOUR WERE SHAPE ─────────
+  //
+  // It GET'd a POST-only endpoint, sent no Authorization header, indexed the
+  // response with `[0]` when `links` is an OBJECT KEYED BY GUEST ID, and then
+  // built `/w/<slug>?rsvp=<token>` when the product's own link is
+  // `<origin>/rsvp/<token>` (SendInvitesModal's RSVP_BASE).
+  //
+  // That is the same class as the defect this run was verifying — reading a
+  // shape that is not there — and it reported "no token found", which names
+  // the symptom and blames the product. The endpoint already returns the
+  // finished URL, so the smoke stops constructing one at all: constructing it
+  // was how the shape got a chance to be wrong.
+  if (!rsvpUrl) {
+    const found = await page.evaluate(async () => {
+      const token = localStorage.getItem('base44_access_token');
+      // The guest this run just added, by its own row, so the link belongs to
+      // the guest the rest of the journey is about.
+      const mine = await fetch('/api/my-guests', { headers: { Authorization: `Bearer ${token}` } })
+        .then((r) => (r.ok ? r.json() : null)).catch(() => null);
+      const rows = mine?.guests || mine?.data || (Array.isArray(mine) ? mine : []);
+      const guest = rows.find((g) => /notiftest01/.test(g.email || '')) || rows[0];
+      if (!guest?.id) return { why: `no guest row (${rows.length} read)` };
+      const r = await fetch('/api/my-guest-links', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ guestIds: [guest.id] }),
+      }).catch(() => null);
+      if (!r || !r.ok) return { why: `my-guest-links HTTP ${r ? r.status : 'no response'}` };
       const j = await r.json().catch(() => ({}));
-      return (j.links || [])[0]?.token || '';
+      const entry = j.links?.[guest.id];
+      return entry?.rsvpUrl ? { url: entry.rsvpUrl } : { why: `no link for ${guest.id} in ${JSON.stringify(Object.keys(j.links || {}))}` };
     });
-    if (token) rsvpUrl = `${BASE}/w/${slug}?rsvp=${token}`;
+    if (found.url) rsvpUrl = found.url;
+    else linkWhy = found.why;
   }
-  check('  and an invitation link exists to open', !!rsvpUrl, rsvpUrl ? rsvpUrl.replace(/rsvp=.*/, 'rsvp=<token>') : 'no token found');
+  check('  and an invitation link exists to open', !!rsvpUrl,
+    rsvpUrl ? rsvpUrl.replace(/\/rsvp\/.*/, '/rsvp/<token>') : (linkWhy || 'no token found'));
 
   // ── 8. the guest, in a context that shares nothing ────────────────────────
   if (rsvpUrl) {
@@ -674,15 +898,62 @@ try {
     await shot(gp, 'guest-arrives');
     const knowsThem = (await gp.getByText(new RegExp(GUEST_NAME.split(' ')[0], 'i')).count()) > 0;
     check('8 · the invitation link opens as that guest', knowsThem, knowsThem ? 'the site knows who they are' : 'the guest was not recognised');
-    await gp.getByRole('button', { name: /rsvp|reply|respond/i }).first().click().catch(() => {});
-    await gp.waitForTimeout(3000);
-    await gp.getByRole('button', { name: /yes|attending|accept|joyfully/i }).first().click().catch(() => {});
-    await gp.waitForTimeout(1500);
-    await gp.getByRole('button', { name: /^(submit|send|confirm|done)$/i }).first().click().catch(() => {});
-    await gp.waitForTimeout(5000);
+    // ── THE PAGE COMMITS ON THE TAP, AND SAYS SO IN ITS OWN WORDS ─────────
+    //
+    // This was three guessed labels behind .catch(() => {}) — rsvp|reply|
+    // respond, then yes|attending|accept|joyfully, then a submit button — and
+    // it reported "no confirmation", which blames the product for the guess.
+    //
+    // RSVPPage has no submit button by design: "nothing here is waiting to be
+    // submitted". It has three phases and three sentences (RSVPPage:920-925):
+    //
+    //   ask       "… would love to know if you can join them to celebrate."
+    //   declined  "Thank you for letting us know."
+    //   accepted  "You are counted in. …"
+    //
+    // AND THE OLD PATTERN WOULD HAVE PASSED ON A DECLINE. It matched
+    // /thank you/, which is the DECLINED sentence — so a guest who said no
+    // would have been reported as having replied yes. A wrong pass, not a
+    // missing one.
+    //
+    // The phase is read before and after, because "you are counted in" can
+    // already be true when the page opens: a guest who replied on an earlier
+    // run is still counted in, and asserting it on arrival would be measuring
+    // the fixture.
+    const phaseOf = async () => {
+      if (await gp.getByText('You are counted in').count() > 0) return 'accepted';
+      if (await gp.getByText('Thank you for letting us know').count() > 0) return 'declined';
+      if (await gp.getByText(/would love to know if you can join/).count() > 0) return 'ask';
+      return 'unknown';
+    };
+    const before = await phaseOf();
+    // THE PRIMARY QUESTION COMES FIRST, AND THE EVENT CARDS DO NOT EXIST YET.
+    //
+    // In the `ask` phase the page shows two large buttons and nothing else —
+    // "Yes, I will be there" / "Sorry, I can't make it" (RSVPPage:939-940) —
+    // and it commits on the tap. The per-event Attending / Can't make it cards
+    // are the REFINEMENT that appears afterwards, which is why looking for
+    // them first found "0 event card(s), phase ask -> ask": the page was
+    // waiting to be asked the only question it exists to ask.
+    const yes = gp.getByRole('button', { name: 'Yes, I will be there', exact: true });
+    const asked = await yes.count() > 0;
+    if (asked) {
+      await yes.first().click({ timeout: 10000 }).catch(() => {});
+      await gp.waitForTimeout(4000);
+    }
+    // Then the refinement, if the couple's events are itemised at all.
+    const attending = gp.getByRole('button', { name: 'Attending', exact: true });
+    const cards = await attending.count();
+    for (let i = 0; i < cards; i++) {
+      await attending.nth(i).click({ timeout: 8000 }).catch(() => {});
+      await gp.waitForTimeout(700);
+    }
+    await gp.waitForTimeout(4000);
     await shot(gp, 'guest-replied');
-    const replied = (await gp.getByText(/thank you|reply received|got it|we have your/i).count()) > 0;
-    check('  and replies', replied, replied ? 'confirmation shown' : 'no confirmation');
+    const after = await phaseOf();
+    check('  and replies', after === 'accepted',
+      `phase ${before} -> ${after}; primary question ${asked ? 'answered' : 'not shown'}, ${cards} event card(s) refined`
+      + (before === 'accepted' ? ' (already counted in when the link opened)' : ''));
     await guestCtx.close();
   } else {
     check('8 · the invitation link opens as that guest', false, 'no link');
@@ -692,10 +963,15 @@ try {
   // ── 9. the couple sees it ─────────────────────────────────────────────────
   await page.goto(`${BASE}/DailyUpdate`, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.waitForTimeout(6000);
-  const counts = await page.evaluate(() => document.body.innerText || '');
+  const after = await countsOn(page);
   await shot(page, 'dashboard');
-  check('9 · the dashboard counts one invitation', /\b1\b[\s\S]{0,40}(invitation|invited)/i.test(counts), 'from the rendered dashboard');
-  check('  and one reply', /\b1\b[\s\S]{0,40}(repl|coming|confirmed)/i.test(counts), 'from the rendered dashboard');
+  const moved = (a, b) => a !== null && b !== null && b > a;
+  check('9 · the dashboard counts the invitation this run sent',
+    moved(dashBefore.invited, after.invited),
+    `invited ${dashBefore.invited} -> ${after.invited}`);
+  check('  and the reply this run made',
+    moved(dashBefore.replied, after.replied),
+    `replied ${dashBefore.replied} -> ${after.replied}`);
 } catch (err) {
   if (!(err instanceof Stop)) {
     // A throw is its own result, and it stops the journey the same way.
@@ -723,6 +999,11 @@ await couple.close();
 await browser.close();
 
 const passed = results.filter((r) => r.ok).length;
+const gaps = notes.filter((n) => !n.ok);
+if (gaps.length) {
+  console.log(`\n  ${gaps.length} coverage gap(s) — not product failures:`);
+  for (const g of gaps) console.log(`    ${g.name} — ${g.detail}`);
+}
 console.log(`\n  screenshots: ${SHOTS}`);
 console.log(`  ${passed}/${results.length} ${passed === results.length ? 'ALL PASS' : 'FAILURES PRESENT'}\n`);
 if (passed !== results.length) {
