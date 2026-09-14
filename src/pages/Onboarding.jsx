@@ -250,11 +250,43 @@ export default function Onboarding() {
       }
       setUser(currentUser);
 
+      // ── THE ACCOUNT'S RECORD IS ADOPTED BY OWNERSHIP, NOT BY A FLAG ───────
+      //
+      // This used to read `if (draft?.onboardingDraft) { setDraftWeddingId(…) }`
+      // — the id was taken ONLY when the record carried the draft flag. A
+      // record without it left draftWeddingId null, and persistDraftStep's
+      // `if (id) update else create` then made a SECOND WeddingDetails for an
+      // account that already had one.
+      //
+      // Measured on 2026-09-14: an account with two flagless records entered
+      // /onboarding, advanced one screen, and came out with three.
+      //
+      // And a duplicate is not an extra row, it is a substitution. Every
+      // surface resolves the couple's wedding as the NEWEST owned record
+      // (resolveMyWedding's mostRecent, and api/my-wedding-details'
+      // getMyWedding, which sort created_date descending and take [0]). A new
+      // record is always newer — so it silently becomes the wedding, and the
+      // one holding everything the couple had filled in vanishes from their
+      // own dashboard. It is not deleted; it is simply never resolved again.
+      //
+      // The flag answers "where were they up to", which is a question about
+      // the WIZARD. Which record to write to is a question about the ACCOUNT,
+      // and `draft` is already the answer: getMyWeddingDetails resolves the
+      // same record the dashboard does. So the id is adopted whenever one
+      // exists, and only the rehydration below stays conditional on the flag.
+      //
+      // The ref is set here as well as the state because the two are synced by
+      // an effect, and a create that fires before that effect commits is the
+      // very duplicate this is preventing.
+      if (draft) {
+        draftWeddingIdRef.current = draft.id;
+        setDraftWeddingId(draft.id);
+      }
+
       // Resume-after-refresh: if an unfinished draft exists for this user,
       // rehydrate onboardingData and jump back to where they left off
       // instead of restarting from welcome.
       if (draft?.onboardingDraft) {
-        setDraftWeddingId(draft.id);
         setOnboardingData(prev => ({
           ...prev,
           // A still-draft record can only ever be Path A: Path B
