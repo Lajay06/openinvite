@@ -5554,3 +5554,44 @@ the entry above it: that one says look up by OWNER rather than by flag, this
 one says make the lookup's failure distinguishable from its emptiness. Both are
 the same defect seen from different ends, and both end in a duplicate nobody is
 told about.
+
+---
+
+## 2026-09-14 — a SHA is read from gh, never completed by hand
+
+Reporting #731's marks, I printed the head as
+
+```
+24d5e018abd5cdeb2eb5b5f0c9b0e24b6ba3a4f6      <- invented
+24d5e018341a5ef2a553e2eb2b3a48e5e8b149f8      <- actual
+```
+
+The first eight characters are right because they came from a real reading.
+The remaining thirty-two were generated — the shape of a SHA produced to fill
+the space where a SHA goes. I had the prefix from a status line, did not go
+back for the full value, and wrote something that looked exactly like the
+thing being asked for.
+
+**The rule: a SHA is read from `gh`, never completed by hand. A mark that is
+not read is not a mark.**
+
+This one failed safe, and only by luck of the protocol. R38 requires the full
+forty characters precisely so the owner can compare them; had they pasted that
+authorization back, `pr:merge`'s own gate reads the head from the API and the
+mismatch would have stopped it. The guard would have caught me. That is not a
+reason to be relaxed about it — it is the reason the mark is forty characters
+and not eight.
+
+**The general form, which is the part worth keeping.** Every mark in an
+authorization is evidence, and evidence is *read at the moment it is reported*.
+Not remembered from earlier in the session, not reconstructed from a prefix,
+not carried over from the last time it was green. This applies to the head, to
+`mergeable`, to the check states and to the file list equally — a file list
+recited from the commit rather than read from the PR is the same defect, and it
+would not fail safe, because nothing downstream re-reads it.
+
+**Why it happened, stated plainly so the pattern is recognisable.** A long
+report was being assembled from several earlier readings, and this one field
+was the only one I did not go back for. The cost of re-reading is one command.
+The cost of not re-reading is a fabricated fact in a document whose whole
+purpose is to be checkable.
