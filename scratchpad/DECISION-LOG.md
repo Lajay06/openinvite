@@ -5400,3 +5400,50 @@ plant run mutates the working tree by design, so the tree is the one place the
 work must not be while it runs. Had the rewrite been committed — even as
 `wip` — `checkout --` would have restored it instead of deleting it, and the
 plant would have had nothing of mine to take with it.
+
+---
+
+## 2026-09-14 — an assertion satisfied by the starting state is vacuous
+
+The launch smoke's step 2 read:
+
+```js
+const onboarded = /\/(DailyUpdate|dashboard|studio)/i.test(page.url()) || …;
+check('2 · reaches the end of onboarding', onboarded, page.url());
+```
+
+It passed every run, for weeks. The wizard was never driven once.
+
+**Two faults underneath it, each enough on its own.** The advance button reads
+`Continue →` and the pattern was anchored `/^(next|continue|…)$/` — the arrow
+is part of the accessible name, so nothing ever matched. And step 1 hides its
+Continue until BOTH names are typed, which the script never did, so there was
+no button to match in the first place. `count() === 0` then `break`, on the
+first iteration, every time.
+
+**But the loop clicking nothing is not what made this survive.** A returning
+account lands on `/DailyUpdate` the moment it signs in. Step 2's assertion was
+already true before step 2 ran. The step could have been deleted entirely and
+the report would not have changed.
+
+**The rule: every smoke step must assert something the step itself caused.**
+Not a URL the account reaches by signing in, not a record that already exists,
+not a badge that was there before. If the assertion holds on the starting
+state, the step is measuring the fixture and reporting it as the product.
+
+The test is mechanical and costs seconds: **ask what the check would say if the
+step's body were deleted.** "Still passes" means it is not a check. Step 2 now
+asserts the wizard was reached, the names were typed, and how many screens were
+crossed — three things that are false before it runs and true after.
+
+**What it cost.** This is the origin of the no-names record. The smoke reported
+onboarding complete on an account that had no couple on it, so `claim-slug`
+answered `{slug: null, reason: 'no-names'}`, and the builder printed
+`openinvite.com.au/w/your-wedding/` beside a green dot over a record that had
+published itself through the autosave default. Three separate investigations
+started downstream of a step that was never true.
+
+**This is the same family as the two entries above it** — a relabel that was
+not a stop, and a blanket catch on a step whose failure is the result. All
+three are a report describing a journey the run did not take. This one is the
+quietest, because nothing about it ever looked wrong.
