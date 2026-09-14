@@ -2104,3 +2104,58 @@ source guards, or a matrix over the ports already assigned (4173, 4179-4193).
 The measure to beat: main's own run, 19m30s at the time of writing.
 
 Post-launch. No code until then.
+
+## 23 WeddingDetails.create paths, no chokepoint
+
+`grep -rn "WeddingDetails.create" src` returns 22 call sites, and
+`api/my-wedding-details.js:318` is the twenty-third. Every one is
+read-then-create: "load my record; if there is none, make one." Base44 declares
+no uniqueness on any entity and offers no conditional write, so two of them
+overlapping produces two records and nothing detects it afterwards.
+
+`src/lib/resolveMyWedding.js:76` already records the class from the other
+direction — "Two sequential calls on a first-ever save would each find no
+record and each create one" — fixed locally inside `putMyWeddingDetails` by
+batching the fields into one call. The fix was local; the shape is general.
+
+The fix: route creation through one server endpoint that resolves the caller's
+record by ownership and REFUSES to create when they already own one, returning
+the existing id instead. Then a guard that fails when a `WeddingDetails.create`
+appears anywhere but there — the same enumerate-and-ratchet shape as
+`modal-scale-class.mjs`, so the count can only go down.
+
+Pre-launch, the wizard's own instance of this is fixed and guarded (#752,
+`tests/persistence/onboarding-resumes-existing.mjs`) — that closed the one path
+a new couple actually walks. The remaining 22 are reachable but not on the
+first-run journey.
+
+See DECISION-LOG 2026-09-14, "read-then-create with nothing to read is the
+duplicate-record shape".
+
+Post-launch. No code until then.
+
+## smoke01 orphan records: websiteEnabled true, slug null
+
+The owner's smoke alias holds three `WeddingDetails`:
+
+```
+6aa1880bfb29e9676f91aa79  2026-09-09T16:23:39  names=[]  slug=null  websiteEnabled=true
+6aa1880e1ab642c55d6cd8fe  2026-09-09T16:23:42  names=[]  slug=null  websiteEnabled=false
+6aa744d615527f1536e4b151  2026-09-14T00:50:30  Smoke & Alias  slug=null  websiteEnabled=false
+```
+
+The first two were created 2.9 seconds apart by the duplicate shape above. Only
+the newest is resolved by any surface, so the other two are unreachable through
+the product — which is why `6aa1880b`'s `websiteEnabled: true` has never
+surfaced anywhere. It is not live: the guest routes need a slug and it has
+none. `6aa1880e` was set to false by the smoke's own teardown, which resolved
+it before the third record existed.
+
+`#745` changed the default and the writable-field list so no new record can
+publish itself by autosave. It did not sweep the records that already had, and
+deliberately so — a migration over live rows is not a launch-week action.
+
+Cleanup under the owner's own token after launch, not the admin key: these are
+the owner's records and nobody else's.
+
+Post-launch. No code until then.
