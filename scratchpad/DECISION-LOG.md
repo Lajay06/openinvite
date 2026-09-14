@@ -5696,3 +5696,102 @@ GREEN, which reads as "the guard did not notice", which is the finding you
 would act on — except the guard never saw anything to notice. A blind guard
 that has been "tested" is worse than one that has not, because nobody looks
 again.
+
+---
+
+## 2026-09-14 — the instrument carries the defect it verifies
+
+**The instrument carries the defect it verifies. A smoke that guesses a shape,
+a label, or a record is not a smoke; every read in it goes through the same
+owner-scoped endpoints the product uses, and every assertion names the
+product's own label.**
+
+Three instances, all in the same run, all in the launch smoke, and all while it
+was verifying a fix for exactly this class of mistake.
+
+**The token fallback.** Reading back the guest's RSVP link, the smoke did a GET
+on a POST-only endpoint, sent no `Authorization` header, indexed the response
+with `[0]` when `links` is an object keyed by guest id, and then built
+`/w/<slug>?rsvp=<token>` when the product's own link is `<origin>/rsvp/<token>`.
+Four guesses about a shape, in a step whose purpose was to confirm a fix for
+`result?.data?.map` — reading a shape that is not there. It reported "no token
+found", which names the symptom and blames the product. The endpoint returns
+the finished URL; the smoke now asks for it instead of constructing one, and
+constructing it was how the shape got a chance to be wrong.
+
+**The `/thank you/` match.** The reply step looked for
+`/thank you|reply received|got it|we have your/`. RSVPPage has three phases and
+three sentences, and "Thank you for letting us know." is the DECLINED one. So a
+guest who said NO would have been reported as having replied yes. Not a missed
+failure — a wrong pass, which is the expensive direction. It now reads the
+product's own three sentences and names which phase it moved between.
+
+**The headline figure.** Step 9 matched `(\d+)` near `invitation|invited` and
+found "6 invitations still to reply" in the page heading — invitations PENDING,
+which legitimately does not move when a guest who was already invited replies.
+The figures the step wanted are under "Your numbers": People invited, Guests
+coming. A pattern loose enough to match the right words in the wrong sentence
+is not a measurement.
+
+**What they have in common.** Each guessed at the product instead of reading
+it, and each failure was reported as the product's. A guard that guesses is
+worse than no guard: it spends the reader's attention on a defect that is not
+there, and it exhausts the credibility that a real finding needs. Twice this
+session a "product failure" from this file was mine, and the second time it
+took a screenshot to see it.
+
+**The standard, concretely.** Reads go through the endpoints the product goes
+through — `/api/my-wedding-details`, `/api/my-guest-links`, `/api/my-guests` —
+never a raw entity list and never the admin key. Assertions quote the label or
+sentence the product renders, found in its source, not a family of words that
+might appear. A URL the product can hand over is asked for, never assembled.
+
+---
+
+## 2026-09-14 — INCIDENT (R23): the smoke read a non-owner record and tried to write to it
+
+**What happened.** The launch smoke's teardown and its step-2 record read both
+did this:
+
+```js
+fetch(`/apps/${appId}/entities/WeddingDetails`)          // the WHOLE collection
+  .sort((a, b) => b.created_date - a.created_date)[0]    // newest wins
+```
+
+A caller's token can read rows it does not own. On a run at 03:5x the newest
+row in the collection belonged to **another account** — created minutes
+earlier — so the smoke resolved that record, reported its couple's names in
+its own step-2 line as though they were the smoke account's, and the teardown
+sent it `PUT { websiteEnabled: false }`.
+
+**Base44 answered 403. Nothing was written.** The refusal came from the
+platform's row-level security, not from this script, and a teardown must never
+be relying on that.
+
+**Two breaches, not one.** A non-owner record was READ, and a non-owner record
+was WRITTEN TO — the write only failing because something else stopped it. The
+couple's names then reached a written report. R23 is "no non-owner records",
+and all three of those are inside it.
+
+**It is the defect `resolveMyWedding.js` exists to prevent**, reproduced by
+hand in the instrument, after that file had been read twice the same session.
+Its header says so in as many words: *"previously this was resolved as
+`WeddingDetails.list()[0]` … Any other account creating a newer record made it
+appear on every other user's dashboard."* The lesson there was written about
+product code; nothing had said it applies to a test, and a test holding a real
+production token is exactly where it applies hardest.
+
+**Fixed** by routing both reads through `/api/my-wedding-details`, which
+filters by `created_by_id` server-side and cannot return another account's row.
+The write and its read-back still address the record by id, but the id now
+comes from the owner-scoped resolver.
+
+**Guarded**, because a rule with no instrument is how this arrived:
+`tests/persistence/smoke-reads-are-owner-scoped.mjs` fails if
+`scripts/launch-smoke.mjs` contains a raw `WeddingDetails.list(`, a `.filter(`,
+an unscoped `/entities/` read or any use of the admin key.
+
+**The general rule.** A script that holds a production token is production
+code. Ownership scoping, rate limits and R23 apply to it exactly as they apply
+to the app, and the fact that it is "only a test" is the reason nobody reviews
+it, not a reason it needs less care.
