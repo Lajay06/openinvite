@@ -57,7 +57,15 @@ export default function OnboardingStep4GuestCount({ onNext, data }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-3 gap-4 mb-12"
+        /* ONE COLUMN UNTIL THERE IS ROOM FOR THREE.
+           At 390 a third of the row is a 98px card, and 24px of padding each
+           side leaves 46px of content — while "Celebration" paints 92px. The
+           word was twice the space it had. Scaling alone does not rescue it:
+           at 360 the content box is 36px, so three columns would need roughly
+           11px type, which is not a size to set a primary choice in. The grid
+           becomes three columns at sm (640px), where a card is wide enough for
+           the longest label at its designed size, and stacks below it. */
+        className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12"
       >
         {CARDS.map((card, i) => {
           const isSelected = selected === card.id;
