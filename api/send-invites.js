@@ -52,7 +52,17 @@ function replaceMergeTags(str, guestName, coupleName, dateStr, rsvpUrl) {
     .replace(/\[RSVP link\]/gi, rsvpUrl || '');
 }
 
-export default async function handler(req, res) {
+/**
+ * `deps` follows api/webhooks/stripe.js's own pattern: every seam defaults to
+ * the real thing, and a guard can drive this handler end to end with a stubbed
+ * Resend rather than asserting the shape of a copy of the code.
+ */
+export default async function handler(req, res, {
+  sendBatch = (b) => resend.batch.send(b),
+  verifyUser = verifyBase44User,
+  fetchOwned = fetchOwnedGuestEmails,
+  adminKey = BASE44_ADMIN_KEY,
+} = {}) {
   if (applyCors(req, res)) return;
 
   if (req.method !== 'POST') {
@@ -67,12 +77,12 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
   }
 
-  const caller = await verifyBase44User(req);
+  const caller = await verifyUser(req);
   if (!caller) {
     return res.status(401).json({ error: 'Authentication required.' });
   }
 
-  if (!BASE44_ADMIN_KEY) {
+  if (!adminKey) {
     console.error('[send-invites] BASE44_ADMIN_KEY env var is not set');
     return res.status(500).json({ error: 'Server not configured' });
   }
@@ -96,7 +106,7 @@ export default async function handler(req, res) {
     // is also allowed through, since "send a test copy to me" (isTest)
     // submits the caller's own address as a synthetic guest entry, not a
     // real Guest record.
-    const ownedEmails = await fetchOwnedGuestEmails(caller.id, BASE44_ADMIN_KEY);
+    const ownedEmails = await fetchOwned(caller.id, adminKey);
     if (caller.email) ownedEmails.add(caller.email.trim().toLowerCase());
     const ownedGuests = filterGuestsByOwnership(guests, ownedEmails);
     if (ownedGuests.length === 0) {
@@ -165,9 +175,48 @@ export default async function handler(req, res) {
       return { from: FROM, to: g.email, replyTo, subject, html, text };
     });
 
-    const result = await resend.batch.send(batch);
+    const result = await sendBatch(batch);
 
-    console.log(`[send-invites] Sent ${batch.length} ${type}${isTest ? ' (test)' : ''} | ids:`, result?.data?.map(d => d.id));
+    // ── THE ERROR FIRST, BECAUSE IT MEANS NOTHING WENT OUT ────────────────
+    //
+    // Resend reports a refused batch in `error` rather than by throwing, so a
+    // handler that only inspects `data` answers 200 on a send that never
+    // happened. 502 is the honest status — the failure is upstream of us — and
+    // the body says `accepted: false` so the caller never has to infer from an
+    // absent field whether any guest was written to.
+    if (result?.error) {
+      console.error('[send-invites] the provider refused the batch:', result.error.message || result.error);
+      return res.status(502).json({
+        error: result.error.message || 'The email provider refused the batch',
+        accepted: false,
+        sent: 0,
+      });
+    }
+
+    // ── AND NOTHING AFTER THE SEND MAY THROW ──────────────────────────────
+    //
+    // `result?.data?.map(d => d.id)` lived here, and resend@6 returns
+    // `{ data: { data: [{id}] }, error }` — `data` is an object wrapping the
+    // array, so `.map` is not a function. The TypeError reached the catch and
+    // the endpoint answered 500.
+    //
+    // The emails were already sent: resend.batch.send is the line above. So
+    // guests received their invitations while the couple was told the send
+    // failed, and SendInvitesModal's `if (!res.ok) throw` aborted before
+    // invite_sent_at was written — leaving the dashboard showing them as
+    // unsent, and every retry posting another copy to the same guests.
+    //
+    // BOTH SHAPES ARE ACCEPTED. The flat form is what the old line expected
+    // and what earlier SDK majors returned; tolerating it costs one branch and
+    // means an SDK bump cannot resurrect this. Neither can throw: no ids is a
+    // log line, not an exception, because the send has already happened and a
+    // cosmetic failure must never change what the couple is told.
+    const payload = result?.data;
+    const ids = Array.isArray(payload?.data) ? payload.data.map((d) => d?.id)
+      : Array.isArray(payload) ? payload.map((d) => d?.id)
+        : null;
+    console.log(`[send-invites] Sent ${batch.length} ${type}${isTest ? ' (test)' : ''} | ids:`,
+      ids && ids.length ? ids : 'no ids returned');
 
     return res.status(200).json({
       sent: batch.length,
