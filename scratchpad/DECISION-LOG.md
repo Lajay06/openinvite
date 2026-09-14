@@ -5496,3 +5496,61 @@ same class from the other direction — *"Two sequential calls on a first-ever
 save would each find no record and each create one"* — fixed locally by
 batching. Twenty-three copies of a check that cannot be made safe by tightening
 any one of them; OPEN-TICKETS carries the chokepoint.
+
+---
+
+## 2026-09-14 — null means two things, so check at the write, not the read
+
+Twenty-two pages held this, in almost identical words:
+
+```js
+const r = await getMyWeddingDetails();     // on mount
+setRecordId(r?.id || null);
+…
+if (recordId) await WeddingDetails.update(recordId, payload);
+else          await WeddingDetails.create(payload);
+```
+
+and every one of their loads ended:
+
+```js
+catch (e) { console.error(e); toast.error('Failed to load — please refresh…'); }
+setLoading(false);      // runs anyway; the form renders, empty and editable
+```
+
+**`recordId` was null in two situations that have nothing in common** — "this
+account has no record yet" and "I could not find out" — and the create could
+not tell them apart. A couple whose read failed once, then typed into the form
+behind the toast, got a second record. Several of those pages autosave, so it
+did not even need a Save click.
+
+**The rule: a nullable read cannot gate a create. Re-read at the WRITE, in a
+mode that distinguishes "none" from "failed", and let a failure throw.**
+
+  a record  -> update it. Never create.
+  a failure -> throw. Never create.
+  none      -> create, the only path that reaches one.
+
+Failing a save is recoverable: the couple retries and their work is still
+there. Creating a duplicate is not — their work is still there too, and
+nothing will ever show it to them again, because every surface resolves the
+newest owned record.
+
+**Why the mount-time read was never enough, even when it succeeded.** It
+describes the account at mount; the save may be minutes later. The check has to
+happen where the decision is made, and the decision is made at the write.
+
+**`if (loading) return (…)` is not a save guard.** It is in most of those
+files, it draws a spinner, and `setLoading(false)` runs after a failed load
+too. The first pass at classifying these twenty-two read it as protection and
+called twelve unsafe files safe — caught only by reading the lines the grep
+had matched rather than trusting the count. **A regex that answers the question
+you asked is not the same as one that answers the question you meant.**
+
+**The shape generalises past this entity.** Anywhere a find-or-create is gated
+on a value that a failure can also produce — null, undefined, an empty array,
+zero rows — the failure path silently takes the create branch. It pairs with
+the entry above it: that one says look up by OWNER rather than by flag, this
+one says make the lookup's failure distinguishable from its emptiness. Both are
+the same defect seen from different ends, and both end in a duplicate nobody is
+told about.
