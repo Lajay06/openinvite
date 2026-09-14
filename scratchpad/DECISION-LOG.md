@@ -5595,3 +5595,53 @@ report was being assembled from several earlier readings, and this one field
 was the only one I did not go back for. The cost of re-reading is one command.
 The cost of not re-reading is a fabricated fact in a document whose whole
 purpose is to be checkable.
+
+---
+
+## 2026-09-14 — a side effect that has already happened must be reported as having happened
+
+`api/send-invites.js:170`:
+
+```js
+const result = await resend.batch.send(batch);          // the emails are away
+
+console.log(`[send-invites] Sent … | ids:`, result?.data?.map(d => d.id));
+```
+
+resend@6 returns `{ data: { data: [{id}] }, error }` — `data` wraps the array —
+so `.map` is not a function. The TypeError reached the handler's catch and the
+endpoint answered **500 on a send that had entirely succeeded**.
+
+**What that cost, in order.** The guests received their invitations. The couple
+was told "Send failed". `SendInvitesModal.jsx:501`'s `if (!res.ok) throw`
+aborted before the `Guest.update({ invite_sent_at })` fourteen lines below it,
+so nothing recorded that anyone had been invited. The dashboard went on showing
+those guests as unsent, which invites the couple to press Send again — and each
+retry posts another copy to people who already have one.
+
+**The rule: a side effect that has already happened must be reported as having
+happened. A throw after the send is a lie to the couple and a duplicate to the
+guests.**
+
+Concretely, for any handler with an irreversible step in it:
+
+  - after that step, NOTHING may throw for a cosmetic reason. A log line, a
+    metric, an id it wanted for a message — none of that is worth
+    misreporting the thing that actually occurred.
+  - the provider's own error field is read FIRST, because an error there means
+    the step did not happen, and that is a different answer, not the same one.
+  - the response says which of the two it was. `accepted: false, sent: 0` is
+    one line and removes the need for anyone to infer it.
+
+**The general shape.** Irreversibility divides a handler in two. Before the
+send, a throw is free and correct — nothing has happened, and failing loudly is
+the right answer. After it, a throw is a false statement about the world, and
+the further from the side effect the throwing line is, the more convincing the
+false statement looks. This one was a `console.log`.
+
+**It was never a regression.** The line is byte-identical to this repository's
+first commit and `resend: ^6.12.3` has been declared since the same commit.
+Nothing broke it this week; it has been failing for every couple who ever
+pressed Send, and it took a smoke run that printed the endpoint's own error
+body to see it — before that the step reported a bare `500`, which names the
+floor and not the room.
