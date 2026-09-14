@@ -8,6 +8,7 @@ import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
 const WeddingDetails = base44.entities.WeddingDetails;
 
 const labelStyle = {
@@ -116,7 +117,7 @@ export default function WeddingFavoursPage() {
         if (recordId) {
           await WeddingDetails.update(recordId, full);
         } else {
-          const c = await WeddingDetails.create(full);
+          const c = await createMyWeddingDetails(full);
           setRecordId(c.id);
           latestRef.current = { ...full, id: c.id };
         }

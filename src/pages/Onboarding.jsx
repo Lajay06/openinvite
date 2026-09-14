@@ -31,6 +31,7 @@ import OnboardingPathAInspiration from '@/components/onboarding/OnboardingPathAI
 import OnboardingCompletion from '@/components/onboarding/OnboardingCompletion';
 import OnboardingShell from '@/components/onboarding/OnboardingShell';
 import { syncWeddingAddress } from '@/lib/weddingAddress';
+import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
 
 // TASK 6+7: 'welcome' added as step 0; 'priorities' removed
 const STEPS = [
@@ -230,7 +231,15 @@ export default function Onboarding() {
       const currentUser = await base44.auth.me();
       // Resolved once, up front, so both guard checks below (and the
       // resume-after-refresh rehydration further down) share one fetch.
-      const draft = await getMyWeddingDetails().catch(() => null);
+      // STRICT, AND THE .catch IS GONE. This read used to swallow its own
+      // failure into null — the same ambiguous null createMyWeddingDetails
+      // exists to remove, one layer up. A failed read here meant no record was
+      // adopted, and the first step advance then created one, which is the
+      // duplicate #752 was about arriving by the other door. checkAuth's own
+      // catch turns a throw into the error state with a retry, which is what a
+      // couple should see when we could not find out whether they have a
+      // wedding.
+      const draft = await getMyWeddingDetails({ strict: true });
 
       // If already onboarded, skip straight to dashboard — isOnboardingComplete
       // also guards on the account already owning a real (non-draft) wedding
@@ -360,7 +369,7 @@ export default function Onboarding() {
         if (draftWeddingIdRef.current) {
           await WeddingDetails.update(draftWeddingIdRef.current, payload);
         } else {
-          const created = await WeddingDetails.create(payload);
+          const created = await createMyWeddingDetails(payload);
           draftWeddingIdRef.current = created.id;
           setDraftWeddingId(created.id);
         }
@@ -466,7 +475,7 @@ export default function Onboarding() {
       if (weddingId) {
         await WeddingDetails.update(weddingId, payload);
       } else {
-        const created = await WeddingDetails.create(payload);
+        const created = await createMyWeddingDetails(payload);
         weddingId = created.id;
         setDraftWeddingId(weddingId);
       }

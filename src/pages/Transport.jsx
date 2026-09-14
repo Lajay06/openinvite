@@ -10,6 +10,7 @@ import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
 const WeddingDetails = base44.entities.WeddingDetails;
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -112,7 +113,7 @@ export default function TransportPage() {
         if (recordId) {
           await WeddingDetails.update(recordId, full);
         } else {
-          const c = await WeddingDetails.create(full);
+          const c = await createMyWeddingDetails(full);
           setRecordId(c.id);
           latestRef.current = { ...full, id: c.id };
         }

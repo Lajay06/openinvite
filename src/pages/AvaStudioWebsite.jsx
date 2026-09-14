@@ -9,6 +9,7 @@ import { interactiveDivProps } from '@/lib/a11y';
 
 import { coupleDisplayName } from '@/lib/coupleNames';
 import { ImageIcon } from 'lucide-react';
+import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
 const sans = "'Plus Jakarta Sans', sans-serif";
 
 // ── Shared primitives ─────────────────────────────────────────
@@ -298,7 +299,7 @@ export default function AvaStudioWebsite() {
         if (field in details) payload[field] = details[field];
       }
       if (detailsId) await base44.entities.WeddingDetails.update(detailsId, payload);
-      else { const r = await base44.entities.WeddingDetails.create(payload); setDetailsId(r.id); }
+      else { const r = await createMyWeddingDetails(payload); setDetailsId(r.id); }
     } catch { toast.error('Save failed'); }
     setSaving(false);
   };

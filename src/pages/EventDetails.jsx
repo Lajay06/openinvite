@@ -24,6 +24,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 import SectionHeading, { CONTENT_WIDTH, sectionDivider, FIELD_GAP } from '../components/event-details/SectionHeading';
 
 import { syncWeddingAddress } from '@/lib/weddingAddress';
+import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
 const TABS = [
   { key: 'details', label: 'Details' },
   { key: 'events',  label: 'Events' },
@@ -664,7 +665,7 @@ export default function EventDetailsPage() {
       if (id) {
         await base44.entities.WeddingDetails.update(id, data);
       } else {
-        const created = await base44.entities.WeddingDetails.create(data);
+        const created = await createMyWeddingDetails(data);
         savedId = created.id;
         setRecordId(created.id);
         recordIdRef.current = created.id;
@@ -793,7 +794,7 @@ export default function EventDetailsPage() {
       if (id) {
         await base44.entities.WeddingDetails.update(id, scopedData);
       } else {
-        const created = await base44.entities.WeddingDetails.create(scopedData);
+        const created = await createMyWeddingDetails(scopedData);
         setRecordId(created.id);
         recordIdRef.current = created.id;
       }

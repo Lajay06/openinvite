@@ -96,7 +96,23 @@ export async function runDashboardSources() {
     .filter((f) => !/resolveMyWedding|dashboardSources/.test(f))
     .filter((f) => /strict:\s*true/.test(readFileSync(f, 'utf8')))
     .map((f) => f.slice(SRC.length + 1));
-  const STRICT_BY_DECISION = ['pages/DailyUpdate.jsx', 'pages/Dashboard.jsx'].sort();
+  // Four decisions now, in two pairs, and the second pair is not about counts.
+  //
+  // DailyUpdate and Dashboard opted in because they render COUNTS drawn from
+  // several stores, where a swallowed failure prints a zero that reads as a
+  // fact about the couple's wedding.
+  //
+  // createMyWeddingDetails and Onboarding opted in because a swallowed failure
+  // there does not print anything wrong — it CREATES A SECOND WEDDING. The
+  // read answers "does this account already have a record", and a soft null
+  // means both "no" and "I could not tell"; the create cannot distinguish
+  // them, and every surface then resolves the newer row, orphaning the one
+  // holding the couple's work. Strict is what makes those two nulls different.
+  // DECISION-LOG 2026-09-14.
+  const STRICT_BY_DECISION = [
+    'pages/DailyUpdate.jsx', 'pages/Dashboard.jsx',
+    'lib/createMyWeddingDetails.js', 'pages/Onboarding.jsx',
+  ].sort();
   check('only the two count-rendering pages opt into strict loaders; the soft default is untouched elsewhere',
     JSON.stringify([...strictCallers].sort()) === JSON.stringify(STRICT_BY_DECISION),
     strictCallers.join(', ') || 'none');

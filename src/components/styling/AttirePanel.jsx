@@ -13,6 +13,7 @@ import { Accordion } from '@/components/ui/accordion';
 import DetailsSection from '@/components/event-details/DetailsSection';
 import SectionInput from '@/components/event-details/SectionInput';
 import VendorContactSection from '@/components/vendors/VendorContactSection';
+import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
 
 const WeddingDetails = base44.entities.WeddingDetails;
 
@@ -401,7 +402,7 @@ export default function AttirePanel() {
       if (id) {
         await WeddingDetails.update(id, { attire: payload });
       } else {
-        const c = await WeddingDetails.create({ attire: payload });
+        const c = await createMyWeddingDetails({ attire: payload });
         detailsIdRef.current = c.id;
       }
       setDirty(false);

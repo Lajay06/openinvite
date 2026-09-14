@@ -39,6 +39,7 @@ import AvaModal from '@/components/layout/AvaModal';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import UltraGate from '@/components/shared/UltraGate';
 import { canAccessUltra } from '@/lib/trialStatus';
+import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
 
 // chore/consolidate-overview — the couple name + days-to-go countdown are
 // already global (Layout.jsx's top bar shows them on every page, per
@@ -151,7 +152,7 @@ export default function UniverseStudio() {
       if (recordId) {
         await WeddingDetails.update(recordId, { activeUniverse: universeId });
       } else {
-        const created = await WeddingDetails.create({ activeUniverse: universeId });
+        const created = await createMyWeddingDetails({ activeUniverse: universeId });
         setRecordId(created.id);
       }
     } catch (err) {
