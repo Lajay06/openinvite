@@ -378,34 +378,78 @@ try {
   const atWizard = /\/onboarding\b/.test(new URL(page.url()).pathname);
   await shot(page, 'onboarding-entry');
 
+  // FILL WHAT THIS SCREEN ASKS, THEN ADVANCE — in that order, every screen.
+  //
+  // The first version typed the names once, before the loop, and reported
+  // "wizard reached, names NOT TYPED, 1 screen crossed". It was right to:
+  // /onboarding opens on the WELCOME screen, which has no name fields at all.
+  // The names are the screen after it. A wizard is a sequence of different
+  // questions and there is no single moment before it at which to answer one.
   const typeName = async (placeholder, value) => {
     const f = page.getByPlaceholder(placeholder).first();
     if (await f.count() === 0) return false;
     await f.fill(value);
     return (await f.inputValue()) === value;
   };
-  const named = (await typeName('Your name', COUPLE1)) && (await typeName("Partner's name", COUPLE2));
-  await shot(page, 'onboarding-names');
+  let named = false;
 
   // "Continue →", "Next →", "Let's go →" — and the arrow is in the name.
   const ADVANCE = /^(next|continue|finish|done|let's go|get started)\b/i;
   // Every optional step offers its own way past, and each is worded for its
   // own question rather than a generic Skip.
   const SKIP = /^(we haven't set a date yet|not sure yet|skip|i'll do this later|maybe later)\b/i;
+  // WHERE THE WIZARD SAYS IT IS. Every screen prints "Step N of 8", which is
+  // the only honest progress signal available: a click that does not change it
+  // did not advance anything. Without this the choice fallback below clicked
+  // the first button on the same screen twenty-four times and reported
+  // twenty-four screens crossed.
+  const whereAmI = async () => {
+    const t = await page.evaluate(() => (document.body.innerText.match(/Step\s+\d+\s+of\s+\d+/i) || [''])[0]);
+    return `${new URL(page.url()).pathname}|${t}`;
+  };
+
   let crossed = 0;
+  let stalledAt = null;
   for (let i = 0; i < 24; i++) {
+    const before = await whereAmI();
+    // The names screen hides its Continue until both fields hold a value, so
+    // this has to happen before the button is looked for, not after.
+    if (!named && await page.getByPlaceholder('Your name').count() > 0) {
+      named = (await typeName('Your name', COUPLE1)) && (await typeName("Partner's name", COUPLE2));
+      await shot(page, 'onboarding-names');
+      await page.waitForTimeout(600);
+    }
     const next = page.getByRole('button', { name: ADVANCE }).first();
     if (await next.count() > 0) {
       await next.click().catch(() => {});
       crossed += 1;
     } else {
       const skip = page.getByRole('button', { name: SKIP }).first();
-      if (await skip.count() === 0) break;
-      await skip.click().catch(() => {});
-      crossed += 1;
+      if (await skip.count() > 0) {
+        await skip.click().catch(() => {});
+        crossed += 1;
+      } else {
+        // A SCREEN WHOSE OPTIONS ARE ITS ADVANCE. "How many guests are you
+        // expecting?" offers Intimate / Celebration / Grand and no Continue at
+        // all — choosing IS continuing, which is how a couple crosses it and
+        // how this must too. The run halted here on step 4 of 8 looking for a
+        // button that the screen had no reason to have.
+        //
+        // Back is excluded by name because it is the one button on these
+        // screens that is not a choice, and going back would loop forever.
+        const choices = page.getByRole('button').filter({ hasNotText: /^\s*(←\s*)?back\s*$/i });
+        const n = await choices.count();
+        if (n === 0) break;
+        await choices.first().click().catch(() => {});
+        crossed += 1;
+      }
     }
     await page.waitForTimeout(1800);
     if (!/\/onboarding\b/.test(new URL(page.url()).pathname)) break;
+    // NO PROGRESS IS A STOP, NOT A REASON TO TRY AGAIN. A run that keeps
+    // clicking a screen it cannot leave produces a large number and no
+    // journey; the screen it is stuck on is the finding.
+    if (await whereAmI() === before) { stalledAt = before; break; }
   }
   await shot(page, 'onboarding-crossed');
   // WAIT FOR THE DESTINATION, NOT FOR A NUMBER OF SECONDS. Login lands on
@@ -426,9 +470,31 @@ try {
   // PRESENCE BEFORE PROPERTIES. "Arrived at the dashboard" is true of an
   // account that was already past onboarding and never filled anything in, so
   // the names and the screens crossed are part of the verdict, not decoration.
-  check('2 · reaches the end of onboarding', onboarded && atWizard && named && crossed > 0,
-    `${page.url()} — wizard ${atWizard ? 'reached' : 'REDIRECTED AWAY (account already onboarded)'}, `
-    + `names ${named ? `typed as ${COUPLE1} & ${COUPLE2}` : 'NOT TYPED'}, ${crossed} screen(s) crossed`);
+  // WHAT THE STEP CAUSED, WHICH IS NOT THE SAME AS WHAT IT TYPED.
+  //
+  // The wizard RESUMES. A run that reaches the names screen types them; the
+  // next run resumes past it, and demanding "typed here" would fail forever on
+  // an account that has ever been part-way through — which is every account
+  // after the first run, because the OTP gate means there is only one account.
+  //
+  // So the step asserts the outcome it is actually for: it started inside the
+  // wizard, it left the wizard, and the couple is on the record afterwards.
+  // All three are false before the step and true after, which is the test.
+  const onRecord = await page.evaluate(async (appId) => {
+    const token = localStorage.getItem('base44_access_token');
+    if (!token) return null;
+    const rows = await fetch(`https://base44.app/api/apps/${appId}/entities/WeddingDetails`,
+      { headers: { Authorization: `Bearer ${token}` } }).then((x) => x.json()).catch(() => null);
+    const list = Array.isArray(rows) ? rows : (rows?.data || rows?.results || []);
+    const mine = list.slice().sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0];
+    return mine ? { id: mine.id, names: [mine.couple1Name, mine.couple2Name].filter(Boolean), draft: mine.onboardingDraft } : null;
+  }, APP_ID);
+  const couple = (onRecord?.names || []).join(' & ');
+  check('2 · reaches the end of onboarding',
+    atWizard && onboarded && crossed > 0 && couple === `${COUPLE1} & ${COUPLE2}`,
+    `${page.url()} — wizard ${atWizard ? 'entered' : 'REDIRECTED AWAY'}, ${crossed} screen(s) crossed`
+    + `${stalledAt ? `, STALLED on ${stalledAt}` : ''}, record ${onRecord?.id || 'none'} holds ${couple ? `"${couple}"` : 'NO NAMES'}`
+    + `${named ? ' (typed by this run)' : ' (from a resumed draft)'}`);
 
   // ── 3. a universe ─────────────────────────────────────────────────────────
   await page.goto(`${BASE}/studio/universe`, { waitUntil: 'domcontentloaded', timeout: 60000 });
