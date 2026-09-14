@@ -2087,3 +2087,20 @@ the sweep. It is listed in that guard's `EXEMPT` with this reason, so it is
 covered by a decision rather than by an oversight.
 
 Post-launch. No code until then.
+
+## Split the browser guards into a parallel CI job
+
+The serial lane is at ~19 minutes. `timeout-minutes` went 20 -> 35 on
+2026-09-13 because a PR went red with `CANCELLED` when the eleventh dialog in
+`test:modal-scale` took the job past its budget — a failure that names the
+wrong cause and cost a round of looking at concurrency groups that were
+behaving correctly.
+
+That bought margin; it did not change the shape. Most of the 19 minutes is
+browser guards run one after another, each starting its own `vite preview` on
+its own port. They share nothing and could be a second job running beside the
+source guards, or a matrix over the ports already assigned (4173, 4179-4193).
+
+The measure to beat: main's own run, 19m30s at the time of writing.
+
+Post-launch. No code until then.
