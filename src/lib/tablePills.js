@@ -68,3 +68,32 @@ export const CELL_SECONDARY = { ...CELL_TEXT, fontSize: 12, fontWeight: 600, col
 /** Muted body text at the primary size — same weight floor, one step larger. */
 export const CELL_MUTED  = { ...CELL_TEXT, fontWeight: 600, color: 'rgba(10,10,10,0.6)' };
 export const CELL_NOWRAP = { whiteSpace: 'nowrap' };
+
+/**
+ * THE WORDS ON A PILL, WHICH ARE NOT THE VALUE UNDERNEATH IT.
+ *
+ * Owner, Run 4 S2: the guest list's category pills read "family" while the
+ * tags beside them read "Family". They do, and it is not a casing bug — the
+ * guest list was the only pill in this family rendering the STORED VALUE.
+ * Every sibling renders a label: the schedule's Type pill takes
+ * WHEN_LABEL[e.when] (ScheduleTable.jsx:105), and the guest list's own
+ * CATEGORY_OPTIONS declares "Family", "Partner's family" and the rest four
+ * lines above the render that ignored them.
+ *
+ * SO THE LABEL WINS, AND SENTENCE CASE IS THE FALLBACK. Casing the value
+ * alone would give "Partners family" — the apostrophe only exists in the
+ * declared label, and losing it is a worse sentence than the one we started
+ * with. The fallback is for a value with no option declared, which is the
+ * case an enum grows into before anyone updates the list beside it.
+ *
+ * TAGS ARE NOT TOUCHED, deliberately: they are whatever the couple typed, and
+ * re-casing someone's own words is not a product's business.
+ */
+export function pillLabel(value, options) {
+  const v = typeof value === 'string' ? value.trim() : '';
+  if (!v) return '';
+  const declared = (options || []).find(o => o && o.value === v);
+  if (declared && declared.label) return declared.label;
+  const words = v.replace(/_/g, ' ').trim();
+  return words ? words.charAt(0).toUpperCase() + words.slice(1) : '';
+}
