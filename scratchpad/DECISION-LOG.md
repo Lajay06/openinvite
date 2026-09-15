@@ -5948,3 +5948,52 @@ repeating them exactly. It reads as complete to the person who just wrote it,
 because those instances are the ones in their head. Write the CLASS — the
 property that makes the act dangerous — and the list becomes examples rather
 than the definition.
+
+---
+
+## 2026-09-15 — when a PR's record disagrees with its ref
+
+**Record ≠ ref → new PR, never merge, never reopen.**
+
+Twice now GitHub's PR record and the branch it points at have said different
+things, and both times the disagreement was invisible until someone compared
+them deliberately.
+
+**#748, 2026-09-13.** Three merge attempts: two answered
+`GraphQL: Something went wrong`, the third a `504 Gateway Timeout`. The 504 is
+the one that landed — the squash commit `0466c243` went onto main — but GitHub
+never recorded it, so the PR stayed `OPEN`, `mergedAt=none`, and
+`gh pr diff 748` went on printing the original 571-line patch against a stale
+base. Every one of its eight paths was already byte-identical on main.
+
+And it was not merely stale, it was **dangerous**: by then main had moved on,
+so merging that record would have reverted #740's five files — deleting a
+guard script and rolling back `DataTable.jsx` and `VendorList.jsx`. A record
+that lags is not a cosmetic problem; it is a record describing a merge that
+would now do something else.
+
+**#762, 2026-09-15.** A rebase moved the branch to `a4c8f61c`. The PR record
+stayed at `59ecb35f` — unrelated histories, `mergeable` stuck at `UNKNOWN`, and
+a force-push did not resync it.
+
+**The rule, and why it is this shape.** A PR whose record has disagreed with
+its ref once is not trusted again, even after it appears to settle. Open a
+fresh PR from the branch, close the old one with `superseded by #<new>`, and
+wait for the new number's checks **from scratch**.
+
+  - **Never merge it**, because the marks in an authorization describe the
+    record, and the record is the thing that has just been demonstrated to be
+    wrong. `pr:merge` re-reads the head at merge time and would catch a
+    mismatch — but that is the net, not a reason to jump.
+  - **Never reopen it.** Reopening asks the same bookkeeping that already
+    failed to correct itself, and leaves no evidence that it ever disagreed.
+  - **A new number carries its own history**, so the checks, the head and the
+    file list are all established together rather than inherited from a record
+    nobody can now vouch for.
+
+**The general form.** Where two systems each claim to know a fact — here git's
+ref and GitHub's record — the cheap failure is assuming they agree because
+they usually do. The instrument is to read both and compare, at the moment the
+fact matters, and to treat any past disagreement as a permanent loss of
+standing for the derived one. `git rev-parse origin/<branch>` against
+`gh pr view <n> --json headRefOid` is two commands.
