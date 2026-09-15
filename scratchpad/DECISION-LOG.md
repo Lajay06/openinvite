@@ -5851,3 +5851,64 @@ broken by someone who knows it, the correct response is not a stronger
 wording. It is to ask what the rule is competing with — here, a shorter
 command that is usually right — and to make the wrong path refuse rather than
 the right path require remembering.
+
+---
+
+## 2026-09-15 — INCIDENT: the owner's file was deleted, and the rule that ends it
+
+**A file the owner put in the working tree is the owner's. The only permitted
+operations on it are none.**
+
+`Claude outputs/beta-50-point-check.md` — the owner's own record of a 50-couple
+beta run, untracked, 20,875 bytes — was deleted from disk. It was recovered
+intact from a dangling commit via `git fsck --lost-found`.
+
+**The sequence, because the shape matters more than the ending.**
+
+  1. `git add -A` on a feature branch staged the folder. Canon since
+     2026-09-08 forbids exactly that command; the rule had been read and
+     cited earlier the same day.
+  2. Caught while reading the numstat. Removed from the commit with
+     `git rm --cached` and `--amend`, which took it out of the COMMIT and left
+     it in a state tied to the index.
+  3. Later, to get a clean local `test:ci` reading, the folder was MOVED to a
+     scratchpad and moved back. That is the second violation, and the one
+     nobody asked about: the file had already been made safe, and it was
+     handled again anyway, for the convenience of a test number.
+  4. A branch switch then removed it from disk, because a staged path follows
+     the index.
+
+**Three separate acts, none of them necessary, each one making the next
+possible.** The deletion at step 4 is the only one that looks like an
+accident; steps 1 and 3 were choices, and step 3 was a choice made about
+someone else's property to make my own output tidier.
+
+**Why "none" is the right number of permitted operations.** Every softer rule
+has an exception that sounds reasonable in the moment — "just moving it back
+afterwards", "only so the guard reads clean", "it was already staged anyway".
+Each of those is how step 3 got made. A rule with no exceptions cannot be
+reasoned around at 2am by someone who means well.
+
+**What replaces the operation.** If an untracked file trips a local guard, the
+guard result is reported WITH ITS CAUSE — "2996/2997, the one failure is an
+untracked file in the working tree, not on this branch" — and the file is left
+exactly where it is. A local number that needs someone else's file moved to
+look right is not a number worth having.
+
+**The instrument.** `.gitignore` gains `Claude outputs/` and `.claude/`: a path
+git will not stage is a path a checkout cannot carry away. That is the half
+that stops step 1 at the source. The pre-commit hook is the other half and
+lands separately, because .gitignore protection is only as old as the commit
+you stand on — `check-no-credentials.mjs`'s own note, written after this same
+command committed a live credential DESPITE .gitignore.
+
+**Recovery, recorded because it will be needed again.** An amended-away commit
+survives as a dangling object until git prunes it:
+
+```
+git fsck --lost-found
+git show <dangling>:'path/to/file' > path/to/file
+```
+
+That window is not a safety net to rely on — `git gc` closes it without
+warning — but it is the difference between an apology and a restoration.
