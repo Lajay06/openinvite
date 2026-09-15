@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { FAITH_OPTIONS, FAITH_FOR_INTERFAITH } from '@/lib/weddingThemeOptions';
+import { color } from '@/styles/tokens';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -72,9 +73,35 @@ function SummaryChip({ label }) {
   );
 }
 
+/**
+ * THREE STATES, ONE RULE, ALL THREE SECTIONS.
+ *
+ * The border used to be a single hardcoded `rgba(10,10,10,0.12)` on every
+ * section in every state, so a couple could not tell from the edge of a row
+ * whether they had answered it. The owner's rule gives the border a job:
+ *
+ *   untouched              the border token — this row is waiting
+ *   open                   #0A0A0A — this row is the one you are answering
+ *   answered and collapsed borderStrong — this row is done, and still legible
+ *
+ * Written as one map rather than three inline ternaries, because the defect
+ * being fixed was three rows disagreeing, and a rule spelled out once cannot.
+ * The token is `color.border` from src/styles/tokens.js, not a literal: a
+ * hardcoded copy of a token is how the three drifted apart in the first place.
+ */
+const SECTION_BORDER = {
+  open: '#0A0A0A',
+  answered: color.borderStrong,
+  untouched: color.border,
+};
+
+const sectionStateOf = (isOpen, summary) =>
+  (isOpen ? 'open' : (summary && summary.length > 0 ? 'answered' : 'untouched'));
+
 function AccordionSection({ title, isOpen, onToggle, summary, children }) {
+  const state = sectionStateOf(isOpen, summary);
   return (
-    <div style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
+    <div data-section-state={state} style={{ borderBottom: `1px solid ${SECTION_BORDER[state]}` }}>
       <button
         type="button"
         onClick={onToggle}
@@ -217,7 +244,7 @@ export default function OnboardingStep5WeddingType({ onNext, data }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        style={{ marginBottom: 32, borderTop: '1px solid rgba(10,10,10,0.12)' }}
+        style={{ marginBottom: 32, borderTop: `1px solid ${color.border}` }}
       >
         {/* Style */}
         <AccordionSection
