@@ -5795,3 +5795,59 @@ an unscoped `/entities/` read or any use of the admin key.
 code. Ownership scoping, rate limits and R23 apply to it exactly as they apply
 to the app, and the fact that it is "only a test" is the reason nobody reviews
 it, not a reason it needs less care.
+
+---
+
+## 2026-09-15 — `git add -A`, the third time, and the gate that ends it
+
+The owner's own untracked working folder was swept into a feature commit by
+`git add -A`. It was caught one command later, while reading the numstat, and
+removed before it reached a PR — by the same author who had read and cited the
+rule against that command earlier the same day.
+
+**Three occurrences now, all the same command:**
+
+  2026-08-25  a session storage-state and a live RSVP token, committed
+              DESPITE both being in .gitignore: the branch stood on a base
+              whose .gitignore predated the rules, so every ignored hazard in
+              the working directory became stageable again.
+              `scripts/check-no-credentials.mjs` came out of it, covering
+              credentials and nothing else.
+  2026-09-08  two files belonging to another branch swept into #724. The
+              authorized list said five paths, the PR carried seven, and the
+              merge was refused — the second void authorization on that PR in
+              a row. The entry written that day says: **stage by path, never
+              `git add -A`, on any branch.**
+  2026-09-15  the owner's working folder, as above.
+
+**The point is not that the rule was broken. It is that the rule was READ and
+then broken, hours apart, by the same reader.** That is the signature of a
+rule doing the wrong job: `git add -A` is one keystroke cheaper than the
+correct thing, it is correct nine times in ten, and the tenth is invisible
+until someone reads a file list. Nothing about knowing the rule makes the
+failure less likely at the moment it happens, because the failure is not a
+decision — it is a reflex.
+
+**So the rule now has an instrument.** `.githooks/pre-commit` refuses any
+commit that ADDS a file which was not declared, via `.stage-paths` or the
+`STAGE_PATHS` environment variable. Modifications and deletions are untouched:
+the accident is a file arriving unnoticed, not an edit to one already tracked.
+Declaring is one line, and that is the point — it makes "which new files am I
+adding" something the author states rather than something the tool infers.
+
+**Both halves again, and for the reason the credentials note already gives.**
+`.gitignore` gains `Claude outputs/`, AND the hook exists, because .gitignore
+protection is only as old as the commit you stand on. Either alone has a hole
+that has already been walked through once.
+
+**What the gate deliberately does not cover.** `--no-verify` skips it, as it
+skips every hook. That is why the file-list mark in a merge authorization
+still exists and still matters: this gate is for the honest slip, and the mark
+is for everything the gate cannot see. A gate that claimed to replace the mark
+would be worse than none, because the mark would stop being read.
+
+**The general form, for the next rule like this one.** When a canon rule is
+broken by someone who knows it, the correct response is not a stronger
+wording. It is to ask what the rule is competing with — here, a shorter
+command that is usually right — and to make the wrong path refuse rather than
+the right path require remembering.
