@@ -97,6 +97,14 @@ for (const width of [390, 1440]) {
 
   function titles() { return SECTIONS; }
 
+  // ── an empty section says so calmly ───────────────────────────────────────
+  // "No info" is a status code, not a sentence. A couple reading it has done
+  // nothing wrong and is being told they are missing something.
+  const noInfo = await page.getByText('No info').count();
+  const calm = await page.getByText('Nothing added yet').count();
+  check('  an empty section reads "Nothing added yet"', noInfo === 0 && calm > 0,
+    `"No info" x${noInfo}, "Nothing added yet" x${calm}`);
+
   // ── every section starts untouched ────────────────────────────────────────
   let seen = await read();
   for (const t of SECTIONS) {

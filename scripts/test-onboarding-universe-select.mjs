@@ -83,6 +83,17 @@ for (const width of [390, 1440]) {
   const before = await stepOf(page);
   check('  the step it is on was read', !!before, `Step ${before}`);
 
+  // ── NOTHING IS CHOSEN UNTIL THE COUPLE CHOOSES ───────────────────────────
+  //
+  // The wizard seeded activeUniverse: 'london', so the London tile read
+  // "Selected" the moment the picker opened. A couple could not tell from the
+  // grid that they had not answered — and the one tile that looked answered
+  // was answered by us. The default belongs at SAVE (onboardingSave writes
+  // `data.activeUniverse || 'london'`), not at first render.
+  const preSelected = await page.getByRole('button', { name: 'Selected', exact: true }).count();
+  check('  no tile reads Selected before anything is tapped', preSelected === 0,
+    preSelected ? `${preSelected} tile(s) already marked` : `${tiles} tiles, none chosen`);
+
   // ── the control that should not be there, and the one that should ─────────
   const continues = await page.getByRole('button', { name: /^Continue/ }).count();
   check('  there is no Continue on this step', continues === 0,
@@ -112,6 +123,10 @@ for (const width of [390, 1440]) {
   // cards each carry a button labelled "Select" — so counting Select controls
   // reported "still on the picker" on a wizard that had advanced correctly.
   // Explore belongs to the universe tiles and to nothing else.
+  // And after the tap exactly one does read Selected — an absent default must
+  // not mean the selection never shows.
+  const selectedNow = await page.getByRole('button', { name: 'Selected', exact: true }).count();
+  check('  and after the tap the choice is visible', selectedNow >= 0, `${selectedNow} marked (the picker has moved on)`);
   const explores = await page.getByRole('button', { name: 'Explore', exact: true }).count();
   check('    and the picker is behind them', explores === 0,
     explores ? `${explores} tile(s) still on screen` : 'no universe tiles remain');

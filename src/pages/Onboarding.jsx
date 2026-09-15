@@ -171,7 +171,17 @@ export default function Onboarding() {
     budget: null,
     currency: 'USD',
     theme: null,
-    activeUniverse: 'london',
+    // NULL, NOT A DEFAULT. Seeding 'london' here made the London tile read
+    // "Selected" the moment the picker opened, so a couple could not tell from
+    // the grid that they had not chosen anything yet — and the one tile that
+    // did look chosen was chosen by us.
+    //
+    // The default still exists where it belongs: onboardingSave's
+    // buildWeddingDetailsPayload writes `data.activeUniverse || 'london'`, so
+    // a couple who skips the step still gets a universe. A default applied at
+    // SAVE is a sensible fallback; the same default applied at FIRST RENDER is
+    // an answer put in their mouth.
+    activeUniverse: null,
     websiteMode: 'dark',
   });
 
