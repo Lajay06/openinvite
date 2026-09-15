@@ -63,11 +63,15 @@ export const SEED = {
   // purchased (neither exists). A seed field the product never reads is not a
   // harmless extra: the surface renders its EMPTY STATE and the pass reports
   // it as clean.
+  // CATEGORY IS SEEDED BECAUSE A PILL'S WORDS CANNOT BE MEASURED OFF AN EMPTY
+  // CELL. Four different values, including the two-word `partners_family`
+  // whose declared label carries an apostrophe — the case a sentence-case
+  // helper alone gets wrong. See pillLabel in src/lib/tablePills.js.
   Guest: [
-    { id:'g1', name:'Grace Hopper',  email:'grace@example.com',  rsvp_status:'attending', table_assignment:'t1', meal_choice:'chicken', event_responses:[], created_by:'fixture@example.com' },
-    { id:'g2', name:'Katherine J.',  email:'kj@example.com',     rsvp_status:'attending', table_assignment:'t1', meal_choice:'fish',    event_responses:[], created_by:'fixture@example.com' },
-    { id:'g3', name:'Alan Turing',   email:'alan@example.com',   rsvp_status:'pending',   table_assignment:'t2', event_responses:[], created_by:'fixture@example.com' },
-    { id:'g4', name:'Edsger D.',     email:'edsger@example.com', rsvp_status:'declined',  event_responses:[], created_by:'fixture@example.com' },
+    { id:'g1', name:'Grace Hopper',  email:'grace@example.com',  rsvp_status:'attending', table_assignment:'t1', meal_choice:'chicken', category:'family',           event_responses:[], created_by:'fixture@example.com' },
+    { id:'g2', name:'Katherine J.',  email:'kj@example.com',     rsvp_status:'attending', table_assignment:'t1', meal_choice:'fish',    category:'partners_family', event_responses:[], created_by:'fixture@example.com' },
+    { id:'g3', name:'Alan Turing',   email:'alan@example.com',   rsvp_status:'pending',   table_assignment:'t2', category:'friends',    event_responses:[], created_by:'fixture@example.com' },
+    { id:'g4', name:'Edsger D.',     email:'edsger@example.com', rsvp_status:'declined',  category:'colleagues', event_responses:[], created_by:'fixture@example.com' },
   ],
   Table: [
     { id:'t1', name:'Table 1', capacity:8,  shape:'round', x:200, y:200, assigned_guests:[{ seat_index:0, guest_id:'g1' }, { seat_index:1, guest_id:'g2' }], created_by:'fixture@example.com' },

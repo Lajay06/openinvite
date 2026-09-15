@@ -9,7 +9,7 @@ import { interactiveDivProps } from '@/lib/a11y';
 import { hasPlusOne, plusOneRsvpStatus, plusOneDisplayName } from '@/lib/plusOne';
 import { naturalCompare, sortRows, nextSortState } from '@/lib/tableSort';
 import DataTable from '@/components/shared/DataTable';
-import { PILL_BASE } from '@/lib/tablePills';
+import { PILL_BASE, pillLabel } from '@/lib/tablePills';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -1071,7 +1071,7 @@ export default function GuestList({
                     {selectCell(guest, 'category', CATEGORY_OPTIONS,
                       guest.category ? (
                         <BadgePill style={CATEGORY_STYLES[guest.category] || CATEGORY_STYLES.family}>
-                          {guest.category.replace(/_/g, ' ')}
+                          {pillLabel(guest.category, CATEGORY_OPTIONS)}
                         </BadgePill>
                       ) : (
                         <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>
@@ -1175,7 +1175,7 @@ export default function GuestList({
                     <TableCell className="align-middle">
                       {guest.category ? (
                         <BadgePill style={CATEGORY_STYLES[guest.category] || CATEGORY_STYLES.family}>
-                          {guest.category.replace(/_/g, ' ')}
+                          {pillLabel(guest.category, CATEGORY_OPTIONS)}
                         </BadgePill>
                       ) : <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>}
                     </TableCell>
