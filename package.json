@@ -86,6 +86,7 @@
     "test:custom-page-in-nav": "node scripts/test-custom-page-in-nav.mjs",
     "test:home-hero-faces": "node scripts/test-home-hero-faces.mjs",
     "test:guest-pills-case": "node scripts/test-guest-pills-case.mjs",
+    "test:ava-page-modal": "node scripts/test-ava-page-modal.mjs",
     "test:onboarding-universe-tiles": "node scripts/test-onboarding-universe-tiles.mjs",
     "test:onboarding-universe-select": "node scripts/test-onboarding-universe-select.mjs",
     "test:studio-rotate-notice": "node scripts/test-studio-rotate-notice.mjs",

@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DashboardPageHeader from '../components/layout/DashboardPageHeader';
 import AvaButton from "@/components/shared/AvaButton";
+import AvaModal from "@/components/layout/AvaModal";
 import DatePicker from "@/components/shared/DatePicker";
 import ThemeSection from "@/components/event-details/ThemeSection";
 import VenueSearchPanel from "@/components/shared/VenueSearchPanel";
@@ -521,6 +522,7 @@ export default function EventDetailsPage() {
   const [editingFixed,  setEditingFixed]    = useState(false);  // true = ceremony or reception
   const [editingFType,  setEditingFType]    = useState(null);   // 'ceremony' | 'reception' | null
   const [editingIsPost, setEditingIsPost]   = useState(false);
+  const [avaOpen, setAvaOpen] = useState(false);
 
   const collab = useCollaboratorContext();
   const isCollaborating = !!collab.ownerUserId;
@@ -870,8 +872,7 @@ export default function EventDetailsPage() {
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <AvaButton
           label="Ask Ava to help plan your event details"
-          seedQuestion="What still needs setting on our ceremony and reception details?"
-          pageContext="sets the ceremony and reception venues, times and dress code."
+          onClick={() => setAvaOpen(true)}
         />
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {!readOnly && tab === 'events' && (
@@ -1088,6 +1089,13 @@ export default function EventDetailsPage() {
           .ev-info { padding: 24px; }
         }
       `}</style>
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Event details"
+        systemPrompt="You are Ava, helping a couple set their ceremony and reception venues, times and dress code. Answer with the running order in mind — what time a ceremony has to start for the photographs, how long a gap guests will forgive, what a dress code line actually tells someone to wear."
+        quickActions={["What still needs setting on our ceremony and reception?", "Help us word the dress code", "What time should the ceremony start?", "What do guests need to know about the venue?"]}
+      />
     </div>
   );
 }
