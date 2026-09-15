@@ -1,0 +1,11 @@
+#!/bin/sh
+# A NEW file reaches a commit only if it was declared.
+#
+# `git add -A` has swept something unintended into a commit three times:
+# credentials (2026-08-25), another branch's files (2026-09-08), and the
+# owner's own working folder (2026-09-15). The rule against it is canon and it
+# was broken by someone who had read it the same day. This is the instrument.
+#
+# Modifications and deletions pass untouched — the accident is a file ARRIVING
+# unnoticed, not an edit to one already tracked.
+node scripts/check-staged-paths.mjs || exit 1
