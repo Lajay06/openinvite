@@ -1,4 +1,5 @@
 import { FilterPill } from '@/components/shared/TableToolbar';
+import { OptionAccordion, OptionAccordionSection } from '@/components/shared/OptionAccordion';
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
@@ -333,6 +334,15 @@ export default function MusicPage() {
 
   const pendingCount = (songRequests || []).filter(r => r.status === 'pending').length;
   const approvedCount = (songRequests || []).filter(r => r.status === 'approved').length;
+
+  // RULE 5: A COLLAPSED SECTION STILL SHOWS ITS DECISION. "Song requests" with
+  // nothing beside it would make a couple open the section to find out whether
+  // anyone is waiting on them, which is the reason to collapse it undone.
+  const playlistSummary = playlistUrl ? [playlistSource || 'Playlist set'] : [];
+  const requestsSummary = pendingCount
+    ? [`${pendingCount} waiting on you`]
+    : (allRequests.length ? [`${allRequests.length} ${allRequests.length === 1 ? 'request' : 'requests'}`] : []);
+  const shareSummary = details?.slug ? [`openinvite.com.au/w/${details.slug}`] : [];
   const guestCount = (songRequests || []).length;
 
   const closeAddPanels = () => { setShowSearch(false); setShowAddForm(false); setShowAddLink(false); setEditingTrack(null); };
@@ -473,11 +483,18 @@ export default function MusicPage() {
       {/* ── PLAYLIST ───────────────────────────────────────────────────────── */}
       {activeTab === 'playlist' && (
         <div style={{ padding: '32px 32px 48px' }}>
-          <div style={{ maxWidth: 760, display: 'flex', flexDirection: 'column', gap: 40 }}>
+          {/* FULL WIDTH, LIKE THE OTHER PLANNER PAGES (owner ruling, Run 4 S7).
+              This was capped at maxWidth: 760 inside a panel measured at 1240px
+              on a 1440 screen — 480px of nothing down the right-hand side,
+              which is the "empty right column" in the walk-through. At 390 the
+              cap never bound (326px of 390), so it was a desktop-only defect
+              and reads as content stacked on the left. */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+            <OptionAccordion initialOpenKey="playlist" headingSize={13} showEmptyState={false}>
 
+            <OptionAccordionSection sectionKey="playlist" title="Your playlist" summary={playlistSummary}>
             {/* ── 1. Your playlist ─────────────────────────────────────── */}
             <section>
-              <label style={labelStyle}>Your playlist</label>
               <p style={helpTextStyle}>
                 Paste a link to your playlist on Spotify, Apple Music or YouTube. Guests
                 can listen to it from your wedding site.
@@ -506,12 +523,13 @@ export default function MusicPage() {
                 </div>
               )}
             </section>
+            </OptionAccordionSection>
 
+            <OptionAccordionSection sectionKey="requests" title="Song requests" summary={requestsSummary}>
             {/* ── 2. Song requests ─────────────────────────────────────── */}
             <section>
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                 <div>
-                  <label style={labelStyle}>Song requests</label>
                   <p style={helpTextStyle}>What your guests have asked for.</p>
                 </div>
                 {!readOnly && (
@@ -568,16 +586,19 @@ export default function MusicPage() {
                 </div>
               )}
             </section>
+            </OptionAccordionSection>
 
+            <OptionAccordionSection sectionKey="share" title="Share with guests" summary={shareSummary}>
             {/* ── 3. Share ─────────────────────────────────────────────── */}
             <section>
-              <label style={labelStyle}>Share with guests</label>
               <p style={helpTextStyle}>
                 Send guests here to request a song, or print the code for the day.
               </p>
               <SharePlaylist slug={details?.slug} />
             </section>
+            </OptionAccordionSection>
 
+            </OptionAccordion>
           </div>
         </div>
       )}
