@@ -64,3 +64,25 @@ scratchpad/**/*.webp
 scratchpad/**/*.gif
 scratchpad/**/*.mp4
 scratchpad/**/*.webm
+
+# ── THE OWNER'S OWN FILES IN THE WORKING TREE ──────────────────────────────
+#
+# On 2026-09-15 `git add -A` staged the owner's untracked working folder into
+# a feature commit. It was removed from the commit — and then DELETED FROM
+# DISK by the next branch switch, because a staged path follows the index. It
+# was recovered from a dangling commit via `git fsck --lost-found`.
+#
+# Ignoring these is the half that stops the sweep at the source: a path git
+# will not stage is a path a checkout cannot carry away. .githooks/pre-commit
+# is the other half, because .gitignore protection is only as old as the
+# commit you stand on — scripts/check-no-credentials.mjs's own note, written
+# after the same command committed a live credential DESPITE .gitignore.
+#
+# A file the owner put in the working tree is the owner's. The only permitted
+# operations on it are none.
+Claude outputs/
+.claude/
+
+# The declared-new-files list .githooks/pre-commit reads: a working note about
+# one commit, never part of one.
+.stage-paths
