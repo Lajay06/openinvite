@@ -197,8 +197,11 @@ export const PUBLISHED_WEDDING = {
   accommodation: {},
   guestSuiteAccommodation: {
     places: [
-      { id: 'a1', name: 'The Devonport Hotel', address: '4 Park Row, Greenwich', rating: 4.4, photo_url: '' },
-      { id: 'a2', name: 'Greenwich Guesthouse', address: '18 Crooms Hill, Greenwich', rating: 4.2, photo_url: '' },
+      // ONE STAY WITH A WEBSITE AND ONE WITHOUT, so a render proves the link
+      // appears and, just as importantly, that it does not appear where there
+      // is nothing to link to.
+      { id: 'a1', name: 'The Devonport Hotel', address: '4 Park Row, Greenwich', rating: 4.4, photo_url: '', maps_url: 'https://www.google.com/maps/place/?q=place_id:devonport', website_url: 'https://example.com/devonport' },
+      { id: 'a2', name: 'Greenwich Guesthouse', address: '18 Crooms Hill, Greenwich', rating: 4.2, photo_url: '', maps_url: 'https://www.google.com/maps/place/?q=place_id:guesthouse' },
     ],
   },
   transport: {},
