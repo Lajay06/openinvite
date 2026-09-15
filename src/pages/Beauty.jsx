@@ -6,6 +6,7 @@ import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import VendorContactSection from '../components/vendors/VendorContactSection';
+import { OptionAccordion, OptionAccordionSection } from '@/components/shared/OptionAccordion';
 import VendorRosterSection from '../components/vendors/VendorRosterSection';
 import PageConsiderations from '../components/shared/PageConsiderations';
 import { base44 } from "@/api/base44Client";
@@ -134,6 +135,21 @@ export default function BeautyPage() {
   const makeupCount = gettingReadyPeople.filter(p => p.service === 'makeup' || p.service === 'both').length;
   const totalMins = hairCount * 60 + makeupCount * 45;
 
+  // RULE 5: A COLLAPSED SECTION STILL SHOWS ITS DECISION. A chip that only said
+  // "set" would make the couple open the section to find out what they chose,
+  // which is the point of collapsing undone. The artists are named.
+  const vendorName = (id) => (beautyVendors.find(v => v.id === id) || {}).name || null;
+  const brideSummary = [
+    vendorName(beautyData.hairArtistVendorId) && `Hair: ${vendorName(beautyData.hairArtistVendorId)}`,
+    vendorName(beautyData.makeupArtistVendorId) && `Makeup: ${vendorName(beautyData.makeupArtistVendorId)}`,
+    (beautyData.styleNotes || '').trim() && 'Style notes',
+    (beautyData.hairInspo || '').trim() && 'Hair inspiration',
+  ].filter(Boolean);
+  const partySummary = gettingReadyPeople.length
+    ? [`${gettingReadyPeople.length} ${gettingReadyPeople.length === 1 ? 'person' : 'people'}`,
+       `${Math.floor(totalMins / 60)}h ${totalMins % 60 > 0 ? `${totalMins % 60}m` : ''}`.trim()]
+    : [];
+
   const STAT_CARDS = [
     { label: 'Artists booked',    value: beautyVendors.filter(v => v.status === 'booked').length },
     { label: 'Trials scheduled',  value: (beautyData.trials || []).length },
@@ -250,12 +266,22 @@ export default function BeautyPage() {
 
         {/* ── HAIR & MAKEUP ──────────────────────────────────────────────── */}
         {activeTab === 'hair-makeup' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, alignItems: 'start' }}>
+          /* ── ONE COLUMN, AND ONE PERSON AT A TIME ────────────────────────
+             Owner walk-through, Run 4 S6: this tab opened with every field of
+             both columns showing at once. On a phone it was worse than long —
+             `gridTemplateColumns: '1fr 1fr'` carried no breakpoint, so at 390
+             the two columns did not stack, they SQUEEZED: measured 143px each
+             inside a 326px page. Two columns of that width is not a layout.
 
-              {/* Left — Bride/Partner 1 */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                <h3 style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: 0 }}>Bride / Partner 1</h3>
+             The people are the sections now, the way every other planner page
+             groups a decision, and the first one is open. Field groups inside a
+             person stay flat: a hair artist behind a second click would be an
+             accordion inside an accordion. */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 32, maxWidth: 860 }}>
+            <OptionAccordion initialOpenKey="bride" headingSize={13}>
+
+              <OptionAccordionSection sectionKey="bride" title="Bride / Partner 1" summary={brideSummary}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20, paddingBottom: 4 }}>
 
                 {/* Hair artist */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -300,10 +326,11 @@ export default function BeautyPage() {
                 </div>
               </div>
 
-              {/* Right — Wedding party */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <h3 style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: 0 }}>Wedding party</h3>
+              </OptionAccordionSection>
+
+              <OptionAccordionSection sectionKey="party" title="Wedding party" summary={partySummary}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 4 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                   <button onClick={addPerson} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12 }}>
                     <Plus size={12} />Add person
                   </button>
@@ -380,7 +407,9 @@ export default function BeautyPage() {
                   </div>
                 )}
               </div>
-            </div>
+              </OptionAccordionSection>
+
+            </OptionAccordion>
           </div>
         )}
 
