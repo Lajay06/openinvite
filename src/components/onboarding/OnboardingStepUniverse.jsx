@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import UniverseWorldView from '@/components/universe-studio/UniverseWorldView';
 import { interactiveDivProps } from '@/lib/a11y';
-import { UNIVERSE_CATALOG } from '@/lib/universeCatalog';
+import { UNIVERSE_CATALOG, universeTileImage } from '@/lib/universeCatalog';
 import { buildWeddingDetailsPayload } from '@/lib/onboardingSave';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 
@@ -74,8 +74,22 @@ function UniverseGridTile({ universe, index, isSelected, onExplore, onSelectTile
         outline: isSelected ? '2px solid #E03553' : 'none', outlineOffset: -2,
       }}
     >
+      {/* THE PICTURE THE UNIVERSE ACTUALLY SHOWS TODAY — RESOLVED HERE, NOT
+          IN THE MODULE-LEVEL MAP ABOVE.
+          The picker was rendering `imageUrl || /universes/<id>.jpg`, the local
+          statics that predate the Cloudinary folders the owner replaced them
+          with. Marketing's grid and scroll were moved onto universeTileImage
+          on 2026-09-07 — universeCatalog's own words, "so marketing and the
+          product cannot drift apart" — and this picker was not, so a couple
+          chose their aesthetic from one photograph and the design studio then
+          showed them another.
+          Called at RENDER time because universeCatalog says so in as many
+          words: computing it inside a top-level map returns the old static for
+          all twenty, since sampleContent is not initialized when that map
+          runs, and it fails silently. 900x1200 is this tile's own 3:4 — the
+          same shape Universes.jsx and UniverseTeaserSection ask for. */}
       <img
-        src={universe.photo}
+        src={universeTileImage(universe.id, { width: 900, height: 1200 }) || universe.photo}
         alt={`The ${universe.name} universe: ${universe.tagline || 'a full wedding aesthetic'}`}
         loading={index < 5 ? 'eager' : 'lazy'}
         style={{
