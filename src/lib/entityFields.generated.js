@@ -1399,6 +1399,7 @@ export const ENTITY_FIELDS = {
       "polls",
       "postWeddingEvents",
       "preWeddingEvents",
+      "previousSlugs",
       "qna",
       "reception",
       "registryContent",
