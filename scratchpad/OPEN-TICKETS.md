@@ -2158,4 +2158,26 @@ deliberately so — a migration over live rows is not a launch-week action.
 Cleanup under the owner's own token after launch, not the admin key: these are
 the owner's records and nobody else's.
 
+### And four upload probe files, same account
+
+Measuring Base44's real upload ceiling on 2026-09-15 (owner-authorized, smoke
+account only) left four files. The Base44 SDK's Core integrations offer
+UploadFile and UploadPrivateFile but **no delete**, so they cannot be removed
+through the client:
+
+```
+…/9b000f5ff_probe-25mb.mp4    25 MB   HTTP 200
+…/6a4264448_probe-50mb.mp4    50 MB   HTTP 200
+…/b6cc6ce1e_probe-100mb.mp4  100 MB   HTTP 200
+…/746c09299_probe-200mb.mp4  200 MB   HTTP 200
+```
+
+Random bytes, no content. They are listed here rather than left unrecorded so
+the same cleanup pass that handles the orphan records can remove them, and so
+nobody later wonders what they were.
+
+The probe found no refusal. Combined with the owner's own figures (25 MB
+succeeded, 240 MB failed), the platform ceiling sits above 200 MB and at or
+below 240 MB — recorded as that range in BASE44_PLATFORM_NOTES.md.
+
 Post-launch. No code until then.
