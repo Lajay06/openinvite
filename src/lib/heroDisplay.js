@@ -29,14 +29,44 @@ export const heroShowsNames = (details) => details?.homeContent?.showNames !== f
 export const heroShowsDate = (details) => details?.homeContent?.showDate !== false;
 
 /**
+ * THE WELCOME LINE, AND THE MARK THAT KEEPS IT COMPANY. Absent means on.
+ *
+ * "Show names" already lets a couple take their names off the hero. It leaves
+ * the kicker — "Join us as we celebrate…" — and the monogram behind, so the
+ * photograph still has furniture on it and there is no way to get to a bare
+ * image. This is the switch for that: off hides the welcome line AND the
+ * motif, so with both switches off the hero is the photograph or video and
+ * nothing else.
+ *
+ * ONE SWITCH FOR TWO THINGS, deliberately. They are not two decisions a couple
+ * makes separately — the mark exists to sit with the words, and a monogram
+ * floating alone over a photo with no text is not a state anyone asked for.
+ * The overlay keeps its own `enabled` flag as well, so a couple who has
+ * switched the mark off individually stays switched off when the welcome line
+ * comes back.
+ */
+export const heroShowsWelcome = (details) => details?.homeContent?.showWelcome !== false;
+
+/**
+ * The kicker a hero should print, which is nothing when the welcome line is
+ * off. Takes the copy object rather than reaching for it, because every
+ * universe's hero is handed its own `copy` and this must not guess which.
+ */
+export const heroKickerOf = (details, copy) => (heroShowsWelcome(details) ? (copy?.heroKicker || '') : '');
+
+/**
  * The overlay to render, or null. A mark with no URL is nothing to draw, and a
  * mark switched off is a mark the couple has kept but does not want shown —
  * turning it off must NOT delete their upload, which is why this is a flag on
  * the object rather than a removal of it.
+ *
+ * It is also null when the welcome line is off: see heroShowsWelcome. The
+ * upload survives either way.
  */
 export function heroOverlayOf(details) {
   const overlay = details?.homeContent?.overlay;
   if (!overlay?.url) return null;
+  if (!heroShowsWelcome(details)) return null;
   return overlay.enabled === false ? null : overlay;
 }
 

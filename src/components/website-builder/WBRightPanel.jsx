@@ -35,7 +35,7 @@ import {
   designOf, publicIdOf,
 } from '@/lib/emailTemplateStore';
 import PillSwitch from './PillSwitch';
-import { heroShowsNames, heroShowsDate, universeHeroRendersDate, OVERLAY_BLOCK_TYPES } from '@/lib/heroDisplay';
+import { heroShowsNames, heroShowsDate, universeHeroRendersDate, OVERLAY_BLOCK_TYPES, heroShowsWelcome } from '@/lib/heroDisplay';
 import { formatWeddingDate } from '@/lib/guestDate';
 import { resolveUniverseConfig } from '@/lib/universeStyling';
 
@@ -949,6 +949,18 @@ function ContentTab({ details, onChange, currentPage = 'home' }) {
         hint="Your names across the hero"
         enabled={heroShowsNames(details)}
         onToggle={() => updateNested('homeContent', 'showNames', !heroShowsNames(details))}
+      />
+      {/* The way to a bare hero. "Show names" alone leaves the kicker and the
+          monogram on the photograph, so there was no combination of switches
+          that gave a couple the image by itself. Off hides the welcome line
+          AND the mark — one switch for two things, because a monogram floating
+          alone over a photo with no text is not a state anyone asked for. The
+          couple's uploaded mark is kept either way. */}
+      <SwitchRow
+        label="Show welcome text"
+        hint="The welcome line and your monogram"
+        enabled={heroShowsWelcome(details)}
+        onToggle={() => updateNested('homeContent', 'showWelcome', !heroShowsWelcome(details))}
       />
       {/* Only where a date is actually printed. Nineteen of the twenty
           universes carry no date in the hero at all — the date/venue/RSVP
