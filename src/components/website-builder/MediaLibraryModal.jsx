@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { Upload, Search, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import toast from 'react-hot-toast';
-import { validateUploadFile } from '@/lib/uploadValidation';
+import { validateUploadFile, uploadFailureMessage, uploadLimitsLabel } from '@/lib/uploadValidation';
 import UploadStatus from '@/components/shared/UploadStatus';
 import { interactiveDivProps } from '@/lib/a11y';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -40,8 +40,17 @@ export default function MediaLibraryModal({ library, onClose, onSelect, onUpload
       const fileType = item.file.type.startsWith('video/') ? 'video' : 'photo';
       onUploaded({ url: file_url, name: item.file.name, type: fileType });
       setQueue(q => q.filter(i => i.id !== item.id));
-    } catch {
-      setQueue(q => q.map(i => i.id === item.id ? { ...i, status: 'error', error: `Failed to upload ${item.file.name}.` } : i));
+    } catch (err) {
+      // THE CATCH BOUND NOTHING, so every failure came back as "Failed to
+      // upload <name>." — the file's name and not one word about why. A couple
+      // whose video was refused could not tell a file that was too big from a
+      // network that dropped from a session that had expired, and neither
+      // could we: the server's own answer was discarded at the moment it
+      // arrived. This is the same defect as the `catch {` in UniverseStudio,
+      // which cost a full diagnostic pass on 2026-09-05.
+      setQueue(q => q.map(i => i.id === item.id
+        ? { ...i, status: 'error', error: uploadFailureMessage(err, item.file) }
+        : i));
     }
   }, [onUploaded]);
 
@@ -262,6 +271,13 @@ export default function MediaLibraryModal({ library, onClose, onSelect, onUpload
                 <Upload size={20} color={dragOver ? '#E03553' : 'rgba(255,255,255,0.2)'} style={{ display: 'block', margin: '0 auto 8px' }} />
                 <p style={{ margin: 0, fontSize: 12, color: dragOver ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.3)', fontFamily: 'inherit' }}>
                   Drop photos or videos here, or click to upload
+                </p>
+                {/* SAID BEFORE THE FILE IS CHOSEN, not after it is refused. A
+                    limit a couple only meets by breaking it is not a limit
+                    they were told about — they picked a file, waited for an
+                    upload, and got a rejection they could have been spared. */}
+                <p data-upload-limits style={{ margin: '6px 0 0', fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: 'inherit' }}>
+                  {uploadLimitsLabel()}
                 </p>
               </div>
 
