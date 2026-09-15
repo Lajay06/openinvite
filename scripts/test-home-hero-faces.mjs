@@ -21,7 +21,7 @@
  * passing quietly — the asset id is checked first, and a different id fails by
  * name asking for the band to be re-measured.
  */
-import { webkit } from 'playwright';
+import { chromium } from 'playwright';
 
 const BASE = process.env.CAPTURE_BASE_URL || 'http://localhost:4202';
 // The master this band was measured from.
@@ -58,7 +58,12 @@ const visibleBand = (page) => page.evaluate(() => {
   return { url, frame: { w: Math.round(r.width), h: Math.round(r.height) }, fraction, start, end: start + fraction };
 });
 
-const browser = await webkit.launch();
+// CHROMIUM, LIKE EVERY OTHER GUARD IN THIS LANE. CI installs chromium alone
+// (ci.yml:329), so a webkit launch is a guard that cannot run — and a guard
+// that cannot run is not a stricter test, it is no test. Nothing here is
+// engine-dependent: the band is computed from the element's own box and its
+// painted background values.
+const browser = await chromium.launch();
 
 for (const [w, h, label] of [[390, 844, '390 x 844'], [430, 932, '430 x 932'], [1440, 900, '1440 x 900']]) {
   const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 2 });
