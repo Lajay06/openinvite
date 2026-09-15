@@ -83,6 +83,7 @@
     "test:sidebar-groups": "node scripts/test-sidebar-groups.mjs",
     "test:modal-scale": "node scripts/test-modal-scale.mjs",
     "test:preview-device-scroll": "node scripts/test-preview-device-scroll.mjs",
+    "test:custom-page-in-nav": "node scripts/test-custom-page-in-nav.mjs",
     "test:onboarding-universe-tiles": "node scripts/test-onboarding-universe-tiles.mjs",
     "test:onboarding-universe-select": "node scripts/test-onboarding-universe-select.mjs",
     "test:studio-rotate-notice": "node scripts/test-studio-rotate-notice.mjs",
