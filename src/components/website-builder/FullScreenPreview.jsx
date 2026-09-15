@@ -105,17 +105,44 @@ export default function FullScreenPreview({ details, onClose, initialPage = 'hom
         display: 'flex', alignItems: device === 'desktop' ? 'flex-start' : 'center', justifyContent: 'center',
         overflow: 'hidden',
       }}>
+        {/* THE FRAME SCROLLS ITS OWN CONTENT, AND THE MENU OPENS INSIDE IT.
+            Two defects, one element.
+
+            The phone frame carried `overflow: hidden`, so a guest site taller
+            than 693px could not be scrolled at all — the preview showed the
+            top of the page and nothing else, on the device where almost every
+            page is taller than the screen.
+
+            And the guest nav's mobile menu is `position: fixed`
+            (WeddingWebsiteNav:287), which resolves against the VIEWPORT — so
+            opening it in the preview covered the whole builder window rather
+            than the phone. `transform` on this element makes it the containing
+            block for fixed descendants, which is what keeps the menu inside
+            the frame. translateZ(0) is the no-op transform that buys that
+            without moving anything by a pixel; `contain: paint` would do it
+            too, at the cost of clipping the frame's own shadow.
+
+            Both devices get the same treatment: a tablet's menu escaped just
+            as happily, and the two had drifted apart for no reason anyone
+            wrote down. */}
         <div
+          data-preview-frame={device}
           className={device === 'mobile' ? 'mobile-preview-frame' : undefined}
           style={{
             width: device === 'desktop' ? '100%' : device === 'tablet' ? '768px' : '390px',
             height: device === 'mobile' ? '693px' : '100%',
             background: '#fff',
             flexShrink: 0,
-            ...(device === 'mobile'
-              ? { overflow: 'hidden', scrollbarWidth: 'none', msOverflowStyle: 'none' }
-              : { overflowY: 'auto', overflowX: 'hidden' }
-            ),
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            // The scrollbar is hidden on the phone only: a visible one there
+            // is 15px of chrome a real phone does not have, and it changes the
+            // width the site lays out into.
+            ...(device === 'mobile' ? { scrollbarWidth: 'none', msOverflowStyle: 'none' } : {}),
+            // Only where there IS a frame. On desktop the preview fills the
+            // window and a containing block would change nothing except to
+            // make `position: fixed` behave differently from the real site.
+            ...(device === 'desktop' ? {} : { transform: 'translateZ(0)' }),
           }}
         >
           <RealWebsitePreview details={details} currentPage={currentPage} onNavigate={setCurrentPage} />

@@ -284,6 +284,11 @@ export default function WeddingWebsiteNav({ weddingDetails, weddingName, theme, 
           // Fixed under the pinned nav means it opens where the guest is
           // looking, wherever they have scrolled to.
           style={{
+            // FIXED HERE MEANS "THE FRAME" IN THE BUILDER'S PREVIEW, and that
+            // is not free: FullScreenPreview puts a transform on its phone and
+            // tablet frames precisely so this resolves against them instead of
+            // the builder window. Deleting that transform as a cosmetic line
+            // puts this menu back over the whole screen.
             position: 'fixed',
             top: 56,
             left: 0,
