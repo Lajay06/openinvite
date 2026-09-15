@@ -98,6 +98,7 @@
     "test:seating-canvas": "node scripts/test-seating-canvas.mjs",
     "test:guest-nav-container": "node scripts/test-guest-nav-container.mjs",
     "test:builder-header-390": "node scripts/test-builder-header-390.mjs",
+    "test:experiences-plain": "node scripts/test-experiences-plain.mjs",
     "test:design-tab-contrast": "node scripts/test-design-tab-contrast.mjs"
   },
   "dependencies": {

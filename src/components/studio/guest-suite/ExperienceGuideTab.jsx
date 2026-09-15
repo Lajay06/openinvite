@@ -18,18 +18,29 @@ const VIBE_OPTIONS = [
   'Fashion & shopping', 'Wellness & spa', 'Vibrant nightlife',
 ];
 
+// NAMED BY KIND, IN ONE WORD WHERE ONE WORD WILL DO (owner ruling, Run 4 S4).
+//
+// These were Title Case marketing headings — "Must Eat", "Recovery & Wellness",
+// "Wedding Weekend Essentials" — each carrying a `desc` blurb of the "worth
+// every cent" sort. The blurbs are gone entirely: NOTHING RENDERED THEM. They
+// sat in this list being read by no one, which is how an eleven-line block of
+// copy survives a design review.
+//
+// THE KEYS DO NOT CHANGE. They are what every saved place is filed under on
+// the couple's record, so renaming one would orphan a category's contents.
+// Only the words a person reads change.
 const CATEGORIES = [
-  { key: 'mustEat',        label: 'Must Eat',                   desc: 'Top restaurants your guests absolutely can\'t miss' },
-  { key: 'coffee',         label: 'Coffee & Bakeries',          desc: 'Morning stops, afternoon treats, and great espresso' },
-  { key: 'hiddenGems',     label: 'Hidden Gems',                desc: 'Local secrets and under-the-radar spots worth finding' },
-  { key: 'luxuryDining',   label: 'Luxury Dining',              desc: 'Special occasion restaurants worth every cent' },
-  { key: 'nature',         label: 'Beaches & Nature',           desc: 'Outdoor escapes, scenic walks, and waterfront spots' },
-  { key: 'nightlife',      label: 'Nightlife',                  desc: 'Bars, rooftop venues, and after-dark adventures' },
-  { key: 'thingsToDo',     label: 'Things To Do',               desc: 'Activities, sights, and experiences nearby' },
-  { key: 'wellness',       label: 'Recovery & Wellness',        desc: 'Spas, yoga studios, and relaxation spots' },
-  { key: 'dayTrips',       label: 'Day Trips',                  desc: 'Nearby destinations worth a half-day or full day out' },
-  { key: 'shopping',       label: 'Shopping',                   desc: 'Markets, boutiques, and local finds' },
-  { key: 'weddingWeekend', label: 'Wedding Weekend Essentials', desc: 'Key spots and info for the full wedding weekend' },
+  { key: 'mustEat',        label: 'Eat' },
+  { key: 'coffee',         label: 'Coffee' },
+  { key: 'hiddenGems',     label: 'Hidden gems' },
+  { key: 'luxuryDining',   label: 'Fine dining' },
+  { key: 'nature',         label: 'Outdoors' },
+  { key: 'nightlife',      label: 'Drink' },
+  { key: 'thingsToDo',     label: 'Do' },
+  { key: 'wellness',       label: 'Wellness' },
+  { key: 'dayTrips',       label: 'Day trips' },
+  { key: 'shopping',       label: 'Shopping' },
+  { key: 'weddingWeekend', label: 'The wedding weekend' },
 ];
 
 const TIME_BLOCKS = ['morning', 'afternoon', 'evening'];
@@ -730,10 +741,6 @@ function ItineraryTab({ details, guide, destination, allSavedPlaces, onSave }) {
     setSchedule(prev => buildSchedule(n, prev));
   };
 
-  const handleDayTitleChange = (dayIdx, title) => {
-    setSchedule(prev => prev.map((d, i) => i === dayIdx ? { ...d, title } : d));
-  };
-
   const handleAddActivity = (dayIdx, block, activity) => {
     setSchedule(prev => prev.map((d, i) => i === dayIdx ? {
       ...d, blocks: { ...d.blocks, [block]: [...d.blocks[block], { ...activity, id: uid() }] },
@@ -765,6 +772,11 @@ function ItineraryTab({ details, guide, destination, allSavedPlaces, onSave }) {
         ? `Single day: pack in highlights — morning coffee spot, afternoon sightseeing, evening dinner.`
         : `Two days: Day 1 = arrival and orientation; Day 2 = deeper exploration.`;
 
+      // NO TITLE, NO SUMMARY (owner ruling, Run 4 S4). This used to ask for an
+      // "evocative, not generic" day title and a sentence "capturing the day's
+      // mood and theme", and the guest page painted both — so a guest looking
+      // for where to be on Saturday read "Coastal charms" and a line of
+      // atmosphere. The heading is the day now, and the code writes it.
       const prompt = `You are planning a premium ${days}-day wedding destination itinerary for guests visiting ${destination}. ${dayContext}
 
 Curated places the couple has saved (use as many as fit naturally):
@@ -775,8 +787,6 @@ Return ONLY valid JSON — no markdown fences, no explanation:
   "schedule": [
     {
       "day": 1,
-      "title": "Evocative short day title",
-      "summary": "One sentence capturing the day's mood and theme",
       "blocks": {
         "morning": [
           {
@@ -804,7 +814,7 @@ Rules:
 - Times must flow (morning before afternoon, etc.)
 - Descriptions must be warm, specific, and helpful — like a well-travelled local friend
 - Durations where natural (e.g. "~2 hrs", "~45 min", "all evening")
-- Day titles: evocative, not generic ("Harbour mornings & harbour nights" not "Day 1: Explore")`;
+- Do not write a day title or a day summary. The page names each day itself.`;
 
       const response = await base44.integrations.Core.InvokeLLM({ prompt });
 
@@ -896,7 +906,6 @@ Rules:
             key={day.day}
             day={day}
             allSavedPlaces={allSavedPlaces}
-            onTitleChange={t => handleDayTitleChange(dayIdx, t)}
             onAddActivity={(block, act) => handleAddActivity(dayIdx, block, act)}
             onRemoveActivity={(block, id) => handleRemoveActivity(dayIdx, block, id)}
           />
@@ -906,40 +915,22 @@ Rules:
   );
 }
 
-function DayCard({ day, allSavedPlaces, onTitleChange, onAddActivity, onRemoveActivity }) {
-  const [editingTitle, setEditingTitle] = useState(false);
-  const [titleDraft, setTitleDraft] = useState(day.title);
-
+// THE COUPLE SEES WHAT THE GUEST SEES, which is why the title editor is gone.
+//
+// Beyond the letter of the S4 ruling, and said out loud rather than smuggled:
+// the ruling makes the guest page name every day itself and ignore any stored
+// title. Leaving the editor here would have shipped a field a couple can type
+// into, save, and never see anywhere — a control with no effect, which is a
+// worse thing to own than the heading it used to set.
+function DayCard({ day, allSavedPlaces, onAddActivity, onRemoveActivity }) {
   return (
     <div style={{ border: '1px solid rgba(10,10,10,0.12)', borderRadius: 8, overflow: 'hidden' }}>
       <div style={{ padding: '14px 20px', background: '#FAFAFA', borderBottom: '1px solid rgba(10,10,10,0.06)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, whiteSpace: 'nowrap' }}>
             Day {day.day}
           </span>
-          {editingTitle ? (
-            <input
-              autoFocus
-              value={titleDraft}
-              onChange={e => setTitleDraft(e.target.value)}
-              onBlur={() => { onTitleChange(titleDraft); setEditingTitle(false); }}
-              onKeyDown={e => { if (e.key === 'Enter') { onTitleChange(titleDraft); setEditingTitle(false); } }}
-              style={{ flex: 1, border: 'none', borderBottom: '1px solid #E03553', background: 'transparent', fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, outline: 'none', padding: '2px 0' }}
-            />
-          ) : (
-            <button
-              onClick={() => setEditingTitle(true)}
-              style={{ flex: 1, background: 'none', border: 'none', textAlign: 'left', fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, cursor: 'text', padding: 0 }}
-            >
-              {day.title || `Day ${day.day}`}
-            </button>
-          )}
         </div>
-        {day.summary && (
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: PJS, margin: '4px 0 0', fontStyle: 'italic' }}>
-            {day.summary}
-          </p>
-        )}
       </div>
 
       <div style={{ padding: '0 20px 20px' }}>

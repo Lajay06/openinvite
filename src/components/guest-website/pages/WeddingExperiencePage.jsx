@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, MapPin, ExternalLink, Heart, CalendarDays } from 'lucide-react';
+import { Star, ExternalLink, Heart, CalendarDays } from 'lucide-react';
 import SectionReveal from '../SectionReveal';
 import { isMotionEnabled } from '@/lib/universeStyling';
 import { accentText, accentChip } from '@/lib/surfaceTint';
@@ -15,6 +15,37 @@ const BLOCKS = [
 function photoUrl(ref) {
   if (!ref) return null;
   return `/api/places-photo?ref=${encodeURIComponent(ref)}&maxwidth=600`;
+}
+
+/**
+ * THE DAY'S HEADING IS THE DAY, NOT A MOOD.
+ *
+ * Owner ruling, Run 4 S4. The generator used to ask the model for an
+ * "evocative, not generic" day title and a one-sentence summary "capturing
+ * the day's mood and theme", and this page painted both — so a guest looking
+ * for where to be on Saturday read "Coastal charms" and a line of atmosphere.
+ *
+ * THE CODE SETS THE TITLE NOW, so a stored one is ignored rather than swept:
+ * every itinerary already saved paints the plain form on its next render and
+ * no record is written. `date` is honoured when a day carries one; no day
+ * carries one today, so today every heading is "Day 1", "Day 2".
+ */
+function dayHeading(day, index) {
+  const n = day?.day ?? index + 1;
+  const plain = `Day ${n}`;
+  const raw = day?.date;
+  if (!raw) return plain;
+  // A DATE-ONLY STRING IS A LOCAL DATE, NOT UTC MIDNIGHT. `new Date('2027-03-14')`
+  // parses as UTC by spec, so every guest west of Greenwich would read the day
+  // before — a guest in New York sent to Saturday for a Sunday brunch. Parsed
+  // by parts instead; anything else falls through to Date, which is right for
+  // a full timestamp.
+  const ymd = typeof raw === 'string' ? raw.match(/^(\d{4})-(\d{2})-(\d{2})$/) : null;
+  const d = ymd ? new Date(+ymd[1], +ymd[2] - 1, +ymd[3]) : new Date(raw);
+  if (Number.isNaN(d.getTime())) return plain;
+  const weekday = d.toLocaleDateString('en-US', { weekday: 'long' });
+  const month = d.toLocaleDateString('en-US', { month: 'long' });
+  return `${plain} \u00b7 ${weekday} ${d.getDate()} ${month}`;
 }
 
 export default function WeddingExperiencePage({ weddingDetails, theme, typography, universeConfig }) {
@@ -94,21 +125,31 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
                 const photo = place.photo_ref ? photoUrl(place.photo_ref) : null;
                 return (
                   <div key={place.place_id || i} style={{ flexShrink: 0, width: 240, scrollSnapAlign: 'start', ...card }}>
-                    <div style={{ height: 150, background: `${theme.darkBg}cc`, position: 'relative', overflow: 'hidden' }}>
-                      {photo ? (
+                    {/* NO RESERVED SPACE WHERE A PHOTOGRAPH IS NOT. This was a
+                        150px band with a MapPin at 0.15 opacity — a grey strip
+                        on every card the couple had not photographed, which is
+                        most of them since the photo removal. A card with no
+                        picture is now just a card. */}
+                    {photo && (
+                      <div style={{ height: 150, background: `${theme.darkBg}cc`, position: 'relative', overflow: 'hidden' }}>
                         <img src={photo} alt={place.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; }} />
-                      ) : (
-                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.15 }}>
-                          <MapPin size={28} color={theme.darkText} />
-                        </div>
-                      )}
-                      {place.category && (
-                        <span style={{ position: 'absolute', bottom: 8, left: 10, fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 999, ...accentChip(theme), fontFamily: typography.bodyFont, letterSpacing: '0.06em' }}>
+                        {place.category && (
+                          <span style={{ position: 'absolute', bottom: 8, left: 10, fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 999, ...accentChip(theme), fontFamily: typography.bodyFont, letterSpacing: '0.06em' }}>
+                            {place.category}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <div style={{ padding: '14px 16px' }}>
+                      {/* The chip used to sit inside the photo band. With no
+                          band on an unphotographed card it would have vanished
+                          with it, so it sits above the name instead — present
+                          either way, never floating over nothing. */}
+                      {!photo && place.category && (
+                        <span style={{ display: 'inline-block', marginBottom: 6, fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 999, ...accentChip(theme), fontFamily: typography.bodyFont, letterSpacing: '0.06em' }}>
                           {place.category}
                         </span>
                       )}
-                    </div>
-                    <div style={{ padding: '14px 16px' }}>
                       <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: '0.9375rem', color: theme.darkText, margin: '0 0 4px', lineHeight: 1.3 }}>
                         {place.name}
                       </h2>
@@ -162,12 +203,9 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
                 disabled={!isMotionEnabled(weddingDetails)}
                 style={{ marginBottom: 40 }}
               >
-                <h2 style={{ ...heading, fontSize: 'clamp(1.25rem,3vw,1.75rem)', margin: '0 0 6px' }}>
-                  {day.title || `Day ${day.day ?? di + 1}`}
+                <h2 style={{ ...heading, fontSize: 'clamp(1.25rem,3vw,1.75rem)', margin: '0 0 20px' }}>
+                  {dayHeading(day, di)}
                 </h2>
-                {day.summary && (
-                  <p style={{ ...body, margin: '0 0 20px', maxWidth: 640 }}>{day.summary}</p>
-                )}
 
                 {BLOCKS.map(({ key, label: blockLabel }) => {
                   const items = Array.isArray(day.blocks?.[key]) ? day.blocks[key] : [];
