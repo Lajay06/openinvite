@@ -2341,3 +2341,46 @@ WhatsApp control at all until they save the number again.
 
 Owner ruling, Run 4 S3: LEAVE THE GATE IN PLACE FOR NOW, do not remove it in
 this run. Filed so the next person does not rediscover it.
+
+## Seating and Wedding favours keep the pod, not a page modal — owner's call, post-launch
+
+Run 4 S1 converted four pages from the global pod to their own page-scoped Ava
+modal. Two were left out: `Seating.jsx` and `WeddingFavours.jsx`. Each carries a
+comment recording that its modal was removed BY THE OWNER, BY NAME, under
+"Spec 3.3, one entry point per page".
+
+Owner's call, 2026-09-16: they stay removed.
+
+## Generate the per-guard CI step from package.json — post-launch
+
+Every browser guard needs three things: a `scripts/test-*.mjs`, a
+`package.json` script, and a hand-written `ci.yml` step that starts a preview
+server on a unique port and runs it. The last two are the same six lines every
+time with a port and a name substituted.
+
+THE COST IS NOT THE TYPING, IT IS THE CONFLICTS. In Run 4 alone, four
+sequential merges each voided a sibling PR's gate, every one of them on
+`package.json` and `ci.yml`:
+
+```
+#773 merged  ->  #775 and #778 went CONFLICTING
+#775 merged  ->  #778 and #780 went CONFLICTING
+```
+
+None was semantic. Every one was "two packages each appended one line to the
+same two files". Each cost a rebase plus a full CI cycle — the lane is serial
+at roughly twenty minutes — and a withdrawn marks block, because a gate green
+against a merge ref GitHub has since deleted is not a gate.
+
+The shape: a step that enumerates `package.json`'s `test:*` scripts and runs
+each against a preview server, ports assigned by index rather than by hand. A
+package then adds ONE file (its guard) plus one `package.json` line, and the
+`ci.yml` churn disappears entirely.
+
+Two things to get right, neither hard: the ports are currently meaningful
+(4173, 4179-4208, one per guard, asserted unique by hand) and would become
+derived; and the existing steps are not uniform — a few run several guards
+against one server, and `test:guest-nav-container` ends on the test itself
+rather than on `exit $STATUS`, which gates correctly but leaks the server.
+
+Post-launch. Not this run.
