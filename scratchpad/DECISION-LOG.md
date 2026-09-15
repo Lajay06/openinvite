@@ -5997,3 +5997,51 @@ they usually do. The instrument is to read both and compare, at the moment the
 fact matters, and to treat any past disagreement as a permanent loss of
 standing for the derived one. `git rev-parse origin/<branch>` against
 `gh pr view <n> --json headRefOid` is two commands.
+
+---
+
+## 2026-09-16 — Owner-typed text is never normalized by a guard or a sweep
+
+**Owner-typed text on any record — tags, names, notes, codes — is never
+normalized by a copy or spelling guard or sweep. The US-English and
+sentence-case rules apply to product chrome only.**
+
+The example that produced the ruling, from a read of the owner's own live guest
+list during Run 4 (S2, production verification, read-only):
+
+```
+Family · College friends · Ceremony · Reception · Welcome · Recovery Brunch
+Wedding party · Partner's side · Pending · Work colleagues · Neighbours
+University · Childhood friends · Attending
+```
+
+Two of those are the owner's own typed TAGS sitting beside product-rendered
+category pills, and both would be "violations" to an instrument that could not
+tell the difference:
+
+  Recovery Brunch   title case, where chrome is sentence case
+  Neighbours        a British spelling, where the repo is US English
+
+Both are correct. They are what a person typed about their own wedding, on
+their own record. A guard that swept them would be editing the owner's words
+to satisfy a rule written for ours.
+
+THIS IS THE SAME BOUNDARY S2 ALREADY DREW AND IT IS NOW GENERAL. That package
+fixed the guest list's CATEGORY pill, which rendered a stored enum value
+(`partners_family`) instead of the label the product declares for it
+("Partner's family") — product chrome, product's business. It deliberately left
+`TagsDisplay` alone, which renders the couple's strings verbatim. The owner's
+report that "tags are sentence case" was an observation about his own typing,
+not a rule the product applies.
+
+The near miss worth recording: a sentence-case helper applied to the value
+would have produced "Partners family", losing an apostrophe that exists only in
+the declared label. An instrument aimed at the wrong side of this line does not
+merely overreach — it gets the answer wrong.
+
+The same boundary is why `guestSuiteAccommodation.places[5].note` on the
+owner's record still reads "Use code JOHNSUZANNE for 20% discount" after the
+rename to Jay & Ella (S8a). It matches the old names, it is not a denormalised
+copy of them, and it is a third party's promo code. A rename sweep that matched
+on the names would have broken a real discount.
+
