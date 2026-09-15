@@ -28,22 +28,19 @@
  * is the check that finds the next one.
  */
 import { pass, fail } from './_shared.mjs';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { trackedUnder } from './_trackedFiles.mjs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const read = (p) => readFileSync(join(ROOT, p), 'utf8');
 
-/** Every .jsx/.js under src, so the route check cannot miss a page. */
-function sourceFiles(dir = 'src', out = []) {
-  for (const name of readdirSync(join(ROOT, dir))) {
-    const rel = `${dir}/${name}`;
-    if (statSync(join(ROOT, rel)).isDirectory()) sourceFiles(rel, out);
-    else if (/\.(jsx?|mjs)$/.test(name)) out.push(rel);
-  }
-  return out;
-}
+/**
+ * Every TRACKED .jsx/.js under src, so the route check cannot miss a page —
+ * and cannot invent one from an untracked file. See _trackedFiles.mjs.
+ */
+const sourceFiles = (dir = 'src') => trackedUnder(dir, /\.(jsx?|mjs)$/);
 
 // The surfaces whose whole job is to explain the product.
 const EXPLAINERS = [

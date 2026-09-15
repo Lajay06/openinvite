@@ -39,7 +39,8 @@
  *     suite"` — a check asserting the opposite of the rule it was written for.
  */
 import { pass, fail } from './_shared.mjs';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { trackedUnder } from './_trackedFiles.mjs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -56,18 +57,17 @@ const EXEMPT = {
   'tests/persistence/help-and-tips-truthful.mjs': 'states the rule',
 };
 
-const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'scratchpad', 'coverage']);
 const EXT = /\.(jsx?|mjs|md|html)$/;
 
-function files(dir = '.', out = []) {
-  for (const name of readdirSync(join(ROOT, dir))) {
-    if (SKIP_DIRS.has(name)) continue;
-    const rel = dir === '.' ? name : `${dir}/${name}`;
-    if (statSync(join(ROOT, rel)).isDirectory()) files(rel, out);
-    else if (EXT.test(name)) out.push(rel);
-  }
-  return out;
-}
+/**
+ * THE REPO IS WHAT GIT TRACKS. This walked the filesystem from the root with a
+ * SKIP_DIRS denylist and counted everything it found — so on 2026-09-15 it read
+ * the owner's own untracked working notes, found the retired phrase there, and
+ * failed a suite that passes in CI. A denylist of the directories somebody
+ * thought of cannot express "only what the repo holds"; `git ls-files` is that
+ * sentence. See tests/persistence/_trackedFiles.mjs.
+ */
+const files = () => trackedUnder('', EXT);
 
 export async function runGuestSuiteVocabulary() {
   const results = [];

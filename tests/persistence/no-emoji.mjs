@@ -38,7 +38,8 @@
  * ruling on either is a line change in one place.
  */
 import { pass, fail } from './_shared.mjs';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { trackedUnder } from './_trackedFiles.mjs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -81,17 +82,12 @@ const RATCHET = {
   'src/pages/Polls.jsx': 'a couple picks one for their own poll category and their guests see it — their content, like their photos, not our chrome',
 };
 
-const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'coverage']);
-
-function files(dir, out = []) {
-  for (const name of readdirSync(join(ROOT, dir))) {
-    if (SKIP_DIRS.has(name)) continue;
-    const rel = `${dir}/${name}`;
-    if (statSync(join(ROOT, rel)).isDirectory()) files(rel, out);
-    else if (/\.(jsx?|html)$/.test(name)) out.push(rel);
-  }
-  return out;
-}
+/**
+ * Tracked files only — see tests/persistence/_trackedFiles.mjs. An untracked
+ * component somebody is part-way through writing is not the product, and a
+ * guard that fails on it teaches people to re-run the suite until it is green.
+ */
+const files = (dir) => trackedUnder(dir, /\.(jsx?|html)$/);
 
 /** Every offending glyph in a string, with its line. */
 function offenders(src) {
