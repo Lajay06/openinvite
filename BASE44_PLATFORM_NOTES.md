@@ -1179,3 +1179,52 @@ between a rule and a promise.
 So: do not declare `is_sample`. If a future package needs to know whether a
 record is sample-backed, it is a question about the code path that produced it,
 not a column.
+
+---
+
+## Core/UploadFile — the file-size ceiling sits between 200 MB and 240 MB
+
+Established 2026-09-15, from two independent measurements.
+
+**Where the request goes.** `base44.integrations.Core.UploadFile` does not pass
+through our own API. The SDK builds a `FormData` and POSTs it straight from the
+browser to
+
+```
+base44.app/api/apps/<appId>/integration-endpoints/Core/UploadFile
+```
+
+so **Vercel's 100 MB request-body limit does not apply on this path**, and no
+Cloudinary preset is involved either. Anyone reasoning about upload limits from
+our own infrastructure is reasoning about the wrong hop.
+
+**The measurements.**
+
+| size | result | source |
+|---|---|---|
+| 25 MB | accepted | owner |
+| 25 MB | HTTP 200 in 7s | probe, smoke account |
+| 50 MB | HTTP 200 in 13s | probe |
+| 100 MB | HTTP 200 in 24s | probe |
+| 200 MB | HTTP 200 in 47s | probe |
+| 240 MB | failed | owner |
+
+**So the ceiling is above 200 MB and at or below 240 MB.** It is deliberately
+not recorded as a single number: nothing has been measured between those two,
+and picking a midpoint would turn two real observations into one invented one.
+If the exact figure is ever needed, it is a bisection between 200 and 240 — and
+the probe that produced the rows above is the method.
+
+**Why the product cap is lower than the ceiling.** `src/lib/uploadValidation.js`
+rejects locally well below this, on purpose. The cap exists so an oversized
+file never leaves the machine, not to track the platform; a client limit set at
+the platform's exact edge would start failing the day Base44 moved it, and the
+couple would see a network error rather than a sentence. The number on screen
+is the product's promise, not this note's finding.
+
+**The 500 MB that used to be there.** `VIDEO_MAX_BYTES` was 500 MB with no
+source in this repo, the SDK, or this file — an invented figure that had been
+read as a promise. Every video between the real ceiling and 500 MB passed the
+client check and then died at the network, with `MediaLibraryModal`'s bare
+`catch {` discarding the reason. That is the shape this note exists to prevent:
+**an unmeasured limit written down once becomes a fact nobody re-checks.**
