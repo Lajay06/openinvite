@@ -649,6 +649,20 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
 
+      # The Beauty page opens on one person, at the page's own size.
+      - name: The Beauty page opens on one person and squeezes no columns
+        run: |
+          npx vite preview --port 4207 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4207 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4207 npm run test:beauty-collapsed
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       # The home hero keeps both faces at phone widths.
       - name: The home hero keeps both faces at phone widths
         run: |
