@@ -21,6 +21,7 @@ import { customPageFor, customPageBlocks } from '@/lib/customPages';
 
 import { syncWeddingAddress } from '@/lib/weddingAddress';
 import WBEmailPreview from '@/components/website-builder/WBEmailPreview';
+import RotateNotice from '@/components/website-builder/RotateNotice';
 import { templatesOf, saveTemplates, EDITOR_TEMPLATES, SAVE_FAILURE_MESSAGE } from '@/lib/emailTemplateStore';
 import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
 const UNIVERSE_THEMES = {
@@ -666,6 +667,13 @@ export default function StudioWebsite({ onBack }) {
   return (
     <MediaLibraryContext.Provider value={{ open: openMediaLibrary }}>
     <div style={{ height: '100vh', overflow: 'hidden', fontFamily: "'Plus Jakarta Sans',sans-serif", background: '#1C1C1E', display: 'flex', flexDirection: 'column' }}>
+
+      {/* A quiet line, portrait only, below 768. Editing is never disabled —
+          see RotateNotice's own note. It sits ABOVE the top bar rather than
+          inside it: the bar is a fixed 48px with three groups already
+          competing for width at phone sizes, and adding a sentence to it is
+          how that collision started. */}
+      <RotateNotice />
 
       {/* TOP BAR */}
       {/* zIndex 40, NOT 100. The shared modal wrapper paints at z-50, so a
