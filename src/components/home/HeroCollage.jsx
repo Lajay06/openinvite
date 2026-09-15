@@ -9,6 +9,14 @@ import { wixPhoto } from "@/lib/wixImage";
 // page: the bare Wix original is 664 KB of JPEG for 1280x960.
 const HERO_BG = wixPhoto("d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg", 1280, 960).src;
 
+// THE HEIGHT AND THE CROP LIVE IN index.css (.home-hero), NOT HERE.
+//
+// Both have to change together below a certain viewport shape, and an inline
+// style cannot carry a media query. The arithmetic is written out at the rule;
+// the short version is that a 4:3 photograph of two people standing apart
+// cannot fill a phone-shaped frame and keep both of them, so on a phone the
+// hero is shorter instead of the couple being cropped away.
+
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -33,10 +41,10 @@ export default function HeroCollage({ onCTA }) {
 
   return (
     <section
+      className="home-hero"
       style={{
         position: "relative",
         width: "100%",
-        minHeight: "100vh",
         display: "flex",
         alignItems: "center",
         overflow: "hidden",
@@ -46,7 +54,6 @@ export default function HeroCollage({ onCTA }) {
         // would throw away the only real pixels there are.
         backgroundImage: `url(${HERO_BG})`,
         backgroundSize: "cover",
-        backgroundPosition: "center",
         backgroundAttachment: "scroll",
         backgroundColor: "#1a0008",
       }}
