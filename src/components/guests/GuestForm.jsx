@@ -2,6 +2,7 @@ import { OptionAccordion, OptionAccordionSection } from '@/components/shared/Opt
 import { mealOptionLabel } from '@/lib/weddingEvents';
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
+import { COUNTRY_CODES, DEFAULT_COUNTRY, toE164, needsCountryCode } from '@/lib/phoneE164';
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -91,6 +92,13 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
     meal_choice: '', plus_one_meal_choice: '',
   });
   const [tagInput, setTagInput] = useState('');
+  // THE PICKER INTERPRETS A LOCAL NUMBER; IT IS NOT STORED ANYWHERE.
+  //
+  // What gets saved is E.164 — "+61412345678" — which carries its own country
+  // for the rest of the record's life, so nothing downstream has to remember
+  // what was chosen here. A wedding has guests in several countries anyway, so
+  // one country per wedding would be the wrong thing to remember.
+  const [phoneCountry, setPhoneCountry] = useState(DEFAULT_COUNTRY);
 
   // Dietary pill state — parsed from the existing field value
   const init = parseDietary((guest || {}).dietary_restrictions || '');
@@ -238,7 +246,36 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
           {/* Row 2: Phone + Category */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <Label htmlFor="phone">Phone</Label>
-            <Input id="phone" value={formData.phone} onChange={e => set('phone', e.target.value)} placeholder="Phone number" />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <select
+                aria-label="Country code"
+                value={phoneCountry}
+                onChange={e => setPhoneCountry(e.target.value)}
+                style={{ flex: '0 0 auto', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 6, padding: '0 8px', fontSize: 13, fontFamily: "'Plus Jakarta Sans', sans-serif", background: '#fff', cursor: 'pointer' }}
+              >
+                {COUNTRY_CODES.map(c => (
+                  <option key={c.iso} value={c.iso}>{c.iso} +{c.dial}</option>
+                ))}
+              </select>
+              <Input
+                id="phone"
+                type="tel"
+                value={formData.phone}
+                onChange={e => set('phone', e.target.value)}
+                onBlur={e => { const v = toE164(e.target.value, phoneCountry); if (v) set('phone', v); }}
+                placeholder="Phone number"
+                data-phone-field
+              />
+            </div>
+            {/* NEVER SILENTLY REWRITTEN, AND NEVER SENT. A number that cannot
+                be made into E.164 is shown as needing a country rather than
+                guessed at — a guessed number is what produced "this number is
+                not on WhatsApp". */}
+            {needsCountryCode(formData.phone, phoneCountry) && (
+              <p data-phone-warning style={{ fontSize: 12, color: '#E03553', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '6px 0 0' }}>
+                That does not look like a phone number. Check the country and the digits — invitations are not sent to a number we cannot read.
+              </p>
+            )}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <Label>Category</Label>
