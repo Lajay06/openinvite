@@ -82,6 +82,7 @@
     "test:hero-toggles": "node scripts/test-hero-toggles.mjs",
     "test:sidebar-groups": "node scripts/test-sidebar-groups.mjs",
     "test:modal-scale": "node scripts/test-modal-scale.mjs",
+    "test:onboarding-universe-select": "node scripts/test-onboarding-universe-select.mjs",
     "test:onboarding-card-fit": "node scripts/test-onboarding-card-fit.mjs",
     "test:onboarding-accordion-borders": "node scripts/test-onboarding-accordion-borders.mjs",
     "test:settings-tab": "node scripts/test-settings-tab.mjs",
