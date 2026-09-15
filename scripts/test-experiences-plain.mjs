@@ -20,7 +20,7 @@
  * ── THE RESERVED SPACE ─────────────────────────────────────────────────────
  *
  * A couple-pick with no photograph rendered a 150px band with a MapPin at 0.15
- * opacity: a grey strip on every card the couple had not photographed, which
+ * opacity: a gray strip on every card the couple had not photographed, which
  * is most of them since the photo removal. The category chip lived inside that
  * band, so it had to move rather than vanish with it — and this checks the
  * chip is still painted, because "remove the placeholder" quietly taking the
@@ -76,7 +76,7 @@ for (const sm of STORED_SUMMARIES) {
 // A PHOTOGRAPH IS AN IMAGE WITH A SOURCE, and that sentence is here because a
 // plant proved the guard did not believe it. Restoring the placeholder renders
 // `<img src={null}>` inside the band — an image ELEMENT with no picture in it —
-// so a test asking "does this band contain an img" counted the grey strip as
+// so a test asking "does this band contain an img" counted the gray strip as
 // photographed and passed over exactly what it exists to catch. Third time this
 // programme that an absence check was satisfied by a different kind of absence.
 const cards = await page.evaluate(() => {

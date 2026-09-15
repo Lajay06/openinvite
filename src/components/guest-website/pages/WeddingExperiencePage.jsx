@@ -126,7 +126,7 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
                 return (
                   <div key={place.place_id || i} style={{ flexShrink: 0, width: 240, scrollSnapAlign: 'start', ...card }}>
                     {/* NO RESERVED SPACE WHERE A PHOTOGRAPH IS NOT. This was a
-                        150px band with a MapPin at 0.15 opacity — a grey strip
+                        150px band with a MapPin at 0.15 opacity — a gray strip
                         on every card the couple had not photographed, which is
                         most of them since the photo removal. A card with no
                         picture is now just a card. */}
