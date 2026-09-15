@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { MessageCircle, X } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { COUNTRY_CODES, DEFAULT_COUNTRY, toE164, needsCountryCode } from "@/lib/phoneE164";
 
 const WHATSAPP_GREEN = "#25D366";
 
@@ -12,10 +13,22 @@ const labelStyle = {
 
 export default function WhatsAppConnect({ onConnect, isConnected, connectedPhone }) {
   const [showDisconnect, setShowDisconnect] = useState(false);
+  // THE prompt() IS GONE (owner ruling, Run 4 S3). It was the only prompt() in
+  // the product and the worst place for one: the field that most needs a
+  // country-code picker was a box the browser drew, in system type, blocking
+  // the page until it was answered. Its wording carried the instruction the
+  // interface should have carried — "with country code, e.g., +61412345678" —
+  // which is the picker beside the field now.
+  const [entering, setEntering] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [country, setCountry] = useState(DEFAULT_COUNTRY);
+  const unreadable = needsCountryCode(draft, country);
 
   const handleSave = () => {
-    const phoneInput = prompt("Enter your WhatsApp phone number (with country code, e.g., +61412345678):");
-    if (phoneInput) onConnect(phoneInput);
+    const e164 = toE164(draft, country);
+    if (!e164) return;
+    onConnect(e164);
+    setEntering(false); setDraft('');
   };
 
   const handleDisconnect = () => {
@@ -68,12 +81,51 @@ export default function WhatsAppConnect({ onConnect, isConnected, connectedPhone
         <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 16, lineHeight: 1.6 }}>
           Save your number so it's ready to go — messages to guests open pre-filled in WhatsApp, no retyping needed.
         </p>
-        <button onClick={handleSave}
-          style={{ background: WHATSAPP_GREEN, color: '#FFFFFF', border: 'none', padding: '9px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', borderRadius: 999, fontFamily: "'Plus Jakarta Sans', sans-serif", transition: 'opacity 0.15s' }}
-          onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
-          onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
-          Save number
-        </button>
+        {entering ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 420 }}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <select
+                aria-label="Country code"
+                value={country}
+                onChange={e => setCountry(e.target.value)}
+                style={{ border: '1px solid rgba(10,10,10,0.15)', borderRadius: 6, padding: '8px', fontSize: 13, fontFamily: "'Plus Jakarta Sans', sans-serif", background: '#fff', cursor: 'pointer' }}
+              >
+                {COUNTRY_CODES.map(c => <option key={c.iso} value={c.iso}>{c.iso} +{c.dial}</option>)}
+              </select>
+              <input
+                type="tel"
+                autoFocus
+                value={draft}
+                onChange={e => setDraft(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && !unreadable && draft.trim()) handleSave(); }}
+                placeholder="Your WhatsApp number"
+                data-whatsapp-number
+                style={{ flex: 1, minWidth: 0, border: '1px solid rgba(10,10,10,0.15)', borderRadius: 6, padding: '8px 10px', fontSize: 13, fontFamily: "'Plus Jakarta Sans', sans-serif", outline: 'none' }}
+              />
+            </div>
+            {unreadable && (
+              <p data-whatsapp-warning style={{ fontSize: 12, color: '#E03553', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>
+                That does not look like a phone number. Check the country and the digits.
+              </p>
+            )}
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={handleSave} disabled={unreadable || !draft.trim()}
+                style={{ background: WHATSAPP_GREEN, color: '#FFFFFF', border: 'none', padding: '9px 20px', fontSize: 13, fontWeight: 700, cursor: unreadable || !draft.trim() ? 'not-allowed' : 'pointer', opacity: unreadable || !draft.trim() ? 0.5 : 1, borderRadius: 999, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                Save number
+              </button>
+              <button onClick={() => { setEntering(false); setDraft(''); }} className="btn-editorial-secondary" style={{ fontSize: 13 }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button onClick={() => setEntering(true)}
+            style={{ background: WHATSAPP_GREEN, color: '#FFFFFF', border: 'none', padding: '9px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', borderRadius: 999, fontFamily: "'Plus Jakarta Sans', sans-serif", transition: 'opacity 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
+            Save number
+          </button>
+        )}
       </div>
     </div>
   );

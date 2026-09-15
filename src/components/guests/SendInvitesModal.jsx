@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { toWaMe } from '@/lib/phoneE164';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { coupleDisplayName } from '@/lib/coupleNames';
@@ -41,7 +42,14 @@ function buildWhatsAppMessage(guest, coupleName, weddingDate, rsvpUrl) {
 
 function buildWhatsAppUrl(guest, coupleName, weddingDate, token) {
   const msg = buildWhatsAppMessage(guest, coupleName, weddingDate, buildRsvpUrl(token));
-  const phone = guest.phone ? guest.phone.replace(/\D/g, '') : '';
+  // ONE NORMALISER, AND A NUMBER IT CANNOT READ IS NOT A NUMBER.
+  //
+  // This stripped non-digits and sent whatever was left: "0412 345 678" went
+  // out as wa.me/0412345678, which is the owner's report — WhatsApp answers
+  // that the number is not on WhatsApp, and it is right to. An unreadable
+  // number now falls through to the no-recipient link, where the couple picks
+  // the contact themselves, rather than opening a conversation with nobody.
+  const phone = toWaMe(guest.phone);
   return phone
     ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
     : `https://wa.me/?text=${encodeURIComponent(msg)}`;
