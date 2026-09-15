@@ -1494,3 +1494,36 @@ body {
 .oi-modal-scale .oi-amount-symbol {
   font-size: 12px !important;
 }
+
+/* ── THE HOME HERO KEEPS BOTH FACES AT PHONE WIDTHS ──────────────────────────
+   Owner report, 2026-09-15: "the home hero cuts the man's head off" on a
+   phone. It does, and centring the crop differently cannot fix it.
+
+   The photograph is 4:3 (1280x960, Wix-hosted, so no srcset and no g_faces).
+   `background-size: cover` on a portrait frame scales the image to the frame's
+   HEIGHT and then crops its width, so the fraction of the photograph's width
+   that survives is 0.75 x (frame width / frame height). At 390x844 that is
+   0.34 — a third of the picture. Measured off the 1440 render, the two faces
+   sit at 33.5% and 80% of the image width, so the band that has to survive is
+   roughly 30% to 84%: 54% of the width. No horizontal position can hold 54%
+   inside a 34% window.
+
+   So the frame changes shape instead of the couple being cropped away. Solving
+   0.75 x (W/H) >= 0.54 gives H <= 1.39W; 130vw leaves a little margin. Below an
+   aspect ratio of 0.72 the viewport is always taller than that, so the hero is
+   never taller than the screen. 65% x sets the surviving band at 28.1%-85.0%,
+   which is the face band with a point or two to spare on either side.
+
+   A guard measures exactly this: scripts/test-home-hero-faces.mjs. It fails if
+   the band stops covering the faces, and it fails LOUDLY if the photograph
+   itself changes, because the 33.5%/80% figures were measured from this one. */
+.home-hero {
+  min-height: 100vh;
+  background-position: center;
+}
+@media (max-aspect-ratio: 72/100) {
+  .home-hero {
+    min-height: 130vw;
+    background-position: 65% 50%;
+  }
+}
