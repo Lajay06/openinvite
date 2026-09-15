@@ -22,6 +22,7 @@ import { readFileSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { toE164, toWaMe, needsCountryCode } from '../../src/lib/phoneE164.js';
+import { rowToGuest } from '../../src/lib/guestImport.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const code = (p) => readFileSync(join(ROOT, p), 'utf8')
@@ -72,6 +73,33 @@ export async function runWhatsappE164() {
     check('  and hand-rolls none of it',
       !/replace\(\/\\D\/g/.test(src) && !/["']61["']\s*\+/.test(src),
       'no digit-strip, no hard-coded 61');
+  }
+
+  // ── THE CSV IMPORT, WHICH HAS NO FIELD TO ASK A COUNTRY FROM ─────────────
+  //
+  // The third place a number enters the product, and the one the first version
+  // of this package missed. A spreadsheet column is whatever the couple's own
+  // address book exported, so it is parsed against the import's country and
+  // stored in E.164 when it resolves — and kept EXACTLY AS TYPED when it does
+  // not, because silently rewriting a number is how one guest's number becomes
+  // somebody else's.
+  {
+    const ok = rowToGuest({ Name: 'A', Phone: '0412 345 678' }, 'AU');
+    check('an imported local number is stored in E.164',
+      ok.phone === '+61412345678' && !ok._phoneWarning, `${ok.phone}`);
+    const intl = rowToGuest({ Name: 'A', Phone: '+44 7700 900123' }, 'AU');
+    check('  an imported number that declares its country is untouched',
+      intl.phone === '+447700900123', `${intl.phone}`);
+    const bad = rowToGuest({ Name: 'A', Phone: '12345' }, 'AU');
+    check('  an unreadable one is flagged and kept exactly as the file had it',
+      bad.phone === '12345' && !!bad._phoneWarning, `${bad.phone} — ${bad._phoneWarning}`);
+    // FLAGGED, NOT DROPPED. `_error` skips the row; the name is what the row is
+    // for, and a guest with an unreadable phone is still a guest.
+    check('  and the row still imports', !bad._error, 'no _error on it');
+    const none = rowToGuest({ Name: 'A', Phone: '' }, 'AU');
+    check('  an empty column is not a warning', !none.phone && !none._phoneWarning, 'nothing flagged');
+    const us = rowToGuest({ Name: 'A', Phone: '2125550123' }, 'US');
+    check('  and the import\'s country is honoured', us.phone === '+12125550123', `${us.phone}`);
   }
 
   // ── AND THE COUPLE'S OWN FIELD IS NOT A BROWSER PROMPT ───────────────────

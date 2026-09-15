@@ -61,7 +61,9 @@ export default function ImportGuestModal({ onClose, onImported }) {
 
     const failed = [];
     await Promise.all(toImport.map(async (row) => {
-      const { _rowIndex, _error, ...guestData } = row;
+      // Every underscore field is preview state, not guest data. `_phoneWarning`
+      // joined them when the import learned to read a phone number.
+      const { _rowIndex, _error, _phoneWarning, ...guestData } = row;
       try {
         await createGuest(guestData);
       } catch (err) {
@@ -190,7 +192,13 @@ export default function ImportGuestModal({ onClose, onImported }) {
                         <td style={{ padding: '8px 12px', verticalAlign: 'middle' }}>
                           {row._error
                             ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#E03553', fontSize: 11, fontWeight: 600 }}><AlertCircle size={11} />{row._error}</span>
-                            : <span style={{ color: '#16a34a', fontSize: 11, fontWeight: 600 }}>OK</span>
+                            : row._phoneWarning
+                              /* FLAGGED, NOT DROPPED. The name is what the row
+                                 is for; a guest with an unreadable phone is
+                                 still a guest, and the number is kept exactly
+                                 as the file had it rather than guessed at. */
+                              ? <span data-phone-warning style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#E03553', fontSize: 11, fontWeight: 600 }}><AlertCircle size={11} />{row._phoneWarning}</span>
+                              : <span style={{ color: '#16a34a', fontSize: 11, fontWeight: 600 }}>OK</span>
                           }
                         </td>
                       </tr>
