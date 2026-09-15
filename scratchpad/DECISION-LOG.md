@@ -5912,3 +5912,39 @@ git show <dangling>:'path/to/file' > path/to/file
 
 That window is not a safety net to rely on — `git gc` closes it without
 warning — but it is the difference between an apology and a restoration.
+
+---
+
+**ADDENDUM, same day, same file, third taking.** The rule above was given,
+acknowledged, and then broken again within the hour by `git stash -u`, run to
+clean a tree before a branch switch. `-u` stashes untracked files; the owner's
+folder was untracked on that branch, because the branch predated the commit
+that ignores it. Recovered from `stash@{0}^3`, and both stashes holding a copy
+were dropped so none lingered in the object store.
+
+The failure was reading the rule as a list of instances rather than a class. It
+had been stated in terms of `mv` and `git add -A`, which is what had gone wrong
+so far, and `git stash -u` is neither of those words while being exactly the
+same act.
+
+**CANON, in the owner's words:**
+
+> Any command that can relocate an untracked file — `git add -A`,
+> `git stash -u`, `git clean`, a checkout over a staged path — is forbidden
+> while anything of the owner's is in the tree, whatever the reason.
+
+**And `stash` WITHOUT `-u` is included**, because you cannot know at the prompt
+whether an owner file is staged — which is precisely the state the first taking
+left behind, and precisely why the third one worked.
+
+**In practice: no stash of any kind, no clean, no `-A`.** If a branch switch
+would need a stash, commit to the branch by path instead. A commit is
+recoverable and named; a stash is a place things go to be forgotten by someone
+who is mid-task.
+
+**The general lesson about rules, which is the expensive part.** A rule
+expressed as the instances that have already gone wrong protects only against
+repeating them exactly. It reads as complete to the person who just wrote it,
+because those instances are the ones in their head. Write the CLASS — the
+property that makes the act dangerous — and the list becomes examples rather
+than the definition.
