@@ -141,12 +141,28 @@ export default function WeddingStayPage({ weddingDetails, theme, typography, uni
                       </p>
                     )}
 
-                    {place.maps_url && (
-                      <a href={place.maps_url} target="_blank" rel="noopener noreferrer"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: theme.accent, fontFamily: typography.bodyFont, textDecoration: 'none', letterSpacing: '0.04em' }}>
-                        View on maps <ExternalLink size={11} />
-                      </a>
-                    )}
+                    {/* THE HOTEL'S OWN PAGE, WHICH THE COUPLE COULD ALREADY SAVE
+                        AND NO GUEST COULD SEE. The studio has stored
+                        `website_url` on a manually-added stay since it shipped
+                        — it is typed into a field labelled "https://…" and
+                        rendered on the couple's own card as "Website /
+                        booking" — and this page never read it. `website` is
+                        read too, because that is the key Google returns and
+                        the enrichment below writes both names on nothing. */}
+                    <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+                      {place.maps_url && (
+                        <a href={place.maps_url} target="_blank" rel="noopener noreferrer"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: theme.accent, fontFamily: typography.bodyFont, textDecoration: 'none', letterSpacing: '0.04em' }}>
+                          View on maps <ExternalLink size={11} />
+                        </a>
+                      )}
+                      {(place.website_url || place.website) && (
+                        <a href={place.website_url || place.website} target="_blank" rel="noopener noreferrer"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: theme.accent, fontFamily: typography.bodyFont, textDecoration: 'none', letterSpacing: '0.04em' }}>
+                          Website <ExternalLink size={11} />
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </SectionReveal>
               ))}

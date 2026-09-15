@@ -2243,3 +2243,28 @@ and the truth is that half the builder does not function in portrait.
 Also visible at 844x390: the canvas header overlaps itself — the address line,
 "Edit", "Replay entrance", "Preview" and "Home" paint on top of each other in
 a 764px-wide bar. Same family as #732.
+
+
+## Booking.com affiliate deep link on a stay — post-launch
+
+Owner, Run 4 S5: a stay's card should be able to carry a Booking.com deep link
+with the couple's dates pre-filled, so a guest goes from the card to a bookable
+page rather than to a home page they then have to search.
+
+NOT BUILT, and deliberately: the owner registers for the affiliate programme
+first. An affiliate link written before the account exists is a link that earns
+nothing and has to be rewritten, and a deep link built against a guessed URL
+shape is a link that breaks silently.
+
+What already exists to hang it on (S5, 2026-09-15):
+
+  guestSuiteAccommodation.places[].website_url   the stay's own site, now
+                                                 shown to guests as "Website"
+  accommodation.checkInDate / checkOutDate       the couple's own dates,
+                                                 already declared on the entity
+
+So the pieces a deep link needs — a place, a site, and two dates — are all on
+the record already. What is missing is the affiliate id and the confirmed URL
+shape, and both are the owner's to supply.
+
+No code until then.

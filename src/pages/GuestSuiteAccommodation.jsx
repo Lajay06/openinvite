@@ -148,8 +148,26 @@ function AddPlaceCard({ destination, onAdd }) {
     setShowManual(false);
   };
 
-  const handleAdd = () => {
+  // THE WEBSITE COMES FROM PLACE DETAILS, NOT FROM SEARCH.
+  //
+  // Google's Text Search response carries no `website` — only Place Details
+  // does (api/place-details.js:33 asks for it by name). So a place added from
+  // the search had no site to link to, while a place typed in by hand had one
+  // stored and shown to nobody. One details call AT ADD TIME, not per render:
+  // it costs a single request against a 40/min server-side limit, and the
+  // answer is written onto the record.
+  //
+  // BEST EFFORT, exactly like the Ava enrichment below: a failed lookup adds
+  // the place anyway. A stay a couple chose must not be lost to a rate limit.
+  const handleAdd = async () => {
     if (!selected) { toast.error('Select a place first'); return; }
+    let website_url = null;
+    if (selected.place_id) {
+      try {
+        const res = await fetch(`/api/place-details?place_id=${encodeURIComponent(selected.place_id)}`);
+        if (res.ok) website_url = (await res.json())?.website || null;
+      } catch { /* the place is added without it */ }
+    }
     onAdd({
       place_id: selected.place_id,
       name: selected.name,
@@ -158,6 +176,7 @@ function AddPlaceCard({ destination, onAdd }) {
       price_level: selected.price_level,
       photo_url: selected.photo_reference ? photoProxy(selected.photo_reference) : null,
       maps_url: selected.maps_url,
+      website_url,
       note: note.trim(),
       badge: badge || null,
     });
