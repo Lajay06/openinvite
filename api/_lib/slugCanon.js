@@ -167,3 +167,35 @@ export function suggestSlug(base, taken, weddingDate) {
   return deriveSlug(base, taken, weddingDate);
 }
 
+/**
+ * THE ADDRESS A COUPLE USED TO HAVE.
+ *
+ * Owner ruling, Run 4 S8b: the address NEVER changes silently. A change is a
+ * deliberate action, the old slug is kept as an alias, and /w/<old> 301s to
+ * /w/<new>. RSVP token links are unaffected — they resolve by token, not by
+ * slug, and never pass through here.
+ *
+ * ABSENT IS EMPTY. The field is declared but unset on every record written
+ * before it existed: the smoke probe read `undefined` on its first read and
+ * `[]` only after a write. Every reader treats the two the same.
+ */
+export function previousSlugsOf(wedding) {
+  const v = wedding?.previousSlugs;
+  return Array.isArray(v) ? v.filter((s) => typeof s === 'string' && s.trim()) : [];
+}
+
+/**
+ * The aliases a rename from `from` to `to` leaves behind: the old address,
+ * plus everything it was already standing in for.
+ *
+ * DEDUPED, AND THE NEW ADDRESS IS NEVER ITS OWN ALIAS. A slug that appears in
+ * both places would make the canonical address redirect to itself forever.
+ */
+export function withAlias(wedding, from, to) {
+  const keep = new Set(previousSlugsOf(wedding));
+  const old = canonicalSlug(from);
+  if (old) keep.add(old);
+  keep.delete(canonicalSlug(to));
+  return [...keep];
+}
+

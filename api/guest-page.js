@@ -27,6 +27,7 @@
  * reason a guest suite does not load.
  */
 import { coupleDisplayName } from './_lib/coupleNames.js';
+import { previousSlugsOf } from './_lib/slugCanon.js';
 // SERVER-SAFE BY CONSTRUCTION: sampleContent/{index,bali,havana}.js and
 // mergeSample.js import nothing but each other — no React, no window, no
 // component. Verified by importing the chain under plain node.
@@ -41,6 +42,18 @@ function slugFrom(url) {
   const m = /^\/w\/([^/]+)/.exec(path);
   if (!m) return null;
   try { return decodeURIComponent(m[1]).trim(); } catch { return null; }
+}
+
+/**
+ * Everything after /w/<slug>, kept verbatim — the page, the query string, all
+ * of it. A guest following an old link to /w/john-suzanne/rsvp?x=1 must land
+ * on the RSVP page of the new address, not on its home page: a redirect that
+ * drops the rest of the path answers a different question than the one asked.
+ */
+function tailFrom(url) {
+  const [path, query] = String(url || '').split('?');
+  const m = /^\/w\/[^/]+(\/.*)?$/.exec(path);
+  return (m && m[1] ? m[1] : '') + (query ? `?${query}` : '');
 }
 
 const esc = (s) => String(s ?? '')
@@ -62,6 +75,34 @@ function withWeddingMeta(html, { title, description, image }) {
       .replace('</head>', `  <meta property="og:image" content="${esc(image)}" />\n  </head>`);
   }
   return out;
+}
+
+/**
+ * The address that replaced `slug`, or null.
+ *
+ * ONE ROW OR NOTHING. Two records claiming the same old address is a state
+ * nobody should be redirected out of — the same rule the slug lookup already
+ * applies, and for the same reason: a guest sent to the wrong wedding is worse
+ * than a guest sent to a 404.
+ */
+async function resolveAlias({ slug, APP, ADMIN }) {
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), LOOKUP_TIMEOUT_MS);
+    const q = encodeURIComponent(JSON.stringify({ previousSlugs: slug }));
+    const r = await fetch(`${BASE44_API}/apps/${APP}/entities/WeddingDetails?q=${q}`,
+      { headers: { Authorization: `Bearer ${ADMIN}` }, signal: ctrl.signal });
+    clearTimeout(timer);
+    if (!r.ok) return null;
+    const payload = await r.json();
+    const list = Array.isArray(payload) ? payload : (payload?.data || payload?.results || []);
+    const rows = list.filter(w => w && !w.is_test && previousSlugsOf(w).includes(slug) && w.slug);
+    return rows.length === 1 ? rows[0].slug : null;
+  } catch {
+    // A lookup that times out serves the shell, exactly as a failed slug
+    // lookup does. A redirect is a nicety; the page loading is not.
+    return null;
+  }
 }
 
 export default async function handler(req, res) {
@@ -105,7 +146,33 @@ export default async function handler(req, res) {
     // Same rule the guest API uses: is_test never resolves, and an ambiguous
     // slug resolves to nothing rather than to whichever row sorted first.
     const rows = list.filter(w => w && w.slug === slug && !w.is_test);
-    if (rows.length !== 1) return send(shell);
+
+    // ── AN ADDRESS THE COUPLE USED TO HAVE ──────────────────────────────────
+    //
+    // Owner ruling, Run 4 S8b: the address never changes silently, and when it
+    // does change the old one keeps working — /w/<old> 301s to /w/<new>.
+    //
+    // HERE, NOT IN THE APP, because only here does the redirect reach the
+    // address bar. The SPA could correct itself after loading, but every link
+    // already shared would still resolve to the old URL for anything that
+    // unfurls, crawls or caches it. A 301 is the only version of this that is
+    // true for a link somebody posted a year ago.
+    //
+    // The array-contains query was PROVED before this was written (smoke
+    // record, owner-authorized probe, 2026-09-16): `?q={"previousSlugs":"x"}`
+    // returned exactly the one matching record. Without that proof this branch
+    // would silently never fire, which is worse than not having it.
+    if (rows.length !== 1) {
+      const aliased = await resolveAlias({ slug, APP, ADMIN });
+      if (aliased && aliased !== slug) {
+        res.statusCode = 301;
+        res.setHeader('Location', `/w/${encodeURIComponent(aliased)}${tailFrom(req.url)}`);
+        // A moved address is permanent, but not cached past a second rename.
+        res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=60, must-revalidate');
+        return res.end();
+      }
+      return send(shell);
+    }
     const wedding = rows[0];
 
     // Unpublished sites are not served by the guest API and must not be

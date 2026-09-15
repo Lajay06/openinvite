@@ -1366,6 +1366,30 @@
     },
     "blockOverlays": {
       "type": "object"
+    },
+    // THE ADDRESSES THIS WEDDING USED TO HAVE (Run 4 S8b).
+    //
+    // The address never changes silently: a change is a deliberate action, the
+    // old slug is kept here, and /w/<old> 301s to /w/<new> at the edge
+    // (api/guest-page.js). RSVP token links are unaffected — they resolve by
+    // token, not by slug.
+    //
+    // ABSENT IS EMPTY. The field is declared but unset on every record written
+    // before it existed; the smoke probe read `undefined` first and `[]` only
+    // after a write, so every reader goes through previousSlugsOf().
+    //
+    // VERIFIED LIVE, not assumed: probed on the smoke record 2026-09-16 —
+    // written, read back as ["smoke-probe"], and reset. A second probe proved
+    // `?q={"previousSlugs":"x"}` resolves as an array-contains, which is the
+    // query the redirect depends on. Both are re-run immediately before this
+    // package's PR opens, per the schema-drift history in
+    // BASE44_PLATFORM_NOTES.md.
+    "previousSlugs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
     }
   },
   "rls": {
