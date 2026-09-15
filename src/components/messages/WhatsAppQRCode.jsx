@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
+import { toWaMe } from '@/lib/phoneE164';
 import { Download, X } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const WHATSAPP_GREEN = "#25D366";
 
 function WhatsAppQRModal({ phoneNumber, onClose }) {
-  const qrValue = `https://wa.me/${phoneNumber}`;
+  // Shape three of three: this took whatever string it was handed. A QR code
+  // is worse than a broken link — it is printed, and nobody finds out until a
+  // guest scans it.
+  const qrValue = `https://wa.me/${toWaMe(phoneNumber) || ''}`;
 
   // THIS ONE SENT A PHONE NUMBER. The others leaked a guest-suite address,
   // which is at least something the couple hands out on purpose; this put a

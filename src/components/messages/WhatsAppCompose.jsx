@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { toWaMe, needsCountryCode, DEFAULT_COUNTRY } from '@/lib/phoneE164';
 import { X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getMyInvitation } from '@/lib/resolveMyWedding';
@@ -106,8 +107,13 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
     // guest. Sending would deliver a broken invitation that cannot be recalled.
     if (message.includes(RSVP_PLACEHOLDER)) return;
     setLoading(true);
-    const cleaned = phone.replace(/\D/g, "");
-    const formatted = !cleaned.startsWith("61") && !cleaned.startsWith("1") ? "61" + cleaned : cleaned;
+    // THIS IS THE LINE THE OWNER'S REPRO WENT THROUGH. It prefixed "61" unless
+    // the number already began 61 or 1, so "0412 345 678" became
+    // 610412345678 — E.164 drops the trunk 0, making the real answer
+    // 61412345678 — and any US number not starting with 1 got an Australian
+    // country code, in a product priced in USD.
+    const formatted = toWaMe(phone, DEFAULT_COUNTRY);
+    if (!formatted) { setLoading(false); return; }
     const link = `https://wa.me/${formatted}?text=${encodeURIComponent(message)}`;
     if (guest?.id && onSent) onSent();
     window.open(link, "_blank");
@@ -119,7 +125,10 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
   // couple may have edited the message, so branch on what is actually
   // about to be sent rather than on which template was chosen.
   const linkMissing = message.includes(RSVP_PLACEHOLDER);
-  const sendBlocked = loading || !message.trim() || !phone.trim() || linkMissing;
+  // A NUMBER WE CANNOT READ IS NOT SENT, for the same reason an unresolved
+  // RSVP placeholder is not: the message would go nowhere and cannot be recalled.
+  const phoneUnreadable = needsCountryCode(phone, DEFAULT_COUNTRY);
+  const sendBlocked = loading || !message.trim() || !phone.trim() || linkMissing || phoneUnreadable;
 
   return (
     <Sheet open onOpenChange={(open) => { if (!open) onClose(); }}>

@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords, getMyInvitation } from '@/lib/resolveMyWedding';
+import { toE164 } from '@/lib/phoneE164';
 import { LAYOUT_QUERY_KEY } from '@/Layout';
 import { Textarea } from '@/components/ui/textarea';
 import { MessageCircle, Reply, Search, CheckCheck, Send, Heart, Mail, User, EyeOff, Eye, MessageSquare, Loader2 } from 'lucide-react';
@@ -59,10 +60,28 @@ export default function MessagesPage() {
   const [coupleNames, setCoupleNames] = useState('');
   const [sendingReply, setSendingReply] = useState(false);
 
+  // THE NUMBER COMES FROM THE GUEST, NOT FROM THE MESSAGE.
+  //
+  // This read `message.guest_phone` — a field on GuestMessage whose schema
+  // description says "Phone number of the guest for WhatsApp" and which
+  // NOTHING IN THIS REPOSITORY EVER WRITES. `git grep guest_phone` returns
+  // three hits: the schema, and the two reads here. So the WhatsApp control
+  // was gated on a field no code fills, which is the most likely reason the
+  // owner's walk-through found it missing.
+  //
+  // Guest.phone is the one the couple actually types, and it is normalised
+  // through the same helper every send path uses.
+  const [guestPhones, setGuestPhones] = useState({});
+
   useEffect(() => {
     loadMessages();
     loadWhatsAppSettings();
     getMyInvitation().then(inv => setCoupleNames(inv?.couple_names || '')).catch(() => {});
+    getMyRecords('Guest', '-created_date')
+      .then(list => setGuestPhones(Object.fromEntries(
+        (list || []).filter(g => g?.id && g?.phone).map(g => [g.id, toE164(g.phone)]).filter(([, v]) => v),
+      )))
+      .catch(() => {});
   }, []);
 
   const loadMessages = async () => {
@@ -286,7 +305,7 @@ export default function MessagesPage() {
                   onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.6)'}>
                   {message.read ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
-                {whatsappConnected && message.guest_phone && (
+                {whatsappConnected && guestPhones[message.guest_id] && (
                   <button onClick={() => setComposingGuest(message)}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 6 }}
                     title="Open in WhatsApp"
@@ -375,7 +394,7 @@ export default function MessagesPage() {
       {/* WhatsApp Compose panel */}
       {composingGuest && (
         <WhatsAppCompose
-          guest={{ id: composingGuest.guest_id, name: composingGuest.guest_name, phone: composingGuest.guest_phone }}
+          guest={{ id: composingGuest.guest_id, name: composingGuest.guest_name, phone: guestPhones[composingGuest.guest_id] || '' }}
           onClose={() => setComposingGuest(null)}
           onSent={() => loadMessages()}
         />

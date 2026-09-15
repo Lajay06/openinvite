@@ -3,7 +3,8 @@
  *
  * Owner ruling, Run 4 S3: "No prompt(), alert() or confirm() anywhere in the
  * product." The ruling is right and the product is 28 sites away from it, so
- * this is the instrument that makes the distance one-way.
+ * this is the instrument that makes the distance one-way. 28 at the ruling,
+ * 27 now.
  *
  * ── WHY THEY HAVE TO GO ────────────────────────────────────────────────────
  *
@@ -43,6 +44,14 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 /**
  * The sites that existed when the ruling was made, 2026-09-15. THIS LIST MAY
  * ONLY SHRINK. A path whose count reaches zero comes out entirely.
+ *
+ * 28 -> 27 on 2026-09-16: WhatsAppConnect.jsx lost its prompt() — the only
+ * prompt() in the product — when the couple's number became a real field with
+ * a country picker (S3, fix/whatsapp-e164). The ratchet refused the rebase
+ * until this line came out, which is the half of it that keeps the count
+ * honest: a dialog removed without the baseline following leaves slack the
+ * next one slips into for free. First time it fired on real work rather than
+ * on a plant.
  */
 const BASELINE = {
   'src/components/games/GamesManager.jsx': 1,
@@ -50,7 +59,6 @@ const BASELINE = {
   'src/components/guests/SetEventsModal.jsx': 1,
   'src/components/invitations/InvitationBuilder.jsx': 2,
   'src/components/layout/CollaborateModal.jsx': 2,
-  'src/components/messages/WhatsAppConnect.jsx': 1,
   'src/components/registry/ReceivedGifts.jsx': 1,
   'src/components/registry/RegistryProductList.jsx': 1,
   'src/components/rsvp/RSVPPage.jsx': 1,
@@ -122,7 +130,7 @@ export async function runNoNativeDialog() {
     stale.length ? `${stale.length} path(s) now have FEWER — bring the baseline down: ${stale.map(([f, n]) => `${f} ${n} -> ${found[f] || 0}`).join(', ')}` : 'exact');
 
   check(`the distance to the ruling is ${total}, and may only fall`,
-    total <= 28, `${total} site(s) across ${Object.keys(found).length} file(s)`);
+    total <= 27, `${total} site(s) across ${Object.keys(found).length} file(s)`);
 
   return results;
 }

@@ -2302,3 +2302,42 @@ out with the files.
 Not deleted in this run — deleting a page is not a copy fix, and the owner
 ruled it untouched until after launch. Filed with the evidence so the deletion
 is a five-minute job rather than a re-investigation.
+
+
+## GuestMessage.guest_phone is a dead field — post-launch removal
+
+Declared on the entity as "Phone number of the guest for WhatsApp". `git grep
+guest_phone` across the repository returns three hits and not one of them is a
+write:
+
+```
+base44/entities/GuestMessage.jsonc:18   the declaration
+src/pages/Messages.jsx:289              a read, gating the WhatsApp control
+src/pages/Messages.jsx:378              a read, passing it to the composer
+```
+
+Nothing in this codebase creates a GuestMessage at all, and nothing anywhere
+sets `guest_phone`. So the WhatsApp button on the Messages page was gated on a
+field no code fills — which is the most likely reason the owner's walk-through
+found the WhatsApp path missing there.
+
+Run 4 S3 made both reads use `Guest.phone` through the E.164 normaliser
+instead, so the field is now read by nothing either. It stays declared: an
+undeclared field is a DROPPED field on a properties-bearing schema, and any
+row written outside this codebase that does carry a number would lose it. The
+removal is a schema push plus a check that no live row holds a value, which is
+post-launch work and needs the Base44 connector.
+
+## "Connect your number" is theater — post-launch
+
+`wa.me/<recipient>?text=` opens whichever WhatsApp the SENDER is signed into.
+The couple's own number, saved at Messages.jsx:98-108 into localStorage
+(`whatsapp_connected` / `whatsapp_phone`), is read by exactly one thing: the QR
+code that lets someone message THEM. No send path reads it.
+
+So "connecting" changes nothing about delivery — it only un-gates the button.
+It is also per-browser and per-device, so a couple on a second device sees no
+WhatsApp control at all until they save the number again.
+
+Owner ruling, Run 4 S3: LEAVE THE GATE IN PLACE FOR NOW, do not remove it in
+this run. Filed so the next person does not rediscover it.
