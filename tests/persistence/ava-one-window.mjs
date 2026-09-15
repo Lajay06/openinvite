@@ -51,14 +51,36 @@ export async function runAvaOneWindow() {
   }
 
   // ── THE FOUR BUTTONS THAT DID NOTHING ───────────────────────────────────
+  //
+  // SUPERSEDED, 2026-09-15 (owner ruling, Run 4 S1). These four buttons were
+  // dead — an AvaButton with no onClick dispatched a CustomEvent nothing
+  // listened for — and the first fix wired them to the POD, with a seed
+  // question and a page context. This block asserted that wiring.
+  //
+  // The ruling is now the other way: a page-level "Ask Ava to …" opens THAT
+  // PAGE'S modal with that page's quick actions, independent of the pod. So
+  // the check that used to require `seedQuestion` now requires the opposite —
+  // an onClick, a pageTitle and quickActions — and the old assertion is
+  // recorded here rather than deleted, because a rule that changes without a
+  // trace reads as a guard someone weakened.
+  //
+  // What has NOT changed is why the block exists: a bare `<AvaButton label=…/>`
+  // with nothing else is still a button that does nothing at all.
   {
     const WAS_DEAD = ['src/pages/Account.jsx', 'src/pages/EventDetails.jsx', 'src/pages/Polls.jsx', 'src/pages/QandA.jsx'];
     const bare = WAS_DEAD.filter(p => /<AvaButton\s+label="[^"]*"\s*\/>/.test(code(p)));
     check('none of the four dead buttons is bare any more',
-      bare.length === 0, bare.join(', ') || `${WAS_DEAD.length} of ${WAS_DEAD.length} carry a seed and a page context`);
-    const seeded = WAS_DEAD.filter(p => /seedQuestion="/.test(code(p)) && /pageContext="/.test(code(p)));
-    check('  each seeds a question and says what its page is for',
-      seeded.length === WAS_DEAD.length, `${seeded.length} of ${WAS_DEAD.length}`);
+      bare.length === 0, bare.join(', ') || `${WAS_DEAD.length} of ${WAS_DEAD.length} open something`);
+    const opens = WAS_DEAD.filter(p => /<AvaButton[\s\S]{0,200}?onClick=\{\(\) => setAvaOpen\(true\)\}/.test(code(p)));
+    check('  each opens its own page modal, not the pod (Run 4 S1)',
+      opens.length === WAS_DEAD.length, `${opens.length} of ${WAS_DEAD.length}`);
+    const furnished = WAS_DEAD.filter(p => /<AvaModal[\s\S]{0,600}?pageTitle="/.test(code(p)) && /<AvaModal[\s\S]{0,600}?quickActions=\{\[/.test(code(p)));
+    check('  and that modal is named for its page and carries its own actions',
+      furnished.length === WAS_DEAD.length, `${furnished.length} of ${WAS_DEAD.length}`);
+    // A page modal with no actions is the pod with extra steps.
+    const empty = WAS_DEAD.filter(p => /quickActions=\{\[\]\}/.test(code(p)));
+    check('  none of them declares an empty action list',
+      empty.length === 0, empty.join(', ') || 'every page brings its own four');
   }
 
   // ── THE TWO RETIRED SURFACES ────────────────────────────────────────────
