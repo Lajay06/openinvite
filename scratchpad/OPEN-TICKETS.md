@@ -2181,3 +2181,65 @@ succeeded, 240 MB failed), the platform ceiling sits above 200 MB and at or
 below 240 MB — recorded as that range in BASE44_PLATFORM_NOTES.md.
 
 Post-launch. No code until then.
+
+### And two or three upload files on the OWNER'S OWN account, not smoke
+
+Different account, same problem, recorded here so one cleanup pass finds both.
+
+The R0 follow-up (2026-09-15, owner-authorized: "a real photo upload through
+the media picker") uploaded `public/universes/paris-800.jpg` — 98,755 bytes, a
+stock universe photograph, nothing private — through the builder's media
+library on **jaygalaxy23**, the owner's main account. It ran twice to completion
+and a third run was killed partway, before the upload step by my reading of the
+clock but not provably so. So: **two files, possibly three**, all with the same
+name.
+
+They reached Base44 storage only. The media library's `onUploaded` adds the
+item to local state; nothing was selected, nothing was applied to a block, and
+the record itself could not be written — every non-GET to `WeddingDetails`,
+`/api/my-wedding-details` and `/api/claim-slug` was refused at the route by the
+harness for the whole run. The owner's wedding record is unchanged.
+
+Same limitation as the smoke probes: the SDK has UploadFile and no delete.
+
+Post-launch, owner's token.
+
+
+## The studio on a phone: two things the R0 follow-up walked into
+
+Both observed on 2026-09-15 on the owner's own record, at 390x844, signed in,
+against production. Neither is a memory finding; they are what the memory run
+could not get past, which makes them worth their own lines.
+
+### 1. `/api/claim-slug` is POSTed on every studio mount
+
+StudioWebsite.jsx:406 runs `if (existing?.id && !details?.slug)
+syncWeddingAddress(existing.id)`. On the mount after the record loads,
+`existing.id` is set while `details` is still DEFAULT, so the condition is true
+even for a couple who has had an address for months. The endpoint answers
+`unchanged` and nothing is written, so the cost is one POST per studio open and
+no damage — but it is a write-shaped call made on a read, and it is the residual
+of TICKET-derived-address-residual-race.md rather than a new thing.
+
+Seen live: the R0 harness refuses non-GETs to the record and logged exactly one
+`POST /api/claim-slug` per studio mount.
+
+### 2. At 390 portrait the builder's canvas cannot be reached at all
+
+The Pages panel and the right panel sit side by side and fill the width; the
+preview canvas is off to the right of both. Its controls are in the DOM —
+"Add a section", "Image — click to choose a photo", the page nav — and every
+one of them is unclickable, because none of it is in the viewport and nothing
+scrolls it into view. The media picker is reachable only through those controls,
+so on a phone held upright there is no way to add a photo to a page.
+
+The product already says so, in the notice at the top of that screen: "Turn
+your phone sideways for the best editing experience" (#761). Sideways it works
+— 844x390 reaches the insert menu, the block, the picker and a real upload,
+first try. So this is the rotate notice doing its job rather than a defect
+nobody knew about; it is filed because "best experience" reads as a preference
+and the truth is that half the builder does not function in portrait.
+
+Also visible at 844x390: the canvas header overlaps itself — the address line,
+"Edit", "Replay entrance", "Preview" and "Home" paint on top of each other in
+a 764px-wide bar. Same family as #732.
