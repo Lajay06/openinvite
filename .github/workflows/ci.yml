@@ -677,6 +677,20 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
 
+      # The Music page uses its page, and a request can be answered.
+      - name: The Music page uses its width and a request can be answered
+        run: |
+          npx vite preview --port 4208 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4208 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4208 npm run test:music-layout-review
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       # The home hero keeps both faces at phone widths.
       - name: The home hero keeps both faces at phone widths
         run: |
