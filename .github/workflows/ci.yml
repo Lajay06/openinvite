@@ -663,6 +663,20 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
 
+      # The Experiences page says what is there, and reserves no room for what is not.
+      - name: The Experiences page names its days plainly and reserves no empty space
+        run: |
+          npx vite preview --port 4205 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4205 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4205 npm run test:experiences-plain
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       # The home hero keeps both faces at phone widths.
       - name: The home hero keeps both faces at phone widths
         run: |

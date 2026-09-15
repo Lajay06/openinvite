@@ -239,7 +239,9 @@ export const PUBLISHED_WEDDING = {
           },
         },
         {
-          day: 2, title: 'The wedding day',
+          // A DATE ON ONE DAY AND NOT THE OTHER, so both heading forms are
+          // rendered in one pass: "Day 1" bare and "Day 2 - Sunday 14 March".
+          day: 2, date: '2027-03-14', title: 'The wedding day',
           summary: 'A slow start, then the Observatory.',
           blocks: {
             morning: [{ id: 'b1', type: 'custom', place_name: 'Breakfast at the Pavilion', category: 'Eat', time: '9:00 AM', duration: '~1 hr', description: 'Right by the park gates, so you can walk up afterwards.' }],
@@ -488,12 +490,19 @@ function assertSeedOnce(seed) {
 }
 
 /** A context with the dummy token planted and the backend stubbed. */
-export async function seededContext(browser, { width, height, seed, user, onEntity } = {}) {
+/**
+ * `timezoneId` exists because a date-only string parses as UTC midnight, so a
+ * page that formats one shows the DAY BEFORE to every viewer west of
+ * Greenwich — and neither CI (UTC) nor the author's machine (UTC+10) can see
+ * it. A guard that needs to prove a date reads the same everywhere renders a
+ * second context in a timezone where the mistake would be visible.
+ */
+export async function seededContext(browser, { width, height, seed, user, onEntity, timezoneId } = {}) {
   // VALIDATE BEFORE RENDERING, not after measuring. Five times a seed field the
   // product never reads made a surface render its empty state while the pass
   // reported it clean. This throws instead.
   assertSeedOnce(seed || SEED);
-  const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1 });
+  const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1, ...(timezoneId ? { timezoneId } : {}) });
   await ctx.addInitScript(() => {
     // A dummy string, never a real credential: it exists only to get
     // AuthContext past `if (token)` so the real page code runs.

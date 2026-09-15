@@ -2268,3 +2268,37 @@ the record already. What is missing is the affiliate id and the confirmed URL
 shape, and both are the owner's to supply.
 
 No code until then.
+## Delete src/components/guest-experience/* and its route — post-launch
+
+A second, older Experiences surface sits beside the one the guest suite
+actually uses. Confirmed unreachable on 2026-09-15 (Run 4 S4, owner asked for
+the evidence before any deletion):
+
+```
+imports of the components   src/pages/GuestExperience.jsx, and nothing else
+imports of the page         src/pages.config.js:74, the lazy auto-route entry
+nav / sidebar entry         none — AnimatedSidebar, Layout and App.jsx say nothing
+createPageUrl('GuestExperience')  no caller anywhere
+href / navigate to it       none
+```
+
+So it is reachable only by typing `/GuestExperience`, through the PascalCase
+auto-route that pages.config.js gives every page by default. Nothing in the
+product links to it.
+
+**2,314 lines across ten files** — `GuestExperience.jsx` plus
+`AIGuestExperienceAssistant`, `HotelForm`, `HotelRecommendations`,
+`InteractiveMap`, `ItineraryPlanner`, `LocalTips`, `RestaurantRecommendations`,
+`ThingsToDo`, `TransportationOptions`. Several carry their own `InvokeLLM`
+calls and their own filler copy (`HotelRecommendations.jsx:175`: "A great
+accommodation option for wedding guests."), which is a second, unmaintained
+voice speaking as the product for anyone who finds the URL.
+
+ONE KNOWN REFERENCE OUTSIDE THE PAGE, and it is a guard, not a caller:
+`tests/persistence/modal-scale-class.mjs:48` lists
+`AIGuestExperienceAssistant.jsx` among the files it checks. That entry comes
+out with the files.
+
+Not deleted in this run — deleting a page is not a copy fix, and the owner
+ruled it untouched until after launch. Filed with the evidence so the deletion
+is a five-minute job rather than a re-investigation.
