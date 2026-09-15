@@ -169,10 +169,6 @@ export default function OnboardingStepUniverse({ onNext, data }) {
   const textPrimary = '#0A0A0A';
   const textMuted = 'rgba(10,10,10,0.6)';
 
-  const handleContinue = () => {
-    onNext({ activeUniverse: selectedUniverse || 'london', websiteMode });
-  };
-
   const handleSkip = () => {
     onNext({ activeUniverse: selectedUniverse || 'london', websiteMode });
   };
@@ -184,9 +180,24 @@ export default function OnboardingStepUniverse({ onNext, data }) {
   // names/date instead of the generic "Your names" placeholder.
   const previewWeddingDetails = buildWeddingDetailsPayload(data);
 
-  const handleSelectFromPreview = (universeId) => {
+  /**
+   * SELECT IS THE ANSWER, SO SELECT ADVANCES.
+   *
+   * Choosing a universe used to set state and leave the couple on the same
+   * screen, with a Continue at the bottom they then had to find and press. On
+   * a phone that button is below the grid, so the tap that answered the
+   * question looked like it did nothing.
+   *
+   * Every other single-choice step in this wizard commits on the tap — the
+   * guest-count cards, the fork's two cards, the primary RSVP question — and
+   * this is the same shape. `onNext` carries the id directly rather than
+   * reading `selectedUniverse`, because a state set in the same tick is not
+   * visible to the handler that follows it.
+   */
+  const selectAndAdvance = (universeId) => {
     setSelectedUniverse(universeId);
     setPreviewUniverse(null);
+    onNext({ activeUniverse: universeId, websiteMode });
   };
 
   return (
@@ -240,7 +251,7 @@ export default function OnboardingStepUniverse({ onNext, data }) {
               index={i}
               isSelected={selectedUniverse === u.id}
               onExplore={() => setPreviewUniverse(u)}
-              onSelectTile={() => setSelectedUniverse(u.id)}
+              onSelectTile={() => selectAndAdvance(u.id)}
             />
           ))}
         </motion.div>
@@ -259,13 +270,11 @@ export default function OnboardingStepUniverse({ onNext, data }) {
           transition={{ delay: 0.3 }}
           style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, marginTop: 40 }}
         >
-          <button
-            onClick={handleContinue}
-            disabled={!selectedUniverse}
-            className="px-8 py-3 rounded-full text-white text-sm font-medium bg-[#E03553] hover:bg-black active:bg-neutral-900 transition-colors duration-150 disabled:opacity-30 disabled:cursor-default disabled:bg-[rgba(10,10,10,0.18)] disabled:hover:bg-[rgba(10,10,10,0.18)]"
-          >
-            Continue →
-          </button>
+          {/* NO CONTINUE ON THIS STEP. Select advances, so a second control
+              asking the couple to confirm what they just chose is a step that
+              can only be got wrong: it sat disabled until they chose, then
+              stayed on screen afterwards asking to be pressed. Skip remains —
+              a couple who wants none of these still needs a way past. */}
           <button
             onClick={handleSkip}
             style={{
@@ -298,7 +307,7 @@ export default function OnboardingStepUniverse({ onNext, data }) {
               isCurrent={selectedUniverse === previewUniverse.id}
               canAccessUltra={true}
               onBack={() => setPreviewUniverse(null)}
-              onSwitchUniverse={handleSelectFromPreview}
+              onSwitchUniverse={selectAndAdvance}
               onUpgrade={() => {}}
               motifNote={previewUniverse.motifNote}
               backButtonStyle={{ top: 20, left: 'auto', right: 24 }}
