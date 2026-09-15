@@ -6,6 +6,7 @@ import { Loader2, Trash2 } from "lucide-react";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { OptionAccordion, OptionAccordionSection } from '@/components/shared/OptionAccordion';
 import AvaButton from "@/components/shared/AvaButton";
+import AvaModal from "@/components/layout/AvaModal";
 import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -58,6 +59,7 @@ export default function QandA() {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [saving, setSaving] = useState(false);
+  const [avaOpen, setAvaOpen] = useState(false);
 
   useEffect(() => {
     getMyWeddingDetails().then(row => {
@@ -127,8 +129,7 @@ export default function QandA() {
         <div style={{ marginBottom: 28 }}>
           <AvaButton
           label="Ask Ava to suggest FAQ questions"
-          seedQuestion="What questions will our guests ask that we have not answered?"
-          pageContext="writes the questions and answers their guests read on the website."
+          onClick={() => setAvaOpen(true)}
         />
         </div>
 
@@ -209,6 +210,13 @@ export default function QandA() {
         )}
       </div>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Questions and answers"
+        systemPrompt="You are Ava, helping a couple write the questions and answers their guests read on their site. Prefer the questions guests actually ask — travel, timing, dress code, children, parking — and answer in the couple's own plain voice, a sentence or two each."
+        quickActions={["What questions will our guests ask that we have not answered?", "Write an answer about parking", "How do we say no children, kindly?", "Which questions does every wedding need?"]}
+      />
     </div>
   );
 }

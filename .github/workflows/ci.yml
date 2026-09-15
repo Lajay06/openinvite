@@ -691,6 +691,20 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
 
+      # One Ask Ava button, one page modal, and the pod stays where it is.
+      - name: A page-level Ask Ava opens that page's own modal
+        run: |
+          npx vite preview --port 4203 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4203 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4203 npm run test:ava-page-modal
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       - name: The universe breadcrumb says where it goes
         run: |
           npx vite preview --port 4180 --strictPort &

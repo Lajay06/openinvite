@@ -6,6 +6,7 @@ import { aggregateVotes } from "@/lib/pollAggregation";
 import { Loader2, Trash2, Share2, Plus, X, ChevronLeft } from "lucide-react";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from "@/components/shared/AvaButton";
+import AvaModal from "@/components/layout/AvaModal";
 import GamesManager from "@/components/games/GamesManager";
 import { interactiveDivProps } from '@/lib/a11y';
 import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
@@ -267,6 +268,7 @@ export default function Polls() {
   const [polls, setPolls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [avaOpen, setAvaOpen] = useState(false);
   const insightRunRef = useRef(false);
 
   useEffect(() => { load(); }, []);
@@ -469,8 +471,7 @@ Return just the insight text, nothing else. Examples: "Espresso martinis are run
       <div style={{ padding: '16px 32px 0' }}>
         <AvaButton
           label="Ask Ava to suggest poll ideas"
-          seedQuestion="Suggest a few polls we could ask our guests"
-          pageContext="asks their guests questions and collects the answers."
+          onClick={() => setAvaOpen(true)}
         />
       </div>
 
@@ -587,6 +588,13 @@ Return just the insight text, nothing else. Examples: "Espresso martinis are run
       </div>
         </>
       )}
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Polls"
+        systemPrompt="You are Ava, helping a couple who asks their guests questions and collects the answers. Suggest polls that are worth asking — ones whose answers change a decision the couple still has to make — and keep them short enough that a guest answers on a phone in one tap."
+        quickActions={["Suggest a few polls we could ask our guests", "What should we ask before we set the menu?", "A poll about the music", "Which questions do guests actually answer?"]}
+      />
     </div>
   );
 }

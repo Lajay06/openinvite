@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Loader2, Check, CreditCard, Crown, Receipt, AlertTriangle } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
+import AvaModal from "@/components/layout/AvaModal";
 import CurrencyModal from '@/components/layout/CurrencyModal';
 import { useAuth } from '@/lib/AuthContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -709,6 +710,7 @@ export default function AccountPage() {
     return requested && VALID_TAB_IDS.has(requested) ? requested : 'settings';
   })();
   const [tab, setTab] = useState(initialTab);
+  const [avaOpen, setAvaOpen] = useState(false);
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS }}>
@@ -717,8 +719,7 @@ export default function AccountPage() {
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <AvaButton
           label="Ask Ava about your account or plan"
-          seedQuestion="What does our plan include?"
-          pageContext="manages their account and their plan."
+          onClick={() => setAvaOpen(true)}
         />
       </div>
 
@@ -761,6 +762,13 @@ export default function AccountPage() {
         )}
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Account"
+        systemPrompt="You are Ava, helping with this couple's account and plan. NEVER state a price, a plan tier's contents, or what an upgrade costs — you do not have the current pricing and a wrong number here is worse than no answer. Send them to the pricing page for anything about money, and answer the rest — collaborators, the account email, exports, cancellation — plainly."
+        quickActions={["What does our plan include?", "How do I add a collaborator?", "How do I change our account email?", "How do I export our data?"]}
+      />
     </div>
   );
 }

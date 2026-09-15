@@ -88,6 +88,7 @@
     "test:stay-website-link": "node scripts/test-stay-website-link.mjs",
     "test:beauty-collapsed": "node scripts/test-beauty-collapsed.mjs",
     "test:guest-pills-case": "node scripts/test-guest-pills-case.mjs",
+    "test:ava-page-modal": "node scripts/test-ava-page-modal.mjs",
     "test:onboarding-universe-tiles": "node scripts/test-onboarding-universe-tiles.mjs",
     "test:onboarding-universe-select": "node scripts/test-onboarding-universe-select.mjs",
     "test:studio-rotate-notice": "node scripts/test-studio-rotate-notice.mjs",

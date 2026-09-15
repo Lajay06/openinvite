@@ -199,7 +199,10 @@ function AvaChatPod({ onClose, openDetail, messages, setMessages, dismissed, set
   ];
 
   return (
-    <div style={{
+    // A NAME THE GUARD CAN ASK FOR. The pod had no stable selector, so
+    // "the page modal opened and the pod did not" could not be measured —
+    // only guessed at from geometry. See scripts/test-ava-page-modal.mjs.
+    <div data-ava-pod style={{
       width: 380,
       height: 520,
       background: '#1A1A1A',
