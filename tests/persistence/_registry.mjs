@@ -103,7 +103,19 @@ export const STANDALONE_GUARDS = new Set([
  * `run-*.mjs` is a guard and RUNS — the safe default this file already argues
  * for two paragraphs above, finally applied to its own exclusion list.
  */
-const NOT_A_GUARD = (f) => f === '_shared.mjs' || f === '_registry.mjs'
+/**
+ * AN UNDERSCORE MEANS HELPER, which both existing helpers already said by
+ * being named that way — the list just did not read it. `_shared.mjs` and
+ * `_registry.mjs` were named individually, so adding a third helper meant
+ * editing this shared file, which is the conflict class this module exists to
+ * remove. A guard is never named `_x.mjs`; a helper always is.
+ *
+ * This is a denylist by CONVENTION rather than by enumeration, and the safe
+ * default above still holds: a file that is not underscore-prefixed and is in
+ * neither Set runs, so a new guard nobody classified still runs rather than
+ * silently not running.
+ */
+const NOT_A_GUARD = (f) => f.startsWith('_')
   || (f.startsWith('run-') && STANDALONE_GUARDS.has(f.slice(4)));
 
 /** Every guard filename in the directory, sorted — the run order is the sort. */
