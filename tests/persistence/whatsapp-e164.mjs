@@ -106,7 +106,15 @@ export async function runWhatsappE164() {
   const connect = code('src/components/messages/WhatsAppConnect.jsx');
   check('the couple types their number into the product, not into prompt()',
     !/(?<![.\w$])prompt\s*\(/.test(connect), 'no prompt()');
-  check('  with a country picker beside it', /COUNTRY_CODES/.test(connect), 'COUNTRY_CODES');
+  // THE PICKER MOVED, THE CHECK FOLLOWED IT. This matched `COUNTRY_CODES` in
+  // this file, which was true while the field rendered its own fourteen-entry
+  // <select>. Run 5 T5 replaced that with the one shared picker, so the text it
+  // looked for is gone and the thing it was about — a country control beside
+  // the number — is more true than before. Asserted by the IMPORT now, which is
+  // what "uses the shared picker" actually means.
+  check('  with the shared country picker beside it',
+    /from ['"]@\/components\/shared\/CountryPicker['"]/.test(connect) && /<CountryPicker/.test(connect),
+    'CountryPicker');
 
   // ── THE DEAD FIELD IS NOT READ ───────────────────────────────────────────
   // GuestMessage.guest_phone is declared "Phone number of the guest for

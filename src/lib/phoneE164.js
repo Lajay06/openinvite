@@ -43,30 +43,28 @@
  * per-country validation would reject real numbers we have no business
  * rejecting. The lengths below are a sanity floor, not a validator.
  */
+import { COUNTRIES } from './countryCodes.generated.js';
+
 
 /**
  * The countries the product sells to first, plus the ones a wedding's guests
  * most often come from. `dial` is what goes after the "+"; `trunk` is the
  * digit dropped from a local number, where the country uses one.
  */
-export const COUNTRY_CODES = [
-  { iso: 'AU', dial: '61',  trunk: '0', label: 'Australia' },
-  { iso: 'US', dial: '1',   trunk: '',  label: 'United States' },
-  { iso: 'GB', dial: '44',  trunk: '0', label: 'United Kingdom' },
-  { iso: 'NZ', dial: '64',  trunk: '0', label: 'New Zealand' },
-  { iso: 'CA', dial: '1',   trunk: '',  label: 'Canada' },
-  { iso: 'IE', dial: '353', trunk: '0', label: 'Ireland' },
-  { iso: 'IN', dial: '91',  trunk: '0', label: 'India' },
-  { iso: 'SG', dial: '65',  trunk: '',  label: 'Singapore' },
-  { iso: 'ZA', dial: '27',  trunk: '0', label: 'South Africa' },
-  { iso: 'FR', dial: '33',  trunk: '0', label: 'France' },
-  { iso: 'DE', dial: '49',  trunk: '0', label: 'Germany' },
-  { iso: 'IT', dial: '39',  trunk: '',  label: 'Italy' },
-  { iso: 'ES', dial: '34',  trunk: '',  label: 'Spain' },
-  { iso: 'AE', dial: '971', trunk: '0', label: 'United Arab Emirates' },
-];
+// THE FULL ISO LIST, GENERATED (Run 5 T5). This was fourteen countries, typed
+// by hand, in a native <select> — so a couple anywhere else picked the wrong
+// country or gave up, and the CSV import assumed Australia for everyone. The
+// table is built by scripts/build-country-data.mjs from libphonenumber-js and
+// Intl.DisplayNames; the fourteen entries that were here are kept verbatim
+// inside the generator, because toE164()'s behaviour on them is covered by the
+// owner's own cases and this was not the package to move any of it.
+//
+// Order: Australia, New Zealand, United Kingdom, United States pinned, then
+// alphabetical by displayed name.
+export const COUNTRY_CODES = COUNTRIES;
 
 export const DEFAULT_COUNTRY = 'AU';
+export { COUNTRIES };
 
 const countryOf = (iso) => COUNTRY_CODES.find((c) => c.iso === iso) || COUNTRY_CODES.find((c) => c.iso === DEFAULT_COUNTRY);
 

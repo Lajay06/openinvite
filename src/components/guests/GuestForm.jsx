@@ -1,8 +1,10 @@
 import { OptionAccordion, OptionAccordionSection } from '@/components/shared/OptionAccordion';
 import { mealOptionLabel } from '@/lib/weddingEvents';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
-import { COUNTRY_CODES, DEFAULT_COUNTRY, toE164, needsCountryCode } from '@/lib/phoneE164';
+import { DEFAULT_COUNTRY, toE164, needsCountryCode } from '@/lib/phoneE164';
+import CountryPicker from '@/components/shared/CountryPicker';
+import { useDefaultCountry } from '@/lib/defaultCountry';
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -98,7 +100,13 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
   // for the rest of the record's life, so nothing downstream has to remember
   // what was chosen here. A wedding has guests in several countries anyway, so
   // one country per wedding would be the wrong thing to remember.
+  // THE VENUE'S COUNTRY, NOT AUSTRALIA FOR EVERYONE (owner's ruling, T5).
+  // useDefaultCountry reads it from the wedding once per page load and falls
+  // back to AU; the couple can still change it, and their change sticks.
+  const venueCountry = useDefaultCountry();
   const [phoneCountry, setPhoneCountry] = useState(DEFAULT_COUNTRY);
+  const [countryTouched, setCountryTouched] = useState(false);
+  useEffect(() => { if (!countryTouched) setPhoneCountry(venueCountry); }, [venueCountry, countryTouched]);
 
   // Dietary pill state — parsed from the existing field value
   const init = parseDietary((guest || {}).dietary_restrictions || '');
@@ -247,16 +255,7 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <Label htmlFor="phone">Phone</Label>
             <div style={{ display: 'flex', gap: 8 }}>
-              <select
-                aria-label="Country code"
-                value={phoneCountry}
-                onChange={e => setPhoneCountry(e.target.value)}
-                style={{ flex: '0 0 auto', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 6, padding: '0 8px', fontSize: 13, fontFamily: "'Plus Jakarta Sans', sans-serif", background: '#fff', cursor: 'pointer' }}
-              >
-                {COUNTRY_CODES.map(c => (
-                  <option key={c.iso} value={c.iso}>{c.iso} +{c.dial}</option>
-                ))}
-              </select>
+              <CountryPicker value={phoneCountry} onChange={(iso) => { setCountryTouched(true); setPhoneCountry(iso); }} />
               <Input
                 id="phone"
                 type="tel"

@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MessageCircle, X } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { COUNTRY_CODES, DEFAULT_COUNTRY, toE164, needsCountryCode } from "@/lib/phoneE164";
+import { DEFAULT_COUNTRY, toE164, needsCountryCode } from "@/lib/phoneE164";
+import CountryPicker from "@/components/shared/CountryPicker";
+import { useDefaultCountry } from "@/lib/defaultCountry";
 
 const WHATSAPP_GREEN = "#25D366";
 
@@ -35,7 +37,11 @@ export default function WhatsAppConnect({ onSave, savedNumber }) {
   // which is the picker beside the field now.
   const [entering, setEntering] = useState(false);
   const [draft, setDraft] = useState('');
+  // Same as the guest form: the venue's country, else AU.
+  const venueCountry = useDefaultCountry();
   const [country, setCountry] = useState(DEFAULT_COUNTRY);
+  const [countryTouched, setCountryTouched] = useState(false);
+  useEffect(() => { if (!countryTouched) setCountry(venueCountry); }, [venueCountry, countryTouched]);
   const unreadable = needsCountryCode(draft, country);
 
   const handleSave = () => {
@@ -98,14 +104,7 @@ export default function WhatsAppConnect({ onSave, savedNumber }) {
         {entering ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 420 }}>
             <div style={{ display: 'flex', gap: 8 }}>
-              <select
-                aria-label="Country code"
-                value={country}
-                onChange={e => setCountry(e.target.value)}
-                style={{ border: '1px solid rgba(10,10,10,0.15)', borderRadius: 6, padding: '8px', fontSize: 13, fontFamily: "'Plus Jakarta Sans', sans-serif", background: '#fff', cursor: 'pointer' }}
-              >
-                {COUNTRY_CODES.map(c => <option key={c.iso} value={c.iso}>{c.iso} +{c.dial}</option>)}
-              </select>
+              <CountryPicker value={country} onChange={(iso) => { setCountryTouched(true); setCountry(iso); }} />
               <input
                 type="tel"
                 autoFocus

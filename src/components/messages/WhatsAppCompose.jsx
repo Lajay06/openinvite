@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { toWaMe, needsCountryCode, DEFAULT_COUNTRY } from '@/lib/phoneE164';
+import CountryPicker from '@/components/shared/CountryPicker';
+import { useDefaultCountry } from '@/lib/defaultCountry';
 import { X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getMyInvitation } from '@/lib/resolveMyWedding';
@@ -47,6 +49,10 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
   const [template, setTemplate] = useState("custom");
   const [message, setMessage] = useState("");
   const [phone, setPhone] = useState(guest?.phone || "");
+  const venueCountry = useDefaultCountry();
+  const [country, setCountry] = useState(DEFAULT_COUNTRY);
+  const [countryTouched, setCountryTouched] = useState(false);
+  React.useEffect(() => { if (!countryTouched) setCountry(venueCountry); }, [venueCountry, countryTouched]);
   const [loading, setLoading] = useState(false);
   const [variables, setVariables] = useState({});
   const [linkState, setLinkState] = useState('loading'); // loading | ready | unavailable
@@ -112,7 +118,7 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
     // 610412345678 — E.164 drops the trunk 0, making the real answer
     // 61412345678 — and any US number not starting with 1 got an Australian
     // country code, in a product priced in USD.
-    const formatted = toWaMe(phone, DEFAULT_COUNTRY);
+    const formatted = toWaMe(phone, country);
     if (!formatted) { setLoading(false); return; }
     const link = `https://wa.me/${formatted}?text=${encodeURIComponent(message)}`;
     if (guest?.id && onSent) onSent();
@@ -127,7 +133,7 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
   const linkMissing = message.includes(RSVP_PLACEHOLDER);
   // A NUMBER WE CANNOT READ IS NOT SENT, for the same reason an unresolved
   // RSVP placeholder is not: the message would go nowhere and cannot be recalled.
-  const phoneUnreadable = needsCountryCode(phone, DEFAULT_COUNTRY);
+  const phoneUnreadable = needsCountryCode(phone, country);
   const sendBlocked = loading || !message.trim() || !phone.trim() || linkMissing || phoneUnreadable;
 
   return (
@@ -147,14 +153,21 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
       <div style={{ flex: 1, overflow: 'auto', padding: 24, display: 'flex', flexDirection: 'column', gap: 18 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <label style={labelStyle}>Phone number</label>
-          <input
-            type="tel"
-            value={phone}
-            onChange={e => setPhone(e.target.value)}
-            placeholder="+61412345678"
-            style={{ ...inputStyle, fontFamily: 'monospace, monospace' }}
-          />
-          <span style={{ fontSize: 11, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Include country code (e.g., +61 for Australia)</span>
+          {/* A PICKER, NOT AN INSTRUCTION. This field asked the couple to type
+              a country code and named Australia's in the hint — the same
+              assumption the rest of the product has stopped making. The number
+              arrives from the guest already in E.164; the picker is for the
+              case where it is edited by hand. */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <CountryPicker value={country} onChange={(iso) => { setCountryTouched(true); setCountry(iso); }} />
+            <input
+              type="tel"
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+              placeholder="412 345 678"
+              style={{ ...inputStyle, flex: 1, minWidth: 0, fontFamily: 'monospace, monospace' }}
+            />
+          </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
