@@ -83,7 +83,19 @@ export async function runAvaOneWindow() {
       empty.length === 0, empty.join(', ') || 'every page brings its own four');
   }
 
-  // ── THE TWO RETIRED SURFACES ────────────────────────────────────────────
+  // ── THE TWO SURFACES THAT WENT TO THE POD, AND CAME BACK ────────────────
+  //
+  // These two checks used to assert the opposite: that Wedding favours and
+  // Seating opened the POD, under spec 3.3's "one entry point per page, and it
+  // is the floating button". Owner ruling, Run 5 T3, supersedes that — a
+  // page-level Ask Ava opens THIS page's shell with this page's actions — and
+  // a guard is not evidence for a ruling that has been replaced.
+  //
+  // What survives unchanged is the part the pod ruling was right about: the
+  // BESPOKE windows are gone and stay gone. A blue dialog of its own on
+  // Wedding favours, an InvokeLLM call that sent no wedding context, and a
+  // "seating arrangement specialist" persona are three things neither ruling
+  // ever wanted back.
   {
     const favours = code('src/pages/WeddingFavours.jsx');
     const seating = code('src/pages/Seating.jsx');
@@ -92,12 +104,13 @@ export async function runAvaOneWindow() {
       'no bespoke dialog left');
     check('  and its own InvokeLLM call with it — it sent no wedding context at all',
       !/InvokeLLM/.test(favours), 'the fourth Ava knew the least about the couple');
-    check('  the page opens the pod instead, with its question seeded',
-      /<AvaButton/.test(favours) && /seedQuestion="Suggest wedding favour ideas/.test(favours), 'AvaButton');
-    check('the "seating arrangement specialist" modal is gone',
-      !/seating arrangement specialist/i.test(seating) && !/<AvaModal/.test(seating), 'no second window');
-    check('  and its prompt became the pod\'s page context, not a lost sentence',
-      /pageContext="arranges their tables/.test(seating), 'the context moved; the window did not survive');
+    check('  the page opens the shared shell, named for itself',
+      /<AvaModal/.test(favours) && /pageTitle="Wedding favours"/.test(favours), 'AvaModal, pageTitle="Wedding favours"');
+    check('the "seating arrangement specialist" persona is gone',
+      !/seating arrangement specialist/i.test(seating), 'no persona left in the prompt');
+    check('  and its sentence of context is the page modal\'s systemPrompt, not a lost sentence',
+      /<AvaModal/.test(seating) && /systemPrompt="You are Ava, helping a couple arrange their tables/.test(seating),
+      'the context stayed; it is the page\'s own prompt now');
   }
 
   // ── ONE ENTRY POINT PER PAGE (spec 3.3) ─────────────────────────────────

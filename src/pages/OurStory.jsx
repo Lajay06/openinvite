@@ -414,7 +414,7 @@ export default function OurStoryPage() {
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
         pageTitle="Our story"
-        systemPrompt="You are Ava, helping a couple write the story of how they met and got here, for their wedding website. Ask for the details that make a story specific — where, when, who said what — and write in their voice, not a greeting card's."
+        systemPrompt="You are Ava, helping a couple write the story of how they met and got here, for their wedding site. Ask for the details that make a story specific — where, when, who said what — and write in their voice, not a greeting card's."
         quickActions={["Help us write how we met", "What milestones should our timeline include?", "Make this sound like us, not a greeting card", "Write a short version for the website"]}
       />
     </div>
