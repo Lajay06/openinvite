@@ -6243,3 +6243,29 @@ nothing to amend.
 This is the same family as "never switch branches with a dirty tree": a git
 command whose behaviour is defined against HEAD is not a way to undo a local
 edit when the tree is holding work HEAD has never seen.
+
+
+---
+
+## 2026-09-16 — A diff guard reads commits, not your working tree
+
+**`scripts/test-us-english-spelling.mjs` reads `origin/main...HEAD` — commit
+before you run it; the working tree is invisible to it.**
+
+Twice in Run 5 the same sequence: the guard flags a line, the line is fixed on
+disk, the guard is run again, and it reports *the same line at the same number*
+— because the fix is in no commit and the guard never opens the file on disk.
+Both times the unchanged report was read as "the fix did not work", and the
+second time cost a CI cycle.
+
+It is not a quirk of this one guard. Every guard that scopes itself to a DIFF —
+this one, `test-prerendered-freshness.mjs`, and any future one that answers
+"what did this branch change" — is asking git, not the filesystem. The rule is
+one line and it belongs in each such guard's header, which is where this one now
+carries it.
+
+The same run's other half of this lesson: the guard flagged a **comment**, and
+it was right to. Comments have been in scope since the 2026-08-30 ruling
+(CLAUDE.md), and this guard's own header still described the old behaviour of
+skipping them — a guard whose documentation describes a superseded rule invites
+an argument with the instrument instead of a fix. Corrected in the same commit.
