@@ -17,9 +17,11 @@
  * excluding marketing/home/public, src/lib/), flags any of the banned
  * British/Australian spellings below as a whole word.
  *
- * Deliberately conservative, same as the prerender guard: comment-only
- * added lines are skipped (spelling in a code comment isn't user-facing),
- * and a small ALLOWLIST covers known legitimate code identifiers that
+ * COMMENTS ARE IN SCOPE (owner ruling, 2026-08-30) — the line below about
+ * skipping comment-only lines describes what this guard used to do, and the
+ * ruling is why it no longer does: comments become strings the moment someone
+ * lifts a phrase out of one into a label, and the spelling travels with it.
+ * A small ALLOWLIST covers known legitimate code identifiers that
  * happen to contain a banned word (BRAND_COLOURS, is_favourite, etc. —
  * renaming those is a much bigger refactor, tracked separately, not what
  * this guard is for). This is coarse, line-based text matching, not real
@@ -27,7 +29,12 @@
  * with no surrounding quotes, but it will never silently miss a quoted
  * string or template literal, which is the common case.
  *
- * Usage: node scripts/test-us-english-spelling.mjs
+ * IT READS origin/main...HEAD — COMMIT BEFORE YOU RUN IT; THE WORKING TREE IS
+ * INVISIBLE TO IT. Fix a flagged line, run this, and it reports the same line
+ * again, because the fix is not in any commit yet and this guard never looks at
+ * the file on disk. Twice in Run 5 that was read as "the fix did not work".
+ *
+ * Usage: node scripts/test-us-english-spelling.mjs   (after committing)
  * Exits 0 if clean (or nothing in-scope changed, or no diff base is
  * available), 1 if a banned spelling was introduced.
  */

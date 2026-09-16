@@ -54,7 +54,6 @@ export default function MessagesPage() {
   const [replyText, setReplyText] = useState('');
   const [loading, setLoading] = useState(true);
   const [avaOpen, setAvaOpen] = useState(false);
-  const [whatsappConnected, setWhatsappConnected] = useState(false);
   const [whatsappPhone, setWhatsappPhone] = useState('');
   const [composingGuest, setComposingGuest] = useState(null);
   const [coupleNames, setCoupleNames] = useState('');
@@ -109,19 +108,16 @@ export default function MessagesPage() {
     const stored = localStorage.getItem('whatsapp_connected');
     const phone = localStorage.getItem('whatsapp_phone');
     if (stored === 'true' && phone) {
-      setWhatsappConnected(true);
       setWhatsappPhone(phone);
     }
   };
 
   const handleWhatsAppConnect = (phone) => {
     if (phone) {
-      setWhatsappConnected(true);
       setWhatsappPhone(phone);
       localStorage.setItem('whatsapp_connected', 'true');
       localStorage.setItem('whatsapp_phone', phone);
     } else {
-      setWhatsappConnected(false);
       setWhatsappPhone('');
       localStorage.removeItem('whatsapp_connected');
       localStorage.removeItem('whatsapp_phone');
@@ -236,9 +232,8 @@ export default function MessagesPage() {
       {/* WhatsApp banner */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <WhatsAppConnect
-          isConnected={whatsappConnected}
-          connectedPhone={whatsappPhone}
-          onConnect={handleWhatsAppConnect}
+          savedNumber={whatsappPhone}
+          onSave={handleWhatsAppConnect}
         />
       </div>
 
@@ -305,7 +300,16 @@ export default function MessagesPage() {
                   onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.6)'}>
                   {message.read ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
-                {whatsappConnected && guestPhones[message.guest_id] && (
+                {/* NO GATE ON THE COUPLE'S OWN NUMBER (owner ruling, Run 5 T9).
+                    This button opens wa.me with THE GUEST'S number, from
+                    whatever WhatsApp account the couple is signed in to on
+                    that device. The couple's own number has nothing to do
+                    with it — it was never sent, never used to address the
+                    message, and saving it changed nothing except whether
+                    this button was drawn. A couple who had not "connected"
+                    saw no way to message a guest at all, and the fix they
+                    were being asked for was theater. */}
+                {guestPhones[message.guest_id] && (
                   <button onClick={() => setComposingGuest(message)}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 6 }}
                     title="Open in WhatsApp"
@@ -385,7 +389,7 @@ export default function MessagesPage() {
       </div>
 
       {/* WhatsApp QR section */}
-      {whatsappConnected && (
+      {whatsappPhone && (
         <div style={{ padding: '24px 32px', borderTop: '1px solid rgba(10,10,10,0.12)', display: 'flex', justifyContent: 'center' }}>
           <WhatsAppQRCode phoneNumber={whatsappPhone} />
         </div>

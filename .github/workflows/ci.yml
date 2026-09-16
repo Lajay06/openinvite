@@ -747,6 +747,20 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
 
+      # The send is not gated on a number nobody sends from.
+      - name: A couple can message a guest without "connecting" anything
+        run: |
+          npx vite preview --port 4210 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4210 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4210 npm run test:whatsapp-gate
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       - name: The universe breadcrumb says where it goes
         run: |
           npx vite preview --port 4180 --strictPort &

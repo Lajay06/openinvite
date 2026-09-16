@@ -11,8 +11,22 @@ const labelStyle = {
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
-export default function WhatsAppConnect({ onConnect, isConnected, connectedPhone }) {
-  const [showDisconnect, setShowDisconnect] = useState(false);
+/**
+ * THE COUPLE'S OWN WHATSAPP NUMBER — FOR THE QR CODE, AND FOR NOTHING ELSE.
+ *
+ * Owner ruling, Run 5 T9: the feature stays, the "connect" theater goes. This
+ * was framed as connecting an account — save a number, and the WhatsApp
+ * controls on the Messages page appear; remove it, and they vanish. Nothing
+ * about a message to a guest ever used it. wa.me is addressed with THE
+ * GUEST'S number and opens on the couple's own device, signed in to whatever
+ * account is on it. The stored number's one real use is the QR code a guest
+ * scans to message the couple, which is what this now says it is for.
+ *
+ * `isConnected` is gone with the framing: a saved number is a saved number,
+ * and `savedNumber` is the whole state.
+ */
+export default function WhatsAppConnect({ onSave, savedNumber }) {
+  const [showRemove, setShowRemove] = useState(false);
   // THE prompt() IS GONE (owner ruling, Run 4 S3). It was the only prompt() in
   // the product and the worst place for one: the field that most needs a
   // country-code picker was a box the browser drew, in system type, blocking
@@ -27,27 +41,27 @@ export default function WhatsAppConnect({ onConnect, isConnected, connectedPhone
   const handleSave = () => {
     const e164 = toE164(draft, country);
     if (!e164) return;
-    onConnect(e164);
+    onSave(e164);
     setEntering(false); setDraft('');
   };
 
-  const handleDisconnect = () => {
-    onConnect(null);
-    setShowDisconnect(false);
+  const handleRemove = () => {
+    onSave(null);
+    setShowRemove(false);
   };
 
-  if (isConnected) {
+  if (savedNumber) {
     return (
       <>
         <div style={{ background: `rgba(37,211,102,0.06)`, border: `1px solid rgba(37,211,102,0.4)`, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 20, height: 20, background: WHATSAPP_GREEN, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>✓</div>
             <div>
-              <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>WhatsApp number saved</p>
-              <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0 0' }}>{connectedPhone}</p>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>Your WhatsApp number (for guests to message you)</p>
+              <p style={{ fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '2px 0 0' }}>{savedNumber}</p>
             </div>
           </div>
-          <button onClick={() => setShowDisconnect(true)}
+          <button onClick={() => setShowRemove(true)}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}
             onMouseEnter={e => e.currentTarget.style.color = '#0A0A0A'}
             onMouseLeave={e => e.currentTarget.style.color = 'rgba(10,10,10,0.6)'}>
@@ -55,15 +69,15 @@ export default function WhatsAppConnect({ onConnect, isConnected, connectedPhone
           </button>
         </div>
 
-        <Dialog open={showDisconnect} onOpenChange={(open) => { if (!open) setShowDisconnect(false); }}>
+        <Dialog open={showRemove} onOpenChange={(open) => { if (!open) setShowRemove(false); }}>
           <DialogContent title="Remove saved WhatsApp number?" className="max-w-[400px] p-7">
             <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 8 }}>Remove saved WhatsApp number?</h3>
             <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 20, lineHeight: 1.6 }}>
-              You'll need to enter it again to generate a QR code or pre-fill it when messaging guests.
+              The QR code below will go with it. Messaging guests is unaffected — that opens WhatsApp on your device either way.
             </p>
             <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => setShowDisconnect(false)} className="btn-editorial-secondary" style={{ flex: 1, fontSize: 13 }}>Cancel</button>
-              <button onClick={handleDisconnect} className="btn-primary" style={{ flex: 1, fontSize: 13 }}>Remove</button>
+              <button onClick={() => setShowRemove(false)} className="btn-editorial-secondary" style={{ flex: 1, fontSize: 13 }}>Cancel</button>
+              <button onClick={handleRemove} className="btn-primary" style={{ flex: 1, fontSize: 13 }}>Remove</button>
             </div>
           </DialogContent>
         </Dialog>
@@ -77,9 +91,9 @@ export default function WhatsAppConnect({ onConnect, isConnected, connectedPhone
         <MessageCircle size={18} />
       </div>
       <div style={{ flex: 1 }}>
-        <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 6 }}>Save your WhatsApp number</p>
+        <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 6 }}>Your WhatsApp number (for guests to message you)</p>
         <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 16, lineHeight: 1.6 }}>
-          Save your number so it's ready to go — messages to guests open pre-filled in WhatsApp, no retyping needed.
+          Add it and we&rsquo;ll make a QR code your guests can scan to message you. Messaging guests does not need it — that opens WhatsApp on your device.
         </p>
         {entering ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 420 }}>
