@@ -55,6 +55,13 @@
  *        fails by construction — the T1 guard read that as the couple's page
  *        not persisting. A guard that needs persistence keeps one record in
  *        memory and merges each write into it.
+ *   8    A CONTROL THE SEED COULD NOT DRAW. Messages.jsx renders its WhatsApp
+ *        button only for a message whose guest has a stored number
+ *        (guestPhones[message.guest_id]). No seeded Guest had a `phone` and no
+ *        seeded GuestMessage had a `guest_id`, so the control could not appear
+ *        under any circumstances — and "the button is not shown" was a claim
+ *        about a fixture, not about the product. g1 now has a number and gm1
+ *        names her (Run 5 T9).
  */
 /* global localStorage, document */  // used inside page.evaluate(), which runs in the browser
 
@@ -97,7 +104,10 @@ export const SEED = {
   // whose declared label carries an apostrophe — the case a sentence-case
   // helper alone gets wrong. See pillLabel in src/lib/tablePills.js.
   Guest: [
-    { id:'g1', name:'Grace Hopper',  email:'grace@example.com',  rsvp_status:'attending', table_assignment:'t1', meal_choice:'chicken', category:'family',           event_responses:[], created_by:'fixture@example.com' },
+    // PHONE ON g1, AND A guest_id ON THE MESSAGE FROM HER BELOW. See
+    // instrument failure 8: without both, the Messages page's WhatsApp
+    // control cannot render in any guard.
+    { id:'g1', name:'Grace Hopper',  email:'grace@example.com',  phone:'+61412345678', rsvp_status:'attending', table_assignment:'t1', meal_choice:'chicken', category:'family',           event_responses:[], created_by:'fixture@example.com' },
     { id:'g2', name:'Katherine J.',  email:'kj@example.com',     rsvp_status:'attending', table_assignment:'t1', meal_choice:'fish',    category:'partners_family', event_responses:[], created_by:'fixture@example.com' },
     { id:'g3', name:'Alan Turing',   email:'alan@example.com',   rsvp_status:'pending',   table_assignment:'t2', category:'friends',    event_responses:[], created_by:'fixture@example.com' },
     { id:'g4', name:'Edsger D.',     email:'edsger@example.com', rsvp_status:'declined',  category:'colleagues', event_responses:[], created_by:'fixture@example.com' },
@@ -153,7 +163,7 @@ export const SEED = {
   // unstamped row white-screens the page behind the error boundary. The seed
   // omitted it and the page rendered its error state, not its list.
   GuestMessage: [
-    { id:'gm1', guest_name:'Grace Hopper', message:'Cannot wait!',    read:false, replied:false, created_date: iso(-3), created_by:'fixture@example.com' },
+    { id:'gm1', guest_id:'g1', guest_name:'Grace Hopper', message:'Cannot wait!',    read:false, replied:false, created_date: iso(-3), created_by:'fixture@example.com' },
     { id:'gm2', guest_name:'Alan Turing',  message:'Congratulations', read:true,  replied:true,  created_date: iso(-1), reply_sent_at: iso(-1), created_by:'fixture@example.com' },
   ],
   // ONE WAITING AND ONE ALREADY ANSWERED. A page whose review controls only

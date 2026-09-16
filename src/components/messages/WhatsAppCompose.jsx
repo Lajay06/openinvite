@@ -185,8 +185,14 @@ export default function WhatsAppCompose({ guest, onClose, onSent }) {
           </div>
         )}
 
-        <div style={{ background: '#F5F5F5', padding: '10px 12px', fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          Opens WhatsApp on your device or browser
+        {/* WHAT THE GATE USED TO IMPLY, SAID PLAINLY (owner ruling, Run 5 T9).
+            The couple was asked to "connect" a number before they could
+            message anyone, which suggested the product sends on their behalf
+            from that number. It does not: it opens WhatsApp on this device
+            and the message goes from whichever account is signed in there.
+            One honest line does the work the gate was pretending to do. */}
+        <div data-whatsapp-send-note style={{ background: '#F5F5F5', padding: '10px 12px', fontSize: 12, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          Opens in your WhatsApp app — messages send from the account you&rsquo;re signed in to.
         </div>
 
         <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>
