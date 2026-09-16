@@ -119,8 +119,13 @@ if (there) {
   // Each row is a flag drawn from the sprite, not a glyph from a font.
   const flags = await list.locator('svg use').count();
   check('  every row draws its flag from the sprite', flags >= 200, `${flags} <use> references`);
-  const href = await list.locator('svg use').first().getAttribute('href');
-  check('  and the sprite is the one local file', /^\/flags\/flags\.svg#flag-[a-z]{2}$/.test(href || ''), href || 'no href');
+  // GUARDED, BECAUSE A PLANT ABORTED THE RUN HERE. With the flags replaced by
+  // emoji there are no <use> elements at all, `.first()` resolved to nothing,
+  // and the read threw — taking the rest of the checks, including the emoji one
+  // this file exists for, down with it. A guard that stops early reports
+  // "did not appear" where it should report FAIL.
+  const href = flags ? await list.locator('svg use').first().getAttribute('href').catch(() => null) : null;
+  check('  and the sprite is the one local file', /^\/flags\/flags\.svg#flag-[a-z]{2}$/.test(href || ''), href || 'no <use> to read');
 
   // THE RULE, MEASURED ON THE SCREEN: no emoji anywhere in the open picker.
   const emoji = await page.locator('[data-country-list]').evaluate((el) =>
