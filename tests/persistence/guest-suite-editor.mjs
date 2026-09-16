@@ -55,13 +55,22 @@ export async function runGuestSuiteEditor() {
     // there because SectionEditorFields already exports a DIFFERENT `Toggle`
     // — the larger light-surface one. This assertion is still the same
     // property: the same enabledPages list, the same control as the built-ins.
+    // RE-EXPRESSED FOR ONE LIST (Run 5 T1), same three properties.
+    //
+    // These matched the SEPARATE custom section's markup — `page.slug`,
+    // `page.name` — because custom pages rendered in their own loop under a
+    // "Custom" divider. That is the defect T1 fixed: a custom page could never
+    // sit between two built-ins however the drag wrote enabledPages. There is
+    // one loop now, over `pageRows`, so the same assertions read `slug` and
+    // `label` and apply to every row of either kind.
     check('PLANT: a custom page toggles on and off like every other page',
-      /<PillSwitch enabled=\{enabledPages\.includes\(page\.slug\)\} onToggle=\{\(\) => toggle\(page\.slug\)\}/.test(left),
-      'the same enabledPages list, the same control');
+      /<PillSwitch enabled=\{enabled\} onToggle=\{\(\) => toggle\(slug\)\}/.test(left),
+      'one control for every row, on the same enabledPages list');
     check('  and a disabled one reads as disabled',
-      /opacity: enabledPages\.includes\(page\.slug\) \? 1 : 0\.4/.test(left), 'as the built-ins do');
-    check('  delete is still there, beside the toggle rather than instead of it',
-      /aria-label=\{`Delete \$\{page\.name\}`\}/.test(left), 'two different intentions, two controls');
+      /opacity: !enabled && slug !== 'home' \? 0\.4 : 1/.test(left), 'as the built-ins do');
+    check('  delete is still there, and only for a page the couple made',
+      /isCustom && \(/.test(left) && /aria-label=\{`Delete \$\{label\}`\}/.test(left),
+      'a built-in is switched off, never destroyed');
 
     // The nav, the preview and the published site all read the chokepoint.
     for (const f of [
@@ -91,13 +100,19 @@ export async function runGuestSuiteEditor() {
     check('PLANT: the order lives in enabledPages, an existing array',
       /onChange\('enabledPages', list\)/.test(left) && /const orderedSlugs = enabledPages/.test(left),
       'no new field');
-    check('PLANT: built-in pages and custom pages are both draggable',
-      (left.match(/dragProps\(/g) || []).length >= 2, 'two CALL sites — the built-in list and the custom list — from one handler');
+    // ONE CALL SITE NOW, AND THAT IS THE POINT. Two call sites were the
+    // symptom: two lists, each draggable within itself, so a custom page could
+    // never cross into the built-ins. The property being asserted was always
+    // "every row can be picked up", and one loop states it once.
+    check('PLANT: every page row is draggable, built-in or the couple\u2019s own',
+      /\{\.\.\.\(enabled \? dragProps\(slug\) : \{\}\)\}/.test(left)
+        && (left.match(/dragProps\(/g) || []).length >= 1,
+      'one row shape for both kinds');
     check('  Home cannot be dragged off the front',
       /const home = list\.indexOf\('home'\);/.test(left) && /list\.unshift\('home'\)/.test(left),
       'a site whose first page is "Good to know" has no front door');
     check('  and the editor list renders in the couple\u2019s order',
-      /\[\.\.\.WEDDING_PAGES\]\.sort\(/.test(left) && /enabledPages\.indexOf\(a\.slug\)/.test(left),
+      /for \(const slug of enabledPages\)/.test(left) && /pageRows\.map\(/.test(left),
       'the catalog sorted by the stored order');
     check('  a row shows where a drop would land',
       /boxShadow: 'inset 0 2px 0 0 #E03553'/.test(left), 'not a silent drag');
