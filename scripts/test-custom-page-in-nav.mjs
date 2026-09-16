@@ -43,11 +43,15 @@
  * they ever stop being the same fact, something has grown a second list.
  */
 import { chromium } from 'playwright';
-import { seededContext, PUBLISHED_WEDDING } from './lib/renderHarness.mjs';
+import { seededContext, PUBLISHED_WEDDING, SEED } from './lib/renderHarness.mjs';
+import { pickGuestSafeFields } from '../api/_lib/guestSafeWedding.js';
 
 const BASE = process.env.CAPTURE_BASE_URL || 'http://localhost:4201';
 const PAGE_NAME = 'Our Dogs';
 const PAGE_SLUG = 'our-dogs';
+// A sentence only this fixture would contain, so finding it on the page means
+// the couple's own block travelled, not that something else said the word.
+const BLOCK_TEXT = 'They are both rescues and they will be at the ceremony.';
 
 const results = [];
 const check = (name, ok, detail) => {
@@ -65,6 +69,23 @@ const writes = [];
 page.on('request', (r) => {
   if (!/entities\/WeddingDetails/.test(r.url()) || r.method() === 'GET') return;
   try { writes.push(JSON.parse(r.postData() || '{}')); } catch { /* not json */ }
+});
+
+// ── A STUB THAT REMEMBERS, BECAUSE A RELOAD OTHERWISE PROVES NOTHING ───────
+//
+// The harness answers every write with a 200 and forgets it, so a reload came
+// back to the seeded record and the couple's page simply vanished — which
+// reads as "the page did not persist" when it is the fixture that did not.
+// This keeps one record in memory, merges each write into it, and serves it
+// back, so "reload and it is still where I put it" is a real question.
+const record = { ...(SEED.WeddingDetails[0] || {}) };
+await page.route((u) => /\/api\/my-wedding-details/.test(typeof u === 'string' ? u : u.href), (route) =>
+  route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(record) }));
+await page.route((u) => /entities\/WeddingDetails/.test(typeof u === 'string' ? u : u.href), async (route) => {
+  const req = route.request();
+  if (req.method() === 'GET') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([record]) });
+  try { Object.assign(record, JSON.parse(req.postData() || '{}')); } catch { /* not json */ }
+  return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(record) });
 });
 
 await page.goto(`${BASE}/website-editor`, { waitUntil: 'domcontentloaded', timeout: 60000 }).catch(() => {});
@@ -109,6 +130,68 @@ const inNav = await page.evaluate((name) => {
 }, PAGE_NAME);
 check('  and a guest can see it in the navigation', inNav, inNav ? `"${PAGE_NAME}" is a nav link` : 'not in the nav');
 
+// ── 3b. ONE LIST, NOT TWO ──────────────────────────────────────────────────
+//
+// Owner report, Run 5 T1: the new page "cannot be dragged into the main page
+// list". It could not. The built-ins rendered from WEDDING_PAGES and the
+// couple's own pages rendered in a separate section under a "Custom" divider,
+// so a custom page could never sit BETWEEN two built-ins however the drag
+// wrote `enabledPages`. The row was draggable; the list was not one list.
+//
+// Asserted on the ROWS AS RENDERED, not on the stored order: the stored order
+// was already right, which is exactly why this went unnoticed.
+await page.keyboard.press('Escape').catch(() => {});
+await page.waitForTimeout(1200);
+const listShape = await page.evaluate((name) => {
+  const rows = [...document.querySelectorAll('[draggable="true"]')].map((d) => (d.innerText || '').trim().split('\n')[0]);
+  // A divider whose only word is "Custom" is the second list announcing itself.
+  const customLabel = [...document.querySelectorAll('*')]
+    .filter((e) => e.children.length === 0 && /^Custom$/i.test((e.innerText || '').trim())).length;
+  return { rows, customLabel, index: rows.findIndex((r) => r.includes(name)) };
+}, PAGE_NAME);
+check('the couple sees one page list, not two', listShape.customLabel === 0,
+  listShape.customLabel ? 'a "Custom" divider still splits the list' : 'no separate section');
+check('  and the new page is a row in it', listShape.index !== -1,
+  listShape.index !== -1 ? `row ${listShape.index + 1} of ${listShape.rows.length}` : `rows: ${listShape.rows.join(' · ')}`);
+// IT IS LAST BECAUSE IT WAS MADE LAST, not because custom pages are pinned
+// below. The next check is the one that tells those two apart.
+check('    in the position the couple created it', listShape.index === listShape.rows.length - 1,
+  `${listShape.rows.join(' · ')}`);
+
+// ── 3c. AND ITS POSITION SURVIVES A REORDER AND A RELOAD ───────────────────
+//
+// The drag writes `enabledPages`; the render reads it. Moving the page up and
+// reloading proves the two agree — a list that renders custom pages in their
+// own section would put it back at the bottom no matter what was stored.
+// A REAL DRAG. Dispatching DragEvent by hand does not reach React's handlers
+// — the first version of this check did exactly that and reported the product
+// broken. Playwright's dragTo performs the mouse sequence the browser turns
+// into the events the component listens for.
+const rows = page.locator('[draggable="true"]');
+const from = rows.filter({ hasText: PAGE_NAME }).first();
+const to = rows.nth(1);
+const moved = await from.dragTo(to).then(() => true).catch(() => false);
+await page.waitForTimeout(3000);
+const afterDrag = await page.evaluate((name) => {
+  const rows = [...document.querySelectorAll('[draggable="true"]')].map((d) => (d.innerText || '').trim().split('\n')[0]);
+  return { rows, index: rows.findIndex((r) => r.includes(name)) };
+}, PAGE_NAME);
+check('  the page can be dragged up among the built-in pages', moved && afterDrag.index === 1,
+  `now row ${afterDrag.index + 1}: ${afterDrag.rows.join(' · ')}`);
+
+const orderAfterDrag = writes.map((w) => w && w.enabledPages).filter(Array.isArray).pop() || [];
+check('    and the move was written to enabledPages', orderAfterDrag[1] === PAGE_SLUG,
+  orderAfterDrag.join(' > ') || 'no write seen');
+
+await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => {});
+await page.waitForTimeout(8000);
+const afterReload = await page.evaluate((name) => {
+  const rows = [...document.querySelectorAll('[draggable="true"]')].map((d) => (d.innerText || '').trim().split('\n')[0]);
+  return { rows, index: rows.findIndex((r) => r.includes(name)) };
+}, PAGE_NAME);
+check('    and it is still there after a reload', afterReload.index === 1,
+  `row ${afterReload.index + 1}: ${afterReload.rows.join(' · ')}`);
+
 // ── 4. it is draggable, like every other page ──────────────────────────────
 await page.keyboard.press('Escape').catch(() => {});
 await page.waitForTimeout(1500);
@@ -144,10 +227,32 @@ const guest = await ctx.newPage();
 // so the guest site reads what was written rather than the static fixture.
 await guest.route(
   (u) => /\/api\/wedding-by-slug/.test(typeof u === 'string' ? u : u.href),
+  // THROUGH THE ENDPOINT'S OWN FUNCTION, NOT AROUND IT.
+  //
+  // This handed the page `{ ...PUBLISHED_WEDDING, enabledPages, customPages }`
+  // directly, and that payload could not occur: /api/wedding-by-slug answers
+  // with pickGuestSafeFields(), whose allowlist did not list `customPages` at
+  // all. So this guard proved a custom page reached the guest nav using a
+  // response the product never sends, and went green for a month while the
+  // live site served "This invitation isn't available" for the couple's own
+  // page.
+  //
+  // A fixture that cannot occur is not evidence. Everything below now passes
+  // through the same filter the endpoint uses, so a field the API will not
+  // send cannot reach this page either.
   (route) => route.fulfill({
     status: 200,
     contentType: 'application/json',
-    body: JSON.stringify({ ...PUBLISHED_WEDDING, enabledPages: lastOrder, customPages: savedCustomPages }),
+    body: JSON.stringify(pickGuestSafeFields({
+      ...PUBLISHED_WEDDING, enabledPages: lastOrder, customPages: savedCustomPages,
+      // WORDS ON THE PAGE, so `customPageContent` is proved to arrive too.
+      // Without a block the page renders its title either way, and the field
+      // could be dropped from the allowlist with nothing noticing — which is
+      // exactly what a plant showed.
+      customPageContent: { [PAGE_SLUG]: { blocks: [
+        { id: 'cp1', type: 'paragraph', order: 0, content: { text: BLOCK_TEXT } },
+      ] } },
+    })),
   }),
 );
 await guest.goto(`${BASE}/w/${PUBLISHED_WEDDING.slug}/${PAGE_SLUG}`, { waitUntil: 'domcontentloaded', timeout: 60000 }).catch(() => {});
@@ -157,6 +262,8 @@ const refused = /isn.t available/i.test(guestText);
 check('  the couple\'s own address is not refused', !refused,
   refused ? 'served "This invitation isn\'t available"' : 'the page rendered');
 check('    and it renders the page the couple named', guestText.includes(PAGE_NAME), `"${PAGE_NAME}"`);
+check('    and the words the couple wrote on it', guestText.includes(BLOCK_TEXT),
+  guestText.includes(BLOCK_TEXT) ? 'the block rendered' : 'customPageContent did not reach the page');
 const inGuestNav = await guest.evaluate((name) => {
   const nav = document.querySelector('nav');
   return !!nav && (nav.innerText || '').toLowerCase().includes(name.toLowerCase());

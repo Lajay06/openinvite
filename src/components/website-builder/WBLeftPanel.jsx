@@ -66,6 +66,35 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
     onChange('enabledPages', next);
   };
 
+  // ── ONE LIST, BECAUSE THE COUPLE ARRANGED ONE LIST ─────────────────────
+  //
+  // Owner report, Run 5 T1: a new page "cannot be dragged into the main page
+  // list". It could not. The built-ins rendered from WEDDING_PAGES and the
+  // couple's own pages rendered in a separate section under a "Custom"
+  // divider, so a custom page could never sit BETWEEN two built-ins no matter
+  // what the drag wrote. Both halves were draggable and both wrote
+  // `enabledPages`, which is why the order persisted and the page still
+  // appeared at the bottom — the row was draggable; the list was not one list.
+  //
+  // `enabledPages` was always the single order. This renders it.
+  const pageRows = (() => {
+    const custom = new Map(customPages.map(p => [p.slug, p]));
+    const builtIn = new Map(WEDDING_PAGES.map(p => [p.slug, p]));
+    const rows = [];
+    // The couple's order first, whatever kind each row is.
+    for (const slug of enabledPages) {
+      if (builtIn.has(slug)) rows.push({ ...builtIn.get(slug), isCustom: false });
+      else if (custom.has(slug)) { const c = custom.get(slug); rows.push({ slug, label: c.name, icon: 'FileText', isCustom: true }); }
+      // A slug in enabledPages that is neither is a retired page (Guestbook);
+      // it has no row, exactly as it has no nav link.
+    }
+    // Then everything switched off, in catalog order — a page that is not on
+    // the site has no position on it.
+    for (const p of WEDDING_PAGES) if (!enabledPages.includes(p.slug)) rows.push({ ...p, isCustom: false });
+    for (const c of customPages) if (!enabledPages.includes(c.slug)) rows.push({ slug: c.slug, label: c.name, icon: 'FileText', isCustom: true });
+    return rows;
+  })();
+
   const handleCreatePage = (page) => {
     onChange('customPages', [...customPages, page]);
     onChange('enabledPages', [...enabledPages, page.slug]);
@@ -145,18 +174,10 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
 
       <div style={{ overflow: 'hidden', maxHeight: pagesOpen ? '2000px' : '0px', transition: 'max-height 0.2s ease' }}>
       <div>
-        {/* IN THE COUPLE'S ORDER. WEDDING_PAGES is the catalog of what exists;
-            enabledPages is the order they arranged. Pages that are switched
-            off keep the catalog's order, after the ones that are on — they
-            have no position on a site they are not part of. */}
-        {[...WEDDING_PAGES].sort((a, b) => {
-          const ia = enabledPages.indexOf(a.slug);
-          const ib = enabledPages.indexOf(b.slug);
-          if (ia === -1 && ib === -1) return 0;
-          if (ia === -1) return 1;
-          if (ib === -1) return -1;
-          return ia - ib;
-        }).map(({ slug, label, icon }) => {
+        {/* IN THE COUPLE'S ORDER, ALL OF THEM. `pageRows` above is the one
+            list: built-ins and the couple's own pages interleaved exactly as
+            `enabledPages` has them, with everything switched off after. */}
+        {pageRows.map(({ slug, label, icon, isCustom }) => {
           const active = currentPage === slug;
           const enabled = enabledPages.includes(slug);
           const hovered = hoveredPage === slug;
@@ -199,6 +220,18 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
                   style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', fontWeight: 600, fontFamily: PJS, letterSpacing: '0.04em' }}
                 >Always on</span>
               )}
+              {/* ONLY A PAGE THE COUPLE MADE CAN BE DELETED. A built-in is
+                  switched off, never destroyed — there is nothing to recover
+                  it from. The control rides on the same row now that the two
+                  lists are one. */}
+              {isCustom && (
+                <button
+                  onClick={e => handleDeleteCustomPage(e, slug)}
+                  aria-label={`Delete ${label}`}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', fontSize: 14, padding: '0 2px', lineHeight: 1, flexShrink: 0 }}
+                  title="Delete page"
+                >×</button>
+              )}
             </div>
           );
         })}
@@ -213,57 +246,6 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
         Your guests need to find the date and a way to reply, so those pages stay on.
       </p>
 
-      {/* Custom pages */}
-      {customPages.length > 0 && (
-        <>
-          <Divider />
-          <SLabel>Custom</SLabel>
-          {customPages.map(page => {
-            const active = currentPage === page.slug;
-            const hovered = hoveredPage === page.slug;
-            return (
-              <div
-                key={page.slug}
-                onClick={() => onPageChange(page.slug)}
-                {...interactiveDivProps(() => onPageChange(page.slug), { label: page.name })}
-                {...(enabledPages.includes(page.slug) ? dragProps(page.slug) : {})}
-                onMouseEnter={() => { if (!active) setHoveredPage(page.slug); }}
-                onMouseLeave={() => setHoveredPage(null)}
-                style={{
-                  ...(dropStyle(page.slug) || {}),
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '6px 16px', cursor: 'pointer',
-                  background: active ? 'rgba(255,255,255,0.06)' : hovered ? 'rgba(255,255,255,0.04)' : 'transparent',
-                  borderLeft: active ? '2px solid #E03553' : '2px solid transparent',
-                  opacity: enabledPages.includes(page.slug) ? 1 : 0.4,
-                  transition: 'background 0.1s',
-                }}
-              >
-                <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-                  <PageIcon name="FileText" active={active} />
-                </div>
-                <span style={{
-                  flex: 1, fontSize: 12, fontWeight: 500, fontFamily: PJS,
-                  color: active || hovered ? '#FFFFFF' : 'rgba(255,255,255,0.5)',
-                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                }}>{page.name}</span>
-                {/* A CUSTOM PAGE TOGGLES LIKE ANY OTHER PAGE. Owner ruling
-                    2026-09-07. It had a delete and nothing else, so the only
-                    way to take one off the site was to destroy it — and the
-                    row sat beside eleven built-ins that all toggle. Same
-                    `enabledPages` list, same control. */}
-                <PillSwitch enabled={enabledPages.includes(page.slug)} onToggle={() => toggle(page.slug)} label={page.name} />
-                <button
-                  onClick={e => handleDeleteCustomPage(e, page.slug)}
-                  aria-label={`Delete ${page.name}`}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', fontSize: 14, padding: '0 2px', lineHeight: 1, flexShrink: 0 }}
-                  title="Delete page"
-                >×</button>
-              </div>
-            );
-          })}
-        </>
-      )}
 
       {/* ── New page ── */}
       <Divider />
