@@ -6269,3 +6269,30 @@ it was right to. Comments have been in scope since the 2026-08-30 ruling
 (CLAUDE.md), and this guard's own header still described the old behaviour of
 skipping them — a guard whose documentation describes a superseded rule invites
 an argument with the instrument instead of a fix. Corrected in the same commit.
+
+
+---
+
+## 2026-09-16 — The restore target is the value you read, never an assumed null
+
+Run 5 T9, production verification on the smoke account. The authorization said
+"restore the field to its prior value (null)". The field did not hold null:
+
+```
+READ 1  guest 6aa193a0becae03604bd3771  phone = ""
+```
+
+`Guest.phone` on that record reads **empty string**, not null, and Base44 keeps
+the difference. Writing back the assumed null would have left the record in a
+state it was never in — a silent change made by a restore, which is the worst
+place for one because a restore is the step nobody re-checks.
+
+**The restore target is the value the read returned.** Capture it, restore it
+verbatim, and re-read to confirm. An authorization that names the expected prior
+value is naming what the owner believes; the read is what is true, and where the
+two differ the read wins and the difference goes in the report.
+
+(The write in question never landed — the probe resolved its app id as undefined
+and the request 404'd, so all three reads are identical. That it failed safely
+was luck, not design; see the OPEN-TICKETS entry requiring a write-capable probe
+to assert a fully resolved target URL before issuing anything.)
