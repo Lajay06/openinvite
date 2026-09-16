@@ -90,6 +90,7 @@ import VowSpeechEditor from '../components/vows/VowSpeechEditor';
 import AIVowsSpeechesAssistant from '../components/vows/AIVowsSpeechesAssistant';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
+import AvaModal from '@/components/layout/AvaModal';
 import CountUp from "@/components/shared/CountUp";
 
 const labelStyle = {
@@ -414,7 +415,16 @@ export default function VowsSpeechesPage() {
       )}
 
       {showAI && (
-        <AIVowsSpeechesAssistant isOpen={showAI} onClose={() => setShowAI(false)} onApply={handleAIApply} type={aiType} />
+        /* THE WRITER IS THE SHELL'S BODY. One shell for every page-level Ask
+           Ava (owner ruling, Run 5 T3) — and the writer keeps its function
+           untouched inside it. */
+        <AvaModal
+          isOpen={showAI}
+          onClose={() => setShowAI(false)}
+          pageTitle="Vows & speeches"
+          quickActions={[]}
+          body={<AIVowsSpeechesAssistant isOpen={showAI} onClose={() => setShowAI(false)} onApply={handleAIApply} type={aiType} />}
+        />
       )}
 
       {lockPrompt === 'set' && selectedItem && (

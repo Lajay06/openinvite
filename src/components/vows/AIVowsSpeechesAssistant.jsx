@@ -3,10 +3,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, Sparkles, Mic, Wand2, Copy, RefreshCw, Send, Loader2 } from 'lucide-react';
+import { Sparkles, Mic, Wand2, Copy, RefreshCw, Send, Loader2 } from 'lucide-react';
 import { InvokeLLM } from '@/integrations/Core';
 import toast from 'react-hot-toast';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -102,17 +101,19 @@ Return the improved version as plain text only — no markdown.`;
     { value: 'preview', label: 'Preview', icon: Mic, disabled: !generated },
   ];
 
+  // ── NO DIALOG OF ITS OWN (owner ruling, Run 5 T3) ────────────────────────
+  //
+  // This was a second window: its own Dialog, its own navy header, its own
+  // legacy "AI vows & speech writer" title and lime icon. The writer's
+  // FUNCTION is worth keeping exactly as it is — tabs, generator, refiner —
+  // and none of that needed a frame of its own. AvaModal supplies the frame,
+  // the title and the quick actions; this renders as its body.
+  //
+  // The tabs stay tabs. They already show one section at a time, which is the
+  // property "collapsed by default" is after, and an accordion inside a 760px
+  // modal would be a worse answer to the same question.
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent hideClose title="AI vows & speech writer" className="max-w-[760px] max-h-[92vh] p-0 gap-0 flex flex-col">
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)', flexShrink: 0, background: '#0A1930' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Sparkles size={16} style={{ color: '#DDF762' }} />
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>AI vows &amp; speech writer</span>
-          </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', display: 'flex', padding: 4 }}><X size={16} /></button>
-        </div>
+    <>
 
         {/* Tabs */}
         <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.12)', flexShrink: 0 }}>
@@ -265,7 +266,6 @@ Return the improved version as plain text only — no markdown.`;
             </div>
           )}
         </div>
-      </DialogContent>
-    </Dialog>
+    </>
   );
 }

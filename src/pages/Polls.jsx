@@ -591,7 +591,7 @@ Return just the insight text, nothing else. Examples: "Espresso martinis are run
       <AvaModal
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
-        pageTitle="Polls"
+        pageTitle="Polls & games"
         systemPrompt="You are Ava, helping a couple who asks their guests questions and collects the answers. Suggest polls that are worth asking — ones whose answers change a decision the couple still has to make — and keep them short enough that a guest answers on a phone in one tap."
         quickActions={["Suggest a few polls we could ask our guests", "What should we ask before we set the menu?", "A poll about the music", "Which questions do guests actually answer?"]}
       />

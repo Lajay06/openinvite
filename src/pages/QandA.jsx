@@ -213,7 +213,7 @@ export default function QandA() {
       <AvaModal
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
-        pageTitle="Questions and answers"
+        pageTitle="Q&A"
         systemPrompt="You are Ava, helping a couple write the questions and answers their guests read on their site. Prefer the questions guests actually ask — travel, timing, dress code, children, parking — and answer in the couple's own plain voice, a sentence or two each."
         quickActions={["What questions will our guests ask that we have not answered?", "Write an answer about parking", "How do we say no children, kindly?", "Which questions does every wedding need?"]}
       />

@@ -419,7 +419,7 @@ export default function ChecklistPage({ embedded = false }) {
       <AvaModal
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
-        pageTitle="Checklist advisor"
+        pageTitle="Checklist"
         systemPrompt="You are Ava, a wedding planning checklist advisor. Help prioritise tasks and stay on track."
         quickActions={["What should I do this month?", "Am I behind schedule?", "Most important tasks right now", "12-month wedding checklist"]}
       />

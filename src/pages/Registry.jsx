@@ -235,7 +235,7 @@ export default function RegistryPage() {
       <AvaModal
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
-        pageTitle="Registry advisor"
+        pageTitle="Registry"
         systemPrompt="You are Ava, a wedding registry advisor. Help couples choose registry items and platforms."
         quickActions={["What should be on my registry?", "Cash fund ideas", "Best registry platforms?", "How much should items cost?"]}
       />

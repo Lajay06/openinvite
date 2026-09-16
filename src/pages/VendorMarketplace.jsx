@@ -534,7 +534,7 @@ export default function VendorMarketplace() {
       <AvaModal
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
-        pageTitle="Vendor advisor"
+        pageTitle="Marketplace"
         systemPrompt="You are Ava, a wedding vendor expert for Openinvite. Help couples find, evaluate, and manage wedding vendors. Suggest vendor categories to search for, help them understand pricing signals, and prepare questions to ask vendors directly."
         quickActions={['What vendors do I still need?', 'What questions should I ask vendors?', 'Help me compare vendors I have saved']}
       />

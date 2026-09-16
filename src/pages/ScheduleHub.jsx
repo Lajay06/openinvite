@@ -9,6 +9,8 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import DashboardPageHeader from "@/components/layout/DashboardPageHeader";
 import ScheduleForm from "../components/schedule/ScheduleForm";
 import CalendarPage from "./Calendar";
+import AvaButton from "@/components/shared/AvaButton";
+import AvaModal from "@/components/layout/AvaModal";
 import { base44 } from "@/api/base44Client";
 import { getMyRecords } from "@/lib/resolveMyWedding";
 import { useCollaboratorContext } from "@/lib/collaboratorContext";
@@ -99,6 +101,7 @@ export default function ScheduleHub() {
 
   // ── Active tab state ──────────────────────────────────────────────────────
   const [runsheetView, setRunsheetView] = useState("list");
+  const [avaOpen, setAvaOpen] = useState(false);
   const isCalendar = location.pathname === "/Calendar";
   const activeTab  = isCalendar ? "calendar" : runsheetView;
 
@@ -331,12 +334,22 @@ export default function ScheduleHub() {
         className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4"
         style={{ borderBottom: "1px solid rgba(10,10,10,0.12)" }}
       >
-        {/* Left: Ava button + Guest Suite notice */}
-        {/* The Ava pill is gone: Ava's one entry point on every page is the
-            floating button (spec 3.3, and the same ruling the daily update
-            got). The Guest Suite line moved under the page title, where it is
-            a note about the page rather than a control in a row of controls. */}
-        <div />
+        {/* THE ASK AVA PILL IS BACK (owner ruling, Run 5 T3), and this page
+            had lost it twice over. Spec 3.3 removed it here in favour of the
+            floating pod — the same ruling that emptied Seating and Wedding
+            favours, now superseded: a page-level Ask Ava opens THIS page's
+            modal with this page's actions.
+
+            The second loss was quieter. Calendar.jsx still renders an Ask Ava
+            of its own, and suppresses it under `hideChrome` with a comment
+            saying the Hub shows one "a few pixels above" — which stopped being
+            true when the pill above was replaced by <div />. Since the Hub is
+            the only thing that renders Calendar.jsx, and it always passes
+            hideChrome, BOTH buttons were gone: /Schedule and /Calendar were
+            the only planning pages in the product with no way to ask Ava.
+            Found by the import graph, which sees a page that imports Ava and
+            renders nothing, where a list of pages sees nothing at all. */}
+        <AvaButton label="Ask Ava to plan your wedding schedule" onClick={() => setAvaOpen(true)} />
 
         {/* Right: Export + Add */}
         <div className="flex flex-wrap items-center gap-[10px]">
@@ -405,6 +418,16 @@ export default function ScheduleHub() {
           <CalendarPage embedded hideChrome />
         </>
       )}
+
+      {/* The schedule's own Ava — the calendar's prompt and actions, which are
+          what a couple wants to ask about on either tab of this page. */}
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Schedule"
+        systemPrompt="You are Ava, a wedding planning AI. Help the couple plan their wedding schedule and calendar, sequence the day, and stay on track with key dates and deadlines."
+        quickActions={["What key dates should we add?", "When should we book vendors?", "Help us plan the month before", "Build a run sheet for the day"]}
+      />
       {activeTab === "runsheet" && (
         <RunSheet
           scheduleItems={scheduleItems}

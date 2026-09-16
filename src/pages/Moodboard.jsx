@@ -400,7 +400,7 @@ export default function MoodboardPage() {
       <AvaModal
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
-        pageTitle="Inspiration curator"
+        pageTitle="Moodboard"
         systemPrompt="You are Ava, a wedding inspiration curator. Help find and organize wedding aesthetic ideas."
         quickActions={["Describe my wedding aesthetic", "Find trending wedding styles", "Color palette suggestions", "Theme ideas for my venue"]}
       />

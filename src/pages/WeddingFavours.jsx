@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import AvaButton from '@/components/shared/AvaButton';
+import AvaModal from '@/components/layout/AvaModal';
 import toast from 'react-hot-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Search, FileText, Check, Plus, Gift, Package, Trash2 } from "lucide-react";
@@ -88,6 +89,7 @@ export default function WeddingFavoursPage() {
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('idle');
   const [activeTab, setActiveTab] = useState('overview');
+  const [avaOpen, setAvaOpen] = useState(false);
   const autoSaveRef = useRef(null);
   const latestRef = useRef(null);
 
@@ -164,9 +166,8 @@ export default function WeddingFavoursPage() {
       {/* Ava + actions bar */}
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <AvaButton
-          label="Ask Ava"
-          seedQuestion="Suggest wedding favour ideas for our wedding"
-          pageContext="plans the favours and small gifts their guests take home."
+          label="Ask Ava to suggest wedding favours"
+          onClick={() => setAvaOpen(true)}
         />
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.6)', minWidth: 80 }}>
           {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
@@ -266,6 +267,17 @@ export default function WeddingFavoursPage() {
         </div>
       </div>
 
+      {/* The blue "Ask Ava — wedding favours" dialog was removed here under
+          Spec 3.3 and the page was wired to the pod. Owner ruling, Run 5 T3,
+          supersedes that. THE LABEL CHANGES TOO: a bare "Ask Ava" does not say
+          what the button will do. */}
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Wedding favours"
+        systemPrompt="You are Ava, helping a couple choose the favours and small gifts their guests take home. Prefer things a guest keeps or eats over things left on the table, and say what an idea costs per head."
+        quickActions={["Suggest wedding favour ideas for our wedding", "What do guests actually keep?", "Favours for under two dollars a head", "Something edible we can make ourselves"]}
+      />
     </div>
   );
 }

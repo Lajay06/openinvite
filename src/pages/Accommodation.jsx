@@ -335,7 +335,7 @@ export default function AccommodationPage() {
       <AvaModal
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
-        pageTitle="Accommodation advisor"
+        pageTitle="Accommodation"
         systemPrompt="You are Ava, a wedding accommodation advisor. Help recommend places to stay and plan guest accommodation."
         quickActions={["What should I consider when recommending accommodation?", "How do I negotiate a group rate at a hotel?", "What information should I include in an accommodation guide?", "Tips for guests traveling from interstate or overseas"]}
       />

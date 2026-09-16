@@ -23,6 +23,7 @@ import AddTableModal from '../components/seating/AddTableModal';
 import AISeatingGenerator from '../components/seating/AISeatingGenerator';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
+import AvaModal from '@/components/layout/AvaModal';
 import { useCollaboratorContext } from '@/lib/collaboratorContext';
 import CountUp from "@/components/shared/CountUp";
 import { color } from "@/styles/tokens";
@@ -215,6 +216,7 @@ export default function SeatingPage() {
   const [manuallyAddedEventIds, setManuallyAddedEventIds] = useState(new Set());
   const [showAddEventMenu, setShowAddEventMenu] = useState(false);
   const [attendingOnly, setAttendingOnly] = useState(false);
+  const [avaOpen, setAvaOpen] = useState(false);
 
   const collab = useCollaboratorContext();
   const isCollaborating = !!collab.ownerUserId;
@@ -910,8 +912,7 @@ export default function SeatingPage() {
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
         <AvaButton
           label="Ask Ava to arrange your seating plan"
-          seedQuestion="Suggest a seating arrangement for our tables"
-          pageContext="arranges their tables and seats their guests, including the family dynamics that make that hard."
+          onClick={() => setAvaOpen(true)}
         />
       </div>
 
@@ -1475,7 +1476,14 @@ export default function SeatingPage() {
       )}
 
       {showAIGenerator && (
-        <AISeatingGenerator
+        /* The auto-allocator inside the one shell — same tool, same title, the
+           shell's frame instead of its own. */
+        <AvaModal
+          isOpen={showAIGenerator}
+          onClose={() => setShowAIGenerator(false)}
+          pageTitle="allocate seats"
+          quickActions={[]}
+          body={<AISeatingGenerator
           // ATTENDEES: the model needs one row per person to seat, and a
           // synthetic id it can return for a plus-one.
           attendees={eventAttendees}
@@ -1484,6 +1492,7 @@ export default function SeatingPage() {
           eventScopeLabel={guestScopeLabel}
           onApplySeating={handleApplyAISeating}
           onClose={() => setShowAIGenerator(false)}
+          />}
         />
       )}
 
@@ -1493,6 +1502,19 @@ export default function SeatingPage() {
           sentence of context wearing a second window. The sentence moved to
           the pod's page context on the button above; the window did not
           survive. Spec 3.3, one entry point per page. */}
+      {/* The "seating arrangement specialist" modal was removed here under
+          Spec 3.3 and the page was wired to the pod. Owner ruling, Run 5 T3,
+          supersedes that: a page-level Ask Ava opens THIS page's modal with
+          this page's actions. The sentence that became the pod's page context
+          is the systemPrompt below — it was always a sentence of context, and
+          now it is one in the right place. */}
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Seating"
+        systemPrompt="You are Ava, helping a couple arrange their tables and seat their guests — including the family dynamics that make that hard. Answer with the room in mind: who should not be near whom is as much of the problem as who should."
+        quickActions={["Suggest a seating arrangement for our tables", "Who should sit at the top table?", "How do we seat divorced parents?", "What size tables work for 120 guests?"]}
+      />
     </div>
   );
 }

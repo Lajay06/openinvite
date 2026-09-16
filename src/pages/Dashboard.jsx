@@ -373,7 +373,7 @@ export default function Dashboard() {
       <AvaModal
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
-        pageTitle="Review your wedding plan"
+        pageTitle="Overall"
         systemPrompt="You are Ava, a wedding planning AI for Openinvite. Help the couple review their overall wedding plan, identify gaps, and suggest next steps."
         quickActions={["What should I focus on this week?", "What's missing from my plan?", "Give me a wedding planning checklist", "How far along am I?"]}
       />

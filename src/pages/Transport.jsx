@@ -383,7 +383,7 @@ export default function TransportPage() {
       <AvaModal
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
-        pageTitle="Transport advisor"
+        pageTitle="Transport"
         systemPrompt="You are Ava, a wedding transport advisor. Help plan wedding party transport, parking, shuttles and logistics for the day."
         quickActions={["What transport should I arrange for my wedding party?", "How do I coordinate wedding party transport to a remote venue?", "Tips for organizing a shuttle bus service", "How much does wedding party transport typically cost?"]}
       />

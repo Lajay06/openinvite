@@ -231,7 +231,7 @@ export default function GuestSuitePolicies() {
 
       {/* Ava button + save indicator */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <AvaButton label="Ask Ava" onClick={() => setAvaOpen(true)} />
+        <AvaButton label="Ask Ava about what to tell your guests" onClick={() => setAvaOpen(true)} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: PJS, color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.6)', minWidth: 80 }}>
           {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
           {saveStatus === 'saved' && <><Check size={12} />Saved</>}
@@ -587,7 +587,7 @@ export default function GuestSuitePolicies() {
       <AvaModal
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
-        pageTitle="Wedding policies"
+        pageTitle="Good to know"
         systemPrompt="You are Ava, a wedding planning expert. Help the couple write clear, warm, and professional wedding policies for their guests — covering photography, social media, children, dietary needs, gifts, dress code, and late arrival. Keep policies friendly but clear."
         quickActions={[
           'Write an unplugged ceremony message',

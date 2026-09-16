@@ -23,11 +23,14 @@ import { budgetCategoryLabel } from '@/lib/budgetCategories';
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const TONES = {
+  // ONE AVA COLOUR. The light tone was purple-bordered with a pink-to-purple
+  // confirm; the dark tone below it was already #E03553. The same action card,
+  // shown in the page modal and in the pod, was two different products.
   light: {
-    border: '1px solid rgba(147,51,234,0.2)', bg: 'rgba(147,51,234,0.04)',
-    eyebrow: 'rgba(147,51,234,0.6)', text: '#0A0A0A',
+    border: '1px solid rgba(224,53,83,0.2)', bg: 'rgba(224,53,83,0.04)',
+    eyebrow: 'rgba(224,53,83,0.75)', text: '#0A0A0A',
     cancelBorder: '1px solid rgba(10,10,10,0.15)', cancelText: 'rgba(10,10,10,0.6)',
-    confirmBg: 'linear-gradient(135deg, #ec4899, #9333ea)', confirmText: '#fff',
+    confirmBg: '#E03553', confirmText: '#fff',
     doneText: 'rgba(10,10,10,0.6)',
   },
   // The pod's own surface: it sits on #1A1A1A, so the light card's near-black

@@ -875,7 +875,7 @@ Rules:
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
               borderRadius: 999, padding: '7px 14px',
-              background: 'linear-gradient(135deg, #ec4899, #9333ea)',
+              background: '#E03553',
               color: '#fff', fontSize: 12, fontWeight: 600, fontFamily: PJS,
               border: 'none', opacity: 0.7,
             }}

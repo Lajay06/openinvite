@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Plus, X, Download, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import toast from 'react-hot-toast';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
-import AvaButton from '@/components/shared/AvaButton';
-import AvaModal from '@/components/layout/AvaModal';
 import { getMyInvitation, getMyRecords } from '@/lib/resolveMyWedding';
 import { buildScheduleEvents } from '@/lib/scheduleEvents';
 import { useCollaboratorContext } from '@/lib/collaboratorContext';
@@ -38,7 +36,6 @@ export default function CalendarPage({ embedded = false, hideChrome = false }) {
   const [customEvents, setCustomEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newEvent, setNewEvent] = useState({ title: '', date: '', time: '', description: '', type: 'custom' });
-  const [avaOpen, setAvaOpen] = useState(false);
 
   const collab = useCollaboratorContext();
   const isCollaborating = !!collab.ownerUserId;
@@ -209,8 +206,8 @@ export default function CalendarPage({ embedded = false, hideChrome = false }) {
           component — showing both stacked was confusing (two "Total events"
           cards with two different numbers, since the Hub's only counts
           Schedule-entity items while this one also folds in vendor dates,
-          the wedding day itself, and custom calendar entries). The Ava
-          button and export/add-event row stay — this component's export
+          the wedding day itself, and custom calendar entries). The
+          export/add-event row stays — this component's export
           includes those extra sources the Hub's own CSV/ics export doesn't,
           so it isn't purely redundant. */}
       {!hideChrome && (
@@ -235,13 +232,14 @@ export default function CalendarPage({ embedded = false, hideChrome = false }) {
 
       {/* Ava button + toolbar row */}
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
-        {/* Not when embedded: the Hub renders "Ask Ava to build your wedding
-            timeline" a few pixels above this, opening a modal about the same
-            page. Two Ava buttons in one viewport is the "too much" the owner
-            named. The Add event button below STAYS — it creates a
-            calendar-only custom event, which the Hub's own Add event (a
-            Schedule record) cannot do. */}
-        {!hideChrome && <AvaButton label="Ask Ava to plan your wedding calendar" onClick={() => setAvaOpen(true)} />}
+        {/* NO ASK AVA HERE, and no `hideChrome` to decide it. ScheduleHub is
+            the only thing that renders this file, it always suppressed this
+            button, and the Hub's own pill it deferred to had been replaced by
+            an empty <div /> — so this was dead code guarding a button nobody
+            could press. The schedule's Ask Ava lives on the Hub, once, for
+            both of its tabs. The Add event button below STAYS: it creates a
+            calendar-only custom event the Hub's Add event cannot. */}
+        <div />
         <div className="flex flex-wrap items-center gap-[10px]">
           <button onClick={exportToICalendar} disabled={events.length === 0}
             className="btn-editorial-secondary"
@@ -425,13 +423,6 @@ export default function CalendarPage({ embedded = false, hideChrome = false }) {
         </div>
       </div>
 
-      <AvaModal
-        isOpen={avaOpen}
-        onClose={() => setAvaOpen(false)}
-        pageTitle="Wedding calendar planner"
-        systemPrompt="You are Ava, a wedding planning AI. Help the couple plan their wedding calendar, schedule appointments, and stay on track with key dates and deadlines."
-        quickActions={["What key dates should I add?", "When should I book vendors?", "Help me plan the month before", "Create a countdown plan"]}
-      />
     </div>
   );
 }

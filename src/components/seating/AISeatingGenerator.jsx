@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Sparkles, CheckCircle, X } from 'lucide-react';
+import { Sparkles, CheckCircle } from 'lucide-react';
 import { InvokeLLM } from '@/integrations/Core';
 import toast from 'react-hot-toast';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { color } from '@/styles/tokens';
 
 const labelStyle = {
@@ -153,22 +152,15 @@ Return assignments[], unassigned[], and summary.`,
 
   const getGuestName = (id) => attendees.find(a => a.id === id)?.name || 'Unknown';
 
+  // ── NO WINDOW OF ITS OWN (owner ruling, Run 5 T3) ─────────────────────────
+  //
+  // This said "Ask Ava — allocate seats" in a header of its own, in the old
+  // pink-to-purple gradient, with its own close button and its own 680px
+  // dialog. Two windows both called Ask Ava, on one page, differing in frame,
+  // colour and close affordance, is two products. The tool is worth keeping
+  // exactly as it is; the frame around it was never its own.
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent hideClose title="Ask Ava — allocate seats" className="max-w-[680px] max-h-[90vh] overflow-y-auto p-0 gap-0">
-
-        {/* Header — same pink/purple Ava gradient every other Ava surface uses (AvaModal.jsx), not a bespoke navy */}
-        <div style={{ background: 'linear-gradient(135deg, #ec4899, #9333ea)', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Sparkles size={15} style={{ color: '#FFFFFF' }} />
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              Ask Ava — allocate seats
-            </span>
-          </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.8)', display: 'flex', padding: 4 }}>
-            <X size={16} />
-          </button>
-        </div>
+    <div style={{ flex: 1, overflowY: 'auto' }}>
 
         <div style={{ padding: 24 }}>
 
@@ -305,7 +297,6 @@ Return assignments[], unassigned[], and summary.`,
             </div>
           )}
         </div>
-      </DialogContent>
-    </Dialog>
+    </div>
   );
 }

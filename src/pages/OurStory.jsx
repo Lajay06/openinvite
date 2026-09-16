@@ -9,13 +9,15 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Trash2, Image as ImageIcon, Sparkles, Loader2, GripVertical } from 'lucide-react';
 import toast from 'react-hot-toast';
-import AIWeddingAssistant from '../components/shared/AIWeddingAssistant';
+import AvaButton from '@/components/shared/AvaButton';
+import AvaModal from '@/components/layout/AvaModal';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { useFileUpload } from '@/hooks/useFileUpload';
 import UploadStatus from '@/components/shared/UploadStatus';
 import { color } from '@/styles/tokens';
 
 export default function OurStoryPage() {
+  const [avaOpen, setAvaOpen] = useState(false);
   const [milestones, setMilestones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
@@ -180,6 +182,17 @@ export default function OurStoryPage() {
         title="Our story"
         subtitle="Create a beautiful timeline of your relationship journey"
       />
+
+      {/* ONE ASK AVA, THE SAME ONE (owner ruling, Run 5 T3).
+          This page ran AIWeddingAssistant: a 337-line chat of its own, in its
+          own dialog titled "Ask Ava", behind its own floating button, with a
+          pink-to-purple avatar, a shadow-2xl card and rounded-2xl corners —
+          three things DESIGN_SPEC bars outright and a fourth Ava besides. It
+          was the only caller. The window is gone; the page asks Ava the way
+          every other page does. */}
+      <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
+        <AvaButton label="Ask Ava to help tell your story" onClick={() => setAvaOpen(true)} />
+      </div>
 
       <div className="p-6 lg:p-8 space-y-8">
 
@@ -397,7 +410,13 @@ export default function OurStoryPage() {
         </div>
       </div>
       
-      <AIWeddingAssistant />
+      <AvaModal
+        isOpen={avaOpen}
+        onClose={() => setAvaOpen(false)}
+        pageTitle="Our story"
+        systemPrompt="You are Ava, helping a couple write the story of how they met and got here, for their wedding website. Ask for the details that make a story specific — where, when, who said what — and write in their voice, not a greeting card's."
+        quickActions={["Help us write how we met", "What milestones should our timeline include?", "Make this sound like us, not a greeting card", "Write a short version for the website"]}
+      />
     </div>
   );
 }
