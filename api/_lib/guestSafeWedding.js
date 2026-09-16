@@ -36,6 +36,32 @@ export const GUEST_SAFE_WEDDING_FIELDS = [
   'postWeddingEvents',
   'pageSections',
   'enabledPages',
+  // THE COUPLE'S OWN PAGES, AND WHAT IS ON THEM.
+  //
+  // Their absence here is why a custom page was invisible to guests on the
+  // live site while every renderer handled it correctly. `enabledPages`
+  // carried the slug, and nothing that received it could resolve the slug to
+  // a page:
+  //
+  //   WeddingWebsiteNav    pageLabel() returns null, and the link is filtered
+  //                        out by the rule that hides retired slugs
+  //   MultiPageWeddingWebsite  allPageSlugs() is the twelve built-ins, so
+  //                        withAlwaysOnPages drops the slug, pageIsAvailable
+  //                        is false, and the route serves
+  //                        "This invitation isn't available" — the couple's
+  //                        own page refusing their guests
+  //   WeddingCustomPage    customPageBlocks() finds nothing to render
+  //
+  // src/lib/customPages.js was written to fix exactly that and did, one layer
+  // in. This is the layer it could not reach.
+  //
+  // GUEST-SAFE: `customPages` is a catalog of {id, name, slug, template} — the
+  // couple's own page names, which every guest already reads in the navigation
+  // — and `customPageContent` holds the blocks they wrote to be read. Neither
+  // carries contact details, guest data or anything the couple has not chosen
+  // to publish.
+  'customPages',
+  'customPageContent',
   'activeTheme',
   'activeTypography',
   'activeUniverse',

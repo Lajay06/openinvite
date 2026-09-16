@@ -27,12 +27,41 @@
  * Reused by: stat-surface assertions (feel-pass 5), the loading-idiom pass
  * (feel-pass 7), and any future build that needs a dashboard page to actually
  * have content in it.
+ *
+ * ── THE INSTRUMENT'S OWN FAILURES, COUNTED ─────────────────────────────────
+ *
+ * Every one of these reported a clean result over a broken product, or a
+ * broken product over a working one. They are counted in one place because a
+ * count kept in two places stops being a count.
+ *
+ *   1-4  a stub with the right NAME and the wrong SHAPE — note.body/note.text,
+ *        missing homeContent.blocks, faq vs qna, and { details: … } on
+ *        /api/my-wedding-details. Each made a surface render its empty state
+ *        while the pass read it as clean.
+ *   5    the fixture was FATTER than the endpoint. /api/wedding-by-slug was
+ *        stubbed as PUBLISHED_WEDDING whole, so a guard could assert against
+ *        fields the API never sends. The R9 guard proved a custom page reached
+ *        the guest nav using `customPages`, which the guest-safe allowlist did
+ *        not carry — green for a month while the live site served "This
+ *        invitation isn't available" for the couple's own page. Fixed by
+ *        routing the fixture through pickGuestSafeFields (Run 5 T1).
+ *   6    A SYNTHETIC DragEvent DOES NOT REACH REACT. Dispatching
+ *        dragstart/dragover/drop by hand moves nothing, and the first version
+ *        of the T1 reorder check read that as the product failing to reorder.
+ *        Playwright's locator.dragTo() performs the mouse sequence the browser
+ *        turns into the events the component actually listens for.
+ *   7    A STUB THAT FORGETS CANNOT BE RELOADED. Writes are answered 200 and
+ *        discarded, so any check of the form "reload and it is still there"
+ *        fails by construction — the T1 guard read that as the couple's page
+ *        not persisting. A guard that needs persistence keeps one record in
+ *        memory and merges each write into it.
  */
 /* global localStorage, document */  // used inside page.evaluate(), which runs in the browser
 
 import { assertSeedMatchesSchemas } from './seedSchema.mjs';
 import { CONTRACTS } from './stubContracts.mjs';
 import { blockRemoteImages } from './blockRemoteImages.mjs';
+import { pickGuestSafeFields } from '../../api/_lib/guestSafeWedding.js';
 const DAY = 86400000;
 const iso = (offsetDays) => new Date(Date.now() + offsetDays * DAY).toISOString();
 
@@ -448,7 +477,26 @@ function resolveStub(url, seed, user, json, onEntity, fail = () => json(null)) {
       let slug = null;
       try { slug = new URL(url).searchParams.get('slug'); } catch { /* non-URL */ }
       if (slug && slug !== PUBLISHED_WEDDING.slug) return fail(404, { error: 'not found' });
-      return json(PUBLISHED_WEDDING);
+      // THROUGH THE SAME ALLOWLIST THE ENDPOINT USES, not the raw fixture.
+      //
+      // This returned PUBLISHED_WEDDING whole, so a guard could assert against
+      // fields the real endpoint never sends. That is not hypothetical: the R9
+      // guard proved a custom page reached the guest nav by handing the page a
+      // payload carrying `customPages`, which GUEST_SAFE_WEDDING_FIELDS did
+      // not list. The product was broken on production the whole time and the
+      // guard was green, because the fixture could not occur.
+      //
+      // Fifth mismatch of this class in this file and the first one authored
+      // here rather than inherited. Routing the fixture through
+      // pickGuestSafeFields makes the class impossible: a field the endpoint
+      // will not send cannot reach a render pass either.
+      // THE ENDPOINT'S EXACT SHAPE: the allowlist, plus the registry the
+      // handler merges in afterwards (wedding-by-slug.js:375). Mirroring only
+      // the allowlist would drop customGifts and registryProducts, which the
+      // real response does carry — a stub that is wrong in the other direction
+      // is still wrong.
+      const { customGifts = [], registryProducts = [] } = PUBLISHED_WEDDING;
+      return json({ ...pickGuestSafeFields(PUBLISHED_WEDDING), customGifts, registryProducts });
     }
     // THE INVITATION ROUTE. /rsvp/:token is a real guest surface — change-your-
     // reply, the address line and the hero all render here — and it could not be
