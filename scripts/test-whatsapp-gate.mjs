@@ -87,7 +87,7 @@ const openMessages = async () => {
     const text = noteThere ? (await note.first().innerText()).trim() : '';
     check('  and the compose panel opens', noteThere, noteThere ? 'the send sheet is open' : 'nothing opened');
     check('  saying where the message actually comes from',
-      /Opens in your WhatsApp app\s*—\s*messages send from the account you’re signed in to\./.test(text),
+      /Opens in WhatsApp\s*—\s*messages send from the account you’re signed in to\./.test(text),
       text ? `"${text}"` : 'no note beside the send');
 
     // A COUPLE PICKS A TEMPLATE, SO THIS DOES TOO. The panel opens on "Custom
