@@ -14,7 +14,7 @@ const labelStyle = {
 /**
  * THE COUPLE'S OWN WHATSAPP NUMBER — FOR THE QR CODE, AND FOR NOTHING ELSE.
  *
- * Owner ruling, Run 5 T9: the feature stays, the "connect" theatre goes. This
+ * Owner ruling, Run 5 T9: the feature stays, the "connect" theater goes. This
  * was framed as connecting an account — save a number, and the WhatsApp
  * controls on the Messages page appear; remove it, and they vanish. Nothing
  * about a message to a guest ever used it. wa.me is addressed with THE

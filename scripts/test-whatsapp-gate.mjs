@@ -1,7 +1,7 @@
 /**
  * THE SEND IS NOT GATED ON A NUMBER NOBODY SENDS FROM.
  *
- * Owner ruling, Run 5 T9: the feature stays, the "connect" theatre goes.
+ * Owner ruling, Run 5 T9: the feature stays, the "connect" theater goes.
  *
  * ── WHAT WAS WRONG ─────────────────────────────────────────────────────────
  *

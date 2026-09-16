@@ -308,7 +308,7 @@ export default function MessagesPage() {
                     message, and saving it changed nothing except whether
                     this button was drawn. A couple who had not "connected"
                     saw no way to message a guest at all, and the fix they
-                    were being asked for was theatre. */}
+                    were being asked for was theater. */}
                 {guestPhones[message.guest_id] && (
                   <button onClick={() => setComposingGuest(message)}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 6 }}
