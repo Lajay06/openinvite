@@ -2,6 +2,8 @@ import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, Download, AlertCircle } from 'lucide-react';
 import { downloadGuestTemplate, parseGuestFile } from '@/lib/guestImport';
+import CountryPicker from '@/components/shared/CountryPicker';
+import { DEFAULT_COUNTRY } from '@/lib/phoneE164';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -16,6 +18,11 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 export default function OnboardingPathAGuestList({ onNext }) {
   const [rows, setRows] = useState(null);
   const [dragOver, setDragOver] = useState(false);
+  // Onboarding has no wedding record to read a venue from yet — this step runs
+  // before one exists — so the picker starts at the default and the couple sets
+  // it if their guests are elsewhere. What it must not do is decide silently:
+  // parseGuestFile assumed Australia for every file, everywhere, until now.
+  const [importCountry, setImportCountry] = useState(DEFAULT_COUNTRY);
   const fileInputRef = useRef(null);
   const [parseError, setParseError] = useState('');
 
@@ -28,7 +35,7 @@ export default function OnboardingPathAGuestList({ onNext }) {
     }
     try {
       setParseError('');
-      setRows(await parseGuestFile(file));
+      setRows(await parseGuestFile(file, importCountry));
     } catch (err) {
       setParseError(err.message);
     }
@@ -68,6 +75,15 @@ export default function OnboardingPathAGuestList({ onNext }) {
         >
           <Download size={13} />Download template
         </button>
+
+        {!rows && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+            <CountryPicker value={importCountry} onChange={setImportCountry} ariaLabel="Country for phone numbers in this file" />
+            <span style={{ fontSize: 12, lineHeight: '14px', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
+              Phone numbers without a country code are read as this country.
+            </span>
+          </div>
+        )}
 
         {!rows && (
           <div

@@ -2342,6 +2342,32 @@ WhatsApp control at all until they save the number again.
 Owner ruling, Run 4 S3: LEAVE THE GATE IN PLACE FOR NOW, do not remove it in
 this run. Filed so the next person does not rediscover it.
 
+## A write-capable probe asserts its target URL before it issues anything — with the `pr:merge` fix
+
+Owner ruling, Run 5 T9. The production-verification probe built its write URL
+from an app id it read out of the page:
+
+```js
+const appId = window.__BASE44_APP_ID__ || document.querySelector('meta[name="base44-app-id"]')?.content;
+fetch(`https://base44.app/api/apps/${appId}/entities/Guest/${id}`, { method: 'PUT', … })
+```
+
+Neither source existed. `appId` was `undefined`, the request went to
+`/apps/undefined/entities/Guest/6aa193a0becae03604bd3771`, and Base44 answered
+404. Nothing was written, the three reads are identical, and the record is
+untouched — **by luck, not by design**. The same undefined in a path segment
+that happened to resolve, or a 404 the script had treated as "already absent",
+would have been a silent wrong write on a real record under an authorization
+that named one field on one guest.
+
+THE RULE. A probe that can write asserts, before issuing the request, that every
+segment of its target URL is present and non-empty — app id, entity name, record
+id — and refuses with a named failure otherwise. "The request failed" is not the
+same as "the request was never sendable", and only the second is safe.
+
+It belongs beside the `pr:merge` fix below: both are guard-rails on tools that
+act, and both were found by a tool doing the forbidden thing on its own.
+
 ## `pr:merge` must refuse to run against a dirty tree — a MINOR package after Run 5
 
 Owner ruling, Run 5: the merge tool performed the dirty-tree branch switch that

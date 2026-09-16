@@ -74,7 +74,16 @@ export async function downloadGuestTemplate() {
  * _rowIndex/_error:null) or an error row (_rowIndex/_error set, placeholder
  * display fields). Rejects only on a genuinely unreadable/unparsable file.
  */
-export function parseGuestFile(file) {
+/**
+ * COUNTRY IS A PARAMETER NOW, AND IT WAS ALWAYS A DECISION (Run 5 T5).
+ *
+ * `rowToGuest(row, country)` has taken a country since it was written, and this
+ * function never passed one — so every imported number was read as Australian,
+ * for everyone, silently. A US couple importing their own guest list got a file
+ * of +61 numbers and no message saying so. The caller picks the country now,
+ * with the same picker every other phone field uses.
+ */
+export function parseGuestFile(file, country = DEFAULT_COUNTRY) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = async (e) => {
@@ -90,7 +99,7 @@ export function parseGuestFile(file) {
         }
         resolve(jsonRows.map((row, i) => {
           try {
-            return { ...rowToGuest(row), _rowIndex: i + 2, _error: null };
+            return { ...rowToGuest(row, country), _rowIndex: i + 2, _error: null };
           } catch (err) {
             return { _rowIndex: i + 2, _error: err.message, name: '—', rsvp_status: '—', plus_one: false };
           }

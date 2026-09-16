@@ -1,10 +1,13 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, Upload, Download, AlertCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
 import toast from 'react-hot-toast';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { downloadGuestTemplate, parseGuestFile } from '@/lib/guestImport';
+import CountryPicker from '@/components/shared/CountryPicker';
+import { useDefaultCountry } from '@/lib/defaultCountry';
+import { DEFAULT_COUNTRY } from '@/lib/phoneE164';
 import { createGuest } from '@/lib/guestWrites';
 
 const Guest = base44.entities.Guest;
@@ -18,6 +21,15 @@ export default function ImportGuestModal({ onClose, onImported }) {
 
   const downloadTemplate = () => downloadGuestTemplate();
 
+  // WHICH COUNTRY THE NUMBERS IN THE FILE ARE IN. It was Australia, always,
+  // without asking (guestImport.js). A spreadsheet of "0412 345 678" and one of
+  // "(212) 555-0123" cannot both be read the same way, and nothing on this
+  // screen used to say which reading it had taken.
+  const venueCountry = useDefaultCountry();
+  const [importCountry, setImportCountry] = useState(DEFAULT_COUNTRY);
+  const [countryTouched, setCountryTouched] = useState(false);
+  useEffect(() => { if (!countryTouched) setImportCountry(venueCountry); }, [venueCountry, countryTouched]);
+
   const handleFile = async (file) => {
     if (!file) return;
     const ext = file.name.split('.').pop().toLowerCase();
@@ -26,7 +38,7 @@ export default function ImportGuestModal({ onClose, onImported }) {
       return;
     }
     try {
-      setRows(await parseGuestFile(file));
+      setRows(await parseGuestFile(file, importCountry));
     } catch (err) {
       toast.error(err.message);
     }
@@ -126,6 +138,18 @@ export default function ImportGuestModal({ onClose, onImported }) {
         >
           <Download size={13} />Download template
         </button>
+
+        {/* WHICH COUNTRY THE PHONE NUMBERS ARE IN — above the drop zone,
+            because it decides how the file is read and changing it after the
+            fact would mean re-reading rows the couple has already seen. */}
+        {!rows && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+            <CountryPicker value={importCountry} onChange={(iso) => { setCountryTouched(true); setImportCountry(iso); }} ariaLabel="Country for phone numbers in this file" />
+            <span style={{ fontSize: 12, lineHeight: '14px', color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
+              Phone numbers without a country code are read as this country.
+            </span>
+          </div>
+        )}
 
         {/* Drop zone — only shown before file is chosen */}
         {!rows && (
