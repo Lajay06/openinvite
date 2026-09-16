@@ -5949,6 +5949,32 @@ because those instances are the ones in their head. Write the CLASS — the
 property that makes the act dangerous — and the list becomes examples rather
 than the definition.
 
+### 2026-09-16 — the same class, one step further: never switch branches dirty
+
+**Owner ruling: never switch branches with a dirty tree, owner files or not. A
+canon entry that arrives mid-package is committed on the package branch and
+lands with it, or waits until the package is pushed. Main is not touched from a
+tree with uncommitted work.**
+
+What happened: a canon entry was ruled while Run 5 T1 was mid-build, so I
+checked out `main` with four modified product files in the tree. Git carried
+them across, I committed only the DECISION-LOG file, and pushed. Nothing wrong
+landed — the commit was clean and the four files were still uncommitted
+afterwards — and that is the point. It was luck, not method. A `git add -A`, an
+editor's save-all, or a conflict on any of those four paths would each have put
+package work on `main` under a docs commit message.
+
+THIS IS THE RELOCATION CLASS WITH THE OBJECT CHANGED. Above, the thing at risk
+was an untracked file belonging to the owner; here it is tracked work belonging
+to a package. The property that makes the act dangerous is identical: a command
+that moves the working tree while something unfinished is in it. `git checkout`
+was already named in the list above as "a checkout over a staged path" — this
+widens it to any checkout, and says why.
+
+The practice is unchanged from the line above it: commit to the branch by path
+first. A commit is recoverable and named.
+
+
 ---
 
 ## 2026-09-15 — when a PR's record disagrees with its ref
