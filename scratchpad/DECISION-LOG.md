@@ -6136,3 +6136,36 @@ something a guest should not read, that is the moment it must be projected**,
 and the bare-object declaration is what makes projecting it possible without a
 schema change.
 
+
+---
+
+## 2026-09-16 — Production verification waits for the DEPLOY, not the merge
+
+**Production verification waits for the deploy of the merge SHA to be READY
+(read it from Vercel/gh), never for the merge alone.**
+
+Run 5 T1. The PR merged as `db250e94`, I ran the production check immediately,
+and it reported the fix not working: the "Custom" divider still present, the
+drag writing the right order while the render ignored it — the two-list symptom
+exactly, which is what the package had just removed.
+
+Production was serving the previous bundle. The deployment record for
+`db250e94` was created at 02:47:08Z, seconds before the run. Re-run against the
+deployed build, every step passed.
+
+THE FAILURE MODE IS SPECIFIC AND IT LOOKS LIKE A REGRESSION, NOT LIKE A RACE. A
+verification run against a stale bundle does not error or say "not deployed" —
+it renders the OLD behaviour faithfully, which is precisely the behaviour the
+package exists to remove. So the reading is a confident, detailed,
+screenshot-able report that the fix does not work.
+
+The check is one command and it is not the merge:
+
+```
+gh api repos/<owner>/<repo>/deployments --jq '.[0:3][] | "\(.environment) \(.sha[0:8]) \(.created_at)"'
+```
+
+A merge SHA appearing on `main` says the code is on the branch. Only the
+deployment says it is on the internet, and only the internet is what
+"production-verified" means.
+
