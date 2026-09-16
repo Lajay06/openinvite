@@ -127,6 +127,14 @@ export const SEED = {
     { id:'gm1', guest_name:'Grace Hopper', message:'Cannot wait!',    read:false, replied:false, created_date: iso(-3), created_by:'fixture@example.com' },
     { id:'gm2', guest_name:'Alan Turing',  message:'Congratulations', read:true,  replied:true,  created_date: iso(-1), reply_sent_at: iso(-1), created_by:'fixture@example.com' },
   ],
+  // ONE WAITING AND ONE ALREADY ANSWERED. A page whose review controls only
+  // render for a PENDING request cannot be measured off an empty list, and a
+  // list with nothing answered cannot prove the controls stop appearing once
+  // the couple has decided.
+  SongRequest: [
+    { id: 'sr1', title: 'Just Like Heaven', artist: 'The Cure',   status: 'pending',  submittedBy: 'Grace Hopper' },
+    { id: 'sr2', title: 'This Must Be the Place', artist: 'Talking Heads', status: 'approved', submittedBy: 'Alan Turing' },
+  ],
   Invitation: [],
   Notification: [],
   // Budget is AES ciphertext in production; the page tolerates an absent blob
@@ -421,6 +429,12 @@ function resolveStub(url, seed, user, json, onEntity, fail = () => json(null)) {
     // stub-vs-reality mismatch of this class. Check the endpoint, not the name.
     if (/\/api\/my-wedding-details/.test(url)) return json((seed.WeddingDetails ?? [])[0] ?? null);
     if (/\/api\/my-guest-links/.test(url))     return json({ links: [] });
+    // THE ENVELOPE IS { requests }, not a bare array. api/song-request-review.js
+    // ends in `res.json({ requests })` and Music.jsx destructures that name, so
+    // a stub returning the rows directly would leave the page on its empty
+    // state with every request seeded — the fourth stub-vs-reality mismatch of
+    // that exact class in this file.
+    if (/\/api\/song-request-review/.test(url)) return json({ requests: seed.SongRequest ?? [] });
     if (/\/api\/rates/.test(url))              return json({ result: 'success', rates: { USD: 1, AUD: 1.5 } });
     // The guest site's single source: without this every /w/ route sits on its
     // skeleton forever, which reads as "nothing rendered" rather than "not seeded".
