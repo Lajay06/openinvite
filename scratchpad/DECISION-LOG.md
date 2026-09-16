@@ -6169,3 +6169,77 @@ A merge SHA appearing on `main` says the code is on the branch. Only the
 deployment says it is on the internet, and only the internet is what
 "production-verified" means.
 
+
+
+---
+
+## 2026-09-16 — An enumeration is by import graph or by AST, never by a text pattern
+
+**An enumeration is by import graph or by AST, never by a text pattern of the
+call form.**
+
+Owner ruling, Run 5 T3, after the same mistake twice in one run:
+
+- **S8a.** `.coupleNames` was matched by name and the match was not followed to
+  its source, so a second producer of the same field went unlisted.
+- **T3.** Six bare "Ask Ava" labels were reported to the owner as **one**. The
+  pattern fitted `<AvaButton\n  label=…`; five of the six were written on a
+  single line, and a single-line call is not a different feature.
+
+A regex enumerates the call forms its author had in mind. It cannot be audited,
+because the thing it misses leaves no trace — a green run over a surface the
+instrument never saw looks exactly like a green run over the whole surface.
+
+The import graph enumerates what the program actually contains, and cannot be
+evaded by writing the same call differently. The cost is a parser and an alias
+resolver; `scripts/lib/avaEntryPoints.mjs` is the worked example
+(`@babel/parser`, `@/` → `src/`, reverse reachability from three root modules).
+
+WHAT IT BOUGHT, IMMEDIATELY. The guard it replaced listed FOUR pages. There
+were thirty-six. Reading the list from the graph turned up, in one run:
+
+- the schedule page had no Ask Ava at all — its own pill was an empty `<div />`
+  and the calendar it embeds suppressed its button in deference to the pill
+  that was no longer there;
+- a 337-line assistant on Our story with its own window, gradient, `shadow-2xl`
+  and `rounded-2xl`, imported by one page and by nothing else;
+- an Ask Ava button on `Dashboard.jsx`, which no route can reach.
+
+None of the three was in anyone's list, because a list is written from memory
+of the feature and all three were failures of memory.
+
+THE ENUMERATION IS NOT THE EXPECTATION. The graph supplies WHICH pages; the
+guard still writes BY HAND what each must show. A guard that reads both from
+the file under test agrees with any mistake in it. The two are cross-checked in
+both directions — an entry point with no expectation fails, an expectation with
+no entry point fails — so a new surface cannot be added quietly and a retired
+one cannot leave a check behind that silently means nothing.
+
+
+---
+
+## 2026-09-16 — A plant is reverted from a snapshot, never with `git checkout --`
+
+Run 5 T3, my own error, filed because the cost was real and the fix is one
+line of procedure.
+
+Eight plants were run against a package whose forty files were **uncommitted**.
+Each plant reverted with `git checkout -- <file>`, which does not undo the
+plant — it restores the file to **HEAD**, discarding every uncommitted change
+in it. Four files lost their package work, including the entire new guard
+(back to the 118-line version it replaced) and a component refactor whose
+caller still expected the new shape.
+
+It is silent. The plant reports red, the revert reports nothing, the next plant
+runs, and the damage is only visible in `git status` — where the file has
+simply stopped being listed as modified.
+
+THE RULE. Plants run against **committed** work, or they revert from a copy
+taken before the plant (`cp file file.bak`; restore from the `.bak`). On this
+package the first is easy and is now the habit: commit the package on its
+branch, then plant. The commit is not the merge, and a branch commit costs
+nothing to amend.
+
+This is the same family as "never switch branches with a dirty tree": a git
+command whose behaviour is defined against HEAD is not a way to undo a local
+edit when the tree is holding work HEAD has never seen.
