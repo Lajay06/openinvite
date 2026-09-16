@@ -31,12 +31,25 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
    src/lib/avaExecute.js. Copying either into the pod would have produced two
    code paths that write to the couple's database and drift apart. */
 
-export default function AvaModal({ isOpen, onClose, systemPrompt, quickActions = [], pageTitle = 'Ava' }) {
+/**
+ * `body` LETS A PAGE PUT ITS OWN TOOL INSIDE THE ONE SHELL.
+ *
+ * Owner ruling, Run 5 T3: every page-level Ask Ava opens one shared shell.
+ * Vows & speeches has a writer — tabs, a generator, a refiner — that is not a
+ * chat and should not become one. Rather than leave it as a second window with
+ * its own navy header, the shell supplies the frame, the title and the quick
+ * actions, and the writer renders as the content.
+ *
+ * With a body there is no transcript and no composer: the page's tool IS the
+ * conversation. Without one, nothing changes for the twenty-five pages that
+ * use the chat.
+ */
+export default function AvaModal({ isOpen, onClose, systemPrompt, quickActions = [], pageTitle = 'Ava', body = null }) {
   if (!isOpen) return null;
-  return <AvaModalDialog onClose={onClose} systemPrompt={systemPrompt} quickActions={quickActions} pageTitle={pageTitle} />;
+  return <AvaModalDialog onClose={onClose} systemPrompt={systemPrompt} quickActions={quickActions} pageTitle={pageTitle} body={body} />;
 }
 
-function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
+function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle, body }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [messages, setMessages] = useState([]);
@@ -148,16 +161,30 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
 
   return (
     <Dialog open onOpenChange={(next) => { if (!next) onClose(); }}>
-      <DialogContent title={`Ask Ava — ${pageTitle}`} className="p-0 gap-0 max-w-[560px] w-full max-h-[80vh] flex flex-col overflow-hidden [&>button]:hidden">
-        {/* Header */}
-        <div style={{ background: 'linear-gradient(135deg, #ec4899, #9333ea)', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Sparkles size={15} style={{ color: '#fff' }} />
-              <span style={{ fontSize: 15, fontWeight: 700, color: '#fff', fontFamily: PJS }}>✦ Ava</span>
-            </div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.75)', fontFamily: PJS, marginTop: 2 }}>{pageTitle}</div>
-          </div>
+      <DialogContent
+        /* A NAME TO ASK THE SHELL BY. `[data-ava-pod]` exists because
+           "the pod did not open" could otherwise only be guessed at from
+           geometry — and a plant proved that deleting the attribute left
+           every pod assertion green, since a selector matching nothing
+           also matches nothing. The same is true of "this is the one
+           shell": without a name, a page could open a bespoke dialog and
+           any structural check would pass on it. */
+        data-ava-shell
+        title={`Ask Ava — ${pageTitle}`} className={`p-0 gap-0 w-full flex flex-col overflow-hidden [&>button]:hidden ${body ? 'max-w-[760px] max-h-[92vh]' : 'max-w-[560px] max-h-[80vh]'}`}>
+        {/* ── ONE SHELL, FLAT, AND THE MARK SAID ONCE (owner ruling, Run 5 T3) ──
+            The header was a pink-to-purple gradient carrying the Ava mark
+            TWICE — a Sparkles icon and the ✦ beside it — over a two-line title
+            that repeated the page name under the word "Ava". None of that is
+            the brand: the product is flat #E03553, and a mark shown twice in
+            one header is decoration rather than identity.
+
+            The title is now the sentence the dialog already passes to
+            DialogContent, so the visible heading and the accessible name are
+            the same string rather than two descriptions of the same window. */}
+        <div style={{ background: '#E03553', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+          <span style={{ fontSize: 15, fontWeight: 700, color: '#fff', fontFamily: PJS }}>
+            ✦ Ask Ava — {pageTitle}
+          </span>
           <button onClick={onClose} aria-label="Close Ava modal" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.8)', display: 'flex', padding: 4 }}>
             <X size={16} />
           </button>
@@ -171,7 +198,7 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
               {quickActions.map(action => (
                 <button key={action} onClick={() => sendMessage(action)} disabled={loading}
                   style={{ padding: '5px 12px', borderRadius: 999, border: '1px solid rgba(10,10,10,0.12)', background: 'rgba(10,10,10,0.03)', fontSize: 12, fontWeight: 600, fontFamily: PJS, color: '#0A0A0A', cursor: loading ? 'not-allowed' : 'pointer', transition: 'all 0.12s' }}
-                  onMouseEnter={e => { if (!loading) { e.currentTarget.style.background = 'rgba(147,51,234,0.08)'; e.currentTarget.style.borderColor = '#9333ea'; e.currentTarget.style.color = '#9333ea'; } }}
+                  onMouseEnter={e => { if (!loading) { e.currentTarget.style.background = 'rgba(224,53,83,0.08)'; e.currentTarget.style.borderColor = '#E03553'; e.currentTarget.style.color = '#E03553'; } }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'rgba(10,10,10,0.03)'; e.currentTarget.style.borderColor = 'rgba(10,10,10,0.12)'; e.currentTarget.style.color = '#0A0A0A'; }}>
                   {action}
                 </button>
@@ -180,6 +207,15 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
           </div>
         )}
 
+        {/* A PAGE'S OWN TOOL, WHERE THE CHAT WOULD BE. The header, the title
+            and the quick actions are the shell's; below them the page decides
+            whether the answer is a conversation or an instrument. */}
+        {body ? (
+          /* The body owns its own scrolling — a tool with pinned tabs and a
+             scrolling pane under them needs the column, not a scroll box. */
+          <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>{body}</div>
+        ) : (
+        <>
         {/* Chat area */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 4, minHeight: 0 }}>
           {messages.length === 0 && !loading && (
@@ -192,14 +228,14 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
             <div key={msgIndex} style={{ display: 'flex', flexDirection: 'column', marginBottom: 8 }}>
               <div style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
                 {msg.role === 'ava' && (
-                  <div style={{ width: 24, height: 24, borderRadius: 999, background: 'linear-gradient(135deg, #ec4899, #9333ea)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
+                  <div style={{ width: 24, height: 24, borderRadius: 999, background: '#E03553', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 8, marginTop: 2 }}>
                     <Sparkles size={11} style={{ color: '#fff' }} />
                   </div>
                 )}
                 {msg.content ? (
                   <div style={{
                     maxWidth: '75%', padding: '10px 14px', fontSize: 13, lineHeight: 1.6, fontFamily: PJS,
-                    background: msg.role === 'user' ? 'linear-gradient(135deg, #ec4899, #9333ea)' : 'rgba(10,10,10,0.04)',
+                    background: msg.role === 'user' ? '#E03553' : 'rgba(10,10,10,0.04)',
                     color: msg.role === 'user' ? '#fff' : '#0A0A0A',
                     borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
                     whiteSpace: 'pre-wrap',
@@ -224,12 +260,12 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
 
           {loading && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <div style={{ width: 24, height: 24, borderRadius: 999, background: 'linear-gradient(135deg, #ec4899, #9333ea)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div style={{ width: 24, height: 24, borderRadius: 999, background: '#E03553', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Sparkles size={11} style={{ color: '#fff' }} />
               </div>
               <div style={{ display: 'flex', gap: 4, padding: '10px 14px', background: 'rgba(10,10,10,0.04)', borderRadius: '12px 12px 12px 2px' }}>
                 {[0, 1, 2].map(d => (
-                  <div key={d} style={{ width: 6, height: 6, borderRadius: 999, background: '#9333ea', opacity: 0.6, animation: `ava-pulse 1.2s ease-in-out ${d * 0.2}s infinite` }} />
+                  <div key={d} style={{ width: 6, height: 6, borderRadius: 999, background: '#E03553', opacity: 0.6, animation: `ava-pulse 1.2s ease-in-out ${d * 0.2}s infinite` }} />
                 ))}
               </div>
             </div>
@@ -251,7 +287,7 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
             onClick={() => sendMessage()}
             disabled={loading || !input.trim()}
             aria-label="Send message"
-            style={{ width: 32, height: 32, borderRadius: 999, border: 'none', cursor: loading || !input.trim() ? 'not-allowed' : 'pointer', background: loading || !input.trim() ? 'rgba(10,10,10,0.1)' : 'linear-gradient(135deg, #ec4899, #9333ea)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}
+            style={{ width: 32, height: 32, borderRadius: 999, border: 'none', cursor: loading || !input.trim() ? 'not-allowed' : 'pointer', background: loading || !input.trim() ? 'rgba(10,10,10,0.1)' : '#E03553', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}
           >
             {/* 0.3 here is textDisabled and is correct: this branch only
                 renders while the button is disabled, and WCAG 1.4.11 exempts
@@ -261,6 +297,8 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle }) {
             <Send size={13} style={{ color: loading || !input.trim() ? 'rgba(10,10,10,0.3)' : '#fff' }} />
           </button>
         </div>
+        </>
+        )}
       </DialogContent>
 
       <style>{`

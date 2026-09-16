@@ -403,7 +403,7 @@ export default function MessagesPage() {
       <AvaModal
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
-        pageTitle="Message drafter"
+        pageTitle="Messages"
         systemPrompt="You are Ava, a wedding communication assistant. Help draft messages to guests, write RSVP reminders, and communicate important wedding details."
         quickActions={["Draft an RSVP reminder", "Write a thank you message", "Send directions to guests", "Compose a schedule update"]}
       />

@@ -153,9 +153,18 @@ export async function runDataTable() {
   // ── THE HUB (R37 items 4-6) ─────────────────────────────────────────────
   {
     const hub = code('src/pages/ScheduleHub.jsx');
-    check('PLANT: the gradient Ava pill is gone from the page',
-      !/<AvaButton/.test(hub) && !/AvaModal/.test(hub),
-      'Ava\'s one entry point is the floating button');
+    // This asserted the OPPOSITE until Run 5 T3: that the hub had no Ava pill
+    // at all, because spec 3.3 made the floating pod the one entry point. That
+    // ruling is superseded, and in the meantime the page had ended up with no
+    // way to ask Ava by any route — the pill here was an empty <div /> and the
+    // calendar it embeds suppressed its own button in deference to it. What
+    // the original check was really about is kept: the pill is not a bespoke
+    // gradient of its own, it is AvaButton, which is solid #E03553.
+    check('PLANT: the schedule page can ask Ava, in the shared shell',
+      /<AvaButton label="Ask Ava to plan your wedding schedule"/.test(hub)
+      && /<AvaModal/.test(hub) && /pageTitle="Schedule"/.test(hub)
+      && !/linear-gradient/.test(hub),
+      'one pill, one shell, no gradient');
     check('  and the Guest Suite line is a note under the title, not a pill in the action row',
       /Visible to guests in your Guest Suite/.test(hub) && !/✨ Visible/.test(hub)
         && /padding: "0 32px 14px"/.test(hub),

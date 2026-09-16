@@ -296,7 +296,7 @@ const [activeTab, setActiveTab] = useState("attire");
       <AvaModal
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
-        pageTitle="Style and fashion advisor"
+        pageTitle="Styling"
         systemPrompt="You are Ava, a wedding style and fashion advisor. Help with attire, flowers, color palettes and decorations."
         quickActions={["Suggest a color palette", "What flowers are in season?", "Help me describe my wedding style", "Bridal party outfit ideas"]}
       />

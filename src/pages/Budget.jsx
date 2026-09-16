@@ -496,7 +496,7 @@ export default function BudgetPage() {
 
       {/* Toolbar row: Ava button left, actions right */}
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
-        <AvaButton label="Ask Ava for budget advice" onClick={() => setAvaOpen(true)} />
+        <AvaButton label="Ask Ava about your budget" onClick={() => setAvaOpen(true)} />
         <div className="flex flex-wrap gap-[10px]">
           <button
             onClick={exportBudget}
@@ -605,7 +605,7 @@ export default function BudgetPage() {
       <AvaModal
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
-        pageTitle="Budget advisor"
+        pageTitle="Budget"
         systemPrompt={`You are Ava, a wedding budget advisor. The couple is tracking their budget in ${currencyCode} (${symbol}). Help couples allocate budget, find savings, and track spending across all wedding categories. When giving budget estimates or comparisons, use ${currencyCode}. If the couple has selected cultures and traditions, factor in typical costs for culturally-specific elements (e.g. Mehndi night, tea ceremony, sofreh aghd) where relevant.`}
         quickActions={["What's a typical wedding budget breakdown?", "Where can I save money?", "Am I spending too much on vendors?", "Help me negotiate with vendors"]}
       />

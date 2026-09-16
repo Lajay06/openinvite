@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import AvaModal from '@/components/layout/AvaModal';
 import toast from 'react-hot-toast';
-import { InvokeLLM } from "@/integrations/Core";
 import { differenceInDays, parseISO } from "date-fns";
-import { Lightbulb, Loader2, X, Search, FileText, Check, Plane, Hotel, Map } from "lucide-react";
+import { Loader2, Search, FileText, Check, Plane, Hotel, Map } from "lucide-react";
 import DetailsSection from "../components/event-details/DetailsSection";
 import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { base44 } from "@/api/base44Client";
 import AvaButton from '@/components/shared/AvaButton';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
 const WeddingDetails = base44.entities.WeddingDetails;
 
@@ -70,62 +69,6 @@ const AVA_PROMPTS = [
   "What travel insurance do I need for a honeymoon abroad?",
 ];
 
-function AvaModal({ onClose }) {
-  const [prompt, setPrompt] = useState('');
-  const [response, setResponse] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const ask = async (q) => {
-    const question = (q || prompt).trim();
-    if (!question) return;
-    setLoading(true); setResponse('');
-    try {
-      const res = await InvokeLLM({ prompt: `Honeymoon planning: ${question}` });
-      setResponse(typeof res === 'string' ? res : JSON.stringify(res));
-    } catch { setResponse('Something went wrong. Please try again.'); }
-    setLoading(false);
-  };
-
-  return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent hideClose title="Ask Ava — honeymoon" aria-label="Ask Ava — honeymoon" className="max-w-[520px] max-h-[80vh] p-0 gap-0 flex flex-col">
-        <div style={{ background: '#0A1930', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Lightbulb size={16} style={{ color: '#DDF762' }} />
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Ask Ava — honeymoon</span>
-          </div>
-          <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
-        </div>
-        <div style={{ padding: 24, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {AVA_PROMPTS.map(p => (
-              <button key={p} onClick={() => ask(p)} disabled={loading}
-                style={{ textAlign: 'left', padding: '10px 14px', background: '#F5F5F5', border: 'none', borderLeft: '2px solid rgba(10,10,10,0.12)', cursor: loading ? 'not-allowed' : 'pointer', fontSize: 13, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                {p}
-              </button>
-            ))}
-          </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
-            <input value={prompt} onChange={e => setPrompt(e.target.value)} onKeyDown={e => e.key === 'Enter' && ask()} disabled={loading}
-              placeholder="Or ask your own question…" style={{ ...inputStyle, flex: 1 }} />
-            <button onClick={() => ask()} disabled={loading || !prompt.trim()} className="btn-primary" style={{ fontSize: 12, flexShrink: 0 }}>Ask</button>
-          </div>
-          {loading && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Loader2 size={14} style={{ color: '#E03553' }} className="animate-spin" />
-              <span style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Thinking…</span>
-            </div>
-          )}
-          {response && (
-            <div style={{ background: '#F5F5F5', padding: '14px 16px', fontSize: 13, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
-              {response}
-            </div>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 const TABS = [
   { key: 'travel',       label: 'Travel' },
@@ -202,7 +145,7 @@ export default function HoneymoonPage() {
 
       {/* Ava button + save indicator */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <AvaButton label="Ask Ava" onClick={() => setShowAva(true)} />
+        <AvaButton label="Ask Ava to plan your honeymoon" onClick={() => setShowAva(true)} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif", color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.6)', minWidth: 80 }}>
           {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
           {saveStatus === 'saved' && <><Check size={12} />Saved</>}
@@ -295,7 +238,20 @@ export default function HoneymoonPage() {
         </div>
       </div>
 
-      {showAva && <AvaModal onClose={() => setShowAva(false)} />}
+      {/* ONE SHELL (owner ruling, Run 5 T3). This page carried its own navy
+          dialog — the fourth Ava — whose InvokeLLM call sent
+          "<context>: <question>" and nothing else: no wedding, no history, no
+          action mirror. So the window with the most confident branding knew
+          the least about the couple. Its four prompts are not lost; they are
+          the quick actions below, answered by the shell that reads the
+          couple's actual record. */}
+      <AvaModal
+        isOpen={showAva}
+        onClose={() => setShowAva(false)}
+        pageTitle="Honeymoon"
+        systemPrompt="You are Ava, helping a couple plan the honeymoon — where to go, when to book it, and what it takes to travel. Answer from what their record already says where it says anything, and keep it to what they can act on next."
+        quickActions={AVA_PROMPTS}
+      />
     </div>
   );
 }

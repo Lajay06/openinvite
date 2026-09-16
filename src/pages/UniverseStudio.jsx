@@ -352,7 +352,7 @@ export default function UniverseStudio() {
       <AvaModal
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
-        pageTitle="Design & guest experience advisor"
+        pageTitle="Design studio"
         systemPrompt="You are Ava, helping a couple with both their wedding's visual design (universe/theme choice, website, invitations, print pieces) and their overall guest experience (RSVP flow, guest communication, making guests feel welcome)."
         quickActions={["Which universe suits our wedding style?", "What should go on my guest suite?", "How do I write a great RSVP message?", "Tips for making guests feel welcome"]}
       />

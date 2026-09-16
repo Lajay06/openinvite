@@ -523,7 +523,7 @@ Badge options: "Luxury pick", "Best value", "Closest to venue", "Budget friendly
             {/* Ava button */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
               {avaLoading ? (
-                <button disabled style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '7px 14px', background: 'linear-gradient(135deg, #ec4899, #9333ea)', color: '#fff', fontSize: 12, fontWeight: 600, fontFamily: PJS, border: 'none', opacity: 0.7 }}>
+                <button disabled style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '7px 14px', background: '#E03553', color: '#fff', fontSize: 12, fontWeight: 600, fontFamily: PJS, border: 'none', opacity: 0.7 }}>
                   <Loader2 size={13} style={{ animation: 'spin 0.8s linear infinite' }} /> Ava is thinking…
                 </button>
               ) : (

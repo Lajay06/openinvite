@@ -2342,14 +2342,19 @@ WhatsApp control at all until they save the number again.
 Owner ruling, Run 4 S3: LEAVE THE GATE IN PLACE FOR NOW, do not remove it in
 this run. Filed so the next person does not rediscover it.
 
-## Seating and Wedding favours keep the pod, not a page modal — owner's call, post-launch
+## An Ask Ava button no route can reach — Dashboard.jsx, post-launch
 
-Run 4 S1 converted four pages from the global pod to their own page-scoped Ava
-modal. Two were left out: `Seating.jsx` and `WeddingFavours.jsx`. Each carries a
-comment recording that its modal was removed BY THE OWNER, BY NAME, under
-"Spec 3.3, one entry point per page".
+`src/pages/Dashboard.jsx` ("Overall") was retired: `/Dashboard` redirects to
+`/DailyUpdate` and no `pages.config.js` key maps to the module, so nothing
+renders it. It still carries an `AvaButton`, an `AvaModal` and a systemPrompt,
+which Run 5 T3 renamed along with every other page's because the import graph
+found it and the guard demanded an expectation for it.
 
-Owner's call, 2026-09-16: they stay removed.
+Nothing is broken — it is unreachable in both directions. The question is
+whether the file should exist at all, which is a deletion, not a fix, and not
+a thing to do in the week of launch. `scripts/test-ava-page-modal.mjs` asserts
+the redirect, so if it is ever routed again the guard asks for a real entry
+rather than letting a dead page quietly come back.
 
 ## Generate the per-guard CI step from package.json — post-launch
 

@@ -649,7 +649,7 @@ export default function MusicPage() {
       <AvaModal
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
-        pageTitle="Music curator"
+        pageTitle="Music"
         systemPrompt="You are Ava, a wedding music curator. Help plan playlists, find songs, and coordinate music. If the couple has selected cultures and traditions, suggest traditional music moments relevant to those traditions where useful (e.g. Bhangra/Bollywood sets for South Asian heritage, a processional style tied to their ceremony tradition)."
         quickActions={["Suggest first dance songs", "Build a reception playlist", "What songs to avoid?", "Ceremony music suggestions"]}
       />
