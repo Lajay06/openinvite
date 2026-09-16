@@ -1,4 +1,4 @@
-/* global getComputedStyle */
+/* global document, window */
 /**
  * ONE COUNTRY PICKER, THE WHOLE ISO LIST, AND NO EMOJI IN IT.
  *
@@ -144,6 +144,88 @@ if (there) {
   await page.waitForTimeout(300);
   const nzRow = (await list.locator('button').first().innerText()).replace(/\n/g, ' ');
   check('  and the row carries its dial code', /\+64/.test(nzRow), nzRow.trim());
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// PART THREE — the open list is actually usable (owner's screenshot, T5 follow-up).
+//
+// It showed Australia and half of New Zealand. The list was absolutely
+// positioned inside the form, and OptionAccordion's section body carries
+// `overflow: hidden` for its expand animation, so the popover was cut off at
+// the bottom of the Phone row. A row count is the only honest measure of that:
+// "the list has 245 children" was TRUE the whole time it was unusable.
+// ════════════════════════════════════════════════════════════════════════════
+console.log('\n  The open list, where it is used\n');
+
+/** Rows whose box is fully inside both the list's visible box and the viewport. */
+const visibleRows = (page) => page.evaluate(() => {
+  const pop = document.querySelector('[data-country-popover]');
+  const list = document.querySelector('[data-country-list]');
+  if (!pop || !list) return { rows: 0, why: 'no popover' };
+  const P = pop.getBoundingClientRect();
+  const L = list.getBoundingClientRect();
+  const rows = [...list.querySelectorAll('button')].filter((b) => {
+    const r = b.getBoundingClientRect();
+    return r.height > 0 && r.top >= L.top - 1 && r.bottom <= L.bottom + 1
+      && r.bottom <= window.innerHeight + 1 && r.top >= 0;
+  }).length;
+  const search = pop.querySelector('input');
+  const S = search ? search.getBoundingClientRect() : null;
+  return {
+    rows,
+    popHeight: Math.round(P.height),
+    withinViewport: P.bottom <= window.innerHeight + 1 && P.top >= -1,
+    searchPinnedAtTop: !!S && Math.abs(S.top - P.top) < 2,
+    searchInsideList: !!(search && list.contains(search)),
+  };
+});
+
+async function openPickerOn(width, height, label, wantRows) {
+  const c = await seededContext(browser, { width, height });
+  const p2 = await c.newPage();
+  await p2.goto(`${BASE}/Guests`, { waitUntil: 'domcontentloaded', timeout: 60000 }).catch(() => {});
+  await p2.waitForTimeout(7000);
+  await p2.getByRole('button', { name: /add guest/i }).first().click({ timeout: 12000 }).catch(() => {});
+  await p2.waitForTimeout(2500);
+  const trig = p2.getByRole('button', { name: /country code/i }).first();
+  const found = await trig.count() > 0;
+  check(`${label}: Add guest offers the picker`, found, found ? 'trigger present' : 'no trigger');
+  if (found) {
+    await trig.click({ timeout: 8000 }).catch(() => {});
+    await p2.waitForTimeout(800);
+    const m = await visibleRows(p2);
+    check(`  ${label}: at least ${wantRows} rows are actually visible`, m.rows >= wantRows,
+      `${m.rows} rows in a ${m.popHeight}px list`);
+    check(`  ${label}: the list is not clipped by anything above it`, m.withinViewport === true,
+      m.withinViewport ? 'inside the viewport' : 'runs past the bottom of the screen');
+    check(`  ${label}: the search stays pinned at the top`, m.searchPinnedAtTop && m.searchInsideList === false,
+      m.searchPinnedAtTop ? 'pinned above the scrolling rows' : 'the search scrolls with the rows');
+  }
+  await c.close();
+}
+
+await openPickerOn(1440, 950, 'desktop 1440x950', 10);
+await openPickerOn(390, 844, 'phone 390x844', 6);
+
+// The same component, in the other three places it is used.
+for (const [route, label, opener] of [
+  ['/Guests', 'Import guests', /import/i],
+  ['/Messages', 'Messages number field', /^save number$/i],
+]) {
+  const c = await seededContext(browser, { width: 1440, height: 950 });
+  const p3 = await c.newPage();
+  await p3.goto(`${BASE}${route}`, { waitUntil: 'domcontentloaded', timeout: 60000 }).catch(() => {});
+  await p3.waitForTimeout(7000);
+  await p3.getByRole('button', { name: opener }).first().click({ timeout: 12000 }).catch(() => {});
+  await p3.waitForTimeout(2000);
+  const trig = p3.getByRole('button', { name: /country (code|for phone numbers)/i }).first();
+  if (await trig.count() === 0) { check(`${label}: offers the picker`, false, 'no trigger'); await c.close(); continue; }
+  await trig.click({ timeout: 8000 }).catch(() => {});
+  await p3.waitForTimeout(800);
+  const m = await visibleRows(p3);
+  check(`${label}: the same list, floating and usable`, m.rows >= 10 && m.withinViewport === true,
+    `${m.rows} rows in a ${m.popHeight}px list${m.withinViewport ? '' : ', clipped'}`);
+  await c.close();
 }
 
 await browser.close();
