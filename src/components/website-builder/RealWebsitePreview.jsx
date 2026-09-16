@@ -97,8 +97,20 @@ export default function RealWebsitePreview({ details: ownDetails, currentPage = 
           never do is look like something the couple wrote. This is studio
           chrome sitting above the artwork, not part of the site: product face,
           sentence case, and it disappears the moment their own words arrive. */}
-      {isSampled && (
-        <div style={{
+      {/* EDITING ONLY (owner ruling, Run 5 T2). This rendered wherever this
+          component rendered, which is the builder canvas AND the full-screen
+          preview — so a couple checking how their site looks was shown our
+          note about sample content sitting on top of it. The banner is studio
+          chrome explaining a mechanism; a preview is a question about the
+          finished thing, and chrome is not part of the answer.
+
+          `editable` already distinguishes the two: StudioWebsite binds it to
+          `canvasMode === 'edit'` (:876) and FullScreenPreview passes nothing,
+          so it defaults false (:148). The published site never imports this
+          file at all — a property of the import graph, asserted by
+          tests/persistence/sample-content-never-published.mjs. */}
+      {isSampled && editable && (
+        <div data-sample-banner style={{
           fontFamily: "'Plus Jakarta Sans', sans-serif",
           fontSize: 12, lineHeight: 1.5, color: 'rgba(10,10,10,0.6)',
           background: '#FFFFFF', borderBottom: '1px solid rgba(10,10,10,0.12)',

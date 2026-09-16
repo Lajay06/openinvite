@@ -691,6 +691,20 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
 
+      # The sample-content banner is editing chrome, and stays there.
+      - name: The sample banner shows while editing and nowhere else
+        run: |
+          npx vite preview --port 4209 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4209 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4209 npm run test:sample-banner-scope
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       # The home hero keeps both faces at phone widths.
       - name: The home hero keeps both faces at phone widths
         run: |

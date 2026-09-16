@@ -85,6 +85,7 @@
     "test:preview-device-scroll": "node scripts/test-preview-device-scroll.mjs",
     "test:custom-page-in-nav": "node scripts/test-custom-page-in-nav.mjs",
     "test:home-hero-faces": "node scripts/test-home-hero-faces.mjs",
+    "test:sample-banner-scope": "node scripts/test-sample-banner-scope.mjs",
     "test:stay-website-link": "node scripts/test-stay-website-link.mjs",
     "test:beauty-collapsed": "node scripts/test-beauty-collapsed.mjs",
     "test:music-layout-review": "node scripts/test-music-layout-review.mjs",
