@@ -2342,6 +2342,39 @@ WhatsApp control at all until they save the number again.
 Owner ruling, Run 4 S3: LEAVE THE GATE IN PLACE FOR NOW, do not remove it in
 this run. Filed so the next person does not rediscover it.
 
+## `pr:merge` must refuse to run against a dirty tree — a MINOR package after Run 5
+
+Owner ruling, Run 5: the merge tool performed the dirty-tree branch switch that
+canon forbids, on its own.
+
+WHAT HAPPENED. `npm run pr:merge 785` merged the PR, then switched to `main` and
+pulled — with T9's uncommitted work in the tree. The pull aborted ("Your local
+changes to the following files would be overwritten by merge:
+src/pages/Messages.jsx"), and the session was left standing on `main` holding
+another branch's edits. Nothing was lost, because the files were carried rather
+than discarded; the same tree state one `git checkout --` later is how four
+files were reverted to HEAD earlier in the same run (DECISION-LOG, 2026-09-16).
+
+THE FIX. `scripts/pr-merge.mjs` refuses to run when `git status --porcelain` is
+non-empty, and prints what is dirty. Owner files are excluded the way the rest
+of the tooling excludes them (the .gitignore / `git ls-files` rule), so a
+scratch file in the working directory does not block a merge.
+
+MY CALL ON WHEN: a separate MINOR package immediately after Run 5's last merge,
+NOT post-launch and NOT inside a Run 5 package.
+
+  · post-launch is too late — the exposure is every merge of this run, and the
+    run has ten packages left;
+  · inside a package is worse — the merge tool is the one thing every package
+    depends on, and changing it mid-run means the next block's merge is the
+    first test of the change;
+  · after the last merge and before the launch smoke, the tool is idle and a
+    green `test:ci` is the whole gate.
+
+Until then the mitigation is procedural and already in force: commit the
+package on its branch before merging anything (which is also what the plant
+ruling requires).
+
 ## An Ask Ava button no route can reach — Dashboard.jsx, post-launch
 
 `src/pages/Dashboard.jsx` ("Overall") was retired: `/Dashboard` redirects to

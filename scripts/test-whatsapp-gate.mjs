@@ -30,6 +30,7 @@
  * could not be drawn in any harness — "it is not shown" was a fact about the
  * fixture.
  */
+/* global localStorage */  // used inside page.evaluate(), which runs in the browser
 import { chromium } from 'playwright';
 import { seededContext } from './lib/renderHarness.mjs';
 
@@ -89,10 +90,31 @@ const openMessages = async () => {
       /Opens in your WhatsApp app\s*—\s*messages send from the account you’re signed in to\./.test(text),
       text ? `"${text}"` : 'no note beside the send');
 
+    // A COUPLE PICKS A TEMPLATE, SO THIS DOES TOO. The panel opens on "Custom
+    // message" with an empty box, and an empty message is not sendable — which
+    // is the product being sensible, not a gate. The thing under test is
+    // whether a couple who has stored no number of their own can get to a
+    // sendable message, so take the path they take.
+    // It is a native <select>: clicking the visible text of an <option> does
+    // nothing at all, which the first run of this check read as the template
+    // failing to fill the box.
+    await page.locator('select').first().selectOption('rsvp').catch(() => {});
+    await page.waitForTimeout(1500);
+    const composed = (await page.locator('textarea').first().inputValue().catch(() => '')).trim();
+    check('  a template fills the message', composed.length > 0,
+        composed ? `"${composed.slice(0, 48)}…"` : 'the box stayed empty');
+
+    // THE SEND ITSELF, NOT JUST THE PANEL. It is blocked when the guest has no
+    // invitation link — a real rule, and the reason instrument failure 9 made
+    // this read `disabled=true` for a while: the harness answered every link
+    // lookup with an empty array, so no guest in any guard had a link.
     const sendBtn = page.getByRole('button', { name: /^open in whatsapp$/i }).last();
     const disabled = await sendBtn.isDisabled().catch(() => null);
     check('  and the send itself is available', disabled === false,
       disabled === false ? 'enabled with no number stored' : `disabled=${disabled}`);
+    const warning = await page.getByText(/could not create an invitation link/i).count();
+    check('  with a real invitation link behind it', warning === 0,
+      warning === 0 ? 'the guest has a link' : 'the send is blocked by the link, not by the gate');
   }
 
   await page.close();
@@ -116,6 +138,13 @@ const openMessages = async () => {
   const shown = await page.getByText(NUMBER, { exact: false }).count();
   check('  and the number itself is shown back', shown > 0, shown > 0 ? NUMBER : 'not displayed');
 
+  // COUNTED BEFORE THE QR MODAL OPENS, DELIBERATELY. Radix marks the rest of
+  // the page aria-hidden while a dialog is open, so every role query outside it
+  // returns nothing — the first version of this check counted zero WhatsApp
+  // buttons and read it as the gate coming back the other way.
+  const sendWithNumber = await page.getByRole('button', { name: /open in whatsapp/i }).count();
+  check('  and messaging a guest still works with a number stored', sendWithNumber > 0, `${sendWithNumber} WhatsApp button(s)`);
+
   const qrBtn = page.getByRole('button', { name: /generate qr code/i });
   const qrThere = await qrBtn.count() > 0;
   check('the QR code is offered once there is a number', qrThere, qrThere ? 'Generate QR code' : 'no QR button');
@@ -128,10 +157,6 @@ const openMessages = async () => {
     check('  and it encodes THAT number', label > 0,
       label > 0 ? `QR for ${NUMBER}` : 'the QR is not built from the stored number');
   }
-
-  // The gate's removal does not run the other way either.
-  const send = await page.getByRole('button', { name: /open in whatsapp/i }).count();
-  check('  and messaging a guest still works with a number stored', send > 0, `${send} WhatsApp button(s)`);
 
   await page.close();
 }

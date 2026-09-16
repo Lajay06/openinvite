@@ -31,10 +31,18 @@ export const CONTRACTS = [
     ok: (b) => b && Array.isArray(b.guests),
     want: '{ guests: [...] }' },
 
+  // NOT AN ARRAY. api/my-guest-links.js:46 documents the shape and :197 builds
+  // it: `{ links: { [guestId]: { token, rsvpUrl } } }`. This asserted an array
+  // and the stub returned one, so the contract check passed over a shape that
+  // no caller can read — `linkMap[guest.id]?.rsvpUrl` is undefined on an
+  // array, which is the "we could not create a link for this guest" branch.
   { match: '/api/my-guest-links',
-    cite: 'api/my-guest-links.js — res.status(200).json({ links })',
-    ok: (b) => b && Array.isArray(b.links),
-    want: '{ links: [...] }' },
+    cite: 'api/my-guest-links.js:46,197 — { links: { [guestId]: { token, rsvpUrl } } }',
+    ok: (b) => b && b.links && typeof b.links === 'object' && !Array.isArray(b.links)
+      && Object.values(b.links).every(v => v && typeof v.token === 'string' && typeof v.rsvpUrl === 'string'
+        // the plus-one pair is optional, and never half of it
+        && (('plusOneToken' in v) === ('plusOneRsvpUrl' in v))),
+    want: '{ links: { [guestId]: { token, rsvpUrl, plusOneToken?, plusOneRsvpUrl? } } }' },
 
   { match: '/api/wedding-by-slug',
     cite: 'api/wedding-by-slug.js — res.json({ ...pickGuestSafeFields(wedding), ...registry })',

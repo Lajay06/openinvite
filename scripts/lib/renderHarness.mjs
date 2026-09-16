@@ -62,6 +62,21 @@
  *        under any circumstances — and "the button is not shown" was a claim
  *        about a fixture, not about the product. g1 now has a number and gm1
  *        names her (Run 5 T9).
+ *   9    THE STUB AND ITS CONTRACT AGREED WITH EACH OTHER AND NOT WITH THE
+ *        ENDPOINT. /api/my-guest-links returns `{ links: { [guestId]: { token,
+ *        rsvpUrl } } }`; the stub returned `{ links: [] }` and the contract
+ *        asserted `Array.isArray(b.links)`, so the check passed on a shape no
+ *        caller can read. Every guard that needed an invitation link got none,
+ *        and the WhatsApp send — blocked when a guest has no link — was
+ *        disabled in every harness run. Read as the product's answer at first
+ *        (Run 5 T9). A contract written from the stub is not a contract.
+ *  10    A COUPLE WITH NO INVITATION RECORD. SEED.Invitation was `[]`, so
+ *        getMyInvitation() answered null — and WhatsAppCompose sets its
+ *        template variables only inside `if (inv)`. Every template therefore
+ *        rendered with {rsvp_link} still in it, which the component reads as
+ *        "no link for this guest" and blocks the send on. Two different
+ *        fixture gaps (9 and 10) produced the same disabled button, and both
+ *        looked like the product refusing to send (Run 5 T9).
  */
 /* global localStorage, document */  // used inside page.evaluate(), which runs in the browser
 
@@ -174,7 +189,13 @@ export const SEED = {
     { id: 'sr1', title: 'Just Like Heaven', artist: 'The Cure',   status: 'pending',  submittedBy: 'Grace Hopper' },
     { id: 'sr2', title: 'This Must Be the Place', artist: 'Talking Heads', status: 'approved', submittedBy: 'Alan Turing' },
   ],
-  Invitation: [],
+  // A COUPLE WITH A WEDDING HAS AN INVITATION RECORD. This was empty, and
+  // getMyInvitation() returning null is not a neutral fact: WhatsAppCompose
+  // only calls setVariables() inside `if (inv)`, so every message template
+  // rendered with {rsvp_link} unresolved, which is the product's "we could not
+  // create an invitation link for this guest" state — and the send is blocked
+  // there by design. See instrument failure 10.
+  Invitation: [{ id: 'inv1', couple_names: 'Ada & Alan', wedding_date: iso(300), rsvp_deadline: iso(200), created_by: 'fixture@example.com', created_by_id: 'u1' }],
   Notification: [],
   // Budget is AES ciphertext in production; the page tolerates an absent blob
   // and renders its tiles from zero, which is still a real (non-empty) read.
@@ -449,7 +470,7 @@ export function stubBodyFor(url, { seed = SEED, user = FIXTURE_USER } = {}) {
   return captured;
 }
 
-function resolveStub(url, seed, user, json, onEntity, fail = () => json(null)) {
+function resolveStub(url, seed, user, json, onEntity, fail = () => json(null), reqBody = null) {
 
     if (/\/me\b|auth\/me|users\/me/.test(url)) return json(user);
 
@@ -467,7 +488,41 @@ function resolveStub(url, seed, user, json, onEntity, fail = () => json(null)) {
     // events, wd.mealOptions/weddingParty/slug/id were all undefined. FOURTH
     // stub-vs-reality mismatch of this class. Check the endpoint, not the name.
     if (/\/api\/my-wedding-details/.test(url)) return json((seed.WeddingDetails ?? [])[0] ?? null);
-    if (/\/api\/my-guest-links/.test(url))     return json({ links: [] });
+    // A MAP KEYED BY GUEST, NOT AN ARRAY — and not an empty one.
+    //
+    // api/my-guest-links.js:46 documents `{ links: { [guestId]: { token,
+    // rsvpUrl } } }` and its callers read `linkMap[guest.id].rsvpUrl`. The
+    // stub answered `{ links: [] }`, which is the wrong TYPE and, being empty,
+    // also the wrong ANSWER: every guard that needed an invitation link got
+    // none, and every surface that branches on "we could not create a link for
+    // this guest" sat in that state permanently. The WhatsApp send is blocked
+    // by exactly that branch, so "the send is disabled" was a fact about the
+    // fixture. Instrument failure 9; the contract in stubContracts.mjs
+    // asserted the array too, so the two agreed with each other and not with
+    // the endpoint.
+    if (/\/api\/my-guest-links/.test(url)) {
+      // MIRRORED FROM api/my-guest-links.js:46 (the documented response) and
+      // :196 (the line that builds it), not from memory:
+      //   { links: { [guestId]: { token, rsvpUrl, plusOneToken?, plusOneRsvpUrl? } } }
+      // The plus-one pair appears only when the caller asked for it AND the
+      // guest has a plus-one email — the endpoint's own condition, kept here so
+      // a guard cannot be handed a link the product would not have minted.
+      const ids = Array.isArray(reqBody?.guestIds) && reqBody.guestIds.length
+        ? reqBody.guestIds
+        : (seed.Guest ?? []).map(g => g.id);
+      const base = 'https://www.openinvite.com.au';
+      const links = {};
+      for (const id of ids) {
+        const guest = (seed.Guest ?? []).find(g => g.id === id);
+        if (!guest) continue;
+        const token = `fixture-token-${id}`;
+        const plusOne = reqBody?.includePlusOne === true && guest.plus_one_email
+          ? { plusOneToken: `fixture-plus-one-${id}`, plusOneRsvpUrl: `${base}/rsvp/fixture-plus-one-${id}` }
+          : {};
+        links[id] = { token, rsvpUrl: `${base}/rsvp/${token}`, ...plusOne };
+      }
+      return json({ links });
+    }
     // THE ENVELOPE IS { requests }, not a bare array. api/song-request-review.js
     // ends in `res.json({ requests })` and Music.jsx destructures that name, so
     // a stub returning the rows directly would leave the page on its empty
@@ -529,7 +584,12 @@ export async function stubBackend(ctx, { seed = SEED, user = FIXTURE_USER, onEnt
     const url = route.request().url();
     const json = (body) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
     const fail = (status, body) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
-    return resolveStub(url, seed, user, json, onEntity, fail);
+    // THE BODY, NOT JUST THE URL. /api/my-guest-links is a POST whose payload
+    // decides part of the response shape (includePlusOne), so a stub that sees
+    // only the URL cannot mirror the endpoint.
+    let reqBody = null;
+    try { reqBody = JSON.parse(route.request().postData() || 'null'); } catch { reqBody = null; }
+    return resolveStub(url, seed, user, json, onEntity, fail, reqBody);
   };
   await ctx.route((url) => isBackend(typeof url === 'string' ? url : url.href), handler);
 }
