@@ -6071,3 +6071,42 @@ rule says "in the same commit": a mirror change that lands with its derivation
 in a separate commit is a commit that does not build, and a bisect that stops
 there finds a failure nobody introduced on purpose.
 
+
+---
+
+## 2026-09-16 — A fixture that cannot occur is not evidence
+
+Run 5 T1. The R9 guard (#770, `912bf544`) proved a custom page reached the
+guest navigation and was **green for a month while the live site served "This
+invitation isn't available" for the couple's own page**.
+
+It passed a payload the product cannot produce. `/api/wedding-by-slug` answers
+through `pickGuestSafeFields`, and `GUEST_SAFE_WEDDING_FIELDS` carried neither
+`customPages` nor `customPageContent`. The guard's route override supplied
+`{ ...PUBLISHED_WEDDING, customPages }` directly, so every renderer downstream
+behaved correctly — on a record that could never arrive.
+
+**A stub must be the endpoint's shape, not a superset of it.** Fixed at the
+root: `seededContext` now answers `/api/wedding-by-slug` with
+`{ ...pickGuestSafeFields(PUBLISHED_WEDDING), customGifts, registryProducts }`
+— the handler's exact expression. Mirroring the allowlist ALONE would have been
+wrong in the other direction: `pickGuestSafeFields` adds `music`,
+`passwordProtected` and `locked` itself, and the handler merges the registry
+afterwards. A stub wrong in the other direction is still wrong.
+
+### And a note on what is passed whole
+
+`customPages` cannot carry anything but `id`, `name`, `slug`, `template`: its
+mirror declares `properties`, and Base44 strips every key such a schema does
+not name. That is platform-enforced — it is why `NewPageModal` writes
+`sections: []` and that key has never persisted on any record.
+
+`customPageContent` is the one to watch. It is declared as a BARE object, so it
+keeps whatever nested keys it is handed — which is exactly why blocks live
+there rather than on the page record. Today its shape is
+`{ [slug]: { blocks: [...] } }`, the same block array `homeContent.blocks` uses
+and which has been allowlisted since it existed. **If a block type ever stores
+something a guest should not read, that is the moment it must be projected**,
+and the bare-object declaration is what makes projecting it possible without a
+schema change.
+
