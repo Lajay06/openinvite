@@ -6,7 +6,9 @@ import { X } from 'lucide-react';
  *
  * ── WHAT IT IS NOT ─────────────────────────────────────────────────────────
  *
- * Not a block, not a modal, not a lock. Editing stays fully enabled in both
+ * Not a block, not a modal, not a lock. It names the two ways out — turn the
+ * phone, or come back at a desk — and takes neither. Editing stays fully
+ * enabled in both
  * orientations: a couple who wants to change one word on a train should be
  * able to, and a product that refuses until the phone is turned is a product
  * telling someone they are holding it wrong. This says the room is better
@@ -63,7 +65,7 @@ export default function RotateNotice() {
       }}
     >
       <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', lineHeight: 1.4 }}>
-        Turn your phone sideways for the best editing experience
+        Turn your phone sideways, or use a desktop for the best experience.
       </span>
       <button
         type="button"

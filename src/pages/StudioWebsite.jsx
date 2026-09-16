@@ -788,7 +788,14 @@ export default function StudioWebsite({ onBack }) {
                 The dot is green only when the site is BOTH published and
                 reachable; otherwise there is no address to print and the bar
                 says so, with the way to fix it. */}
-            <div style={{ position: 'absolute', left: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+            {/* `wb-canvas-url` is a width hook for index.css, and it is here
+                because this line is ABSOLUTE: it knows nothing about the device
+                pills centred beside it. Measured at 844x390 — a phone in
+                landscape, the orientation the notice above sends couples to —
+                it overlapped them by 117x17px, and at 390 wide it ran 72px past
+                the right edge of the screen. Desktop is untouched: at 1440 the
+                address ends at 462 and the pills start at 575. */}
+            <div className="wb-canvas-url" style={{ position: 'absolute', left: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: isLive ? '#22C55E' : 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
               <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 220 }}>
                 {/* An email has no address. Leaving the site URL up while the

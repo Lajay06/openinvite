@@ -1,4 +1,4 @@
-/* global document, window */
+/* global document, window, getComputedStyle */
 /**
  * A QUIET LINE, PORTRAIT ONLY, AND EDITING NEVER STOPS.
  *
@@ -24,7 +24,10 @@ import { chromium } from 'playwright';
 import { seededContext } from './lib/renderHarness.mjs';
 
 const BASE = process.env.CAPTURE_BASE_URL || 'http://localhost:4197';
-const TEXT = 'Turn your phone sideways for the best editing experience';
+// THE OWNER'S EXACT WORDING, character for character. It named one way out
+// ("turn your phone") where there are two, and a couple at a desk was being
+// told to pick up their phone and turn it.
+const TEXT = 'Turn your phone sideways, or use a desktop for the best experience.';
 
 const results = [];
 const check = (name, ok, detail) => {
@@ -43,6 +46,29 @@ const openBuilder = async (width, height) => {
 };
 
 const noticeCount = (page) => page.locator('[data-rotate-notice]').count();
+
+/**
+ * NOTHING IN THE CANVAS TOOLBAR SITS ON TOP OF ANYTHING ELSE.
+ *
+ * The address line is absolutely positioned and the device pills are centred,
+ * so neither knows the other is there. Read as geometry, at the viewport, not
+ * as a class name: a rule that matched but changed nothing would pass a source
+ * check and fail a person (index.css:1399 records exactly that happening to the
+ * header title, where an inline style beat the selector).
+ */
+const toolbarOverlap = (page) => page.evaluate(() => {
+  const url = document.querySelector('.wb-canvas-url');
+  const pills = [...document.querySelectorAll('div')].find((d) => d.style.borderRadius === '999px' && d.querySelector('svg'));
+  const vis = (el) => !!el && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 0;
+  if (!vis(url)) return { urlVisible: false, overlap: null, offscreen: false };
+  const A = url.getBoundingClientRect();
+  const offscreen = A.right > window.innerWidth + 1 || A.left < -1;
+  if (!vis(pills)) return { urlVisible: true, overlap: null, offscreen };
+  const B = pills.getBoundingClientRect();
+  const ox = Math.min(A.right, B.right) - Math.max(A.left, B.left);
+  const oy = Math.min(A.bottom, B.bottom) - Math.max(A.top, B.top);
+  return { urlVisible: true, offscreen, overlap: (ox > 0 && oy > 0) ? { x: Math.round(ox), y: Math.round(oy) } : null };
+});
 /** Editing is not a claim about a flag: a field takes a value, or it does not. */
 const canStillEdit = async (page) => {
   await page.getByRole('button', { name: 'Content', exact: true }).first().click({ timeout: 6000 }).catch(() => {});
@@ -73,6 +99,11 @@ const canStillEdit = async (page) => {
   await page.getByRole('button', { name: 'Dismiss', exact: true }).first().click({ timeout: 6000 }).catch(() => {});
   await page.waitForTimeout(600);
   check('    and it can be dismissed', await noticeCount(page) === 0, 'gone after the close control');
+
+  // ── AND NOTHING OVERLAPS THE CANVAS ─────────────────────────────────────
+  const t = await toolbarOverlap(page);
+  check('  the address line does not run off the screen', !t.offscreen && !t.urlVisible,
+    t.urlVisible ? `visible at 390 wide${t.offscreen ? ', and past the right edge' : ''}` : 'hidden on a phone');
   await ctx.close();
 }
 
@@ -102,6 +133,14 @@ const canStillEdit = async (page) => {
   check('  the notice is hidden in landscape', n === 0, `${n} notice(s)`);
   const edit = await canStillEdit(page);
   check('    and editing works here too', edit.ok, edit.why);
+
+  // THE OWNER'S SECOND FINDING, MEASURED. Before this package the address line
+  // overlapped the device pills by 117x17px in exactly this viewport — the one
+  // the notice above sends couples to.
+  const t = await toolbarOverlap(page);
+  check('  nothing in the canvas toolbar overlaps anything else', !t.overlap && !t.offscreen,
+    t.overlap ? `the address line overlaps the device pills by ${t.overlap.x}x${t.overlap.y}px`
+      : t.offscreen ? 'the address line runs past the edge' : 'clear');
   await ctx.close();
 }
 
@@ -112,6 +151,13 @@ const canStillEdit = async (page) => {
   check('the builder rendered', await page.locator('.wb-builder-header').count() > 0, 'header present');
   const n = await noticeCount(page);
   check('  the notice is hidden above 768', n === 0, `${n} notice(s)`);
+
+  // THE DESKTOP CONTROL. The address line is hidden on a phone, and a rule that
+  // hid it everywhere would satisfy both phone checks above while quietly
+  // deleting it from the surface it belongs on.
+  const t = await toolbarOverlap(page);
+  check('  the address line is still there on a desktop', t.urlVisible, t.urlVisible ? 'visible at 1440' : 'hidden at 1440 — the rule is too wide');
+  check('    and clear of the device pills', !t.overlap, t.overlap ? `overlaps by ${t.overlap.x}x${t.overlap.y}px` : 'clear');
   await ctx.close();
 }
 
