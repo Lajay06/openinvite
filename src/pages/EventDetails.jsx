@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DashboardPageHeader from '../components/layout/DashboardPageHeader';
+import ChangeAddressDialog from '../components/event-details/ChangeAddressDialog';
 import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import DatePicker from "@/components/shared/DatePicker";
@@ -523,6 +524,7 @@ export default function EventDetailsPage() {
   const [editingFType,  setEditingFType]    = useState(null);   // 'ceremony' | 'reception' | null
   const [editingIsPost, setEditingIsPost]   = useState(false);
   const [avaOpen, setAvaOpen] = useState(false);
+  const [addressOpen, setAddressOpen] = useState(false);
 
   const collab = useCollaboratorContext();
   const isCollaborating = !!collab.ownerUserId;
@@ -903,6 +905,30 @@ export default function EventDetailsPage() {
           </div>
 
           <div style={divider} />
+          {/* ── THE ADDRESS, WHICH FOLLOWS THE NAMES UNTIL THE COUPLE SAYS
+                 OTHERWISE (owner ruling, Run 4 S8b) ────────────────────────
+              It sits under Couple because that is what it is derived from —
+              slugRootFromNames — and a couple looking for why their address
+              says John and Suzanne is looking at their names when they ask. */}
+          <SectionHeading>Your address</SectionHeading>
+          {r.slug ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: FIELD_GAP }}>
+              <span data-wedding-address style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>
+                openinvite.com.au/w/{r.slug}
+              </span>
+              {!readOnly && (
+                <button onClick={() => setAddressOpen(true)} className="btn-editorial-secondary" style={{ fontSize: 12 }} data-change-address>
+                  Change address
+                </button>
+              )}
+            </div>
+          ) : (
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, marginBottom: FIELD_GAP }}>
+              Your address appears here once you have added both names.
+            </p>
+          )}
+
+          <div style={divider} />
           <SectionHeading>The date</SectionHeading>
           <span style={sLabel}>Wedding date</span>
           <DatePicker value={r.weddingDate} onChange={v => update({ weddingDate: v })} placeholder="Select your wedding date" disabled={readOnly} />
@@ -1089,6 +1115,15 @@ export default function EventDetailsPage() {
           .ev-info { padding: 24px; }
         }
       `}</style>
+      {addressOpen && (
+        <ChangeAddressDialog
+          weddingId={r.id}
+          currentSlug={r.slug}
+          onClose={() => setAddressOpen(false)}
+          onChanged={async ({ slug, previousSlugs }) => { await update({ slug, previousSlugs }); }}
+        />
+      )}
+
       <AvaModal
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}

@@ -97,6 +97,7 @@ import { pickGuestSafeFields, verifyWeddingPassword, websiteGateIsOn } from './_
 import { pickGuestSafeCustomGift, pickGuestSafeRegistryProduct } from './_lib/guestSafeRegistry.js';
 import { verifyBase44User } from './_lib/auth.js';
 import { resolveWeddingBySlug } from './_lib/resolveWeddingBySlug.js';
+import { previousSlugsOf } from './_lib/slugCanon.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -134,6 +135,30 @@ async function fetchGuestSafeRegistry(ownerId) {
     customGifts: gifts.map(pickGuestSafeCustomGift),
     registryProducts: products.map(pickGuestSafeRegistryProduct),
   };
+}
+
+/**
+ * The address that replaced `slug`, or null. ONE ROW OR NOTHING — two records
+ * claiming the same old address is a state nobody should be redirected out of.
+ *
+ * `list` is the result the slug query already returned, so the common case
+ * costs no extra request: a record whose previousSlugs contains the requested
+ * slug can only be absent from that list if it is filed under a different
+ * slug, which is exactly when the second query is needed.
+ */
+async function aliasTarget({ slug, list }) {
+  const inHand = (list || []).filter(w => w && !w.is_test && w.slug && previousSlugsOf(w).includes(slug));
+  if (inHand.length === 1) return inHand[0].slug;
+  try {
+    const q = encodeURIComponent(JSON.stringify({ previousSlugs: slug }));
+    const r = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/WeddingDetails?q=${q}`,
+      { headers: { Authorization: `Bearer ${BASE44_ADMIN_KEY}` } });
+    if (!r.ok) return null;
+    const payload = await r.json();
+    const rows = (Array.isArray(payload) ? payload : (payload?.data || payload?.results || []))
+      .filter(w => w && !w.is_test && w.slug && previousSlugsOf(w).includes(slug));
+    return rows.length === 1 ? rows[0].slug : null;
+  } catch { return null; }
 }
 
 export default async function handler(req, res) {
@@ -207,6 +232,30 @@ export default async function handler(req, res) {
     const wedding = resolved.ok ? resolved.wedding : null;
 
     if (!wedding) {
+      // ── AN ADDRESS THE COUPLE USED TO HAVE ────────────────────────────────
+      //
+      // /w/ redirects at the edge (api/guest-page.js), so a guest following an
+      // old link never reaches this endpoint with the old slug. This branch is
+      // for the callers that do not pass through there: a client holding a
+      // cached route, a preview surface, anything asking the API directly.
+      //
+      // It answers with the wedding AND with `canonicalSlug`, so the caller can
+      // correct its own address bar rather than silently serving a page under a
+      // name the couple no longer uses.
+      //
+      // IT CARRIES NO RECORD, DELIBERATELY. Returning the wedding here would
+      // answer around the publish gate and the password gate below — the exact
+      // leak this file's own history is about, where an unpublished site
+      // returned 200 with the couple's names and venue. The response names the
+      // new address and nothing else; the caller re-requests it and meets every
+      // gate on the way in.
+      //
+      // Still 404: from the outside, an address that has moved and an address
+      // that never existed are the same fact until the caller asks again.
+      const canonical = await aliasTarget({ slug, list });
+      if (canonical) {
+        return res.status(404).json({ error: 'Wedding not found.', canonicalSlug: canonical, requestedSlug: slug });
+      }
       return res.status(404).json({ error: 'Wedding not found.' });
     }
 
