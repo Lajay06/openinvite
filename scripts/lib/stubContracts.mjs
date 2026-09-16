@@ -37,7 +37,7 @@ export const CONTRACTS = [
   // no caller can read — `linkMap[guest.id]?.rsvpUrl` is undefined on an
   // array, which is the "we could not create a link for this guest" branch.
   { match: '/api/my-guest-links',
-    cite: 'api/my-guest-links.js:46,197 — { links: { [guestId]: { token, rsvpUrl } } }',
+    cite: 'api/my-guest-links.js:46 documents it, :196 builds it — { links: { [guestId]: { token, rsvpUrl, plusOneToken?, plusOneRsvpUrl? } } }',
     ok: (b) => b && b.links && typeof b.links === 'object' && !Array.isArray(b.links)
       && Object.values(b.links).every(v => v && typeof v.token === 'string' && typeof v.rsvpUrl === 'string'
         // the plus-one pair is optional, and never half of it
