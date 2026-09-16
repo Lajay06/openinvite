@@ -6045,3 +6045,29 @@ rename to Jay & Ella (S8a). It matches the old names, it is not a denormalised
 copy of them, and it is a third party's promo code. A rename sweep that matched
 on the names would have broken a real discount.
 
+
+---
+
+## 2026-09-16 — A mirror change regenerates entityFields in the same commit
+
+**A mirror change regenerates `entityFields.generated.js` in the same commit
+(`npm run generate:entity-fields`); the staleness guard is the check.**
+
+Run 4 S8b added `previousSlugs` to `base44/entities/WeddingDetails.jsonc` and
+stopped there. CI failed:
+
+```
+❌ FAIL  entityFields.generated.js is STALE — run npm run generate:entity-fields
+```
+
+The guard was right and the fix was one generated line. Recorded because the
+lesson is not "remember the second file" — it is that **a schema mirror is not
+a leaf**. Things are derived from it, and the derived thing is what other code
+actually reads, so a mirror edited alone leaves the repository stating two
+different shapes for the same entity.
+
+I regenerated in a follow-up commit rather than the same one, which is why this
+rule says "in the same commit": a mirror change that lands with its derivation
+in a separate commit is a commit that does not build, and a bisect that stops
+there finds a failure nobody introduced on purpose.
+
