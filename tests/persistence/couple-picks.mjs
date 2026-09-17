@@ -114,7 +114,12 @@ export async function runCouplePicks() {
   // three lines above in the local that builds it. What matters is what is
   // WRITTEN, so the assertion is the spread itself.
   check('  and the handler writes BOTH halves',
-    /handleToggleCouplePick[\s\S]{0,1600}?const next = \{ \.\.\.guide, categories, couplePicks \};/.test(tab),
+    // TEMPERED, because three handlers in this file save the same shape. An
+    // untempered match ran past the toggle into handleRemovePlace's identical
+    // line and stayed green while the toggle itself had stopped writing the
+    // list. This can only match if the FIRST `const next =` after the toggle
+    // is the one carrying both halves.
+    /handleToggleCouplePick((?!const next =)[\s\S])*const next = \{ \.\.\.guide, categories, couplePicks \};/.test(tab),
     'both are in the object the mutation receives');
 
   return results;
