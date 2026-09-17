@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useMemo, useRef, useState } from 'react';
+import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { COUNTRIES } from '@/lib/countryCodes.generated';
 import { color } from '@/styles/tokens';
 
@@ -19,108 +19,37 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
  * emoji is exactly that, and on Windows it is not even drawn. These are SVGs
  * from public/flags/flags.svg, one request, cached, sized by us.
  *
- * NOT A <select>. A native select cannot be searched past its first letter, and
- * 245 options behind one keystroke is a list you scroll rather than use.
- *
- * ── THE LIST IS PORTALLED, AND THAT IS NOT A PREFERENCE ────────────────────
+ * ── IT IS A RADIX POPOVER, AND THAT IS THE POINT ───────────────────────────
  *
  * Owner's screenshot: in Add new guest the open list showed Australia and half
- * of New Zealand. It was `position: absolute` inside the form, and
- * OptionAccordion's section body carries `overflow: hidden` for its expand
- * animation (OptionAccordion.jsx:196) — so the list was cut off at the bottom
- * of the Phone row. Any ancestor with overflow, a transform or a stacking
- * context does the same thing, and a picker used in five places cannot know
- * what it is inside.
+ * of New Zealand. It was a hand-rolled `position: absolute` list, and the Phone
+ * row sits inside an OptionAccordionSection whose body carries
+ * `overflow: hidden` for its expand animation (OptionAccordion.jsx:196).
  *
- * So the list renders into document.body as `position: fixed`, measured from
- * the trigger's own rect and re-measured on scroll and resize. Nothing above it
- * in the tree can clip it, and z-index 1000 puts it over the dialog it is used
- * inside.
+ * Hand-rolling a portal instead fixed the clipping and broke two other things,
+ * both only INSIDE A DIALOG and both invisible to any rectangle:
+ *
+ *   · Radix sets `pointer-events: none` on <body> while a dialog is open, so a
+ *     body-portalled popover inherited it — painted above the form, with every
+ *     click passing THROUGH it into the fields underneath;
+ *   · Radix's focus trap pulled focus back into the dialog the moment the
+ *     search box took it, so typing went nowhere and the list stayed unfiltered.
+ *
+ * A Radix Popover nested inside a Radix Dialog is the supported case: it layers
+ * its own FocusScope and DismissableLayer inside the dialog's, so the input
+ * receives focus and keystrokes, clicks land on rows, pointer-events are
+ * handled, and its portal is outside every overflow in the form. None of that
+ * is our code to maintain, which is the argument for using it.
+ *
+ * NOT A <select>. A native select cannot be searched past its first letter, and
+ * 245 options behind one keystroke is a list you scroll rather than use.
  */
 export default function CountryPicker({ value, onChange, ariaLabel = 'Country code', disabled = false }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [rect, setRect] = useState(null);
-  const boxRef = useRef(null);
-  const listRef = useRef(null);
   const inputRef = useRef(null);
 
-  // WIDTH AND HEIGHT ARE DECIDED HERE, not by the content. Ten rows and the
-  // search box is the owner's floor — the pinned four plus at least six more —
-  // and the list never grows past the space it has, because a popover that
-  // runs off the bottom of the screen is the defect this replaced.
-  const WIDTH = 280;
-  const MAX_HEIGHT = 360;
-  const MIN_HEIGHT = 220;
-
-  // The effect's key handler needs the CURRENT matches without re-subscribing
-  // on every keystroke.
-  const matchesRef = useRef([]);
-  const chooseRef = useRef(() => {});
-
-  const place = useCallback(() => {
-    const el = boxRef.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const below = window.innerHeight - r.bottom - 8;
-    const above = r.top - 8;
-    // Below by default; above only when below cannot hold a usable list and
-    // above can hold more. On a phone the trigger is often near the bottom.
-    const useAbove = below < MIN_HEIGHT && above > below;
-    const height = Math.max(120, Math.min(MAX_HEIGHT, useAbove ? above : below));
-    const left = Math.min(Math.max(8, r.left), Math.max(8, window.innerWidth - WIDTH - 8));
-    setRect({ left, top: useAbove ? r.top - height - 4 : r.bottom + 4, height });
-  }, []);
-
   const selected = COUNTRIES.find((c) => c.iso === value) || COUNTRIES[0];
-
-  useLayoutEffect(() => { if (open) place(); }, [open, place]);
-
-  useEffect(() => {
-    if (!open) return undefined;
-    // BOTH REFS. The list is not inside the trigger's subtree any more, so a
-    // contains() check on the trigger alone would close the popover on the
-    // mousedown that precedes a row's click — every choice would be a dismiss.
-    const onDown = (e) => {
-      const inTrigger = boxRef.current?.contains(e.target);
-      const inList = listRef.current?.contains(e.target);
-      if (!inTrigger && !inList) setOpen(false);
-    };
-    const onKey = (e) => {
-      if (e.key === 'Escape') { setOpen(false); return; }
-      if (e.key === 'Enter' && matchesRef.current[0]) { e.preventDefault(); chooseRef.current(matchesRef.current[0].iso); }
-    };
-    // Capture, because an ancestor that scrolls does not bubble its scroll.
-    const onScrollOrResize = () => place();
-    // TYPE-AHEAD AT THE DOCUMENT, BECAUSE THE SEARCH BOX CANNOT HOLD FOCUS
-    // INSIDE A DIALOG. Radix's focus trap pulls focus back into the dialog the
-    // moment a portalled input takes it — measured: focusin fired straight back
-    // onto the trigger, the query stayed empty, and the list stayed on
-    // Australia while "new z" went nowhere. Rather than fight the trap, the
-    // popover listens for the keystrokes itself, which is what a native select
-    // does and works identically in and out of a dialog. The input below still
-    // works normally where focus IS allowed.
-    const onType = (e) => {
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if (e.target === inputRef.current) return;          // it has focus; let it type
-      if (e.key === 'Backspace') { setQuery((q) => q.slice(0, -1)); e.preventDefault(); return; }
-      if (e.key === 'Enter') return;                      // handled below, on the list
-      if (e.key.length === 1) { setQuery((q) => q + e.key); e.preventDefault(); }
-    };
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
-    document.addEventListener('keydown', onType, true);
-    window.addEventListener('scroll', onScrollOrResize, true);
-    window.addEventListener('resize', onScrollOrResize);
-    inputRef.current?.focus();
-    return () => {
-      document.removeEventListener('mousedown', onDown);
-      document.removeEventListener('keydown', onKey);
-      document.removeEventListener('keydown', onType, true);
-      window.removeEventListener('scroll', onScrollOrResize, true);
-      window.removeEventListener('resize', onScrollOrResize);
-    };
-  }, [open, place]);
 
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -135,44 +64,48 @@ export default function CountryPicker({ value, onChange, ariaLabel = 'Country co
   }, [query]);
 
   const choose = (iso) => { onChange(iso); setOpen(false); setQuery(''); };
-  matchesRef.current = matches;
-  chooseRef.current = choose;
 
   return (
-    <div ref={boxRef} style={{ position: 'relative', flex: '0 0 auto' }}>
-      <button
-        type="button"
-        aria-label={ariaLabel}
-        aria-expanded={open}
-        disabled={disabled}
-        onClick={() => setOpen((o) => !o)}
-        style={{
-          display: 'flex', alignItems: 'center', gap: 6,
-          border: '1px solid rgba(10,10,10,0.15)', borderRadius: 6,
-          background: '#FFFFFF', padding: '0 10px', height: 38,
-          fontSize: 12, lineHeight: '14px', fontFamily: PJS, color: '#0A0A0A',
-          cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.5 : 1,
-        }}
-      >
-        <Flag iso={selected.iso} />
-        +{selected.dial}
-      </button>
-
-      {open && rect && createPortal(
-        <div
-          ref={listRef}
-          data-country-popover
+    <PopoverPrimitive.Root
+      open={open}
+      onOpenChange={(o) => { setOpen(o); if (!o) setQuery(''); }}
+    >
+      <PopoverPrimitive.Trigger asChild>
+        <button
+          type="button"
+          aria-label={ariaLabel}
+          disabled={disabled}
           style={{
-            position: 'fixed', zIndex: 1000, top: rect.top, left: rect.left,
-            // POINTER-EVENTS IS NOT DECORATION HERE. Radix sets
-            // `pointer-events: none` on <body> while a dialog is open and
-            // restores it only inside the dialog, so a portalled popover — a
-            // body child, outside the dialog — inherits it and is painted
-            // above the form while every click passes THROUGH it into the
-            // fields underneath. Found by hit-testing the rows rather than
-            // measuring their rectangles; the rectangle was perfect.
-            pointerEvents: 'auto',
-            width: WIDTH, height: rect.height, display: 'flex', flexDirection: 'column',
+            display: 'flex', alignItems: 'center', gap: 6,
+            border: '1px solid rgba(10,10,10,0.15)', borderRadius: 6,
+            background: '#FFFFFF', padding: '0 10px', height: 38, flex: '0 0 auto',
+            fontSize: 12, lineHeight: '14px', fontFamily: PJS, color: '#0A0A0A',
+            cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.5 : 1,
+          }}
+        >
+          <Flag iso={selected.iso} />
+          +{selected.dial}
+        </button>
+      </PopoverPrimitive.Trigger>
+
+      <PopoverPrimitive.Portal>
+        <PopoverPrimitive.Content
+          data-country-popover
+          align="start"
+          sideOffset={4}
+          collisionPadding={8}
+          // THE SEARCH BOX TAKES FOCUS, NOT THE FIRST ROW. Radix focuses the
+          // content on open; sending it to the input is what makes this a
+          // search rather than a list you arrow through.
+          onOpenAutoFocus={(e) => { e.preventDefault(); inputRef.current?.focus(); }}
+          style={{
+            zIndex: 1000,
+            width: 280,
+            // 360 is the owner's floor — the pinned four plus at least six more
+            // — and Radix's own measurement caps it to the space available on
+            // the chosen side, flipping when there is more room above.
+            height: 'min(360px, var(--radix-popover-content-available-height))',
+            display: 'flex', flexDirection: 'column',
             background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 6,
           }}
         >
@@ -215,10 +148,9 @@ export default function CountryPicker({ value, onChange, ariaLabel = 'Country co
               </button>
             ))}
           </div>
-        </div>,
-        document.body,
-      )}
-    </div>
+        </PopoverPrimitive.Content>
+      </PopoverPrimitive.Portal>
+    </PopoverPrimitive.Root>
   );
 }
 

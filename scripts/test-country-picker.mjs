@@ -266,6 +266,20 @@ for (const [route, label, opener] of [
   const m = await visibleRows(p3);
   check(`${label}: the same list, floating and usable`, m.rows >= 10 && m.withinViewport === true,
     `${m.rows} rows in a ${m.popHeight}px list${m.withinViewport ? '' : ', clipped'}`);
+
+  // TYPED AND PRESSED HERE TOO. Messages is NOT inside a dialog, and the two
+  // defects this guard exists for were dialog-only — so a picker proven only
+  // inside a dialog is proven on half the product. Import guests is a dialog;
+  // Messages is the other half.
+  const before = (await trig.innerText()).replace(/\n/g, ' ').trim();
+  await p3.keyboard.type('new z', { delay: 30 });
+  await p3.waitForTimeout(500);
+  const top = (await p3.locator('[data-country-list] button').first().innerText().catch(() => '')).replace(/\n/g, ' ').trim();
+  check(`  ${label}: typing filters the list`, /New Zealand/.test(top), top || 'nothing matched');
+  await p3.locator('[data-country-list] button').first().click({ timeout: 8000 }).catch(() => {});
+  await p3.waitForTimeout(600);
+  const after = (await trig.innerText()).replace(/\n/g, ' ').trim();
+  check(`  ${label}: pressing a row chooses it`, after.includes('+64') && after !== before, `${before} -> ${after}`);
   await c.close();
 }
 
