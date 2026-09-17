@@ -15,6 +15,7 @@ import { isAttending, isDeclined, isAwaitingPrimary } from '@/lib/guestRsvpTally
 import { interactiveDivProps } from '@/lib/a11y';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { fetchGuestLinks } from '@/lib/guestLinks';
+import { buildGuestCtaUrl } from '@/lib/emailTemplate';
 
 // Guarded on the pattern already used by src/lib/app-params.js: read the
 // environment at module load only when there IS one. Browser behavior is
@@ -40,8 +41,14 @@ function buildWhatsAppMessage(guest, coupleName, weddingDate, rsvpUrl) {
   return `Hi ${name}! You're invited to ${coupleName ? `${coupleName}'s wedding` : 'our wedding'}${dateStr ? ` on ${dateStr}` : ''}. Please RSVP here: ${rsvpUrl}`;
 }
 
-function buildWhatsAppUrl(guest, coupleName, weddingDate, token) {
-  const msg = buildWhatsAppMessage(guest, coupleName, weddingDate, buildRsvpUrl(token));
+function buildWhatsAppUrl(guest, coupleName, weddingDate, token, siteUrl) {
+  // THE SAME DOORWAY AS THE EMAIL (owner ruling, Run 6 U1). WhatsApp used to be
+  // the only channel that carried the guest's token — /rsvp/<token>, which
+  // resolves and then redirects into the site. Email now opens the site
+  // directly as that guest, and both channels should land in the same place:
+  // one destination to reason about, and the guest sees the couple's site
+  // rather than a redirect on the way to it.
+  const msg = buildWhatsAppMessage(guest, coupleName, weddingDate, buildGuestCtaUrl({ showDate: true, siteUrl, rsvpToken: token, rsvpUrl: buildRsvpUrl(token) }));
   // ONE NORMALISER, AND A NUMBER IT CANNOT READ IS NOT A NUMBER.
   //
   // This stripped non-digits and sent whatever was left: "0412 345 678" went
@@ -410,6 +417,7 @@ export default function SendInvitesModal({
     events: previewEvents,
     personalMessage: previewBody,
     rsvpUrl: previewRsvpUrl,
+    rsvpToken: previewGuest?.rsvp_link_id || '',
     bannerImageUrl,
   }).html;
 
@@ -478,12 +486,18 @@ export default function SendInvitesModal({
         // all (feat/plus-one-identity).
         const plusOneEmailList = withTokens.filter(g => g.plus_one_email && g.plus_one_rsvp_link_id);
         const recipients = [
+          // rsvpToken travels beside rsvpUrl so the email's button can open the
+          // couple's SITE as this guest (?rsvp=<token>) rather than as a
+          // stranger. A plus-one has a token of their own; sending the primary
+          // guest's would put two people behind one identity.
           ...emailList.map(g => ({
             email: g.email, name: g.name, rsvpUrl: buildRsvpUrl(g.rsvp_link_id),
+            rsvpToken: g.rsvp_link_id,
             events: buildGuestEvents(g),
           })),
           ...plusOneEmailList.map(g => ({
             email: g.plus_one_email, name: g.plus_one_name || 'Guest', rsvpUrl: buildRsvpUrl(g.plus_one_rsvp_link_id),
+            rsvpToken: g.plus_one_rsvp_link_id,
             events: buildGuestEvents(g),
           })),
         ];
@@ -512,7 +526,7 @@ export default function SendInvitesModal({
 
       if (sendWhatsApp) {
         withTokens.forEach(g => {
-          window.open(buildWhatsAppUrl(g, coupleName, weddingDate, g.rsvp_link_id), '_blank');
+          window.open(buildWhatsAppUrl(g, coupleName, weddingDate, g.rsvp_link_id, siteUrl), '_blank');
         });
       }
 
