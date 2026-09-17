@@ -138,6 +138,39 @@ export default function ExperienceGuideTab({ details }) {
     toast.success(`Added to ${CATEGORIES.find(c => c.key === catKey)?.label}`);
   };
 
+  /**
+   * A SAVED PLACE CAN BE MADE A FAVORITE AFTERWARDS (owner report, Run 5 T7).
+   *
+   * "Couple's pick" existed only as a Switch inside the ADD dialog, defaulting
+   * to off for every add, and the saved card showed a badge with no control.
+   * Read from the owner's own record before any code was written: four saved
+   * places, two marked, couplePicks holding exactly those two, nothing missing
+   * from either side. Nothing was being dropped — the choice could not be made.
+   *
+   * This writes both halves in one update, because they are one fact stored
+   * twice: is_couple_pick on the category's copy, and membership of
+   * couplePicks, which is what the guest page reads. Anything already out of
+   * step is healed rather than left to drift.
+   */
+  const handleToggleCouplePick = (catKey, placeId) => {
+    const categories = { ...(guide.categories || {}) };
+    const places = categories[catKey]?.places || [];
+    const place = places.find(p => p.place_id === placeId);
+    if (!place) return;
+    const nextPick = !place.is_couple_pick;
+    categories[catKey] = {
+      ...(categories[catKey] || {}),
+      places: places.map(p => (p.place_id === placeId ? { ...p, is_couple_pick: nextPick } : p)),
+    };
+    const withoutIt = (guide.couplePicks || []).filter(p => p.place_id !== placeId);
+    const couplePicks = nextPick
+      ? [...withoutIt, { ...place, is_couple_pick: true, category: CATEGORIES.find(c => c.key === catKey)?.label || catKey }]
+      : withoutIt;
+    const next = { ...guide, categories, couplePicks };
+    setGuide(next);
+    updateMutation.mutate(next);
+  };
+
   const handleRemovePlace = (catKey, placeId) => {
     const categories = { ...(guide.categories || {}) };
     categories[catKey] = {
@@ -197,6 +230,7 @@ export default function ExperienceGuideTab({ details }) {
               allSavedPlaces={allSavedPlaces}
               onAddPlace={handleAddPlace}
               onRemovePlace={handleRemovePlace}
+              onToggleCouplePick={handleToggleCouplePick}
             />
           </TabsContent>
 
@@ -231,7 +265,7 @@ export default function ExperienceGuideTab({ details }) {
 
 // ── Places tab ─────────────────────────────────────────────────────────────────
 
-function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemovePlace }) {
+function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemovePlace, onToggleCouplePick }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -563,6 +597,7 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
                 key={`${place.categoryKey}-${place.place_id}`}
                 place={place}
                 onRemove={() => onRemovePlace(place.categoryKey, place.place_id)}
+                onToggleCouplePick={() => onToggleCouplePick(place.categoryKey, place.place_id)}
               />
             ))}
           </div>
@@ -572,7 +607,7 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
   );
 }
 
-function SavedPlaceCard({ place, onRemove }) {
+function SavedPlaceCard({ place, onRemove, onToggleCouplePick }) {
   const [hovered, setHovered] = useState(false);
   const photo = photoProxyUrl(place.photo_ref, 600);
 
@@ -592,13 +627,29 @@ function SavedPlaceCard({ place, onRemove }) {
           </div>
         )}
 
-        {/* Couple's pick badge */}
-        {place.is_couple_pick && (
-          <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', background: '#E03553', borderRadius: 999 }}>
-            <Heart size={9} fill="#FFFFFF" color="#FFFFFF" />
-            <span style={{ fontSize: 10, fontWeight: 700, color: '#FFFFFF', fontFamily: PJS }}>Couple's pick</span>
-          </div>
-        )}
+        {/* THE BADGE IS THE CONTROL NOW (Run 5 T7). It was a label with no way
+            to set it once the add dialog had closed, so "our favorites" could
+            only be decided in the seconds a place was being saved. */}
+        <button
+          type="button"
+          data-couple-pick={place.is_couple_pick ? 'on' : 'off'}
+          aria-pressed={!!place.is_couple_pick}
+          aria-label={place.is_couple_pick ? `Remove ${place.name} from your favorites` : `Make ${place.name} a favorite`}
+          onClick={onToggleCouplePick}
+          style={{
+            position: 'absolute', top: 8, left: 8, display: 'flex', alignItems: 'center', gap: 4,
+            padding: '3px 8px', borderRadius: 999, border: 'none', cursor: 'pointer',
+            background: place.is_couple_pick ? '#E03553' : 'rgba(255,255,255,0.92)',
+            opacity: place.is_couple_pick || hovered ? 1 : 0, transition: 'opacity 0.15s',
+          }}
+        >
+          <Heart size={9}
+            fill={place.is_couple_pick ? '#FFFFFF' : 'transparent'}
+            color={place.is_couple_pick ? '#FFFFFF' : 'rgba(10,10,10,0.6)'} />
+          <span style={{ fontSize: 10, fontWeight: 700, color: place.is_couple_pick ? '#FFFFFF' : 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
+            {place.is_couple_pick ? "Couple's pick" : 'Make a favorite'}
+          </span>
+        </button>
 
         {/* Remove button — visible on hover */}
         {hovered && (
