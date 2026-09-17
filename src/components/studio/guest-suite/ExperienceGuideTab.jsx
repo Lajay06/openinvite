@@ -954,16 +954,18 @@ function ActivityRow({ activity, onRemove }) {
   const name = activity.place_name || activity.custom_text || '';
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 0', borderBottom: '1px solid rgba(10,10,10,0.04)' }}>
-      {/* Thumbnail */}
-      <div style={{ width: 56, height: 56, flexShrink: 0, overflow: 'hidden', borderRadius: 4, background: 'rgba(10,10,10,0.04)' }}>
-        {activity.photo_url ? (
+      {/* NO RESERVED SPACE WHERE A PHOTOGRAPH IS NOT (owner ruling, Run 5 T6).
+          This drew a 56px gray square with a MapPin at 0.2 opacity on every
+          item the couple had not photographed — which is most of them, and all
+          of the typed ones ("Check in at Crown Sydney" can never have a photo).
+          The guest page applied this rule to its cards in Run 4; the studio's
+          own list did not, so the couple saw a column of gray boxes beside
+          their plan. A row with no picture is just a row. */}
+      {activity.photo_url && (
+        <div style={{ width: 56, height: 56, flexShrink: 0, overflow: 'hidden', borderRadius: 4, background: 'rgba(10,10,10,0.04)' }}>
           <img src={activity.photo_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={e => { e.target.style.display = 'none'; }} />
-        ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <MapPin size={14} color="rgba(10,10,10,0.2)" />
-          </div>
-        )}
-      </div>
+        </div>
+      )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2, flexWrap: 'wrap' }}>
           <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: 0, fontFamily: PJS }}>{name}</p>
@@ -980,6 +982,26 @@ function ActivityRow({ activity, onRemove }) {
         )}
         {!activity.description && (activity.note) && (
           <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.45)', margin: 0, fontFamily: PJS, fontStyle: 'italic' }}>{activity.note}</p>
+        )}
+        {/* THE SAME TWO LINKS THE STAY PAGE GIVES A HOTEL (S5). Present when
+            the data is, absent when it is not — never an empty row of dead
+            words. `website_url` is what the studio stores; `website` is what
+            Google returns, and both names appear in saved places. */}
+        {(activity.maps_url || activity.website_url || activity.website) && (
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 6 }}>
+            {(activity.website_url || activity.website) && (
+              <a href={activity.website_url || activity.website} target="_blank" rel="noopener noreferrer"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: '#E03553', fontFamily: PJS, textDecoration: 'none' }}>
+                Website <ExternalLink size={10} />
+              </a>
+            )}
+            {activity.maps_url && (
+              <a href={activity.maps_url} target="_blank" rel="noopener noreferrer"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: '#E03553', fontFamily: PJS, textDecoration: 'none' }}>
+                View on map <ExternalLink size={10} />
+              </a>
+            )}
+          </div>
         )}
       </div>
       <button onClick={onRemove} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.25)', padding: 0, flexShrink: 0, marginTop: 2 }}>
@@ -1000,7 +1022,13 @@ function AddActivityInline({ block, allSavedPlaces, onAdd }) {
     if (type === 'place') {
       const place = allSavedPlaces.find(p => p.place_id === selectedPlaceId);
       if (!place) { toast.error('Select a place'); return; }
+      // THE LINKS TRAVEL WITH THE ITEM. This copied five fields off a saved
+      // place and left maps_url and website_url behind, so an itinerary item
+      // could never show either link no matter what the guest page rendered —
+      // the data was one object away the whole time.
       onAdd({ type: 'place', place_id: place.place_id, place_name: place.name, category: place.categoryLabel, note,
+        maps_url: place.maps_url || null,
+        website_url: place.website_url || place.website || null,
         photo_url: place.photo_ref ? `/api/places-photo?ref=${encodeURIComponent(place.photo_ref)}&maxwidth=800` : null });
     } else {
       if (!customText.trim()) { toast.error('Enter an activity'); return; }
