@@ -53,6 +53,11 @@ export default function CountryPicker({ value, onChange, ariaLabel = 'Country co
   const MAX_HEIGHT = 360;
   const MIN_HEIGHT = 220;
 
+  // The effect's key handler needs the CURRENT matches without re-subscribing
+  // on every keystroke.
+  const matchesRef = useRef([]);
+  const chooseRef = useRef(() => {});
+
   const place = useCallback(() => {
     const el = boxRef.current;
     if (!el) return;
@@ -81,17 +86,37 @@ export default function CountryPicker({ value, onChange, ariaLabel = 'Country co
       const inList = listRef.current?.contains(e.target);
       if (!inTrigger && !inList) setOpen(false);
     };
-    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    const onKey = (e) => {
+      if (e.key === 'Escape') { setOpen(false); return; }
+      if (e.key === 'Enter' && matchesRef.current[0]) { e.preventDefault(); chooseRef.current(matchesRef.current[0].iso); }
+    };
     // Capture, because an ancestor that scrolls does not bubble its scroll.
     const onScrollOrResize = () => place();
+    // TYPE-AHEAD AT THE DOCUMENT, BECAUSE THE SEARCH BOX CANNOT HOLD FOCUS
+    // INSIDE A DIALOG. Radix's focus trap pulls focus back into the dialog the
+    // moment a portalled input takes it — measured: focusin fired straight back
+    // onto the trigger, the query stayed empty, and the list stayed on
+    // Australia while "new z" went nowhere. Rather than fight the trap, the
+    // popover listens for the keystrokes itself, which is what a native select
+    // does and works identically in and out of a dialog. The input below still
+    // works normally where focus IS allowed.
+    const onType = (e) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.target === inputRef.current) return;          // it has focus; let it type
+      if (e.key === 'Backspace') { setQuery((q) => q.slice(0, -1)); e.preventDefault(); return; }
+      if (e.key === 'Enter') return;                      // handled below, on the list
+      if (e.key.length === 1) { setQuery((q) => q + e.key); e.preventDefault(); }
+    };
     document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);
+    document.addEventListener('keydown', onType, true);
     window.addEventListener('scroll', onScrollOrResize, true);
     window.addEventListener('resize', onScrollOrResize);
     inputRef.current?.focus();
     return () => {
       document.removeEventListener('mousedown', onDown);
       document.removeEventListener('keydown', onKey);
+      document.removeEventListener('keydown', onType, true);
       window.removeEventListener('scroll', onScrollOrResize, true);
       window.removeEventListener('resize', onScrollOrResize);
     };
@@ -110,6 +135,8 @@ export default function CountryPicker({ value, onChange, ariaLabel = 'Country co
   }, [query]);
 
   const choose = (iso) => { onChange(iso); setOpen(false); setQuery(''); };
+  matchesRef.current = matches;
+  chooseRef.current = choose;
 
   return (
     <div ref={boxRef} style={{ position: 'relative', flex: '0 0 auto' }}>
@@ -137,6 +164,14 @@ export default function CountryPicker({ value, onChange, ariaLabel = 'Country co
           data-country-popover
           style={{
             position: 'fixed', zIndex: 1000, top: rect.top, left: rect.left,
+            // POINTER-EVENTS IS NOT DECORATION HERE. Radix sets
+            // `pointer-events: none` on <body> while a dialog is open and
+            // restores it only inside the dialog, so a portalled popover — a
+            // body child, outside the dialog — inherits it and is painted
+            // above the form while every click passes THROUGH it into the
+            // fields underneath. Found by hit-testing the rows rather than
+            // measuring their rectangles; the rectangle was perfect.
+            pointerEvents: 'auto',
             width: WIDTH, height: rect.height, display: 'flex', flexDirection: 'column',
             background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 6,
           }}

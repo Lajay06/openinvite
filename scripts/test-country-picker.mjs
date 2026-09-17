@@ -157,7 +157,21 @@ if (there) {
 // ════════════════════════════════════════════════════════════════════════════
 console.log('\n  The open list, where it is used\n');
 
-/** Rows whose box is fully inside both the list's visible box and the viewport. */
+/**
+ * Rows a person could actually press — a HIT TEST, not a rectangle.
+ *
+ * The first version of this counted rows whose box was inside the list's box
+ * and the viewport, and a plant proved it blind: putting the list back inside
+ * the form (the owner's defect) still counted nine rows, because a rectangle
+ * does not know it has been CLIPPED by an ancestor. The Phone row sits inside
+ * an OptionAccordionSection whose body is `overflow: hidden`, and clipping is
+ * invisible to getBoundingClientRect — the element keeps its full box and
+ * simply is not painted.
+ *
+ * document.elementFromPoint answers the question a person asks: press here —
+ * do I get this row? It sees ancestor clipping, overlap and zero-opacity
+ * alike, and it is the only measure that would have caught the screenshot.
+ */
 const visibleRows = (page) => page.evaluate(() => {
   const pop = document.querySelector('[data-country-popover]');
   const list = document.querySelector('[data-country-list]');
@@ -166,8 +180,10 @@ const visibleRows = (page) => page.evaluate(() => {
   const L = list.getBoundingClientRect();
   const rows = [...list.querySelectorAll('button')].filter((b) => {
     const r = b.getBoundingClientRect();
-    return r.height > 0 && r.top >= L.top - 1 && r.bottom <= L.bottom + 1
-      && r.bottom <= window.innerHeight + 1 && r.top >= 0;
+    if (!(r.height > 0 && r.top >= L.top - 1 && r.bottom <= L.bottom + 1
+      && r.bottom <= window.innerHeight + 1 && r.top >= 0)) return false;
+    const hit = document.elementFromPoint(Math.round(r.left + r.width / 2), Math.round(r.top + r.height / 2));
+    return !!hit && (hit === b || b.contains(hit));
   }).length;
   const search = pop.querySelector('input');
   const S = search ? search.getBoundingClientRect() : null;
@@ -200,6 +216,31 @@ async function openPickerOn(width, height, label, wantRows) {
       m.withinViewport ? 'inside the viewport' : 'runs past the bottom of the screen');
     check(`  ${label}: the search stays pinned at the top`, m.searchPinnedAtTop && m.searchInsideList === false,
       m.searchPinnedAtTop ? 'pinned above the scrolling rows' : 'the search scrolls with the rows');
+
+    // ── AND THE WHOLE POINT: TYPE, PRESS, AND IT IS CHOSEN ────────────────
+    //
+    // Two defects lived behind a picture-perfect rectangle, both only inside a
+    // dialog, and neither was visible to any count of rows:
+    //
+    //   pointer-events   Radix sets `pointer-events: none` on <body> while a
+    //                    dialog is open. A portalled popover inherits it: the
+    //                    list was painted above the form and every click went
+    //                    THROUGH it into the fields underneath.
+    //   focus            Radix's focus trap pulls focus back into the dialog
+    //                    the moment the portalled search box takes it, so
+    //                    typing went nowhere and the list stayed unfiltered.
+    //
+    // This types with the keyboard (not fill()) and presses the top row, then
+    // asks the trigger what it says. Nothing short of that would have failed.
+    const before = (await trig.innerText()).replace(/\n/g, ' ').trim();
+    await p2.keyboard.type('new z', { delay: 30 });
+    await p2.waitForTimeout(500);
+    const top = (await p2.locator('[data-country-list] button').first().innerText().catch(() => '')).replace(/\n/g, ' ').trim();
+    check(`  ${label}: typing filters the list`, /New Zealand/.test(top), top || 'nothing matched');
+    await p2.locator('[data-country-list] button').first().click({ timeout: 8000 }).catch(() => {});
+    await p2.waitForTimeout(600);
+    const after = (await trig.innerText()).replace(/\n/g, ' ').trim();
+    check(`  ${label}: pressing a row chooses it`, after.includes('+64') && after !== before, `${before} -> ${after}`);
   }
   await c.close();
 }
