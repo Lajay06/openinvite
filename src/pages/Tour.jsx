@@ -481,6 +481,9 @@ export default function Tour() {
         image={END_CAP.src}
         srcSet={END_CAP.srcSet}
         alt="A couple on a coastal rock at dusk, one crouched at the edge and the other balancing with arms outstretched"
+        // 2048x1152 from fl_getinfo, reduced. The box matches the photo so
+        // cover shows the whole frame with both people in it.
+        aspectRatio="16/9"
         title="All that. And we're still just getting started."
       />
 
