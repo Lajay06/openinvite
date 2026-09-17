@@ -19,6 +19,7 @@ import MarketingHero from "@/components/marketing/MarketingHero";
 import MarketingPhotoPair from "@/components/marketing/MarketingPhotoPair";
 import ProductMediaFrame from "@/components/shared/ProductMediaFrame";
 import { responsivePhoto } from "@/lib/marketingImage";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -30,7 +31,7 @@ const HERO = responsivePhoto("DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2",
   transform: "c_crop,x_0,y_0,w_1600,h_640",
   croppedWidth: 1600,
 });
-const END_CAP = responsivePhoto("DTS_BANDITS_PALI_MENDEZ_Photos_ID14229_mhwb5h", 1280);
+const END_CAP = responsivePhoto("hf_20260903_230645_48b55428-c800-49a3-98eb-01afc61a473e_hnoru8", 2048);
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 
 // 16:10 is the dashboard capture aspect, and the same value Features.jsx
@@ -354,6 +355,7 @@ function Scene({ scene }) {
 }
 
 export default function Tour() {
+  const isMobile = useIsMobile();
   // Not useMarketingSeo(): that hook has no noindex support and would fall
   // back to the home page's title for an unlisted path. While /tour is a
   // private preview it sets its own tags; T3 can move it onto the shared
@@ -480,7 +482,16 @@ export default function Tour() {
       <MarketingEndCap
         image={END_CAP.src}
         srcSet={END_CAP.srcSet}
-        alt="Friends celebrating together at a wedding party"
+        alt="A couple on a coastal rock at dusk, one crouched at the edge and the other balancing with arms outstretched"
+        // 2048x1152 from fl_getinfo, reduced. The box matches the photo so
+        // cover shows the whole frame with both people in it.
+        aspectRatio="16/9"
+        // Owner override of the no-scrim standing rule, this slot only, and
+        // only below 768 (2026-09-18): at 390 the 75% anchor that keeps both
+        // people in frame puts the headline's right-hand words over a cream
+        // skirt, white on cream at ~1.2:1. Desktop shows the full frame, reads
+        // clean, and stays at 0 as measured.
+        scrim={isMobile ? 0.2 : 0}
         title="All that. And we're still just getting started."
       />
 
