@@ -249,6 +249,28 @@ export default function WeddingExperiencePage({ weddingDetails, theme, typograph
                               {item.description && (
                                 <p style={{ ...body, fontSize: '0.875rem', margin: 0 }}>{item.description}</p>
                               )}
+                              {/* THE SAME TWO LINKS THE STAY PAGE GIVES A HOTEL
+                                  (S5). A guest reading "Check in at Crown
+                                  Sydney" could not reach the hotel from it —
+                                  the itinerary named places and linked to
+                                  none of them. Present when the data is,
+                                  absent when it is not. */}
+                              {(item.maps_url || item.website_url || item.website) && (
+                                <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 8 }}>
+                                  {(item.website_url || item.website) && (
+                                    <a href={item.website_url || item.website} target="_blank" rel="noopener noreferrer"
+                                      style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: accentText(theme), fontFamily: typography.bodyFont, textDecoration: 'none', letterSpacing: '0.04em' }}>
+                                      Website <ExternalLink size={11} />
+                                    </a>
+                                  )}
+                                  {item.maps_url && (
+                                    <a href={item.maps_url} target="_blank" rel="noopener noreferrer"
+                                      style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: accentText(theme), fontFamily: typography.bodyFont, textDecoration: 'none', letterSpacing: '0.04em' }}>
+                                      View on map <ExternalLink size={11} />
+                                    </a>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
                         ))}
