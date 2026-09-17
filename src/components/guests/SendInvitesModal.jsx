@@ -79,6 +79,14 @@ const STEP_LABELS = ['Select guests', 'Compose', 'Channel', 'Review & send'];
 const F = { fontFamily: "'Plus Jakarta Sans', sans-serif" };
 
 export const TYPE_LABELS = {
+  // SAVE THE DATE WAS ALREADY IN THE LIST AND HAD NO NAME (Run 5 T14). It is
+  // the first key of TYPE_CONFIG, so EMAIL_TYPES has always carried it and the
+  // drawer has always drawn a pill for it — an EMPTY one, because this map had
+  // no entry, and `TYPE_LABELS[type].toLowerCase()` (used in the drawer title,
+  // the toast and the send button) throws on undefined. So the type the owner
+  // reported as missing was worse than missing: it was an unlabelled chip that
+  // broke the drawer if pressed.
+  save_the_date: 'Save the date',
   invite: 'Invitation',
   reminder: 'Reminder',
   update: 'Event update',
@@ -89,6 +97,10 @@ export const TYPE_LABELS = {
 // Each type's sensible default guest filter — reminder targets guests who've
 // been invited but haven't answered yet, thank-you targets guests who have.
 const TYPE_DEFAULT_FILTER = {
+  // EVERYONE, because a save-the-date precedes invitation status entirely:
+  // it is the announcement, and filtering it to "not yet invited" would be
+  // reasoning about a state that has not happened yet.
+  save_the_date: 'all',
   invite: 'not_invited',
   reminder: 'awaiting',
   update: 'all',
@@ -531,9 +543,17 @@ export default function SendInvitesModal({
       }
 
       const channelStr = [sendEmail && 'email', sendWhatsApp && 'whatsapp'].filter(Boolean).join('+');
-      // Only invite/reminder have a dedicated tracking field on Guest — update
-      // and thank-you types don't write anything back (no schema field for
-      // "last update sent" / "thank-you sent" to avoid inventing untracked data).
+      // Only invite/reminder have a dedicated tracking field on Guest — update,
+      // save-the-date and thank-you types don't write anything back (no schema
+      // field for "last update sent" / "save-the-date sent" / "thank-you sent",
+      // and inventing untracked data is worse than tracking nothing).
+      //
+      // SAVE THE DATE MUST NOT WRITE invite_sent_at, and this is the reason it
+      // is spelled out rather than left to the condition above: the invitation
+      // send defaults to the "Not yet invited" filter, which reads exactly that
+      // field. Marking a guest invited for an announcement that says "the full
+      // invitation will follow" would hide them from the send that follows it —
+      // the couple would post save-the-dates and silently never invite anyone.
       if (type === 'invite' || type === 'reminder') {
         await Promise.all(
           withTokens.map(g =>
