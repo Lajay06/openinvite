@@ -109,9 +109,13 @@ export async function runCouplePicks() {
     'the badge is a button');
   check('  and it is not only in the add dialog', /handleToggleCouplePick/.test(tab) && /onToggleCouplePick=\{\(\) => onToggleCouplePick\(/.test(tab),
     'wired from the card to the handler');
+  // THE SPREAD, NOT THE WORD. A plant removed couplePicks from the object the
+  // handler saves and this check stayed green, because the word still appeared
+  // three lines above in the local that builds it. What matters is what is
+  // WRITTEN, so the assertion is the spread itself.
   check('  and the handler writes BOTH halves',
-    /handleToggleCouplePick[\s\S]{0,1400}?is_couple_pick: nextPick[\s\S]{0,600}?couplePicks/.test(tab),
-    'is_couple_pick and couplePicks in one update');
+    /handleToggleCouplePick[\s\S]{0,1600}?const next = \{ \.\.\.guide, categories, couplePicks \};/.test(tab),
+    'both are in the object the mutation receives');
 
   return results;
 }
