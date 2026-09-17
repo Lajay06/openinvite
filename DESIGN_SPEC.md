@@ -217,6 +217,12 @@ the Universes closing CTA — is delivered through `responsivePhoto()` in
   `naturalWidth` is density-corrected for srcset images and will understate the
   real decode — measure with `createImageBitmap`, not `naturalWidth`.
 - `npm run test:marketing-images` enforces both halves of this and must pass.
+- **To show a whole frame, size the box to the photo, not the photo to the
+  box.** `MarketingEndCap` takes an optional `aspectRatio` ("w/h", the master's
+  real ratio from `fl_getinfo`, reduced — Tour passes "16/9" for 2048x1152).
+  The section then sizes itself to the photo instead of 70vh, so cover has
+  nothing to trim; below 768 the 70vh box stays and the crop anchors to the
+  top. Callers that omit it are unchanged.
 
 Known ceiling: only the Pricing and About heroes are print masters. The other
 eleven full-bleed photos are 1280–1600px web exports and sit at 0.34–0.42x;
