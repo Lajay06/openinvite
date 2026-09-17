@@ -346,7 +346,7 @@ export default function AvaPage() {
         headline="The right words, finally."
         body="Writing vows is one of the hardest parts of planning. Ava makes it easier: not by giving you a template, but by asking the right questions and helping you craft something that genuinely sounds like you."
         bullets={["Guided vow prompts based on your story", "Tone selector: funny / heartfelt / poetic / traditional", "Draft and refine in real-time", "Word count and timing guidance", "Private: only you can see it"]}
-        photo="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779233659/DTS_Grand_Design_Daniel_Far%C3%B2_Photos_ID4152_auimyj.jpg"
+        photo="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/hf_20260904_090213_dcaa917a-e117-4610-8618-a399139999a4_jv74kl"
         reversed={false} />
       
 
