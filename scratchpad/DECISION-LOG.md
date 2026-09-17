@@ -6335,3 +6335,31 @@ The same rule applied earlier in this run to the studio's status line, where the
 defect was overlap rather than clipping and the measurement was a rect
 intersection at three viewports. Rect intersection catches overlap; only a hit
 test catches clipping. When in doubt, hit-test.
+
+
+---
+
+## 2026-09-18 — One Claude Code session per checkout
+
+**One Claude Code session per checkout; a second lane uses its own clone.**
+
+Run 6 U4. A second session took this working tree to `main` and then to
+`feat/ava-vow-writing-photo` while the first was mid-package on
+`fix/rsvp-changes-stick`, stashing the first session's uncommitted work to get
+there — two stashes, correctly labelled ("parked for ava vow photo"), so
+nothing was lost. It was handled well and it should not have been necessary.
+
+A checkout is a single mutable thing: the branch, the index and the working
+tree. Two sessions sharing one is two writers to one variable, and the failure
+mode is not a merge conflict — it is a session that reads a file it did not
+write, or finds its own edits gone with no error anywhere. The first session
+here found `RSVPPage.jsx` unmodified, an unrelated page modified, and had to
+read the reflog to learn why.
+
+The rule costs nothing: `git clone` the repo again, or `git worktree add` a
+second directory. Both give the second lane its own branch, index and tree, and
+both let the two sessions push to the same remote as they already do.
+
+If a tree IS shared and the other session is mid-package: park with a labelled
+stash and say so, which is exactly what happened here — never `git checkout --`
+a file, and never discard.
