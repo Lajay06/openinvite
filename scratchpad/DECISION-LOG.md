@@ -6296,3 +6296,42 @@ two differ the read wins and the difference goes in the report.
 and the request 404'd, so all three reads are identical. That it failed safely
 was luck, not design; see the OPEN-TICKETS entry requiring a write-capable probe
 to assert a fully resolved target URL before issuing anything.)
+
+
+---
+
+## 2026-09-17 — A visibility assertion is a hit test, never a rectangle
+
+**A visibility assertion uses `document.elementFromPoint` — what is painted and
+clickable — never a rectangle alone: a clipped element keeps its full box.**
+
+Run 5, the country picker. The owner's screenshot showed the open list cut to
+Australia and half of New Zealand. The first guard counted rows whose
+`getBoundingClientRect()` sat inside the list's box and the viewport, and a
+plant restoring the broken positioning **still counted nine rows** — because
+clipping is invisible to a rectangle. An element inside an ancestor with
+`overflow: hidden` keeps its full geometry and simply is not painted;
+`getBoundingClientRect` reports the box it would have had.
+
+Hit-testing the row centres reproduced the screenshot exactly — **2 rows** — and
+then found two further defects that no rectangle could have shown, both only
+inside a dialog:
+
+- Radix sets `pointer-events: none` on `<body>` while a dialog is open, so a
+  body-portalled popover was painted above the form while every click passed
+  **through** it into the fields underneath;
+- Radix's focus trap pulled focus back into the dialog the moment the portalled
+  search box took it, so typing went nowhere and the list stayed unfiltered.
+
+`elementFromPoint` answers the question a person asks — *press here, do I get
+this?* — and it sees ancestor clipping, overlap, zero opacity and
+pointer-events alike. Where the assertion is about something a person must be
+able to USE, the end of the check is an interaction: type into it, press it, and
+read back what changed. The picker's guard now types "new z" and presses the top
+row, asserting the trigger moves from +61 to +64, on a dialog surface and a
+non-dialog one.
+
+The same rule applied earlier in this run to the studio's status line, where the
+defect was overlap rather than clipping and the measurement was a rect
+intersection at three viewports. Rect intersection catches overlap; only a hit
+test catches clipping. When in doubt, hit-test.
