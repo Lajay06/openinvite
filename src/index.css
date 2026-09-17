@@ -1432,6 +1432,35 @@ body {
   }
 }
 
+/* THE CANVAS TOOLBAR'S ADDRESS LINE ON A PHONE.
+   The line — a dot, the site address, and sometimes "Add your names" — is
+   absolutely positioned at the left of a toolbar whose device pills are
+   centred, so the two know nothing about each other. Two measurements, not
+   two guesses:
+
+     390x844 portrait    the line starts at x=257 and is 205 wide, so it ran
+                         to 462 in a 390 viewport — 72px off the screen.
+     844x390 landscape   it overlapped the device pills by 117x17px. This is
+                         the orientation the rotate notice SENDS people to,
+                         which is what makes it worth fixing rather than
+                         noting.
+     1440x950 desktop    clear: the line ends at 462, the pills start at 575.
+
+   It is hidden on a phone rather than docked: at 390px of height the scarcest
+   thing on the screen is vertical space, and an extra toolbar row to hold an
+   address the couple can read on the Share panel is a bad trade. The dot and
+   the address are informational — nothing is lost that cannot be seen a tap
+   away, and nothing is pressable inside it except "Add your names", which is
+   also on the page it points at.
+
+   !important for the same reason as the header rules above: the element
+   carries an inline `position: absolute`, and an inline style beats any
+   selector. Measured by scripts/test-studio-rotate-notice.mjs at both phone
+   viewports and at 1440. */
+@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) {
+  .wb-canvas-url { display: none !important; }
+}
+
 /* ── The modal scale ─────────────────────────────────────────────────────────
  *
  * A dialog is a small window onto a big form, and this one was built at page
