@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { DIETARY_OPTIONS, DIETARY_OTHER, parseDietaryPills, serializeDietaryPills } from '@/lib/dietaryPills';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { getWeddingEvents, getGuestEventResponse, getEventVenueAndDate } from '@/lib/weddingEvents';
@@ -17,11 +18,6 @@ const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 // internal default (which falls back to the London palette) — a wedding that
 // never chose a universe should see Openinvite's own brand look, not a
 // phantom London theme it never selected.
-const DIETARY_OTHER = 'Something else';
-const DIETARY_OPTIONS = [
-  'No restrictions', 'Vegetarian', 'Vegan', 'Gluten free',
-  'Dairy free', 'Nut allergy', 'Halal', 'Kosher', DIETARY_OTHER,
-];
 
 const FALLBACK_THEME = {
   darkBg: '#FAFAFA', lightBg: '#FAFAFA', darkText: '#0A0A0A', lightText: '#0A0A0A',
@@ -427,7 +423,15 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
         setGuestVotes(g.poll_votes || {});
         setSongRequest(g.song_request || '');
         setRsvpNote(g.rsvp_note || '');
+        // PRE-FILLED, so a returning guest sees their own answer. Without this
+        // the pills render empty over a stored value, and an untouched control
+        // used to re-send that value.
         setDietaryRestrictions(g.dietary_restrictions || '');
+        {
+          const { picked, other } = parseDietaryPills(g.dietary_restrictions || '');
+          setDietaryPicked(picked);
+          setDietaryOther(other);
+        }
         setEmail(g.email || '');
         setHasEmailOnFile(!!g.email);
 
@@ -521,6 +525,19 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
     const status = yes ? 'yes' : 'no';
     const now = new Date().toISOString();
     try {
+      // ── THE TAP MUST NOT ERASE (owner ruling, Run 6 U4) ─────────────────
+      //
+      // api/rsvp-submit.js writes the guest-level row UNCONDITIONALLY, even
+      // when empty — deliberately, so a guest who clears a song request has
+      // that clearing recorded as the new latest value. This caller sent no
+      // guest-level fields at all, so every re-tap of Yes/No wrote an empty
+      // row that won latest-wins and wiped the guest's dietary, song request,
+      // note and email from the couple's dashboard.
+      //
+      // The contract stays: a caller that wants to clear says so explicitly.
+      // This caller does not want to clear, so it carries the current values
+      // forward — the loaded ones, or the form's if the guest has edited them
+      // in this visit, which is the same state either way.
       await writeResponses(invitedEvents.map(ev => ({
         event_id: ev.event_id,
         status,
@@ -528,7 +545,12 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
         plus_ones: 0,
         plus_one_names: [],
         responded_at: now,
-      })));
+      })), {
+        song_request: songRequest,
+        rsvp_note: rsvpNote,
+        dietary_restrictions: serializeDietaryPills(dietaryPicked, dietaryOther),
+        email,
+      });
       // Seed the details form from the primary answer so the per-event list
       // opens already reflecting what was just recorded.
       setEventForm(prev => {
@@ -577,14 +599,12 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
           event_responses: submittedResponses,
           song_request: songRequest,
           rsvp_note: rsvpNote,
-          // Pills serialise back into the one free string the schema stores.
-          // "Something else" contributes its typed text, not the label.
-          dietary_restrictions: dietaryPicked.length
-            ? dietaryPicked
-                .map(o => (o === DIETARY_OTHER ? dietaryOther.trim() : o))
-                .filter(Boolean)
-                .join(', ')
-            : dietaryRestrictions,
+          // THE PILLS ARE THE ANSWER, and an empty selection is an empty
+          // answer. This read `dietaryPicked.length ? … : dietaryRestrictions`
+          // — no pills meant "keep whatever was stored", so a guest could
+          // never clear their restrictions and an untouched control replayed
+          // the first submission forever.
+          dietary_restrictions: serializeDietaryPills(dietaryPicked, dietaryOther),
           email,
         }),
       });
@@ -599,7 +619,7 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
         event_responses: Array.from(existingByEventId.values()),
         song_request: songRequest,
         rsvp_note: rsvpNote,
-        dietary_restrictions: dietaryRestrictions,
+        dietary_restrictions: serializeDietaryPills(dietaryPicked, dietaryOther),
         email,
       }));
       // Advance to polls if any active, otherwise straight to done
