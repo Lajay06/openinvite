@@ -26,6 +26,7 @@
  * chip is still painted, because "remove the placeholder" quietly taking the
  * label with it is the way that fix goes wrong.
  */
+import { readFileSync } from 'node:fs';
 import { chromium } from 'playwright';
 import { seededContext } from './lib/renderHarness.mjs';
 
@@ -115,6 +116,80 @@ check('  and the category is still on the card', /\bEat\b/.test(seen.text),
   check('the same day reads the same in New York', h.includes(want),
     h.includes(want) ? 'Sunday either side of the Atlantic' : `headings read: ${h.join(' | ').slice(0, 90)}`);
   await west.close();
+}
+
+// ── THE ITINERARY'S LINKS, AND ITS MISSING SQUARES (Run 5 T6) ──────────────
+//
+// The owner's report: a grey placeholder square beside every itinerary item,
+// and no way to reach the place an item names. The square was in the STUDIO's
+// own list (ExperienceGuideTab's ActivityRow drew a 56px box with a MapPin at
+// 0.2 opacity); the missing links were on both surfaces; and the item never
+// carried maps_url/website_url at all, because the add path dropped them.
+//
+// Measured at two widths, and both directions of the claim: the linked item
+// shows both links, the plain one shows NEITHER — an "absent" that is only
+// ever tested against absent data proves nothing.
+for (const width of [390, 1440]) {
+  const c = await seededContext(browser, { width, height: width === 390 ? 844 : 950 });
+  const pg = await c.newPage();
+  await pg.goto(`${BASE}/w/${SLUG}/experience`, { waitUntil: 'domcontentloaded', timeout: 60000 }).catch(() => {});
+  await pg.waitForTimeout(6000);
+
+  const m = await pg.evaluate(() => {
+    const textOf = (el) => (el.innerText || '').trim();
+    const blocks = [...document.querySelectorAll('div')].filter((d) => /Greenwich Market/.test(textOf(d)) && textOf(d).length < 400);
+    const linked = blocks[blocks.length - 1] || null;
+    const plainBlocks = [...document.querySelectorAll('div')].filter((d) => /Check in at the Devonport/.test(textOf(d)) && textOf(d).length < 400);
+    const plain = plainBlocks[plainBlocks.length - 1] || null;
+    const hrefs = (el) => el ? [...el.querySelectorAll('a')].map((a) => a.href) : null;
+    return {
+      rendered: !!linked && !!plain,
+      linkedHrefs: hrefs(linked),
+      linkedLabels: linked ? [...linked.querySelectorAll('a')].map((a) => textOf(a)) : [],
+      plainHrefs: hrefs(plain),
+      // a placeholder would be an empty fixed box beside an item with no photo
+      emptyBoxes: plain ? [...plain.querySelectorAll('div')].filter((d) => {
+        const r = d.getBoundingClientRect();
+        return r.width > 40 && r.width < 120 && Math.abs(r.width - r.height) < 12 && !d.querySelector('img') && !textOf(d);
+      }).length : -1,
+    };
+  });
+
+  check(`${width}: both itinerary items rendered`, m.rendered === true, m.rendered ? 'linked and plain' : 'fixture items missing');
+  if (m.rendered) {
+    check('  the linked item offers Website and View on map',
+      m.linkedLabels.some((t) => /website/i.test(t)) && m.linkedLabels.some((t) => /view on map/i.test(t)),
+      m.linkedLabels.join(' · ') || 'no links');
+    check('    pointing at what the item stores',
+      (m.linkedHrefs || []).some((h) => h.includes('greenwichmarket.london'))
+      && (m.linkedHrefs || []).some((h) => h.includes('maps.google.com')),
+      (m.linkedHrefs || []).join(' · ').slice(0, 80));
+    check('  the item with no links offers none', (m.plainHrefs || []).length === 0,
+      `${(m.plainHrefs || []).length} link(s) on an item that has none`);
+    check('  and no placeholder square stands beside it', m.emptyBoxes === 0,
+      m.emptyBoxes === 0 ? 'no empty box' : `${m.emptyBoxes} empty box(es)`);
+  }
+  await c.close();
+}
+
+// ── THE STUDIO'S OWN LIST (Run 5 T6) ───────────────────────────────────────
+//
+// The guest page is only half of this. The grey square the owner reported was
+// in the COUPLE's list, and the links can only ever appear if the add path
+// carries them onto the item. Neither is reachable from /w/, so both are read
+// from source here rather than left unguarded.
+{
+  const studio = readFileSync(new URL('../src/components/studio/guest-suite/ExperienceGuideTab.jsx', import.meta.url), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  check('the studio row draws no box without a photograph',
+    /\{activity\.photo_url && \(/.test(studio) && !/activity\.photo_url \?[\s\S]{0,200}?MapPin/.test(studio),
+    'the thumbnail is conditional, with no placeholder branch');
+  check('  and it offers the same two links',
+    /Website\s*<ExternalLink/.test(studio) && /View on map\s*<ExternalLink/.test(studio),
+    'Website and View on map');
+  check('  and an item is added carrying them',
+    /onAdd\(\{ type: 'place'[\s\S]{0,400}?maps_url: place\.maps_url[\s\S]{0,200}?website_url: place\.website_url/.test(studio),
+    'maps_url and website_url travel with the item');
 }
 
 await browser.close();

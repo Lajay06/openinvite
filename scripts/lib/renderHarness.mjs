@@ -302,7 +302,11 @@ export const PUBLISHED_WEDDING = {
           summary: 'Settle in, then walk the Thames path while the light is good.',
           blocks: {
             morning: [{ id: 'a1', type: 'custom', place_name: 'Check in at the Devonport', category: 'Stay', time: '11:00 AM', duration: '~1 hr', description: 'Drop your bags and take the courtyard entrance — it is easy to miss from the road.' }],
-            afternoon: [{ id: 'a2', type: 'custom', place_name: 'Greenwich Market', category: 'Eat', time: '1:00 PM', duration: '~2 hrs', description: 'Lunch under the glass roof. The Ethiopian stall at the back is the one to find.' }],
+            // ONE ITEM WITH LINKS AND ONE WITHOUT (Run 5 T6). "Links appear
+            // when the data is there" and "nothing appears when it is not" are
+            // two claims, and a fixture that carries links on every item can
+            // only ever prove the first.
+            afternoon: [{ id: 'a2', type: 'place', place_name: 'Greenwich Market', category: 'Eat', time: '1:00 PM', duration: '~2 hrs', description: 'Lunch under the glass roof. The Ethiopian stall at the back is the one to find.', maps_url: 'https://maps.google.com/?cid=fixture-greenwich', website_url: 'https://greenwichmarket.london' }],
             evening: [],
           },
         },
