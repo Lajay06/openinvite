@@ -955,11 +955,11 @@ function ActivityRow({ activity, onRemove }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 0', borderBottom: '1px solid rgba(10,10,10,0.04)' }}>
       {/* NO RESERVED SPACE WHERE A PHOTOGRAPH IS NOT (owner ruling, Run 5 T6).
-          This drew a 56px grey square with a MapPin at 0.2 opacity on every
+          This drew a 56px gray square with a MapPin at 0.2 opacity on every
           item the couple had not photographed — which is most of them, and all
           of the typed ones ("Check in at Crown Sydney" can never have a photo).
           The guest page applied this rule to its cards in Run 4; the studio's
-          own list did not, so the couple saw a column of grey boxes beside
+          own list did not, so the couple saw a column of gray boxes beside
           their plan. A row with no picture is just a row. */}
       {activity.photo_url && (
         <div style={{ width: 56, height: 56, flexShrink: 0, overflow: 'hidden', borderRadius: 4, background: 'rgba(10,10,10,0.04)' }}>
