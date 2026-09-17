@@ -30,7 +30,7 @@ const HERO = responsivePhoto("DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2",
   transform: "c_crop,x_0,y_0,w_1600,h_640",
   croppedWidth: 1600,
 });
-const END_CAP = responsivePhoto("DTS_BANDITS_PALI_MENDEZ_Photos_ID14229_mhwb5h", 1280);
+const END_CAP = responsivePhoto("hf_20260903_230645_48b55428-c800-49a3-98eb-01afc61a473e_hnoru8", 2048);
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 
 // 16:10 is the dashboard capture aspect, and the same value Features.jsx
@@ -480,7 +480,7 @@ export default function Tour() {
       <MarketingEndCap
         image={END_CAP.src}
         srcSet={END_CAP.srcSet}
-        alt="Friends celebrating together at a wedding party"
+        alt="A couple on a coastal rock at dusk, one crouched at the edge and the other balancing with arms outstretched"
         title="All that. And we're still just getting started."
       />
 
