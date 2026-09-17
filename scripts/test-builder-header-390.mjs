@@ -1,6 +1,9 @@
-/* global document, getComputedStyle */
+/* global document, window, getComputedStyle */
 /**
- * NOTHING IN THE BUILDER'S TOP BAR OVERLAPS ANYTHING ELSE.
+ * NOTHING IN THE BUILDER OVERFLOWS ITSELF AT PHONE WIDTH.
+ *
+ * Two places, both found by looking at 390 rather than by reading source: the
+ * top bar's title, and the right panel's tab row.
  *
  * At 390 the title was drawn straight through Save and Share. It is centred
  * with `position: absolute; left: 50%`, which takes it out of flow — so it
@@ -61,6 +64,55 @@ const overlaps = (a, b) =>
 
 console.log('\n  The builder header, at both widths:\n');
 
+/**
+ * THE RIGHT PANEL'S TAB ROW, READ AS GEOMETRY AND AS A HIT TEST.
+ *
+ * Measured at 390 before the fix: the panel is 147px and Design + Content +
+ * Settings needed more than that at their inline 13px, so the row overflowed
+ * and the last tab ran past the edge of the screen — the three labels read as
+ * one word.
+ *
+ * Two questions, and the second is why this is not just a width check:
+ *   · does every tab END INSIDE the viewport;
+ *   · is every LABEL still readable inside its own button — because shrinking
+ *     the row without shrinking the text satisfies the first and hides the
+ *     words. A clipped label keeps its full box (DECISION-LOG 2026-09-17), so
+ *     the label is hit-tested at its own centre, not measured.
+ */
+const readTabs = (page) => page.evaluate(() => {
+  const row = document.querySelector('.wb-right-tabs');
+  if (!row) return null;
+  const btns = [...row.querySelectorAll('button')];
+  return {
+    count: btns.length,
+    labels: btns.map((b) => (b.innerText || '').trim()),
+    rowWidth: Math.round(row.getBoundingClientRect().width),
+    pastTheEdge: btns.filter((b) => b.getBoundingClientRect().right > window.innerWidth + 1).length,
+    // THE LABEL, NOT THE BUTTON. A plant clipped the text inside each button
+    // with `overflow: hidden` at 13px and this check stayed green, because
+    // hit-testing the button's centre finds the BUTTON whether or not its text
+    // fits. The word is what a person reads, so the word is what is measured:
+    // its own range rect must sit inside the button's box, and the button must
+    // not be scrolling its content out of sight.
+    unreadable: btns.filter((b) => {
+      const r = b.getBoundingClientRect();
+      if (r.width <= 0) return true;
+      if (b.scrollWidth > b.clientWidth + 1) return true;          // text wider than its box
+      const node = [...b.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim());
+      if (!node) return true;
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      const t = range.getBoundingClientRect();
+      if (t.width <= 0) return true;
+      if (t.right > r.right + 1 || t.left < r.left - 1) return true; // spills its button
+      const hit = document.elementFromPoint(Math.round(t.left + t.width / 2), Math.round(t.top + t.height / 2));
+      return !(hit && (hit === b || b.contains(hit) || b.contains(hit.parentElement)));
+    }).length,
+    fontSize: btns[0] ? getComputedStyle(btns[0]).fontSize : null,
+    scrollsItself: row.scrollWidth > row.clientWidth + 1,
+  };
+});
+
 const browser = await chromium.launch();
 
 for (const width of [390, 1440]) {
@@ -97,6 +149,19 @@ for (const width of [390, 1440]) {
     check(`  and nothing in it overlaps anything else`, false, 'no header');
     check('  width-specific checks', false, 'no header');
     check('  width-specific checks', false, 'no header');
+  }
+
+  // ── THE RIGHT PANEL'S TABS ───────────────────────────────────────────────
+  const tabs = await readTabs(page);
+  check(`${width}: the right panel's tabs are there`, !!tabs && tabs.count === 3,
+    tabs ? `${tabs.count} tabs at ${tabs.fontSize}: ${tabs.labels.join(' · ')}` : 'no tab row');
+  if (tabs) {
+    check('  every tab ends inside the screen', tabs.pastTheEdge === 0,
+      tabs.pastTheEdge ? `${tabs.pastTheEdge} tab(s) past the right edge in a ${tabs.rowWidth}px row` : `all three inside a ${tabs.rowWidth}px row`);
+    check('  and every label is readable in its own button', tabs.unreadable === 0,
+      tabs.unreadable ? `${tabs.unreadable} label(s) clipped or covered` : 'nothing clipped');
+    check('  and the row does not scroll sideways inside itself', tabs.scrollsItself === false,
+      tabs.scrollsItself ? `scrollWidth exceeds the panel` : 'fits');
   }
   await ctx.close();
 }

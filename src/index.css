@@ -1432,6 +1432,25 @@ body {
   }
 }
 
+/* THE RIGHT PANEL'S TABS AT PHONE WIDTH.
+   Measured at 390 before anything was changed: the panel is 147px wide and
+   Design + Content + Settings need more than that at their inline 13px, so the
+   row overflowed its own panel and the last label ran past the right edge of
+   the screen — three tabs reading as one word. At 11px the three fit inside the
+   panel with room to spare.
+
+   The check is not "the row is narrower". It is that each tab ends inside the
+   viewport AND that no label is clipped inside its own button, because
+   shrinking the row without shrinking the text satisfies the first and hides
+   the words — measured by scripts/test-builder-header-390.mjs, which hit-tests
+   the labels rather than trusting their rectangles (DECISION-LOG 2026-09-17).
+
+   !important for the same reason as the header rule above: the buttons carry an
+   inline `fontSize: 13`, and an inline style beats any selector. */
+@media (max-width: 640px) {
+  .wb-right-tabs button { font-size: 11px !important; }
+}
+
 /* THE CANVAS TOOLBAR'S ADDRESS LINE ON A PHONE.
    The line — a dot, the site address, and sometimes "Add your names" — is
    absolutely positioned at the left of a toolbar whose device pills are
