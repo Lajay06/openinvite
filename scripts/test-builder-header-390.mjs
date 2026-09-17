@@ -88,10 +88,24 @@ const readTabs = (page) => page.evaluate(() => {
     labels: btns.map((b) => (b.innerText || '').trim()),
     rowWidth: Math.round(row.getBoundingClientRect().width),
     pastTheEdge: btns.filter((b) => b.getBoundingClientRect().right > window.innerWidth + 1).length,
+    // THE LABEL, NOT THE BUTTON. A plant clipped the text inside each button
+    // with `overflow: hidden` at 13px and this check stayed green, because
+    // hit-testing the button's centre finds the BUTTON whether or not its text
+    // fits. The word is what a person reads, so the word is what is measured:
+    // its own range rect must sit inside the button's box, and the button must
+    // not be scrolling its content out of sight.
     unreadable: btns.filter((b) => {
       const r = b.getBoundingClientRect();
       if (r.width <= 0) return true;
-      const hit = document.elementFromPoint(Math.round(r.left + r.width / 2), Math.round(r.top + r.height / 2));
+      if (b.scrollWidth > b.clientWidth + 1) return true;          // text wider than its box
+      const node = [...b.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim());
+      if (!node) return true;
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      const t = range.getBoundingClientRect();
+      if (t.width <= 0) return true;
+      if (t.right > r.right + 1 || t.left < r.left - 1) return true; // spills its button
+      const hit = document.elementFromPoint(Math.round(t.left + t.width / 2), Math.round(t.top + t.height / 2));
       return !(hit && (hit === b || b.contains(hit) || b.contains(hit.parentElement)));
     }).length,
     fontSize: btns[0] ? getComputedStyle(btns[0]).fontSize : null,
