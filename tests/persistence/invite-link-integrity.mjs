@@ -22,11 +22,27 @@
  * The throw-on-failure assertions run the real function against a stubbed fetch
  * rather than grepping for it, so they fail if the behaviour regresses even
  * when the words survive.
+ *
+ * ── AND THE LINK HAS TO CARRY THE GUEST (owner ruling, Run 6 U1) ───────────
+ *
+ * A link that resolves is not enough if it resolves to a stranger. The
+ * invitation's button pointed at the couple's bare address, so an emailed guest
+ * landed on /w/<slug> unrecognised and the RSVP tab offered them an email box —
+ * asking for the address the email had just been sent to. The token was never
+ * missing: my-guest-links mints it, the modal fetches it, send-invites refuses
+ * a guest without one, and the template then dropped it.
+ *
+ * The checks below RENDER the real email and read the href, for both types that
+ * open a doorway. The token they use is minted per run with randomUUID and is
+ * never printed: every detail line redacts it, because a guard that prints a
+ * token teaches people that tokens are printable.
  */
 import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { randomUUID } from 'node:crypto';
 import { pass, fail } from './_shared.mjs';
+import { renderInvitationEmail, buildGuestCtaUrl } from '../../src/lib/emailTemplate.js';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = (p) => resolve(__dir, '../../', p);
@@ -48,6 +64,55 @@ async function withBrowserGlobals(fetchImpl, fn) {
 export async function runInviteLinkIntegrity() {
   const results = [];
   const check = (n, ok, d) => results.push(ok ? pass(n, d) : fail(n, 'see name', d));
+
+  // ── THE EMAIL'S DOORWAY OPENS FOR A NAMED GUEST ─────────────────────────
+  {
+    // Minted here, never a literal in the file and never printed. `redact`
+    // is used on every detail string below.
+    const token = randomUUID();
+    const redact = (str) => String(str).split(token).join('<redacted>');
+    const siteUrl = 'https://www.openinvite.com.au/w/ada-and-alan';
+    const base = { universeId: 'paris', coupleNames: 'Ada & Alan', guestName: 'Grace', weddingDate: '2027-05-01' };
+
+    for (const type of ['invite', 'save_the_date']) {
+      const { html, text } = renderInvitationEmail({
+        ...base, type, siteUrl, rsvpToken: token, rsvpUrl: `https://www.openinvite.com.au/rsvp/${token}`,
+      });
+      const want = `${siteUrl}?rsvp=${token}`;
+      const hrefs = [...html.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
+      const cta = hrefs.find((h) => h.includes('/w/') || h.includes('/rsvp/'));
+
+      check(`${type}: the button opens the site AS THIS GUEST`, cta === want, redact(cta || 'no CTA href'));
+      check(`  ${type}: and the copy-link line carries the same address`,
+        html.includes(`Or copy this link: ${want.replace(/&/g, '&amp;')}`) || html.includes(`Or copy this link: ${want}`),
+        redact(want));
+      check(`  ${type}: and so does the plain-text part`, text.includes(want), redact('text part carries it'));
+      // THE ONE THAT WOULD HAVE CAUGHT THE DEFECT: a bare address, with no
+      // guest on it, must not be what the button points at.
+      check(`  ${type}: no bare /w/<slug> is offered as the CTA`,
+        !hrefs.includes(siteUrl), hrefs.includes(siteUrl) ? 'the tokenless address is still the button' : 'every CTA carries a guest');
+    }
+
+    // No slug yet — the tokenized page, which resolves and then redirects into
+    // the site itself.
+    for (const type of ['invite', 'save_the_date']) {
+      const rsvpUrl = `https://www.openinvite.com.au/rsvp/${token}`;
+      const { html } = renderInvitationEmail({ ...base, type, siteUrl: '', rsvpToken: token, rsvpUrl });
+      const hrefs = [...html.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
+      check(`  ${type}: with no address yet, the tokenized link is the fallback`,
+        hrefs.includes(rsvpUrl), redact(hrefs.find((h) => h.includes('/rsvp/')) || 'no rsvp href'));
+    }
+
+    // The helper both channels share, so email and WhatsApp cannot drift.
+    check('  the CTA helper is one function, and it is exported',
+      typeof buildGuestCtaUrl === 'function'
+      && buildGuestCtaUrl({ showDate: true, siteUrl, rsvpToken: token, rsvpUrl: 'x' }) === `${siteUrl}?rsvp=${token}`
+      && buildGuestCtaUrl({ showDate: true, siteUrl: '', rsvpToken: token, rsvpUrl: 'x' }) === 'x',
+      'slug -> ?rsvp=<redacted>, no slug -> the tokenized link');
+    const wa = strip(read('src/components/guests/SendInvitesModal.jsx'));
+    check('  WhatsApp lands where the email lands', /buildWhatsAppUrl\([\s\S]{0,400}?buildGuestCtaUrl\(/.test(wa),
+      'the same helper builds both');
+  }
   console.log('\n  Invite links — a send aborts rather than mailing a dead link:\n');
 
   const { fetchGuestLinks } = await import('../../src/lib/guestLinks.js');

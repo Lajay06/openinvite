@@ -14,7 +14,8 @@
  *       // defaults to 'invite'
  *     universeId?: string,      // one of UNIVERSE_EMAIL_STYLES' keys, falls back to 'london'
  *     isTest?: boolean,         // "send test to me" — prefixes the subject, skipped from guest-count logging
- *     guests: [{ email: string, name: string, rsvpUrl: string, events?: Array<{name,date,startTime,venue}> }],
+ *     guests: [{ email: string, name: string, rsvpUrl: string, rsvpToken?: string,
+ *               events?: Array<{name,date,startTime,venue}> }],
  *       // events — the events THIS guest is invited to; per-guest since invite
  *       // lists differ per event. Falls back to wedding.venue/weddingDate as a
  *       // single synthetic event if omitted (back-compat with older callers).
@@ -152,6 +153,13 @@ export default async function handler(req, res, {
     const batch = validGuests.map(g => {
       const guestName = sanitizeString(g.name) || '';
       const rsvpUrl = g.rsvpUrl;
+      // THE TOKEN TRAVELS AS A TOKEN (owner ruling, Run 6 U1). The caller sends
+      // it alongside the URL rather than this file slicing it back out of the
+      // URL's tail: a parser is a second place that must agree about the link's
+      // shape, and it would silently produce a wrong "token" the day the shape
+      // changes. Sanitized like every other caller-supplied string, and never
+      // logged — the send log below counts recipients and prints no link.
+      const rsvpToken = sanitizeString(g.rsvpToken) || '';
 
       const subject = (customSubject
         ? replaceMergeTags(sanitizeString(customSubject), guestName, coupleName, dateStr, rsvpUrl)
@@ -169,7 +177,7 @@ export default async function handler(req, res, {
         : (venue || weddingDate) ? [{ name: 'Wedding day', date: weddingDate, venue }] : [];
 
       const { html, text } = renderInvitationEmail({
-        universeId, type, guestName, coupleNames: coupleName, events, personalMessage: processedBody, rsvpUrl, siteUrl, weddingDate, bannerImageUrl,
+        universeId, type, guestName, coupleNames: coupleName, events, personalMessage: processedBody, rsvpUrl, rsvpToken, siteUrl, weddingDate, bannerImageUrl,
       });
 
       return { from: FROM, to: g.email, replyTo, subject, html, text };

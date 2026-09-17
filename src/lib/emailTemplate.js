@@ -113,6 +113,28 @@ const TYPE_CONFIG = {
 
 export const EMAIL_TYPES = Object.keys(TYPE_CONFIG);
 
+/**
+ * The address an emailed guest should arrive at.
+ *
+ *   slug + token   /w/<slug>?rsvp=<token>   the site, opened as this guest
+ *   no slug        /rsvp/<token>            the tokenized page, which redirects
+ *                                           into the site once it resolves one
+ *   no token       whatever the caller had  never reached in practice:
+ *                                           api/send-invites.js:139 refuses a
+ *                                           guest with no link at all
+ *
+ * A separate function because three things need the same answer — the button,
+ * the "Or copy this link" line, and the plain-text part — and three copies of a
+ * ternary is how they drift apart.
+ */
+export function buildGuestCtaUrl({ showDate, siteUrl, rsvpToken, rsvpUrl }) {
+  if (showDate && siteUrl && rsvpToken) {
+    const sep = siteUrl.includes('?') ? '&' : '?';
+    return `${siteUrl}${sep}rsvp=${encodeURIComponent(rsvpToken)}`;
+  }
+  return rsvpUrl || siteUrl || '';
+}
+
 export function getEmailTypeConfig(type) {
   return TYPE_CONFIG[type] || TYPE_CONFIG.invite;
 }
@@ -273,6 +295,10 @@ function dividerHtml(style, accent) {
  *   — the events THIS guest is invited to (ignored when the type doesn't show events)
  * @param {string} [opts.personalMessage] — free text, may contain newlines; defaults per type when omitted
  * @param {string} [opts.rsvpUrl] — required when the type shows an RSVP CTA
+ * @param {string} [opts.rsvpToken] — the guest's own token, passed explicitly by
+ *   the caller and never parsed back out of rsvpUrl. With it and a siteUrl the
+ *   CTA opens the couple's site AS THIS GUEST; without it the CTA is the
+ *   tokenized /rsvp/<token> link.
  * @param {string} [opts.bannerImageUrl] — resolved via getBannerImageUrl(); omitted entirely when falsy, never a broken image or stock placeholder
  * @returns {{ html: string, text: string }}
  */
@@ -284,6 +310,7 @@ export function renderInvitationEmail({
   events = [],
   personalMessage,
   rsvpUrl,
+  rsvpToken,
   siteUrl,
   weddingDate,
   bannerImageUrl,
@@ -338,9 +365,27 @@ export function renderInvitationEmail({
             </td>
           </tr>` : '';
 
-  // The button opens the site when we have its address, and falls back to the
-  // RSVP link when we do not — an invitation is never sent without a button.
-  const ctaUrl = (cfg.showDate && siteUrl) ? siteUrl : rsvpUrl;
+  // ── THE DOORWAY OPENS FOR A NAMED GUEST (owner ruling, Run 6 U1) ────────
+  //
+  // This line read `(cfg.showDate && siteUrl) ? siteUrl : rsvpUrl`, so every
+  // emailed guest of a couple WITH an address arrived at /w/<slug> as a
+  // stranger. The site then did the only thing it can for a stranger: the RSVP
+  // tab offered an email box — "enter the email your invite was sent to and
+  // we'll send your personal link" — to someone who had just clicked the link
+  // from that very email. The owner's words: "when you send an invitation
+  // there's no opportunity to RSVP; the RSVP page asks for your email."
+  //
+  // The per-guest token was never missing. api/my-guest-links mints it,
+  // SendInvitesModal fetches it, api/send-invites REFUSES a guest without one
+  // (send-invites.js:139) — and this line then dropped it. WhatsApp did not:
+  // its message carried the tokenized link all along, so the same guest was
+  // recognised by WhatsApp and anonymous by email.
+  //
+  // The doorway intent stands: the button opens the SITE, not a bare form.
+  // `?rsvp=` is the path the site already has — MultiPageWeddingWebsite
+  // consumes it in a useState initialiser, before any fetch, and strips it from
+  // the address bar so it never rides along in a Referer header.
+  const ctaUrl = buildGuestCtaUrl({ showDate: cfg.showDate, siteUrl, rsvpToken, rsvpUrl });
 
   const messageHtml = message ? `
           <tr>
