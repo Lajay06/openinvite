@@ -221,8 +221,9 @@ the Universes closing CTA — is delivered through `responsivePhoto()` in
   box.** `MarketingEndCap` takes an optional `aspectRatio` ("w/h", the master's
   real ratio from `fl_getinfo`, reduced — Tour passes "16/9" for 2048x1152).
   The section then sizes itself to the photo instead of 70vh, so cover has
-  nothing to trim; below 768 the 70vh box stays and the crop anchors to the
-  top. Callers that omit it are unchanged.
+  nothing to trim; below 768 the 70vh box stays and the crop anchors at
+  `75% top` (the phone box is taller than the photo, so it trims sideways —
+  the x value is the lever). Callers that omit it are unchanged.
 
 Known ceiling: only the Pricing and About heroes are print masters. The other
 eleven full-bleed photos are 1280–1600px web exports and sit at 0.34–0.42x;

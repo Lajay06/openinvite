@@ -42,7 +42,7 @@ const CARDS = [
   title: "Planning & schedule",
   desc: "A day-of timeline builder, a shared to-do list, and daily nudges so nothing slips through.",
   bullets: ["Day-of timeline builder", "Shared to-do list", "Daily planning updates"],
-  photo: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1784100467/DTS_Weekend_Brainstorm_Kristine_Isabedra_Photos_ID2889_etg9ko.jpg"
+  photo: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/hf_20260904_112950_ee43be91-2036-4b97-8ff9-f490913bfded_q6rrgk"
 },
 {
   num: "04",

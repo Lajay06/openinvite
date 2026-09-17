@@ -484,6 +484,12 @@ export default function Tour() {
         // 2048x1152 from fl_getinfo, reduced. The box matches the photo so
         // cover shows the whole frame with both people in it.
         aspectRatio="16/9"
+        // Owner override of the no-scrim standing rule, this slot only
+        // (2026-09-18): at 390 the 75% anchor that keeps both people in frame
+        // puts the headline's right-hand words over a cream skirt, white on
+        // cream at ~1.2:1. Desktop shows the full frame and reads clean; the
+        // 0.2 is the lightest lift that carries the phone crop.
+        scrim={0.2}
         title="All that. And we're still just getting started."
       />
 

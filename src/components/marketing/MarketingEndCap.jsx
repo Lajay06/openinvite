@@ -47,9 +47,12 @@ export default function MarketingEndCap({
   // fl_getinfo. When set, the section sizes itself to the photo instead of
   // 70vh, so object-fit: cover has nothing to trim and the whole frame is
   // visible at every width where minHeight 480 is not binding. Below 768 the
-  // 70vh box stays (a 16:9 strip is too short on a phone) and the crop is
-  // anchored to the top so the heads survive. Callers that omit it are
-  // unchanged.
+  // 70vh box stays (a 16:9 strip is too short on a phone). There the box is
+  // taller than the photo, so cover trims sideways, not vertically: a y-anchor
+  // alone is a no-op (measured on Tour: 402 of 640 source px cut in x, 0 in
+  // y). The 75% x-anchor is what keeps both subjects in frame at 390; top
+  // keeps the heads if a caller's box ever does trim vertically. Callers that
+  // omit it are unchanged.
   aspectRatio,
   children,
 }) {
@@ -94,7 +97,7 @@ export default function MarketingEndCap({
           width: "100%",
           height: "100%",
           objectFit: "cover",
-          objectPosition: aspectRatio && isMobile ? "center top" : "center",
+          objectPosition: aspectRatio && isMobile ? "75% top" : "center",
         }}
       />
 

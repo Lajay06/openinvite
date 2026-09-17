@@ -116,7 +116,6 @@ const fullBleedNear = (s) =>
 const OFF_CDN_ALLOWLIST = new Set([
   "d2df22_8e79926ce6c74e55aa7ee84c8a8be77c~mv2.jpg", // Home hero background
   "d2df22_c34b84a5b42f49b0963b953b94c0e8c4~mv2.jpg", // Home red statement banner
-  "d2df22_2d4ea077497f48679138b2e04dbc7e3a~mv2.jpg", // Home budget block photo
 ]);
 
 // Any full-bleed photo routed through the Wix helper is off our CDN by
