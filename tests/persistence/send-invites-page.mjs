@@ -24,6 +24,7 @@
  * the list was right and the NAME was missing.
  */
 import { pass, fail } from './_shared.mjs';
+import { EMAIL_TYPES } from '../../src/lib/emailTemplate.js';
 import { readFileSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -93,11 +94,15 @@ export async function runSendInvitesPage() {
     const modal = code('src/components/guests/SendInvitesModal.jsx');
     const tmpl = code('src/lib/emailTemplate.js');
 
-    // Order comes from the data, not from a second list: the drawer maps
-    // EMAIL_TYPES, which is Object.keys(TYPE_CONFIG).
-    const configKeys = [...tmpl.matchAll(/^  ([a-z_]+): \{$/gm)].map((m) => m[1]);
+    // THE ARRAY THE DRAWER ACTUALLY MAPS, imported and read — not the source
+    // order of TYPE_CONFIG. A plant proved the difference: filtering
+    // `save_the_date` out of EMAIL_TYPES left every source-text check green
+    // while the pill disappeared from the drawer. The list is the thing, so
+    // the list is what is measured.
     check('save the date is the first type offered',
-      configKeys[0] === 'save_the_date', `TYPE_CONFIG order: ${configKeys.slice(0, 3).join(' · ')}…`);
+      EMAIL_TYPES[0] === 'save_the_date', `EMAIL_TYPES: ${EMAIL_TYPES.slice(0, 3).join(' · ')}…`);
+    check('  and it is still in the list at all',
+      EMAIL_TYPES.includes('save_the_date'), `${EMAIL_TYPES.length} types offered`);
     check('  and the drawer renders the list, not a copy of it',
       /EMAIL_TYPES\.map\(/.test(modal), 'EMAIL_TYPES.map — one source for the order');
 
