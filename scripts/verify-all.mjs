@@ -71,6 +71,7 @@ const EXCLUDED = [
   [/^npm ci$/, 'dependency install; the local tree is already installed'],
   [/^npx playwright install/, 'CI-only browser provisioning'],
   [/^npm run audit:ci$/, 'hits the npm registry; slow and network-dependent, so CI-only'],
+  [/^sudo rm -f \/etc\/apt\/sources\.list\.d\/google-chrome/, 'CI-only runner apt cleanup ahead of playwright install-deps (#790)'],
 ];
 
 // GitHub expression substitution. An unresolved ${{ }} must never be handed to
