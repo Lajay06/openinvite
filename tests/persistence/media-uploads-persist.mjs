@@ -69,6 +69,32 @@ export async function runMediaUploadsPersist() {
     /setMediaLibrary\(prev => \[optimistic, \.\.\.prev\]\)[\s\S]{0,600}?catch/.test(studio),
     'the prepend happens before the write, and survives its failure');
 
+  // ── WHERE A STUDIO UPLOAD CAN AND CANNOT APPEAR ────────────────────────
+  //
+  // Writing Photo records raises the question the owner asked: can working
+  // material reach a guest? Read from the code rather than assumed:
+  //
+  //   · NO guest-facing surface reads the Photo entity at all. The guest site
+  //     renders from the guest-safe wedding projection (photosContent on
+  //     WeddingDetails), and there is no gallery page among the /w/ routes.
+  //   · The three readers are the two studios and Moodboard's export — all
+  //     couple-facing, behind the couple's own session.
+  //
+  // So the exposure was never a guest one. It was the couple's own export
+  // labelling working material as "Photo gallery", which photoExport now
+  // excludes — and this check is what keeps the claim true.
+  const exportLib = code('src/lib/photoExport.js');
+  check('a studio upload is left out of the photo export',
+    /if \(p\.visible_to_guests === false\) continue;/.test(exportLib),
+    'excluded from the "Photo gallery" surface');
+  check('  and only an explicit false is excluded',
+    !/if \(!p\.visible_to_guests\) continue;/.test(exportLib),
+    "records written before the field existed carry no value, and those are the couple's real photos");
+  const guestPages = code('api/_lib/guestSafeWedding.js');
+  check('  while the guest projection carries no Photo records at all',
+    !/entities\.Photo|'Photo'/.test(guestPages),
+    'the guest site renders from the wedding record, not from this entity');
+
   // The same mapping existed twice; a fix in one copy is not a fix.
   const ava = code('src/pages/AvaStudioWebsite.jsx');
   check('the Ava studio reads the same field', /url: p\.image_url \|\|/.test(ava),

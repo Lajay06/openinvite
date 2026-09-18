@@ -66,6 +66,15 @@ export function collectPhotoItems({ photos = [], moodboard = [], coverPhoto = nu
   }
   for (const p of photos) {
     if (!p?.image_url) continue;
+    // WORKING MATERIAL IS NOT A GALLERY PHOTO (Run 5 T11). Studio uploads are
+    // written as Photo records with visible_to_guests: false so the library can
+    // remember them; they are not photographs the couple has chosen to show,
+    // and an export that labels them "Photo gallery" says they are.
+    //
+    // ONLY AN EXPLICIT false is excluded. Records written before this field was
+    // set carry no value at all, and those are the couple's real photos — a
+    // truthiness test would have dropped every one of them.
+    if (p.visible_to_guests === false) continue;
     items.push({ url: p.image_url, title: p.title || '', surface: 'Photo gallery',
                  category: p.category || '', description: p.description || '',
                  credit: p.photographer_credit || '', date: p.date_taken || '' });
