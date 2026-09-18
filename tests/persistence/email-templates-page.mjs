@@ -42,8 +42,12 @@ export async function runEmailTemplatesPage() {
   // ── (a) a header on every card ──────────────────────────────────────────
   const gallery = code('src/components/guests/EmailTemplates.jsx');
   const labels = code('src/components/guests/SendInvitesModal.jsx');
-  const missingLabel = EMAIL_TYPES.filter((t) => !new RegExp(`${t}:\\s*'`).test(labels));
-  const missingDesc = EMAIL_TYPES.filter((t) => !new RegExp(`${t}:\\s*'`).test(gallery.slice(gallery.indexOf('TYPE_DESCRIPTIONS'), gallery.indexOf('export default'))));
+  // A BOUNDARY, because `save_the_date:` is a substring of `xsave_the_date:`
+  // — a plant that renamed the key left this green.
+  const declared = (src, t) => new RegExp(`(^|[^\\w$])${t}:\\s*'`, 'm').test(src);
+  const missingLabel = EMAIL_TYPES.filter((t) => !declared(labels, t));
+  const descBlock = gallery.slice(gallery.indexOf('TYPE_DESCRIPTIONS'), gallery.indexOf('export default'));
+  const missingDesc = EMAIL_TYPES.filter((t) => !declared(descBlock, t));
   check('every card has a name', missingLabel.length === 0,
     missingLabel.length ? `no label for: ${missingLabel.join(', ')}` : `${EMAIL_TYPES.length} types`);
   check('  and a description under it', missingDesc.length === 0,
