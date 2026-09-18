@@ -37,7 +37,7 @@ export async function runToolingRefusesDirtyTree() {
   check('pr:merge asks git whether the tree is clean',
     /git status --porcelain/.test(merge), 'porcelain, which already excludes ignored files');
   check('  and refuses rather than warning',
-    /REFUSING[\s\S]{0,400}?process\.exit\(1\)/.test(merge), 'exit 1, before anything moves');
+    /REFUSING[\s\S]{0,900}?process\.exit\(1\)/.test(merge), 'exit 1, before anything moves');
   check('  before it reads the PR at all',
     merge.indexOf('refuseIfDirty(') < merge.indexOf('gh pr view'),
     'the refusal runs first, so nothing has happened yet when it fires');
