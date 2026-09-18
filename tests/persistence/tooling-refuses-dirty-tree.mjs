@@ -38,8 +38,13 @@ export async function runToolingRefusesDirtyTree() {
     /git status --porcelain/.test(merge), 'porcelain, which already excludes ignored files');
   check('  and refuses rather than warning',
     /REFUSING[\s\S]{0,900}?process\.exit\(1\)/.test(merge), 'exit 1, before anything moves');
+  // PRESENCE BEFORE ORDER. `indexOf` returns -1 when the call is gone, and
+  // -1 < anything is true — so this check passed with the refusal DELETED,
+  // which is what the plant runner caught the first time it was pointed at
+  // this file. The call must exist, and then come first.
   check('  before it reads the PR at all',
-    merge.indexOf('refuseIfDirty(') < merge.indexOf('gh pr view'),
+    merge.includes('refuseIfDirty(')
+    && merge.indexOf('refuseIfDirty(') < merge.indexOf('gh pr view'),
     'the refusal runs first, so nothing has happened yet when it fires');
   check('  and it names what is dirty',
     /for \(const l of dirty\.split/.test(merge), 'the lines are printed, not just a count');
