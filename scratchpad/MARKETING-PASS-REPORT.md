@@ -130,3 +130,49 @@ class, the sixth card, the grid) and is in the PR.
 test:ci, page-gate all 0.
 
 **PR.** opens after M3 merges.
+
+## M4 — Universes hero: slight scrim, owner 2026-09-17
+
+**Finding.** The owner's quote ("…wants to plan your entire wedding") does
+not appear in the codebase; the Universes hero heading is "Your universe.
+One aesthetic vision for every piece of your wedding." and the instruction
+names the Universes hero explicitly, so that is the target. The photo is
+pale sand edge to edge with no darker region to move the heading onto.
+
+**Measured before** (scrim method: hide the copy, sample the painted pixels
+inside the heading's box, contrast of #FFF against them): 99th-percentile
+backdrop 1.61:1 at 390 and 1.63:1 at 1440; lightest pixel 1.17:1 / 1.30:1;
+64% of pixels under 3:1.
+
+**Threshold search** (uniform black scrim, painted, both widths):
+
+| scrim | p99 contrast 390 / 1440 | pixels under 3:1 |
+|---|---|---|
+| 0.20 | 2.52 / 2.54 | 51% / 52% |
+| 0.25 | 2.86 / 2.87 | 8% / 12% |
+| **0.28** | **3.08 / 3.09** | 0.8% / 0.1% |
+| 0.30 | 3.27 / 3.29 | 0.5% / 0% |
+| 0.35 | 3.71 / 3.74 | 0% / 0% |
+
+0.28 is the exact minimum reaching 3:1 at the 99th percentile at both
+widths. Shipped **0.30** for a small margin; the pixels still short are
+specular highlights on the water. (The earlier linear-light estimate of
+~0.5 was wrong: the browser composites in sRGB, which darkens more per unit
+of alpha. Measured painted pixels, not the formula, decide.)
+
+**Change.** `src/pages/Universes.jsx`: `overlay={0.3}` on the hero, with the
+code comment "Universes hero: slight scrim, owner 2026-09-17" and the
+numbers above. `MarketingHero` itself is untouched — `overlay` is its
+existing opt-in, the same one Features uses at 0.2.
+
+**Measured after, as shipped:** p99 3.27:1 at 390, 3.29:1 at 1440; median
+3.79 / 3.70; 0.5% / 0% of pixels under 3:1.
+
+**Snapshot.** `prerendered/universes/index.html` body changed (the overlay
+div) and is in the PR. Home regenerated with only the ScrollProgress pulse
+flip and was reverted.
+
+**Gate.** prerendered-freshness 14/14, marketing-routes 14/14,
+marketing-images 15/71, lint, test:ci, page-gate all 0.
+
+**PR.** opens after M1 merges.
