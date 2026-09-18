@@ -497,16 +497,24 @@ export default function Pricing() {
         srcSet={END_CAP.srcSet}
         title="Your wedding deserves better. So, shall we?"
         alt="A couple on a day trip together"
-        /* 0.45 read muddy against this photo. Worst-case (lightest backdrop
-           pixel) contrast for the "Start free trial" button, which is the
-           binding element at 14px/700 = normal text, AA 4.5:1:
-             scrim   1440    1280     390
-             0.30    7.95    7.95    4.37  <- fails on mobile
-             0.35    8.46    8.46    4.81  <- lightest value that passes
-             0.45    9.59    9.59    5.89     (previous)
-           Mobile binds because the crop puts pale water behind the buttons
-           there. The headline is never the constraint: >=32px bold is AA
-           large text at 3:1 and clears even at 0.25. */
+        /* 0.45 read muddy against this photo; 0.35 is the scrim. The
+           "Start free trial" button is the binding element at 14px/700 =
+           normal text, AA 4.5:1. Re-measured 2026-09-19 as painted: the
+           real button with its label glyphs made transparent, lightest pixel
+           inside the pill (corners excluded), scrim 0.35, the stacked layout
+           below md:
+             ghost fill               1440    1280    390
+             white 0.10 (was)        10.74   10.65   2.65  <- fails on mobile
+             black 0.20 (now)        16.33   16.22   4.52  <- AA at 390
+           (black 0.15 models at ~4.07 at 390, enough for 3:1 but not for
+           the 4.5:1 this 14px label is held to.) The table this replaced
+           recorded 4.81 at 390 for the white fill; that value could not be
+           reproduced by any sampling (with or without the fill, button box
+           or whole row, five phone heights), so the fill is now the lever
+           rather than the scrim: a darker fill lowers the backdrop under the
+           label, a lighter one lifts it. The
+           headline is never the constraint: >=32px bold is AA large text
+           at 3:1 and clears even at 0.25. */
       >
           {!isPaidUser && (
             <button
@@ -515,7 +523,8 @@ export default function Pricing() {
               style={{
                 padding: "14px 32px", borderRadius: 999, fontSize: 14, fontWeight: 700,
                 fontFamily: PJS, cursor: "pointer", border: "1px solid rgba(255,255,255,0.3)",
-                background: "rgba(255,255,255,0.1)", color: "#FFFFFF", transition: "opacity 0.15s",
+                // Dark glass, not light: see the measurement note on the end cap.
+                background: "rgba(0,0,0,0.2)", color: "#FFFFFF", transition: "opacity 0.15s",
               }}
               onMouseEnter={e => e.currentTarget.style.opacity = "0.8"}
               onMouseLeave={e => e.currentTarget.style.opacity = "1"}
