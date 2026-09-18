@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { getMyWeddingDetails, getMyRecords } from '@/lib/resolveMyWedding';
@@ -347,26 +347,80 @@ export default function StudioWebsite({ onBack }) {
   const [mediaModalOpen, setMediaModalOpen] = useState(false);
   const [mediaCallback, setMediaCallback] = useState(null);
 
-  useEffect(() => {
+  /**
+   * THE UPLOADED TAB READS THE RECORD, EVERY TIME IT OPENS (Run 5 T11).
+   *
+   * Two things were wrong, and either alone empties the tab.
+   *
+   * THE FIELD NAMES WERE NOT THE ENTITY'S. This mapped `p.url ||
+   * p.photo_url || p.imageUrl` and Photo's field is `image_url` — the name
+   * src/lib/photoExport.js:68 has always used. Every row mapped to '' and was
+   * then dropped by the .filter, so the tab was empty however many photos the
+   * couple had.
+   *
+   * AND NOTHING WROTE A RECORD. handleMediaUploaded only prepended to this
+   * local array, so an upload lived exactly as long as the page did: the file
+   * was in storage, its URL was on the block it was chosen for, and the library
+   * had no memory of it at all.
+   *
+   * Reading on mount is not enough either — the modal can be opened long after,
+   * and an upload made in another tab belongs in the list — so this is a
+   * function the modal calls when it opens.
+   */
+  const loadMediaLibrary = useCallback(() => {
     getMyRecords('Photo', '-created_date', 100).then(photos => {
       setMediaLibrary(photos.map(p => ({
         id: p.id,
-        url: p.url || p.photo_url || p.imageUrl || '',
-        thumbnail: p.url || p.photo_url || p.imageUrl || '',
+        // image_url is the entity's field. The rest are older shapes kept as
+        // fallbacks so a record written before this is still readable.
+        url: p.image_url || p.url || p.photo_url || p.imageUrl || '',
+        thumbnail: p.image_url || p.url || p.photo_url || p.imageUrl || '',
         type: 'photo',
-        name: p.caption || p.title || 'Photo',
+        name: p.title || p.caption || 'Photo',
       })).filter(p => p.url));
     }).catch(() => {});
   }, []);
 
+  useEffect(() => { loadMediaLibrary(); }, [loadMediaLibrary]);
+
   const openMediaLibrary = (callback) => {
     setMediaCallback(() => callback);
+    // Re-read on open: an upload from another tab, or from before this page
+    // was loaded, belongs in the list the couple is about to look at.
+    loadMediaLibrary();
     setMediaModalOpen(true);
   };
 
-  const handleMediaUploaded = (item) => {
-    const newItem = { id: Date.now() + '', ...item };
-    setMediaLibrary(prev => [newItem, ...prev]);
+  /**
+   * AN UPLOAD BECOMES A RECORD (Run 5 T11).
+   *
+   * This kept the upload in local state only, so the Uploaded tab was empty on
+   * every reopen while the file sat in storage, reachable only through whatever
+   * block it had been chosen for. The Photo entity already has the fields: an
+   * image_url and a category are required, and both are supplied here.
+   *
+   * `visible_to_guests: false` deliberately. A studio upload is working
+   * material, not a gallery photo, and the couple decides separately what
+   * guests see.
+   *
+   * The local prepend happens either way: a failed write must not lose the
+   * photo the couple just uploaded from the session they are in.
+   */
+  const handleMediaUploaded = async (item) => {
+    const optimistic = { id: `local-${Date.now()}`, ...item };
+    setMediaLibrary(prev => [optimistic, ...prev]);
+    if (item.type !== 'photo' || !item.url) return;
+    try {
+      const saved = await base44.entities.Photo.create({
+        image_url: item.url,
+        category: 'other',
+        title: item.name || 'Photo',
+        visible_to_guests: false,
+      });
+      if (saved?.id) setMediaLibrary(prev => prev.map(i => (i.id === optimistic.id ? { ...i, id: saved.id } : i)));
+    } catch (err) {
+      console.error('[StudioWebsite] could not save the upload to the library:', err?.message || err);
+    }
   };
 
 
