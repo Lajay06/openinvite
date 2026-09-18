@@ -283,11 +283,21 @@ const Universes = () => {
       <PublicNav />
 
       {/* SECTION 1: HERO */}
+      {/* Universes hero: slight scrim, owner 2026-09-17. An owner-specified
+          exception to the no-overlay rule (2026-08-09) for this hero only: the
+          photo is pale sand edge to edge, so there is no darker region to move
+          the heading onto, and white on it measured 1.6:1 at the 99th
+          percentile of backdrop pixels (1.2:1 at the lightest). Measured with
+          the scrim method — hide the copy, sample the painted pixels inside the
+          heading's box, contrast of #FFF against the lightest 1% — 0.28 is the
+          exact threshold for 3:1 at both 390 and 1440; 0.3 gives 3.27:1 there
+          with under 0.5% of pixels (specular highlights) still short. */}
       <MarketingHero
         image={HERO.src}
         srcSet={HERO.srcSet}
         title="Your universe. One aesthetic vision for every piece of your wedding."
         maxWidth={1200}
+        overlay={0.3}
         cta={{ label: "Get started", href: "/signup" }}
       />
 
