@@ -27,7 +27,6 @@ export default function MediaLibraryModal({ library, onClose, onSelect, onUpload
   const [stockError, setStockError] = useState('');
   const [stockPage, setStockPage] = useState(1);
   const [stockHasMore, setStockHasMore] = useState(false);
-  const [stockImportingId, setStockImportingId] = useState(null);
   const fileInputRef = useRef(null);
   const stockDebounceRef = useRef(null);
 
@@ -119,21 +118,22 @@ export default function MediaLibraryModal({ library, onClose, onSelect, onUpload
   // hotlinking — that's their embed model) and re-uploads it through the
   // existing base44 path, so the wedding site ends up with its own hosted
   // copy rather than a long-term hot-link to a third party.
-  const handleSelectStockPhoto = async (photo) => {
-    setStockImportingId(photo.id);
-    try {
-      const imgRes = await fetch(photo.full);
-      if (!imgRes.ok) throw new Error('Download failed');
-      const blob = await imgRes.blob();
-      const file = new File([blob], `pexels-${photo.id}.jpg`, { type: blob.type || 'image/jpeg' });
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      onUploaded({ url: file_url, name: photo.alt || `Stock photo by ${photo.photographer}`, type: 'photo' });
-      toast.success('Photo added');
-    } catch (e) {
-      console.error('[MediaLibraryModal] stock photo import failed:', e);
-      toast.error('Failed to add photo — please try again.');
-    }
-    setStockImportingId(null);
+  /**
+   * CLICKING A STOCK PHOTO CHOOSES IT (owner ruling, Run 5 T10).
+   *
+   * This used to download the photo, re-upload it to the couple's own storage,
+   * and call onUploaded — and never onSelect. So a click did three surprising
+   * things and none of the expected one: the picker stayed open, nothing looked
+   * selected, and the photo turned up in the Uploaded tab as if the couple had
+   * added a file. The owner's report — "it loads, then the pane goes blank and
+   * nothing is selected" — is that sequence exactly.
+   *
+   * A stock photo is now chosen the same way an uploaded one is: onSelect with
+   * its URL, then close. No copy, no second step, nothing to undo afterwards.
+   */
+  const handleSelectStockPhoto = (photo) => {
+    onSelect(photo.full);
+    onClose();
   };
 
   const handleDrop = useCallback((e) => {
@@ -406,14 +406,13 @@ export default function MediaLibraryModal({ library, onClose, onSelect, onUpload
                 <>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8 }}>
                     {stockResults.map(photo => {
-                      const importing = stockImportingId === photo.id;
                       return (
                         <div
                           key={photo.id}
-                          onClick={() => !importing && handleSelectStockPhoto(photo)}
-                          {...interactiveDivProps(importing ? null : () => handleSelectStockPhoto(photo), { label: photo.alt || 'Select stock photo' })}
+                          onClick={() => handleSelectStockPhoto(photo)}
+                          {...interactiveDivProps(() => handleSelectStockPhoto(photo), { label: photo.alt || 'Select stock photo' })}
                           style={{
-                            aspectRatio: '1', position: 'relative', overflow: 'hidden', cursor: importing ? 'default' : 'pointer',
+                            aspectRatio: '1', position: 'relative', overflow: 'hidden', cursor: 'pointer',
                             background: 'rgba(255,255,255,0.06)',
                           }}
                         >
@@ -428,11 +427,6 @@ export default function MediaLibraryModal({ library, onClose, onSelect, onUpload
                               <p style={{ margin: 0, fontSize: 10, color: 'rgba(255,255,255,0.8)', fontFamily: 'inherit', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {photo.photographer}
                               </p>
-                            </div>
-                          )}
-                          {importing && (
-                            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <Loader2 size={18} className="animate-spin" style={{ color: '#FFFFFF' }} />
                             </div>
                           )}
                         </div>
