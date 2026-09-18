@@ -43,8 +43,11 @@ export async function runToolingRefusesDirtyTree() {
   // which is what the plant runner caught the first time it was pointed at
   // this file. The call must exist, and then come first.
   check('  before it reads the PR at all',
-    merge.includes('refuseIfDirty(')
-    && merge.indexOf('refuseIfDirty(') < merge.indexOf('gh pr view'),
+    // THE CALL, NOT THE DEFINITION. `refuseIfDirty(` matches
+    // `function refuseIfDirty(what)` too, so this passed with the call site
+    // deleted — the plant runner caught that on its second outing.
+    merge.includes("refuseIfDirty('a merge')")
+    && merge.indexOf("refuseIfDirty('a merge')") < merge.indexOf('gh pr view'),
     'the refusal runs first, so nothing has happened yet when it fires');
   check('  and it names what is dirty',
     /for \(const l of dirty\.split/.test(merge), 'the lines are printed, not just a count');
