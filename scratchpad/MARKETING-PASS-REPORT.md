@@ -38,7 +38,7 @@ opacity flipped (capture timing, not source) and were reverted.
 **Gate.** prerendered-freshness ✓ (14/14 bodies match), marketing-routes
 14/14, marketing-images 15 photos / 71 URLs, lint, test:ci, page-gate all 0.
 
-**PR.** #803.
+**PR.** #803, merged `bae218c`. Verified on production: 390 form 390 wide with the photo panel below, 1440 side by side 720/720.
 
 ## M3 — Ava page, three phone breaks
 
@@ -92,7 +92,7 @@ the other 13 regenerated head-only and were reverted.
 **Gate.** prerendered-freshness 14/14, marketing-routes 14/14,
 marketing-images 15/71, lint, test:ci, page-gate, us-english-spelling all 0.
 
-**PR.** opens after #803 merges (one PR at a time).
+**PR.** #805, merged `d7d97f5`. Verified on production: tabs 300 wide, pillars 342, comparison edges 25/25/25 at 390; 221/554/886 at 1440.
 
 ## M1 — Six universes, 2×3 on the phone and 3×2 on desktop
 
@@ -129,7 +129,7 @@ class, the sixth card, the grid) and is in the PR.
 **Gate.** prerendered-freshness 14/14, marketing-routes 14/14, lint,
 test:ci, page-gate all 0.
 
-**PR.** opens after M3 merges.
+**PR.** #806, merged `5eb7663`. Verified on production: 6 cards, 2·2·2 at 390, 3·3 at 1440.
 
 ## M4 — Universes hero: slight scrim, owner 2026-09-17
 
@@ -175,7 +175,7 @@ flip and was reverted.
 **Gate.** prerendered-freshness 14/14, marketing-routes 14/14,
 marketing-images 15/71, lint, test:ci, page-gate all 0.
 
-**PR.** opens after M1 merges.
+**PR.** #808, merged `2a9860b`. Verified on production: p99 3.27:1 at 390, 3.29:1 at 1440.
 
 ## M2 — Features accordion, draft for owner approval
 
@@ -213,8 +213,8 @@ no horizontal scroll; accordion still collapsed by default.
 **Snapshot.** `prerendered/features/index.html` body changed (seven hunks)
 and is in the PR.
 
-**PR.** draft, opens after M4 merges. Owner approves the copy before it
-ships; nothing merges from this item without that.
+**PR.** #811, draft. Owner approves the copy before it ships; nothing
+merges from this item without that.
 
 ## M5 — Pricing end cap stacks its three buttons on the phone
 
@@ -258,4 +258,32 @@ page has one button there.
 **Snapshot.** `prerendered/pricing/index.html` body changed and is in the
 PR.
 
-**PR.** opens after M2's draft is up (last in the sequence).
+**PR.** #812, merged `cc3011b`. Verified on production: three rows of 320 at 390, one row at 1440.
+
+## Slotted between box items
+
+**Auth carousel slide 2** (owner, standalone): `src/components/AuthLayout.jsx`
+`CAROUSEL_IMAGES[1]` → `hf_20260917_162932_…_cjv7wi`. Verified on the
+preview and on production: slide 2 on /login and /register at 1440 paints
+the new photo in the 720×836 panel, 0 px cropped horizontally, 355 px
+top and bottom of the 2048-tall master, both subjects in frame. The
+freshness guard did not ask for a regeneration, so none. PR #810, merged
+`b5ce14d`.
+
+## Closing
+
+Five of six items merged and verified on openinvite.com.au (M6, M3, M1,
+M4, M5) plus the auth slide swap; M2 is open as draft #811 awaiting the
+owner's copy approval. No product-lane PR was merged by this lane; #802
+landed mid-run and every branch was rebased onto it before merging.
+Every PR carried its regenerated prerendered snapshot (body diffs only)
+and merged with Build & test green.
+
+Two open questions for the owner, neither acted on:
+
+1. **Universes page showcase** still curates the original five; add
+   Shanghai there too, or leave the editorial call as its comment records?
+2. **Pricing ghost button:** by a strictest-pixel measure "Start free
+   trial" sits at 2.69:1 on the live end cap, where the code comment
+   records 4.81:1 at scrim 0.35. The M5 stack did not change that class of
+   backdrop. Worth a re-measure with the sampling the comment intended.
