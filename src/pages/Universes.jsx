@@ -21,13 +21,15 @@ const FALLBACK_IMAGE = {};
 
 const PJS = 'Plus Jakarta Sans, sans-serif';
 
-// The 5 strongest, most-established universes for the full-bleed crossfade
+// The strongest, most-established universes for the full-bleed crossfade
 // — walking through all 20 full-bleed is a lot of scrolling for little
-// payoff; these 5 lead into the plain grid below, which covers the
-// remaining 15 (plus these 5 again) statically. London now has its own
-// photography too but isn't in this curated 5 — a separate editorial call
-// from whether it has a photo at all.
-const SHOWCASE_UNIVERSE_IDS = ['tulum', 'kyoto', 'marrakech', 'capri', 'paris'];
+// payoff; these lead into the plain grid below, which covers the rest
+// (plus these again) statically. Shanghai is the sixth (owner 2026-09-19),
+// the same choice and order as Home's teaser: one cool, luminous, urban
+// universe after five warm or coastal ones. London has its own photography
+// too but stays out of the curated set — a separate editorial call from
+// whether it has a photo at all.
+const SHOWCASE_UNIVERSE_IDS = ['tulum', 'kyoto', 'marrakech', 'capri', 'paris', 'shanghai'];
 
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
