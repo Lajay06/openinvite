@@ -91,6 +91,7 @@
     "test:music-layout-review": "node scripts/test-music-layout-review.mjs",
     "test:guest-pills-case": "node scripts/test-guest-pills-case.mjs",
     "test:ava-page-modal": "node scripts/test-ava-page-modal.mjs",
+    "plant": "node scripts/plant.mjs",
     "test:whatsapp-gate": "node scripts/test-whatsapp-gate.mjs",
     "test:country-picker": "node scripts/test-country-picker.mjs",
     "test:onboarding-universe-tiles": "node scripts/test-onboarding-universe-tiles.mjs",

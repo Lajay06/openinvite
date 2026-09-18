@@ -35,6 +35,40 @@ const keepBranch = process.argv.includes('--no-delete-branch');
 const sh = (cmd) => execSync(cmd, { encoding: 'utf8' }).trim();
 const line = () => console.log('─'.repeat(60));
 
+/**
+ * ── A MERGE DOES NOT START AGAINST A DIRTY TREE ───────────────────────────
+ *
+ * Run 5: this script merged a PR and then took the checkout to main with
+ * another package's uncommitted work in it. The pull aborted — "Your local
+ * changes to the following files would be overwritten by merge" — and the
+ * session was left standing on main holding a branch's edits. Nothing was lost
+ * that time. The same tree state one `git checkout --` later is how four files
+ * were reverted to HEAD earlier in the same run, silently.
+ *
+ * Canon already says a human must never switch branches with a dirty tree. The
+ * tool that switches branches on their behalf has to obey the same rule, and
+ * the fix is a refusal, not a warning: a warning is something you read after
+ * the thing has happened.
+ *
+ * `git status --porcelain` is the right question because it already excludes
+ * everything .gitignore excludes — the owner's own scratch files, .env.local,
+ * node_modules. What it reports is work that would travel, and work that would
+ * travel is exactly what must not.
+ */
+function refuseIfDirty(what) {
+  const dirty = sh('git status --porcelain');
+  if (!dirty) return;
+  console.error(`\n  ✗ REFUSING: the working tree is not clean, and ${what} moves between branches.\n`);
+  for (const l of dirty.split('\n').slice(0, 20)) console.error(`      ${l}`);
+  const extra = dirty.split('\n').length - 20;
+  if (extra > 0) console.error(`      … and ${extra} more`);
+  console.error('\n  Commit it on its own branch, or park it in a labelled stash, then run this again.');
+  console.error('  (Ignored files — .env.local, scratch, node_modules — are already excluded here.)\n');
+  process.exit(1);
+}
+
+refuseIfDirty('a merge');
+
 console.log('\n══════════════════════════════════════════════════════════');
 console.log(`  pr:merge #${num} — gate, then merge. Never one without the other.`);
 console.log('══════════════════════════════════════════════════════════\n');
