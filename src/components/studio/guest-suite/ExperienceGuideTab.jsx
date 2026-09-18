@@ -103,13 +103,39 @@ export default function ExperienceGuideTab({ details }) {
   };
 
 
-  const handleAddPlace = (place, catKey, note, isCouplePick) => {
+  /**
+   * THE WEBSITE COMES FROM PLACE DETAILS, NOT FROM SEARCH (Run 5 T8).
+   *
+   * `place.website_url` was read straight off the search result, and
+   * api/places-search.js does not return one: Google's Text Search has no
+   * `website` field, and the endpoint forwards eight named keys, none of them
+   * it. So every place added from the picker stored `website_url: null`, and
+   * the Website link the guest page now renders could never appear for any of
+   * them — only for places typed in by hand, where the couple supplies the URL.
+   *
+   * api/place-details.js already asks Google for `website` by name (:33). One
+   * details call AT ADD TIME, not per render: a single request against a
+   * 40/min server-side limit, and the answer is written onto the record.
+   *
+   * BEST EFFORT, the same rule the Stay page adopted (GuestSuiteAccommodation
+   * .jsx:160): a failed lookup adds the place anyway. A place the couple chose
+   * must not be lost to a rate limit.
+   */
+  const handleAddPlace = async (place, catKey, note, isCouplePick) => {
     const categories = { ...(guide.categories || {}) };
     const catPlaces = [...(categories[catKey]?.places || [])];
 
     if (catPlaces.find(p => p.place_id === place.place_id)) {
       toast.error('Already added to this category');
       return;
+    }
+
+    let website_url = place.website_url || null;
+    if (!website_url && place.place_id) {
+      try {
+        const res = await fetch(`/api/place-details?place_id=${encodeURIComponent(place.place_id)}`);
+        if (res.ok) website_url = (await res.json())?.website || null;
+      } catch { /* the place is added without it */ }
     }
 
     const saved = {
@@ -120,7 +146,7 @@ export default function ExperienceGuideTab({ details }) {
       price_level: place.price_level,
       photo_ref: place.photo_reference || place.photo_ref || null,
       maps_url: place.maps_url,
-      website_url: place.website_url || null,
+      website_url,
       note: note || '',
       is_couple_pick: isCouplePick,
     };
