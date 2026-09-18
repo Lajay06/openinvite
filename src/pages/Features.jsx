@@ -37,13 +37,17 @@ function useScrollReveal(threshold = 0.2) {
 }
 
 const ACCORDION_BORDERS = ["#E03553", "#803D81", "#6B2CAE", "#DDF762", "#C2E5F3", "#0A1930"];
+// DRAFT (owner 2026-09-17, M2): the accordion used to restate the three
+// deep dives below it word for word, plus a playlist item. It now covers the
+// rest of the product, and nothing the cards above or below already say.
+// Copy is pending owner approval before this ships.
 const ALL_FEATURES = [
-{ title: "Advanced guest management", bullets: ["Unlimited guest lists", "Real-time RSVP tracking", "Dietary preference tracking", "Smart table assignments", "Guest tagging & categories", "Centralized contact management"] },
-{ title: "Smart budget tracking", bullets: ["Budget vs. actual spend tracking", "Vendor payment scheduling", "Category-based budgeting", "Visual expense analytics", "Friendly payment reminders", "Subtle cost-saving suggestions"] },
-{ title: "Timeline & schedule planning", bullets: ["Visual timeline builder", "Vendor coordination made easy", "Assign tasks to your crew", "Track deadlines without drama", "Share the schedule with key players", "Create your seamless day-of rundown"] },
-{ title: "Collaborative playlists", bullets: ["Spotify track search", "Let guests submit their favorite tracks", "Organize songs by vibe or moment", "Share playlists in a click", "DJ collaboration made effortless", "Create a music timeline"] },
-{ title: "Registry integration", bullets: ["One-click registry linking", "Sync with major platforms", "Share seamlessly with guests"] },
-{ title: "Venue management", bullets: ["Track multiple venues", "Upload contracts & notes", "Capture must-know logistics"] }];
+{ title: "Ava, on every page", bullets: ["A short briefing each morning: what is coming up, what needs a decision", "A checklist built for your date, venue and style, not a template", "Vow drafts in the tone you choose, refined until they sound like you", "Ask Ava from any page, about the page you are on", "Answers drawn from your own wedding, never generic advice"] },
+{ title: "A guest suite, written for you", bullets: ["Ava drafts your welcome, story and FAQ from a few answers", "Stay, transport and experience pages for out-of-town guests", "Good-to-know details, dress code and policies in one place", "Polls for the questions you want guests to weigh in on", "Add your own pages for anything the template did not think of"] },
+{ title: "Twenty universes", bullets: ["One aesthetic carries from the invitation to the guest suite to the RSVP", "Typography, palette, imagery and motion, chosen as a set", "Swap universes at any point without rebuilding a page", "A studio to preview every page in the universe before it goes live"] },
+{ title: "Invitations and RSVP", bullets: ["Save the dates and invitations from the same guest list", "Every guest gets their own link, and the site opens as them", "Send by email or share by WhatsApp", "Meal choices and dietary needs collected with the answer", "A guest who changes their mind can answer again, and the latest reply counts"] },
+{ title: "Registry and cash funds", bullets: ["Products and cash funds side by side on one registry page", "Guests give toward a honeymoon or a specific gift", "Contributions land in your registry, not in a spreadsheet"] },
+{ title: "Vendors, seating and your calendar", bullets: ["Find and contact real vendors in the marketplace", "Keep quotes, contracts and contacts with each vendor", "Lay out the venue and assign guests to tables by drag and drop", "Subscribe to your schedule in Google Calendar, so an edit here reaches your phone on its own"] }];
 
 
 const DOTS = ["#E03553", "#803D81", "#DDF762", "#6B2CAE", "#C2E5F3", "#0A1930"];
