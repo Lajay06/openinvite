@@ -97,9 +97,27 @@ export default function Contact() {
       {/* No banner — the tagline lives directly above the form so the
           whole page (tagline + form) sits above the fold, zero scrolling
           required to start filling it in. */}
-      <div style={{ paddingTop: 64, height: "100vh", boxSizing: "border-box", display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+      {/* Stacked by default, side by side from lg — the same single-column
+          rule every other marketing split follows. Class-driven in a scoped
+          style block, not a JS breakpoint, so the prerendered snapshot is
+          already right and nothing flips on hydration. Owner finding
+          (2026-09-17, M6): the fixed 1fr 1fr grid put a 195px form next to a
+          195px photo at 390. */}
+      <style>{`
+        .contact-shell { padding-top: 64px; box-sizing: border-box; }
+        .contact-form-col { padding: 40px clamp(32px, 6vw, 80px); display: flex; flex-direction: column; justify-content: center; }
+        /* A definite height on the phone panel so its bottom-anchored
+           contact details still have a 100% to anchor against. */
+        .contact-photo-col { height: 60vh; min-height: 420px; }
+        @media (min-width: 1024px) {
+          .contact-shell { height: 100vh; display: grid; grid-template-columns: 1fr 1fr; }
+          .contact-form-col { border-right: 1px solid #E0E0DC; }
+          .contact-photo-col { height: auto; min-height: 0; }
+        }
+      `}</style>
+      <div className="contact-shell">
         {/* LEFT: TAGLINE + FORM */}
-        <div style={{ padding: "40px clamp(32px, 6vw, 80px)", display: "flex", flexDirection: "column", justifyContent: "center", borderRight: "1px solid #E0E0DC" }}>
+        <div className="contact-form-col">
           <h1 style={{ fontSize: "clamp(30px, 3.6vw, 42px)", fontWeight: 700, color: "#0A0A0A", lineHeight: 1.15, letterSpacing: "-0.02em", margin: "0 0 32px", maxWidth: 440 }}>
             Let's plan something beautiful.
           </h1>
@@ -204,6 +222,7 @@ export default function Contact() {
             with a scrim, so contact details survive the panel becoming
             a photo instead of a card. */}
         <div
+          className="contact-photo-col"
           style={{
             position: "relative",
             overflow: "hidden",
