@@ -54,7 +54,7 @@ import { ImageSlider } from "@/components/ui/ImageSlider";
 // the same idiom the marketing pages already use.
 const CAROUSEL_IMAGES = [
   "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_1440,c_limit/hf_20260904_090213_dcaa917a-e117-4610-8618-a399139999a4_jv74kl",
-  "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_1440,c_limit/DTS_Teen_Spirit__Marlen_Stahlhuth_Photos_ID14324_zqa5rg.jpg",
+  "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_1440,c_limit/hf_20260917_162932_67a07cb6-bca4-45e9-861b-f6cc6044d28a_cjv7wi",
   "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_1440,c_limit/hf_20260905_095507_0842f0f9-82bb-462a-9756-c6d1b1cb4486_po7vnk",
   "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_1440,c_limit/DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14166_tqzysj.jpg",
 ];
