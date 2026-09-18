@@ -359,6 +359,24 @@ export default function StudioWebsite({ onBack }) {
     }).catch(() => {});
   }, []);
 
+  /**
+   * ?panel=emails LANDS ON THE EMAILS (owner ruling, Run 5 T12).
+   *
+   * The guest list's template gallery says "Email designs are edited in the
+   * Design studio" and offers a button. A button that opens the studio on the
+   * website and leaves the couple to find the Emails list is the same as no
+   * button: the sentence promises a destination, so the link carries one.
+   *
+   * The first email template is selected, which is what the left panel would
+   * show if the couple clicked it themselves.
+   */
+  useEffect(() => {
+    const panel = new URLSearchParams(window.location.search).get('panel');
+    if (panel !== 'emails') return;
+    const first = EDITOR_TEMPLATES[0];
+    if (first) setSelectedEmail({ entryId: first.id, type: first.types[0] });
+  }, []);
+
   const openMediaLibrary = (callback) => {
     setMediaCallback(() => callback);
     setMediaModalOpen(true);

@@ -7,6 +7,7 @@
  * — for real or as a test — always goes through SendInvitesModal / the
  * /api/send-invites path, never a second email mechanism.
  */
+import { useNavigate } from 'react-router-dom';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
@@ -24,6 +25,11 @@ const F = { fontFamily: "'Plus Jakarta Sans', sans-serif" };
 const RSVP_BASE = typeof window === 'undefined' ? '/rsvp/' : `${window.location.origin}/rsvp/`;
 
 const TYPE_DESCRIPTIONS = {
+  // THE FIRST CARD HAD NO HEADER because this map had no entry for it and
+  // TYPE_LABELS had none either (Run 5 T14 fixed the label). The card itself
+  // was never special: every type renders the same header, and both of its
+  // lines were reading undefined.
+  save_the_date: 'The announcement that arrives first — the date, and nothing to answer yet.',
   invite: 'The first ask — sent when a guest is added to your list.',
   reminder: 'A nudge for guests who were invited but haven\'t replied yet.',
   update: 'Something changed — venue, time, dress code. Keep everyone current.',
@@ -32,6 +38,7 @@ const TYPE_DESCRIPTIONS = {
 };
 
 export default function EmailTemplates({ guests, onUseTemplate }) {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [wedding, setWedding] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -114,6 +121,25 @@ export default function EmailTemplates({ guests, onUseTemplate }) {
         Every email type below is the same template, styled to your wedding's universe. "Use this" opens the send
         drawer with that type preselected; "Send test to me" emails you exactly what a guest would see.
       </p>
+
+      {/* WHERE THE DESIGN IS CHANGED, SAID ONCE (owner ruling, Run 5 T12).
+          This gallery previews and sends; it does not edit. Without a line
+          saying so, the only way to discover that the emails are designed in
+          the studio was to go looking for it. */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', margin: '0 0 20px' }}>
+        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, ...F }}>
+          Email designs are edited in the Design studio
+        </p>
+        <button
+          type="button"
+          onClick={() => navigate('/website-editor?panel=emails')}
+          className="btn-editorial-secondary"
+          style={{ fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+        >
+          Open the Design studio
+          <ArrowUpRight size={12} />
+        </button>
+      </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 24 }}>
         {EMAIL_TYPES.map(type => {
