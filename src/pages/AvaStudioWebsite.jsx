@@ -272,7 +272,10 @@ export default function AvaStudioWebsite() {
       else setDetails({});
     });
     getMyRecords('Photo', '-created_date', 100).then(photos => {
-      setMediaLibrary(photos.map(p => ({ id: p.id, url: p.url || p.photo_url || '', thumbnail: p.url || p.photo_url || '', type: 'photo', name: p.caption || 'Photo' })).filter(p => p.url));
+      // image_url is Photo's field (photoExport.js:68); the older names are
+      // fallbacks. Reading only the old ones emptied this list entirely — the
+      // same defect as StudioWebsite's, in a second copy of the same mapping.
+      setMediaLibrary(photos.map(p => ({ id: p.id, url: p.image_url || p.url || p.photo_url || '', thumbnail: p.image_url || p.url || p.photo_url || '', type: 'photo', name: p.title || p.caption || 'Photo' })).filter(p => p.url));
     }).catch(() => {});
   }, []);
 
