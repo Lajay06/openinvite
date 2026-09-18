@@ -482,6 +482,16 @@ export default function Pricing() {
           itself, so no crop can keep both heads (1920x720 is still -93px here).
           This crop improves every such case by a uniform +184px, but the full
           fix would be a change to the shared component's height rule. */}
+      {/* Owner finding 2026-09-17 (M5): three pills in the shared end-cap
+          row wrapped 2 + 1 at 390, the top pair edge to edge. Below md each
+          pill takes its own row, centered and capped at 320px, so the row
+          stacks. Pricing-only: the shared MarketingEndCap row is untouched,
+          and every other page has a single button there. */}
+      <style>{`
+        @media (max-width: 767px) {
+          .pricing-endcap-btn { flex: 0 0 100%; max-width: 320px; justify-content: center; }
+        }
+      `}</style>
       <MarketingEndCap
         image={END_CAP.src}
         srcSet={END_CAP.srcSet}
@@ -500,6 +510,7 @@ export default function Pricing() {
       >
           {!isPaidUser && (
             <button
+              className="pricing-endcap-btn"
               onClick={goFree}
               style={{
                 padding: "14px 32px", borderRadius: 999, fontSize: 14, fontWeight: 700,
@@ -513,6 +524,7 @@ export default function Pricing() {
             </button>
           )}
           <button
+            className="pricing-endcap-btn"
             onClick={goPro}
             disabled={proDisabled}
             style={{
@@ -534,6 +546,7 @@ export default function Pricing() {
             {proLabel}
           </button>
           <button
+            className="pricing-endcap-btn"
             onClick={goUltra}
             disabled={ultraDisabled}
             style={{

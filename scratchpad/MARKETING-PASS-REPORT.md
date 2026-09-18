@@ -176,3 +176,86 @@ flip and was reverted.
 marketing-images 15/71, lint, test:ci, page-gate all 0.
 
 **PR.** opens after M1 merges.
+
+## M2 — Features accordion, draft for owner approval
+
+**Finding.** The accordion's first three items ("Advanced guest management",
+"Smart budget tracking", "Timeline & schedule planning") restated the three
+deep-dive sections directly below it, bullet for bullet. The fourth was
+"Collaborative playlists" (Spotify search, guest track submissions, DJ
+collaboration, music timeline).
+
+**Draft.** `src/pages/Features.jsx` `ALL_FEATURES`, six items, none of which
+the Quick start wizard, Customizable Dashboard (collaborators) or the three
+deep dives already say. All music material removed. Every bullet is checked
+against the product as it stands:
+
+| item | bullets rest on |
+|---|---|
+| Ava, on every page | daily briefing, personalized checklist, vow drafts (Ava page); AvaChatPod on every page ("Ask Ava anything") |
+| A guest suite, written for you | Ava writes welcome/story/FAQ; Stay, Transport, Experience, Good to know, Polls, custom pages in `guest-website/pages` |
+| Twenty universes | 20 in the catalog ("Explore all 20 universes"); studio previews; universe swap |
+| Invitations and RSVP | save the date as an invitation type (#792); per-guest link opens the site as the invited guest (#791); email and WhatsApp share (StudioShareTab); meal choices (dietaryPills); latest answer counts (#795) |
+| Registry and cash funds | Registry page: "products and cash funds"; honeymoon custom gift |
+| Vendors, seating and your calendar | My vendors + Marketplace ("real wedding vendors"); seating: "design your venue layout and assign guests to tables", drag state; `api/schedule.ics` subscribe feed, "Subscribe in Google Calendar" |
+
+Two claims were trimmed during checking: Apple Calendar (the subscribe
+component names only Google) and "a house" as a cash-fund example.
+
+Copy rules checked: US English (guard passes), no em dashes, sentence-case
+titles, "Ava" never "she". "Collaborators" was left out on purpose: the
+Customizable Dashboard card above already covers inviting a partner or
+planner and permissions.
+
+**Measured.** Six items render at 390 and 1440 with no clipped titles and
+no horizontal scroll; accordion still collapsed by default.
+
+**Snapshot.** `prerendered/features/index.html` body changed (seven hunks)
+and is in the PR.
+
+**PR.** draft, opens after M4 merges. Owner approves the copy before it
+ships; nothing merges from this item without that.
+
+## M5 — Pricing end cap stacks its three buttons on the phone
+
+**Finding.** At 390 the three pills in the shared end-cap row wrapped 2 + 1:
+"Start free trial" (159) and "Get Pro" (169) side by side from x 25 to
+x 365, "Get Ultra" alone beneath.
+
+**Decision test.** Dropping to two would be a decision (which one, and all
+three carry billing navigation and analytics), so the only no-decision
+option was a stack. A stack moves the buttons onto different backdrop
+pixels, and the end cap's 0.35 scrim was chosen against the row layout, so
+the check was whether the existing scrim still holds. Measured with the
+buttons hidden and the ghost button's 0.1 white fill composited in,
+lightest backdrop pixel under each button at 390:
+
+| button | today's row (production) | stacked |
+|---|---|---|
+| Start free trial (ghost) | 2.69:1 | 2.66:1 |
+| Get Pro (solid red) | backdrop irrelevant | backdrop irrelevant |
+| Get Ultra (solid amber) | backdrop irrelevant | backdrop irrelevant |
+
+The stack lands the ghost button on the same class of backdrop as today,
+so nothing about the scrim decision changes. No new decision; shipped.
+
+**Method note for the owner, not acted on.** The same strictest-pixel
+measure gives 2.69:1 for the ghost button on the row that is live now,
+where the code comment records 4.81:1 for scrim 0.35. That comment's
+sampling was evidently less strict (a percentile, or the glyph area only).
+Whether the ghost button meets 4.5:1 today is a separate question from
+this item and is left as is.
+
+**Change.** `src/pages/Pricing.jsx`: the three end-cap buttons carry
+`className="pricing-endcap-btn"`, and a page-scoped rule below 768 gives
+each `flex: 0 0 100%; max-width: 320px`, so the shared row stacks them,
+centered. Pricing-only; `MarketingEndCap` is untouched and every other
+page has one button there.
+
+**Measured.** 390: three rows, each 320 wide at x 35, tops 275 / 338 / 399.
+1440: one row, unchanged (159 / 169 / 178 wide at x 455 / 626 / 807).
+
+**Snapshot.** `prerendered/pricing/index.html` body changed and is in the
+PR.
+
+**PR.** opens after M2's draft is up (last in the sequence).
