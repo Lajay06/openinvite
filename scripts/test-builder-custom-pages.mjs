@@ -1,4 +1,4 @@
-/* global document, getComputedStyle */
+/* global document, getComputedStyle , Node */
 /**
  * THE BUILDER'S CUSTOM PAGES: the order they were given, the brand's own
  * button, and an affordance you can see without hunting for it.
