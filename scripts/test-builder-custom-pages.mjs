@@ -139,6 +139,46 @@ const browser = await chromium.launch();
     'same handler');
 }
 
+// ── ONE COLUMN OF TOGGLES (owner screenshot, Run 5 T18) ────────────────────
+//
+// A custom page's row carried its delete × AFTER the toggle, so that row's
+// toggle sat one control-width left of every other row's and the column of
+// switches had a step in it. The toggle is what a couple reads down the list;
+// it holds the right edge, and the delete takes the space beside it.
+//
+// Measured at both widths, because a column that lines up at 1440 and not at
+// 390 is still a crooked column.
+for (const [w, h] of [[1440, 950], [390, 844]]) {
+  const ctx = await seededContext(browser, { width: w, height: h, seed: SEEDED });
+  const page = await ctx.newPage();
+  await page.goto(`${BASE}/website-editor`, { waitUntil: 'domcontentloaded', timeout: 45000 }).catch(() => {});
+  await page.waitForTimeout(6000);
+
+  const m = await page.evaluate(() => {
+    const toggles = [...document.querySelectorAll('[data-page-toggle]')];
+    const rights = toggles.map((t) => Math.round(t.getBoundingClientRect().right));
+    const del = [...document.querySelectorAll('button[aria-label^="Delete "]')][0] || null;
+    const row = del ? del.closest('[data-page-toggle]') ? null : del.parentElement : null;
+    const rowToggle = row ? row.querySelector('[data-page-toggle]') : null;
+    return {
+      count: toggles.length,
+      spread: rights.length ? Math.max(...rights) - Math.min(...rights) : -1,
+      deleteFound: !!del,
+      deleteLabel: del ? del.getAttribute('aria-label') : null,
+      // the × must come BEFORE the toggle in document order within its row
+      deleteBeforeToggle: !!(del && rowToggle && (del.compareDocumentPosition(rowToggle) & Node.DOCUMENT_POSITION_FOLLOWING)),
+      deleteClickable: !!(del && del.getBoundingClientRect().width > 0),
+    };
+  });
+
+  check(`${w}: every page row has a toggle slot`, m.count >= 5, `${m.count} rows`);
+  check('  and they share one right edge', m.spread >= 0 && m.spread <= 1, `${m.spread}px between the leftmost and rightmost`);
+  check('  the custom page still offers its delete', m.deleteFound && m.deleteClickable, m.deleteLabel || 'no delete control');
+  check('    with the × beside the toggle, not after it', m.deleteBeforeToggle === true,
+    m.deleteBeforeToggle ? 'before it in the row' : 'the × follows the toggle — the column steps');
+  await ctx.close();
+}
+
 await browser.close();
 
 const passed = results.filter(Boolean).length;
