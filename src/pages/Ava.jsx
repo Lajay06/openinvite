@@ -14,6 +14,9 @@ const HERO = responsivePhoto("v1779217006/DTS_Misc_1__Nick_Fancher__Nick_Fancher
 const END_CAP = responsivePhoto("DTS_Tradition_Chris_Abatzis_Photos_ID9150_yiunlp", 1600);
 
 // ── Scroll animation hook ─────────────────────────────────────
+const prefersReduced = () =>
+  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 function useInView(threshold = 0.15, once = true) {
   const ref = useRef(null);
   const [inView, setInView] = useState(false);
@@ -106,6 +109,17 @@ function AvaCarousel({ inView }) {
 
   const feature = avaFeatures[active];
 
+  // Keep the active tab in view when the strip scrolls (phone only: from md
+  // the strip has no overflow and scrollTo is a no-op). Scrolls the strip
+  // itself, never the page — scrollIntoView could yank the document.
+  const stripRef = useRef(null);
+  const tabRefs = useRef([]);
+  useEffect(() => {
+    const strip = stripRef.current, tab = tabRefs.current[active];
+    if (!strip || !tab || strip.scrollWidth <= strip.clientWidth) return;
+    strip.scrollTo({ left: tab.offsetLeft, behavior: prefersReduced() ? "auto" : "smooth" });
+  }, [active]);
+
   return (
     <div>
       {/* Image area */}
@@ -120,19 +134,28 @@ function AvaCarousel({ inView }) {
           }} />
         
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%)" }} />
-        <div style={{ position: "absolute", bottom: 40, left: 48, maxWidth: 600 }}>
+        {/* Inset on both sides, not a fixed left: at 390 a left-only 48px
+            with a 600px maxWidth ran the paragraph off the right edge. */}
+        <div style={{ position: "absolute", bottom: 40, left: "clamp(20px, 4vw, 48px)", right: "clamp(20px, 4vw, 48px)", maxWidth: 600 }}>
           <h3 style={{ fontSize: "clamp(28px,4vw,48px)", fontWeight: 700, color: "#fff", margin: "0 0 12px", letterSpacing: "-0.02em", animation: "fadeIn 0.5s ease forwards" }}>{feature.label}</h3>
           <p style={{ fontSize: 16, color: "#FFFFFF", lineHeight: 1.6, maxWidth: 500, margin: 0, animation: "fadeIn 0.5s 0.1s ease both" }}>{feature.detail}</p>
         </div>
       </div>
-      {/* Buttons */}
-      <div style={{ display: "flex", background: "#0F0F0F" }}>
+      {/* Buttons. Five equal columns from md; below that a snap-scrolling
+          strip of 300px cards (owner finding 2026-09-17, M3a: five `flex: 1`
+          tabs in 390px were 78px each and clipped every label). The strip
+          follows the active tab so the auto-advance never leaves it
+          off-screen. Layout lives in the .ava-tab* rules of the page's
+          style block. */}
+      <div ref={stripRef} className="ava-tabs" style={{ background: "#0F0F0F" }}>
         {avaFeatures.map((f, i) =>
         <button
           key={f.value}
+          ref={(el) => { tabRefs.current[i] = el; }}
           onClick={() => goTo(i)}
+          className="ava-tab"
           style={{
-            flex: 1, padding: "28px 20px", borderRight: i < 4 ? "1px solid #1A1A1A" : "none",
+            padding: "28px 20px", borderRight: i < 4 ? "1px solid #1A1A1A" : "none",
             background: "none", border: "none", borderRight: i < 4 ? "1px solid #1A1A1A" : "none",
             cursor: "pointer", textAlign: "left", position: "relative", overflow: "hidden",
             opacity: i === active ? 1 : 0.4, transition: "opacity 0.3s ease", minHeight: 100
@@ -253,6 +276,42 @@ export default function AvaPage() {
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes punchIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
 
+        /* M3 (owner 2026-09-17), three phone breaks on this page. All
+           class-driven with a media query so the prerendered snapshot is
+           already right and nothing flips on hydration.
+
+           a. Carousel tabs: a snap-scrolling strip of 300px cards below md,
+              five equal columns from it. */
+        .ava-tabs { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .ava-tabs::-webkit-scrollbar { display: none; }
+        .ava-tab { flex: 0 0 300px; scroll-snap-align: start; }
+        /* b. The three pillars: one column below md. */
+        .ava-how { grid-template-columns: 1fr; }
+        /* c. The comparison: one column per row below md, each cell carrying
+              its own caption; the header row exists only from md. minmax(0,
+              1fr) from md so every row shares the same column edges — plain
+              1fr let a long word widen a column in one row and not the next,
+              which is the misalignment the owner saw. */
+        .ava-cmp-row { display: grid; grid-template-columns: 1fr; }
+        .ava-cmp-head { display: none; }
+        .ava-cmp-cap { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: rgba(255,255,255,0.5); margin-bottom: 4px; }
+        /* Cell padding lives here, not inline, so the breakpoint can change
+           it without an !important fight. */
+        .ava-cmp-feature { padding: 18px 24px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .ava-cmp-without { padding: 18px 24px 10px; }
+        .ava-cmp-with { padding: 0 24px 18px; }
+        @media (min-width: 768px) {
+          .ava-tabs { overflow-x: visible; scroll-snap-type: none; }
+          .ava-tab { flex: 1 1 0; }
+          .ava-how { grid-template-columns: repeat(3, 1fr); }
+          .ava-cmp-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); }
+          .ava-cmp-head { display: grid; }
+          .ava-cmp-head > div:not(:last-child) { border-right: 1px solid rgba(255,255,255,0.1); }
+          .ava-cmp-cap { display: none; }
+          .ava-cmp-feature, .ava-cmp-without { border-right: 1px solid rgba(255,255,255,0.06); border-bottom: none; }
+          .ava-cmp-without, .ava-cmp-with { padding: 18px 24px; }
+        }
+
         /* Deep-dive side alternation. Photo is first in the DOM, so below lg
            every block stacks image-then-copy with no order rules at all.
            Above lg a flipped block swaps them. Class-driven on purpose: an
@@ -297,11 +356,14 @@ export default function AvaPage() {
           <h2 style={{ fontSize: 'clamp(32px, 4vw, 56px)', fontWeight: 700, color: '#DDF762', margin: '0 0 64px', letterSpacing: '-0.02em', fontFamily: 'Plus Jakarta Sans, sans-serif', textAlign: 'center', width: '100%' }}>
             Ava learns. Ava plans. Ava delivers.
           </h2>
-          <div ref={howRef} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, background: 'rgba(255,255,255,0.08)' }}>
+          {/* One column below md, three from it (.ava-how in the style
+              block). Owner finding 2026-09-17, M3b: three 1fr columns in
+              390px set the headings one word per line. */}
+          <div ref={howRef} className="ava-how" style={{ display: 'grid', gap: 1, background: 'rgba(255,255,255,0.08)' }}>
             {HOW_CARDS.map((c, i) => (
               <div key={i} style={{
                 background: '#0A0A0A',
-                padding: 40,
+                padding: 'clamp(28px, 4vw, 40px)',
                 position: 'relative',
                 overflow: 'hidden',
                 opacity: howInView ? 1 : 0,
@@ -370,18 +432,22 @@ export default function AvaPage() {
           <h2 style={{ fontSize: "clamp(28px,3vw,48px)", fontWeight: 700, color: "#FFFFFF", margin: "0 0 48px", letterSpacing: "-0.02em" }}>Planning with Ava vs. planning without.</h2>
           <div ref={tableRef} style={{ border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden" }}>
             {/* Header */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "#1A1A1A" }}>
+            {/* Header row is desktop-only; on the phone each cell carries
+                its own caption (.ava-cmp-cap) instead. */}
+            <div className="ava-cmp-row ava-cmp-head" style={{ background: "#1A1A1A" }}>
               {["", "Without Ava", "With Ava"].map((h, i) =>
-                <div key={i} style={{ padding: "18px 24px", fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: i === 0 ? "transparent" : "#FFFFFF", borderRight: i < 2 ? "1px solid rgba(255,255,255,0.1)" : "none", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{h}</div>
+                <div key={i} style={{ padding: "18px 24px", fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: i === 0 ? "transparent" : "#FFFFFF", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{h}</div>
               )}
             </div>
             {TABLE_ROWS.map((row, i) =>
-            <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: i % 2 === 1 ? "#111111" : "#0A0A0A", borderTop: "1px solid rgba(255,255,255,0.06)", opacity: tableInView ? 1 : 0, transform: tableInView ? "none" : "translateY(8px)", transition: `opacity 0.4s ${i * 0.05}s ease, transform 0.4s ${i * 0.05}s ease` }}>
-                <div style={{ padding: "18px 24px", fontSize: 14, fontWeight: 600, color: "#FFFFFF", borderRight: "1px solid rgba(255,255,255,0.06)" }}>{row.feature}</div>
-                <div style={{ padding: "18px 24px", fontSize: 14, color: "rgba(255,255,255,0.35)", borderRight: "1px solid rgba(255,255,255,0.06)" }}>{row.without}</div>
-                <div style={{ padding: "18px 24px", fontSize: 14, fontWeight: 600, color: "#FFFFFF", display: "flex", alignItems: "center", gap: 8 }}>
+            <div key={i} className="ava-cmp-row" style={{ display: "grid", background: i % 2 === 1 ? "#111111" : "#0A0A0A", borderTop: "1px solid rgba(255,255,255,0.06)", opacity: tableInView ? 1 : 0, transform: tableInView ? "none" : "translateY(8px)", transition: `opacity 0.4s ${i * 0.05}s ease, transform 0.4s ${i * 0.05}s ease` }}>
+                <div className="ava-cmp-feature" style={{ fontSize: 14, fontWeight: 600, color: "#FFFFFF" }}>{row.feature}</div>
+                <div className="ava-cmp-without" style={{ fontSize: 14, color: "rgba(255,255,255,0.35)" }}>
+                  <span className="ava-cmp-cap">Without Ava</span>{row.without}
+                </div>
+                <div className="ava-cmp-with" style={{ fontSize: 14, fontWeight: 600, color: "#FFFFFF", display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#DDF762", border: "1px solid #AAB000", flexShrink: 0 }} />
-                  {row.with}
+                  <span><span className="ava-cmp-cap">With Ava</span>{row.with}</span>
                 </div>
               </div>
             )}

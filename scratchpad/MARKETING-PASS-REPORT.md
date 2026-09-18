@@ -38,4 +38,58 @@ opacity flipped (capture timing, not source) and were reverted.
 **Gate.** prerendered-freshness ✓ (14/14 bodies match), marketing-routes
 14/14, marketing-images 15 photos / 71 URLs, lint, test:ci, page-gate all 0.
 
-**PR.** pending below.
+**PR.** #803.
+
+## M3 — Ava page, three phone breaks
+
+**Findings and causes** (all at 390; desktop was fine):
+
+- (a) Carousel: five tab buttons at `flex: 1` in one row are 78px each, so
+  every label wrapped and the description clamp cut mid-word. The image
+  caption was pinned at `left: 48` with a 600px maxWidth and no right inset,
+  so its paragraph ran off the right edge.
+- (b) "Ava learns. Ava plans. Ava delivers." pillars: `repeat(3, 1fr)` gave
+  114px cards, one word per line.
+- (c) "Planning with Ava vs. planning without": every row is its own
+  `1fr 1fr 1fr` grid, so a long word (`Personalized`) widened a column in
+  one row and not the next. That is the alternate-row misalignment, and it
+  was there on desktop too, just less visible. At 390 it was also three
+  114px columns.
+
+**Change** (`src/pages/Ava.jsx`, class rules in the page's existing scoped
+style block, media query at 768):
+
+- (a) Below md the tab row is a snap-scrolling strip of 300px cards
+  (`.ava-tabs` / `.ava-tab`); from md the five equal columns are unchanged.
+  The strip scrolls itself to the active tab on auto-advance (never the
+  page; `scrollTo` on the strip, not `scrollIntoView`; instant under
+  reduced motion). The caption is inset `clamp(20px, 4vw, 48px)` on both
+  sides.
+- (b) `.ava-how` is one column below md, three from it; card padding
+  `clamp(28px, 4vw, 40px)`.
+- (c) `.ava-cmp-row` is one column below md with each cell carrying its own
+  small caption ("Without Ava" / "With Ava"); the header row exists only
+  from md. From md the columns are `minmax(0, 1fr)` ×3 so every row shares
+  the same edges. Cell padding moved from inline into the class rules so
+  the breakpoint owns it — no `!important` (the page's own comment records
+  why that pattern broke the tour once).
+
+**Measured** (production build on vite preview, guard = no clipped text,
+no card under ~300px, comparison rows on one left edge):
+
+| | 390 | 1440 |
+|---|---|---|
+| tab card width | 300 ×5, strip scrollWidth 1500, no label clipped | 288 ×5, no overflow |
+| caption inset l / r | 20 / 20, 350 wide, not clipped | 48 / —, 600 wide |
+| pillar card width | 342 ×3, headings 1 line, none clipped | 399 ×3 |
+| comparison cell left edges | 25, 25, 25 on all 7 rows | 221, 554, 886 on all 7 rows |
+| header row / cell captions | hidden / shown | shown / hidden |
+| horizontal page scroll | none | none |
+
+**Snapshot.** `prerendered/ava/index.html` body changed and is in the PR;
+the other 13 regenerated head-only and were reverted.
+
+**Gate.** prerendered-freshness 14/14, marketing-routes 14/14,
+marketing-images 15/71, lint, test:ci, page-gate, us-english-spelling all 0.
+
+**PR.** opens after #803 merges (one PR at a time).
