@@ -93,3 +93,40 @@ the other 13 regenerated head-only and were reverted.
 marketing-images 15/71, lint, test:ci, page-gate, us-english-spelling all 0.
 
 **PR.** opens after #803 merges (one PR at a time).
+
+## M1 — Six universes, 2×3 on the phone and 3×2 on desktop
+
+**Finding.** Home's "One aesthetic vision" block (`UniverseTeaserSection`)
+showed five universes in `repeat(auto-fit, minmax(180px, 1fr))`: one row of
+five on desktop, and on a phone either a single column (390) or 2·2·1 with
+an orphan (430), depending on the width.
+
+**Change.** `src/components/home/UniverseTeaserSection.jsx`: Shanghai is
+the sixth card, and the grid is a fixed two columns, three from md
+(`grid grid-cols-2 md:grid-cols-3`). Shanghai over London: it is the one
+cool, luminous, urban tile against five warm or coastal ones; London's
+rain-and-black-cab frame is mostly black and would read as a hole on the
+black section. It also adds a continent to the set. Both tiles come from
+the same `universeTileImage` 3:4 face-cropped CDN path as the other five.
+
+The Universes page's own showcase is a full-bleed crossfade of the same
+five (`SHOWCASE_UNIVERSE_IDS`), not a card grid, and its comment records
+that leaving London out of it was a separate editorial call. Not changed;
+adding a sixth there is the owner's call.
+
+**Measured** (production build on vite preview):
+
+| viewport | cards | card width | rows |
+|---|---|---|---|
+| 390 | 6 | 165 | 2 · 2 · 2 |
+| 430 | 6 | 183 | 2 · 2 · 2 |
+| 768 | 6 | 217 | 3 · 3 |
+| 1440 | 6 | 359 | 3 · 3 |
+
+**Snapshot.** `prerendered/index.html` body changed (three hunks: the
+class, the sixth card, the grid) and is in the PR.
+
+**Gate.** prerendered-freshness 14/14, marketing-routes 14/14, lint,
+test:ci, page-gate all 0.
+
+**PR.** opens after M3 merges.

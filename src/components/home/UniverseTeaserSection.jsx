@@ -16,7 +16,12 @@ const prefersReduced = () =>
 
 // marrakech added as the 5th (round-4-followups) — pairs naturally with
 // UniverseMiniHero's own Marrakech-garden photo right above this section.
-const PREVIEW_IDS = ["tulum", "kyoto", "capri", "paris", "marrakech"];
+// shanghai is the 6th (owner 2026-09-17, M1): five cards were 2·2·1 on a
+// phone with an orphan row; six sit 2×3 there and 3×2 on desktop. Shanghai
+// over London because it is the one cool, luminous, urban tile against five
+// warm or coastal ones — London's rain-and-cab frame is mostly black and
+// would read as a hole in a grid on this black section.
+const PREVIEW_IDS = ["tulum", "kyoto", "capri", "paris", "marrakech", "shanghai"];
 const PREVIEW = PREVIEW_IDS
   .map((id) => UNIVERSE_CATALOG.find((u) => u.id === id))
   .filter(Boolean);
@@ -52,8 +57,11 @@ export default function UniverseTeaserSection() {
           Choose a universe and your invitation, guest suite and RSVP follow it, automatically.
         </p>
 
-        <div style={{
-          display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 56,
+        {/* Two columns, three from md. auto-fit/minmax(180px) put the five
+            in one row on desktop and 1 or 2·2·1 on a phone depending on its
+            width; with six the count is fixed, so the columns are too. */}
+        <div className="grid grid-cols-2 md:grid-cols-3" style={{
+          gap: 12, marginBottom: 56,
           opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(20px)",
           transition: `opacity 0.7s ${EASE} 0.15s, transform 0.7s ${EASE} 0.15s`,
         }}>
