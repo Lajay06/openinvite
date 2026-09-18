@@ -210,28 +210,42 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>{label}</span>
 
-              {!ALWAYS_ON_PAGES.includes(slug) ? (
-                <PillSwitch enabled={enabled} onToggle={() => toggle(slug)} label={label} />
-              ) : (
-                // Not "Req". An abbreviation of a word the couple never used is
-                // not an explanation, and a dead toggle would be worse still.
-                <span
-                  title="Your guests need to find the date and a way to reply."
-                  style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', fontWeight: 600, fontFamily: PJS, letterSpacing: '0.04em' }}
-                >Always on</span>
-              )}
               {/* ONLY A PAGE THE COUPLE MADE CAN BE DELETED. A built-in is
                   switched off, never destroyed — there is nothing to recover
-                  it from. The control rides on the same row now that the two
-                  lists are one. */}
+                  it from.
+
+                  IT SITS BEFORE THE TOGGLE, and that is the whole of this fix
+                  (owner screenshot, Run 5 T18). The × used to follow the
+                  toggle, so on a custom page's row the toggle was pushed one
+                  control-width left of every other row's and the column of
+                  switches had a step in it. The toggle is the control a couple
+                  reads down the list; it holds the right edge, and the delete
+                  takes the space beside it. */}
               {isCustom && (
                 <button
                   onClick={e => handleDeleteCustomPage(e, slug)}
                   aria-label={`Delete ${label}`}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', fontSize: 14, padding: '0 2px', lineHeight: 1, flexShrink: 0 }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: hovered || active ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.25)', fontSize: 14, padding: '0 2px', lineHeight: 1, flexShrink: 0 }}
                   title="Delete page"
                 >×</button>
               )}
+
+              {/* THE LAST THING IN EVERY ROW, so every toggle shares one right
+                  edge. `data-page-toggle` is the name the guard measures them
+                  by — without it "the column is straight" can only be asked of
+                  geometry that happens to be nearby. */}
+              <div data-page-toggle style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                {!ALWAYS_ON_PAGES.includes(slug) ? (
+                  <PillSwitch enabled={enabled} onToggle={() => toggle(slug)} label={label} />
+                ) : (
+                  // Not "Req". An abbreviation of a word the couple never used
+                  // is not an explanation, and a dead toggle would be worse.
+                  <span
+                    title="Your guests need to find the date and a way to reply."
+                    style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', fontWeight: 600, fontFamily: PJS, letterSpacing: '0.04em' }}
+                  >Always on</span>
+                )}
+              </div>
             </div>
           );
         })}
