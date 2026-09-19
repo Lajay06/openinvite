@@ -41,8 +41,8 @@ const ACCORDION_BORDERS = ["#E03553", "#803D81", "#6B2CAE", "#DDF762", "#C2E5F3"
 // below it word for word, plus a playlist item. It now covers the rest of the
 // product, and nothing the cards above or below already say. Copy approved
 // by the owner 2026-09-19 with three edits: no personalized-greeting claim
-// (post-launch), no calendar-subscribe bullet (CALENDAR_FEED_SECRET in
-// production could not be confirmed from outside), and the second-answer
+// (post-launch), the calendar-subscribe bullet restored once the owner
+// confirmed CALENDAR_FEED_SECRET is set in production, and the second-answer
 // bullet kept because api/rsvp-submit.js appends and rsvpAggregation.js
 // resolves latest-wins.
 const ALL_FEATURES = [
@@ -51,7 +51,7 @@ const ALL_FEATURES = [
 { title: "Twenty universes", bullets: ["One aesthetic carries from the invitation to the guest suite to the RSVP", "Typography, palette, imagery and motion, chosen as a set", "Swap universes at any point without rebuilding a page", "A studio to preview every page in the universe before it goes live"] },
 { title: "Invitations and RSVP", bullets: ["Save the dates and invitations from the same guest list", "Every guest gets their own link, so replying takes seconds", "Send by email or share by WhatsApp", "Meal choices and dietary needs collected with the answer", "A guest who changes their mind can answer again, and the latest reply counts"] },
 { title: "Registry and cash funds", bullets: ["Products and cash funds side by side on one registry page", "Guests give toward a honeymoon or a specific gift", "Contributions land in your registry, not in a spreadsheet"] },
-{ title: "Vendors, seating and your calendar", bullets: ["Find and contact real vendors in the marketplace", "Keep quotes, contracts and contacts with each vendor", "Lay out the venue and assign guests to tables by drag and drop"] }];
+{ title: "Vendors, seating and your calendar", bullets: ["Find and contact real vendors in the marketplace", "Keep quotes, contracts and contacts with each vendor", "Lay out the venue and assign guests to tables by drag and drop", "Subscribe to your schedule in Google Calendar, so an edit here reaches your phone on its own"] }];
 
 
 const DOTS = ["#E03553", "#803D81", "#DDF762", "#6B2CAE", "#C2E5F3", "#0A1930"];
