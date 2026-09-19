@@ -79,23 +79,41 @@ export default async function handler(req, res, fetchImpl = fetch) {
   const adminKey = process.env.BASE44_ADMIN_KEY;
   if (!adminKey) return notFound(res);
 
+  // THE SCHEDULE IS THE OWNER'S, NOT THE WEDDING'S. Schedule rows carry no
+  // wedding_id at all (list_entity_schemas, 2026-09-20): the hub reads them
+  // with getMyRecords(), i.e. by created_by_id = the signed-in user. So the
+  // join goes token -> wedding -> its created_by_id -> that user's rows. The
+  // previous filter compared created_by_id to the WEDDING id and matched
+  // nothing for a real wedding — an empty calendar with a valid token.
+  // Bearer on both reads, not `?api_key=`: the query form answers `200 []`
+  // on every LIST (BASE44_PLATFORM_NOTES.md, "not User-specific"). Lists
+  // come back wrapped.
+  const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${adminKey}` };
   let rows = [];
   try {
-    // Bearer, not `?api_key=`: the query form answers `200 []` on every LIST
-    // (BASE44_PLATFORM_NOTES.md, "not User-specific"), which here meant a
-    // valid token got an empty calendar. The list comes back wrapped.
-    const url = `${BASE44_API}/apps/${BASE44_APP_ID}/entities/Schedule?limit=500`;
-    const r = await fetchImpl(url, { method: 'GET', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminKey}` } });
+    const w = await fetchImpl(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/WeddingDetails/${encodeURIComponent(weddingId)}`, { method: 'GET', headers });
+    if (!w.ok) return notFound(res);
+    const wedding = await w.json();
+    const ownerId = wedding?.created_by_id;
+    if (!ownerId) return notFound(res);
+
+    const q = encodeURIComponent(JSON.stringify({ created_by_id: ownerId }));
+    const r = await fetchImpl(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/Schedule?q=${q}&limit=500`, { method: 'GET', headers });
     if (!r.ok) return notFound(res);
-    const all = await r.json();
-    // Scoped to this wedding. The admin key is not a superuser bypass and
-    // does not scope a list for us, so the filter is ours to apply.
-    rows = unwrapList(all).filter((x) => x?.wedding_id === weddingId || x?.created_by_id === weddingId);
+    // The admin key is not a superuser bypass and does not scope a list for
+    // us, so the owner filter is applied here too, whatever the query did.
+    rows = unwrapList(await r.json()).filter((x) => x?.created_by_id === ownerId);
   } catch {
     return notFound(res);
   }
 
-  const ics = buildIcsCalendar(rows.map(pickFeedFields), 'Wedding schedule');
+  // The row id rides along for the UID and nothing else. pickFeedFields()
+  // drops it (it is not a feed field), and without it every VEVENT carried
+  // UID schedule-undefined@ — one identical UID for the whole schedule, which
+  // a calendar client dedupes down to a single event. That is the "only the
+  // after party arrived". An opaque record id in a UID is not one of the
+  // fields the allowlist exists to keep in.
+  const ics = buildIcsCalendar(rows.map((r) => ({ id: r.id, ...pickFeedFields(r) })), 'Wedding schedule');
   res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
   // PRIVATE. A shared cache in front of this would serve one couple's schedule
   // to the next request for the same URL, which is fine, and to a proxy that

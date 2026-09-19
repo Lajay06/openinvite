@@ -51,9 +51,22 @@ async function callFeed({ w, t, secret = SECRET, adminKey = 'fixture-admin-key',
     send(b) { captured.body = b; return this; },
     end() { return this; },
   };
-  const fetchImpl = async () => ({ ok: true, json: async () => rows });
+  // Routed like the real API: a wedding read answers the wedding record,
+  // a Schedule list answers `rows` wrapped the way Base44 wraps it, and the
+  // request is captured so the join can be asserted. Wedding w1 belongs to
+  // owner u1; a wedding the fixture does not know 404s like a stranger's.
+  const seen = [];
+  const fetchImpl = async (url, init) => {
+    seen.push({ url, init });
+    if (/entities\/WeddingDetails\//.test(url)) {
+      const ok = /WeddingDetails\/w1$/.test(url);
+      return { ok, json: async () => (ok ? { id: 'w1', created_by_id: 'u1' } : {}), text: async () => '' };
+    }
+    return { ok: true, json: async () => ({ data: rows }), text: async () => '' };
+  };
   try {
     await mod.default({ method: 'GET', query: { w, t }, headers: {} }, res, fetchImpl);
+    captured.requests = seen;
   } finally {
     if (prevSecret === undefined) delete process.env.CALENDAR_FEED_SECRET; else process.env.CALENDAR_FEED_SECRET = prevSecret;
     if (prevAdmin === undefined) delete process.env.BASE44_ADMIN_KEY; else process.env.BASE44_ADMIN_KEY = prevAdmin;
@@ -62,7 +75,7 @@ async function callFeed({ w, t, secret = SECRET, adminKey = 'fixture-admin-key',
 }
 
 const ROW = {
-  id: 's1', wedding_id: 'w1',
+  id: 's1', created_by_id: 'u1',
   event_name: 'Ceremony', event_date: '2027-07-03', start_time: '15:00', end_time: '16:00',
   location: 'The Old Observatory', description: 'Guests seated by 2.45',
   // Everything below must never leave the server.
@@ -222,9 +235,52 @@ export async function runCalendarFeed() {
       typeof out?.url === 'string' && /schedule\.ics\?w=w-new&t=[0-9a-f]+$/.test(out.url), JSON.stringify(out));
 
     // And the feed itself unwraps its Schedule list the same way.
-    const wrapped = await callFeed({ w: 'w1', t: calendarFeedToken('w1', SECRET), rows: { data: [ROW] } });
+    const wrapped = await callFeed({ w: 'w1', t: calendarFeedToken('w1', SECRET), rows: [ROW] }); // callFeed wraps rows as {data:[…]}
     check('the feed reads a {data:[…]} Schedule envelope and emits the event',
       wrapped.status === 200 && /Ceremony/.test(wrapped.body), `${wrapped.status}`);
+  }
+
+  // ── THE JOIN GOES THROUGH THE WEDDING'S OWNER ─────────────────────────────
+  // Schedule rows carry no wedding_id (list_entity_schemas, 2026-09-20); the
+  // hub reads them by created_by_id. The feed used to compare created_by_id
+  // to the WEDDING id and emitted none of the owner's 21 rows on production.
+  {
+    const t = calendarFeedToken('w1', SECRET);
+    const mine = { ...ROW, id: 's-mine', created_by_id: 'u1' };
+    const theirs = { ...ROW, id: 's-theirs', event_name: 'Someone else', created_by_id: 'u2' };
+    const out = await callFeed({ w: 'w1', t, rows: [mine, theirs] });
+    check('the owner\'s row is emitted although it carries no wedding_id',
+      out.status === 200 && /schedule-s-mine@/.test(out.body), `${out.status}`);
+    check('another user\'s row is not, even when the list hands it over',
+      !/s-theirs@/.test(out.body) && !/Someone else/.test(out.body), 'filtered by owner');
+    const sched = (out.requests || []).find((r) => /entities\/Schedule/.test(r.url));
+    check('the Schedule list is asked for the owner, by created_by_id, with a Bearer header',
+      !!sched && /created_by_id/.test(decodeURIComponent(sched.url)) && /u1/.test(decodeURIComponent(sched.url))
+        && sched.init?.headers?.Authorization === 'Bearer fixture-admin-key' && !/api_key=/.test(sched.url),
+      sched?.url);
+    const wed = (out.requests || []).find((r) => /entities\/WeddingDetails\//.test(r.url));
+    check('the wedding is read first, to find its owner',
+      !!wed && wed.init?.headers?.Authorization === 'Bearer fixture-admin-key', wed?.url);
+
+    // EVERY EVENT HAS ITS OWN UID. pickFeedFields() drops the row id, and
+    // the UID was built from it: schedule-undefined@ on every VEVENT, which a
+    // calendar client dedupes to ONE event. Three rows in, three UIDs out.
+    const three = await callFeed({ w: 'w1', t, rows: [
+      { ...ROW, id: 's-a', created_by_id: 'u1' },
+      { ...ROW, id: 's-b', event_name: 'Reception', start_time: '18:00', created_by_id: 'u1' },
+      { ...ROW, id: 's-c', event_name: 'After party', start_time: '22:00', created_by_id: 'u1' },
+    ] });
+    const uids = [...three.body.matchAll(/^UID:(.+)$/gm)].map((x) => x[1].trim());
+    check('three schedule rows become three VEVENTs with three distinct UIDs',
+      uids.length === 3 && new Set(uids).size === 3 && !uids.some((u) => /undefined/.test(u)), uids.join(' | '));
+
+    // An event across midnight: 23:45 -> 00:15 must end on the NEXT day, or
+    // DTEND precedes DTSTART and the client drops the event.
+    const late = { ...ROW, id: 's-late', event_date: '2026-12-31', start_time: '23:45', end_time: '00:15', created_by_id: 'u1' };
+    const night = await callFeed({ w: 'w1', t, rows: [late] });
+    const m = night.body.match(/DTSTART:(\d{8}T\d{6})\r\nDTEND:(\d{8}T\d{6})/);
+    check('an event that crosses midnight ends the next day, not before it starts',
+      !!m && m[1] === '20261231T234500' && m[2] === '20270101T001500', m ? `${m[1]} -> ${m[2]}` : 'no VEVENT');
   }
 
   return results;
