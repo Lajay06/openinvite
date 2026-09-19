@@ -41,6 +41,13 @@ import { calendarFeedTokenMatches } from './_lib/calendarFeedToken.js';
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 
+function unwrapList(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.results)) return payload.results;
+  return [];
+}
+
 /** The only fields that leave this server. */
 export const FEED_FIELDS = ['event_name', 'event_date', 'start_time', 'end_time', 'location', 'description'];
 
@@ -74,13 +81,16 @@ export default async function handler(req, res, fetchImpl = fetch) {
 
   let rows = [];
   try {
-    const url = `${BASE44_API}/apps/${BASE44_APP_ID}/entities/Schedule?api_key=${adminKey}&limit=500`;
-    const r = await fetchImpl(url);
+    // Bearer, not `?api_key=`: the query form answers `200 []` on every LIST
+    // (BASE44_PLATFORM_NOTES.md, "not User-specific"), which here meant a
+    // valid token got an empty calendar. The list comes back wrapped.
+    const url = `${BASE44_API}/apps/${BASE44_APP_ID}/entities/Schedule?limit=500`;
+    const r = await fetchImpl(url, { method: 'GET', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminKey}` } });
     if (!r.ok) return notFound(res);
     const all = await r.json();
     // Scoped to this wedding. The admin key is not a superuser bypass and
     // does not scope a list for us, so the filter is ours to apply.
-    rows = (Array.isArray(all) ? all : []).filter((x) => x?.wedding_id === weddingId || x?.created_by_id === weddingId);
+    rows = unwrapList(all).filter((x) => x?.wedding_id === weddingId || x?.created_by_id === weddingId);
   } catch {
     return notFound(res);
   }

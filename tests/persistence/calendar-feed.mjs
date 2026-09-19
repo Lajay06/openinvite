@@ -183,5 +183,49 @@ export async function runCalendarFeed() {
     }
   }
 
+  // ── THE WEDDING IS FOUND THROUGH THE HEADER, AND THE LIST IS UNWRAPPED ──
+  // On production /api/schedule-feed-url answered {url:null, reason:"no-wedding"}
+  // for the owner with both env vars set. The list was fetched with
+  // `?api_key=`, which Base44 answers `200 []` for every entity, and only a
+  // bare array was accepted. These feed the envelope Base44 really returns
+  // and capture the request, so both halves are asserted, not assumed.
+  {
+    const feedUrl = await import('../../api/schedule-feed-url.js');
+    const seen = [];
+    const envelope = { data: [
+      { id: 'w-old', created_by_id: 'u1', created_date: '2026-01-01T00:00:00Z' },
+      { id: 'w-test', created_by_id: 'u1', created_date: '2026-09-01T00:00:00Z', is_test: true },
+      { id: 'w-new', created_by_id: 'u1', created_date: '2026-06-01T00:00:00Z' },
+    ] };
+    const fetchImpl = async (url, init) => { seen.push({ url, init }); return { ok: true, json: async () => envelope, text: async () => '' }; };
+    const id = await feedUrl.findMyWeddingId('u1', 'fixture-admin-key', fetchImpl);
+    check('findMyWeddingId reads a {data:[…]} envelope and picks the newest real wedding',
+      id === 'w-new', String(id));
+    check('the admin key travels as Authorization: Bearer, never as ?api_key=',
+      seen.length === 1 && seen[0].init?.headers?.Authorization === 'Bearer fixture-admin-key' && !/api_key=/.test(seen[0].url),
+      seen[0]?.url);
+    check('the query is still created_by_id',
+      /created_by_id/.test(decodeURIComponent(seen[0]?.url || '')), 'unchanged filter');
+
+    // Through the handler, with a signed-in caller stubbed in.
+    const prevSecret = process.env.CALENDAR_FEED_SECRET, prevAdmin = process.env.BASE44_ADMIN_KEY;
+    process.env.CALENDAR_FEED_SECRET = SECRET; process.env.BASE44_ADMIN_KEY = 'fixture-admin-key';
+    let out = null;
+    const res = { status() { return this; }, json(b) { out = b; return this; } };
+    try {
+      await feedUrl.default({ method: 'GET', headers: { host: 'openinvite.com.au' } }, res, fetchImpl, async () => ({ id: 'u1' }));
+    } finally {
+      if (prevSecret === undefined) delete process.env.CALENDAR_FEED_SECRET; else process.env.CALENDAR_FEED_SECRET = prevSecret;
+      if (prevAdmin === undefined) delete process.env.BASE44_ADMIN_KEY; else process.env.BASE44_ADMIN_KEY = prevAdmin;
+    }
+    check('/api/schedule-feed-url returns a url for that wedding, not no-wedding',
+      typeof out?.url === 'string' && /schedule\.ics\?w=w-new&t=[0-9a-f]+$/.test(out.url), JSON.stringify(out));
+
+    // And the feed itself unwraps its Schedule list the same way.
+    const wrapped = await callFeed({ w: 'w1', t: calendarFeedToken('w1', SECRET), rows: { data: [ROW] } });
+    check('the feed reads a {data:[…]} Schedule envelope and emits the event',
+      wrapped.status === 200 && /Ceremony/.test(wrapped.body), `${wrapped.status}`);
+  }
+
   return results;
 }
