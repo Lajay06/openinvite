@@ -1,27 +1,32 @@
-import React from 'react';
-import { ArrowLeft } from 'lucide-react';
+import React, { useContext } from 'react';
+import { ArrowLeft, Bell } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ShellContext } from './MobileShell';
 
 /**
- * The large title at the top of a screen, plus the slim compact bar that
- * fades a 17px copy of it in once the large one has scrolled past 48px.
- *
- * `Screen` owns the scroll position and passes `compact` in; this component
- * only paints. Right-side actions live in the compact bar so they stay
- * reachable at any scroll position.
+ * The compact bar: back or nothing on the left, the 17px title in the
+ * middle (fades in past 48px), up to two circular white icon buttons on the
+ * right. On a tab root the rightmost is always the bell with the unread dot.
  */
-export function CompactBar({ title, compact, actions = [], onBack }) {
+export function CompactBar({ title, compact, actions = [], onBack, bell = false }) {
+  const navigate = useNavigate();
+  const { base, unread } = useContext(ShellContext);
+  const all = bell ? [...actions.slice(0, 1), { icon: Bell, label: 'Notifications', dot: unread > 0, onClick: () => navigate(`${base}/notifications`) }] : actions.slice(0, 2);
   return (
     <div className={`oi-m-compact${compact ? ' oi-m-compact--on' : ''}`}>
       {onBack ? (
-        <button type="button" className="oi-m-iconbtn oi-m-compact__back" onClick={onBack} aria-label="Back" style={{ marginLeft: -12 }}>
-          <ArrowLeft size={22} strokeWidth={1.75} />
-        </button>
+        <div className="oi-m-compact__back">
+          <button type="button" className="oi-m-iconbtn" onClick={onBack} aria-label="Back">
+            <ArrowLeft size={22} strokeWidth={1.75} />
+          </button>
+        </div>
       ) : <span style={{ width: 0 }} />}
       <div className="oi-m-compact__title" aria-hidden={!compact}>{title}</div>
-      <div className="oi-m-compact__actions" style={{ marginRight: -12 }}>
-        {actions.map((a) => (
+      <div className="oi-m-compact__actions">
+        {all.map((a) => (
           <button key={a.label} type="button" className="oi-m-iconbtn" onClick={a.onClick} aria-label={a.label}>
-            <a.icon size={22} strokeWidth={1.75} />
+            <a.icon size={21} strokeWidth={1.75} />
+            {a.dot && <span className="oi-m-dot" />}
           </button>
         ))}
       </div>

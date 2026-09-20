@@ -1,12 +1,12 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Users, ListChecks, Globe, UserRound } from 'lucide-react';
+import { Home, Users, LayoutGrid, Globe, UserRound } from 'lucide-react';
 import { hapticLight } from '../native';
 
 export const TABS = [
   { key: 'home', label: 'Home', icon: Home, path: '' },
   { key: 'guests', label: 'Guests', icon: Users, path: 'guests' },
-  { key: 'plan', label: 'Plan', icon: ListChecks, path: 'plan' },
+  { key: 'plan', label: 'Plan', icon: LayoutGrid, path: 'plan' },
   { key: 'site', label: 'Site', icon: Globe, path: 'site' },
   { key: 'account', label: 'Account', icon: UserRound, path: 'account' },
 ];
@@ -15,10 +15,11 @@ export const TABS = [
 export function activeTabFor(pathname, base) {
   const rest = pathname.startsWith(base) ? pathname.slice(base.length) : pathname;
   const first = rest.replace(/^\/+/, '').split('/')[0] || '';
-  return TABS.find((t) => t.path === first)?.key || 'home';
+  if (first === 'notifications' || first === 'search') return null;
+  return TABS.find((t) => t.path === first)?.key || 'plan';
 }
 
-/** Five tabs. Active: primary text, weight 600, a 2px #E03553 line above the icon. */
+/** A floating white pill. Active: icon and label in primary with a small spring. */
 export default function TabBar({ base }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -33,12 +34,9 @@ export default function TabBar({ base }) {
             type="button"
             className={`oi-m-tab${on ? ' oi-m-tab--on' : ''}`}
             aria-current={on ? 'page' : undefined}
-            onClick={() => {
-              if (!on) hapticLight();
-              navigate(`${base}${t.path ? `/${t.path}` : ''}`);
-            }}
+            onClick={() => { if (!on) hapticLight(); navigate(`${base}${t.path ? `/${t.path}` : ''}`); }}
           >
-            <t.icon size={24} strokeWidth={on ? 2 : 1.5} />
+            <span className="oi-m-tab__icon"><t.icon size={24} strokeWidth={on ? 2.2 : 1.6} /></span>
             <span>{t.label}</span>
           </button>
         );
