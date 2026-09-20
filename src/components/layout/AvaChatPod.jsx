@@ -3,6 +3,7 @@ import { color } from '@/styles/tokens';
 import { parseAvaText } from '@/lib/avaMarkdown';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords, getMyWeddingDetails, putMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { syncMyCalendarFeed } from '@/lib/calendarFeedSync';
 import { buildWeddingContext } from '@/lib/avaContext';
 import { buildAvaPrompt, unwrapLlmReply, ACTION_MIRROR } from '@/lib/avaRequest';
 import { filterUnbackedOffers } from '@/lib/avaOfferFilter';
@@ -163,7 +164,7 @@ function AvaChatPod({ onClose, openDetail, messages, setMessages, dismissed, set
     if (!action) return;
     updateAction(msgId, actionId, { status: 'executing' });
     try {
-      const { ok, error } = await executeAvaAction(action, { entities: base44.entities, navigate, currentPath: location.pathname, listTodos: () => getMyRecords('Note'), readWeddingDetails: getMyWeddingDetails, putWeddingFields: putMyWeddingDetails, listVendors: () => getMyRecords('Vendor'), listGuests: () => getMyRecords('Guest') });
+      const { ok, error } = await executeAvaAction(action, { entities: base44.entities, navigate, currentPath: location.pathname, listTodos: () => getMyRecords('Note'), readWeddingDetails: getMyWeddingDetails, putWeddingFields: putMyWeddingDetails, syncCalendarFeed: syncMyCalendarFeed, listVendors: () => getMyRecords('Vendor'), listGuests: () => getMyRecords('Guest') });
       if (!ok) { updateAction(msgId, actionId, { status: 'error', error }); toast.error(error); return; }
       updateAction(msgId, actionId, { status: 'done' });
       if (action.type !== 'navigate') toast.success(actionLabel(action.type, action.data));
