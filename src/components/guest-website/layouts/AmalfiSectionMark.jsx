@@ -9,9 +9,9 @@ export default function AmalfiSectionMark({ kicker, theme, typography, textColor
   const color = textColor || theme.lightText;
   const accent = accentColor || theme.accent;
   return (
-    <div style={{ textAlign: 'left', marginBottom: 48 }}>
+    <div data-oi-anchor-root="" style={{ textAlign: 'left', marginBottom: 48 }}>
       {kicker && (
-        <Tag className="wb-body-face" style={{ fontFamily: typography.bodyFont, fontSize: 12.5, fontWeight: 500, letterSpacing: '0.1em', color, opacity: 0.65, margin: '0 0 14px' }}>
+        <Tag data-oi-anchor="mark" className="wb-body-face" style={{ fontFamily: typography.bodyFont, fontSize: 12.5, fontWeight: 500, letterSpacing: '0.1em', color, opacity: 0.65, margin: '0 0 14px' }}>
           {kicker}
         </Tag>
       )}
@@ -19,3 +19,8 @@ export default function AmalfiSectionMark({ kicker, theme, typography, textColor
     </div>
   );
 }
+
+// THE PAGE ANCHOR. Body copy on a page follows its mark rather than fighting
+// it (Batch 2, phase two): the guard measures the painted mark and asserts it
+// agrees with this declaration, so the two cannot drift apart unnoticed.
+AmalfiSectionMark.anchor = 'left';

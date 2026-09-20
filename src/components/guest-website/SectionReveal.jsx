@@ -21,6 +21,10 @@ export default function SectionReveal({
   disabled = false,
   style,
   className,
+  // A measurement hook, nothing more: the page-anchor guard finds the
+  // page's heading/paragraph/quote by this attribute. Explicit rather than a
+  // `...rest` spread, so the wrapper cannot grow into a prop passthrough.
+  anchorRole,
 }) {
   const prefersReduced = useReducedMotion();
   const m = universeConfig?.motion;
@@ -46,6 +50,7 @@ export default function SectionReveal({
       transition={shouldAnimate ? { duration, ease } : undefined}
       style={style}
       className={className}
+      data-oi-anchor={anchorRole}
     >
       {children}
     </motion.div>

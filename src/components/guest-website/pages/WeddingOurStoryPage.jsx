@@ -49,7 +49,7 @@ function GenericStoryComposition({ SectionMark, weddingDetails, theme, typograph
         </SectionReveal>
 
         {storyText && (
-          <SectionReveal universeConfig={universeConfig} disabled={!motionEnabled} style={{ fontFamily: typography.headingFont, fontSize: 'clamp(1.15rem, 2.2vw, 1.375rem)', lineHeight: 1.7, marginBottom: 56, whiteSpace: 'pre-wrap' }}>
+          <SectionReveal anchorRole="paragraph" universeConfig={universeConfig} disabled={!motionEnabled} style={{ fontFamily: typography.headingFont, fontSize: 'clamp(1.15rem, 2.2vw, 1.375rem)', lineHeight: 1.7, marginBottom: 56, whiteSpace: 'pre-wrap' }}>
             {storyText}
           </SectionReveal>
         )}
@@ -131,7 +131,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
           </SectionReveal>
 
           {storyText && (
-            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontFamily: typography.bodyFont, fontSize: 'clamp(1rem, 2vw, 1.1875rem)', lineHeight: 1.85, marginBottom: 72, whiteSpace: 'pre-wrap' }}>
+            <SectionReveal anchorRole="paragraph" universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontFamily: typography.bodyFont, fontSize: 'clamp(1rem, 2vw, 1.1875rem)', lineHeight: 1.85, marginBottom: 72, whiteSpace: 'pre-wrap' }}>
               {storyText}
             </SectionReveal>
           )}
@@ -175,7 +175,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
           </SectionReveal>
 
           {storyText && (
-            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontFamily: typography.headingFont, fontSize: 'clamp(1.15rem, 2.2vw, 1.375rem)', lineHeight: 1.7, marginBottom: 56, whiteSpace: 'pre-wrap' }}>
+            <SectionReveal anchorRole="paragraph" universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontFamily: typography.headingFont, fontSize: 'clamp(1.15rem, 2.2vw, 1.375rem)', lineHeight: 1.7, marginBottom: 56, whiteSpace: 'pre-wrap' }}>
               {storyText}
             </SectionReveal>
           )}
@@ -219,7 +219,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
           </SectionReveal>
 
           {storyText && (
-            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontFamily: typography.bodyFont, fontSize: 'clamp(1rem, 2vw, 1.1875rem)', lineHeight: 1.8, marginBottom: 88, whiteSpace: 'pre-wrap' }}>
+            <SectionReveal anchorRole="paragraph" universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontFamily: typography.bodyFont, fontSize: 'clamp(1rem, 2vw, 1.1875rem)', lineHeight: 1.8, marginBottom: 88, whiteSpace: 'pre-wrap' }}>
               {storyText}
             </SectionReveal>
           )}
@@ -266,7 +266,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
           </SectionReveal>
 
           {storyText && (
-            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontFamily: typography.headingFont, fontSize: 'clamp(1.1rem, 2.2vw, 1.3rem)', lineHeight: 1.85, marginBottom: 72, whiteSpace: 'pre-wrap' }}>
+            <SectionReveal anchorRole="paragraph" universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontFamily: typography.headingFont, fontSize: 'clamp(1.1rem, 2.2vw, 1.3rem)', lineHeight: 1.85, marginBottom: 72, whiteSpace: 'pre-wrap' }}>
               {storyText}
             </SectionReveal>
           )}
@@ -311,7 +311,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
           </SectionReveal>
 
           {storyText && (
-            <SectionReveal
+            <SectionReveal anchorRole="paragraph"
               universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
               style={{ fontFamily: typography.headingFont, fontSize: 'clamp(1.05rem, 2vw, 1.3rem)', lineHeight: 2.1, marginBottom: 96, whiteSpace: 'pre-wrap' }}
             >
@@ -361,7 +361,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
           </SectionReveal>
 
           {storyText && (
-            <SectionReveal
+            <SectionReveal anchorRole="paragraph"
               universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
               style={{ fontFamily: typography.bodyFont, fontSize: 'clamp(1.05rem, 2vw, 1.25rem)', lineHeight: 1.75, marginBottom: 64, maxWidth: 640, whiteSpace: 'pre-wrap' }}
             >
@@ -413,7 +413,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
           </SectionReveal>
 
           {storyText && (
-            <SectionReveal
+            <SectionReveal anchorRole="paragraph"
               universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
               style={{ fontFamily: typography.headingFont, fontSize: 'clamp(1.1rem, 2.2vw, 1.375rem)', lineHeight: 1.85, marginBottom: 56, whiteSpace: 'pre-wrap' }}
             >
@@ -473,7 +473,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
 
         {/* Story text */}
         {storyText && (
-          <SectionReveal
+          <SectionReveal anchorRole="paragraph"
             universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
             style={{
               fontFamily: isMinimal ? typography.headingFont : isEditorial ? typography.headingFont : typography.bodyFont,

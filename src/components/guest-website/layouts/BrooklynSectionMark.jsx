@@ -11,10 +11,10 @@ export default function BrooklynSectionMark({ kicker, theme, typography, textCol
   const color = textColor || theme.lightText;
   const accent = accentColor || theme.accent;
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 48 }}>
+    <div data-oi-anchor-root="" style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 48 }}>
       <TicketStub color={accent} width={48} height={10} />
       {kicker && (
-        <Tag className="wb-body-face"
+        <Tag data-oi-anchor="mark" className="wb-body-face"
           style={{
             fontFamily: typography.bodyFont,
             fontSize: 12,
@@ -32,3 +32,8 @@ export default function BrooklynSectionMark({ kicker, theme, typography, textCol
     </div>
   );
 }
+
+// THE PAGE ANCHOR. Body copy on a page follows its mark rather than fighting
+// it (Batch 2, phase two): the guard measures the painted mark and asserts it
+// agrees with this declaration, so the two cannot drift apart unnoticed.
+BrooklynSectionMark.anchor = 'left';

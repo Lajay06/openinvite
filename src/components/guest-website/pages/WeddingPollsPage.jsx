@@ -125,7 +125,7 @@ function PollCard({ poll, theme, typography, onVote, weddingSlug, getTurnstileTo
           <span style={{ fontSize: 22 }}>{poll.emoji}</span>
         )}
         <div>
-          <h2 style={{
+          <h2 data-oi-anchor="heading" style={{
             fontSize: 16,
             fontWeight: 700,
             color: theme.darkText,

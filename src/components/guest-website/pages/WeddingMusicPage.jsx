@@ -166,6 +166,7 @@ export default function WeddingMusicPage({ weddingDetails, theme, typography, un
 
         {content.customMessage && (
           <SectionReveal
+            anchorRole="paragraph"
             {...reveal}
             style={{
               fontFamily: typography.bodyFont,

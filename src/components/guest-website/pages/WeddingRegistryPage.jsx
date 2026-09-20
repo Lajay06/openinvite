@@ -150,6 +150,7 @@ export default function WeddingRegistryPage({ weddingDetails, theme, typography,
           <>
             {content.registryMessage && (
               <SectionReveal
+                anchorRole="paragraph"
                 universeConfig={universeConfig} disabled={motionDisabled}
                 style={{
                   fontFamily: typography.bodyFont,

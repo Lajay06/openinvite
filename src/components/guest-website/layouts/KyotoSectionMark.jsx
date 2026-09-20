@@ -10,10 +10,10 @@ import EnsoRing from './EnsoRing';
 export default function KyotoSectionMark({ kicker, theme, typography, textColor, as: Tag = 'p' }) {
   const color = textColor || theme.lightText;
   return (
-    <div style={{ textAlign: 'left', marginBottom: 64 }}>
+    <div data-oi-anchor-root="" style={{ textAlign: 'left', marginBottom: 64 }}>
       <EnsoRing color={color} opacity={0.5} size={22} style={{ marginBottom: 16 }} />
       {kicker && (
-        <Tag className="wb-body-face"
+        <Tag data-oi-anchor="mark" className="wb-body-face"
           style={{
             fontFamily: typography.bodyFont,
             fontSize: 11,
@@ -31,3 +31,8 @@ export default function KyotoSectionMark({ kicker, theme, typography, textColor,
     </div>
   );
 }
+
+// THE PAGE ANCHOR. Body copy on a page follows its mark rather than fighting
+// it (Batch 2, phase two): the guard measures the painted mark and asserts it
+// agrees with this declaration, so the two cannot drift apart unnoticed.
+KyotoSectionMark.anchor = 'left';

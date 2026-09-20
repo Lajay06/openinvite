@@ -63,7 +63,7 @@ export default function WeddingTransportPage({ weddingDetails, theme, typography
           <GuestPageHeading title={"Getting here"} theme={theme} typography={typography} universeConfig={universeConfig} />
         </SectionReveal>
 
-        <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' }}>
+        <SectionReveal anchorRole="paragraph" universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' }}>
           Here's everything you need to know to get to the venue.
         </SectionReveal>
 

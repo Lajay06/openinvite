@@ -271,7 +271,7 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
                           {dayOfWeek}
                         </p>
                       )}
-                      <h2 style={{
+                      <h2 data-oi-anchor="heading" style={{
                         fontFamily: hFont, fontWeight: hWt,
                         fontSize: isBrooklyn ? 'clamp(2.2rem, 5.5vw, 3.5rem)' : 'clamp(1.6rem, 3.5vw, 2.5rem)',
                         letterSpacing: isBrooklyn ? '0.01em' : isMykonos ? '-0.01em' : '-0.02em',

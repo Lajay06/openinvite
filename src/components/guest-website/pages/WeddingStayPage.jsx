@@ -49,13 +49,13 @@ export default function WeddingStayPage({ weddingDetails, theme, typography, uni
         </SectionReveal>
 
         {accom.coupleNote && (
-          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' }}>
+          <SectionReveal anchorRole="paragraph" universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' }}>
             {accom.coupleNote}
           </SectionReveal>
         )}
 
         {!accom.coupleNote && (
-          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' }}>
+          <SectionReveal anchorRole="paragraph" universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' }}>
             We've curated a few great places to stay so you can find something that suits your style and budget.
           </SectionReveal>
         )}

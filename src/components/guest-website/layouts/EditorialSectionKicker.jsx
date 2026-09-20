@@ -11,9 +11,9 @@ import ZelligeDivider from './ZelligeDivider';
 export default function EditorialSectionKicker({ kicker, theme, typography, align = 'left', textColor, as: Tag = 'p' }) {
   const color = textColor || theme.lightText;
   return (
-    <div style={{ textAlign: align, marginBottom: 40 }}>
+    <div data-oi-anchor-root="" style={{ textAlign: align, marginBottom: 40 }}>
       {kicker && (
-        <Tag className="wb-body-face"
+        <Tag data-oi-anchor="mark" className="wb-body-face"
           style={{
             fontFamily: typography.bodyFont,
             fontSize: 12,
@@ -37,3 +37,8 @@ export default function EditorialSectionKicker({ kicker, theme, typography, alig
     </div>
   );
 }
+
+// THE PAGE ANCHOR. `align` defaults to left, and every page that renders this
+// kicker without the prop gets a left mark. A caller passing align="center"
+// (the RSVP editorial branch) is the exception, not the anchor.
+EditorialSectionKicker.anchor = 'left';
