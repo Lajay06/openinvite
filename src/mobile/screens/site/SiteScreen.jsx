@@ -1,38 +1,32 @@
 import React from 'react';
 import { ExternalLink, Share2, Palette, LayoutTemplate, Sparkles, Clock, HelpCircle, Gift, Hotel, Car, MapPin, ScrollText, BarChart2, Monitor } from 'lucide-react';
 import Screen from '../../shell/Screen';
-import { Block, Row, PillButton, StatusPill, Skeleton, ErrorState } from '../../ui';
+import { Row, RowGroup, PillButton, StatusPill, Skeleton, ErrorState, SmartImage, PanelCard } from '../../ui';
 
 /**
- * Site: the universe, the guest site status, a preview image, view and
- * share, then rows into the parts of the site that are reasonable to edit
- * on a phone (they hand off to the desktop pages) and a row that says the
- * builder itself is a desktop tool.
+ * Site: a large preview of the guest site in a rounded frame, the universe
+ * and live status, share and view, then rows into the guest-suite editors
+ * (in the app) and the design tools (desktop).
  */
-export default function SiteScreen({ universeName, isLive, slug, previewImage, siteUrl, onView, onShare, onOpenDesktop, loading, error, onRetry }) {
+export default function SiteScreen({ universeName, isLive, siteUrl, previewImage, coupleName, onView, onShare, onOpen, onOpenDesktop, loading, error, onRetry }) {
   return (
-    <Screen title="Site">
-      <div className="oi-m-stack oi-m-stack--16">
-        {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? (
-          <Skeleton kind="block" style={{ height: 260 }} />
-        ) : (
-          <div className="oi-m-block oi-m-block--flush">
-            <div style={{ position: 'relative', aspectRatio: '4 / 3', background: 'var(--m-text)', overflow: 'hidden' }}>
-              {previewImage && <img src={previewImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+    <Screen title="Site" bell>
+      <div className="oi-m-stack oi-m-stack--24">
+        {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <Skeleton kind="hero" /> : (
+          <div className="oi-m-card oi-m-card--flush">
+            <div style={{ position: 'relative', padding: '12px 12px 0' }}>
+              <div style={{ position: 'relative', borderRadius: 'var(--m-r-image)', overflow: 'hidden', background: 'var(--m-ink)', aspectRatio: '4 / 5' }}>
+                <SmartImage src={previewImage} alt={universeName ? `${universeName} universe` : 'Your site'} width={340} ratio="4/5" square eager tone="ink" />
+                <div className="oi-m-hero__scrim" />
+                <div style={{ position: 'absolute', left: 20, right: 20, bottom: 20, color: '#FFFFFF' }}>
+                  <div className="oi-m-hero__label">{universeName || 'Choose a universe'}</div>
+                  <div className="oi-m-hero__title" style={{ fontSize: 26, lineHeight: '32px' }}>{coupleName || 'Your wedding'}</div>
+                </div>
+                <div style={{ position: 'absolute', top: 12, right: 12 }}><StatusPill tone={isLive ? 'ok' : 'light'}>{isLive ? 'Live' : 'Draft'}</StatusPill></div>
+              </div>
             </div>
             <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                <div style={{ minWidth: 0 }}>
-                  <p className="oi-m-meta">Universe</p>
-                  <p className="oi-m-section" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{universeName || 'Not chosen yet'}</p>
-                </div>
-                <StatusPill tone={isLive ? 'ok' : 'neutral'}>{isLive ? 'Live' : 'Draft'}</StatusPill>
-              </div>
-              {siteUrl ? (
-                <p className="oi-m-meta" style={{ overflowWrap: 'anywhere' }}>{siteUrl.replace(/^https?:\/\//, '')}</p>
-              ) : (
-                <p className="oi-m-meta">Your site does not have an address yet. Choose one in the studio on desktop.</p>
-              )}
+              {siteUrl ? <p className="oi-m-meta" style={{ overflowWrap: 'anywhere' }}>{siteUrl.replace(/^https?:\/\//, '')}</p> : <p className="oi-m-meta">Your site does not have an address yet. Choose one in the studio on desktop.</p>}
               <div style={{ display: 'flex', gap: 8 }}>
                 <PillButton variant="primary" icon={ExternalLink} onClick={onView} disabled={!siteUrl} style={{ flex: 1 }}>View site</PillButton>
                 <PillButton variant="secondary" icon={Share2} onClick={onShare} disabled={!siteUrl} style={{ flex: 1 }}>Share link</PillButton>
@@ -42,33 +36,30 @@ export default function SiteScreen({ universeName, isLive, slug, previewImage, s
         )}
 
         <section>
-          <h2 className="oi-m-section" style={{ marginBottom: 8 }}>Guest suite</h2>
-          <div className="oi-m-block oi-m-block--flush">
-            <Row icon={Clock} label="Schedule" sub="What guests see on the day" onClick={() => onOpenDesktop('/GuestSuiteSchedule')} />
-            <Row icon={HelpCircle} label="Q&A" sub="Dress code, parking, the small questions" onClick={() => onOpenDesktop('/QandA')} />
-            <Row icon={Gift} label="Registry" onClick={() => onOpenDesktop('/GuestSuiteRegistry')} />
-            <Row icon={Hotel} label="Accommodation" onClick={() => onOpenDesktop('/GuestSuiteAccommodation')} />
-            <Row icon={Car} label="Transport" onClick={() => onOpenDesktop('/GuestSuiteTransport')} />
-            <Row icon={MapPin} label="Experience guide" onClick={() => onOpenDesktop('/GuestSuiteExperience')} />
-            <Row icon={ScrollText} label="Good to know" onClick={() => onOpenDesktop('/GuestSuitePolicies')} />
-            <Row icon={BarChart2} label="Guest polls" onClick={() => onOpenDesktop('/GuestSuitePolls')} />
-          </div>
+          <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Guest suite</h2>
+          <RowGroup>
+            <Row icon={Clock} tile="sand" label="Schedule" sub="What guests see on the day" onClick={() => onOpen('suite-schedule')} />
+            <Row icon={HelpCircle} tile="sand" label="Q&A" sub="Dress code, parking, the small questions" onClick={() => onOpen('qna')} />
+            <Row icon={Gift} tile="sand" label="Registry" onClick={() => onOpen('registry')} />
+            <Row icon={Hotel} tile="sand" label="Accommodation" onClick={() => onOpen('suite-accommodation')} />
+            <Row icon={Car} tile="sand" label="Transport" onClick={() => onOpen('suite-transport')} />
+            <Row icon={MapPin} tile="sand" label="Experience guide" onClick={() => onOpen('experience')} />
+            <Row icon={ScrollText} tile="sand" label="Good to know" onClick={() => onOpen('good-to-know')} />
+            <Row icon={BarChart2} tile="sand" label="Guest polls" onClick={() => onOpen('polls')} />
+          </RowGroup>
         </section>
 
         <section>
-          <h2 className="oi-m-section" style={{ marginBottom: 8 }}>Design</h2>
-          <div className="oi-m-block oi-m-block--flush">
-            <Row icon={Palette} label="Choose a universe" sub="The look of your whole suite" onClick={() => onOpenDesktop('/studio/universe')} />
-            <Row icon={LayoutTemplate} label="Website builder" sub="Best on desktop" onClick={() => onOpenDesktop('/studio/website')} />
-            <Row icon={Sparkles} label="Ava studio" sub="Best on desktop" onClick={() => onOpenDesktop('/studio/ava')} />
-          </div>
-          <Block style={{ marginTop: 8 }}>
-            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-              <Monitor size={20} strokeWidth={1.75} style={{ flexShrink: 0, marginTop: 2, color: 'var(--m-text-2)' }} />
-              <p className="oi-m-meta">The builder and Ava studio need a bigger screen. Open them on a laptop and everything you change shows up here.</p>
-            </div>
-          </Block>
+          <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Design</h2>
+          <RowGroup>
+            <Row icon={Palette} tile="blush" label="Choose a universe" sub="The look of your whole suite" onClick={() => onOpenDesktop('/studio/universe')} />
+            <Row icon={LayoutTemplate} tile="blush" label="Website builder" sub="Best on desktop" onClick={() => onOpenDesktop('/studio/website')} />
+            <Row icon={Sparkles} tile="blush" label="Ava studio" sub="Best on desktop" onClick={() => onOpenDesktop('/studio/ava')} />
+          </RowGroup>
         </section>
+        <PanelCard tone="sand" body="The builder and Ava studio need a bigger screen. Open them on a laptop and everything you change shows up here.">
+          <Monitor size={18} strokeWidth={1.75} style={{ color: 'var(--m-text-2)' }} />
+        </PanelCard>
       </div>
     </Screen>
   );

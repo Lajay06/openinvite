@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { getUniverse } from '@/lib/universeCatalog';
-import { getSampleWedding } from '@/lib/sampleContent';
+import { heroImageFor } from '../../lib/images';
+import { ShellContext } from '../../shell/MobileShell';
 import SiteScreen from './SiteScreen';
 import { useWedding } from '../../data/wedding';
 import { openExternal, shareLink } from '../../native';
@@ -14,7 +15,8 @@ export default function SiteContainer() {
   const d = wedding.data;
   const universeId = d?.activeUniverse || '';
   const universe = universeId ? getUniverse(universeId) : null;
-  const previewImage = d?.coverPhoto || (universeId ? getSampleWedding(universeId)?.coverPhoto || universe?.imageUrl : '') || '';
+  const previewImage = heroImageFor(d);
+  const { base } = useContext(ShellContext);
   const siteUrl = siteUrlFor(d);
   const coupleName = d?.couple1Name && d?.couple2Name ? `${d.couple1Name} & ${d.couple2Name}` : '';
 
@@ -28,11 +30,12 @@ export default function SiteContainer() {
     <SiteScreen
       universeName={universe?.name}
       isLive={!!d?.websiteEnabled}
-      slug={d?.slug}
       previewImage={previewImage}
+      coupleName={coupleName}
       siteUrl={siteUrl}
       onView={() => openExternal(siteUrl)}
       onShare={share}
+      onOpen={(key) => navigate(`${base}/plan/${key}`)}
       onOpenDesktop={(path) => openDesktop(navigate, path)}
       loading={wedding.loading}
       error={wedding.error}

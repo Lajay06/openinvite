@@ -87,6 +87,7 @@ export default function GuestsContainer() {
           loading={guests.loading}
           error={guests.error}
           onRetry={guests.reload}
+          onRefresh={async () => { await guests.reload(); }}
         />
       )}
       <GuestFormSheet open={sheet.open} guest={sheet.guest} onClose={() => setSheet((s) => ({ ...s, open: false }))} onSave={save} />

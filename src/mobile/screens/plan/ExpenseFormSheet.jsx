@@ -3,10 +3,10 @@ import { BottomSheet, PillButton, TextField, SelectField, Checkbox } from '../..
 import { BUDGET_CATEGORIES } from '@/lib/budgetCategories';
 
 const CATEGORY_OPTIONS = BUDGET_CATEGORIES.map((c) => ({ value: c.key, label: c.label }));
-const EMPTY = { category: '', item_name: '', budgeted_amount: '', actual_amount: '', vendor: '', paid: false, notes: '' };
+const EMPTY = { category: '', item_name: '', budgeted_amount: '', actual_amount: '', vendor: '', paid: false, payment_date: '', notes: '' };
 
 /** Add or edit a Budget record, the same fields BudgetForm.jsx writes. */
-export default function ExpenseFormSheet({ open, item, onClose, onSave, symbol = '$', defaultCategory = '' }) {
+export default function ExpenseFormSheet({ open, item, onClose, onSave, onDelete, symbol = '$', defaultCategory = '' }) {
   const [f, setF] = useState(EMPTY);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
@@ -37,6 +37,7 @@ export default function ExpenseFormSheet({ open, item, onClose, onSave, symbol =
         actual_amount: parseFloat(f.actual_amount) || 0,
         vendor: f.vendor.trim(),
         paid: !!f.paid,
+        payment_date: f.payment_date || '',
         notes: f.notes,
       });
       onClose();
@@ -53,6 +54,7 @@ export default function ExpenseFormSheet({ open, item, onClose, onSave, symbol =
       title={item ? 'Edit expense' : 'Add an expense'}
       footer={(
         <>
+          {item && onDelete && <PillButton variant="ghost" onClick={() => onDelete(item)} disabled={saving} style={{ color: 'var(--m-primary)' }}>Remove</PillButton>}
           <PillButton variant="secondary" onClick={onClose} disabled={saving}>Cancel</PillButton>
           <PillButton variant="primary" onClick={submit} disabled={saving} style={{ flex: 1 }}>{saving ? 'Saving' : item ? 'Save changes' : 'Add expense'}</PillButton>
         </>
@@ -64,6 +66,7 @@ export default function ExpenseFormSheet({ open, item, onClose, onSave, symbol =
         <TextField label={`Budgeted (${symbol})`} type="number" inputMode="decimal" value={f.budgeted_amount} onChange={(e) => set('budgeted_amount', e.target.value)} error={errors.budgeted_amount} placeholder="0" />
         <TextField label={`Actual (${symbol})`} type="number" inputMode="decimal" value={f.actual_amount} onChange={(e) => set('actual_amount', e.target.value)} error={errors.actual_amount} placeholder="0" />
         <TextField label="Vendor" value={f.vendor} onChange={(e) => set('vendor', e.target.value)} placeholder="Optional" />
+        <TextField label="Payment due" type="date" value={f.payment_date || ''} onChange={(e) => set('payment_date', e.target.value)} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <Checkbox checked={!!f.paid} onChange={(v) => set('paid', v)} label="Paid" />
           <span className="oi-m-body">Paid</span>

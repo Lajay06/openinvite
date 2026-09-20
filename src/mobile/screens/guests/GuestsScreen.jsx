@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Search, Plus, Users } from 'lucide-react';
 import Screen from '../../shell/Screen';
-import { FilterPills, SearchScreen, SkeletonRows, ErrorState, EmptyState, StatusPill } from '../../ui';
+import { FilterPills, SearchScreen, SkeletonRows, ErrorState, EmptyState, StatusPill, ProgressBar, RowGroup } from '../../ui';
 import { isAttending, isDeclined, isPending, isAwaitingPrimary } from '@/lib/guestRsvpTally';
 import { initials, RSVP_LABEL, RSVP_TONE, GUEST_CATEGORY_LABEL } from '../../lib/format';
 
@@ -47,7 +47,7 @@ export function GuestRow({ guest, onClick }) {
  * The guest list. props: guests, filter, onFilter, onOpenGuest, onAdd,
  * loading, error, onRetry, groupings (extra filter pills from tags).
  */
-export default function GuestsScreen({ guests = [], filter = 'all', onFilter, onOpenGuest, onAdd, loading, error, onRetry, groupings = [] }) {
+export default function GuestsScreen({ guests = [], filter = 'all', onFilter, onOpenGuest, onAdd, loading, error, onRetry, groupings = [], back, onRefresh }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [q, setQ] = useState('');
 
@@ -78,13 +78,25 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, on
       <Screen
         title="Guests"
         subtitle={loading ? '' : `${guests.length} guest${guests.length === 1 ? '' : 's'}`}
-        actions={[
-          { icon: Search, label: 'Search guests', onClick: () => setSearchOpen(true) },
-          { icon: Plus, label: 'Add a guest', onClick: onAdd },
-        ]}
+        bell={!back}
+        back={back}
+        actions={[{ icon: Search, label: 'Search guests', onClick: () => setSearchOpen(true) }, ...(back ? [{ icon: Plus, label: 'Add a guest', onClick: onAdd }] : [])]}
+        onRefresh={onRefresh}
       >
+        {!loading && guests.length > 0 && (
+          <div className="oi-m-stack" style={{ marginBottom: 16 }}>
+            <div className="oi-m-card">
+              <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
+                <Stat n={filters[1].count} label="Attending" />
+                <Stat n={filters[3].count} label="Declined" />
+                <Stat n={filters[2].count} label="Awaiting" />
+              </div>
+              <ProgressBar value={filters[1].count + filters[3].count} max={guests.filter((g) => g.invite_sent_at).length} note={summary(guests, filters)} />
+            </div>
+          </div>
+        )}
         <FilterPills options={filters} value={filter} onChange={onFilter} />
-        <div className="oi-m-stack" style={{ marginTop: 8 }}>
+        <div className="oi-m-stack" style={{ marginTop: 12 }}>
           {error && !loading ? (
             <ErrorState onRetry={onRetry} />
           ) : loading ? (
@@ -94,9 +106,12 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, on
           ) : visible.length === 0 ? (
             <EmptyState icon={Users} text="No guests match this filter." />
           ) : (
-            <div className="oi-m-block oi-m-block--flush">
+            <RowGroup>
               {visible.map((g) => <GuestRow key={g.id} guest={g} onClick={() => onOpenGuest(g)} />)}
-            </div>
+            </RowGroup>
+          )}
+          {!loading && !error && (
+            <button type="button" className="oi-m-pill oi-m-pill--primary oi-m-pill--block" onClick={onAdd}>Add a guest</button>
           )}
         </div>
       </Screen>
@@ -106,11 +121,27 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, on
         ) : results.length === 0 ? (
           <p className="oi-m-meta" style={{ padding: 16 }}>No guests match that.</p>
         ) : (
-          <div className="oi-m-block oi-m-block--flush">
+          <div className="oi-m-stack"><RowGroup>
             {results.map((g) => <GuestRow key={g.id} guest={g} onClick={() => { setSearchOpen(false); setQ(''); onOpenGuest(g); }} />)}
-          </div>
+          </RowGroup></div>
         )}
       </SearchScreen>
     </>
   );
+}
+
+function Stat({ n, label }) {
+  return (
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <div className="oi-m-num" style={{ fontSize: 28, lineHeight: '32px' }}>{n}</div>
+      <div className="oi-m-meta">{label}</div>
+    </div>
+  );
+}
+
+function summary(guests, filters) {
+  const invited = guests.filter((g) => g.invite_sent_at).length;
+  if (!invited) return 'No invitations sent yet.';
+  const awaiting = filters[2].count;
+  return awaiting ? `${awaiting} of ${invited} invited guests still to reply.` : 'Everyone you invited has replied.';
 }

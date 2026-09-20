@@ -1,99 +1,288 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import PlanScreen, { BudgetCategoryScreen } from './PlanScreen';
-import TaskFormSheet from './TaskFormSheet';
-import ExpenseFormSheet from './ExpenseFormSheet';
+import { assignGuestToTableByName, unassignGuestFromTables } from '@/lib/tableAssignment';
+import { saveVendorFromPlaces, getSavedPlaceIds, CATEGORY_QUERIES } from '@/lib/vendorPlaces';
+import { getMyRecords } from '@/lib/resolveMyWedding';
 import { ShellContext } from '../../shell/MobileShell';
-import { useTasks, useBudget, useSchedule, useVendors, taskWrites, budgetWrites } from '../../data/wedding';
+import { usePlanData, useEntity, useWeddingDetails, reviewSongRequest, fetchSongRequests } from '../../data/plan';
+import { useTasks, useBudget, useGuests, taskWrites, budgetWrites } from '../../data/wedding';
+import useLoad from '../../data/useLoad';
 import { hapticLight } from '../../native';
 import { openDesktop } from '../../lib/links';
+import { featureByKey } from '../../features/registry';
+import { DETAILS, ENTITIES } from '../../features/schemas';
+import DetailsScreen from '../../features/DetailsScreen';
+import EntityListScreen from '../../features/EntityListScreen';
+import PlanHubScreen, { planProgress } from './PlanHubScreen';
+import ChecklistScreen from './ChecklistScreen';
+import BudgetScreen, { BudgetCategoryScreen } from './BudgetScreen';
+import MessagesScreen, { ThreadScreen } from './MessagesScreen';
+import SeatingScreen from './SeatingScreen';
+import PollsScreen from './PollsScreen';
+import MusicScreen from './MusicScreen';
+import RegistryScreen from './RegistryScreen';
+import { QnaScreen, GoodToKnowScreen, PlacesScreen, SuiteScheduleScreen, WeddingPartyScreen, MarketplaceScreen, DesktopFeatureScreen } from './SuiteScreens';
 
-/** /m/plan, /m/plan/budget/:category. Loads through getMyRecords, writes through the Note and Budget entities. */
-export default function PlanContainer() {
+const genId = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+
+/** /m/plan: the hub. */
+export function PlanHubContainer() {
   const navigate = useNavigate();
-  const { category } = useParams();
-  const [params, setParams] = useSearchParams();
   const { base } = useContext(ShellContext);
   const { symbol } = useCurrency();
-  const [segment, setSegment] = useState(params.get('segment') || 'checklist');
-  const [taskSheet, setTaskSheet] = useState(false);
-  const [expenseSheet, setExpenseSheet] = useState({ open: false, item: null });
+  const data = usePlanData();
+  const open = (f) => {
+    if (f.path.startsWith('../')) return navigate(`${base}/${f.path.slice(3)}`);
+    return navigate(`${base}/plan/${f.path}`);
+  };
+  return <PlanHubScreen data={data.data} symbol={symbol} progress={planProgress(data.data)} onOpen={open} onSearch={() => navigate(`${base}/search`)} loading={data.loading} error={data.error} onRetry={data.reload} />;
+}
 
+/** /m/plan/:feature and deeper. */
+export default function PlanFeatureContainer() {
+  const { feature, id } = useParams();
+  const navigate = useNavigate();
+  const { base } = useContext(ShellContext);
+  const back = `${base}/plan`;
+  const f = featureByKey(feature);
+  if (!f) return <DesktopFeatureScreen title="Not here yet" body="This part of the planner is not in the app yet." back={back} onDesktop={() => navigate(back)} />;
+
+  if (f.kind === 'details') return <DetailsContainer f={f} back={back} />;
+  if (f.kind === 'entity') return <EntityContainer f={f} back={back} />;
+  if (f.kind === 'desktop') return <DesktopFeatureScreen title={f.label} body={desktopBody(f.key)} stat="" back={back} onDesktop={() => openDesktop(navigate, f.desktop)} />;
+  switch (f.key) {
+    case 'checklist': return <ChecklistContainer back={back} />;
+    case 'budget': return id ? <BudgetCategoryContainer category={id} back={`${base}/plan/budget`} /> : <BudgetContainer back={back} />;
+    case 'messages': return id ? <ThreadContainer id={id} back={`${base}/plan/messages`} /> : <MessagesContainer back={back} />;
+    case 'seating': return <SeatingContainer back={back} />;
+    case 'polls': case 'suite-polls': return <PollsContainer back={back} />;
+    case 'music': return <MusicContainer back={back} />;
+    case 'registry': case 'suite-registry': return <RegistryContainer back={back} />;
+    case 'qna': return <QnaContainer back={back} />;
+    case 'good-to-know': return <GoodToKnowContainer back={back} />;
+    case 'suite-accommodation': return <PlacesContainer back={back} title="Accommodation" keyName="guestSuiteAccommodation" desktop="/GuestSuiteAccommodation" intro="Places guests can stay, shown on your site." />;
+    case 'suite-transport': return <PlacesContainer back={back} title="Transport" keyName="guestSuiteTransport" desktop="/GuestSuiteTransport" intro="How guests get there and back, shown on your site." />;
+    case 'experience': return <PlacesContainer back={back} title="Experience guide" keyName="experienceGuide" listKey="couplePicks" desktop="/GuestSuiteExperience" intro="Your picks around the venue: a coffee, a walk, a good dinner." />;
+    case 'suite-schedule': return <SuiteScheduleContainer back={back} />;
+    case 'wedding-party': return <WeddingPartyContainer back={back} />;
+    case 'marketplace': return <MarketplaceContainer back={back} />;
+    case 'studio': return <DesktopFeatureScreen title="Design studio" body="The website builder and Ava studio need a bigger screen." back={back} onDesktop={() => navigate(`${base}/site`)} />;
+    default: return <DesktopFeatureScreen title={f.label} body="Best on desktop for now." back={back} onDesktop={() => openDesktop(navigate, f.desktop)} />;
+  }
+}
+
+function desktopBody(key) {
+  return {
+    'send-invites': 'Sending invitations picks guests, an email design and a preview side by side. That works best on a laptop.',
+    invitations: 'Designing the invitation uses the full builder. Open it on desktop and the result shows on your site.',
+    considerations: 'Considerations is a long read tailored to your ceremony and traditions. It reads best on a bigger screen.',
+  }[key] || 'Best on desktop for now.';
+}
+
+/* ── Generic ─────────────────────────────────────────────────────────── */
+
+function DetailsContainer({ f, back }) {
+  const wd = useWeddingDetails();
+  const schema = DETAILS[f.key];
+  return <DetailsScreen schema={schema} details={wd.details} onSave={wd.save} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} />;
+}
+
+function EntityContainer({ f, back }) {
+  const schema = ENTITIES[f.key];
+  const e = useEntity(schema.entity, schema.sort);
+  const wrap = (fn, ok) => async (...a) => { const r = await fn(...a); toast.success(ok); return r; };
+  return <EntityListScreen schema={schema} items={e.data || []} onCreate={wrap(e.create, 'Added')} onUpdate={wrap(e.update, 'Saved')} onDelete={wrap(e.remove, 'Removed')} loading={e.loading} error={e.error} onRetry={e.reload} back={back} />;
+}
+
+/* ── Checklist and budget ────────────────────────────────────────────── */
+
+function ChecklistContainer({ back }) {
+  const [params] = useSearchParams();
   const tasks = useTasks();
+  const toggle = async (t) => { try { await taskWrites.toggle(t); if (!t.completed) hapticLight(); tasks.reload(); } catch { toast.error('Could not update that task. Try again.'); } };
+  const add = async (fields) => { await taskWrites.create(fields); toast.success('Task added'); tasks.reload(); };
+  return <ChecklistScreen tasks={tasks.data || []} onToggle={toggle} onAdd={add} loading={tasks.loading} error={tasks.error} onRetry={tasks.reload} back={back} openAdd={params.get('add') === '1'} />;
+}
+
+function BudgetContainer({ back }) {
+  const [params] = useSearchParams();
+  const navigate = useNavigate();
+  const { base } = useContext(ShellContext);
+  const { symbol } = useCurrency();
   const budget = useBudget();
-  const schedule = useSchedule();
-  const vendors = useVendors();
-
-  // ?add=1 (from Home's quick actions) opens the right sheet once, then clears itself.
-  const handledAdd = useRef(false);
-  useEffect(() => {
-    if (handledAdd.current) return;
-    handledAdd.current = true;
-    if (params.get('add') === '1') {
-      if ((params.get('segment') || 'checklist') === 'budget') setExpenseSheet({ open: true, item: null });
-      else setTaskSheet(true);
-      params.delete('add');
-      setParams(params, { replace: true });
-    }
-  }, [params, setParams]);
-
-  const desktop = (path) => openDesktop(navigate, path);
-
-  const toggleTask = async (t) => {
-    try {
-      await taskWrites.toggle(t);
-      if (!t.completed) hapticLight();
-      tasks.reload();
-    } catch {
-      toast.error('Could not update that task. Try again.');
-    }
-  };
-  const addTask = async (fields) => {
-    await taskWrites.create(fields);
-    toast.success('Task added');
-    tasks.reload();
-  };
-  const saveExpense = async (fields) => {
-    if (expenseSheet.item) {
-      await budgetWrites.update(expenseSheet.item.id, fields);
-      toast.success('Expense updated');
-    } else {
-      await budgetWrites.create(fields);
-      toast.success('Expense added');
-    }
+  const save = async (fields, existing) => {
+    if (existing) { await budgetWrites.update(existing.id, fields); toast.success('Expense updated'); } else { await budgetWrites.create(fields); toast.success('Expense added'); }
     budget.reload();
   };
-
-  const items = budget.data?.items || [];
-  const plan = budget.data?.plan || null;
-
-  return (
-    <>
-      {category ? (
-        <BudgetCategoryScreen
-          category={category}
-          items={items}
-          plan={plan}
-          symbol={symbol}
-          back={`${base}/plan?segment=budget`}
-          onAdd={() => setExpenseSheet({ open: true, item: null })}
-          onEdit={(item) => setExpenseSheet({ open: true, item })}
-        />
-      ) : (
-        <PlanScreen
-          segment={segment}
-          onSegment={(s) => { setSegment(s); params.set('segment', s); setParams(params, { replace: true }); }}
-          checklist={{ tasks: tasks.data || [], onToggle: toggleTask, onAdd: () => setTaskSheet(true), loading: tasks.loading, error: tasks.error, onRetry: tasks.reload }}
-          budget={{ items, plan, symbol, onOpenCategory: (c) => navigate(`${base}/plan/budget/${c}`), onAdd: () => setExpenseSheet({ open: true, item: null }), loading: budget.loading, error: budget.error, onRetry: budget.reload }}
-          timeline={{ items: schedule.data || [], loading: schedule.loading, error: schedule.error, onRetry: schedule.reload, onOpenDesktop: () => desktop('/Schedule') }}
-          vendors={{ items: vendors.data || [], symbol, loading: vendors.loading, error: vendors.error, onRetry: vendors.reload, onOpenDesktop: () => desktop('/Vendors') }}
-          onSeating={() => desktop('/Seating')}
-        />
-      )}
-      <TaskFormSheet open={taskSheet} onClose={() => setTaskSheet(false)} onSave={addTask} />
-      <ExpenseFormSheet open={expenseSheet.open} item={expenseSheet.item} defaultCategory={category || ''} symbol={symbol} onClose={() => setExpenseSheet((s) => ({ ...s, open: false }))} onSave={saveExpense} />
-    </>
-  );
+  return <BudgetScreen items={budget.data?.items || []} plan={budget.data?.plan || null} symbol={symbol} onOpenCategory={(c) => navigate(`${base}/plan/budget/${c}`)} onAdd={save} loading={budget.loading} error={budget.error} onRetry={budget.reload} back={back} openAdd={params.get('add') === '1'} />;
 }
+
+function BudgetCategoryContainer({ category, back }) {
+  const { symbol } = useCurrency();
+  const budget = useBudget();
+  const save = async (fields, existing) => {
+    if (existing) { await budgetWrites.update(existing.id, fields); toast.success('Expense updated'); } else { await budgetWrites.create(fields); toast.success('Expense added'); }
+    budget.reload();
+  };
+  return <BudgetCategoryScreen category={category} items={budget.data?.items || []} plan={budget.data?.plan || null} symbol={symbol} onSave={save} back={back} />;
+}
+
+/* ── Messages ────────────────────────────────────────────────────────── */
+
+function MessagesContainer({ back }) {
+  const navigate = useNavigate();
+  const { base } = useContext(ShellContext);
+  const m = useEntity('GuestMessage', '-created_date');
+  return <MessagesScreen messages={m.data || []} onOpen={(msg) => navigate(`${base}/plan/messages/${msg.id}`)} loading={m.loading} error={m.error} onRetry={m.reload} back={back} />;
+}
+
+function ThreadContainer({ id, back }) {
+  const m = useEntity('GuestMessage', '-created_date');
+  const wd = useWeddingDetails();
+  const [sending, setSending] = useState(false);
+  const message = (m.data || []).find((x) => x.id === id);
+  // Opening a thread marks it read, as Messages.jsx does when a message is expanded.
+  const marked = React.useRef(false);
+  React.useEffect(() => {
+    if (message && !message.read && !marked.current) { marked.current = true; m.update(message.id, { ...message, read: true }).catch(() => {}); }
+  }, [message, m]);
+  const reply = async (replyText) => {
+    setSending(true);
+    const tid = toast.loading('Sending reply');
+    try {
+      const coupleNames = wd.details?.couple1Name && wd.details?.couple2Name ? `${wd.details.couple1Name} & ${wd.details.couple2Name}` : (wd.details?.couple1Name || '');
+      const res = await fetch('/api/send-guest-reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
+        body: JSON.stringify({ guestEmail: message.guest_email, guestName: message.guest_name, originalMessage: message.message, replyText, coupleNames }),
+      });
+      if (!res.ok) { const body = await res.json().catch(() => ({})); throw new Error(body.error || 'Could not send the reply.'); }
+      await m.update(message.id, { ...message, reply: replyText, replied: true, reply_sent_at: new Date().toISOString() });
+      toast.success('Reply sent', { id: tid });
+    } catch (e) {
+      toast.error(e?.message || 'Could not send the reply.', { id: tid });
+    } finally { setSending(false); }
+  };
+  return <ThreadScreen message={message} onReply={reply} sending={sending} back={back} />;
+}
+
+/* ── Seating ─────────────────────────────────────────────────────────── */
+
+function SeatingContainer({ back }) {
+  const navigate = useNavigate();
+  const tables = useEntity('Table', '-created_date');
+  const guests = useGuests();
+  const move = async (guestId, tableName) => {
+    try {
+      if (tableName) await assignGuestToTableByName({ guestId, tableName, tables: tables.data || [] });
+      else await unassignGuestFromTables({ guestId, tables: tables.data || [] });
+      hapticLight();
+      toast.success(tableName ? `Moved to ${tableName}` : 'Taken off the table');
+      tables.reload();
+    } catch (e) { toast.error(e?.message || 'Could not move that guest.'); throw e; }
+  };
+  return <SeatingScreen tables={tables.data || []} guests={guests.data || []} onMove={move} loading={tables.loading || guests.loading} error={tables.error || guests.error} onRetry={() => { tables.reload(); guests.reload(); }} back={back} onDesktop={() => openDesktop(navigate, '/Seating')} />;
+}
+
+/* ── Polls: WeddingDetails.polls, as Polls.jsx persists them ─────────── */
+
+function PollsContainer({ back }) {
+  const wd = useWeddingDetails();
+  const votes = useLoad(() => getMyRecords('PollVote', '-created_date').catch(() => []), []);
+  const polls = wd.details?.polls || [];
+  const persist = async (next) => { await wd.save('polls', next, false); };
+  const create = async ({ title, options }) => {
+    const poll = { id: genId(), title, category: 'custom', emoji: '', options: options.map((label) => ({ id: genId(), label, votes: 0 })), allowComments: true, comments: [], isActive: true, createdAt: new Date().toISOString(), avaInsight: null, expiresAt: null };
+    await persist([...polls, poll]);
+    toast.success('Poll created');
+  };
+  const end = async (p) => { await persist(polls.map((x) => (x.id === p.id ? { ...x, isActive: false } : x))); toast.success('Poll ended'); };
+  return <PollsScreen polls={polls} votes={votes.data || []} onCreate={create} onEnd={end} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} />;
+}
+
+/* ── Music ───────────────────────────────────────────────────────────── */
+
+function MusicContainer({ back }) {
+  const tracks = useEntity('Music', '-created_date');
+  const requests = useLoad(fetchSongRequests, []);
+  const wd = useWeddingDetails();
+  const playlistUrl = (wd.details?.music?.playlists || [])[0]?.playlistUrl || '';
+  const review = async (r, action) => {
+    try { await reviewSongRequest(r.id, action); toast.success(action === 'add' ? 'Added to the playlist' : 'Declined'); requests.reload(); tracks.reload(); } catch (e) { toast.error(e?.message || 'Could not update that request.'); }
+  };
+  const wrap = (fn, ok) => async (...a) => { const r = await fn(...a); toast.success(ok); return r; };
+  return <MusicScreen tracks={tracks.data || []} requests={requests.data || []} playlistUrl={playlistUrl} onCreate={wrap(tracks.create, 'Track added')} onUpdate={wrap(tracks.update, 'Saved')} onDelete={wrap(tracks.remove, 'Removed')} onReview={review} loading={tracks.loading} error={tracks.error} onRetry={() => { tracks.reload(); requests.reload(); }} back={back} />;
+}
+
+/* ── Registry ────────────────────────────────────────────────────────── */
+
+function RegistryContainer({ back }) {
+  const { symbol } = useCurrency();
+  const links = useEntity('RegistryItem');
+  const products = useEntity('RegistryProduct');
+  const funds = useEntity('CustomGift');
+  const received = useEntity('ReceivedGift');
+  const wrap = (e) => ({ items: e.data || [], loading: e.loading, error: e.error, reload: e.reload, create: async (v) => { await e.create(v); toast.success('Added'); }, update: async (id, v) => { await e.update(id, v); toast.success('Saved'); }, remove: async (id) => { await e.remove(id); toast.success('Removed'); } });
+  return <RegistryScreen lists={{ links: wrap(links), products: wrap(products), funds: wrap(funds), received: wrap(received) }} symbol={symbol} back={back} />;
+}
+
+/* ── Guest suite editors on WeddingDetails ───────────────────────────── */
+
+function QnaContainer({ back }) {
+  const wd = useWeddingDetails();
+  return <QnaScreen qna={wd.details?.qna || []} onSave={async (next) => { await wd.save('qna', next, false); toast.success('Saved'); }} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} />;
+}
+
+function GoodToKnowContainer({ back }) {
+  const wd = useWeddingDetails();
+  return <GoodToKnowScreen policies={wd.details?.weddingPolicies || {}} onSave={async (next) => { await wd.save('weddingPolicies', next, false); }} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} />;
+}
+
+function PlacesContainer({ back, title, keyName, listKey = 'places', desktop, intro }) {
+  const navigate = useNavigate();
+  const wd = useWeddingDetails();
+  const obj = wd.details?.[keyName] || {};
+  const places = obj[listKey] || [];
+  const save = async (next) => { await wd.save(keyName, { ...obj, [listKey]: next }, false); toast.success('Saved'); };
+  return <PlacesScreen title={title} places={places} onSave={save} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} intro={intro} onDesktop={() => openDesktop(navigate, desktop)} />;
+}
+
+function SuiteScheduleContainer({ back }) {
+  const navigate = useNavigate();
+  const { base } = useContext(ShellContext);
+  const s = useEntity('Schedule', 'start_time');
+  return <SuiteScheduleScreen items={s.data || []} loading={s.loading} error={s.error} onRetry={s.reload} back={back} onEdit={() => navigate(`${base}/plan/schedule`)} />;
+}
+
+function WeddingPartyContainer({ back }) {
+  const wd = useWeddingDetails();
+  return <WeddingPartyScreen party={wd.details?.weddingParty || {}} onSave={async (next) => { await wd.save('weddingParty', next, false); toast.success('Saved'); }} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} />;
+}
+
+/* ── Marketplace ─────────────────────────────────────────────────────── */
+
+const MARKET_LABEL = { photography: 'Photography', videography: 'Videography', catering: 'Catering', florals: 'Florals', styling: 'Styling', beauty: 'Hair & makeup', music: 'Music & DJ', venue: 'Venues', cake: 'Cake', transport: 'Transport' };
+
+function MarketplaceContainer({ back }) {
+  const [results, setResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [error, setError] = useState('');
+  const saved = useLoad(() => getSavedPlaceIds().catch(() => []), []);
+  const savedIds = useMemo(() => new Set(saved.data || []), [saved.data]);
+  const search = async ({ category, location }) => {
+    setSearching(true); setError('');
+    try {
+      const res = await fetch('/api/places-search', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` }, body: JSON.stringify({ q: CATEGORY_QUERIES[MARKET_LABEL[category]] || 'wedding vendor', location }) });
+      if (!res.ok) throw new Error('Search did not work. Try again in a moment.');
+      const data = await res.json();
+      setResults((data.places || []).map((p) => ({ id: p.place_id, place_id: p.place_id, placeId: p.place_id, name: p.name, category: MARKET_LABEL[category], rating: p.rating, address: p.formatted_address || p.vicinity, website: p.website })));
+    } catch (e) { setError(e?.message || 'Search did not work.'); } finally { setSearching(false); }
+  };
+  const save = async (v) => {
+    try { await saveVendorFromPlaces(v, null); toast.success('Added to my vendors'); saved.reload(); } catch (e) { toast.error(e?.message || 'Could not add that vendor.'); }
+  };
+  return <MarketplaceScreen results={results} searching={searching} onSearch={search} onSave={save} savedIds={savedIds} back={back} error={error} />;
+}
+

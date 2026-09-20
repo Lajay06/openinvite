@@ -1,7 +1,8 @@
 import React from 'react';
 import { Pencil, Mail, Phone, Users, Utensils, Armchair, UserPlus } from 'lucide-react';
 import Screen from '../../shell/Screen';
-import { Block, Row, StatusPill, PillButton } from '../../ui';
+import { Row, RowGroup, StatusPill, PillButton } from '../../ui';
+import { initials } from '../../lib/format';
 import { isPending } from '@/lib/guestRsvpTally';
 import { RSVP_LABEL, RSVP_TONE, GUEST_CATEGORY_LABEL } from '../../lib/format';
 import { openExternal } from '../../native';
@@ -19,15 +20,17 @@ export default function GuestDetailScreen({ guest, onEdit, onDelete, back }) {
   const invited = !!guest.invite_sent_at || !isPending(guest);
   return (
     <Screen title={guest.name || 'Guest'} back={back} actions={[{ icon: Pencil, label: 'Edit guest', onClick: onEdit }]}>
-      <div className="oi-m-stack oi-m-stack--16">
-        <Block>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-            <span className="oi-m-meta">Reply</span>
-            {invited ? <StatusPill tone={RSVP_TONE[status]}>{RSVP_LABEL[status]}</StatusPill> : <StatusPill tone="neutral">Not yet invited</StatusPill>}
+      <div className="oi-m-stack oi-m-stack--24">
+        <div className="oi-m-card" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <span className="oi-m-row__tile oi-m-row__tile--blush" style={{ width: 56, height: 56, fontSize: 18 }}>{initials(guest.name)}</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="oi-m-body oi-m-strong">{guest.name}</div>
+            <div className="oi-m-meta">{invited ? 'Invited' : 'Not yet invited'}</div>
           </div>
-        </Block>
+          {invited ? <StatusPill tone={RSVP_TONE[status]}>{RSVP_LABEL[status]}</StatusPill> : <StatusPill tone="neutral">Not invited</StatusPill>}
+        </div>
 
-        <div className="oi-m-block oi-m-block--flush">
+        <RowGroup>
           {guest.email && <Row icon={Mail} label={guest.email} sub="Email" onClick={() => openExternal(`mailto:${guest.email}`)} chevron={false} />}
           {guest.phone && <Row icon={Phone} label={guest.phone} sub="Phone" onClick={() => openExternal(`tel:${guest.phone}`)} chevron={false} />}
           {guest.category && <Row icon={Users} label={GUEST_CATEGORY_LABEL[guest.category] || guest.category} sub="Group" />}
@@ -37,7 +40,7 @@ export default function GuestDetailScreen({ guest, onEdit, onDelete, back }) {
           {!guest.email && !guest.phone && !guest.category && !guest.plus_one && !guest.dietary_requirements && !guest.table_assignment && (
             <div style={{ padding: 16 }}><p className="oi-m-meta">Nothing else on file yet. Add an email so they can be invited.</p></div>
           )}
-        </div>
+        </RowGroup>
 
         <PillButton variant="secondary" block icon={Pencil} onClick={onEdit}>Edit guest</PillButton>
         {onDelete && (
