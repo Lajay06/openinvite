@@ -801,6 +801,21 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
 
+      # One anchor per page: the kicker, heading, paragraph and quote follow
+      # the universe's own mark, in all twenty, at 390 and 1440.
+      - name: Every text block on a guest page follows its universe's mark
+        run: |
+          npx vite preview --port 4214 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4214 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4214 npm run test:page-anchor-parity
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       - name: Prerendered freshness guard
         env:
           GH_EVENT_BEFORE: ${{ github.event.before }}

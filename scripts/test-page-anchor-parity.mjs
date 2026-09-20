@@ -15,12 +15,14 @@
  * WHAT IT MEASURES, AND WHY NOT RECTANGLES ALONE. A bounding box is the box,
  * not the text: a centered paragraph in a full-width box has the box's left
  * edge at the page inset and its glyphs somewhere else entirely. So each
- * element's edge is its FIRST PAINTED LINE — a Range over the first text node,
- * getClientRects() — and elementFromPoint at that line's left-middle must
+ * element's edge is its FIRST PAINTED LINE — every glyph box on the topmost
+ * line of a Range over the element, unioned — and elementFromPoint at that
+ * line's left-middle must
  * return the element or a descendant, proving the glyphs are painted there
- * and not covered. The mark's edge is its root box (a flex-row mark's kicker
- * sits after an icon; the edge is where the row starts). Computed textAlign
- * is read too, and both must agree.
+ * and not covered. A decorated block's edge is its root box (a flex-row mark's
+ * kicker sits after an icon, kyoto's date after a rule, the RSVP intro inside
+ * its form card; the edge is where the block starts, declared with
+ * data-oi-anchor-root). Computed textAlign is read too, and both must agree.
  *
  * THE FIXTURE IS EACH UNIVERSE'S OWN SAMPLE, routed through the same guest-safe
  * allowlist the endpoint uses, into the published-site path under the render
@@ -56,6 +58,10 @@ const BASE = process.env.CAPTURE_BASE_URL || 'http://localhost:4173';
 const SLUG = PUBLISHED_WEDDING.slug;
 const VIEWPORTS = [390, 1440];
 const TOLERANCE = 1.5; // px — subpixel layout, never a design difference
+// A wrapped line's glyph box carries its trailing space, so a centered line's
+// measured center sits half a space (2–3px) right of the column's. Real
+// defects on this axis are 40–150px; 4px cannot hide one.
+const CENTER_TOLERANCE = 4;
 
 // ── The declared anchor, read off the mark files (they are JSX; Node cannot import them) ──
 function declaredAnchors() {
@@ -107,16 +113,18 @@ function fixtureFor(id) {
 // the first element carrying that role, hit-tested, plus computed textAlign.
 const MEASURE = () => {
   const norm = (a) => (a === 'start' || a === 'left' ? 'left' : a === 'center' ? 'center' : a);
+  // The first painted LINE: every glyph box on the topmost line, unioned. A
+  // quote renders as three text nodes — “, the words, ” — and the first node
+  // alone is one twelve-pixel glyph whose center says nothing about the line.
   const firstLine = (el) => {
-    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-    let n;
-    while ((n = walker.nextNode())) {
-      if (!n.textContent.trim()) continue;
-      const r = document.createRange(); r.selectNodeContents(n);
-      const rects = [...r.getClientRects()].filter((x) => x.width > 0 && x.height > 0);
-      if (rects.length) return rects[0];
-    }
-    return null;
+    const r = document.createRange(); r.selectNodeContents(el);
+    const rects = [...r.getClientRects()].filter((x) => x.width > 0 && x.height > 0);
+    if (!rects.length) return null;
+    const top = Math.min(...rects.map((x) => x.top));
+    const line = rects.filter((x) => Math.abs(x.top - top) < 2);
+    const left = Math.min(...line.map((x) => x.left)), right = Math.max(...line.map((x) => x.right));
+    const height = Math.max(...line.map((x) => x.height));
+    return { left, top, width: right - left, height };
   };
   const out = {};
   for (const role of ['mark', 'heading', 'paragraph', 'quote']) {
@@ -131,13 +139,16 @@ const MEASURE = () => {
     if (!line) { out[role] = { error: 'no painted text' }; continue; }
     const hit = document.elementFromPoint(line.left + 2, line.top + line.height / 2);
     const painted = !!hit && (el === hit || el.contains(hit));
-    const root = role === 'mark' ? (el.closest('[data-oi-anchor-root]') || el) : el;
-    const box = root.getBoundingClientRect();
+    // A decorated row — a mark's icon, kyoto's vertical rule before the date —
+    // starts at the column edge and puts its glyphs after the ornament. The
+    // row is the edge; it declares itself with data-oi-anchor-root.
+    const root = el.closest('[data-oi-anchor-root]');
+    const box = (root || el).getBoundingClientRect();
     out[role] = {
       textAlign: norm(getComputedStyle(el).textAlign),
       lineLeft: line.left, lineCenter: line.left + line.width / 2,
-      edgeLeft: role === 'mark' ? box.left : line.left,
-      edgeCenter: role === 'mark' ? box.left + box.width / 2 : line.left + line.width / 2,
+      edgeLeft: root ? box.left : line.left,
+      edgeCenter: root ? box.left + box.width / 2 : line.left + line.width / 2,
       painted, hit: hit ? `${hit.tagName.toLowerCase()}${hit.className ? '.' + String(hit.className).split(' ')[0] : ''}` : null,
       text: el.textContent.trim().slice(0, 40),
     };
@@ -158,10 +169,11 @@ function judge(m, anchor) {
   if (m.mark.textAlign !== anchor) problems.push(`mark paints ${m.mark.textAlign}, declared ${anchor}`);
   for (const r of roles) if (m[r].textAlign !== anchor) problems.push(`${r} textAlign ${m[r].textAlign} ≠ anchor ${anchor}`);
   const key = anchor === 'center' ? 'edgeCenter' : 'edgeLeft';
+  const tol = anchor === 'center' ? CENTER_TOLERANCE : TOLERANCE;
   const ref = m.mark[key];
   for (const r of roles) {
     const d = Math.abs(m[r][key] - ref);
-    if (d > TOLERANCE) problems.push(`${r} ${anchor === 'center' ? 'center' : 'left edge'} ${m[r][key].toFixed(1)} vs mark ${ref.toFixed(1)} (Δ${d.toFixed(1)})`);
+    if (d > tol) problems.push(`${r} ${anchor === 'center' ? 'center' : 'left edge'} ${m[r][key].toFixed(1)} vs mark ${ref.toFixed(1)} (Δ${d.toFixed(1)})`);
   }
   return problems;
 }

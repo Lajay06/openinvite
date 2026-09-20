@@ -25,6 +25,9 @@ export default function SectionReveal({
   // page's heading/paragraph/quote by this attribute. Explicit rather than a
   // `...rest` spread, so the wrapper cannot grow into a prop passthrough.
   anchorRole,
+  // A decorated block whose edge is the block, not its inset glyphs (the
+  // RSVP form card). Same hook the SectionMarks carry.
+  anchorRoot = false,
 }) {
   const prefersReduced = useReducedMotion();
   const m = universeConfig?.motion;
@@ -51,6 +54,7 @@ export default function SectionReveal({
       style={style}
       className={className}
       data-oi-anchor={anchorRole}
+      data-oi-anchor-root={anchorRoot ? '' : undefined}
     >
       {children}
     </motion.div>
