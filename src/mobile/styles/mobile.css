@@ -15,7 +15,7 @@
  */
 
 .oi-mobile-root {
-  /* colour */
+  /* color */
   --m-bg: #F5F5F4;
   --m-card: #FFFFFF;
   --m-block: #FFFFFF;
@@ -124,7 +124,9 @@
 
 /* ── Type ───────────────────────────────────────────────────────────── */
 .oi-m-title { font-size: 34px; line-height: 40px; font-weight: 600; }
-.oi-m-hero-num { font-size: 56px; line-height: 56px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.5px; }
+.oi-m-hero-num { font-size: 56px; line-height: 56px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.5px; overflow-wrap: anywhere; }
+/* Long money strings step down rather than clip. */
+.oi-m-hero-num--long { font-size: 40px; line-height: 44px; }
 .oi-m-section { font-size: 22px; line-height: 28px; font-weight: 600; }
 .oi-m-body { font-size: 16px; line-height: 24px; }
 .oi-m-meta { font-size: 14px; line-height: 20px; color: var(--m-text-2); }
@@ -451,7 +453,7 @@
 .oi-m-tile__icon { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--m-bg); color: var(--m-text); }
 .oi-m-tile--sand .oi-m-tile__icon, .oi-m-tile--blush .oi-m-tile__icon { background: rgba(255, 255, 255, 0.7); }
 .oi-m-tile--photo .oi-m-tile__icon { background: rgba(255, 255, 255, 0.18); color: #FFFFFF; }
-.oi-m-tile__name { font-size: 16px; line-height: 22px; font-weight: 600; }
+.oi-m-tile__name { font-size: 16px; line-height: 22px; font-weight: 600; overflow-wrap: anywhere; hyphens: auto; }
 .oi-m-tile__stat { font-size: 14px; line-height: 20px; color: var(--m-text-2); }
 .oi-m-tile--photo .oi-m-tile__stat { color: var(--m-on-dark-2); }
 
@@ -670,7 +672,7 @@ select.oi-m-input { background-image: none; padding-right: 44px; }
 .oi-m-banner__title { font-size: 15px; line-height: 20px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .oi-m-banner__body { font-size: 14px; line-height: 20px; color: var(--m-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* ── Notification centre ────────────────────────────────────────────── */
+/* ── Notification center ────────────────────────────────────────────── */
 .oi-m-notif__unread { width: 8px; height: 8px; border-radius: 50%; background: var(--m-primary); flex-shrink: 0; }
 
 /* ── Messages ───────────────────────────────────────────────────────── */

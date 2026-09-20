@@ -27,11 +27,29 @@ export default function BottomSheet({ open, onClose, title, children, footer, fu
     return () => clearTimeout(timer.current);
   }, [open]);
 
+  // Focus: trapped inside the sheet while open, restored to the opener on close.
+  const opener = useRef(null);
   useEffect(() => {
     if (!open) return undefined;
-    const onKey = (e) => { if (e.key === 'Escape') onClose?.(); };
+    opener.current = document.activeElement;
+    const focusables = () => [...(sheetRef.current?.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])') || [])];
+    const t = setTimeout(() => { const f = focusables(); (f.find((el) => !el.closest('.oi-m-sheet__head')) || f[0])?.focus?.(); }, 60);
+    const onKey = (e) => {
+      if (e.key === 'Escape') { onClose?.(); return; }
+      if (e.key !== 'Tab') return;
+      const f = focusables();
+      if (!f.length) return;
+      const first = f[0]; const last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener('keydown', onKey);
+      const o = opener.current;
+      if (o && typeof o.focus === 'function' && document.contains(o)) o.focus();
+    };
   }, [open, onClose]);
 
   const onTouchStart = (e) => { drag.current = { y: e.touches[0].clientY, dy: 0 }; };

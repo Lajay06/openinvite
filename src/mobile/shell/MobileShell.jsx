@@ -73,7 +73,7 @@ export default function MobileShell({ base = '/m', renderAva, showAva = true, no
   useEffect(() => { setAvaOpen(false); }, [pathname]);
 
   // Something new arrived while the app is open: show it once, as a banner,
-  // unless the couple is already looking at the centre.
+  // unless the couple is already looking at the center.
   const latest = notifications?.latestUnseen || null;
   useEffect(() => {
     if (!latest || banner || pathname.endsWith('/notifications')) return;

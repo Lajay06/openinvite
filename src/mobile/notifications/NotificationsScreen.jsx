@@ -7,7 +7,7 @@ import { groupByTime, relativeTime } from './feed';
 import { typeIcon } from './icons';
 
 /**
- * The notification centre. Grouped Today / This week / Earlier. Tap opens
+ * The notification center. Grouped Today / This week / Earlier. Tap opens
  * the item's screen. Presentational: everything comes in as props.
  */
 export default function NotificationsScreen({ items = [], loading, error, onRetry, onMarkAllRead, onOpen, onSettings, back, now = Date.now() }) {

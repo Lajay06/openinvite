@@ -37,7 +37,7 @@ export const DETAILS = {
     title: 'Styling',
     sections: [
       { title: 'Flowers', key: 'flowers', fields: [ta('bouquet', 'Bouquet'), ta('bridesmaidBouquets', 'Bridesmaid bouquets'), ta('boutonnieres', 'Boutonnieres'), ta('ceremony', 'Ceremony flowers'), ta('centerpieces', 'Centrepieces'), ta('additional', 'Anything else'), ta('notes', 'Notes')] },
-      { title: 'Decorations', key: 'decorations', fields: [t('theme', 'Theme'), t('colorScheme', 'Colour scheme'), ta('ceremonyDecorations', 'Ceremony decorations'), ta('receptionDecorations', 'Reception decorations'), ta('lighting', 'Lighting'), ta('linens', 'Linens'), ta('specialElements', 'Special elements'), ta('notes', 'Notes')] },
+      { title: 'Decorations', key: 'decorations', fields: [t('theme', 'Theme'), t('colorScheme', 'Color scheme'), ta('ceremonyDecorations', 'Ceremony decorations'), ta('receptionDecorations', 'Reception decorations'), ta('lighting', 'Lighting'), ta('linens', 'Linens'), ta('specialElements', 'Special elements'), ta('notes', 'Notes')] },
     ],
   },
   beauty: {
@@ -65,7 +65,7 @@ export const DETAILS = {
     title: 'Guest gifts',
     sections: [
       { title: 'The gift', key: 'weddingFavours', fields: [t('concept', 'What you are giving'), t('supplierName', 'Supplier'), t('totalBudget', 'Budget', { type: 'number' }), t('orderedStatus', 'Status', { type: 'select', options: opt([['not_ordered', 'Not ordered'], ['ordered', 'Ordered'], ['received', 'Received']]) })] },
-      { title: 'Packaging and tags', key: 'weddingFavours', fields: [t('packagingType', 'Packaging'), t('packagingSupplier', 'Packaging supplier'), t('personalised', 'Personalised', { type: 'toggle' }), ta('personalisationDetails', 'Personalisation'), ta('tagsNotes', 'Tags'), ta('displayNotes', 'How they are displayed'), ta('additionalNotes', 'Notes')] },
+      { title: 'Packaging and tags', key: 'weddingFavours', fields: [t('packagingType', 'Packaging'), t('packagingSupplier', 'Packaging supplier'), t('personalised', 'Personalized', { type: 'toggle' }), ta('personalisationDetails', 'Personalization'), ta('tagsNotes', 'Tags'), ta('displayNotes', 'How they are displayed'), ta('additionalNotes', 'Notes')] },
     ],
   },
   ceremony: {
@@ -73,7 +73,7 @@ export const DETAILS = {
     sections: [
       { title: 'Celebrant', key: 'celebrant', encrypted: true, fields: [t('name', 'Name'), t('title', 'Title'), t('type', 'Type', { type: 'select', options: opt([['celebrant', 'Professional celebrant'], ['religious', 'Religious officiant'], ['friend', 'Friend or family'], ['registry', 'Registry office']]) }), t('phone', 'Phone', { type: 'tel' }), t('email', 'Email', { type: 'email' }), ta('notes', 'Notes')] },
       { title: 'The ceremony', key: null, fields: [t('ceremonyType', 'Type of ceremony'), ta('ceremonyMusic', 'Music'), ta('ceremonyReadings', 'Readings'), ta('vowsNotes', 'Vows'), ta('orderOfServiceNotes', 'Order of service'), ta('ringBearerDetails', 'Ring bearer'), ta('flowerGirlDetails', 'Flower girl'), ta('additionalNotes', 'Anything else')] },
-      { title: 'Licence', key: 'license', encrypted: true, fields: [t('issuingOffice', 'Issuing office'), t('applicationDate', 'Applied', { type: 'date' }), t('issueDate', 'Issued', { type: 'date' }), t('expiryDate', 'Expires', { type: 'date' }), t('licenseNumber', 'Licence number'), t('witnessesRequired', 'Witnesses required', { type: 'number' }), ta('notes', 'Notes')] },
+      { title: 'License', key: 'license', encrypted: true, fields: [t('issuingOffice', 'Issuing office'), t('applicationDate', 'Applied', { type: 'date' }), t('issueDate', 'Issued', { type: 'date' }), t('expiryDate', 'Expires', { type: 'date' }), t('licenseNumber', 'License number'), t('witnessesRequired', 'Witnesses required', { type: 'number' }), ta('notes', 'Notes')] },
     ],
   },
   transport: {

@@ -9,10 +9,10 @@ import '../styles/mobile.css';
 /**
  * /m/preview/push, dev only. A realistic iOS lock screen: time, date, the
  * couple's hero photo as wallpaper, blurred notification cards showing six
- * Openinvite notifications from the real copy catalogue, one expanded and
+ * Openinvite notifications from the real copy catalog, one expanded and
  * one grouped stack. `?state=banner` shows the in-app banner over Home
  * instead (that state lives on /m/preview?banner=1; this page links to it).
- * A design artefact: it sends nothing.
+ * A design artifact: it sends nothing.
  */
 const SAMPLE = [
   ['rsvp_attending', { names: ['Sarah', 'Tom'], count: 2, replied: 46, invited: 80 }, '9:41'],

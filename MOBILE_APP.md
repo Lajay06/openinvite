@@ -91,7 +91,7 @@ and mirrors the desktop sidebar's groups and names exactly.
 | Style & experience | `/wedding-favours` Guest gifts | `/m/plan/favours` | light | form over WeddingDetails.weddingFavours |
 | Vendors | `/Vendors` My vendors | `/m/plan/vendors` | full | filters, list, add, edit, delete over Vendor |
 | Vendors | `/VendorMarketplace` Marketplace | `/m/plan/marketplace` | light | category and location search through /api/places-search; add to my vendors through saveVendorFromPlaces |
-| On the day | `/ceremony-details` Ceremony details | `/m/plan/ceremony` | full | form; celebrant and licence through the encrypted PUT, the rest plaintext, as CeremonyDetails.jsx splits them |
+| On the day | `/ceremony-details` Ceremony details | `/m/plan/ceremony` | full | form; celebrant and license through the encrypted PUT, the rest plaintext, as CeremonyDetails.jsx splits them |
 | On the day | `/transport` Transport | `/m/plan/transport` | light | form plus a shuttles list; WeddingDetails.transport |
 | On the day | `/accommodation` Accommodation | `/m/plan/accommodation` | light | form plus a places list; WeddingDetails.accommodation |
 | On the day | `/emergency-contact` Emergency contact | `/m/plan/emergency` | full | form through the encrypted PUT; WeddingDetails.emergencyContacts |
@@ -119,7 +119,7 @@ Cards 20px, images 16px, inputs 14px, sheets 28px on top, pills and buttons 999p
 
 ### Image inventory
 
-Order of preference on every slot: the couple's own imagery (`coverPhoto`, then photo blocks in `homeContent.blocks`, then `ourStoryContent.photos`), then the sample content of their universe (`getSampleWedding(id)`), then a colour panel. `SmartImage` never renders a broken or empty box. Stills only: nothing animates an image whose public id starts with `DTS_`; the scroll parallax on a static hero is the only motion.
+Order of preference on every slot: the couple's own imagery (`coverPhoto`, then photo blocks in `homeContent.blocks`, then `ourStoryContent.photos`), then the sample content of their universe (`getSampleWedding(id)`), then a color panel. `SmartImage` never renders a broken or empty box. Stills only: nothing animates an image whose public id starts with `DTS_`; the scroll parallax on a static hero is the only motion.
 
 Cloudinary delivery: `f_auto,q_auto,c_fill,g_auto,w_<slot x dpr>,h_<slot x dpr>` for 2x and 3x, from `src/mobile/lib/images.js`.
 
@@ -151,15 +151,15 @@ Every id above was checked to resolve at `f_auto,q_auto,c_fill,g_auto,w_100,h_10
 1. The `Notification` entity that already exists and that three endpoints write (`rsvp_received` from `api/rsvp-submit.js`, `collaborator_joined` from `api/collaborator-accept.js`, `questionnaire_answered` from `api/questionnaire-answer-submit.js`). Its own `read` flag is the read state for those rows, updated through `Notification.update`, as `src/lib/useNotifications.js` does for the desktop bell.
 2. A feed derived client-side in `feed.js` from data the app already loads: replies from the guest list (`rsvp_date`), guest messages, song requests still pending, poll votes grouped per poll per day, received gifts, tasks due within three days or overdue within thirty, unpaid budget items with a payment date within a week, and one briefing line a day. Read state for these is a last-seen timestamp plus dismissed ids, stored with Capacitor Preferences natively and localStorage on the web (`store.js`).
 
-The feed is capped to the last thirty days and sixty items. Types the couple has switched off in settings are filtered out of the feed, so the bell, the centre and the banner agree. A real notifications table later replaces `load()` in the hook and nothing else.
+The feed is capped to the last thirty days and sixty items. Types the couple has switched off in settings are filtered out of the feed, so the bell, the center and the banner agree. A real notifications table later replaces `load()` in the hook and nothing else.
 
-**Surfaces.** The bell (top right on every tab root, unread dot), the centre at `/m/notifications` (Today / This week / Earlier, mark all as read, empty state), settings at `/m/notifications/settings` (a toggle per group and quiet hours), the in-app banner (drops from the top when a new unread item arrives while the app is open and the centre is not on screen; four seconds; swipe to dismiss; tap to open), and Home's "Latest" rows.
+**Surfaces.** The bell (top right on every tab root, unread dot), the center at `/m/notifications` (Today / This week / Earlier, mark all as read, empty state), settings at `/m/notifications/settings` (a toggle per group and quiet hours), the in-app banner (drops from the top when a new unread item arrives while the app is open and the center is not on screen; four seconds; swipe to dismiss; tap to open), and Home's "Latest" rows.
 
-**Copy.** `src/mobile/notifications/copy.ts` is the catalogue: one template per type, titles under 40 characters, bodies under 90, clipped at word boundaries. The push preview and the in-app centre use the same function.
+**Copy.** `src/mobile/notifications/copy.ts` is the catalog: one template per type, titles under 40 characters, bodies under 90, clipped at word boundaries. The push preview and the in-app center use the same function.
 
 **Settings are local.** The toggles and quiet hours are saved on the device and shape what the app shows. They are not connected to push, because there is no push yet. The settings screen says so.
 
-**Push preview.** `/m/preview/push` (dev only) is a design artefact: an iOS lock screen with the couple's photo as wallpaper, six Openinvite notifications from the real catalogue, one expanded with Open / Later, one grouped stack that expands on tap, and a button to the in-app banner state (`/m/preview?banner=1`). It sends nothing.
+**Push preview.** `/m/preview/push` (dev only) is a design artifact: an iOS lock screen with the couple's photo as wallpaper, six Openinvite notifications from the real catalog, one expanded with Open / Later, one grouped stack that expands on tap, and a button to the in-app banner state (`/m/preview?banner=1`). It sends nothing.
 
 **What real push needs** (not done in this run, by design):
 
@@ -193,6 +193,101 @@ The feed is capped to the last thirty days and sixty items. Types the couple has
 - **Fan-out for the derived notification types.** The desktop only writes `Notification` rows for RSVPs, collaborators and questionnaires. Messages, song requests, poll votes, gifts and due dates would need server-side writers before push can carry them.
 - **`eslint.config.js`** still does not include `src/mobile/**`; the `.ts` files (`native.ts`, `copy.ts`) are outside the current parser config too.
 
+## Goal 3: list patterns, the native app layer, first run
+
+### Lists: the rule and where each pattern is used
+
+Two patterns, never mixed within one list; the rule is in `src/mobile/DESIGN_MOBILE.md`, "Lists". More than about 25 items, or no image and no inline action, means grouped rows; otherwise item cards.
+
+| Item cards (`ItemCard`) | Grouped rows (`GroupedList` of `Row`) |
+|---|---|
+| vendors (grid toggle), registry links, products and cash funds (grid toggle), received gifts, moodboard pins (grid toggle), schedule moments, vows and speeches, payments due, tasks and payments in Home's "Next up", seating tables, guest-suite places (accommodation, transport, experience picks), the wedding party, marketplace results, polls | guests (swipe to remove), the checklist (swipe to complete or remove), messages (swipe to mark read), budget line items inside a category, the playlist, song requests, the notification center, notification settings, account |
+
+Every list has skeleton, empty and error states and pull to refresh. Song requests keep their inline Add / Decline because those go through `/api/song-request-review`, not a row mutation.
+
+### The image manifest
+
+`src/mobile/images.ts` is the one place a decorative Cloudinary id is named: 35 slots with alt text, where each is drawn, the pixel size to supply and a focal point where the crop matters. Eight slots are `todo` and render a color panel: the Plan tiles for Schedule, Budget, My vendors and Transport, the empty states for Guests and Registry, and the app-lock background (which uses the couple's own photo first). `/m/preview/images` renders the file as a gallery with a "Needs photo" marker on each. Fixture data that stands in for the couple's own uploads (cover photo, Our Story, moodboard pins) also reads from the manifest so nothing else names an id.
+
+### Native layer
+
+| Piece | Built | Notes |
+|---|---|---|
+| Icon and splash | `assets/logo.svg`, `assets/icon-only.svg`, `assets/splash.svg`, `assets/splash-dark.svg`, generated into both projects with `npx capacitor-assets generate` | The brand mark from `public/favicon.svg` at icon scale (the red ring on ink); the splash is the mark centered on the flat page background, dark variant on ink, no gradient. The splash fades out over 250ms once the shell has painted (`hideSplash()` 350ms after mount). The wordmark PNG in the repo is 1434 by 331 and unsuitable for a square icon, so the mark was drawn from the favicon rather than rasterized from it. |
+| Deep links | `openinvite://` in `Info.plist` (`CFBundleURLTypes`) and `AndroidManifest.xml` (a `VIEW` intent filter); `registerDeepLinks()` in `native.ts` listens for `appUrlOpen` and the launch URL and routes through `routeForDeepLink()` | `openinvite://m/plan/budget`, `openinvite://plan/budget` and `https://openinvite.com.au/m/...` all become `/m/...`. |
+| Auth callback | `routeForDeepLink()` stores `access_token` from the URL as `base44_access_token`, exactly as `src/lib/app-params.js` does for the web callback, then the shell reloads at `/m` so `AuthContext` sees the session | The provider buttons on `/m/login` call `base44.auth.loginWithProvider(provider, 'openinvite://auth?next=/m')` when native. **The backend is Base44, not Supabase**: the redirect allow-list lives in the Base44 app's auth settings, not a Supabase dashboard. See "Manual steps". |
+| External links | `openExternal()` opens `@capacitor/browser` natively (the in-app browser), a new tab on the web; the app's own webview is never navigated away | Used for the site, vendor websites, tel: and mailto:, the reset flow and sign-up. |
+| Face ID lock | `@aparajita/capacitor-biometric-auth`; `AppLock` in `src/mobile/shell/`; "Require Face ID to open" row under Account, native only | Branded lock screen (the couple's photo, the mark, one Unlock button) on cold start and after five minutes in the background; biometrics with the device passcode as fallback. Stores only the on/off choice in Preferences. No password or token is stored anywhere new. |
+| Camera and library | `@capacitor/camera`; `PhotoPicker` sheet; an `image` field type in the form schemas | Moodboard pins and the three registry lists offer Take photo and Choose from library (or a file input on the web), then upload through `src/hooks/useFileUpload.js` and the same Base44 `UploadFile` endpoint the desktop uses (GPS stripped, validated), with progress and a retry. iOS usage strings are in `Info.plist`; Android has `CAMERA`. |
+| Keyboard, safe areas, gestures | keyboard resize is native (`capacitor.config.ts`); composer bars use `Screen`'s pinned footer; tapping outside an input blurs it; `useEdgeSwipeBack` on iOS; the Android back handler closes a sheet, then goes back, then confirms before leaving from a root | Every screen and sheet pads with `env(safe-area-inset-*)`; the compact bar, tab bar, Ava button, banner and offline pill all respect the notch and the home indicator. |
+| Webview tells | `user-select: none` and `-webkit-touch-callout: none` on chrome (text stays selectable in inputs and message bubbles), `touch-action: pan-x pan-y` on the root (no pinch zoom), no tap highlight, `allowsLinkPreview: false`, `scrollEnabled: false` on iOS so the shell does not rubber-band | |
+| Offline | `@capacitor/network` (the browser's online events on the web); `NetworkProvider` and the slim `OfflineBanner` pill under the header; forms disable Save with a plain line while offline | Last loaded data stays on screen. |
+| Timeouts | `useLoad` races every load against 15 seconds and resolves to an error the screens render with a retry button; data already shown stays | No infinite spinners. |
+| Optimistic updates | `useLoad().optimistic(patch, commit, onFail)`: completing a task (Home and checklist), marking a message read, marking a payment paid, notification settings | Rolls back with "Could not save that. Put back the way it was." |
+
+### First run
+
+- **Welcome**: `/m/welcome`, three swipeable slides from the manifest, dots, Get started and I already have an account. Shown once natively (`welcome_seen` in Preferences); the web goes to the existing login.
+- **Login**: `/m/login`, email and password through `base44.auth.loginViaEmailPassword` as `Login.jsx` does, show and hide password, plain errors, Forgot your password opens the existing reset flow in the in-app browser. Google and Apple appear because the web app has them and go through the scheme. The web login page is untouched.
+- **New accounts**: sign-up involves plan selection on the web, so the app does not rebuild it. Get started and Create an account open a sheet that explains the account is created on the website and opens `/register` in the in-app browser. Recorded under "Needs a decision" with the purchases question.
+- **Notification priming**: `/m/priming`, shown the first time a reply is in the feed and never seen before. Turn on records `notif_priming = on` locally and says notifications are coming soon; Not now records `later`. The system prompt is not called.
+
+All four are in `/m/preview` (`/welcome`, `/login`, `/login?state=error`, `/priming`, `/priming?state=recorded`), plus `?lock=1` and `?offline=1` on Home.
+
+### Accessibility
+
+Every icon-only button carries an `aria-label` (header actions, the bell, item-card actions, swipe actions, the password toggle, Close on sheets). Tabs are `role=tab` with `aria-selected`; switches are `role=switch`; carousels are `role=region` with slides as groups; sheets are `role=dialog` `aria-modal`, trap Tab inside and restore focus to the opener on close. Layouts were probed at 130 percent text (the probe is in the session notes, the two clipping cases it found are fixed: long tile names wrap with hyphens, long money figures step down to 40px). Text on photos always sits on the scrim; the input placeholder is #444444; nothing on a light surface is lighter than that. Reduced motion keeps only fades: the stagger, parallax, count-ups and springs are all switched off by `prefers-reduced-motion`.
+
+### Verify
+
+- `npm run build`: passes. `npm run lint`: passes. `scripts/test-route-collisions.mjs`: passes.
+- `npx cap sync`: passes, eleven plugins on each platform.
+- **Xcode is not installed on this machine** (`xcode-select -p` is `/Library/Developer/CommandLineTools`, `xcodebuild` reports "requires Xcode"), so the iOS project has not been built for the simulator here. The steps are under "How to run on the simulator" below. Android Studio and a JDK are not installed either.
+- 62 screenshots at 390 by 844 in `mobile-screenshots/`, all passing the width, 44px, 16px and shadow probe, including the new list patterns, the image gallery, welcome, login, the lock screen, the offline state and priming.
+
+### How to run on the simulator and on a real iPhone
+
+1. Install Xcode from the App Store (the full app, not the command line tools), open it once to accept the license and install the iOS platform. Then `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`.
+2. `npm run mobile:build` (builds the web app and runs `cap sync`), then `npm run mobile:ios` to open `ios/App/App.xcworkspace`. Pick a simulator and press Run.
+3. Command line: `cd ios/App && xcodebuild -workspace App.xcworkspace -scheme App -destination 'platform=iOS Simulator,name=iPhone 16' build`.
+4. A real iPhone: sign in with an Apple ID under Xcode > Settings > Accounts, set the team on the App target under Signing & Capabilities, plug the phone in, trust the computer, select it as the destination and Run. For a personal team the app expires after seven days; the Apple Developer Program lifts that and is needed for TestFlight, push and Face ID entitlements.
+5. Deep links on the simulator: `xcrun simctl openurl booted "openinvite://m/plan/budget"`.
+
+### Manual steps for the owner
+
+- **Xcode** and, for Android, **Android Studio with a JDK 17**, as above.
+- **Apple Developer Program**, for TestFlight, push and the release.
+- **Redirect URLs for auth**: the backend is Base44. In the Base44 app's authentication settings, add `openinvite://auth` as an allowed `from_url` origin for the Google and Apple providers (the app passes `openinvite://auth?next=/m`), alongside the existing `https://openinvite.com.au`. If Base44 rejects a custom scheme, the fallback is `https://openinvite.com.au/m/auth-return`, which becomes a universal link once `apple-app-site-association` and `assetlinks.json` are served from the site (already exempt from the SPA rewrite in `vercel.json`). Universal links on `openinvite.com.au` are the later upgrade in either case.
+- **CORS** for the shell's origin in `api/_lib/security.js` (from goal 1; still the gate for any data loading natively).
+- **Icon source**: the generated icon is drawn from the favicon mark. If a designed 1024 by 1024 icon exists, drop it at `assets/icon-only.svg` (or `.png`) and a 2732 by 2732 splash at `assets/splash.svg` and re-run `npx capacitor-assets generate --ios --android`.
+
+### Stubs and blockers added in goal 3
+
+1. The iOS and Android projects are synced, not built (no Xcode, no Android Studio here).
+2. `PushSubscription`, `DeviceToken`, `push_prefs`, the fan-out and the crons are a proposal only (`PUSH_BACKEND_PROPOSAL.md`). The priming screen records the choice locally.
+3. Face ID, the camera and deep links are wired and untested on a device; each is a no-op on the web and in the preview, and each degrades to a plain message on failure.
+4. Pinch zoom is held off with `touch-action: pan-x pan-y` on the root, not a viewport `maximum-scale`, because `index.html` is outside goal 3's allowed edits.
+5. Long lists are neither virtualized nor paginated: the existing loaders return whole lists and there is no page cursor to reuse, and no virtualization library was added. Guests at a few hundred rows render fine in the probe.
+6. Photo upload is offered where the desktop offers it and the feature exists in the app: moodboard pins and registry images. The cover photo and Our Story photos are set in the builder on desktop.
+7. The welcome gate runs natively only; on the web, `/m` still redirects a signed-out visitor to the existing `/login?next=/m`.
+
+### Needs a decision (goal 3 additions)
+
+- **Purchases and accounts in the app.** Sign-up and plan selection stay on the website and the app says so (a sheet on Get started). The App Store question from goal 1 still stands: in-app purchase, web-only with a plain note (what v0 does), or Stripe in the in-app browser with a deep-link return.
+- **Redirect URL policy on Base44.** Whether the custom scheme is accepted as a `from_url`, or the universal-link route should be built first.
+- **Push schema** (`PUSH_BACKEND_PROPOSAL.md`): the four open questions at its end, and approval of the three entity changes before anything is applied.
+- **`index.html` viewport**: whether to add `maximum-scale=1` for the native build only (a build-time swap), which WKWebView honors and which removes the last pinch-zoom path.
+
+### Roadmap, re-ordered for what is left before TestFlight
+
+1. Owner: Xcode, Apple Developer Program, CORS for the shell origin, the Base44 redirect URL.
+2. Build the iOS project in Xcode; run on a device; check Face ID, the camera, deep links and the keyboard on real hardware.
+3. Approve and apply the push schema; ship the triggers; then registration, then the fan-out (order in the proposal).
+4. TestFlight build with the current icon; a designed icon when one exists.
+5. Universal links on `openinvite.com.au` for auth and shared links.
+6. App Store assets: screenshots from `mobile-screenshots/` at the store sizes, privacy labels, the review notes on purchases.
+7. Android: Android Studio, a JDK, the Firebase project, a Play internal track.
+
 ## How to run
 
 **Preview (no sign-in, fixture data, dev only)**
@@ -214,7 +309,7 @@ Query flags: `?state=loading`, `?state=empty`, `?state=error` on any screen;
 state; nothing is written.
 
 `npm run mobile:screenshots` (with the dev server up; set `BASE` if it is not on
-5173) recaptures the fifty screens in `mobile-screenshots/` and fails if any
+5173) recaptures the sixty-two screens in `mobile-screenshots/` and fails if any
 screen is wider than the viewport, has a tap target under 44px, an input under
 16px, or a box-shadow other than the elevation token.
 

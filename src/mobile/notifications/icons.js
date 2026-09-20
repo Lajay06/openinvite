@@ -1,6 +1,6 @@
 import { UserCheck, UserX, HelpCircle, MessageCircle, BookOpen, Music2, BarChart2, Gift, ListChecks, AlertCircle, Receipt, Sparkles } from 'lucide-react';
 
-/** Circular icon tile per type: which Lucide icon and which tile colour. */
+/** Circular icon tile per type: which Lucide icon and which tile color. */
 export function typeIcon(type) {
   switch (type) {
     case 'rsvp_attending': return { icon: UserCheck, tile: 'ok' };

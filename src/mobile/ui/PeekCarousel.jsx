@@ -16,8 +16,8 @@ export default function PeekCarousel({ children, size = 'peek', dots = true }) {
   };
   return (
     <div>
-      <div className={`oi-m-peek${size === 'wide' ? ' oi-m-peek--wide' : size === 'narrow' ? ' oi-m-peek--narrow' : ''}`} ref={ref} onScroll={onScroll}>
-        {items.map((child, i) => <div className="oi-m-peek__item" key={i}>{child}</div>)}
+      <div className={`oi-m-peek${size === 'wide' ? ' oi-m-peek--wide' : size === 'narrow' ? ' oi-m-peek--narrow' : ''}`} ref={ref} onScroll={onScroll} role="region" aria-roledescription="carousel" aria-label={`${items.length} items`}>
+        {items.map((child, i) => <div className="oi-m-peek__item" key={i} role="group" aria-roledescription="slide" aria-label={`${i + 1} of ${items.length}`}>{child}</div>)}
       </div>
       {dots && items.length > 1 && (
         <div className="oi-m-dots" aria-hidden="true">

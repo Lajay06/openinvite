@@ -4,11 +4,11 @@ import StatusPill from './StatusPill';
 
 /**
  * An item that is its own rounded card, for lists that are browsed: a 72px
- * thumbnail or colour tile on the left, title, one meta line, a key value
+ * thumbnail or color tile on the left, title, one meta line, a key value
  * bottom left, one trailing action on the right edge. The whole card taps
  * through. See DESIGN_MOBILE.md, "Lists".
  *
- * props: image | icon (+ tile colour), title, meta, value, badge/badgeTone,
+ * props: image | icon (+ tile color), title, meta, value, badge/badgeTone,
  * action { icon, label, onClick, tone }, onClick
  */
 export default function ItemCard({ image, alt = '', icon: Icon, tile = 'sand', title, meta, value, badge, badgeTone = 'neutral', action, onClick, initials }) {

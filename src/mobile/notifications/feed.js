@@ -106,7 +106,7 @@ export function buildFeed({ entity = [], guests = [], messages = [], songRequest
     push({ id: `brief:${Math.floor(now / DAY)}`, type: 'briefing', ts: today + 7 * 3600000, title, body, link: base, group: 'briefing' });
   }
 
-  // Keep the centre to the last 30 days and a sane length; the derived feed
+  // Keep the center to the last 30 days and a sane length; the derived feed
   // is not a history, it is what is worth knowing now.
   const floor = now - 30 * DAY;
   items.sort((a, b) => b.ts - a.ts);

@@ -44,6 +44,8 @@ const SHOTS = [
   ['/m/preview/plan/polls', 'plan-polls'],
   ['/m/preview/plan/wedding-party', 'plan-wedding-party'],
   ['/m/preview/plan/moodboard', 'plan-moodboard'],
+  ['/m/preview/plan/suite-accommodation', 'plan-suite-accommodation'],
+  ['/m/preview/plan/polls', 'plan-polls-cards'],
   ['/m/preview/plan/styling', 'plan-styling'],
   ['/m/preview/plan/music', 'plan-music'],
   ['/m/preview/plan/music?segment=requests', 'plan-music-requests'],
@@ -68,6 +70,16 @@ const SHOTS = [
   ['/m/preview/notifications', 'notifications'],
   ['/m/preview/notifications/settings', 'notification-settings'],
   ['/m/preview/push', 'push-lock-screen'],
+  ['/m/preview/images', 'image-slots'],
+  ['/m/preview/welcome', 'welcome'],
+  ['/m/preview/login', 'login'],
+  ['/m/preview/login?state=error', 'login-error'],
+  ['/m/preview/priming', 'notification-priming'],
+  ['/m/preview/priming?state=recorded', 'notification-priming-recorded'],
+  ['/m/preview?lock=1', 'app-lock'],
+  ['/m/preview?offline=1', 'offline'],
+  ['/m/preview/plan/vendors', 'plan-vendors-grid', 'tap:Show as grid'],
+  ['/m/preview/plan/moodboard', 'plan-moodboard-add', 'tap:Add pin'],
   ['/m/preview?state=loading', 'home-state-loading'],
   ['/m/preview/guests?state=empty', 'guests-state-empty'],
   ['/m/preview/plan?state=error', 'plan-state-error'],
@@ -91,7 +103,7 @@ for (const [route, name, action] of SHOTS) {
   const m = await page.evaluate(() => {
     const vw = window.innerWidth;
     const all = [...document.querySelectorAll('.oi-mobile-root *')];
-    const wide = all.filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.right > vw + 1 && !el.closest('.oi-m-filters, .oi-m-peek, .oi-m-segments'); }).length;
+    const wide = all.filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.right > vw + 1 && !el.closest('.oi-m-filters, .oi-m-peek, .oi-m-segments, .oi-m-welcome__slides'); }).length;
     const inter = [...document.querySelectorAll('.oi-mobile-root a[href], .oi-mobile-root button:not([data-preview-control]), .oi-mobile-root input, .oi-mobile-root select, .oi-mobile-root textarea, .oi-mobile-root [role=button]')].filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < window.innerHeight; });
     const small = inter.filter((el) => { const r = el.getBoundingClientRect(); return Math.min(r.width, r.height) < 44; }).length;
     const inputs = [...document.querySelectorAll('.oi-mobile-root input, .oi-mobile-root textarea, .oi-mobile-root select')].filter((el) => el.getBoundingClientRect().width > 0 && parseFloat(getComputedStyle(el).fontSize) < 16).length;

@@ -2,7 +2,7 @@ import React from 'react';
 import SmartImage from './SmartImage';
 
 /**
- * Plan hub tile: a photo or a colour panel, a Lucide icon in a circle, the
+ * Plan hub tile: a photo or a color panel, a Lucide icon in a circle, the
  * feature name, one live stat. `tone`: 'photo' (needs image) | 'white' |
  * 'sand' | 'blush'.
  */

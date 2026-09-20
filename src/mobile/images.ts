@@ -10,7 +10,7 @@
  * src/mobile/. /m/preview/images renders this file as a gallery.
  *
  * `todo: true` marks a slot that has no good photo yet and falls back to a
- * colour panel. That list is the shopping list for the next batch.
+ * color panel. That list is the shopping list for the next batch.
  *
  * STILLS ONLY. No component may derive motion from an id that starts with
  * DTS_. Public ids are never invented: each one is already served on the
@@ -26,9 +26,9 @@ export interface ImageSlot {
   /** The CSS pixel size the slot is drawn at, before 2x/3x. */
   size: { w: number; h: number };
   ratio: '4/5' | '4/3' | '16/9' | '1/1' | '3/2';
-  /** object-position when the default centre crop loses the subject. */
+  /** object-position when the default center crop loses the subject. */
   focal?: string;
-  /** No good photo yet: render a colour panel and show a "needs photo" marker in the gallery. */
+  /** No good photo yet: render a color panel and show a "needs photo" marker in the gallery. */
   todo?: boolean;
   /** The panel tone used while todo. */
   tone?: 'ink' | 'sand' | 'blush';
@@ -80,7 +80,7 @@ export const IMAGES = {
   priming: { id: 'DTS_BANDITS_PALI_MENDEZ_Photos_ID14229_mhwb5h', alt: 'A group of friends in the evening light', usedIn: 'Notification priming, top panel', size: { w: 390, h: 260 }, ratio: '3/2' },
   lock: { id: '', alt: 'The Openinvite mark', usedIn: 'Face ID lock screen (uses the couple\'s own photo first, then ink)', size: { w: 390, h: 844 }, ratio: '4/5', todo: true, tone: 'ink' },
 
-  /* ── Preview artefacts ── */
+  /* ── Preview artifacts ── */
   lockScreenWallpaper: { id: 'DTS_Slices_of_Summer_Mark_La_Montagne_Photos_ID2661_vb5omq', alt: 'Two friends lying in the grass', usedIn: '/m/preview/push wallpaper (the couple\'s own photo when they have one)', size: { w: 390, h: 844 }, ratio: '4/5' },
 } as const satisfies Record<string, ImageSlot>;
 

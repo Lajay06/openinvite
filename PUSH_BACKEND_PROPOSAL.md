@@ -231,7 +231,7 @@ Rate: at most one push per recipient per type per 60 seconds except `message` an
 
 ## 6. Payloads, per type
 
-Titles and bodies come from `src/mobile/notifications/copy.ts` (`notificationCopy(type, data)`), so the lock screen, the in-app centre and the email digest say the same thing. Deep links use the `openinvite://` scheme registered in goal 3 and map through `routeForDeepLink()` in `src/mobile/native.ts`. Examples, rendered exactly by that function:
+Titles and bodies come from `src/mobile/notifications/copy.ts` (`notificationCopy(type, data)`), so the lock screen, the in-app center and the email digest say the same thing. Deep links use the `openinvite://` scheme registered in goal 3 and map through `routeForDeepLink()` in `src/mobile/native.ts`. Examples, rendered exactly by that function:
 
 **iOS (APNs HTTP/2 request body)**
 
@@ -266,7 +266,7 @@ Headers: `apns-topic: au.com.openinvite.app`, `apns-push-type: alert`, `apns-pri
 }
 ```
 
-**One example per type** (title / body / link; all under 40 and 90 characters, from the catalogue):
+**One example per type** (title / body / link; all under 40 and 90 characters, from the catalog):
 
 | Type | Title | Body | Link |
 |---|---|---|---|
@@ -317,7 +317,7 @@ after:   entity rows (all types now)                                    -> items
 
 1. **Approve the schema** (this document): widen `Notification.type`, add `source_key`, `push_state`, `push_sent_at`, `data`; add `DeviceToken` and `PushSubscription`; add `User.push_prefs`. Push with the merged `rls` block explicitly, per `BASE44_PLATFORM_NOTES.md` "schema drift".
 2. **Triggers, app-invisible.** Extend `notify()` and the six trigger endpoints to write the new types with `push_state: 'pending'`. Nothing sends yet. Verify rows appear with the right `source_key` and no duplicates on a retried webhook.
-3. **App reads rows.** Ship the `useNotifications` swap behind a flag (`VITE_MOBILE_PUSH_FEED=1` on the preview build only): the centre shows server rows for the new types. Compare against the derived feed for a week.
+3. **App reads rows.** Ship the `useNotifications` swap behind a flag (`VITE_MOBILE_PUSH_FEED=1` on the preview build only): the center shows server rows for the new types. Compare against the derived feed for a week.
 4. **Registration.** Ship `registerPush()` and `/api/push/register` to TestFlight. Confirm `DeviceToken` rows appear for test devices and `PushSubscription` rows decrypt.
 5. **Fan-out, sandbox.** Deploy `push-fanout.js` pointing at the APNs sandbox and a test FCM project, allow-listed to the owner's `recipient_user_id` only.
 6. **Fan-out, production**, allow-list removed. The daily cron (`notify-due.js`) last, since it is the only one that can send to everyone at once.
@@ -325,7 +325,7 @@ after:   entity rows (all types now)                                    -> items
 
 ## 10. Rollback
 
-- Every step is independently reversible. The cron entries in `vercel.json` can be removed in one deploy; with no fan-out, rows stay `pending` and the app still shows them (that is today's behaviour for the three existing types).
+- Every step is independently reversible. The cron entries in `vercel.json` can be removed in one deploy; with no fan-out, rows stay `pending` and the app still shows them (that is today's behavior for the three existing types).
 - The schema additions are additive with defaults; reverting the entity JSON leaves existing rows readable because unknown fields are dropped by Base44 on write and ignored on read (platform notes).
 - If pushes misbehave in production: set `PUSH_FANOUT_PAUSED=1` in Vercel env (the cron checks it first and exits 200) before touching code. To silence one type, remove it from the recipient's group in `push_prefs` server-side; to silence one device, set `disabled_at` on its `PushSubscription`.
 - Tokens can be revoked wholesale by rotating the APNs key or the FCM service account; the app re-registers on next launch.

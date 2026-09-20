@@ -90,7 +90,7 @@ function imagesFrom(d) {
   return out;
 }
 
-/** The first image, or '' so a slot can fall back to a colour panel. */
+/** The first image, or '' so a slot can fall back to a color panel. */
 export function heroImageFor(details) {
   return coupleImages(details)[0] || '';
 }

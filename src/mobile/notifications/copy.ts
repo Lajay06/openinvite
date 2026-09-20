@@ -1,13 +1,13 @@
 /**
  * src/mobile/notifications/copy.ts
  *
- * The notification copy catalogue. One template per type. Plain, warm,
+ * The notification copy catalog. One template per type. Plain, warm,
  * specific. Titles under 40 characters, bodies under 90. No exclamation
  * marks, no em dashes, no emoji.
  *
  * Each template takes the data the feed already has and returns
  * { title, body }. Keep the wording here, not in the screens, so push
- * notifications and the in-app centre say the same thing.
+ * notifications and the in-app center say the same thing.
  */
 
 export type NotificationType =

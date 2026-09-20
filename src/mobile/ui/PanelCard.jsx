@@ -1,6 +1,6 @@
 import React from 'react';
 
-/** A colour panel for emphasis. tone: 'ink' | 'wine' | 'blush' | 'sand'. `mark` renders the ✦ for Ava. */
+/** A color panel for emphasis. tone: 'ink' | 'wine' | 'blush' | 'sand'. `mark` renders the ✦ for Ava. */
 export default function PanelCard({ tone = 'ink', mark, label, title, body, action, onClick, style, children }) {
   const Tag = onClick ? 'button' : 'div';
   return (

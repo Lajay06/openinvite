@@ -34,7 +34,7 @@ export default function BudgetScreen({ items = [], plan = null, symbol = '$', on
           <>
             <div className="oi-m-card">
               <p className="oi-m-meta">Spent so far</p>
-              <p className="oi-m-hero-num" style={{ margin: '4px 0 16px' }}>{money(s.spent, symbol)}</p>
+              <p className={`oi-m-hero-num${money(s.spent, symbol).length > 8 ? ' oi-m-hero-num--long' : ''}`} style={{ margin: '4px 0 16px' }}>{money(s.spent, symbol)}</p>
               <ProgressBar value={s.spent} max={s.total} note={s.total > 0 ? `${money(s.remaining, symbol)} of ${money(s.total, symbol)} left.` : 'Set a total budget on desktop to see what is left.'} />
             </div>
             <div className="oi-m-grid2">
@@ -79,7 +79,7 @@ export function BudgetCategoryScreen({ category, items = [], plan = null, symbol
     <Screen title={label} back={back} actions={[{ icon: Plus, label: 'Add an expense', onClick: () => setSheet({ open: true, item: null }) }]}>
       <div className="oi-m-stack oi-m-stack--24">
         <div className="oi-m-card">
-          <p className="oi-m-hero-num" style={{ marginBottom: 16 }}>{money(spent, symbol)}</p>
+          <p className={`oi-m-hero-num${money(spent, symbol).length > 8 ? ' oi-m-hero-num--long' : ''}`} style={{ marginBottom: 16 }}>{money(spent, symbol)}</p>
           <ProgressBar value={spent} max={planned} note={planned > 0 ? `${money(planned - spent, symbol)} of ${money(planned, symbol)} left in ${label.toLowerCase()}.` : 'Nothing planned for this category yet.'} />
         </div>
         {rows.length === 0 ? (

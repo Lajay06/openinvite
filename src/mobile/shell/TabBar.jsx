@@ -25,7 +25,7 @@ export default function TabBar({ base }) {
   const navigate = useNavigate();
   const active = activeTabFor(pathname, base);
   return (
-    <nav className="oi-m-tabbar" aria-label="Main">
+    <nav className="oi-m-tabbar" aria-label="Main" role="tablist">
       {TABS.map((t) => {
         const on = t.key === active;
         return (
@@ -33,6 +33,8 @@ export default function TabBar({ base }) {
             key={t.key}
             type="button"
             className={`oi-m-tab${on ? ' oi-m-tab--on' : ''}`}
+            role="tab"
+            aria-selected={on}
             aria-current={on ? 'page' : undefined}
             onClick={() => { if (!on) hapticLight(); navigate(`${base}${t.path ? `/${t.path}` : ''}`); }}
           >

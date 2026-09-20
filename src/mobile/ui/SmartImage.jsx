@@ -5,7 +5,7 @@ import { deliver, srcSetFor } from '../lib/images';
  * A photo slot that is never broken or empty. Reserves its aspect ratio,
  * shows a tinted placeholder while loading, lazy loads below the fold, and
  * delivers Cloudinary at the slot's size for 2x and 3x screens. With no
- * `src` it renders the placeholder alone (a colour panel), so the caller
+ * `src` it renders the placeholder alone (a color panel), so the caller
  * never has to branch.
  *
  * props: src, alt (required), width (CSS px of the slot), ratio ('4/5', '16/9',
