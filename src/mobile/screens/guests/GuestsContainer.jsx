@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import GuestsScreen from './GuestsScreen';
@@ -26,14 +26,17 @@ export default function GuestsContainer() {
   const [filter, setFilter] = useState(params.get('filter') || 'all');
   const [sheet, setSheet] = useState({ open: false, guest: null });
 
+  // ?add=1 (from Home's quick action) opens the sheet once, then clears itself.
+  const handledAdd = useRef(false);
   useEffect(() => {
+    if (handledAdd.current) return;
+    handledAdd.current = true;
     if (params.get('add') === '1') {
       setSheet({ open: true, guest: null });
       params.delete('add');
       setParams(params, { replace: true });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [params, setParams]);
 
   const list = guests.data || [];
   const groupings = useMemo(() => groupingsFrom(list), [list]);

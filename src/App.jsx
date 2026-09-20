@@ -102,6 +102,7 @@ const Home = lazyWithReload(() => import('./pages/Home'));
 // See MOBILE_APP.md. Both are their own chunks; neither is linked from the
 // desktop dashboard yet.
 const MobileApp = lazyWithReload(() => import('./mobile/MobileApp'));
+import { isNative as isNativeShell } from './mobile/native';
 const MobilePreviewApp = lazyWithReload(() => import('./mobile/MobilePreviewApp'));
 const FAQ = lazyWithReload(() => import('./pages/FAQ'));
 const Tour = lazyWithReload(() => import('./pages/Tour'));
@@ -195,6 +196,14 @@ const AuthenticatedApp = () => {
   // Both spellings, because a hand-typed path should land somewhere.
   if (location.pathname === '/dashboard' || location.pathname === '/Dashboard') {
     return <Navigate to="/DailyUpdate" replace />;
+  }
+
+  // INSIDE THE NATIVE SHELL THE APP STARTS AT /m. Capacitor loads
+  // index.html at "/", and the post-login landing is /DailyUpdate; both are
+  // desktop surfaces, so on a phone in the shell they go to the mobile app
+  // instead. On the web nothing changes. See MOBILE_APP.md.
+  if (isNativeShell() && (location.pathname === '/' || location.pathname === '/DailyUpdate')) {
+    return <Navigate to="/m" replace />;
   }
 
   // ── Public pages — no auth check, render immediately ─────────────────────────

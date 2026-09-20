@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -26,15 +26,18 @@ export default function PlanContainer() {
   const schedule = useSchedule();
   const vendors = useVendors();
 
+  // ?add=1 (from Home's quick actions) opens the right sheet once, then clears itself.
+  const handledAdd = useRef(false);
   useEffect(() => {
+    if (handledAdd.current) return;
+    handledAdd.current = true;
     if (params.get('add') === '1') {
       if ((params.get('segment') || 'checklist') === 'budget') setExpenseSheet({ open: true, item: null });
       else setTaskSheet(true);
       params.delete('add');
       setParams(params, { replace: true });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [params, setParams]);
 
   const desktop = (path) => openDesktop(navigate, path);
 
