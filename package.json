@@ -104,7 +104,11 @@
     "test:guest-nav-container": "node scripts/test-guest-nav-container.mjs",
     "test:builder-header-390": "node scripts/test-builder-header-390.mjs",
     "test:experiences-plain": "node scripts/test-experiences-plain.mjs",
-    "test:design-tab-contrast": "node scripts/test-design-tab-contrast.mjs"
+    "test:design-tab-contrast": "node scripts/test-design-tab-contrast.mjs",
+    "mobile:screenshots": "node scripts/mobile-preview-screenshots.mjs",
+    "mobile:build": "npm run build && npx cap sync",
+    "mobile:ios": "npx cap open ios",
+    "mobile:android": "npx cap open android"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.48",

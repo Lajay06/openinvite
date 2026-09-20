@@ -98,9 +98,11 @@ const MockUniverseB = lazyWithReload(() => import('./pages/MockUniverseB'));
 const MockUniverseC = lazyWithReload(() => import('./pages/MockUniverseC'));
 const Features = lazyWithReload(() => import('./pages/Features'));
 const Home = lazyWithReload(() => import('./pages/Home'));
-// The mobile app shell (/m/*). See MOBILE_APP.md. Its own chunk; not linked
-// from the desktop dashboard yet.
+// The mobile app shell (/m/*) and its dev-only fixture preview (/m/preview/*).
+// See MOBILE_APP.md. Both are their own chunks; neither is linked from the
+// desktop dashboard yet.
 const MobileApp = lazyWithReload(() => import('./mobile/MobileApp'));
+const MobilePreviewApp = lazyWithReload(() => import('./mobile/MobilePreviewApp'));
 const FAQ = lazyWithReload(() => import('./pages/FAQ'));
 const Tour = lazyWithReload(() => import('./pages/Tour'));
 
@@ -253,6 +255,10 @@ const AuthenticatedApp = () => {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      {/* Dev-only: the mobile screens rendered from fixtures, no sign-in
+          needed. MobilePreviewApp itself redirects to /m outside DEV, and
+          the route is not registered at all in a production build. */}
+      {import.meta.env.DEV && <Route path="/m/preview/*" element={<MobilePreviewApp />} />}
       {/* The mobile app, behind the same ProtectedRoute as the dashboard but
           with its own unauthenticated element, so a signed-out visitor comes
           back to /m after signing in (Login honors ?next=). It sits beside
