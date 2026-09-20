@@ -98,6 +98,9 @@ const MockUniverseB = lazyWithReload(() => import('./pages/MockUniverseB'));
 const MockUniverseC = lazyWithReload(() => import('./pages/MockUniverseC'));
 const Features = lazyWithReload(() => import('./pages/Features'));
 const Home = lazyWithReload(() => import('./pages/Home'));
+// The mobile app shell (/m/*). See MOBILE_APP.md. Its own chunk; not linked
+// from the desktop dashboard yet.
+const MobileApp = lazyWithReload(() => import('./mobile/MobileApp'));
 const FAQ = lazyWithReload(() => import('./pages/FAQ'));
 const Tour = lazyWithReload(() => import('./pages/Tour'));
 
@@ -250,6 +253,14 @@ const AuthenticatedApp = () => {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      {/* The mobile app, behind the same ProtectedRoute as the dashboard but
+          with its own unauthenticated element, so a signed-out visitor comes
+          back to /m after signing in (Login honors ?next=). It sits beside
+          the dashboard's guard rather than inside it, because a nested guard
+          would never be reached: the outer one redirects first. */}
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=%2Fm" replace />} />}>
+        <Route path="/m/*" element={<MobileApp />} />
+      </Route>
       <Route path="/signup" element={<Navigate to="/register" replace />} />
       {/* PlanSelection.jsx (superseded by ChoosePlan.jsx, the account-state-
           gated plan step every auth path routes through) had zero inbound
