@@ -18,10 +18,46 @@ import { calendarFeedToken } from './_lib/calendarFeedToken.js';
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 
-export default async function handler(req, res, fetchImpl = fetch) {
+// THE ADMIN KEY GOES IN THE AUTHORIZATION HEADER, AND THE LIST COMES BACK
+// WRAPPED. `?api_key=` on a LIST answers `200 []` for every entity — a
+// successful-looking empty answer (BASE44_PLATFORM_NOTES.md, "not
+// User-specific") — which is exactly how this endpoint said "no-wedding" to
+// the owner on production with both env vars set. Same pattern as
+// getMyWeddings() in api/my-wedding-details.js: Bearer, then unwrap
+// {data:[…]} / {results:[…]} / bare array.
+function unwrapList(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.results)) return payload.results;
+  return [];
+}
+
+async function adminFetch(fetchImpl, path, adminKey) {
+  const res = await fetchImpl(`${BASE44_API}${path}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminKey}` },
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Base44 GET ${path} failed (${res.status}): ${text.slice(0, 200)}`);
+  }
+  return res.json();
+}
+
+/** The caller's newest real wedding, exactly as getMyWedding() picks it. */
+export async function findMyWeddingId(callerId, adminKey, fetchImpl = fetch) {
+  const q = encodeURIComponent(JSON.stringify({ created_by_id: callerId }));
+  const weddings = unwrapList(await adminFetch(fetchImpl, `/apps/${BASE44_APP_ID}/entities/WeddingDetails?q=${q}`, adminKey))
+    .filter((w) => !w.is_test);
+  return weddings.length > 0
+    ? weddings.slice().sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0].id
+    : null;
+}
+
+export default async function handler(req, res, fetchImpl = fetch, verifyImpl = verifyBase44User) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
-  const caller = await verifyBase44User(req);
+  const caller = await verifyImpl(req);
   if (!caller?.id) return res.status(401).json({ error: 'Not signed in' });
 
   const secret = process.env.CALENDAR_FEED_SECRET;
@@ -35,12 +71,7 @@ export default async function handler(req, res, fetchImpl = fetch) {
 
   let weddingId = null;
   try {
-    const q = encodeURIComponent(JSON.stringify({ created_by_id: caller.id }));
-    const r = await fetchImpl(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/WeddingDetails?q=${q}&api_key=${adminKey}`);
-    if (r.ok) {
-      const rows = await r.json();
-      weddingId = (Array.isArray(rows) ? rows : [])[0]?.id || null;
-    }
+    weddingId = await findMyWeddingId(caller.id, adminKey, fetchImpl);
   } catch { /* falls through to the no-wedding answer below */ }
 
   if (!weddingId) return res.status(200).json({ url: null, reason: 'no-wedding' });

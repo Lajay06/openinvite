@@ -48,9 +48,15 @@ function foldLine(line) {
 function buildVEvent(item, dtstamp) {
   const uid = `schedule-${item.id}@openinvite.com.au`;
   const start = parseDateTime(item.event_date, item.start_time);
-  const end = item.end_time
+  let end = item.end_time
     ? parseDateTime(item.event_date, item.end_time)
     : new Date(start.getTime() + 60 * 60 * 1000); // default 1 hour when no end_time
+  // A schedule row has one event_date, so an event that crosses midnight
+  // (23:45 -> 00:15) parses to an end BEFORE its start. Calendar clients
+  // reject a VEVENT whose DTEND precedes DTSTART, which is how the after
+  // party could arrive and the night's other events could not. The end
+  // belongs to the next day.
+  if (end <= start) end = new Date(end.getTime() + 24 * 60 * 60 * 1000);
 
   const lines = [
     'BEGIN:VEVENT',
