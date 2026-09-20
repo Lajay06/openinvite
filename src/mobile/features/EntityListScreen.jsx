@@ -1,17 +1,23 @@
 import React, { useMemo, useState } from 'react';
-import { Plus, Inbox } from 'lucide-react';
+import { Plus, Inbox, LayoutGrid, List as ListIcon } from 'lucide-react';
 import Screen from '../shell/Screen';
-import { Row, RowGroup, FilterPills, EmptyState, ErrorState, SkeletonRows, StatusPill, SmartImage } from '../ui';
+import { FilterPills, EmptyState, ErrorState, SkeletonRows, ItemCard, ItemList, GroupedList, Row, SmartImage, StatusPill, useListView } from '../ui';
 import FormSheet from './FormSheet';
 
 /**
  * A list of records with add / edit / delete, from an ENTITIES schema.
- * Presentational: `items`, `onCreate`, `onUpdate`, `onDelete` come from the
- * container (or the preview). Optional filters, grouping and a photo grid.
+ *
+ * Which pattern (DESIGN_MOBILE.md, "Lists"): `schema.pattern` is 'cards' or
+ * 'rows'. Cards for browsable lists where each item matters on its own
+ * (vendors, registry, timeline moments); rows for long, text-led lists.
+ * `schema.gridToggle` adds the circular view toggle that swaps cards for a
+ * two-column image grid, remembered locally.
  */
-export default function EntityListScreen({ schema, items = [], onCreate, onUpdate, onDelete, loading, error, onRetry, back, subtitle, extraActions = [], header = null }) {
+export default function EntityListScreen({ schema, items = [], onCreate, onUpdate, onDelete, loading, error, onRetry, back, subtitle, extraActions = [], header = null, onRefresh }) {
   const [filter, setFilter] = useState('all');
   const [sheet, setSheet] = useState({ open: false, item: null });
+  const [view, setView] = useListView(schema.entity, 'cards');
+  const pattern = schema.pattern || 'rows';
   const visible = useMemo(() => {
     const f = schema.filters?.find((x) => x.key === filter);
     return f?.test ? items.filter(f.test) : items;
@@ -33,70 +39,69 @@ export default function EntityListScreen({ schema, items = [], onCreate, onUpdat
     await onDelete(sheet.item.id);
     setSheet({ open: false, item: null });
   };
+  const openItem = (it) => setSheet({ open: true, item: it });
+  const actions = [
+    ...extraActions,
+    ...(schema.gridToggle ? [{ icon: view === 'grid' ? ListIcon : LayoutGrid, label: view === 'grid' ? 'Show as list' : 'Show as grid', onClick: () => setView(view === 'grid' ? 'cards' : 'grid') }] : []),
+    { icon: Plus, label: `Add ${schema.itemLabel}`, onClick: () => setSheet({ open: true, item: null }) },
+  ].slice(-2);
+
+  const renderCards = (list) => (
+    <ItemList>
+      {list.map((it) => {
+        const r = schema.row(it);
+        return <ItemCard key={it.id} image={r.image} alt={r.title} icon={r.icon} initials={r.image || r.icon ? undefined : (r.title || '?').slice(0, 1).toUpperCase()} title={r.title} meta={r.sub} value={r.value} badge={r.badge} badgeTone={r.badgeTone} action={r.action} onClick={() => openItem(it)} />;
+      })}
+    </ItemList>
+  );
+  const renderGrid = (list) => (
+    <div className="oi-m-imggrid">
+      {list.map((it) => {
+        const r = schema.row(it);
+        return (
+          <button key={it.id} type="button" className="oi-m-imgcard oi-m-press" onClick={() => openItem(it)}>
+            {r.badge && <span className="oi-m-imgcard__badge"><StatusPill tone={r.badgeTone === 'ok' ? 'ok' : 'light'}>{r.badge}</StatusPill></span>}
+            <SmartImage src={r.image} alt={r.title} width={170} ratio="1/1" tone={r.image ? 'sand' : 'blush'} />
+            <div className="oi-m-imgcard__body">
+              <div className="oi-m-imgcard__title">{r.title}</div>
+              {r.sub && <div className="oi-m-meta" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.sub}</div>}
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+  const renderRows = () => (
+    <GroupedList groups={groups.map((g) => ({
+      key: g.key,
+      title: g.title,
+      rows: g.items.map((it) => {
+        const r = schema.row(it);
+        return <Row key={it.id} label={r.title} sub={r.sub} value={r.badge ? undefined : r.value} initials={r.image ? undefined : (r.title || '?').slice(0, 1).toUpperCase()} onClick={() => openItem(it)} trailing={r.badge ? <StatusPill tone={r.badgeTone || 'neutral'}>{r.badge}</StatusPill> : undefined} />;
+      }),
+    }))} />
+  );
 
   return (
     <Screen
       title={schema.title}
       subtitle={subtitle ?? (loading ? '' : `${items.length} ${items.length === 1 ? schema.itemLabel : `${schema.itemLabel}s`}`)}
       back={back}
-      actions={[...extraActions, { icon: Plus, label: `Add ${schema.itemLabel}`, onClick: () => setSheet({ open: true, item: null }) }]}
+      actions={actions}
+      onRefresh={onRefresh}
     >
       {header}
       {schema.filters && <FilterPills options={schema.filters} value={filter} onChange={setFilter} />}
       <div className="oi-m-stack oi-m-stack--24" style={{ marginTop: schema.filters ? 12 : 0 }}>
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : items.length === 0 ? (
-          <EmptyState icon={Inbox} text={`No ${schema.itemLabel}s yet. Add the first one.`} actionLabel={`Add a ${schema.itemLabel}`} onAction={() => setSheet({ open: true, item: null })} />
+          <EmptyState icon={Inbox} image={schema.emptyImage} text={schema.emptyText || `No ${schema.itemLabel}s yet. Add the first one.`} actionLabel={`Add a ${schema.itemLabel}`} onAction={() => setSheet({ open: true, item: null })} />
         ) : visible.length === 0 ? (
           <EmptyState icon={Inbox} text="Nothing matches this filter." />
-        ) : schema.grid ? (
-          <div className="oi-m-grid2">
-            {visible.map((it) => {
-              const r = schema.row(it);
-              return (
-                <button key={it.id} type="button" className="oi-m-imgcard oi-m-press" onClick={() => setSheet({ open: true, item: it })}>
-                  <SmartImage src={r.image} alt={r.title} width={170} ratio="1/1" />
-                  <div className="oi-m-imgcard__body">
-                    <div className="oi-m-imgcard__title">{r.title}</div>
-                    {r.sub && <div className="oi-m-meta" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.sub}</div>}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        ) : (
-          groups.map((g) => (
-            <section key={g.key}>
-              {g.title && <h2 className="oi-m-section" style={{ marginBottom: 12 }}>{g.title}</h2>}
-              <RowGroup>
-                {g.items.map((it) => {
-                  const r = schema.row(it);
-                  return (
-                    <Row
-                      key={it.id}
-                      label={r.title}
-                      sub={r.sub}
-                      value={r.badge ? undefined : r.value}
-                      initials={r.image ? undefined : (r.title || '?').slice(0, 1).toUpperCase()}
-                      icon={undefined}
-                      onClick={() => setSheet({ open: true, item: it })}
-                      trailing={r.badge ? <StatusPill tone={r.badgeTone || 'neutral'}>{r.badge}</StatusPill> : undefined}
-                    >
-                      {r.image ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <SmartImage src={r.image} alt="" width={48} height={48} style={{ width: 48, height: 48, flexShrink: 0, borderRadius: 12 }} />
-                          <div style={{ minWidth: 0 }}>
-                            <div className="oi-m-row__label">{r.title}</div>
-                            {r.sub && <div className="oi-m-row__sub">{r.sub}</div>}
-                          </div>
-                        </div>
-                      ) : null}
-                    </Row>
-                  );
-                })}
-              </RowGroup>
-            </section>
-          ))
-        )}
+        ) : pattern === 'cards' ? (
+          schema.gridToggle && view === 'grid' ? renderGrid(visible) : groups.length > 1 || groups[0].title ? (
+            <div className="oi-m-grouped">{groups.map((g) => <section key={g.key}><h2 className="oi-m-grouped__title">{g.title}</h2>{renderCards(g.items)}</section>)}</div>
+          ) : renderCards(visible)
+        ) : renderRows()}
       </div>
       <FormSheet
         open={sheet.open}

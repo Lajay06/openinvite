@@ -78,11 +78,24 @@ Sentence case everywhere, including badges and tab labels. Lucide icons only. No
 | `FeatureTile` | Plan hub tile: photo or colour panel with a Lucide icon, the feature name, one live stat. |
 | `StatCard` | Half-width card: circular icon, label, big number. Used in pairs. |
 | `PanelCard` | A colour panel for emphasis: Ava's briefing, a due payment. |
-| `Row` / `RowGroup` | Rows inside a rounded card with hairline dividers, circular icon tile left, chevron right. |
+| `ItemCard` / `ItemList` | The browsable list pattern: one rounded card per item. See "Lists". |
+| `Row` / `RowGroup` / `GroupedList` / `SwipeRow` | The scannable list pattern: rows in a rounded card with hairline dividers, sticky headers, optional swipe actions. See "Lists". |
 | `BottomSheet` | 28px top corners, grab handle, spring open and close, scrim. Full-height variant for Ava. |
 | `SmartImage` | Cloudinary delivery with `f_auto,q_auto,c_fill,g_auto` at 2x and 3x, fixed aspect ratio, tinted placeholder, lazy below the fold, alt text always. Never a broken box: falls back to a colour panel. |
 | `PillButton`, `FilterPills`, `ProgressBar`, `EmptyState`, `ErrorState`, `Skeleton`, `SearchScreen`, form fields | As in v0, restyled to the tokens. |
 | `Banner` | The in-app notification: a rounded card that drops from the top with the elevation token, stays four seconds, swipes away, opens on tap. |
+
+## Lists
+
+Two patterns, chosen by a rule, never mixed within one list.
+
+**Item cards** (`ItemCard` in `ItemList`, each item its own rounded card with a 12px gap): for lists that are browsed. Anatomy: a 72px rounded thumbnail or colour tile on the left, title, one meta line, a key value (amount, date or status) bottom left, and one trailing circular action on the right edge where one makes sense (call, pay, add). The whole card taps through. Used for vendors, registry items, payments due, tasks and payments in "Next up", seating tables, accommodation and transport places, experience guide entries, polls, timeline moments, the wedding party, marketplace results.
+
+**Grouped rows** (`GroupedList` of `Row`s, many rows in one rounded card with hairline dividers and sticky section headers): for lists that are long, text-led, and scanned or searched. Used for guests, budget line items inside a category, the full checklist inside each group, the messages list, the notification centre, song requests, the playlist, settings and account.
+
+**The rule of thumb:** more than about 25 items, or no image and no inline action, means grouped rows. Otherwise item cards.
+
+Grouped rows can swipe left to reveal an action where an existing mutation supports it (`SwipeRow`): complete a task, mark a message read, remove with a confirm. Vendors and the registry carry a circular view toggle beside search that swaps item cards for a two-column image grid; the choice is remembered on the device. Every list keeps its skeleton, empty and error states, and gets pull to refresh.
 
 ## Motion
 
@@ -103,4 +116,4 @@ Stills only. Nothing derives motion from an image whose public id starts with `D
 
 Where images belong: Home hero carousel, Home "keep planning" carousel, Plan hub tiles, Site tab preview, vendor and registry cards where the data has photos, empty states where a photo helps, the Account profile card. Where they do not: forms, dense lists, budget tables.
 
-The image inventory (every public id used, and where) is kept in `MOBILE_APP.md`.
+Every decorative slot is named once, in `src/mobile/images.ts`, with its public id, alt text, where it is drawn, the size to supply and a `todo` marker while it waits for a photo. `/m/preview/images` renders that file as a gallery. No decorative Cloudinary id lives anywhere else in `src/mobile/`.

@@ -22,7 +22,7 @@ import {
   UtensilsCrossed, Music2, Camera, FileText, Package, Store, ShoppingBag, Heart, Car, Hotel, Phone, Wallet,
   Gift, Clock, HelpCircle, MapPin, ScrollText, Plane, Lightbulb, Mail, Send, CalendarDays,
 } from 'lucide-react';
-import { STILLS } from '../lib/images';
+import { imageUrl } from '../images';
 import { money } from '../lib/format';
 
 const n = (v) => (Array.isArray(v) ? v.length : 0);
@@ -41,60 +41,60 @@ export const GROUPS = [
 
 export const FEATURES = [
   // Planning
-  { key: 'event-details', group: 'planning', label: 'Event details', icon: CalendarDays, desktop: '/event-details', path: 'event-details', kind: 'details', depth: 'full', image: STILLS.couple,
+  { key: 'event-details', group: 'planning', label: 'Event details', icon: CalendarDays, desktop: '/event-details', path: 'event-details', image: imageUrl('tileEventDetails'), kind: 'details', depth: 'full',
     stat: (d) => (d.details?.weddingDate ? new Date(`${d.details.weddingDate}T00:00:00`).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : 'Add your date') },
-  { key: 'schedule', group: 'planning', label: 'Schedule', icon: Calendar, desktop: '/Schedule', path: 'schedule', kind: 'entity', depth: 'full',
+  { key: 'schedule', group: 'planning', label: 'Schedule', icon: Calendar, desktop: '/Schedule', path: 'schedule', image: imageUrl('tileSchedule'), kind: 'entity', depth: 'full',
     stat: (d) => count(d.schedule, 'event') },
   { key: 'checklist', group: 'planning', label: 'To do', icon: ListTodo, desktop: '/TodoList', path: 'checklist', kind: 'custom', depth: 'full',
     stat: (d) => { const open = (d.tasks || []).filter((t) => !t.completed).length; return open ? `${open} open` : 'All done'; } },
   // Guests
-  { key: 'guest-list', group: 'guests', label: 'Guest list', icon: Users, desktop: '/Guests', path: '../guests', kind: 'custom', depth: 'full', image: STILLS.guests,
+  { key: 'guest-list', group: 'guests', label: 'Guest list', icon: Users, desktop: '/Guests', path: '../guests', image: imageUrl('tileGuests'), kind: 'custom', depth: 'full',
     stat: (d) => { const a = (d.guests || []).filter((g) => g.invite_sent_at && (!g.rsvp_status || g.rsvp_status === 'pending')).length; return a ? `${a} awaiting` : count(d.guests, 'guest'); } },
   { key: 'polls', group: 'guests', label: 'Polls & games', icon: BarChart2, desktop: '/Polls', path: 'polls', kind: 'custom', depth: 'full',
     stat: (d) => count(d.details?.polls, 'poll') },
   { key: 'messages', group: 'guests', label: 'Messages', icon: MessageCircle, desktop: '/Messages', path: 'messages', kind: 'custom', depth: 'full',
     stat: (d) => { const u = (d.messages || []).filter((m) => !m.read).length; return u ? `${u} unread` : count(d.messages, 'message'); } },
-  { key: 'seating', group: 'guests', label: 'Seating', icon: LayoutGrid, desktop: '/Seating', path: 'seating', kind: 'custom', depth: 'view', image: STILLS.table,
+  { key: 'seating', group: 'guests', label: 'Seating', icon: LayoutGrid, desktop: '/Seating', path: 'seating', image: imageUrl('tileSeating'), kind: 'custom', depth: 'view',
     stat: (d) => count(d.tables, 'table') },
-  { key: 'wedding-party', group: 'guests', label: 'Wedding party', icon: UserCheck, desktop: '/wedding-party', path: 'wedding-party', kind: 'custom', depth: 'full', image: STILLS.party,
+  { key: 'wedding-party', group: 'guests', label: 'Wedding party', icon: UserCheck, desktop: '/wedding-party', path: 'wedding-party', image: imageUrl('tileWeddingParty'), kind: 'custom', depth: 'full',
     stat: (d) => { const wp = d.details?.weddingParty || {}; const c = Object.values(wp).reduce((s, v) => s + (Array.isArray(v) ? v.length : 0), 0); return c ? `${c} people` : 'Add your people'; } },
   { key: 'send-invites', group: 'guests', label: 'Send invites', icon: Send, desktop: '/SendInvites', path: 'send-invites', kind: 'desktop', depth: 'view',
     stat: (d) => { const s = (d.guests || []).filter((g) => g.invite_sent_at).length; return s ? `${s} sent` : 'Not sent yet'; } },
   { key: 'invitations', group: 'guests', label: 'Invitations', icon: Mail, desktop: '/Invitations', path: 'invitations', kind: 'desktop', depth: 'view', stat: () => 'Design on desktop' },
   // Style & experience
-  { key: 'moodboard', group: 'style', label: 'Moodboard', icon: Image, desktop: '/Moodboard', path: 'moodboard', kind: 'entity', depth: 'full', image: STILLS.style,
+  { key: 'moodboard', group: 'style', label: 'Moodboard', icon: Image, desktop: '/Moodboard', path: 'moodboard', image: imageUrl('tileMoodboard'), kind: 'entity', depth: 'full',
     stat: (d) => count(d.moodboard, 'pin') },
-  { key: 'styling', group: 'style', label: 'Styling', icon: Palette, desktop: '/Styling', path: 'styling', kind: 'details', depth: 'light', image: STILLS.flowers,
+  { key: 'styling', group: 'style', label: 'Styling', icon: Palette, desktop: '/Styling', path: 'styling', image: imageUrl('tileStyling'), kind: 'details', depth: 'light',
     stat: (d) => (d.details?.flowers?.bouquet || d.details?.decorations?.theme ? 'In progress' : 'Start here') },
-  { key: 'beauty', group: 'style', label: 'Beauty', icon: Sparkles, desktop: '/Beauty', path: 'beauty', kind: 'details', depth: 'light', image: STILLS.beauty,
+  { key: 'beauty', group: 'style', label: 'Beauty', icon: Sparkles, desktop: '/Beauty', path: 'beauty', image: imageUrl('tileBeauty'), kind: 'details', depth: 'light',
     stat: (d) => { const b = (d.vendors || []).filter((v) => v.category === 'beauty' && v.status === 'booked').length; return b ? `${b} booked` : 'No artist yet'; } },
-  { key: 'food', group: 'style', label: 'Food & beverage', icon: UtensilsCrossed, desktop: '/FoodBeverage', path: 'food', kind: 'details', depth: 'light', image: STILLS.dinner,
+  { key: 'food', group: 'style', label: 'Food & beverage', icon: UtensilsCrossed, desktop: '/FoodBeverage', path: 'food', image: imageUrl('tileFood'), kind: 'details', depth: 'light',
     stat: (d) => (d.details?.foodBeverage?.serviceStyle ? d.details.foodBeverage.serviceStyle : 'Plan the menu') },
-  { key: 'music', group: 'style', label: 'Music', icon: Music2, desktop: '/Music', path: 'music', kind: 'custom', depth: 'full', image: STILLS.music,
+  { key: 'music', group: 'style', label: 'Music', icon: Music2, desktop: '/Music', path: 'music', image: imageUrl('tileMusic'), kind: 'custom', depth: 'full',
     stat: (d) => { const p = (d.songRequests || []).filter((r) => !r.status || r.status === 'pending').length; return p ? `${p} to review` : count(d.music, 'track'); } },
-  { key: 'photography', group: 'style', label: 'Photography', icon: Camera, desktop: '/Photography', path: 'photography', kind: 'details', depth: 'light', image: STILLS.couple,
+  { key: 'photography', group: 'style', label: 'Photography', icon: Camera, desktop: '/Photography', path: 'photography', image: imageUrl('tilePhotography'), kind: 'details', depth: 'light',
     stat: (d) => { const b = (d.vendors || []).filter((v) => ['photography', 'videography'].includes(v.category) && v.status === 'booked').length; return b ? `${b} booked` : 'Find a photographer'; } },
   { key: 'vows', group: 'style', label: 'Vows & speeches', icon: FileText, desktop: '/VowsSpeeches', path: 'vows', kind: 'entity', depth: 'full',
     stat: (d) => count(d.vows, 'draft') },
-  { key: 'favours', group: 'style', label: 'Guest gifts', icon: Package, desktop: '/wedding-favours', path: 'favours', kind: 'details', depth: 'light', image: STILLS.gifts,
+  { key: 'favours', group: 'style', label: 'Guest gifts', icon: Package, desktop: '/wedding-favours', path: 'favours', image: imageUrl('tileGuestGifts'), kind: 'details', depth: 'light',
     stat: (d) => (d.details?.weddingFavours?.concept ? d.details.weddingFavours.concept : 'Not chosen yet') },
   // Vendors
-  { key: 'vendors', group: 'vendors', label: 'My vendors', icon: Store, desktop: '/Vendors', path: 'vendors', kind: 'entity', depth: 'full',
+  { key: 'vendors', group: 'vendors', label: 'My vendors', icon: Store, desktop: '/Vendors', path: 'vendors', image: imageUrl('tileVendors'), kind: 'entity', depth: 'full',
     stat: (d) => { const b = (d.vendors || []).filter((v) => v.status === 'booked').length; return `${b} booked of ${n(d.vendors)}`; } },
-  { key: 'marketplace', group: 'vendors', label: 'Marketplace', icon: ShoppingBag, desktop: '/VendorMarketplace', path: 'marketplace', kind: 'custom', depth: 'light', image: STILLS.dance, stat: () => 'Search near you' },
+  { key: 'marketplace', group: 'vendors', label: 'Marketplace', icon: ShoppingBag, desktop: '/VendorMarketplace', path: 'marketplace', image: imageUrl('tileMarketplace'), kind: 'custom', depth: 'light', stat: () => 'Search near you' },
   // On the day
-  { key: 'ceremony', group: 'day', label: 'Ceremony details', icon: Heart, desktop: '/ceremony-details', path: 'ceremony', kind: 'details', depth: 'full', image: STILLS.ceremony,
+  { key: 'ceremony', group: 'day', label: 'Ceremony details', icon: Heart, desktop: '/ceremony-details', path: 'ceremony', image: imageUrl('tileCeremony'), kind: 'details', depth: 'full',
     stat: (d) => (d.details?.celebrant?.name ? `With ${d.details.celebrant.name}` : 'Add your celebrant') },
-  { key: 'transport', group: 'day', label: 'Transport', icon: Car, desktop: '/transport', path: 'transport', kind: 'details', depth: 'light',
+  { key: 'transport', group: 'day', label: 'Transport', icon: Car, desktop: '/transport', path: 'transport', image: imageUrl('tileTransport'), kind: 'details', depth: 'light',
     stat: (d) => (d.details?.transport?.shuttles?.length ? count(d.details.transport.shuttles, 'shuttle') : 'Plan the trip') },
-  { key: 'accommodation', group: 'day', label: 'Accommodation', icon: Hotel, desktop: '/accommodation', path: 'accommodation', kind: 'details', depth: 'light', image: STILLS.stay,
+  { key: 'accommodation', group: 'day', label: 'Accommodation', icon: Hotel, desktop: '/accommodation', path: 'accommodation', image: imageUrl('tileAccommodation'), kind: 'details', depth: 'light',
     stat: (d) => count(d.details?.accommodation?.manualProperties, 'place') },
   { key: 'emergency', group: 'day', label: 'Emergency contact', icon: Phone, desktop: '/emergency-contact', path: 'emergency', kind: 'details', depth: 'full',
     stat: (d) => (d.details?.emergencyContacts?.primary?.name ? d.details.emergencyContacts.primary.name : 'Add a contact') },
   // Finances
-  { key: 'budget', group: 'finances', label: 'Budget', icon: Wallet, desktop: '/Budget', path: 'budget', kind: 'custom', depth: 'full',
+  { key: 'budget', group: 'finances', label: 'Budget', icon: Wallet, desktop: '/Budget', path: 'budget', image: imageUrl('tileBudget'), kind: 'custom', depth: 'full',
     stat: (d, symbol) => { const spent = (d.budget || []).reduce((s, i) => s + (i.actual_amount || 0), 0); const total = d.details?.budget?.total ? Number(d.details.budget.total) : (d.budget || []).reduce((s, i) => s + (i.budgeted_amount || 0), 0); return total ? `${money(total - spent, symbol)} left` : 'Set a total'; } },
-  { key: 'registry', group: 'finances', label: 'Registry', icon: Gift, desktop: '/Registry', path: 'registry', kind: 'custom', depth: 'full', image: STILLS.gifts,
+  { key: 'registry', group: 'finances', label: 'Registry', icon: Gift, desktop: '/Registry', path: 'registry', image: imageUrl('tileRegistry'), kind: 'custom', depth: 'full',
     stat: (d) => { const g = n(d.gifts); return g ? `${g} received` : `${n(d.registryItems) + n(d.registryProducts) + n(d.customGifts)} listed`; } },
   // Guest suite
   { key: 'studio', group: 'suite', label: 'Design studio', icon: Sparkles, desktop: '/studio', path: '../site', kind: 'custom', depth: 'view', stat: (d) => (d.details?.websiteEnabled ? 'Site is live' : 'Site is a draft') },
@@ -107,7 +107,7 @@ export const FEATURES = [
   { key: 'good-to-know', group: 'suite', label: 'Good to know', icon: ScrollText, desktop: '/GuestSuitePolicies', path: 'good-to-know', kind: 'custom', depth: 'full', stat: (d) => { const p = d.details?.weddingPolicies || {}; const on = Object.values(p).filter((v) => v && typeof v === 'object' && v.enabled).length; return on ? `${on} shown to guests` : 'Nothing set'; } },
   { key: 'suite-polls', group: 'suite', label: 'Guest polls', icon: BarChart2, desktop: '/GuestSuitePolls', path: 'polls', kind: 'custom', depth: 'full', stat: (d) => count((d.details?.polls || []).filter((p) => p.isActive), 'live poll') },
   // Extras
-  { key: 'honeymoon', group: 'extras', label: 'Honeymoon', icon: Plane, desktop: '/honeymoon', path: 'honeymoon', kind: 'details', depth: 'light', image: STILLS.travel,
+  { key: 'honeymoon', group: 'extras', label: 'Honeymoon', icon: Plane, desktop: '/honeymoon', path: 'honeymoon', image: imageUrl('tileHoneymoon'), kind: 'details', depth: 'light',
     stat: (d) => (d.details?.honeymoonDetails?.destination ? d.details.honeymoonDetails.destination : 'Dream a little') },
   { key: 'considerations', group: 'extras', label: 'Considerations', icon: Lightbulb, desktop: '/Considerations', path: 'considerations', kind: 'desktop', depth: 'view', stat: () => 'Read on desktop' },
 ];

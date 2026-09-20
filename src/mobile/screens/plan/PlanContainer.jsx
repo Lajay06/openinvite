@@ -93,7 +93,7 @@ function EntityContainer({ f, back }) {
   const schema = ENTITIES[f.key];
   const e = useEntity(schema.entity, schema.sort);
   const wrap = (fn, ok) => async (...a) => { const r = await fn(...a); toast.success(ok); return r; };
-  return <EntityListScreen schema={schema} items={e.data || []} onCreate={wrap(e.create, 'Added')} onUpdate={wrap(e.update, 'Saved')} onDelete={wrap(e.remove, 'Removed')} loading={e.loading} error={e.error} onRetry={e.reload} back={back} />;
+  return <EntityListScreen schema={schema} items={e.data || []} onCreate={wrap(e.create, 'Added')} onUpdate={wrap(e.update, 'Saved')} onDelete={wrap(e.remove, 'Removed')} loading={e.loading} error={e.error} onRetry={e.reload} back={back} onRefresh={e.reload} />;
 }
 
 /* ── Checklist and budget ────────────────────────────────────────────── */
@@ -103,7 +103,8 @@ function ChecklistContainer({ back }) {
   const tasks = useTasks();
   const toggle = async (t) => { try { await taskWrites.toggle(t); if (!t.completed) hapticLight(); tasks.reload(); } catch { toast.error('Could not update that task. Try again.'); } };
   const add = async (fields) => { await taskWrites.create(fields); toast.success('Task added'); tasks.reload(); };
-  return <ChecklistScreen tasks={tasks.data || []} onToggle={toggle} onAdd={add} loading={tasks.loading} error={tasks.error} onRetry={tasks.reload} back={back} openAdd={params.get('add') === '1'} />;
+  const remove = async (t) => { if (!window.confirm('Remove this task?')) return; try { await taskWrites.remove(t.id); toast.success('Task removed'); tasks.reload(); } catch { toast.error('Could not remove that task.'); } };
+  return <ChecklistScreen tasks={tasks.data || []} onToggle={toggle} onAdd={add} onRemove={remove} loading={tasks.loading} error={tasks.error} onRetry={tasks.reload} back={back} openAdd={params.get('add') === '1'} onRefresh={tasks.reload} />;
 }
 
 function BudgetContainer({ back }) {
@@ -116,7 +117,8 @@ function BudgetContainer({ back }) {
     if (existing) { await budgetWrites.update(existing.id, fields); toast.success('Expense updated'); } else { await budgetWrites.create(fields); toast.success('Expense added'); }
     budget.reload();
   };
-  return <BudgetScreen items={budget.data?.items || []} plan={budget.data?.plan || null} symbol={symbol} onOpenCategory={(c) => navigate(`${base}/plan/budget/${c}`)} onAdd={save} loading={budget.loading} error={budget.error} onRetry={budget.reload} back={back} openAdd={params.get('add') === '1'} />;
+  const markPaid = async (i) => { try { await budgetWrites.update(i.id, { paid: true }); toast.success('Marked paid'); budget.reload(); } catch { toast.error('Could not update that payment.'); } };
+  return <BudgetScreen items={budget.data?.items || []} plan={budget.data?.plan || null} symbol={symbol} onOpenCategory={(c) => navigate(`${base}/plan/budget/${c}`)} onAdd={save} onMarkPaid={markPaid} loading={budget.loading} error={budget.error} onRetry={budget.reload} back={back} openAdd={params.get('add') === '1'} onRefresh={budget.reload} />;
 }
 
 function BudgetCategoryContainer({ category, back }) {
@@ -135,7 +137,8 @@ function MessagesContainer({ back }) {
   const navigate = useNavigate();
   const { base } = useContext(ShellContext);
   const m = useEntity('GuestMessage', '-created_date');
-  return <MessagesScreen messages={m.data || []} onOpen={(msg) => navigate(`${base}/plan/messages/${msg.id}`)} loading={m.loading} error={m.error} onRetry={m.reload} back={back} />;
+  const markRead = async (msg) => { try { await m.update(msg.id, { ...msg, read: !msg.read }); } catch { toast.error('Could not update that message.'); } };
+  return <MessagesScreen messages={m.data || []} onOpen={(msg) => navigate(`${base}/plan/messages/${msg.id}`)} onMarkRead={markRead} loading={m.loading} error={m.error} onRetry={m.reload} back={back} onRefresh={m.reload} />;
 }
 
 function ThreadContainer({ id, back }) {

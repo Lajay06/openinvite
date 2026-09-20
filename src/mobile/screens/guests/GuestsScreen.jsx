@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { Search, Plus, Users } from 'lucide-react';
 import Screen from '../../shell/Screen';
-import { FilterPills, SearchScreen, SkeletonRows, ErrorState, EmptyState, StatusPill, ProgressBar, RowGroup } from '../../ui';
+import { FilterPills, SearchScreen, SkeletonRows, ErrorState, EmptyState, StatusPill, ProgressBar, RowGroup, SwipeRow, SWIPE_ICONS } from '../../ui';
+import { imageUrl } from '../../images';
 import { isAttending, isDeclined, isPending, isAwaitingPrimary } from '@/lib/guestRsvpTally';
 import { initials, RSVP_LABEL, RSVP_TONE, GUEST_CATEGORY_LABEL } from '../../lib/format';
 
@@ -47,7 +48,7 @@ export function GuestRow({ guest, onClick }) {
  * The guest list. props: guests, filter, onFilter, onOpenGuest, onAdd,
  * loading, error, onRetry, groupings (extra filter pills from tags).
  */
-export default function GuestsScreen({ guests = [], filter = 'all', onFilter, onOpenGuest, onAdd, loading, error, onRetry, groupings = [], back, onRefresh }) {
+export default function GuestsScreen({ guests = [], filter = 'all', onFilter, onOpenGuest, onAdd, onRemove, loading, error, onRetry, groupings = [], back, onRefresh }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [q, setQ] = useState('');
 
@@ -102,12 +103,18 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, on
           ) : loading ? (
             <SkeletonRows count={8} />
           ) : guests.length === 0 ? (
-            <EmptyState icon={Users} text="No guests yet. Add the first one and the rest of the list follows." actionLabel="Add a guest" onAction={onAdd} />
+            <EmptyState icon={Users} image={imageUrl('emptyGuests')} text="No guests yet. Add the first one and the rest of the list follows." actionLabel="Add a guest" onAction={onAdd} />
           ) : visible.length === 0 ? (
             <EmptyState icon={Users} text="No guests match this filter." />
           ) : (
             <RowGroup>
-              {visible.map((g) => <GuestRow key={g.id} guest={g} onClick={() => onOpenGuest(g)} />)}
+              {visible.map((g) => (
+                onRemove ? (
+                  <SwipeRow key={g.id} actions={[{ key: 'remove', icon: SWIPE_ICONS.remove, label: `Remove ${g.name}`, tone: 'no', onAction: () => onRemove(g) }]}>
+                    <GuestRow guest={g} onClick={() => onOpenGuest(g)} />
+                  </SwipeRow>
+                ) : <GuestRow key={g.id} guest={g} onClick={() => onOpenGuest(g)} />
+              ))}
             </RowGroup>
           )}
           {!loading && !error && (

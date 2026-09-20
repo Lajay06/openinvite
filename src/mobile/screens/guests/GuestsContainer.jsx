@@ -54,18 +54,19 @@ export default function GuestsContainer() {
     guests.reload();
   };
 
-  const remove = async () => {
-    if (!current) return;
-    if (!window.confirm(`Remove ${current.name || 'this guest'} from your list?`)) return;
+  const removeGuest = async (g, { goBack = false } = {}) => {
+    if (!g) return;
+    if (!window.confirm(`Remove ${g.name || 'this guest'} from your list?`)) return;
     try {
-      await guestWrites.remove(current.id);
+      await guestWrites.remove(g.id);
       toast.success('Guest removed');
       guests.reload();
-      navigate(`${base}/guests`, { replace: true });
+      if (goBack) navigate(`${base}/guests`, { replace: true });
     } catch (e) {
       toast.error(e?.message || 'Could not remove this guest. Try again.');
     }
   };
+  const remove = () => removeGuest(current, { goBack: true });
 
   return (
     <>
@@ -84,6 +85,7 @@ export default function GuestsContainer() {
           groupings={groupings}
           onOpenGuest={(g) => navigate(`${base}/guests/${g.id}`)}
           onAdd={() => setSheet({ open: true, guest: null })}
+          onRemove={(g) => removeGuest(g)}
           loading={guests.loading}
           error={guests.error}
           onRetry={guests.reload}

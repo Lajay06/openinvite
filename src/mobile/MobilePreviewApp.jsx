@@ -24,6 +24,7 @@ import SearchScreenPage from './screens/search/SearchScreenPage';
 import NotificationsScreen from './notifications/NotificationsScreen';
 import NotificationSettingsScreen from './notifications/NotificationSettingsScreen';
 import PushPreview from './notifications/PushPreview';
+import ImageGalleryScreen from './screens/preview/ImageGalleryScreen';
 import { buildFeed } from './notifications/feed';
 import { defaultSettings } from './notifications/store';
 import { isAttending, isDeclined, isAwaitingPrimary } from '@/lib/guestRsvpTally';
@@ -68,6 +69,7 @@ export default function MobilePreviewApp() {
         <Route path="search" element={<PreviewSearch />} />
         <Route path="notifications" element={<PreviewNotifications />} />
         <Route path="notifications/settings" element={<PreviewNotificationSettings />} />
+        <Route path="images" element={<ImageGalleryScreen back={PREVIEW_BASE} />} />
         <Route path="*" element={<Navigate to={PREVIEW_BASE} replace />} />
       </Route>
     </Routes>
@@ -166,7 +168,7 @@ function PreviewGuests() {
       {id ? (
         <GuestDetailScreen guest={current} back={`${base}/guests`} onEdit={() => setSheet({ open: true, guest: current })} onDelete={() => { setGuests((l) => l.filter((g) => g.id !== id)); navigate(`${base}/guests`); }} />
       ) : (
-        <GuestsScreen guests={st.empty ? [] : guests} filter={filter} onFilter={setFilter} onOpenGuest={(g) => navigate(`${base}/guests/${g.id}`)} onAdd={() => setSheet({ open: true, guest: null })} loading={st.loading} error={st.error} onRetry={() => navigate(`${base}/guests`)} onRefresh={async () => {}} />
+        <GuestsScreen guests={st.empty ? [] : guests} filter={filter} onFilter={setFilter} onOpenGuest={(g) => navigate(`${base}/guests/${g.id}`)} onAdd={() => setSheet({ open: true, guest: null })} onRemove={(g) => setGuests((l) => l.filter((x) => x.id !== g.id))} loading={st.loading} error={st.error} onRetry={() => navigate(`${base}/guests`)} onRefresh={async () => {}} />
       )}
       <GuestFormSheet open={sheet.open} guest={sheet.guest} onClose={() => setSheet((s) => ({ ...s, open: false }))} onSave={save} />
     </>
@@ -225,13 +227,13 @@ function PreviewFeature() {
   if (f.kind === 'entity') return ent(f.key);
   if (f.kind === 'desktop') return <DesktopFeatureScreen title={f.label} body="This one is built for a bigger screen. Open it on desktop and the result shows here." stat={f.stat(PLAN_DATA, SYMBOL)} back={back} onDesktop={() => {}} />;
   switch (f.key) {
-    case 'checklist': return <ChecklistScreen tasks={st.empty ? [] : tasks.items} onToggle={(t) => tasks.update(t.id, { completed: !t.completed })} onAdd={async (v) => tasks.create({ completed: false, view_type: 'todo', ...v })} openAdd={params.get('add') === '1'} {...common} />;
+    case 'checklist': return <ChecklistScreen tasks={st.empty ? [] : tasks.items} onToggle={(t) => tasks.update(t.id, { completed: !t.completed })} onRemove={(t) => tasks.remove(t.id)} onAdd={async (v) => tasks.create({ completed: false, view_type: 'todo', ...v })} openAdd={params.get('add') === '1'} {...common} />;
     case 'budget': return id
       ? <BudgetCategoryScreen category={id} items={budget.items} plan={FIXTURE_WEDDING.budget} symbol={SYMBOL} onSave={async (v, ex) => (ex ? budget.update(ex.id, v) : budget.create(v))} back={`${base}/plan/budget`} />
-      : <BudgetScreen items={st.empty ? [] : budget.items} plan={st.empty ? null : FIXTURE_WEDDING.budget} symbol={SYMBOL} onOpenCategory={(c) => navigate(`${base}/plan/budget/${c}`)} onAdd={async (v, ex) => (ex ? budget.update(ex.id, v) : budget.create(v))} openAdd={params.get('add') === '1'} {...common} />;
+      : <BudgetScreen items={st.empty ? [] : budget.items} plan={st.empty ? null : FIXTURE_WEDDING.budget} symbol={SYMBOL} onOpenCategory={(c) => navigate(`${base}/plan/budget/${c}`)} onAdd={async (v, ex) => (ex ? budget.update(ex.id, v) : budget.create(v))} onMarkPaid={(i) => budget.update(i.id, { paid: true })} openAdd={params.get('add') === '1'} {...common} />;
     case 'messages': return id
       ? <ThreadScreen message={messages.items.find((m) => m.id === id)} onReply={async (text) => messages.update(id, { reply: text, replied: true, reply_sent_at: new Date().toISOString(), read: true })} back={`${base}/plan/messages`} />
-      : <MessagesScreen messages={st.empty ? [] : messages.items} onOpen={(m) => { messages.update(m.id, { read: true }); navigate(`${base}/plan/messages/${m.id}`); }} {...common} />;
+      : <MessagesScreen messages={st.empty ? [] : messages.items} onOpen={(m) => { messages.update(m.id, { read: true }); navigate(`${base}/plan/messages/${m.id}`); }} onMarkRead={(m) => messages.update(m.id, { read: !m.read })} {...common} />;
     case 'seating': return <SeatingScreen tables={st.empty ? [] : tables} guests={FIXTURE_GUESTS} onMove={async (guestId, tableName) => setTables((ts) => ts.map((t) => ({ ...t, assigned_guests: (t.assigned_guests || []).filter((a) => a.guest_id !== guestId).concat(t.name === tableName ? [{ guest_id: guestId, seat_index: (t.assigned_guests || []).length }] : []) })))} onDesktop={() => {}} {...common} />;
     case 'polls': case 'suite-polls': return <PollsScreen polls={st.empty ? [] : details.polls || []} votes={FIXTURE_POLL_VOTES} onCreate={async ({ title, options }) => saveDetails('polls', [...(details.polls || []), { id: `p${Date.now()}`, title, options: options.map((label, i) => ({ id: `o${Date.now()}${i}`, label, votes: 0 })), isActive: true }])} onEnd={async (p) => saveDetails('polls', (details.polls || []).map((x) => (x.id === p.id ? { ...x, isActive: false } : x)))} {...common} />;
     case 'music': return <MusicScreen tracks={st.empty ? [] : music.items} requests={st.empty ? [] : requests} playlistUrl={details.music?.playlists?.[0]?.playlistUrl} onCreate={music.create} onUpdate={music.update} onDelete={music.remove} onReview={async (r, action) => { setRequests((l) => l.map((x) => (x.id === r.id ? { ...x, status: action === 'add' ? 'added' : 'declined' } : x))); if (action === 'add') music.create({ song_title: r.title, artist: r.artist, category: 'party', guest_suggestion: true }); }} {...common} />;

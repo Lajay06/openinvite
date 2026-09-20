@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { HelpCircle, Plus, MapPin, Hotel, Car, ScrollText, Clock, UserCheck, ShoppingBag, Search, Monitor } from 'lucide-react';
+import { HelpCircle, Plus, MapPin, Hotel, Car, ScrollText, Clock, UserCheck, ShoppingBag, Search, Monitor, ExternalLink, Phone } from 'lucide-react';
 import Screen from '../../shell/Screen';
-import { Row, RowGroup, EmptyState, ErrorState, SkeletonRows, Switch, PanelCard, PillButton, TextField, SelectField, StatusPill, BottomSheet } from '../../ui';
+import { Row, RowGroup, EmptyState, ErrorState, SkeletonRows, Switch, PanelCard, PillButton, TextField, SelectField, StatusPill, BottomSheet, ItemCard, ItemList } from '../../ui';
 import FormSheet from '../../features/FormSheet';
 import { timeLabel, dateShort, initials } from '../../lib/format';
 import { openExternal } from '../../native';
@@ -93,9 +93,9 @@ export function PlacesScreen({ title, icon: Icon = MapPin, places = [], onSave, 
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={4} /> : places.length === 0 ? (
           <EmptyState icon={Icon} text="Nothing added yet. Add a place by hand here, or search nearby on desktop." actionLabel="Add a place" onAction={() => setSheet(-1)} />
         ) : (
-          <RowGroup>
-            {places.map((p, i) => <Row key={p.place_id || p.id || i} icon={Icon} tile="sand" label={p.name} sub={p.note || p.address} onClick={() => setSheet(i)} trailing={p.is_couple_pick ? <StatusPill tone="ok">Our pick</StatusPill> : undefined} />)}
-          </RowGroup>
+          <ItemList>
+            {places.map((p, i) => <ItemCard key={p.place_id || p.id || i} icon={Icon} tile="sand" title={p.name} meta={p.note || p.address} value={p.address && p.note ? p.address : undefined} badge={p.is_couple_pick ? 'Our pick' : undefined} badgeTone="ok" onClick={() => setSheet(i)} action={p.url ? { icon: ExternalLink, label: `Open ${p.name}`, onClick: () => openExternal(p.url) } : undefined} />)}
+          </ItemList>
         )}
       </div>
       {sheet != null && (
@@ -120,14 +120,11 @@ export function SuiteScheduleScreen({ items = [], loading, error, onRetry, back,
           days.map((d) => (
             <section key={d || 'none'}>
               <h2 className="oi-m-section" style={{ marginBottom: 12 }}>{d ? dateShort(d) : 'No date'}</h2>
-              <RowGroup>
+              <ItemList>
                 {items.filter((it) => dayOf(it) === d).sort((a, b) => (a.start_time || '').localeCompare(b.start_time || '')).map((it) => (
-                  <div key={it.id} className="oi-m-row">
-                    <span className="oi-m-meta oi-m-strong" style={{ width: 72, flexShrink: 0 }}>{timeLabel(it.start_time)}</span>
-                    <div className="oi-m-row__body"><div className="oi-m-row__label">{it.event_name}</div>{it.location && <div className="oi-m-row__sub">{it.location}</div>}</div>
-                  </div>
+                  <ItemCard key={it.id} icon={Clock} tile="sand" title={it.event_name} meta={it.location || ''} value={timeLabel(it.start_time)} />
                 ))}
-              </RowGroup>
+              </ItemList>
             </section>
           ))
         )}
@@ -162,9 +159,9 @@ export function WeddingPartyScreen({ party = {}, onSave, loading, error, onRetry
           PARTY_ROLES.filter((r) => (party[r.key] || []).length).map((r) => (
             <section key={r.key}>
               <h2 className="oi-m-section" style={{ marginBottom: 12 }}>{r.label}</h2>
-              <RowGroup>
-                {(party[r.key] || []).map((m, i) => <Row key={i} initials={initials(m.name || '?')} label={m.name || 'Unnamed'} sub={[m.phone, m.notes].filter(Boolean).join(' · ')} onClick={() => setSheet({ role: r.key, index: i })} />)}
-              </RowGroup>
+              <ItemList>
+                {(party[r.key] || []).map((m, i) => <ItemCard key={i} initials={initials(m.name || '?')} tile="blush" title={m.name || 'Unnamed'} meta={m.notes || r.singular} value={m.phone || ''} onClick={() => setSheet({ role: r.key, index: i })} action={m.phone ? { icon: Phone, label: `Call ${m.name}`, onClick: () => openExternal(`tel:${m.phone}`) } : undefined} />)}
+              </ItemList>
             </section>
           ))
         )}
@@ -200,21 +197,11 @@ export function MarketplaceScreen({ results = [], searching, onSearch, onSave, s
         {error ? <ErrorState text={error} /> : results.length === 0 ? (
           <EmptyState icon={ShoppingBag} text="Choose what you need and where, and we will look nearby." />
         ) : (
-          <RowGroup>
+          <ItemList>
             {results.map((v) => (
-              <div key={v.place_id || v.id} className="oi-m-row" style={{ flexWrap: 'wrap', gap: 8 }}>
-                <span className="oi-m-row__tile oi-m-row__tile--sand"><ShoppingBag size={18} strokeWidth={1.75} /></span>
-                <div className="oi-m-row__body">
-                  <div className="oi-m-row__label">{v.name}</div>
-                  <div className="oi-m-row__sub">{[v.rating ? `${v.rating} stars` : '', v.address || v.formatted_address].filter(Boolean).join(' · ')}</div>
-                </div>
-                <div style={{ display: 'flex', gap: 8, width: '100%', paddingLeft: 52 }}>
-                  {v.website && <PillButton variant="secondary" size="sm" onClick={() => openExternal(v.website)}>Website</PillButton>}
-                  <PillButton variant={savedIds.has(v.place_id) ? 'ghost' : 'primary'} size="sm" onClick={() => onSave(v)} disabled={savedIds.has(v.place_id)}>{savedIds.has(v.place_id) ? 'Added' : 'Add to my vendors'}</PillButton>
-                </div>
-              </div>
+              <ItemCard key={v.place_id || v.id} icon={ShoppingBag} tile="sand" title={v.name} meta={v.address || v.formatted_address || ''} value={v.rating ? `${v.rating} stars` : ''} badge={savedIds.has(v.place_id) ? 'Added' : undefined} badgeTone="ok" onClick={v.website ? () => openExternal(v.website) : undefined} action={savedIds.has(v.place_id) ? undefined : { icon: Plus, label: `Add ${v.name} to my vendors`, tone: 'primary', onClick: () => onSave(v) }} />
             ))}
-          </RowGroup>
+          </ItemList>
         )}
       </div>
     </Screen>

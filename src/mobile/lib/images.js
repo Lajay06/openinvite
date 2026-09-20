@@ -95,24 +95,5 @@ export function heroImageFor(details) {
   return coupleImages(details)[0] || '';
 }
 
-/**
- * Marketing stills reused for feature tiles and empty states. All of these
- * are already served on the marketing site (see MOBILE_APP.md, image
- * inventory). Keyed by the feel the slot wants, not by page.
- */
-export const STILLS = {
-  couple: `${CLOUD}/DTS_Like_a_Movie_Foster___Asher_Photos_ID1042_qaddk3`,
-  guests: `${CLOUD}/DTS_Slices_of_Summer_Mark_La_Montagne_Photos_ID2661_vb5omq`,
-  dinner: `${CLOUD}/v1779185603/DTS_Fine_Dining_Patrick_Chin_Photos_ID955_uoaegj`,
-  dance: `${CLOUD}/DTS_NU_NUPTIALS_Shauna_Summers_Photos_ID10310_o5dcie`,
-  flowers: `${CLOUD}/DTS_Natural_Beauty_Rob_Christain_Crosby_Photos_ID2680_fnyjzd`,
-  travel: `${CLOUD}/v1779185631/DTS_Early_Honey_Moon_Tino_Renato_Photos_ID3576_v8vxs0`,
-  ceremony: `${CLOUD}/DTS_Tradition_Chris_Abatzis_Photos_ID9150_yiunlp`,
-  party: `${CLOUD}/DTS_BANDITS_PALI_MENDEZ_Photos_ID14229_mhwb5h`,
-  table: `${CLOUD}/DTS_Grand_Design_Daniel_Far%C3%B2_Photos_ID4152_auimyj`,
-  style: `${CLOUD}/DTS_DECADENT_Debora_Spanhol_Photos_ID12475_viqbsz`,
-  beauty: `${CLOUD}/DTS_MOTHERLY_Shauna_Summers_Photos_ID10728_vz25fa`,
-  music: `${CLOUD}/DTS_PLAYER_TWO_JELLY_LUISE_Photos_ID13458_a53qq3`,
-  stay: `${CLOUD}/DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_xted4d`,
-  gifts: `${CLOUD}/DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14166_tqzysj`,
-};
+/** Decorative slots live in src/mobile/images.ts; this re-export keeps the delivery helpers and the manifest in one import. */
+export { IMAGES, imageUrl } from '../images';

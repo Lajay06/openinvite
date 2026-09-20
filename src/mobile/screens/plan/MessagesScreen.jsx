@@ -1,19 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MessageCircle, Send, MailOpen } from 'lucide-react';
 import Screen from '../../shell/Screen';
-import { Row, RowGroup, FilterPills, EmptyState, ErrorState, SkeletonRows, StatusPill } from '../../ui';
+import { Row, RowGroup, FilterPills, EmptyState, ErrorState, SkeletonRows, StatusPill, SwipeRow, SWIPE_ICONS } from '../../ui';
 import { initials } from '../../lib/format';
 import { relativeTime } from '../../notifications/feed';
 
 const FILTERS = [{ key: 'all', label: 'All' }, { key: 'unread', label: 'Unread' }, { key: 'unreplied', label: 'To reply' }, { key: 'replied', label: 'Replied' }];
 
 /** Conversation list. One row per guest message; unread rows are bold. */
-export default function MessagesScreen({ messages = [], onOpen, loading, error, onRetry, back }) {
+export default function MessagesScreen({ messages = [], onOpen, onMarkRead, loading, error, onRetry, back, onRefresh }) {
   const [filter, setFilter] = useState('all');
   const visible = messages.filter((m) => filter === 'all' || (filter === 'unread' && !m.read) || (filter === 'unreplied' && !m.replied) || (filter === 'replied' && m.replied));
   const unread = messages.filter((m) => !m.read).length;
   return (
-    <Screen title="Messages" subtitle={loading ? '' : unread ? `${unread} unread` : `${messages.length} message${messages.length === 1 ? '' : 's'}`} back={back}>
+    <Screen title="Messages" subtitle={loading ? '' : unread ? `${unread} unread` : `${messages.length} message${messages.length === 1 ? '' : 's'}`} back={back} onRefresh={onRefresh}>
       <FilterPills options={FILTERS} value={filter} onChange={setFilter} />
       <div className="oi-m-stack" style={{ marginTop: 12 }}>
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : messages.length === 0 ? (
@@ -23,13 +23,15 @@ export default function MessagesScreen({ messages = [], onOpen, loading, error, 
         ) : (
           <RowGroup>
             {visible.map((m) => (
-              <Row key={m.id} initials={initials(m.guest_name)} onClick={() => onOpen(m)} tile={m.read ? 'default' : 'primary'} trailing={m.replied ? <StatusPill tone="ok">Replied</StatusPill> : !m.read ? <span className="oi-m-notif__unread" /> : null}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                  <span className="oi-m-row__label" style={{ fontWeight: m.read ? 400 : 600 }}>{m.guest_name || 'Guest'}</span>
-                  <span className="oi-m-meta" style={{ flexShrink: 0, fontSize: 12 }}>{relativeTime(new Date(m.created_date).getTime())}</span>
-                </div>
-                <div className="oi-m-row__sub">{m.message}</div>
-              </Row>
+              <SwipeRow key={m.id} actions={onMarkRead ? [{ key: 'read', icon: SWIPE_ICONS.read, label: m.read ? 'Mark unread' : 'Mark read', tone: 'primary', onAction: () => onMarkRead(m) }] : []}>
+                <Row initials={initials(m.guest_name)} onClick={() => onOpen(m)} tile={m.read ? 'default' : 'primary'} trailing={m.replied ? <StatusPill tone="ok">Replied</StatusPill> : !m.read ? <span className="oi-m-notif__unread" /> : null}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                    <span className="oi-m-row__label" style={{ fontWeight: m.read ? 400 : 600 }}>{m.guest_name || 'Guest'}</span>
+                    <span className="oi-m-meta" style={{ flexShrink: 0, fontSize: 12 }}>{relativeTime(new Date(m.created_date).getTime())}</span>
+                  </div>
+                  <div className="oi-m-row__sub">{m.message}</div>
+                </Row>
+              </SwipeRow>
             ))}
           </RowGroup>
         )}

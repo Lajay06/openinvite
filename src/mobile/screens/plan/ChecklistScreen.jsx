@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { ListChecks, Plus } from 'lucide-react';
 import Screen from '../../shell/Screen';
-import { RowGroup, ProgressBar, EmptyState, ErrorState, SkeletonRows, Checkbox } from '../../ui';
+import { GroupedList, SwipeRow, SWIPE_ICONS, ProgressBar, EmptyState, ErrorState, SkeletonRows, Checkbox } from '../../ui';
 import { dueLabel } from '../../lib/format';
 import TaskFormSheet from './TaskFormSheet';
 
@@ -23,13 +23,13 @@ function groupTasks(tasks) {
 }
 
 /** The to-do list: grouped, tap to complete, add sheet. */
-export default function ChecklistScreen({ tasks = [], onToggle, onAdd, loading, error, onRetry, back, openAdd = false }) {
+export default function ChecklistScreen({ tasks = [], onToggle, onAdd, onRemove, loading, error, onRetry, back, openAdd = false, onRefresh }) {
   const [sheet, setSheet] = useState(openAdd);
   const groups = useMemo(() => groupTasks(tasks), [tasks]);
   const open = tasks.filter((t) => !t.completed).length;
   const done = tasks.length - open;
   return (
-    <Screen title="To do" subtitle={loading ? '' : open ? `${open} open` : tasks.length ? 'All done' : ''} back={back} actions={[{ icon: Plus, label: 'Add a task', onClick: () => setSheet(true) }]}>
+    <Screen title="To do" subtitle={loading ? '' : open ? `${open} open` : tasks.length ? 'All done' : ''} back={back} actions={[{ icon: Plus, label: 'Add a task', onClick: () => setSheet(true) }]} onRefresh={onRefresh}>
       <div className="oi-m-stack oi-m-stack--24">
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : tasks.length === 0 ? (
           <EmptyState icon={ListChecks} text="No tasks yet. Add the first thing on your mind." actionLabel="Add a task" onAction={() => setSheet(true)} />
@@ -38,22 +38,24 @@ export default function ChecklistScreen({ tasks = [], onToggle, onAdd, loading, 
             <div className="oi-m-card">
               <ProgressBar value={done} max={tasks.length} note={open === 0 ? 'Everything is done.' : `${done} of ${tasks.length} done, ${open} to go.`} />
             </div>
-            {groups.map((g) => (
-              <section key={g.key}>
-                <h2 className="oi-m-section" style={{ marginBottom: 12 }}>{g.title}</h2>
-                <RowGroup>
-                  {g.items.map((t) => (
-                    <div key={t.id} className="oi-m-row">
-                      <Checkbox checked={!!t.completed} onChange={() => onToggle?.(t)} label={t.title} />
-                      <div className="oi-m-row__body">
-                        <div className="oi-m-row__label oi-m-row__label--wrap" style={{ textDecoration: t.completed ? 'line-through' : 'none', color: t.completed ? 'var(--m-text-2)' : undefined }}>{t.title}</div>
-                        {(t.due_date || (t.priority && t.priority !== 'Medium')) && <div className="oi-m-row__sub">{[dueLabel(t.due_date), t.priority && t.priority !== 'Medium' ? `${t.priority} priority` : ''].filter(Boolean).join(' · ')}</div>}
-                      </div>
+            <GroupedList groups={groups.map((g) => ({
+              key: g.key,
+              title: g.title,
+              rows: g.items.map((t) => (
+                <SwipeRow key={t.id} actions={[
+                  { key: 'complete', icon: SWIPE_ICONS.complete, label: t.completed ? 'Mark not done' : 'Mark done', tone: 'ok', onAction: () => onToggle?.(t) },
+                  ...(onRemove ? [{ key: 'remove', icon: SWIPE_ICONS.remove, label: 'Remove task', tone: 'no', onAction: () => onRemove(t) }] : []),
+                ]}>
+                  <div className="oi-m-row">
+                    <Checkbox checked={!!t.completed} onChange={() => onToggle?.(t)} label={t.title} />
+                    <div className="oi-m-row__body">
+                      <div className="oi-m-row__label oi-m-row__label--wrap" style={{ textDecoration: t.completed ? 'line-through' : 'none', color: t.completed ? 'var(--m-text-2)' : undefined }}>{t.title}</div>
+                      {(t.due_date || (t.priority && t.priority !== 'Medium')) && <div className="oi-m-row__sub">{[dueLabel(t.due_date), t.priority && t.priority !== 'Medium' ? `${t.priority} priority` : ''].filter(Boolean).join(' · ')}</div>}
                     </div>
-                  ))}
-                </RowGroup>
-              </section>
-            ))}
+                  </div>
+                </SwipeRow>
+              )),
+            }))} />
           </>
         )}
       </div>

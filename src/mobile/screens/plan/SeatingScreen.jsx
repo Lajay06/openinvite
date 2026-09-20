@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Armchair, Monitor, UserMinus } from 'lucide-react';
 import Screen from '../../shell/Screen';
-import { Row, RowGroup, PanelCard, EmptyState, ErrorState, SkeletonRows, BottomSheet, PillButton, SelectField } from '../../ui';
+import { Row, RowGroup, PanelCard, EmptyState, ErrorState, SkeletonRows, BottomSheet, PillButton, SelectField, ItemCard, ItemList } from '../../ui';
 import { initials } from '../../lib/format';
 
 /**
@@ -10,8 +10,9 @@ import { initials } from '../../lib/format';
  * sheet that calls `onMove(guestId, tableName | '')`, the desktop's own
  * assign / unassign helpers.
  */
-export default function SeatingScreen({ tables = [], guests = [], onMove, loading, error, onRetry, back, onDesktop }) {
+export default function SeatingScreen({ tables = [], guests = [], onMove, loading, error, onRetry, back, onDesktop, onRefresh }) {
   const [sheet, setSheet] = useState(null); // guest
+  const [openTable, setOpenTable] = useState(null);
   const [target, setTarget] = useState('');
   const [saving, setSaving] = useState(false);
   const byGuest = useMemo(() => {
@@ -28,14 +29,23 @@ export default function SeatingScreen({ tables = [], guests = [], onMove, loadin
     try { await onMove(sheet.id, target); setSheet(null); } finally { setSaving(false); }
   };
   return (
-    <Screen title="Seating" subtitle={loading ? '' : `${tables.length} table${tables.length === 1 ? '' : 's'}, ${unassigned.length} unseated`} back={back}>
+    <Screen title="Seating" subtitle={loading ? '' : `${tables.length} table${tables.length === 1 ? '' : 's'}, ${unassigned.length} unseated`} back={back} onRefresh={onRefresh}>
       <div className="oi-m-stack oi-m-stack--24">
         <PanelCard tone="sand" label="Best on desktop" body="The table layout is drawn on a bigger screen. Here you can see who sits where and move guests between tables." action={onDesktop ? 'Open the layout on desktop' : undefined} onClick={onDesktop} />
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : tables.length === 0 ? (
           <EmptyState icon={Armchair} text="No tables yet. Add them on desktop and they show here." />
         ) : (
           <>
-            {tables.map((t) => (
+            <section>
+              <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Tables</h2>
+              <ItemList>
+                {tables.map((t) => {
+                  const seated = (t.assigned_guests || []).map((a) => name(a.guest_id));
+                  return <ItemCard key={t.id} icon={Armchair} tile={openTable === t.id ? 'ink' : 'sand'} title={t.name} meta={seated.length ? seated.slice(0, 3).join(', ') + (seated.length > 3 ? ` and ${seated.length - 3} more` : '') : 'Nobody seated yet'} value={`${seated.length} of ${t.capacity || 8}`} badge={seated.length >= (t.capacity || 8) ? 'Full' : undefined} badgeTone="warn" onClick={() => setOpenTable(openTable === t.id ? null : t.id)} />;
+                })}
+              </ItemList>
+            </section>
+            {openTable && tables.filter((t) => t.id === openTable).map((t) => (
               <section key={t.id}>
                 <div className="oi-m-section-head">
                   <h2 className="oi-m-section">{t.name}</h2>

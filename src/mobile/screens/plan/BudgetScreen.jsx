@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Wallet, Plus, Receipt, CreditCard } from 'lucide-react';
 import Screen from '../../shell/Screen';
-import { Row, RowGroup, ProgressBar, StatCard, EmptyState, ErrorState, SkeletonRows, PanelCard } from '../../ui';
+import { Row, RowGroup, ProgressBar, StatCard, EmptyState, ErrorState, SkeletonRows, PanelCard, ItemCard, ItemList } from '../../ui';
 import { BUDGET_CATEGORIES, budgetCategoryLabel } from '@/lib/budgetCategories';
 import { money, dateShort } from '../../lib/format';
 import ExpenseFormSheet from './ExpenseFormSheet';
@@ -21,12 +21,12 @@ export function summariseBudget(items = [], plan = null) {
 }
 
 /** Budget and payments: totals, the next payment due, categories as rows. */
-export default function BudgetScreen({ items = [], plan = null, symbol = '$', onOpenCategory, onAdd, loading, error, onRetry, back, openAdd = false }) {
+export default function BudgetScreen({ items = [], plan = null, symbol = '$', onOpenCategory, onAdd, onMarkPaid, loading, error, onRetry, back, openAdd = false, onRefresh }) {
   const [sheet, setSheet] = useState({ open: openAdd, item: null });
   const s = useMemo(() => summariseBudget(items, plan), [items, plan]);
   const next = s.duePayments[0];
   return (
-    <Screen title="Budget" subtitle={loading ? '' : s.total ? `${money(s.remaining, symbol)} left` : ''} back={back} actions={[{ icon: Plus, label: 'Add an expense', onClick: () => setSheet({ open: true, item: null }) }]}>
+    <Screen title="Budget" subtitle={loading ? '' : s.total ? `${money(s.remaining, symbol)} left` : ''} back={back} actions={[{ icon: Plus, label: 'Add an expense', onClick: () => setSheet({ open: true, item: null }) }]} onRefresh={onRefresh}>
       <div className="oi-m-stack oi-m-stack--24">
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : items.length === 0 && !plan?.total ? (
           <EmptyState icon={Wallet} text="No expenses yet. Add the first one and your totals start here." actionLabel="Add an expense" onAction={() => setSheet({ open: true, item: null })} />
@@ -53,9 +53,11 @@ export default function BudgetScreen({ items = [], plan = null, symbol = '$', on
             {s.duePayments.length > 0 && (
               <section>
                 <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Payments due</h2>
-                <RowGroup>
-                  {s.duePayments.map((i) => <Row key={i.id} icon={Receipt} tile="warn" label={i.item_name} sub={[i.vendor, `Due ${dateShort(i.payment_date)}`].filter(Boolean).join(' · ')} value={money(i.actual_amount || i.budgeted_amount, symbol)} onClick={() => setSheet({ open: true, item: i })} />)}
-                </RowGroup>
+                <ItemList>
+                  {s.duePayments.map((i) => (
+                    <ItemCard key={i.id} icon={Receipt} tile="warn" title={i.item_name} meta={[i.vendor, `Due ${dateShort(i.payment_date)}`].filter(Boolean).join(' · ')} value={money(i.actual_amount || i.budgeted_amount, symbol)} onClick={() => setSheet({ open: true, item: i })} action={onMarkPaid ? { icon: CreditCard, label: `Mark ${i.item_name} paid`, tone: 'primary', onClick: () => onMarkPaid(i) } : undefined} />
+                  ))}
+                </ItemList>
               </section>
             )}
           </>
