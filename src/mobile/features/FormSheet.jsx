@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BottomSheet, PillButton } from '../ui';
 import { SchemaField, coerce, validate } from './FieldRenderer';
+import { useOnline } from '../shell/OfflineBanner';
 
 /**
  * A bottom sheet that edits an object against a field list. onSave(values)
@@ -11,6 +12,7 @@ export default function FormSheet({ open, title, fields, initial, required = [],
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const online = useOnline();
   useEffect(() => {
     if (open) {
       const base = {};
@@ -41,13 +43,14 @@ export default function FormSheet({ open, title, fields, initial, required = [],
         <>
           {onDelete && <PillButton variant="ghost" onClick={onDelete} disabled={saving} style={{ color: 'var(--m-primary)' }}>Remove</PillButton>}
           <PillButton variant="secondary" onClick={onClose} disabled={saving}>Cancel</PillButton>
-          <PillButton variant="primary" onClick={submit} disabled={saving} style={{ flex: 1 }}>{saving ? 'Saving' : saveLabel || 'Save'}</PillButton>
+          <PillButton variant="primary" onClick={submit} disabled={saving || !online} style={{ flex: 1 }}>{saving ? 'Saving' : !online ? 'Offline' : saveLabel || 'Save'}</PillButton>
         </>
       )}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {fields.map((f) => <SchemaField key={f.name} field={f} value={v[f.name]} onChange={(val) => setV((s) => ({ ...s, [f.name]: val }))} error={errors[f.name]} />)}
         {saveError && <p className="oi-m-field__error" role="alert">{saveError}</p>}
+        {!online && <p className="oi-m-meta">You are offline, so this cannot be saved yet. It will not be lost while the sheet is open.</p>}
       </div>
     </BottomSheet>
   );

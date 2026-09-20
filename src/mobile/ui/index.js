@@ -22,3 +22,4 @@ export { useCountUp, useParallax } from './motion';
 export { default as ItemCard, ItemList } from './ItemCard';
 export { default as GroupedList, SwipeRow, SWIPE_ICONS } from './GroupedList';
 export { useListView } from './ViewToggle';
+export { default as PhotoPicker } from './PhotoPicker';

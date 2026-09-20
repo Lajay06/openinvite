@@ -93,7 +93,7 @@ export default function EntityListScreen({ schema, items = [], onCreate, onUpdat
       {header}
       {schema.filters && <FilterPills options={schema.filters} value={filter} onChange={setFilter} />}
       <div className="oi-m-stack oi-m-stack--24" style={{ marginTop: schema.filters ? 12 : 0 }}>
-        {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : items.length === 0 ? (
+        {error && !loading ? <ErrorState onRetry={onRetry} timedOut={error?.timedOut} /> : loading ? <SkeletonRows count={6} /> : items.length === 0 ? (
           <EmptyState icon={Inbox} image={schema.emptyImage} text={schema.emptyText || `No ${schema.itemLabel}s yet. Add the first one.`} actionLabel={`Add a ${schema.itemLabel}`} onAction={() => setSheet({ open: true, item: null })} />
         ) : visible.length === 0 ? (
           <EmptyState icon={Inbox} text="Nothing matches this filter." />

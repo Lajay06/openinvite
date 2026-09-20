@@ -760,3 +760,64 @@ select.oi-m-input { background-image: none; padding-right: 44px; }
 /* Two-column image grid, the alternate view for vendors and the registry. */
 .oi-m-imggrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .oi-m-imggrid > * { min-width: 0; }
+
+/* ── Webview tells, removed ─────────────────────────────────────────── */
+.oi-mobile-root {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: pan-x pan-y;
+}
+.oi-mobile-root input,
+.oi-mobile-root textarea,
+.oi-mobile-root [contenteditable],
+.oi-mobile-root .oi-m-bubble,
+.oi-mobile-root .oi-m-selectable {
+  -webkit-user-select: text;
+  user-select: text;
+}
+.oi-mobile-root img { -webkit-touch-callout: none; pointer-events: none; }
+
+/* ── App lock ───────────────────────────────────────────────────────── */
+.oi-m-lock { position: absolute; inset: 0; z-index: 60; background: var(--m-ink); color: #FFFFFF; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; }
+.oi-m-lock .oi-m-img { border-radius: 0; }
+.oi-m-lock__body { position: relative; z-index: 2; margin: 0 var(--m-gutter) calc(var(--m-safe-bottom) + 40px); display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.oi-m-lock__body .oi-m-pill { margin-top: 8px; }
+.oi-m-lock__mark { width: 56px; height: 56px; border-radius: 50%; background: var(--m-primary); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+.oi-m-lock__mark > span { width: 28px; height: 28px; border-radius: 50%; background: var(--m-ink); }
+
+/* ── Offline banner: slim, under the compact bar ────────────────────── */
+.oi-m-offline {
+  position: absolute;
+  top: calc(var(--m-safe-top) + var(--m-compact-h));
+  left: var(--m-gutter);
+  right: var(--m-gutter);
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--m-r-pill);
+  background: var(--m-ink);
+  color: #FFFFFF;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  animation: oiMobileEnter var(--m-move) var(--m-ease) both;
+}
+
+/* ── First run ──────────────────────────────────────────────────────── */
+.oi-m-welcome { position: absolute; inset: 0; background: var(--m-ink); color: #FFFFFF; display: flex; flex-direction: column; z-index: 40; }
+.oi-m-welcome__slides { flex: 1; min-height: 0; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.oi-m-welcome__slides::-webkit-scrollbar { display: none; }
+.oi-m-welcome__slide { position: relative; flex: 0 0 100%; scroll-snap-align: start; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; }
+.oi-m-welcome__slide .oi-m-img { border-radius: 0; }
+.oi-m-welcome__text { position: relative; z-index: 2; padding: 0 24px 24px; display: flex; flex-direction: column; gap: 8px; }
+.oi-m-welcome__foot { position: relative; z-index: 2; padding: 0 16px calc(var(--m-safe-bottom) + 24px); display: flex; flex-direction: column; gap: 10px; background: var(--m-ink); }
+.oi-m-welcome__foot .oi-m-dots { padding: 12px 0 8px; }
+
+.oi-m-login { position: absolute; inset: 0; background: var(--m-bg); display: flex; flex-direction: column; overflow-y: auto; z-index: 40; }
+.oi-m-login__top { position: relative; height: 260px; flex-shrink: 0; background: var(--m-ink); overflow: hidden; }
+.oi-m-login__top .oi-m-img { border-radius: 0; }
+.oi-m-login__title { position: absolute; left: 20px; right: 20px; bottom: 20px; z-index: 2; display: flex; flex-direction: column; gap: 4px; }
+.oi-m-login__form { display: flex; flex-direction: column; gap: 16px; padding: 24px 16px calc(var(--m-safe-bottom) + 24px); }

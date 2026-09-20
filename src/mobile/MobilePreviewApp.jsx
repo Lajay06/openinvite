@@ -25,6 +25,9 @@ import NotificationsScreen from './notifications/NotificationsScreen';
 import NotificationSettingsScreen from './notifications/NotificationSettingsScreen';
 import PushPreview from './notifications/PushPreview';
 import ImageGalleryScreen from './screens/preview/ImageGalleryScreen';
+import WelcomeScreen from './screens/firstrun/WelcomeScreen';
+import LoginScreen from './screens/firstrun/LoginScreen';
+import PrimingScreen from './screens/firstrun/PrimingScreen';
 import { buildFeed } from './notifications/feed';
 import { defaultSettings } from './notifications/store';
 import { isAttending, isDeclined, isAwaitingPrimary } from '@/lib/guestRsvpTally';
@@ -57,7 +60,10 @@ export default function MobilePreviewApp() {
   return (
     <Routes>
       <Route path="push" element={<PushPreview />} />
-      <Route element={<MobileShell base={PREVIEW_BASE} renderAva={() => <PreviewAva />} notifications={notifications} />}>
+      <Route path="welcome" element={<div className="oi-mobile-root"><WelcomeScreen onStart={() => {}} onLogin={() => {}} /></div>} />
+      <Route path="login" element={<div className="oi-mobile-root"><LoginScreen onSubmit={() => {}} providers={[{ key: 'google', label: 'Continue with Google' }, { key: 'apple', label: 'Continue with Apple' }]} onForgot={() => {}} onSignUp={() => {}} onBack={() => {}} error={params.get('state') === 'error' ? 'That email and password did not match. Try again.' : ''} /></div>} />
+      <Route path="priming" element={<div className="oi-mobile-root"><PrimingScreen onTurnOn={() => {}} onNotNow={() => {}} recorded={params.get('state') === 'recorded'} /></div>} />
+      <Route element={<MobileShell base={PREVIEW_BASE} renderAva={() => <PreviewAva />} notifications={notifications} forcedOffline={params.get('offline') === '1'} forcedLock={params.get('lock') === '1'} lockPhoto={coupleImages(FIXTURE_WEDDING)[0]} />}>
         <Route index element={<PreviewHome />} />
         <Route path="guests" element={<PreviewGuests />} />
         <Route path="guests/:id" element={<PreviewGuests />} />

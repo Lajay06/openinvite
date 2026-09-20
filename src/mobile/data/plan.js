@@ -60,6 +60,7 @@ export function useEntity(name, sort = '-created_date') {
   const writes = {
     create: async (fields) => { const r = await E.create(fields); load.reload(); return r; },
     update: async (id, fields) => { const r = await E.update(id, fields); load.reload(); return r; },
+    updateQuiet: (id, fields) => E.update(id, fields),
     remove: async (id) => { await E.delete(id); load.reload(); },
   };
   return { ...load, ...writes };

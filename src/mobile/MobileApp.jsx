@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import AvaChatPod from '@/components/layout/AvaChatPod';
@@ -10,6 +10,10 @@ import SiteContainer from './screens/site/SiteContainer';
 import AccountContainer from './screens/account/AccountContainer';
 import SearchContainer from './screens/search/SearchContainer';
 import useNotifications from './notifications/useNotifications';
+import { useWedding } from './data/wedding';
+import { heroImageFor } from './lib/images';
+import { PrimingContainer, usePrimingGate, WELCOME_PREF } from './screens/firstrun/FirstRunContainers';
+import { isNative, prefGet } from './native';
 import NotificationsScreen from './notifications/NotificationsScreen';
 import NotificationSettingsScreen from './notifications/NotificationSettingsScreen';
 
@@ -24,12 +28,18 @@ export default function MobileApp() {
   const [dismissed, setDismissed] = useState(() => new Set());
   const { symbol } = useCurrency();
   const notifications = useNotifications({ base: MOBILE_BASE, symbol });
+  const wedding = useWedding();
+  const navigate = useNavigate();
+  const showPriming = usePrimingGate(notifications);
+  // Native first launch: the welcome screens once, tracked locally.
+  useEffect(() => { if (isNative()) prefGet(WELCOME_PREF).then((v) => { if (!v) navigate('/m/welcome', { replace: true }); }); }, [navigate]);
   const renderAva = ({ onClose }) => (
     <AvaChatPod onClose={onClose} openDetail={null} messages={messages} setMessages={setMessages} dismissed={dismissed} setDismissed={setDismissed} onClear={() => { setMessages([]); setDismissed(new Set()); }} />
   );
+  if (showPriming && !window.location.pathname.endsWith('/priming')) return <Navigate to={`${MOBILE_BASE}/priming`} replace />;
   return (
     <Routes>
-      <Route element={<MobileShell base={MOBILE_BASE} renderAva={renderAva} notifications={notifications} />}>
+      <Route element={<MobileShell base={MOBILE_BASE} renderAva={renderAva} notifications={notifications} lockPhoto={heroImageFor(wedding.data)} />}>
         <Route index element={<HomeContainer />} />
         <Route path="guests" element={<GuestsContainer />} />
         <Route path="guests/:id" element={<GuestsContainer />} />
@@ -41,6 +51,7 @@ export default function MobileApp() {
         <Route path="search" element={<SearchContainer />} />
         <Route path="notifications" element={<NotificationsContainer />} />
         <Route path="notifications/settings" element={<NotificationSettingsContainer />} />
+        <Route path="priming" element={<PrimingContainer />} />
         <Route path="*" element={<Navigate to={MOBILE_BASE} replace />} />
       </Route>
     </Routes>

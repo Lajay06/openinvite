@@ -69,7 +69,7 @@ export default function DetailsScreen({ schema, details, onSave, loading, error,
   return (
     <Screen title={schema.title} subtitle={status === 'saving' ? 'Saving' : status === 'saved' ? 'Saved' : status === 'failed' ? 'Could not save. Check your connection.' : subtitle} back={back}>
       <div className="oi-m-stack oi-m-stack--24">
-        {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? (
+        {error && !loading ? <ErrorState onRetry={onRetry} timedOut={error?.timedOut} /> : loading ? (
           <>
             <Skeleton kind="block" />
             <Skeleton kind="block" />

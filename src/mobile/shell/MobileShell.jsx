@@ -1,10 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import TabBar from './TabBar';
+import AppLock from './AppLock';
+import OfflineBanner, { NetworkProvider } from './OfflineBanner';
+import useEdgeSwipeBack from './useEdgeSwipeBack';
 import BottomSheet from '../ui/BottomSheet';
 import Banner from '../notifications/Banner';
-import { bootNative, registerBackButton } from '../native';
+import { bootNative, registerBackButton, registerDeepLinks, hideSplash } from '../native';
 import '../styles/mobile.css';
 
 /**
@@ -17,14 +21,46 @@ import '../styles/mobile.css';
  */
 export const ShellContext = React.createContext({ base: '/m', unread: 0, openAva: () => {}, closeAva: () => {}, notifications: null, search: null });
 
-export default function MobileShell({ base = '/m', renderAva, showAva = true, notifications = null, search = null }) {
+export default function MobileShell({ base = '/m', renderAva, showAva = true, notifications = null, search = null, lockPhoto = '', forcedOffline = false, forcedLock = false }) {
   const [avaOpen, setAvaOpen] = useState(false);
+  const navigate = useNavigate();
+  const rootRef = useRef(null);
+  useEdgeSwipeBack(base, rootRef);
   const [banner, setBanner] = useState(null);
   const { pathname } = useLocation();
   const avaOpenRef = useRef(avaOpen);
   avaOpenRef.current = avaOpen;
 
-  useEffect(() => { bootNative(); }, []);
+  // Boot: status bar and keyboard, then the splash goes once the shell has
+  // painted its first frame (a short fade is in capacitor.config.ts).
+  useEffect(() => {
+    bootNative();
+    const t = setTimeout(() => hideSplash(), 350);
+    return () => clearTimeout(t);
+  }, []);
+
+  // openinvite:// and universal links route into /m; auth callbacks store
+  // the token first (native.ts) and then reload so AuthContext sees it.
+  useEffect(() => {
+    let dispose = () => {};
+    registerDeepLinks((path, raw) => {
+      if (/access_token=/.test(raw)) { window.location.replace(path); return; }
+      navigate(path);
+    }).then((d) => { dispose = d; });
+    return () => dispose();
+  }, [navigate]);
+
+  // Tapping outside an input dismisses the keyboard.
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return undefined;
+    const onTouch = (e) => {
+      const a = document.activeElement;
+      if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && !a.contains(e.target) && !e.target.closest('input, textarea, select, button, [role=button], a')) a.blur();
+    };
+    el.addEventListener('touchstart', onTouch, { passive: true });
+    return () => el.removeEventListener('touchstart', onTouch);
+  }, []);
 
   useEffect(() => {
     let dispose = () => {};
@@ -49,7 +85,9 @@ export default function MobileShell({ base = '/m', renderAva, showAva = true, no
 
   return (
     <ShellContext.Provider value={ctx}>
-      <div className="oi-mobile-root">
+      <NetworkProvider forcedOffline={forcedOffline}>
+      <AppLock photo={lockPhoto} forced={forcedLock}>
+      <div className="oi-mobile-root" ref={rootRef}>
         <Toaster
           position="top-center"
           containerStyle={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}
@@ -73,7 +111,10 @@ export default function MobileShell({ base = '/m', renderAva, showAva = true, no
           </BottomSheet>
         )}
         {banner && <Banner item={banner} onDone={onBannerDone} />}
+        <OfflineBanner />
       </div>
+      </AppLock>
+      </NetworkProvider>
     </ShellContext.Provider>
   );
 }

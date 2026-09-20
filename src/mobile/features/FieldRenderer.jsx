@@ -1,5 +1,7 @@
-import React from 'react';
-import { TextField, TextAreaField, SelectField, Switch } from '../ui';
+import React, { useState } from 'react';
+import { Camera } from 'lucide-react';
+import { TextField, TextAreaField, SelectField, Switch, PillButton, SmartImage } from '../ui';
+import PhotoPicker from '../ui/PhotoPicker';
 
 /** Renders one schema field bound to `value`/`onChange`. */
 export function SchemaField({ field, value, onChange, error }) {
@@ -21,6 +23,8 @@ export function SchemaField({ field, value, onChange, error }) {
     case 'date':
     case 'time':
       return <TextField {...common} type={field.type} value={value ?? ''} onChange={(e) => onChange(e.target.value)} />;
+    case 'image':
+      return <ImageField field={field} value={value} onChange={onChange} error={error} />;
     case 'email':
     case 'tel':
     case 'url':
@@ -47,4 +51,23 @@ export function validate(fields, values, required = []) {
     if (f.type === 'number' && v !== '' && v != null && Number.isNaN(Number(v))) errors[f.name] = 'Numbers only.';
   }
   return errors;
+}
+
+/** A photo slot: the current image, a picker (camera or library), or a pasted link. */
+function ImageField({ field, value, onChange, error }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="oi-m-field">
+      <span className="oi-m-field__label">{field.label}</span>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+        <SmartImage src={value} alt="" width={72} height={72} style={{ width: 72, height: 72, flexShrink: 0 }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1, minWidth: 0 }}>
+          <PillButton variant="secondary" size="sm" icon={Camera} onClick={() => setOpen(true)} style={{ alignSelf: 'flex-start' }}>{value ? 'Change photo' : 'Add a photo'}</PillButton>
+          {value && <button type="button" className="oi-m-block__link" onClick={() => onChange('')} style={{ margin: 0, minHeight: 32 }}>Remove</button>}
+        </div>
+      </div>
+      <TextField id={`f-${field.name}`} type="url" inputMode="url" autoCapitalize="off" value={value ?? ''} onChange={(e) => onChange(e.target.value)} placeholder="Or paste an image link" error={error} />
+      <PhotoPicker open={open} onClose={() => setOpen(false)} onUploaded={(url) => onChange(url)} />
+    </div>
+  );
 }

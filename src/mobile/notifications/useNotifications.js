@@ -89,8 +89,9 @@ export default function useNotifications({ base = '/m', symbol = '$' } = {}) {
   }, [state.dismissed]);
 
   const setSettings = useCallback(async (next) => {
-    setState((s) => ({ ...s, settings: next }));
-    await saveSettings(next);
+    let before = null;
+    setState((s) => { before = s.settings; return { ...s, settings: next }; });
+    try { await saveSettings(next); } catch { setState((s) => ({ ...s, settings: before })); }
   }, []);
 
   const bannerShown = useCallback(async (item) => {

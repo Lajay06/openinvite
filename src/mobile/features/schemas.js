@@ -130,7 +130,7 @@ export const ENTITIES = {
     pattern: 'cards',
     gridToggle: true,
     row: (r) => ({ title: r.title || 'Untitled', sub: [r.category, (r.tags || []).join(', ')].filter(Boolean).join(' · '), image: r.image_url }),
-    fields: [t('title', 'Title'), t('image_url', 'Image link', { type: 'url' }), t('url', 'Source link', { type: 'url' }), t('category', 'Category', { type: 'select', options: opt([['venue', 'Venue'], ['dress', 'Dress'], ['flowers', 'Flowers'], ['decor', 'Decor'], ['food', 'Food'], ['other', 'Other']]) }), ta('notes', 'Notes')],
+    fields: [t('title', 'Title'), t('image_url', 'Photo', { type: 'image' }), t('url', 'Source link', { type: 'url' }), t('category', 'Category', { type: 'select', options: opt([['venue', 'Venue'], ['dress', 'Dress'], ['flowers', 'Flowers'], ['decor', 'Decor'], ['food', 'Food'], ['other', 'Other']]) }), ta('notes', 'Notes')],
     required: ['title'],
   },
   vows: {
@@ -166,7 +166,7 @@ export const ENTITIES = {
     pattern: 'cards',
     gridToggle: true,
     row: (r) => ({ title: r.store_name || 'Registry', sub: (r.url || '').replace(/^https?:\/\//, ''), image: r.image_url, icon: Gift }),
-    fields: [t('store_name', 'Store'), t('url', 'Registry link', { type: 'url' }), ta('description', 'A line for guests'), t('image_url', 'Image link', { type: 'url' })],
+    fields: [t('store_name', 'Store'), t('url', 'Registry link', { type: 'url' }), ta('description', 'A line for guests'), t('image_url', 'Photo', { type: 'image' })],
     required: ['store_name', 'url'],
   },
   'registry-products': {
@@ -177,7 +177,7 @@ export const ENTITIES = {
     pattern: 'cards',
     gridToggle: true,
     row: (r) => ({ title: r.name, sub: [r.registry_platform, r.quantity_purchased ? `${r.quantity_purchased} of ${r.quantity_requested || 1} bought` : ''].filter(Boolean).join(' · '), value: r.price ? `$${Number(r.price).toLocaleString('en-US')}` : '', image: r.image_url, icon: Gift, badge: r.quantity_purchased >= (r.quantity_requested || 1) ? 'Bought' : undefined, badgeTone: 'ok' }),
-    fields: [t('name', 'Product'), t('price', 'Price', { type: 'number' }), t('product_url', 'Link', { type: 'url' }), t('registry_platform', 'Store'), t('quantity_requested', 'How many', { type: 'number' }), t('priority', 'Priority', { type: 'select', options: opt([['high', 'High'], ['medium', 'Medium'], ['low', 'Low']]) }), t('image_url', 'Image link', { type: 'url' }), ta('description', 'Why you love it'), ta('notes', 'Notes')],
+    fields: [t('name', 'Product'), t('price', 'Price', { type: 'number' }), t('product_url', 'Link', { type: 'url' }), t('registry_platform', 'Store'), t('quantity_requested', 'How many', { type: 'number' }), t('priority', 'Priority', { type: 'select', options: opt([['high', 'High'], ['medium', 'Medium'], ['low', 'Low']]) }), t('image_url', 'Photo', { type: 'image' }), ta('description', 'Why you love it'), ta('notes', 'Notes')],
     required: ['name'],
   },
   'registry-funds': {
@@ -188,7 +188,7 @@ export const ENTITIES = {
     pattern: 'cards',
     gridToggle: true,
     row: (r) => ({ title: r.title, sub: r.description, value: r.requested_amount ? `Goal $${Number(r.requested_amount).toLocaleString('en-US')}` : '', image: r.image_url, icon: Gift }),
-    fields: [t('title', 'Fund'), ta('description', 'What it is for'), t('requested_amount', 'Goal', { type: 'number' }), t('payment_link_url', 'Payment link', { type: 'url' }), t('category', 'Category', { type: 'select', options: opt([['honeymoon', 'Honeymoon'], ['home', 'Home'], ['experience', 'Experience'], ['charity', 'Charity'], ['other', 'Other']]) }), t('image_url', 'Image link', { type: 'url' })],
+    fields: [t('title', 'Fund'), ta('description', 'What it is for'), t('requested_amount', 'Goal', { type: 'number' }), t('payment_link_url', 'Payment link', { type: 'url' }), t('category', 'Category', { type: 'select', options: opt([['honeymoon', 'Honeymoon'], ['home', 'Home'], ['experience', 'Experience'], ['charity', 'Charity'], ['other', 'Other']]) }), t('image_url', 'Photo', { type: 'image' })],
     required: ['title'],
   },
   'registry-received': {

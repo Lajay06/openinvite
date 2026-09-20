@@ -57,6 +57,7 @@ const LOADERS: Record<string, () => Promise<Plugin>> = {
   browser: () => import('@capacitor/browser'),
   preferences: () => import('@capacitor/preferences'),
   app: () => import('@capacitor/app'),
+  network: () => import('@capacitor/network'),
 };
 
 async function load(name: string): Promise<Plugin | null> {
@@ -208,10 +209,13 @@ export async function registerBackButton(onBack: () => boolean): Promise<() => v
   if (!mod || platform() !== 'android') return () => {};
   try {
     const handle = await mod.App.addListener('backButton', ({ canGoBack }: { canGoBack: boolean }) => {
+      // Sheets first (the caller closes one and returns true), then history,
+      // then a confirm before leaving the app from a root screen.
       const handled = onBack();
       if (handled) return;
-      if (canGoBack) window.history.back();
-      else mod.App.exitApp();
+      const atRoot = /^\/m\/?(guests|plan|site|account)?\/?$/.test(window.location.pathname);
+      if (canGoBack && !atRoot) { window.history.back(); return; }
+      if (window.confirm('Leave Openinvite?')) mod.App.exitApp();
     });
     return () => {
       try {
@@ -280,4 +284,147 @@ export async function bootNative(): Promise<void> {
   if (!isNative()) return;
   await Promise.all([configureStatusBar(), configureKeyboard()]);
   await hideSplash();
+}
+
+/* ── Goal 3: deep links, biometric lock, camera, network ───────────────── */
+
+/** The custom scheme the native projects register. Universal links on openinvite.com.au are the later upgrade. */
+export const APP_SCHEME = 'openinvite';
+
+/**
+ * Turns an incoming openinvite:// URL into an in-app path under /m.
+ *   openinvite://auth?access_token=...   -> stores the token, returns '/m'
+ *   openinvite://m/plan/budget           -> '/m/plan/budget'
+ *   openinvite://plan/budget             -> '/m/plan/budget'
+ *   https://openinvite.com.au/m/...      -> '/m/...' (universal link, later)
+ * Returns null for anything it does not understand.
+ *
+ * Auth mirrors src/lib/app-params.js: the web callback lands on
+ * from_url?access_token=..., app-params stores it as base44_access_token
+ * and strips it from the URL. The scheme does the same and then goes Home.
+ */
+export function routeForDeepLink(url: string): string | null {
+  let u: URL;
+  try { u = new URL(url); } catch { return null; }
+  const isScheme = u.protocol === `${APP_SCHEME}:`;
+  const isSite = /openinvite\.com\.au$/i.test(u.hostname);
+  if (!isScheme && !isSite) return null;
+  const token = u.searchParams.get('access_token');
+  if (token) {
+    try { localStorage.setItem('base44_access_token', token); localStorage.setItem('oi_auth', '1'); } catch { /* private mode */ }
+    const next = u.searchParams.get('next');
+    return next && next.startsWith('/m') ? next : '/m';
+  }
+  // Scheme URLs: the host is the first path segment ("m", "plan", "guests").
+  const segs = isScheme ? [u.hostname, ...u.pathname.split('/').filter(Boolean)] : u.pathname.split('/').filter(Boolean);
+  const path = segs.filter(Boolean);
+  if (path[0] !== 'm') path.unshift('m');
+  return `/${path.join('/')}${u.search && !token ? u.search : ''}`;
+}
+
+/** Listens for openinvite:// and universal links and hands the route to the caller. Disposer returned. */
+export async function registerDeepLinks(onRoute: (path: string, raw: string) => void): Promise<() => void> {
+  const mod = await load('app');
+  if (!mod) return () => {};
+  try {
+    const handle = await mod.App.addListener('appUrlOpen', ({ url }: { url: string }) => {
+      const path = routeForDeepLink(url);
+      if (path) onRoute(path, url);
+    });
+    // A cold start from a link: the URL that launched the app.
+    try {
+      const launch = await mod.App.getLaunchUrl();
+      if (launch?.url) { const path = routeForDeepLink(launch.url); if (path) onRoute(path, launch.url); }
+    } catch { /* no launch url */ }
+    return () => { try { handle.remove(); } catch { /* no-op */ } };
+  } catch {
+    return () => {};
+  }
+}
+
+/** Fires when the app returns to the foreground; used by the app lock. */
+export async function onAppStateChange(cb: (active: boolean) => void): Promise<() => void> {
+  const mod = await load('app');
+  if (!mod) return () => {};
+  try {
+    const handle = await mod.App.addListener('appStateChange', ({ isActive }: { isActive: boolean }) => cb(isActive));
+    return () => { try { handle.remove(); } catch { /* no-op */ } };
+  } catch { return () => {}; }
+}
+
+const BIOMETRIC_LOADER = () => import('@aparajita/capacitor-biometric-auth');
+
+/** Whether the device offers biometrics (Face ID, Touch ID, fingerprint). Web: false. */
+export async function biometricsAvailable(): Promise<{ available: boolean; kind: string }> {
+  if (!isNative()) return { available: false, kind: '' };
+  try {
+    const mod: Plugin = await BIOMETRIC_LOADER();
+    const r = await mod.BiometricAuth.checkBiometry();
+    const kind = r.biometryType === mod.BiometryType.faceId ? 'Face ID' : r.biometryType === mod.BiometryType.touchId ? 'Touch ID' : r.biometryType === mod.BiometryType.fingerprintAuthentication ? 'Fingerprint' : r.biometryType === mod.BiometryType.faceAuthentication ? 'Face unlock' : 'Biometrics';
+    return { available: !!r.isAvailable, kind };
+  } catch { return { available: false, kind: '' }; }
+}
+
+/**
+ * Asks for biometrics, with the device passcode as fallback. Resolves true
+ * on success, false on cancel or failure. Web: true (no lock on the web).
+ * An app lock only: no password or token is stored anywhere new.
+ */
+export async function biometricUnlock(reason = 'Unlock Openinvite'): Promise<boolean> {
+  if (!isNative()) return true;
+  try {
+    const mod: Plugin = await BIOMETRIC_LOADER();
+    await mod.BiometricAuth.authenticate({ reason, cancelTitle: 'Cancel', allowDeviceCredential: true, iosFallbackTitle: 'Use passcode', androidTitle: 'Unlock Openinvite', androidSubtitle: reason });
+    return true;
+  } catch { return false; }
+}
+
+const CAMERA_LOADER = () => import('@capacitor/camera');
+
+/**
+ * Take a photo or choose one from the library and return it as a File the
+ * existing upload hook (src/hooks/useFileUpload.js) accepts. Web: null, so
+ * the caller falls back to <input type="file">.
+ */
+export async function pickPhoto(source: 'camera' | 'library'): Promise<File | null> {
+  if (!isNative()) return null;
+  try {
+    const mod: Plugin = await CAMERA_LOADER();
+    let uri: string | undefined;
+    if (source === 'camera') {
+      const r = await mod.Camera.takePhoto({ quality: 85, targetWidth: 2400, saveToGallery: false });
+      uri = r?.webPath || r?.uri;
+    } else {
+      const r = await mod.Camera.chooseFromGallery({ quality: 85, targetWidth: 2400, allowMultipleSelection: false, limit: 1 });
+      const first = r?.results?.[0];
+      uri = first?.webPath || first?.uri;
+    }
+    if (!uri) return null;
+    const blob = await (await fetch(uri)).blob();
+    const ext = blob.type.includes('png') ? 'png' : 'jpg';
+    return new File([blob], `photo-${Date.now()}.${ext}`, { type: blob.type || 'image/jpeg' });
+  } catch {
+    return null;
+  }
+}
+
+/** Network: current status and a listener. Web: navigator.onLine and the online/offline events. */
+export async function networkStatus(): Promise<boolean> {
+  const mod = await load('network');
+  if (mod) { try { const s = await mod.Network.getStatus(); return !!s.connected; } catch { /* fall through */ } }
+  return typeof navigator === 'undefined' ? true : navigator.onLine !== false;
+}
+
+export async function onNetworkChange(cb: (online: boolean) => void): Promise<() => void> {
+  const mod = await load('network');
+  if (mod) {
+    try {
+      const handle = await mod.Network.addListener('networkStatusChange', (s: { connected: boolean }) => cb(!!s.connected));
+      return () => { try { handle.remove(); } catch { /* no-op */ } };
+    } catch { /* fall through */ }
+  }
+  if (typeof window === 'undefined') return () => {};
+  const on = () => cb(true); const off = () => cb(false);
+  window.addEventListener('online', on); window.addEventListener('offline', off);
+  return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); };
 }

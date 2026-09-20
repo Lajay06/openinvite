@@ -5,6 +5,7 @@ import { getTrialStatus } from '@/lib/trialStatus';
 import CollaborateModal from '@/components/layout/CollaborateModal';
 import AccountScreen from './AccountScreen';
 import { isNative } from '../../native';
+import { useAppLockSetting } from '../../shell/AppLock';
 import { openDesktop } from '../../lib/links';
 import { useWedding } from '../../data/wedding';
 import { heroImageFor } from '../../lib/images';
@@ -29,6 +30,7 @@ export default function AccountContainer() {
   const trial = getTrialStatus(user);
   const planLabel = PLAN_LABELS[trial.plan] || 'Free trial';
   const showPurchases = !isNative();
+  const appLock = useAppLockSetting();
 
   const planNote = trial.isPaid
     ? null
@@ -58,6 +60,7 @@ export default function AccountContainer() {
         onContact={() => openDesktop(navigate, '/Contact')}
         onLogout={() => logout()}
         loading={isLoadingAuth}
+        appLock={isNative() ? appLock : null}
       />
       {collab && <CollaborateModal onClose={() => setCollab(false)} />}
     </>

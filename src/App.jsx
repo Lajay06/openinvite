@@ -104,6 +104,7 @@ const Home = lazyWithReload(() => import('./pages/Home'));
 const MobileApp = lazyWithReload(() => import('./mobile/MobileApp'));
 import { isNative as isNativeShell } from './mobile/native';
 const MobilePreviewApp = lazyWithReload(() => import('./mobile/MobilePreviewApp'));
+const MobileFirstRun = lazyWithReload(() => import('./mobile/MobileFirstRun'));
 const FAQ = lazyWithReload(() => import('./pages/FAQ'));
 const Tour = lazyWithReload(() => import('./pages/Tour'));
 
@@ -268,12 +269,15 @@ const AuthenticatedApp = () => {
           needed. MobilePreviewApp itself redirects to /m outside DEV, and
           the route is not registered at all in a production build. */}
       {import.meta.env.DEV && <Route path="/m/preview/*" element={<MobilePreviewApp />} />}
+      {/* First run for the mobile app: reachable signed out. The web login page is untouched. */}
+      <Route path="/m/welcome" element={<MobileFirstRun screen="welcome" />} />
+      <Route path="/m/login" element={<MobileFirstRun screen="login" />} />
       {/* The mobile app, behind the same ProtectedRoute as the dashboard but
           with its own unauthenticated element, so a signed-out visitor comes
           back to /m after signing in (Login honors ?next=). It sits beside
           the dashboard's guard rather than inside it, because a nested guard
           would never be reached: the outer one redirects first. */}
-      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=%2Fm" replace />} />}>
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to={isNativeShell() ? '/m/welcome' : '/login?next=%2Fm'} replace />} />}>
         <Route path="/m/*" element={<MobileApp />} />
       </Route>
       <Route path="/signup" element={<Navigate to="/register" replace />} />

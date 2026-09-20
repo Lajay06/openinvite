@@ -1,7 +1,7 @@
 import React from 'react';
-import { UserRound, Users, CreditCard, Bell, LifeBuoy, MessageSquare, LogOut, CalendarDays, ArrowUpRight, BellRing } from 'lucide-react';
+import { UserRound, Users, CreditCard, Bell, LifeBuoy, MessageSquare, LogOut, CalendarDays, ArrowUpRight, BellRing, ScanFace } from 'lucide-react';
 import Screen from '../../shell/Screen';
-import { Row, RowGroup, PillButton, Skeleton, SmartImage, PanelCard } from '../../ui';
+import { Row, RowGroup, PillButton, Skeleton, SmartImage, PanelCard, Switch } from '../../ui';
 import { initials } from '../../lib/format';
 
 /**
@@ -9,7 +9,7 @@ import { initials } from '../../lib/format';
  * rows. `showPurchases` is false inside the native shell, so no upgrade,
  * checkout or billing-portal call to action renders there.
  */
-export default function AccountScreen({ name, email, coupleName, weddingDate, photo, planLabel, planNote, trialDaysLeft, showPurchases, onUpgrade, onDetails, onEventDetails, onCollaborators, onNotifications, onNotificationSettings, onHelp, onContact, onLogout, loading }) {
+export default function AccountScreen({ name, email, coupleName, weddingDate, photo, planLabel, planNote, trialDaysLeft, showPurchases, onUpgrade, onDetails, onEventDetails, onCollaborators, onNotifications, onNotificationSettings, onHelp, onContact, onLogout, loading, appLock = null }) {
   return (
     <Screen title="Account" bell>
       <div className="oi-m-stack oi-m-stack--24">
@@ -41,6 +41,16 @@ export default function AccountScreen({ name, email, coupleName, weddingDate, ph
           <Row icon={CreditCard} tile="sand" label="Plan" value={planLabel} onClick={showPurchases ? onUpgrade : undefined} chevron={!!showPurchases} />
           <Row icon={BellRing} tile="sand" label="Notifications" sub="What you hear about, and when" onClick={onNotificationSettings} />
           <Row icon={Bell} tile="sand" label="Email notifications" onClick={onNotifications} />
+          {appLock && (
+            <div className="oi-m-row" style={{ minHeight: 68 }}>
+              <span className="oi-m-row__tile oi-m-row__tile--sand"><ScanFace size={19} strokeWidth={1.75} /></span>
+              <div className="oi-m-row__body">
+                <div className="oi-m-row__label">Require {appLock.kind || 'Face ID'} to open</div>
+                <div className="oi-m-row__sub" style={{ whiteSpace: 'normal' }}>{appLock.available ? 'Locks the app on open and after five minutes away' : `${appLock.kind || 'Biometrics'} is not set up on this phone`}</div>
+              </div>
+              <Switch on={appLock.on} onChange={appLock.set} label="Require Face ID to open" />
+            </div>
+          )}
         </RowGroup>
 
         {planNote && (

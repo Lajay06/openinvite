@@ -49,7 +49,11 @@ export default function HomeContainer() {
     return navigate(`${base}/plan/${f.path}`);
   };
   const completeTask = async (t) => {
-    try { await taskWrites.toggle(t); hapticLight(); toast.success('Done'); plan.reload(); } catch { toast.error('Could not update that task. Try again.'); }
+    hapticLight();
+    try {
+      await plan.optimistic((d) => ({ ...d, tasks: (d?.tasks || []).map((x) => (x.id === t.id ? { ...x, completed: true } : x)) }), () => taskWrites.toggle(t), () => toast.error('Could not save that. Put back the way it was.'));
+      toast.success('Done');
+    } catch { /* rolled back */ }
   };
   const share = async () => {
     const r = await shareLink({ title: coupleName ? `${coupleName}'s wedding` : 'Our wedding', text: 'Here is our wedding site.', url: siteUrl });

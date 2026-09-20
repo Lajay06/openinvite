@@ -13,6 +13,9 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: 'never',
     backgroundColor: '#F5F5F4',
+    // No link previews or pinch zoom: the shell is an app, not a page.
+    allowsLinkPreview: false,
+    scrollEnabled: false,
     // The web view sits under the status bar and the shell pads with
     // env(safe-area-inset-*), which viewport-fit=cover makes available.
     preferredContentMode: 'mobile',
@@ -24,8 +27,11 @@ const config: CapacitorConfig = {
   plugins: {
     SplashScreen: {
       launchAutoHide: false,
+      launchFadeOutDuration: 250,
       backgroundColor: '#F5F5F4',
       showSpinner: false,
+      splashFullScreen: true,
+      splashImmersive: true,
     },
     StatusBar: {
       style: 'LIGHT',
