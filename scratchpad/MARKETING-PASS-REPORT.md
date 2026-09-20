@@ -213,8 +213,9 @@ no horizontal scroll; accordion still collapsed by default.
 **Snapshot.** `prerendered/features/index.html` body changed (seven hunks)
 and is in the PR.
 
-**PR.** #811, draft. Owner approves the copy before it ships; nothing
-merges from this item without that.
+**PR.** #811, merged `10a781b4` (2026-09-18) after the owner's copy
+approval. Verified live 2026-09-19 (prior session). The one bullet dropped
+from it came back as #816, below, once the feed it describes worked.
 
 ## M5 — Pricing end cap stacks its three buttons on the phone
 
@@ -270,23 +271,87 @@ top and bottom of the 2048-tall master, both subjects in frame. The
 freshness guard did not ask for a regeneration, so none. PR #810, merged
 `b5ce14d`.
 
-## Closing
+## Closing (updated 2026-09-20)
 
-Five of six items merged and verified on openinvite.com.au (M6, M3, M1,
-M4, M5) plus the auth slide swap; M2 is open as draft #811 awaiting the
-owner's copy approval. No product-lane PR was merged by this lane; #802
-landed mid-run and every branch was rebased onto it before merging.
-Every PR carried its regenerated prerendered snapshot (body diffs only)
-and merged with Build & test green.
+All six box items merged and verified on openinvite.com.au (M6 #803, M3
+#805, M1 #806, M4 #808, M2 #811, M5 #812) plus the auth slide swap (#810).
+No product-lane PR was merged by this lane; #802 landed mid-run and every
+branch was rebased onto it before merging. Every PR carried its
+regenerated prerendered snapshot (body diffs only) and merged with Build
+& test green.
 
-Two open questions for the owner, neither acted on:
+The two open questions from the first closing were both answered by the
+owner and shipped as the three closing items, verified live 2026-09-19:
 
-1. **Universes page showcase** still curates the original five; add
-   Shanghai there too, or leave the editorial call as its comment records?
-2. **Pricing ghost button:** by a strictest-pixel measure "Start free
-   trial" sits at 2.69:1 on the live end cap, where the code comment
-   records 4.81:1 at scrim 0.35. The M5 stack did not change that class of
-   backdrop. Worth a re-measure with the sampling the comment intended.
+1. **Universes page showcase** now walks six universes; Shanghai joins the
+   crossfade. #814, merged `863a5466`.
+2. **Pricing ghost button** reads on a phone: dark glass, measured. #815,
+   merged `708c4a61`.
+3. **The marketing pass report** closes out with PR numbers and production
+   verdicts. #813, merged `ef9ace38`.
+
+## The calendar subscribe feed (2026-09-20)
+
+Not a box item. The Features accordion's one dropped bullet ("Subscribe to
+your schedule in Google Calendar") could not ship until the thing it
+describes worked on production, and it did not. Three PRs, in the order
+they were understood, each merged on a five-marks line with Build & test
+and the Vercel preview green.
+
+**#817 — the feed finds the couple's wedding.** Merged `8af37819`
+08:25Z. `api/schedule-feed-url.js` listed WeddingDetails with `?api_key=`,
+which Base44 answers `200 []` for every entity, so the owner's Calendar
+tab said no-wedding with both env vars set. Bearer plus an unwrapped
+`{data:[…]}`, like every working endpoint. Same PR: every VEVENT carried
+`UID:schedule-undefined@` because the allowlist pick dropped the row id
+and the UID was built from it; calendar clients deduped the whole
+schedule to one event — "only the after party arrived". The id now rides
+along for the UID and nothing else.
+
+*What the 404 after it was.* The owner's browser got a raw 404 on
+`/api/schedule.ics?…` on www. Tokenless probes could not diagnose it: the
+handler answers a blank 404 for every refusal by design ("404, never
+401"), and the route IS mounted — the 404 carried `iad1` in `x-vercel-id`
+and no `x-vercel-error`, where a genuinely unmapped path gets
+`x-vercel-error: NOT_FOUND`. A proposed rename to `schedule-ics` was
+refused on that evidence. Production runtime logs, grouped by status and
+deployment only (no request paths fetched, so no token entered the
+session), showed the git deploy of #817 serving a 200 and a manual
+redeploy of the same commit five minutes later serving only 404s. Same
+code, different environment: `CALENDAR_FEED_SECRET` had been rotated, and
+every link minted under the previous secret died with it — the documented
+cost of a derived token. The owner rotated once more, redeployed, and
+minted fresh.
+
+**#818 — the feed carries the schedule.** Merged `992ed134` 13:58Z.
+With a correct, fresh token the feed served a valid, EMPTY calendar.
+`Schedule.read` is owner-scoped and the admin key is not a superuser: an
+owner-scoped list answers `200 []`, silently (BASE44_PLATFORM_NOTES.md).
+The feed has no session — Google and Apple fetch it — so it can only ever
+hold the admin key. Fix: the six allowlisted fields of every Schedule
+row, plus the row id for the UID, are projected onto
+`WeddingDetails.calendarFeed` (schema added by the owner in the Base44
+chat, confirmed with `list_entity_schemas` first, mirror updated) by the
+couple's own session through `/api/my-wedding-details`, from one
+chokepoint (`ScheduleHub.loadItems()`, which all four hub writers end in
+and which self-heals on load; Ava's `create_schedule` is the fifth
+writer). `api/schedule.ics.js` reads that row, which is `read: null` and
+which it already read, and never asks Schedule. Strictly narrower
+exposure than opening `Schedule.read`. The guard's stub now answers `[]`
+for Schedule as the platform does; the plant was red on the old handler
+(0 VEVENTs) and green on the new (3). Verified live by the owner on
+production: Apple Calendar subscription refreshed, only the subscribed
+calendar visible, all 21 events present, correct days and times.
+
+**#816 — the Features bullet.** Merged `7cbb6b04` 14:06Z, under MINOR,
+after the owner's 21-event verification. `src/pages/Features.jsx`, one
+data line: "Subscribe to your schedule in Google Calendar, so an edit
+here reaches your phone on its own". Collapsed accordion content, not in
+the prerendered body, so the freshness guard asked for no regeneration.
+
+**Not verified by this lane, on purpose:** no feed URL, token, secret,
+Vercel bypass link or production row was read or printed. The connector
+was used for `list_entity_schemas` only.
 
 ## Open ticket — the weekly digest's owner-scoped reads (logged 2026-09-20, no fix now)
 
@@ -295,7 +360,7 @@ empty calendar to a correct token because `Schedule.read` is owner-scoped
 and the admin key gets `200 []` from an owner-scoped list
 (BASE44_PLATFORM_NOTES.md, "The admin key is not a superuser bypass").
 The feed fix projects the schedule onto `WeddingDetails.calendarFeed`
-(PR: feat/calendar-feed-projection).
+(#818, merged `992ed134`).
 
 `api/cron/send-weekly-digest.js` has the same shape, unfixed:
 
@@ -312,3 +377,11 @@ Candidates, undecided: project the counts the digest needs onto the
 WeddingDetails row the way the feed now does; or a hosted Base44
 function with `asServiceRole` (notes, "hosted functions"), which is new
 infrastructure. Not a marketing-lane fix; logged for the product lane.
+
+## Pass closed (2026-09-20)
+
+Box M1–M6 shipped, the three closing items shipped, the calendar feed
+fixed twice and its Features bullet shipped, all merged to main and
+verified on openinvite.com.au. One open ticket remains, above, for the
+product lane: the weekly digest's admin-key reads of owner-scoped
+entities. No PR from this lane is open.
