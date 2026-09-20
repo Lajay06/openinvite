@@ -1,0 +1,874 @@
+/* src/mobile/styles/mobile.css
+ *
+ * Everything here is scoped under .oi-mobile-root. Nothing leaks into the
+ * desktop dashboard or the guest site. The tokens live as custom properties
+ * on the root so a screen can read them from inline styles too.
+ *
+ * Global rules in src/index.css still reach in (the `*` font-family with
+ * !important, Tailwind's preflight). Where one of them fights a mobile rule,
+ * the mobile rule is written with the same or higher specificity here rather
+ * than by editing index.css, which is out of bounds for this branch.
+ */
+
+.oi-mobile-root {
+  --m-bg: #F5F5F4;
+  --m-block: #FFFFFF;
+  --m-line: #E7E5E4;
+  --m-text: #1A1A1A;
+  --m-text-2: #444444;
+  --m-primary: #E03553;
+  --m-primary-soft: rgba(224, 53, 83, 0.08);
+  --m-press: rgba(26, 26, 26, 0.06);
+  --m-ok: #166534;
+  --m-ok-bg: #DCFCE7;
+  --m-warn: #854D0E;
+  --m-warn-bg: #FEF9C3;
+  --m-no: #991B1B;
+  --m-no-bg: #FEE2E2;
+
+  --m-gutter: 16px;
+  --m-tab-h: 64px;
+  --m-safe-top: env(safe-area-inset-top, 0px);
+  --m-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --m-compact-h: 48px;
+
+  --m-ease: cubic-bezier(0.2, 0, 0, 1);
+  --m-fast: 120ms;
+  --m-move: 220ms;
+
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--m-bg);
+  color: var(--m-text);
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+.oi-mobile-root *,
+.oi-mobile-root *::before,
+.oi-mobile-root *::after {
+  box-sizing: border-box;
+}
+
+/* Resets are wrapped in :where() so they carry zero specificity and never
+   outrank a component class such as .oi-m-pill--primary. */
+:where(.oi-mobile-root) :where(h1, h2, h3) {
+  margin: 0;
+  font-weight: 600;
+  color: var(--m-text);
+  letter-spacing: 0;
+}
+:where(.oi-mobile-root) :where(p) {
+  margin: 0;
+}
+:where(.oi-mobile-root) :where(button) {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+:where(.oi-mobile-root) :where(a) {
+  color: inherit;
+  text-decoration: none;
+}
+:where(.oi-mobile-root) :where(img) {
+  display: block;
+  max-width: 100%;
+}
+:where(.oi-mobile-root) :where(input, textarea, select) {
+  font: inherit;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--m-text);
+}
+
+/* ── Type ───────────────────────────────────────────────────────────── */
+.oi-m-title {
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+}
+.oi-m-section {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+}
+.oi-m-body {
+  font-size: 16px;
+  line-height: 24px;
+}
+.oi-m-meta {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--m-text-2);
+}
+.oi-m-strong {
+  font-weight: 600;
+}
+.oi-m-num {
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Screen scaffold ────────────────────────────────────────────────── */
+.oi-m-screen {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding-top: calc(var(--m-safe-top) + var(--m-compact-h));
+  /* 56px Ava button + 16px inset + 16px air, so a list can end above it. */
+  padding-bottom: calc(var(--m-tab-h) + var(--m-safe-bottom) + 88px);
+}
+.oi-m-screen--bare {
+  padding-top: var(--m-safe-top);
+}
+
+/* The compact bar sits above the scroller and fades in once the large title
+   has scrolled past. transform+opacity only. */
+.oi-m-compact {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--m-safe-top) + var(--m-compact-h));
+  padding-top: var(--m-safe-top);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: var(--m-gutter);
+  padding-right: var(--m-gutter);
+  background: var(--m-bg);
+  border-bottom: 1px solid transparent;
+  z-index: 5;
+  pointer-events: none;
+}
+.oi-m-compact__title {
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity var(--m-move) var(--m-ease), transform var(--m-move) var(--m-ease);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.oi-m-compact--on {
+  border-bottom-color: var(--m-line);
+}
+.oi-m-compact--on .oi-m-compact__title {
+  opacity: 1;
+  transform: translateY(0);
+}
+.oi-m-compact__actions,
+.oi-m-compact__back {
+  pointer-events: auto;
+}
+
+.oi-m-header {
+  padding: 8px var(--m-gutter) 16px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+}
+.oi-m-header__title {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.oi-m-header__actions {
+  display: flex;
+  gap: 0;
+  flex-shrink: 0;
+  margin-right: -8px;
+  margin-bottom: -4px;
+}
+
+/* ── Icon button: 44px hit area, 24px icon ──────────────────────────── */
+.oi-m-iconbtn {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--m-text);
+  transition: background-color var(--m-fast) var(--m-ease);
+}
+.oi-m-iconbtn:active {
+  background: var(--m-press);
+}
+
+/* ── Blocks and rows ────────────────────────────────────────────────── */
+.oi-m-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 var(--m-gutter);
+}
+.oi-m-stack--16 {
+  gap: 16px;
+}
+.oi-m-block {
+  background: var(--m-block);
+  padding: 16px;
+}
+.oi-m-block--flush {
+  padding: 0;
+}
+.oi-m-block__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.oi-m-block__link {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--m-primary);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  margin: -12px 0;
+}
+
+.oi-m-row {
+  width: 100%;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: var(--m-block);
+  transition: background-color var(--m-fast) var(--m-ease);
+}
+.oi-m-row + .oi-m-row {
+  border-top: 1px solid var(--m-line);
+}
+.oi-m-row:active,
+.oi-m-row--pressable:active {
+  background: var(--m-press);
+}
+.oi-m-row__tile {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--m-bg);
+  color: var(--m-text);
+}
+.oi-m-row__tile--primary {
+  background: var(--m-primary-soft);
+  color: var(--m-primary);
+}
+.oi-m-row__body {
+  flex: 1;
+  min-width: 0;
+}
+.oi-m-row__label {
+  font-size: 16px;
+  line-height: 24px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.oi-m-row__sub {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--m-text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.oi-m-row__value {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--m-text-2);
+  flex-shrink: 0;
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.oi-m-row__chevron {
+  flex-shrink: 0;
+  color: var(--m-text-2);
+}
+
+/* ── Pills and buttons ──────────────────────────────────────────────── */
+.oi-m-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: 999px;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: opacity var(--m-fast) var(--m-ease), background-color var(--m-fast) var(--m-ease);
+}
+.oi-m-pill--primary {
+  background: var(--m-primary);
+  color: #FFFFFF;
+}
+.oi-m-pill--secondary {
+  background: var(--m-block);
+  color: var(--m-text);
+  border: 1px solid var(--m-line);
+}
+.oi-m-pill--ghost {
+  background: var(--m-bg);
+  color: var(--m-text);
+}
+.oi-m-pill--block {
+  width: 100%;
+}
+.oi-m-pill:active {
+  opacity: 0.8;
+}
+.oi-m-pill:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.oi-m-filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 0 var(--m-gutter) 8px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.oi-m-filters::-webkit-scrollbar {
+  display: none;
+}
+.oi-m-filter {
+  flex-shrink: 0;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--m-line);
+  background: var(--m-block);
+  color: var(--m-text);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color var(--m-fast) var(--m-ease), color var(--m-fast) var(--m-ease);
+}
+.oi-m-filter--on {
+  background: var(--m-text);
+  border-color: var(--m-text);
+  color: #FFFFFF;
+}
+.oi-m-filter:active {
+  background: var(--m-press);
+}
+.oi-m-filter--on:active {
+  background: var(--m-text);
+  opacity: 0.8;
+}
+
+/* Segmented pills (Plan): same shape, sits under the title. */
+.oi-m-segments {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 0 var(--m-gutter) 16px;
+  scrollbar-width: none;
+}
+.oi-m-segments::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Status pill on a row (10px would be the desktop scale; 12 on a phone) */
+.oi-m-status {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.oi-m-status--ok {
+  background: var(--m-ok-bg);
+  color: var(--m-ok);
+}
+.oi-m-status--warn {
+  background: var(--m-warn-bg);
+  color: var(--m-warn);
+}
+.oi-m-status--no {
+  background: var(--m-no-bg);
+  color: var(--m-no);
+}
+.oi-m-status--neutral {
+  background: var(--m-bg);
+  color: var(--m-text-2);
+}
+
+/* ── Progress ───────────────────────────────────────────────────────── */
+.oi-m-progress {
+  height: 4px;
+  width: 100%;
+  background: var(--m-line);
+  overflow: hidden;
+}
+.oi-m-progress__fill {
+  height: 100%;
+  background: var(--m-primary);
+  transition: width var(--m-move) var(--m-ease);
+}
+
+/* ── Peek carousel ──────────────────────────────────────────────────── */
+.oi-m-peek {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 0 var(--m-gutter);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.oi-m-peek::-webkit-scrollbar {
+  display: none;
+}
+.oi-m-peek__item {
+  flex: 0 0 82%;
+  scroll-snap-align: start;
+}
+.oi-m-peek__item:last-child {
+  margin-right: var(--m-gutter);
+}
+.oi-m-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding-top: 12px;
+}
+.oi-m-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--m-line);
+  transition: background-color var(--m-fast) var(--m-ease);
+}
+.oi-m-dot--on {
+  background: var(--m-text);
+}
+
+/* ── Two-column grid ────────────────────────────────────────────────── */
+.oi-m-grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.oi-m-tile {
+  background: var(--m-block);
+  padding: 16px;
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  transition: background-color var(--m-fast) var(--m-ease);
+}
+.oi-m-tile:active {
+  background: var(--m-press);
+}
+
+/* ── Empty, error, skeleton ─────────────────────────────────────────── */
+.oi-m-empty {
+  background: var(--m-block);
+  padding: 32px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+.oi-m-empty__icon {
+  color: var(--m-text-2);
+}
+.oi-m-skel {
+  background: var(--m-line);
+  width: 100%;
+}
+.oi-m-skel--text {
+  height: 16px;
+}
+.oi-m-skel--title {
+  height: 28px;
+  width: 60%;
+}
+.oi-m-skel--row {
+  height: 56px;
+}
+.oi-m-skel--block {
+  height: 120px;
+}
+
+/* ── Forms ──────────────────────────────────────────────────────────── */
+.oi-m-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.oi-m-field__label {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--m-text-2);
+}
+.oi-m-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 16px;
+  background: var(--m-bg);
+  border: 1px solid transparent;
+  border-radius: 0;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: border-color var(--m-fast) var(--m-ease);
+}
+.oi-m-input:focus {
+  border-color: var(--m-text);
+}
+.oi-m-input--error {
+  border-color: var(--m-primary);
+}
+.oi-m-input::placeholder {
+  color: #6B6B6B;
+}
+textarea.oi-m-input {
+  min-height: 96px;
+  resize: vertical;
+}
+select.oi-m-input {
+  background-image: none;
+}
+.oi-m-field__error {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--m-primary);
+}
+.oi-m-select-wrap {
+  position: relative;
+}
+.oi-m-select-wrap svg {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--m-text-2);
+}
+.oi-m-check {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: -12px;
+}
+.oi-m-check__box {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--m-text-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  transition: background-color var(--m-fast) var(--m-ease), border-color var(--m-fast) var(--m-ease);
+}
+.oi-m-check__box--on {
+  background: var(--m-primary);
+  border-color: var(--m-primary);
+}
+
+/* ── Tab bar ────────────────────────────────────────────────────────── */
+.oi-m-tabbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--m-tab-h) + var(--m-safe-bottom));
+  padding-bottom: var(--m-safe-bottom);
+  background: var(--m-block);
+  border-top: 1px solid var(--m-line);
+  display: flex;
+  z-index: 10;
+}
+.oi-m-tab {
+  flex: 1;
+  min-width: 0;
+  height: var(--m-tab-h);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  position: relative;
+  color: var(--m-text-2);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  transition: color var(--m-fast) var(--m-ease);
+}
+.oi-m-tab::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 32px;
+  height: 2px;
+  transform: translateX(-50%) scaleX(0);
+  background: var(--m-primary);
+  transition: transform var(--m-move) var(--m-ease);
+}
+.oi-m-tab--on {
+  color: var(--m-text);
+  font-weight: 600;
+}
+.oi-m-tab--on::before {
+  transform: translateX(-50%) scaleX(1);
+}
+.oi-m-tab:active {
+  background: var(--m-press);
+}
+
+/* ── Ava button and sheets ──────────────────────────────────────────── */
+.oi-m-ava {
+  position: absolute;
+  right: 16px;
+  bottom: calc(var(--m-tab-h) + var(--m-safe-bottom) + 16px);
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: var(--m-primary);
+  color: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  line-height: 1;
+  z-index: 11;
+  transition: transform var(--m-fast) var(--m-ease), opacity var(--m-fast) var(--m-ease);
+}
+.oi-m-ava:active {
+  transform: scale(0.94);
+}
+
+.oi-m-sheet-root {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.oi-m-sheet-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 26, 26, 0.4);
+  opacity: 0;
+  transition: opacity var(--m-move) var(--m-ease);
+}
+.oi-m-sheet {
+  position: relative;
+  background: var(--m-block);
+  max-height: calc(100% - var(--m-safe-top) - 24px);
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform var(--m-move) var(--m-ease);
+  padding-bottom: var(--m-safe-bottom);
+}
+.oi-m-sheet--full {
+  height: calc(100% - var(--m-safe-top));
+  max-height: none;
+}
+.oi-m-sheet-root--open .oi-m-sheet-scrim {
+  opacity: 1;
+}
+.oi-m-sheet-root--open .oi-m-sheet {
+  transform: translateY(0);
+}
+.oi-m-sheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 56px;
+  padding: 8px 8px 8px 16px;
+  border-bottom: 1px solid var(--m-line);
+  flex-shrink: 0;
+}
+.oi-m-sheet__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
+}
+.oi-m-sheet__body--flush {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.oi-m-sheet__foot {
+  padding: 8px 16px 16px;
+  border-top: 1px solid var(--m-line);
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+}
+
+/* The desktop Ava pod is 380x520 with 16px corners by inline style. Inside
+   the sheet it fills the sheet and squares off, without touching the pod. */
+.oi-mobile-root .oi-m-ava-host [data-ava-pod] {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  animation: none !important;
+}
+.oi-m-ava-host {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.oi-m-ava-host > * {
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Search screen ──────────────────────────────────────────────────── */
+.oi-m-search {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  background: var(--m-bg);
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--m-safe-top);
+}
+.oi-m-search__bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 16px;
+  background: var(--m-block);
+  border-bottom: 1px solid var(--m-line);
+}
+.oi-m-search__input {
+  flex: 1;
+  min-height: 44px;
+  background: var(--m-bg);
+  padding: 0 16px;
+  border: 0;
+  outline: none;
+  border-radius: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.oi-m-search__results {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* ── Hero ───────────────────────────────────────────────────────────── */
+.oi-m-hero {
+  position: relative;
+  background: var(--m-text);
+  color: #FFFFFF;
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 16px;
+  overflow: hidden;
+}
+.oi-m-hero__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.oi-m-hero__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(26, 26, 26, 0.78) 0%, rgba(26, 26, 26, 0.2) 60%, rgba(26, 26, 26, 0) 100%);
+}
+.oi-m-hero__body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.oi-m-hero .oi-m-pill--primary {
+  align-self: flex-start;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .oi-mobile-root *,
+  .oi-mobile-root *::before,
+  .oi-mobile-root *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* ── Screen enter ───────────────────────────────────────────────────── */
+.oi-m-enter {
+  animation: oiMobileEnter var(--m-move) var(--m-ease) both;
+}
+@keyframes oiMobileEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
