@@ -22,6 +22,9 @@ declare global {
   }
 }
 
+/** Production origin: where the API lives when the page is not served by Vercel. */
+export const PROD_ORIGIN = 'https://openinvite.com.au';
+
 /** True only inside the Capacitor iOS or Android shell. */
 export function isNative(): boolean {
   if (typeof window === 'undefined') return false;
@@ -221,6 +224,56 @@ export async function registerBackButton(onBack: () => boolean): Promise<() => v
     return () => {};
   }
 }
+
+/**
+ * THE API HAS NO SAME-ORIGIN IN THE SHELL. Every data call in the codebase is
+ * relative: `fetch('/api/my-guests')`, and the Base44 client's `serverUrl: ''`
+ * sends `/api/apps/...` through Vercel's rewrite. Inside Capacitor the page
+ * origin is capacitor://localhost (iOS) or http://localhost (Android), so
+ * those paths resolve to the app bundle and fail.
+ *
+ * This installs, natively only, a rewrite of any same-origin `/api/` request
+ * to PROD_ORIGIN, for both fetch (the /api/*.js endpoints) and
+ * XMLHttpRequest (the SDK's axios). It runs at module load, which App.jsx's
+ * static import puts before AuthProvider's first `auth.me()`.
+ *
+ * What it does NOT do: make the server accept the request. api/_lib/security.js
+ * reflects Access-Control-Allow-Origin only for the production hostnames, so
+ * the shell's origin must be added there before any data loads natively. See
+ * MOBILE_APP.md, "Needs a decision".
+ */
+export function installNativeApiBase(origin: string = PROD_ORIGIN): void {
+  if (typeof window === 'undefined' || !isNative()) return;
+  const w = window as any;
+  if (w.__oiNativeApiBase) return;
+  w.__oiNativeApiBase = origin;
+
+  const rewrite = (url: unknown): unknown => {
+    if (typeof url === 'string' && url.startsWith('/api/')) return origin + url;
+    if (typeof url === 'string' && url.startsWith(`${window.location.origin}/api/`)) return origin + url.slice(window.location.origin.length);
+    return url;
+  };
+
+  const nativeFetch = window.fetch.bind(window);
+  window.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+    if (typeof input === 'string') return nativeFetch(rewrite(input) as string, init);
+    if (input instanceof URL) return nativeFetch(rewrite(input.toString()) as string, init);
+    if (input instanceof Request) {
+      const next = rewrite(input.url) as string;
+      if (next !== input.url) return nativeFetch(new Request(next, input), init);
+    }
+    return nativeFetch(input, init);
+  }) as typeof window.fetch;
+
+  const open = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function (this: XMLHttpRequest, method: string, url: string | URL, ...rest: any[]) {
+    const next = rewrite(typeof url === 'string' ? url : url.toString()) as string;
+    return (open as any).call(this, method, next, ...rest);
+  } as typeof XMLHttpRequest.prototype.open;
+}
+
+// Installed as early as this module is evaluated. A no-op on the web.
+installNativeApiBase();
 
 /** Runs the native setup once when the shell mounts. No-op on the web. */
 export async function bootNative(): Promise<void> {

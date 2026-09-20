@@ -768,6 +768,11 @@ select.oi-m-input {
   box-shadow: none !important;
   animation: none !important;
 }
+/* The pod's composer is 13px by inline style, which makes iOS zoom the page
+   on focus. Lifted to 16px here, inside the sheet only. */
+.oi-mobile-root .oi-m-ava-host [data-ava-pod] textarea {
+  font-size: 16px !important;
+}
 .oi-m-ava-host {
   flex: 1;
   min-height: 0;

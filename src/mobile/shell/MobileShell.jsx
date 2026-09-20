@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import TabBar from './TabBar';
 import BottomSheet from '../ui/BottomSheet';
 import { bootNative, registerBackButton } from '../native';
@@ -42,6 +43,18 @@ export default function MobileShell({ base = '/m', renderAva, showAva = true }) 
   return (
     <ShellContext.Provider value={ctx}>
       <div className="oi-mobile-root">
+        {/* Layout.jsx mounts the desktop Toaster; /m is outside Layout, so the
+            shell carries its own. Square, flat, under the status bar. */}
+        <Toaster
+          position="top-center"
+          containerStyle={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}
+          toastOptions={{
+            duration: 2500,
+            style: { borderRadius: 0, boxShadow: 'none', background: '#1A1A1A', color: '#FFFFFF', fontSize: 14, fontWeight: 600, padding: '12px 16px' },
+            success: { iconTheme: { primary: '#E03553', secondary: '#FFFFFF' } },
+            error: { iconTheme: { primary: '#E03553', secondary: '#FFFFFF' } },
+          }}
+        />
         <Outlet />
         <TabBar base={base} />
         {showAva && (

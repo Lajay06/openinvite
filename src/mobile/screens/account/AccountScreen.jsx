@@ -44,7 +44,7 @@ export default function AccountScreen({ name, email, planLabel, planNote, trialD
         )}
 
         <div className="oi-m-block oi-m-block--flush">
-          <Row icon={LifeBuoy} label="Help centre" onClick={onHelp} />
+          <Row icon={LifeBuoy} label="Help center" onClick={onHelp} />
           <Row icon={MessageSquare} label="Contact support" onClick={onContact} />
         </div>
 

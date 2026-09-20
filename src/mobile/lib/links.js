@@ -1,7 +1,7 @@
-import { isNative, openExternal } from '../native';
+import { isNative, openExternal, PROD_ORIGIN } from '../native';
 
-/** Production origin. Inside the shell window.location.origin is capacitor://localhost, which is not a link anyone can open. */
-export const PROD_ORIGIN = 'https://openinvite.com.au';
+/** Inside the shell window.location.origin is capacitor://localhost, which is not a link anyone can open, so links use PROD_ORIGIN. */
+export { PROD_ORIGIN };
 
 export function siteOrigin() {
   if (isNative()) return PROD_ORIGIN;

@@ -73,7 +73,7 @@ Three shapes recur:
 
 ## Things that behave differently in a webview
 
-| What | Where | Behaviour in Capacitor | Severity |
+| What | Where | Behavior in Capacitor | Severity |
 |---|---|---|---|
 | Stripe Checkout redirect: `window.location.href = data.url` to `checkout.stripe.com`, `success_url` / `cancel_url` return to `https://openinvite.com.au/...`. | `src/lib/checkoutSession.js:66,156`, `api/create-checkout-session.js:63` (do-not-touch) | The webview navigates away from the bundled app to Stripe, then Stripe sends it to the live website, not back into the app. Also an App Store review risk (in-app purchase rules). Needs `@capacitor/browser` and a deep-link return, or hiding purchase CTAs natively. | red |
 | Stripe billing portal: `window.location.href = data.url`, `return_url: 'https://openinvite.com.au/account'`. | `src/pages/Account.jsx:358`, `api/create-portal-session.js:44` | Same as above. | red |
