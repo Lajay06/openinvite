@@ -426,6 +426,7 @@
 
 /* ── Grids and tiles ────────────────────────────────────────────────── */
 .oi-m-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.oi-m-grid2 > * { min-width: 0; }
 .oi-m-tile {
   position: relative;
   background: var(--m-card);
@@ -513,7 +514,7 @@
 }
 .oi-m-input:focus { border-color: var(--m-text); background: var(--m-card); }
 .oi-m-input--error { border-color: var(--m-primary); }
-.oi-m-input::placeholder { color: #6B6B6B; }
+.oi-m-input::placeholder { color: var(--m-text-2); opacity: 1; }
 textarea.oi-m-input { min-height: 104px; resize: vertical; }
 select.oi-m-input { background-image: none; padding-right: 44px; }
 .oi-m-field__error { font-size: 14px; line-height: 20px; color: var(--m-primary); padding-left: 4px; }

@@ -53,7 +53,7 @@ export default function PushPreview() {
         </div>
       </div>
       <div style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top, 0px) + 10px)', right: 12, display: 'flex', gap: 8 }}>
-        <button type="button" className="oi-m-status oi-m-status--light" onClick={() => navigate('/m/preview?banner=1')} style={{ border: 0, cursor: 'pointer', padding: '6px 12px' }}>Show the in-app banner</button>
+        <button type="button" data-preview-control className="oi-m-pill oi-m-pill--light oi-m-pill--sm" onClick={() => navigate('/m/preview?banner=1')}>Show the in-app banner</button>
       </div>
     </div>
   );

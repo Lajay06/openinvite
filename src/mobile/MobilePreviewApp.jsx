@@ -262,7 +262,7 @@ function PreviewAccount() {
   const { base } = useContext(ShellContext);
   const [params] = useSearchParams();
   const native = params.get('native') === '1';
-  return <AccountScreen name={FIXTURE_USER.full_name} email={FIXTURE_USER.email} coupleName={`${FIXTURE_WEDDING.couple1Name} & ${FIXTURE_WEDDING.couple2Name}`} weddingDate={dateLong(FIXTURE_WEDDING.weddingDate)} photo={coupleImages(FIXTURE_WEDDING)[1]} planLabel="Pro" planNote={null} trialDaysLeft={null} showPurchases={!native} onUpgrade={() => {}} onDetails={() => {}} onEventDetails={() => navigate(`${base}/plan/event-details`)} onCollaborators={() => {}} onNotifications={() => {}} onNotificationSettings={() => navigate(`${base}/notifications/settings`)} onHelp={() => {}} onContact={() => {}} onLogout={() => {}} loading={false} />;
+  return <AccountScreen name={FIXTURE_USER.full_name} email={FIXTURE_USER.email} coupleName={`${FIXTURE_WEDDING.couple1Name} & ${FIXTURE_WEDDING.couple2Name}`} weddingDate={dateLong(FIXTURE_WEDDING.weddingDate)} photo={coupleImages(FIXTURE_WEDDING)[0]} planLabel="Pro" planNote={null} trialDaysLeft={null} showPurchases={!native} onUpgrade={() => {}} onDetails={() => {}} onEventDetails={() => navigate(`${base}/plan/event-details`)} onCollaborators={() => {}} onNotifications={() => {}} onNotificationSettings={() => navigate(`${base}/notifications/settings`)} onHelp={() => {}} onContact={() => {}} onLogout={() => {}} loading={false} />;
 }
 
 function PreviewSearch() {

@@ -19,7 +19,7 @@ export default function SearchScreen({ open, onClose, value, onChange, placehold
           <Search size={18} strokeWidth={1.75} style={{ color: 'var(--m-text-2)', flexShrink: 0 }} />
           <input ref={ref} className="oi-m-search__input" type="search" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} autoComplete="off" autoCorrect="off" autoCapitalize="off" enterKeyHint="search" />
           {value && (
-            <button type="button" className="oi-m-iconbtn oi-m-iconbtn--ghost" onClick={() => onChange('')} aria-label="Clear" style={{ width: 40, height: 40 }}>
+            <button type="button" className="oi-m-iconbtn oi-m-iconbtn--ghost" onClick={() => onChange('')} aria-label="Clear">
               <X size={18} strokeWidth={1.75} />
             </button>
           )}

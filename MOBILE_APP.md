@@ -55,6 +55,144 @@ Scope column: **v0** = built as a mobile screen; **row** = reachable from a mobi
 
 `/m` collides with nothing. Existing routes starting with `m` are `/mocks/universe/{a,b,c}` (a different first segment). Guest sites are `/w/:slug`, RSVP is `/rsvp/:token`, games `/games/:token/:id`. `isPublicPath()` in `App.jsx` does not match `/m`, so `/m/*` falls through to the authenticated `Routes`, which is where it is registered. `/m/preview/*` is registered next to `/login` (outside the guard), and only when `import.meta.env.DEV`.
 
+## Goal 2: design uplift, full coverage, notifications
+
+Built on the same branch after v0. The mobile design language is in
+`src/mobile/DESIGN_MOBILE.md`; this section records what changed, where every
+feature lives now, the images in use, and how notifications work.
+
+### Coverage: every desktop couple feature has a mobile home
+
+Depth: **full** = list, detail, add, edit and delete through the existing
+mutations; **light** = read everything, edit the simple fields; **view** = read
+here, edit on desktop, with a note. No row is "not in app". `/m/plan` is the hub
+and mirrors the desktop sidebar's groups and names exactly.
+
+| Sidebar group | Desktop route | Mobile location | Depth | How |
+|---|---|---|---|---|
+| Planning | `/DailyUpdate` Daily update | `/m` (Home) | full | hero carousel, stats, next up, keep planning, from Ava, latest |
+| Planning | `/event-details` Event details | `/m/plan/event-details` | full | form over WeddingDetails, auto-saves |
+| Planning | `/Schedule` Schedule | `/m/plan/schedule` | full | list, detail, add, edit, delete over Schedule |
+| Planning | `/TodoList` To do | `/m/plan/checklist` | full | grouped list, tap to complete, add sheet, over Note |
+| Guests | `/Guests` Guest list | `/m/guests` | full | replies card, filters, search, detail, add and edit sheet, remove |
+| Guests | `/Polls` Polls & games | `/m/plan/polls` | full | polls with live counts, create, end; on WeddingDetails.polls as Polls.jsx keeps them |
+| Guests | `/Messages` Messages | `/m/plan/messages` | full | conversation list, thread, composer pinned above the keyboard, reply through /api/send-guest-reply, read state on GuestMessage |
+| Guests | `/Seating` Seating | `/m/plan/seating` | view | tables and who sits where as lists; move a guest through a sheet over assignGuestToTableByName / unassignGuestFromTables; layout stays on desktop |
+| Guests | `/wedding-party` Wedding party | `/m/plan/wedding-party` | full | roles as sections, add, edit, remove; WeddingDetails.weddingParty |
+| Guests | `/SendInvites` Send invites | `/m/plan/send-invites` | view | hand-off screen with a note |
+| Guests | `/Invitations` Invitations | `/m/plan/invitations` | view | hand-off screen with a note |
+| Style & experience | `/Moodboard` Moodboard | `/m/plan/moodboard` | full | photo grid, add, edit, delete over MoodboardItem |
+| Style & experience | `/Styling` Styling | `/m/plan/styling` | light | form over WeddingDetails.flowers and .decorations |
+| Style & experience | `/Beauty` Beauty | `/m/plan/beauty` | light | form over WeddingDetails.beauty |
+| Style & experience | `/FoodBeverage` Food & beverage | `/m/plan/food` | light | form over WeddingDetails.foodBeverage |
+| Style & experience | `/Music` Music | `/m/plan/music` | full | playlist over Music (add, edit, delete); guest requests approved or declined through /api/song-request-review; the Spotify playlist link |
+| Style & experience | `/Photography` Photography | `/m/plan/photography` | light | form over WeddingDetails.photography |
+| Style & experience | `/VowsSpeeches` Vows & speeches | `/m/plan/vows` | full | list, add, edit, delete over VowSpeech |
+| Style & experience | `/wedding-favours` Guest gifts | `/m/plan/favours` | light | form over WeddingDetails.weddingFavours |
+| Vendors | `/Vendors` My vendors | `/m/plan/vendors` | full | filters, list, add, edit, delete over Vendor |
+| Vendors | `/VendorMarketplace` Marketplace | `/m/plan/marketplace` | light | category and location search through /api/places-search; add to my vendors through saveVendorFromPlaces |
+| On the day | `/ceremony-details` Ceremony details | `/m/plan/ceremony` | full | form; celebrant and licence through the encrypted PUT, the rest plaintext, as CeremonyDetails.jsx splits them |
+| On the day | `/transport` Transport | `/m/plan/transport` | light | form plus a shuttles list; WeddingDetails.transport |
+| On the day | `/accommodation` Accommodation | `/m/plan/accommodation` | light | form plus a places list; WeddingDetails.accommodation |
+| On the day | `/emergency-contact` Emergency contact | `/m/plan/emergency` | full | form through the encrypted PUT; WeddingDetails.emergencyContacts |
+| Finances | `/Budget` Budget | `/m/plan/budget` | full | spent, paid, still to pay, next payment due, categories, category detail, add and edit expense with a payment date, over Budget |
+| Finances | `/Registry` Registry | `/m/plan/registry` | full | four lists (registry links, products, cash funds, received gifts) over RegistryItem, RegistryProduct, CustomGift, ReceivedGift |
+| Guest suite | `/studio` Design studio | `/m/site` | view | site preview, live status, view and share; the builder and Ava studio hand off to desktop |
+| Guest suite | `/GuestSuiteSchedule` Schedule | `/m/plan/suite-schedule` | view | the same Schedule records as guests see them; edit link into the schedule |
+| Guest suite | `/QandA` Q&A | `/m/plan/qna` | full | questions and answers, add, edit, remove; WeddingDetails.qna |
+| Guest suite | `/GuestSuiteRegistry` Registry | `/m/plan/registry` | full | the same registry screen |
+| Guest suite | `/GuestSuiteAccommodation` Accommodation | `/m/plan/suite-accommodation` | light | places list, add by hand, edit, remove; WeddingDetails.guestSuiteAccommodation.places; nearby search stays on desktop |
+| Guest suite | `/GuestSuiteTransport` Transport | `/m/plan/suite-transport` | light | as above over guestSuiteTransport.places |
+| Guest suite | `/GuestSuiteExperience` Experience guide | `/m/plan/experience` | light | the couple's picks; WeddingDetails.experienceGuide.couplePicks |
+| Guest suite | `/GuestSuitePolicies` Good to know | `/m/plan/good-to-know` | full | a switch and a note per policy; WeddingDetails.weddingPolicies |
+| Guest suite | `/GuestSuitePolls` Guest polls | `/m/plan/polls` | full | the same polls screen |
+| Extras | `/honeymoon` Honeymoon | `/m/plan/honeymoon` | light | form over WeddingDetails.honeymoonDetails |
+| Extras | `/Considerations` Considerations | `/m/plan/considerations` | view | hand-off screen with a note (its content is computed inside the desktop page and not exported) |
+| Account | `/account` | `/m/account` | full | profile card, rows; purchases hidden natively |
+| Account | `/help`, `/Contact` | rows on `/m/account` | view | hand off to desktop |
+
+Not a feature, so not a row: the guestbook. `GuestbookEntry` exists as an entity but the guestbook page was retired from the guest site (`WeddingWebsiteNav.jsx` filters the slug out). The notification feed still reads any entries that exist; nothing new can be written.
+
+### The design, in one paragraph
+
+Cards 20px, images 16px, inputs 14px, sheets 28px on top, pills and buttons 999px, icon buttons circular. No shadow on cards; one elevation (`0 8px 24px rgba(0,0,0,0.08)`) on the floating tab bar, the Ava button, the in-app banner and bottom sheets. Page #F5F5F4, card #FFFFFF, text #1A1A1A and #444444, primary #E03553 flat, emphasis panels ink / wine / blush / sand. Titles 34/40, hero numbers 56/56 tabular, sections 22/28, body 16/24, meta 14/20, all weight 600 at most. Press scales to 0.98 in 120ms, screens stagger in 40ms per block, hero numbers count up once, progress bars animate, the hero photo parallaxes up to 12px, carousels snap, haptics on tab change, task completion and pull to refresh. `prefers-reduced-motion` keeps only fades. The full statement is `src/mobile/DESIGN_MOBILE.md`.
+
+### Image inventory
+
+Order of preference on every slot: the couple's own imagery (`coverPhoto`, then photo blocks in `homeContent.blocks`, then `ourStoryContent.photos`), then the sample content of their universe (`getSampleWedding(id)`), then a colour panel. `SmartImage` never renders a broken or empty box. Stills only: nothing animates an image whose public id starts with `DTS_`; the scroll parallax on a static hero is the only motion.
+
+Cloudinary delivery: `f_auto,q_auto,c_fill,g_auto,w_<slot x dpr>,h_<slot x dpr>` for 2x and 3x, from `src/mobile/lib/images.js`.
+
+Public ids used by the app itself (all already served on the marketing site or the universes page; none invented), keyed by the feel the slot wants:
+
+| Key | Public id | Used where |
+|---|---|---|
+| couple | `DTS_Like_a_Movie_Foster___Asher_Photos_ID1042_qaddk3` | Event details tile, Photography tile, fixture Our Story |
+| guests | `DTS_Slices_of_Summer_Mark_La_Montagne_Photos_ID2661_vb5omq` | Guest list tile, fixture cover photo |
+| dinner | `v1779185603/DTS_Fine_Dining_Patrick_Chin_Photos_ID955_uoaegj` | Food & beverage tile |
+| dance | `DTS_NU_NUPTIALS_Shauna_Summers_Photos_ID10310_o5dcie` | Marketplace tile, fixture Our Story |
+| flowers | `DTS_Natural_Beauty_Rob_Christain_Crosby_Photos_ID2680_fnyjzd` | Styling tile, fixture moodboard |
+| travel | `v1779185631/DTS_Early_Honey_Moon_Tino_Renato_Photos_ID3576_v8vxs0` | Honeymoon tile |
+| ceremony | `DTS_Tradition_Chris_Abatzis_Photos_ID9150_yiunlp` | Ceremony tile, fixture Our Story |
+| party | `DTS_BANDITS_PALI_MENDEZ_Photos_ID14229_mhwb5h` | Wedding party tile |
+| table | `DTS_Grand_Design_Daniel_Far%C3%B2_Photos_ID4152_auimyj` | Seating tile, fixture moodboard |
+| style | `DTS_DECADENT_Debora_Spanhol_Photos_ID12475_viqbsz` | Moodboard tile, fixture moodboard |
+| beauty | `DTS_MOTHERLY_Shauna_Summers_Photos_ID10728_vz25fa` | Beauty tile |
+| music | `DTS_PLAYER_TWO_JELLY_LUISE_Photos_ID13458_a53qq3` | Music tile |
+| stay | `DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_xted4d` | Accommodation tile |
+| gifts | `DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14166_tqzysj` | Guest gifts tile, Registry tile |
+
+Every id above was checked to resolve at `f_auto,q_auto,c_fill,g_auto,w_100,h_100` on 2026-09-21. Per-universe sample photos come through `src/lib/sampleContent/*` unchanged. The push preview's wallpaper and the Account profile photo are the couple's first image. `/favicon.svg` is the app icon on the lock screen mock.
+
+### Notifications
+
+**Architecture.** One hook, `src/mobile/notifications/useNotifications.js`, with the interface the screens see: `items, unread, loading, error, reload, markAllRead, markRead, settings, setSettings, latestUnseen, bannerShown`. It merges two sources:
+
+1. The `Notification` entity that already exists and that three endpoints write (`rsvp_received` from `api/rsvp-submit.js`, `collaborator_joined` from `api/collaborator-accept.js`, `questionnaire_answered` from `api/questionnaire-answer-submit.js`). Its own `read` flag is the read state for those rows, updated through `Notification.update`, as `src/lib/useNotifications.js` does for the desktop bell.
+2. A feed derived client-side in `feed.js` from data the app already loads: replies from the guest list (`rsvp_date`), guest messages, song requests still pending, poll votes grouped per poll per day, received gifts, tasks due within three days or overdue within thirty, unpaid budget items with a payment date within a week, and one briefing line a day. Read state for these is a last-seen timestamp plus dismissed ids, stored with Capacitor Preferences natively and localStorage on the web (`store.js`).
+
+The feed is capped to the last thirty days and sixty items. Types the couple has switched off in settings are filtered out of the feed, so the bell, the centre and the banner agree. A real notifications table later replaces `load()` in the hook and nothing else.
+
+**Surfaces.** The bell (top right on every tab root, unread dot), the centre at `/m/notifications` (Today / This week / Earlier, mark all as read, empty state), settings at `/m/notifications/settings` (a toggle per group and quiet hours), the in-app banner (drops from the top when a new unread item arrives while the app is open and the centre is not on screen; four seconds; swipe to dismiss; tap to open), and Home's "Latest" rows.
+
+**Copy.** `src/mobile/notifications/copy.ts` is the catalogue: one template per type, titles under 40 characters, bodies under 90, clipped at word boundaries. The push preview and the in-app centre use the same function.
+
+**Settings are local.** The toggles and quiet hours are saved on the device and shape what the app shows. They are not connected to push, because there is no push yet. The settings screen says so.
+
+**Push preview.** `/m/preview/push` (dev only) is a design artefact: an iOS lock screen with the couple's photo as wallpaper, six Openinvite notifications from the real catalogue, one expanded with Open / Later, one grouped stack that expands on tap, and a button to the in-app banner state (`/m/preview?banner=1`). It sends nothing.
+
+**What real push needs** (not done in this run, by design):
+
+1. A notifications table with a device-scoped read state, replacing the derived feed: `type, title, body, link, recipient_user_id, read, created_date` is already the shape of the `Notification` entity, so extending its writers is the smaller step.
+2. A server-side trigger or function to fan out: every place that today writes a `Notification` row, plus the events the feed derives now (new guest message, song request, poll vote, gift, task due, payment due, the morning briefing), calling APNs and FCM.
+3. Device token storage: a field or small entity keyed by user and platform, written by the app after registration. This is a schema change and needs a decision.
+4. An APNs key (.p8) and an FCM project, with the iOS entitlement and the Android google-services file in the native projects.
+5. `@capacitor/push-notifications` registration in `native.ts`, behind `isNative()`.
+6. Permission prompt timing: ask after the first RSVP arrives, not on first launch.
+
+### Global search
+
+`/m/search` (the magnifier on Home and Plan) searches guests by name and email, tasks by title, vendors by name and category, and features by name, over the same loaded data as the hub.
+
+### Stubs, skips and blockers added in goal 2
+
+1. **Considerations** is a hand-off only. Its content is a list computed inside `src/pages/Considerations.jsx` from the couple's profile and is not exported, so the app cannot render it without editing that page.
+2. **Seating** adds and moves guests between existing tables; creating a table, changing capacity and the canvas stay on desktop. `assignGuestToTableByName` creates a table when the name is new, so a typed name would work, but the sheet offers existing tables only, on purpose.
+3. **Marketplace** results carry name, rating, address and website; Google photos and the vendor profile modal stay on desktop. Saving uses `saveVendorFromPlaces(vendor, null)`, which files the vendor under the searched category.
+4. **Photos and media**: there is no photos page in the desktop sidebar, so there is no mobile screen. The `Photo` entity is read by Moodboard on desktop only.
+5. **Pull to refresh** is on Home and Guests. The other lists expose `reload` and could take it in one line each.
+6. **Guest suite places** are edited by hand (name, address, note, website). The desktop pages also search Google Places and attach a photo reference; the mobile screen keeps whatever the desktop attached and links to it for search.
+7. **The Ava pod** still navigates to desktop routes from its action cards (see the v0 decision).
+8. **`window.confirm`** is still used for destructive confirms in the generic list screen, as on desktop.
+9. **Polls** show vote counts from `PollVote` rows plus any counts stored on the poll option; comments and Ava insights stay on desktop.
+10. **The notification feed's reply detection** relies on `Guest.rsvp_date`, which the RSVP endpoint sets; guests whose reply predates that field show under "Earlier" or not at all.
+
+### Needs a decision (goal 2 additions)
+
+- **Device tokens for push** need somewhere to live (a field on `User`, or a `DeviceToken` entity). Schema change; not made here.
+- **Fan-out for the derived notification types.** The desktop only writes `Notification` rows for RSVPs, collaborators and questionnaires. Messages, song requests, poll votes, gifts and due dates would need server-side writers before push can carry them.
+- **`eslint.config.js`** still does not include `src/mobile/**`; the `.ts` files (`native.ts`, `copy.ts`) are outside the current parser config too.
+
 ## How to run
 
 **Preview (no sign-in, fixture data, dev only)**
@@ -65,15 +203,20 @@ open http://localhost:5173/m/preview
 ```
 
 Tabs: `/m/preview`, `/m/preview/guests`, `/m/preview/plan`, `/m/preview/site`,
-`/m/preview/account`. Deep screens: `/m/preview/guests/g3`,
-`/m/preview/plan/budget/catering`. Query flags: `?state=loading`, `?state=empty`,
-`?state=error` on any screen; `?add=1` opens the add sheet on Guests and Plan;
-`?segment=budget|timeline|vendors` on Plan; `?native=1` on Account shows the
-no-purchases variant. Everything is local state; nothing is written.
+`/m/preview/account`. Every feature: `/m/preview/plan/<key>` for each key in
+`src/mobile/features/registry.js` (for example `checklist`, `budget`,
+`messages`, `seating`, `music?segment=requests`, `registry?segment=received`,
+`ceremony`, `good-to-know`). Also `/m/preview/search`, `/m/preview/notifications`,
+`/m/preview/notifications/settings`, and the lock screen at `/m/preview/push`.
+Query flags: `?state=loading`, `?state=empty`, `?state=error` on any screen;
+`?add=1` opens the add sheet; `?banner=1` on Home shows the in-app banner;
+`?native=1` on Account shows the no-purchases variant. Everything is local
+state; nothing is written.
 
 `npm run mobile:screenshots` (with the dev server up; set `BASE` if it is not on
-5173) recaptures `mobile-screenshots/` and fails if any screen is wider than the
-viewport, has a tap target under 44px, or an input under 16px.
+5173) recaptures the fifty screens in `mobile-screenshots/` and fails if any
+screen is wider than the viewport, has a tap target under 44px, an input under
+16px, or a box-shadow other than the elevation token.
 
 **The real thing on the web**
 

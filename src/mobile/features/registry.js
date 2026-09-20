@@ -72,7 +72,7 @@ export const FEATURES = [
     stat: (d) => (d.details?.foodBeverage?.serviceStyle ? d.details.foodBeverage.serviceStyle : 'Plan the menu') },
   { key: 'music', group: 'style', label: 'Music', icon: Music2, desktop: '/Music', path: 'music', kind: 'custom', depth: 'full', image: STILLS.music,
     stat: (d) => { const p = (d.songRequests || []).filter((r) => !r.status || r.status === 'pending').length; return p ? `${p} to review` : count(d.music, 'track'); } },
-  { key: 'photography', group: 'style', label: 'Photography', icon: Camera, desktop: '/Photography', path: 'photography', kind: 'details', depth: 'light',
+  { key: 'photography', group: 'style', label: 'Photography', icon: Camera, desktop: '/Photography', path: 'photography', kind: 'details', depth: 'light', image: STILLS.couple,
     stat: (d) => { const b = (d.vendors || []).filter((v) => ['photography', 'videography'].includes(v.category) && v.status === 'booked').length; return b ? `${b} booked` : 'Find a photographer'; } },
   { key: 'vows', group: 'style', label: 'Vows & speeches', icon: FileText, desktop: '/VowsSpeeches', path: 'vows', kind: 'entity', depth: 'full',
     stat: (d) => count(d.vows, 'draft') },
@@ -81,7 +81,7 @@ export const FEATURES = [
   // Vendors
   { key: 'vendors', group: 'vendors', label: 'My vendors', icon: Store, desktop: '/Vendors', path: 'vendors', kind: 'entity', depth: 'full',
     stat: (d) => { const b = (d.vendors || []).filter((v) => v.status === 'booked').length; return `${b} booked of ${n(d.vendors)}`; } },
-  { key: 'marketplace', group: 'vendors', label: 'Marketplace', icon: ShoppingBag, desktop: '/VendorMarketplace', path: 'marketplace', kind: 'custom', depth: 'light', stat: () => 'Search near you' },
+  { key: 'marketplace', group: 'vendors', label: 'Marketplace', icon: ShoppingBag, desktop: '/VendorMarketplace', path: 'marketplace', kind: 'custom', depth: 'light', image: STILLS.dance, stat: () => 'Search near you' },
   // On the day
   { key: 'ceremony', group: 'day', label: 'Ceremony details', icon: Heart, desktop: '/ceremony-details', path: 'ceremony', kind: 'details', depth: 'full', image: STILLS.ceremony,
     stat: (d) => (d.details?.celebrant?.name ? `With ${d.details.celebrant.name}` : 'Add your celebrant') },
@@ -94,7 +94,7 @@ export const FEATURES = [
   // Finances
   { key: 'budget', group: 'finances', label: 'Budget', icon: Wallet, desktop: '/Budget', path: 'budget', kind: 'custom', depth: 'full',
     stat: (d, symbol) => { const spent = (d.budget || []).reduce((s, i) => s + (i.actual_amount || 0), 0); const total = d.details?.budget?.total ? Number(d.details.budget.total) : (d.budget || []).reduce((s, i) => s + (i.budgeted_amount || 0), 0); return total ? `${money(total - spent, symbol)} left` : 'Set a total'; } },
-  { key: 'registry', group: 'finances', label: 'Registry', icon: Gift, desktop: '/Registry', path: 'registry', kind: 'custom', depth: 'full',
+  { key: 'registry', group: 'finances', label: 'Registry', icon: Gift, desktop: '/Registry', path: 'registry', kind: 'custom', depth: 'full', image: STILLS.gifts,
     stat: (d) => { const g = n(d.gifts); return g ? `${g} received` : `${n(d.registryItems) + n(d.registryProducts) + n(d.customGifts)} listed`; } },
   // Guest suite
   { key: 'studio', group: 'suite', label: 'Design studio', icon: Sparkles, desktop: '/studio', path: '../site', kind: 'custom', depth: 'view', stat: (d) => (d.details?.websiteEnabled ? 'Site is live' : 'Site is a draft') },

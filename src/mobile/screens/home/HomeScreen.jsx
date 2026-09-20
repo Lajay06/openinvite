@@ -78,7 +78,7 @@ export default function HomeScreen({
             <div className="oi-m-section-head"><h2 className="oi-m-section">Keep planning</h2></div>
             <div style={{ margin: '0 calc(-1 * var(--m-gutter))' }}>
               <PeekCarousel size="narrow" dots={false}>
-                {keepPlanning.map((f) => <ImageCard key={f.key} image={f.image || img(4)} alt={f.label} title={f.label} line={f.line} onClick={() => onOpenFeature?.(f.key)} width={240} />)}
+                {keepPlanning.map((f, i) => <ImageCard key={f.key} image={f.image || img(4 + i)} alt={f.label} title={f.label} line={f.line} onClick={() => onOpenFeature?.(f.key)} width={240} />)}
               </PeekCarousel>
             </div>
           </section>

@@ -17,7 +17,7 @@ export default function AccountScreen({ name, email, coupleName, weddingDate, ph
           <div className="oi-m-card oi-m-card--flush">
             <div style={{ position: 'relative', aspectRatio: '16 / 9', background: 'var(--m-ink)' }}>
               <SmartImage src={photo} alt="" width={360} ratio="16/9" square eager tone="ink" />
-              <div className="oi-m-hero__scrim" />
+              <div className="oi-m-hero__scrim" style={{ background: 'linear-gradient(to top, rgba(26,26,26,0.92) 0%, rgba(26,26,26,0.45) 55%, rgba(26,26,26,0.05) 100%)' }} />
               <div style={{ position: 'absolute', left: 16, bottom: 14, color: '#FFFFFF' }}>
                 <div className="oi-m-hero__title" style={{ fontSize: 24, lineHeight: '30px' }}>{coupleName || name || 'Your wedding'}</div>
                 {weddingDate && <div className="oi-m-hero__label">{weddingDate}</div>}
