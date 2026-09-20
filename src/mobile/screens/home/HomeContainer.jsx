@@ -5,78 +5,57 @@ import { useAuth } from '@/lib/AuthContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { daysUntilWedding } from '@/lib/weddingCountdown';
 import { isAttending, isDeclined, isAwaitingPrimary } from '@/lib/guestRsvpTally';
-import { getUniverse } from '@/lib/universeCatalog';
-import { getSampleWedding } from '@/lib/sampleContent';
 import HomeScreen from './HomeScreen';
 import { ShellContext } from '../../shell/MobileShell';
-import { useWedding, useGuests, useTasks, useBudget, taskWrites } from '../../data/wedding';
-import { hapticLight, openExternal } from '../../native';
+import { usePlanData } from '../../data/plan';
+import { taskWrites } from '../../data/wedding';
+import { hapticLight, shareLink } from '../../native';
 import { siteUrlFor } from '../../lib/links';
+import { coupleImages } from '../../lib/images';
+import { leastTouched, featureByKey } from '../../features/registry';
+import { summariseBudget } from '../plan/BudgetScreen';
 
-/** Loads Home from the same helpers DailyUpdate, Guests and Budget use. */
+/** Home, from the same loaders the Plan hub uses, plus the notification feed for "Latest". */
 export default function HomeContainer() {
   const { user } = useAuth();
   const { symbol } = useCurrency();
   const navigate = useNavigate();
-  const { base } = useContext(ShellContext);
-  const wedding = useWedding();
-  const guests = useGuests();
-  const tasks = useTasks();
-  const budget = useBudget();
+  const { base, notifications, openAva } = useContext(ShellContext);
+  const plan = usePlanData();
+  const d = plan.data || {};
+  const details = d.details;
 
-  const details = wedding.data;
   const firstName = (details?.couple1Name || user?.full_name || '').split(' ')[0];
-  const coupleName = details?.couple1Name && details?.couple2Name
-    ? `${details.couple1Name} & ${details.couple2Name}`
-    : details?.couple1Name || details?.couple2Name || '';
+  const coupleName = details?.couple1Name && details?.couple2Name ? `${details.couple1Name} & ${details.couple2Name}` : details?.couple1Name || details?.couple2Name || '';
   const daysToGo = details?.weddingDate ? daysUntilWedding(details.weddingDate) : null;
-  const universeId = details?.activeUniverse || 'london';
-  const heroImage = details?.coverPhoto || getSampleWedding(universeId)?.coverPhoto || getUniverse(universeId)?.imageUrl || '';
-
-  const rsvp = useMemo(() => {
-    const list = guests.data || [];
-    const invited = list.filter((g) => !!g.invite_sent_at);
-    return {
-      attending: list.filter(isAttending).length,
-      declined: list.filter(isDeclined).length,
-      awaiting: list.filter(isAwaitingPrimary).length,
-      invited: invited.length,
-    };
-  }, [guests.data]);
-
-  const budgetSnap = useMemo(() => {
-    const items = budget.data?.items || [];
-    const spent = items.reduce((s, i) => s + (i.actual_amount || 0), 0);
-    const planned = budget.data?.plan?.total ? Number(budget.data.plan.total) : items.reduce((s, i) => s + (i.budgeted_amount || 0), 0);
-    return { spent, total: planned, symbol };
-  }, [budget.data, symbol]);
-
-  const openTasks = (tasks.data || []).filter((t) => !t.completed);
+  const images = useMemo(() => coupleImages(details), [details]);
   const siteUrl = siteUrlFor(details);
 
-  const nextAction = !guests.loading && (guests.data || []).length === 0
-    ? { label: 'Add your first guest', onClick: () => navigate(`${base}/guests?add=1`) }
-    : rsvp.awaiting > 0
-      ? { label: 'See who is yet to reply', onClick: () => navigate(`${base}/guests?filter=awaiting`) }
-      : openTasks.length > 0
-        ? { label: 'Open your tasks', onClick: () => navigate(`${base}/plan`) }
-        : siteUrl
-          ? { label: 'View your site', onClick: () => openExternal(siteUrl) }
-          : null;
+  const rsvp = useMemo(() => {
+    const list = d.guests || [];
+    return { attending: list.filter(isAttending).length, declined: list.filter(isDeclined).length, awaiting: list.filter(isAwaitingPrimary).length, invited: list.filter((g) => !!g.invite_sent_at).length };
+  }, [d.guests]);
+  const budgetSum = useMemo(() => summariseBudget(d.budget || [], details?.budget || null), [d.budget, details?.budget]);
+  const openTasks = (d.tasks || []).filter((t) => !t.completed).sort((a, b) => (a.due_date || '9999').localeCompare(b.due_date || '9999'));
+  const keepPlanning = useMemo(() => leastTouched(d, 6).map((f) => ({ key: f.key, label: f.label, image: f.image, line: f.stat(d, symbol) })), [d, symbol]);
+  const briefing = notifications?.items?.find((i) => i.type === 'briefing')?.body || (daysToGo != null ? `${openTasks.length} open task${openTasks.length === 1 ? '' : 's'} and ${rsvp.awaiting} guests still to reply.` : null);
+  const latest = (notifications?.items || []).filter((i) => i.type !== 'briefing').slice(0, 3);
 
-  const completeTask = async (t) => {
-    try {
-      await taskWrites.toggle(t);
-      hapticLight();
-      toast.success('Done');
-      tasks.reload();
-    } catch {
-      toast.error('Could not update that task. Try again.');
-    }
+  const openFeature = (key) => {
+    if (key === 'site') return navigate(`${base}/site`);
+    const f = featureByKey(key);
+    if (!f) return navigate(`${base}/plan`);
+    if (f.path.startsWith('../')) return navigate(`${base}/${f.path.slice(3)}`);
+    return navigate(`${base}/plan/${f.path}`);
   };
-
-  const loading = wedding.loading || guests.loading || tasks.loading || budget.loading;
-  const error = wedding.error || guests.error || tasks.error || budget.error;
+  const completeTask = async (t) => {
+    try { await taskWrites.toggle(t); hapticLight(); toast.success('Done'); plan.reload(); } catch { toast.error('Could not update that task. Try again.'); }
+  };
+  const share = async () => {
+    const r = await shareLink({ title: coupleName ? `${coupleName}'s wedding` : 'Our wedding', text: 'Here is our wedding site.', url: siteUrl });
+    if (r === 'copied') toast.success('Link copied');
+    if (r === 'failed') toast.error('Could not share the link.');
+  };
 
   return (
     <HomeScreen
@@ -84,22 +63,29 @@ export default function HomeContainer() {
       coupleName={coupleName}
       weddingDate={details?.weddingDate}
       daysToGo={daysToGo}
-      heroImage={heroImage}
-      nextAction={nextAction}
-      tasks={openTasks}
+      images={images}
+      siteUrl={siteUrl}
       rsvp={rsvp}
-      budget={budgetSnap}
-      onOpenTasks={() => navigate(`${base}/plan`)}
-      onOpenGuests={() => navigate(`${base}/guests`)}
-      onOpenBudget={() => navigate(`${base}/plan?segment=budget`)}
+      budget={{ spent: budgetSum.spent, total: budgetSum.total, symbol }}
+      tasks={openTasks}
+      payments={budgetSum.duePayments}
+      keepPlanning={keepPlanning}
+      briefing={briefing}
+      latest={latest}
+      onOpenGuests={() => navigate(`${base}/guests?filter=awaiting`)}
+      onOpenBudget={() => navigate(`${base}/plan/budget`)}
+      onOpenTasks={() => navigate(`${base}/plan/checklist`)}
       onCompleteTask={completeTask}
-      onAddGuest={() => navigate(`${base}/guests?add=1`)}
-      onAddTask={() => navigate(`${base}/plan?add=1`)}
-      onAddExpense={() => navigate(`${base}/plan?segment=budget&add=1`)}
-      onViewSite={() => (siteUrl ? openExternal(siteUrl) : navigate(`${base}/site`))}
-      loading={loading}
-      error={error}
-      onRetry={() => { wedding.reload(); guests.reload(); tasks.reload(); budget.reload(); }}
+      onOpenFeature={openFeature}
+      onOpenAva={openAva}
+      onShare={share}
+      onSearch={() => navigate(`${base}/search`)}
+      onOpenLatest={(it) => { notifications?.markRead?.(it); navigate(it.link); }}
+      onOpenNotifications={() => navigate(`${base}/notifications`)}
+      loading={plan.loading}
+      error={plan.error}
+      onRetry={plan.reload}
+      onRefresh={async () => { hapticLight(); await plan.reload(); await notifications?.reload?.(); }}
     />
   );
 }

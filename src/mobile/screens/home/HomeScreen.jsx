@@ -1,148 +1,109 @@
 import React from 'react';
-import { UserPlus, ListPlus, Receipt, Globe, CheckCircle2 } from 'lucide-react';
+import { Search, Users, Wallet, CheckCircle2, Receipt } from 'lucide-react';
 import Screen from '../../shell/Screen';
-import { Block, PillButton, PeekCarousel, ProgressBar, Skeleton, ErrorState, EmptyState } from '../../ui';
-import { money, dateLong, dueLabel } from '../../lib/format';
+import { HeroCard, PeekCarousel, StatCard, PanelCard, ImageCard, Row, RowGroup, PillButton, Skeleton, ErrorState, ProgressBar } from '../../ui';
+import { money, dateLong, dueLabel, dateShort } from '../../lib/format';
+import { typeIcon } from '../../notifications/icons';
+import { relativeTime } from '../../notifications/feed';
 
 /**
- * Home. Everything comes in through props so the preview can render it
- * from fixtures.
- *
- * props
- *   firstName, coupleName, weddingDate, daysToGo, heroImage
- *   nextAction  { label, onClick }
- *   tasks       open tasks (first few are shown)
- *   rsvp        { attending, declined, awaiting, invited }
- *   budget      { spent, total, symbol }
- *   on*         quick-action and section handlers
- *   loading, error, onRetry
+ * Home. Hero carousel, stat pair, next up, keep planning, from Ava, latest.
+ * A section renders only when a real feature backs it. Everything arrives
+ * as props so the preview renders it from fixtures.
  */
 export default function HomeScreen({
-  firstName, coupleName, weddingDate, daysToGo, heroImage, nextAction,
-  tasks = [], rsvp, budget,
-  onOpenTasks, onOpenGuests, onOpenBudget, onCompleteTask,
-  onAddGuest, onAddTask, onAddExpense, onViewSite,
-  loading = false, error = null, onRetry,
+  firstName, coupleName, weddingDate, daysToGo, images = [], siteUrl,
+  rsvp, budget, tasks = [], payments = [], keepPlanning = [], briefing, latest = [],
+  onOpenGuests, onOpenBudget, onOpenTasks, onCompleteTask, onOpenFeature, onOpenAva, onShare, onSearch, onOpenLatest, onOpenNotifications,
+  loading = false, error = null, onRetry, onRefresh,
 }) {
-  const title = firstName ? `Hi ${firstName}` : 'Hi';
-  const countdown = daysToGo == null ? '' : daysToGo > 1 ? `${daysToGo} days to go` : daysToGo === 1 ? 'Tomorrow' : daysToGo === 0 ? 'Today' : 'Married';
-
+  const img = (i) => images[i % Math.max(1, images.length)] || images[0] || '';
+  const countdown = daysToGo == null ? null : daysToGo > 1 ? `${daysToGo}` : daysToGo === 1 ? 'Tomorrow' : daysToGo === 0 ? 'Today' : null;
+  const heroes = [];
+  if (!loading) {
+    heroes.push({ key: 'days', image: img(0), label: coupleName || 'Your wedding', number: countdown && daysToGo > 1 ? countdown : undefined, title: countdown && daysToGo > 1 ? 'days to go' : countdown || coupleName, sub: weddingDate ? dateLong(weddingDate) : 'Add your date in Event details', action: siteUrl ? 'View your site' : 'Event details', onAction: siteUrl ? () => onOpenFeature?.('site') : () => onOpenFeature?.('event-details') });
+    if (rsvp && rsvp.invited > 0) heroes.push({ key: 'rsvp', image: img(1), label: 'Replies', number: rsvp.attending, title: `attending so far`, sub: rsvpSentence(rsvp), action: 'See who is yet to reply', onAction: onOpenGuests, progress: { value: rsvp.attending + rsvp.declined, max: rsvp.invited } });
+    if (briefing) heroes.push({ key: 'ava', image: img(2), label: 'From Ava', title: briefing, action: 'Ask Ava', onAction: onOpenAva });
+    if (siteUrl) heroes.push({ key: 'share', image: img(3), label: 'Your site', title: 'Share it with your guests', sub: siteUrl.replace(/^https?:\/\//, ''), action: 'Share link', onAction: onShare });
+  }
   return (
-    <Screen title={title}>
-      <div className="oi-m-stack oi-m-stack--16">
+    <Screen title={firstName ? `Hi ${firstName}` : 'Hi'} bell actions={[{ icon: Search, label: 'Search', onClick: onSearch }]} onRefresh={onRefresh}>
+      <div className="oi-m-stack oi-m-stack--24">
         {error && !loading ? <ErrorState onRetry={onRetry} /> : null}
 
-        {/* Hero */}
-        {loading ? (
-          <Skeleton kind="block" style={{ height: 240 }} />
-        ) : (
-          <div className="oi-m-hero">
-            {heroImage && <img className="oi-m-hero__img" src={heroImage} alt="" />}
-            <div className="oi-m-hero__scrim" />
-            <div className="oi-m-hero__body">
-              <div className="oi-m-meta" style={{ color: 'rgba(255,255,255,0.8)' }}>{countdown}</div>
-              <h2 className="oi-m-section" style={{ color: '#FFFFFF', fontSize: 24, lineHeight: '32px' }}>{coupleName || 'Your wedding'}</h2>
-              {weddingDate && <p className="oi-m-body" style={{ color: 'rgba(255,255,255,0.9)' }}>{dateLong(weddingDate)}</p>}
-              {nextAction && (
-                <PillButton variant="primary" onClick={nextAction.onClick} style={{ marginTop: 8 }}>{nextAction.label}</PillButton>
-              )}
-            </div>
+        {loading ? <Skeleton kind="hero" /> : (
+          <div style={{ margin: '0 calc(-1 * var(--m-gutter))' }}>
+            <PeekCarousel size="wide">
+              {heroes.map((h) => (
+                <HeroCard key={h.key} image={h.image} alt="" label={h.label} number={h.number} title={h.title} sub={h.sub} action={h.action} onAction={h.onAction}>
+                  {h.progress && <div style={{ marginTop: 4 }}><ProgressBar value={h.progress.value} max={h.progress.max} onDark /></div>}
+                </HeroCard>
+              ))}
+            </PeekCarousel>
           </div>
         )}
 
-        {/* Next up */}
-        <section>
-          <div className="oi-m-block__head" style={{ padding: '0 0 8px' }}>
-            <h2 className="oi-m-section">Next up</h2>
-            {onOpenTasks && <button type="button" className="oi-m-block__link" onClick={onOpenTasks}>All tasks</button>}
+        {!loading && rsvp && budget && (
+          <div className="oi-m-grid2">
+            <StatCard icon={Users} label="Replies in" numeric={rsvp.attending + rsvp.declined} suffix={rsvp.invited ? ` of ${rsvp.invited}` : ''} onClick={onOpenGuests} />
+            <StatCard icon={Wallet} label="Budget left" number={budget.total > 0 ? money(budget.total - budget.spent, budget.symbol) : 'Set a total'} ink onClick={onOpenBudget} />
           </div>
-          {loading ? (
-            <Skeleton kind="block" />
-          ) : tasks.length === 0 ? (
-            <EmptyState icon={CheckCircle2} text="Nothing open right now. Add a task when something comes up." actionLabel="Add a task" onAction={onAddTask} />
-          ) : (
+        )}
+
+        {!loading && (tasks.length > 0 || payments.length > 0) && (
+          <section>
+            <div className="oi-m-section-head">
+              <h2 className="oi-m-section">Next up</h2>
+              <button type="button" className="oi-m-block__link" onClick={onOpenTasks}>All tasks</button>
+            </div>
             <div style={{ margin: '0 calc(-1 * var(--m-gutter))' }}>
               <PeekCarousel>
+                {payments.slice(0, 2).map((p) => (
+                  <PanelCard key={`p${p.id}`} tone="wine" label={`Due ${dateShort(p.payment_date)}`} title={money(p.actual_amount || p.budgeted_amount, budget?.symbol)} body={`${p.item_name}${p.vendor ? ` to ${p.vendor}` : ''}`} onClick={onOpenBudget}>
+                    <Receipt size={18} style={{ opacity: 0.7 }} />
+                  </PanelCard>
+                ))}
                 {tasks.slice(0, 5).map((t) => (
-                  <div key={t.id} className="oi-m-block" style={{ minHeight: 120, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 12 }}>
-                    <div>
-                      <p className="oi-m-body oi-m-strong" style={{ overflowWrap: 'anywhere' }}>{t.title}</p>
-                      <p className="oi-m-meta">{dueLabel(t.due_date) || (t.priority ? `${t.priority} priority` : '')}</p>
-                    </div>
-                    {onCompleteTask && (
-                      <PillButton variant="secondary" icon={CheckCircle2} onClick={() => onCompleteTask(t)} style={{ alignSelf: 'flex-start' }}>Done</PillButton>
-                    )}
-                  </div>
+                  <PanelCard key={t.id} tone="sand" label={dueLabel(t.due_date) || (t.priority ? `${t.priority} priority` : 'No date')} title={t.title}>
+                    <PillButton variant="light" size="sm" icon={CheckCircle2} onClick={() => onCompleteTask?.(t)} style={{ alignSelf: 'flex-start', marginTop: 4 }}>Done</PillButton>
+                  </PanelCard>
                 ))}
               </PeekCarousel>
             </div>
-          )}
-        </section>
+          </section>
+        )}
 
-        {/* RSVP snapshot */}
-        <Block title="Replies" action={onOpenGuests ? 'Guests' : undefined} onAction={onOpenGuests}>
-          {loading || !rsvp ? (
-            <Skeleton kind="text" width="70%" />
-          ) : (
-            <>
-              <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
-                <Stat n={rsvp.attending} label="Attending" />
-                <Stat n={rsvp.declined} label="Declined" />
-                <Stat n={rsvp.awaiting} label="Awaiting" />
-              </div>
-              <ProgressBar
-                value={rsvp.attending + rsvp.declined}
-                max={rsvp.invited}
-                note={rsvpSentence(rsvp)}
-              />
-            </>
-          )}
-        </Block>
+        {!loading && keepPlanning.length > 0 && (
+          <section>
+            <div className="oi-m-section-head"><h2 className="oi-m-section">Keep planning</h2></div>
+            <div style={{ margin: '0 calc(-1 * var(--m-gutter))' }}>
+              <PeekCarousel size="narrow" dots={false}>
+                {keepPlanning.map((f) => <ImageCard key={f.key} image={f.image || img(4)} alt={f.label} title={f.label} line={f.line} onClick={() => onOpenFeature?.(f.key)} width={240} />)}
+              </PeekCarousel>
+            </div>
+          </section>
+        )}
 
-        {/* Budget snapshot */}
-        <Block title="Budget" action={onOpenBudget ? 'Budget' : undefined} onAction={onOpenBudget}>
-          {loading || !budget ? (
-            <Skeleton kind="text" width="70%" />
-          ) : budget.total > 0 ? (
-            <>
-              <p className="oi-m-num" style={{ marginBottom: 8 }}>{money(budget.spent, budget.symbol)}</p>
-              <ProgressBar value={budget.spent} max={budget.total} note={`${money(budget.spent, budget.symbol)} of ${money(budget.total, budget.symbol)} spent so far.`} />
-            </>
-          ) : (
-            <p className="oi-m-meta">No budget yet. Set a total and Ava can help you split it.</p>
-          )}
-        </Block>
+        {!loading && briefing && (
+          <PanelCard tone="ink" mark="✦" label="From Ava" body={briefing} action="Ask Ava" onClick={onOpenAva} />
+        )}
 
-        {/* Quick actions */}
-        <section>
-          <h2 className="oi-m-section" style={{ marginBottom: 8 }}>Quick actions</h2>
-          <div className="oi-m-grid2">
-            <Tile icon={UserPlus} label="Add a guest" onClick={onAddGuest} />
-            <Tile icon={ListPlus} label="Add a task" onClick={onAddTask} />
-            <Tile icon={Receipt} label="Add an expense" onClick={onAddExpense} />
-            <Tile icon={Globe} label="View your site" onClick={onViewSite} />
-          </div>
-        </section>
+        {!loading && latest.length > 0 && (
+          <section>
+            <div className="oi-m-section-head">
+              <h2 className="oi-m-section">Latest</h2>
+              <button type="button" className="oi-m-block__link" onClick={onOpenNotifications}>All activity</button>
+            </div>
+            <RowGroup>
+              {latest.slice(0, 3).map((it) => {
+                const { icon: Icon, tile } = typeIcon(it.type);
+                return <Row key={it.id} icon={Icon} tile={tile} label={it.title} sub={it.body} value={relativeTime(it.ts)} onClick={() => onOpenLatest?.(it)} />;
+              })}
+            </RowGroup>
+          </section>
+        )}
       </div>
     </Screen>
-  );
-}
-
-function Stat({ n, label }) {
-  return (
-    <div style={{ flex: 1, minWidth: 0 }}>
-      <div className="oi-m-num" style={{ fontSize: 28, lineHeight: '36px' }}>{n}</div>
-      <div className="oi-m-meta">{label}</div>
-    </div>
-  );
-}
-
-function Tile({ icon: Icon, label, onClick }) {
-  return (
-    <button type="button" className="oi-m-tile" onClick={onClick}>
-      <span className="oi-m-row__tile oi-m-row__tile--primary"><Icon size={20} strokeWidth={1.75} /></span>
-      <span className="oi-m-body oi-m-strong">{label}</span>
-    </button>
   );
 }
 
