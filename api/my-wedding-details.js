@@ -63,6 +63,7 @@ import { verifyBase44User } from './_lib/auth.js';
 import { rejectIfTrialExpired } from './_lib/trialGuard.js';
 import { encryptPayload, decryptPayload } from './_lib/questionnaireCrypto.js';
 import { hashWebsitePassword } from './_lib/websitePasswordHash.js';
+import { projectScheduleForFeed } from '../src/lib/calendarFeedProjection.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -81,11 +82,24 @@ import { ENCRYPTED_FIELDS } from './_lib/encryptedFields.js';
 // hashed instead — see api/_lib/websitePasswordHash.js.
 const HASHED_FIELDS = ['websitePassword'];
 
-// Written verbatim — not sensitive, but it must be writable HERE so that
-// enabling the gate and setting its credential land in ONE request. Splitting
-// them across two endpoints would reintroduce the enabled-without-credential
-// window that src/lib/websitePasswordGate.js exists to prevent.
-const PLAINTEXT_WRITABLE_FIELDS = ['websitePasswordEnabled'];
+// Written in the clear — neither is sensitive — but each must be writable
+// HERE, for its own reason:
+//   websitePasswordEnabled  so that enabling the gate and setting its
+//                           credential land in ONE request. Splitting them
+//                           across two endpoints would reintroduce the
+//                           enabled-without-credential window that
+//                           src/lib/websitePasswordGate.js exists to prevent.
+//   calendarFeed            the subscribe feed's copy of the schedule — the
+//                           six allowlisted fields of every Schedule row,
+//                           projected here because Schedule.read is
+//                           owner-scoped and the feed's admin key gets [] from
+//                           it (src/lib/calendarFeedProjection.js). Written
+//                           only by src/lib/calendarFeedSync.js, and
+//                           RE-PROJECTED below on the way in, so a client
+//                           cannot store `notes` in the feed by hand. Not in
+//                           GUEST_SAFE_WEDDING_FIELDS: guests have their own
+//                           schedule path.
+const PLAINTEXT_WRITABLE_FIELDS = ['websitePasswordEnabled', 'calendarFeed'];
 
 // Fields THIS endpoint is allowed to write. Never a blanket "update
 // anything" passthrough.
@@ -302,6 +316,9 @@ async function handlePut(req, res, caller, callerToken) {
       // digest of "" that would silently become a working blank password.
       const plain = typeof value === 'string' ? value.trim() : '';
       payload[name] = plain ? await hashWebsitePassword(plain) : null;
+    } else if (name === 'calendarFeed') {
+      // The allowlist is applied server-side, whatever the client sent.
+      payload[name] = value == null ? null : projectScheduleForFeed(value?.events);
     } else if (PLAINTEXT_WRITABLE_FIELDS.includes(name)) {
       payload[name] = value ?? null;
     } else {

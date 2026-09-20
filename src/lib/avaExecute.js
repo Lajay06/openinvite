@@ -249,5 +249,15 @@ export async function executeAvaAction(action, deps) {
   };
 
   await writers[type]();
+  // THE FIFTH WRITER OF THE SCHEDULE. The hub's four all end in its load path,
+  // which projects the schedule onto WeddingDetails.calendarFeed for the
+  // subscribe feed (src/lib/calendarFeedSync.js); a row Ava adds has to reach
+  // the same copy. The row is written by now, so a failed sync is logged and
+  // the action still succeeds — the next hub load repairs the copy.
+  if (type === 'create_schedule' && deps.syncCalendarFeed) {
+    try { await deps.syncCalendarFeed(); } catch (err) {
+      console.error('[avaExecute] calendar feed sync failed:', err?.message || err);
+    }
+  }
   return { ok: true, error: null, entity };
 }

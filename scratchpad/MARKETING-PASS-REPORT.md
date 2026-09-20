@@ -287,3 +287,28 @@ Two open questions for the owner, neither acted on:
    trial" sits at 2.69:1 on the live end cap, where the code comment
    records 4.81:1 at scrim 0.35. The M5 stack did not change that class of
    backdrop. Worth a re-measure with the sampling the comment intended.
+
+## Open ticket — the weekly digest's owner-scoped reads (logged 2026-09-20, no fix now)
+
+Found while diagnosing the calendar subscribe feed, which served a valid,
+empty calendar to a correct token because `Schedule.read` is owner-scoped
+and the admin key gets `200 []` from an owner-scoped list
+(BASE44_PLATFORM_NOTES.md, "The admin key is not a superuser bypass").
+The feed fix projects the schedule onto `WeddingDetails.calendarFeed`
+(PR: feat/calendar-feed-projection).
+
+`api/cron/send-weekly-digest.js` has the same shape, unfixed:
+
+| Line | Entity | `read` RLS (list_entity_schemas, 2026-09-20) | What the cron does with it |
+|---|---|---|---|
+| 119 | `Table` | `{created_by_id: "{{user.id}}"}` | "finish seating" action |
+| 136 | `Note` | `{created_by_id: "{{user.id}}"}` | "close out your checklist" action |
+| 152 | `VendorTask` | `{created_by_id: "{{user.id}}"}` | "check in with vendors" action |
+
+Each list comes back `[]` under the admin key, so those three digest
+actions can silently never fire. The digest still sends (Guest,
+RsvpResponse, WeddingDetails are `read: null`), so nothing looks broken.
+Candidates, undecided: project the counts the digest needs onto the
+WeddingDetails row the way the feed now does; or a hosted Base44
+function with `asServiceRole` (notes, "hosted functions"), which is new
+infrastructure. Not a marketing-lane fix; logged for the product lane.

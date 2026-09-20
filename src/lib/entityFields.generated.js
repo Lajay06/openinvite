@@ -1335,6 +1335,7 @@ export const ENTITY_FIELDS = {
       "beauty",
       "blockOverlays",
       "budget",
+      "calendarFeed",
       "cateringNotes",
       "celebrant",
       "celebrationContent",

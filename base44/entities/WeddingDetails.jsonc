@@ -1390,6 +1390,40 @@
         "type": "string"
       },
       "default": []
+    },
+    // THE SUBSCRIBE FEED'S COPY OF THE SCHEDULE. Schedule.read is owner-scoped
+    // and the admin key is not a superuser, so api/schedule.ics.js — fetched
+    // by Google's and Apple's servers, with no session — got `200 []` from
+    // Schedule and served a valid, empty calendar (production, 2026-09-20).
+    // This row is read:null and the feed already reads it, so the six
+    // allowlisted fields of every Schedule row are projected here, by the
+    // couple's own session, whenever the schedule changes
+    // (src/lib/calendarFeedProjection.js, src/lib/calendarFeedSync.js, via
+    // api/my-wedding-details.js PUT). `id` is the Schedule row id, for the
+    // VEVENT UID. notes and responsible_person never enter. Not in
+    // GUEST_SAFE_WEDDING_FIELDS. Added to the live schema by the owner in the
+    // Base44 chat, 2026-09-20, and confirmed with list_entity_schemas before
+    // this mirror was written.
+    "calendarFeed": {
+      "type": "object",
+      "properties": {
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "event_name": { "type": "string" },
+              "event_date": { "type": "string" },
+              "start_time": { "type": "string" },
+              "end_time": { "type": "string" },
+              "location": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        },
+        "updatedAt": { "type": "string" }
+      }
     }
   },
   "rls": {
