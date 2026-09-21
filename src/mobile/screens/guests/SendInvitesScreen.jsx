@@ -1,0 +1,264 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Search, Mail, MessageCircle, Eye, FlaskConical, Send } from 'lucide-react';
+import toast from 'react-hot-toast';
+import Screen from '../../shell/Screen';
+import { FilterPills, RowGroup, Checkbox, PillButton, TextField, TextAreaField, BottomSheet, SkeletonRows, ErrorState, EmptyState, PanelCard } from '../../ui';
+import PillChoice from '../../ui/PillChoice';
+import { initials, GUEST_CATEGORY_LABEL } from '../../lib/format';
+import { openExternal } from '../../native';
+import { useApi } from '../../data/api';
+import { isAttending, isDeclined, isAwaitingPrimary } from '@/lib/guestRsvpTally';
+import { toWaMe } from '@/lib/phoneE164';
+import { coupleDisplayName } from '@/lib/coupleNames';
+import { getWeddingEvents, getGuestEventResponse, getEventVenueAndDate } from '@/lib/weddingEvents';
+import { renderInvitationEmail, getTypeComposeDefaults, getBannerImageUrl, getDefaultBannerChoice, buildGuestCtaUrl } from '@/lib/emailTemplate';
+import { PROD_ORIGIN } from '../../lib/links';
+
+/* SendInvitesModal.jsx's types, default filters and filter tabs, verbatim. */
+export const TYPE_LABELS = { save_the_date: 'Save the date', invite: 'Invitation', reminder: 'Reminder', update: 'Event update', thank_you_attending: 'Thank you (attending)', thank_you_declined: 'Thank you (declined)' };
+const TYPE_DEFAULT_FILTER = { save_the_date: 'all', invite: 'not_invited', reminder: 'awaiting', update: 'all', thank_you_attending: 'attending', thank_you_declined: 'declined' };
+const FILTER_TABS = [{ key: 'not_invited', label: 'Not yet invited' }, { key: 'awaiting', label: 'Awaiting reply' }, { key: 'attending', label: 'Attending' }, { key: 'declined', label: 'Declined' }, { key: 'all', label: 'All guests' }];
+const STEPS = ['Select guests', 'Compose', 'Channel', 'Review and send'];
+const RSVP_BASE = `${typeof window === 'undefined' ? PROD_ORIGIN : window.location.origin}/rsvp/`;
+
+const buildRsvpUrl = (token) => { if (!token) throw new Error('Refusing to build an RSVP link from an empty token.'); return RSVP_BASE + token; };
+function buildWhatsAppMessage(guest, coupleName, weddingDate, rsvpUrl) {
+  const name = guest?.name ? guest.name.split(' ')[0] : 'there';
+  const dateStr = weddingDate ? new Date(weddingDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+  return `Hi ${name}! You're invited to ${coupleName ? `${coupleName}'s wedding` : 'our wedding'}${dateStr ? ` on ${dateStr}` : ''}. Please RSVP here: ${rsvpUrl}`;
+}
+function buildWhatsAppUrl(guest, coupleName, weddingDate, token, siteUrl) {
+  const msg = buildWhatsAppMessage(guest, coupleName, weddingDate, buildGuestCtaUrl({ showDate: true, siteUrl, rsvpToken: token, rsvpUrl: buildRsvpUrl(token) }));
+  const phone = toWaMe(guest.phone);
+  return phone ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}` : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+}
+function replaceMergeTags(str, guestName, coupleName, dateStr) {
+  const firstName = guestName ? guestName.split(' ')[0] : '[Guest name]';
+  return String(str || '').replace(/\[Guest name\]/gi, firstName).replace(/\[Wedding date\]/gi, dateStr || '[Wedding date]').replace(/\[Couple names\]/gi, coupleName || 'the couple').replace(/\[RSVP link\]/gi, '[RSVP link]');
+}
+
+/**
+ * Send invites: the desktop's four steps on one full-screen flow. The same
+ * types, filters, compose defaults, merge tags, banner choice, rendered
+ * preview (the exact renderInvitationEmail the server uses), test send,
+ * channel, review, send through /api/send-invites, WhatsApp through wa.me,
+ * and the same tracking writes (invite_sent_at and invite_channel for
+ * invitations, reminder_sent_at for reminders). Ultra only, as on desktop.
+ *
+ * props: guests, wedding, user, initialSelectedIds, restrictEventIds,
+ * initialType, isPro, onDone, back, loading, error, onRetry
+ */
+export default function SendInvitesScreen({ guests = [], wedding, user, initialSelectedIds = [], restrictEventIds = null, initialType = 'invite', isPro = false, onSent, back, loading, error, onRetry }) {
+  const api = useApi();
+  const [step, setStep] = useState(1);
+  const [type, setType] = useState(initialType);
+  const [filter, setFilter] = useState(initialSelectedIds.length ? 'all' : TYPE_DEFAULT_FILTER[initialType] || 'all');
+  const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState(() => new Set(initialSelectedIds));
+  const skipAuto = useRef(initialSelectedIds.length > 0);
+  const [subject, setSubject] = useState('');
+  const [body, setBody] = useState('');
+  const [subjectEdited, setSubjectEdited] = useState(false);
+  const [bodyEdited, setBodyEdited] = useState(false);
+  const [bannerChoice, setBannerChoice] = useState('none');
+  const [bannerTouched, setBannerTouched] = useState(false);
+  const [channel, setChannel] = useState('email');
+  const [preview, setPreview] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendingTest, setSendingTest] = useState(false);
+
+  const coupleName = coupleDisplayName(wedding);
+  const weddingDate = wedding?.weddingDate || '';
+  const venue = wedding?.mainCeremony?.venueName || '';
+  const siteUrl = wedding?.slug ? `${typeof window === 'undefined' ? PROD_ORIGIN : window.location.origin}/w/${wedding.slug}` : '';
+  const dateStr = weddingDate ? new Date(weddingDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+  const universeId = wedding?.activeUniverse;
+  const weddingEvents = useMemo(() => (wedding ? getWeddingEvents(wedding).map((ev) => ({ ...ev, ...getEventVenueAndDate(wedding, ev) })) : []), [wedding]);
+  const buildGuestEvents = (g) => weddingEvents.filter((ev) => getGuestEventResponse(g, ev).invited).filter((ev) => !restrictEventIds || restrictEventIds.includes(ev.event_id)).map((ev) => ({ name: ev.name, date: ev.date, startTime: ev.startTime, venue: ev.venue }));
+
+  useEffect(() => { if (bannerTouched || !wedding) return; setBannerChoice(getDefaultBannerChoice({ coverPhoto: wedding.coverPhoto, venuePhotoUrl: wedding.mainCeremony?.photoUrl })); }, [wedding, bannerTouched]);
+  useEffect(() => { const d = getTypeComposeDefaults(type); if (!subjectEdited) setSubject(d.subject); if (!bodyEdited) setBody(d.body); }, [type]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const filtered = useMemo(() => {
+    let list = guests;
+    if (filter === 'not_invited') list = guests.filter((g) => !g.invite_sent_at);
+    else if (filter === 'awaiting') list = guests.filter(isAwaitingPrimary);
+    else if (filter === 'attending') list = guests.filter(isAttending);
+    else if (filter === 'declined') list = guests.filter(isDeclined);
+    const q = search.trim().toLowerCase();
+    if (q) list = list.filter((g) => g.name?.toLowerCase().includes(q) || g.email?.toLowerCase().includes(q));
+    return list;
+  }, [guests, filter, search]);
+  // A filter change selects everyone it shows, as the desktop does, except when a preselection arrived with the page.
+  useEffect(() => { if (skipAuto.current) { skipAuto.current = false; return; } setSelected(new Set(filtered.map((g) => g.id))); }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
+  const changeType = (t) => { setType(t); setFilter(TYPE_DEFAULT_FILTER[t] || 'all'); };
+  const selectedGuests = useMemo(() => guests.filter((g) => selected.has(g.id)), [guests, selected]);
+  const withEmail = selectedGuests.filter((g) => g.email);
+  const noEmail = selectedGuests.filter((g) => !g.email);
+  const withPhone = selectedGuests.filter((g) => toWaMe(g.phone));
+
+  const hasWeddingPhoto = !!wedding?.coverPhoto;
+  const hasVenuePhoto = !!wedding?.mainCeremony?.photoUrl;
+  const bannerImageUrl = getBannerImageUrl({ coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl }, bannerChoice);
+  const previewGuest = selectedGuests[0] || null;
+  const previewEvents = previewGuest ? buildGuestEvents(previewGuest) : weddingEvents.map((ev) => ({ name: ev.name, date: ev.date, startTime: ev.startTime, venue: ev.venue }));
+  const previewRsvpUrl = previewGuest?.rsvp_link_id ? buildRsvpUrl(previewGuest.rsvp_link_id) : `${RSVP_BASE}preview-token`;
+  const previewHtml = useMemo(() => {
+    try { return renderInvitationEmail({ universeId, type, coupleNames: coupleName, siteUrl, weddingDate, events: previewEvents, personalMessage: replaceMergeTags(body, previewGuest?.name, coupleName, dateStr), rsvpUrl: previewRsvpUrl, rsvpToken: previewGuest?.rsvp_link_id || '', bannerImageUrl }).html; } catch { return ''; }
+  }, [universeId, type, coupleName, siteUrl, weddingDate, body, previewGuest, bannerImageUrl, previewRsvpUrl, dateStr]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const ensureTokens = async (list) => {
+    const map = await api.guestLinks(list.map((g) => g.id), { includePlusOne: true, throwOnFailure: true });
+    const withTokens = list.map((g) => { const l = map[g.id]; return l ? { ...g, rsvp_link_id: l.token || g.rsvp_link_id, ...(l.plusOneToken ? { plus_one_rsvp_link_id: l.plusOneToken } : {}) } : g; });
+    const missingPrimary = withTokens.filter((g) => !g.rsvp_link_id);
+    const missingPlusOne = withTokens.filter((g) => g.plus_one_email && !g.plus_one_rsvp_link_id);
+    const missing = missingPrimary.length + missingPlusOne.length;
+    if (missing > 0) { const names = [...missingPrimary, ...missingPlusOne].slice(0, 3).map((g) => g.name || 'a guest').join(', '); throw new Error(`${missing} invitation link${missing === 1 ? '' : 's'} could not be created (${names}${missing > 3 ? ', and more' : ''}). Nothing was sent.`); }
+    return withTokens;
+  };
+  const weddingPayload = { coupleName, weddingDate, venue, siteUrl, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl };
+
+  const send = async () => {
+    setSending(true);
+    const tid = toast.loading(`Sending ${TYPE_LABELS[type].toLowerCase()}s`);
+    try {
+      const withTokens = await ensureTokens(selectedGuests);
+      const sendEmail = channel === 'email' || channel === 'both';
+      const sendWhatsApp = channel === 'whatsapp' || channel === 'both';
+      if (sendEmail) {
+        const emailList = withTokens.filter((g) => g.email);
+        const plusOneList = withTokens.filter((g) => g.plus_one_email && g.plus_one_rsvp_link_id);
+        const recipients = [
+          ...emailList.map((g) => ({ email: g.email, name: g.name, rsvpUrl: buildRsvpUrl(g.rsvp_link_id), rsvpToken: g.rsvp_link_id, events: buildGuestEvents(g) })),
+          ...plusOneList.map((g) => ({ email: g.plus_one_email, name: g.plus_one_name || 'Guest', rsvpUrl: buildRsvpUrl(g.plus_one_rsvp_link_id), rsvpToken: g.plus_one_rsvp_link_id, events: buildGuestEvents(g) })),
+        ];
+        if (recipients.length) await api.json('/api/send-invites', { method: 'POST', body: JSON.stringify({ type, universeId, bannerChoice, guests: recipients, wedding: weddingPayload, customSubject: subject, customBody: body }) });
+      }
+      if (sendWhatsApp) withTokens.forEach((g) => openExternal(buildWhatsAppUrl(g, coupleName, weddingDate, g.rsvp_link_id, siteUrl)));
+      const channelStr = [sendEmail && 'email', sendWhatsApp && 'whatsapp'].filter(Boolean).join('+');
+      // Only invite and reminder have a tracking field on Guest; save the date must not write invite_sent_at (SendInvitesModal.jsx).
+      if (type === 'invite' || type === 'reminder') {
+        const sentAt = new Date().toISOString();
+        await Promise.all(withTokens.map((g) => api.update('Guest', g.id, type === 'reminder' ? { reminder_sent_at: sentAt } : { invite_sent_at: sentAt, invite_channel: channelStr })));
+      }
+      const msg = channel === 'both' ? `Sent to ${withEmail.length} by email, WhatsApp opened for ${selectedGuests.length}` : channel === 'email' ? `${TYPE_LABELS[type]} sent to ${withEmail.length} guest${withEmail.length === 1 ? '' : 's'}` : `WhatsApp opened for ${selectedGuests.length} guest${selectedGuests.length === 1 ? '' : 's'}`;
+      toast.success(msg, { id: tid });
+      onSent?.();
+    } catch (e) { toast.error(e?.message || 'Failed to send', { id: tid }); setSending(false); }
+  };
+  const sendTest = async () => {
+    if (!user?.email) { toast.error('No email on your account to send a test to.'); return; }
+    setSendingTest(true);
+    const tid = toast.loading('Sending a test to you');
+    try {
+      await api.json('/api/send-invites', { method: 'POST', body: JSON.stringify({ type, universeId, bannerChoice, isTest: true, guests: [{ email: user.email, name: 'Test guest', rsvpUrl: previewRsvpUrl, events: previewEvents }], wedding: weddingPayload, customSubject: subject, customBody: body }) });
+      toast.success(`Test email sent to ${user.email}`, { id: tid });
+    } catch (e) { toast.error(e?.message || 'Failed to send the test', { id: tid }); } finally { setSendingTest(false); }
+  };
+
+  if (!isPro) {
+    return (
+      <Screen title="Send invites" back={back}>
+        <div className="oi-m-stack oi-m-stack--24">
+          <PanelCard tone="ink" label="Ultra" title="Sending invitations is part of Ultra" body="Upgrade on the website to email and message your guests from here. Your list, events and RSVP links are all ready." />
+        </div>
+      </Screen>
+    );
+  }
+
+  const footer = (
+    <div style={{ display: 'flex', gap: 8, padding: '12px var(--m-gutter)', background: 'var(--m-card)', borderTop: '1px solid var(--m-line)' }}>
+      {step > 1 && <PillButton variant="secondary" onClick={() => setStep(step - 1)} disabled={sending}>Back</PillButton>}
+      {step < 4 && <PillButton variant="primary" style={{ flex: 1 }} disabled={(step === 1 && selected.size === 0) || (step === 2 && !subject.trim())} onClick={() => setStep(step + 1)}>Next</PillButton>}
+      {step === 4 && <PillButton variant="primary" style={{ flex: 1 }} icon={Send} disabled={sending || selectedGuests.length === 0} onClick={send}>{sending ? 'Sending' : `Send ${TYPE_LABELS[type].toLowerCase()}${selectedGuests.length === 1 ? '' : 's'}`}</PillButton>}
+    </div>
+  );
+
+  return (
+    <Screen title="Send invites" subtitle={`Step ${step} of 4, ${STEPS[step - 1]}`} back={back} footer={footer}>
+      <div className="oi-m-steps" aria-hidden="true">{STEPS.map((s, i) => <span key={s} className={`oi-m-steps__dot${i < step ? ' oi-m-steps__dot--on' : ''}`} />)}</div>
+      <div className="oi-m-stack oi-m-stack--24">
+        {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : (
+          <>
+            {step === 1 && (
+              <>
+                <PillChoice label="What are you sending" options={Object.entries(TYPE_LABELS).map(([value, label]) => ({ value, label }))} value={type} onChange={(t) => t && changeType(t)} />
+                <div>
+                  <FilterPills options={FILTER_TABS} value={filter} onChange={setFilter} className="oi-m-filters" />
+                  <div style={{ position: 'relative', marginTop: 12 }}>
+                    <Search size={18} strokeWidth={1.75} style={{ position: 'absolute', left: 14, top: 15, color: 'var(--m-text-2)', pointerEvents: 'none' }} />
+                    <input className="oi-m-input" style={{ paddingLeft: 42 }} value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or email" />
+                  </div>
+                </div>
+                <div className="oi-m-section-head">
+                  <h2 className="oi-m-section">{selected.size} chosen</h2>
+                  <button type="button" className="oi-m-block__link" onClick={() => setSelected(selected.size === filtered.length ? new Set() : new Set(filtered.map((g) => g.id)))}>{selected.size === filtered.length && filtered.length ? 'Clear' : 'Select all shown'}</button>
+                </div>
+                {filtered.length === 0 ? <EmptyState icon={Mail} text="No guests match this filter." /> : (
+                  <RowGroup>
+                    {filtered.map((g) => (
+                      <div key={g.id} className="oi-m-row">
+                        <Checkbox checked={selected.has(g.id)} onChange={() => setSelected((s) => { const n = new Set(s); if (n.has(g.id)) n.delete(g.id); else n.add(g.id); return n; })} label={g.name} />
+                        <button type="button" className="oi-m-row__body" style={{ textAlign: 'left' }} onClick={() => setSelected((s) => { const n = new Set(s); if (n.has(g.id)) n.delete(g.id); else n.add(g.id); return n; })}>
+                          <div className="oi-m-row__label">{g.name}</div>
+                          <div className="oi-m-row__sub">{[g.email || 'No email', GUEST_CATEGORY_LABEL[g.category]].filter(Boolean).join(', ')}</div>
+                        </button>
+                        <span className="oi-m-row__tile" style={{ fontSize: 12, fontWeight: 600 }}>{initials(g.name)}</span>
+                      </div>
+                    ))}
+                  </RowGroup>
+                )}
+              </>
+            )}
+
+            {step === 2 && (
+              <>
+                <div className="oi-m-card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <TextField label="Subject" value={subject} onChange={(e) => { setSubject(e.target.value); setSubjectEdited(true); }} />
+                  <TextAreaField label="Your message" value={body} onChange={(e) => { setBody(e.target.value); setBodyEdited(true); }} rows={7} />
+                  <p className="oi-m-meta">Merge tags: [Guest name], [Wedding date], [Couple names], [RSVP link]. The RSVP button is always added.</p>
+                  <PillChoice label="Banner photo" options={[{ value: 'none', label: 'No banner' }, ...(hasWeddingPhoto ? [{ value: 'wedding', label: 'Your wedding photo' }] : []), ...(hasVenuePhoto ? [{ value: 'venue', label: 'The venue' }] : [])]} value={bannerChoice} onChange={(v) => { if (v) { setBannerChoice(v); setBannerTouched(true); } }} />
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <PillButton variant="secondary" icon={Eye} onClick={() => setPreview(true)}>Preview the email</PillButton>
+                  <PillButton variant="secondary" icon={FlaskConical} onClick={sendTest} disabled={sendingTest}>{sendingTest ? 'Sending' : 'Send a test to me'}</PillButton>
+                </div>
+                <div className="oi-m-card">
+                  <div className="oi-m-meta">As {previewGuest?.name?.split(' ')[0] || 'a guest'} will read it</div>
+                  <div className="oi-m-body oi-m-strong" style={{ marginTop: 4 }}>{replaceMergeTags(subject, previewGuest?.name, coupleName, dateStr)}</div>
+                  <p className="oi-m-body" style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>{replaceMergeTags(body, previewGuest?.name, coupleName, dateStr)}</p>
+                </div>
+              </>
+            )}
+
+            {step === 3 && (
+              <RowGroup>
+                {[['email', 'Email', `${withEmail.length} of ${selectedGuests.length} have an email`, Mail], ['whatsapp', 'WhatsApp', `${withPhone.length} have a phone number; a message opens for each`, MessageCircle], ['both', 'Email and WhatsApp', 'Both, for everyone it reaches', Send]].map(([k, label, sub, Icon]) => (
+                  <button key={k} type="button" className="oi-m-row oi-m-row--pressable" onClick={() => setChannel(k)} aria-pressed={channel === k}>
+                    <span className={`oi-m-row__tile${channel === k ? ' oi-m-row__tile--primary' : ''}`}><Icon size={19} strokeWidth={1.75} /></span>
+                    <div className="oi-m-row__body"><div className="oi-m-row__label">{label}</div><div className="oi-m-row__sub">{sub}</div></div>
+                    {channel === k && <span className="oi-m-status oi-m-status--ok">Chosen</span>}
+                  </button>
+                ))}
+              </RowGroup>
+            )}
+
+            {step === 4 && (
+              <>
+                <div className="oi-m-card oi-m-card--flush">
+                  {[['Sending', TYPE_LABELS[type]], ['To', `${selectedGuests.length} guest${selectedGuests.length === 1 ? '' : 's'}`], ['By', channel === 'both' ? 'Email and WhatsApp' : channel === 'email' ? 'Email' : 'WhatsApp'], ['Subject', subject], ['Banner', bannerChoice === 'none' ? 'None' : bannerChoice === 'wedding' ? 'Your wedding photo' : 'The venue']].map(([k, v]) => <div key={k} className="oi-m-kv"><div className="oi-m-kv__k">{k}</div><div className="oi-m-kv__v">{v}</div></div>)}
+                </div>
+                {(channel === 'email' || channel === 'both') && noEmail.length > 0 && <div className="oi-m-card"><p className="oi-m-body">{noEmail.length} of the chosen guests {noEmail.length === 1 ? 'has' : 'have'} no email and will not get the email: {noEmail.slice(0, 4).map((g) => g.name).join(', ')}{noEmail.length > 4 ? ', and more' : ''}.</p></div>}
+                {(channel === 'whatsapp' || channel === 'both') && <div className="oi-m-card"><p className="oi-m-body">WhatsApp opens one message at a time, with the guest's RSVP link filled in. {selectedGuests.length - withPhone.length > 0 ? `${selectedGuests.length - withPhone.length} have no phone number and open a blank recipient.` : ''}</p></div>}
+                {type === 'invite' && <p className="oi-m-meta">Each guest is marked as invited once this sends. Save the dates never mark anyone invited.</p>}
+              </>
+            )}
+          </>
+        )}
+      </div>
+      <BottomSheet open={preview} onClose={() => setPreview(false)} title="Email preview" full flush>
+        {previewHtml ? <iframe title="Email preview" srcDoc={previewHtml} sandbox="" style={{ width: '100%', height: '100%', minHeight: 600, border: 0, background: '#FFFFFF' }} /> : <p className="oi-m-meta" style={{ padding: 16 }}>The preview could not be built.</p>}
+      </BottomSheet>
+    </Screen>
+  );
+}

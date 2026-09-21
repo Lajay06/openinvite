@@ -16,6 +16,8 @@ import EntityListScreen from '../../features/EntityListScreen';
 import PlanHubScreen, { planProgress } from './PlanHubScreen';
 import EventDetailsScreen, { InvitePromptSheet } from './EventDetailsScreen';
 import ScheduleScreen from './ScheduleScreen';
+import SendInvitesScreen from '../guests/SendInvitesScreen';
+import { useGuests as useGuestList } from '../../data/wedding';
 import { openExternal } from '../../native';
 import ChecklistScreen from './ChecklistScreen';
 import BudgetScreen, { BudgetCategoryScreen } from './BudgetScreen';
@@ -52,6 +54,7 @@ export default function PlanFeatureContainer() {
 
   if (f.key === 'event-details') return <EventDetailsContainer back={back} />;
   if (f.key === 'schedule') return <ScheduleContainer back={back} />;
+  if (f.key === 'send-invites') return <SendInvitesContainer back={`${base}/guests`} />;
   if (f.kind === 'details') return <DetailsContainer f={f} back={back} />;
   if (f.kind === 'entity') return <EntityContainer f={f} back={back} />;
   if (f.kind === 'desktop') return <DesktopFeatureScreen title={f.label} body={desktopBody(f.key)} stat="" back={back} onDesktop={() => openDesktop(navigate, f.desktop)} />;
@@ -138,6 +141,21 @@ function ScheduleContainer({ back }) {
     if (to) navigate(`${base}/plan/${to}`);
   };
   return <ScheduleScreen items={s.data || []} sources={extra.data || {}} feedUrl={feed.data} feedState={feed.loading ? 'loading' : feed.data ? 'ready' : 'unavailable'} onCreate={wrap(s.create, 'Event added')} onUpdate={wrap(s.update, 'Event updated')} onDelete={wrap(s.remove, 'Event deleted')} onOpenHome={openHome} loading={s.loading} error={s.error} onRetry={() => { s.reload(); extra.reload(); }} back={back} openAdd={params.get('add') === '1'} onRefresh={async () => { s.reload(); extra.reload(); }} />;
+}
+
+/* ── Send invites ────────────────────────────────────────────────────── */
+
+function SendInvitesContainer({ back }) {
+  const api = useApi();
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const guests = useGuestList();
+  const wd = useWeddingDetails();
+  const ids = (params.get('ids') || '').split(',').filter(Boolean);
+  const events = (params.get('events') || '').split(',').filter(Boolean);
+  // Ultra only, as Guests.jsx gates it: a Pro plan cannot send.
+  const isPro = api.mode === 'preview' ? true : (api.user?.plan || 'free') !== 'pro';
+  return <SendInvitesScreen guests={guests.data || []} wedding={wd.details} user={api.user} initialSelectedIds={ids} restrictEventIds={events.length ? events : null} initialType={params.get('type') || 'invite'} isPro={isPro} onSent={() => navigate(back)} back={back} loading={guests.loading || wd.loading} error={guests.error} onRetry={guests.reload} />;
 }
 
 /* ── Generic ─────────────────────────────────────────────────────────── */

@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { Search, Plus, Users } from 'lucide-react';
+import { Search, Plus, Users, MoreHorizontal, Upload, Download, Send, CheckSquare, X } from 'lucide-react';
 import Screen from '../../shell/Screen';
-import { FilterPills, SearchScreen, SkeletonRows, ErrorState, EmptyState, StatusPill, ProgressBar, RowGroup, SwipeRow, SWIPE_ICONS } from '../../ui';
+import { FilterPills, SearchScreen, SkeletonRows, ErrorState, EmptyState, StatusPill, ProgressBar, RowGroup, SwipeRow, SWIPE_ICONS, BottomSheet, Row, Checkbox, PillButton } from '../../ui';
 import { imageUrl } from '../../images';
 import { isAttending, isDeclined, isPending, isAwaitingPrimary } from '@/lib/guestRsvpTally';
+import { getGuestEventResponse } from '@/lib/weddingEvents';
 import { initials, RSVP_LABEL, RSVP_TONE, GUEST_CATEGORY_LABEL } from '../../lib/format';
 
 export const GUEST_FILTERS = [
@@ -24,49 +25,55 @@ export function applyGuestFilter(list, key) {
   }
 }
 
-/** One guest row: initials tile, name, sub line, status pill. */
-export function GuestRow({ guest, onClick }) {
+const EVENT_STATUS = { yes: ['ok', 'Yes'], no: ['no', 'No'], pending: ['warn', 'Awaiting'] };
+
+/** One guest row: initials tile, name, sub line, status pill (per event when an event filter is on). */
+export function GuestRow({ guest, onClick, event, selectable, selected, onSelect }) {
   const status = guest.invite_sent_at || !isPending(guest) ? (guest.rsvp_status || 'pending') : null;
-  const sub = [GUEST_CATEGORY_LABEL[guest.category], guest.plus_one ? 'Plus one' : '', guest.email].filter(Boolean).join(' · ');
+  const sub = [GUEST_CATEGORY_LABEL[guest.category], guest.plus_one ? 'Plus one' : '', guest.email].filter(Boolean).join(', ');
+  let pill = status ? <StatusPill tone={RSVP_TONE[status] || 'neutral'}>{RSVP_LABEL[status] || status}</StatusPill> : <StatusPill tone="neutral">Not invited</StatusPill>;
+  if (event) {
+    const r = getGuestEventResponse(guest, event);
+    const [tone, label] = EVENT_STATUS[r.status] || EVENT_STATUS.pending;
+    pill = r.invited ? <StatusPill tone={tone}>{label}</StatusPill> : <StatusPill tone="neutral">Not invited</StatusPill>;
+  }
   return (
-    <button type="button" className="oi-m-row oi-m-row--pressable" onClick={onClick}>
-      <span className="oi-m-row__tile" style={{ fontSize: 13, fontWeight: 600 }}>{initials(guest.name)}</span>
-      <div className="oi-m-row__body">
-        <div className="oi-m-row__label">{guest.name || 'Unnamed guest'}</div>
-        {sub && <div className="oi-m-row__sub">{sub}</div>}
-      </div>
-      {status ? (
-        <StatusPill tone={RSVP_TONE[status] || 'neutral'}>{RSVP_LABEL[status] || status}</StatusPill>
-      ) : (
-        <StatusPill tone="neutral">Not invited</StatusPill>
-      )}
-    </button>
+    <div className="oi-m-row">
+      {selectable && <Checkbox checked={!!selected} onChange={() => onSelect?.(guest)} label={`Select ${guest.name}`} />}
+      <button type="button" className="oi-m-row oi-m-row--pressable" style={{ padding: 0, minHeight: 0, flex: 1, background: 'transparent' }} onClick={selectable ? () => onSelect?.(guest) : onClick}>
+        {!selectable && <span className="oi-m-row__tile" style={{ fontSize: 13, fontWeight: 600 }}>{initials(guest.name)}</span>}
+        <div className="oi-m-row__body">
+          <div className="oi-m-row__label">{guest.name || 'Unnamed guest'}</div>
+          {sub && <div className="oi-m-row__sub">{sub}</div>}
+        </div>
+        {pill}
+      </button>
+    </div>
   );
 }
 
 /**
- * The guest list. props: guests, filter, onFilter, onOpenGuest, onAdd,
- * loading, error, onRetry, groupings (extra filter pills from tags).
+ * The guest list: stats, status filters, an event filter, tag groupings,
+ * search, select mode with the bulk actions, import, export, send.
  */
-export default function GuestsScreen({ guests = [], filter = 'all', onFilter, onOpenGuest, onAdd, onRemove, loading, error, onRetry, groupings = [], back, onRefresh }) {
+export default function GuestsScreen({ guests = [], filter = 'all', onFilter, eventFilter = 'all', onEventFilter, weddingEvents = [], onOpenGuest, onAdd, onRemove, onImport, onExport, onSend, selected, onToggleSelect, onSelectAll, onClearSelection, onBulk, loading, error, onRetry, groupings = [], back, onRefresh }) {
   const [searchOpen, setSearchOpen] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
   const [q, setQ] = useState('');
+  const selecting = !!selected;
 
   const filters = useMemo(() => {
-    const counts = {
-      all: guests.length,
-      attending: applyGuestFilter(guests, 'attending').length,
-      awaiting: applyGuestFilter(guests, 'awaiting').length,
-      declined: applyGuestFilter(guests, 'declined').length,
-      not_invited: applyGuestFilter(guests, 'not_invited').length,
-    };
+    const counts = { all: guests.length, attending: applyGuestFilter(guests, 'attending').length, awaiting: applyGuestFilter(guests, 'awaiting').length, declined: applyGuestFilter(guests, 'declined').length, not_invited: applyGuestFilter(guests, 'not_invited').length };
     return [...GUEST_FILTERS.map((f) => ({ ...f, count: counts[f.key] })), ...groupings];
   }, [guests, groupings]);
+  const event = eventFilter !== 'all' ? weddingEvents.find((e) => e.event_id === eventFilter) : null;
 
   const visible = useMemo(() => {
     const grouping = groupings.find((g) => g.key === filter);
-    return grouping ? guests.filter(grouping.test) : applyGuestFilter(guests, filter);
-  }, [guests, filter, groupings]);
+    let list = grouping ? guests.filter(grouping.test) : applyGuestFilter(guests, filter);
+    if (event) list = list.filter((g) => getGuestEventResponse(g, event).invited);
+    return list;
+  }, [guests, filter, groupings, event]);
 
   const results = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -74,17 +81,27 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, on
     return guests.filter((g) => [g.name, g.email, g.phone, g.plus_one_name].some((v) => (v || '').toLowerCase().includes(s)));
   }, [guests, q]);
 
+  const actions = selecting
+    ? [{ icon: X, label: 'Done selecting', onClick: onClearSelection }]
+    : [{ icon: Search, label: 'Search guests', onClick: () => setSearchOpen(true) }, { icon: MoreHorizontal, label: 'More actions', onClick: () => setActionsOpen(true) }];
+
   return (
     <>
       <Screen
-        title="Guests"
-        subtitle={loading ? '' : `${guests.length} guest${guests.length === 1 ? '' : 's'}`}
-        bell={!back}
+        title={selecting ? `${selected.size} selected` : 'Guests'}
+        subtitle={loading ? '' : selecting ? 'Tap guests to add them' : `${guests.length} guest${guests.length === 1 ? '' : 's'}`}
+        bell={!back && !selecting}
         back={back}
-        actions={[{ icon: Search, label: 'Search guests', onClick: () => setSearchOpen(true) }, ...(back ? [{ icon: Plus, label: 'Add a guest', onClick: onAdd }] : [])]}
-        onRefresh={onRefresh}
+        actions={actions}
+        onRefresh={selecting ? undefined : onRefresh}
+        footer={selecting ? (
+          <div style={{ display: 'flex', gap: 8, padding: '12px var(--m-gutter)', background: 'var(--m-card)', borderTop: '1px solid var(--m-line)' }}>
+            <PillButton variant="secondary" onClick={() => onSelectAll(visible)}>{selected.size === visible.length && visible.length ? 'Clear' : 'Select all'}</PillButton>
+            <PillButton variant="primary" style={{ flex: 1 }} disabled={selected.size === 0} onClick={onBulk}>Actions for {selected.size}</PillButton>
+          </div>
+        ) : undefined}
       >
-        {!loading && guests.length > 0 && (
+        {!loading && guests.length > 0 && !selecting && (
           <div className="oi-m-stack" style={{ marginBottom: 16 }}>
             <div className="oi-m-card">
               <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
@@ -97,6 +114,11 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, on
           </div>
         )}
         <FilterPills options={filters} value={filter} onChange={onFilter} />
+        {weddingEvents.length > 1 && (
+          <div style={{ marginTop: 8 }}>
+            <FilterPills options={[{ key: 'all', label: 'Every event' }, ...weddingEvents.map((e) => ({ key: e.event_id, label: e.name }))]} value={eventFilter} onChange={onEventFilter} />
+          </div>
+        )}
         <div className="oi-m-stack" style={{ marginTop: 12 }}>
           {error && !loading ? (
             <ErrorState onRetry={onRetry} />
@@ -109,15 +131,15 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, on
           ) : (
             <RowGroup>
               {visible.map((g) => (
-                onRemove ? (
+                onRemove && !selecting ? (
                   <SwipeRow key={g.id} actions={[{ key: 'remove', icon: SWIPE_ICONS.remove, label: `Remove ${g.name}`, tone: 'no', onAction: () => onRemove(g) }]}>
-                    <GuestRow guest={g} onClick={() => onOpenGuest(g)} />
+                    <GuestRow guest={g} event={event} onClick={() => onOpenGuest(g)} />
                   </SwipeRow>
-                ) : <GuestRow key={g.id} guest={g} onClick={() => onOpenGuest(g)} />
+                ) : <GuestRow key={g.id} guest={g} event={event} onClick={() => onOpenGuest(g)} selectable={selecting} selected={selected?.has(g.id)} onSelect={onToggleSelect} />
               ))}
             </RowGroup>
           )}
-          {!loading && !error && (
+          {!loading && !error && !selecting && (
             <button type="button" className="oi-m-pill oi-m-pill--primary oi-m-pill--block" onClick={onAdd}>Add a guest</button>
           )}
         </div>
@@ -133,6 +155,15 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, on
           </RowGroup></div>
         )}
       </SearchScreen>
+      <BottomSheet open={actionsOpen} onClose={() => setActionsOpen(false)} title="Guest list">
+        <RowGroup>
+          <Row icon={Plus} tile="primary" label="Add a guest" onClick={() => { setActionsOpen(false); onAdd(); }} />
+          <Row icon={CheckSquare} tile="neutral" label="Select guests" sub="Set events, tags, category or dietary for several at once" onClick={() => { setActionsOpen(false); onSelectAll([]); }} />
+          <Row icon={Send} tile="neutral" label="Send invites" sub="Save the date, invitation, reminder, update, thank you" onClick={() => { setActionsOpen(false); onSend(); }} />
+          <Row icon={Upload} tile="neutral" label="Import from a file" sub="CSV or Excel" onClick={() => { setActionsOpen(false); onImport(); }} />
+          <Row icon={Download} tile="neutral" label="Export as CSV" onClick={() => { setActionsOpen(false); onExport(); }} />
+        </RowGroup>
+      </BottomSheet>
     </>
   );
 }
