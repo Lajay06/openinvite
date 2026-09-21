@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { UserRound, X } from 'lucide-react';
+import { UserRound } from 'lucide-react';
 import { BottomSheet, PillButton, Row, RowGroup, TextField } from '../ui';
 import { useGuests } from '../data/wedding';
 import { initials } from '../lib/format';
@@ -21,7 +21,7 @@ export default function GuestPickerField({ label = 'Who', value, onChange, place
             <div className="oi-m-row__label">{value.name}</div>
             <div className="oi-m-row__sub">{value.guestId ? 'On the guest list' : 'Not on the guest list'}</div>
           </div>
-          <PillButton variant="ghost" size="sm" icon={X} onClick={() => onChange(null)}>Clear</PillButton>
+          <PillButton variant="secondary" size="sm" onClick={() => setOpen(true)}>Change</PillButton>
         </div>
       ) : (
         <PillButton variant="secondary" onClick={() => setOpen(true)} style={{ alignSelf: 'flex-start' }}>Choose someone</PillButton>

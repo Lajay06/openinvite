@@ -134,7 +134,7 @@ export function SuiteScheduleScreen({ items = [], loading, error, onRetry, back,
   );
 }
 
-/* ── Wedding party: WeddingDetails.weddingParty, { roleKey: [{ name, guestId, phone, notes }] } ── */
+/* ── Wedding party: WeddingDetails.weddingParty, key roles plus { roleKey: [{ name, guestId, phone, notes }] } ── */
 export const PARTY_ROLES = [
   { key: 'bridesmaids', label: 'Bridesmaids', singular: 'Bridesmaid' },
   { key: 'groomsmen', label: 'Groomsmen', singular: 'Groomsman' },
@@ -144,26 +144,49 @@ export const PARTY_ROLES = [
   { key: 'ushers', label: 'Ushers', singular: 'Usher' },
   { key: 'other', label: 'Other roles', singular: 'Member' },
 ];
-const MEMBER_FIELDS = [{ name: 'name', label: 'Name', type: 'text' }, { name: 'phone', label: 'Phone', type: 'tel' }, { name: 'notes', label: 'Notes', type: 'textarea' }];
+/** WeddingParty.jsx's MemberRow: a guest picked from the list or a typed name, phone, notes. */
+const MEMBER_FIELDS = [{ name: 'who', label: 'Who', type: 'guest' }, { name: 'phone', label: 'Phone', type: 'tel' }, { name: 'notes', label: 'Notes', type: 'textarea' }];
+const KEY_ROLES = [{ key: 'maidOfHonour', label: 'Maid of honor or best person' }, { key: 'bestMan', label: 'Best man or best person' }];
+const asPick = (v) => (typeof v === 'string' ? (v ? { name: v, guestId: null } : null) : v && (v.name || v.guestId) ? { name: v.name || '', guestId: v.guestId || null } : null);
 
 export function WeddingPartyScreen({ party = {}, onSave, loading, error, onRetry, back }) {
   const [sheet, setSheet] = useState(null); // { role, index }
+  const [keyRole, setKeyRole] = useState(null); // key
+  const [notes, setNotes] = useState(party.keyRoleNotes || '');
+  const notesTimer = React.useRef(null);
+  React.useEffect(() => { setNotes(party.keyRoleNotes || ''); }, [party.keyRoleNotes]);
+  React.useEffect(() => () => clearTimeout(notesTimer.current), []);
   const total = PARTY_ROLES.reduce((s, r) => s + (party[r.key] || []).length, 0);
   const [pick, setPick] = useState(false);
+  const queueNotes = (v) => { setNotes(v); clearTimeout(notesTimer.current); notesTimer.current = setTimeout(() => onSave({ ...party, keyRoleNotes: v }, { quiet: true }), 900); };
   return (
     <Screen title="Wedding party" subtitle={loading ? '' : total ? `${total} people` : ''} back={back} actions={[{ icon: Plus, label: 'Add someone', onClick: () => setPick(true) }]}>
       <div className="oi-m-stack oi-m-stack--24">
-        {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={5} /> : total === 0 ? (
-          <EmptyState icon={UserCheck} text="Nobody in the party yet. Start with the people standing beside you." actionLabel="Add someone" onAction={() => setPick(true)} />
-        ) : (
-          PARTY_ROLES.filter((r) => (party[r.key] || []).length).map((r) => (
-            <section key={r.key}>
-              <h2 className="oi-m-section" style={{ marginBottom: 12 }}>{r.label}</h2>
-              <ItemList>
-                {(party[r.key] || []).map((m, i) => <ItemCard key={i} initials={initials(m.name || '?')} tile="tint" title={m.name || 'Unnamed'} meta={m.notes || r.singular} value={m.phone || ''} onClick={() => setSheet({ role: r.key, index: i })} action={m.phone ? { icon: Phone, label: `Call ${m.name}`, onClick: () => openExternal(`tel:${m.phone}`) } : undefined} />)}
-              </ItemList>
+        {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={5} /> : (
+          <>
+            <section>
+              <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Key roles</h2>
+              <RowGroup>
+                {KEY_ROLES.map((k) => { const v = asPick(party[k.key]); return <Row key={k.key} initials={v ? initials(v.name) : undefined} icon={v ? undefined : UserCheck} tile="tint" label={v?.name || 'Not chosen yet'} sub={k.label} onClick={() => setKeyRole(k.key)} />; })}
+              </RowGroup>
+              <div className="oi-m-card" style={{ marginTop: 12 }}>
+                <label className="oi-m-field__label" htmlFor="key-role-notes">Key role notes</label>
+                <textarea id="key-role-notes" className="oi-m-input" rows={3} value={notes} onChange={(e) => queueNotes(e.target.value)} placeholder="Who has the rings, who is holding the speeches" />
+              </div>
             </section>
-          ))
+            {total === 0 ? (
+              <EmptyState icon={UserCheck} text="Nobody in the party yet. Start with the people standing beside you." actionLabel="Add someone" onAction={() => setPick(true)} />
+            ) : (
+              PARTY_ROLES.filter((r) => (party[r.key] || []).length).map((r) => (
+                <section key={r.key}>
+                  <h2 className="oi-m-section" style={{ marginBottom: 12 }}>{r.label}</h2>
+                  <ItemList>
+                    {(party[r.key] || []).map((m, i) => <ItemCard key={i} initials={initials(m.name || '?')} tile="tint" title={m.name || 'Unnamed'} meta={[m.guestId ? 'On the guest list' : '', m.notes].filter(Boolean).join(', ') || r.singular} value={m.phone || ''} onClick={() => setSheet({ role: r.key, index: i })} action={m.phone ? { icon: Phone, label: `Call ${m.name}`, onClick: () => openExternal(`tel:${m.phone}`) } : undefined} />)}
+                  </ItemList>
+                </section>
+              ))
+            )}
+          </>
         )}
       </div>
       <BottomSheet open={pick} onClose={() => setPick(false)} title="Which role">
@@ -172,9 +195,14 @@ export function WeddingPartyScreen({ party = {}, onSave, loading, error, onRetry
         </RowGroup>
       </BottomSheet>
       {sheet && (
-        <FormSheet open title={sheet.index < 0 ? `Add ${PARTY_ROLES.find((r) => r.key === sheet.role)?.singular.toLowerCase()}` : 'Edit'} fields={MEMBER_FIELDS} initial={sheet.index < 0 ? null : (party[sheet.role] || [])[sheet.index]} required={['name']} onClose={() => setSheet(null)}
-          onSave={async (v) => { const list = [...(party[sheet.role] || [])]; if (sheet.index < 0) list.push({ guestId: null, ...v }); else list[sheet.index] = { ...list[sheet.index], ...v }; await onSave({ ...party, [sheet.role]: list }); }}
+        <FormSheet open title={sheet.index < 0 ? `Add ${PARTY_ROLES.find((r) => r.key === sheet.role)?.singular.toLowerCase()}` : 'Edit'} fields={MEMBER_FIELDS} initial={sheet.index < 0 ? null : (() => { const m = (party[sheet.role] || [])[sheet.index]; return { ...m, who: asPick(m) }; })()} required={['who']} onClose={() => setSheet(null)}
+          onSave={async (v) => { const list = [...(party[sheet.role] || [])]; const entry = { name: v.who?.name || '', guestId: v.who?.guestId || null, phone: v.phone || '', notes: v.notes || '' }; if (sheet.index < 0) list.push(entry); else list[sheet.index] = { ...list[sheet.index], ...entry }; await onSave({ ...party, [sheet.role]: list }); }}
           onDelete={sheet.index < 0 ? undefined : async () => { await onSave({ ...party, [sheet.role]: (party[sheet.role] || []).filter((_, i) => i !== sheet.index) }); setSheet(null); }} />
+      )}
+      {keyRole && (
+        <FormSheet open title={KEY_ROLES.find((k) => k.key === keyRole)?.label} fields={[{ name: 'who', label: 'Who', type: 'guest' }]} initial={{ who: asPick(party[keyRole]) }} onClose={() => setKeyRole(null)}
+          onSave={async (v) => { await onSave({ ...party, [keyRole]: v.who ? { name: v.who.name, guestId: v.who.guestId || null } : null }); }}
+          onDelete={asPick(party[keyRole]) ? async () => { await onSave({ ...party, [keyRole]: null }); setKeyRole(null); } : undefined} deleteLabel="Clear" />
       )}
     </Screen>
   );

@@ -473,7 +473,7 @@ function SuiteScheduleContainer({ back }) {
 
 function WeddingPartyContainer({ back }) {
   const wd = useWeddingDetails();
-  return <WeddingPartyScreen party={wd.details?.weddingParty || {}} onSave={async (next) => { await wd.save('weddingParty', next, false); toast.success('Saved'); }} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} />;
+  return <WeddingPartyScreen party={wd.details?.weddingParty || {}} onSave={async (next, opts) => { await wd.save('weddingParty', next, false); if (!opts?.quiet) toast.success('Saved'); }} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} />;
 }
 
 /* ── Marketplace ─────────────────────────────────────────────────────── */

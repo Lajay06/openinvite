@@ -105,7 +105,7 @@ itself stays on desktop and is noted.
 **Desktop.** One tab. Key roles: `maidOfHonour` and `bestMan` (guest search, `@` opens the guest list, or a typed name; stored `{ name, guestId }`), `keyRoleNotes` (textarea). Roles (`bridesmaids, groomsmen, flowerGirls, ringBearers, readers, ushers, other`), each a list of `{ name, guestId, phone, notes }` with add and remove. Saved whole on `WeddingDetails.weddingParty`. Ava.
 **Mobile (found).** Roles as sections, add, edit, remove with name, phone, notes.
 **Gaps.** Key roles; guest linking (pick from the guest list); key role notes.
-**Status.** Planned (phase 1): Key roles card with a guest picker sheet, key role notes, and the guest picker inside every member sheet.
+**Status.** Done (phase 1): Key roles (maid of honor or best person, best man or best person) through the guest picker or a typed name, stored `{ name, guestId }` as `WeddingParty.jsx` stores them; key role notes auto-saved; every member sheet picks a guest from the list or takes a typed name, with phone and notes; roles, add, edit, remove as before.
 
 ### Send invites (`/SendInvites`) → `/m/plan/send-invites`
 
