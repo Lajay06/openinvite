@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The launch background, DESIGN_SPEC.md's black. Matches the iOS launch
+         storyboard, capacitor.config.ts and assets/splash.svg. -->
+    <color name="launchBackground">#0A0A0A</color>
+</resources>

@@ -72,6 +72,13 @@ async function load(name: string): Promise<Plugin | null> {
 }
 
 /** Light status bar text on the light page background. */
+/** Light status bar content over an ink or photo surface (the launch sequence), dark content over the page. */
+export async function setStatusBarDark(darkSurface: boolean): Promise<void> {
+  const mod = await load('status-bar');
+  if (!mod) return;
+  try { await mod.StatusBar.setStyle({ style: darkSurface ? mod.Style.Dark : mod.Style.Light }); } catch { /* no-op */ }
+}
+
 export async function configureStatusBar(): Promise<void> {
   const mod = await load('status-bar');
   if (!mod) return;

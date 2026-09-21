@@ -31,6 +31,8 @@ import PrimingScreen from './screens/firstrun/PrimingScreen';
 import { buildFeed } from './notifications/feed';
 import { defaultSettings } from './notifications/store';
 import { isDemoBuild } from './demo';
+import { LaunchSplash, Greeting, briefingLine, launchPhoto } from './shell/LaunchSequence';
+import { isNative } from './native';
 import { isAttending, isDeclined, isAwaitingPrimary } from '@/lib/guestRsvpTally';
 import { daysUntilWedding } from '@/lib/weddingCountdown';
 import { getUniverse } from '@/lib/universeCatalog';
@@ -54,6 +56,22 @@ const NOW = new Date('2026-09-21T09:00:00+10:00').getTime();
  * on Home shows the in-app notification banner. /m/preview/push is the lock
  * screen mock.
  */
+/** The greeting's line, from the fixtures. */
+function previewBriefing() {
+  return briefingLine({ daysToGo: daysUntilWedding(FIXTURE_WEDDING.weddingDate), newReplies: 3 });
+}
+
+/**
+ * The launch sequence runs in the preview only inside the native shell (the
+ * demo build starts here), so the web preview and its screenshots are not
+ * covered by it; /m/preview/splash and /m/preview/greeting show the two
+ * screens on their own.
+ */
+function previewLaunch() {
+  if (!isNative()) return null;
+  return { ready: true, firstName: FIXTURE_WEDDING.couple1Name, line: previewBriefing(), photo: launchPhoto(), alt: 'A couple laughing together outdoors' };
+}
+
 export default function MobilePreviewApp() {
   const [params] = useSearchParams();
   const notifications = usePreviewNotifications(params.get('banner') === '1');
@@ -64,7 +82,9 @@ export default function MobilePreviewApp() {
       <Route path="welcome" element={<div className="oi-mobile-root"><WelcomeScreen onStart={() => {}} onLogin={() => {}} /></div>} />
       <Route path="login" element={<div className="oi-mobile-root"><LoginScreen onSubmit={() => {}} providers={[{ key: 'google', label: 'Continue with Google' }, { key: 'apple', label: 'Continue with Apple' }]} onForgot={() => {}} onSignUp={() => {}} onBack={() => {}} error={params.get('state') === 'error' ? 'That email and password did not match. Try again.' : ''} /></div>} />
       <Route path="priming" element={<div className="oi-mobile-root"><PrimingScreen onTurnOn={() => {}} onNotNow={() => {}} recorded={params.get('state') === 'recorded'} /></div>} />
-      <Route element={<MobileShell base={PREVIEW_BASE} renderAva={() => <PreviewAva />} notifications={notifications} forcedOffline={params.get('offline') === '1'} forcedLock={params.get('lock') === '1'} lockPhoto={coupleImages(FIXTURE_WEDDING)[0]} />}>
+      <Route path="splash" element={<div className="oi-mobile-root"><LaunchSplash photo={launchPhoto()} alt="A couple laughing together outdoors" /></div>} />
+      <Route path="greeting" element={<div className="oi-mobile-root"><Greeting salutation="Good morning" firstName={FIXTURE_WEDDING.couple1Name} line={previewBriefing()} /></div>} />
+      <Route element={<MobileShell base={PREVIEW_BASE} renderAva={() => <PreviewAva />} notifications={notifications} forcedOffline={params.get('offline') === '1'} forcedLock={params.get('lock') === '1'} lockPhoto={coupleImages(FIXTURE_WEDDING)[0]} launch={previewLaunch()} />}>
         <Route index element={<PreviewHome />} />
         <Route path="guests" element={<PreviewGuests />} />
         <Route path="guests/:id" element={<PreviewGuests />} />

@@ -8,7 +8,8 @@ import OfflineBanner, { NetworkProvider } from './OfflineBanner';
 import useEdgeSwipeBack from './useEdgeSwipeBack';
 import BottomSheet from '../ui/BottomSheet';
 import Banner from '../notifications/Banner';
-import { bootNative, registerBackButton, registerDeepLinks, hideSplash } from '../native';
+import LaunchSequence from './LaunchSequence';
+import { bootNative, registerBackButton, registerDeepLinks, hideSplash, setStatusBarDark } from '../native';
 import '../styles/mobile.css';
 
 /**
@@ -21,8 +22,14 @@ import '../styles/mobile.css';
  */
 export const ShellContext = React.createContext({ base: '/m', unread: 0, openAva: () => {}, closeAva: () => {}, notifications: null, search: null });
 
-export default function MobileShell({ base = '/m', renderAva, showAva = true, notifications = null, search = null, lockPhoto = '', forcedOffline = false, forcedLock = false }) {
+// The launch sequence runs once per app open, not on every mount of the
+// shell (a route change, a lock, a reload of the tree keep it away).
+let launchShown = false;
+
+export default function MobileShell({ base = '/m', renderAva, showAva = true, notifications = null, search = null, lockPhoto = '', forcedOffline = false, forcedLock = false, launch = null }) {
   const [avaOpen, setAvaOpen] = useState(false);
+  const [launching, setLaunching] = useState(() => !!launch && !launchShown);
+  useEffect(() => { if (launching) launchShown = true; }, [launching]);
   const navigate = useNavigate();
   const rootRef = useRef(null);
   useEdgeSwipeBack(base, rootRef);
@@ -34,9 +41,10 @@ export default function MobileShell({ base = '/m', renderAva, showAva = true, no
   // Boot: status bar and keyboard, then the splash goes once the shell has
   // painted its first frame (a short fade is in capacitor.config.ts).
   useEffect(() => {
-    bootNative();
+    bootNative().then(() => { if (launching) setStatusBarDark(true); });
     const t = setTimeout(() => hideSplash(), 350);
     return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // openinvite:// and universal links route into /m; auth callbacks store
@@ -112,6 +120,7 @@ export default function MobileShell({ base = '/m', renderAva, showAva = true, no
         )}
         {banner && <Banner item={banner} onDone={onBannerDone} />}
         <OfflineBanner />
+        {launching && launch && <LaunchSequence ready={!!launch.ready} firstName={launch.firstName} line={launch.line} photo={launch.photo} alt={launch.alt} onDone={() => setLaunching(false)} />}
       </div>
       </AppLock>
       </NetworkProvider>

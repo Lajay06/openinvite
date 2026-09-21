@@ -12,6 +12,9 @@ import SearchContainer from './screens/search/SearchContainer';
 import useNotifications from './notifications/useNotifications';
 import { useWedding } from './data/wedding';
 import { heroImageFor } from './lib/images';
+import { launchPhoto, briefingLine } from './shell/LaunchSequence';
+import { daysUntilWedding } from '@/lib/weddingCountdown';
+import { useAuth } from '@/lib/AuthContext';
 import { PrimingContainer, usePrimingGate, WELCOME_PREF } from './screens/firstrun/FirstRunContainers';
 import { isNative, prefGet } from './native';
 import NotificationsScreen from './notifications/NotificationsScreen';
@@ -31,6 +34,25 @@ export default function MobileApp() {
   const wedding = useWedding();
   const navigate = useNavigate();
   const showPriming = usePrimingGate(notifications);
+  const { user } = useAuth();
+  // The launch sequence: the splash holds until the wedding details are in
+  // (the first data every screen needs), then the greeting reads from them
+  // and from the feed. Runs once per app open (MobileShell).
+  const details = wedding.data;
+  const firstName = (details?.couple1Name || user?.full_name || '').split(' ')[0];
+  const items = notifications?.items || [];
+  const since = Date.now() - 24 * 3600000;
+  const launch = {
+    ready: !wedding.loading,
+    firstName,
+    line: briefingLine({
+      daysToGo: details?.weddingDate ? daysUntilWedding(details.weddingDate) : null,
+      newReplies: items.filter((i) => /^rsvp_/.test(i.type) && i.ts > since).length,
+      openTasks: items.filter((i) => i.type === 'task_due' || i.type === 'task_overdue').length,
+    }),
+    photo: launchPhoto(),
+    alt: 'A couple laughing together outdoors',
+  };
   // Native first launch: the welcome screens once, tracked locally.
   useEffect(() => { if (isNative()) prefGet(WELCOME_PREF).then((v) => { if (!v) navigate('/m/welcome', { replace: true }); }); }, [navigate]);
   const renderAva = ({ onClose }) => (
@@ -39,7 +61,7 @@ export default function MobileApp() {
   if (showPriming && !window.location.pathname.endsWith('/priming')) return <Navigate to={`${MOBILE_BASE}/priming`} replace />;
   return (
     <Routes>
-      <Route element={<MobileShell base={MOBILE_BASE} renderAva={renderAva} notifications={notifications} lockPhoto={heroImageFor(wedding.data)} />}>
+      <Route element={<MobileShell base={MOBILE_BASE} renderAva={renderAva} notifications={notifications} lockPhoto={heroImageFor(wedding.data)} launch={launch} />}>
         <Route index element={<HomeContainer />} />
         <Route path="guests" element={<GuestsContainer />} />
         <Route path="guests/:id" element={<GuestsContainer />} />

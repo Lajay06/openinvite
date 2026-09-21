@@ -12,7 +12,9 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   ios: {
     contentInset: 'never',
-    backgroundColor: '#F5F5F4',
+    // Ink, DESIGN_SPEC.md's black: the native launch screen, this webview
+    // background and the in-app splash are one continuous surface.
+    backgroundColor: '#0A0A0A',
     // No link previews or pinch zoom: the shell is an app, not a page.
     allowsLinkPreview: false,
     scrollEnabled: false,
@@ -21,21 +23,24 @@ const config: CapacitorConfig = {
     preferredContentMode: 'mobile',
   },
   android: {
-    backgroundColor: '#F5F5F4',
+    backgroundColor: '#0A0A0A',
     allowMixedContent: false,
   },
   plugins: {
     SplashScreen: {
       launchAutoHide: false,
       launchFadeOutDuration: 250,
-      backgroundColor: '#F5F5F4',
+      backgroundColor: '#0A0A0A',
       showSpinner: false,
       splashFullScreen: true,
       splashImmersive: true,
     },
     StatusBar: {
-      style: 'LIGHT',
-      backgroundColor: '#F5F5F4',
+      // The launch chain (native launch screen, in-app splash, greeting) is
+      // ink, so the bar starts with light content; the shell switches it to
+      // dark content when the dashboard settles (native.ts).
+      style: 'DARK',
+      backgroundColor: '#0A0A0A',
       overlaysWebView: true,
     },
     Keyboard: {

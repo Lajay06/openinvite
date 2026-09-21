@@ -72,6 +72,9 @@ export const IMAGES = {
   emptyMoodboard: { id: 'DTS_DECADENT_Debora_Spanhol_Photos_ID12475_viqbsz', alt: 'A dessert table with cakes and fruit', usedIn: 'Moodboard, empty state', size: { w: 326, h: 183 }, ratio: '16/9' },
   emptyRegistry: { id: '', alt: 'A wrapped gift', usedIn: 'Registry, empty state', size: { w: 326, h: 183 }, ratio: '16/9', todo: true, tone: 'tint' },
 
+  /* ── Launch ── */
+  splash: { id: 'DTS_Like_a_Movie_Foster___Asher_Photos_ID1042_qaddk3', alt: 'A couple laughing together outdoors', usedIn: 'In-app splash, behind the logo (once per app open)', size: { w: 390, h: 844 }, ratio: '4/5', focal: '50% 30%' },
+
   /* ── First run ── */
   welcome1: { id: 'DTS_Like_a_Movie_Foster___Asher_Photos_ID1042_qaddk3', alt: 'A couple laughing together outdoors', usedIn: 'Welcome, screen 1', size: { w: 390, h: 844 }, ratio: '4/5', focal: '50% 35%' },
   welcome2: { id: 'DTS_Slices_of_Summer_Mark_La_Montagne_Photos_ID2661_vb5omq', alt: 'Two friends lying in the grass', usedIn: 'Welcome, screen 2', size: { w: 390, h: 844 }, ratio: '4/5' },
