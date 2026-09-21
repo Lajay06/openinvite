@@ -1,15 +1,43 @@
-import React from 'react';
-import { Search } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Search, ChevronDown } from 'lucide-react';
 import Screen from '../../shell/Screen';
 import { FeatureTile, ProgressBar, ErrorState, Skeleton } from '../../ui';
 import { GROUPS, featuresIn } from '../../features/registry';
+import { prefGet, prefSet } from '../../native';
+
+const OPEN_PREF = 'plan_open_groups';
 
 /**
- * The Plan hub: title, search, an overall progress card, then one section
- * per desktop sidebar group, each a two-column grid of FeatureTiles with a
- * live stat. `data` is the usePlanData payload (or fixtures).
+ * Owner fix 6: which accordion sections are open, remembered across opens.
+ * Until the preference has been read the first visit's default applies:
+ * the first group open, the rest collapsed.
+ */
+function useOpenGroups() {
+  const [open, setOpen] = useState(() => new Set([GROUPS[0].key]));
+  useEffect(() => {
+    let live = true;
+    prefGet(OPEN_PREF).then((v) => {
+      if (!live || v == null) return;
+      try { setOpen(new Set(JSON.parse(v))); } catch { /* a bad value keeps the default */ }
+    });
+    return () => { live = false; };
+  }, []);
+  const toggle = (key) => setOpen((prev) => {
+    const next = new Set(prev);
+    if (next.has(key)) next.delete(key); else next.add(key);
+    prefSet(OPEN_PREF, JSON.stringify([...next]));
+    return next;
+  });
+  return [open, toggle];
+}
+
+/**
+ * The Plan hub: title, search, an overall progress card, then one accordion
+ * section per desktop sidebar group (owner fix 6), each a two-column grid
+ * of FeatureTiles. `data` is the usePlanData payload (or fixtures).
  */
 export default function PlanHubScreen({ data, symbol = '$', progress, onOpen, onSearch, loading, error, onRetry }) {
+  const [openGroups, toggleGroup] = useOpenGroups();
   return (
     <Screen title="Plan" bell actions={[{ icon: Search, label: 'Search', onClick: onSearch }]}>
       <div className="oi-m-stack oi-m-stack--24">
@@ -29,16 +57,31 @@ export default function PlanHubScreen({ data, symbol = '$', progress, onOpen, on
                 <ProgressBar value={progress.pct} max={100} note={progress.note} />
               </div>
             )}
-            {GROUPS.map((g) => (
-              <section key={g.key}>
-                <h2 className="oi-m-section" style={{ marginBottom: 12 }}>{g.label}</h2>
-                <div className="oi-m-grid2">
-                  {featuresIn(g.key).map((f) => (
-                    <FeatureTile key={f.key} icon={f.icon} name={f.label} image={f.image} alt={f.label} tone={f.image ? 'photo' : (['guests', 'finances'].includes(g.key) ? 'neutral' : 'white')} onClick={() => onOpen(f)} />
-                  ))}
-                </div>
-              </section>
-            ))}
+            <div>
+              {GROUPS.map((g) => {
+                const features = featuresIn(g.key);
+                const isOpen = openGroups.has(g.key);
+                const bodyId = `plan-group-${g.key}`;
+                return (
+                  <section key={g.key} className="oi-m-acc">
+                    <button type="button" className="oi-m-acc__head" onClick={() => toggleGroup(g.key)} aria-expanded={isOpen} aria-controls={bodyId}>
+                      <h2 className="oi-m-acc__title">{g.label}</h2>
+                      <span className="oi-m-acc__count">{features.length} feature{features.length === 1 ? '' : 's'}</span>
+                      <ChevronDown size={20} strokeWidth={1.75} className={`oi-m-acc__chevron${isOpen ? ' oi-m-acc__chevron--open' : ''}`} aria-hidden="true" />
+                    </button>
+                    <div id={bodyId} className={`oi-m-acc__body${isOpen ? ' oi-m-acc__body--open' : ''}`} aria-hidden={!isOpen}>
+                      <div className="oi-m-acc__inner">
+                        <div className="oi-m-grid2" style={{ paddingBottom: 16 }}>
+                          {features.map((f) => (
+                            <FeatureTile key={f.key} icon={f.icon} name={f.label} image={f.image} alt={f.label} tone={f.image ? 'photo' : (['guests', 'finances'].includes(g.key) ? 'neutral' : 'white')} onClick={() => onOpen(f)} />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
           </>
         )}
       </div>

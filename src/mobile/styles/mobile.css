@@ -940,7 +940,8 @@ select.oi-m-input { background-image: none; padding-right: 44px; }
 .oi-m-acc__chevron--open { transform: rotate(180deg); }
 .oi-m-acc__body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 240ms var(--m-ease); }
 .oi-m-acc__body--open { grid-template-rows: 1fr; }
-.oi-m-acc__inner { overflow: hidden; }
+.oi-m-acc__inner { overflow: hidden; visibility: hidden; transition: visibility 0s linear 240ms; }
+.oi-m-acc__body--open .oi-m-acc__inner { visibility: visible; transition-delay: 0s; }
 .oi-m-acc__body--open .oi-m-acc__inner { padding-top: 8px; }
 @media (prefers-reduced-motion: reduce) { .oi-m-acc__body, .oi-m-acc__chevron { transition: none; } }
 
