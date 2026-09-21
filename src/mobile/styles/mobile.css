@@ -124,14 +124,17 @@
 
 /* ── Type ───────────────────────────────────────────────────────────── */
 .oi-m-title { font-size: 34px; line-height: 40px; font-weight: 600; }
-.oi-m-hero-num { font-size: 56px; line-height: 56px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.5px; overflow-wrap: anywhere; }
+/* Figures are the font's default proportional set. Never tabular-nums or
+   font-feature-settings "tnum" here: Plus Jakarta Sans swaps in a footed 1
+   and a condensed 0 for its tabular figures, which read as another font. */
+.oi-m-hero-num { font-size: 56px; line-height: 56px; font-weight: 600; letter-spacing: -0.5px; overflow-wrap: anywhere; }
 /* Long money strings step down rather than clip. */
 .oi-m-hero-num--long { font-size: 40px; line-height: 44px; }
 .oi-m-section { font-size: 22px; line-height: 28px; font-weight: 600; }
 .oi-m-body { font-size: 16px; line-height: 24px; }
 .oi-m-meta { font-size: 14px; line-height: 20px; color: var(--m-text-2); }
 .oi-m-strong { font-weight: 600; }
-.oi-m-num { font-size: 32px; line-height: 40px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.oi-m-num { font-size: 32px; line-height: 40px; font-weight: 600; }
 .oi-m-on-dark { color: var(--m-on-dark); }
 .oi-m-on-dark-2 { color: var(--m-on-dark-2); }
 
@@ -462,7 +465,7 @@
 .oi-m-stat--ink .oi-m-meta { color: var(--m-on-dark-2); }
 .oi-m-stat__icon { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--m-primary-soft); color: var(--m-primary); }
 .oi-m-stat--ink .oi-m-stat__icon { background: rgba(255, 255, 255, 0.14); color: #FFFFFF; }
-.oi-m-stat__num { font-size: 28px; line-height: 34px; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.oi-m-stat__num { font-size: 28px; line-height: 34px; font-weight: 600; overflow-wrap: anywhere; }
 .oi-m-stat__num--long { font-size: 22px; line-height: 28px; }
 
 .oi-m-panel { border-radius: var(--m-r-card); padding: 20px; display: flex; flex-direction: column; gap: 8px; min-height: 120px; width: 100%; text-align: left; }
@@ -724,7 +727,7 @@ select.oi-m-input { background-image: none; padding-right: 44px; }
 .oi-m-item__title { font-size: 16px; line-height: 22px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .oi-m-item__meta { font-size: 14px; line-height: 20px; color: var(--m-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .oi-m-item__foot { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
-.oi-m-item__value { font-size: 15px; line-height: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.oi-m-item__value { font-size: 15px; line-height: 20px; font-weight: 600; }
 .oi-m-item__action {
   width: 44px; height: 44px; border-radius: 50%; align-self: center; flex-shrink: 0;
   display: inline-flex; align-items: center; justify-content: center;

@@ -40,7 +40,7 @@ export default function PushPreview() {
       <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100%', padding: 'calc(env(safe-area-inset-top, 0px) + 12px) 12px 12px', color: '#FFFFFF' }}>
         <div style={{ textAlign: 'center', marginTop: 44 }}>
           <div style={{ fontSize: 20, lineHeight: '24px', fontWeight: 500, opacity: 0.95 }}>{now.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
-          <div style={{ fontSize: 88, lineHeight: '92px', fontWeight: 600, letterSpacing: -2, fontVariantNumeric: 'tabular-nums' }}>9:41</div>
+          <div style={{ fontSize: 88, lineHeight: '92px', fontWeight: 600, letterSpacing: -2 }}>9:41</div>
         </div>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: 8, paddingBottom: 56 }}>
           {single.map((it, i) => <Card key={it.type + i} item={it} expanded={expanded === i} onClick={() => setExpanded(i)} />)}

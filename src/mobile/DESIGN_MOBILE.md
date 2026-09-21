@@ -48,12 +48,12 @@ No gradients, with one exception: a bottom-up dark scrim over photos so white te
 
 **Type**
 
-Plus Jakarta Sans only. Headings weight 600, never heavier. Size contrast does the work, not weight.
+Plus Jakarta Sans only. Headings weight 600, never heavier. Size contrast does the work, not weight. Figures are the font's default proportional set everywhere: no `font-variant-numeric: tabular-nums` and no `font-feature-settings` on any number. Plus Jakarta Sans's tabular figures are different glyphs (a footed 1, a narrowed 0) and read as a second font. If a true column of figures ever needs aligning, align the column, not the digits.
 
 | Class | Size / line | Use |
 |---|---|---|
 | `.oi-m-title` | 34 / 40 | the one screen title, and the greeting |
-| `.oi-m-hero-num` | 56 / 56, tabular figures | days to go, totals |
+| `.oi-m-hero-num` | 56 / 56 | days to go, totals |
 | `.oi-m-section` | 22 / 28 | section titles |
 | `.oi-m-body` | 16 / 24 | body, row labels, inputs |
 | `.oi-m-meta` | 14 / 20 | secondary lines, captions |
