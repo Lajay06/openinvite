@@ -55,7 +55,7 @@ export default function HomeScreen({
               <h2 className="oi-m-section">Next up</h2>
               <button type="button" className="oi-m-block__link" onClick={onOpenTasks}>All tasks</button>
             </div>
-            <div style={{ margin: '0 calc(-1 * var(--m-gutter))' }}>
+            <div className="oi-m-nextup" style={{ margin: '0 calc(-1 * var(--m-gutter))' }}>
               <PeekCarousel>
                 {payments.slice(0, 2).map((p) => (
                   <PanelCard key={`p${p.id}`} tone="ink" label={`Due ${dateShort(p.payment_date)}`} title={money(p.actual_amount || p.budgeted_amount, budget?.symbol)} body={`${p.item_name}${p.vendor ? ` to ${p.vendor}` : ''}`} onClick={onOpenBudget}>
@@ -64,7 +64,7 @@ export default function HomeScreen({
                 ))}
                 {tasks.slice(0, 5).map((t) => (
                   <PanelCard key={t.id} tone="neutral" label={dueLabel(t.due_date) || (t.priority ? `${t.priority} priority` : 'No date')} title={t.title}>
-                    <PillButton variant="light" size="sm" icon={CheckCircle2} onClick={() => onCompleteTask?.(t)} style={{ alignSelf: 'flex-start', marginTop: 4 }}>Done</PillButton>
+                    <PillButton variant="light" size="sm" icon={CheckCircle2} onClick={() => onCompleteTask?.(t)} style={{ alignSelf: 'flex-start' }}>Done</PillButton>
                   </PanelCard>
                 ))}
               </PeekCarousel>

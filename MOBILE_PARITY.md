@@ -33,7 +33,7 @@ itself stays on desktop and is noted.
 **Desktop.** Greeting, day state, stat tiles (replies, budget, tasks, vendors), Ava briefing, latest activity. No forms. Ava: `AvaChatPod`.
 **Mobile.** Hero carousel (days to go, replies, from Ava, share the site), stat pair, Next up (payments due and open tasks, tap to complete), keep planning, from Ava, latest three notifications, pull to refresh. Ava opens the same pod in a sheet.
 **Gaps.** None on content. Owner fix 1: the Next up cards are unequal heights.
-**Status.** Parity on content. Owner fix 1 planned for phase 2 (fixed-height cards, two-line titles, one-line meta).
+**Status.** Done. Owner fix 1: every Next up card is 156px, titles clamp to two lines, meta and body to one, content aligned to the top with the action at the foot.
 
 ### Event details (`/event-details`) → `/m/plan/event-details`
 
