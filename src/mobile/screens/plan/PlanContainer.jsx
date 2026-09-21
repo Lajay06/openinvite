@@ -8,6 +8,7 @@ import { useApi, useSymbol } from '../../data/api';
 import useLoad from '../../data/useLoad';
 import { hapticLight, shareLink, openExternal, prefGet, prefSet } from '../../native';
 import { openDesktop, siteUrlFor, siteOrigin } from '../../lib/links';
+import { useConfirm } from '../../ui/ConfirmSheet';
 import { resolveRecipients } from '@/lib/questionnaireRecipients';
 import { getWeddingEvents, RECEPTION_EVENT_ID } from '@/lib/weddingEvents';
 import { validatePlanAssignments } from '@/lib/tableAssignment';
@@ -282,32 +283,43 @@ function ChecklistContainer({ back }) {
 function BudgetContainer({ back }) {
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const api = useApi();
   const { base } = useContext(ShellContext);
   const symbol = useSymbol();
   const budget = useBudget();
   const budgetWrites = useBudgetWrites();
+  const [confirm, confirmEl] = useConfirm();
   const save = async (fields, existing) => {
     if (existing) { await budgetWrites.update(existing.id, fields); toast.success('Expense updated'); } else { await budgetWrites.create(fields); toast.success('Expense added'); }
     budget.reload();
   };
+  const remove = async (i) => { if (!(await confirm({ title: 'Delete this expense', body: i.item_name, action: 'Delete' }))) return; await budgetWrites.remove(i.id); toast.success('Expense deleted'); budget.reload(); };
   const markPaid = async (i) => {
     try {
       await budget.optimistic((d) => ({ ...d, items: (d?.items || []).map((x) => (x.id === i.id ? { ...x, paid: true } : x)) }), () => budgetWrites.update(i.id, { paid: true }), () => toast.error('Could not save that. Put back the way it was.'));
       hapticLight();
     } catch { /* rolled back */ }
   };
-  return <BudgetScreen items={budget.data?.items || []} plan={budget.data?.plan || null} symbol={symbol} onOpenCategory={(c) => navigate(`${base}/plan/budget/${c}`)} onAdd={save} onMarkPaid={markPaid} loading={budget.loading} error={budget.error} onRetry={budget.reload} back={back} openAdd={params.get('add') === '1'} onRefresh={budget.reload} />;
+  const savePlan = async (plan) => { await budgetWrites.savePlan(plan); toast.success('Plan saved'); budget.reload(); };
+  return (
+    <>
+      <BudgetScreen items={budget.data?.items || []} plan={budget.data?.plan || null} symbol={symbol} onOpenCategory={(c) => navigate(`${base}/plan/budget/${c}`)} onAdd={save} onDelete={remove} onMarkPaid={markPaid} onSavePlan={savePlan} onAsk={(prompt, opts) => api.llm(prompt, opts)} loading={budget.loading} error={budget.error} onRetry={budget.reload} back={back} openAdd={params.get('add') === '1'} onRefresh={budget.reload} />
+      {confirmEl}
+    </>
+  );
 }
 
 function BudgetCategoryContainer({ category, back }) {
   const symbol = useSymbol();
   const budget = useBudget();
   const budgetWrites = useBudgetWrites();
+  const [confirm, confirmEl] = useConfirm();
   const save = async (fields, existing) => {
     if (existing) { await budgetWrites.update(existing.id, fields); toast.success('Expense updated'); } else { await budgetWrites.create(fields); toast.success('Expense added'); }
     budget.reload();
   };
-  return <BudgetCategoryScreen category={category} items={budget.data?.items || []} plan={budget.data?.plan || null} symbol={symbol} onSave={save} back={back} />;
+  const remove = async (i) => { if (!(await confirm({ title: 'Delete this expense', body: i.item_name, action: 'Delete' }))) return; await budgetWrites.remove(i.id); toast.success('Expense deleted'); budget.reload(); };
+  return <><BudgetCategoryScreen category={category} items={budget.data?.items || []} plan={budget.data?.plan || null} symbol={symbol} onSave={save} onDelete={remove} back={back} />{confirmEl}</>;
 }
 
 /* ── Messages ────────────────────────────────────────────────────────── */
