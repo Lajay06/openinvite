@@ -169,7 +169,7 @@ export default function ExperienceScreen({ guide = {}, destination = '', onSave,
                     <div key={block} style={{ padding: '12px 16px', borderTop: block === 'morning' ? 0 : '1px solid var(--m-line)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
                         <div className="oi-m-meta oi-m-strong" style={{ color: 'var(--m-text)' }}>{block.charAt(0).toUpperCase() + block.slice(1)}</div>
-                        <button type="button" className="oi-m-block__link" style={{ margin: 0, minHeight: 32 }} onClick={() => setActivitySheet({ dayIdx, block })}>Add</button>
+                        <button type="button" className="oi-m-block__link" style={{ margin: 0, minHeight: 44, minWidth: 44, justifyContent: "center" }} onClick={() => setActivitySheet({ dayIdx, block })}>Add</button>
                       </div>
                       {day.blocks[block].length === 0 ? <div className="oi-m-meta">Nothing yet</div> : day.blocks[block].map((a) => (
                         <div key={a.id} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '8px 0' }}>

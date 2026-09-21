@@ -445,10 +445,10 @@ TABLES: ${JSON.stringify(tableData)}
 INSTRUCTIONS:
 1. PRIORITISE TAGS: group guests with matching tags together (e.g. all "College Friends" at one table)
 2. Secondary grouping by relationship category (family, friends, colleagues)
-3. Every person listed needs their own seat, including plus-ones. A plus-one has isPlusOne: true and plusOneOf giving their host's id — seat them at the same table as their host. Respect seating preferences.
+3. Every person listed needs their own seat, including plus-ones. A plus-one has isPlusOne: true and plusOneOf giving their host's id; seat them at the same table as their host. Respect seating preferences.
 4. Balance table sizes evenly; consider dietary restrictions
-5. In your output, refer to each guest ONLY by their exact "id" value from the GUESTS list above (e.g. "g1", "g2") — never their name, and never invent an id.
-6. For "reasoning", write one plain, specific sentence naming the actual tag, relationship, or preference that drove the grouping — no vague or generic language like "for synergy," "for balance," or "for cohesion."
+5. In your output, refer to each guest ONLY by their exact "id" value from the GUESTS list above (e.g. "g1", "g2"), never their name, and never invent an id.
+6. For "reasoning", write one plain, specific sentence naming the actual tag, relationship, or preference that drove the grouping, with no vague or generic language like "for synergy," "for balance," or "for cohesion."
 
 Return assignments[], unassigned[], and summary.`, { add_context_from_internet: false, response_json_schema: { type: 'object', properties: { assignments: { type: 'array', items: { type: 'object', properties: { tableId: { type: 'string' }, tableName: { type: 'string' }, guests: { type: 'array', items: { type: 'string' } }, reasoning: { type: 'string' } } } }, unassigned: { type: 'array', items: { type: 'string' } }, summary: { type: 'string' } } } });
     return { ...response, assignments: (response?.assignments || []).map((a) => ({ ...a, guests: (a.guests || []).map((t) => idOf.get(t)).filter(Boolean) })), unassigned: (response?.unassigned || []).map((t) => idOf.get(t)).filter(Boolean) };

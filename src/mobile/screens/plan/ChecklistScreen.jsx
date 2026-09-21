@@ -99,7 +99,7 @@ export default function ChecklistScreen({ tasks = [], onToggle, onAdd, onUpdate,
       ]}>
         <div className="oi-m-row">
           <Checkbox checked={!!t.completed} onChange={() => complete(t)} label={t.title} />
-          <button type="button" className="oi-m-row__body" style={{ textAlign: 'left' }} onClick={() => setSheet({ task: t })}>
+          <button type="button" className="oi-m-row__body" style={{ textAlign: 'left', minHeight: 44, alignSelf: 'stretch' }} onClick={() => setSheet({ task: t })}>
             <div className={`oi-m-row__label oi-m-row__label--wrap oi-m-task__title${t.completed ? ' oi-m-task__title--done' : ''}`}>{t.title}</div>
             {(t.due_date || pr !== 'medium' || t.description) && !settled && <div className="oi-m-row__sub">{[dueLabel(t.due_date), pr !== 'medium' ? `${PRIORITY[pr].label} priority` : '', t.description ? 'Has notes' : ''].filter(Boolean).join(', ')}</div>}
           </button>

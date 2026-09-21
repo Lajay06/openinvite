@@ -156,7 +156,7 @@ export function VendorDetailScreen({ vendor, logs = [], tasks = [], symbol = '$'
               <RowGroup>{docs.map((l) => (
                 <div key={l.id} className="oi-m-row">
                   <span className="oi-m-row__tile oi-m-row__tile--neutral"><FileText size={19} strokeWidth={1.75} /></span>
-                  <button type="button" className="oi-m-row__body" style={{ textAlign: 'left' }} onClick={l.document_url ? () => openExternal(l.document_url) : undefined}>
+                  <button type="button" className="oi-m-row__body" style={{ textAlign: 'left', minHeight: 44, alignSelf: 'stretch' }} onClick={l.document_url ? () => openExternal(l.document_url) : undefined}>
                     <div className="oi-m-row__label oi-m-row__label--wrap">{l.subject || l.document_name || 'Document'}</div>
                     <div className="oi-m-row__sub">{[DOC_TYPES.find((t) => t.value === l.document_type)?.label, l.document_name, l.logged_at ? dateShort(l.logged_at) : ''].filter(Boolean).join(', ')}</div>
                   </button>

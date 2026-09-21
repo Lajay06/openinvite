@@ -199,7 +199,7 @@ export default function SendInvitesScreen({ guests = [], wedding, user, initialS
                     {filtered.map((g) => (
                       <div key={g.id} className="oi-m-row">
                         <Checkbox checked={selected.has(g.id)} onChange={() => setSelected((s) => { const n = new Set(s); if (n.has(g.id)) n.delete(g.id); else n.add(g.id); return n; })} label={g.name} />
-                        <button type="button" className="oi-m-row__body" style={{ textAlign: 'left' }} onClick={() => setSelected((s) => { const n = new Set(s); if (n.has(g.id)) n.delete(g.id); else n.add(g.id); return n; })}>
+                        <button type="button" className="oi-m-row__body" style={{ textAlign: 'left', minHeight: 44, alignSelf: 'stretch' }} onClick={() => setSelected((s) => { const n = new Set(s); if (n.has(g.id)) n.delete(g.id); else n.add(g.id); return n; })}>
                           <div className="oi-m-row__label">{g.name}</div>
                           <div className="oi-m-row__sub">{[g.email || 'No email', GUEST_CATEGORY_LABEL[g.category]].filter(Boolean).join(', ')}</div>
                         </button>

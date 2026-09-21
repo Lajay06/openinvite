@@ -110,7 +110,7 @@ export default function SeatingScreen({ tables = [], guests = [], weddingEvents 
               </div>
               <div className="oi-m-row" style={{ background: 'transparent', padding: '0 4px 12px', minHeight: 44 }}>
                 <Checkbox checked={attendingOnly} onChange={setAttendingOnly} label="Attending only" />
-                <button type="button" className="oi-m-row__body" style={{ textAlign: 'left' }} onClick={() => setAttendingOnly((v) => !v)}><div className="oi-m-row__label">Attending only</div><div className="oi-m-row__sub">Hide guests who have not replied yet</div></button>
+                <button type="button" className="oi-m-row__body" style={{ textAlign: 'left', minHeight: 44, alignSelf: 'stretch' }} onClick={() => setAttendingOnly((v) => !v)}><div className="oi-m-row__label">Attending only</div><div className="oi-m-row__sub">Hide guests who have not replied yet</div></button>
               </div>
               {unseated.length === 0 ? <div className="oi-m-card"><p className="oi-m-meta">{attendees.length ? 'Everyone here has a seat.' : `No one is invited to ${activeEvent.name} yet.`}</p></div> : (
                 <RowGroup>

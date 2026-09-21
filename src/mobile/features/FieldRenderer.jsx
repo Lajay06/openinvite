@@ -126,7 +126,7 @@ function ImageField({ field, value, onChange, error }) {
         <SmartImage src={value} alt="" width={72} height={72} style={{ width: 72, height: 72, flexShrink: 0 }} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1, minWidth: 0 }}>
           <PillButton variant="secondary" size="sm" icon={Camera} onClick={() => setOpen(true)} style={{ alignSelf: 'flex-start' }}>{value ? 'Change photo' : 'Add a photo'}</PillButton>
-          {value && <button type="button" className="oi-m-block__link" onClick={() => onChange('')} style={{ margin: 0, minHeight: 32 }}>Remove</button>}
+          {value && <button type="button" className="oi-m-block__link" onClick={() => onChange('')} style={{ margin: 0, minHeight: 44 }}>Remove</button>}
         </div>
       </div>
       <TextField id={`f-${field.name}`} type="url" inputMode="url" autoCapitalize="off" value={value ?? ''} onChange={(e) => onChange(e.target.value)} placeholder="Or paste an image link" error={error} />

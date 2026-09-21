@@ -123,7 +123,7 @@ function PollCard({ poll: p, countFor, comments, onEdit, onEnd, onReopen, onDele
       {p.avaInsight && <div className="oi-m-panel oi-m-panel--tint" style={{ minHeight: 0, padding: '12px 16px', gap: 4 }}><span className="oi-m-meta"><span aria-hidden="true">✦</span> From Ava</span><span className="oi-m-body">{p.avaInsight}</span></div>}
       {p.allowComments && allComments.length > 0 && (
         <div>
-          <button type="button" className="oi-m-block__link" style={{ margin: 0, minHeight: 32, display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => setShowComments((v) => !v)}><MessageCircle size={14} /> {showComments ? 'Hide comments' : `${allComments.length} comment${allComments.length === 1 ? '' : 's'}`}</button>
+          <button type="button" className="oi-m-block__link" style={{ margin: 0, minHeight: 44, display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => setShowComments((v) => !v)}><MessageCircle size={14} /> {showComments ? 'Hide comments' : `${allComments.length} comment${allComments.length === 1 ? '' : 's'}`}</button>
           {showComments && <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>{allComments.slice(-5).map((c, i) => <p key={i} className="oi-m-meta" style={{ color: 'var(--m-text)' }}>{c}</p>)}</div>}
         </div>
       )}

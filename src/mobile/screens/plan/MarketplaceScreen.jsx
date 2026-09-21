@@ -97,7 +97,7 @@ export default function MarketplaceScreen({ eventLocation = '', savedIds = new S
           {REMOTE_PLAUSIBLE.includes(category) && (
             <div className="oi-m-row" style={{ padding: 0, minHeight: 44, background: 'transparent' }}>
               <Checkbox checked={online} onChange={setOnline} label="Online services" />
-              <button type="button" className="oi-m-row__body" style={{ textAlign: 'left' }} onClick={() => setOnline((v) => !v)}><div className="oi-m-row__label">Online services</div><div className="oi-m-row__sub">Search without a location for a category that can work remotely</div></button>
+              <button type="button" className="oi-m-row__body" style={{ textAlign: 'left', minHeight: 44, alignSelf: 'stretch' }} onClick={() => setOnline((v) => !v)}><div className="oi-m-row__label">Online services</div><div className="oi-m-row__sub">Search without a location for a category that can work remotely</div></button>
             </div>
           )}
           <PillButton variant="primary" icon={Search} onClick={() => runSearch()} disabled={status === 'searching'}>{status === 'searching' ? 'Searching' : 'Search'}</PillButton>

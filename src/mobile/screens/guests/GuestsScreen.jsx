@@ -40,7 +40,7 @@ export function GuestRow({ guest, onClick, event, selectable, selected, onSelect
   return (
     <div className="oi-m-row">
       {selectable && <Checkbox checked={!!selected} onChange={() => onSelect?.(guest)} label={`Select ${guest.name}`} />}
-      <button type="button" className="oi-m-row oi-m-row--pressable" style={{ padding: 0, minHeight: 0, flex: 1, background: 'transparent' }} onClick={selectable ? () => onSelect?.(guest) : onClick}>
+      <button type="button" className="oi-m-row oi-m-row--pressable" style={{ padding: 0, minHeight: 44, flex: 1, background: 'transparent' }} onClick={selectable ? () => onSelect?.(guest) : onClick}>
         {!selectable && <span className="oi-m-row__tile" style={{ fontSize: 13, fontWeight: 600 }}>{initials(guest.name)}</span>}
         <div className="oi-m-row__body">
           <div className="oi-m-row__label">{guest.name || 'Unnamed guest'}</div>
@@ -83,7 +83,7 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
 
   const actions = selecting
     ? [{ icon: X, label: 'Done selecting', onClick: onClearSelection }]
-    : [{ icon: Search, label: 'Search guests', onClick: () => setSearchOpen(true) }, { icon: MoreHorizontal, label: 'More actions', onClick: () => setActionsOpen(true) }];
+    : [{ icon: Search, label: 'Search guests', onClick: () => setSearchOpen(true) }];
 
   return (
     <>
@@ -110,6 +110,11 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
                 <Stat n={filters[2].count} label="Awaiting" />
               </div>
               <ProgressBar value={filters[1].count + filters[3].count} max={guests.filter((g) => g.invite_sent_at).length} note={summary(guests, filters)} />
+              {/* The tab root keeps the bell top right, so the list's actions live here, not in the header. */}
+              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                <PillButton variant="primary" size="sm" icon={Plus} onClick={onAdd} style={{ flex: 1 }}>Add a guest</PillButton>
+                <PillButton variant="secondary" size="sm" icon={MoreHorizontal} onClick={() => setActionsOpen(true)} style={{ flex: 1 }}>More</PillButton>
+              </div>
             </div>
           </div>
         )}

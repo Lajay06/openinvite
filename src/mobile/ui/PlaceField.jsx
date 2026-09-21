@@ -97,10 +97,10 @@ export default function PlaceField({ label = 'Venue', value, onChange, locationB
     <div className="oi-m-field">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
         <span className="oi-m-field__label">{label}</span>
-        {geo === 'idle' && <button type="button" className="oi-m-block__link" style={{ margin: 0, minHeight: 32, display: 'inline-flex', alignItems: 'center', gap: 4 }} onClick={useLocation}><Navigation size={13} /> Use my location</button>}
+        {geo === 'idle' && <button type="button" className="oi-m-block__link" style={{ margin: 0, minHeight: 44, display: 'inline-flex', alignItems: 'center', gap: 4 }} onClick={useLocation}><Navigation size={13} /> Use my location</button>}
         {geo === 'loading' && <span className="oi-m-meta" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Loader2 size={13} className="oi-m-spin" /> Finding you</span>}
-        {geo === 'active' && <span className="oi-m-meta" style={{ color: 'var(--m-primary)', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Navigation size={13} /> Near you <button type="button" className="oi-m-block__link" style={{ margin: 0, minHeight: 32 }} onClick={() => { coords.current = null; setGeo('idle'); }} aria-label="Stop using my location"><X size={13} /></button></span>}
-        {geo === 'error' && <button type="button" className="oi-m-block__link" style={{ margin: 0, minHeight: 32 }} onClick={useLocation}>Could not find you. Try again</button>}
+        {geo === 'active' && <span className="oi-m-meta" style={{ color: 'var(--m-primary)', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Navigation size={13} /> Near you <button type="button" className="oi-m-block__link" style={{ margin: 0, minHeight: 44 }} onClick={() => { coords.current = null; setGeo('idle'); }} aria-label="Stop using my location"><X size={13} /></button></span>}
+        {geo === 'error' && <button type="button" className="oi-m-block__link" style={{ margin: 0, minHeight: 44 }} onClick={useLocation}>Could not find you. Try again</button>}
         {geo === 'unavailable' && <span className="oi-m-meta">Location is not available</span>}
       </div>
       {!manual ? (
@@ -123,7 +123,7 @@ export default function PlaceField({ label = 'Venue', value, onChange, locationB
               ))}
             </div>
           )}
-          <button type="button" className="oi-m-block__link" style={{ margin: '8px 0 0', minHeight: 32, alignSelf: 'flex-start' }} onClick={() => setManual(true)}>Add by hand</button>
+          <button type="button" className="oi-m-block__link" style={{ margin: '8px 0 0', minHeight: 44, alignSelf: 'flex-start' }} onClick={() => setManual(true)}>Add by hand</button>
         </>
       ) : (
         <div className="oi-m-card" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

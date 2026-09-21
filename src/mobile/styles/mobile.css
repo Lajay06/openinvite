@@ -890,7 +890,7 @@ select.oi-m-input { background-image: none; padding-right: 44px; }
 
 /* Choice pills wrap inside a form, unlike the scrolling filter row. */
 .oi-m-choices { display: flex; flex-wrap: wrap; gap: 8px; }
-.oi-m-choices .oi-m-filter { border-color: var(--m-line); display: inline-flex; align-items: center; }
+.oi-m-choices .oi-m-filter { border-color: var(--m-line); display: inline-flex; align-items: center; max-width: 100%; white-space: normal; text-align: left; padding: 11px 16px; }
 
 .oi-m-spin { animation: oi-m-spin 0.8s linear infinite; }
 @keyframes oi-m-spin { to { transform: rotate(360deg); } }
