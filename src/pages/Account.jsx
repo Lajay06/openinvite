@@ -45,7 +45,7 @@ const PLAN_FEATURES = {
     'Premium themes (11 universe styles)',
     'Digital invitations via email & WhatsApp',
     'Online RSVP pages for guests',
-    'Guest suite — accommodation, transport & experience guide',
+    'Guest suite — stay, getting here & experience guide',
     'Save the dates & thank you cards',
   ],
 };

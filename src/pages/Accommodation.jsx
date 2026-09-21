@@ -236,11 +236,11 @@ export default function AccommodationPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-      <DashboardPageHeader title="Accommodation" subtitle="Plan and organize accommodation options for your wedding weekend" />
+      <DashboardPageHeader title="Stay" subtitle="Plan and organize where your guests stay for the wedding weekend" />
 
       {/* Ava button + save indicator */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <AvaButton label="Ask Ava about guest accommodation" onClick={() => setAvaOpen(true)} />
+        <AvaButton label="Ask Ava about where guests stay" onClick={() => setAvaOpen(true)} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontFamily: PJS, color: saveStatus === 'saved' ? '#6b7700' : 'rgba(10,10,10,0.6)', minWidth: 80 }}>
           {saveStatus === 'saving' && <><Loader2 size={12} className="animate-spin" />Saving…</>}
           {saveStatus === 'saved' && <><Check size={12} />Saved</>}
@@ -265,7 +265,7 @@ export default function AccommodationPage() {
         {/* Properties tab */}
         {activeTab === 'properties' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <DetailsSection title="Accommodation options" icon={MapPin}>
+            <DetailsSection title="Places to stay" icon={MapPin}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {properties.length === 0 && (
                   <div style={{ padding: '32px 0', textAlign: 'center', border: '1px dashed rgba(10,10,10,0.15)' }}>
@@ -326,7 +326,7 @@ export default function AccommodationPage() {
         {activeTab === 'notes' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <DetailsSection title="Notes" icon={FileText}>
-              <SectionInput label="Additional accommodation notes" isTextarea value={accom.additionalNotes} onChange={e => update({ additionalNotes: e.target.value })} placeholder="Anything else guests should know about accommodation…" />
+              <SectionInput label="Additional notes on where to stay" isTextarea value={accom.additionalNotes} onChange={e => update({ additionalNotes: e.target.value })} placeholder="Anything else guests should know about where to stay…" />
             </DetailsSection>
           </div>
         )}
@@ -335,9 +335,9 @@ export default function AccommodationPage() {
       <AvaModal
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
-        pageTitle="Accommodation"
-        systemPrompt="You are Ava, a wedding accommodation advisor. Help recommend places to stay and plan guest accommodation."
-        quickActions={["What should I consider when recommending accommodation?", "How do I negotiate a group rate at a hotel?", "What information should I include in an accommodation guide?", "Tips for guests traveling from interstate or overseas"]}
+        pageTitle="Stay"
+        systemPrompt="You are Ava, a wedding stay advisor. Help recommend places to stay and plan where guests stay."
+        quickActions={["What should I consider when recommending places to stay?", "How do I negotiate a group rate at a hotel?", "What information should I include in a guide to where guests stay?", "Tips for guests traveling from interstate or overseas"]}
       />
       {showModal && <PropertyModal property={editingProperty} onSave={saveProperty} onClose={() => { setShowModal(false); setEditingProperty(null); }} />}
     </div>

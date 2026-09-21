@@ -102,7 +102,7 @@ export default function SuggestionsModal({ isOpen, onClose, onAddSuggestion }) {
     setLoadingGeneral(true);
     try {
       const response = await InvokeLLM({
-        prompt: `Generate a comprehensive list of wedding planning tasks that couples typically need to complete. Organize them by timeline (12 months before, 9 months before, 6 months before, 3 months before, 1 month before, 2 weeks before, 1 week before, day of wedding). Include tasks for: venue booking, catering, photography, flowers, music, attire, legal requirements, guest management, transportation, and decorations. Make each task specific and actionable.`,
+        prompt: `Generate a comprehensive list of wedding planning tasks that couples typically need to complete. Organize them by timeline (12 months before, 9 months before, 6 months before, 3 months before, 1 month before, 2 weeks before, 1 week before, day of wedding). Include tasks for: venue booking, catering, photography, flowers, music, attire, legal requirements, guest management, transport, and decorations. Make each task specific and actionable.`,
         response_json_schema: {
           type: "object",
           properties: {

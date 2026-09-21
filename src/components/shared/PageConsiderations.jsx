@@ -346,7 +346,7 @@ const CONSIDERATIONS = {
       title: 'Common hidden costs',
       tag: 'Finance',
       body: [
-        'Wedding budgets are routinely underestimated because certain costs are easy to overlook. Most commonly missed: vendor meal allowances, gratuities and service charges, wedding night accommodation, rehearsal dinner, wedding party gifts, outfit alterations, and postage for invitations.',
+        'Wedding budgets are routinely underestimated because certain costs are easy to overlook. Most commonly missed: vendor meal allowances, gratuities and service charges, the wedding night hotel, rehearsal dinner, wedding party gifts, outfit alterations, and postage for invitations.',
         'Stationery costs are particularly easy to underestimate — design, printing, envelopes, and postage together can be several hundred dollars.',
       ],
       tips: [
@@ -454,7 +454,7 @@ const CONSIDERATIONS = {
       title: 'Pre-wedding guest communications',
       tag: 'Guest care',
       body: [
-        'Your guests need practical information well before the wedding day: venue address and directions, parking or transport options, accommodation suggestions, dress code, and what to expect from the day.',
+        'Your guests need practical information well before the wedding day: venue address and directions, parking or transport options, suggestions on where to stay, dress code, and what to expect from the day.',
         'A guest suite is the most efficient way to share this. Send the link with your invitation, and update it as logistics are confirmed.',
       ],
       tips: [

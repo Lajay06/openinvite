@@ -172,7 +172,7 @@ export default function HotelRecommendations({ weddingLocation, weddingCity }) {
             </div>
 
             <p className="text-sm text-[rgba(10,10,10,0.6)] mb-2 line-clamp-2">
-              {hotel.description || 'A great accommodation option for wedding guests.'}
+              {hotel.description || 'A great place for wedding guests to stay.'}
             </p>
 
             {hotel.whyGood && (
@@ -238,7 +238,7 @@ export default function HotelRecommendations({ weddingLocation, weddingCity }) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold text-[#0A0A0A]">Hotel Recommendations</h2>
-          <p className="text-sm mt-1" style={{ color: color.textMuted }}>Handpicked accommodations near {weddingCity}</p>
+          <p className="text-sm mt-1" style={{ color: color.textMuted }}>Handpicked places to stay near {weddingCity}</p>
         </div>
         <div className="flex gap-2">
           {aiHotels.length === 0 && hasLoaded && (

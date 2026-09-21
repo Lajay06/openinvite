@@ -12,7 +12,7 @@ const CATEGORY_CONFIG = {
   reception:      { bg: '#803D81',               text: '#FFFFFF', label: 'Reception' },
   photography:    { bg: '#0A1930',               text: '#FFFFFF', label: 'Photography' },
   preparation:    { bg: '#DDF762',               text: '#0A1930', label: 'Preparation' },
-  transportation: { bg: 'rgba(221,247,98,0.6)',  text: '#0A1930', label: 'Transportation' },
+  transportation: { bg: 'rgba(221,247,98,0.6)',  text: '#0A1930', label: 'Transport' },
   rehearsal:      { bg: '#0A0A0A',               text: '#FFFFFF', label: 'Rehearsal' },
   pre_wedding:    { bg: 'rgba(128,61,129,0.2)',  text: '#803D81', label: 'Pre-wedding' },
   post_wedding:   { bg: 'rgba(224,53,83,0.12)', text: '#E03553', label: 'Post-wedding' },

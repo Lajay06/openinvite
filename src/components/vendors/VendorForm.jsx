@@ -14,7 +14,7 @@ const CATEGORIES = [
   { value: "flowers",        label: "Flowers & florist" },
   { value: "music",          label: "Music & DJ" },
   { value: "bakery",         label: "Bakery & cake" },
-  { value: "transportation", label: "Transportation" },
+  { value: "transportation", label: "Transport" },
   { value: "beauty",         label: "Beauty & hair" },
   { value: "attire",         label: "Attire & fashion" },
   { value: "planning",       label: "Wedding planning" },

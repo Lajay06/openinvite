@@ -61,7 +61,7 @@ const BASE = process.env.CAPTURE_BASE_URL || 'http://localhost:4203';
 // the button. Not a persona: you ask Ava about your vendors, not a "Vendor
 // expert".
 const EXPECT = {
-  Accommodation:           { kind: 'modal', route: '/accommodation',           title: 'Accommodation' },
+  Accommodation:           { kind: 'modal', route: '/accommodation',           title: 'Stay' },
   Account:                 { kind: 'modal', route: '/account',                 title: 'Account' },
   Beauty:                  { kind: 'modal', route: '/Beauty',                  title: 'Beauty' },
   Budget:                  { kind: 'modal', route: '/Budget',                  title: 'Budget' },
@@ -87,7 +87,7 @@ const EXPECT = {
   // two tools, one window. Extra shells are declared, never ignored.
   Seating:                 { kind: 'modal', route: '/Seating',                 title: 'Seating', alsoTitles: ['allocate seats'] },
   Styling:                 { kind: 'modal', route: '/Styling',                 title: 'Styling' },
-  Transport:               { kind: 'modal', route: '/transport',               title: 'Transport' },
+  Transport:               { kind: 'modal', route: '/transport',               title: 'Getting here' },
   UniverseStudio:          { kind: 'modal', route: '/studio/universe',         title: 'Design studio' },
   VendorMarketplace:       { kind: 'modal', route: '/VendorMarketplace',       title: 'Marketplace' },
   Vendors:                 { kind: 'modal', route: '/Vendors',                 title: 'My vendors' },

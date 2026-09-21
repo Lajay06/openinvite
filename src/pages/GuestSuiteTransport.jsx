@@ -355,7 +355,7 @@ isPlace: true only for actual places (airports, stations) that can be found on G
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       <DashboardPageHeader
-        title="Transport"
+        title="Getting here"
         subtitle="Getting to and around the venue"
         actions={saving ? <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Saving…</span> : null}
       />
