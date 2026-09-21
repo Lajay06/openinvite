@@ -32,6 +32,9 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 import { coupleDisplayName } from '@/lib/coupleNames';
 const SKIP_REVEAL_MS = 300;
+// What `oi_entrance_<slug>` records. A legacy '1' reads as SEEN_UNGREETED.
+export const SEEN_UNGREETED = 'seen-ungreeted';
+export const SEEN_GREETED = 'seen-greeted';
 const CUE_VISIBLE_MS = 1800;
 const CURTAIN_BLUR_PX = 14;
 
@@ -60,20 +63,49 @@ function nameVariants(nameMotion, ease) {
 const ACTIVE_PHASES = new Set(['scrim', 'kicker', 'names', 'holding']);
 
 export default function EntranceMoment({ weddingSlug, weddingDetails, theme, typography, universeConfig, forcePlay = false, onDone, guestFirstName = null }) {
-  // ACCEPTED, NOT YET USED. The recognised guest's first name (or null) arrives
-  // here from MultiPageWeddingWebsite so the greeting package can render it; in
-  // this package the overlay is byte-identical to before.
-  void guestFirstName;
   const prefersReducedOS = useReducedMotion();
   const universeKey = normalizeUniverseKey(weddingDetails?.activeUniverse) || 'london';
   const config = getEntranceConfig(universeKey);
   const storageKey = `oi_entrance_${weddingSlug || 'default'}`;
 
+  // THE GREETING IS DECIDED AT THE KICKER BEAT, NOT AT RENDER. The recognised
+  // guest's first name (src/lib/guestGreeting.js, or null) arrives from the
+  // shell whenever its lookup answers. The kicker timer reads this ref when it
+  // fires and copies the value into `greetName`; from then on the name is
+  // fixed for the visit. A name that lands after the beat never pops in late,
+  // never re-triggers a beat, and moves nothing already painted.
+  const guestFirstNameRef = useRef(guestFirstName);
+  guestFirstNameRef.current = guestFirstName;
+  const [greetName, setGreetName] = useState(null);
+  const greetNameRef = useRef(null);
+
+  // ONE KEY, THREE VALUES. `oi_entrance_<slug>` used to hold '1': the entrance
+  // played. It now records how it played — SEEN_UNGREETED or SEEN_GREETED — so
+  // a guest who saw it as a stranger and now arrives recognised gets it once
+  // more, greeted. A legacy '1' is a stranger's viewing and is migrated to
+  // SEEN_UNGREETED at mount, so nobody gets more than that single replay.
+  //
+  // THE REPLAY IS OFFERED ONLY WHEN THE NAME IS ALREADY KNOWN AT MOUNT. The
+  // shell starts the lookup beside the wedding fetch and this overlay mounts
+  // after that fetch, so on a return visit the name is normally here first.
+  // Deciding on the prop at mount is what makes "once more, greeted" a
+  // promise rather than a hope: a replay never plays ungreeted, and a guest
+  // whose name never resolves never replays. Whether the replay is then
+  // finished or skipped, it is spent — the key advances to SEEN_GREETED.
+  const replayRef = useRef(false);
   const [phase, setPhase] = useState(() => {
     if (typeof window === 'undefined') return 'gone';
     if (!forcePlay) {
       if (prefersReducedOS) return 'gone';
-      try { if (window.localStorage.getItem(storageKey)) return 'gone'; } catch { /* storage unavailable — treat as first visit */ }
+      try {
+        const seen = window.localStorage.getItem(storageKey);
+        if (seen === SEEN_GREETED) return 'gone';
+        if (seen) {
+          if (seen !== SEEN_UNGREETED) window.localStorage.setItem(storageKey, SEEN_UNGREETED);
+          if (!guestFirstName) return 'gone';
+          replayRef.current = true;
+        }
+      } catch { /* storage unavailable — treat as first visit */ }
     }
     return 'scrim';
   });
@@ -115,7 +147,10 @@ export default function EntranceMoment({ weddingSlug, weddingDetails, theme, typ
   // scroll cue appears and finally unmounting.
   const revealThenGone = (revealMs) => {
     if (!forcePlay) {
-      try { window.localStorage.setItem(storageKey, '1'); } catch { /* best-effort only */ }
+      // Greeted, or a spent replay: never again. Otherwise a stranger's viewing,
+      // which a later recognised visit may replay once.
+      const seen = greetNameRef.current || replayRef.current ? SEEN_GREETED : SEEN_UNGREETED;
+      try { window.localStorage.setItem(storageKey, seen); } catch { /* best-effort only */ }
     }
     onDoneRef.current?.();
     setPhase('revealing');
@@ -137,7 +172,14 @@ export default function EntranceMoment({ weddingSlug, weddingDetails, theme, typ
   useEffect(() => {
     if (!shouldPlayRef.current) return;
     const ids = [
-      setTimeout(() => setPhase(p => (p === 'scrim' ? 'kicker' : p)), config.beats.kicker),
+      setTimeout(() => {
+        // The greeting rides this beat. Whatever the shell has resolved by now
+        // is the name for this visit; null means no line, and no later change.
+        const name = guestFirstNameRef.current || null;
+        greetNameRef.current = name;
+        setGreetName(name);
+        setPhase(p => (p === 'scrim' ? 'kicker' : p));
+      }, config.beats.kicker),
       setTimeout(() => setPhase(p => (p === 'kicker' ? 'names' : p)), config.beats.names),
       setTimeout(() => setPhase(p => (p === 'names' ? 'holding' : p)), config.beats.settle),
     ];
@@ -249,6 +291,31 @@ export default function EntranceMoment({ weddingSlug, weddingDetails, theme, typ
               filter: 'blur(10px)', pointerEvents: 'none',
             }}
           />
+        )}
+
+        {/* Beat 2, the greeting — "For Nora", one line immediately above the
+            kicker, on the universe's own name motion. Absolutely positioned
+            off the column's top edge (the kicker wrapper is the column's first
+            in-flow child), so it reserves nothing, shifts nothing, and when
+            there is no name there is no element at all. */}
+        {greetName && (
+          <motion.p
+            initial="hidden"
+            animate={showKicker ? 'shown' : 'hidden'}
+            variants={variants}
+            style={{
+              position: 'absolute', bottom: '100%', left: 0, right: 0, marginBottom: 18,
+              fontFamily: typography?.headingFont,
+              fontWeight: typography?.headingWeight || 400,
+              fontStyle: typography?.headingStyle || 'normal',
+              fontSize: 'clamp(1.125rem, 3vw, 1.5rem)',
+              lineHeight: 1.3,
+              color: theme?.lightBg || '#FFFFFF',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            For {greetName}
+          </motion.p>
         )}
 
         {/* Beat 2 — kicker + hairline */}
