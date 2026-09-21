@@ -111,7 +111,7 @@ export const SAMPLE_SHANGHAI = {
   transport: { enabledModes: ['train', 'taxi', 'airport'] },
   guestSuiteTransport: {
     places: [
-      { id: 'sample-sh-t1', name: 'The metro', type: 'train_station', address: 'Exit two, then a covered walk', note: 'Six minutes to the north lobby. Last train at eleven, which is well before you will want it.' },
+      { id: 'sample-sh-t1', name: 'The metro', type: 'train_station', address: 'Exit two, then a covered walk', note: 'Six minutes to the north lobby. Last train at eleven; taxis after that.' },
       { id: 'sample-sh-t2', name: 'Taxis', type: 'taxi', address: 'The rank on the north side', note: 'Plentiful. Have the tower name written down; the corner has two of them.' },
       { id: 'sample-sh-t3', name: 'From the airport', type: 'airport', address: 'Fifty minutes, or twenty on the fast train', note: 'The train is faster than the car at every hour of the day.' },
     ],

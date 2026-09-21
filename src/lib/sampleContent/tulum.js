@@ -69,7 +69,7 @@ export const SAMPLE_TULUM = {
       { id: 'tu2', type: 'paragraph', order: 1, content: {
         text: 'We are marrying on the sand at the end of the afternoon, and eating afterward under the palms. Shoes are optional and mostly a nuisance. Stay as long as you like.',
       } },
-      { id: 'tu3', type: 'quote', order: 2, content: { text: 'Bring nothing. Everything you need is already there.', attribution: 'Imogen & Kai' } },
+      { id: 'tu3', type: 'quote', order: 2, content: { text: 'Bring nothing. It is all already there.', attribution: 'Imogen & Kai' } },
       { id: 'tu4', type: 'photo', order: 3, content: { url: img(TULUM_IMAGES.home[0], 1400) } },
       { id: 'tu5', type: 'photo', order: 4, content: { url: img(TULUM_IMAGES.home[1], 1400) } },
 

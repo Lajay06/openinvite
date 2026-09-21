@@ -59,7 +59,7 @@ export const SAMPLE_CAPETOWN = {
     blocks: [
       { id: 'ct1', type: 'heading', order: 0, content: { text: 'One long table, and no head of it', kicker: 'The day' } },
       { id: 'ct2', type: 'paragraph', order: 1, content: {
-        text: 'We are marrying in the cellar at half past four and eating outside from half past six. Everybody sits at the same table. There is no top table, no seating plan beyond the one that keeps the talkers apart, and no reason to leave before the lights come on.',
+        text: 'We are marrying in the cellar at half past four and eating outside from half past six. Everybody sits at the same table. There is no top table, no seating plan beyond the one that keeps the talkers apart, and the lights come on at eight.',
       } },
       { id: 'ct3', type: 'quote', order: 2, content: { text: 'Stay for the second bottle. That is when the good part starts.', attribution: 'Naledi & Sam' } },
       { id: 'ct4', type: 'photo', order: 3, content: { url: img(CAPETOWN_IMAGES.home[0], 1400) } },
