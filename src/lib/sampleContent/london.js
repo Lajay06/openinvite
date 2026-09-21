@@ -71,9 +71,9 @@ export const SAMPLE_LONDON = {
     blocks: [
       { id: 'ln1', type: 'heading', order: 0, content: { text: 'A quiet afternoon, then a long evening', kicker: 'The day' } },
       { id: 'ln2', type: 'paragraph', order: 1, content: {
-        text: 'We are marrying in a room with tall windows, and afterward we are going upstairs for dinner. There is no schedule to keep beyond arriving, and no part of the day you need to prepare for.',
+        text: 'We are marrying in a room with tall windows, and afterward we are going upstairs for dinner. There is no schedule beyond the hour on the invitation, and nothing about the evening that needs rehearsing.',
       } },
-      { id: 'ln3', type: 'quote', order: 2, content: { text: 'Come as you would to a good dinner. That is the whole of it.', attribution: 'Nora & Julian' } },
+      { id: 'ln3', type: 'quote', order: 2, content: { text: 'A good dinner that happens to begin with vows. That is the whole of it.', attribution: 'Nora & Julian' } },
       { id: 'ln4', type: 'photo', order: 3, content: { url: img(LONDON_IMAGES.home[0], 1400) } },
       { id: 'ln5', type: 'photo', order: 4, content: { url: img(LONDON_IMAGES.home[1], 1400) } },
 
