@@ -41,8 +41,10 @@ export async function runDashboardStructure() {
   results.push(!/Our recommendations/.test(accomSource)
     ? pass('Accommodation.jsx — "Our recommendations" guest-facing framing removed', 'not found')
     : fail('Accommodation.jsx — "Our recommendations" guest-facing framing removed', 'not found', 'still present'));
-  results.push(/Accommodation options/.test(accomSource)
-    ? pass('Accommodation.jsx — section reframed with a private-planning label', 'found "Accommodation options"')
+  // 'Accommodation options' -> 'Places to stay' under the Stay / Getting here
+  // ruling (2026-09-21); the private-planning framing is unchanged.
+  results.push(/Places to stay/.test(accomSource)
+    ? pass('Accommodation.jsx — section reframed with a private-planning label', 'found "Places to stay"')
     : fail('Accommodation.jsx — section reframed with a private-planning label', 'found', 'not found'));
 
   console.log('\n  Dashboard structure — Accommodation.jsx never renders on the published guest site:\n');

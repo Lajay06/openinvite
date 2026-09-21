@@ -14,7 +14,7 @@ const CATEGORIES = [
   { value: "flowers",        label: "Flowers" },
   { value: "music",          label: "Music" },
   { value: "attire",         label: "Attire" },
-  { value: "transportation", label: "Transportation" },
+  { value: "transportation", label: "Transport" },
   { value: "decorations",    label: "Decorations" },
   { value: "rings",          label: "Rings" },
   { value: "stationery",     label: "Stationery" },

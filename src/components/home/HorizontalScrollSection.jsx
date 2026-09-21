@@ -68,8 +68,8 @@ const CARDS = [
 {
   num: "07",
   title: "Guest suite",
-  desc: "Accommodation, transport, guides and polls: the parts of the day your guests actually need to know.",
-  bullets: ["Accommodation & transport", "Guest polls & Q&A"],
+  desc: "Stay, getting here, guides and polls: the parts of the day your guests actually need to know.",
+  bullets: ["Stay & getting here", "Guest polls & Q&A"],
   photo: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779185630/DTS_Early_Honey_Moon_Tino_Renato_Photos_ID3565_ys7asa.jpg"
 },
 ];

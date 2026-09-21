@@ -72,7 +72,7 @@ const AVA_PROMPTS = [
 
 const TABS = [
   { key: 'travel',       label: 'Travel' },
-  { key: 'accommodation',label: 'Accommodation' },
+  { key: 'accommodation',label: 'Stay' },
   { key: 'planning',     label: 'Planning' },
   { key: 'notes',        label: 'Notes' },
 ];
@@ -141,7 +141,7 @@ export default function HoneymoonPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
-      <DashboardPageHeader title="Honeymoon" subtitle="Plan your post-wedding trip, accommodation, and activities" />
+      <DashboardPageHeader title="Honeymoon" subtitle="Plan your post-wedding trip, where you stay, and activities" />
 
       {/* Ava button + save indicator */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -191,9 +191,9 @@ export default function HoneymoonPage() {
           </DetailsSection>
           )}
 
-          {/* Accommodation */}
+          {/* Stay */}
           {activeTab === 'accommodation' && (
-          <DetailsSection title="Accommodation" icon={Hotel}>
+          <DetailsSection title="Stay" icon={Hotel}>
             <GoogleField label="Hotel / resort name" value={data.hotelName} onChange={e => update({ hotelName: e.target.value })} placeholder="e.g. Four Seasons Bali" />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <SectionInput label="Booking reference" value={data.bookingReference} onChange={e => update({ bookingReference: e.target.value })} />

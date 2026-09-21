@@ -343,7 +343,7 @@ const ALL_ITEMS = [
     relevance: () => 'HIGH',
     body: p => {
       if (p.isDestination) return [
-        'For a destination wedding, your RSVP process needs to provide guests with enough information to book travel and accommodation. Send save-the-dates at least 12 months in advance, and include a travel FAQ page in your guest suite from the start.',
+        'For a destination wedding, your RSVP process needs to provide guests with enough information to book travel and a place to stay. Send save-the-dates at least 12 months in advance, and include a travel FAQ page in your guest suite from the start.',
         'Your RSVP form should collect: attendance confirmation, dietary requirements, song requests if you want them, and any accessibility needs. For a destination event, also ask which pre-wedding activities guests plan to attend.',
       ];
       if (p.isIntimate) return [
@@ -534,7 +534,7 @@ const ALL_ITEMS = [
       ];
       if (p.isElopement) return [
         'An elopement budget is dramatically simpler than a traditional wedding — but that does not mean there are no decisions to make. Photography is typically the highest single cost in an elopement and is worth allocating generously, as it is often all you will have to share with family afterwards.',
-        'Budget for: photography (potentially full day), officiant fee, travel if the location is remote, outfits, hair and makeup, a celebratory meal, and any accommodation.',
+        'Budget for: photography (potentially full day), officiant fee, travel if the location is remote, outfits, hair and makeup, a celebratory meal, and anywhere you stay.',
       ];
       return [
         'Before allocating anything, agree on a total number that both partners are genuinely comfortable with — not an aspirational figure that assumes optimistic cost estimates. Then allocate percentages to each category: venue and catering typically absorb 45-55% of a total wedding budget.',
@@ -572,7 +572,7 @@ const ALL_ITEMS = [
     tag: 'Finance',
     relevance: () => 'MEDIUM',
     body: () => [
-      'Wedding budgets are routinely underestimated because certain costs are easy to overlook in the excitement of planning. The most commonly missed items are: vendor meal allowances (most caterers charge per vendor), gratuities and service charges, wedding night accommodation, rehearsal dinner costs, wedding party gift expenses, alterations and accessory costs for outfits, and postage for physical invitations.',
+      'Wedding budgets are routinely underestimated because certain costs are easy to overlook in the excitement of planning. The most commonly missed items are: vendor meal allowances (most caterers charge per vendor), gratuities and service charges, the wedding night hotel, rehearsal dinner costs, wedding party gift expenses, alterations and accessory costs for outfits, and postage for physical invitations.',
       'Stationery costs are particularly easy to underestimate — design, printing, envelopes, stamps, and postage together can be several hundred dollars for a mid-sized wedding.',
     ],
     tips: () => [
@@ -619,7 +619,7 @@ const ALL_ITEMS = [
         'Look for a photographer who specialises in elopements and adventure sessions. Their ability to work in natural light, navigate remote locations, and direct you authentically is different from a traditional wedding photographer\'s skill set.',
       ];
       if (p.isMultiDay || p.isDestination) return [
-        'For a multi-day or destination wedding, confirm exactly which events your photographer will attend and what is included in the package. Travel, accommodation, and per diem for the photographer and second shooter can add significantly to the cost.',
+        'For a multi-day or destination wedding, confirm exactly which events your photographer will attend and what is included in the package. Travel, hotels, and per diem for the photographer and second shooter can add significantly to the cost.',
         'A second shooter is particularly valuable at complex multi-day events where different things happen simultaneously.',
       ];
       return [

@@ -201,7 +201,7 @@ export default function WeddingStayPage({ weddingDetails, theme, typography, uni
         {places.length === 0 && legacy.length === 0 && (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ textAlign: 'center', padding: '60px 24px' }}>
             <p style={{ ...body, opacity: 0.4, fontStyle: 'italic' }}>
-              Accommodation recommendations will be added here by the couple.
+              Places to stay will be added here by the couple.
             </p>
           </SectionReveal>
         )}

@@ -13,7 +13,7 @@ const BENCHMARKS = {
   flowers:        { pct: 0.08, label: 'Flowers' },
   music:          { pct: 0.05, label: 'Music / Entertainment' },
   attire:         { pct: 0.07, label: 'Attire' },
-  transportation: { pct: 0.02, label: 'Transportation' },
+  transportation: { pct: 0.02, label: 'Transport' },
   decorations:    { pct: 0.03, label: 'Decorations' },
   rings:          { pct: 0.02, label: 'Rings' },
   beauty:         { pct: 0.02, label: 'Beauty' },

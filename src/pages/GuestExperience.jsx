@@ -15,7 +15,7 @@ import { getMyWeddingDetails, getMyInvitation } from '@/lib/resolveMyWedding';
 const TABS = [
   { id: 'hotels', label: 'Hotels', icon: Hotel },
   { id: 'restaurants', label: 'Restaurants', icon: Utensils },
-  { id: 'transportation', label: 'Transportation', icon: Car },
+  { id: 'transportation', label: 'Getting here', icon: Car },
   { id: 'things-to-do', label: 'Things to do', icon: Camera },
   { id: 'itinerary', label: 'Itinerary', icon: ClipboardList },
   { id: 'local-tips', label: 'Local tips', icon: Info },
