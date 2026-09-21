@@ -35,6 +35,7 @@ import MusicScreen from './MusicScreen';
 import RegistryScreen from './RegistryScreen';
 import { QnaScreen, GoodToKnowScreen, PlacesScreen, SuiteScheduleScreen, WeddingPartyScreen, DesktopFeatureScreen } from './SuiteScreens';
 import SuitePlacesScreen from './SuitePlacesScreen';
+import ExperienceScreen from './ExperienceScreen';
 import MarketplaceScreen from './MarketplaceScreen';
 
 const genId = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
@@ -83,7 +84,7 @@ export default function PlanFeatureContainer() {
     case 'good-to-know': return <GoodToKnowContainer back={back} />;
     case 'suite-accommodation': return <SuitePlacesContainer back={back} kind="accommodation" keyName="guestSuiteAccommodation" />;
     case 'suite-transport': return <SuitePlacesContainer back={back} kind="transport" keyName="guestSuiteTransport" />;
-    case 'experience': return <PlacesContainer back={back} title="Experience guide" keyName="experienceGuide" listKey="couplePicks" desktop="/GuestSuiteExperience" intro="Your picks around the venue: a coffee, a walk, a good dinner." />;
+    case 'experience': return <ExperienceContainer back={back} />;
     case 'suite-schedule': return <SuiteScheduleContainer back={back} />;
     case 'wedding-party': return <WeddingPartyContainer back={back} />;
     case 'marketplace': return <MarketplaceContainer back={back} />;
@@ -570,6 +571,14 @@ function SuitePlacesContainer({ back, kind, keyName }) {
   const obj = wd.details?.[keyName] || {};
   const save = async (places, notes) => { await wd.save(keyName, kind === 'transport' ? { ...obj, places, notes: notes || [] } : { ...obj, places }, false); };
   return <SuitePlacesScreen kind={kind} places={obj.places || []} notes={obj.notes || []} destination={wd.details?.mainCeremony?.address || ''} onSave={save} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} />;
+}
+
+function ExperienceContainer({ back }) {
+  const wd = useWeddingDetails();
+  const d = wd.details || {};
+  // The studio's destination: the guide's own, else the last three parts of the ceremony address.
+  const destination = d.experienceGuide?.destination || d.mainCeremony?.address?.split(',').slice(-3).join(', ').trim() || '';
+  return <ExperienceScreen guide={d.experienceGuide || {}} destination={destination} onSave={async (next) => { await wd.save('experienceGuide', next, false); }} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} />;
 }
 
 function SuiteScheduleContainer({ back }) {

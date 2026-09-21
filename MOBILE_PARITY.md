@@ -285,7 +285,7 @@ Mirror of Registry. **Status.** Parity through the registry screen.
 **Desktop.** `ExperienceGuideTab`. Tabs Places (per category: Eat, Coffee, Hidden gems, Fine dining, Outdoors, Drink, Do, Wellness, Day trips, Shopping, The wedding weekend; Places search, `note`, Couple's pick switch, manual add; cards with photo, remove, toggle couple's pick; saved on `experienceGuide.categories[key].places[]` with `couplePicks[]` mirrored), Itinerary (`days` 1 / 3 / 5, day cards with morning, afternoon, evening; add an activity from a saved place or custom text with a note; remove; Ava generates the itinerary; Save), Publish (`heroPhotoUrl`, `editorialIntro` with Ava generate, `vibes[]` from 15, `published` switch).
 **Mobile (found).** Couple's picks by hand only.
 **Gaps.** Everything above.
-**Status.** Planned (phase 1): three segments.
+**Status.** Done. Places, Itinerary and Publish segments with Ava itinerary and intro prompts; couple picks mirror to the site.
 
 ### Good to know (`/GuestSuitePolicies`) → `/m/plan/good-to-know`
 
