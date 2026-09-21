@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Wallet, Plus, Receipt, CreditCard, Search, Download, Sparkles, Pencil, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Screen from '../../shell/Screen';
+import { useConsiderations } from '../../features/ConsiderationsSheet';
+
 import { Row, RowGroup, ProgressBar, StatCard, EmptyState, ErrorState, SkeletonRows, PanelCard, ItemCard, ItemList, BottomSheet, PillButton, TextField, StatusPill, SearchScreen, FilterPills } from '../../ui';
 import Segments, { useSegment } from '../../ui/Segments';
 import { BUDGET_CATEGORIES, budgetCategoryLabel } from '@/lib/budgetCategories';
@@ -41,7 +43,8 @@ export default function BudgetScreen({ items = [], plan = null, symbol = '$', on
   const [planner, setPlanner] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [q, setQ] = useState('');
-  const [catFilter, setCatFilter] = useState('all'); // Budget.jsx's Expenses tab category pills
+  const [catFilter, setCatFilter] = useState('all');
+  const considerations = useConsiderations('budget'); // Budget.jsx's Expenses tab category pills
   const s = useMemo(() => summariseBudget(items, plan), [items, plan]);
   const next = s.duePayments[0];
   const stats = useMemo(() => ({ totalBudgeted: s.committed, totalSpent: s.spent, remaining: s.committed - s.spent, percentageUsed: s.committed > 0 ? (s.spent / s.committed) * 100 : 0 }), [s]);
@@ -107,7 +110,9 @@ export default function BudgetScreen({ items = [], plan = null, symbol = '$', on
               <RowGroup><Row icon={Download} tile="neutral" label="Export as CSV" sub="Every expense" onClick={exportExpenses} chevron={false} /></RowGroup>
             </>
           )}
+          {!loading && !error && considerations.row}
         </div>
+        {considerations.sheet}
         <ExpenseFormSheet open={sheet.open} item={sheet.item} symbol={symbol} onClose={() => setSheet((x) => ({ ...x, open: false }))} onSave={(v) => onAdd(v, sheet.item)} onDelete={sheet.item && onDelete ? async () => { await onDelete(sheet.item); setSheet({ open: false, item: null }); } : undefined} />
         <PlannerSheet open={planner} onClose={() => setPlanner(false)} plan={plan} items={items} symbol={symbol} committed={s.committed} onSave={onSavePlan} />
       </Screen>

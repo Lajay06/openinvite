@@ -71,7 +71,7 @@ export default function MobilePreviewApp() {
         <Route path="priming" element={<div className="oi-mobile-root"><PrimingScreen onTurnOn={() => {}} onNotNow={() => {}} recorded={params.get('state') === 'recorded'} /></div>} />
         <Route path="splash" element={<div className="oi-mobile-root"><LaunchSplash photo={launchPhoto()} alt="A couple laughing together outdoors" /></div>} />
         <Route path="greeting" element={<div className="oi-mobile-root"><Greeting salutation="Good morning" firstName={FIXTURE_WEDDING.couple1Name} line={previewBriefing()} /></div>} />
-        <Route element={<MobileShell base={PREVIEW_BASE} renderAva={() => <PreviewAva />} notifications={notifications} forcedOffline={params.get('offline') === '1'} forcedLock={params.get('lock') === '1'} lockPhoto={coupleImages(FIXTURE_WEDDING)[0]} launch={previewLaunch()} />}>
+        <Route element={<MobileShell base={PREVIEW_BASE} renderAva={({ openDetail }) => <PreviewAva openDetail={openDetail} />} notifications={notifications} forcedOffline={params.get('offline') === '1'} forcedLock={params.get('lock') === '1'} lockPhoto={coupleImages(FIXTURE_WEDDING)[0]} launch={previewLaunch()} />}>
           <Route index element={<HomeContainer />} />
           <Route path="guests" element={<GuestsContainer />} />
           <Route path="guests/:id" element={<GuestsContainer />} />
@@ -125,8 +125,9 @@ function PreviewNotificationSettings() {
 }
 
 /** A static stand-in for the Ava pod so the preview makes no network calls. */
-function PreviewAva() {
+function PreviewAva({ openDetail }) {
   const messages = useMemo(() => FIXTURE_AVA_MESSAGES, []);
+  const seed = openDetail?.seedQuestion || '';
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#0A0A0A', color: '#FFFFFF' }}>
       <div style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -135,7 +136,7 @@ function PreviewAva() {
         ))}
       </div>
       <div style={{ padding: 16, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-        <input className="oi-m-input" placeholder="Ask Ava anything" readOnly style={{ background: 'rgba(255,255,255,0.08)', color: '#FFFFFF' }} />
+        <input className="oi-m-input" placeholder="Ask Ava anything" value={seed} readOnly style={{ background: 'rgba(255,255,255,0.08)', color: '#FFFFFF' }} />
       </div>
     </div>
   );

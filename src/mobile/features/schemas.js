@@ -62,6 +62,7 @@ export const DETAILS = {
   },
   beauty: {
     title: 'Beauty',
+    considerations: 'beauty',
     segments: [{ key: 'look', label: 'Hair & makeup' }, { key: 'ready', label: 'Getting ready' }, { key: 'skincare', label: 'Skincare' }, { key: 'trials', label: 'Trials' }],
     sections: [
       { title: 'Your artists', segment: 'look', key: 'beauty', fields: [{ name: 'hairArtistVendorId', label: 'Hair artist', type: 'vendor', category: 'beauty' }, { name: 'makeupArtistVendorId', label: 'Makeup artist', type: 'vendor', category: 'beauty' }] },
@@ -74,6 +75,7 @@ export const DETAILS = {
   },
   food: {
     title: 'Food & beverage',
+    considerations: 'food',
     segments: [{ key: 'catering', label: 'Catering' }, { key: 'menu', label: 'Menu' }, { key: 'bar', label: 'Bar & drinks' }, { key: 'notes', label: 'Notes' }],
     sections: [
       { title: 'Caterer', segment: 'catering', key: 'foodBeverage', fields: [{ name: 'vendorId', label: 'Caterer', type: 'vendor', category: 'catering' }] },
@@ -87,6 +89,7 @@ export const DETAILS = {
   },
   photography: {
     title: 'Photography',
+    considerations: 'photography',
     segments: [{ key: 'photo', label: 'Photographers' }, { key: 'video', label: 'Videographers' }, { key: 'shots', label: 'Shot list' }],
     sections: [
       { title: 'Photographer', segment: 'photo', key: 'photography', fields: [{ name: 'photographerVendorId', label: 'Photographer', type: 'vendor', category: 'photography' }, t('photographyStyle', 'Photography style'), t('photographyPackage', 'Package selected'), t('photographyHours', 'Hours booked', { type: 'number' })] },
@@ -165,28 +168,6 @@ export const DETAILS = {
 };
 
 export const ENTITIES = {
-  schedule: {
-    title: 'Schedule',
-    entity: 'Schedule',
-    sort: 'start_time',
-    itemLabel: 'event',
-    pattern: 'cards',
-    row: (r) => ({ title: r.event_name, sub: [r.location, r.responsible_person].filter(Boolean).join(' · '), value: r.start_time ? `${r.start_time}${r.end_time ? ` to ${r.end_time}` : ''}` : '', icon: Calendar }),
-    fields: [t('event_name', 'Event'), t('event_date', 'Date', { type: 'date' }), t('start_time', 'Starts', { type: 'time' }), t('end_time', 'Ends', { type: 'time' }), t('location', 'Where'), t('category', 'Part of the day', { type: 'select', options: opt([['ceremony', 'Ceremony'], ['reception', 'Reception'], ['planning', 'Planning'], ['after', 'After the day']]) }), t('responsible_person', 'Who is looking after it'), ta('description', 'Details'), ta('notes', 'Notes')],
-    required: ['event_name'],
-    groupBy: (r) => String(r.event_date || '').slice(0, 10) || 'No date',
-  },
-  moodboard: {
-    title: 'Moodboard',
-    entity: 'MoodboardItem',
-    sort: '-created_date',
-    itemLabel: 'pin',
-    pattern: 'cards',
-    gridToggle: true,
-    row: (r) => ({ title: r.title || 'Untitled', sub: [r.category, (r.tags || []).join(', ')].filter(Boolean).join(' · '), image: r.image_url }),
-    fields: [t('title', 'Title'), t('image_url', 'Photo', { type: 'image' }), t('url', 'Source link', { type: 'url' }), t('category', 'Category', { type: 'select', options: opt([['venue', 'Venue'], ['dress', 'Dress'], ['flowers', 'Flowers'], ['decor', 'Decor'], ['food', 'Food'], ['other', 'Other']]) }), ta('notes', 'Notes')],
-    required: ['title'],
-  },
   vows: {
     title: 'Vows & speeches',
     entity: 'VowSpeech',
@@ -197,20 +178,6 @@ export const ENTITIES = {
     fields: [t('title', 'Title'), t('type', 'What is it', { type: 'select', options: opt([['vow', 'Vows'], ['speech', 'Speech']]) }), t('author', 'Written by'), ta('content', 'The words', { rows: 10 }), ta('notes', 'Notes')],
     required: ['title'],
     defaults: { type: 'vow' },
-  },
-  vendors: {
-    title: 'My vendors',
-    entity: 'Vendor',
-    sort: '-created_date',
-    itemLabel: 'vendor',
-    pattern: 'cards',
-    gridToggle: true,
-    emptyImage: imageUrl('emptyVendors'),
-    row: (r) => ({ title: r.name, sub: [r.category, r.contact_person].filter(Boolean).join(' · '), value: r.quoted_price ? `$${Number(r.quoted_price).toLocaleString('en-US')}` : '', badge: VENDOR_STATUS_LABEL[r.status] || r.status, badgeTone: r.status === 'booked' ? 'ok' : r.status === 'rejected' ? 'no' : r.status === 'researching' ? 'neutral' : 'warn', icon: Store, action: r.phone ? { icon: Phone, label: `Call ${r.name}`, onClick: () => openExternal(`tel:${r.phone}`) } : undefined }),
-    fields: [t('name', 'Name'), t('category', 'Category', { type: 'select', options: opt([['venue', 'Venue'], ['catering', 'Catering'], ['photography', 'Photography'], ['videography', 'Videography'], ['flowers', 'Flowers & florist'], ['music', 'Music & DJ'], ['bakery', 'Bakery & cake'], ['transportation', 'Transportation'], ['beauty', 'Beauty & hair'], ['attire', 'Attire & fashion'], ['planning', 'Wedding planning'], ['decorations', 'Decorations'], ['entertainment', 'Entertainment'], ['other', 'Other']]) }), t('status', 'Status', { type: 'select', options: opt([['researching', 'Researching'], ['contacted', 'Contacted'], ['meeting_scheduled', 'Meeting scheduled'], ['quoted', 'Quoted'], ['booked', 'Booked'], ['rejected', 'Rejected']]) }), t('contact_person', 'Contact'), t('phone', 'Phone', { type: 'tel' }), t('email', 'Email', { type: 'email' }), t('website', 'Website', { type: 'url' }), t('quoted_price', 'Quote', { type: 'number' }), t('deposit_amount', 'Deposit', { type: 'number' }), t('deposit_paid', 'Deposit paid', { type: 'toggle' }), t('contract_signed', 'Contract signed', { type: 'toggle' }), ta('notes', 'Notes')],
-    required: ['name', 'category'],
-    defaults: { status: 'researching' },
-    filters: [{ key: 'all', label: 'All' }, { key: 'booked', label: 'Booked', test: (r) => r.status === 'booked' }, { key: 'quoted', label: 'Quoted', test: (r) => r.status === 'quoted' }, { key: 'researching', label: 'Researching', test: (r) => r.status === 'researching' || r.status === 'contacted' }],
   },
   'registry-links': {
     title: 'Registry links',

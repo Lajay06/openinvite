@@ -2,6 +2,8 @@ import React, { useMemo, useRef, useState } from 'react';
 import { Plus, Store, Search, Star, Phone, Mail, Globe, MapPin, LayoutGrid, List as ListIcon, MessageSquare, FileText, CheckSquare, Trash2, Pencil, Upload, PhoneCall, Users, ArrowUp, ArrowDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Screen from '../../shell/Screen';
+import { useConsiderations } from '../../features/ConsiderationsSheet';
+
 import { FilterPills, EmptyState, ErrorState, SkeletonRows, ItemCard, ItemList, SmartImage, StatusPill, useListView, SearchScreen, RowGroup, Row, PillButton, BottomSheet, SelectField, TextField, TextAreaField, Checkbox } from '../../ui';
 import Segments, { useSegment } from '../../ui/Segments';
 import { useConfirm } from '../../ui/ConfirmSheet';
@@ -41,6 +43,7 @@ export default function VendorsScreen({ items = [], symbol = '$', initialCategor
   const [searchOpen, setSearchOpen] = useState(false);
   const [q, setQ] = useState('');
   const [view, setView] = useListView('Vendor', 'cards');
+  const considerations = useConsiderations('vendors');
   const visible = useMemo(() => sortVendors(items.filter((v) => (status === 'all' || (status === 'favorites' ? !!v.is_favourite : v.status === status)) && (category === 'all' || v.category === category)), sort.key, sort.dir), [items, status, category, sort]);
   const results = useMemo(() => { const s = q.trim().toLowerCase(); return s ? items.filter((v) => [v.name, v.contact_person, v.category, v.email].some((x) => (x || '').toLowerCase().includes(s))) : []; }, [items, q]);
   const booked = items.filter((v) => v.status === 'booked').length;
@@ -77,8 +80,10 @@ export default function VendorsScreen({ items = [], symbol = '$', initialCategor
               ) : <ItemList>{visible.map(card)}</ItemList>}
             </>
           )}
+          {!loading && !error && considerations.row}
         </div>
       </Screen>
+      {considerations.sheet}
       <SearchScreen open={searchOpen} onClose={() => { setSearchOpen(false); setQ(''); }} value={q} onChange={setQ} placeholder="Search by name, contact or category">
         {q.trim() === '' ? <p className="oi-m-meta" style={{ padding: 16 }}>Start typing to search your vendors.</p> : results.length === 0 ? <p className="oi-m-meta" style={{ padding: 16 }}>No vendors match that.</p> : <div className="oi-m-stack"><ItemList>{results.map((v) => <ItemCard key={v.id} icon={Store} tile="neutral" title={v.name} meta={CATEGORY_LABEL[v.category] || v.category} onClick={() => { setSearchOpen(false); setQ(''); onOpen(v); }} />)}</ItemList></div>}
       </SearchScreen>

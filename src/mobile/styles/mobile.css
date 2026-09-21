@@ -945,6 +945,20 @@ select.oi-m-input { background-image: none; padding-right: 44px; }
 .oi-m-acc__body--open .oi-m-acc__inner { padding-top: 8px; }
 @media (prefers-reduced-motion: reduce) { .oi-m-acc__body, .oi-m-acc__chevron { transition: none; } }
 
+/* The page-scoped Ava's quick questions, a scrolling row above the pod. */
+.oi-m-ava-quick { display: flex; gap: 8px; padding: 12px var(--m-gutter); overflow-x: auto; scrollbar-width: none; flex-shrink: 0; }
+.oi-m-ava-quick::-webkit-scrollbar { display: none; }
+.oi-m-ava-quick .oi-m-filter { border: 1px solid var(--m-line); background: var(--m-card); }
+
+/* The desktop's PageConsiderations inside a sheet: its inline sizes are brought onto the app's scale. */
+.oi-m-considerations > div { max-width: none !important; padding: 0 !important; }
+.oi-m-considerations button { min-height: 44px; }
+.oi-m-considerations button > span:first-child { font-size: 15px !important; line-height: 20px !important; font-weight: 600 !important; }
+.oi-m-considerations p { font-size: 15px !important; line-height: 22px !important; color: var(--m-text) !important; font-style: normal !important; }
+.oi-m-considerations li { font-size: 15px !important; line-height: 22px !important; color: var(--m-text) !important; }
+.oi-m-considerations span[style] { font-size: 12px !important; line-height: 16px !important; }
+.oi-m-considerations > div > div:first-child p, .oi-m-considerations h3 { font-size: 17px !important; line-height: 22px !important; }
+
 /* Undo toast: a pill with a text action. */
 .oi-m-toast-action { background: none; border: 0; color: #FFFFFF; font-weight: 600; text-decoration: underline; margin-left: 12px; min-height: 32px; }
 

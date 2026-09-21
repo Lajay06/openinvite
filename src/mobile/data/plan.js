@@ -10,14 +10,16 @@ import useLoad from './useLoad';
 export function usePlanData() {
   const api = useApi();
   return useLoad(async () => {
-    const soft = (p) => p.catch(() => []);
+    // A store that failed is named, not emptied: DailyUpdate.jsx's banner says which numbers are incomplete.
+    const failed = [];
+    const soft = (p, name) => p.catch(() => { if (name) failed.push(name); return []; });
     const [details, guests, tasks, budget, schedule, vendors, messages, registryItems, registryProducts, customGifts, gifts, music, songRequests, vows, moodboard, tables, guestbook] = await Promise.all([
       api.wedding.get().catch(() => null),
-      soft(api.guests.list()),
-      soft(api.list('Note', '-created_date')),
-      soft(api.list('Budget', '-created_date')),
-      soft(api.list('Schedule', 'start_time')),
-      soft(api.list('Vendor', '-created_date')),
+      soft(api.guests.list(), 'guests'),
+      soft(api.list('Note', '-created_date'), 'to-dos'),
+      soft(api.list('Budget', '-created_date'), 'budget'),
+      soft(api.list('Schedule', 'start_time'), 'schedule'),
+      soft(api.list('Vendor', '-created_date'), 'vendors'),
       soft(api.list('GuestMessage', '-created_date')),
       soft(api.list('RegistryItem', '-created_date')),
       soft(api.list('RegistryProduct', '-created_date')),
@@ -30,7 +32,7 @@ export function usePlanData() {
       soft(api.list('Table', '-created_date')),
       soft(api.list('GuestbookEntry', '-created_date')),
     ]);
-    return { details, guests, tasks: tasks.filter((t) => t.view_type === 'todo'), budget, schedule, vendors, messages, registryItems, registryProducts, customGifts, gifts, music, songRequests, vows, moodboard, tables, guestbook };
+    return { details, guests, tasks: tasks.filter((t) => t.view_type === 'todo'), budget, schedule, vendors, messages, registryItems, registryProducts, customGifts, gifts, music, songRequests, vows, moodboard, tables, guestbook, failed };
   }, []);
 }
 

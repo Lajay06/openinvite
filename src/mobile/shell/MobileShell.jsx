@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { avaDetailFor } from '../features/avaContext';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
@@ -89,7 +90,10 @@ export default function MobileShell({ base = '/m', renderAva, showAva = true, no
   }, [latest, banner, pathname]);
   const onBannerDone = useCallback((item) => { setBanner(null); notifications?.bannerShown?.(item); }, [notifications]);
 
-  const ctx = { base, unread: notifications?.unread || 0, openAva: () => setAvaOpen(true), closeAva: () => setAvaOpen(false), notifications, search };
+  // The page-scoped Ava: the screen's desktop page, its voice line and its quick actions ride into the pod (avaContext.js).
+  const [avaDetail, setAvaDetail] = useState(null);
+  const openAva = useCallback((extra = {}) => { setAvaDetail({ ...(avaDetailFor(window.location.pathname, base) || {}), ...extra }); setAvaOpen(true); }, [base]);
+  const ctx = { base, unread: notifications?.unread || 0, openAva, closeAva: () => setAvaOpen(false), notifications, search };
 
   return (
     <ShellContext.Provider value={ctx}>
@@ -109,13 +113,18 @@ export default function MobileShell({ base = '/m', renderAva, showAva = true, no
         <Outlet />
         <TabBar base={base} />
         {showAva && (
-          <button type="button" className="oi-m-ava" onClick={() => setAvaOpen(true)} aria-label="Ask Ava">
+          <button type="button" className="oi-m-ava" onClick={() => openAva()} aria-label="Ask Ava">
             <span aria-hidden="true">✦</span>
           </button>
         )}
         {showAva && (
-          <BottomSheet open={avaOpen} onClose={() => setAvaOpen(false)} title="Ava" full flush>
-            <div className="oi-m-ava-host">{avaOpen && renderAva ? renderAva({ onClose: () => setAvaOpen(false) }) : null}</div>
+          <BottomSheet open={avaOpen} onClose={() => setAvaOpen(false)} title={avaDetail?.title ? `Ava, ${avaDetail.title}` : 'Ava'} full flush>
+            {avaDetail?.quickActions?.length > 0 && (
+              <div className="oi-m-ava-quick" role="group" aria-label="Quick questions">
+                {avaDetail.quickActions.map((q) => <button key={q} type="button" className="oi-m-filter" onClick={() => setAvaDetail((d) => ({ ...d, seedQuestion: q, seededAt: Date.now() }))}>{q}</button>)}
+              </div>
+            )}
+            <div className="oi-m-ava-host">{avaOpen && renderAva ? renderAva({ onClose: () => setAvaOpen(false), openDetail: avaDetail }) : null}</div>
           </BottomSheet>
         )}
         {banner && <Banner item={banner} onDone={onBannerDone} />}

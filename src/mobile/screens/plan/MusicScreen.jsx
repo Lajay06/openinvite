@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Music2, Check, X, Plus, Share2, Settings2, ExternalLink, Store, Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Screen from '../../shell/Screen';
+import { useConsiderations } from '../../features/ConsiderationsSheet';
+
 import { FilterPills, RowGroup, EmptyState, ErrorState, SkeletonRows, StatusPill, PillButton, SmartImage, PanelCard, BottomSheet, TextField, TextAreaField, Switch } from '../../ui';
 import Segments, { useSegment } from '../../ui/Segments';
 import { useConfirm } from '../../ui/ConfirmSheet';
@@ -33,6 +35,7 @@ export default function MusicScreen({ tracks = [], requests = [], settings = {},
   const [filter, setFilter] = useState('all');
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const considerations = useConsiderations('music');
   const [link, setLink] = useState(playlistUrl || '');
   const [notes, setNotes] = useState(settings.notes || '');
   const notesTimer = React.useRef(null);
@@ -118,9 +121,12 @@ export default function MusicScreen({ tracks = [], requests = [], settings = {},
             </section>
           </>
         ) : segment === 'notes' ? (
+          <>
+          {considerations.row}
           <div className="oi-m-card">
             <TextAreaField label="Notes" value={notes} onChange={(e) => queueNotes(e.target.value)} rows={6} placeholder="Anything else about your music plans: must-plays, timing notes, vendor coordination" />
           </div>
+          </>
         ) : (
           <PanelCard tone="neutral" label="Music vendors" title="Your DJ, band and musicians" body="Everyone in the music category of My vendors, with their status and contact." action="Open My vendors" onClick={() => onOpenVendors('music')}><Store size={18} style={{ opacity: 0.6 }} /></PanelCard>
         )}
@@ -129,6 +135,7 @@ export default function MusicScreen({ tracks = [], requests = [], settings = {},
       <SettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} settings={settings} onSave={onSettings} />
       <ShareSheet open={shareOpen} onClose={() => setShareOpen(false)} url={shareUrl} />
       {confirmEl}
+      {considerations.sheet}
     </Screen>
   );
 }

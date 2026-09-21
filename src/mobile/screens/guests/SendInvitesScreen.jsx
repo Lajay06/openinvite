@@ -46,9 +46,9 @@ function replaceMergeTags(str, guestName, coupleName, dateStr) {
  * invitations, reminder_sent_at for reminders). Ultra only, as on desktop.
  *
  * props: guests, wedding, user, initialSelectedIds, restrictEventIds,
- * initialType, isPro, onDone, back, loading, error, onRetry
+ * initialType, canSend, onDone, back, loading, error, onRetry
  */
-export default function SendInvitesScreen({ guests = [], wedding, user, initialSelectedIds = [], restrictEventIds = null, initialType = 'invite', isPro = false, onSent, back, loading, error, onRetry }) {
+export default function SendInvitesScreen({ guests = [], wedding, user, initialSelectedIds = [], restrictEventIds = null, initialType = 'invite', canSend = true, onSent, back, loading, error, onRetry }) {
   const api = useApi();
   const [step, setStep] = useState(1);
   const [type, setType] = useState(initialType);
@@ -172,7 +172,7 @@ export default function SendInvitesScreen({ guests = [], wedding, user, initialS
     } catch (e) { toast.error(e?.message || 'Failed to send the test', { id: tid }); } finally { setSendingTest(false); }
   };
 
-  if (!isPro) {
+  if (!canSend) {
     return (
       <Screen title="Send invites" back={back}>
         <div className="oi-m-stack oi-m-stack--24">

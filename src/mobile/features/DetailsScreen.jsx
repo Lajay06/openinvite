@@ -9,6 +9,7 @@ import { canAccessUltra } from '@/lib/trialStatus';
 import { useEntity } from '../data/plan';
 import { VENDOR_STATUS_LABEL, VENDOR_STATUS_TONE } from '../lib/format';
 import { StatusPill } from '../ui';
+import { useConsiderations } from './ConsiderationsSheet';
 
 /**
  * A form over WeddingDetails sub-objects, from a DETAILS schema. Fields
@@ -29,6 +30,8 @@ import { StatusPill } from '../ui';
  * props: schema, details, onSave, loading, error, onRetry, back, user
  */
 export default function DetailsScreen({ schema, details, onSave, loading, error, onRetry, back, subtitle, user, onOpenVendors }) {
+  // The desktop's Considerations tab, on the pages that have one (schema.considerations names PageConsiderations' key).
+  const considerations = useConsiderations(schema.considerations || 'none');
   const [data, setData] = useState(details || {});
   const [status, setStatus] = useState('idle');
   const timer = useRef(null);
@@ -118,7 +121,9 @@ export default function DetailsScreen({ schema, details, onSave, loading, error,
             </section>
           ))
         )}
+        {!loading && !error && schema.considerations && considerations.row}
       </div>
+      {schema.considerations && considerations.sheet}
       {listSheet && (
         <FormSheet
           open

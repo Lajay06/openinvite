@@ -1,8 +1,14 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { daysUntilWedding } from '@/lib/weddingCountdown';
-import { isAttending, isDeclined, isAwaitingPrimary } from '@/lib/guestRsvpTally';
+import { isAttending, isDeclined, isAwaitingPrimary, guestCounts } from '@/lib/guestRsvpTally';
+import { resolveDayState } from '@/lib/dayState';
+import { buildAvaPrompt, unwrapLlmReply } from '@/lib/avaRequest';
+import { buildWeddingContext } from '@/lib/avaContext';
+import { TRACKING_REQUEST, validateTracking, authoredTracking, parseTrackingBlocks } from '@/lib/avaTracking';
+import { countdownLabel } from '@/lib/weddingCountdown';
+import { formatSourceList } from '@/lib/dashboardSources';
 import HomeScreen from './HomeScreen';
 import { ShellContext } from '../../shell/MobileShell';
 import { usePlanData } from '../../data/plan';
@@ -16,7 +22,8 @@ import { summariseBudget } from '../plan/BudgetScreen';
 
 /** Home, from the same loaders the Plan hub uses, plus the notification feed for "Latest". */
 export default function HomeContainer() {
-  const { user } = useApi();
+  const api = useApi();
+  const { user } = api;
   const symbol = useSymbol();
   const taskWrites = useTaskWrites();
   const navigate = useNavigate();
@@ -44,7 +51,43 @@ export default function HomeContainer() {
   const budgetSum = useMemo(() => summariseBudget(d.budget || [], details?.budget || null), [d.budget, details?.budget]);
   const openTasks = (d.tasks || []).filter((t) => !t.completed).sort((a, b) => (a.due_date || '9999').localeCompare(b.due_date || '9999'));
   const keepPlanning = useMemo(() => leastTouched(d, 6).map((f) => ({ key: f.key, label: f.label, line: f.stat(d, symbol) })), [d, symbol]);
-  const briefing = notifications?.items?.find((i) => i.type === 'briefing')?.body || (daysToGo != null ? `${openTasks.length} open task${openTasks.length === 1 ? '' : 's'} and ${rsvp.awaiting} guests still to reply.` : null);
+  // DailyUpdate.jsx's day state: the This week lines and the badge, from the same stores.
+  const failed = d.failed || [];
+  const day = useMemo(() => (plan.loading ? null : resolveDayState({ tasks: d.tasks || [], schedule: d.schedule || [], guests: d.guests || [], budget: d.budget || [], vendors: d.vendors || [], unseen: failed, daysOut: daysToGo })), [plan.loading, d, failed, daysToGo]);
+  const thisWeek = useMemo(() => (day?.lines || []).map((l) => ({ text: l.text, to: { '/TodoList': `${base}/plan/checklist`, '/Guests': `${base}/guests`, '/Schedule': `${base}/plan/schedule`, '/Budget': `${base}/plan/budget`, '/Vendors': `${base}/plan/vendors` }[l.to] || `${base}/plan`, label: { '/TodoList': 'Open to do', '/Guests': 'Open guest list', '/Schedule': 'Open schedule', '/Budget': 'Open budget', '/Vendors': 'Open vendors' }[l.to] || 'Open' })), [day, base]);
+  // DailyUpdate.jsx's six numbers: replies per invitation, attendance per person (guestCounts).
+  const numbers = useMemo(() => {
+    const c = guestCounts(d.guests || []);
+    const totalBudget = (d.budget || []).reduce((n, b) => n + (b.budgeted_amount || 0), 0);
+    const spent = (d.budget || []).reduce((n, b) => n + (b.actual_amount || 0), 0);
+    return [
+      ['Guests coming', String(c.people.attending)], ['People invited', String(c.people.total)], ['Invitations pending', String(c.invitations.pending)],
+      ['Budget used', `${totalBudget ? Math.round((spent / totalBudget) * 100) : 0}%`], ['Events planned', String((d.schedule || []).length)], ['Vendors booked', `${(d.vendors || []).filter((v) => v.status === 'booked').length}/${(d.vendors || []).length}`],
+    ];
+  }, [d]);
+  // Ava's briefing, as DailyUpdate.jsx writes it: the model reads the wedding
+  // (buildAvaPrompt + TRACKING_REQUEST), an authored paragraph stands in when
+  // there is nothing to read or the reply fails validateTracking.
+  const [briefing, setBriefing] = useState(null);
+  useEffect(() => {
+    if (plan.loading || !plan.data) return undefined;
+    let alive = true;
+    const data = plan.data;
+    const c = guestCounts(data.guests || []);
+    const facts = { countdown: countdownLabel(daysUntilWedding(data.details?.weddingDate)), invitationsPending: c.invitations.pending, invitations: c.invitations.total, peopleAttending: c.people.attending, overdue: resolveDayState({ tasks: data.tasks || [] }).counts.overdue, unseen: data.failed || [] };
+    const nothingToRead = !facts.invitations && !(data.budget || []).length && !(data.vendors || []).length && !(data.schedule || []).length && !(data.tasks || []).length;
+    const done = (text) => { if (alive) setBriefing(parseTrackingBlocks(text)); };
+    if (nothingToRead) { done(authoredTracking(facts)); return undefined; }
+    (async () => {
+      try {
+        const weddingContext = api.mode === 'preview' ? 'preview' : await buildWeddingContext();
+        if (!weddingContext) throw new Error('no context');
+        const reply = unwrapLlmReply(await api.llm(buildAvaPrompt({ weddingContext, page: '/DailyUpdate', mirror: [], userText: TRACKING_REQUEST }), { model: 'claude_sonnet_4_6' }), '');
+        done(validateTracking(reply).ok ? reply.trim() : authoredTracking(facts));
+      } catch { done(authoredTracking(facts)); }
+    })();
+    return () => { alive = false; };
+  }, [plan.loading, plan.data, api]);
   const latest = (notifications?.items || []).filter((i) => i.type !== 'briefing').slice(0, 3);
 
   const openFeature = (key) => {
@@ -81,6 +124,10 @@ export default function HomeContainer() {
       payments={budgetSum.duePayments}
       keepPlanning={keepPlanning}
       briefing={briefing}
+      badge={day?.badge || null}
+      thisWeek={thisWeek}
+      numbers={numbers}
+      failedSources={failed.length ? formatSourceList(failed) : ''}
       latest={latest}
       onOpenGuests={() => navigate(`${base}/guests?filter=awaiting`)}
       onOpenBudget={() => navigate(`${base}/plan/budget`)}
@@ -92,6 +139,7 @@ export default function HomeContainer() {
       onSearch={() => navigate(`${base}/search`)}
       onOpenLatest={(it) => { notifications?.markRead?.(it); navigate(it.link); }}
       onOpenNotifications={() => navigate(`${base}/notifications`)}
+      onOpenLink={(to) => navigate(to)}
       loading={plan.loading}
       error={plan.error}
       onRetry={plan.reload}

@@ -63,8 +63,8 @@ function MobileAppInner() {
   };
   // Native first launch: the welcome screens once, tracked locally.
   useEffect(() => { if (isNative()) prefGet(WELCOME_PREF).then((v) => { if (!v) navigate('/m/welcome', { replace: true }); }); }, [navigate]);
-  const renderAva = ({ onClose }) => (
-    <AvaChatPod onClose={onClose} openDetail={null} messages={messages} setMessages={setMessages} dismissed={dismissed} setDismissed={setDismissed} onClear={() => { setMessages([]); setDismissed(new Set()); }} />
+  const renderAva = ({ onClose, openDetail }) => (
+    <AvaChatPod onClose={onClose} openDetail={openDetail || null} messages={messages} setMessages={setMessages} dismissed={dismissed} setDismissed={setDismissed} onClear={() => { setMessages([]); setDismissed(new Set()); }} />
   );
   if (showPriming && !window.location.pathname.endsWith('/priming')) return <Navigate to={`${MOBILE_BASE}/priming`} replace />;
   return (

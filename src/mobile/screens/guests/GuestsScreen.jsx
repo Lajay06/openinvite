@@ -6,6 +6,8 @@ import { imageUrl } from '../../images';
 import { isAttending, isDeclined, isPending, isAwaitingPrimary, tallyAttendees } from '@/lib/guestRsvpTally';
 import { resolveAttendees } from '@/lib/attendees';
 import { prefGet, prefSet } from '../../native';
+import { useConsiderations } from '../../features/ConsiderationsSheet';
+
 import { getGuestEventResponse } from '@/lib/weddingEvents';
 import { initials, RSVP_LABEL, RSVP_TONE, GUEST_CATEGORY_LABEL } from '../../lib/format';
 
@@ -93,6 +95,7 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
   const dismissCase = (g) => setDismissedCase((prev) => { const next = new Set(prev); next.add(g.id); prefSet(CASE_DISMISS_KEY, JSON.stringify([...next])); return next; });
   const quickAdd = async () => { const name = quick.trim(); if (!name || !onQuickAdd) return; setQuickBusy(true); try { await onQuickAdd(name); setQuick(''); } finally { setQuickBusy(false); } };
   const selecting = !!selected;
+  const considerations = useConsiderations('guests');
 
   const filters = useMemo(() => {
     const counts = { all: guests.length, attending: applyGuestFilter(guests, 'attending').length, awaiting: applyGuestFilter(guests, 'awaiting').length, declined: applyGuestFilter(guests, 'declined').length, not_invited: applyGuestFilter(guests, 'not_invited').length };
@@ -216,8 +219,10 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
           {!loading && !error && !selecting && (
             <button type="button" className="oi-m-pill oi-m-pill--secondary oi-m-pill--block" onClick={onAdd}>Add a guest with every detail</button>
           )}
+          {!loading && !error && !selecting && considerations.row}
         </div>
       </Screen>
+      {considerations.sheet}
       <SearchScreen open={searchOpen} onClose={() => { setSearchOpen(false); setQ(''); }} value={q} onChange={setQ} placeholder="Search by name, email or phone">
         {q.trim() === '' ? (
           <p className="oi-m-meta" style={{ padding: 16 }}>Start typing to search your guests.</p>

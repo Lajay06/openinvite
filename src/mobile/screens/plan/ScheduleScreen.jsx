@@ -11,6 +11,8 @@ import { buildScheduleEvents, groupEventsByDay, WHEN_LABEL, WHEN_RANK, ROW_HOME,
 import { sortScheduleItems } from '@/lib/scheduleOrder';
 import { buildIcsCalendar } from '@/lib/ics';
 import { exportText } from '../../native';
+import { useConsiderations } from '../../features/ConsiderationsSheet';
+
 
 const SEGMENTS = [{ key: 'timeline', label: 'Timeline' }, { key: 'events', label: 'My events' }, { key: 'runsheet', label: 'Run sheet' }, { key: 'share', label: 'Calendar' }];
 const TYPE_ORDER = Object.keys(WHEN_RANK).sort((a, b) => WHEN_RANK[a] - WHEN_RANK[b]);
@@ -59,6 +61,7 @@ export default function ScheduleScreen({ items = [], sources = {}, feedUrl, feed
   const [segment, setSegment] = useSegment(SEGMENTS);
   const [sheet, setSheet] = useState(openAdd ? { item: null } : null);
   const [confirm, confirmEl] = useConfirm();
+  const considerations = useConsiderations('schedule');
   const [type, setType] = useState('all');
   const [search, setSearch] = useState('');
   const [locationFilter, setLocationFilter] = useState('all');
@@ -138,6 +141,7 @@ export default function ScheduleScreen({ items = [], sources = {}, feedUrl, feed
               <GroupedList groups={groupItems(items).map((g) => ({ key: g.key, title: g.title, rows: g.items.map((it) => <Row key={it.id} icon={Calendar} tile="neutral" label={it.event_name} sub={[it.start_time ? `${timeLabel(it.start_time)}${it.end_time ? ` to ${timeLabel(it.end_time)}` : ''}` : '', it.location, CATEGORY_LABEL[it.category]].filter(Boolean).join(', ')} wrap onClick={() => setSheet({ item: it })} />) }))} />
             ))}
 
+            {segment === 'timeline' && !loading && !error && considerations.row}
             {segment === 'runsheet' && <RunSheet items={items} onEdit={(it) => setSheet({ item: it })} onDelete={remove} onReorder={onReorder} onAdd={(ev) => setSheet({ item: null, preset: { category: ev.key, event_date: ev.date } })} />}
 
             {segment === 'share' && (
@@ -174,6 +178,7 @@ export default function ScheduleScreen({ items = [], sources = {}, feedUrl, feed
           onDelete={sheet.item ? () => remove(sheet.item) : undefined} deleteLabel="Delete" saveLabel={sheet.item ? 'Save' : 'Add event'} />
       )}
       {confirmEl}
+      {considerations.sheet}
     </Screen>
   );
 }
