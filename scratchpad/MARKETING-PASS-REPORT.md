@@ -378,6 +378,29 @@ WeddingDetails row the way the feed now does; or a hosted Base44
 function with `asServiceRole` (notes, "hosted functions"), which is new
 infrastructure. Not a marketing-lane fix; logged for the product lane.
 
+## Flake to watch — `test:ci` FAIL inside `npm run verify`, unreproducible (2026-09-21)
+
+Logged so it is chased next time rather than rerun past.
+
+- **When:** shipping PR #820 (page-anchor parity), first `./scripts/ship.sh`
+  run, 2026-09-21 ~00:10Z, on branch `fix/page-anchor-parity` at `43ee7abd`.
+- **What:** `npm run verify` reported `npm run test:ci  FAIL`, 25/26; the
+  other 25 steps passed. verify-all.mjs does not echo the step's transcript,
+  so the failing assertion was never seen.
+- **Immediately after:** `npm run test:ci` alone → 3216/3216. `npm run
+  verify` alone → 26/26. Second `./scripts/ship.sh` → verify passed, PR
+  opened. GitHub Build & test → pass. Three consecutive green runs on the
+  identical tree.
+- **Context that may matter:** in the minutes before the failing run, two
+  `vite preview` servers (ports 4212/4213) and a detached git worktree of an
+  earlier commit had just been torn down, and a temporary untracked script
+  under `scripts/` had just been deleted. A guard that reads `dist/` or
+  scans `scripts/` while the tree is settling is the first suspect; a
+  timing-sensitive check is the second.
+- **Rule:** if it appears again, capture the `test:ci` transcript
+  (`npm run test:ci > log 2>&1` inside the same verify run) and chase the
+  named check. Do not rerun past it a second time.
+
 ## Pass closed (2026-09-20)
 
 Box M1–M6 shipped, the three closing items shipped, the calendar feed
