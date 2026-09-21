@@ -129,7 +129,8 @@ const errors = [];
 page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
 let failures = 0;
 
-for (const [route, name, action] of SHOTS) {
+const ONLY = process.env.ONLY ? new Set(process.env.ONLY.split(',')) : null;
+for (const [route, name, action] of SHOTS.filter(([, n]) => !ONLY || ONLY.has(n))) {
   await page.goto(`${BASE}${route}`, { waitUntil: 'networkidle', timeout: 30000 }).catch((e) => errors.push(`goto ${route}: ${e.message}`));
   await page.waitForTimeout(700);
   if (action === 'ava') { await page.click('button[aria-label="Ask Ava"]'); await page.waitForTimeout(500); }
@@ -155,5 +156,5 @@ for (const [route, name, action] of SHOTS) {
 }
 for (const e of [...new Set(errors)]) console.log('  ' + e);
 await browser.close();
-console.log(failures ? `\n  ${failures} screen(s) failed` : `\n  ${SHOTS.length} screens captured to ${DIR}/`);
+console.log(failures ? `\n  ${failures} screen(s) failed` : `\n  ${ONLY ? ONLY.size : SHOTS.length} screens captured to ${DIR}/`);
 process.exit(failures ? 1 : 0);

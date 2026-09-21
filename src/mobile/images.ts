@@ -10,7 +10,7 @@
  * src/mobile/. /m/preview/images renders this file as a gallery.
  *
  * ONE LIBRARY. Every id here is one of the 73 photos in the Cloudinary
- * folder `app` (cloud dsr84xknv), listed through the Admin API on
+ * folder `app` (cloud dsr84xknv), plus the airport photo added afterwards, listed through the Admin API on
  * 2026-09-21 and viewed one by one before it was assigned. Each photo is
  * used once across the whole app, so no photo repeats on a screen; the
  * `screen` field is what /m/preview/images checks. Crops are chosen so no
@@ -19,8 +19,9 @@
  * here too, so no Cloudinary id lives anywhere else in src/mobile/.
  *
  * `todo: true` marks a slot that has no good photo; the gallery shows the
- * marker and the slot draws a color panel. One is todo after goal 5
- * (placeAirport: the library has no airport exterior).
+ * marker and the slot draws a color panel. None is todo now: the owner
+ * added an airport photo (at the cloud's root, not in `app/`) for
+ * placeAirport after goal 5.
  *
  * ONCE, APP-WIDE (goal 5). A public id may appear in one slot only, and
  * `duplicateIds()` is empty by construction: /m/preview/images throws
@@ -121,7 +122,7 @@ export const IMAGES = {
   placeReception: { id: 'C17E98A9-5E5C-410A-B3F5-46098E2DFD6C_buezni', alt: 'A shared table from above', usedIn: 'Demo: the reception venue photo on Event details', screen: 'event-details', size: { w: 358, h: 200 }, ratio: '16/9' },
   placeStay1: { id: 'hf_20260904_090923_955b7356-c7d6-4f54-a3fd-5aae76c514ed_jq9izj', alt: 'A whitewashed hotel with blue railings', usedIn: 'Demo: guest suite accommodation, place 1 (also the welcome drinks venue)', screen: 'suite-accommodation', size: { w: 358, h: 200 }, ratio: '16/9', focal: '50% 45%' },
   placeStay2: { id: 'DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14166_tqzysj', alt: 'A bright hotel suite', usedIn: 'Demo: guest suite accommodation, place 2', screen: 'suite-accommodation', size: { w: 358, h: 200 }, ratio: '16/9' },
-  placeAirport: { id: '', alt: 'A small regional airport', usedIn: 'Demo: guest suite transport, the airport (the library has no airport exterior)', screen: 'suite-transport', size: { w: 358, h: 200 }, ratio: '16/9', todo: true, tone: 'neutral' },
+  placeAirport: { id: 'hf_20260921_234435_574beb4c-4fd7-4b47-948d-35721b323d3d_nxxjhz', alt: 'A couple walking toward the gates with suitcases', usedIn: 'Demo: guest suite transport, the airport', screen: 'suite-transport', size: { w: 358, h: 200 }, ratio: '16/9', focal: '50% 60%' },
   placePick1: { id: 'hf_20260917_170201_93bb15ab-fa11-4849-b922-4eca471c3d50_cwapbb', alt: 'A table at a seaside restaurant', usedIn: 'Demo: experience guide, coffee pick', screen: 'experience', size: { w: 358, h: 200 }, ratio: '16/9', focal: '50% 40%' },
   placePick2: { id: 'pin_edinburgh_couple', alt: 'A windy walk on the headland', usedIn: 'Demo: experience guide, outdoors pick', screen: 'experience', size: { w: 358, h: 200 }, ratio: '16/9', focal: '50% 40%' },
   placeMarket1: { id: 'hf_20260904_090213_dcaa917a-e117-4610-8618-a399139999a4_jv74kl', alt: 'A black and white portrait in a doorway', usedIn: 'Demo: marketplace result 1, the photographer', screen: 'marketplace', size: { w: 72, h: 72 }, ratio: '1/1', focal: '50% 35%' },
