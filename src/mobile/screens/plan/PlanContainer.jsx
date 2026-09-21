@@ -7,8 +7,9 @@ import { usePlanData, useEntity, useWeddingDetails } from '../../data/plan';
 import { useTasks, useBudget, useGuests, useTaskWrites, useBudgetWrites } from '../../data/wedding';
 import { useApi, useSymbol } from '../../data/api';
 import useLoad from '../../data/useLoad';
-import { hapticLight } from '../../native';
-import { openDesktop } from '../../lib/links';
+import { hapticLight, shareLink, openExternal } from '../../native';
+import { openDesktop, siteUrlFor, siteOrigin } from '../../lib/links';
+import { resolveRecipients } from '@/lib/questionnaireRecipients';
 import { featureByKey } from '../../features/registry';
 import { DETAILS, ENTITIES } from '../../features/schemas';
 import DetailsScreen from '../../features/DetailsScreen';
@@ -17,8 +18,6 @@ import PlanHubScreen, { planProgress } from './PlanHubScreen';
 import EventDetailsScreen, { InvitePromptSheet } from './EventDetailsScreen';
 import ScheduleScreen from './ScheduleScreen';
 import SendInvitesScreen from '../guests/SendInvitesScreen';
-import { useGuests as useGuestList } from '../../data/wedding';
-import { openExternal } from '../../native';
 import ChecklistScreen from './ChecklistScreen';
 import BudgetScreen, { BudgetCategoryScreen } from './BudgetScreen';
 import MessagesScreen, { ThreadScreen } from './MessagesScreen';
@@ -149,7 +148,7 @@ function SendInvitesContainer({ back }) {
   const api = useApi();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const guests = useGuestList();
+  const guests = useGuests();
   const wd = useWeddingDetails();
   const ids = (params.get('ids') || '').split(',').filter(Boolean);
   const events = (params.get('events') || '').split(',').filter(Boolean);
@@ -280,21 +279,55 @@ function SeatingContainer({ back }) {
   return <SeatingScreen tables={tables.data || []} guests={guests.data || []} onMove={move} loading={tables.loading || guests.loading} error={tables.error || guests.error} onRetry={() => { tables.reload(); guests.reload(); }} back={back} onDesktop={() => openDesktop(navigate, '/Seating')} />;
 }
 
-/* ── Polls: WeddingDetails.polls, as Polls.jsx persists them ─────────── */
+/* ── Polls and games: WeddingDetails.polls as Polls.jsx persists them; Questionnaire records ── */
 
 function PollsContainer({ back }) {
   const api = useApi();
   const wd = useWeddingDetails();
   const votes = useLoad(() => api.list('PollVote', '-created_date').catch(() => []), []);
+  const comments = useLoad(() => api.list('PollComment', '-created_date').then((l) => l.filter((c) => !c.is_test)).catch(() => []), []);
+  const games = useEntity('Questionnaire', '-created_date');
+  const guests = useGuests();
+  const responses = useLoad(() => api.json('/api/questionnaire-responses-for-owner', { method: 'POST' }).then((d) => d.responses || []).catch(() => []), []);
   const polls = wd.details?.polls || [];
+  const siteUrl = siteUrlFor(wd.details);
   const persist = async (next) => { await wd.save('polls', next, false); };
-  const create = async ({ title, options }) => {
-    const poll = { id: genId(), title, category: 'custom', emoji: '', options: options.map((label) => ({ id: genId(), label, votes: 0 })), allowComments: true, comments: [], isActive: true, createdAt: new Date().toISOString(), avaInsight: null, expiresAt: null };
+  const create = async ({ title, options, allowComments, category }) => {
+    const poll = { id: genId(), title, category: category || 'Custom', emoji: '', options: options.map((o) => ({ id: genId(), label: o.label || o, votes: 0 })), allowComments: allowComments !== false, comments: [], isActive: true, createdAt: new Date().toISOString(), avaInsight: null, expiresAt: null };
     await persist([...polls, poll]);
     toast.success('Poll created');
   };
+  const update = async (p, { title, options, allowComments }) => {
+    // Existing option ids are kept so votes stay attached; new options get ids.
+    await persist(polls.map((x) => (x.id === p.id ? { ...x, title, allowComments, options: options.map((o) => ({ id: String(o.id).startsWith('new-') ? genId() : o.id, label: o.label, votes: o.votes || 0 })) } : x)));
+    toast.success('Poll saved');
+  };
   const end = async (p) => { await persist(polls.map((x) => (x.id === p.id ? { ...x, isActive: false } : x))); toast.success('Poll ended'); };
-  return <PollsScreen polls={polls} votes={votes.data || []} onCreate={create} onEnd={end} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} />;
+  const reopen = async (p) => { await persist(polls.map((x) => (x.id === p.id ? { ...x, isActive: true } : x))); toast.success('Poll reopened'); };
+  const remove = async (p) => { await persist(polls.filter((x) => x.id !== p.id)); toast.success('Poll deleted'); };
+  const share = async (p) => {
+    const url = siteUrl ? `${siteUrl}/polls` : '';
+    if (!url) { toast.error('Your site has no address yet, so there is no link to share.'); return; }
+    const r = await shareLink({ title: p.title, text: 'Have your say on our wedding site.', url });
+    if (r === 'copied') toast.success('Link copied'); if (r === 'failed') toast.error('Could not share the link.');
+  };
+  const createGame = async (data) => { await games.create(data); toast.success('Game created'); };
+  const toggleGame = async (g) => { await games.update(g.id, { is_active: g.is_active === false }); toast.success(g.is_active === false ? 'Game reopened' : 'Game closed'); };
+  const deleteGame = async (g) => { await games.remove(g.id); toast.success('Game deleted'); };
+  const copyGameLinks = async (g) => {
+    const recipients = resolveRecipients(g, guests.data || []);
+    if (!recipients.length) { toast.error('No guests match this game yet.'); return; }
+    const tid = toast.loading('Getting the links');
+    try {
+      const map = await api.guestLinks(recipients.map((x) => x.id));
+      const base = `${siteOrigin()}/games/`;
+      const lines = recipients.filter((x) => map[x.id]?.token).map((x) => `${x.name}: ${base}${map[x.id].token}/${g.id}`);
+      if (!lines.length) throw new Error('Could not generate game links');
+      await navigator.clipboard.writeText(lines.join('\n'));
+      toast.success(`${lines.length} game link${lines.length === 1 ? '' : 's'} copied`, { id: tid });
+    } catch (e) { toast.error(e?.message || 'Could not get the links', { id: tid }); }
+  };
+  return <PollsScreen polls={polls} votes={votes.data || []} comments={comments.data || []} games={games.data || []} responses={responses.data || []} guests={guests.data || []} siteUrl={siteUrl} onCreate={create} onUpdate={update} onEnd={end} onReopen={reopen} onDelete={remove} onShare={share} onCreateGame={createGame} onToggleGame={toggleGame} onDeleteGame={deleteGame} onCopyGameLinks={copyGameLinks} loading={wd.loading} error={wd.error} onRetry={() => { wd.reload(); votes.reload(); games.reload(); responses.reload(); }} back={back} onRefresh={async () => { wd.reload(); votes.reload(); comments.reload(); games.reload(); responses.reload(); }} />;
 }
 
 /* ── Music ───────────────────────────────────────────────────────────── */
