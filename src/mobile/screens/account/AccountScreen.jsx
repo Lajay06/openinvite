@@ -9,9 +9,9 @@ import { initials } from '../../lib/format';
  * rows. `showPurchases` is false inside the native shell, so no upgrade,
  * checkout or billing-portal call to action renders there.
  */
-export default function AccountScreen({ name, email, coupleName, weddingDate, photo, planLabel, planNote, trialDaysLeft, showPurchases, onUpgrade, onDetails, onEventDetails, onCollaborators, onNotifications, onNotificationSettings, onHelp, onContact, onLogout, loading, appLock = null }) {
+export default function AccountScreen({ name, email, coupleName, weddingDate, photo, planLabel, planNote, trialDaysLeft, showPurchases, onUpgrade, onDetails, onEventDetails, onCollaborators, onNotifications, onNotificationSettings, onHelp, onContact, onLogout, loading, appLock = null, subtitle }) {
   return (
-    <Screen title="Account" bell>
+    <Screen title="Account" subtitle={subtitle} bell>
       <div className="oi-m-stack oi-m-stack--24">
         {loading ? <Skeleton kind="block" style={{ height: 200 }} /> : (
           <div className="oi-m-card oi-m-card--flush">

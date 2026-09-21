@@ -103,6 +103,7 @@ const Home = lazyWithReload(() => import('./pages/Home'));
 // desktop dashboard yet.
 const MobileApp = lazyWithReload(() => import('./mobile/MobileApp'));
 import { isNative as isNativeShell } from './mobile/native';
+import { isDemoBuild } from './mobile/demo';
 const MobilePreviewApp = lazyWithReload(() => import('./mobile/MobilePreviewApp'));
 const MobileFirstRun = lazyWithReload(() => import('./mobile/MobileFirstRun'));
 const FAQ = lazyWithReload(() => import('./pages/FAQ'));
@@ -204,7 +205,7 @@ const AuthenticatedApp = () => {
   // desktop surfaces, so on a phone in the shell they go to the mobile app
   // instead. On the web nothing changes. See MOBILE_APP.md.
   if (isNativeShell() && (location.pathname === '/' || location.pathname === '/DailyUpdate')) {
-    return <Navigate to="/m" replace />;
+    return <Navigate to={isDemoBuild ? '/m/preview' : '/m'} replace />;
   }
 
   // ── Public pages — no auth check, render immediately ─────────────────────────
@@ -267,8 +268,10 @@ const AuthenticatedApp = () => {
       <Route path="/register" element={<Register />} />
       {/* Dev-only: the mobile screens rendered from fixtures, no sign-in
           needed. MobilePreviewApp itself redirects to /m outside DEV, and
-          the route is not registered at all in a production build. */}
-      {import.meta.env.DEV && <Route path="/m/preview/*" element={<MobilePreviewApp />} />}
+          the route is not registered at all in a production build. The one
+          exception is the demo build (VITE_MOBILE_DEMO=1, src/mobile/demo.ts),
+          which ships these routes and makes no network calls. */}
+      {(import.meta.env.DEV || isDemoBuild) && <Route path="/m/preview/*" element={<MobilePreviewApp />} />}
       {/* First run for the mobile app: reachable signed out. The web login page is untouched. */}
       <Route path="/m/welcome" element={<MobileFirstRun screen="welcome" />} />
       <Route path="/m/login" element={<MobileFirstRun screen="login" />} />

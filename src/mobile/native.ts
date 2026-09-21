@@ -239,7 +239,10 @@ export async function registerBackButton(onBack: () => boolean): Promise<() => v
  * This installs, natively only, a rewrite of any same-origin `/api/` request
  * to PROD_ORIGIN, for both fetch (the /api/*.js endpoints) and
  * XMLHttpRequest (the SDK's axios). It runs at module load, which App.jsx's
- * static import puts before AuthProvider's first `auth.me()`.
+ * static // Demo builds refuse network calls; the guard must be in place before the
+// API rewrite below and before AuthProvider. No-op unless VITE_MOBILE_DEMO=1.
+import './demo';
+import puts before AuthProvider's first `auth.me()`.
  *
  * What it does NOT do: make the server accept the request. api/_lib/security.js
  * reflects Access-Control-Allow-Origin only for the production hostnames, so

@@ -253,7 +253,7 @@ Every icon-only button carries an `aria-label` (header actions, the bell, item-c
    - **Xcode 27**: `Simulator.app` was renamed `DeviceHub.app` and moved to `Xcode.app/Contents/Applications/`. `npx cap run ios` builds fine and then fails at "Deploying" with "Simulator.app does not exist"; that is a Capacitor CLI path bug, not a build failure. The simctl steps above do not need the window at all. To get the window: `open -a /Applications/Xcode.app/Contents/Applications/DeviceHub.app`.
    - `xcrun simctl openurl booted "openinvite://..."` puts up an "Open in Openinvite?" alert on iOS 27 that has to be tapped in the window.
    - Local builds have no `.env`, so `VITE_BASE44_APP_ID` is unset and the SDK warns at build time. Vercel supplies it in CI. For sign-in to work in a local simulator build, `vercel env pull` first.
-4. A real iPhone: sign in with an Apple ID under Xcode > Settings > Accounts, set the team on the App target under Signing & Capabilities, plug the phone in, trust the computer, select it as the destination and Run. For a personal team the app expires after seven days; the Apple Developer Program lifts that and is needed for TestFlight, push and Face ID entitlements.
+4. A real iPhone: sign in with an Apple ID under Xcode > Settings > Accounts, set the team on the App target under Signing & Capabilities, plug the phone in, trust the computer, select it as the destination and Run. For a personal team the app expires after seven days; the Apple Developer Program lifts that and is needed for TestFlight and push. Face ID is not gated: `NSFaceIDUsageDescription` in `Info.plist` is all the biometric prompt needs, and a personal team signs it.
 5. Deep links on the simulator: `xcrun simctl openurl booted "openinvite://m/plan/budget"`.
 
 ### Manual steps for the owner
@@ -352,6 +352,27 @@ Needs Xcode (the full app, not the command line tools). Capacitor 8 uses Swift
 Package Manager, so CocoaPods is not required. Verified on Xcode 27.0; the
 command-line route and the Xcode 27 quirks are under "How to run on the
 simulator and on a real iPhone" above.
+
+**Demo build, for showing the app without an account**
+
+```
+npm run mobile:demo         # VITE_MOBILE_DEMO=1 vite build, then npx cap sync
+```
+
+Then build and run the iOS project as above. A demo build ships the
+`/m/preview` routes (a normal production bundle leaves them out), starts the
+native app at `/m/preview` on the fixtures, shows "Demo data" under the
+Account title, and makes no network calls: `src/mobile/demo.ts` refuses every
+fetch, XMLHttpRequest and sendBeacon that is not one of the app's own assets
+or a Cloudinary image, so auth, currency, analytics and error reporting all
+fail the way they do offline and nothing leaves the device. With the flag
+unset the guard is tree-shaken out of the bundle and behavior is exactly as
+before; `npm run build` on its own still keeps `/m/preview` out of
+production. Verified 2026-09-21: the demo bundle served locally makes zero
+`/api/` requests across Home, Account and Budget; the default bundle sends
+`/m/preview` to `/login?next=/m` and its twelve boot calls as it always did.
+Never point `mobile:demo` at a store submission; it is for demos and
+screenshots.
 
 **Android emulator**
 

@@ -30,6 +30,7 @@ import LoginScreen from './screens/firstrun/LoginScreen';
 import PrimingScreen from './screens/firstrun/PrimingScreen';
 import { buildFeed } from './notifications/feed';
 import { defaultSettings } from './notifications/store';
+import { isDemoBuild } from './demo';
 import { isAttending, isDeclined, isAwaitingPrimary } from '@/lib/guestRsvpTally';
 import { daysUntilWedding } from '@/lib/weddingCountdown';
 import { getUniverse } from '@/lib/universeCatalog';
@@ -56,7 +57,7 @@ const NOW = new Date('2026-09-21T09:00:00+10:00').getTime();
 export default function MobilePreviewApp() {
   const [params] = useSearchParams();
   const notifications = usePreviewNotifications(params.get('banner') === '1');
-  if (!import.meta.env.DEV) return <Navigate to="/m" replace />;
+  if (!import.meta.env.DEV && !isDemoBuild) return <Navigate to="/m" replace />;
   return (
     <Routes>
       <Route path="push" element={<PushPreview />} />
@@ -270,7 +271,7 @@ function PreviewAccount() {
   const { base } = useContext(ShellContext);
   const [params] = useSearchParams();
   const native = params.get('native') === '1';
-  return <AccountScreen name={FIXTURE_USER.full_name} email={FIXTURE_USER.email} coupleName={`${FIXTURE_WEDDING.couple1Name} & ${FIXTURE_WEDDING.couple2Name}`} weddingDate={dateLong(FIXTURE_WEDDING.weddingDate)} photo={coupleImages(FIXTURE_WEDDING)[0]} planLabel="Pro" planNote={null} trialDaysLeft={null} showPurchases={!native} onUpgrade={() => {}} onDetails={() => {}} onEventDetails={() => navigate(`${base}/plan/event-details`)} onCollaborators={() => {}} onNotifications={() => {}} onNotificationSettings={() => navigate(`${base}/notifications/settings`)} onHelp={() => {}} onContact={() => {}} onLogout={() => {}} loading={false} />;
+  return <AccountScreen subtitle={isDemoBuild ? 'Demo data' : undefined} name={FIXTURE_USER.full_name} email={FIXTURE_USER.email} coupleName={`${FIXTURE_WEDDING.couple1Name} & ${FIXTURE_WEDDING.couple2Name}`} weddingDate={dateLong(FIXTURE_WEDDING.weddingDate)} photo={coupleImages(FIXTURE_WEDDING)[0]} planLabel="Pro" planNote={null} trialDaysLeft={null} showPurchases={!native} onUpgrade={() => {}} onDetails={() => {}} onEventDetails={() => navigate(`${base}/plan/event-details`)} onCollaborators={() => {}} onNotifications={() => {}} onNotificationSettings={() => navigate(`${base}/notifications/settings`)} onHelp={() => {}} onContact={() => {}} onLogout={() => {}} loading={false} />;
 }
 
 function PreviewSearch() {
