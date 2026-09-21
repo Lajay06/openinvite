@@ -278,7 +278,7 @@ Mirror of Registry. **Status.** Parity through the registry screen.
 **Desktop.** As accommodation, with `type` (airport, train_station, bus_station, car_rental, ferry, other) instead of a badge; plus `notes[]` (`title`, `text`) add, edit, remove; Ava recommends places and notes. Saved on `guestSuiteTransport.{places, notes}`.
 **Mobile (found).** Places by hand; no notes.
 **Gaps.** Search, type, notes, Ava.
-**Status.** Planned (phase 1).
+**Status.** Done (phase 1): as accommodation, with the six place types instead of a badge, the Notes segment (add, edit, remove `{ title, text }`), and Ava's transport advice through the same prompt (places added through Places search, advice added as notes).
 
 ### Experience guide (`/GuestSuiteExperience`) → `/m/plan/experience`
 

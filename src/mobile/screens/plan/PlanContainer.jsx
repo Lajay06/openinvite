@@ -34,6 +34,7 @@ import PollsScreen from './PollsScreen';
 import MusicScreen from './MusicScreen';
 import RegistryScreen from './RegistryScreen';
 import { QnaScreen, GoodToKnowScreen, PlacesScreen, SuiteScheduleScreen, WeddingPartyScreen, DesktopFeatureScreen } from './SuiteScreens';
+import SuitePlacesScreen from './SuitePlacesScreen';
 import MarketplaceScreen from './MarketplaceScreen';
 
 const genId = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
@@ -80,8 +81,8 @@ export default function PlanFeatureContainer() {
     case 'registry': case 'suite-registry': return <RegistryContainer back={back} />;
     case 'qna': return <QnaContainer back={back} />;
     case 'good-to-know': return <GoodToKnowContainer back={back} />;
-    case 'suite-accommodation': return <PlacesContainer back={back} title="Accommodation" keyName="guestSuiteAccommodation" desktop="/GuestSuiteAccommodation" intro="Places guests can stay, shown on your site." />;
-    case 'suite-transport': return <PlacesContainer back={back} title="Transport" keyName="guestSuiteTransport" desktop="/GuestSuiteTransport" intro="How guests get there and back, shown on your site." />;
+    case 'suite-accommodation': return <SuitePlacesContainer back={back} kind="accommodation" keyName="guestSuiteAccommodation" />;
+    case 'suite-transport': return <SuitePlacesContainer back={back} kind="transport" keyName="guestSuiteTransport" />;
     case 'experience': return <PlacesContainer back={back} title="Experience guide" keyName="experienceGuide" listKey="couplePicks" desktop="/GuestSuiteExperience" intro="Your picks around the venue: a coffee, a walk, a good dinner." />;
     case 'suite-schedule': return <SuiteScheduleContainer back={back} />;
     case 'wedding-party': return <WeddingPartyContainer back={back} />;
@@ -564,13 +565,11 @@ function GoodToKnowContainer({ back }) {
   return <GoodToKnowScreen policies={wd.details?.weddingPolicies || {}} onSave={async (next) => { await wd.save('weddingPolicies', next, false); }} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} />;
 }
 
-function PlacesContainer({ back, title, keyName, listKey = 'places', desktop, intro }) {
-  const navigate = useNavigate();
+function SuitePlacesContainer({ back, kind, keyName }) {
   const wd = useWeddingDetails();
   const obj = wd.details?.[keyName] || {};
-  const places = obj[listKey] || [];
-  const save = async (next) => { await wd.save(keyName, { ...obj, [listKey]: next }, false); toast.success('Saved'); };
-  return <PlacesScreen title={title} places={places} onSave={save} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} intro={intro} onDesktop={() => openDesktop(navigate, desktop)} />;
+  const save = async (places, notes) => { await wd.save(keyName, kind === 'transport' ? { ...obj, places, notes: notes || [] } : { ...obj, places }, false); };
+  return <SuitePlacesScreen kind={kind} places={obj.places || []} notes={obj.notes || []} destination={wd.details?.mainCeremony?.address || ''} onSave={save} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} />;
 }
 
 function SuiteScheduleContainer({ back }) {
