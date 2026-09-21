@@ -1,14 +1,14 @@
 import React from 'react';
 import { ExternalLink, Share2, Palette, LayoutTemplate, Sparkles, Clock, HelpCircle, Gift, Hotel, Car, MapPin, ScrollText, BarChart2, Monitor } from 'lucide-react';
 import Screen from '../../shell/Screen';
-import { Row, RowGroup, PillButton, StatusPill, Skeleton, ErrorState, SmartImage, PanelCard } from '../../ui';
+import { Row, RowGroup, PillButton, StatusPill, Skeleton, ErrorState, SmartImage, PanelCard, Switch } from '../../ui';
 
 /**
  * Site: a large preview of the guest site in a rounded frame, the universe
  * and live status, share and view, then rows into the guest-suite editors
  * (in the app) and the design tools (desktop).
  */
-export default function SiteScreen({ universeName, isLive, siteUrl, previewImage, coupleName, onView, onShare, onOpen, onOpenDesktop, loading, error, onRetry }) {
+export default function SiteScreen({ universeName, isLive, siteUrl, previewImage, coupleName, onView, onShare, onOpen, onOpenDesktop, onTogglePublish, loading, error, onRetry }) {
   return (
     <Screen title="Site" bell>
       <div className="oi-m-stack oi-m-stack--24">
@@ -27,6 +27,10 @@ export default function SiteScreen({ universeName, isLive, siteUrl, previewImage
             </div>
             <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
               {siteUrl ? <p className="oi-m-meta" style={{ overflowWrap: 'anywhere' }}>{siteUrl.replace(/^https?:\/\//, '')}</p> : <p className="oi-m-meta">Your site does not have an address yet. Choose one in the studio on desktop.</p>}
+              <div className="oi-m-row" style={{ padding: 0, minHeight: 44, background: 'transparent' }}>
+                <div className="oi-m-row__body"><div className="oi-m-row__label">{isLive ? 'Website is live' : 'Website is hidden'}</div><div className="oi-m-row__sub">{isLive ? 'Guests can open it at the address above' : siteUrl ? 'Only you can see it until you go live' : 'Choose an address first'}</div></div>
+                <Switch on={isLive} onChange={onTogglePublish} label="Website is live" />
+              </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <PillButton variant="primary" icon={ExternalLink} onClick={onView} disabled={!siteUrl} style={{ flex: 1 }}>View site</PillButton>
                 <PillButton variant="secondary" icon={Share2} onClick={onShare} disabled={!siteUrl} style={{ flex: 1 }}>Share link</PillButton>

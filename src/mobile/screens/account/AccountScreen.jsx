@@ -9,7 +9,7 @@ import { initials } from '../../lib/format';
  * rows. `showPurchases` is false inside the native shell, so no upgrade,
  * checkout or billing-portal call to action renders there.
  */
-export default function AccountScreen({ name, email, coupleName, weddingDate, photo, planLabel, planNote, trialDaysLeft, showPurchases, onUpgrade, onDetails, onEventDetails, onCollaborators, onNotifications, onNotificationSettings, onHelp, onContact, onLogout, loading, appLock = null, subtitle }) {
+export default function AccountScreen({ name, email, coupleName, weddingDate, photo, planLabel, planNote, trialDaysLeft, showPurchases, onUpgrade, onDetails, onEventDetails, onCollaborators, onNotifications, onNotificationSettings, onHelp, onContact, onLogout, loading, appLock = null, subtitle, detailsSub }) {
   return (
     <Screen title="Account" subtitle={subtitle} bell>
       <div className="oi-m-stack oi-m-stack--24">
@@ -35,12 +35,12 @@ export default function AccountScreen({ name, email, coupleName, weddingDate, ph
         )}
 
         <RowGroup>
-          <Row icon={UserRound} tile="neutral" label="Account details" sub="Name, email, password" onClick={onDetails} />
+          <Row icon={UserRound} tile="neutral" label="Account details" sub={detailsSub || 'Name, currency, temperature'} onClick={onDetails} />
           <Row icon={CalendarDays} tile="neutral" label="Wedding details" sub="Names, date, venues" onClick={onEventDetails} />
           {onCollaborators && <Row icon={Users} tile="neutral" label="Collaborators" sub="Share the planning" onClick={onCollaborators} />}
           <Row icon={CreditCard} tile="neutral" label="Plan" value={planLabel} onClick={showPurchases ? onUpgrade : undefined} chevron={!!showPurchases} />
           <Row icon={BellRing} tile="neutral" label="Notifications" sub="What you hear about, and when" onClick={onNotificationSettings} />
-          <Row icon={Bell} tile="neutral" label="Email notifications" onClick={onNotifications} />
+          <Row icon={Bell} tile="neutral" label="Email notifications" sub="Which emails you get" onClick={onNotifications} />
           {appLock && (
             <div className="oi-m-row" style={{ minHeight: 68 }}>
               <span className="oi-m-row__tile oi-m-row__tile--neutral"><ScanFace size={19} strokeWidth={1.75} /></span>

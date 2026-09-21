@@ -6,11 +6,13 @@ import { heroImageFor } from '../../lib/images';
 import { ShellContext } from '../../shell/MobileShell';
 import SiteScreen from './SiteScreen';
 import { useWedding } from '../../data/wedding';
+import { useApi } from '../../data/api';
 import { openExternal, shareLink } from '../../native';
 import { siteUrlFor, openDesktop } from '../../lib/links';
 
 export default function SiteContainer() {
   const navigate = useNavigate();
+  const api = useApi();
   const wedding = useWedding();
   const d = wedding.data;
   const universeId = d?.activeUniverse || '';
@@ -26,10 +28,20 @@ export default function SiteContainer() {
     if (result === 'failed') toast.error('Could not share the link. Copy it from the address above.');
   };
 
+  // StudioShareTab.jsx's publish toggle: no address, no going live.
+  const togglePublish = async (on) => {
+    if (on && !d?.slug) { toast.error('Add your names first so your guest suite has an address.'); return; }
+    try {
+      await wedding.optimistic((w) => ({ ...(w || {}), websiteEnabled: on }), () => api.wedding.save('websiteEnabled', on, false));
+      toast.success(on ? 'Website is now live' : 'Website hidden');
+    } catch { toast.error('Could not change that. Try again.'); }
+  };
+
   return (
     <SiteScreen
       universeName={universe?.name}
       isLive={!!d?.websiteEnabled}
+      onTogglePublish={togglePublish}
       previewImage={previewImage}
       coupleName={coupleName}
       siteUrl={siteUrl}

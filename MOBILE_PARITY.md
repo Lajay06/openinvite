@@ -248,7 +248,7 @@ itself stays on desktop and is noted.
 **Desktop.** The studio hub, website builder, universe picker, Ava studio. Publish state, share.
 **Mobile.** Site preview, live status, view, share, rows into the guest suite editors. Builder and Ava studio hand off.
 **Gaps.** The builder is a canvas; the universe picker is a list (parity for that list is a builder action inside the studio and stays with it).
-**Status.** Desktop-only by design (canvas). Publish toggle, view and share are on the Site tab.
+**Status.** Desktop-only by design (canvas). The Site tab carries StudioShareTab's publish switch (`websiteEnabled`, gated on the slug), view and share.
 
 ### Schedule (`/GuestSuiteSchedule`) → `/m/plan/suite-schedule`
 
@@ -316,7 +316,7 @@ Read-only mirror of polls with stats and a link to Polls. **Status.** Parity thr
 **Desktop.** Profile name (`base44.auth.updateMe`), currency (`CurrencyModal`), temperature unit, email notification preferences (`notification_prefs`), plan and billing, change password, delete account, collaborators.
 **Mobile.** Rows; account details hand off to desktop; purchases hidden natively.
 **Gaps.** Name, currency, temperature unit and the email preferences are editable on desktop and hand off here.
-**Status.** Built in phase 1 as an Account details sheet (name, currency, temperature unit) and an email preferences sheet. Password change and account deletion stay on the desktop page (auth surface, locked by CLAUDE.md).
+**Status.** Done. An Account details sheet (name through `updateMe`, currency through CurrencyContext, temperature unit) and an Email notifications sheet on `notification_prefs` with the desktop's four switches and in-app-only dimming. Password change and account deletion stay on the desktop page (auth surface, locked by CLAUDE.md). Plan and billing hand off outside the native shell only.
 
 ---
 

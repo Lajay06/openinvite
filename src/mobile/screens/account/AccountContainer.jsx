@@ -6,6 +6,8 @@ import { isDemoBuild } from '../../demo';
 import { getTrialStatus } from '@/lib/trialStatus';
 import CollaborateModal from '@/components/layout/CollaborateModal';
 import AccountScreen from './AccountScreen';
+import { AccountDetailsSheet, EmailPreferencesSheet } from './AccountSheets';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { isNative } from '../../native';
 import { useAppLockSetting } from '../../shell/AppLock';
 import { openDesktop } from '../../lib/links';
@@ -29,6 +31,19 @@ export default function AccountContainer() {
   const logout = api.mode === 'preview' ? () => {} : auth.logout;
   const navigate = useNavigate();
   const [collab, setCollab] = useState(false);
+  const [sheet, setSheet] = useState(null); // 'details' | 'email'
+  const [, bump] = useState(0);
+  const currency = useCurrency();
+  const isPreview = api.mode === 'preview';
+  const currencyCode = isPreview ? (user?.currency || 'AUD') : currency.currencyCode;
+  // Account.jsx's Settings tab: name and tempUnit through updateMe, currency
+  // through CurrencyContext (which writes updateMe itself), then refresh the user.
+  const saveDetails = async ({ full_name, currency: code, tempUnit }) => {
+    await api.updateMe({ full_name, tempUnit, ...(isPreview ? { currency: code } : {}) });
+    if (!isPreview && code !== currency.currencyCode) await currency.updateCurrency(code);
+    if (isPreview) bump((n) => n + 1); else await auth.checkAppState?.();
+  };
+  const savePrefs = async (next) => { await api.updateMe({ notification_prefs: next }); if (isPreview) bump((n) => n + 1); else await auth.checkAppState?.(); };
   const { base } = useContext(ShellContext);
   const wedding = useWedding();
   const d = wedding.data;
@@ -58,10 +73,11 @@ export default function AccountContainer() {
         trialDaysLeft={trial.isPaid ? null : trial.daysLeft}
         showPurchases={showPurchases}
         onUpgrade={() => openDesktop(navigate, '/pricing')}
-        onDetails={() => openDesktop(navigate, '/account')}
+        onDetails={() => setSheet('details')}
+        detailsSub={`Name, ${currencyCode}, °${user?.tempUnit || 'C'}`}
         onEventDetails={() => navigate(`${base}/plan/event-details`)}
         onCollaborators={() => setCollab(true)}
-        onNotifications={() => openDesktop(navigate, '/account')}
+        onNotifications={() => setSheet('email')}
         onNotificationSettings={() => navigate(`${base}/notifications/settings`)}
         onHelp={() => openDesktop(navigate, '/help')}
         onContact={() => openDesktop(navigate, '/Contact')}
@@ -70,6 +86,8 @@ export default function AccountContainer() {
         appLock={isNative() ? appLock : null}
       />
       {collab && <CollaborateModal onClose={() => setCollab(false)} />}
+      <AccountDetailsSheet open={sheet === 'details'} user={user} currencyCode={currencyCode} onClose={() => setSheet(null)} onSave={saveDetails} onDesktop={() => { setSheet(null); openDesktop(navigate, '/account'); }} />
+      <EmailPreferencesSheet open={sheet === 'email'} user={user} onClose={() => setSheet(null)} onSave={savePrefs} />
     </>
   );
 }
