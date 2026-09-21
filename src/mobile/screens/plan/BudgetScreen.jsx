@@ -42,7 +42,7 @@ export default function BudgetScreen({ items = [], plan = null, symbol = '$', on
               <StatCard icon={Receipt} label="Still to pay" number={money(Math.max(0, s.spent - s.paid), symbol)} ink />
             </div>
             {next && (
-              <PanelCard tone="wine" label="Next payment" title={`${money(next.actual_amount || next.budgeted_amount, symbol)} to ${next.vendor || next.item_name}`} body={`Due ${dateShort(next.payment_date)}. ${s.duePayments.length > 1 ? `${s.duePayments.length - 1} more after that.` : ''}`} action="See the payment" onClick={() => setSheet({ open: true, item: next })} />
+              <PanelCard tone="ink" label="Next payment" title={`${money(next.actual_amount || next.budgeted_amount, symbol)} to ${next.vendor || next.item_name}`} body={`Due ${dateShort(next.payment_date)}. ${s.duePayments.length > 1 ? `${s.duePayments.length - 1} more after that.` : ''}`} action="See the payment" onClick={() => setSheet({ open: true, item: next })} />
             )}
             <section>
               <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Categories</h2>

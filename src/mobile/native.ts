@@ -78,7 +78,7 @@ export async function configureStatusBar(): Promise<void> {
   try {
     await mod.StatusBar.setStyle({ style: mod.Style.Light });
     if (platform() === 'android') {
-      await mod.StatusBar.setBackgroundColor({ color: '#F5F5F4' });
+      await mod.StatusBar.setBackgroundColor({ color: '#F7F7F7' });
       await mod.StatusBar.setOverlaysWebView({ overlay: false });
     }
   } catch {

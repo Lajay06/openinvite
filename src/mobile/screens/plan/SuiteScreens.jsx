@@ -18,7 +18,7 @@ export function QnaScreen({ qna = [], onSave, loading, error, onRetry, back }) {
           <EmptyState icon={HelpCircle} text="No questions yet. Dress code, parking and timing are the ones guests always ask." actionLabel="Add a question" onAction={() => setSheet(-1)} />
         ) : (
           <RowGroup>
-            {qna.map((q, i) => <Row key={i} icon={HelpCircle} tile="sand" label={q.question} sub={q.answer || 'No answer yet'} wrap onClick={() => setSheet(i)} />)}
+            {qna.map((q, i) => <Row key={i} icon={HelpCircle} tile="neutral" label={q.question} sub={q.answer || 'No answer yet'} wrap onClick={() => setSheet(i)} />)}
           </RowGroup>
         )}
       </div>
@@ -89,12 +89,12 @@ export function PlacesScreen({ title, icon: Icon = MapPin, places = [], onSave, 
   return (
     <Screen title={title} subtitle={loading ? '' : `${places.length} place${places.length === 1 ? '' : 's'} on your site`} back={back} actions={[{ icon: Plus, label: 'Add place', onClick: () => setSheet(-1) }]}>
       <div className="oi-m-stack oi-m-stack--24">
-        {intro && <PanelCard tone="sand" body={intro} action={onDesktop ? 'Search nearby on desktop' : undefined} onClick={onDesktop} />}
+        {intro && <PanelCard tone="neutral" body={intro} action={onDesktop ? 'Search nearby on desktop' : undefined} onClick={onDesktop} />}
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={4} /> : places.length === 0 ? (
           <EmptyState icon={Icon} text="Nothing added yet. Add a place by hand here, or search nearby on desktop." actionLabel="Add a place" onAction={() => setSheet(-1)} />
         ) : (
           <ItemList>
-            {places.map((p, i) => <ItemCard key={p.place_id || p.id || i} icon={Icon} tile="sand" title={p.name} meta={p.note || p.address} value={p.address && p.note ? p.address : undefined} badge={p.is_couple_pick ? 'Our pick' : undefined} badgeTone="ok" onClick={() => setSheet(i)} action={p.url ? { icon: ExternalLink, label: `Open ${p.name}`, onClick: () => openExternal(p.url) } : undefined} />)}
+            {places.map((p, i) => <ItemCard key={p.place_id || p.id || i} icon={Icon} tile="neutral" title={p.name} meta={p.note || p.address} value={p.address && p.note ? p.address : undefined} badge={p.is_couple_pick ? 'Our pick' : undefined} badgeTone="ok" onClick={() => setSheet(i)} action={p.url ? { icon: ExternalLink, label: `Open ${p.name}`, onClick: () => openExternal(p.url) } : undefined} />)}
           </ItemList>
         )}
       </div>
@@ -122,7 +122,7 @@ export function SuiteScheduleScreen({ items = [], loading, error, onRetry, back,
               <h2 className="oi-m-section" style={{ marginBottom: 12 }}>{d ? dateShort(d) : 'No date'}</h2>
               <ItemList>
                 {items.filter((it) => dayOf(it) === d).sort((a, b) => (a.start_time || '').localeCompare(b.start_time || '')).map((it) => (
-                  <ItemCard key={it.id} icon={Clock} tile="sand" title={it.event_name} meta={it.location || ''} value={timeLabel(it.start_time)} />
+                  <ItemCard key={it.id} icon={Clock} tile="neutral" title={it.event_name} meta={it.location || ''} value={timeLabel(it.start_time)} />
                 ))}
               </ItemList>
             </section>
@@ -160,7 +160,7 @@ export function WeddingPartyScreen({ party = {}, onSave, loading, error, onRetry
             <section key={r.key}>
               <h2 className="oi-m-section" style={{ marginBottom: 12 }}>{r.label}</h2>
               <ItemList>
-                {(party[r.key] || []).map((m, i) => <ItemCard key={i} initials={initials(m.name || '?')} tile="blush" title={m.name || 'Unnamed'} meta={m.notes || r.singular} value={m.phone || ''} onClick={() => setSheet({ role: r.key, index: i })} action={m.phone ? { icon: Phone, label: `Call ${m.name}`, onClick: () => openExternal(`tel:${m.phone}`) } : undefined} />)}
+                {(party[r.key] || []).map((m, i) => <ItemCard key={i} initials={initials(m.name || '?')} tile="tint" title={m.name || 'Unnamed'} meta={m.notes || r.singular} value={m.phone || ''} onClick={() => setSheet({ role: r.key, index: i })} action={m.phone ? { icon: Phone, label: `Call ${m.name}`, onClick: () => openExternal(`tel:${m.phone}`) } : undefined} />)}
               </ItemList>
             </section>
           ))
@@ -199,7 +199,7 @@ export function MarketplaceScreen({ results = [], searching, onSearch, onSave, s
         ) : (
           <ItemList>
             {results.map((v) => (
-              <ItemCard key={v.place_id || v.id} icon={ShoppingBag} tile="sand" title={v.name} meta={v.address || v.formatted_address || ''} value={v.rating ? `${v.rating} stars` : ''} badge={savedIds.has(v.place_id) ? 'Added' : undefined} badgeTone="ok" onClick={v.website ? () => openExternal(v.website) : undefined} action={savedIds.has(v.place_id) ? undefined : { icon: Plus, label: `Add ${v.name} to my vendors`, tone: 'primary', onClick: () => onSave(v) }} />
+              <ItemCard key={v.place_id || v.id} icon={ShoppingBag} tile="neutral" title={v.name} meta={v.address || v.formatted_address || ''} value={v.rating ? `${v.rating} stars` : ''} badge={savedIds.has(v.place_id) ? 'Added' : undefined} badgeTone="ok" onClick={v.website ? () => openExternal(v.website) : undefined} action={savedIds.has(v.place_id) ? undefined : { icon: Plus, label: `Add ${v.name} to my vendors`, tone: 'primary', onClick: () => onSave(v) }} />
             ))}
           </ItemList>
         )}

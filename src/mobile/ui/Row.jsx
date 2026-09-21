@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 /**
  * A row inside a rounded card: circular icon tile, label (+ sub), value,
  * chevron. Renders a button when it has somewhere to go. `tile` picks the
- * tile color: default | primary | ink | sand | blush | ok | warn.
+ * tile color: default | primary | ink | neutral | tint | ok | warn.
  */
 export default function Row({ icon: Icon, label, sub, value, to, onClick, chevron, tile = 'default', trailing, wrap = false, initials, children }) {
   const navigate = useNavigate();

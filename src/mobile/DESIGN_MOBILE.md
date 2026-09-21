@@ -29,20 +29,24 @@ None on cards. Cards separate from the page by color and spacing. One token, `--
 
 **Color**
 
+Every value is one DESIGN_SPEC.md defines: the brand red, the black, white, the spec's greys, and one alpha tint of the red. Nothing warm. No brown, cream, beige, sand, wine or warm grey, in tokens, fixtures, mocks or inline styles; the tone names `wine`, `sand` and `blush` were removed with the colors on 2026-09-21 and must not be reintroduced under any name. Panels do not borrow from the couple's universe palette; that is the guest site's design, not the app's.
+
 | Token | Value | Role |
 |---|---|---|
-| `--m-bg` | #F5F5F4 | page |
+| `--m-bg` | #F7F7F7 | page (the spec's panel grey) |
 | `--m-card` | #FFFFFF | card |
-| `--m-text` | #1A1A1A | primary text |
+| `--m-text` | #0A0A0A | primary text |
 | `--m-text-2` | #444444 | secondary text, the lightest allowed on a light surface |
-| `--m-line` | #E7E5E4 | hairline dividers |
+| `--m-line` | rgba(10,10,10,0.08) | hairline dividers, card borders (the spec's border) |
+| `--m-press` | rgba(10,10,10,0.08) | pressed state |
 | `--m-primary` | #E03553 | flat, sparingly: primary buttons, active tab, progress fill, key numbers, unread dot |
-| `--m-ink` | #1A1A1A | emphasis panel (Ava, the dark stat) |
-| `--m-wine` | #3B1820 | emphasis panel (due payments, warnings) |
-| `--m-blush` | #FBE9EC | emphasis panel, light |
-| `--m-sand` | #EFE9E1 | emphasis panel, light |
+| `--m-primary-soft`, `--m-tint` | rgba(224,53,83,0.1) | the one light tint: a tinted icon tile, a light emphasis panel |
+| `--m-ink` | #0A0A0A | dark emphasis panel (Ava, the dark stat, a due payment) |
+| `--m-neutral` | #F7F7F7 | a neutral icon tile or image placeholder inside a white card |
 
-Panels prefer the couple's universe palette when it exposes one (`getUniverse(id).colors.darkBg` for ink, `lightBg` for sand) and fall back to the tokens. Text on a panel is chosen by `readableOn()` from `src/lib/surfaceTint.js`, never hard-paired.
+Panel and tile tones are `ink`, `neutral` and `tint`. A `neutral` panel or photo-less feature tile sits on the page grey, so it renders as a white card with the hairline rather than a fill. Text on a dark panel is `--m-on-dark`; nothing is hard-paired.
+
+The three status pairs (`--m-ok`, `--m-warn`, `--m-no` with their backgrounds) are the dashboard guest list's own attending, awaiting and declined colors, kept for the same meanings and nothing else.
 
 No gradients, with one exception: a bottom-up dark scrim over photos so white text stays readable (`--m-scrim`).
 

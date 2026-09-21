@@ -34,7 +34,7 @@ export default function PushPreview() {
   const single = items.slice(0, 3);
   const stack = items.slice(3);
   return (
-    <div className="oi-mobile-root" style={{ background: '#000' }}>
+    <div className="oi-mobile-root" style={{ background: '#0A0A0A' }}>
       <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${wallpaper})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'saturate(1.05)' }} />
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.05) 30%, rgba(0,0,0,0.45) 100%)' }} />
       <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100%', padding: 'calc(env(safe-area-inset-top, 0px) + 12px) 12px 12px', color: '#FFFFFF' }}>

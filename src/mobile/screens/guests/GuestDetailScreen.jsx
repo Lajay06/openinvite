@@ -22,7 +22,7 @@ export default function GuestDetailScreen({ guest, onEdit, onDelete, back }) {
     <Screen title={guest.name || 'Guest'} back={back} actions={[{ icon: Pencil, label: 'Edit guest', onClick: onEdit }]}>
       <div className="oi-m-stack oi-m-stack--24">
         <div className="oi-m-card" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <span className="oi-m-row__tile oi-m-row__tile--blush" style={{ width: 56, height: 56, fontSize: 18 }}>{initials(guest.name)}</span>
+          <span className="oi-m-row__tile oi-m-row__tile--tint" style={{ width: 56, height: 56, fontSize: 18 }}>{initials(guest.name)}</span>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="oi-m-body oi-m-strong">{guest.name}</div>
             <div className="oi-m-meta">{invited ? 'Invited' : 'Not yet invited'}</div>

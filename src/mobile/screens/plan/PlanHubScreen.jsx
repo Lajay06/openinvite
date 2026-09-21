@@ -34,7 +34,7 @@ export default function PlanHubScreen({ data, symbol = '$', progress, onOpen, on
                 <h2 className="oi-m-section" style={{ marginBottom: 12 }}>{g.label}</h2>
                 <div className="oi-m-grid2">
                   {featuresIn(g.key).map((f) => (
-                    <FeatureTile key={f.key} icon={f.icon} name={f.label} stat={f.stat(data || {}, symbol)} image={f.image} alt={f.label} tone={f.image ? 'photo' : (['guests', 'finances'].includes(g.key) ? 'sand' : 'white')} onClick={() => onOpen(f)} />
+                    <FeatureTile key={f.key} icon={f.icon} name={f.label} stat={f.stat(data || {}, symbol)} image={f.image} alt={f.label} tone={f.image ? 'photo' : (['guests', 'finances'].includes(g.key) ? 'neutral' : 'white')} onClick={() => onOpen(f)} />
                   ))}
                 </div>
               </section>

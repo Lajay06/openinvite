@@ -189,7 +189,7 @@ export const FIXTURE_DETAILS_EXTRA = {
   celebrant: { name: 'Jo Marsh', title: '', type: 'celebrant', phone: '+61 412 000 111', email: 'jo@example.com', notes: 'Wants the readings by 1 March.' },
   ceremonyType: 'Civil, outdoors', ceremonyMusic: 'Golden Hour on the walk in', ceremonyReadings: 'Union by Robert Fulghum', vowsNotes: 'Two minutes each, no jokes about parking',
   flowers: { bouquet: 'Loose natives, white and green', bridesmaidBouquets: 'Smaller versions of the same', ceremony: 'Arbour dressed in eucalyptus', centerpieces: 'Bud vases along the tables' },
-  decorations: { theme: 'Barefoot, unhurried', colorScheme: 'Sand, white, sage' },
+  decorations: { theme: 'Barefoot, unhurried', colorScheme: 'White, sage, stone' },
   beauty: { styleNotes: 'Soft, glowy, nothing heavy', hairInspo: 'Loose waves, half up' },
   foodBeverage: { serviceStyle: 'family_style', barType: 'open', signatureCocktail: 'Yuzu spritz', dietaryRequirements: '3 vegetarian, 1 coeliac, 1 vegan', weddingCakeDetails: 'Two tiers, lemon and elderflower' },
   photography: { photographyStyle: 'Candid, film', photographyHours: 10, mustHaveShots: 'Both grandmothers together', videoStyle: 'Documentary' },

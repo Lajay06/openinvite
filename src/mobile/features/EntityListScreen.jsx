@@ -61,7 +61,7 @@ export default function EntityListScreen({ schema, items = [], onCreate, onUpdat
         return (
           <button key={it.id} type="button" className="oi-m-imgcard oi-m-press" onClick={() => openItem(it)}>
             {r.badge && <span className="oi-m-imgcard__badge"><StatusPill tone={r.badgeTone === 'ok' ? 'ok' : 'light'}>{r.badge}</StatusPill></span>}
-            <SmartImage src={r.image} alt={r.title} width={170} ratio="1/1" tone={r.image ? 'sand' : 'blush'} />
+            <SmartImage src={r.image} alt={r.title} width={170} ratio="1/1" tone={r.image ? 'neutral' : 'tint'} />
             <div className="oi-m-imgcard__body">
               <div className="oi-m-imgcard__title">{r.title}</div>
               {r.sub && <div className="oi-m-meta" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.sub}</div>}

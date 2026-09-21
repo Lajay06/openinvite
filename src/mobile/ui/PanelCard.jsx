@@ -1,6 +1,6 @@
 import React from 'react';
 
-/** A color panel for emphasis. tone: 'ink' | 'wine' | 'blush' | 'sand'. `mark` renders the ✦ for Ava. */
+/** A color panel for emphasis. tone: 'ink' | 'neutral' | 'tint'. `mark` renders the ✦ for Ava. */
 export default function PanelCard({ tone = 'ink', mark, label, title, body, action, onClick, style, children }) {
   const Tag = onClick ? 'button' : 'div';
   return (
@@ -12,7 +12,7 @@ export default function PanelCard({ tone = 'ink', mark, label, title, body, acti
         </div>
       )}
       {title && <div className="oi-m-section" style={{ color: 'inherit' }}>{title}</div>}
-      {body && <p className="oi-m-body" style={{ opacity: tone === 'ink' || tone === 'wine' ? 0.88 : 1 }}>{body}</p>}
+      {body && <p className="oi-m-body" style={{ opacity: tone === 'ink' ? 0.88 : 1 }}>{body}</p>}
       {children}
       {action && <div className="oi-m-meta oi-m-strong" style={{ marginTop: 4, color: 'inherit' }}>{action}</div>}
     </Tag>

@@ -22,7 +22,7 @@ export default function WelcomeScreen({ onStart, onLogin }) {
         {SLIDES.map((s) => (
           <section key={s.key} className="oi-m-welcome__slide" aria-roledescription="slide">
             <SmartImage src={imageUrl(s.key)} alt="" width={390} ratio="4/5" square eager tone="ink" style={{ position: 'absolute', inset: 0, height: '100%', aspectRatio: 'auto' }} />
-            <div className="oi-m-hero__scrim" style={{ background: 'linear-gradient(to top, rgba(26,26,26,0.92) 0%, rgba(26,26,26,0.5) 45%, rgba(26,26,26,0.1) 100%)' }} />
+            <div className="oi-m-hero__scrim" style={{ background: 'linear-gradient(to top, rgba(10,10,10,0.92) 0%, rgba(10,10,10,0.5) 45%, rgba(10,10,10,0.1) 100%)' }} />
             <div className="oi-m-welcome__text">
               <h1 className="oi-m-title oi-m-on-dark">{s.headline}</h1>
               <p className="oi-m-body oi-m-on-dark-2">{s.line}</p>

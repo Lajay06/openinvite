@@ -17,14 +17,14 @@ export default function AccountScreen({ name, email, coupleName, weddingDate, ph
           <div className="oi-m-card oi-m-card--flush">
             <div style={{ position: 'relative', aspectRatio: '16 / 9', background: 'var(--m-ink)' }}>
               <SmartImage src={photo} alt="" width={360} ratio="16/9" square eager tone="ink" />
-              <div className="oi-m-hero__scrim" style={{ background: 'linear-gradient(to top, rgba(26,26,26,0.92) 0%, rgba(26,26,26,0.45) 55%, rgba(26,26,26,0.05) 100%)' }} />
+              <div className="oi-m-hero__scrim" style={{ background: 'linear-gradient(to top, rgba(10,10,10,0.92) 0%, rgba(10,10,10,0.45) 55%, rgba(10,10,10,0.05) 100%)' }} />
               <div style={{ position: 'absolute', left: 16, bottom: 14, color: '#FFFFFF' }}>
                 <div className="oi-m-hero__title" style={{ fontSize: 24, lineHeight: '30px' }}>{coupleName || name || 'Your wedding'}</div>
                 {weddingDate && <div className="oi-m-hero__label">{weddingDate}</div>}
               </div>
             </div>
             <div style={{ padding: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span className="oi-m-row__tile oi-m-row__tile--blush" style={{ width: 48, height: 48, fontSize: 16 }}>{initials(name || email)}</span>
+              <span className="oi-m-row__tile oi-m-row__tile--tint" style={{ width: 48, height: 48, fontSize: 16 }}>{initials(name || email)}</span>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <p className="oi-m-body oi-m-strong" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name || 'Your account'}</p>
                 <p className="oi-m-meta" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{email}</p>
@@ -35,15 +35,15 @@ export default function AccountScreen({ name, email, coupleName, weddingDate, ph
         )}
 
         <RowGroup>
-          <Row icon={UserRound} tile="sand" label="Account details" sub="Name, email, password" onClick={onDetails} />
-          <Row icon={CalendarDays} tile="sand" label="Wedding details" sub="Names, date, venues" onClick={onEventDetails} />
-          {onCollaborators && <Row icon={Users} tile="sand" label="Collaborators" sub="Share the planning" onClick={onCollaborators} />}
-          <Row icon={CreditCard} tile="sand" label="Plan" value={planLabel} onClick={showPurchases ? onUpgrade : undefined} chevron={!!showPurchases} />
-          <Row icon={BellRing} tile="sand" label="Notifications" sub="What you hear about, and when" onClick={onNotificationSettings} />
-          <Row icon={Bell} tile="sand" label="Email notifications" onClick={onNotifications} />
+          <Row icon={UserRound} tile="neutral" label="Account details" sub="Name, email, password" onClick={onDetails} />
+          <Row icon={CalendarDays} tile="neutral" label="Wedding details" sub="Names, date, venues" onClick={onEventDetails} />
+          {onCollaborators && <Row icon={Users} tile="neutral" label="Collaborators" sub="Share the planning" onClick={onCollaborators} />}
+          <Row icon={CreditCard} tile="neutral" label="Plan" value={planLabel} onClick={showPurchases ? onUpgrade : undefined} chevron={!!showPurchases} />
+          <Row icon={BellRing} tile="neutral" label="Notifications" sub="What you hear about, and when" onClick={onNotificationSettings} />
+          <Row icon={Bell} tile="neutral" label="Email notifications" onClick={onNotifications} />
           {appLock && (
             <div className="oi-m-row" style={{ minHeight: 68 }}>
-              <span className="oi-m-row__tile oi-m-row__tile--sand"><ScanFace size={19} strokeWidth={1.75} /></span>
+              <span className="oi-m-row__tile oi-m-row__tile--neutral"><ScanFace size={19} strokeWidth={1.75} /></span>
               <div className="oi-m-row__body">
                 <div className="oi-m-row__label">Require {appLock.kind || 'Face ID'} to open</div>
                 <div className="oi-m-row__sub" style={{ whiteSpace: 'normal' }}>{appLock.available ? 'Locks the app on open and after five minutes away' : `${appLock.kind || 'Biometrics'} is not set up on this phone`}</div>
@@ -54,14 +54,14 @@ export default function AccountScreen({ name, email, coupleName, weddingDate, ph
         </RowGroup>
 
         {planNote && (
-          <PanelCard tone={trialDaysLeft != null && trialDaysLeft <= 3 ? 'wine' : 'sand'} label="Your plan" body={planNote}>
+          <PanelCard tone={trialDaysLeft != null && trialDaysLeft <= 3 ? 'ink' : 'neutral'} label="Your plan" body={planNote}>
             {showPurchases && trialDaysLeft != null && <PillButton variant="light" size="sm" icon={ArrowUpRight} onClick={onUpgrade} style={{ alignSelf: 'flex-start', marginTop: 8 }}>See plans</PillButton>}
           </PanelCard>
         )}
 
         <RowGroup>
-          <Row icon={LifeBuoy} tile="sand" label="Help center" onClick={onHelp} />
-          <Row icon={MessageSquare} tile="sand" label="Contact support" onClick={onContact} />
+          <Row icon={LifeBuoy} tile="neutral" label="Help center" onClick={onHelp} />
+          <Row icon={MessageSquare} tile="neutral" label="Contact support" onClick={onContact} />
         </RowGroup>
 
         <RowGroup>

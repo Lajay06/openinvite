@@ -63,7 +63,7 @@ export default function AppLock({ children, forced = false, photo }) {
       {locked && (
         <div className="oi-m-lock" role="dialog" aria-modal="true" aria-label="Openinvite is locked">
           <SmartImage src={photo || imageUrl('lock')} alt="" width={390} ratio="4/5" square eager tone="ink" style={{ position: 'absolute', inset: 0, height: '100%', aspectRatio: 'auto' }} />
-          <div className="oi-m-hero__scrim" style={{ background: 'linear-gradient(to top, rgba(26,26,26,0.94) 0%, rgba(26,26,26,0.6) 50%, rgba(26,26,26,0.35) 100%)' }} />
+          <div className="oi-m-hero__scrim" style={{ background: 'linear-gradient(to top, rgba(10,10,10,0.94) 0%, rgba(10,10,10,0.6) 50%, rgba(10,10,10,0.35) 100%)' }} />
           <div className="oi-m-lock__body">
             <span className="oi-m-lock__mark" aria-hidden="true"><span /></span>
             <h1 className="oi-m-title oi-m-on-dark">Openinvite</h1>

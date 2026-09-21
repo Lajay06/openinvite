@@ -49,7 +49,7 @@ export default function NotificationSettingsScreen({ settings, onChange, back })
             )}
           </RowGroup>
         </section>
-        <PanelCard tone="sand" label="About these settings" body="These choices are saved on this phone. Push notifications are not switched on yet, so for now they shape what you see in the app." />
+        <PanelCard tone="neutral" label="About these settings" body="These choices are saved on this phone. Push notifications are not switched on yet, so for now they shape what you see in the app." />
       </div>
     </Screen>
   );

@@ -31,7 +31,7 @@ export interface ImageSlot {
   /** No good photo yet: render a color panel and show a "needs photo" marker in the gallery. */
   todo?: boolean;
   /** The panel tone used while todo. */
-  tone?: 'ink' | 'sand' | 'blush';
+  tone?: 'ink' | 'neutral' | 'tint';
 }
 
 export const IMAGES = {
@@ -58,19 +58,19 @@ export const IMAGES = {
   tileAccommodation: { id: 'DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_xted4d', alt: 'A hotel room door with a do not disturb sign', usedIn: 'Plan hub, Accommodation tile', size: { w: 171, h: 148 }, ratio: '4/3' },
   tileRegistry: { id: 'DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14166_tqzysj', alt: 'A hotel suite with gifts laid out', usedIn: 'Plan hub, Registry tile', size: { w: 171, h: 148 }, ratio: '4/3' },
   tileHoneymoon: { id: 'v1779185631/DTS_Early_Honey_Moon_Tino_Renato_Photos_ID3576_v8vxs0', alt: 'A couple on holiday by the sea', usedIn: 'Plan hub, Honeymoon tile', size: { w: 171, h: 148 }, ratio: '4/3' },
-  tileSchedule: { id: '', alt: 'The wedding day timeline', usedIn: 'Plan hub, Schedule tile', size: { w: 171, h: 148 }, ratio: '4/3', todo: true, tone: 'sand' },
-  tileBudget: { id: '', alt: 'Planning the budget', usedIn: 'Plan hub, Budget tile', size: { w: 171, h: 148 }, ratio: '4/3', todo: true, tone: 'sand' },
-  tileVendors: { id: '', alt: 'Meeting a vendor', usedIn: 'Plan hub, My vendors tile', size: { w: 171, h: 148 }, ratio: '4/3', todo: true, tone: 'sand' },
-  tileTransport: { id: '', alt: 'Guests arriving by car', usedIn: 'Plan hub, Transport tile', size: { w: 171, h: 148 }, ratio: '4/3', todo: true, tone: 'sand' },
+  tileSchedule: { id: '', alt: 'The wedding day timeline', usedIn: 'Plan hub, Schedule tile', size: { w: 171, h: 148 }, ratio: '4/3', todo: true, tone: 'neutral' },
+  tileBudget: { id: '', alt: 'Planning the budget', usedIn: 'Plan hub, Budget tile', size: { w: 171, h: 148 }, ratio: '4/3', todo: true, tone: 'neutral' },
+  tileVendors: { id: '', alt: 'Meeting a vendor', usedIn: 'Plan hub, My vendors tile', size: { w: 171, h: 148 }, ratio: '4/3', todo: true, tone: 'neutral' },
+  tileTransport: { id: '', alt: 'Guests arriving by car', usedIn: 'Plan hub, Transport tile', size: { w: 171, h: 148 }, ratio: '4/3', todo: true, tone: 'neutral' },
 
   /* ── Keep planning cards (Home): reuse the tile images by feature; these two are extra ── */
   keepPlanningDefault: { id: 'DTS_NU_NUPTIALS_Shauna_Summers_Photos_ID10310_o5dcie', alt: 'Guests dancing at a reception', usedIn: 'Home, keep planning card with no feature image', size: { w: 240, h: 180 }, ratio: '4/3' },
 
   /* ── Empty states ── */
   emptyVendors: { id: 'DTS_Fine_Dining_Patrick_Chin_Photos_ID955_uoaegj', alt: 'A plated dinner', usedIn: 'My vendors, empty state', size: { w: 326, h: 183 }, ratio: '16/9' },
-  emptyGuests: { id: '', alt: 'Friends together', usedIn: 'Guests, empty state', size: { w: 326, h: 183 }, ratio: '16/9', todo: true, tone: 'blush' },
+  emptyGuests: { id: '', alt: 'Friends together', usedIn: 'Guests, empty state', size: { w: 326, h: 183 }, ratio: '16/9', todo: true, tone: 'tint' },
   emptyMoodboard: { id: 'DTS_DECADENT_Debora_Spanhol_Photos_ID12475_viqbsz', alt: 'A dessert table with cakes and fruit', usedIn: 'Moodboard, empty state', size: { w: 326, h: 183 }, ratio: '16/9' },
-  emptyRegistry: { id: '', alt: 'A wrapped gift', usedIn: 'Registry, empty state', size: { w: 326, h: 183 }, ratio: '16/9', todo: true, tone: 'blush' },
+  emptyRegistry: { id: '', alt: 'A wrapped gift', usedIn: 'Registry, empty state', size: { w: 326, h: 183 }, ratio: '16/9', todo: true, tone: 'tint' },
 
   /* ── First run ── */
   welcome1: { id: 'DTS_Like_a_Movie_Foster___Asher_Photos_ID1042_qaddk3', alt: 'A couple laughing together outdoors', usedIn: 'Welcome, screen 1', size: { w: 390, h: 844 }, ratio: '4/5', focal: '50% 35%' },

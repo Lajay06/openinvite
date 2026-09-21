@@ -15,29 +15,34 @@
  */
 
 .oi-mobile-root {
-  /* color */
-  --m-bg: #F5F5F4;
+  /* color. Every value here is from DESIGN_SPEC.md: the brand red, the
+     black, white, the spec's greys and one alpha tint of the red (the
+     dashboard uses that tint in over a hundred places). No brown, cream,
+     beige, wine or warm grey: those were removed on 2026-09-21 and the tone
+     names (wine, sand, blush) went with them so they cannot come back. */
+  --m-bg: #F7F7F7;
   --m-card: #FFFFFF;
   --m-block: #FFFFFF;
-  --m-line: #E7E5E4;
-  --m-text: #1A1A1A;
+  --m-line: rgba(10, 10, 10, 0.08);
+  --m-text: #0A0A0A;
   --m-text-2: #444444;
   --m-primary: #E03553;
   --m-primary-soft: rgba(224, 53, 83, 0.1);
-  --m-press: rgba(26, 26, 26, 0.06);
-  --m-ink: #1A1A1A;
-  --m-wine: #3B1820;
-  --m-blush: #FBE9EC;
-  --m-sand: #EFE9E1;
+  --m-press: rgba(10, 10, 10, 0.08);
+  --m-ink: #0A0A0A;
+  --m-neutral: #F7F7F7;
+  --m-tint: var(--m-primary-soft);
   --m-on-dark: #FFFFFF;
   --m-on-dark-2: rgba(255, 255, 255, 0.72);
+  /* Status pairs: the same values the dashboard's guest list uses for
+     attending, awaiting and declined. Semantic, not palette. */
   --m-ok: #166534;
   --m-ok-bg: #DCFCE7;
   --m-warn: #854D0E;
   --m-warn-bg: #FEF9C3;
   --m-no: #991B1B;
   --m-no-bg: #FEE2E2;
-  --m-scrim: linear-gradient(to top, rgba(26, 26, 26, 0.82) 0%, rgba(26, 26, 26, 0.35) 45%, rgba(26, 26, 26, 0) 100%);
+  --m-scrim: linear-gradient(to top, rgba(10, 10, 10, 0.82) 0%, rgba(10, 10, 10, 0.35) 45%, rgba(10, 10, 10, 0) 100%);
 
   /* radius */
   --m-r-card: 20px;
@@ -220,7 +225,7 @@
 }
 .oi-m-iconbtn:active { transform: scale(0.94); background: var(--m-press); }
 .oi-m-iconbtn--ghost { background: transparent; }
-.oi-m-iconbtn--dark { background: rgba(26, 26, 26, 0.45); color: #FFFFFF; }
+.oi-m-iconbtn--dark { background: rgba(10, 10, 10, 0.45); color: #FFFFFF; }
 .oi-m-dot {
   position: absolute;
   top: 10px;
@@ -291,8 +296,8 @@
 }
 .oi-m-row__tile--primary { background: var(--m-primary-soft); color: var(--m-primary); }
 .oi-m-row__tile--ink { background: var(--m-ink); color: var(--m-on-dark); }
-.oi-m-row__tile--sand { background: var(--m-sand); }
-.oi-m-row__tile--blush { background: var(--m-blush); color: var(--m-primary); }
+.oi-m-row__tile--neutral { background: var(--m-neutral); }
+.oi-m-row__tile--tint { background: var(--m-tint); color: var(--m-primary); }
 .oi-m-row__tile--ok { background: var(--m-ok-bg); color: var(--m-ok); }
 .oi-m-row__tile--warn { background: var(--m-warn-bg); color: var(--m-warn); }
 .oi-m-row__body { flex: 1; min-width: 0; }
@@ -380,7 +385,7 @@
 .oi-m-progress--on-dark .oi-m-progress__fill { background: #FFFFFF; }
 
 /* ── Image and hero ─────────────────────────────────────────────────── */
-.oi-m-img { position: relative; overflow: hidden; background: var(--m-sand); border-radius: var(--m-r-image); }
+.oi-m-img { position: relative; overflow: hidden; background: var(--m-neutral); border-radius: var(--m-r-image); }
 .oi-m-img__el { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity var(--m-move) var(--m-ease); }
 .oi-m-img--loaded .oi-m-img__el { opacity: 1; }
 .oi-m-img--square { border-radius: 0; }
@@ -450,11 +455,12 @@
 .oi-m-tile--photo { color: var(--m-on-dark); background: var(--m-ink); min-height: 148px; }
 .oi-m-tile--photo .oi-m-img { position: absolute; inset: 0; border-radius: 0; z-index: 0; }
 .oi-m-tile--photo .oi-m-hero__scrim { z-index: 1; }
-.oi-m-tile--sand { background: var(--m-sand); }
-.oi-m-tile--blush { background: var(--m-blush); }
+.oi-m-tile--neutral { background: var(--m-card); border: 1px solid var(--m-line); }
+.oi-m-tile--tint { background: var(--m-tint); }
 .oi-m-tile__top, .oi-m-tile__bottom { position: relative; z-index: 2; }
 .oi-m-tile__icon { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--m-bg); color: var(--m-text); }
-.oi-m-tile--sand .oi-m-tile__icon, .oi-m-tile--blush .oi-m-tile__icon { background: rgba(255, 255, 255, 0.7); }
+.oi-m-tile--neutral .oi-m-tile__icon { background: var(--m-neutral); }
+.oi-m-tile--tint .oi-m-tile__icon { background: rgba(255, 255, 255, 0.7); }
 .oi-m-tile--photo .oi-m-tile__icon { background: rgba(255, 255, 255, 0.18); color: #FFFFFF; }
 .oi-m-tile__name { font-size: 16px; line-height: 22px; font-weight: 600; overflow-wrap: anywhere; hyphens: auto; }
 .oi-m-tile__stat { font-size: 14px; line-height: 20px; color: var(--m-text-2); }
@@ -470,10 +476,9 @@
 
 .oi-m-panel { border-radius: var(--m-r-card); padding: 20px; display: flex; flex-direction: column; gap: 8px; min-height: 120px; width: 100%; text-align: left; }
 .oi-m-panel--ink { background: var(--m-ink); color: var(--m-on-dark); }
-.oi-m-panel--wine { background: var(--m-wine); color: var(--m-on-dark); }
-.oi-m-panel--blush { background: var(--m-blush); color: var(--m-text); }
-.oi-m-panel--sand { background: var(--m-sand); color: var(--m-text); }
-.oi-m-panel--ink .oi-m-meta, .oi-m-panel--wine .oi-m-meta { color: var(--m-on-dark-2); }
+.oi-m-panel--tint { background: var(--m-tint); color: var(--m-text); }
+.oi-m-panel--neutral { background: var(--m-card); color: var(--m-text); border: 1px solid var(--m-line); }
+.oi-m-panel--ink .oi-m-meta { color: var(--m-on-dark-2); }
 .oi-m-panel__mark { font-size: 22px; line-height: 1; }
 
 .oi-m-imgcard {
@@ -493,7 +498,7 @@
 
 /* ── Empty, error, skeleton ─────────────────────────────────────────── */
 .oi-m-empty { background: var(--m-card); border-radius: var(--m-r-card); padding: 32px 20px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; overflow: hidden; }
-.oi-m-empty__icon { width: 56px; height: 56px; border-radius: 50%; background: var(--m-sand); color: var(--m-text); display: inline-flex; align-items: center; justify-content: center; }
+.oi-m-empty__icon { width: 56px; height: 56px; border-radius: 50%; background: var(--m-neutral); color: var(--m-text); display: inline-flex; align-items: center; justify-content: center; }
 .oi-m-skel { background: var(--m-line); border-radius: var(--m-r-image); width: 100%; }
 .oi-m-skel--text { height: 16px; border-radius: 8px; }
 .oi-m-skel--title { height: 28px; width: 60%; border-radius: 8px; }
@@ -603,7 +608,7 @@ select.oi-m-input { background-image: none; padding-right: 44px; }
 .oi-m-ava:active { transform: scale(0.92); }
 
 .oi-m-sheet-root { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; justify-content: flex-end; }
-.oi-m-sheet-scrim { position: absolute; inset: 0; background: rgba(26, 26, 26, 0.42); opacity: 0; transition: opacity var(--m-move) var(--m-ease); }
+.oi-m-sheet-scrim { position: absolute; inset: 0; background: rgba(10, 10, 10, 0.42); opacity: 0; transition: opacity var(--m-move) var(--m-ease); }
 .oi-m-sheet {
   position: relative;
   background: var(--m-card);
@@ -721,7 +726,7 @@ select.oi-m-input { background-image: none; padding-right: 44px; }
 .oi-m-item__hit { position: absolute; inset: 0; border-radius: var(--m-r-card); z-index: 1; }
 .oi-m-item__action { position: relative; z-index: 2; }
 .oi-m-item__thumb { width: 72px; height: 72px; flex-shrink: 0; border-radius: var(--m-r-image); align-self: center; }
-.oi-m-item__thumb--tile { display: inline-flex; align-items: center; justify-content: center; background: var(--m-sand); color: var(--m-text); }
+.oi-m-item__thumb--tile { display: inline-flex; align-items: center; justify-content: center; background: var(--m-neutral); color: var(--m-text); }
 .oi-m-item__initials { font-size: 20px; font-weight: 600; }
 .oi-m-item__body { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 2px 0; }
 .oi-m-item__title { font-size: 16px; line-height: 22px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -759,7 +764,7 @@ select.oi-m-input { background-image: none; padding-right: 44px; }
 .oi-m-swipe__action { width: 72px; display: inline-flex; align-items: center; justify-content: center; color: #FFFFFF; }
 .oi-m-swipe__action--ok { background: var(--m-ok); }
 .oi-m-swipe__action--primary { background: var(--m-primary); }
-.oi-m-swipe__action--no { background: var(--m-wine); }
+.oi-m-swipe__action--no { background: var(--m-no); }
 .oi-m-swipe__content { position: relative; background: var(--m-card); will-change: transform; }
 
 /* Two-column image grid, the alternate view for vendors and the registry. */

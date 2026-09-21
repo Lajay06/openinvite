@@ -11,7 +11,7 @@ import StatusPill from './StatusPill';
  * props: image | icon (+ tile color), title, meta, value, badge/badgeTone,
  * action { icon, label, onClick, tone }, onClick
  */
-export default function ItemCard({ image, alt = '', icon: Icon, tile = 'sand', title, meta, value, badge, badgeTone = 'neutral', action, onClick, initials }) {
+export default function ItemCard({ image, alt = '', icon: Icon, tile = 'neutral', title, meta, value, badge, badgeTone = 'neutral', action, onClick, initials }) {
   // The card is a div: the tap-through is an invisible button stretched over
   // it, so the trailing action can be a real button too (no nested buttons).
   return (

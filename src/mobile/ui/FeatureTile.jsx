@@ -4,11 +4,11 @@ import SmartImage from './SmartImage';
 /**
  * Plan hub tile: a photo or a color panel, a Lucide icon in a circle, the
  * feature name, one live stat. `tone`: 'photo' (needs image) | 'white' |
- * 'sand' | 'blush'.
+ * 'neutral' | 'tint'.
  */
 export default function FeatureTile({ icon: Icon, name, stat, image, alt = '', tone, onClick }) {
   const photo = !!image;
-  const cls = photo ? ' oi-m-tile--photo' : tone === 'sand' ? ' oi-m-tile--sand' : tone === 'blush' ? ' oi-m-tile--blush' : '';
+  const cls = photo ? ' oi-m-tile--photo' : tone === 'neutral' ? ' oi-m-tile--neutral' : tone === 'tint' ? ' oi-m-tile--tint' : '';
   return (
     <button type="button" className={`oi-m-tile oi-m-press${cls}`} onClick={onClick}>
       {photo && <SmartImage src={image} alt={alt} width={180} height={150} square tone="ink" />}

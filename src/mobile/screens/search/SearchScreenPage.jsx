@@ -39,7 +39,7 @@ export default function SearchScreenPage({ guests = [], tasks = [], vendors = []
             {results.features.length > 0 && (
               <section>
                 <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Planner</h2>
-                <RowGroup>{results.features.map((f) => <Row key={f.key} icon={f.icon} tile="sand" label={f.label} onClick={() => go(featurePath(f))} />)}</RowGroup>
+                <RowGroup>{results.features.map((f) => <Row key={f.key} icon={f.icon} tile="neutral" label={f.label} onClick={() => go(featurePath(f))} />)}</RowGroup>
               </section>
             )}
             {results.guests.length > 0 && (

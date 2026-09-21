@@ -11,14 +11,14 @@ import { deliver, srcSetFor } from '../lib/images';
  * props: src, alt (required), width (CSS px of the slot), ratio ('4/5', '16/9',
  * '1/1'), square (no radius, for use inside a hero), eager, style, className
  */
-export default function SmartImage({ src, alt = '', width = 360, height, ratio, square = false, eager = false, style, className = '', tone = 'sand' }) {
+export default function SmartImage({ src, alt = '', width = 360, height, ratio, square = false, eager = false, style, className = '', tone = 'neutral' }) {
   const [state, setState] = useState('loading');
   const h = height || (ratio ? Math.round(width / ratioNumber(ratio)) : undefined);
   const ok = !!src && state !== 'error';
   return (
     <div
       className={`oi-m-img${ok && state === 'loaded' ? ' oi-m-img--loaded' : ''}${square ? ' oi-m-img--square' : ''} ${className}`}
-      style={{ aspectRatio: ratio ? ratio.replace('/', ' / ') : undefined, background: tone === 'ink' ? 'var(--m-ink)' : tone === 'blush' ? 'var(--m-blush)' : 'var(--m-sand)', ...style }}
+      style={{ aspectRatio: ratio ? ratio.replace('/', ' / ') : undefined, background: tone === 'ink' ? 'var(--m-ink)' : tone === 'tint' ? 'var(--m-tint)' : 'var(--m-neutral)', ...style }}
       aria-label={!ok ? alt : undefined}
       role={!ok && alt ? 'img' : undefined}
     >

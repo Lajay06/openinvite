@@ -93,7 +93,7 @@ export default function MobileShell({ base = '/m', renderAva, showAva = true, no
           containerStyle={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}
           toastOptions={{
             duration: 2500,
-            style: { borderRadius: 999, boxShadow: 'none', background: '#1A1A1A', color: '#FFFFFF', fontSize: 14, fontWeight: 600, padding: '10px 16px' },
+            style: { borderRadius: 999, boxShadow: 'none', background: '#0A0A0A', color: '#FFFFFF', fontSize: 14, fontWeight: 600, padding: '10px 16px' },
             success: { iconTheme: { primary: '#E03553', secondary: '#FFFFFF' } },
             error: { iconTheme: { primary: '#E03553', secondary: '#FFFFFF' } },
           }}

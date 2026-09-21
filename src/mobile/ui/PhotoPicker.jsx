@@ -52,8 +52,8 @@ export default function PhotoPicker({ open, onClose, onUploaded, title = 'Add a 
         </div>
       ) : (
         <RowGroup>
-          <Row icon={Camera} tile="blush" label="Take photo" onClick={() => choose('camera')} />
-          <Row icon={ImageIcon} tile="sand" label="Choose from library" onClick={() => choose('library')} />
+          <Row icon={Camera} tile="tint" label="Take photo" onClick={() => choose('camera')} />
+          <Row icon={ImageIcon} tile="neutral" label="Choose from library" onClick={() => choose('library')} />
         </RowGroup>
       )}
     </BottomSheet>

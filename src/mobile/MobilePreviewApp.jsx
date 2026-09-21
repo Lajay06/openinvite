@@ -295,7 +295,7 @@ function PreviewNotificationSettings() {
 function PreviewAva() {
   const messages = useMemo(() => FIXTURE_AVA_MESSAGES, []);
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#1A1A1A', color: '#FFFFFF' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#0A0A0A', color: '#FFFFFF' }}>
       <div style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
         {messages.map((m, i) => (
           <div key={i} style={{ alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '84%', padding: '12px 16px', borderRadius: 20, background: m.role === 'user' ? '#E03553' : 'rgba(255,255,255,0.08)', fontSize: 15, lineHeight: '22px' }}>{m.text}</div>

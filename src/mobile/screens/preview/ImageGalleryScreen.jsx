@@ -16,14 +16,14 @@ export default function ImageGalleryScreen({ back }) {
   return (
     <Screen title="Image slots" subtitle={`${slots.length} slots, ${todo.length} need a photo`} back={back}>
       <div className="oi-m-stack oi-m-stack--24">
-        <PanelCard tone="sand" label="How to read this" body="Each card is one place the app shows a photo the couple did not upload. Supply the size shown at 3x for the sharpest result. Change the id in src/mobile/images.ts and it changes everywhere." />
+        <PanelCard tone="neutral" label="How to read this" body="Each card is one place the app shows a photo the couple did not upload. Supply the size shown at 3x for the sharpest result. Change the id in src/mobile/images.ts and it changes everywhere." />
         {slots.map((s) => (
           <div key={s.key} className="oi-m-card oi-m-card--flush">
             <div style={{ padding: 8 }}>
               {s.id ? (
                 <SmartImage src={`${CLOUD}/${s.id}`} alt={s.alt} width={342} ratio={s.ratio} style={s.focal ? { objectPosition: s.focal } : undefined} />
               ) : (
-                <div style={{ aspectRatio: s.ratio.replace('/', ' / '), borderRadius: 'var(--m-r-image)', background: s.tone === 'ink' ? 'var(--m-ink)' : s.tone === 'blush' ? 'var(--m-blush)' : 'var(--m-sand)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.tone === 'ink' ? '#FFFFFF' : 'var(--m-text-2)' }}>
+                <div style={{ aspectRatio: s.ratio.replace('/', ' / '), borderRadius: 'var(--m-r-image)', background: s.tone === 'ink' ? 'var(--m-ink)' : s.tone === 'tint' ? 'var(--m-tint)' : 'var(--m-neutral)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.tone === 'ink' ? '#FFFFFF' : 'var(--m-text-2)' }}>
                   <ImageOff size={28} strokeWidth={1.5} />
                 </div>
               )}

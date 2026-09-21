@@ -31,7 +31,7 @@ export default function SeatingScreen({ tables = [], guests = [], onMove, loadin
   return (
     <Screen title="Seating" subtitle={loading ? '' : `${tables.length} table${tables.length === 1 ? '' : 's'}, ${unassigned.length} unseated`} back={back} onRefresh={onRefresh}>
       <div className="oi-m-stack oi-m-stack--24">
-        <PanelCard tone="sand" label="Best on desktop" body="The table layout is drawn on a bigger screen. Here you can see who sits where and move guests between tables." action={onDesktop ? 'Open the layout on desktop' : undefined} onClick={onDesktop} />
+        <PanelCard tone="neutral" label="Best on desktop" body="The table layout is drawn on a bigger screen. Here you can see who sits where and move guests between tables." action={onDesktop ? 'Open the layout on desktop' : undefined} onClick={onDesktop} />
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : tables.length === 0 ? (
           <EmptyState icon={Armchair} text="No tables yet. Add them on desktop and they show here." />
         ) : (
@@ -41,7 +41,7 @@ export default function SeatingScreen({ tables = [], guests = [], onMove, loadin
               <ItemList>
                 {tables.map((t) => {
                   const seated = (t.assigned_guests || []).map((a) => name(a.guest_id));
-                  return <ItemCard key={t.id} icon={Armchair} tile={openTable === t.id ? 'ink' : 'sand'} title={t.name} meta={seated.length ? seated.slice(0, 3).join(', ') + (seated.length > 3 ? ` and ${seated.length - 3} more` : '') : 'Nobody seated yet'} value={`${seated.length} of ${t.capacity || 8}`} badge={seated.length >= (t.capacity || 8) ? 'Full' : undefined} badgeTone="warn" onClick={() => setOpenTable(openTable === t.id ? null : t.id)} />;
+                  return <ItemCard key={t.id} icon={Armchair} tile={openTable === t.id ? 'ink' : 'neutral'} title={t.name} meta={seated.length ? seated.slice(0, 3).join(', ') + (seated.length > 3 ? ` and ${seated.length - 3} more` : '') : 'Nobody seated yet'} value={`${seated.length} of ${t.capacity || 8}`} badge={seated.length >= (t.capacity || 8) ? 'Full' : undefined} badgeTone="warn" onClick={() => setOpenTable(openTable === t.id ? null : t.id)} />;
                 })}
               </ItemList>
             </section>

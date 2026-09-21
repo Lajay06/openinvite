@@ -59,12 +59,12 @@ export default function HomeScreen({
             <div style={{ margin: '0 calc(-1 * var(--m-gutter))' }}>
               <PeekCarousel>
                 {payments.slice(0, 2).map((p) => (
-                  <PanelCard key={`p${p.id}`} tone="wine" label={`Due ${dateShort(p.payment_date)}`} title={money(p.actual_amount || p.budgeted_amount, budget?.symbol)} body={`${p.item_name}${p.vendor ? ` to ${p.vendor}` : ''}`} onClick={onOpenBudget}>
+                  <PanelCard key={`p${p.id}`} tone="ink" label={`Due ${dateShort(p.payment_date)}`} title={money(p.actual_amount || p.budgeted_amount, budget?.symbol)} body={`${p.item_name}${p.vendor ? ` to ${p.vendor}` : ''}`} onClick={onOpenBudget}>
                     <Receipt size={18} style={{ opacity: 0.7 }} />
                   </PanelCard>
                 ))}
                 {tasks.slice(0, 5).map((t) => (
-                  <PanelCard key={t.id} tone="sand" label={dueLabel(t.due_date) || (t.priority ? `${t.priority} priority` : 'No date')} title={t.title}>
+                  <PanelCard key={t.id} tone="neutral" label={dueLabel(t.due_date) || (t.priority ? `${t.priority} priority` : 'No date')} title={t.title}>
                     <PillButton variant="light" size="sm" icon={CheckCircle2} onClick={() => onCompleteTask?.(t)} style={{ alignSelf: 'flex-start', marginTop: 4 }}>Done</PillButton>
                   </PanelCard>
                 ))}
