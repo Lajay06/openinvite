@@ -135,21 +135,21 @@ itself stays on desktop and is noted.
 **Desktop.** Tabs Attire, Flowers, Decorations. *Attire* (`AttirePanel`, `WeddingDetails.attire`): outfits `outfits[]` (`role` select from 15 roles, `roleCustom` when Other, `name`, `description`, `source`, `status` select Not started / Researching / Ordered / In alterations / Ready / Collected, `measurements`, `cost`, `photoUrl` via upload), tailor (`tailorVendorId` through `VendorContactSection`, `tailor.notes`), `fittings[]` (`date`, `who`, `notes`), `accessories[]` (`item`, `for`, `notes`?), `notes`. *Flowers* (`flowers`): Florist `vendorId` (`VendorContactSection` category flowers), `bouquet`, `bridesmaidBouquets`, `boutonnieres`, `additional`, `ceremony`, `centerpieces`, `notes`. *Decorations* (`decorations`): Decorator `vendorId`, `theme`, `colorScheme`, `ceremonyDecorations`, `receptionDecorations`, `lighting`, `linens`, `specialElements`, `notes`. Each section saves its key whole. Ava.
 **Mobile (found).** Flowers and decorations text fields only.
 **Gaps.** The attire tab entirely; the florist and decorator vendor pickers.
-**Status.** Planned (phase 1): three segments; attire outfits, tailor, fittings and accessories as lists with sheets and photo upload; vendor picker fields on flowers and decorations.
+**Status.** Done (phase 1): Attire, Flowers and Decorations segments. Attire: outfits (`AttirePanel`'s fifteen roles with the custom role, name, description, source, the six statuses, measurements, cost, a photo through the camera, library or a link), the tailor as a vendor picker, tailor notes, fittings, accessories, attire notes, all under `WeddingDetails.attire`. Flowers and Decorations carry the florist and decorator vendor pickers (`VendorContactSection`: choose one of the couple's vendors or add one through the same Vendor form) and every text field.
 
 ### Beauty (`/Beauty`) → `/m/plan/beauty`
 
 **Desktop.** Tabs Hair & makeup, Getting ready, Skincare timeline, Beauty team, Trial planning, Considerations. `WeddingDetails.beauty`: `hairArtistVendorId`, `makeupArtistVendorId` (`VendorContactSection` beauty), `styleNotes`, `hairInspo`; `gettingReadyPeople[]` (`name`, `role`, `service` hair / makeup / both); `skincareTimeline[]` (`timeframe`, `treatment`, `notes`, `done`); `trials[]` (**Add trial** modal: `date`, `artist`, `lookDescription`, `notes`, `rating` 1 to 5); `VendorRosterSection` for beauty vendors. Stats. Ava.
 **Mobile (found).** `styleNotes` and `hairInspo`.
 **Gaps.** Vendor pickers; people in the chair; skincare timeline; trials; the roster.
-**Status.** Planned (phase 1): sections for the artists (vendor pickers), the look, getting ready people, skincare timeline (tick done), trials with the rating.
+**Status.** Done (phase 1): Hair & makeup (hair and makeup artists as vendor pickers, the look, the inspiration, the beauty team roster from My vendors), Getting ready (people in the chair with name, role, hair / makeup / both), Skincare (milestones with when, treatment, notes, done), Trials (date, artist, the look, notes, a 1 to 5 rating stored as a number).
 
 ### Food & beverage (`/FoodBeverage`) → `/m/plan/food`
 
 **Desktop.** Tabs Catering, Menu, Bar & drinks, Notes, Considerations. `foodBeverage`: caterer `vendorId` (`VendorContactSection` catering), `serviceStyle` (plated, buffet, cocktail, stations, family_style), `dietaryRequirements`, `weddingCakeDetails`, `barType` (full_bar, beer_wine, dry, byo), `signatureCocktail`, `barNotes`, `additionalNotes`. Top-level `menuItems[]` (`name`, `description`) and **Guest meal options** `mealOptions[]` (`{ id, label }`, Ultra only; a gate card otherwise). Saves scoped keys. Ava.
 **Mobile (found).** Service style (drifted values), dietary, cake, bar type (drifted values), signature drink, bar notes, notes.
 **Gaps.** Value drift on two selects; caterer picker; menu items; meal options with the Ultra gate.
-**Status.** Planned (phase 1): the select values match the desktop; caterer picker; menu items list; meal options list behind `canAccessUltra`.
+**Status.** Done (phase 1): Catering (caterer vendor picker, service style with the desktop's five values, dietary overview), Menu (menu items with name and description on the top-level `menuItems`, the cake, guest meal options on the top-level `mealOptions` behind the same `canAccessUltra` gate with the desktop's gate card), Bar & drinks (bar type with the desktop's four values, signature cocktail, bar notes), Notes.
 
 ### Music (`/Music`) → `/m/plan/music`
 
@@ -163,7 +163,7 @@ itself stays on desktop and is noted.
 **Desktop.** Tabs Photographers, Videographers, Shot list, Timeline, Considerations. `photography`: photographer `photographerVendorId` and videographer `videographerVendorId` (`VendorContactSection`), `photographyStyle`, `photographyPackage`, `photographyHours`, `editingStyle`, `editedPhotosCount`, `photoDeliveryTimeline`, `deliveryFormat`, shot list (`gettingReadyShots`, `ceremonyShots`, `familyPortraits`, `receptionShots`, `mustHaveShots`), `videographyPackage`, `videoStyle`, `videoLength`, `videoDeliveryTimeline`; `VendorRosterSection` for photography and videography. Ava.
 **Mobile (found).** The text fields.
 **Gaps.** Vendor pickers.
-**Status.** Planned (phase 1): vendor picker fields.
+**Status.** Done (phase 1): Photographers (vendor picker, style, package, hours, the roster of photography vendors, delivery and editing), Videographers (vendor picker, package, style, length, delivery, the videography roster), Shot list (the five shot fields).
 
 ### Vows & speeches (`/VowsSpeeches`) → `/m/plan/vows`
 
@@ -177,7 +177,7 @@ itself stays on desktop and is noted.
 **Desktop.** Tabs Overview, Favour items, Packaging & display, Notes. `weddingFavours`: `concept`, `supplierName`, `totalBudget`, `orderedStatus` (not_started, researching, ordered, received, assembled), `favourItems[]` (`name`, `quantity`, `costPerUnit`, `notes`), `packagingType`, `packagingSupplier`, `personalised`, `personalisationDetails`, `tagsNotes`, `displayNotes`, `additionalNotes`. "Search on Google" links beside supplier fields. Ava.
 **Mobile (found).** Fields except the items list; status values drifted (not_ordered).
 **Gaps.** Favour items list; status values; Google search link.
-**Status.** Planned (phase 1).
+**Status.** Done (phase 1): Overview (concept and supplier with the Google search link, budget, the five statuses), Items (`favourItems` with name, quantity, cost per unit, notes), Packaging (type, supplier with the search link, personalized and its details, tags, display notes), Notes.
 
 ## Vendors
 
@@ -202,28 +202,28 @@ itself stays on desktop and is noted.
 **Desktop.** Tabs Celebrant, Ceremony, Legal, Notes. `celebrant` (encrypted): `name`, `title`, `type`, `phone`, `email`, `notes`; top-level `ceremonyType`, `ceremonyMusic`, `ceremonyReadings`, `vowsNotes`, `orderOfServiceNotes`, `ringBearerDetails`, `flowerGirlDetails`, `additionalNotes`; `license` (encrypted): `issuingOffice`, `applicationDate`, `issueDate`, `expiryDate`, `licenseNumber`, `witnessesRequired`, `notes`. Search on Google beside the celebrant name. Ava.
 **Mobile (found).** All fields, the encrypted split honoured.
 **Gaps.** The Google search link.
-**Status.** Parity; the search link is planned.
+**Status.** Done (phase 1): four segments as the desktop's tabs; the celebrant name carries the Google search link; the encrypted split (celebrant and license through the encrypted PUT) is unchanged.
 
 ### Transport (`/transport`) → `/m/plan/transport`
 
 **Desktop.** Tabs Overview, Shuttles, Parking, Public transport, Rideshare, Notes. `transport`: `recommendedMode` (rideshare, drive, public, shuttle, walk, hire), `coupleNote`; `shuttles[]` (`name`, `type` coach / shuttle / minibus / transfer / limo, `pickupLocation`, `pickupTime`, `returnTime`, `dropoffLocation`, `capacity`, `contact`, `notes`); `parking` (`venueParking`, `venueParkingNotes`, `nearbyCarParks[]` with `name`, `address`, `distance`, `cost`, `streetParking`, `accessibilityNotes`); `publicTransport` (`generalNotes`, `routes[]` with `type` train / bus / tram / metro / ferry, `notes`, `totalTime`); `rideshare` (`pickupLocation`, `dropoffLocation`, `lateNightNote`); `freeTextNotes`. Ava.
 **Mobile (found).** Recommended mode as free text; parking with `nearbyCarParks` as a textarea (wrong shape); shuttles list with type as text.
 **Gaps.** Mode select; shuttle type select; car parks as a list; public transport routes; rideshare.
-**Status.** Planned (phase 1).
+**Status.** Done (phase 1): Overview (recommended mode with the desktop's six values, note for the wedding party), Shuttles (name, type with the five values, pickups, drop-offs, times, seats, contact, notes), Parking (venue parking switch and notes, street parking, accessibility parking, nearby car parks as a list with name, address, distance, cost), Public transport (general notes, routes with the five types, summary and travel time), Rideshare (pickup, drop-off, late-night note), Notes.
 
 ### Accommodation (`/accommodation`) → `/m/plan/accommodation`
 
 **Desktop.** Tabs Overview, Properties, Notes. `accommodation`: `checkInDate`, `checkOutDate`, `coupleNote`, `additionalNotes`; `manualProperties[]` (**Add property** modal: `photoUrl`, `name` with a Google search link, `address`, `website`, `phone`, `bookingCode`, `coupleNote`, `tags[]` from ten options, flags `isMainGuestHotel`, `isClosestToVenue`, `isBestValue`, `isPinned`), edit, delete. Ava.
 **Mobile (found).** Dates and notes; places with name, address, url (wrong key), phone, priceRange (not a desktop field), notes.
 **Gaps.** The property sheet's real fields: photo, website key, booking code, note to guests, tags, flags; pinned first.
-**Status.** Planned (phase 1).
+**Status.** Done (phase 1): Overview (check in, check out, note to guests), Properties (the desktop's property sheet: photo, name with the search link, address, website, phone, booking code, note to guests, the ten tags, the four flags), Notes.
 
 ### Emergency contact (`/emergency-contact`) → `/m/plan/emergency`
 
 **Desktop.** Tabs Contacts, Vendors, Notes. `emergencyContacts` (encrypted): `primary`, `backup` (`name`, `role`, `phone`), `venue` (`name`, `phone`), `otherNotes`; `dayVendorContacts[]` (encrypted, `name`, `role`, `phone`). Ava.
 **Mobile (found).** Primary, backup, venue, notes.
 **Gaps.** Key vendors on the day.
-**Status.** Planned (phase 1).
+**Status.** Done (phase 1): Contacts, Vendors (`dayVendorContacts`, encrypted, name, role, phone), Notes.
 
 ## Finances
 
@@ -304,7 +304,7 @@ Read-only mirror of polls with stats and a link to Polls. **Status.** Parity thr
 
 **Desktop.** Tabs Planning, Travel, Accommodation, Notes. `honeymoonDetails`: `destination` (Google search link), `departureDate`, `returnDate`, `budget`, `departureAirport`, `flightReference`, `travelInsurance`, `travelInsuranceDetails`, `hotelName`, `checkInDate`, `checkOutDate`, `bookingReference`, `confirmationNumber`, `activitiesPlanned`, `packingNotes`, `notes`. Ava.
 **Mobile (found).** All but `confirmationNumber`.
-**Status.** Planned (phase 1).
+**Status.** Done (phase 1): every field including the confirmation number, the destination and hotel with the Google search link, in the desktop's four tabs.
 
 ### Considerations (`/Considerations`)
 
