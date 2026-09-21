@@ -559,7 +559,16 @@ function RegistryContainer({ back }) {
 
 function QnaContainer({ back }) {
   const wd = useWeddingDetails();
-  return <QnaScreen qna={wd.details?.qna || []} onSave={async (next) => { await wd.save('qna', next, false); toast.success('Saved'); }} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} />;
+  const api = useApi();
+  // QandA.jsx's Ava voice line, asked once for a list rather than as a chat.
+  const suggest = async () => {
+    const d = wd.details || {};
+    const have = (d.qna || []).map((q) => q.question).filter(Boolean);
+    const out = await api.llm(`You are Ava, helping a couple write the questions and answers their guests read on their site. Prefer the questions guests actually ask: travel, timing, dress code, children, parking. Answer in the couple's own plain voice, a sentence or two each. Suggest four questions guests will ask that are not answered yet.\nCouple: ${d.couple1Name || ''} and ${d.couple2Name || ''}. Date: ${d.weddingDate || 'not set'}. Ceremony: ${d.mainCeremony?.venueName || ''} ${d.mainCeremony?.venueAddress || ''}. Dress code: ${d.mainCeremony?.dressCode || 'not set'}.\nAlready answered: ${have.join('; ') || 'nothing yet'}.`,
+      { response_json_schema: { type: 'object', properties: { questions: { type: 'array', items: { type: 'object', properties: { question: { type: 'string' }, answer: { type: 'string' } } } } } } });
+    return Array.isArray(out?.questions) ? out.questions.filter((q) => q?.question) : [];
+  };
+  return <QnaScreen qna={wd.details?.qna || []} onSave={async (next) => { await wd.save('qna', next, false); toast.success('Saved'); }} onSuggest={suggest} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} />;
 }
 
 function GoodToKnowContainer({ back }) {

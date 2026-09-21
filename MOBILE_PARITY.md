@@ -260,7 +260,7 @@ itself stays on desktop and is noted.
 
 **Desktop.** Add a question and answer; each row removable. Ava suggests questions.
 **Mobile.** Add, edit, remove.
-**Status.** Parity (mobile edits in place, a superset).
+**Status.** Done. Add, edit, remove, and Ava suggests four unanswered questions with answers (QandA.jsx's voice line through `InvokeLLM`), each added with one tap.
 
 ### Registry (`/GuestSuiteRegistry`)
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { HelpCircle, Plus, MapPin, Hotel, Car, ScrollText, Clock, UserCheck, ShoppingBag, Search, Monitor, ExternalLink, Phone } from 'lucide-react';
+import { HelpCircle, Plus, Sparkles, MapPin, Hotel, Car, ScrollText, Clock, UserCheck, ShoppingBag, Search, Monitor, ExternalLink, Phone } from 'lucide-react';
+import toast from 'react-hot-toast';
 import Screen from '../../shell/Screen';
 import { Row, RowGroup, EmptyState, ErrorState, SkeletonRows, Switch, PanelCard, PillButton, TextField, SelectField, StatusPill, BottomSheet, ItemCard, ItemList } from '../../ui';
 import FormSheet from '../../features/FormSheet';
@@ -9,11 +10,36 @@ import { openExternal } from '../../native';
 /* ── Q&A: WeddingDetails.qna, [{ question, answer }] ─────────────────── */
 const QNA_FIELDS = [{ name: 'question', label: 'Question', type: 'text' }, { name: 'answer', label: 'Answer', type: 'textarea' }];
 
-export function QnaScreen({ qna = [], onSave, loading, error, onRetry, back }) {
+export function QnaScreen({ qna = [], onSave, onSuggest, loading, error, onRetry, back }) {
   const [sheet, setSheet] = useState(null); // index or -1
+  const [ideas, setIdeas] = useState(null); // null | 'loading' | [{question, answer}]
+  const ask = async () => {
+    setIdeas('loading');
+    try { const list = await onSuggest(); setIdeas(list); if (!list.length) toast('Ava had nothing to add. Your list covers it.'); }
+    catch { setIdeas(null); toast.error('Ava could not answer just now. Try again.'); }
+  };
+  const addIdea = async (idea) => { await onSave([...qna, { question: idea.question, answer: idea.answer || '' }]); setIdeas((l) => (Array.isArray(l) ? l.filter((x) => x !== idea) : l)); };
   return (
     <Screen title="Q&A" subtitle={loading ? '' : `${qna.length} question${qna.length === 1 ? '' : 's'} on your site`} back={back} actions={[{ icon: Plus, label: 'Add question', onClick: () => setSheet(-1) }]}>
       <div className="oi-m-stack">
+        {!loading && !error && onSuggest && (
+          <PanelCard tone="ink" label="Ava" body="What will your guests ask that you have not answered yet?">
+            <PillButton variant="light" size="sm" icon={Sparkles} onClick={ask} disabled={ideas === 'loading'} style={{ alignSelf: 'flex-start', marginTop: 8 }}>{ideas === 'loading' ? 'Thinking' : 'Suggest questions'}</PillButton>
+          </PanelCard>
+        )}
+        {Array.isArray(ideas) && ideas.length > 0 && (
+          <section>
+            <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Ava suggests</h2>
+            <RowGroup>
+              {ideas.map((idea, i) => (
+                <div key={i} className="oi-m-row" style={{ minHeight: 68 }}>
+                  <div className="oi-m-row__body"><div className="oi-m-row__label oi-m-row__label--wrap">{idea.question}</div><div className="oi-m-row__sub" style={{ whiteSpace: 'normal' }}>{idea.answer}</div></div>
+                  <PillButton variant="secondary" size="sm" icon={Plus} onClick={() => addIdea(idea)}>Add</PillButton>
+                </div>
+              ))}
+            </RowGroup>
+          </section>
+        )}
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={4} /> : qna.length === 0 ? (
           <EmptyState icon={HelpCircle} text="No questions yet. Dress code, parking and timing are the ones guests always ask." actionLabel="Add a question" onAction={() => setSheet(-1)} />
         ) : (
