@@ -33,7 +33,7 @@ export default function HomeScreen({
 
         {loading ? <Skeleton kind="hero" /> : (
           <div style={{ margin: '0 calc(-1 * var(--m-gutter))' }}>
-            <PeekCarousel size="wide">
+            <PeekCarousel size="full">
               {heroes.map((h) => (
                 <HeroCard key={h.key} image={h.image} alt="" label={h.label} number={h.number} title={h.title} sub={h.sub} action={h.action} onAction={h.onAction}>
                   {h.progress && <div style={{ marginTop: 4 }}><ProgressBar value={h.progress.value} max={h.progress.max} onDark /></div>}

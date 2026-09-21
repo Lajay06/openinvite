@@ -429,6 +429,10 @@
 .oi-m-peek__item { flex: 0 0 78%; scroll-snap-align: start; }
 .oi-m-peek--wide .oi-m-peek__item { flex: 0 0 calc(100% - 44px); }
 .oi-m-peek--narrow .oi-m-peek__item { flex: 0 0 62%; }
+/* Full: one card fills the view and the next sits a whole gutter pair away,
+   so nothing peeks; snap-stop makes a swipe move exactly one card. */
+.oi-m-peek--full { gap: calc(var(--m-gutter) * 2); }
+.oi-m-peek--full .oi-m-peek__item { flex: 0 0 100%; scroll-snap-stop: always; }
 .oi-m-peek__item:last-child { margin-right: var(--m-gutter); }
 .oi-m-dots { display: flex; justify-content: center; gap: 6px; padding-top: 12px; }
 .oi-m-dots__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--m-line); transition: background-color var(--m-fast) var(--m-ease), width var(--m-move) var(--m-spring); }
