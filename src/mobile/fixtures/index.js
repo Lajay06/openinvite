@@ -114,7 +114,7 @@ export const FIXTURE_SCHEDULE = [
   { id: 's4', event_name: 'Reception opens', event_date: '2027-03-20', start_time: '18:00', end_time: '', location: 'The Barn', category: 'reception' },
   { id: 's5', event_name: 'Speeches', event_date: '2027-03-20', start_time: '19:30', end_time: '20:00', location: 'The Barn', category: 'reception' },
   { id: 's6', event_name: 'First dance', event_date: '2027-03-20', start_time: '20:30', end_time: '', location: 'The Barn', category: 'reception' },
-  { id: 's7', event_name: 'Rehearsal dinner', event_date: '2027-03-19', start_time: '18:30', end_time: '', location: 'Beach Hotel', category: 'planning' },
+  { id: 's7', event_name: 'Rehearsal dinner', event_date: '2027-03-19', start_time: '18:30', end_time: '', location: 'Beach Hotel', category: 'rehearsal', responsible_person: 'Ben', notes: 'Casual, the Beach Hotel back room' },
 ];
 
 export const FIXTURE_VENDORS = [

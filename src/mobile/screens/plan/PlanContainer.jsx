@@ -15,6 +15,8 @@ import DetailsScreen from '../../features/DetailsScreen';
 import EntityListScreen from '../../features/EntityListScreen';
 import PlanHubScreen, { planProgress } from './PlanHubScreen';
 import EventDetailsScreen, { InvitePromptSheet } from './EventDetailsScreen';
+import ScheduleScreen from './ScheduleScreen';
+import { openExternal } from '../../native';
 import ChecklistScreen from './ChecklistScreen';
 import BudgetScreen, { BudgetCategoryScreen } from './BudgetScreen';
 import MessagesScreen, { ThreadScreen } from './MessagesScreen';
@@ -49,6 +51,7 @@ export default function PlanFeatureContainer() {
   if (!f) return <DesktopFeatureScreen title="Not here yet" body="This part of the planner is not in the app yet." back={back} onDesktop={() => navigate(back)} />;
 
   if (f.key === 'event-details') return <EventDetailsContainer back={back} />;
+  if (f.key === 'schedule') return <ScheduleContainer back={back} />;
   if (f.kind === 'details') return <DetailsContainer f={f} back={back} />;
   if (f.kind === 'entity') return <EntityContainer f={f} back={back} />;
   if (f.kind === 'desktop') return <DesktopFeatureScreen title={f.label} body={desktopBody(f.key)} stat="" back={back} onDesktop={() => openDesktop(navigate, f.desktop)} />;
@@ -108,6 +111,33 @@ function EventDetailsContainer({ back }) {
       <InvitePromptSheet event={prompt} onClose={() => setPrompt(null)} onEveryone={() => navigate(`${base}/guests?inviteAll=${encodeURIComponent(prompt.event_id)}&eventName=${encodeURIComponent(prompt.name)}`)} onChoose={() => navigate(`${base}/guests?setEvents=${encodeURIComponent(prompt.event_id)}`)} />
     </>
   );
+}
+
+/* ── Schedule ────────────────────────────────────────────────────────── */
+
+function ScheduleContainer({ back }) {
+  const api = useApi();
+  const navigate = useNavigate();
+  const { base } = useContext(ShellContext);
+  const [params] = useSearchParams();
+  const s = useEntity('Schedule', 'start_time');
+  // The timeline's other sources, as ScheduleHub.jsx loads them, each failing soft.
+  const extra = useLoad(async () => {
+    const soft = (p) => p.catch(() => []);
+    const [vendors, invitation, wd, todos, customPages, liveStreams] = await Promise.all([
+      soft(api.list('Vendor')), api.wedding.invitation().catch(() => null), api.wedding.get().catch(() => null), soft(api.list('Note')), soft(api.list('CustomEventPage')), soft(api.list('LiveStream')),
+    ]);
+    return { vendors, invitation, wd, weddingDate: wd?.weddingDate || null, todos, customPages, liveStreams };
+  }, []);
+  const feed = useLoad(() => api.json('/api/schedule-feed-url').then((d) => d.url || null).catch(() => null), []);
+  const wrap = (fn, ok) => async (...a) => { const r = await fn(...a); toast.success(ok); return r; };
+  const openHome = (kind, url) => {
+    if (kind === 'google-calendar') { const webcal = String(url).replace(/^https?:/, 'webcal:'); return openExternal(`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcal)}`); }
+    if (kind === 'webcal') return openExternal(String(url).replace(/^https?:/, 'webcal:'));
+    const to = { todo: 'checklist', vendor: 'vendors', deadline: 'event-details', music: 'music', wd: 'event-details', livestream: 'event-details', custom: 'event-details' }[kind];
+    if (to) navigate(`${base}/plan/${to}`);
+  };
+  return <ScheduleScreen items={s.data || []} sources={extra.data || {}} feedUrl={feed.data} feedState={feed.loading ? 'loading' : feed.data ? 'ready' : 'unavailable'} onCreate={wrap(s.create, 'Event added')} onUpdate={wrap(s.update, 'Event updated')} onDelete={wrap(s.remove, 'Event deleted')} onOpenHome={openHome} loading={s.loading} error={s.error} onRetry={() => { s.reload(); extra.reload(); }} back={back} openAdd={params.get('add') === '1'} onRefresh={async () => { s.reload(); extra.reload(); }} />;
 }
 
 /* ── Generic ─────────────────────────────────────────────────────────── */

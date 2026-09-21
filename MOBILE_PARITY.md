@@ -55,7 +55,7 @@ itself stays on desktop and is noted.
 **States.** Loading; empty list; "Calendar subscribing is not switched on for this wedding yet."
 **Mobile (found).** Generic entity list over Schedule with add, edit, delete; fields event_name, date, start, end, location, category (four values, drift), responsible_person, description, notes; grouped by date.
 **Gaps.** Category list drift (mobile had ceremony/reception/planning/after); the merged timeline (vendor dates, to-dos, deadlines) and its type filter; run sheet; calendar subscribe; .ics and CSV export.
-**Status.** Planned (phase 1): the timeline segment (merged events, type filter, grouped by day), My events (add, edit, delete with the full form and the grouped category select), Run sheet, Subscribe (Google Calendar through the feed URL, copy link), Export (.ics and CSV through the native share sheet or a download).
+**Status.** Done (phase 1): Timeline (the merged `buildScheduleEvents` list with the type filter and counts, grouped by day under sticky headers; schedule rows open the edit sheet, other rows open their home screen), My events (add, edit, delete with `ScheduleForm`'s fields and the grouped category select, the same required fields), Run sheet (`eventsInSchedule` and `runSheetFor`, one event or all), Calendar (Subscribe in Google Calendar and Add to the phone's calendar from `/api/schedule-feed-url`, copy the link, the .ics snapshot and the CSV export through `exportText`). The month grid view stays on desktop; the timeline's day grouping is the phone's calendar.
 
 ### To do (`/TodoList`) → `/m/plan/checklist`
 
