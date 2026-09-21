@@ -322,19 +322,42 @@ export function routeForDeepLink(url: string): string | null {
   return `/${path.join('/')}${u.search && !token ? u.search : ''}`;
 }
 
+// On iOS, App.getLaunchUrl() returns the last URL the app was ever opened
+// with, cold or warm, and never clears it (ApplicationDelegateProxy.lastURL).
+// So every mount that registers below would replay it. Found on the first
+// simulator run: a link to a guarded route while signed out bounced to
+// /m/welcome, which remounted, replayed the link, bounced again, and WebKit
+// threw after 100 replaceState calls. The auth callback had the same shape
+// through its reload. The URL already handled is kept in sessionStorage,
+// which survives that reload inside the webview.
+const HANDLED_URL_KEY = 'oi_deeplink_handled';
+let handledUrlFallback: string | null = null;
+function handledUrl(): string | null {
+  try { return window.sessionStorage.getItem(HANDLED_URL_KEY) ?? handledUrlFallback; } catch { return handledUrlFallback; }
+}
+function markHandled(url: string): void {
+  handledUrlFallback = url;
+  try { window.sessionStorage.setItem(HANDLED_URL_KEY, url); } catch { /* private mode */ }
+}
+
 /** Listens for openinvite:// and universal links and hands the route to the caller. Disposer returned. */
 export async function registerDeepLinks(onRoute: (path: string, raw: string) => void): Promise<() => void> {
   const mod = await load('app');
   if (!mod) return () => {};
   try {
     const handle = await mod.App.addListener('appUrlOpen', ({ url }: { url: string }) => {
+      markHandled(url);
       const path = routeForDeepLink(url);
       if (path) onRoute(path, url);
     });
-    // A cold start from a link: the URL that launched the app.
+    // A cold start from a link: the URL that launched the app, once.
     try {
       const launch = await mod.App.getLaunchUrl();
-      if (launch?.url) { const path = routeForDeepLink(launch.url); if (path) onRoute(path, launch.url); }
+      if (launch?.url && launch.url !== handledUrl()) {
+        markHandled(launch.url);
+        const path = routeForDeepLink(launch.url);
+        if (path) onRoute(path, launch.url);
+      }
     } catch { /* no launch url */ }
     return () => { try { handle.remove(); } catch { /* no-op */ } };
   } catch {

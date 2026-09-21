@@ -242,14 +242,17 @@ Every icon-only button carries an `aria-label` (header actions, the bell, item-c
 
 - `npm run build`: passes. `npm run lint`: passes. `scripts/test-route-collisions.mjs`: passes.
 - `npx cap sync`: passes, eleven plugins on each platform.
-- **Xcode is not installed on this machine** (`xcode-select -p` is `/Library/Developer/CommandLineTools`, `xcodebuild` reports "requires Xcode"), so the iOS project has not been built for the simulator here. The steps are under "How to run on the simulator" below. Android Studio and a JDK are not installed either.
+- **Built and run on the iOS simulator, 2026-09-21** (Xcode 27.0, iOS 27.0 runtime, iPhone 17). `npm run mobile:build` passes; `xcodebuild` on `ios/App/App.xcodeproj` passes (Swift packages resolve, no CocoaPods); the app installs and launches. Captures are in `mobile-screenshots/simulator/` at half the iPhone 17's 1206 by 2622: `00-before-fix-launch-black` (the first launch, before the fixes), `01-welcome`, `02-provider-handoff-safari` (Continue with Google, in Safari), `03-preview-home` (from the throwaway dev bundle). The login screen itself was not captured; it needs a tap the headless run could not give. What the run found and what was fixed is under "First simulator run" below. Android Studio and a JDK are still not installed.
 - 62 screenshots at 390 by 844 in `mobile-screenshots/`, all passing the width, 44px, 16px and shadow probe, including the new list patterns, the image gallery, welcome, login, the lock screen, the offline state and priming.
 
 ### How to run on the simulator and on a real iPhone
 
 1. Install Xcode from the App Store (the full app, not the command line tools), open it once to accept the license and install the iOS platform. Then `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`.
-2. `npm run mobile:build` (builds the web app and runs `cap sync`), then `npm run mobile:ios` to open `ios/App/App.xcworkspace`. Pick a simulator and press Run.
-3. Command line: `cd ios/App && xcodebuild -workspace App.xcworkspace -scheme App -destination 'platform=iOS Simulator,name=iPhone 16' build`.
+2. `npm run mobile:build` (builds the web app and runs `cap sync`), then `npm run mobile:ios` to open `ios/App/App.xcodeproj` (there is no `.xcworkspace`; Capacitor 8 resolves its plugins as Swift packages inside the project). Pick a simulator and press Run.
+3. Command line: `xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath ios/DerivedData build`, then `xcrun simctl install booted <DerivedData>/Build/Products/Debug-iphonesimulator/App.app` and `xcrun simctl launch --console-pty booted au.com.openinvite.app` (the console shows the Capacitor bridge and `console.error` from the web app). Screenshots: `xcrun simctl io booted screenshot out.png`.
+   - **Xcode 27**: `Simulator.app` was renamed `DeviceHub.app` and moved to `Xcode.app/Contents/Applications/`. `npx cap run ios` builds fine and then fails at "Deploying" with "Simulator.app does not exist"; that is a Capacitor CLI path bug, not a build failure. The simctl steps above do not need the window at all. To get the window: `open -a /Applications/Xcode.app/Contents/Applications/DeviceHub.app`.
+   - `xcrun simctl openurl booted "openinvite://..."` puts up an "Open in Openinvite?" alert on iOS 27 that has to be tapped in the window.
+   - Local builds have no `.env`, so `VITE_BASE44_APP_ID` is unset and the SDK warns at build time. Vercel supplies it in CI. For sign-in to work in a local simulator build, `vercel env pull` first.
 4. A real iPhone: sign in with an Apple ID under Xcode > Settings > Accounts, set the team on the App target under Signing & Capabilities, plug the phone in, trust the computer, select it as the destination and Run. For a personal team the app expires after seven days; the Apple Developer Program lifts that and is needed for TestFlight, push and Face ID entitlements.
 5. Deep links on the simulator: `xcrun simctl openurl booted "openinvite://m/plan/budget"`.
 
@@ -263,13 +266,31 @@ Every icon-only button carries an `aria-label` (header actions, the bell, item-c
 
 ### Stubs and blockers added in goal 3
 
-1. The iOS and Android projects are synced, not built (no Xcode, no Android Studio here).
+1. The iOS project is built and runs on the simulator (see "First simulator run"). Android is synced, not built (no Android Studio, no JDK).
 2. `PushSubscription`, `DeviceToken`, `push_prefs`, the fan-out and the crons are a proposal only (`PUSH_BACKEND_PROPOSAL.md`). The priming screen records the choice locally.
 3. Face ID, the camera and deep links are wired and untested on a device; each is a no-op on the web and in the preview, and each degrades to a plain message on failure.
 4. Pinch zoom is held off with `touch-action: pan-x pan-y` on the root, not a viewport `maximum-scale`, because `index.html` is outside goal 3's allowed edits.
 5. Long lists are neither virtualized nor paginated: the existing loaders return whole lists and there is no page cursor to reuse, and no virtualization library was added. Guests at a few hundred rows render fine in the probe.
 6. Photo upload is offered where the desktop offers it and the feature exists in the app: moodboard pins and registry images. The cover photo and Our Story photos are set in the builder on desktop.
 7. The welcome gate runs natively only; on the web, `/m` still redirects a signed-out visitor to the existing `/login?next=/m`.
+8. **The launch screen renders black for two to four seconds** before the splash plugin's image appears. `splashboardd` logs `XBLaunchStoryboardErrorDomain code 6: Estimated size (29900800) is over limit (25000000)` and falls back to black. The number is the one capacitor-assets users report for its 2732 by 2732 output (ionic-team/capacitor-assets#640), but on iOS 27 it did not change after the imageset was downscaled to 2000 px or the storyboard's declared size was reduced, so the estimate is not driven by the image alone; both experiments were reverted. Proposed fix, not applied: rebuild `LaunchScreen.storyboard` as a plain view with a named background color (light `#F5F5F4`, dark `#0A0A0A`) and a small centered image view for the mark, instead of a full-screen image view. Needs a device run to confirm the same limit applies there.
+9. A blank page-colored frame shows for about a second between the splash fading and the welcome photo arriving from Cloudinary, on both cold and warm starts. Cosmetic; holding the splash until the first image decodes is the fix if it matters.
+
+### First simulator run (2026-09-21)
+
+Production bundle, Debug build, iPhone 17 simulator on iOS 27.0. Cold start to the welcome screen is about seven seconds (four of them the black launch screen, item 8 above); a warm relaunch is about four. Two bugs surfaced on the first launch, both in code that could not run anywhere but a device, both fixed inside `src/mobile/`:
+
+1. **The splash never hid on a fresh install.** With no session, `/m` bounces to `/m/welcome`, which renders `MobileFirstRun`; only `MobileShell` called `hideSplash()`, and `launchAutoHide` is off, so the native splash sat over welcome and login forever. `MobileFirstRun` now runs the same boot as the shell (status bar, keyboard, splash) and registers the deep-link listener, which it also needed: the provider sign-in returns to `openinvite://auth?access_token=` while that screen is up.
+2. **Deep links replayed forever.** On iOS `App.getLaunchUrl()` returns the last URL the app was ever opened with, cold or warm, and never clears it (`ApplicationDelegateProxy.lastURL`). A link to a guarded route while signed out bounced to `/m/welcome`, which remounted, read the same URL back, bounced again, and WebKit threw its 100-`replaceState` SecurityError into the error boundary. The auth callback had the same shape across its reload. `registerDeepLinks` now records the URL it handled in `sessionStorage` (which survives the reload inside the webview) and skips the replay.
+
+Also observed:
+
+- Tapping Continue with Google on `/m/login` leaves the webview in place and opens Base44's provider page in Safari (Capacitor sends off-origin top-level navigations to the system browser), with the "Openinvite" back link in the status bar. That is the right shape for Google, which refuses embedded webviews. Whether Base44 then returns to `openinvite://auth` depends on the redirect URL being registered (manual steps).
+- Safe areas: the status bar overlays the page (`overlaysWebView`), the welcome title sits clear of the notch, the tab bar clears the home indicator, the Ava button floats above it. Nothing differs from the 390 by 844 browser captures except the status bar itself and the 402 by 874 point canvas of the iPhone 17.
+- Plus Jakarta Sans renders natively; no fallback font appears.
+- The keyboard was not exercised: the login form needs a tap the headless run could not give (see the Xcode 27 notes above).
+- `/m/preview` is not in the production bundle (`import.meta.env.DEV` gates the route), so the preview home capture came from a throwaway `NODE_ENV=development vite build --mode development`, which is not committed. Plain `vite build --mode development` is not enough; Vite keeps `DEV` false without `NODE_ENV`.
+- Running `cap run` or `xcodebuild` leaves `ios/DerivedData/` behind (gitignored), and `npm run lint` then fails on Capacitor's bundled `native-bridge.js` inside it because `eslint.config.js` does not ignore `ios/**`. Existing-file edit, listed under "Needs a decision".
 
 ### Needs a decision (goal 3 additions)
 
@@ -277,11 +298,13 @@ Every icon-only button carries an `aria-label` (header actions, the bell, item-c
 - **Redirect URL policy on Base44.** Whether the custom scheme is accepted as a `from_url`, or the universal-link route should be built first.
 - **Push schema** (`PUSH_BACKEND_PROPOSAL.md`): the four open questions at its end, and approval of the three entity changes before anything is applied.
 - **`index.html` viewport**: whether to add `maximum-scale=1` for the native build only (a build-time swap), which WKWebView honors and which removes the last pinch-zoom path.
+- **`eslint.config.js`**: add `ios/**` and `android/**` to the global ignores so a simulator build does not make `npm run lint` fail on Capacitor's bundled JavaScript.
+- **The launch screen** (item 8 above): rebuild the storyboard without a full-screen image view.
 
 ### Roadmap, re-ordered for what is left before TestFlight
 
-1. Owner: Xcode, Apple Developer Program, CORS for the shell origin, the Base44 redirect URL.
-2. Build the iOS project in Xcode; run on a device; check Face ID, the camera, deep links and the keyboard on real hardware.
+1. Owner: Apple Developer Program, CORS for the shell origin, the Base44 redirect URL, `vercel env pull` for local builds. Xcode is installed.
+2. Run on a device; check Face ID, the camera, deep links and the keyboard on real hardware. The simulator run is done; the launch screen finding (item 8) is the one thing to settle before TestFlight.
 3. Approve and apply the push schema; ship the triggers; then registration, then the fan-out (order in the proposal).
 4. TestFlight build with the current icon; a designed icon when one exists.
 5. Universal links on `openinvite.com.au` for auth and shared links.
@@ -322,11 +345,13 @@ the desktop uses. Nothing links to `/m` from the dashboard yet.
 
 ```
 npm run mobile:build        # vite build, then npx cap sync
-npm run mobile:ios          # opens ios/App in Xcode; pick a simulator and run
+npm run mobile:ios          # opens ios/App/App.xcodeproj in Xcode; pick a simulator and run
 ```
 
 Needs Xcode (the full app, not the command line tools). Capacitor 8 uses Swift
-Package Manager, so CocoaPods is not required.
+Package Manager, so CocoaPods is not required. Verified on Xcode 27.0; the
+command-line route and the Xcode 27 quirks are under "How to run on the
+simulator and on a real iPhone" above.
 
 **Android emulator**
 
