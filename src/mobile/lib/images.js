@@ -77,6 +77,9 @@ export function coupleImages(details) {
   return [];
 }
 
+/** The couple's own imagery only: cover photo, site photo blocks, Our Story photos. */
+export function ownImages(d) { return imagesFrom(d); }
+
 function imagesFrom(d) {
   if (!d) return [];
   const out = [];

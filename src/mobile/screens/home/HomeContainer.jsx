@@ -11,7 +11,7 @@ import { usePlanData } from '../../data/plan';
 import { taskWrites } from '../../data/wedding';
 import { hapticLight, shareLink } from '../../native';
 import { siteUrlFor } from '../../lib/links';
-import { coupleImages } from '../../lib/images';
+import { ownImages, imageUrl } from '../../lib/images';
 import { leastTouched, featureByKey } from '../../features/registry';
 import { summariseBudget } from '../plan/BudgetScreen';
 
@@ -28,7 +28,10 @@ export default function HomeContainer() {
   const firstName = (details?.couple1Name || user?.full_name || '').split(' ')[0];
   const coupleName = details?.couple1Name && details?.couple2Name ? `${details.couple1Name} & ${details.couple2Name}` : details?.couple1Name || details?.couple2Name || '';
   const daysToGo = details?.weddingDate ? daysUntilWedding(details.weddingDate) : null;
-  const images = useMemo(() => coupleImages(details), [details]);
+  // The couple's own photos take priority here and on the Site preview; with
+  // none, the hero draws from the app/ folder (goal 4, phase 1), never from
+  // the universe's sample content.
+  const images = useMemo(() => { const own = ownImages(details); return own.length ? own : [imageUrl('heroDays'), imageUrl('heroReplies'), imageUrl('heroAva'), imageUrl('heroShare')]; }, [details]);
   const siteUrl = siteUrlFor(details);
 
   const rsvp = useMemo(() => {

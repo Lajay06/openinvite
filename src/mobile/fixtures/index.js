@@ -6,6 +6,8 @@
  * same shapes they get from the containers. Deterministic: no Math.random.
  */
 
+import { imageUrl } from '../images';
+
 const FIRST = ['Amelia', 'Oliver', 'Charlotte', 'Jack', 'Isla', 'Noah', 'Mia', 'William', 'Grace', 'Leo', 'Ava', 'Henry', 'Chloe', 'Thomas', 'Zoe', 'Lucas', 'Ruby', 'Ethan', 'Sophie', 'Harrison', 'Evie', 'Oscar', 'Matilda', 'Hunter', 'Ivy', 'Levi', 'Willow', 'Archie', 'Harper', 'Cooper', 'Ella', 'Max', 'Lily', 'Finn', 'Sienna', 'Elijah', 'Layla', 'Mason', 'Hannah', 'Xavier'];
 const LAST = ['Nguyen', 'Smith', 'Williams', 'Chen', 'Brown', 'Taylor', 'Jones', 'Singh', 'Wilson', 'Lee', 'Martin', 'Kelly', 'Thompson', 'Ryan', 'Walker', 'Kaur', 'Robinson', 'Scott', 'Anderson', 'White'];
 const CATEGORIES = ['family', 'friends', 'colleagues', 'partners_family', 'partners_friends'];
@@ -29,8 +31,8 @@ export const FIXTURE_WEDDING = {
   activeUniverse: 'tulum',
   slug: 'priya-and-tom',
   websiteEnabled: true,
-  coverPhoto: 'https://res.cloudinary.com/dsr84xknv/image/upload/DTS_Slices_of_Summer_Mark_La_Montagne_Photos_ID2661_vb5omq',
-  ourStoryContent: { photos: ['https://res.cloudinary.com/dsr84xknv/image/upload/DTS_Like_a_Movie_Foster___Asher_Photos_ID1042_qaddk3', 'https://res.cloudinary.com/dsr84xknv/image/upload/DTS_NU_NUPTIALS_Shauna_Summers_Photos_ID10310_o5dcie', 'https://res.cloudinary.com/dsr84xknv/image/upload/DTS_Tradition_Chris_Abatzis_Photos_ID9150_yiunlp'] },
+  coverPhoto: imageUrl('fixtureCover'),
+  ourStoryContent: { photos: [imageUrl('fixtureStory1'), imageUrl('fixtureStory2'), imageUrl('fixtureStory3')] },
   guestCount: 82,
   mainCeremony: { venue: 'The Fig Tree', address: '4 Beach Rd, Byron Bay NSW 2481', time: '15:00' },
   reception: { venue: 'The Fig Tree', address: '4 Beach Rd, Byron Bay NSW 2481', time: '18:00' },
@@ -165,10 +167,10 @@ export const FIXTURE_VOWS = [
 ];
 
 export const FIXTURE_MOODBOARD = [
-  { id: 'mb1', title: 'Arbour with native greenery', category: 'flowers', image_url: 'https://res.cloudinary.com/dsr84xknv/image/upload/DTS_Natural_Beauty_Rob_Christain_Crosby_Photos_ID2680_fnyjzd', tags: ['ceremony', 'green'] },
-  { id: 'mb2', title: 'Long tables, linen, candles', category: 'decor', image_url: 'https://res.cloudinary.com/dsr84xknv/image/upload/DTS_Grand_Design_Daniel_Far%C3%B2_Photos_ID4152_auimyj', tags: ['reception'] },
-  { id: 'mb3', title: 'Slip dress, no veil', category: 'dress', image_url: 'https://res.cloudinary.com/dsr84xknv/image/upload/DTS_DECADENT_Debora_Spanhol_Photos_ID12475_viqbsz', tags: ['attire'] },
-  { id: 'mb4', title: 'Golden hour portraits', category: 'other', image_url: 'https://res.cloudinary.com/dsr84xknv/image/upload/DTS_Like_a_Movie_Foster___Asher_Photos_ID1042_qaddk3', tags: ['photos'] },
+  { id: 'mb1', title: 'Lilies in red light', category: 'flowers', image_url: imageUrl('fixturePin1'), tags: ['ceremony', 'evening'] },
+  { id: 'mb2', title: 'Flowers carried down the street', category: 'decor', image_url: imageUrl('fixturePin2'), tags: ['reception'] },
+  { id: 'mb3', title: 'A coupe for cocktail hour', category: 'other', image_url: imageUrl('fixturePin3'), tags: ['drinks'] },
+  { id: 'mb4', title: 'White shirts, arms linked', category: 'dress', image_url: imageUrl('fixturePin4'), tags: ['attire'] },
 ];
 
 export const FIXTURE_TABLES = [
