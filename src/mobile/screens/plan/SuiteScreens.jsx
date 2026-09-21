@@ -18,7 +18,7 @@ export function QnaScreen({ qna = [], onSave, onSuggest, loading, error, onRetry
     try { const list = await onSuggest(); setIdeas(list); if (!list.length) toast('Ava had nothing to add. Your list covers it.'); }
     catch { setIdeas(null); toast.error('Ava could not answer just now. Try again.'); }
   };
-  const addIdea = async (idea) => { await onSave([...qna, { question: idea.question, answer: idea.answer || '' }]); setIdeas((l) => (Array.isArray(l) ? l.filter((x) => x !== idea) : l)); };
+  const addIdea = async (idea) => { await onSave([...qna, { id: Date.now(), question: idea.question, answer: idea.answer || '' }]); setIdeas((l) => (Array.isArray(l) ? l.filter((x) => x !== idea) : l)); };
   return (
     <Screen title="Q&A" subtitle={loading ? '' : `${qna.length} question${qna.length === 1 ? '' : 's'} on your site`} back={back} actions={[{ icon: Plus, label: 'Add question', onClick: () => setSheet(-1) }]}>
       <div className="oi-m-stack">
@@ -50,7 +50,7 @@ export function QnaScreen({ qna = [], onSave, onSuggest, loading, error, onRetry
       </div>
       {sheet != null && (
         <FormSheet open title={sheet < 0 ? 'Add question' : 'Edit question'} fields={QNA_FIELDS} initial={sheet < 0 ? null : qna[sheet]} required={['question']} onClose={() => setSheet(null)}
-          onSave={async (v) => { const next = [...qna]; if (sheet < 0) next.push(v); else next[sheet] = { ...next[sheet], ...v }; await onSave(next); }}
+          onSave={async (v) => { const next = [...qna]; if (sheet < 0) next.push({ id: Date.now(), ...v }); else next[sheet] = { ...next[sheet], ...v }; await onSave(next); }}
           onDelete={sheet < 0 ? undefined : async () => { await onSave(qna.filter((_, i) => i !== sheet)); setSheet(null); }} />
       )}
     </Screen>

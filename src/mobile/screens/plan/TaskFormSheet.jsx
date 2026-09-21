@@ -25,7 +25,8 @@ export default function TaskFormSheet({ open, task, onClose, onSave, onDelete, o
     if (!f.title.trim()) { setError('Give the task a name.'); return; }
     setSaving(true); setError('');
     try {
-      const out = { ...f, title: f.title.trim(), description: f.description.trim() || undefined, due_date: f.due_date || undefined };
+      // TodoList.jsx clears with null; undefined would be dropped from the JSON and the old value kept.
+      const out = { ...f, title: f.title.trim(), description: f.description.trim() || (task ? null : undefined), due_date: f.due_date || (task ? null : undefined) };
       if (task && f.status !== (task.status || 'Ideas')) out.completed = f.status === 'Done';
       await onSave(out);
       onClose();

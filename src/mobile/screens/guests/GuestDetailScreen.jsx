@@ -126,7 +126,7 @@ export default function GuestDetailScreen({ guest, weddingEvents = [], mealOptio
             {!invited && !guest.rsvp_note && !guest.song_request && <div className="oi-m-kv"><div className="oi-m-kv__v" style={{ color: 'var(--m-text-2)' }}>Nothing sent yet.</div></div>}
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
-            {onSendInvite && <PillButton variant="secondary" size="sm" icon={Send} onClick={onSendInvite}>{invited ? 'Send again' : 'Send invitation'}</PillButton>}
+            {onSendInvite && <PillButton variant="secondary" size="sm" icon={Send} onClick={onSendInvite}>{invited ? 'Send again' : (guest.event_responses || []).length ? 'Send invitation' : 'Set events and send'}</PillButton>}
             {onCopyLink && <PillButton variant="secondary" size="sm" icon={Link2} onClick={onCopyLink}>Copy RSVP link</PillButton>}
             {onEditEvents && <PillButton variant="secondary" size="sm" icon={CalendarCheck} onClick={onEditEvents}>Edit events</PillButton>}
           </div>

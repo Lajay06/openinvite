@@ -9,7 +9,7 @@ import GuestPickerField from './GuestPickerField';
 import { openExternal } from '../native';
 
 /** Renders one schema field bound to `value`/`onChange`. */
-export function SchemaField({ field, value, onChange, error }) {
+export function SchemaField({ field, value, onChange, error, values = {} }) {
   const common = { label: field.label, error, id: `f-${field.name}` };
   switch (field.type) {
     case 'textarea':
@@ -53,8 +53,15 @@ export function SchemaField({ field, value, onChange, error }) {
       return <p className="oi-m-meta">{field.label}</p>;
     case 'email':
     case 'tel':
-    case 'url':
-      return <TextField {...common} type={field.type} inputMode={field.type === 'tel' ? 'tel' : field.type === 'email' ? 'email' : 'url'} autoCapitalize="off" value={value ?? ''} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder} />;
+    case 'url': {
+      const warn = !error && typeof field.warn === 'function' ? field.warn(value, values) : '';
+      return (
+        <div>
+          <TextField {...common} type={field.type} inputMode={field.type === 'tel' ? 'tel' : field.type === 'email' ? 'email' : 'url'} autoCapitalize="off" value={value ?? ''} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder} />
+          {warn && <p className="oi-m-meta" style={{ color: 'var(--m-primary)', marginTop: 6 }}>{warn}</p>}
+        </div>
+      );
+    }
     default:
       return <TextField {...common} value={value ?? ''} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder} />;
   }

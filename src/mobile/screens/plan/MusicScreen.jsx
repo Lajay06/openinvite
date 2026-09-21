@@ -58,7 +58,7 @@ export default function MusicScreen({ tracks = [], requests = [], settings = {},
       <div className="oi-m-stack oi-m-stack--24" style={{ paddingTop: segment === 'requests' ? 16 : 0 }}>
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : segment === 'requests' ? (
           requests.length === 0 ? (
-            <EmptyState icon={Music2} text={settings.guestRequestsEnabled === false ? 'Song requests are switched off. Turn them on under settings and guests can suggest songs from your site.' : 'No requests yet. Guests can suggest songs from your site.'} />
+            <EmptyState icon={Music2} text={!settings.guestRequestsEnabled ? 'Song requests are switched off. Turn them on under settings and guests can suggest songs from your site.' : 'No requests yet. Guests can suggest songs from your site.'} />
           ) : visible.length === 0 ? <EmptyState icon={Music2} text="Nothing here for this filter." /> : (
             <RowGroup>
               {visible.map((r) => {
@@ -136,7 +136,7 @@ export default function MusicScreen({ tracks = [], requests = [], settings = {},
 /** Music.jsx's SettingsModal. */
 function SettingsSheet({ open, onClose, settings, onSave }) {
   const [v, setV] = useState({});
-  useEffect(() => { if (open) setV({ guestRequestsEnabled: settings.guestRequestsEnabled !== false, requestsRequireApproval: !!settings.requestsRequireApproval, limitOnePerGuest: !!settings.limitOnePerGuest, requestMessage: settings.requestMessage ?? DEFAULT_MUSIC_REQUEST_MESSAGE }); }, [open, settings]);
+  useEffect(() => { if (open) setV({ guestRequestsEnabled: !!settings.guestRequestsEnabled, requestsRequireApproval: !!settings.requestsRequireApproval, limitOnePerGuest: !!settings.limitOnePerGuest, requestMessage: settings.requestMessage ?? DEFAULT_MUSIC_REQUEST_MESSAGE }); }, [open, settings]);
   const [saving, setSaving] = useState(false);
   const rows = [['guestRequestsEnabled', 'Enable guest song requests'], ['requestsRequireApproval', 'Require approval before adding'], ['limitOnePerGuest', 'One request per guest']];
   return (

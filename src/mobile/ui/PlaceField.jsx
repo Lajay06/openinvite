@@ -17,7 +17,7 @@ import { openExternal } from '../native';
  * a card with its photo, address and Open in Maps, which opens the native
  * Maps app through the system, never inside the webview.
  */
-export default function PlaceField({ label = 'Venue', value, onChange, locationBias = '', placeholder = 'Search for a place', manualFields = null, extraFromPlace }) {
+export default function PlaceField({ label = 'Venue', value, onChange, locationBias = '', placeholder = 'Search for a place', manualFields = null, extraFromPlace, queryPrefix = '' }) {
   const api = useApi();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
@@ -35,7 +35,7 @@ export default function PlaceField({ label = 'Venue', value, onChange, locationB
     if (!q.trim() || q.trim().length < 2) { setResults([]); setOpen(false); return; }
     setSearching(true);
     try {
-      const body = { q: q.trim(), location: locationBias };
+      const body = { q: `${queryPrefix}${q.trim()}`, location: locationBias };
       if (coords.current) { body.lat = coords.current.lat; body.lng = coords.current.lng; }
       const places = await api.places.search(body);
       setResults(places || []);
@@ -55,6 +55,7 @@ export default function PlaceField({ label = 'Venue', value, onChange, locationB
       photoUrl: place.photo_reference ? api.places.photo(place.photo_reference) : null,
       photoReference: place.photo_reference || null,
       rating: place.rating ?? null,
+      price_level: place.price_level ?? null,
       ...(extraFromPlace ? extraFromPlace(place) : {}),
     });
     setQuery(''); setResults([]); setOpen(false); setManual(false);

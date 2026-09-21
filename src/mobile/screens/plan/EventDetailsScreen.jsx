@@ -132,7 +132,7 @@ function ChangeAddressSheet({ open, currentSlug, onClose, onChange }) {
         <p className="oi-m-meta">Your site is at openinvite.com.au/w/{currentSlug}. Links you have already shared keep working.</p>
         <TextField label="New address" value={wanted} onChange={(e) => setWanted(e.target.value)} placeholder="jay-ella" autoCapitalize="off" autoCorrect="off" />
         <TextField label="Type it again" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="jay-ella" autoCapitalize="off" autoCorrect="off" error={confirm && !matches ? 'The two do not match yet.' : same ? 'That is already your address.' : ''} />
-        {cleaned && <p className="oi-m-meta">It will read openinvite.com.au/w/{cleaned}</p>}
+        {cleaned ? <p className="oi-m-meta">It will read openinvite.com.au/w/{cleaned}</p> : wanted.trim() ? <p className="oi-m-field__error" role="alert">Letters, numbers and hyphens.</p> : null}
         {error && <p className="oi-m-field__error" role="alert">{error}</p>}
       </div>
     </BottomSheet>

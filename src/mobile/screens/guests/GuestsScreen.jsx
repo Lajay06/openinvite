@@ -1,9 +1,11 @@
-import React, { useMemo, useState } from 'react';
-import { Search, Plus, Users, MoreHorizontal, Upload, Download, Send, CheckSquare, X } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Search, Plus, Users, MoreHorizontal, Upload, Download, Send, CheckSquare, X, Mail } from 'lucide-react';
 import Screen from '../../shell/Screen';
-import { FilterPills, SearchScreen, SkeletonRows, ErrorState, EmptyState, StatusPill, ProgressBar, RowGroup, SwipeRow, SWIPE_ICONS, BottomSheet, Row, Checkbox, PillButton } from '../../ui';
+import { FilterPills, SearchScreen, SkeletonRows, ErrorState, EmptyState, StatusPill, ProgressBar, RowGroup, SwipeRow, SWIPE_ICONS, BottomSheet, Row, Checkbox, PillButton, SelectField } from '../../ui';
 import { imageUrl } from '../../images';
-import { isAttending, isDeclined, isPending, isAwaitingPrimary } from '@/lib/guestRsvpTally';
+import { isAttending, isDeclined, isPending, isAwaitingPrimary, tallyAttendees } from '@/lib/guestRsvpTally';
+import { resolveAttendees } from '@/lib/attendees';
+import { prefGet, prefSet } from '../../native';
 import { getGuestEventResponse } from '@/lib/weddingEvents';
 import { initials, RSVP_LABEL, RSVP_TONE, GUEST_CATEGORY_LABEL } from '../../lib/format';
 
@@ -20,17 +22,34 @@ export function applyGuestFilter(list, key) {
     case 'attending': return list.filter(isAttending);
     case 'declined': return list.filter(isDeclined);
     case 'awaiting': return list.filter(isAwaitingPrimary);
-    case 'not_invited': return list.filter((g) => !g.invite_sent_at && isPending(g));
+    case 'not_invited': return list.filter((g) => !g.invite_sent_at); // Guests.jsx: never sent, whatever they replied
     default: return list;
   }
 }
 
+/** GuestList.jsx's sortable columns. */
+const SORTS = [{ value: 'added', label: 'Newest first' }, { value: 'name', label: 'Name' }, { value: 'category', label: 'Category' }, { value: 'status', label: 'RSVP status' }, { value: 'table', label: 'Table' }];
+function sortGuests(list, key) {
+  if (key === 'added') return list;
+  const acc = { name: (g) => g.name || '', category: (g) => g.category || '', status: (g) => g.rsvp_status || '', table: (g) => g.table_assignment || '' }[key];
+  return [...list].sort((a, b) => acc(a).localeCompare(acc(b), 'en', { numeric: true }));
+}
+
+/** GuestList.jsx's title-case suggestion: an all-lowercase name gets one tap to fix; a decline persists per guest. */
+export function suggestTitleCase(name) {
+  const raw = (name || '').trim();
+  if (!raw || /[A-Z]/.test(raw) || !/[a-z]/.test(raw)) return null;
+  const suggested = raw.replace(/(^|[\s'-])([a-z])/g, (m, sep, ch) => sep + ch.toUpperCase());
+  return suggested === raw ? null : suggested;
+}
+const CASE_DISMISS_KEY = 'name_case_dismissed';
+
 const EVENT_STATUS = { yes: ['ok', 'Yes'], no: ['no', 'No'], pending: ['warn', 'Awaiting'] };
 
 /** One guest row: initials tile, name, sub line, status pill (per event when an event filter is on). */
-export function GuestRow({ guest, onClick, event, selectable, selected, onSelect }) {
+export function GuestRow({ guest, onClick, event, selectable, selected, onSelect, role, caseSuggestion, onRename, onDismissCase }) {
   const status = guest.invite_sent_at || !isPending(guest) ? (guest.rsvp_status || 'pending') : null;
-  const sub = [GUEST_CATEGORY_LABEL[guest.category], guest.plus_one ? 'Plus one' : '', guest.email].filter(Boolean).join(', ');
+  const sub = [role, GUEST_CATEGORY_LABEL[guest.category], guest.plus_one ? 'Plus one' : '', guest.email].filter(Boolean).join(', ');
   let pill = status ? <StatusPill tone={RSVP_TONE[status] || 'neutral'}>{RSVP_LABEL[status] || status}</StatusPill> : <StatusPill tone="neutral">Not invited</StatusPill>;
   if (event) {
     const r = getGuestEventResponse(guest, event);
@@ -48,6 +67,12 @@ export function GuestRow({ guest, onClick, event, selectable, selected, onSelect
         </div>
         {pill}
       </button>
+      {caseSuggestion && !selectable && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 4 }}>
+          <button type="button" className="oi-m-block__link" style={{ margin: 0, minHeight: 44 }} onClick={() => onRename?.(guest, caseSuggestion)}>{caseSuggestion}?</button>
+          <button type="button" className="oi-m-iconbtn oi-m-iconbtn--ghost" aria-label="Keep the name as it is" onClick={() => onDismissCase?.(guest)}><X size={16} /></button>
+        </div>
+      )}
     </div>
   );
 }
@@ -56,10 +81,17 @@ export function GuestRow({ guest, onClick, event, selectable, selected, onSelect
  * The guest list: stats, status filters, an event filter, tag groupings,
  * search, select mode with the bulk actions, import, export, send.
  */
-export default function GuestsScreen({ guests = [], filter = 'all', onFilter, eventFilter = 'all', onEventFilter, weddingEvents = [], onOpenGuest, onAdd, onRemove, onImport, onExport, onSend, selected, onToggleSelect, onSelectAll, onClearSelection, onBulk, loading, error, onRetry, groupings = [], back, onRefresh }) {
+export default function GuestsScreen({ guests = [], filter = 'all', onFilter, eventFilter = 'all', onEventFilter, weddingEvents = [], onOpenGuest, onAdd, onQuickAdd, onRename, onRemove, onImport, onExport, onSend, onTemplates, selected, onToggleSelect, onSelectAll, onClearSelection, onBulk, loading, error, onRetry, groupings = [], guestRoles = {}, back, onRefresh }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
   const [q, setQ] = useState('');
+  const [sort, setSort] = useState('added');
+  const [quick, setQuick] = useState('');
+  const [quickBusy, setQuickBusy] = useState(false);
+  const [dismissedCase, setDismissedCase] = useState(() => new Set());
+  useEffect(() => { prefGet(CASE_DISMISS_KEY).then((v) => { if (v) { try { setDismissedCase(new Set(JSON.parse(v))); } catch { /* keep none */ } } }); }, []);
+  const dismissCase = (g) => setDismissedCase((prev) => { const next = new Set(prev); next.add(g.id); prefSet(CASE_DISMISS_KEY, JSON.stringify([...next])); return next; });
+  const quickAdd = async () => { const name = quick.trim(); if (!name || !onQuickAdd) return; setQuickBusy(true); try { await onQuickAdd(name); setQuick(''); } finally { setQuickBusy(false); } };
   const selecting = !!selected;
 
   const filters = useMemo(() => {
@@ -72,14 +104,30 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
     const grouping = groupings.find((g) => g.key === filter);
     let list = grouping ? guests.filter(grouping.test) : applyGuestFilter(guests, filter);
     if (event) list = list.filter((g) => getGuestEventResponse(g, event).invited);
-    return list;
-  }, [guests, filter, groupings, event]);
+    return sortGuests(list, sort);
+  }, [guests, filter, groupings, event, sort]);
 
+  // Guests.jsx: the search runs over the active status and event filter, not the whole list.
   const results = useMemo(() => {
     const s = q.trim().toLowerCase();
     if (!s) return [];
-    return guests.filter((g) => [g.name, g.email, g.phone, g.plus_one_name].some((v) => (v || '').toLowerCase().includes(s)));
-  }, [guests, q]);
+    return visible.filter((g) => [g.name, g.email, g.phone, g.plus_one_name].some((v) => (v || '').toLowerCase().includes(s)));
+  }, [visible, q]);
+
+  // Guests.jsx's stat cards: total with plus-ones, invited, attending and awaiting over the attendee list; per-event counts when an event filter is on.
+  const stats = useMemo(() => {
+    const attendees = resolveAttendees(guests);
+    const { combined, plusOnes } = tallyAttendees(attendees);
+    const byId = new Map(guests.map((g) => [g.id, g]));
+    const awaiting = attendees.filter((a) => !!byId.get(a.isPlusOne ? a.hostGuestId : a.id)?.invite_sent_at && isPending(a)).length;
+    return { total: guests.length + plusOnes.total, plusOnes: plusOnes.total, invited: guests.filter((g) => g.invite_sent_at).length, attending: combined.attending, declined: combined.declined, awaiting };
+  }, [guests]);
+  const eventStats = useMemo(() => {
+    if (!event) return null;
+    const out = { invited: 0, yes: 0, no: 0, pending: 0 };
+    for (const g of guests) { const r = getGuestEventResponse(g, event); if (!r.invited) continue; out.invited++; if (r.status === 'yes') out.yes++; else if (r.status === 'no') out.no++; else out.pending++; }
+    return out;
+  }, [guests, event]);
 
   const actions = selecting
     ? [{ icon: X, label: 'Done selecting', onClick: onClearSelection }]
@@ -104,11 +152,21 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
         {!loading && guests.length > 0 && !selecting && (
           <div className="oi-m-stack" style={{ marginBottom: 16 }}>
             <div className="oi-m-card">
-              <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
-                <Stat n={filters[1].count} label="Attending" />
-                <Stat n={filters[3].count} label="Declined" />
-                <Stat n={filters[2].count} label="Awaiting" />
-              </div>
+              {eventStats ? (
+                <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
+                  <Stat n={eventStats.invited} label="Invited" />
+                  <Stat n={eventStats.yes} label="Yes" />
+                  <Stat n={eventStats.no} label="No" />
+                  <Stat n={eventStats.pending} label="Pending" />
+                </div>
+              ) : (
+                <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
+                  <Stat n={stats.total} label={stats.plusOnes ? `Guests, ${stats.plusOnes} plus one${stats.plusOnes === 1 ? '' : 's'}` : 'Guests'} />
+                  <Stat n={stats.invited} label="Invited" />
+                  <Stat n={stats.attending} label="Attending" />
+                  <Stat n={stats.awaiting} label="Awaiting" />
+                </div>
+              )}
               <ProgressBar value={filters[1].count + filters[3].count} max={guests.filter((g) => g.invite_sent_at).length} note={summary(guests, filters)} />
               {/* The tab root keeps the bell top right, so the list's actions live here, not in the header. */}
               <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
@@ -122,6 +180,11 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
         {weddingEvents.length > 1 && (
           <div style={{ marginTop: 8 }}>
             <FilterPills options={[{ key: 'all', label: 'Every event' }, ...weddingEvents.map((e) => ({ key: e.event_id, label: e.name }))]} value={eventFilter} onChange={onEventFilter} />
+          </div>
+        )}
+        {!loading && !error && guests.length > 0 && !selecting && (
+          <div style={{ display: 'flex', gap: 8, marginTop: 12, alignItems: 'flex-end' }}>
+            <div style={{ flex: 1 }}><SelectField label="Sort" value={sort} onChange={(e) => setSort(e.target.value)} options={SORTS} /></div>
           </div>
         )}
         <div className="oi-m-stack" style={{ marginTop: 12 }}>
@@ -138,14 +201,20 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
               {visible.map((g) => (
                 onRemove && !selecting ? (
                   <SwipeRow key={g.id} actions={[{ key: 'remove', icon: SWIPE_ICONS.remove, label: `Remove ${g.name}`, tone: 'no', onAction: () => onRemove(g) }]}>
-                    <GuestRow guest={g} event={event} onClick={() => onOpenGuest(g)} />
+                    <GuestRow guest={g} event={event} onClick={() => onOpenGuest(g)} role={guestRoles[g.id]} caseSuggestion={!dismissedCase.has(g.id) ? suggestTitleCase(g.name) : null} onRename={onRename} onDismissCase={dismissCase} />
                   </SwipeRow>
-                ) : <GuestRow key={g.id} guest={g} event={event} onClick={() => onOpenGuest(g)} selectable={selecting} selected={selected?.has(g.id)} onSelect={onToggleSelect} />
+                ) : <GuestRow key={g.id} guest={g} event={event} onClick={() => onOpenGuest(g)} selectable={selecting} selected={selected?.has(g.id)} onSelect={onToggleSelect} role={guestRoles[g.id]} />
               ))}
             </RowGroup>
           )}
+          {!loading && !error && !selecting && onQuickAdd && (
+            <div className="oi-m-card" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <input className="oi-m-input" value={quick} onChange={(e) => setQuick(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') quickAdd(); }} placeholder="Quick add a name" autoCapitalize="words" aria-label="Quick add a guest by name" style={{ flex: 1 }} />
+              <PillButton variant="primary" size="sm" icon={Plus} onClick={quickAdd} disabled={!quick.trim() || quickBusy}>Add</PillButton>
+            </div>
+          )}
           {!loading && !error && !selecting && (
-            <button type="button" className="oi-m-pill oi-m-pill--primary oi-m-pill--block" onClick={onAdd}>Add a guest</button>
+            <button type="button" className="oi-m-pill oi-m-pill--secondary oi-m-pill--block" onClick={onAdd}>Add a guest with every detail</button>
           )}
         </div>
       </Screen>
@@ -165,6 +234,7 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
           <Row icon={Plus} tile="primary" label="Add a guest" onClick={() => { setActionsOpen(false); onAdd(); }} />
           <Row icon={CheckSquare} tile="neutral" label="Select guests" sub="Set events, tags, category or dietary for several at once" onClick={() => { setActionsOpen(false); onSelectAll([]); }} />
           <Row icon={Send} tile="neutral" label="Send invites" sub="Save the date, invitation, reminder, update, thank you" onClick={() => { setActionsOpen(false); onSend(); }} />
+          {onTemplates && <Row icon={Mail} tile="neutral" label="Email templates" sub="See each email and send it" onClick={() => { setActionsOpen(false); onTemplates(); }} />}
           <Row icon={Upload} tile="neutral" label="Import from a file" sub="CSV or Excel" onClick={() => { setActionsOpen(false); onImport(); }} />
           <Row icon={Download} tile="neutral" label="Export as CSV" onClick={() => { setActionsOpen(false); onExport(); }} />
         </RowGroup>

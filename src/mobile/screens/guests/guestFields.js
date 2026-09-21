@@ -6,7 +6,10 @@
  * when there are none, as the desktop does.
  */
 import { COMMON_TAGS, DIETARY_OPTIONS } from '@/components/guests/GuestForm';
-import { needsCountryCode, toE164 } from '@/lib/phoneE164';
+import { needsCountryCode, toE164, COUNTRIES } from '@/lib/phoneE164';
+
+/** CountryPicker's list as select options: the wedding's country is the default. */
+export const COUNTRY_OPTIONS = COUNTRIES.map((c) => ({ value: c.iso, label: `${c.label} +${c.dial}` }));
 
 export const GUEST_CATEGORIES = [['family', 'Family'], ['friends', 'Friends'], ['colleagues', 'Colleagues'], ['partners_family', "Partner's family"], ['partners_friends', "Partner's friends"]].map(([value, label]) => ({ value, label }));
 export const RSVP_STATUSES = [['pending', 'Pending'], ['attending', 'Attending'], ['declined', 'Declined'], ['maybe', 'Maybe']].map(([value, label]) => ({ value, label }));
@@ -42,7 +45,9 @@ export function guestFields({ mealOptions = [], country = 'AU' } = {}) {
     { type: 'heading', label: 'Basics' },
     { name: 'name', label: 'Name', type: 'text', placeholder: "Guest's full name", autoCapitalize: 'words' },
     { name: 'email', label: 'Email', type: 'email', placeholder: 'guest@example.com' },
-    { name: 'phone', label: 'Phone', type: 'tel', placeholder: 'Mobile number', validate: (v) => (v && needsCountryCode(v, country) ? 'That does not look like a phone number. Check the country code and the digits; invitations are not sent to a number we cannot read.' : '') },
+    { name: 'phone_country', label: 'Phone country', type: 'select', options: COUNTRY_OPTIONS, default: country },
+    // GuestForm.jsx: an unreadable number warns and is never rewritten, but the save goes through.
+    { name: 'phone', label: 'Phone', type: 'tel', placeholder: 'Mobile number', warn: (v, values) => (v && needsCountryCode(v, values.phone_country || country) ? 'That does not look like a phone number. Check the country and the digits; invitations are not sent to a number we cannot read.' : '') },
     { name: 'category', label: 'Category', type: 'select', options: GUEST_CATEGORIES, placeholder: 'Choose a category' },
     { name: 'table_assignment', label: 'Table', type: 'text', placeholder: 'Table number or name' },
     { name: 'rsvp_status', label: 'RSVP status', type: 'select', options: RSVP_STATUSES },
@@ -82,12 +87,14 @@ export function guestInitial(g) {
 
 /** The sheet's values into the fields the desktop submits. */
 export function guestPayload(v, country = 'AU') {
-  const phone = v.phone ? (toE164(v.phone, country) || v.phone) : '';
+  const iso = v.phone_country || country;
+  const phone = v.phone ? (toE164(v.phone, iso) || v.phone) : '';
   const out = {
     name: (v.name || '').trim(), email: (v.email || '').trim(), phone, category: v.category || '', table_assignment: v.table_assignment || '', rsvp_status: v.rsvp_status || 'pending',
     meal_choice: v.meal_choice || '', tags: v.tags || [], dietary_restrictions: dietaryToString(v.dietary_pills, v.dietary_other),
-    plus_one: !!v.plus_one, plus_one_name: v.plus_one ? (v.plus_one_name || '') : '', plus_one_email: v.plus_one ? (v.plus_one_email || '').trim() : '', plus_one_meal_choice: v.plus_one ? (v.plus_one_meal_choice || '') : '',
-    plus_one_dietary_restrictions: v.plus_one ? dietaryToString(v.po_dietary_pills, v.po_dietary_other) : '',
+    // GuestForm.jsx keeps the plus-one details on the record when the box is unticked.
+    plus_one: !!v.plus_one, plus_one_name: v.plus_one_name || '', plus_one_email: (v.plus_one_email || '').trim(), plus_one_meal_choice: v.plus_one_meal_choice || '',
+    plus_one_dietary_restrictions: dietaryToString(v.po_dietary_pills, v.po_dietary_other),
     mailing_address: v.mailing_address || '', notes: v.notes || '',
   };
   return out;

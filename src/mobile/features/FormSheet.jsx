@@ -13,6 +13,8 @@ export default function FormSheet({ open, title, fields, initial, required = [],
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
   const online = useOnline();
+  const initKey = JSON.stringify(initial ?? null);
+  const fieldsKey = fields.map((f) => f.name).join(',');
   useEffect(() => {
     if (open) {
       const base = {};
@@ -23,7 +25,9 @@ export default function FormSheet({ open, title, fields, initial, required = [],
       }
       setV(base); setErrors({}); setSaveError('');
     }
-  }, [open, initial, fields]);
+    // Keyed on content, not identity: callers build `fields` and `initial`
+    // inline, and a reset on every render would wipe what was typed.
+  }, [open, initKey, fieldsKey]); // eslint-disable-line react-hooks/exhaustive-deps
   // A caller can react to a value (the event kind picking the type list).
   useEffect(() => { if (open && onValuesChange) onValuesChange(v, setV); }, [v]); // eslint-disable-line react-hooks/exhaustive-deps
   const submit = async () => {
@@ -55,7 +59,7 @@ export default function FormSheet({ open, title, fields, initial, required = [],
       )}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {fields.filter((f) => fieldVisible(f, v)).map((f, i) => <SchemaField key={f.name || `h${i}`} field={f} value={v[f.name]} onChange={(val) => setV((s) => ({ ...s, [f.name]: val }))} error={errors[f.name]} />)}
+        {fields.filter((f) => fieldVisible(f, v)).map((f, i) => <SchemaField key={f.name || `h${i}`} field={f} values={v} value={v[f.name]} onChange={(val) => setV((s) => ({ ...s, [f.name]: val }))} error={errors[f.name]} />)}
         {typeof children === 'function' ? children(v, setV) : children}
         {saveError && <p className="oi-m-field__error" role="alert">{saveError}</p>}
         {!online && <p className="oi-m-meta">You are offline, so this cannot be saved yet. It will not be lost while the sheet is open.</p>}

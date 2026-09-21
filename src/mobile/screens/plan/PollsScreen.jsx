@@ -8,12 +8,19 @@ import PillChoice from '../../ui/PillChoice';
 import { useConfirm } from '../../ui/ConfirmSheet';
 import { GuestPickerSheet } from '../../features/GuestPickerField';
 import { aggregateVotes } from '@/lib/pollAggregation';
+import { resolveRecipients } from '@/lib/questionnaireRecipients';
 import { initials } from '../../lib/format';
 import { exportText } from '../../native';
 
 const SEGMENTS = [{ key: 'polls', label: 'Polls' }, { key: 'games', label: 'Games' }];
 
-/** Polls.jsx's templates, without the emoji (the app never renders one). */
+/**
+ * Polls.jsx's templates. The `emoji` is data for the couple's site
+ * (WeddingPollsPage renders it); the app never draws it, so it is written
+ * as code points rather than a glyph in this file.
+ */
+const cp = (...codes) => String.fromCodePoint(...codes);
+export const POLL_TEMPLATE_EMOJI = { Cocktails: cp(0x1f378), 'First dance': cp(0x1f3b5), 'Dance floor': cp(0x1f483), 'Midnight snack': cp(0x1f35f), 'Welcome drink': cp(0x1f942), Afterparty: cp(0x1f3a8), Dessert: cp(0x1f370), 'Recovery brunch': cp(0x2600, 0xfe0f), Photobooth: cp(0x1f4f8), Hashtag: cp(0x23, 0xfe0f, 0x20e3), Custom: cp(0x1f4ca) };
 export const POLL_TEMPLATES = [
   { category: 'Cocktails', title: 'Which cocktail should make the menu?', defaultOptions: ['Espresso Martini', 'Aperol Spritz', 'Margarita', 'French 75', 'Negroni'] },
   { category: 'First dance', title: 'Help us choose our first dance song', defaultOptions: [] },
@@ -40,8 +47,14 @@ export default function PollsScreen({ polls = [], votes = [], comments = [], gam
   const [sheet, setSheet] = useState(null); // { poll } | { template } | { custom: true } | { pick: true }
   const [gameSheet, setGameSheet] = useState(null); // { game } | { create: true }
   const [confirm, confirmEl] = useConfirm();
-  const counts = useMemo(() => aggregateVotes(votes), [votes]);
-  const countFor = (poll, o) => (counts[o.id] || 0) + (o.votes || 0);
+  // Polls.jsx: real votes only, grouped by poll before aggregateVotes (its
+  // dedupe is per guest), and the live count replaces the stored snapshot.
+  const countsByPoll = useMemo(() => {
+    const byPoll = new Map();
+    for (const v of votes) { if (v.is_test) continue; if (!byPoll.has(v.poll_id)) byPoll.set(v.poll_id, []); byPoll.get(v.poll_id).push(v); }
+    return new Map([...byPoll.entries()].map(([id, list]) => [id, aggregateVotes(list)]));
+  }, [votes]);
+  const countFor = (poll, o) => (countsByPoll.get(poll.id) || {})[o.id] || 0;
   const live = polls.filter((p) => p.isActive !== false);
   const ended = polls.filter((p) => p.isActive === false);
   const remove = async (p) => { if (!(await confirm({ title: 'Delete this poll', body: `${p.title} and its votes come off your site.`, action: 'Delete' }))) return; await onDelete(p); setSheet(null); };
@@ -66,7 +79,7 @@ export default function PollsScreen({ polls = [], votes = [], comments = [], gam
             <EmptyState icon={Dices} text="No games yet. A quiz about the two of you, or a page of advice, goes out to the guests you choose." actionLabel="New game" onAction={() => setGameSheet({ create: true })} />
           ) : (
             <ItemList>
-              {games.map((g) => { const n = responses.filter((r) => r.questionnaire_id === g.id).length; return <ItemCard key={g.id} icon={Dices} tile={g.is_active === false ? 'neutral' : 'tint'} title={g.title} meta={`${(g.questions || []).length} question${(g.questions || []).length === 1 ? '' : 's'}, ${g.recipient_mode === 'all' ? 'everyone' : g.recipient_mode === 'tag' ? (g.recipient_tags || []).join(', ') : `${(g.recipient_guest_ids || []).length} guests`}`} value={`${n} answer${n === 1 ? '' : 's'}`} badge={g.is_active === false ? 'Closed' : 'Open'} badgeTone={g.is_active === false ? 'neutral' : 'ok'} onClick={() => setGameSheet({ game: g })} />; })}
+              {games.map((g) => { const n = responses.filter((r) => r.questionnaire_id === g.id).length; const total = resolveRecipients(g, guests).length; return <ItemCard key={g.id} icon={Dices} tile={g.is_active === false ? 'neutral' : 'tint'} title={g.title} meta={`${(g.questions || []).length} question${(g.questions || []).length === 1 ? '' : 's'}, ${g.recipient_mode === 'all' ? 'everyone' : g.recipient_mode === 'tag' ? (g.recipient_tags || []).join(', ') : `${(g.recipient_guest_ids || []).length} guests`}`} value={`${n}/${total} answered`} badge={g.is_active === false ? 'Closed' : 'Open'} badgeTone={g.is_active === false ? 'neutral' : 'ok'} onClick={() => setGameSheet({ game: g })} />; })}
             </ItemList>
           )
         )}
@@ -92,7 +105,7 @@ export default function PollsScreen({ polls = [], votes = [], comments = [], gam
         />
       )}
       {gameSheet?.create && <GameEditorSheet guests={guests} onClose={() => setGameSheet(null)} onSave={async (data) => { await onCreateGame(data); setGameSheet(null); }} />}
-      {gameSheet?.game && <GameResultsSheet game={games.find((g) => g.id === gameSheet.game.id) || gameSheet.game} responses={responses.filter((r) => r.questionnaire_id === gameSheet.game.id)} onClose={() => setGameSheet(null)} onToggle={() => onToggleGame(gameSheet.game)} onCopyLinks={() => onCopyGameLinks(gameSheet.game)} onDelete={async () => { if (!(await confirm({ title: 'Delete this game', body: 'Its answers are removed too.', action: 'Delete' }))) return; await onDeleteGame(gameSheet.game); setGameSheet(null); }} />}
+      {gameSheet?.game && <GameResultsSheet guests={guests} game={games.find((g) => g.id === gameSheet.game.id) || gameSheet.game} responses={responses.filter((r) => r.questionnaire_id === gameSheet.game.id)} onClose={() => setGameSheet(null)} onToggle={() => onToggleGame(gameSheet.game)} onCopyLinks={() => onCopyGameLinks(gameSheet.game)} onDelete={async () => { if (!(await confirm({ title: 'Delete this game', body: 'Its answers are removed too.', action: 'Delete' }))) return; await onDeleteGame(gameSheet.game); setGameSheet(null); }} />}
       {confirmEl}
     </Screen>
   );
@@ -227,7 +240,12 @@ function GameEditorSheet({ guests, onClose, onSave }) {
               <SelectField label="Answer type" value={q.type} onChange={(e) => setQ(q.id, { type: e.target.value, options: e.target.value === 'multiple_choice' ? (q.options.length ? q.options : ['', '']) : [] })} options={[{ value: 'short_text', label: 'Short answer' }, { value: 'multiple_choice', label: 'Multiple choice' }]} />
               {q.type === 'multiple_choice' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {q.options.map((o, oi) => <input key={oi} className="oi-m-input" value={o} onChange={(e) => setQ(q.id, { options: q.options.map((x, j) => (j === oi ? e.target.value : x)) })} placeholder={`Option ${oi + 1}`} />)}
+                  {q.options.map((o, oi) => (
+                    <div key={oi} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <input className="oi-m-input" value={o} onChange={(e) => setQ(q.id, { options: q.options.map((x, j) => (j === oi ? e.target.value : x)) })} placeholder={`Option ${oi + 1}`} style={{ flex: 1 }} />
+                      {q.options.length > 2 && <button type="button" className="oi-m-iconbtn oi-m-iconbtn--ghost" aria-label={`Remove option ${oi + 1}`} onClick={() => setQ(q.id, { options: q.options.filter((_, j) => j !== oi) })}><X size={18} /></button>}
+                    </div>
+                  ))}
                   <PillButton variant="secondary" size="sm" icon={Plus} onClick={() => setQ(q.id, { options: [...q.options, ''] })} style={{ alignSelf: 'flex-start' }}>Add an option</PillButton>
                 </div>
               )}
@@ -251,8 +269,10 @@ function GameEditorSheet({ guests, onClose, onSave }) {
 }
 
 /** GameResponses: answers per question, copy links, close or reopen, share the answers (the desktop prints), delete. */
-function GameResultsSheet({ game, responses, onClose, onToggle, onCopyLinks, onDelete }) {
-  const answers = (qid) => responses.map((r) => ({ name: r.guest_name, a: (r.answers || []).find((x) => x.question_id === qid)?.answer })).filter((x) => x.a);
+function GameResultsSheet({ game, responses, guests = [], onClose, onToggle, onCopyLinks, onDelete }) {
+  const recipients = resolveRecipients(game, guests);
+  const answeredIds = new Set(responses.map((r) => r.guest_id));
+  const answers = (qid) => responses.map((r) => ({ name: r.guest_name, a: (() => { const ans = (r.answers || []).find((x) => x.question_id === qid); return ans ? (ans.answer_text || ans.selected_option || '') : ''; })() })).filter((x) => x.a);
   const shareAnswers = async () => {
     const text = [game.title, '', ...(game.questions || []).flatMap((q, i) => [`${i + 1}. ${q.text}`, ...answers(q.id).map((x) => `  ${x.name}: ${x.a}`), ''])].join('\n');
     const r = await exportText(`${game.title}.txt`, 'text/plain', text);
@@ -267,7 +287,15 @@ function GameResultsSheet({ game, responses, onClose, onToggle, onCopyLinks, onD
     )}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {game.intro && <p className="oi-m-meta">{game.intro}</p>}
-        <p className="oi-m-body">{responses.length} answer{responses.length === 1 ? '' : 's'} so far{game.is_active === false ? ', now closed' : ''}.</p>
+        <p className="oi-m-body">{responses.length}/{recipients.length} answered{game.is_active === false ? ', now closed' : ''}.</p>
+        <section>
+          <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Who has answered</h2>
+          {recipients.length === 0 ? <p className="oi-m-meta">No guests match this game's settings.</p> : (
+            <RowGroup>
+              {recipients.map((g) => { const done = answeredIds.has(g.id); return <Row key={g.id} initials={initials(g.name)} label={g.name} trailing={<StatusPill tone={done ? 'ok' : 'neutral'}>{done ? 'Answered' : 'Pending'}</StatusPill>} chevron={false} />; })}
+            </RowGroup>
+          )}
+        </section>
         {(game.questions || []).map((q, i) => {
           const list = answers(q.id);
           return (

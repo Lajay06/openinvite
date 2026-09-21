@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import GuestsScreen from './GuestsScreen';
 import GuestDetailScreen from './GuestDetailScreen';
 import GuestFormSheet from './GuestFormSheet';
-import { SetEventsSheet, ImportGuestsSheet, BulkActionsSheet } from './GuestSheets';
+import { SetEventsSheet, ImportGuestsSheet, BulkActionsSheet, EmailTemplatesSheet } from './GuestSheets';
 import { ShellContext } from '../../shell/MobileShell';
 import { useGuests, useWedding, useGuestWrites } from '../../data/wedding';
 import { useApi, useSymbol } from '../../data/api';
@@ -14,6 +14,7 @@ import { BottomSheet, PillButton } from '../../ui';
 import { hapticLight, exportText, shareLink } from '../../native';
 import { getWeddingEvents, toggleEventInvite, getGuestEventResponse, mealOptionLabel, effectiveMealChoice } from '@/lib/weddingEvents';
 import { hasPlusOne, plusOneRsvpStatus } from '@/lib/plusOne';
+import { copyFromPromise } from '@/lib/copyToClipboard';
 import { countryFromWedding } from '@/lib/countryFromVenue';
 import { DEFAULT_COUNTRY } from '@/lib/phoneE164';
 
@@ -48,6 +49,8 @@ export default function GuestsContainer() {
   const [selected, setSelected] = useState(null); // Set | null
   const [bulkOpen, setBulkOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [linksText, setLinksText] = useState('');
+  const [templatesOpen, setTemplatesOpen] = useState(false); // shown when the clipboard refuses, as Guests.jsx does
   const [events, setEvents] = useState(null); // { guests, autoSend } for the set-events sheet
   const [bulkInvite, setBulkInvite] = useState(null); // { event, targets }
   const [confirm, confirmEl] = useConfirm();
@@ -89,6 +92,29 @@ export default function GuestsContainer() {
 
   const reload = () => { guests.reload(); tables.reload(); };
 
+  // Guests.jsx's one-shot token backfill: a guest whose RSVP token was never
+  // minted (has_rsvp_token === false) gets one on first load, server-side.
+  const backfilled = useRef(false);
+  useEffect(() => {
+    if (backfilled.current || guests.loading) return;
+    const missing = list.filter((g) => g.has_rsvp_token === false).map((g) => g.id);
+    if (!missing.length) return;
+    backfilled.current = true;
+    api.guestLinks(missing).catch(() => {});
+  }, [guests.loading, list, api]);
+
+  // Guests.jsx's guestRoles: the wedding party's guest ids to their role, for the row badge.
+  const guestRoles = useMemo(() => {
+    const wp = d?.weddingParty || {};
+    const map = {};
+    const asMember = (v) => (!v ? null : typeof v === 'string' ? { name: v, guestId: null } : v);
+    const add = (m, role) => { if (m?.guestId) map[m.guestId] = role; };
+    add(asMember(wp.maidOfHonour), 'Maid of honor');
+    add(asMember(wp.bestMan), 'Best man');
+    for (const [key, role] of [['bridesmaids', 'Bridesmaid'], ['groomsmen', 'Groomsman'], ['flowerGirls', 'Flower girl'], ['ringBearers', 'Ring bearer'], ['readers', 'Reader'], ['ushers', 'Usher'], ['other', 'Wedding party']]) (wp[key] || []).forEach((m) => add(m, role));
+    return map;
+  }, [d]);
+
   const applyTable = async (guestId, nextName, prevName) => {
     const nextT = (nextName || '').trim();
     if (nextT === (prevName || '').trim()) return;
@@ -124,22 +150,29 @@ export default function GuestsContainer() {
     const r = await exportText('guest-list.csv', 'text/csv', csv);
     if (r !== 'failed') toast.success('Guest list exported'); else toast.error('Could not export the list.');
   };
+  // Guests.jsx: Copy links is part of Ultra; the promise goes to the
+  // clipboard inside the gesture (copyFromPromise), so Safari does not deny it.
   const copyLinks = async (targets) => {
     if (!targets.length) return;
-    const tid = toast.loading('Getting the links');
-    try {
+    if ((api.user?.plan || 'free') === 'pro') { toast('Copy links is part of Ultra. Upgrade to share invitations.'); return; }
+    const textPromise = (async () => {
       const map = await api.guestLinks(targets.map((g) => g.id));
       const urls = targets.map((g) => map[g.id]?.rsvpUrl).filter(Boolean);
       if (!urls.length) throw new Error('Could not generate RSVP links');
-      if (urls.length === 1) { const r = await shareLink({ title: `${targets[0].name}'s RSVP link`, url: urls[0] }); toast.success(r === 'copied' ? 'RSVP link copied' : 'RSVP link ready', { id: tid }); return; }
-      await navigator.clipboard.writeText(urls.join('\n'));
-      toast.success(`${urls.length} RSVP links copied`, { id: tid });
-    } catch (e) { toast.error(e?.message || 'Could not get the links', { id: tid }); }
+      return urls.join('\n');
+    })();
+    if (targets.length === 1) {
+      try { const url = await textPromise; const r = await shareLink({ title: `${targets[0].name}'s RSVP link`, url }); toast.success(r === 'copied' ? 'RSVP link copied' : 'RSVP link ready'); } catch (e) { toast.error(e?.message || 'Could not get the link'); }
+      return;
+    }
+    const { ok, text } = await copyFromPromise(textPromise);
+    if (!text) { toast.error('Could not generate RSVP links'); return; }
+    if (ok) toast.success(`${text.split('\n').length} RSVP links copied`); else setLinksText(text);
   };
   const goSend = (ids, restrictEventIds) => navigate(`${base}/plan/send-invites${ids?.length ? `?ids=${ids.join(',')}${restrictEventIds ? `&events=${restrictEventIds.join(',')}` : ''}` : ''}`);
   const bulk = {
-    setCategory: async (category) => { try { await Promise.all(selectedGuests.map((g) => guestWrites.update(g.id, { category }))); toast.success(`Category set for ${selectedGuests.length}`); reload(); } catch { toast.error('Could not update some guests'); } },
-    setDietary: async (dietary_restrictions) => { try { await Promise.all(selectedGuests.map((g) => guestWrites.update(g.id, { dietary_restrictions }))); toast.success(`Dietary set for ${selectedGuests.length}`); reload(); } catch { toast.error('Could not update some guests'); } },
+    setCategory: async (category) => { category = category || null; try { await Promise.all(selectedGuests.map((g) => guestWrites.update(g.id, { category }))); toast.success(`Category set for ${selectedGuests.length}`); reload(); } catch { toast.error('Could not update some guests'); } },
+    setDietary: async (dietary_restrictions) => { /* null clears, as Guests.jsx writes it */ try { await Promise.all(selectedGuests.map((g) => guestWrites.update(g.id, { dietary_restrictions }))); toast.success(`Dietary set for ${selectedGuests.length}`); reload(); } catch { toast.error('Could not update some guests'); } },
     addTag: async (tag) => { const t = selectedGuests.filter((g) => !(g.tags || []).includes(tag)); try { await Promise.all(t.map((g) => guestWrites.update(g.id, { tags: [...(g.tags || []), tag] }))); toast.success(`Tagged ${t.length} guest${t.length === 1 ? '' : 's'} ${tag}`); reload(); } catch { toast.error('Could not tag some guests'); } },
     removeTag: async (tag) => { const t = selectedGuests.filter((g) => (g.tags || []).includes(tag)); try { await Promise.all(t.map((g) => guestWrites.update(g.id, { tags: (g.tags || []).filter((x) => x !== tag) }))); toast.success(`Removed ${tag} from ${t.length}`); reload(); } catch { toast.error('Could not update some guests'); } },
     remove: async () => {
@@ -170,7 +203,7 @@ export default function GuestsContainer() {
           onEditEvents={() => setEvents({ guests: [current], autoSend: false })}
           onDelete={() => removeGuest(current, { goBack: true })}
           onCopyLink={() => copyLinks([current])}
-          onSendInvite={() => goSend([current.id])}
+          onSendInvite={() => { if (!(current.event_responses || []).length && weddingEvents.length) setEvents({ guests: [current], autoSend: true }); else goSend([current.id]); }}
           loading={guests.loading && !current}
           error={guests.error}
           onRetry={reload}
@@ -186,6 +219,10 @@ export default function GuestsContainer() {
           groupings={groupings}
           onOpenGuest={(g) => navigate(`${base}/guests/${g.id}`)}
           onAdd={() => setSheet({ open: true, guest: null })}
+          onQuickAdd={async (name) => { try { await guestWrites.create({ name, rsvp_status: 'pending' }, d); toast.success(`${name} added`); hapticLight(); reload(); } catch (e) { toast.error(e?.message || 'Could not add the guest'); } }}
+          onRename={async (g, name) => { try { await guestWrites.update(g.id, { name }); reload(); } catch { toast.error('Could not rename'); } }}
+          guestRoles={guestRoles}
+          onTemplates={() => setTemplatesOpen(true)}
           onRemove={(g) => removeGuest(g)}
           onImport={() => setImportOpen(true)}
           onExport={exportCsv}
@@ -202,7 +239,8 @@ export default function GuestsContainer() {
         />
       )}
       <GuestFormSheet open={sheet.open} guest={sheet.guest} mealOptions={mealOptions} country={country} onClose={() => setSheet((s) => ({ ...s, open: false }))} onSave={save} />
-      <SetEventsSheet open={!!events} guests={events?.guests || []} weddingEvents={weddingEvents} onUpdate={updateGuest} onClose={() => setEvents(null)} onSaved={(newly) => { reload(); if (newly?.length && events?.guests?.length === 1) toast((t) => <span>Invited to {newly.length} new event{newly.length === 1 ? '' : 's'}<button type="button" className="oi-m-toast-action" onClick={() => { toast.dismiss(t.id); goSend([events.guests[0].id], newly); }}>Send invite</button></span>, { duration: 6000 }); }} />
+      <SetEventsSheet open={!!events} guests={events?.guests || []} weddingEvents={weddingEvents} onUpdate={updateGuest} onClose={() => setEvents(null)} onSaved={(newly) => { reload(); if (events?.autoSend && events?.guests?.length === 1) { goSend([events.guests[0].id]); return; } if (newly?.length && events?.guests?.length === 1) toast((t) => <span>Invited to {newly.length} new event{newly.length === 1 ? '' : 's'}<button type="button" className="oi-m-toast-action" onClick={() => { toast.dismiss(t.id); goSend([events.guests[0].id], newly); }}>Send invite</button></span>, { duration: 6000 }); }} />
+      <EmailTemplatesSheet open={templatesOpen} onClose={() => setTemplatesOpen(false)} onUse={(type) => { setTemplatesOpen(false); navigate(`${base}/plan/send-invites?type=${type}`); }} />
       <ImportGuestsSheet open={importOpen} onClose={() => setImportOpen(false)} existingGuests={list} country={country} onCreate={(data) => guestWrites.create(data, d)} onImported={reload} />
       <BulkActionsSheet open={bulkOpen} onClose={() => setBulkOpen(false)} guests={selectedGuests} onSetCategory={bulk.setCategory} onSetDietary={bulk.setDietary} onAddTag={bulk.addTag} onRemoveTag={bulk.removeTag} onSetEvents={() => setEvents({ guests: selectedGuests, autoSend: false })} onCopyLinks={() => copyLinks(selectedGuests)} onSend={() => goSend(selectedGuests.map((g) => g.id))} onDelete={bulk.remove} />
       <BottomSheet open={!!bulkInvite} onClose={() => setBulkInvite(null)} title={bulkInvite ? `Invite everyone to ${bulkInvite.event.name}?` : ''} footer={bulkInvite ? (
@@ -212,6 +250,10 @@ export default function GuestsContainer() {
         </>
       ) : undefined}>
         {bulkInvite && <p className="oi-m-body">{bulkInvite.targets.length ? `${bulkInvite.targets.length} guest${bulkInvite.targets.length === 1 ? ' is' : 's are'} not invited to ${bulkInvite.event.name} yet. This marks them invited; it sends nothing until you send.` : `Everyone on the list is already invited to ${bulkInvite.event.name}.`}</p>}
+      </BottomSheet>
+      <BottomSheet open={!!linksText} onClose={() => setLinksText('')} title="RSVP links" footer={<PillButton variant="primary" block onClick={() => setLinksText('')}>Done</PillButton>}>
+        <p className="oi-m-meta" style={{ marginBottom: 12 }}>The clipboard was not available, so here they are to copy by hand.</p>
+        <textarea className="oi-m-input" readOnly value={linksText} rows={6} style={{ overflowWrap: 'anywhere' }} />
       </BottomSheet>
       {confirmEl}
     </>

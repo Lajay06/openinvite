@@ -7,6 +7,7 @@ import { initials } from '../../lib/format';
 import { relativeTime } from '../../notifications/feed';
 import { openExternal } from '../../native';
 import { toWaMe, toE164, needsCountryCode } from '@/lib/phoneE164';
+import { COUNTRY_OPTIONS } from '../guests/guestFields';
 
 const FILTERS = [{ key: 'all', label: 'All' }, { key: 'unread', label: 'Unread' }, { key: 'unreplied', label: 'To reply' }, { key: 'replied', label: 'Replied' }];
 
@@ -31,7 +32,7 @@ export default function MessagesScreen({ messages = [], onOpen, onMarkRead, what
   );
   return (
     <>
-    <Screen title="Messages" subtitle={loading ? '' : `${messages.length} message${messages.length === 1 ? '' : 's'}, ${unread} unread, ${replied} replied`} back={back} onRefresh={onRefresh} actions={[{ icon: Search, label: 'Search messages', onClick: () => setSearchOpen(true) }, { icon: Settings2, label: 'WhatsApp number', onClick: () => setSettings(true) }]}>
+    <Screen title="Messages" subtitle={loading ? '' : `${messages.length} message${messages.length === 1 ? '' : 's'}, ${unread} unread, ${replied} replied, ${messages.length - replied} to reply`} back={back} onRefresh={onRefresh} actions={[{ icon: Search, label: 'Search messages', onClick: () => setSearchOpen(true) }, { icon: Settings2, label: 'WhatsApp number', onClick: () => setSettings(true) }]}>
       <FilterPills options={FILTERS} value={filter} onChange={setFilter} />
       <div className="oi-m-stack" style={{ marginTop: 12 }}>
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : messages.length === 0 ? (
@@ -60,9 +61,10 @@ export default function MessagesScreen({ messages = [], onOpen, onMarkRead, what
 /** WhatsAppConnect.jsx: the couple's own number, kept on the device, so guests can message it. */
 function WhatsAppNumberSheet({ open, onClose, phone, country, onSave }) {
   const [v, setV] = useState(phone || '');
-  useEffect(() => { if (open) setV(phone || ''); }, [open, phone]);
-  const bad = v.trim() && needsCountryCode(v, country);
-  const save = () => { const e164 = v.trim() ? toE164(v, country) : ''; if (v.trim() && !e164) return; onSave(e164 || ''); onClose(); toast.success(e164 ? 'WhatsApp number saved' : 'WhatsApp number removed'); };
+  const [iso, setIso] = useState(country);
+  useEffect(() => { if (open) { setV(phone || ''); setIso(country); } }, [open, phone, country]);
+  const bad = v.trim() && needsCountryCode(v, iso);
+  const save = () => { const e164 = v.trim() ? toE164(v, iso) : ''; if (v.trim() && !e164) return; onSave(e164 || ''); onClose(); toast.success(e164 ? 'WhatsApp number saved' : 'WhatsApp number removed'); };
   return (
     <BottomSheet open={open} onClose={onClose} title="Your WhatsApp number" footer={(
       <>
@@ -72,6 +74,7 @@ function WhatsAppNumberSheet({ open, onClose, phone, country, onSave }) {
     )}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <p className="oi-m-meta">Shown to guests on your site so they can message you. Kept on this device, as the website keeps it in the browser.</p>
+        <SelectField label="Country" value={iso} onChange={(e) => setIso(e.target.value)} options={COUNTRY_OPTIONS} />
         <TextField label="Number" type="tel" inputMode="tel" value={v} onChange={(e) => setV(e.target.value)} placeholder="+61 4..." error={bad ? 'That does not look like a phone number. Include the country code.' : ''} />
         {phone && toWaMe(phone) && <p className="oi-m-meta">Guests reach you at wa.me/{toWaMe(phone)}</p>}
       </div>
@@ -93,7 +96,8 @@ export function WhatsAppComposeSheet({ open, onClose, guest, phone: initialPhone
   const [template, setTemplate] = useState('custom');
   const [message, setMessage] = useState('');
   const [phone, setPhone] = useState(initialPhone || '');
-  useEffect(() => { if (open) { setTemplate('custom'); setMessage(''); setPhone(initialPhone || ''); } }, [open, initialPhone]);
+  const [iso, setIso] = useState(country);
+  useEffect(() => { if (open) { setTemplate('custom'); setMessage(''); setPhone(initialPhone || ''); setIso(country); } }, [open, initialPhone, country]);
   const render = (tpl) => {
     let out = tpl;
     Object.entries(variables).forEach(([k, val]) => { if (k === 'rsvp_link' && !val) return; out = out.replace(new RegExp(`\\{${k}\\}`, 'g'), val || ''); });
@@ -102,10 +106,10 @@ export function WhatsAppComposeSheet({ open, onClose, guest, phone: initialPhone
   };
   useEffect(() => { if (template !== 'custom') { const t = TEMPLATES.find((x) => x.id === template); if (t) setMessage(render(t.template)); } }, [template, variables]); // eslint-disable-line react-hooks/exhaustive-deps
   const linkMissing = message.includes(RSVP_PLACEHOLDER);
-  const badPhone = phone.trim() && !toWaMe(phone, country);
+  const badPhone = phone.trim() && !toWaMe(phone, iso);
   const send = () => {
     if (!message.trim() || !phone.trim() || linkMissing || badPhone) return;
-    openExternal(`https://wa.me/${toWaMe(phone, country)}?text=${encodeURIComponent(message)}`);
+    openExternal(`https://wa.me/${toWaMe(phone, iso)}?text=${encodeURIComponent(message)}`);
     onSent?.();
     onClose();
   };
@@ -118,6 +122,7 @@ export function WhatsAppComposeSheet({ open, onClose, guest, phone: initialPhone
     )}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <SelectField label="Template" value={template} onChange={(e) => setTemplate(e.target.value)} options={TEMPLATES.map((t) => ({ value: t.id, label: t.name }))} />
+        <SelectField label="Country" value={iso} onChange={(e) => setIso(e.target.value)} options={COUNTRY_OPTIONS} />
         <TextField label="Phone number" type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="The guest's mobile" error={badPhone ? 'That does not look like a phone number.' : ''} />
         <TextAreaField label="Message" value={message} onChange={(e) => setMessage(e.target.value)} rows={7} placeholder="Type your message" />
         {linkMissing && <p className="oi-m-field__error" role="alert">{linkState === 'loading' ? 'Getting this guest\'s RSVP link.' : 'This guest has no RSVP link yet, so the reminder cannot be sent. Add them to the guest list first.'}</p>}

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Gift, Share2, ShoppingBag, Copy, Mail, MessageCircle, MessageSquare, Sparkles, Check } from 'lucide-react';
+import { Gift, Share2, ShoppingBag, Copy, Mail, MessageCircle, MessageSquare, Sparkles, Check, Undo2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Screen from '../../shell/Screen';
 import { StatCard, PanelCard, RowGroup, Row, ProgressBar, BottomSheet, PillButton, TextField, TextAreaField, ErrorState, SkeletonRows, ItemList, ItemCard } from '../../ui';
@@ -42,11 +42,13 @@ export default function RegistryScreen({ lists, symbol = '$', registryUrl = '', 
       full: true,
       search: (g, q) => [g.item_name, g.giver_name, g.notes].some((x) => (x || '').toLowerCase().includes(q)),
       searchPlaceholder: 'Search gifts or givers',
+      // ReceivedGifts.jsx's one-tap toggle: thank_you_sent with today's date, or cleared.
+      row: (g) => ({ ...ENTITIES['registry-received'].row(g), action: { icon: g.thank_you_sent ? Undo2 : Check, label: g.thank_you_sent ? `Mark ${g.item_name} not yet thanked` : `Mark ${g.item_name} thanked`, tone: g.thank_you_sent ? 'neutral' : 'primary', onClick: () => lists.received.update(g.id, { thank_you_sent: !g.thank_you_sent, thank_you_date: g.thank_you_sent ? '' : new Date().toISOString().split('T')[0] }) } }),
       toForm: (g) => ({ ...g, giver: g.giver_name ? { name: g.giver_name, guestId: g.giver_guest_id || null } : null }),
-      fromForm: (v) => { const { giver, ...rest } = v; return { ...rest, giver_guest_id: giver?.guestId || '', giver_name: giver?.name || '', giver_email: rest.giver_email || giver?.email || '', thank_you_date: rest.thank_you_sent ? (rest.thank_you_date || new Date().toISOString().split('T')[0]) : '' }; },
+      fromForm: (v) => { const { giver, ...rest } = v; return { ...rest, estimated_value: rest.estimated_value === '' || rest.estimated_value == null ? undefined : Number(rest.estimated_value), giver_guest_id: giver?.guestId || '', giver_name: giver?.name || '', giver_email: rest.giver_email || giver?.email || '', thank_you_date: rest.thank_you_sent ? (rest.thank_you_date || new Date().toISOString().split('T')[0]) : '' }; },
       sheetChildren: (v, setV) => <ThankYouHelper v={v} setV={setV} onAsk={onAsk} />,
     },
-  }), [onAsk]);
+  }), [onAsk, lists.received]);
 
   if (segment === 'overview') {
     return (
@@ -59,6 +61,7 @@ export default function RegistryScreen({ lists, symbol = '$', registryUrl = '', 
                 <StatCard icon={Gift} label="Platforms" numeric={links.length} />
                 <StatCard icon={ShoppingBag} label="Products" numeric={products.length} ink />
               </div>
+              {products.length > 0 && <div className="oi-m-grid2"><StatCard icon={Gift} label="Cash funds" numeric={funds.length} /><StatCard icon={ShoppingBag} label="Total value" number={money(Math.round(products.reduce((t, p) => t + (Number(p.price) || 0) * (p.quantity_requested || 1), 0)), symbol)} ink /></div>}
               <div className="oi-m-card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}><span className="oi-m-section">Bought so far</span><span className="oi-m-num" style={{ fontSize: 28, lineHeight: '34px' }}>{completion}%</span></div>
                 <ProgressBar value={totalPurchased} max={totalRequested || 1} note={totalRequested ? `${totalPurchased} of ${totalRequested} products bought.` : 'Add products to track what gets bought.'} />
@@ -155,6 +158,7 @@ function ShareSheet({ open, onClose, url, links, products }) {
             <Row icon={Mail} tile="neutral" label="Email" onClick={() => openExternal(`mailto:?subject=${encodeURIComponent('Our Wedding Registry')}&body=${encodeURIComponent(message)}`)} chevron={false} />
             <Row icon={MessageSquare} tile="neutral" label="Text message" onClick={() => openExternal(`sms:?body=${encodeURIComponent(message)}`)} chevron={false} />
             <Row icon={MessageCircle} tile="neutral" label="WhatsApp" onClick={() => openExternal(`https://wa.me/?text=${encodeURIComponent(message)}`)} chevron={false} />
+            <Row icon={Share2} tile="neutral" label="Facebook" onClick={() => openExternal(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`)} chevron={false} />
           </RowGroup>
         </div>
       )}

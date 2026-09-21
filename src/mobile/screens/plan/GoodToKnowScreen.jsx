@@ -1,10 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Camera, Share2, Baby, Utensils, Gift, Shirt, Clock, FileText, Wand2, Music2, Users, Upload, X } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { Camera, Share2, Baby, Utensils, Gift, Shirt, Clock, FileText, Wand2, Users } from 'lucide-react';
 import Screen from '../../shell/Screen';
 import { RowGroup, ErrorState, SkeletonRows, Switch, BottomSheet, PillButton, TextField, TextAreaField } from '../../ui';
 import PillChoice from '../../ui/PillChoice';
-import { useApi } from '../../data/api';
 
 /* GuestSuitePolicies.jsx's shape, verbatim: each policy's own fields plus `display`. */
 export const EMPTY_POLICIES = {
@@ -39,18 +37,16 @@ const STYLING_MODES = [
 /**
  * Good to know, as GuestSuitePolicies.jsx: every policy with its own
  * fields and a Show in guest suite switch, the styling quiz mode, and the
- * guest experience settings (background music by upload, show who is
- * attending, the circle). Saves `weddingPolicies` and
+ * guest experience settings (show who is attending, the circle; background
+ * music is hidden on desktop by owner decision and so here). Saves `weddingPolicies` and
  * `guestExperienceSettings` as the desktop's Save does, 900ms after the
  * last change.
  */
 export default function GoodToKnowScreen({ policies = {}, guestExperience = {}, eventDressCode = '', onSave, loading, error, onRetry, back }) {
-  const api = useApi();
   const [p, setP] = useState(() => merge(policies));
   const [ge, setGe] = useState(() => ({ ...EMPTY_GUEST_EXPERIENCE, ...guestExperience, backgroundMusic: { ...EMPTY_GUEST_EXPERIENCE.backgroundMusic, ...(guestExperience.backgroundMusic || {}) } }));
   const [edit, setEdit] = useState(null); // section key
   const [status, setStatus] = useState('idle');
-  const [uploading, setUploading] = useState(false);
   const timer = useRef(null);
   const pending = useRef(null);
   useEffect(() => { setP(merge(policies)); }, [policies]);
@@ -64,12 +60,6 @@ export default function GoodToKnowScreen({ policies = {}, guestExperience = {}, 
   };
   const set = (key, field, value) => { const next = { ...p, [key]: { ...(p[key] || {}), [field]: value } }; setP(next); queue(next, ge); };
   const setGE = (field, value) => { const next = { ...ge, [field]: value }; setGe(next); queue(p, next); };
-  const uploadTrack = async (file) => {
-    if (!file) return;
-    if (!/^audio\//.test(file.type)) { toast.error('Choose an audio file'); return; }
-    setUploading(true);
-    try { const { file_url } = await api.upload(file); setGE('backgroundMusic', { enabled: true, source: 'upload', url: file_url, trackId: '', trackName: file.name }); toast.success('Track uploaded'); } catch { toast.error('Could not upload the track'); } finally { setUploading(false); }
-  };
   const shown = SECTIONS.filter((s) => p[s.key]?.display).length;
   const subtitle = status === 'saving' ? 'Saving' : status === 'saved' ? 'Saved' : status === 'failed' ? 'Could not save. Check your connection.' : loading ? '' : `${shown} shown to guests`;
   const summaryOf = (key) => {
@@ -86,7 +76,6 @@ export default function GoodToKnowScreen({ policies = {}, guestExperience = {}, 
       default: return '';
     }
   };
-  const file = useRef(null);
 
   return (
     <Screen title="Good to know" subtitle={subtitle} back={back}>
@@ -123,23 +112,7 @@ export default function GoodToKnowScreen({ policies = {}, guestExperience = {}, 
             <section>
               <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Guest experience</h2>
               <RowGroup>
-                <div className="oi-m-row" style={{ minHeight: 68 }}>
-                  <span className="oi-m-row__tile oi-m-row__tile--neutral"><Music2 size={19} strokeWidth={1.75} /></span>
-                  <div className="oi-m-row__body"><div className="oi-m-row__label">Background music</div><div className="oi-m-row__sub">{ge.backgroundMusic?.enabled ? (ge.backgroundMusic.trackName || 'No track yet') : 'Off'}</div></div>
-                  <Switch on={!!ge.backgroundMusic?.enabled} onChange={(on) => setGE('backgroundMusic', { ...ge.backgroundMusic, enabled: on })} label="Background music" />
-                </div>
-                {ge.backgroundMusic?.enabled && (
-                  <div className="oi-m-row" style={{ minHeight: 56 }}>
-                    <div className="oi-m-row__body">
-                      <input ref={file} type="file" accept="audio/*" style={{ display: 'none' }} onChange={(e) => uploadTrack(e.target.files?.[0])} />
-                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                        <PillButton variant="secondary" size="sm" icon={Upload} onClick={() => file.current?.click()} disabled={uploading}>{uploading ? 'Uploading' : ge.backgroundMusic.url ? 'Change the track' : 'Upload a track'}</PillButton>
-                        {ge.backgroundMusic.url && <PillButton variant="ghost" size="sm" icon={X} onClick={() => setGE('backgroundMusic', { ...EMPTY_GUEST_EXPERIENCE.backgroundMusic })}>Remove</PillButton>}
-                      </div>
-                      <div className="oi-m-meta" style={{ marginTop: 6, whiteSpace: 'normal' }}>Plays softly on your site. Guests can always turn it off.</div>
-                    </div>
-                  </div>
-                )}
+                {/* Background music stays hidden, as GuestSuitePolicies.jsx's SHOW_BACKGROUND_MUSIC_UI = false (owner decision: both sources declined). The stored value is left untouched. */}
                 <div className="oi-m-row" style={{ minHeight: 68 }}>
                   <span className="oi-m-row__tile oi-m-row__tile--neutral"><Users size={19} strokeWidth={1.75} /></span>
                   <div className="oi-m-row__body"><div className="oi-m-row__label">Show who is attending</div><div className="oi-m-row__sub" style={{ whiteSpace: 'normal' }}>Guests see the names of everyone who has said yes</div></div>

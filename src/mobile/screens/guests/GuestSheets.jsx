@@ -3,10 +3,12 @@ import { Upload, Download, Tag, Users, Utensils, Trash2, CalendarCheck, Link2, S
 import toast from 'react-hot-toast';
 import { BottomSheet, PillButton, Checkbox, Row, RowGroup, SelectField, TextField } from '../../ui';
 import PillChoice from '../../ui/PillChoice';
+import { useConfirm } from '../../ui/ConfirmSheet';
 import { getGuestEventResponse, toggleEventInvite } from '@/lib/weddingEvents';
 import { parseGuestFile, downloadGuestTemplate } from '@/lib/guestImport';
 import { COMMON_TAGS, DIETARY_OPTIONS } from '@/components/guests/GuestForm';
-import { GUEST_CATEGORIES } from './guestFields';
+import { GUEST_CATEGORIES, COUNTRY_OPTIONS } from './guestFields';
+import { TYPE_LABELS } from './SendInvitesScreen';
 
 /**
  * SetEventsModal.jsx as a sheet: a switch per wedding event. Unticking an
@@ -20,9 +22,13 @@ export function SetEventsSheet({ open, guests = [], weddingEvents = [], onUpdate
   const [on, setOn] = useState({});
   const [saving, setSaving] = useState(false);
   useEffect(() => { if (open) setOn(Object.fromEntries(weddingEvents.map((ev) => [ev.event_id, guests.length > 0 && guests.every((g) => initial.get(g.id)?.has(ev.event_id))]))); }, [open, guests, weddingEvents, initial]);
-  const toggle = (ev) => {
+  const [confirm, confirmEl] = useConfirm();
+  const toggle = async (ev) => {
     const turningOff = on[ev.event_id];
-    if (turningOff && guests.some((g) => initial.get(g.id)?.has(ev.event_id)) && !window.confirm(`Uninvite ${guests.length === 1 ? (guests[0].name || 'this guest') : `${guests.length} guests`} from ${ev.name}? Their reply is kept, but they will not see this event.`)) return;
+    if (turningOff && guests.some((g) => initial.get(g.id)?.has(ev.event_id))) {
+      const ok = await confirm({ title: `Uninvite from ${ev.name}?`, body: `${guests.length === 1 ? (guests[0].name || 'This guest') : `${guests.length} guests`} will no longer see this event. Any reply is kept.`, action: 'Uninvite' });
+      if (!ok) return;
+    }
     setOn((s) => ({ ...s, [ev.event_id]: !s[ev.event_id] }));
   };
   const save = async () => {
@@ -55,6 +61,7 @@ export function SetEventsSheet({ open, guests = [], weddingEvents = [], onUpdate
           </div>
         ))}
       </RowGroup>
+      {confirmEl}
     </BottomSheet>
   );
 }
@@ -67,14 +74,19 @@ export function SetEventsSheet({ open, guests = [], weddingEvents = [], onUpdate
 export function ImportGuestsSheet({ open, onClose, existingGuests = [], country = 'AU', onCreate, onImported }) {
   const [rows, setRows] = useState(null);
   const [busy, setBusy] = useState(false);
+  // ImportGuestModal.jsx: the country the file's phone numbers are read in, the venue's until changed.
+  const [importCountry, setImportCountry] = useState(country);
+  const [lastFile, setLastFile] = useState(null);
   const input = useRef(null);
-  useEffect(() => { if (open) setRows(null); }, [open]);
+  useEffect(() => { if (open) { setRows(null); setImportCountry(country); setLastFile(null); } }, [open, country]);
   const pick = async (file) => {
     if (!file) return;
     const ext = file.name.split('.').pop().toLowerCase();
     if (!['csv', 'xlsx', 'xls'].includes(ext)) { toast.error('Choose a CSV or Excel file'); return; }
-    try { setRows(await parseGuestFile(file, country)); } catch (e) { toast.error(e.message); }
+    setLastFile(file);
+    try { setRows(await parseGuestFile(file, importCountry)); } catch (e) { toast.error(e.message); }
   };
+  const changeCountry = async (iso) => { setImportCountry(iso); if (lastFile) { try { setRows(await parseGuestFile(lastFile, iso)); } catch (e) { toast.error(e.message); } } };
   const run = async () => {
     const valid = (rows || []).filter((r) => !r._error);
     if (!valid.length) { toast.error('No rows to import'); return; }
@@ -84,7 +96,7 @@ export function ImportGuestsSheet({ open, onClose, existingGuests = [], country 
     const toImport = []; const dupes = [];
     for (const r of valid) { const e = r.email?.trim().toLowerCase(); if (e && emails.has(e)) dupes.push(r._rowIndex); else { toImport.push(r); if (e) emails.add(e); } }
     const failed = [];
-    await Promise.all(toImport.map(async (r) => { const { _rowIndex, _error, _phoneWarning, ...data } = r; try { await onCreate(data); } catch { failed.push(_rowIndex); } }));
+    await Promise.all(toImport.map(async (r) => { const { _rowIndex, _error, _phoneWarning, ...data } = r; try { await onCreate({ ...data, event_responses: [] }); } catch { failed.push(_rowIndex); } }));
     setBusy(false);
     const n = toImport.length - failed.length;
     const parts = [n > 0 ? `${n} imported` : '', dupes.length ? `${dupes.length} skipped (already on your list)` : '', failed.length ? `${failed.length} failed` : ''].filter(Boolean);
@@ -103,6 +115,7 @@ export function ImportGuestsSheet({ open, onClose, existingGuests = [], country 
     ) : undefined}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <p className="oi-m-body">A spreadsheet with the columns Name, Email, Phone and Plus one. Extra columns are ignored.</p>
+        <SelectField label="Phone numbers are from" value={importCountry} onChange={(e) => changeCountry(e.target.value)} options={COUNTRY_OPTIONS} />
         <input ref={input} type="file" accept=".csv,.xlsx,.xls" style={{ display: 'none' }} onChange={(e) => pick(e.target.files?.[0])} />
         {!rows ? (
           <>
@@ -113,7 +126,7 @@ export function ImportGuestsSheet({ open, onClose, existingGuests = [], country 
           <>
             <div className="oi-m-card"><div className="oi-m-body oi-m-strong">{valid} of {rows.length} rows ready</div>{bad.length > 0 && <div className="oi-m-meta">{bad.length} will be skipped.</div>}</div>
             <RowGroup>
-              {rows.slice(0, 40).map((r) => <Row key={r._rowIndex} icon={FileSpreadsheet} tile={r._error ? 'warn' : 'neutral'} label={r.name || `Row ${r._rowIndex}`} sub={r._error || [r.email, r.phone].filter(Boolean).join(', ')} wrap />)}
+              {rows.slice(0, 40).map((r) => <Row key={r._rowIndex} icon={FileSpreadsheet} tile={r._error ? 'warn' : r._phoneWarning ? 'tint' : 'neutral'} label={r.name || `Row ${r._rowIndex}`} sub={r._error || r._phoneWarning || [r.email, r.phone].filter(Boolean).join(', ')} wrap />)}
             </RowGroup>
             {rows.length > 40 && <p className="oi-m-meta">And {rows.length - 40} more.</p>}
           </>
@@ -159,8 +172,8 @@ export function BulkActionsSheet({ open, onClose, guests = [], onSetCategory, on
       )}
       {mode === 'dietary' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <PillChoice label="Dietary for everyone selected" options={DIETARY_OPTIONS.filter((o) => o !== 'Other')} value={dietary} onChange={setDietary} />
-          <PillButton variant="primary" block disabled={!dietary} onClick={() => { onSetDietary(dietary === 'None' ? '' : dietary); onClose(); }}>Apply to {n}</PillButton>
+          <PillChoice label="Dietary for everyone selected" options={DIETARY_OPTIONS} value={dietary} onChange={setDietary} />
+          <PillButton variant="primary" block disabled={!dietary} onClick={() => { onSetDietary(dietary === 'None' ? null : dietary); onClose(); }}>Apply to {n}</PillButton>
         </div>
       )}
       {mode === 'addTag' && (
@@ -176,6 +189,26 @@ export function BulkActionsSheet({ open, onClose, guests = [], onSetCategory, on
           <PillButton variant="primary" block disabled={!tag} onClick={() => { onRemoveTag(tag); onClose(); }}>Remove from {n}</PillButton>
         </div>
       )}
+    </BottomSheet>
+  );
+}
+
+/** EmailTemplates.jsx as a sheet: one row per email type, each opening Send invites with that type chosen (the preview and test send live there). */
+const TYPE_DESCRIPTIONS = {
+  save_the_date: 'The first word, before the invitation.',
+  invite: 'The first ask, sent when a guest is added to your list.',
+  reminder: 'A nudge for guests who were invited but have not replied yet.',
+  update: 'Something changed: venue, time, dress code. Keep everyone current.',
+  thank_you_attending: 'Sent after a guest confirms they are coming.',
+  thank_you_declined: 'Sent after a guest lets you know they cannot make it.',
+};
+export function EmailTemplatesSheet({ open, onClose, onUse }) {
+  return (
+    <BottomSheet open={open} onClose={onClose} title="Email templates">
+      <p className="oi-m-meta" style={{ marginBottom: 12 }}>Every email uses your site's universe styling and your real details. Choose one to see it and send it.</p>
+      <RowGroup>
+        {Object.entries(TYPE_LABELS).map(([type, label]) => <Row key={type} icon={Send} tile="neutral" label={label} sub={TYPE_DESCRIPTIONS[type] || ''} wrap onClick={() => onUse(type)} />)}
+      </RowGroup>
     </BottomSheet>
   );
 }

@@ -242,12 +242,13 @@ function AddPlaceSheet({ cat, destination, onClose, onAdd }) {
 
 /** AddActivityInline: a saved place by category, or a custom activity, with an optional tip. */
 function ActivitySheet({ allSaved, onClose, onAdd }) {
+  const api = useApi();
   const [mode, setMode] = useState(allSaved.length ? 'place' : 'custom');
   const [placeId, setPlaceId] = useState('');
   const [custom, setCustom] = useState('');
   const [note, setNote] = useState('');
   const add = () => {
-    if (mode === 'place') { const p = allSaved.find((x) => x.place_id === placeId); if (!p) return; onAdd({ type: 'place', place_id: p.place_id, place_name: p.name, category: p.categoryLabel, note, photo_url: p.photo_url || null }); }
+    if (mode === 'place') { const p = allSaved.find((x) => x.place_id === placeId); if (!p) return; onAdd({ type: 'place', place_id: p.place_id, place_name: p.name, category: p.categoryLabel, note, maps_url: p.maps_url || null, website_url: p.website_url || p.website || null, photo_url: p.photo_ref ? api.places.photo(p.photo_ref, 800) : (p.photo_url || null) }); }
     else { if (!custom.trim()) return; onAdd({ type: 'custom', place_name: custom.trim(), note }); }
   };
   return (

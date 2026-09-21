@@ -28,9 +28,9 @@ import ChecklistScreen from './ChecklistScreen';
 import BudgetScreen, { BudgetCategoryScreen } from './BudgetScreen';
 import MessagesScreen, { ThreadScreen, WhatsAppComposeSheet } from './MessagesScreen';
 import { countryFromWedding } from '@/lib/countryFromVenue';
-import { DEFAULT_COUNTRY } from '@/lib/phoneE164';
+import { DEFAULT_COUNTRY, toE164 } from '@/lib/phoneE164';
 import SeatingScreen from './SeatingScreen';
-import PollsScreen from './PollsScreen';
+import PollsScreen, { POLL_TEMPLATE_EMOJI } from './PollsScreen';
 import MusicScreen from './MusicScreen';
 import RegistryScreen from './RegistryScreen';
 import { QnaScreen, PlacesScreen, SuiteScheduleScreen, WeddingPartyScreen, DesktopFeatureScreen } from './SuiteScreens';
@@ -342,6 +342,15 @@ function MessagesContainer({ back }) {
   const m = useEntity('GuestMessage', '-created_date');
   const wd = useWeddingDetails();
   const [phone, savePhone] = useWhatsappPhone();
+  // Messages.jsx marks every unread message read as the page loads.
+  const swept = React.useRef(false);
+  React.useEffect(() => {
+    if (swept.current || m.loading || !m.data) return;
+    const unread = m.data.filter((x) => !x.read);
+    if (!unread.length) return;
+    swept.current = true;
+    Promise.all(unread.map((x) => m.updateQuiet(x.id, { ...x, read: true }))).then(() => m.reload()).catch(() => {});
+  }, [m.loading, m.data, m]);
   const markRead = async (msg) => {
     try {
       await m.optimistic((list) => (list || []).map((x) => (x.id === msg.id ? { ...x, read: !msg.read } : x)), () => m.updateQuiet(msg.id, { ...msg, read: !msg.read }), () => toast.error('Could not save that. Put back the way it was.'));
@@ -359,7 +368,9 @@ function ThreadContainer({ id, back }) {
   const [compose, setCompose] = useState(false);
   const [vars, setVars] = useState({ state: 'loading', variables: {} });
   const message = (m.data || []).find((x) => x.id === id);
-  const guest = useMemo(() => (message ? (guests.data || []).find((g) => g.email && message.guest_email && g.email.toLowerCase() === message.guest_email.toLowerCase()) || null : null), [guests.data, message]);
+  // Messages.jsx resolves the WhatsApp target by guest_id (email as the fallback when an older message carries none).
+  const guest = useMemo(() => (message ? (guests.data || []).find((g) => (message.guest_id && g.id === message.guest_id) || (!message.guest_id && g.email && message.guest_email && g.email.toLowerCase() === message.guest_email.toLowerCase())) || null : null), [guests.data, message]);
+  const guestPhone = guest?.phone ? toE164(guest.phone) : null;
   // Opening a thread marks it read, as Messages.jsx does when a message is expanded.
   const marked = React.useRef(false);
   React.useEffect(() => {
@@ -383,7 +394,9 @@ function ThreadContainer({ id, back }) {
     setSending(true);
     const tid = toast.loading('Sending reply');
     try {
-      const coupleNames = wd.details?.couple1Name && wd.details?.couple2Name ? `${wd.details.couple1Name} & ${wd.details.couple2Name}` : (wd.details?.couple1Name || '');
+      // Messages.jsx sends Invitation.couple_names.
+      const inv = await api.wedding.invitation().catch(() => null);
+      const coupleNames = inv?.couple_names || '';
       await api.json('/api/send-guest-reply', { method: 'POST', body: JSON.stringify({ guestEmail: message.guest_email, guestName: message.guest_name, originalMessage: message.message, replyText, coupleNames }) });
       await m.update(message.id, { ...message, reply: replyText, replied: true, reply_sent_at: new Date().toISOString() });
       toast.success('Reply sent', { id: tid });
@@ -394,8 +407,8 @@ function ThreadContainer({ id, back }) {
   const toggleRead = async () => { try { await m.update(message.id, { ...message, read: !message.read }); toast.success(message.read ? 'Marked unread' : 'Marked read'); } catch { toast.error('Could not save that.'); } };
   return (
     <>
-      <ThreadScreen message={message} onReply={reply} sending={sending} back={back} onToggleRead={message ? toggleRead : undefined} onWhatsApp={message ? () => setCompose(true) : undefined} />
-      <WhatsAppComposeSheet open={compose} onClose={() => setCompose(false)} guest={{ id: guest?.id, name: message?.guest_name }} phone={guest?.phone || ''} variables={vars.variables} linkState={vars.state} country={countryFromWedding(wd.details) || DEFAULT_COUNTRY} />
+      <ThreadScreen message={message} onReply={reply} sending={sending} back={back} onToggleRead={message ? toggleRead : undefined} onWhatsApp={message && guestPhone ? () => setCompose(true) : undefined} />
+      <WhatsAppComposeSheet open={compose} onClose={() => setCompose(false)} guest={{ id: guest?.id, name: message?.guest_name }} phone={guestPhone || ''} variables={vars.variables} linkState={vars.state} country={countryFromWedding(wd.details) || DEFAULT_COUNTRY} />
     </>
   );
 }
@@ -480,7 +493,7 @@ function PollsContainer({ back }) {
   const siteUrl = siteUrlFor(wd.details);
   const persist = async (next) => { await wd.save('polls', next, false); };
   const create = async ({ title, options, allowComments, category }) => {
-    const poll = { id: genId(), title, category: category || 'Custom', emoji: '', options: options.map((o) => ({ id: genId(), label: o.label || o, votes: 0 })), allowComments: allowComments !== false, comments: [], isActive: true, createdAt: new Date().toISOString(), avaInsight: null, expiresAt: null };
+    const poll = { id: genId(), title, category: category || 'Custom', emoji: POLL_TEMPLATE_EMOJI[category] || POLL_TEMPLATE_EMOJI.Custom, options: options.map((o) => ({ id: genId(), label: o.label || o, votes: 0 })), allowComments: allowComments !== false, comments: [], isActive: true, createdAt: new Date().toISOString(), avaInsight: null, expiresAt: null };
     await persist([...polls, poll]);
     toast.success('Poll created');
   };
