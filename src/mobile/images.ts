@@ -87,6 +87,17 @@ export const IMAGES = {
   lock: { id: 'DTS_Tradition_Chris_Abatzis_Photos_ID9150_yiunlp', alt: 'A couple in a mountain meadow', usedIn: 'Face ID lock screen (the couple\'s own photo first)', screen: 'lock', size: { w: 390, h: 844 }, ratio: '4/5' },
   /* ── Preview artifacts ── */
   lockScreenWallpaper: { id: 'hf_20260905_005926_9ff8ad93-21a0-4c2f-8f41-94cd140aa0ee_ib1qrr', alt: 'Steps down to the sea between flowering walls', usedIn: '/m/preview/push wallpaper (the couple\'s own photo when they have one)', screen: 'push', size: { w: 390, h: 844 }, ratio: '4/5' },
+  /* ── Demo place tiles: what Google's photo would be in the connected app (preview and demo only) ── */
+  placeCeremony: { id: '', alt: 'The ceremony venue', usedIn: 'Demo: the ceremony venue photo on Event details, and the Places search result', screen: 'event-details', size: { w: 358, h: 200 }, ratio: '16/9', todo: true, tone: 'neutral' },
+  placeReception: { id: '', alt: 'The reception venue', usedIn: 'Demo: the reception venue photo on Event details', screen: 'event-details', size: { w: 358, h: 200 }, ratio: '16/9', todo: true, tone: 'neutral' },
+  placeStay1: { id: '', alt: 'A hotel by the beach', usedIn: 'Demo: guest suite accommodation, place 1 (also the welcome drinks venue)', screen: 'suite-accommodation', size: { w: 358, h: 200 }, ratio: '16/9', todo: true, tone: 'neutral' },
+  placeStay2: { id: '', alt: 'A resort with a pool', usedIn: 'Demo: guest suite accommodation, place 2', screen: 'suite-accommodation', size: { w: 358, h: 200 }, ratio: '16/9', todo: true, tone: 'neutral' },
+  placeAirport: { id: '', alt: 'A small regional airport', usedIn: 'Demo: guest suite transport, the airport', screen: 'suite-transport', size: { w: 358, h: 200 }, ratio: '16/9', todo: true, tone: 'neutral' },
+  placePick1: { id: '', alt: 'A cafe breakfast', usedIn: 'Demo: experience guide, coffee pick', screen: 'experience', size: { w: 358, h: 200 }, ratio: '16/9', todo: true, tone: 'neutral' },
+  placePick2: { id: '', alt: 'A lighthouse walk', usedIn: 'Demo: experience guide, outdoors pick', screen: 'experience', size: { w: 358, h: 200 }, ratio: '16/9', todo: true, tone: 'neutral' },
+  placeMarket1: { id: '', alt: 'A photographer at work', usedIn: 'Demo: marketplace result 1', screen: 'marketplace', size: { w: 72, h: 72 }, ratio: '1/1', todo: true, tone: 'neutral' },
+  placeMarket2: { id: '', alt: 'A florist arranging stems', usedIn: 'Demo: marketplace result 2', screen: 'marketplace', size: { w: 72, h: 72 }, ratio: '1/1', todo: true, tone: 'neutral' },
+  placeMarket3: { id: '', alt: 'A makeup artist at work', usedIn: 'Demo: marketplace result 3', screen: 'marketplace', size: { w: 72, h: 72 }, ratio: '1/1', todo: true, tone: 'neutral' },
   /* ── Fixture stand-ins for the couple\'s own uploads (preview and demo only) ── */
   fixtureCover: { id: 'aspen-hero_zeblit', alt: 'A couple running through snow between pines', usedIn: 'Fixture cover photo: Home hero, Site preview, Account', screen: 'home', size: { w: 390, h: 488 }, ratio: '4/5', focal: '50% 45%' },
   fixtureStory1: { id: 'florence-hero_up7h6h', alt: 'A couple wheeling a bicycle down a stone lane', usedIn: 'Fixture Our Story photo 1: Home hero', screen: 'home', size: { w: 390, h: 488 }, ratio: '4/5', focal: '50% 45%' },

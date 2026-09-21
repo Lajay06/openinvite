@@ -1,6 +1,8 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { ApiContext } from './data/api';
+import { createRealApi } from './data/realApi';
 import AvaChatPod from '@/components/layout/AvaChatPod';
 import MobileShell, { ShellContext } from './shell/MobileShell';
 import HomeContainer from './screens/home/HomeContainer';
@@ -27,6 +29,12 @@ export const MOBILE_BASE = '/m';
  * ProtectedRoute, so an unauthenticated visitor never reaches this tree.
  */
 export default function MobileApp() {
+  const { user } = useAuth();
+  const api = useMemo(() => createRealApi(user), [user]);
+  return <ApiContext.Provider value={api}><MobileAppInner /></ApiContext.Provider>;
+}
+
+function MobileAppInner() {
   const [messages, setMessages] = useState([]);
   const [dismissed, setDismissed] = useState(() => new Set());
   const { symbol } = useCurrency();

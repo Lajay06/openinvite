@@ -1,13 +1,11 @@
 import React, { useContext, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { useCurrency } from '@/contexts/CurrencyContext';
-import { assignGuestToTableByName, unassignGuestFromTables } from '@/lib/tableAssignment';
-import { saveVendorFromPlaces, getSavedPlaceIds, CATEGORY_QUERIES } from '@/lib/vendorPlaces';
-import { getMyRecords } from '@/lib/resolveMyWedding';
+import { CATEGORY_QUERIES } from '@/lib/vendorPlaces';
 import { ShellContext } from '../../shell/MobileShell';
-import { usePlanData, useEntity, useWeddingDetails, reviewSongRequest, fetchSongRequests } from '../../data/plan';
-import { useTasks, useBudget, useGuests, taskWrites, budgetWrites } from '../../data/wedding';
+import { usePlanData, useEntity, useWeddingDetails } from '../../data/plan';
+import { useTasks, useBudget, useGuests, useTaskWrites, useBudgetWrites } from '../../data/wedding';
+import { useApi, useSymbol } from '../../data/api';
 import useLoad from '../../data/useLoad';
 import { hapticLight } from '../../native';
 import { openDesktop } from '../../lib/links';
@@ -31,7 +29,7 @@ const genId = () => `${Date.now().toString(36)}${Math.random().toString(36).slic
 export function PlanHubContainer() {
   const navigate = useNavigate();
   const { base } = useContext(ShellContext);
-  const { symbol } = useCurrency();
+  const symbol = useSymbol();
   const data = usePlanData();
   const open = (f) => {
     if (f.path.startsWith('../')) return navigate(`${base}/${f.path.slice(3)}`);
@@ -101,6 +99,7 @@ function EntityContainer({ f, back }) {
 function ChecklistContainer({ back }) {
   const [params] = useSearchParams();
   const tasks = useTasks();
+  const taskWrites = useTaskWrites();
   const toggle = async (t) => {
     if (!t.completed) hapticLight();
     try {
@@ -116,8 +115,9 @@ function BudgetContainer({ back }) {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { base } = useContext(ShellContext);
-  const { symbol } = useCurrency();
+  const symbol = useSymbol();
   const budget = useBudget();
+  const budgetWrites = useBudgetWrites();
   const save = async (fields, existing) => {
     if (existing) { await budgetWrites.update(existing.id, fields); toast.success('Expense updated'); } else { await budgetWrites.create(fields); toast.success('Expense added'); }
     budget.reload();
@@ -132,8 +132,9 @@ function BudgetContainer({ back }) {
 }
 
 function BudgetCategoryContainer({ category, back }) {
-  const { symbol } = useCurrency();
+  const symbol = useSymbol();
   const budget = useBudget();
+  const budgetWrites = useBudgetWrites();
   const save = async (fields, existing) => {
     if (existing) { await budgetWrites.update(existing.id, fields); toast.success('Expense updated'); } else { await budgetWrites.create(fields); toast.success('Expense added'); }
     budget.reload();
@@ -156,6 +157,7 @@ function MessagesContainer({ back }) {
 }
 
 function ThreadContainer({ id, back }) {
+  const api = useApi();
   const m = useEntity('GuestMessage', '-created_date');
   const wd = useWeddingDetails();
   const [sending, setSending] = useState(false);
@@ -170,12 +172,7 @@ function ThreadContainer({ id, back }) {
     const tid = toast.loading('Sending reply');
     try {
       const coupleNames = wd.details?.couple1Name && wd.details?.couple2Name ? `${wd.details.couple1Name} & ${wd.details.couple2Name}` : (wd.details?.couple1Name || '');
-      const res = await fetch('/api/send-guest-reply', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
-        body: JSON.stringify({ guestEmail: message.guest_email, guestName: message.guest_name, originalMessage: message.message, replyText, coupleNames }),
-      });
-      if (!res.ok) { const body = await res.json().catch(() => ({})); throw new Error(body.error || 'Could not send the reply.'); }
+      await api.json('/api/send-guest-reply', { method: 'POST', body: JSON.stringify({ guestEmail: message.guest_email, guestName: message.guest_name, originalMessage: message.message, replyText, coupleNames }) });
       await m.update(message.id, { ...message, reply: replyText, replied: true, reply_sent_at: new Date().toISOString() });
       toast.success('Reply sent', { id: tid });
     } catch (e) {
@@ -189,12 +186,13 @@ function ThreadContainer({ id, back }) {
 
 function SeatingContainer({ back }) {
   const navigate = useNavigate();
+  const api = useApi();
   const tables = useEntity('Table', '-created_date');
   const guests = useGuests();
   const move = async (guestId, tableName) => {
     try {
-      if (tableName) await assignGuestToTableByName({ guestId, tableName, tables: tables.data || [] });
-      else await unassignGuestFromTables({ guestId, tables: tables.data || [] });
+      if (tableName) await api.seating.assignByName({ guestId, tableName, tables: tables.data || [] });
+      else await api.seating.unassign({ guestId, tables: tables.data || [] });
       hapticLight();
       toast.success(tableName ? `Moved to ${tableName}` : 'Taken off the table');
       tables.reload();
@@ -206,8 +204,9 @@ function SeatingContainer({ back }) {
 /* ── Polls: WeddingDetails.polls, as Polls.jsx persists them ─────────── */
 
 function PollsContainer({ back }) {
+  const api = useApi();
   const wd = useWeddingDetails();
-  const votes = useLoad(() => getMyRecords('PollVote', '-created_date').catch(() => []), []);
+  const votes = useLoad(() => api.list('PollVote', '-created_date').catch(() => []), []);
   const polls = wd.details?.polls || [];
   const persist = async (next) => { await wd.save('polls', next, false); };
   const create = async ({ title, options }) => {
@@ -222,12 +221,13 @@ function PollsContainer({ back }) {
 /* ── Music ───────────────────────────────────────────────────────────── */
 
 function MusicContainer({ back }) {
+  const api = useApi();
   const tracks = useEntity('Music', '-created_date');
-  const requests = useLoad(fetchSongRequests, []);
+  const requests = useLoad(() => api.songRequests.list(), []);
   const wd = useWeddingDetails();
   const playlistUrl = (wd.details?.music?.playlists || [])[0]?.playlistUrl || '';
   const review = async (r, action) => {
-    try { await reviewSongRequest(r.id, action); toast.success(action === 'add' ? 'Added to the playlist' : 'Declined'); requests.reload(); tracks.reload(); } catch (e) { toast.error(e?.message || 'Could not update that request.'); }
+    try { await api.songRequests.review(r.id, action); toast.success(action === 'add' ? 'Added to the playlist' : 'Declined'); requests.reload(); tracks.reload(); } catch (e) { toast.error(e?.message || 'Could not update that request.'); }
   };
   const wrap = (fn, ok) => async (...a) => { const r = await fn(...a); toast.success(ok); return r; };
   return <MusicScreen tracks={tracks.data || []} requests={requests.data || []} playlistUrl={playlistUrl} onCreate={wrap(tracks.create, 'Track added')} onUpdate={wrap(tracks.update, 'Saved')} onDelete={wrap(tracks.remove, 'Removed')} onReview={review} loading={tracks.loading} error={tracks.error} onRetry={() => { tracks.reload(); requests.reload(); }} back={back} />;
@@ -236,7 +236,7 @@ function MusicContainer({ back }) {
 /* ── Registry ────────────────────────────────────────────────────────── */
 
 function RegistryContainer({ back }) {
-  const { symbol } = useCurrency();
+  const symbol = useSymbol();
   const links = useEntity('RegistryItem');
   const products = useEntity('RegistryProduct');
   const funds = useEntity('CustomGift');
@@ -283,22 +283,21 @@ function WeddingPartyContainer({ back }) {
 const MARKET_LABEL = { photography: 'Photography', videography: 'Videography', catering: 'Catering', florals: 'Florals', styling: 'Styling', beauty: 'Hair & makeup', music: 'Music & DJ', venue: 'Venues', cake: 'Cake', transport: 'Transport' };
 
 function MarketplaceContainer({ back }) {
+  const api = useApi();
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState('');
-  const saved = useLoad(() => getSavedPlaceIds().catch(() => []), []);
+  const saved = useLoad(() => api.vendors.savedPlaceIds().catch(() => new Set()), []);
   const savedIds = useMemo(() => new Set(saved.data || []), [saved.data]);
   const search = async ({ category, location }) => {
     setSearching(true); setError('');
     try {
-      const res = await fetch('/api/places-search', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` }, body: JSON.stringify({ q: CATEGORY_QUERIES[MARKET_LABEL[category]] || 'wedding vendor', location }) });
-      if (!res.ok) throw new Error('Search did not work. Try again in a moment.');
-      const data = await res.json();
-      setResults((data.places || []).map((p) => ({ id: p.place_id, place_id: p.place_id, placeId: p.place_id, name: p.name, category: MARKET_LABEL[category], rating: p.rating, address: p.formatted_address || p.vicinity, website: p.website })));
+      const places = await api.places.search({ q: CATEGORY_QUERIES[MARKET_LABEL[category]] || 'wedding vendor', location });
+      setResults((places || []).map((p) => ({ id: p.place_id, place_id: p.place_id, placeId: p.place_id, name: p.name, category: MARKET_LABEL[category], rating: p.rating, address: p.formatted_address || p.vicinity, website: p.website })));
     } catch (e) { setError(e?.message || 'Search did not work.'); } finally { setSearching(false); }
   };
   const save = async (v) => {
-    try { await saveVendorFromPlaces(v, null); toast.success('Added to my vendors'); saved.reload(); } catch (e) { toast.error(e?.message || 'Could not add that vendor.'); }
+    try { await api.vendors.saveFromPlaces(v, null); toast.success('Added to my vendors'); saved.reload(); } catch (e) { toast.error(e?.message || 'Could not add that vendor.'); }
   };
   return <MarketplaceScreen results={results} searching={searching} onSearch={search} onSave={save} savedIds={savedIds} back={back} error={error} />;
 }

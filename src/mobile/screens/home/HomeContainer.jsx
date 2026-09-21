@@ -1,14 +1,13 @@
 import React, { useContext, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { useAuth } from '@/lib/AuthContext';
-import { useCurrency } from '@/contexts/CurrencyContext';
 import { daysUntilWedding } from '@/lib/weddingCountdown';
 import { isAttending, isDeclined, isAwaitingPrimary } from '@/lib/guestRsvpTally';
 import HomeScreen from './HomeScreen';
 import { ShellContext } from '../../shell/MobileShell';
 import { usePlanData } from '../../data/plan';
-import { taskWrites } from '../../data/wedding';
+import { useTaskWrites } from '../../data/wedding';
+import { useApi, useSymbol } from '../../data/api';
 import { hapticLight, shareLink } from '../../native';
 import { siteUrlFor } from '../../lib/links';
 import { ownImages, imageUrl } from '../../lib/images';
@@ -17,8 +16,9 @@ import { summariseBudget } from '../plan/BudgetScreen';
 
 /** Home, from the same loaders the Plan hub uses, plus the notification feed for "Latest". */
 export default function HomeContainer() {
-  const { user } = useAuth();
-  const { symbol } = useCurrency();
+  const { user } = useApi();
+  const symbol = useSymbol();
+  const taskWrites = useTaskWrites();
   const navigate = useNavigate();
   const { base, notifications, openAva } = useContext(ShellContext);
   const plan = usePlanData();

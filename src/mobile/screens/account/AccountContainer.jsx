@@ -1,6 +1,8 @@
 import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
+import { useApi } from '../../data/api';
+import { isDemoBuild } from '../../demo';
 import { getTrialStatus } from '@/lib/trialStatus';
 import CollaborateModal from '@/components/layout/CollaborateModal';
 import AccountScreen from './AccountScreen';
@@ -20,7 +22,11 @@ const PLAN_LABELS = { free: 'Free trial', pro: 'Pro', ultra: 'Ultra' };
  * runs natively (see MOBILE_APP.md, "Needs a decision").
  */
 export default function AccountContainer() {
-  const { user, isLoadingAuth, logout } = useAuth();
+  const auth = useAuth();
+  const api = useApi();
+  const user = api.mode === 'preview' ? api.user : auth.user;
+  const isLoadingAuth = api.mode === 'preview' ? false : auth.isLoadingAuth;
+  const logout = api.mode === 'preview' ? () => {} : auth.logout;
   const navigate = useNavigate();
   const [collab, setCollab] = useState(false);
   const { base } = useContext(ShellContext);
@@ -41,6 +47,7 @@ export default function AccountContainer() {
   return (
     <>
       <AccountScreen
+        subtitle={isDemoBuild ? 'Demo data' : undefined}
         name={user?.full_name}
         email={user?.email}
         coupleName={coupleName}

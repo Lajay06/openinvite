@@ -1,107 +1,95 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { base44 } from '@/api/base44Client';
-import { getMyRecords, getMyWeddingDetails, getMyGuestsWithRsvp, putMyWeddingDetails } from '@/lib/resolveMyWedding';
-import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useApi } from './api';
 import useLoad from './useLoad';
 
 /**
  * Everything the Plan hub's live stats need, loaded once, each part
  * failing soft to [] so one slow entity never blanks the hub. The same
- * loaders the desktop pages use.
+ * loaders the desktop pages use, through the api seam.
  */
 export function usePlanData() {
+  const api = useApi();
   return useLoad(async () => {
     const soft = (p) => p.catch(() => []);
     const [details, guests, tasks, budget, schedule, vendors, messages, registryItems, registryProducts, customGifts, gifts, music, songRequests, vows, moodboard, tables, guestbook] = await Promise.all([
-      getMyWeddingDetails().catch(() => null),
-      soft(getMyGuestsWithRsvp('created_date')),
-      soft(getMyRecords('Note', '-created_date')),
-      soft(getMyRecords('Budget', '-created_date')),
-      soft(getMyRecords('Schedule', 'start_time')),
-      soft(getMyRecords('Vendor', '-created_date')),
-      soft(getMyRecords('GuestMessage', '-created_date')),
-      soft(getMyRecords('RegistryItem', '-created_date')),
-      soft(getMyRecords('RegistryProduct', '-created_date')),
-      soft(getMyRecords('CustomGift', '-created_date')),
-      soft(getMyRecords('ReceivedGift', '-created_date')),
-      soft(getMyRecords('Music', '-created_date')),
-      fetchSongRequests(),
-      soft(getMyRecords('VowSpeech', '-created_date')),
-      soft(getMyRecords('MoodboardItem', '-created_date')),
-      soft(getMyRecords('Table', '-created_date')),
-      soft(getMyRecords('GuestbookEntry', '-created_date')),
+      api.wedding.get().catch(() => null),
+      soft(api.guests.list()),
+      soft(api.list('Note', '-created_date')),
+      soft(api.list('Budget', '-created_date')),
+      soft(api.list('Schedule', 'start_time')),
+      soft(api.list('Vendor', '-created_date')),
+      soft(api.list('GuestMessage', '-created_date')),
+      soft(api.list('RegistryItem', '-created_date')),
+      soft(api.list('RegistryProduct', '-created_date')),
+      soft(api.list('CustomGift', '-created_date')),
+      soft(api.list('ReceivedGift', '-created_date')),
+      soft(api.list('Music', '-created_date')),
+      soft(api.songRequests.list()),
+      soft(api.list('VowSpeech', '-created_date')),
+      soft(api.list('MoodboardItem', '-created_date')),
+      soft(api.list('Table', '-created_date')),
+      soft(api.list('GuestbookEntry', '-created_date')),
     ]);
     return { details, guests, tasks: tasks.filter((t) => t.view_type === 'todo'), budget, schedule, vendors, messages, registryItems, registryProducts, customGifts, gifts, music, songRequests, vows, moodboard, tables, guestbook };
   }, []);
 }
 
-export async function fetchSongRequests() {
-  try {
-    const token = localStorage.getItem('base44_access_token');
-    const res = await fetch('/api/song-request-review', { headers: { Authorization: `Bearer ${token}` } });
-    if (!res.ok) return [];
-    const { requests } = await res.json();
-    return requests || [];
-  } catch { return []; }
-}
-
-/** POST { songRequestId, action } as Music.jsx does. action: 'add' | 'decline' */
-export async function reviewSongRequest(songRequestId, action) {
-  const token = localStorage.getItem('base44_access_token');
-  const res = await fetch('/api/song-request-review', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ songRequestId, action }) });
-  if (!res.ok) throw new Error('Could not update that request.');
-  return res.json().catch(() => ({}));
-}
-
 /** A generic entity list with the same create/update/delete the desktop pages call. */
 export function useEntity(name, sort = '-created_date') {
-  const load = useLoad(() => getMyRecords(name, sort), [name, sort]);
-  const E = base44.entities[name];
-  const writes = {
-    create: async (fields) => { const r = await E.create(fields); load.reload(); return r; },
-    update: async (id, fields) => { const r = await E.update(id, fields); load.reload(); return r; },
-    updateQuiet: (id, fields) => E.update(id, fields),
-    remove: async (id) => { await E.delete(id); load.reload(); },
-  };
+  const api = useApi();
+  const load = useLoad(() => api.list(name, sort), [name, sort]);
+  const writes = useMemo(() => ({
+    create: async (fields) => { const r = await api.create(name, fields); load.reload(); return r; },
+    update: async (id, fields) => { const r = await api.update(name, id, fields); load.reload(); return r; },
+    updateQuiet: (id, fields) => api.update(name, id, fields),
+    remove: async (id) => { await api.remove(name, id); load.reload(); },
+  }), [api, name, load.reload]); // eslint-disable-line react-hooks/exhaustive-deps
+  return { ...load, ...writes };
+}
+
+/** Records filtered by a query (VendorLog and VendorTask by vendor, PollVote by wedding). */
+export function useFiltered(name, query, sort) {
+  const api = useApi();
+  const key = JSON.stringify(query || {});
+  const load = useLoad(() => api.filter(name, query || {}, sort), [name, key, sort]);
+  const writes = useMemo(() => ({
+    create: async (fields) => { const r = await api.create(name, { ...(query || {}), ...fields }); load.reload(); return r; },
+    update: async (id, fields) => { const r = await api.update(name, id, fields); load.reload(); return r; },
+    remove: async (id) => { await api.remove(name, id); load.reload(); },
+  }), [api, name, key, load.reload]); // eslint-disable-line react-hooks/exhaustive-deps
   return { ...load, ...writes };
 }
 
 /**
  * The WeddingDetails record, with a saver that follows the desktop pages:
  * plaintext keys through WeddingDetails.update (creating the record first
- * if the couple has none, as WeddingParty.jsx does), encrypted keys
- * (celebrant, license, emergencyContacts, budget, dayVendorContacts,
- * contactPerson) through /api/my-wedding-details PUT.
+ * if the couple has none), encrypted keys (celebrant, license,
+ * emergencyContacts, budget, dayVendorContacts, contactPerson) through
+ * /api/my-wedding-details PUT. `save(null, patch)` writes top-level fields.
  */
 export function useWeddingDetails() {
+  const api = useApi();
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const idRef = useRef(null);
+  const alive = useRef(true);
+  useEffect(() => () => { alive.current = false; }, []);
   const load = useCallback(async () => {
     try {
-      const d = await getMyWeddingDetails();
-      idRef.current = d?.id || null;
+      const d = await api.wedding.get();
+      if (!alive.current) return;
       setDetails(d || {});
       setError(null);
-    } catch (e) { setError(e); }
-    setLoading(false);
-  }, []);
+    } catch (e) { if (alive.current) setError(e); }
+    if (alive.current) setLoading(false);
+  }, [api]);
   useEffect(() => { load(); }, [load]);
 
   const save = useCallback(async (key, value, encrypted) => {
+    await api.wedding.save(key, value, encrypted);
     const patch = key == null ? value : { [key]: value };
-    if (encrypted) {
-      const id = await putMyWeddingDetails(patch);
-      if (!idRef.current) idRef.current = id;
-    } else if (idRef.current) {
-      await base44.entities.WeddingDetails.update(idRef.current, patch);
-    } else {
-      const created = await createMyWeddingDetails(patch);
-      idRef.current = created.id;
-    }
     setDetails((d) => ({ ...(d || {}), ...patch }));
-  }, []);
+  }, [api]);
 
-  return { details, loading, error, reload: load, save, id: idRef.current };
+  return { details, loading, error, reload: load, save, id: api.wedding.id() };
 }

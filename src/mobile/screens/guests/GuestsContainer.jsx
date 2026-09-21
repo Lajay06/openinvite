@@ -5,7 +5,7 @@ import GuestsScreen from './GuestsScreen';
 import GuestDetailScreen from './GuestDetailScreen';
 import GuestFormSheet from './GuestFormSheet';
 import { ShellContext } from '../../shell/MobileShell';
-import { useGuests, useWedding, guestWrites } from '../../data/wedding';
+import { useGuests, useWedding, useGuestWrites } from '../../data/wedding';
 import { hapticLight } from '../../native';
 
 /** Tag-based groupings become extra filter pills, as the desktop list offers. */
@@ -23,6 +23,7 @@ export default function GuestsContainer() {
   const { base } = useContext(ShellContext);
   const guests = useGuests();
   const wedding = useWedding();
+  const guestWrites = useGuestWrites();
   const [filter, setFilter] = useState(params.get('filter') || 'all');
   const [sheet, setSheet] = useState({ open: false, guest: null });
 
