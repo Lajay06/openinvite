@@ -81,7 +81,7 @@ export const SAMPLE_CAPETOWN = {
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'A guitar while we eat and a proper set after the plates go. Tell us what you want to hear in the second half.' },
   music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'Send us the one you would get up for.' },
-  registryContent: { registryMessage: 'We have been keeping house together for years, so there is nothing we are short of. If you would like to mark the day, there is a short list and a fund for the trip.', noGiftsPlease: false },
+  registryContent: { registryMessage: 'We have kept house together for years and are short of nothing. There is a fund for the trip, and a handful of things besides, if a fund feels too abstract.', noGiftsPlease: false },
 
   qna: [
     { question: 'What time should we arrive?', answer: 'From four. The ceremony is at half past and the cellar is cool, which is worth knowing in February.' },

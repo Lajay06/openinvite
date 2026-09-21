@@ -86,7 +86,7 @@ export const SAMPLE_BROOKLYN = {
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'The playlist is long and it is not finished. Add something to it.' },
   music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song. Loud is fine.' },
-  registryContent: { registryMessage: 'You turning up is the gift. There is a list if you want one.', noGiftsPlease: false },
+  registryContent: { registryMessage: 'You turning up is the gift. A list exists. It is four items long.', noGiftsPlease: false },
 
   qna: [
     { question: 'What time should we arrive?', answer: 'Half past three. The ceremony is ten minutes and it starts at four.' },

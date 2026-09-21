@@ -90,7 +90,7 @@ export const SAMPLE_TULUM = {
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'There is a guitar at sunset and something considerably louder after dark. Tell us what belongs to the second half.' },
   music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song. The one you would put on at midnight.' },
-  registryContent: { registryMessage: 'Getting here is the gift, and we know what it costs. If you want to mark it anyway, there is a short list.', noGiftsPlease: false },
+  registryContent: { registryMessage: 'Getting here costs what it costs, and that is gift enough. A few small things are listed for anyone who disagrees.', noGiftsPlease: false },
 
   qna: [
     { question: 'What time should we arrive?', answer: 'From four. The ceremony starts at half past and the light is best just after.' },

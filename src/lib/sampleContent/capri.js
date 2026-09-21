@@ -81,7 +81,7 @@ export const SAMPLE_CAPRI = {
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'There is a small band through dinner and a record player afterward. Tell us what belongs on it.' },
   music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song, the one that gets you up from the table.' },
-  registryContent: { registryMessage: 'You coming this far is the gift. If you would rather mark it with something, there is a short list.', noGiftsPlease: false },
+  registryContent: { registryMessage: 'Come, eat, stay late. That is all of it. If something must be given, the list will not take long to read.', noGiftsPlease: false },
 
   qna: [
     { question: 'What time should we arrive?', answer: 'From half past four. The ceremony is short and starts on the hour.' },

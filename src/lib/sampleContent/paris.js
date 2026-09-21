@@ -78,7 +78,7 @@ export const SAMPLE_PARIS = {
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'A piano through dinner, and something with a beat once the plates go. Send us the second kind.' },
   music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song each. We are counting.' },
-  registryContent: { registryMessage: 'The apartment is small and already full. If you would like to give something, there is a short list, and none of it is furniture.', noGiftsPlease: false },
+  registryContent: { registryMessage: 'The apartment is small and already full. Nothing we have listed is furniture, and nothing is large.', noGiftsPlease: false },
 
   qna: [
     { question: 'What time should we arrive?', answer: 'A quarter to four. The ceremony starts at four and the doors close while it runs.' },

@@ -80,7 +80,7 @@ export const SAMPLE_TAJ = {
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'There are musicians in the pavilion for the ceremony and something with a great deal more volume in the courtyard. Tell us what belongs in the courtyard.' },
   music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song, and it will be played.' },
-  registryContent: { registryMessage: 'Many of you are flying a long way, and that is more than enough. If you would like to give something as well, there is a short list.', noGiftsPlease: false },
+  registryContent: { registryMessage: 'Many of you are flying a long way, and that is more than enough. For anyone who cannot arrive empty-handed, we have put down a few ideas.', noGiftsPlease: false },
 
   qna: [
     { question: 'What time should we arrive?', answer: 'By half past four. The pavilion is at the far end of the garden and the walk takes ten minutes at an unhurried pace.' },
