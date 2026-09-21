@@ -11,9 +11,9 @@ import HairlineRule from './HairlineRule';
 export default function MinimalSectionMark({ kicker, theme, typography, textColor, as: Tag = 'p' }) {
   const color = textColor || theme.lightText;
   return (
-    <div style={{ textAlign: 'center', marginBottom: 56 }}>
+    <div data-oi-anchor-root="" style={{ textAlign: 'center', marginBottom: 56 }}>
       {kicker && (
-        <Tag className="wb-body-face"
+        <Tag data-oi-anchor="mark" className="wb-body-face"
           style={{
             fontFamily: typography.bodyFont,
             fontSize: 11,
@@ -32,3 +32,8 @@ export default function MinimalSectionMark({ kicker, theme, typography, textColo
     </div>
   );
 }
+
+// THE PAGE ANCHOR. Body copy on a page follows its mark rather than fighting
+// it (Batch 2, phase two): the guard measures the painted mark and asserts it
+// agrees with this declaration, so the two cannot drift apart unnoticed.
+MinimalSectionMark.anchor = 'center';

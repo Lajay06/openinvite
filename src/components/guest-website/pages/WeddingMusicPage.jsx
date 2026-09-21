@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile';
 import SectionReveal from '../SectionReveal';
 import GuestPageHeading from '../GuestPageHeading';
+import { pageAnchorFor } from '../layouts/sectionMarks';
 import { isMotionEnabled } from '@/lib/universeStyling';
 import { parsePlaylistLink } from '@/lib/musicLinkParser';
 import { getCachedWeddingPassword } from '@/lib/guestSitePassword';
@@ -166,13 +167,15 @@ export default function WeddingMusicPage({ weddingDetails, theme, typography, un
 
         {content.customMessage && (
           <SectionReveal
+            anchorRole="paragraph"
             {...reveal}
             style={{
               fontFamily: typography.bodyFont,
               fontSize: '1rem',
               lineHeight: 1.8,
               marginBottom: '40px',
-              textAlign: 'center'
+              // The page anchor: follows the mark above it, not a fixed center.
+              textAlign: pageAnchorFor(universeConfig)
             }}
           >
             {content.customMessage}

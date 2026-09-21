@@ -120,9 +120,16 @@ export async function runSentenceCaseChrome() {
   // "ACCEPTS WITH PLEASURE", which is exactly what the artwork exemption exists
   // to protect. Deleting the feature deletes its typography; nothing eroded.
   //
+  // 64 -> 63 IN BATCH 2 PHASE TWO (page-anchor parity, 2026-09-20).
+  // WeddingCelebrationPage's brooklyn branch hand-rolled its kicker as an
+  // uppercase h1 beside a right-aligned ticket stub; it now renders
+  // BrooklynSectionMark like every other brooklyn page, and that mark's own
+  // uppercase declaration is already in this count. One duplicate treatment
+  // gone, none eroded.
+  //
   // A guard whose expected count is edited WITHOUT a reason is
   // indistinguishable from a guard being silenced. This is the reason.
-  check('artwork keeps its uppercase treatment', art.length >= 64, `${art.length} declarations preserved (baseline 64)`);
+  check('artwork keeps its uppercase treatment', art.length >= 63, `${art.length} declarations preserved (baseline 63)`);
 
   // Product names match the sidebar rather than drifting into Title Case.
   const gate = CHROME.find(([p]) => p === 'pages/UniverseStudio.jsx')?.[1] || '';
