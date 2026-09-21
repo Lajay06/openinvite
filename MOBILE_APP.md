@@ -311,6 +311,51 @@ Also observed:
 6. App Store assets: screenshots from `mobile-screenshots/` at the store sizes, privacy labels, the review notes on purchases.
 7. Android: Android Studio, a JDK, the Firebase project, a Play internal track.
 
+## Goal 4: the owner's phone-test fixes (2026-09-21)
+
+Built against `MOBILE_APP_GOAL_4.md`. Phases 2 to 6 are done; phase 1 is paused on the owner.
+
+### Photos: paused on the owner
+
+No Cloudinary admin credentials exist on this machine (`CLOUDINARY_URL`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `CLOUDINARY_CLOUD_NAME` unset, no `.env`), so the `app/` folder (cloud `dsr84xknv`, 72 photos) could not be listed, and per the brief nothing was guessed or scraped. **Waiting on the owner: the list of public IDs in `app/`.** Once it arrives: view each photo as a thumbnail, rewrite `src/mobile/images.ts` so every decorative slot (the splash included) draws from `app/` with no repeat on a screen and each photo used once where possible, faces never cut by the crop, route the fixtures' stand-ins for the couple's own uploads (cover photo, Our Story, moodboard pins in `src/mobile/fixtures/index.js`) through the manifest so no Cloudinary ID lives outside `images.ts`, remove the ids from other folders, and make `/m/preview/images` flag repeats. Until then the manifest still carries the previous DTS_ ids, eight `todo` slots, and repeats across screens (the couple-laughing photo is the splash, a Home hero, the Event details tile and welcome screen 1).
+
+### Launch sequence
+
+Tap the icon, a branded native screen, the in-app splash, a greeting, then the dashboard. Verified on the simulator frame by frame; no black frame anywhere.
+
+| Step | What | Where |
+|---|---|---|
+| Native launch screen | A flat ink view (DESIGN_SPEC.md's black) with the full logo centred at 160pt. Drawn from loose bundle PNGs (`ios/App/App/launch-logo{,@2x,@3x}.png`) because SplashBoard, the process that renders the launch image, could not load the same image from the asset catalog ("Could not load the LaunchLogo image referenced from a nib") while the app itself could. The old full-screen 2732 by 2732 Splash imageset is deleted: it tripped SplashBoard's 25 MB cap and showed black for two to four seconds. Android draws the same from a layer-list (`drawable/splash.xml`, `launch_logo` at five densities) and sets the Android 12 system splash background to ink. `capacitor.config.ts` and `assets/splash*.svg` are ink; the status bar starts with light content and the shell flips it once the dashboard settles. | `ios/`, `android/`, `capacitor.config.ts`, `assets/` |
+| In-app splash | The same logo over a photo from the manifest (`splash` slot) with the scrim, held until the wedding details and the photo itself have arrived, at least 800ms and at most 2.5s. Still only. | `src/mobile/shell/LaunchSequence.jsx` |
+| Greeting | "Good morning, {first name}" (afternoon, evening by the phone's clock) at 28/34 and one line from real data: days to go, then new RSVPs since yesterday (from the feed), else open tasks. Gone after 1.8s or on tap, sliding up and fading; a plain fade under reduced motion. | same |
+| Once per app open | `MobileShell` keeps a module flag, so tab changes, locks and re-renders do not replay it. The demo build and the native preview run it; the web preview shows the two screens on their own at `/m/preview/splash` and `/m/preview/greeting`. | `MobileShell.jsx`, `MobilePreviewApp.jsx` |
+
+Known gap: with the Face ID lock on, the greeting shows before the lock; it names the couple and a count. If that matters, gate the sequence on the lock being open.
+
+### Home hero
+
+`PeekCarousel` size `full`: one card fills the view, nothing peeks, `scroll-snap-stop: always` moves one card per swipe, dots track. Only the hero uses it.
+
+### Type scale and space
+
+Screen titles 28/34, section headings 17/22, tile and card titles 15/20, body 15/22, meta 13/18, hero numbers 44/48, inputs 16. Side gutter 20px, 40px between sections, 12px from a heading to its content, 12px between cards, 16px card padding. Tiles and image cards show their title only (`FeatureTile` and `ImageCard` ignore a stat or line if passed). The full table is in `src/mobile/DESIGN_MOBILE.md`. One consequence found by the probe: the mobile input rule had zero specificity (`:where` on both sides), so the preflight's `input { font-size: 100% }` won once the root dropped to 15px; it now carries the class and inputs stay 16px.
+
+### Latest and notifications
+
+One `ActivityRow` for both: a 36px tile in a soft tint of the type color, or the guest's initials when a person is behind the item, title 15/20, one line of detail 13/18, the time right aligned, a red dot for unread, 64px rows with the hairline inset past the tile, 13/18 group headings. Home shows the three newest in one card with "See all".
+
+### Verify (goal 4)
+
+- `npm run build` passes before each of the five commits. `npm run mobile:demo` rebuilds and syncs the demo bundle.
+- 64 screens at 390 by 844 in `mobile-screenshots/` (two new: `launch-splash`, `launch-greeting`), all passing the width, 44px, 16px and shadow probe. The probe exempts the two launch screens from its "more than 100 characters" check, since they are meant to be sparse.
+- Inside `src/mobile/`: no size above the scale except the lock-screen mock's clock, which imitates iOS; no tile subtitle; no `tabular-nums`; no color outside DESIGN_SPEC.md (plus the three status pairs); Cloudinary ids only in `images.ts` and, until phase 1, the fixtures' stand-ins for the couple's uploads.
+- `git diff main --stat`: new files, plus the allowed edits (`src/App.jsx` route registration, `package.json`, `capacitor.config.ts`, `assets/`, `ios/`, `android/`) and the branch's own `scripts/mobile-preview-screenshots.mjs`.
+
+### Still waiting on the owner (goal 4)
+
+1. The `app/` folder's public IDs (phase 1, above).
+2. Everything from goals 1 to 3 still open: CORS for the shell origin, the Base44 redirect URL, the push schema, the Apple Developer Program for TestFlight and push.
+
 ## How to run
 
 **Preview (no sign-in, fixture data, dev only)**

@@ -57,7 +57,7 @@ export function GoodToKnowScreen({ policies = {}, onSave, loading, error, onRetr
               const v = policies[p.key] || {};
               return (
                 <div key={p.key} className="oi-m-row" style={{ minHeight: 68 }}>
-                  <button type="button" className="oi-m-row__body" style={{ textAlign: 'left' }} onClick={() => { setEdit(p.key); setNote(v.message || ''); }}>
+                  <button type="button" className="oi-m-row__body" style={{ textAlign: 'left', minHeight: 44 }} onClick={() => { setEdit(p.key); setNote(v.message || ''); }}>
                     <div className="oi-m-row__label">{p.label}</div>
                     <div className="oi-m-row__sub">{v.message || p.sub}</div>
                   </button>

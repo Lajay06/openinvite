@@ -120,7 +120,10 @@
   display: block;
   max-width: 100%;
 }
-:where(.oi-mobile-root) :where(input, textarea, select) {
+/* Class specificity on purpose: the preflight's input { font-size: 100% }
+   must not win now that the root is 15px; inputs stay 16px so iOS does not
+   zoom. */
+.oi-mobile-root :where(input, textarea, select) {
   font: inherit;
   font-size: 16px;
   line-height: 24px;
