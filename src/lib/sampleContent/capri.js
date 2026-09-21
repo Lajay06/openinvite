@@ -60,7 +60,7 @@ export const SAMPLE_CAPRI = {
       { id: 'cp2', type: 'paragraph', order: 1, content: {
         text: 'We are marrying on a terrace in the late afternoon, and then we are eating outside for as long as the evening allows. There is more food than anyone needs and no speeches you have to sit still for.',
       } },
-      { id: 'cp3', type: 'quote', order: 2, content: { text: 'Come hungry. That is the only preparation.', attribution: 'Beatrix & Elio' } },
+      { id: 'cp3', type: 'quote', order: 2, content: { text: 'Come hungry. The kitchen has been at it since Thursday.', attribution: 'Beatrix & Elio' } },
       { id: 'cp4', type: 'photo', order: 3, content: { url: img(CAPRI_IMAGES.home[0], 1400) } },
       { id: 'cp5', type: 'photo', order: 4, content: { url: img(CAPRI_IMAGES.home[1], 1400) } },
 

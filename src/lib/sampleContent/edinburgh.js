@@ -60,7 +60,7 @@ export const SAMPLE_EDINBURGH = {
     blocks: [
       { id: 'ed1', type: 'heading', order: 0, content: { text: 'Two in the afternoon, while there is still light', kicker: 'The day' } },
       { id: 'ed2', type: 'paragraph', order: 1, content: {
-        text: 'It gets dark here at four in the winter, which is why the ceremony is at two and why everything after it happens indoors with the fires lit. Dinner is at six and the hall stays open long after. There is nowhere to be afterward and no reason to leave early.',
+        text: 'It gets dark here at four in the winter, which is why the ceremony is at two and why everything after it happens indoors with the fires lit. Dinner is at six and the hall stays open long after. There is nothing after it, and the bar stays open.',
       } },
       { id: 'ed3', type: 'quote', order: 2, content: { text: 'It will be cold and it will be dark and we would not have it any other way.', attribution: 'Fiona & Callum' } },
       { id: 'ed4', type: 'photo', order: 3, content: { url: img(EDINBURGH_IMAGES.home[0], 1400) } },
