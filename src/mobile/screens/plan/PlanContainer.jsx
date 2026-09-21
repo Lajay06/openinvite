@@ -14,6 +14,7 @@ import { DETAILS, ENTITIES } from '../../features/schemas';
 import DetailsScreen from '../../features/DetailsScreen';
 import EntityListScreen from '../../features/EntityListScreen';
 import PlanHubScreen, { planProgress } from './PlanHubScreen';
+import EventDetailsScreen, { InvitePromptSheet } from './EventDetailsScreen';
 import ChecklistScreen from './ChecklistScreen';
 import BudgetScreen, { BudgetCategoryScreen } from './BudgetScreen';
 import MessagesScreen, { ThreadScreen } from './MessagesScreen';
@@ -47,6 +48,7 @@ export default function PlanFeatureContainer() {
   const f = featureByKey(feature);
   if (!f) return <DesktopFeatureScreen title="Not here yet" body="This part of the planner is not in the app yet." back={back} onDesktop={() => navigate(back)} />;
 
+  if (f.key === 'event-details') return <EventDetailsContainer back={back} />;
   if (f.kind === 'details') return <DetailsContainer f={f} back={back} />;
   if (f.kind === 'entity') return <EntityContainer f={f} back={back} />;
   if (f.kind === 'desktop') return <DesktopFeatureScreen title={f.label} body={desktopBody(f.key)} stat="" back={back} onDesktop={() => openDesktop(navigate, f.desktop)} />;
@@ -77,6 +79,35 @@ function desktopBody(key) {
     invitations: 'Designing the invitation uses the full builder. Open it on desktop and the result shows on your site.',
     considerations: 'Considerations is a long read tailored to your ceremony and traditions. It reads best on a bigger screen.',
   }[key] || 'Best on desktop for now.';
+}
+
+/* ── Event details ───────────────────────────────────────────────────── */
+
+function EventDetailsContainer({ back }) {
+  const api = useApi();
+  const navigate = useNavigate();
+  const { base } = useContext(ShellContext);
+  const wd = useWeddingDetails();
+  const [prompt, setPrompt] = useState(null);
+  const changeAddress = async (newSlug) => {
+    let body;
+    try {
+      body = await api.json('/api/change-address', { method: 'POST', body: JSON.stringify({ weddingId: wd.details?.id || api.wedding.id(), newSlug }) });
+    } catch (e) {
+      const said = { taken: 'That address belongs to another wedding, or redirects to one. Try another.', reserved: 'That address is reserved. Try another.', 'not-an-address': 'That is not an address. Letters, numbers and hyphens.', forbidden: 'That is not your wedding to rename.' }[e?.body?.error];
+      throw new Error(said || 'The address could not be changed. Nothing was saved.');
+    }
+    if (body?.unchanged) { toast('That is already your address.'); return; }
+    // The client writes with its own token, so the update meets the record's owner-scoped RLS (ChangeAddressDialog.jsx).
+    await wd.save(null, { slug: body.slug, previousSlugs: body.previousSlugs }, false);
+    toast.success(`Your address is now openinvite.com.au/w/${body.slug}`);
+  };
+  return (
+    <>
+      <EventDetailsScreen details={wd.details} onSave={(key, value) => wd.save(key, value, false)} onChangeAddress={changeAddress} onInvitePrompt={setPrompt} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} />
+      <InvitePromptSheet event={prompt} onClose={() => setPrompt(null)} onEveryone={() => navigate(`${base}/guests?inviteAll=${encodeURIComponent(prompt.event_id)}&eventName=${encodeURIComponent(prompt.name)}`)} onChoose={() => navigate(`${base}/guests?setEvents=${encodeURIComponent(prompt.event_id)}`)} />
+    </>
+  );
 }
 
 /* ── Generic ─────────────────────────────────────────────────────────── */

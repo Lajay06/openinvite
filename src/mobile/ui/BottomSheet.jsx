@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 /**
@@ -64,7 +65,10 @@ export default function BottomSheet({ open, onClose, title, children, footer, fu
   };
 
   if (!mounted) return null;
-  return (
+  // Portalled to the shell root so a sheet opened from inside an animated or
+  // scrolled block still sits above the tab bar and the Ava button.
+  const host = typeof document !== 'undefined' ? document.querySelector('.oi-mobile-root') : null;
+  const tree = (
     <div className={`oi-m-sheet-root${phase === 'open' ? ' oi-m-sheet-root--open' : ''}${phase === 'closing' ? ' oi-m-sheet-root--closing' : ''}`} role="presentation">
       <div className="oi-m-sheet-scrim" onClick={onClose} />
       <div className={`oi-m-sheet${full ? ' oi-m-sheet--full' : ''}`} role="dialog" aria-modal="true" aria-label={title || 'Sheet'} ref={sheetRef}>
@@ -86,4 +90,5 @@ export default function BottomSheet({ open, onClose, title, children, footer, fu
       </div>
     </div>
   );
+  return host ? createPortal(tree, host) : tree;
 }

@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
-import { Camera } from 'lucide-react';
+import { Camera, Search, X } from 'lucide-react';
 import { TextField, TextAreaField, SelectField, Switch, PillButton, SmartImage } from '../ui';
 import PhotoPicker from '../ui/PhotoPicker';
+import PlaceField from '../ui/PlaceField';
+import PillChoice from '../ui/PillChoice';
+import VendorPickerField from './VendorPickerField';
+import GuestPickerField from './GuestPickerField';
+import { openExternal } from '../native';
 
 /** Renders one schema field bound to `value`/`onChange`. */
 export function SchemaField({ field, value, onChange, error }) {
@@ -25,6 +30,27 @@ export function SchemaField({ field, value, onChange, error }) {
       return <TextField {...common} type={field.type} value={value ?? ''} onChange={(e) => onChange(e.target.value)} />;
     case 'image':
       return <ImageField field={field} value={value} onChange={onChange} error={error} />;
+    case 'place':
+      return <PlaceField label={field.label} value={value || null} onChange={onChange} locationBias={field.locationBias || ''} placeholder={field.placeholder} />;
+    case 'pills':
+      return <PillChoice label={field.label} options={field.options} value={value ?? (field.multi ? [] : '')} onChange={onChange} multi={!!field.multi} hint={field.hint} />;
+    case 'vendor':
+      return <VendorPickerField label={field.label} category={field.category} value={value || ''} onChange={onChange} />;
+    case 'guest':
+      return <GuestPickerField label={field.label} value={value || null} onChange={onChange} />;
+    case 'tags':
+      return <TagsField field={field} value={Array.isArray(value) ? value : []} onChange={onChange} />;
+    case 'search':
+      return (
+        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+          <div style={{ flex: 1, minWidth: 0 }}><TextField {...common} value={value ?? ''} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder} /></div>
+          {value && <button type="button" className="oi-m-iconbtn" aria-label={`Search Google for ${value}`} onClick={() => openExternal(`https://www.google.com/search?q=${encodeURIComponent(value)}`)} style={{ marginBottom: error ? 22 : 0 }}><Search size={20} strokeWidth={1.75} /></button>}
+        </div>
+      );
+    case 'heading':
+      return <h3 className="oi-m-section" style={{ marginTop: 4 }}>{field.label}</h3>;
+    case 'note':
+      return <p className="oi-m-meta">{field.label}</p>;
     case 'email':
     case 'tel':
     case 'url':
@@ -38,17 +64,53 @@ export function SchemaField({ field, value, onChange, error }) {
 export function coerce(field, v) {
   if (field.type === 'number') return v === '' || v == null ? '' : Number(v);
   if (field.type === 'toggle') return !!v;
+  if (field.type === 'pills' && field.multi) return Array.isArray(v) ? v : [];
+  if (field.type === 'tags') return Array.isArray(v) ? v : [];
+  if (field.type === 'place' || field.type === 'guest') return v ?? null;
+  if (field.type === 'heading' || field.type === 'note') return undefined;
   return v ?? '';
+}
+
+/** Whether a field renders for these values (plus-one fields behind the plus-one switch, and so on). */
+export function fieldVisible(field, values) {
+  return typeof field.showIf === 'function' ? !!field.showIf(values) : true;
+}
+
+/** Free tags with quick-add suggestions, as GuestForm's tag section works. */
+function TagsField({ field, value, onChange }) {
+  const [draft, setDraft] = useState('');
+  const add = (t) => { const v = t.trim(); if (v && !value.includes(v)) onChange([...value, v]); setDraft(''); };
+  return (
+    <div className="oi-m-field">
+      <span className="oi-m-field__label">{field.label}</span>
+      {value.length > 0 && (
+        <div className="oi-m-choices" style={{ marginBottom: 8 }}>
+          {value.map((t) => (
+            <span key={t} className="oi-m-filter oi-m-filter--on" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>{t}<button type="button" aria-label={`Remove ${t}`} onClick={() => onChange(value.filter((x) => x !== t))} style={{ display: 'inline-flex', color: 'inherit' }}><X size={14} /></button></span>
+          ))}
+        </div>
+      )}
+      <input className="oi-m-input" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); add(draft); } }} onBlur={() => draft.trim() && add(draft)} placeholder={field.placeholder || 'Type a tag and press return'} autoCapitalize="words" />
+      {field.suggestions && (
+        <div className="oi-m-choices" style={{ marginTop: 8 }}>
+          {field.suggestions.filter((t) => !value.includes(t)).map((t) => <button key={t} type="button" className="oi-m-filter" onClick={() => add(t)}>{t}</button>)}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function validate(fields, values, required = []) {
   const errors = {};
   for (const f of fields) {
+    if (!fieldVisible(f, values) || f.type === 'heading' || f.type === 'note') continue;
     const v = values[f.name];
     if (required.includes(f.name) && (v == null || String(v).trim() === '')) errors[f.name] = `Add ${f.label.toLowerCase()}.`;
     if (f.type === 'email' && v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v).trim())) errors[f.name] = 'That email does not look right.';
     if (f.type === 'url' && v && !/^https?:\/\//i.test(String(v).trim())) errors[f.name] = 'Links start with http:// or https://';
     if (f.type === 'number' && v !== '' && v != null && Number.isNaN(Number(v))) errors[f.name] = 'Numbers only.';
+    if (f.type === 'place' && required.includes(f.name) && !v?.name) errors[f.name] = `Choose ${f.label.toLowerCase()}.`;
+    if (typeof f.validate === 'function') { const msg = f.validate(v, values); if (msg) errors[f.name] = msg; }
   }
   return errors;
 }

@@ -157,6 +157,46 @@ export async function shareLink(opts: { title?: string; text?: string; url: stri
   }
 }
 
+/**
+ * Hand a generated file (a CSV, an .ics, a text) to the couple. Natively the
+ * share sheet carries the content as text (no Filesystem plugin is added on
+ * this branch, and Mail, Notes and Files all accept text). On the web the
+ * Web Share API takes a File where it is offered; otherwise the file
+ * downloads, as the desktop's export buttons do.
+ */
+export async function exportText(filename: string, mime: string, content: string): Promise<'native' | 'web' | 'download' | 'failed'> {
+  const mod = await load('share');
+  if (mod) {
+    try {
+      await mod.Share.share({ title: filename, text: content, dialogTitle: filename });
+      return 'native';
+    } catch {
+      /* dismissed */
+    }
+  }
+  if (typeof navigator !== 'undefined' && typeof navigator.share === 'function' && typeof File !== 'undefined') {
+    try {
+      const file = new File([content], filename, { type: mime });
+      if (typeof navigator.canShare !== 'function' || navigator.canShare({ files: [file] })) {
+        await navigator.share({ title: filename, files: [file] });
+        return 'web';
+      }
+    } catch {
+      /* dismissed or unsupported */
+    }
+  }
+  try {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    return 'download';
+  } catch {
+    return 'failed';
+  }
+}
+
 /** External links open in the system browser natively, a new tab on the web. */
 export async function openExternal(url: string): Promise<void> {
   const mod = await load('browser');

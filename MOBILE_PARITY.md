@@ -46,7 +46,7 @@ itself stays on desktop and is noted.
 **States.** Loading spinner; "Your address appears here once you have added both names"; empty events list.
 **Mobile (found).** One form: names, date, guest count, ceremony venue name/address/time/dress code, reception the same. No address, no guest type, no venue search, no photo, no map link, no start and end times, no parking or accessibility, no custom events, no theme.
 **Gaps.** Wedding address and change address; guest type; venue search with the same stored shape and photo; end time; parking, accessibility, notes on the two main events; pre and post events with the full modal; invite prompt; theme tab.
-**Status.** Planned (phase 1): three segments (Details, Events, Theme); the address with a change sheet over `/api/change-address`; guest type pills; event sheets with `PlaceField` (Places search, Use my location, manual, photo, map opens natively); pre and post events; the invite prompt; the theme pills with the interfaith rule.
+**Status.** Done (phase 1): three segments (Details, Events, Theme); the address with a change sheet over `/api/change-address` and the same refusals; guest type pills; the ceremony, reception and custom event sheets with `PlaceField` (Places search, Use my location, add by hand, photo, Open in Maps through the system); pre and post events with the desktop's type lists and stored keys; the invite prompt after a new event (goes to Guests with `?inviteAll=` or `?setEvents=`); the theme pills with the interfaith two-pick rule, the culture search and the free-text culture.
 
 ### Schedule (`/Schedule`, `/Calendar`) → `/m/plan/schedule`
 
