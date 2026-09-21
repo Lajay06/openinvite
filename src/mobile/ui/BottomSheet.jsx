@@ -72,7 +72,7 @@ export default function BottomSheet({ open, onClose, title, children, footer, fu
           <div className="oi-m-sheet__handle" />
           {(title || onClose) && (
             <div className="oi-m-sheet__head">
-              <h2 className="oi-m-section" style={{ fontSize: 20, lineHeight: '28px' }}>{title}</h2>
+              <h2 className="oi-m-section" style={{ fontSize: 17, lineHeight: '22px' }}>{title}</h2>
               {onClose && (
                 <button type="button" className="oi-m-iconbtn oi-m-iconbtn--ghost" onClick={onClose} aria-label="Close">
                   <X size={22} strokeWidth={1.75} />

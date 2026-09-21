@@ -19,12 +19,12 @@ export default function AccountScreen({ name, email, coupleName, weddingDate, ph
               <SmartImage src={photo} alt="" width={360} ratio="16/9" square eager tone="ink" />
               <div className="oi-m-hero__scrim" style={{ background: 'linear-gradient(to top, rgba(10,10,10,0.92) 0%, rgba(10,10,10,0.45) 55%, rgba(10,10,10,0.05) 100%)' }} />
               <div style={{ position: 'absolute', left: 16, bottom: 14, color: '#FFFFFF' }}>
-                <div className="oi-m-hero__title" style={{ fontSize: 24, lineHeight: '30px' }}>{coupleName || name || 'Your wedding'}</div>
+                <div className="oi-m-hero__title" style={{ fontSize: 17, lineHeight: '22px' }}>{coupleName || name || 'Your wedding'}</div>
                 {weddingDate && <div className="oi-m-hero__label">{weddingDate}</div>}
               </div>
             </div>
             <div style={{ padding: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span className="oi-m-row__tile oi-m-row__tile--tint" style={{ width: 48, height: 48, fontSize: 16 }}>{initials(name || email)}</span>
+              <span className="oi-m-row__tile oi-m-row__tile--tint" style={{ width: 48, height: 48, fontSize: 15 }}>{initials(name || email)}</span>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <p className="oi-m-body oi-m-strong" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name || 'Your account'}</p>
                 <p className="oi-m-meta" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{email}</p>

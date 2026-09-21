@@ -27,7 +27,7 @@ export default function MessagesScreen({ messages = [], onOpen, onMarkRead, load
                 <Row initials={initials(m.guest_name)} onClick={() => onOpen(m)} tile={m.read ? 'default' : 'primary'} trailing={m.replied ? <StatusPill tone="ok">Replied</StatusPill> : !m.read ? <span className="oi-m-notif__unread" /> : null}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                     <span className="oi-m-row__label" style={{ fontWeight: m.read ? 400 : 600 }}>{m.guest_name || 'Guest'}</span>
-                    <span className="oi-m-meta" style={{ flexShrink: 0, fontSize: 12 }}>{relativeTime(new Date(m.created_date).getTime())}</span>
+                    <span className="oi-m-meta" style={{ flexShrink: 0 }}>{relativeTime(new Date(m.created_date).getTime())}</span>
                   </div>
                   <div className="oi-m-row__sub">{m.message}</div>
                 </Row>

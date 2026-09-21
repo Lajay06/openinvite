@@ -30,7 +30,7 @@ export function GuestRow({ guest, onClick }) {
   const sub = [GUEST_CATEGORY_LABEL[guest.category], guest.plus_one ? 'Plus one' : '', guest.email].filter(Boolean).join(' · ');
   return (
     <button type="button" className="oi-m-row oi-m-row--pressable" onClick={onClick}>
-      <span className="oi-m-row__tile" style={{ fontSize: 14, fontWeight: 600 }}>{initials(guest.name)}</span>
+      <span className="oi-m-row__tile" style={{ fontSize: 13, fontWeight: 600 }}>{initials(guest.name)}</span>
       <div className="oi-m-row__body">
         <div className="oi-m-row__label">{guest.name || 'Unnamed guest'}</div>
         {sub && <div className="oi-m-row__sub">{sub}</div>}
@@ -140,7 +140,7 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, on
 function Stat({ n, label }) {
   return (
     <div style={{ flex: 1, minWidth: 0 }}>
-      <div className="oi-m-num" style={{ fontSize: 28, lineHeight: '32px' }}>{n}</div>
+      <div className="oi-m-num" style={{ fontSize: 28, lineHeight: '34px' }}>{n}</div>
       <div className="oi-m-meta">{label}</div>
     </div>
   );

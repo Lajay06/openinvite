@@ -24,7 +24,7 @@ export default function PlanHubScreen({ data, symbol = '$', progress, onOpen, on
               <div className="oi-m-card">
                 <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 12 }}>
                   <span className="oi-m-section">{progress.label}</span>
-                  <span className="oi-m-num" style={{ fontSize: 28, lineHeight: '32px' }}>{Math.round(progress.pct)}%</span>
+                  <span className="oi-m-num" style={{ fontSize: 28, lineHeight: '34px' }}>{Math.round(progress.pct)}%</span>
                 </div>
                 <ProgressBar value={progress.pct} max={100} note={progress.note} />
               </div>
@@ -34,7 +34,7 @@ export default function PlanHubScreen({ data, symbol = '$', progress, onOpen, on
                 <h2 className="oi-m-section" style={{ marginBottom: 12 }}>{g.label}</h2>
                 <div className="oi-m-grid2">
                   {featuresIn(g.key).map((f) => (
-                    <FeatureTile key={f.key} icon={f.icon} name={f.label} stat={f.stat(data || {}, symbol)} image={f.image} alt={f.label} tone={f.image ? 'photo' : (['guests', 'finances'].includes(g.key) ? 'neutral' : 'white')} onClick={() => onOpen(f)} />
+                    <FeatureTile key={f.key} icon={f.icon} name={f.label} image={f.image} alt={f.label} tone={f.image ? 'photo' : (['guests', 'finances'].includes(g.key) ? 'neutral' : 'white')} onClick={() => onOpen(f)} />
                   ))}
                 </div>
               </section>

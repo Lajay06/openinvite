@@ -20,7 +20,7 @@ export default function SiteScreen({ universeName, isLive, siteUrl, previewImage
                 <div className="oi-m-hero__scrim" />
                 <div style={{ position: 'absolute', left: 20, right: 20, bottom: 20, color: '#FFFFFF' }}>
                   <div className="oi-m-hero__label">{universeName || 'Choose a universe'}</div>
-                  <div className="oi-m-hero__title" style={{ fontSize: 26, lineHeight: '32px' }}>{coupleName || 'Your wedding'}</div>
+                  <div className="oi-m-hero__title" style={{ fontSize: 17, lineHeight: '22px' }}>{coupleName || 'Your wedding'}</div>
                 </div>
                 <div style={{ position: 'absolute', top: 12, right: 12 }}><StatusPill tone={isLive ? 'ok' : 'light'}>{isLive ? 'Live' : 'Draft'}</StatusPill></div>
               </div>

@@ -2,11 +2,12 @@ import React from 'react';
 import SmartImage from './SmartImage';
 
 /**
- * Plan hub tile: a photo or a color panel, a Lucide icon in a circle, the
- * feature name, one live stat. `tone`: 'photo' (needs image) | 'white' |
- * 'neutral' | 'tint'.
+ * Plan hub tile: a photo or a color panel, a Lucide icon in a circle, and
+ * the feature name. Nothing else: tiles carry their title only (goal 4). A
+ * `stat` passed by a caller is ignored. `tone`: 'photo' (needs image) |
+ * 'white' | 'neutral' | 'tint'.
  */
-export default function FeatureTile({ icon: Icon, name, stat, image, alt = '', tone, onClick }) {
+export default function FeatureTile({ icon: Icon, name, image, alt = '', tone, onClick }) {
   const photo = !!image;
   const cls = photo ? ' oi-m-tile--photo' : tone === 'neutral' ? ' oi-m-tile--neutral' : tone === 'tint' ? ' oi-m-tile--tint' : '';
   return (
@@ -18,7 +19,6 @@ export default function FeatureTile({ icon: Icon, name, stat, image, alt = '', t
       </div>
       <div className="oi-m-tile__bottom">
         <div className="oi-m-tile__name">{name}</div>
-        {stat && <div className="oi-m-tile__stat">{stat}</div>}
       </div>
     </button>
   );

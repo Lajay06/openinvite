@@ -40,7 +40,7 @@ export default function NotificationsScreen({ items = [], loading, error, onRetr
                       <div className="oi-m-row__body">
                         <div className="oi-m-row__label" style={{ whiteSpace: 'normal', fontWeight: it.unread ? 600 : 400 }}>{it.title}</div>
                         <div className="oi-m-row__sub" style={{ whiteSpace: 'normal' }}>{it.body}</div>
-                        <div className="oi-m-meta" style={{ marginTop: 4, fontSize: 12, lineHeight: '16px' }}>{relativeTime(it.ts, now)}</div>
+                        <div className="oi-m-meta" style={{ marginTop: 4 }}>{relativeTime(it.ts, now)}</div>
                       </div>
                       {it.unread && <span className="oi-m-notif__unread" style={{ marginTop: 8 }} />}
                     </button>

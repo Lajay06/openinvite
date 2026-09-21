@@ -54,18 +54,25 @@ No gradients, with one exception: a bottom-up dark scrim over photos so white te
 
 Plus Jakarta Sans only. Headings weight 600, never heavier. Size contrast does the work, not weight. Figures are the font's default proportional set everywhere: no `font-variant-numeric: tabular-nums` and no `font-feature-settings` on any number. Plus Jakarta Sans's tabular figures are different glyphs (a footed 1, a narrowed 0) and read as a second font. If a true column of figures ever needs aligning, align the column, not the digits.
 
+The scale is small and calm (goal 4, after the owner's phone test; the references are the Qantas and Nespresso apps). Nothing in `src/mobile/` declares a size above it.
+
 | Class | Size / line | Use |
 |---|---|---|
-| `.oi-m-title` | 34 / 40 | the one screen title, and the greeting |
-| `.oi-m-hero-num` | 56 / 56 | days to go, totals |
-| `.oi-m-section` | 22 / 28 | section titles |
-| `.oi-m-body` | 16 / 24 | body, row labels, inputs |
-| `.oi-m-meta` | 14 / 20 | secondary lines, captions |
+| `.oi-m-title`, `.oi-m-greeting__title` | 28 / 34 | the one screen title, and the greeting |
+| `.oi-m-hero-num` | 44 / 48 (34 / 38 when long) | days to go, totals |
+| `.oi-m-num`, `.oi-m-stat__num` | 28 / 34 | stat numbers |
+| `.oi-m-section`, `.oi-m-grouped__title`, sheet titles | 17 / 22 | section headings above rows and tiles |
+| `.oi-m-tile__name`, `.oi-m-imgcard__title`, `.oi-m-item__title`, `.oi-m-banner__title` | 15 / 20, weight 600 | tile and card titles |
+| root, `.oi-m-body`, `.oi-m-row__label`, `.oi-m-pill`, `.oi-m-bubble` | 15 / 22 | body, row labels, buttons |
+| `.oi-m-meta`, `.oi-m-row__sub`, `.oi-m-row__value`, `.oi-m-hero__label`, `.oi-m-field__label`, `.oi-m-filter` | 13 / 18 | secondary lines, captions, labels |
 | `.oi-m-status` | 12 / 16 | status pills |
+| inputs | 16 / 24 | never smaller, so iOS does not zoom |
+
+Tiles and image cards show their title only. No subtitle, stat or secondary line on a tile or an image card anywhere; `FeatureTile` and `ImageCard` ignore one if passed. Live figures belong only where they are the point of the card: stat cards, the RSVP and budget snapshots.
 
 **Spacing**
 
-8px grid. Side gutter 16px. 24px between sections. 12px between cards in a row, 8px between rows in a group. Card padding 16px, hero card padding 20px. Minimum tap target 44px.
+8px grid. Side gutter 20px (`--m-gutter`). 40px between sections (`.oi-m-stack--24`, `.oi-m-grouped`), 12px between a section heading and its content. 12px between cards in a row or grid, 8px between rows in a group. Card padding 16px, hero card padding 20px. Minimum tap target 44px. Nothing should feel packed: where a screen still feels busy after the scale, remove or combine elements rather than shrinking further.
 
 ## Still locked, from the product rules
 
