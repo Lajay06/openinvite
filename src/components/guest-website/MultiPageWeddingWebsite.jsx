@@ -10,6 +10,7 @@ import TextureOverlay from './TextureOverlay';
 import EntranceMoment from './EntranceMoment';
 import BackgroundMusicPlayer from './BackgroundMusicPlayer';
 import { consumeTokenFromUrl, getRecognisedToken, forgetRecognisedGuest } from '@/lib/guestRecognition';
+import { greetableFirstName } from '@/lib/guestGreeting';
 import GuestSiteSkeleton from './GuestSiteSkeleton';
 import { fetchWeddingBySlug } from '@/lib/weddingBySlug';
 
@@ -133,6 +134,36 @@ export default function MultiPageWeddingWebsite() {
     forgetRecognisedGuest(weddingSlug);
     setRecognisedToken('');
   };
+
+  // THE RECOGNISED GUEST'S FIRST NAME, or null. Resolved from the token by the
+  // same /api/rsvp-lookup the RSVP tab uses, through the one greeting rule
+  // (src/lib/guestGreeting.js), so a household or the API's 'Guest' placeholder
+  // is null here exactly as it is there.
+  //
+  // ITS OWN EFFECT, BESIDE THE WEDDING FETCH, NOT CHAINED TO IT. Both effects
+  // fire on the same commit, so the two requests leave together; nothing here
+  // is awaited by the wedding load, the skeleton, or the entrance. Effects run
+  // after the first render, and the token initialiser above ran DURING it and
+  // stripped ?rsvp= from the address bar first, so this request never carries
+  // the token in a Referer. No token, no request. A slow or failed lookup is
+  // silent: the site renders exactly as it does for a stranger, and the RSVP
+  // tab still performs its own lookup when it mounts.
+  const [guestFirstName, setGuestFirstName] = useState(null);
+  useEffect(() => {
+    if (!recognisedToken) { setGuestFirstName(null); return undefined; }
+    let stale = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/rsvp-lookup?token=${encodeURIComponent(recognisedToken)}`);
+        if (!res.ok || stale) return;
+        const data = await res.json();
+        if (!stale) setGuestFirstName(greetableFirstName(data?.guest?.name));
+      } catch {
+        // Offline, blocked, or malformed: the guest is simply not greeted.
+      }
+    })();
+    return () => { stale = true; };
+  }, [recognisedToken]);
 
   // Must be called before any early return — React rules of hooks
   const prefersReduced = useReducedMotion();
@@ -425,6 +456,7 @@ export default function MultiPageWeddingWebsite() {
         theme={theme}
         typography={typography}
         universeConfig={universeConfig}
+        guestFirstName={guestFirstName}
       />
 
       {/* Top-level sibling of the page-transition area below, not inside
