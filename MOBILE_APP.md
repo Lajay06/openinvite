@@ -365,6 +365,54 @@ One `ActivityRow` for both: a 36px tile in a soft tint of the type color, or the
 
 Nothing from goal 4. Still open from goals 1 to 3: CORS for the shell origin, the Base44 redirect URL, the push schema, the Apple Developer Program for TestFlight and push.
 
+## Goal 5: full parity with the desktop planner (2026-09-22)
+
+Built against `MOBILE_APP_GOAL_5.md`. `MOBILE_PARITY.md` is the feature-by-feature record: what the desktop has, what mobile had, and what was built, with a **Status** line per feature.
+
+### The data seam
+
+Every screen reads and writes through one api object (`src/mobile/data/api.js`): `createRealApi(user)` delegates to the desktop's own helpers (`base44.entities.*`, `/api/my-guests`, `/api/my-wedding-details`, Places, `InvokeLLM`, `UploadFile`) and `createPreviewApi()` answers the same calls from an in-memory store seeded by the fixtures, with `?state=loading|empty|error` gates. So the preview, the demo build and the connected app run the same containers, and every gap closed in phase 1 was smoke-tested headlessly on the preview before commit.
+
+### What was built (phase 1, in sidebar order)
+
+Event details (both venues through Places, the events list, change of address, the invite prompt), Schedule, To do (detail sheet with every field; owner fix 4), Guests (per-event RSVP, every field of `GuestForm`, import, bulk actions, set events; owner fix 2) and Send invites, Polls & games (full CRUD, results, comments, links; owner fix 5), Messages (threads, WhatsApp number and compose), Seating (tables, assign by name, Ava plan with the desktop prompt and validation), Wedding party (key roles from the guest list), Moodboard, Invitations hand-off, the ten detail pages (styling, beauty, food, photography, guest gifts, ceremony, transport, accommodation, emergency, honeymoon) on the desktop field names, Music (settings, requests, share), Vows & speeches (PIN through `/api/vow-pin`), My vendors (the full `VendorForm`, logs, documents, tasks) and Marketplace (Places search, profile, add), Budget (planner, forecast, expenses, categories, Ava insight), Registry (platforms, products, cash funds, received gifts, thank-you notes), guest suite Accommodation and Transport (`PlaceField`, badges, Ava recommendations), Experience guide (places, itinerary, publish), Good to know (every policy on `GuestSuitePolicies`' shape plus `guestExperienceSettings`), Q&A with Ava suggestions, Account (details and email preferences sheets) and the Site tab's publish switch.
+
+Shared pieces added: `PlaceField` (Places search, use my location, add by hand; stores `name, address, placeId, mapsUrl, photoUrl, photoReference, rating`), `PillChoice`, `ConfirmSheet`/`useConfirm` (no `window.confirm` anywhere), `Segments`/`useSegment` (`?segment=`), `VendorPickerField`, `GuestPickerField`, `vendorFields.js`, `exportText()` in `native.ts` (Share sheet natively, download on the web). `FormSheet` gained `full`, `showIf`, `validate`, a children function and the place, pills, vendor, guest, tags and search field types. Maps and directions open natively (`openExternal`).
+
+### Owner fixes (phase 2)
+
+1. Next up cards are all 156px, titles clamp to two lines, meta to one, content top-aligned (`.oi-m-nextup`).
+2. Guest profile: RSVP per event, every desktop field editable.
+3. Sticky date headers with a solid page background (`.oi-m-grouped__title`).
+4. To do: detail sheet, tick animation, light haptic, one second then into a collapsible Completed section, four second Undo toast, untick from Completed.
+5. Polls and games: full CRUD, options, settings, results.
+6. Plan tab: one accordion section per sidebar group with a feature count and chevron; open sections remembered (`plan_open_groups` preference); the first open on the first visit; the progress card above.
+
+### Photos (phase 3)
+
+Every rendered image on every preview route was collected from the DOM (headless, all `img` sources and inline background images) and traced back to `src/mobile/images.ts`; nothing renders that is not a slot there, apart from the logo and favicon. The manifest now names 73 slots and 72 distinct photos, each photo in exactly one slot anywhere in the app: the nine demo place photos, thirteen Plan tiles that were icon panels, six fixed keep-planning cards by position (so a Plan tile photo is never drawn again on Home), the Site preview's own hero block (`fixtureSite`), and the push preview wallpaper from its own slot. `/m/preview/images` throws on any duplicate (`duplicateIds()`), so a repeat cannot ship unnoticed.
+
+The one deliberate repeat is not a library photo: the couple's own cover is their identity and shows on the Home hero, the Account card and the lock screen, as a profile photo would. `homeHeroImages()` fills each hero position with the couple's photo for that position or the decorative slot for it, never a repeat to fill a gap; `siteImageFor()` previews the site's own first photo block. The Beach Hotel is both the welcome-drinks venue and accommodation place 1, so its one Google photo shows in both places, as it would in the connected app.
+
+Photo-free by design: the Send invites, Invitations and Considerations tiles (they hand off to desktop), the Emergency contact tile (a form) and the guest suite Accommodation tile. **Photos still needed: 1.** `placeAirport` (the demo airport on guest suite Transport) draws a color panel because the library has no airport exterior. The one unassigned library photo (a couple in bed, `DTS_SUITE_TALK ... 14160`) has closed eyes in its focal area and stays out, as goal 4 ruled; with it the Accommodation tile could be filled, so a second photo would fill that too.
+
+### Independent check (phase 4)
+
+A fresh subagent given only `MOBILE_PARITY.md`, the desktop source and the mobile source re-verified every feature and reported 107 gaps with line cites on both sides. All are closed in three commits (the record, with the three decisions that are not gaps, is at the end of `MOBILE_PARITY.md`). The largest were data written under the wrong key (guest gifts items, celebrant types, accessories), polls double-counting, game answers never shown, a custom event sheet that reset on the timing pill, to-do notes that could not be cleared, guest requests silently switched on, and a background-music control the desktop hides by owner decision.
+
+### Verify (goal 5)
+
+`npm run mobile:demo` and `npx cap sync` pass; `npm run build` exits 0; `npm run mobile:screenshots` captures every screen and sheet into `mobile-screenshots/`; `git diff main --stat` touches only `src/mobile/**`, the three markdown files and `scripts/mobile-preview-screenshots.mjs`. Inside `src/mobile/`: no Cloudinary id outside `images.ts`, no `tabular-nums`, no emoji, no em dash, no `window.confirm`; the only sizes off the goal 4 scale are the 11px tab bar label (goal 2) and the iOS clock in the lock-screen mock.
+
+### Needs a decision (goal 5 additions)
+
+- **Considerations** is computed inside `src/pages/Considerations.jsx` and nothing is exported; it stays a desktop hand-off until that page's logic is extracted to `src/lib` (an edit outside `src/mobile`).
+- **WhatsApp QR pairing** is desktop-only; the mobile Messages screen takes the number and composes messages natively instead.
+- **Exports** (`jszip` bundles, CSV, ICS) go through the native Share sheet as text or a file; the desktop's direct downloads have no equivalent in a webview.
+- **The Plan hub's good-to-know stat** counted `enabled`, which the desktop never writes; it now counts `display`.
+- **Collaborator sessions** are desktop-only: the app signs in as the couple and never reads `/api/collaborator-data`. Supporting a collaborator on the phone means the read-only overlay on every screen.
+- **Ava's quick actions** seed the question into the pod's box (the pod is shared with the desktop's Layout and is not edited); on desktop the modal sends the quick action at once. One tap more on the phone.
+
 ## How to run
 
 **Preview (no sign-in, fixture data, dev only)**

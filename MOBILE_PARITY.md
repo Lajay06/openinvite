@@ -337,3 +337,31 @@ Read-only mirror of polls with stats and a link to Polls. **Status.** Parity thr
 | Received gift status | received, shipping, pending | expected, received, not_received |
 | Good to know | `enabled` + `message` per key | `display` plus each policy's own fields |
 | Poll | no `allowComments`, `category`, `emoji` | the full shape |
+| Guest gifts items | `weddingFavours.favourItems` | top-level `favourItems` |
+| Guest gifts amounts | numbers | free text (`$3.50`) |
+| Celebrant type | celebrant, religious, friend, registry | religious, civil, humanist, celebrant |
+| Attire accessories | `item`, `for`, `notes` | `item`, `forWhom`, `done` |
+| Shuttle times and capacity | HH:MM and a number | free text |
+| Music track category | cocktail, first_dance, party, last_song | ceremony, cocktail_hour, dinner, dancing, special_moments, general |
+| Music track source | manual | spotify (the create default; the enum is spotify, apple, youtube) |
+| Vendor meeting date | date | datetime-local |
+| To-do cleared notes or date | undefined (dropped) | null |
+| Bulk dietary None | `''` | null |
+| Poll emoji | `''` | the template's, rendered on the couple's site |
+| Q&A item | no `id` | `id: Date.now()` |
+| Music guest requests, undefined | on | off |
+
+---
+
+## Phase 4: the independent check (2026-09-22)
+
+A fresh subagent that had not seen this session was given only this file, the desktop source and the mobile source, and asked to verify every claim feature by feature. It reported 107 gaps with line cites on both sides (14 spot-verified twice), ranging from data written under the wrong key to missing list actions. Every one is now closed except the three below, which are decisions rather than gaps. The confirmed-at-parity list from that check: Beauty, Food & beverage, Photography, Vows & speeches, Emergency contact, Honeymoon, guest suite Transport, Account.
+
+**Closed in the three fix commits** (batch 1 to 3): the field drifts in the table above; polls counting live votes per poll and skipping test votes; game answers reading `answer_text || selected_option`, option removal and the who-has-answered tracker; the custom event sheet no longer resetting on the timing pill; the address error; Ava suggestions and ids on Q&A; background music hidden as on desktop; itinerary items carrying maps, website and photo; price level and the hotel prefix on place searches; guests: the Ultra gate on copy links through `copyFromPromise`, the not-invited filter, bulk dietary Other and null, a phone country with a non-blocking warning, plus-one details kept, imports without `event_responses` and with a country and per-row phone warnings, set events then send, the email templates gallery, sort, quick add, the wedding-party role on rows and the profile, the title-case suggestion with persisted dismissals, search over the active filter, the token backfill, stats with plus-ones and per event; send invites listing recipients, showing phone and badges, previewing the WhatsApp text and opening one chat at a time with per-guest tracking; messages resolving WhatsApp by `guest_id`, sending `Invitation.couple_names`, marking all read on load, counting unreplied, with country pickers; schedule search, location filter, sortable columns, stat tiles, run sheet edit, delete, move and add-a-moment, the unplaceable notice; the to-do board view; seating panel filters with dietary search, seated rows naming their table, the attendee whitelist, capacity guarded by taken seats, the six stats; wedding party notes and stats; the first-invitation form and copy link; moodboard multi-upload and the union export; vendor pickers editing in place and clearing with null; vendors favorites, sort, statuses including meeting scheduled, meeting date shown, websites as any string, counts not sums; marketplace category, venue-name fallback, Listed as; budget notes, category pills, Remaining as committed minus spent, the desktop's CSV columns and plan export; registry filters, one-tap thanked, total value, https-only payment links, required amounts, Facebook; the transport roster, search link and free-text fields; property description; suite schedule descriptions and categories; Site password protection, QR code and Email your guests; Home's model briefing, This week, the six numbers and the failure banner; the page-scoped Ava (each desktop page's voice line and quick actions ride into the shared pod, `src/mobile/features/avaPages.generated.js`); the Considerations tab as a sheet on the eight pages that have it.
+
+**Decisions, not gaps:**
+- **Collaborator mode on Home.** The app signs in as the couple; a collaborator session (`/api/collaborator-data`) is desktop-only, as this file already states at the top. Listed under "Needs a decision" in MOBILE_APP.md.
+- **Category colors on the guest suite Schedule.** The desktop draws a color per category; the app's palette is brand-only (DESIGN_MOBILE.md), so the category is a neutral badge with the same label.
+- **Drag-and-drop on the Moodboard** has no equivalent on a phone; the multi-file picker covers the same upload.
+
+**Noted and kept:** date formatting stays `en-AU` in the mobile helpers (a product decision from goal 2: the audience reads "20 March 2027"); the US-English rule is about spelling and idiom. The desktop's `PageConsiderations` and Ava prompts are reused verbatim, including their punctuation.

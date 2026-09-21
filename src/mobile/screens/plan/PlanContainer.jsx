@@ -10,6 +10,7 @@ import { hapticLight, shareLink, openExternal, prefGet, prefSet } from '../../na
 import { openDesktop, siteUrlFor, siteOrigin } from '../../lib/links';
 import { useConfirm } from '../../ui/ConfirmSheet';
 import { resolveRecipients } from '@/lib/questionnaireRecipients';
+import { copyFromPromise } from '@/lib/copyToClipboard';
 import { getWeddingEvents, RECEPTION_EVENT_ID } from '@/lib/weddingEvents';
 import { validatePlanAssignments } from '@/lib/tableAssignment';
 import { featureByKey } from '../../features/registry';
@@ -534,18 +535,21 @@ function PollsContainer({ back }) {
   const createGame = async (data) => { await games.create(data); toast.success('Game created'); };
   const toggleGame = async (g) => { await games.update(g.id, { is_active: g.is_active === false }); toast.success(g.is_active === false ? 'Game reopened' : 'Game closed'); };
   const deleteGame = async (g) => { await games.remove(g.id); toast.success('Game deleted'); };
+  // The promise goes to the clipboard inside the gesture (copyFromPromise), so Safari does not deny the write after the fetch.
   const copyGameLinks = async (g) => {
     const recipients = resolveRecipients(g, guests.data || []);
     if (!recipients.length) { toast.error('No guests match this game yet.'); return; }
-    const tid = toast.loading('Getting the links');
-    try {
+    const textPromise = (async () => {
       const map = await api.guestLinks(recipients.map((x) => x.id));
       const base = `${siteOrigin()}/games/`;
       const lines = recipients.filter((x) => map[x.id]?.token).map((x) => `${x.name}: ${base}${map[x.id].token}/${g.id}`);
-      if (!lines.length) throw new Error('Could not generate game links');
-      await navigator.clipboard.writeText(lines.join('\n'));
-      toast.success(`${lines.length} game link${lines.length === 1 ? '' : 's'} copied`, { id: tid });
-    } catch (e) { toast.error(e?.message || 'Could not get the links', { id: tid }); }
+      return lines.join('\n');
+    })();
+    const { ok, text } = await copyFromPromise(textPromise);
+    if (!text) { toast.error('Could not generate game links'); return; }
+    const n = text.split('\n').length;
+    if (ok) toast.success(`${n} game link${n === 1 ? '' : 's'} copied`);
+    else { const r = await shareLink({ title: `${g.title} links`, text, url: siteUrl }); if (r === 'failed') toast.error('Could not copy the links'); }
   };
   return <PollsScreen polls={polls} votes={votes.data || []} comments={comments.data || []} games={games.data || []} responses={responses.data || []} guests={guests.data || []} siteUrl={siteUrl} onCreate={create} onUpdate={update} onEnd={end} onReopen={reopen} onDelete={remove} onShare={share} onCreateGame={createGame} onToggleGame={toggleGame} onDeleteGame={deleteGame} onCopyGameLinks={copyGameLinks} loading={wd.loading} error={wd.error} onRetry={() => { wd.reload(); votes.reload(); games.reload(); responses.reload(); }} back={back} onRefresh={async () => { wd.reload(); votes.reload(); comments.reload(); games.reload(); responses.reload(); }} />;
 }

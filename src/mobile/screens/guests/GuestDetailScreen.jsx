@@ -22,7 +22,7 @@ const fmtWhen = (iso) => { if (!iso) return ''; const d = new Date(iso); return 
  * reminder), the RSVP note and song request, and gifts from this guest.
  * Edit opens the full sheet; Edit events the per-event invite sheet.
  */
-export default function GuestDetailScreen({ guest, weddingEvents = [], mealOptions = [], gifts = [], symbol = '$', back, onEdit, onEditEvents, onDelete, onCopyLink, onSendInvite, loading, error, onRetry }) {
+export default function GuestDetailScreen({ guest, role = '', weddingEvents = [], mealOptions = [], gifts = [], symbol = '$', back, onEdit, onEditEvents, onDelete, onCopyLink, onSendInvite, loading, error, onRetry }) {
   if (loading) return <Screen title="Guest" back={back}><div className="oi-m-stack oi-m-stack--24"><Skeleton kind="block" /><Skeleton kind="block" /></div></Screen>;
   if (error) return <Screen title="Guest" back={back}><div className="oi-m-stack"><ErrorState onRetry={onRetry} /></div></Screen>;
   if (!guest) return <Screen title="Guest" back={back}><div className="oi-m-stack"><p className="oi-m-body">This guest is not on your list any more.</p></div></Screen>;
@@ -41,7 +41,7 @@ export default function GuestDetailScreen({ guest, weddingEvents = [], mealOptio
           <span className="oi-m-row__tile" style={{ width: 56, height: 56, fontSize: 17, fontWeight: 600, flexShrink: 0 }}>{initials(guest.name)}</span>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="oi-m-item__title" style={{ whiteSpace: 'normal' }}>{guest.name}</div>
-            <div className="oi-m-meta">{invited ? `Invited ${fmtWhen(guest.invite_sent_at)}` : 'Not invited yet'}{guest.category ? `, ${GUEST_CATEGORY_LABEL[guest.category] || guest.category}` : ''}</div>
+            <div className="oi-m-meta">{[role, invited ? `Invited ${fmtWhen(guest.invite_sent_at)}` : 'Not invited yet', guest.category ? (GUEST_CATEGORY_LABEL[guest.category] || guest.category) : ''].filter(Boolean).join(', ')}</div>
           </div>
           <StatusPill tone={invited || status !== 'pending' ? RSVP_TONE[status] || 'neutral' : 'neutral'}>{invited || status !== 'pending' ? RSVP_LABEL[status] || status : 'Not invited'}</StatusPill>
         </div>

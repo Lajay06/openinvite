@@ -194,6 +194,7 @@ export default function GuestsContainer() {
       {id ? (
         <GuestDetailScreen
           guest={current}
+          role={guestRoles[current?.id]}
           weddingEvents={weddingEvents}
           mealOptions={mealOptions}
           gifts={gifts.data || []}
