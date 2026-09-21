@@ -45,7 +45,7 @@ export function useEntity(name, sort = '-created_date') {
     update: async (id, fields) => { const r = await api.update(name, id, fields); load.reload(); return r; },
     updateQuiet: (id, fields) => api.update(name, id, fields),
     remove: async (id) => { await api.remove(name, id); load.reload(); },
-  }), [api, name, load.reload]); // eslint-disable-line react-hooks/exhaustive-deps
+  }), [api, name, load.reload]);
   return { ...load, ...writes };
 }
 
@@ -58,7 +58,7 @@ export function useFiltered(name, query, sort) {
     create: async (fields) => { const r = await api.create(name, { ...(query || {}), ...fields }); load.reload(); return r; },
     update: async (id, fields) => { const r = await api.update(name, id, fields); load.reload(); return r; },
     remove: async (id) => { await api.remove(name, id); load.reload(); },
-  }), [api, name, key, load.reload]); // eslint-disable-line react-hooks/exhaustive-deps
+  }), [api, name, key, load.reload]);
   return { ...load, ...writes };
 }
 
