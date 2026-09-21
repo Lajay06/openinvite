@@ -1,7 +1,6 @@
 import React, { useContext, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { CATEGORY_QUERIES } from '@/lib/vendorPlaces';
 import { ShellContext } from '../../shell/MobileShell';
 import { usePlanData, useEntity, useWeddingDetails } from '../../data/plan';
 import { useTasks, useBudget, useGuests, useTaskWrites, useBudgetWrites } from '../../data/wedding';
@@ -21,6 +20,8 @@ import EventDetailsScreen, { InvitePromptSheet } from './EventDetailsScreen';
 import ScheduleScreen from './ScheduleScreen';
 import MoodboardScreen from './MoodboardScreen';
 import VowsScreen from './VowsScreen';
+import VendorsScreen, { VendorDetailScreen, VendorFormSheet } from './VendorsScreen';
+import { useFiltered } from '../../data/plan';
 import SendInvitesScreen from '../guests/SendInvitesScreen';
 import ChecklistScreen from './ChecklistScreen';
 import BudgetScreen, { BudgetCategoryScreen } from './BudgetScreen';
@@ -31,7 +32,8 @@ import SeatingScreen from './SeatingScreen';
 import PollsScreen from './PollsScreen';
 import MusicScreen from './MusicScreen';
 import RegistryScreen from './RegistryScreen';
-import { QnaScreen, GoodToKnowScreen, PlacesScreen, SuiteScheduleScreen, WeddingPartyScreen, MarketplaceScreen, DesktopFeatureScreen } from './SuiteScreens';
+import { QnaScreen, GoodToKnowScreen, PlacesScreen, SuiteScheduleScreen, WeddingPartyScreen, DesktopFeatureScreen } from './SuiteScreens';
+import MarketplaceScreen from './MarketplaceScreen';
 
 const genId = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
 
@@ -62,6 +64,7 @@ export default function PlanFeatureContainer() {
   if (f.key === 'send-invites') return <SendInvitesContainer back={`${base}/guests`} />;
   if (f.key === 'moodboard') return <MoodboardContainer back={back} />;
   if (f.key === 'vows') return <VowsContainer back={back} />;
+  if (f.key === 'vendors') return id ? <VendorDetailContainer id={id} back={`${base}/plan/vendors`} /> : <VendorsContainer back={back} />;
   if (f.key === 'invitations') return <InvitationsContainer back={back} />;
   if (f.kind === 'details') return <DetailsContainer f={f} back={back} />;
   if (f.kind === 'entity') return <EntityContainer f={f} back={back} />;
@@ -190,6 +193,44 @@ function VowsContainer({ back }) {
     onUnlock={async (it, pin) => { const r = await api.vows.unlock(it.id, pin); if (r.ok) reveal(it.id); return r; }}
     onClearPin={async (it) => { const r = await api.vows.clearPin(it.id); if (r.ok) { reveal(it.id); e.reload(); } return r; }}
     onAsk={(prompt) => api.llm(prompt)} loading={e.loading} error={e.error} onRetry={e.reload} back={back} onRefresh={e.reload} />;
+}
+
+/* ── My vendors ──────────────────────────────────────────────────────── */
+
+function VendorsContainer({ back }) {
+  const navigate = useNavigate();
+  const { base } = useContext(ShellContext);
+  const [params] = useSearchParams();
+  const symbol = useSymbol();
+  const e = useEntity('Vendor', '-created_date');
+  const wrap = (fn, ok) => async (...a) => { const r = await fn(...a); toast.success(ok); return r; };
+  return <VendorsScreen items={e.data || []} symbol={symbol} initialCategory={params.get('category') || 'all'} onCreate={wrap(e.create, 'Vendor added')} onUpdate={wrap(e.update, 'Saved')} onDelete={wrap((v) => e.remove(v.id), 'Vendor deleted')} onOpen={(v) => navigate(`${base}/plan/vendors/${v.id}`)} loading={e.loading} error={e.error} onRetry={e.reload} back={back} onRefresh={e.reload} openAdd={params.get('add') === '1'} />;
+}
+
+function VendorDetailContainer({ id, back }) {
+  const api = useApi();
+  const navigate = useNavigate();
+  const symbol = useSymbol();
+  const vendors = useEntity('Vendor', '-created_date');
+  const logs = useFiltered('VendorLog', { vendor_id: id }, '-created_date');
+  const tasks = useFiltered('VendorTask', { vendor_id: id }, 'due_date');
+  const [edit, setEdit] = useState(false);
+  const vendor = (vendors.data || []).find((v) => v.id === id);
+  return (
+    <>
+      <VendorDetailScreen vendor={vendor} logs={logs.data || []} tasks={tasks.data || []} symbol={symbol} back={back} loading={vendors.loading && !vendor} error={vendors.error} onRetry={vendors.reload}
+        onEdit={() => setEdit(true)}
+        onDelete={async () => { await vendors.remove(id); toast.success('Vendor deleted'); navigate(back, { replace: true }); }}
+        onToggleFavourite={async () => { await vendors.update(id, { is_favourite: !vendor?.is_favourite }); hapticLight(); }}
+        onAddLog={async (v) => { await logs.create(v); toast.success(v.type === 'document' ? 'Document added' : 'Logged'); }}
+        onDeleteLog={async (l) => { await logs.remove(l.id); }}
+        onUpload={(file) => api.upload(file)}
+        onAddTask={async (v) => { await tasks.create(v); toast.success('Task added'); }}
+        onToggleTask={async (t) => { await tasks.update(t.id, { completed: !t.completed }); hapticLight(); }}
+        onDeleteTask={async (t) => { await tasks.remove(t.id); }} />
+      {edit && vendor && <VendorFormSheet item={vendor} onClose={() => setEdit(false)} onSave={async (v) => { await vendors.update(id, v); toast.success('Saved'); }} />}
+    </>
+  );
 }
 
 /* ── Invitations: the builder is a canvas and stays on desktop; the hand-off names what exists ── */
@@ -531,25 +572,14 @@ function WeddingPartyContainer({ back }) {
 
 /* ── Marketplace ─────────────────────────────────────────────────────── */
 
-const MARKET_LABEL = { photography: 'Photography', videography: 'Videography', catering: 'Catering', florals: 'Florals', styling: 'Styling', beauty: 'Hair & makeup', music: 'Music & DJ', venue: 'Venues', cake: 'Cake', transport: 'Transport' };
-
 function MarketplaceContainer({ back }) {
   const api = useApi();
-  const [results, setResults] = useState([]);
-  const [searching, setSearching] = useState(false);
-  const [error, setError] = useState('');
+  const wd = useWeddingDetails();
   const saved = useLoad(() => api.vendors.savedPlaceIds().catch(() => new Set()), []);
   const savedIds = useMemo(() => new Set(saved.data || []), [saved.data]);
-  const search = async ({ category, location }) => {
-    setSearching(true); setError('');
-    try {
-      const places = await api.places.search({ q: CATEGORY_QUERIES[MARKET_LABEL[category]] || 'wedding vendor', location });
-      setResults((places || []).map((p) => ({ id: p.place_id, place_id: p.place_id, placeId: p.place_id, name: p.name, category: MARKET_LABEL[category], rating: p.rating, address: p.formatted_address || p.vicinity, website: p.website })));
-    } catch (e) { setError(e?.message || 'Search did not work.'); } finally { setSearching(false); }
+  const eventLocation = wd.details?.mainCeremony?.address || '';
+  const save = async (v, details) => {
+    try { const r = await api.vendors.saveFromPlaces(v, details); toast.success(r?.created === false ? 'Already in my vendors' : 'Added to my vendors'); saved.reload(); } catch (e) { toast.error(e?.message || 'Could not add that vendor.'); }
   };
-  const save = async (v) => {
-    try { await api.vendors.saveFromPlaces(v, null); toast.success('Added to my vendors'); saved.reload(); } catch (e) { toast.error(e?.message || 'Could not add that vendor.'); }
-  };
-  return <MarketplaceScreen results={results} searching={searching} onSearch={search} onSave={save} savedIds={savedIds} back={back} error={error} />;
+  return <MarketplaceScreen eventLocation={eventLocation} savedIds={savedIds} onSave={save} back={back} />;
 }
-
