@@ -33,9 +33,10 @@ import SeatingScreen from './SeatingScreen';
 import PollsScreen from './PollsScreen';
 import MusicScreen from './MusicScreen';
 import RegistryScreen from './RegistryScreen';
-import { QnaScreen, GoodToKnowScreen, PlacesScreen, SuiteScheduleScreen, WeddingPartyScreen, DesktopFeatureScreen } from './SuiteScreens';
+import { QnaScreen, PlacesScreen, SuiteScheduleScreen, WeddingPartyScreen, DesktopFeatureScreen } from './SuiteScreens';
 import SuitePlacesScreen from './SuitePlacesScreen';
 import ExperienceScreen from './ExperienceScreen';
+import GoodToKnowScreen from './GoodToKnowScreen';
 import MarketplaceScreen from './MarketplaceScreen';
 
 const genId = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
@@ -563,7 +564,10 @@ function QnaContainer({ back }) {
 
 function GoodToKnowContainer({ back }) {
   const wd = useWeddingDetails();
-  return <GoodToKnowScreen policies={wd.details?.weddingPolicies || {}} onSave={async (next) => { await wd.save('weddingPolicies', next, false); }} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} />;
+  const d = wd.details || {};
+  // GuestSuitePolicies.jsx saves both objects in one WeddingDetails.update.
+  const save = async (policies, guestExperience) => { await wd.save(null, { weddingPolicies: policies, guestExperienceSettings: guestExperience }, false); };
+  return <GoodToKnowScreen policies={d.weddingPolicies || {}} guestExperience={d.guestExperienceSettings || {}} eventDressCode={d.mainCeremony?.dressCode || ''} onSave={save} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} />;
 }
 
 function SuitePlacesContainer({ back, kind, keyName }) {

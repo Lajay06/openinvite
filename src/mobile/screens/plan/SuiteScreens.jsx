@@ -31,56 +31,6 @@ export function QnaScreen({ qna = [], onSave, loading, error, onRetry, back }) {
   );
 }
 
-/* ── Good to know: WeddingDetails.weddingPolicies, one toggle + note per key ── */
-const POLICY_KEYS = [
-  { key: 'photography', label: 'Photography', sub: 'An unplugged ceremony, or snap away' },
-  { key: 'socialMedia', label: 'Social media', sub: 'Whether to post on the day' },
-  { key: 'children', label: 'Children', sub: 'Little ones welcome, or a night off' },
-  { key: 'dietary', label: 'Dietary', sub: 'How guests tell you what they need' },
-  { key: 'gifts', label: 'Gifts', sub: 'Registry, cash, or your presence is enough' },
-  { key: 'dressCode', label: 'Dress code', sub: 'What to wear' },
-  { key: 'lateArrival', label: 'Late arrival', sub: 'What happens if someone is running late' },
-];
-
-export function GoodToKnowScreen({ policies = {}, onSave, loading, error, onRetry, back }) {
-  const [edit, setEdit] = useState(null); // key
-  const [note, setNote] = useState('');
-  const [saving, setSaving] = useState(false);
-  const toggle = async (key, on) => { await onSave({ ...policies, [key]: { ...(policies[key] || {}), enabled: on } }); };
-  const saveNote = async () => { setSaving(true); try { await onSave({ ...policies, [edit]: { ...(policies[edit] || {}), message: note } }); setEdit(null); } finally { setSaving(false); } };
-  return (
-    <Screen title="Good to know" subtitle="What guests see before the day" back={back}>
-      <div className="oi-m-stack">
-        {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : (
-          <RowGroup>
-            {POLICY_KEYS.map((p) => {
-              const v = policies[p.key] || {};
-              return (
-                <div key={p.key} className="oi-m-row" style={{ minHeight: 68 }}>
-                  <button type="button" className="oi-m-row__body" style={{ textAlign: 'left', minHeight: 44 }} onClick={() => { setEdit(p.key); setNote(v.message || ''); }}>
-                    <div className="oi-m-row__label">{p.label}</div>
-                    <div className="oi-m-row__sub">{v.message || p.sub}</div>
-                  </button>
-                  <Switch on={!!v.enabled} onChange={(on) => toggle(p.key, on)} label={p.label} />
-                </div>
-              );
-            })}
-          </RowGroup>
-        )}
-        <p className="oi-m-meta">Tap a row to write the note guests read. The switch shows or hides it on your site.</p>
-      </div>
-      <BottomSheet open={!!edit} onClose={() => setEdit(null)} title={POLICY_KEYS.find((p) => p.key === edit)?.label || ''} footer={(
-        <>
-          <PillButton variant="secondary" onClick={() => setEdit(null)} disabled={saving}>Cancel</PillButton>
-          <PillButton variant="primary" onClick={saveNote} disabled={saving} style={{ flex: 1 }}>{saving ? 'Saving' : 'Save'}</PillButton>
-        </>
-      )}>
-        <TextField label="What guests read" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Keep it short and kind" />
-      </BottomSheet>
-    </Screen>
-  );
-}
-
 /* ── Places lists: guestSuiteAccommodation.places, guestSuiteTransport.places, experienceGuide.couplePicks ── */
 const PLACE_FIELDS = [{ name: 'name', label: 'Name', type: 'text' }, { name: 'address', label: 'Address', type: 'text' }, { name: 'note', label: 'A note for guests', type: 'textarea' }, { name: 'url', label: 'Website', type: 'url' }];
 

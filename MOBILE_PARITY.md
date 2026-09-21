@@ -292,7 +292,7 @@ Mirror of Registry. **Status.** Parity through the registry screen.
 **Desktop.** `weddingPolicies`: photography (`unplugged`, `message`, `display`), socialMedia (`noCeremony`, `tagUs`, `hashtag`, `message`, `display`), children (`option` all / wedding_party / adults_only, `message`, `display`), dietary (`description`, `contactName`, `contactEmail`, `display`), gifts (`option` welcome / no_gifts / charity / wishing_well, `registryUrl`, `message`, `display`), dressCode (`guidance`, `weatherNote`, `display`; the event dress codes shown from event details), lateArrival (`policy`, `display`), other (`text`, `display`), stylingQuestionnaire (`enabled`: Personal stylist or Quick guide). `guestExperience`: `backgroundMusic` (`enabled`, upload or curated track), `showAttending`, `showCircle`. Save button. Ava.
 **Mobile (found).** A switch and a note per key under the wrong keys (`enabled`, `message` for every policy).
 **Gaps.** The real shape and every field; styling quiz mode; guest experience.
-**Status.** Planned (phase 1): rebuilt on the desktop shape.
+**Status.** Done. Every policy on the desktop shape (own fields plus display), the styling quiz mode, background music by upload, show attending and the circle; weddingPolicies and guestExperienceSettings save together.
 
 ### Guest polls (`/GuestSuitePolls`)
 
