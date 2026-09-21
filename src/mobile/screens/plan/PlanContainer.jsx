@@ -19,6 +19,7 @@ import EntityListScreen from '../../features/EntityListScreen';
 import PlanHubScreen, { planProgress } from './PlanHubScreen';
 import EventDetailsScreen, { InvitePromptSheet } from './EventDetailsScreen';
 import ScheduleScreen from './ScheduleScreen';
+import MoodboardScreen from './MoodboardScreen';
 import SendInvitesScreen from '../guests/SendInvitesScreen';
 import ChecklistScreen from './ChecklistScreen';
 import BudgetScreen, { BudgetCategoryScreen } from './BudgetScreen';
@@ -58,6 +59,8 @@ export default function PlanFeatureContainer() {
   if (f.key === 'event-details') return <EventDetailsContainer back={back} />;
   if (f.key === 'schedule') return <ScheduleContainer back={back} />;
   if (f.key === 'send-invites') return <SendInvitesContainer back={`${base}/guests`} />;
+  if (f.key === 'moodboard') return <MoodboardContainer back={back} />;
+  if (f.key === 'invitations') return <InvitationsContainer back={back} />;
   if (f.kind === 'details') return <DetailsContainer f={f} back={back} />;
   if (f.kind === 'entity') return <EntityContainer f={f} back={back} />;
   if (f.kind === 'desktop') return <DesktopFeatureScreen title={f.label} body={desktopBody(f.key)} stat="" back={back} onDesktop={() => openDesktop(navigate, f.desktop)} />;
@@ -159,6 +162,27 @@ function SendInvitesContainer({ back }) {
   // Ultra only, as Guests.jsx gates it: a Pro plan cannot send.
   const isPro = api.mode === 'preview' ? true : (api.user?.plan || 'free') !== 'pro';
   return <SendInvitesScreen guests={guests.data || []} wedding={wd.details} user={api.user} initialSelectedIds={ids} restrictEventIds={events.length ? events : null} initialType={params.get('type') || 'invite'} isPro={isPro} onSent={() => navigate(back)} back={back} loading={guests.loading || wd.loading} error={guests.error} onRetry={guests.reload} />;
+}
+
+/* ── Moodboard ───────────────────────────────────────────────────────── */
+
+function MoodboardContainer({ back }) {
+  const [params] = useSearchParams();
+  const e = useEntity('MoodboardItem', '-created_date');
+  const wd = useWeddingDetails();
+  const wrap = (fn, ok) => async (...a) => { const r = await fn(...a); toast.success(ok); return r; };
+  return <MoodboardScreen items={e.data || []} coverPhoto={wd.details?.coverPhoto} onCreate={wrap(e.create, 'Pinned')} onUpdate={wrap(e.update, 'Saved')} onDelete={wrap(e.remove, 'Removed')} loading={e.loading} error={e.error} onRetry={e.reload} back={back} onRefresh={e.reload} openAdd={params.get('add') === '1'} />;
+}
+
+/* ── Invitations: the builder is a canvas and stays on desktop; the hand-off names what exists ── */
+
+function InvitationsContainer({ back }) {
+  const api = useApi();
+  const navigate = useNavigate();
+  const inv = useLoad(() => api.wedding.invitation().catch(() => null), []);
+  const saved = inv.data?.updated_date || inv.data?.created_date;
+  const stat = inv.loading ? '' : inv.data ? `Saved ${new Date(saved).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}` : 'No invitation yet';
+  return <DesktopFeatureScreen title="Invitations" body={inv.data ? `Your invitation for ${inv.data.couple_names || 'your wedding'} is designed in the builder on desktop. Sending it is here, under Send invites.` : 'Designing the invitation uses the full builder. Open it on desktop, and sending it is here, under Send invites.'} stat={stat} back={back} onDesktop={() => openDesktop(navigate, '/Invitations')} />;
 }
 
 /* ── Generic ─────────────────────────────────────────────────────────── */

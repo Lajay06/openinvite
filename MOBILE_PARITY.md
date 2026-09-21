@@ -119,7 +119,7 @@ itself stays on desktop and is noted.
 **Desktop.** `InvitationBuilder` (create) and `InvitationStudio` (design canvas over the `Invitation` record).
 **Mobile.** A hand-off screen with a note.
 **Gaps.** The design canvas is a builder; it stays on desktop, as the brief allows for canvas tools. The list and form actions here are the builder's own fields, which are its canvas.
-**Status.** Desktop-only by design (canvas). The hand-off screen names the invitation that exists and when it was last saved.
+**Status.** Desktop-only by design (canvas). The hand-off names the invitation that exists and when it was last saved, and points to Send invites here.
 
 ## Style & experience
 
@@ -128,7 +128,7 @@ itself stays on desktop and is noted.
 **Desktop.** Stats. Board selector (`board_name`, four defaults plus create). Search by title or tag. Category filter (all, venue, decor, flowers, dress, cake, colors, invitations, photography, hairstyle, makeup, centerpieces, lighting, other). Upload files (multiple, `UploadFile`, then `MoodboardItem.create` with the file name as title), drag and drop. **Add item** modal: `title` (required), `image_url` (required), `source_url`, `category`, `tags` (comma separated), `notes`. Grid item: view large (title, category, notes, tags, View source), **Edit** (`title`, `tags`, `notes`), Delete. Export the board as a zip. Inspiration search (`InspirationSearch`: canned Unsplash results, add to board). Ava.
 **Mobile (found).** Entity list with title, photo (camera, library or link), `url` (wrong key), category (six values), notes. No tags, no board, no source url key, no search, no export.
 **Gaps.** `source_url`; `tags`; `board_name` and the board switcher; the full category list; search; category filter; export.
-**Status.** Planned (phase 1): boards, search, category filter, add and edit with every field, export as a zip through the native share sheet.
+**Status.** Done (phase 1): boards (the four defaults plus create, as `BoardSelector` keeps them; pins carry `board_name`), search every board by title or tag, the category filter over the desktop's fourteen categories, grid or list, add with the camera, the library or a link, edit with `title`, `image_url`, `source_url`, `category`, `tags`, `notes`, the large view with the source link, remove with a confirm, and the export (the desktop's zip with `photos.csv` on the web through the same `photoExport` helpers; natively the app has no file store to hand a zip to, so the list of every original link goes through the share sheet, which is the desktop's own fallback above the size limit). Inspiration search (canned Unsplash results) stays on desktop.
 
 ### Styling (`/Styling`) → `/m/plan/styling`
 
