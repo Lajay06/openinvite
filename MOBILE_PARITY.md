@@ -98,7 +98,7 @@ itself stays on desktop and is noted.
 **States.** Loading; no tables yet; everyone seated; collaborator read-only.
 **Mobile (found).** Tables as cards with who sits where; move a guest through a sheet over `assignGuestToTableByName`; no tables can be created.
 **Gaps.** Per-event switch; add table (name, shape, capacity); rename; change capacity; delete; unseat; attending-only filter and search of the unseated; Ava seating plan. The canvas, venue assets, layout export and import stay on desktop (drag surface).
-**Status.** Planned (phase 1): event switcher, table sheet (add, rename, shape, capacity, delete), seat a guest (search, attending only, per-event pool), unseat, Ava seating plan with a review list before it applies. Desktop-only: the drag canvas, venue assets, PDF export, layout import.
+**Status.** Done (phase 1): the per-event switcher (the reception, every event with a layout, Add event for the rest), the two stat cards, tables as cards with a sheet for name, shape, capacity, the seat list (tap an empty seat to seat someone, tap a seated person to unseat) and Delete (unseats everyone first); the Still to seat list from the same attendee pool Seating.jsx uses (`getGuestEventResponse` invited and not declined, plus-ones only where the event granted one, `resolveAttendees` ids) with search and Attending only; seat at the first free seat of a chosen table; Ava's seating plan (the same prompt, schema and token mapping as `AISeatingGenerator`, through `InvokeLLM`) reviewed as a list before `applyEventSeatingPlan`. Desktop-only, by design: the drag canvas, venue assets, the PDF export of the drawn layout, layout import.
 
 ### Wedding party (`/wedding-party`) → `/m/plan/wedding-party`
 

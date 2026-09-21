@@ -10,6 +10,8 @@ import useLoad from '../../data/useLoad';
 import { hapticLight, shareLink, openExternal, prefGet, prefSet } from '../../native';
 import { openDesktop, siteUrlFor, siteOrigin } from '../../lib/links';
 import { resolveRecipients } from '@/lib/questionnaireRecipients';
+import { getWeddingEvents, RECEPTION_EVENT_ID } from '@/lib/weddingEvents';
+import { validatePlanAssignments } from '@/lib/tableAssignment';
 import { featureByKey } from '../../features/registry';
 import { DETAILS, ENTITIES } from '../../features/schemas';
 import DetailsScreen from '../../features/DetailsScreen';
@@ -304,16 +306,63 @@ function SeatingContainer({ back }) {
   const api = useApi();
   const tables = useEntity('Table', '-created_date');
   const guests = useGuests();
-  const move = async (guestId, tableName) => {
-    try {
-      if (tableName) await api.seating.assignByName({ guestId, tableName, tables: tables.data || [] });
-      else await api.seating.unassign({ guestId, tables: tables.data || [] });
-      hapticLight();
-      toast.success(tableName ? `Moved to ${tableName}` : 'Taken off the table');
-      tables.reload();
-    } catch (e) { toast.error(e?.message || 'Could not move that guest.'); throw e; }
+  const wd = useWeddingDetails();
+  const [activeEventId, setActiveEventId] = useState(RECEPTION_EVENT_ID);
+  const [manualEvents, setManualEvents] = useState([]);
+  const weddingEvents = useMemo(() => getWeddingEvents(wd.details), [wd.details]);
+  const all = tables.data || [];
+  const addTable = async (cfg) => { await tables.create({ ...cfg, x: 100 + Math.random() * 200, y: 100 + Math.random() * 200, assigned_guests: [] }); toast.success('Table added'); };
+  const updateTable = async (t, v) => {
+    await tables.update(t.id, v);
+    if (v.name && v.name !== t.name) await api.seating.rename({ tableId: t.id, newName: v.name, tables: all });
+    toast.success('Table saved');
   };
-  return <SeatingScreen tables={tables.data || []} guests={guests.data || []} onMove={move} loading={tables.loading || guests.loading} error={tables.error || guests.error} onRetry={() => { tables.reload(); guests.reload(); }} back={back} onDesktop={() => openDesktop(navigate, '/Seating')} />;
+  const deleteTable = async (t) => {
+    // Unseat everyone first so their table cache clears, as the desktop's delete does through unassignSeat.
+    for (const a of t.assigned_guests || []) await api.seating.unassignSeat({ guestId: a.guest_id, tableId: t.id, seatIndex: a.seat_index, tables: all }).catch(() => {});
+    await tables.remove(t.id); toast.success('Table deleted');
+  };
+  const seat = async ({ guestId, tableId, seatIndex }) => { const r = await api.seating.assignSeat({ guestId, tableId, seatIndex, tables: all, eventId: activeEventId }); if (r?.ok !== false) { hapticLight(); tables.reload(); } return r; };
+  const unseat = async ({ guestId, tableId, seatIndex }) => { await api.seating.unassignSeat({ guestId, tableId, seatIndex, tables: all, eventId: activeEventId }); tables.reload(); toast.success('Unseated'); };
+  // AISeatingGenerator's prompt and schema, with tokens in place of ids so the model never sees or invents one.
+  const avaPlan = async (attendees, eventTables) => {
+    const tokenOf = new Map(attendees.map((a, i) => [a.id, `g${i + 1}`]));
+    const idOf = new Map(attendees.map((a, i) => [`g${i + 1}`, a.id]));
+    const hosts = new Map((guests.data || []).map((g) => [g.id, g]));
+    const guestData = attendees.map((a) => (a.isPlusOne
+      ? { id: tokenOf.get(a.id), name: a.name, isPlusOne: true, plusOneOf: tokenOf.get(a.hostGuestId), dietary_restrictions: a.dietary_restrictions }
+      : { id: tokenOf.get(a.id), name: a.name, isPlusOne: false, plusOneOf: null, category: hosts.get(a.id)?.category, tags: hosts.get(a.id)?.tags || [], seating_preferences: hosts.get(a.id)?.seating_preferences || [], seating_avoid: hosts.get(a.id)?.seating_avoid || [], dietary_restrictions: a.dietary_restrictions, special_requests: hosts.get(a.id)?.special_requests }));
+    const tableData = eventTables.map((t) => ({ id: t.id, name: t.name, capacity: t.capacity, shape: t.shape, currentlyAssigned: (t.assigned_guests || []).length }));
+    const response = await api.llm(`You are an expert wedding planner specialising in optimal seating arrangements.
+
+Analyze these ${guestData.length} wedding attendees and ${tableData.length} tables to create the perfect seating chart.
+
+GUESTS: ${JSON.stringify(guestData)}
+
+TABLES: ${JSON.stringify(tableData)}
+
+INSTRUCTIONS:
+1. PRIORITISE TAGS: group guests with matching tags together (e.g. all "College Friends" at one table)
+2. Secondary grouping by relationship category (family, friends, colleagues)
+3. Every person listed needs their own seat, including plus-ones. A plus-one has isPlusOne: true and plusOneOf giving their host's id — seat them at the same table as their host. Respect seating preferences.
+4. Balance table sizes evenly; consider dietary restrictions
+5. In your output, refer to each guest ONLY by their exact "id" value from the GUESTS list above (e.g. "g1", "g2") — never their name, and never invent an id.
+6. For "reasoning", write one plain, specific sentence naming the actual tag, relationship, or preference that drove the grouping — no vague or generic language like "for synergy," "for balance," or "for cohesion."
+
+Return assignments[], unassigned[], and summary.`, { add_context_from_internet: false, response_json_schema: { type: 'object', properties: { assignments: { type: 'array', items: { type: 'object', properties: { tableId: { type: 'string' }, tableName: { type: 'string' }, guests: { type: 'array', items: { type: 'string' } }, reasoning: { type: 'string' } } } }, unassigned: { type: 'array', items: { type: 'string' } }, summary: { type: 'string' } } } });
+    return { ...response, assignments: (response?.assignments || []).map((a) => ({ ...a, guests: (a.guests || []).map((t) => idOf.get(t)).filter(Boolean) })), unassigned: (response?.unassigned || []).map((t) => idOf.get(t)).filter(Boolean) };
+  };
+  const applyPlan = async (plan) => {
+    const tid = toast.loading("Applying Ava's seating plan");
+    try {
+      const eventTables = all.filter((t) => (t.event_id || RECEPTION_EVENT_ID) === activeEventId);
+      const valid = new Set(plan.assignments.flatMap((a) => a.guests));
+      const { ok, err } = await api.seating.applyPlan({ assignments: validatePlanAssignments(plan.assignments, valid), tables: eventTables, eventId: activeEventId });
+      tables.reload();
+      toast.success(`${ok} seated${err > 0 ? `, ${err} could not be` : ''}`, { id: tid });
+    } catch { toast.error('Could not apply the plan', { id: tid }); }
+  };
+  return <SeatingScreen tables={all} guests={guests.data || []} weddingEvents={weddingEvents} activeEventId={activeEventId} onEvent={setActiveEventId} manualEvents={manualEvents} onAddEventTab={(id) => { setManualEvents((m) => [...m, id]); setActiveEventId(id); }} onAddTable={addTable} onUpdateTable={updateTable} onDeleteTable={deleteTable} onSeat={seat} onUnseat={unseat} onAvaPlan={avaPlan} onApplyPlan={applyPlan} loading={tables.loading || guests.loading} error={tables.error || guests.error} onRetry={() => { tables.reload(); guests.reload(); }} back={back} onDesktop={() => openDesktop(navigate, '/Seating')} onRefresh={async () => { tables.reload(); guests.reload(); }} />;
 }
 
 /* ── Polls and games: WeddingDetails.polls as Polls.jsx persists them; Questionnaire records ── */
