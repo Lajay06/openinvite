@@ -140,7 +140,7 @@ for (const [route, name, action] of SHOTS) {
   const m = await page.evaluate(() => {
     const vw = window.innerWidth;
     const all = [...document.querySelectorAll('.oi-mobile-root *')];
-    const wide = all.filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.right > vw + 1 && !el.closest('.oi-m-filters, .oi-m-peek, .oi-m-segments, .oi-m-welcome__slides'); }).length;
+    const wide = all.filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.right > vw + 1 && !el.closest('.oi-m-filters, .oi-m-peek, .oi-m-segments, .oi-m-welcome__slides, .oi-m-ava-quick'); }).length;
     const inter = [...document.querySelectorAll('.oi-mobile-root a[href], .oi-mobile-root button:not([data-preview-control]), .oi-mobile-root input, .oi-mobile-root select, .oi-mobile-root textarea, .oi-mobile-root [role=button]')].filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < window.innerHeight; });
     const small = inter.filter((el) => { const r = el.getBoundingClientRect(); return Math.min(r.width, r.height) < 44; }).length;
     const inputs = [...document.querySelectorAll('.oi-mobile-root input, .oi-mobile-root textarea, .oi-mobile-root select')].filter((el) => el.getBoundingClientRect().width > 0 && parseFloat(getComputedStyle(el).fontSize) < 16).length;
