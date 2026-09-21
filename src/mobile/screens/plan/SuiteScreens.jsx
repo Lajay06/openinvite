@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { HelpCircle, Plus, Sparkles, MapPin, Hotel, Car, ScrollText, Clock, UserCheck, ShoppingBag, Search, Monitor, ExternalLink, Phone } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Screen from '../../shell/Screen';
-import { Row, RowGroup, EmptyState, ErrorState, SkeletonRows, Switch, PanelCard, PillButton, TextField, SelectField, StatusPill, BottomSheet, ItemCard, ItemList } from '../../ui';
+import { Row, RowGroup, EmptyState, ErrorState, SkeletonRows, Switch, PanelCard, PillButton, TextField, SelectField, StatusPill, BottomSheet, ItemCard, ItemList, StatCard } from '../../ui';
 import FormSheet from '../../features/FormSheet';
 import { timeLabel, dateShort, initials } from '../../lib/format';
 import { openExternal } from '../../native';
@@ -129,17 +129,26 @@ export function WeddingPartyScreen({ party = {}, onSave, loading, error, onRetry
   const [sheet, setSheet] = useState(null); // { role, index }
   const [keyRole, setKeyRole] = useState(null); // key
   const [notes, setNotes] = useState(party.keyRoleNotes || '');
+  const [general, setGeneral] = useState(party.notes || ''); // WeddingParty.jsx's Notes tab (weddingParty.notes)
   const notesTimer = React.useRef(null);
   React.useEffect(() => { setNotes(party.keyRoleNotes || ''); }, [party.keyRoleNotes]);
+  React.useEffect(() => { setGeneral(party.notes || ''); }, [party.notes]);
   React.useEffect(() => () => clearTimeout(notesTimer.current), []);
-  const total = PARTY_ROLES.reduce((s, r) => s + (party[r.key] || []).length, 0);
+  const total = PARTY_ROLES.reduce((s, r) => s + (party[r.key] || []).length, 0) + (party.maidOfHonour ? 1 : 0) + (party.bestMan ? 1 : 0);
+  const bridesmaids = (party.bridesmaids || []).length;
+  const groomsmen = (party.groomsmen || []).length;
   const [pick, setPick] = useState(false);
   const queueNotes = (v) => { setNotes(v); clearTimeout(notesTimer.current); notesTimer.current = setTimeout(() => onSave({ ...party, keyRoleNotes: v }, { quiet: true }), 900); };
+  const queueGeneral = (v) => { setGeneral(v); clearTimeout(notesTimer.current); notesTimer.current = setTimeout(() => onSave({ ...party, notes: v }, { quiet: true }), 900); };
   return (
     <Screen title="Wedding party" subtitle={loading ? '' : total ? `${total} people` : ''} back={back} actions={[{ icon: Plus, label: 'Add someone', onClick: () => setPick(true) }]}>
       <div className="oi-m-stack oi-m-stack--24">
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={5} /> : (
           <>
+            <div className="oi-m-grid2">
+              <StatCard icon={UserCheck} label="In the party" numeric={total} />
+              <StatCard icon={UserCheck} label="Bridesmaids" numeric={bridesmaids} sub={`${groomsmen} groomsm${groomsmen === 1 ? 'an' : 'en'}`} ink />
+            </div>
             <section>
               <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Key roles</h2>
               <RowGroup>
@@ -162,6 +171,13 @@ export function WeddingPartyScreen({ party = {}, onSave, loading, error, onRetry
                 </section>
               ))
             )}
+            <section>
+              <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Notes</h2>
+              <div className="oi-m-card">
+                <label className="oi-m-field__label" htmlFor="party-notes">Additional notes</label>
+                <textarea id="party-notes" className="oi-m-input" rows={4} value={general} onChange={(e) => queueGeneral(e.target.value)} placeholder="Attire details, group photos, rehearsal dinner notes" />
+              </div>
+            </section>
           </>
         )}
       </div>

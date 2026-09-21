@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Wallet, Plus, Receipt, CreditCard, Search, Download, Sparkles, Pencil, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Screen from '../../shell/Screen';
-import { Row, RowGroup, ProgressBar, StatCard, EmptyState, ErrorState, SkeletonRows, PanelCard, ItemCard, ItemList, BottomSheet, PillButton, TextField, StatusPill, SearchScreen } from '../../ui';
+import { Row, RowGroup, ProgressBar, StatCard, EmptyState, ErrorState, SkeletonRows, PanelCard, ItemCard, ItemList, BottomSheet, PillButton, TextField, StatusPill, SearchScreen, FilterPills } from '../../ui';
 import Segments, { useSegment } from '../../ui/Segments';
 import { BUDGET_CATEGORIES, budgetCategoryLabel } from '@/lib/budgetCategories';
 import { money, dateShort } from '../../lib/format';
@@ -25,7 +25,8 @@ export function summariseBudget(items = [], plan = null) {
     return { key: c.key, label: c.label, planned, spent: rows.reduce((s, i) => s + (i.actual_amount || 0), 0), count: rows.length };
   }).filter((c) => c.planned > 0 || c.count > 0);
   const duePayments = items.filter((i) => !i.paid && i.payment_date).sort((a, b) => String(a.payment_date).localeCompare(String(b.payment_date)));
-  return { spent, committed, total, paid, remaining: total - spent, cats, duePayments };
+  // Budget.jsx's Remaining is committed minus spent; the plan's total is the planner's, shown against it.
+  return { spent, committed, total, paid, remaining: committed - spent, planLeft: total - spent, cats, duePayments };
 }
 
 /**
@@ -40,17 +41,21 @@ export default function BudgetScreen({ items = [], plan = null, symbol = '$', on
   const [planner, setPlanner] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [q, setQ] = useState('');
+  const [catFilter, setCatFilter] = useState('all'); // Budget.jsx's Expenses tab category pills
   const s = useMemo(() => summariseBudget(items, plan), [items, plan]);
   const next = s.duePayments[0];
   const stats = useMemo(() => ({ totalBudgeted: s.committed, totalSpent: s.spent, remaining: s.committed - s.spent, percentageUsed: s.committed > 0 ? (s.spent / s.committed) * 100 : 0 }), [s]);
   const results = useMemo(() => { const t = q.trim().toLowerCase(); return t ? items.filter((i) => [i.item_name, i.vendor, i.notes, budgetCategoryLabel(i.category)].some((x) => (x || '').toLowerCase().includes(t))) : []; }, [items, q]);
   const exportExpenses = async () => {
-    const csv = [['Category', 'Item', 'Budgeted', 'Actual', 'Vendor', 'Paid', 'Payment date', 'Notes'].join(','), ...items.map((i) => [budgetCategoryLabel(i.category), i.item_name || '', i.budgeted_amount || 0, i.actual_amount || 0, i.vendor || '', i.paid ? 'Yes' : 'No', i.payment_date || '', i.notes || ''].map((f) => `"${String(f).replace(/"/g, '""')}"`).join(','))].join('\n');
+    const csv = [['Category', 'Item Name', 'Vendor', 'Budgeted Amount', 'Actual Amount', 'Paid', 'Payment Date', 'Notes'].join(','), ...items.map((i) => [i.category, i.item_name || '', i.vendor || '', i.budgeted_amount || 0, i.actual_amount || 0, i.paid ? 'Yes' : 'No', i.payment_date || '', i.notes || ''].map((f) => `"${String(f).replace(/"/g, '""')}"`).join(','))].join('\n');
     const r = await exportText('wedding-expenses.csv', 'text/csv', csv); if (r !== 'failed') toast.success('Budget exported');
   };
   const exportPlan = async () => {
-    const value = (k) => (plan?.categories?.[k] != null ? plan.categories[k] : '');
-    const csv = [['Category', 'Planned'].join(','), ['Total wedding budget', plan?.total ?? ''].map((f) => `"${f}"`).join(','), ...BUDGET_CATEGORIES.map((c) => [c.label, value(c.key)].map((f) => `"${f}"`).join(','))].join('\n');
+    if (!plan) { toast.error('No saved plan to export yet'); return; }
+    const total = parseFloat(plan.total) || 0;
+    const value = (k) => { const v = plan.categories?.[k]; return v === undefined || v === null || v === '' ? 0 : parseFloat(v) || 0; };
+    const allocated = BUDGET_CATEGORIES.reduce((sum, c) => sum + value(c.key), 0);
+    const csv = [['Plan item', 'Planned amount'].join(','), ['Total wedding budget', total].map((f) => `"${f}"`).join(','), ...BUDGET_CATEGORIES.map((c) => [c.label, value(c.key)].map((f) => `"${f}"`).join(',')), ['Allocated to categories', allocated].map((f) => `"${f}"`).join(','), ['Unallocated', total - allocated].map((f) => `"${f}"`).join(',')].join('\n');
     const r = await exportText('wedding-budget-plan.csv', 'text/csv', csv); if (r !== 'failed') toast.success('Plan exported');
   };
   const expenseRow = (i) => <Row key={i.id} label={i.item_name} sub={[budgetCategoryLabel(i.category), i.vendor].filter(Boolean).join(', ')} value={money(i.actual_amount || i.budgeted_amount, symbol)} trailing={<StatusPill tone={i.paid ? 'ok' : 'warn'}>{i.paid ? 'Paid' : 'Unpaid'}</StatusPill>} onClick={() => setSheet({ open: true, item: i })} />;
@@ -58,7 +63,7 @@ export default function BudgetScreen({ items = [], plan = null, symbol = '$', on
 
   return (
     <>
-      <Screen title="Budget" subtitle={loading ? '' : s.total ? `${money(s.remaining, symbol)} left` : ''} back={back} actions={actions} onRefresh={onRefresh}>
+      <Screen title="Budget" subtitle={loading ? '' : items.length ? (s.remaining < 0 ? `${money(Math.abs(s.remaining), symbol)} over budget` : `${money(s.remaining, symbol)} left to spend`) : ''} back={back} actions={actions} onRefresh={onRefresh}>
         <Segments options={SEGMENTS} value={segment} onChange={setSegment} />
         <div className="oi-m-stack oi-m-stack--24">
           {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : segment === 'overview' ? (
@@ -72,7 +77,7 @@ export default function BudgetScreen({ items = [], plan = null, symbol = '$', on
                 <div className="oi-m-card">
                   <p className="oi-m-meta">Spent so far</p>
                   <p className={`oi-m-hero-num${money(s.spent, symbol).length > 8 ? ' oi-m-hero-num--long' : ''}`} style={{ margin: '4px 0 16px' }}>{money(s.spent, symbol)}</p>
-                  <ProgressBar value={s.spent} max={s.total} note={s.total > 0 ? `${money(s.remaining, symbol)} of ${money(s.total, symbol)} left. ${money(s.committed, symbol)} committed in expenses.` : 'No total yet.'} />
+                  <ProgressBar value={s.spent} max={s.total} note={s.total > 0 ? `${money(s.committed, symbol)} committed, ${s.remaining < 0 ? `${money(Math.abs(s.remaining), symbol)} over` : `${money(s.remaining, symbol)} left to spend`}.${plan?.total ? ` ${money(s.planLeft, symbol)} of the ${money(s.total, symbol)} plan unspent.` : ''}` : 'No total yet.'} />
                   <PillButton variant="secondary" size="sm" icon={Pencil} onClick={() => setPlanner(true)} style={{ marginTop: 12 }}>{plan?.total ? 'Edit the plan' : 'Set a total budget'}</PillButton>
                 </div>
                 <div className="oi-m-grid2">
@@ -97,7 +102,8 @@ export default function BudgetScreen({ items = [], plan = null, symbol = '$', on
             <Forecast items={items} stats={stats} symbol={symbol} onAsk={onAsk} />
           ) : (
             <>
-              {items.length === 0 ? <EmptyState icon={Wallet} text="No expenses yet." actionLabel="Add an expense" onAction={() => setSheet({ open: true, item: null })} /> : <RowGroup>{items.map(expenseRow)}</RowGroup>}
+              {items.length > 0 && <FilterPills options={[{ key: 'all', label: 'All' }, ...BUDGET_CATEGORIES.filter((c) => items.some((i) => i.category === c.key)).map((c) => ({ key: c.key, label: c.label, count: items.filter((i) => i.category === c.key).length }))]} value={catFilter} onChange={setCatFilter} />}
+              {items.length === 0 ? <EmptyState icon={Wallet} text="No expenses yet." actionLabel="Add an expense" onAction={() => setSheet({ open: true, item: null })} /> : <RowGroup>{items.filter((i) => catFilter === 'all' || i.category === catFilter).map(expenseRow)}</RowGroup>}
               <RowGroup><Row icon={Download} tile="neutral" label="Export as CSV" sub="Every expense" onClick={exportExpenses} chevron={false} /></RowGroup>
             </>
           )}

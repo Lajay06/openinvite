@@ -28,6 +28,8 @@ export function SchemaField({ field, value, onChange, error, values = {} }) {
     case 'date':
     case 'time':
       return <TextField {...common} type={field.type} value={value ?? ''} onChange={(e) => onChange(e.target.value)} />;
+    case 'datetime':
+      return <TextField {...common} type="datetime-local" value={value ?? ''} onChange={(e) => onChange(e.target.value)} />;
     case 'image':
       return <ImageField field={field} value={value} onChange={onChange} error={error} />;
     case 'place':

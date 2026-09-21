@@ -12,15 +12,15 @@ const STATUSES = ['Ideas', 'In progress', 'Done'].map((s) => ({ value: s, label:
  * description, priority (lowercase, as the desktop stores it), due date,
  * and the kanban status. Editing offers Mark done and Remove.
  */
-export default function TaskFormSheet({ open, task, onClose, onSave, onDelete, onToggle }) {
-  const blank = { title: '', description: '', priority: 'medium', due_date: '', status: 'Ideas' };
+export default function TaskFormSheet({ open, task, preset = null, onClose, onSave, onDelete, onToggle }) {
+  const blank = { title: '', description: '', priority: 'medium', due_date: '', status: 'Ideas', ...(preset || {}) };
   const [f, setF] = useState(blank);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const online = useOnline();
   useEffect(() => {
     if (open) { setF(task ? { title: task.title || '', description: task.description || '', priority: normalizePriority(task.priority), due_date: task.due_date || '', status: task.status || (task.completed ? 'Done' : 'Ideas') } : blank); setError(''); }
-  }, [open, task]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [open, task, preset]); // eslint-disable-line react-hooks/exhaustive-deps
   const submit = async () => {
     if (!f.title.trim()) { setError('Give the task a name.'); return; }
     setSaving(true); setError('');

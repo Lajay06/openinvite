@@ -59,5 +59,5 @@ export const GUEST_CATEGORY_LABEL = {
 export const RSVP_LABEL = { pending: 'Awaiting', attending: 'Attending', declined: 'Declined', maybe: 'Maybe' };
 export const RSVP_TONE = { pending: 'warn', attending: 'ok', declined: 'no', maybe: 'neutral' };
 
-export const VENDOR_STATUS_LABEL = { booked: 'Booked', quoted: 'Quoted', contacted: 'Contacted', researching: 'Researching', rejected: 'Not going ahead' };
-export const VENDOR_STATUS_TONE = { booked: 'ok', quoted: 'warn', contacted: 'warn', researching: 'neutral', rejected: 'no' };
+export const VENDOR_STATUS_LABEL = { booked: 'Booked', quoted: 'Quoted', meeting_scheduled: 'Meeting scheduled', contacted: 'Contacted', researching: 'Researching', rejected: 'Not going ahead' };
+export const VENDOR_STATUS_TONE = { booked: 'ok', quoted: 'warn', meeting_scheduled: 'warn', contacted: 'warn', researching: 'neutral', rejected: 'no' };

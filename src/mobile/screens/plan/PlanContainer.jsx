@@ -37,6 +37,7 @@ import { QnaScreen, PlacesScreen, SuiteScheduleScreen, WeddingPartyScreen, Deskt
 import SuitePlacesScreen from './SuitePlacesScreen';
 import ExperienceScreen from './ExperienceScreen';
 import GoodToKnowScreen from './GoodToKnowScreen';
+import InvitationsScreen from './InvitationsScreen';
 import MarketplaceScreen from './MarketplaceScreen';
 
 const genId = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
@@ -155,7 +156,7 @@ function ScheduleContainer({ back }) {
     const to = { todo: 'checklist', vendor: 'vendors', deadline: 'event-details', music: 'music', wd: 'event-details', livestream: 'event-details', custom: 'event-details' }[kind];
     if (to) navigate(`${base}/plan/${to}`);
   };
-  return <ScheduleScreen items={s.data || []} sources={extra.data || {}} feedUrl={feed.data} feedState={feed.loading ? 'loading' : feed.data ? 'ready' : 'unavailable'} onCreate={wrap(s.create, 'Event added')} onUpdate={wrap(s.update, 'Event updated')} onDelete={wrap(s.remove, 'Event deleted')} onOpenHome={openHome} loading={s.loading} error={s.error} onRetry={() => { s.reload(); extra.reload(); }} back={back} openAdd={params.get('add') === '1'} onRefresh={async () => { s.reload(); extra.reload(); }} />;
+  return <ScheduleScreen items={s.data || []} sources={extra.data || {}} feedUrl={feed.data} feedState={feed.loading ? 'loading' : feed.data ? 'ready' : 'unavailable'} onCreate={wrap(s.create, 'Event added')} onUpdate={wrap(s.update, 'Event updated')} onDelete={wrap(s.remove, 'Event deleted')} onReorder={async (x, y) => { await s.updateQuiet(x.id, { start_time: y.start_time }); await s.updateQuiet(y.id, { start_time: x.start_time }); s.reload(); }} onOpenHome={openHome} loading={s.loading} error={s.error} onRetry={() => { s.reload(); extra.reload(); }} back={back} openAdd={params.get('add') === '1'} onRefresh={async () => { s.reload(); extra.reload(); }} />;
 }
 
 /* ── Send invites ────────────────────────────────────────────────────── */
@@ -177,10 +178,12 @@ function SendInvitesContainer({ back }) {
 
 function MoodboardContainer({ back }) {
   const [params] = useSearchParams();
+  const api = useApi();
   const e = useEntity('MoodboardItem', '-created_date');
   const wd = useWeddingDetails();
-  const wrap = (fn, ok) => async (...a) => { const r = await fn(...a); toast.success(ok); return r; };
-  return <MoodboardScreen items={e.data || []} coverPhoto={wd.details?.coverPhoto} onCreate={wrap(e.create, 'Pinned')} onUpdate={wrap(e.update, 'Saved')} onDelete={wrap(e.remove, 'Removed')} loading={e.loading} error={e.error} onRetry={e.reload} back={back} onRefresh={e.reload} openAdd={params.get('add') === '1'} />;
+  const gallery = useLoad(() => api.list('Photo', '-created_date').catch(() => []), []);
+  const wrap = (fn, ok) => async (v, opts) => { const r = await fn(v); if (!opts?.quiet) toast.success(ok); return r; };
+  return <MoodboardScreen items={e.data || []} coverPhoto={wd.details?.coverPhoto} galleryPhotos={gallery.data || []} onCreate={wrap(e.create, 'Pinned')} onUpdate={async (id, v) => { await e.update(id, v); toast.success('Saved'); }} onDelete={wrap(e.remove, 'Removed')} loading={e.loading} error={e.error} onRetry={e.reload} back={back} onRefresh={e.reload} openAdd={params.get('add') === '1'} />;
 }
 
 /* ── Vows & speeches ─────────────────────────────────────────────────── */
@@ -208,7 +211,7 @@ function VendorsContainer({ back }) {
   const symbol = useSymbol();
   const e = useEntity('Vendor', '-created_date');
   const wrap = (fn, ok) => async (...a) => { const r = await fn(...a); toast.success(ok); return r; };
-  return <VendorsScreen items={e.data || []} symbol={symbol} initialCategory={params.get('category') || 'all'} onCreate={wrap(e.create, 'Vendor added')} onUpdate={wrap(e.update, 'Saved')} onDelete={wrap((v) => e.remove(v.id), 'Vendor deleted')} onOpen={(v) => navigate(`${base}/plan/vendors/${v.id}`)} loading={e.loading} error={e.error} onRetry={e.reload} back={back} onRefresh={e.reload} openAdd={params.get('add') === '1'} />;
+  return <VendorsScreen items={e.data || []} symbol={symbol} initialCategory={params.get('category') || 'all'} onCreate={wrap(e.create, 'Vendor added')} onUpdate={wrap(e.update, 'Saved')} onDelete={wrap((v) => e.remove(v.id), 'Vendor deleted')} onToggleFavorite={async (v) => { await e.update(v.id, { is_favourite: !v.is_favourite }); hapticLight(); }} onOpen={(v) => navigate(`${base}/plan/vendors/${v.id}`)} loading={e.loading} error={e.error} onRetry={e.reload} back={back} onRefresh={e.reload} openAdd={params.get('add') === '1'} />;
 }
 
 function VendorDetailContainer({ id, back }) {
@@ -242,10 +245,24 @@ function VendorDetailContainer({ id, back }) {
 function InvitationsContainer({ back }) {
   const api = useApi();
   const navigate = useNavigate();
+  const { base } = useContext(ShellContext);
   const inv = useLoad(() => api.wedding.invitation().catch(() => null), []);
-  const saved = inv.data?.updated_date || inv.data?.created_date;
-  const stat = inv.loading ? '' : inv.data ? `Saved ${new Date(saved).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}` : 'No invitation yet';
-  return <DesktopFeatureScreen title="Invitations" body={inv.data ? `Your invitation for ${inv.data.couple_names || 'your wedding'} is designed in the builder on desktop. Sending it is here, under Send invites.` : 'Designing the invitation uses the full builder. Open it on desktop, and sending it is here, under Send invites.'} stat={stat} back={back} onDesktop={() => openDesktop(navigate, '/Invitations')} />;
+  // InvitationBuilder.jsx's starter design, verbatim, so the desktop builder opens the same record.
+  const create = async ({ coupleNames, weddingDate }) => {
+    const shown = weddingDate ? new Date(`${weddingDate}T00:00:00`).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+    const design = {
+      globalStyles: { fontFamily: 'Playfair Display', scrollDirection: 'vertical', transitionType: 'fade', parallax: true },
+      sections: [{ id: 'hero', name: 'Hero Section', background: { type: 'gradient', value: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }, components: [
+        { id: `text_${Date.now()}`, type: 'text', content: { text: coupleNames }, styles: { padding: '40px', margin: '20px 0', textAlign: 'center', fontSize: '2rem', color: '#ffffff', fontWeight: 'bold' } },
+        { id: `date_${Date.now()}`, type: 'text', content: { text: shown }, styles: { padding: '10px', margin: '0', textAlign: 'center', fontSize: '1.25rem', color: '#ffffff' } },
+      ] }],
+      selectedSection: 0, selectedElement: null,
+    };
+    await api.create('Invitation', { couple_names: coupleNames, wedding_date: weddingDate, design });
+    inv.reload();
+  };
+  const url = inv.data ? `${siteOrigin()}/guest-invitation/${inv.data.id}` : '';
+  return <InvitationsScreen invitation={inv.data} invitationUrl={url} loading={inv.loading} error={inv.error} onRetry={inv.reload} onCreate={create} onDesktop={() => openDesktop(navigate, '/Invitations')} onSend={() => navigate(`${base}/plan/send-invites`)} back={back} />;
 }
 
 /* ── Generic ─────────────────────────────────────────────────────────── */
@@ -280,7 +297,8 @@ function ChecklistContainer({ back }) {
   const add = async (fields) => { await taskWrites.create(fields); toast.success('Task added'); tasks.reload(); };
   const update = async (id, fields) => { await taskWrites.update(id, fields); toast.success('Saved'); tasks.reload(); };
   const remove = async (t) => { try { await taskWrites.remove(t.id); toast.success('Task removed'); tasks.reload(); } catch { toast.error('Could not remove that task.'); } };
-  return <ChecklistScreen tasks={tasks.data || []} onToggle={toggle} onAdd={add} onUpdate={update} onRemove={remove} loading={tasks.loading} error={tasks.error} onRetry={tasks.reload} back={back} openAdd={params.get('add') === '1'} onRefresh={tasks.reload} />;
+  const move = async (t, status) => { await taskWrites.move(t, status); tasks.reload(); };
+  return <ChecklistScreen tasks={tasks.data || []} onToggle={toggle} onAdd={add} onUpdate={update} onMove={move} onRemove={remove} loading={tasks.loading} error={tasks.error} onRetry={tasks.reload} back={back} openAdd={params.get('add') === '1'} onRefresh={tasks.reload} />;
 }
 
 function BudgetContainer({ back }) {
@@ -466,11 +484,12 @@ INSTRUCTIONS:
 Return assignments[], unassigned[], and summary.`, { add_context_from_internet: false, response_json_schema: { type: 'object', properties: { assignments: { type: 'array', items: { type: 'object', properties: { tableId: { type: 'string' }, tableName: { type: 'string' }, guests: { type: 'array', items: { type: 'string' } }, reasoning: { type: 'string' } } } }, unassigned: { type: 'array', items: { type: 'string' } }, summary: { type: 'string' } } } });
     return { ...response, assignments: (response?.assignments || []).map((a) => ({ ...a, guests: (a.guests || []).map((t) => idOf.get(t)).filter(Boolean) })), unassigned: (response?.unassigned || []).map((t) => idOf.get(t)).filter(Boolean) };
   };
-  const applyPlan = async (plan) => {
+  const applyPlan = async (plan, attendees = []) => {
     const tid = toast.loading("Applying Ava's seating plan");
     try {
       const eventTables = all.filter((t) => (t.event_id || RECEPTION_EVENT_ID) === activeEventId);
-      const valid = new Set(plan.assignments.flatMap((a) => a.guests));
+      // Seating.jsx: the whitelist is this event's attendee ids, so Ava can only seat people who are in the event.
+      const valid = new Set(attendees.map((a) => a.id));
       const { ok, err } = await api.seating.applyPlan({ assignments: validatePlanAssignments(plan.assignments, valid), tables: eventTables, eventId: activeEventId });
       tables.reload();
       toast.success(`${ok} seated${err > 0 ? `, ${err} could not be` : ''}`, { id: tid });
@@ -626,9 +645,10 @@ function MarketplaceContainer({ back }) {
   const wd = useWeddingDetails();
   const saved = useLoad(() => api.vendors.savedPlaceIds().catch(() => new Set()), []);
   const savedIds = useMemo(() => new Set(saved.data || []), [saved.data]);
-  const eventLocation = wd.details?.mainCeremony?.address || '';
+  const eventLocation = wd.details?.mainCeremony?.address || wd.details?.mainCeremony?.venueName || ''; // VendorMarketplace.jsx falls back to the venue name
   const save = async (v, details) => {
-    try { const r = await api.vendors.saveFromPlaces(v, details); toast.success(r?.created === false ? 'Already in my vendors' : 'Added to my vendors'); saved.reload(); } catch (e) { toast.error(e?.message || 'Could not add that vendor.'); }
+    // VendorMarketplace.jsx files the record under the searched category when Google has no trusted type.
+    try { const r = await api.vendors.saveFromPlaces({ ...v, category: v.category || v.searchCategory || 'Other' }, details); toast.success(r?.created === false ? 'Already in my vendors' : 'Added to my vendors'); saved.reload(); } catch (e) { toast.error(e?.message || 'Could not add that vendor.'); }
   };
   return <MarketplaceScreen eventLocation={eventLocation} savedIds={savedIds} onSave={save} back={back} />;
 }

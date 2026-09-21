@@ -149,6 +149,12 @@ function ProfileSheet({ vendor, isSaved, onClose, onSave }) {
           {rating != null && <div className="oi-m-body" style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Star size={16} /> {rating} of 5{(details?.user_ratings_total ?? vendor.reviewCount) ? `, ${details?.user_ratings_total ?? vendor.reviewCount} Google reviews` : ''}</div>}
           {(details?.address || vendor.location) && <div className="oi-m-meta">{details?.address || vendor.location}</div>}
         </div>
+        {details?.types?.filter((t) => !['point_of_interest', 'establishment'].includes(t)).length > 0 && (
+          <div>
+            <div className="oi-m-meta" style={{ marginBottom: 8 }}>Listed as</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>{details.types.filter((t) => !['point_of_interest', 'establishment'].includes(t)).slice(0, 6).map((t) => <StatusPill key={t} tone="neutral">{t.replace(/_/g, ' ')}</StatusPill>)}</div>
+          </div>
+        )}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {details?.website && <PillButton variant="secondary" size="sm" icon={Globe} onClick={() => openExternal(details.website)}>Website</PillButton>}
           {details?.phone && <PillButton variant="secondary" size="sm" icon={Phone} onClick={() => openExternal(`tel:${details.phone}`)}>{details.phone}</PillButton>}

@@ -54,7 +54,11 @@ export default function SeatingScreen({ tables = [], guests = [], weddingEvents 
   const allAttendees = useMemo(() => attendees, [attendees]);
   const seatedIds = useMemo(() => new Set(eventTables.flatMap((t) => (t.assigned_guests || []).map((a) => a.guest_id))), [eventTables]);
   const nameOf = (id) => allAttendees.find((a) => a.id === id)?.name || guests.find((g) => g.id === id)?.name || 'Guest';
-  const unseated = useMemo(() => { const s = q.trim().toLowerCase(); return attendees.filter((a) => !seatedIds.has(a.id) && (!s || a.name.toLowerCase().includes(s))); }, [attendees, seatedIds, q]);
+  const [panel, setPanel] = useState('unassigned'); // Seating.jsx's guest panel: All / Unassigned / Assigned
+  const tableOf = (id) => eventTables.find((t) => (t.assigned_guests || []).some((a) => a.guest_id === id));
+  // Seating.jsx: search by name or dietary, over the chosen panel filter.
+  const panelList = useMemo(() => { const s = q.trim().toLowerCase(); return attendees.filter((a) => (panel === 'all' || (panel === 'assigned' ? seatedIds.has(a.id) : !seatedIds.has(a.id))) && (!s || a.name.toLowerCase().includes(s) || (a.dietary_restrictions || '').toLowerCase().includes(s))); }, [attendees, seatedIds, q, panel]);
+  const unseated = panelList;
   const seats = eventTables.reduce((s, t) => s + (t.capacity || 0), 0);
   const seatedCount = attendees.filter((a) => seatedIds.has(a.id)).length;
 
@@ -80,8 +84,10 @@ export default function SeatingScreen({ tables = [], guests = [], weddingEvents 
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={4} /> : (
           <>
             <div className="oi-m-grid2">
-              <StatCard icon={Armchair} label="Seated" numeric={seatedCount} suffix={` of ${attendees.length}`} />
-              <StatCard icon={Armchair} label="Seats" numeric={seats} suffix={eventTables.length ? ` at ${eventTables.length}` : ''} ink />
+              <StatCard icon={Armchair} label="Tables" numeric={eventTables.length} sub={`${seats} seat${seats === 1 ? '' : 's'}`} />
+              <StatCard icon={Armchair} label="Guests" numeric={attendees.length} sub={`${activeEvent.name}, ${attendingOnly ? 'attending only' : 'excludes declined'}`} ink />
+              <StatCard icon={Armchair} label="Assigned" numeric={seatedCount} sub={`${attendees.length - seatedCount} unassigned`} />
+              <StatCard icon={Armchair} label="Complete" numeric={attendees.length ? Math.round((seatedCount / attendees.length) * 100) : 0} suffix="%" ink />
             </div>
             <PanelCard tone="neutral" label="Best on desktop" body="The table layout is drawn on a bigger screen. Here you can add tables, seat people and move them." action="Open on desktop" onClick={onDesktop}>
               <Monitor size={18} style={{ opacity: 0.6 }} />
@@ -99,22 +105,23 @@ export default function SeatingScreen({ tables = [], guests = [], weddingEvents 
             </section>
             <section>
               <div className="oi-m-section-head">
-                <h2 className="oi-m-section">Still to seat</h2>
+                <h2 className="oi-m-section">{panel === 'assigned' ? 'Seated' : panel === 'all' ? 'Everyone' : 'Still to seat'}</h2>
                 {attendees.length > 1 && eventTables.length > 0 && <button type="button" className="oi-m-block__link" onClick={runAva}>Ask Ava to seat everyone</button>}
               </div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
                 <div style={{ position: 'relative', flex: 1 }}>
                   <Search size={18} strokeWidth={1.75} style={{ position: 'absolute', left: 14, top: 15, color: 'var(--m-text-2)', pointerEvents: 'none' }} />
-                  <input className="oi-m-input" style={{ paddingLeft: 42 }} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Find someone" />
+                  <input className="oi-m-input" style={{ paddingLeft: 42 }} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Name or dietary" />
                 </div>
               </div>
+              <div style={{ marginBottom: 12 }}><FilterPills options={[{ key: 'unassigned', label: 'Unassigned' }, { key: 'assigned', label: 'Assigned' }, { key: 'all', label: 'All' }]} value={panel} onChange={setPanel} /></div>
               <div className="oi-m-row" style={{ background: 'transparent', padding: '0 4px 12px', minHeight: 44 }}>
                 <Checkbox checked={attendingOnly} onChange={setAttendingOnly} label="Attending only" />
                 <button type="button" className="oi-m-row__body" style={{ textAlign: 'left', minHeight: 44, alignSelf: 'stretch' }} onClick={() => setAttendingOnly((v) => !v)}><div className="oi-m-row__label">Attending only</div><div className="oi-m-row__sub">Hide guests who have not replied yet</div></button>
               </div>
-              {unseated.length === 0 ? <div className="oi-m-card"><p className="oi-m-meta">{attendees.length ? 'Everyone here has a seat.' : `No one is invited to ${activeEvent.name} yet.`}</p></div> : (
+              {unseated.length === 0 ? <div className="oi-m-card"><p className="oi-m-meta">{attendees.length ? (panel === 'unassigned' ? 'Everyone here has a seat.' : 'No one matches.') : `No one is invited to ${activeEvent.name} yet.`}</p></div> : (
                 <RowGroup>
-                  {unseated.map((a) => <Row key={a.id} initials={initials(a.name)} label={a.name} sub={[a.isPlusOne ? 'Plus one' : '', a.status === 'pending' ? 'Not replied yet' : '', a.dietary_restrictions].filter(Boolean).join(', ')} onClick={() => setSeatSheet({ attendee: a })} value="Seat" />)}
+                  {unseated.map((a) => { const t = tableOf(a.id); return <Row key={a.id} initials={initials(a.name)} label={a.name} sub={[t ? `At ${t.name}` : '', a.isPlusOne ? 'Plus one' : '', a.status === 'pending' ? 'Not replied yet' : '', a.dietary_restrictions].filter(Boolean).join(', ')} onClick={() => (t ? setTableSheet({ table: t }) : setSeatSheet({ attendee: a }))} value={t ? 'Move' : 'Seat'} />; })}
                 </RowGroup>
               )}
             </section>
@@ -163,7 +170,7 @@ export default function SeatingScreen({ tables = [], guests = [], weddingEvents 
         <BottomSheet open onClose={() => setAva(null)} title="Ava's seating plan" full footer={ava.plan ? (
           <>
             <PillButton variant="secondary" onClick={() => setAva(null)}>Discard</PillButton>
-            <PillButton variant="primary" style={{ flex: 1 }} onClick={async () => { await onApplyPlan(ava.plan); setAva(null); }}>Apply this plan</PillButton>
+            <PillButton variant="primary" style={{ flex: 1 }} onClick={async () => { await onApplyPlan(ava.plan, attendees); setAva(null); }}>Apply this plan</PillButton>
           </>
         ) : undefined}>
           {ava.busy ? <p className="oi-m-body" style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Sparkles size={16} /> Ava is grouping by tags, then by relationship, keeping plus ones with their guests.</p> : (
@@ -197,6 +204,8 @@ function TableSheet({ table, eventName, nameOf, onClose, onSave, onDelete, onSea
   const save = async () => {
     if (!name.trim()) { setErr('Give the table a name.'); return; }
     if (!(Number(capacity) > 0)) { setErr('Capacity must be at least one.'); return; }
+    const highest = Math.max(-1, ...(table?.assigned_guests || []).map((a) => a.seat_index ?? 0));
+    if (table && Number(capacity) <= highest) { setErr(`Seat ${highest + 1} is taken, so the table needs at least ${highest + 1} seats. Unseat someone first.`); return; }
     setSaving(true); setErr('');
     try { await onSave({ name: name.trim(), shape, capacity: Number(capacity) }); } catch (e) { setErr(e?.message || 'Could not save the table.'); } finally { setSaving(false); }
   };

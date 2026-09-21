@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BottomSheet, PillButton, TextField, SelectField, Checkbox } from '../../ui';
+import { BottomSheet, PillButton, TextField, TextAreaField, SelectField, Checkbox } from '../../ui';
 import { BUDGET_CATEGORIES } from '@/lib/budgetCategories';
 
 const CATEGORY_OPTIONS = BUDGET_CATEGORIES.map((c) => ({ value: c.key, label: c.label }));
@@ -71,6 +71,7 @@ export default function ExpenseFormSheet({ open, item, onClose, onSave, onDelete
           <Checkbox checked={!!f.paid} onChange={(v) => set('paid', v)} label="Paid" />
           <span className="oi-m-body">Paid</span>
         </div>
+        <TextAreaField label="Notes" value={f.notes || ''} onChange={(e) => set('notes', e.target.value)} rows={3} placeholder="Optional" />
         {saveError && <p className="oi-m-field__error" role="alert">{saveError}</p>}
       </div>
     </BottomSheet>

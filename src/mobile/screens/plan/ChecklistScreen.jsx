@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ListChecks, Plus, ChevronDown, Download, ArrowUpDown } from 'lucide-react';
+import { ListChecks, Plus, ChevronDown, Download, ArrowUpDown, MoveRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Screen from '../../shell/Screen';
-import { GroupedList, SwipeRow, SWIPE_ICONS, ProgressBar, EmptyState, ErrorState, SkeletonRows, Checkbox, FilterPills, RowGroup, BottomSheet, Row } from '../../ui';
+import { GroupedList, SwipeRow, SWIPE_ICONS, ProgressBar, EmptyState, ErrorState, SkeletonRows, Checkbox, FilterPills, RowGroup, BottomSheet, Row, PillButton } from '../../ui';
+import Segments from '../../ui/Segments';
 import { useConfirm } from '../../ui/ConfirmSheet';
 import { dueLabel } from '../../lib/format';
 import { hapticLight, exportText } from '../../native';
@@ -10,6 +11,10 @@ import TaskFormSheet from './TaskFormSheet';
 import { PRIORITY, SETTABLE_PRIORITIES, SORT_KEYS, DEFAULT_SORT, normalizePriority, nextSort, sortTasks } from '@/lib/todoSort';
 
 const FILTERS = [{ key: 'All', label: 'All' }, { key: 'Active', label: 'Active' }, { key: 'Completed', label: 'Completed' }];
+/** TodoList.jsx's kanban columns; a task's column is its status, Done when completed. */
+const KANBAN_COLS = ['Ideas', 'In progress', 'Done'];
+const VIEWS = [{ key: 'list', label: 'List' }, { key: 'board', label: 'Board' }];
+const columnOf = (t) => (t.completed ? 'Done' : KANBAN_COLS.includes(t.status) ? t.status : 'Ideas');
 const SORT_LABEL = { due_date: 'Due date', title: 'Title', priority: 'Priority' };
 const SORT_PREF_KEY = 'oi_todo_sort';
 const MOVE_DELAY = 1000;
@@ -37,8 +42,10 @@ const GROUP_TITLES = { overdue: 'Overdue', soon: 'Next 30 days', later: 'Later' 
  * collapsible Completed section; an Undo toast lasts four seconds; a
  * completed task can be unticked from the Completed section.
  */
-export default function ChecklistScreen({ tasks = [], onToggle, onAdd, onUpdate, onRemove, loading, error, onRetry, back, openAdd = false, onRefresh }) {
+export default function ChecklistScreen({ tasks = [], onToggle, onAdd, onUpdate, onMove, onRemove, loading, error, onRetry, back, openAdd = false, onRefresh }) {
   const [sheet, setSheet] = useState(openAdd ? { task: null } : null);
+  const [view, setView] = useState('list');
+  const [moving, setMoving] = useState(null); // the task whose column is being chosen
   const [filter, setFilter] = useState('All');
   const [sort, setSort] = useState(loadSort);
   const [sortOpen, setSortOpen] = useState(false);
@@ -110,7 +117,8 @@ export default function ChecklistScreen({ tasks = [], onToggle, onAdd, onUpdate,
 
   return (
     <Screen title="To do" subtitle={loading ? '' : open ? `${open} open` : tasks.length ? 'All done' : ''} back={back} actions={[{ icon: ArrowUpDown, label: 'Sort', onClick: () => setSortOpen(true) }, { icon: Plus, label: 'Add a task', onClick: () => setSheet({ task: null }) }]} onRefresh={onRefresh}>
-      <FilterPills options={FILTERS} value={filter} onChange={setFilter} />
+      <Segments options={VIEWS} value={view} onChange={setView} />
+      {view === 'list' && <div style={{ marginTop: 8 }}><FilterPills options={FILTERS} value={filter} onChange={setFilter} /></div>}
       <div className="oi-m-stack oi-m-stack--24" style={{ paddingTop: 16 }}>
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : tasks.length === 0 ? (
           <EmptyState icon={ListChecks} text="No tasks yet. Add the first thing on your mind." actionLabel="Add a task" onAction={() => setSheet({ task: null })} />
@@ -119,7 +127,29 @@ export default function ChecklistScreen({ tasks = [], onToggle, onAdd, onUpdate,
             <div className="oi-m-card">
               <ProgressBar value={done} max={tasks.length} note={open === 0 ? 'Everything is done.' : `${done} of ${tasks.length} done, ${open} to go.`} />
             </div>
-            {groups.length === 0 ? <EmptyState icon={ListChecks} text="Nothing here for this filter." /> : (
+            {view === 'board' ? (
+              <GroupedList groups={KANBAN_COLS.map((col) => {
+                const inCol = sortTasks(tasks.filter((t) => columnOf(t) === col), sort);
+                return {
+                  key: col,
+                  title: `${col} (${inCol.length})`,
+                  rows: [
+                    ...inCol.map((t) => (
+                      <div key={t.id} className="oi-m-row">
+                        <button type="button" className="oi-m-row__body" style={{ textAlign: 'left', minHeight: 44, alignSelf: 'stretch' }} onClick={() => setSheet({ task: t })}>
+                          <div className={`oi-m-row__label oi-m-row__label--wrap${t.completed ? ' oi-m-task__title--done' : ''}`}>{t.title}</div>
+                          {(t.due_date || normalizePriority(t.priority) !== 'medium') && <div className="oi-m-row__sub">{[dueLabel(t.due_date), normalizePriority(t.priority) !== 'medium' ? `${PRIORITY[normalizePriority(t.priority)].label} priority` : ''].filter(Boolean).join(', ')}</div>}
+                        </button>
+                        <button type="button" className="oi-m-iconbtn oi-m-iconbtn--ghost" aria-label={`Move ${t.title} to another column`} onClick={() => setMoving(t)}><MoveRight size={18} strokeWidth={1.75} /></button>
+                      </div>
+                    )),
+                    <div key={`${col}-add`} className="oi-m-row" style={{ minHeight: 56 }}>
+                      <PillButton variant="secondary" size="sm" icon={Plus} onClick={() => setSheet({ task: null, preset: { status: col } })}>Add to {col.toLowerCase()}</PillButton>
+                    </div>,
+                  ],
+                };
+              })} />
+            ) : groups.length === 0 ? <EmptyState icon={ListChecks} text="Nothing here for this filter." /> : (
               <GroupedList groups={groups.map((g) => ({
                 key: g.key,
                 title: g.title,
@@ -142,7 +172,12 @@ export default function ChecklistScreen({ tasks = [], onToggle, onAdd, onUpdate,
           </>
         )}
       </div>
-      <TaskFormSheet open={!!sheet} task={sheet?.task || null} onClose={() => setSheet(null)} onSave={async (v) => (sheet?.task ? onUpdate?.(sheet.task.id, v) : onAdd?.(v))} onDelete={sheet?.task ? () => removeTask(sheet.task) : undefined} onToggle={sheet?.task ? async () => { await complete(sheet.task); setSheet(null); } : undefined} />
+      <TaskFormSheet open={!!sheet} task={sheet?.task || null} preset={sheet?.preset || null} onClose={() => setSheet(null)} onSave={async (v) => (sheet?.task ? onUpdate?.(sheet.task.id, v) : onAdd?.(v))} onDelete={sheet?.task ? () => removeTask(sheet.task) : undefined} onToggle={sheet?.task ? async () => { await complete(sheet.task); setSheet(null); } : undefined} />
+      <BottomSheet open={!!moving} onClose={() => setMoving(null)} title={moving ? `Move ${moving.title}` : ''}>
+        <RowGroup>
+          {KANBAN_COLS.map((col) => <Row key={col} label={col} value={moving && columnOf(moving) === col ? 'Here now' : ''} onClick={async () => { const t = moving; setMoving(null); if (t && columnOf(t) !== col) { try { await onMove?.(t, col); } catch { toast.error('Could not move that task.'); } } }} chevron={false} />)}
+        </RowGroup>
+      </BottomSheet>
       <BottomSheet open={sortOpen} onClose={() => setSortOpen(false)} title="Sort by">
         <RowGroup>
           {SORT_KEYS.map((k) => <Row key={k} label={SORT_LABEL[k]} sub={sort.key === k ? (sort.dir === 'asc' ? 'Ascending' : 'Descending') : ''} value={sort.key === k ? 'Chosen' : ''} onClick={() => { setSort(nextSort(sort, k)); }} chevron={false} />)}

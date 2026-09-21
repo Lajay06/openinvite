@@ -1,5 +1,5 @@
 import React from 'react';
-import { ExternalLink, Share2, Palette, LayoutTemplate, Sparkles, Clock, HelpCircle, Gift, Hotel, Car, MapPin, ScrollText, BarChart2, Monitor } from 'lucide-react';
+import { ExternalLink, Share2, Palette, LayoutTemplate, Sparkles, Clock, HelpCircle, Gift, Hotel, Car, MapPin, ScrollText, BarChart2, Monitor, Lock, QrCode, Mail } from 'lucide-react';
 import Screen from '../../shell/Screen';
 import { Row, RowGroup, PillButton, StatusPill, Skeleton, ErrorState, SmartImage, PanelCard, Switch } from '../../ui';
 
@@ -8,7 +8,7 @@ import { Row, RowGroup, PillButton, StatusPill, Skeleton, ErrorState, SmartImage
  * and live status, share and view, then rows into the guest-suite editors
  * (in the app) and the design tools (desktop).
  */
-export default function SiteScreen({ universeName, isLive, siteUrl, previewImage, coupleName, onView, onShare, onOpen, onOpenDesktop, onTogglePublish, loading, error, onRetry }) {
+export default function SiteScreen({ universeName, isLive, siteUrl, previewImage, coupleName, onView, onShare, onOpen, onOpenDesktop, onTogglePublish, passwordOn = false, onPassword, onQr, onEmailGuests, loading, error, onRetry }) {
   return (
     <Screen title="Site" bell>
       <div className="oi-m-stack oi-m-stack--24">
@@ -37,6 +37,17 @@ export default function SiteScreen({ universeName, isLive, siteUrl, previewImage
               </div>
             </div>
           </div>
+        )}
+
+        {!loading && !error && (
+          <section>
+            <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Share</h2>
+            <RowGroup>
+              <Row icon={Lock} tile="neutral" label="Password protection" sub={passwordOn ? 'On. Guests enter a password to open the site' : 'Off. Anyone with the link can open the site'} onClick={onPassword} />
+              <Row icon={QrCode} tile="neutral" label="QR code" sub="For invitations and signs" onClick={onQr} />
+              <Row icon={Mail} tile="neutral" label="Email your guests" sub="Send the site to your guest list" onClick={onEmailGuests} />
+            </RowGroup>
+          </section>
         )}
 
         <section>

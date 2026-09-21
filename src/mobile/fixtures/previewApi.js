@@ -219,7 +219,7 @@ export function createPreviewApi() {
     },
     wedding: {
       get: () => gate(clone(store.wedding), { empty: clone(EMPTY_WEDDING) }),
-      invitation: () => gate(clone(FIXTURE_INVITATION), { empty: null }),
+      invitation: () => gate(clone(listOf('Invitation')[0] || FIXTURE_INVITATION), { empty: null }),
       save: async (key, value) => { if (key == null) Object.assign(store.wedding, clone(value)); else store.wedding[key] = clone(value); return store.wedding.id; },
       id: () => store.wedding.id,
     },
@@ -263,5 +263,6 @@ export function createPreviewApi() {
     },
     upload: async () => ({ file_url: imageUrl('fixturePin1') }),
     updateMe: async (patch) => Object.assign(FIXTURE_USER, patch),
+    sendEmail: async () => { await new Promise((r) => setTimeout(r, 200)); return { ok: true }; },
   };
 }

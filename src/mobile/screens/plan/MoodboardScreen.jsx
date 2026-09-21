@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Image as ImageIcon, Plus, Search, LayoutGrid, List as ListIcon, Download, ExternalLink, FolderOpen } from 'lucide-react';
+import { Image as ImageIcon, Plus, Search, LayoutGrid, List as ListIcon, Download, ExternalLink, FolderOpen, Images } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Screen from '../../shell/Screen';
 import { FilterPills, EmptyState, ErrorState, SkeletonRows, ItemCard, ItemList, SmartImage, StatusPill, useListView, BottomSheet, Row, RowGroup, TextField, PillButton, SearchScreen } from '../../ui';
@@ -8,6 +8,8 @@ import { useConfirm } from '../../ui/ConfirmSheet';
 import { imageUrl } from '../../images';
 import { openExternal, exportText, isNative } from '../../native';
 import { collectPhotoItems, buildManifestCsv, ZIP_BYTE_LIMIT } from '@/lib/photoExport';
+import { validateUploadFile } from '@/lib/uploadValidation';
+import { useApi } from '../../data/api';
 
 /* Moodboard.jsx's categories and default boards, verbatim. */
 export const MOODBOARD_CATEGORIES = ['venue', 'decor', 'flowers', 'dress', 'cake', 'colors', 'invitations', 'photography', 'hairstyle', 'makeup', 'centerpieces', 'lighting', 'other'];
@@ -31,7 +33,24 @@ const FIELDS = [
  * export (a zip on the web; natively the list of links, since the app has
  * no file store to hand a zip to).
  */
-export default function MoodboardScreen({ items = [], coverPhoto, onCreate, onUpdate, onDelete, loading, error, onRetry, back, onRefresh, openAdd = false }) {
+export default function MoodboardScreen({ items = [], coverPhoto, galleryPhotos = [], onCreate, onUpdate, onDelete, loading, error, onRetry, back, onRefresh, openAdd = false }) {
+  const api = useApi();
+  const multi = React.useRef(null);
+  const [uploading, setUploading] = useState(0);
+  // Moodboard.jsx's multi-file upload: every file is checked first, then each becomes a pin titled from its name.
+  const uploadMany = async (files) => {
+    const list = Array.from(files || []);
+    if (!list.length) return;
+    for (const f of list) { const err = validateUploadFile(f, 'image'); if (err) { toast.error(`${f.name}: ${err}`); return; } }
+    setUploading(list.length);
+    let failed = 0;
+    await Promise.all(list.map(async (f) => {
+      try { const { file_url } = await api.upload(f); await onCreate({ title: f.name.split('.')[0], image_url: file_url, category: 'other', board_name: board, tags: [] }, { quiet: true }); }
+      catch { failed += 1; }
+      finally { setUploading((n) => n - 1); }
+    }));
+    if (failed) toast.error(`${failed} of ${list.length} failed to upload`); else toast.success(`${list.length} photo${list.length === 1 ? '' : 's'} pinned`);
+  };
   const [board, setBoard] = useState('Main board');
   const [boards, setBoards] = useState(DEFAULT_BOARDS);
   const [category, setCategory] = useState('all');
@@ -50,7 +69,8 @@ export default function MoodboardScreen({ items = [], coverPhoto, onCreate, onUp
   const cats = useMemo(() => ['all', ...MOODBOARD_CATEGORIES.filter((c) => onBoard.some((i) => i.category === c))], [onBoard]);
   const remove = async (it) => { if (!(await confirm({ title: 'Remove this pin', body: it.title, action: 'Remove' }))) return; await onDelete(it.id); setSheet(null); setView(null); };
   const exportBoard = async () => {
-    const list = collectPhotoItems({ photos: [], moodboard: items, coverPhoto });
+    // Moodboard.jsx exports the union: moodboard pins, the Photo gallery and the cover.
+    const list = collectPhotoItems({ photos: galleryPhotos, moodboard: items, coverPhoto });
     if (!list.length) { toast.error('No photos to export yet'); return; }
     const manifest = buildManifestCsv(list);
     if (isNative()) { const r = await exportText('wedding-photos-list.csv', 'text/csv', manifest); if (r !== 'failed') toast.success(`${list.length} links shared as a list`); return; }
@@ -97,6 +117,12 @@ export default function MoodboardScreen({ items = [], coverPhoto, onCreate, onUp
             <ItemList>
               {visible.map((it) => <ItemCard key={it.id} image={it.image_url} alt={it.title} icon={ImageIcon} title={it.title || 'Untitled'} meta={[cap(it.category || 'other'), (it.tags || []).join(', ')].filter(Boolean).join(', ')} onClick={() => openItem(it)} />)}
             </ItemList>
+          )}
+          {!loading && !error && (
+            <>
+              <input ref={multi} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={(e) => { uploadMany(e.target.files); e.target.value = ''; }} />
+              <RowGroup><Row icon={Images} tile="neutral" label={uploading ? `Uploading ${uploading}` : 'Add several photos at once'} sub={`Each becomes a pin on ${board}, titled from its file name`} onClick={() => multi.current?.click()} chevron={false} /></RowGroup>
+            </>
           )}
           {!loading && items.length > 0 && <RowGroup><Row icon={Download} tile="neutral" label="Export the photos" sub={isNative() ? 'A list with every link, through the share sheet' : 'A zip with every photo and a list'} onClick={exportBoard} chevron={false} /></RowGroup>}
         </div>

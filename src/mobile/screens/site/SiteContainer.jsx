@@ -1,10 +1,12 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { getUniverse } from '@/lib/universeCatalog';
 import { siteImageFor } from '../../lib/images';
 import { ShellContext } from '../../shell/MobileShell';
 import SiteScreen from './SiteScreen';
+import { PasswordSheet, QrSheet, EmailGuestsSheet } from './SiteSheets';
+import { useGuests } from '../../data/wedding';
 import { useWedding } from '../../data/wedding';
 import { useApi } from '../../data/api';
 import { openExternal, shareLink } from '../../native';
@@ -14,6 +16,10 @@ export default function SiteContainer() {
   const navigate = useNavigate();
   const api = useApi();
   const wedding = useWedding();
+  const guests = useGuests();
+  const [sheet, setSheet] = useState(null); // 'password' | 'qr' | 'email'
+  // websitePasswordGate.js: the credential is hashed server-side through /api/my-wedding-details; only whether one exists is known here.
+  const savePassword = async (patch) => { await api.wedding.save(null, patch, true); await wedding.optimistic((w) => ({ ...(w || {}), websitePasswordEnabled: patch.websitePasswordEnabled ?? w?.websitePasswordEnabled, ...('websitePassword' in patch ? { websitePasswordIsSet: !!patch.websitePassword?.trim() } : {}) }), async () => {}); };
   const d = wedding.data;
   const universeId = d?.activeUniverse || '';
   const universe = universeId ? getUniverse(universeId) : null;
@@ -38,10 +44,15 @@ export default function SiteContainer() {
   };
 
   return (
+    <>
     <SiteScreen
       universeName={universe?.name}
       isLive={!!d?.websiteEnabled}
       onTogglePublish={togglePublish}
+      passwordOn={!!d?.websitePasswordEnabled}
+      onPassword={() => setSheet('password')}
+      onQr={() => setSheet('qr')}
+      onEmailGuests={() => setSheet('email')}
       previewImage={previewImage}
       coupleName={coupleName}
       siteUrl={siteUrl}
@@ -53,5 +64,9 @@ export default function SiteContainer() {
       error={wedding.error}
       onRetry={wedding.reload}
     />
+    <PasswordSheet open={sheet === 'password'} onClose={() => setSheet(null)} enabled={!!d?.websitePasswordEnabled} hasStored={!!d?.websitePasswordIsSet} onSave={savePassword} />
+    <QrSheet open={sheet === 'qr'} onClose={() => setSheet(null)} siteUrl={siteUrl} />
+    <EmailGuestsSheet open={sheet === 'email'} onClose={() => setSheet(null)} guests={guests.data || []} siteUrl={siteUrl} onSend={api.sendEmail} />
+    </>
   );
 }

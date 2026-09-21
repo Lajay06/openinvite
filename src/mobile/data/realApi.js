@@ -100,5 +100,7 @@ export function createRealApi(user) {
     llm: (prompt, opts = {}) => InvokeLLM({ prompt, add_context_from_internet: false, ...opts }),
     upload: (file) => UploadFile({ file }),
     updateMe: (patch) => base44.auth.updateMe(patch),
+    /** StudioShareTab.jsx's Email your guests: one SendEmail per guest through the SDK integration. */
+    sendEmail: ({ to, subject, body }) => base44.integrations.Core.SendEmail({ to, subject, body }),
   };
 }

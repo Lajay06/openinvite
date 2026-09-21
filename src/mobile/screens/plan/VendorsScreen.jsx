@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { Plus, Store, Search, Star, Phone, Mail, Globe, MapPin, LayoutGrid, List as ListIcon, MessageSquare, FileText, CheckSquare, Trash2, Pencil, Upload, PhoneCall, Users } from 'lucide-react';
+import { Plus, Store, Search, Star, Phone, Mail, Globe, MapPin, LayoutGrid, List as ListIcon, MessageSquare, FileText, CheckSquare, Trash2, Pencil, Upload, PhoneCall, Users, ArrowUp, ArrowDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Screen from '../../shell/Screen';
 import { FilterPills, EmptyState, ErrorState, SkeletonRows, ItemCard, ItemList, SmartImage, StatusPill, useListView, SearchScreen, RowGroup, Row, PillButton, BottomSheet, SelectField, TextField, TextAreaField, Checkbox } from '../../ui';
@@ -12,7 +12,17 @@ import { openExternal } from '../../native';
 import { VENDOR_STATUS_LABEL, VENDOR_STATUS_TONE, money, dateShort } from '../../lib/format';
 
 /* Vendors.jsx's filter lists, verbatim (its category labels differ from the form's on purpose there too). */
-const STATUS_FILTERS = [['all', 'All statuses'], ['booked', 'Booked'], ['contacted', 'Contacted'], ['quoted', 'Quoted'], ['rejected', 'Rejected'], ['researching', 'Researching']];
+const STATUS_FILTERS = [['all', 'All statuses'], ['favorites', 'Favorites'], ['booked', 'Booked'], ['contacted', 'Contacted'], ['meeting_scheduled', 'Meeting scheduled'], ['quoted', 'Quoted'], ['rejected', 'Rejected'], ['researching', 'Researching']];
+/** VendorList.jsx's sortable columns; blanks sort last whatever the direction. */
+const SORTS = [{ value: 'added', label: 'Newest first' }, { value: 'name', label: 'Name' }, { value: 'category', label: 'Category' }, { value: 'status', label: 'Status' }, { value: 'cost', label: 'Price' }];
+const STATUS_RANK = { booked: 0, quoted: 1, meeting_scheduled: 2, contacted: 3, researching: 4, rejected: 5 };
+function sortVendors(list, key, dir) {
+  if (key === 'added') return list;
+  const get = { name: (v) => v.name || '', category: (v) => CATEGORY_LABEL[v.category] || v.category || '', status: (v) => (v.status ? STATUS_RANK[v.status] ?? 5 : null), cost: (v) => v.quoted_price ?? null }[key];
+  const cmp = key === 'name' || key === 'category' ? (a, b) => String(a).localeCompare(String(b), 'en', { numeric: true, sensitivity: 'base' }) : (a, b) => a - b;
+  const d = dir === 'desc' ? -1 : 1;
+  return [...list].sort((a, b) => { const va = get(a); const vb = get(b); const ab = va === '' || va == null; const bb = vb === '' || vb == null; if (ab && bb) return 0; if (ab) return 1; if (bb) return -1; return cmp(va, vb) * d; });
+}
 const CATEGORY_FILTERS = [['all', 'All categories'], ['venue', 'Venue'], ['catering', 'Catering'], ['photography', 'Photography'], ['videography', 'Videography'], ['flowers', 'Florals'], ['attire', 'Styling'], ['beauty', 'Hair & makeup'], ['music', 'Music & DJ'], ['transportation', 'Transport'], ['planning', 'Celebrant'], ['other', 'Other']];
 const CATEGORY_LABEL = Object.fromEntries(VENDOR_CATEGORIES.map((c) => [c.value, c.label]));
 const STATUS_LABEL = Object.fromEntries(VENDOR_STATUSES.map((s) => [s.value, s.label]));
@@ -23,21 +33,23 @@ const STATUS_LABEL = Object.fromEntries(VENDOR_STATUSES.map((s) => [s.value, s.l
  * VendorForm (the photo and video fields for those two categories), and
  * a vendor screen with communications, documents and tasks.
  */
-export default function VendorsScreen({ items = [], symbol = '$', initialCategory = 'all', onCreate, onUpdate, onDelete, onOpen, loading, error, onRetry, back, onRefresh, openAdd = false }) {
+export default function VendorsScreen({ items = [], symbol = '$', initialCategory = 'all', onCreate, onUpdate, onDelete, onOpen, onToggleFavorite, loading, error, onRetry, back, onRefresh, openAdd = false }) {
+  const [sort, setSort] = useState({ key: 'added', dir: 'asc' });
   const [status, setStatus] = useState('all');
   const [category, setCategory] = useState(initialCategory);
   const [sheet, setSheet] = useState(openAdd ? { item: null } : null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [q, setQ] = useState('');
   const [view, setView] = useListView('Vendor', 'cards');
-  const visible = useMemo(() => items.filter((v) => (status === 'all' || v.status === status) && (category === 'all' || v.category === category)), [items, status, category]);
+  const visible = useMemo(() => sortVendors(items.filter((v) => (status === 'all' || (status === 'favorites' ? !!v.is_favourite : v.status === status)) && (category === 'all' || v.category === category)), sort.key, sort.dir), [items, status, category, sort]);
   const results = useMemo(() => { const s = q.trim().toLowerCase(); return s ? items.filter((v) => [v.name, v.contact_person, v.category, v.email].some((x) => (x || '').toLowerCase().includes(s))) : []; }, [items, q]);
   const booked = items.filter((v) => v.status === 'booked').length;
-  const quoted = items.reduce((s, v) => s + (Number(v.quoted_price) || 0), 0);
-  const card = (v) => <ItemCard key={v.id} icon={Store} tile={v.is_favourite ? 'tint' : 'neutral'} title={v.name} meta={[CATEGORY_LABEL[v.category] || v.category, v.contact_person].filter(Boolean).join(', ')} value={v.quoted_price ? money(v.quoted_price, symbol) : ''} badge={VENDOR_STATUS_LABEL[v.status] || STATUS_LABEL[v.status] || v.status} badgeTone={VENDOR_STATUS_TONE[v.status] || 'neutral'} onClick={() => onOpen(v)} action={v.phone ? { icon: Phone, label: `Call ${v.name}`, onClick: () => openExternal(`tel:${v.phone}`) } : undefined} />;
+  const quoted = items.filter((v) => v.status === 'quoted').length; // Vendors.jsx counts quotes, it does not sum them
+  const researching = items.filter((v) => v.status === 'researching').length;
+  const card = (v) => <ItemCard key={v.id} icon={Store} tile={v.is_favourite ? 'tint' : 'neutral'} action={onToggleFavorite ? { icon: Star, label: v.is_favourite ? `Remove ${v.name} from favorites` : `Add ${v.name} to favorites`, tone: v.is_favourite ? 'primary' : 'neutral', onClick: () => onToggleFavorite(v) } : undefined} title={v.name} meta={[CATEGORY_LABEL[v.category] || v.category, v.contact_person].filter(Boolean).join(', ')} value={v.quoted_price ? money(v.quoted_price, symbol) : ''} badge={VENDOR_STATUS_LABEL[v.status] || STATUS_LABEL[v.status] || v.status} badgeTone={VENDOR_STATUS_TONE[v.status] || 'neutral'} onClick={() => onOpen(v)} action={v.phone ? { icon: Phone, label: `Call ${v.name}`, onClick: () => openExternal(`tel:${v.phone}`) } : undefined} />;
   return (
     <>
-      <Screen title="My vendors" subtitle={loading ? '' : `${booked} booked of ${items.length}${quoted ? `, ${money(quoted, symbol)} quoted` : ''}`} back={back} onRefresh={onRefresh} actions={[{ icon: Search, label: 'Search vendors', onClick: () => setSearchOpen(true) }, { icon: Plus, label: 'Add vendor', onClick: () => setSheet({ item: null }) }]}>
+      <Screen title="My vendors" subtitle={loading ? '' : `${items.length} vendor${items.length === 1 ? '' : 's'}: ${booked} booked, ${quoted} quoted, ${researching} researching`} back={back} onRefresh={onRefresh} actions={[{ icon: Search, label: 'Search vendors', onClick: () => setSearchOpen(true) }, { icon: Plus, label: 'Add vendor', onClick: () => setSheet({ item: null }) }]}>
         <FilterPills options={STATUS_FILTERS.map(([key, label]) => ({ key, label, count: key === 'all' ? undefined : items.filter((v) => v.status === key).length }))} value={status} onChange={setStatus} />
         <div style={{ marginTop: 8 }}><FilterPills options={CATEGORY_FILTERS.filter(([k]) => k === 'all' || items.some((v) => v.category === k)).map(([key, label]) => ({ key, label }))} value={category} onChange={setCategory} /></div>
         <div className="oi-m-stack oi-m-stack--24" style={{ paddingTop: 12 }}>
@@ -45,7 +57,11 @@ export default function VendorsScreen({ items = [], symbol = '$', initialCategor
             <EmptyState icon={Store} image={imageUrl('emptyVendors')} text="No vendors yet. Add the ones you are talking to, or find them in the marketplace." actionLabel="Add a vendor" onAction={() => setSheet({ item: null })} />
           ) : visible.length === 0 ? <EmptyState icon={Store} text="No vendors match these filters." /> : (
             <>
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 8 }}>
+                <div style={{ flex: 1, display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+                  <div style={{ flex: 1 }}><SelectField label="Sort" value={sort.key} onChange={(e) => setSort({ key: e.target.value, dir: 'asc' })} options={SORTS} /></div>
+                  {sort.key !== 'added' && <button type="button" className="oi-m-iconbtn" aria-label={sort.dir === 'asc' ? 'Sort descending' : 'Sort ascending'} onClick={() => setSort((x) => ({ ...x, dir: x.dir === 'asc' ? 'desc' : 'asc' }))}>{sort.dir === 'asc' ? <ArrowDown size={20} strokeWidth={1.75} /> : <ArrowUp size={20} strokeWidth={1.75} />}</button>}
+                </div>
                 <button type="button" className="oi-m-iconbtn" aria-label={view === 'grid' ? 'Show as list' : 'Show as grid'} onClick={() => setView(view === 'grid' ? 'cards' : 'grid')}>{view === 'grid' ? <ListIcon size={20} strokeWidth={1.75} /> : <LayoutGrid size={20} strokeWidth={1.75} />}</button>
               </div>
               {view === 'grid' ? (
@@ -53,7 +69,7 @@ export default function VendorsScreen({ items = [], symbol = '$', initialCategor
                   {visible.map((v) => (
                     <button key={v.id} type="button" className="oi-m-imgcard oi-m-press" onClick={() => onOpen(v)}>
                       <span className="oi-m-imgcard__badge"><StatusPill tone={v.status === 'booked' ? 'ok' : 'light'}>{VENDOR_STATUS_LABEL[v.status] || v.status}</StatusPill></span>
-                      <SmartImage src={v.portfolio_image_url || ''} alt={v.name} width={170} ratio="1/1" tone="tint" />
+                      <SmartImage src={String(v.sample_work || '').split(/\n/).map((x) => x.trim()).find((x) => /^https?:\/\//.test(x)) || ''} alt={v.name} width={170} ratio="1/1" tone="tint" />
                       <div className="oi-m-imgcard__body"><div className="oi-m-imgcard__title">{v.name}</div></div>
                     </button>
                   ))}
@@ -110,6 +126,7 @@ export function VendorDetailScreen({ vendor, logs = [], tasks = [], symbol = '$'
             </RowGroup>
             <div className="oi-m-card oi-m-card--flush">
               {kv('Contact', vendor.contact_person)}
+              {kv('Meeting', vendor.meeting_date ? new Date(vendor.meeting_date).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : '')}
               {kv('Status', VENDOR_STATUS_LABEL[vendor.status] || vendor.status)}
               {kv('Quote', vendor.quoted_price ? money(vendor.quoted_price, symbol) : '')}
               {kv('Deposit', vendor.deposit_amount ? `${money(vendor.deposit_amount, symbol)}${vendor.deposit_paid ? ', paid' : ', not paid'}` : vendor.deposit_paid ? 'Paid' : '')}
