@@ -856,3 +856,24 @@ select.oi-m-input { background-image: none; padding-right: 44px; }
   .oi-m-greeting--leaving { transform: none; }
   @keyframes oi-m-fade-in { from { opacity: 0; } to { opacity: 1; } }
 }
+
+/* ── Activity rows: Home's "Latest" and the notification center ────── */
+.oi-m-act { width: 100%; min-height: 64px; display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: none; border: 0; text-align: left; font: inherit; color: inherit; position: relative; }
+.oi-m-act + .oi-m-act::before { content: ''; position: absolute; left: 64px; right: 0; top: 0; height: 1px; background: var(--m-line); }
+.oi-m-act:active { background: var(--m-press); }
+.oi-m-act__tile { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; background: var(--m-neutral); color: var(--m-text); }
+.oi-m-act__tile--person { background: var(--m-tint); color: var(--m-primary); }
+.oi-m-act__tile--primary { background: var(--m-tint); color: var(--m-primary); }
+.oi-m-act__tile--tint { background: var(--m-tint); color: var(--m-primary); }
+.oi-m-act__tile--ink { background: var(--m-neutral); color: var(--m-text); }
+.oi-m-act__tile--neutral { background: var(--m-neutral); color: var(--m-text); }
+.oi-m-act__tile--ok { background: var(--m-ok-bg); color: var(--m-ok); }
+.oi-m-act__tile--warn { background: var(--m-warn-bg); color: var(--m-warn); }
+.oi-m-act__tile--no { background: var(--m-no-bg); color: var(--m-no); }
+.oi-m-act__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.oi-m-act__title { font-size: 15px; line-height: 20px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oi-m-act__detail { font-size: 13px; line-height: 18px; color: var(--m-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oi-m-act__side { flex-shrink: 0; display: flex; align-items: center; gap: 8px; align-self: flex-start; padding-top: 1px; }
+.oi-m-act__time { font-size: 13px; line-height: 18px; color: var(--m-text-2); white-space: nowrap; }
+.oi-m-act__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--m-primary); }
+.oi-m-act-group { font-size: 13px; line-height: 18px; font-weight: 600; color: var(--m-text-2); margin: 0 0 12px; padding: 0 4px; }

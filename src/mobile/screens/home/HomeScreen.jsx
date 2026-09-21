@@ -3,8 +3,7 @@ import { Search, Users, Wallet, CheckCircle2, Receipt } from 'lucide-react';
 import Screen from '../../shell/Screen';
 import { HeroCard, PeekCarousel, StatCard, PanelCard, ImageCard, Row, RowGroup, PillButton, Skeleton, ErrorState, ProgressBar } from '../../ui';
 import { money, dateLong, dueLabel, dateShort } from '../../lib/format';
-import { typeIcon } from '../../notifications/icons';
-import { relativeTime } from '../../notifications/feed';
+import ActivityRow from '../../notifications/ActivityRow';
 
 /**
  * Home. Hero carousel, stat pair, next up, keep planning, from Ava, latest.
@@ -92,13 +91,10 @@ export default function HomeScreen({
           <section>
             <div className="oi-m-section-head">
               <h2 className="oi-m-section">Latest</h2>
-              <button type="button" className="oi-m-block__link" onClick={onOpenNotifications}>All activity</button>
+              <button type="button" className="oi-m-block__link" onClick={onOpenNotifications}>See all</button>
             </div>
             <RowGroup>
-              {latest.slice(0, 3).map((it) => {
-                const { icon: Icon, tile } = typeIcon(it.type);
-                return <Row key={it.id} icon={Icon} tile={tile} label={it.title} sub={it.body} value={relativeTime(it.ts)} onClick={() => onOpenLatest?.(it)} />;
-              })}
+              {latest.slice(0, 3).map((it) => <ActivityRow key={it.id} item={it} onOpen={onOpenLatest} />)}
             </RowGroup>
           </section>
         )}
