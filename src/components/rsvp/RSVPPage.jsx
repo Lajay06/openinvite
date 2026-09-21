@@ -9,6 +9,7 @@ import { loadFontFamilies, familiesFromGoogleSpec } from '@/lib/selfHostedFonts'
 import SectionReveal from '@/components/guest-website/SectionReveal';
 import { buildIcs, buildGoogleCalendarUrl } from '@/lib/calendarLinks';
 import { formatWeddingDate } from '@/lib/guestDate';
+import { greetableFirstName } from '@/lib/guestGreeting';
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
@@ -709,7 +710,10 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
   const icsHref = icsText ? `data:text/calendar;charset=utf-8,${encodeURIComponent(icsText)}` : null;
   const googleHref = buildGoogleCalendarUrl(acceptedEvents, coupleName);
 
-  const firstName = guest?.name ? guest.name.split(' ')[0] : '';
+  // A first name one person would answer to, or null: a household ("The Smith
+  // Family", "Nora & Sam") and the API's 'Guest' placeholder get no greeting line
+  // at all, never a generic word. src/lib/guestGreeting.js is the one rule.
+  const firstName = greetableFirstName(guest?.name);
   // For the "done" screen icon/copy — attending overall if any invited event is a yes.
   const anyAttending = Object.values(eventForm).some(v => v.status === 'yes');
   // The couple's menu is the ONLY source of choices. DEFAULT_MEAL_OPTIONS is
