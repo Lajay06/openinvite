@@ -80,7 +80,7 @@ export const SAMPLE_AMALFI = {
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'Something quiet while we eat, and a band from ten. Tell us what you would like played once the tables are pushed back.' },
   music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song each, and we will get to all of them.' },
-  registryContent: { registryMessage: 'The house has everything it needs and rather more than it has room for. The roof, however, leaks. There is a fund for that, and a few smaller things.', noGiftsPlease: false },
+  registryContent: { registryMessage: 'The house has everything it needs and rather more than it has room for. The roof, however, leaks. There is a fund for that.', noGiftsPlease: false },
 
   qna: [
     { question: 'What time should we arrive?', answer: 'From half past four. The walk up from the road takes ten minutes and it is warm at that hour.' },
