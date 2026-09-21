@@ -6,8 +6,8 @@
  * token in a useState initialiser (consume-and-strip, before any effect),
  * and now looks that token up against /api/rsvp-lookup in an effect OF ITS
  * OWN, beside the wedding fetch, holding greetableFirstName(...) in state and
- * passing it to EntranceMoment as a named prop. This package renders nothing
- * new; the prop is accepted and unused.
+ * passing it to EntranceMoment as a named prop. Package three then renders it
+ * as one line above the kicker, decided at the kicker beat.
  *
  * What is asserted is the SHAPE that keeps the hard constraints true:
  *   - the lookup lives in its own effect keyed on the token, not inside
@@ -58,7 +58,12 @@ export async function runGuestFirstNamePlumbing() {
   // The prop, by name, at both ends.
   check('the shell passes guestFirstName to EntranceMoment by name', /<EntranceMoment[\s\S]*?guestFirstName=\{guestFirstName\}[\s\S]*?\/>/.test(shell), 'named prop, no spread');
   check('  EntranceMoment accepts guestFirstName in its signature', /export default function EntranceMoment\(\{[^}]*\bguestFirstName = null\b[^}]*\}\)/.test(entrance), 'named, defaults to null');
-  check('  and renders nothing with it yet (package two)', /void guestFirstName;/.test(entrance) && !/\{guestFirstName\}/.test(entrance), 'accepted, unused');
+  // Package three: the prop is read by the kicker timer through a ref and
+  // rendered as greetName — never straight from the prop, so a late name
+  // cannot pop in after the beat.
+  check('  and the greeting is fixed at the kicker beat, not read live from the prop',
+    /guestFirstNameRef\.current = guestFirstName/.test(entrance) && /const name = guestFirstNameRef\.current \|\| null;/.test(entrance) && /\{greetName && \(/.test(entrance) && !/\{guestFirstName\}/.test(entrance),
+    'ref at the beat, greetName in the tree');
 
   return results;
 }
