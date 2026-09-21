@@ -162,14 +162,14 @@ function ChecklistContainer({ back }) {
   const tasks = useTasks();
   const taskWrites = useTaskWrites();
   const toggle = async (t) => {
-    if (!t.completed) hapticLight();
     try {
       await tasks.optimistic((list) => (list || []).map((x) => (x.id === t.id ? { ...x, completed: !t.completed } : x)), () => taskWrites.toggle(t), () => toast.error('Could not save that. Put back the way it was.'));
     } catch { /* rolled back */ }
   };
   const add = async (fields) => { await taskWrites.create(fields); toast.success('Task added'); tasks.reload(); };
-  const remove = async (t) => { if (!window.confirm('Remove this task?')) return; try { await taskWrites.remove(t.id); toast.success('Task removed'); tasks.reload(); } catch { toast.error('Could not remove that task.'); } };
-  return <ChecklistScreen tasks={tasks.data || []} onToggle={toggle} onAdd={add} onRemove={remove} loading={tasks.loading} error={tasks.error} onRetry={tasks.reload} back={back} openAdd={params.get('add') === '1'} onRefresh={tasks.reload} />;
+  const update = async (id, fields) => { await taskWrites.update(id, fields); toast.success('Saved'); tasks.reload(); };
+  const remove = async (t) => { try { await taskWrites.remove(t.id); toast.success('Task removed'); tasks.reload(); } catch { toast.error('Could not remove that task.'); } };
+  return <ChecklistScreen tasks={tasks.data || []} onToggle={toggle} onAdd={add} onUpdate={update} onRemove={remove} loading={tasks.loading} error={tasks.error} onRetry={tasks.reload} back={back} openAdd={params.get('add') === '1'} onRefresh={tasks.reload} />;
 }
 
 function BudgetContainer({ back }) {
