@@ -447,15 +447,23 @@ function PollsContainer({ back }) {
 
 function MusicContainer({ back }) {
   const api = useApi();
+  const navigate = useNavigate();
+  const { base } = useContext(ShellContext);
   const tracks = useEntity('Music', '-created_date');
   const requests = useLoad(() => api.songRequests.list(), []);
   const wd = useWeddingDetails();
-  const playlistUrl = (wd.details?.music?.playlists || [])[0]?.playlistUrl || '';
+  const music = wd.details?.music || {};
+  const stored = (music.playlists || [])[0] || null;
+  const playlistUrl = stored?.playlistUrl || '';
+  const shareUrl = wd.details?.slug ? `${siteOrigin()}/w/${wd.details.slug}/music` : '';
+  const saveMusic = async (patch, opts) => { await wd.save('music', { ...music, ...patch }, false); if (!opts?.quiet) toast.success('Saved'); };
+  // Music.jsx's savePlaylistUrl: one primary row, cleared when the link is emptied.
+  const savePlaylistUrl = async (next) => { const row = { ...(stored || { id: 'primary', name: 'Wedding playlist', enabled: true }), playlistUrl: next }; await saveMusic({ playlists: next ? [row] : [] }); };
   const review = async (r, action) => {
-    try { await api.songRequests.review(r.id, action); toast.success(action === 'add' ? 'Added to the playlist' : 'Declined'); requests.reload(); tracks.reload(); } catch (e) { toast.error(e?.message || 'Could not update that request.'); }
+    try { await api.songRequests.review(r.id, action); toast.success(action === 'add' ? 'Added to the playlist' : action === 'approve' ? 'Approved' : 'Declined'); requests.reload(); tracks.reload(); } catch (e) { toast.error(e?.message || 'Could not update that request.'); }
   };
   const wrap = (fn, ok) => async (...a) => { const r = await fn(...a); toast.success(ok); return r; };
-  return <MusicScreen tracks={tracks.data || []} requests={requests.data || []} playlistUrl={playlistUrl} onCreate={wrap(tracks.create, 'Track added')} onUpdate={wrap(tracks.update, 'Saved')} onDelete={wrap(tracks.remove, 'Removed')} onReview={review} loading={tracks.loading} error={tracks.error} onRetry={() => { tracks.reload(); requests.reload(); }} back={back} />;
+  return <MusicScreen tracks={tracks.data || []} requests={requests.data || []} settings={music} playlistUrl={playlistUrl} shareUrl={shareUrl} onPlaylistUrl={savePlaylistUrl} onSettings={saveMusic} onCreate={wrap(tracks.create, 'Track added')} onUpdate={wrap(tracks.update, 'Saved')} onDelete={wrap(tracks.remove, 'Removed')} onReview={review} onOpenVendors={(c) => navigate(`${base}/plan/vendors?category=${c}`)} loading={tracks.loading || wd.loading} error={tracks.error} onRetry={() => { tracks.reload(); requests.reload(); wd.reload(); }} back={back} onRefresh={async () => { tracks.reload(); requests.reload(); }} />;
 }
 
 /* ── Registry ────────────────────────────────────────────────────────── */
