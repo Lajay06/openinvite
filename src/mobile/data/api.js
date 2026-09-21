@@ -26,6 +26,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
  *   guestLinks(ids, opts)
  *   seating.assignByName / unassign / assignSeat / unassignSeat / applyPlan / rename
  *   vendors.saveFromPlaces(vendor, details) / vendors.savedPlaceIds()
+ *   vows.setPin(id, pin) / vows.unlock(id, pin) / vows.clearPin(id)   -> { ok, error? }
  *   llm(prompt, opts)          InvokeLLM
  *   upload(file)               -> { file_url }
  *   updateMe(patch)

@@ -13,6 +13,7 @@ import { saveVendorFromPlaces, getSavedPlaceIds } from '@/lib/vendorPlaces';
 import { fetchGuestLinks } from '@/lib/guestLinks';
 import { syncWeddingAddress } from '@/lib/weddingAddress';
 import { InvokeLLM, UploadFile } from '@/integrations/Core';
+import { setPin, unlock, clearPin } from '@/lib/vowPinLock';
 import { authHeaders } from './api';
 
 async function json(path, init = {}) {
@@ -95,6 +96,7 @@ export function createRealApi(user) {
       saveFromPlaces: (vendor, details) => saveVendorFromPlaces(vendor, details),
       savedPlaceIds: () => getSavedPlaceIds(),
     },
+    vows: { setPin, unlock, clearPin },
     llm: (prompt, opts = {}) => InvokeLLM({ prompt, add_context_from_internet: false, ...opts }),
     upload: (file) => UploadFile({ file }),
     updateMe: (patch) => base44.auth.updateMe(patch),

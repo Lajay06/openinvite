@@ -20,6 +20,7 @@ import PlanHubScreen, { planProgress } from './PlanHubScreen';
 import EventDetailsScreen, { InvitePromptSheet } from './EventDetailsScreen';
 import ScheduleScreen from './ScheduleScreen';
 import MoodboardScreen from './MoodboardScreen';
+import VowsScreen from './VowsScreen';
 import SendInvitesScreen from '../guests/SendInvitesScreen';
 import ChecklistScreen from './ChecklistScreen';
 import BudgetScreen, { BudgetCategoryScreen } from './BudgetScreen';
@@ -60,6 +61,7 @@ export default function PlanFeatureContainer() {
   if (f.key === 'schedule') return <ScheduleContainer back={back} />;
   if (f.key === 'send-invites') return <SendInvitesContainer back={`${base}/guests`} />;
   if (f.key === 'moodboard') return <MoodboardContainer back={back} />;
+  if (f.key === 'vows') return <VowsContainer back={back} />;
   if (f.key === 'invitations') return <InvitationsContainer back={back} />;
   if (f.kind === 'details') return <DetailsContainer f={f} back={back} />;
   if (f.kind === 'entity') return <EntityContainer f={f} back={back} />;
@@ -172,6 +174,22 @@ function MoodboardContainer({ back }) {
   const wd = useWeddingDetails();
   const wrap = (fn, ok) => async (...a) => { const r = await fn(...a); toast.success(ok); return r; };
   return <MoodboardScreen items={e.data || []} coverPhoto={wd.details?.coverPhoto} onCreate={wrap(e.create, 'Pinned')} onUpdate={wrap(e.update, 'Saved')} onDelete={wrap(e.remove, 'Removed')} loading={e.loading} error={e.error} onRetry={e.reload} back={back} onRefresh={e.reload} openAdd={params.get('add') === '1'} />;
+}
+
+/* ── Vows & speeches ─────────────────────────────────────────────────── */
+
+function VowsContainer({ back }) {
+  const api = useApi();
+  const e = useEntity('VowSpeech', '-created_date');
+  const [revealed, setRevealed] = useState(() => new Set());
+  const [tick, setTick] = useState(0);
+  const reveal = (id) => { setRevealed((s) => new Set([...s, id])); setTick((t) => t + 1); };
+  const wrap = (fn, ok) => async (...a) => { const r = await fn(...a); toast.success(ok); return r; };
+  return <VowsScreen items={e.data || []} revealed={revealed} revealTick={tick} onCreate={wrap(e.create, 'Saved')} onUpdate={wrap(e.update, 'Saved')} onDelete={wrap(e.remove, 'Deleted')}
+    onSetPin={async (it, pin) => { const r = await api.vows.setPin(it.id, pin); if (r.ok) { reveal(it.id); e.reload(); } return r; }}
+    onUnlock={async (it, pin) => { const r = await api.vows.unlock(it.id, pin); if (r.ok) reveal(it.id); return r; }}
+    onClearPin={async (it) => { const r = await api.vows.clearPin(it.id); if (r.ok) { reveal(it.id); e.reload(); } return r; }}
+    onAsk={(prompt) => api.llm(prompt)} loading={e.loading} error={e.error} onRetry={e.reload} back={back} onRefresh={e.reload} />;
 }
 
 /* ── Invitations: the builder is a canvas and stays on desktop; the hand-off names what exists ── */

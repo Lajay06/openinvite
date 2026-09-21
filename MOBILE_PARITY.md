@@ -170,7 +170,7 @@ itself stays on desktop and is noted.
 **Desktop.** Stats. List by tab (vows, speeches). **Editor** (`VowSpeechEditor`: `title` required, `author` required, `type` vow / speech, `content`, `notes`). Reading pane: Lock (PIN 4 to 6 digits, `POST /api/vow-pin`, `pin_hash` on the record; locked items show a PIN pane; Remove lock), Print, Edit, Delete. **Ava assistant** (`AIVowsSpeechesAssistant`: generate from style, length, tone, humor, partner name, years, story, memory, hopes; refine shorter / longer / warmer; apply into the editor). `VowSpeech.create/update/delete`.
 **Mobile (found).** Entity list with title, type, author, content, notes.
 **Gaps.** Lock and unlock; print or share; the Ava writing assistant.
-**Status.** Planned (phase 1): reader sheet with lock, unlock, remove lock through `/api/vow-pin`; share or print through the native share sheet; Ava assistant sheet with the same inputs.
+**Status.** Done (phase 1): Vows and Speeches segments; a reader with the words, private notes, Lock with a 4 to 6 digit PIN, Unlock and Remove the lock through the same `vowPinLock` helpers and `/api/vow-pin` (locked words hidden until unlocked, as on desktop), Share as text through the share sheet (the desktop prints), Edit and Delete; the editor with `VowSpeechEditor`'s fields (title and author required); Ava's assistant with the same generate inputs (partner, style, length, tone, humor, years, story, memory, hopes) and the same six improvements, applied into a new draft.
 
 ### Guest gifts (`/wedding-favours`) → `/m/plan/favours`
 

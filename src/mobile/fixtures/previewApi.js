@@ -184,12 +184,12 @@ async function json(path, init = {}) {
   if (p === '/api/questionnaire-responses-for-owner') return { responses: clone(store.gameResponses) };
   if (p === '/api/my-guest-links') return { links: Object.fromEntries((body.guestIds || []).map((id) => [id, { token: `demo-${id}`, rsvpUrl: `https://openinvite.com.au/rsvp/demo-${id}`, plusOneToken: body.includePlusOne ? `demo-${id}-po` : undefined }])) };
   if (p === '/api/vow-pin') {
-    const { action, itemId, pin } = body;
-    const item = listOf('VowSpeech').find((v) => v.id === itemId);
+    const { action, id, pin } = body;
+    const item = listOf('VowSpeech').find((v) => v.id === id);
     if (!item) throw Object.assign(new Error('Not found'), { status: 404 });
-    if (action === 'set') { store.pins[itemId] = pin; item.pin_hash = 'demo'; return { ok: true }; }
-    if (action === 'clear') { delete store.pins[itemId]; delete item.pin_hash; return { ok: true }; }
-    if (action === 'unlock') { if (store.pins[itemId] === pin) return { ok: true, content: item.content }; throw Object.assign(new Error('That PIN is not right.'), { status: 403 }); }
+    if (action === 'set') { store.pins[id] = pin; item.pin_hash = 'demo'; return { ok: true }; }
+    if (action === 'clear') { delete store.pins[id]; delete item.pin_hash; return { ok: true }; }
+    if (action === 'unlock') { if (store.pins[id] === pin) return { ok: true }; throw Object.assign(new Error('That PIN does not match.'), { status: 401 }); }
     return { ok: true };
   }
   if (p === '/api/my-wedding-details' && method === 'PUT') { store.wedding[body.field] = body.value; return { id: store.wedding.id }; }
@@ -241,6 +241,11 @@ export function createPreviewApi() {
         return { record, created: true };
       },
       savedPlaceIds: async () => new Set(listOf('Vendor').map((v) => v.google_place_id).filter(Boolean)),
+    },
+    vows: {
+      setPin: (id, pin) => json('/api/vow-pin', { method: 'POST', body: JSON.stringify({ id, action: 'set', pin }) }).then(() => ({ ok: true })).catch((e) => ({ ok: false, error: e.message })),
+      unlock: (id, pin) => json('/api/vow-pin', { method: 'POST', body: JSON.stringify({ id, action: 'unlock', pin }) }).then(() => ({ ok: true })).catch((e) => ({ ok: false, error: e.message })),
+      clearPin: (id) => json('/api/vow-pin', { method: 'POST', body: JSON.stringify({ id, action: 'clear' }) }).then(() => ({ ok: true })).catch((e) => ({ ok: false, error: e.message })),
     },
     llm: async (prompt, opts = {}) => {
       await new Promise((r) => setTimeout(r, 600));
