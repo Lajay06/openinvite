@@ -219,7 +219,7 @@ export const ENTITIES = {
     pattern: 'cards',
     gridToggle: true,
     row: (r) => ({ title: r.store_name || 'Registry', sub: (r.url || '').replace(/^https?:\/\//, ''), image: r.image_url, icon: Gift }),
-    fields: [t('store_name', 'Store'), t('url', 'Registry link', { type: 'url' }), ta('description', 'A line for guests'), t('image_url', 'Photo', { type: 'image' })],
+    fields: [t('store_name', 'Store name', { placeholder: 'Crate & Barrel' }), t('url', 'Registry link', { type: 'url', placeholder: 'https://store.com/registry/your-name' }), t('image_url', 'Store logo', { type: 'image' }), ta('description', 'Note for guests', { placeholder: 'A short note for your guests' })],
     required: ['store_name', 'url'],
   },
   'registry-products': {
@@ -230,8 +230,9 @@ export const ENTITIES = {
     pattern: 'cards',
     gridToggle: true,
     row: (r) => ({ title: r.name, sub: [r.registry_platform, r.quantity_purchased ? `${r.quantity_purchased} of ${r.quantity_requested || 1} bought` : ''].filter(Boolean).join(' · '), value: r.price ? `$${Number(r.price).toLocaleString('en-US')}` : '', image: r.image_url, icon: Gift, badge: r.quantity_purchased >= (r.quantity_requested || 1) ? 'Bought' : undefined, badgeTone: 'ok' }),
-    fields: [t('name', 'Product'), t('price', 'Price', { type: 'number' }), t('product_url', 'Link', { type: 'url' }), t('registry_platform', 'Store'), t('quantity_requested', 'How many', { type: 'number' }), t('priority', 'Priority', { type: 'select', options: opt([['high', 'High'], ['medium', 'Medium'], ['low', 'Low']]) }), t('image_url', 'Photo', { type: 'image' }), ta('description', 'Why you love it'), ta('notes', 'Notes')],
+    fields: [t('name', 'Product name', { placeholder: 'KitchenAid stand mixer' }), t('price', 'Price', { type: 'number', placeholder: '299.99' }), sel('category', 'Category', [['kitchen', 'Kitchen'], ['home_decor', 'Home decor'], ['bedding', 'Bedding'], ['bathroom', 'Bathroom'], ['outdoor', 'Outdoor'], ['electronics', 'Electronics'], ['other', 'Other']]), sel('registry_platform', 'Platform', ['Zola', 'MyRegistry', 'The Knot', 'Amazon', 'Target', 'Williams Sonoma', 'Crate & Barrel', 'Other'].map((p) => [p, p])), t('quantity_requested', 'Quantity needed', { type: 'number' }), sel('priority', 'Priority', [['high', 'High'], ['medium', 'Medium'], ['low', 'Low']]), t('product_url', 'Product link', { type: 'url' }), t('image_url', 'Product photo', { type: 'image' }), ta('description', 'Description', { placeholder: 'Product details' }), ta('notes', 'Private notes', { placeholder: 'Not visible to guests' })],
     required: ['name'],
+    defaults: { quantity_requested: 1, priority: 'medium', quantity_purchased: 0, purchased_by: [] },
   },
   'registry-funds': {
     title: 'Cash funds',
@@ -241,8 +242,9 @@ export const ENTITIES = {
     pattern: 'cards',
     gridToggle: true,
     row: (r) => ({ title: r.title, sub: r.description, value: r.requested_amount ? `Goal $${Number(r.requested_amount).toLocaleString('en-US')}` : '', image: r.image_url, icon: Gift }),
-    fields: [t('title', 'Fund'), ta('description', 'What it is for'), t('requested_amount', 'Goal', { type: 'number' }), t('payment_link_url', 'Payment link', { type: 'url' }), t('category', 'Category', { type: 'select', options: opt([['honeymoon', 'Honeymoon'], ['home', 'Home'], ['experience', 'Experience'], ['charity', 'Charity'], ['other', 'Other']]) }), t('image_url', 'Photo', { type: 'image' })],
+    fields: [t('title', 'Fund name', { placeholder: 'Honeymoon airfare' }), sel('category', 'Category', [['honeymoon', 'Honeymoon'], ['home_fund', 'Home fund'], ['charity', 'Charity'], ['experience', 'Experience'], ['custom', 'Custom']]), t('requested_amount', 'Goal amount', { type: 'number', placeholder: '500' }), t('image_url', 'Photo', { type: 'image' }), t('payment_link_url', 'Payment link', { type: 'url', placeholder: 'https://paypal.me/yourname' }), ta('description', 'Description', { placeholder: 'Tell guests about this fund' })],
     required: ['title'],
+    defaults: { category: 'honeymoon' },
   },
   'registry-received': {
     title: 'Received gifts',
@@ -250,9 +252,10 @@ export const ENTITIES = {
     sort: '-created_date',
     itemLabel: 'gift',
     pattern: 'cards',
-    row: (r) => ({ title: r.item_name || 'Gift', sub: r.giver_name ? `From ${r.giver_name}` : '', value: r.estimated_value ? `$${Number(r.estimated_value).toLocaleString('en-US')}` : '', badge: r.thank_you_sent ? 'Thanked' : 'Thank you to send', badgeTone: r.thank_you_sent ? 'ok' : 'warn', icon: Gift }),
-    fields: [t('item_name', 'Gift'), t('giver_name', 'From'), t('giver_email', 'Their email', { type: 'email' }), t('estimated_value', 'Value', { type: 'number' }), t('received_date', 'Received', { type: 'date' }), t('delivery_status', 'Delivery', { type: 'select', options: opt([['received', 'Received'], ['shipping', 'On its way'], ['pending', 'Not yet']]) }), t('thank_you_sent', 'Thank you sent', { type: 'toggle' }), ta('thank_you_note', 'Thank you note'), ta('notes', 'Notes')],
+    row: (r) => ({ title: r.item_name || 'Gift', sub: [r.giver_name ? `From ${r.giver_name}` : '', { expected: 'Expected', received: 'Received', not_received: 'Not received' }[r.delivery_status] || ''].filter(Boolean).join(', '), value: r.estimated_value ? `$${Number(r.estimated_value).toLocaleString('en-US')}` : '', badge: r.thank_you_sent ? 'Thanked' : 'Thank you to send', badgeTone: r.thank_you_sent ? 'ok' : 'warn', icon: Gift }),
+    fields: [t('item_name', 'Gift', { placeholder: 'KitchenAid stand mixer' }), { name: 'giver', label: 'From', type: 'guest', placeholder: 'Search your guest list' }, t('giver_email', 'Their email', { type: 'email', placeholder: 'giver@email.com' }), sel('delivery_status', 'Delivery', [['expected', 'Expected'], ['received', 'Received'], ['not_received', 'Not received']]), t('received_date', 'Received on', { type: 'date' }), sel('category', 'Category', [['physical', 'Physical'], ['cash', 'Cash'], ['experience', 'Experience'], ['digital', 'Digital'], ['other', 'Other']]), t('estimated_value', 'Estimated value', { type: 'number' }), t('thank_you_sent', 'Thank you sent', { type: 'toggle' }), t('thank_you_date', 'Thanked on', { type: 'date', showIf: (v) => !!v.thank_you_sent }), ta('thank_you_note', 'Thank you note', { placeholder: 'Write one, or ask Ava below' }), t('notes', 'Notes')],
     required: ['item_name'],
+    defaults: { delivery_status: 'expected', category: 'physical' },
   },
   music: {
     title: 'Playlist',

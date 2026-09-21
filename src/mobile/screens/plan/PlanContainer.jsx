@@ -540,13 +540,16 @@ function MusicContainer({ back }) {
 /* ── Registry ────────────────────────────────────────────────────────── */
 
 function RegistryContainer({ back }) {
+  const api = useApi();
   const symbol = useSymbol();
+  const wd = useWeddingDetails();
   const links = useEntity('RegistryItem');
   const products = useEntity('RegistryProduct');
   const funds = useEntity('CustomGift');
   const received = useEntity('ReceivedGift');
   const wrap = (e) => ({ items: e.data || [], loading: e.loading, error: e.error, reload: e.reload, create: async (v) => { await e.create(v); toast.success('Added'); }, update: async (id, v) => { await e.update(id, v); toast.success('Saved'); }, remove: async (id) => { await e.remove(id); toast.success('Removed'); } });
-  return <RegistryScreen lists={{ links: wrap(links), products: wrap(products), funds: wrap(funds), received: wrap(received) }} symbol={symbol} back={back} />;
+  const registryUrl = wd.details?.slug ? `${siteOrigin()}/w/${wd.details.slug}/registry` : '';
+  return <RegistryScreen lists={{ links: wrap(links), products: wrap(products), funds: wrap(funds), received: wrap(received) }} symbol={symbol} registryUrl={registryUrl} onAsk={(prompt) => api.llm(prompt)} back={back} />;
 }
 
 /* ── Guest suite editors on WeddingDetails ───────────────────────────── */

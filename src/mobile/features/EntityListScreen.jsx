@@ -3,6 +3,7 @@ import { Plus, Inbox, LayoutGrid, List as ListIcon } from 'lucide-react';
 import Screen from '../shell/Screen';
 import { FilterPills, EmptyState, ErrorState, SkeletonRows, ItemCard, ItemList, GroupedList, Row, SmartImage, StatusPill, useListView } from '../ui';
 import FormSheet from './FormSheet';
+import { useConfirm } from '../ui/ConfirmSheet';
 
 /**
  * A list of records with add / edit / delete, from an ENTITIES schema.
@@ -17,11 +18,16 @@ export default function EntityListScreen({ schema, items = [], onCreate, onUpdat
   const [filter, setFilter] = useState('all');
   const [sheet, setSheet] = useState({ open: false, item: null });
   const [view, setView] = useListView(schema.entity, 'cards');
+  const [q, setQ] = useState('');
+  const [confirm, confirmEl] = useConfirm();
   const pattern = schema.pattern || 'rows';
   const visible = useMemo(() => {
     const f = schema.filters?.find((x) => x.key === filter);
-    return f?.test ? items.filter(f.test) : items;
-  }, [items, filter, schema.filters]);
+    let list = f?.test ? items.filter(f.test) : items;
+    const t = q.trim().toLowerCase();
+    if (schema.search && t) list = list.filter((it) => schema.search(it, t));
+    return list;
+  }, [items, filter, schema, q]);
   const groups = useMemo(() => {
     if (!schema.groupBy) return [{ key: 'all', title: null, items: visible }];
     const m = new Map();
@@ -30,12 +36,13 @@ export default function EntityListScreen({ schema, items = [], onCreate, onUpdat
   }, [visible, schema]);
 
   const save = async (values) => {
-    if (sheet.item) await onUpdate(sheet.item.id, values);
-    else await onCreate({ ...(schema.defaults || {}), ...values });
+    const out = schema.fromForm ? schema.fromForm(values, sheet.item) : values;
+    if (sheet.item) await onUpdate(sheet.item.id, out);
+    else await onCreate({ ...(schema.defaults || {}), ...out });
   };
   const remove = async () => {
     if (!sheet.item) return;
-    if (!window.confirm(`Remove this ${schema.itemLabel}?`)) return;
+    if (!(await confirm({ title: `Remove this ${schema.itemLabel}`, body: schema.row(sheet.item).title, action: 'Remove' }))) return;
     await onDelete(sheet.item.id);
     setSheet({ open: false, item: null });
   };
@@ -92,6 +99,7 @@ export default function EntityListScreen({ schema, items = [], onCreate, onUpdat
     >
       {header}
       {schema.filters && <FilterPills options={schema.filters} value={filter} onChange={setFilter} />}
+      {schema.search && items.length > 0 && <div className="oi-m-stack" style={{ marginBottom: 12 }}><input className="oi-m-input" value={q} onChange={(e) => setQ(e.target.value)} placeholder={schema.searchPlaceholder || 'Search'} aria-label={schema.searchPlaceholder || 'Search'} /></div>}
       <div className="oi-m-stack oi-m-stack--24" style={{ marginTop: schema.filters ? 12 : 0 }}>
         {error && !loading ? <ErrorState onRetry={onRetry} timedOut={error?.timedOut} /> : loading ? <SkeletonRows count={6} /> : items.length === 0 ? (
           <EmptyState icon={Inbox} image={schema.emptyImage} text={schema.emptyText || `No ${schema.itemLabel}s yet. Add the first one.`} actionLabel={`Add a ${schema.itemLabel}`} onAction={() => setSheet({ open: true, item: null })} />
@@ -105,15 +113,19 @@ export default function EntityListScreen({ schema, items = [], onCreate, onUpdat
       </div>
       <FormSheet
         open={sheet.open}
+        full={!!schema.full}
         title={sheet.item ? `Edit ${schema.itemLabel}` : `Add ${schema.itemLabel}`}
         fields={schema.fields}
-        initial={sheet.item}
+        initial={sheet.item ? (schema.toForm ? schema.toForm(sheet.item) : sheet.item) : (schema.defaults || null)}
         required={schema.required || []}
         onClose={() => setSheet((s) => ({ ...s, open: false }))}
         onSave={save}
         onDelete={sheet.item ? remove : undefined}
         saveLabel={sheet.item ? 'Save changes' : `Add ${schema.itemLabel}`}
-      />
+      >
+        {schema.sheetChildren}
+      </FormSheet>
+      {confirmEl}
     </Screen>
   );
 }
