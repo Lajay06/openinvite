@@ -18,7 +18,7 @@ export const FIXTURE_USER = {
   id: 'preview-user',
   full_name: 'Priya Nair',
   email: 'priya@example.com',
-  plan: 'pro',
+  plan: 'ultra',
   planActivatedAt: '2026-03-02T00:00:00Z',
   created_date: '2026-02-20T00:00:00Z',
 };

@@ -63,6 +63,7 @@ export function SchemaField({ field, value, onChange, error }) {
 /** Coerce a form value for saving: numbers become numbers, '' stays ''. */
 export function coerce(field, v) {
   if (field.type === 'number') return v === '' || v == null ? '' : Number(v);
+  if (field.type === 'select' && field.numeric) return v === '' || v == null ? '' : Number(v);
   if (field.type === 'toggle') return !!v;
   if (field.type === 'pills' && field.multi) return Array.isArray(v) ? v : [];
   if (field.type === 'tags') return Array.isArray(v) ? v : [];

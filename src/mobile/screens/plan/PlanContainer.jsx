@@ -160,7 +160,7 @@ function SendInvitesContainer({ back }) {
   const ids = (params.get('ids') || '').split(',').filter(Boolean);
   const events = (params.get('events') || '').split(',').filter(Boolean);
   // Ultra only, as Guests.jsx gates it: a Pro plan cannot send.
-  const isPro = api.mode === 'preview' ? true : (api.user?.plan || 'free') !== 'pro';
+  const isPro = (api.user?.plan || 'free') !== 'pro';
   return <SendInvitesScreen guests={guests.data || []} wedding={wd.details} user={api.user} initialSelectedIds={ids} restrictEventIds={events.length ? events : null} initialType={params.get('type') || 'invite'} isPro={isPro} onSent={() => navigate(back)} back={back} loading={guests.loading || wd.loading} error={guests.error} onRetry={guests.reload} />;
 }
 
@@ -188,9 +188,12 @@ function InvitationsContainer({ back }) {
 /* ── Generic ─────────────────────────────────────────────────────────── */
 
 function DetailsContainer({ f, back }) {
+  const api = useApi();
+  const navigate = useNavigate();
+  const { base } = useContext(ShellContext);
   const wd = useWeddingDetails();
   const schema = DETAILS[f.key];
-  return <DetailsScreen schema={schema} details={wd.details} onSave={wd.save} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} />;
+  return <DetailsScreen schema={schema} details={wd.details} onSave={wd.save} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} user={api.user} onOpenVendors={(category, id) => navigate(`${base}/plan/vendors${id ? `/${id}` : `?category=${category}`}`)} />;
 }
 
 function EntityContainer({ f, back }) {
