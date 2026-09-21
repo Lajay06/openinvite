@@ -177,7 +177,9 @@ async function json(path, init = {}) {
   if (p === '/api/place-details') { const id = url.searchParams.get('place_id'); return { place: clone(FIXTURE_PLACE_DETAILS[id] || FIXTURE_PLACES.find((x) => x.place_id === id) || null) }; }
   if (p === '/api/places-search') {
     const q = String(body.q || '').toLowerCase();
-    const hit = FIXTURE_PLACES.filter((x) => !q || x.keywords.some((k) => q.includes(k)));
+    // The marketplace's blank search ('wedding vendor') lands on the three
+    // vendors, not the venues; every other query matches on keywords.
+    const hit = q === 'wedding vendor' ? FIXTURE_PLACES.filter((x) => x.keywords.includes('vendor')) : FIXTURE_PLACES.filter((x) => !q || x.keywords.some((k) => q.includes(k)));
     return { places: clone((hit.length ? hit : FIXTURE_PLACES).slice(0, 6).map(({ keywords, ...rest }) => rest)) };
   }
   if (p === '/api/send-guest-reply' || p === '/api/send-invites' || p === '/api/contact') return { ok: true, sent: (body.guests || []).length };

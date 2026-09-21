@@ -98,5 +98,27 @@ export function heroImageFor(details) {
   return coupleImages(details)[0] || '';
 }
 
+/**
+ * The Home heroes: the cover and the Our Story photos, not the site's own
+ * photo blocks, which belong to the Site tab preview (`siteImageFor`). So
+ * a site block photo is never drawn on Home and on Site both.
+ */
+export function homeHeroImages(d) {
+  if (!d) return [];
+  const out = [];
+  const push = (u) => { if (u && typeof u === 'string' && !out.includes(u)) out.push(u); };
+  push(d.coverPhoto);
+  for (const p of d.ourStoryContent?.photos || []) push(typeof p === 'string' ? p : p?.url);
+  return out;
+}
+
+/** The Site tab preview: the site's first photo block, else the cover, else the universe sample. */
+export function siteImageFor(d) {
+  for (const b of d?.homeContent?.blocks || []) {
+    if ((b?.type === 'photo' || b?.type === 'full-width-image') && b.content?.url) return b.content.url;
+  }
+  return heroImageFor(d);
+}
+
 /** Decorative slots live in src/mobile/images.ts; this re-export keeps the delivery helpers and the manifest in one import. */
 export { IMAGES, imageUrl } from '../images';

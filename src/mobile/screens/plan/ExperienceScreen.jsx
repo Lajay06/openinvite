@@ -42,7 +42,9 @@ export default function ExperienceScreen({ guide = {}, destination = '', onSave,
   const save = (patch) => onSave({ ...guide, ...patch });
 
   /* ── Places ── */
-  const [cat, setCat] = useState(CATEGORIES[0][0]);
+  // Land on the first category with something in it (the desktop's first tab is Eat, often empty) until the couple picks one.
+  const [chosenCat, setCat] = useState(null);
+  const cat = chosenCat || (CATEGORIES.find(([key]) => (categories[key]?.places || []).length) || CATEGORIES[0])[0];
   const [adding, setAdding] = useState(false);
   const withPick = (next, catKey, placeId, nextPick) => {
     const places = next.categories?.[catKey]?.places || [];

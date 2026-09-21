@@ -2,13 +2,12 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { notificationCopy } from './copy';
 import { deliver } from '../lib/images';
-import { coupleImages } from '../lib/images';
-import { FIXTURE_WEDDING } from '../fixtures';
+import { imageUrl } from '../images';
 import '../styles/mobile.css';
 
 /**
  * /m/preview/push, dev only. A realistic iOS lock screen: time, date, the
- * couple's hero photo as wallpaper, blurred notification cards showing six
+ * manifest's wallpaper photo, blurred notification cards showing six
  * Openinvite notifications from the real copy catalog, one expanded and
  * one grouped stack. `?state=banner` shows the in-app banner over Home
  * instead (that state lives on /m/preview?banner=1; this page links to it).
@@ -27,7 +26,9 @@ export default function PushPreview() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [expanded, setExpanded] = useState(0);
-  const wallpaper = useMemo(() => deliver(coupleImages(FIXTURE_WEDDING)[0], { width: 390, height: 844, dpr: 2 }), []);
+  // The manifest's wallpaper slot, not the fixture cover: the cover already
+  // draws on Home, Account and the lock screen (goal 5, once app-wide).
+  const wallpaper = useMemo(() => deliver(imageUrl('lockScreenWallpaper'), { width: 390, height: 844, dpr: 2 }), []);
   const items = SAMPLE.map(([type, data, when]) => ({ type, when, ...notificationCopy(type, data) }));
   const now = new Date('2026-09-21T09:41:00');
   const grouped = params.get('grouped') !== '0';

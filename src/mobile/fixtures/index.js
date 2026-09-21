@@ -32,6 +32,7 @@ export const FIXTURE_WEDDING = {
   slug: 'priya-and-tom',
   websiteEnabled: true,
   coverPhoto: imageUrl('fixtureCover'),
+  homeContent: { blocks: [{ type: 'photo', content: { url: imageUrl('fixtureSite') } }] },
   ourStoryContent: { photos: [imageUrl('fixtureStory1'), imageUrl('fixtureStory2'), imageUrl('fixtureStory3')] },
   guestCount: 82,
   mainCeremony: { venue: 'The Fig Tree', address: '4 Beach Rd, Byron Bay NSW 2481', time: '15:00' },

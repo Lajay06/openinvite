@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { getUniverse } from '@/lib/universeCatalog';
-import { heroImageFor } from '../../lib/images';
+import { siteImageFor } from '../../lib/images';
 import { ShellContext } from '../../shell/MobileShell';
 import SiteScreen from './SiteScreen';
 import { useWedding } from '../../data/wedding';
@@ -17,7 +17,7 @@ export default function SiteContainer() {
   const d = wedding.data;
   const universeId = d?.activeUniverse || '';
   const universe = universeId ? getUniverse(universeId) : null;
-  const previewImage = heroImageFor(d);
+  const previewImage = siteImageFor(d);
   const { base } = useContext(ShellContext);
   const siteUrl = siteUrlFor(d);
   const coupleName = d?.couple1Name && d?.couple2Name ? `${d.couple1Name} & ${d.couple2Name}` : '';

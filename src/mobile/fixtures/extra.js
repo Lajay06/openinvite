@@ -19,9 +19,9 @@ export const FIXTURE_PLACES = [
   place('demo-airport', 'Ballina Byron Gateway Airport', 'Southern Cross Dr, Ballina NSW 2478', ['airport'], 4.1, 980, null, 'placeAirport', ['airport', 'ballina', 'transport', 'train', 'bus']),
   place('demo-bayleaf', 'Bayleaf Cafe', '2 Marvell St, Byron Bay NSW 2481', ['cafe', 'restaurant'], 4.6, 1120, 2, 'placePick1', ['cafe', 'coffee', 'breakfast', 'eat', 'brunch']),
   place('demo-lighthouse', 'Cape Byron Lighthouse', 'Lighthouse Rd, Byron Bay NSW 2481', ['tourist_attraction', 'point_of_interest'], 4.8, 6400, null, 'placePick2', ['lighthouse', 'walk', 'do', 'outdoors', 'nature', 'hike']),
-  place('demo-ilford', 'Ilford Studio', '12 Fletcher St, Byron Bay NSW 2481', ['point_of_interest'], 4.9, 64, null, 'placeMarket1', ['photographer', 'photography', 'photo', 'video', 'videographer']),
-  place('demo-bloom', 'Bloom & Vine Florals', '8 Jonson St, Byron Bay NSW 2481', ['florist', 'store'], 4.7, 91, 2, 'placeMarket2', ['florist', 'flowers', 'floral', 'styling']),
-  place('demo-sable', 'Sable Beauty', '3 Lawson St, Byron Bay NSW 2481', ['beauty_salon', 'hair_care'], 4.8, 140, 2, 'placeMarket3', ['makeup', 'hair', 'beauty', 'bridal']),
+  place('demo-ilford', 'Ilford Studio', '12 Fletcher St, Byron Bay NSW 2481', ['point_of_interest'], 4.9, 64, null, 'placeMarket1', ['photographer', 'photography', 'photo', 'video', 'videographer', 'vendor']),
+  place('demo-bloom', 'Bloom & Vine Florals', '8 Jonson St, Byron Bay NSW 2481', ['florist', 'store'], 4.7, 91, 2, 'placeMarket2', ['florist', 'flowers', 'floral', 'styling', 'vendor']),
+  place('demo-sable', 'Sable Beauty', '3 Lawson St, Byron Bay NSW 2481', ['beauty_salon', 'hair_care'], 4.8, 140, 2, 'placeMarket3', ['makeup', 'hair', 'beauty', 'bridal', 'vendor']),
 ];
 
 export const FIXTURE_PLACE_DETAILS = Object.fromEntries(FIXTURE_PLACES.map(({ keywords, ...p }) => [p.place_id, {

@@ -10,7 +10,7 @@ import { useTaskWrites } from '../../data/wedding';
 import { useApi, useSymbol } from '../../data/api';
 import { hapticLight, shareLink } from '../../native';
 import { siteUrlFor } from '../../lib/links';
-import { ownImages, imageUrl } from '../../lib/images';
+import { homeHeroImages, imageUrl } from '../../lib/images';
 import { leastTouched, featureByKey } from '../../features/registry';
 import { summariseBudget } from '../plan/BudgetScreen';
 
@@ -31,7 +31,10 @@ export default function HomeContainer() {
   // The couple's own photos take priority here and on the Site preview; with
   // none, the hero draws from the app/ folder (goal 4, phase 1), never from
   // the universe's sample content.
-  const images = useMemo(() => { const own = ownImages(details); return own.length ? own : [imageUrl('heroDays'), imageUrl('heroReplies'), imageUrl('heroAva'), imageUrl('heroShare')]; }, [details]);
+  // Hero i draws the couple's own photo i (cover, then Our Story), and the
+  // decorative slot for that position when they have fewer: a photo is never
+  // repeated across the four heroes to fill a gap.
+  const images = useMemo(() => { const own = homeHeroImages(details); return [imageUrl('heroDays'), imageUrl('heroReplies'), imageUrl('heroAva'), imageUrl('heroShare')].map((u, i) => own[i] || u); }, [details]);
   const siteUrl = siteUrlFor(details);
 
   const rsvp = useMemo(() => {
@@ -40,7 +43,7 @@ export default function HomeContainer() {
   }, [d.guests]);
   const budgetSum = useMemo(() => summariseBudget(d.budget || [], details?.budget || null), [d.budget, details?.budget]);
   const openTasks = (d.tasks || []).filter((t) => !t.completed).sort((a, b) => (a.due_date || '9999').localeCompare(b.due_date || '9999'));
-  const keepPlanning = useMemo(() => leastTouched(d, 6).map((f) => ({ key: f.key, label: f.label, image: f.image, line: f.stat(d, symbol) })), [d, symbol]);
+  const keepPlanning = useMemo(() => leastTouched(d, 6).map((f) => ({ key: f.key, label: f.label, line: f.stat(d, symbol) })), [d, symbol]);
   const briefing = notifications?.items?.find((i) => i.type === 'briefing')?.body || (daysToGo != null ? `${openTasks.length} open task${openTasks.length === 1 ? '' : 's'} and ${rsvp.awaiting} guests still to reply.` : null);
   const latest = (notifications?.items || []).filter((i) => i.type !== 'briefing').slice(0, 3);
 

@@ -18,8 +18,18 @@
  * left out. The fixture stand-ins for the couple's own uploads are slots
  * here too, so no Cloudinary id lives anywhere else in src/mobile/.
  *
- * `todo: true` marks a slot that has no good photo; none do now, and the
- * gallery still shows the marker if one ever returns.
+ * `todo: true` marks a slot that has no good photo; the gallery shows the
+ * marker and the slot draws a color panel. One is todo after goal 5
+ * (placeAirport: the library has no airport exterior).
+ *
+ * ONCE, APP-WIDE (goal 5). A public id may appear in one slot only, and
+ * `duplicateIds()` is empty by construction: /m/preview/images throws
+ * when it is not. The one deliberate repeat is not a slot at all: the
+ * couple's own cover photo is their identity and shows on the Home hero,
+ * the Account card and the lock screen, the way a profile photo would.
+ * In the preview that is `fixtureCover`; the Site tab previews the site's
+ * own hero block (`fixtureSite`) and the Home heroes exclude site blocks,
+ * so no library photo is drawn twice.
  *
  * STILLS ONLY. No component may derive motion from an id that starts with
  * DTS_. Public ids are never invented.
@@ -50,8 +60,14 @@ export const IMAGES = {
   heroReplies: { id: 'DTS_BANDITS_PALI_MENDEZ_Photos_ID14215_bykr7b', alt: 'A couple walking hand in hand at sunset', usedIn: 'Home hero, replies', screen: 'home', size: { w: 358, h: 448 }, ratio: '4/5', focal: '50% 40%' },
   heroAva: { id: 'hf_20260904_112950_ee43be91-2036-4b97-8ff9-f490913bfded_q6rrgk', alt: 'A couple laughing at a bar table', usedIn: 'Home hero, from Ava', screen: 'home', size: { w: 358, h: 448 }, ratio: '4/5', focal: '50% 35%' },
   heroShare: { id: 'pin_marrakech_couple', alt: 'Friends on a rooftop at dusk with a tray of drinks', usedIn: 'Home hero, share your site', screen: 'home', size: { w: 358, h: 448 }, ratio: '4/5', focal: '50% 40%' },
-  keepPlanningDefault: { id: 'DTS_SNOWBOUND_Daniel_Farò_Photos_ID12430_hmrv0c', alt: 'A couple under a yellow blanket with mugs', usedIn: 'Home, keep planning card with no feature image', screen: 'home', size: { w: 240, h: 180 }, ratio: '4/3' },
-  /* ── Plan hub tiles (also the Home keep-planning cards, by feature) ── */
+  /* ── Home keep-planning cards: six fixed photos by position, whatever feature lands there, so no Plan tile photo is drawn twice ── */
+  keepPlanning1: { id: 'DTS_SNOWBOUND_Daniel_Farò_Photos_ID12430_hmrv0c', alt: 'A couple under a yellow blanket with mugs', usedIn: 'Home, keep planning card 1', screen: 'home', size: { w: 240, h: 180 }, ratio: '4/3' },
+  keepPlanning2: { id: 'DTS_Like_a_Movie_Foster___Asher_Photos_ID1042_qaddk3', alt: 'Running along a white wall', usedIn: 'Home, keep planning card 2', screen: 'home', size: { w: 240, h: 180 }, ratio: '4/3' },
+  keepPlanning3: { id: 'DTS_SNOWBOUND_Daniel_Farò_Photos_ID12449_f9hidr', alt: 'Two in the snow, arms wide', usedIn: 'Home, keep planning card 3', screen: 'home', size: { w: 240, h: 180 }, ratio: '4/3' },
+  keepPlanning4: { id: 'DTS_First_Date_Marlen_Stahlhuth_Photos_ID4764_nostak', alt: 'Two friends looking up at the sky', usedIn: 'Home, keep planning card 4', screen: 'home', size: { w: 240, h: 180 }, ratio: '4/3', focal: '50% 35%' },
+  keepPlanning5: { id: 'pin_aspen_couple', alt: 'Hot drinks on the slopes', usedIn: 'Home, keep planning card 5', screen: 'home', size: { w: 240, h: 180 }, ratio: '4/3', focal: '50% 40%' },
+  keepPlanning6: { id: 'pin_seoul_couple', alt: 'Street food at a night market', usedIn: 'Home, keep planning card 6', screen: 'home', size: { w: 240, h: 180 }, ratio: '4/3', focal: '50% 45%' },
+  /* ── Plan hub tiles ── */
   tileEventDetails: { id: 'DTS_ISOLA_Daniel_Farò_Photos_ID13172_fu4zfe', alt: 'Two hands and a pair of rings on a table', usedIn: 'Plan hub, Event details tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
   tileSchedule: { id: 'DTS_INFLUENCER_Daniel_Farò_Photos_ID8195_hcbnri', alt: 'Planning on a laptop, phone in hand', usedIn: 'Plan hub, Schedule tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 30%' },
   tileGuests: { id: 'DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2', alt: 'Friends leaping over a hay bale', usedIn: 'Plan hub, Guest list tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
@@ -72,6 +88,19 @@ export const IMAGES = {
   tileBudget: { id: 'DTS_SOJOURN_Franco_Dupuy_Photos_ID10730_je7niq', alt: 'Working on a laptop, racket by the wall', usedIn: 'Plan hub, Budget tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 35%' },
   tileRegistry: { id: 'DTS_THE_INTERN_Shauna_Summers_Photos_ID11406_giy6nx', alt: 'Carrying an armful of wrapped parcels', usedIn: 'Plan hub, Registry tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
   tileHoneymoon: { id: 'tulum-hero_nbr4op', alt: 'A couple walking along a beach', usedIn: 'Plan hub, Honeymoon tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
+  /* Goal 5: the tiles that were icon panels. Five stay icon tiles: Send invites, Invitations and Considerations hand off to desktop, Emergency contact is a form, and the guest suite Accommodation tile waits for a photo (the one unassigned photo, a couple in bed, has closed eyes in its focal area and stays out, as goal 4 ruled). */
+  tileChecklist: { id: 'DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14188_oqc9dm', alt: 'A game of chess by the window', usedIn: 'Plan hub, To do tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 40%' },
+  tilePolls: { id: 'hf_20260917_161857_658d1c99-742d-4bba-930c-4d52299b90c9_ccpphs', alt: 'Drinks at a party', usedIn: 'Plan hub, Polls & games tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 35%' },
+  tileMessages: { id: 'hf_20260904_010212_e9bf35e3-c220-4d78-8595-01d39c75be7e_se9wle', alt: 'Sitting close on a leather banquette', usedIn: 'Plan hub, Messages tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 40%' },
+  tileVows: { id: 'DTS_day_tripping_Agustín_Farías_Photos_ID6199_g2inky', alt: 'An embrace by the waterfall', usedIn: 'Plan hub, Vows & speeches tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
+  tileStudio: { id: 'shanghai-hero_ixxql3', alt: 'A couple against a city skyline at night', usedIn: 'Plan hub, Design studio tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
+  tileSuiteSchedule: { id: 'DTS_LUNAR_Daniel_Farò_Photos_ID11268_bm3gla', alt: 'Dusk by the water', usedIn: 'Plan hub, guest suite Schedule tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
+  tileQna: { id: 'DTS_SILVER_HOUR_Franco_Dupuy_Photos_ID14690_mjiupn', alt: 'Dressed up outside a cafe', usedIn: 'Plan hub, Q&A tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 30%' },
+  tileSuiteRegistry: { id: 'hf_20260905_095507_0842f0f9-82bb-462a-9756-c6d1b1cb4486_po7vnk', alt: 'Grilling together at night', usedIn: 'Plan hub, guest suite Registry tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 40%' },
+  tileSuiteTransport: { id: 'DTS_BANDITS_PALI_MENDEZ_Photos_ID14261_wcy4l1', alt: 'A piggyback through the desert', usedIn: 'Plan hub, guest suite Transport tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
+  tileExperience: { id: 'DTS_Springtime_Rob_Christain_Crosby_Photos_ID3094_kjiq9v', alt: 'Skating down a palm-lined street', usedIn: 'Plan hub, Experience guide tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 60%' },
+  tileGoodToKnow: { id: 'DTS_LAST_SUPPER_PALI_MENDEZ_Photos_ID13840_nxtipc', alt: 'A martini against red velvet', usedIn: 'Plan hub, Good to know tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
+  tileSuitePolls: { id: 'DTS_Pride_Agustín_Farías_Photos_ID5510_dn4jws', alt: 'A kiss at sunset', usedIn: 'Plan hub, Guest polls tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
   /* ── Empty states ── */
   emptyVendors: { id: 'DTS_Banquet_Daniel_Farò_Photos_ID5367_hgnaqg', alt: 'Hands serving plates at a counter', usedIn: 'My vendors, empty state', screen: 'vendors', size: { w: 326, h: 183 }, ratio: '16/9' },
   emptyGuests: { id: 'DTS_BEHIND_THE_SCENES_Shauna_Summers_Photos_ID8234_esice8', alt: 'Two friends laughing over a phone', usedIn: 'Guests, empty state', screen: 'guests', size: { w: 326, h: 183 }, ratio: '16/9', focal: '50% 30%' },
@@ -88,18 +117,19 @@ export const IMAGES = {
   /* ── Preview artifacts ── */
   lockScreenWallpaper: { id: 'hf_20260905_005926_9ff8ad93-21a0-4c2f-8f41-94cd140aa0ee_ib1qrr', alt: 'Steps down to the sea between flowering walls', usedIn: '/m/preview/push wallpaper (the couple\'s own photo when they have one)', screen: 'push', size: { w: 390, h: 844 }, ratio: '4/5' },
   /* ── Demo place tiles: what Google's photo would be in the connected app (preview and demo only) ── */
-  placeCeremony: { id: '', alt: 'The ceremony venue', usedIn: 'Demo: the ceremony venue photo on Event details, and the Places search result', screen: 'event-details', size: { w: 358, h: 200 }, ratio: '16/9', todo: true, tone: 'neutral' },
-  placeReception: { id: '', alt: 'The reception venue', usedIn: 'Demo: the reception venue photo on Event details', screen: 'event-details', size: { w: 358, h: 200 }, ratio: '16/9', todo: true, tone: 'neutral' },
-  placeStay1: { id: '', alt: 'A hotel by the beach', usedIn: 'Demo: guest suite accommodation, place 1 (also the welcome drinks venue)', screen: 'suite-accommodation', size: { w: 358, h: 200 }, ratio: '16/9', todo: true, tone: 'neutral' },
-  placeStay2: { id: '', alt: 'A resort with a pool', usedIn: 'Demo: guest suite accommodation, place 2', screen: 'suite-accommodation', size: { w: 358, h: 200 }, ratio: '16/9', todo: true, tone: 'neutral' },
-  placeAirport: { id: '', alt: 'A small regional airport', usedIn: 'Demo: guest suite transport, the airport', screen: 'suite-transport', size: { w: 358, h: 200 }, ratio: '16/9', todo: true, tone: 'neutral' },
-  placePick1: { id: '', alt: 'A cafe breakfast', usedIn: 'Demo: experience guide, coffee pick', screen: 'experience', size: { w: 358, h: 200 }, ratio: '16/9', todo: true, tone: 'neutral' },
-  placePick2: { id: '', alt: 'A lighthouse walk', usedIn: 'Demo: experience guide, outdoors pick', screen: 'experience', size: { w: 358, h: 200 }, ratio: '16/9', todo: true, tone: 'neutral' },
-  placeMarket1: { id: '', alt: 'A photographer at work', usedIn: 'Demo: marketplace result 1', screen: 'marketplace', size: { w: 72, h: 72 }, ratio: '1/1', todo: true, tone: 'neutral' },
-  placeMarket2: { id: '', alt: 'A florist arranging stems', usedIn: 'Demo: marketplace result 2', screen: 'marketplace', size: { w: 72, h: 72 }, ratio: '1/1', todo: true, tone: 'neutral' },
-  placeMarket3: { id: '', alt: 'A makeup artist at work', usedIn: 'Demo: marketplace result 3', screen: 'marketplace', size: { w: 72, h: 72 }, ratio: '1/1', todo: true, tone: 'neutral' },
+  placeCeremony: { id: 'tulum-hero_pfdffd', alt: 'A wedding party on the sand', usedIn: 'Demo: the ceremony venue photo on Event details, and the Places search result', screen: 'event-details', size: { w: 358, h: 200 }, ratio: '16/9' },
+  placeReception: { id: 'C17E98A9-5E5C-410A-B3F5-46098E2DFD6C_buezni', alt: 'A shared table from above', usedIn: 'Demo: the reception venue photo on Event details', screen: 'event-details', size: { w: 358, h: 200 }, ratio: '16/9' },
+  placeStay1: { id: 'hf_20260904_090923_955b7356-c7d6-4f54-a3fd-5aae76c514ed_jq9izj', alt: 'A whitewashed hotel with blue railings', usedIn: 'Demo: guest suite accommodation, place 1 (also the welcome drinks venue)', screen: 'suite-accommodation', size: { w: 358, h: 200 }, ratio: '16/9', focal: '50% 45%' },
+  placeStay2: { id: 'DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14166_tqzysj', alt: 'A bright hotel suite', usedIn: 'Demo: guest suite accommodation, place 2', screen: 'suite-accommodation', size: { w: 358, h: 200 }, ratio: '16/9' },
+  placeAirport: { id: '', alt: 'A small regional airport', usedIn: 'Demo: guest suite transport, the airport (the library has no airport exterior)', screen: 'suite-transport', size: { w: 358, h: 200 }, ratio: '16/9', todo: true, tone: 'neutral' },
+  placePick1: { id: 'hf_20260917_170201_93bb15ab-fa11-4849-b922-4eca471c3d50_cwapbb', alt: 'A table at a seaside restaurant', usedIn: 'Demo: experience guide, coffee pick', screen: 'experience', size: { w: 358, h: 200 }, ratio: '16/9', focal: '50% 40%' },
+  placePick2: { id: 'pin_edinburgh_couple', alt: 'A windy walk on the headland', usedIn: 'Demo: experience guide, outdoors pick', screen: 'experience', size: { w: 358, h: 200 }, ratio: '16/9', focal: '50% 40%' },
+  placeMarket1: { id: 'hf_20260904_090213_dcaa917a-e117-4610-8618-a399139999a4_jv74kl', alt: 'A black and white portrait in a doorway', usedIn: 'Demo: marketplace result 1, the photographer', screen: 'marketplace', size: { w: 72, h: 72 }, ratio: '1/1', focal: '50% 35%' },
+  placeMarket2: { id: 'DTS_New_Friends_and_Old_Cameras_Maresa_Smith_Photos_ID521_tkvtqe', alt: 'An armful of purple flowers', usedIn: 'Demo: marketplace result 2, the florist', screen: 'marketplace', size: { w: 72, h: 72 }, ratio: '1/1' },
+  placeMarket3: { id: 'DTS_FIRST_ROUND_JELLY_LUISE_Photos_ID10648_vcwiko', alt: 'A close portrait with a glass', usedIn: 'Demo: marketplace result 3, the beauty salon', screen: 'marketplace', size: { w: 72, h: 72 }, ratio: '1/1', focal: '50% 30%' },
   /* ── Fixture stand-ins for the couple\'s own uploads (preview and demo only) ── */
-  fixtureCover: { id: 'aspen-hero_zeblit', alt: 'A couple running through snow between pines', usedIn: 'Fixture cover photo: Home hero, Site preview, Account', screen: 'home', size: { w: 390, h: 488 }, ratio: '4/5', focal: '50% 45%' },
+  fixtureCover: { id: 'aspen-hero_zeblit', alt: 'A couple running through snow between pines', usedIn: 'Fixture cover photo, the couple\'s identity: Home hero 1, the Account card, the lock screen', screen: 'home', size: { w: 390, h: 488 }, ratio: '4/5', focal: '50% 45%' },
+  fixtureSite: { id: 'hf_20260905_024502_4d83f52a-6e0b-4646-8139-ecb322b66c97_wvmeaa', alt: 'A snowball fight under the pines', usedIn: 'Fixture site hero block: the Site tab preview', screen: 'site', size: { w: 342, h: 428 }, ratio: '4/5', focal: '50% 40%' },
   fixtureStory1: { id: 'florence-hero_up7h6h', alt: 'A couple wheeling a bicycle down a stone lane', usedIn: 'Fixture Our Story photo 1: Home hero', screen: 'home', size: { w: 390, h: 488 }, ratio: '4/5', focal: '50% 45%' },
   fixtureStory2: { id: 'hf_20260917_170201_de2267ae-fe05-4cfc-8a7c-5733336600d0_ybyaaj', alt: 'A couple dressed up on a bridge at night', usedIn: 'Fixture Our Story photo 2: Home hero', screen: 'home', size: { w: 390, h: 488 }, ratio: '4/5', focal: '50% 35%' },
   fixtureStory3: { id: 'hf_20260905_002721_b09968b5-48aa-43ca-ad4f-76ac3cee3ccf_ly1f2r', alt: 'A couple against a city skyline', usedIn: 'Fixture Our Story photo 3: Home hero', screen: 'home', size: { w: 390, h: 488 }, ratio: '4/5', focal: '50% 35%' },
@@ -131,15 +161,14 @@ export function todoSlots() {
   return allSlots().filter((s) => s.todo);
 }
 
-/** Slots on the same screen that share a photo: what the gallery flags. Empty is the rule. */
-export function repeatedSlots(): Array<{ id: string; screen: string; keys: ImageKey[] }> {
+/** Slots anywhere in the app that share a photo: the gallery throws on any. Empty is the rule. */
+export function duplicateIds(): Array<{ id: string; keys: ImageKey[] }> {
   const seen = new Map<string, ImageKey[]>();
   for (const s of allSlots()) {
     if (!s.id) continue;
-    const k = `${s.screen}::${s.id}`;
-    seen.set(k, [...(seen.get(k) || []), s.key]);
+    seen.set(s.id, [...(seen.get(s.id) || []), s.key]);
   }
-  return [...seen.entries()].filter(([, keys]) => keys.length > 1).map(([k, keys]) => ({ screen: k.split('::')[0], id: k.split('::')[1], keys }));
+  return [...seen.entries()].filter(([, keys]) => keys.length > 1).map(([id, keys]) => ({ id, keys }));
 }
 
 /** Every photo used, for the docs and the once-only check. */

@@ -4,6 +4,10 @@ import Screen from '../../shell/Screen';
 import { HeroCard, PeekCarousel, StatCard, PanelCard, ImageCard, Row, RowGroup, PillButton, Skeleton, ErrorState, ProgressBar } from '../../ui';
 import { money, dateLong, dueLabel, dateShort } from '../../lib/format';
 import ActivityRow from '../../notifications/ActivityRow';
+import { imageUrl } from '../../images';
+
+/** Keep-planning cards draw a fixed photo by position (images.ts), never the feature's Plan tile photo. */
+const KEEP_PLANNING = ['keepPlanning1', 'keepPlanning2', 'keepPlanning3', 'keepPlanning4', 'keepPlanning5', 'keepPlanning6'];
 
 /**
  * Home. Hero carousel, stat pair, next up, keep planning, from Ava, latest.
@@ -16,7 +20,7 @@ export default function HomeScreen({
   onOpenGuests, onOpenBudget, onOpenTasks, onCompleteTask, onOpenFeature, onOpenAva, onShare, onSearch, onOpenLatest, onOpenNotifications,
   loading = false, error = null, onRetry, onRefresh,
 }) {
-  const img = (i) => images[i % Math.max(1, images.length)] || images[0] || '';
+  const img = (i) => images[i] || '';
   const countdown = daysToGo == null ? null : daysToGo > 1 ? `${daysToGo}` : daysToGo === 1 ? 'Tomorrow' : daysToGo === 0 ? 'Today' : null;
   const heroes = [];
   if (!loading) {
@@ -77,7 +81,7 @@ export default function HomeScreen({
             <div className="oi-m-section-head"><h2 className="oi-m-section">Keep planning</h2></div>
             <div style={{ margin: '0 calc(-1 * var(--m-gutter))' }}>
               <PeekCarousel size="narrow" dots={false}>
-                {keepPlanning.map((f, i) => <ImageCard key={f.key} image={f.image || img(4 + i)} alt={f.label} title={f.label} onClick={() => onOpenFeature?.(f.key)} width={240} />)}
+                {keepPlanning.map((f, i) => <ImageCard key={f.key} image={imageUrl(KEEP_PLANNING[i] || KEEP_PLANNING[0])} alt={f.label} title={f.label} onClick={() => onOpenFeature?.(f.key)} width={240} />)}
               </PeekCarousel>
             </div>
           </section>
