@@ -7,7 +7,7 @@ import { usePlanData, useEntity, useWeddingDetails } from '../../data/plan';
 import { useTasks, useBudget, useGuests, useTaskWrites, useBudgetWrites } from '../../data/wedding';
 import { useApi, useSymbol } from '../../data/api';
 import useLoad from '../../data/useLoad';
-import { hapticLight, shareLink, openExternal } from '../../native';
+import { hapticLight, shareLink, openExternal, prefGet, prefSet } from '../../native';
 import { openDesktop, siteUrlFor, siteOrigin } from '../../lib/links';
 import { resolveRecipients } from '@/lib/questionnaireRecipients';
 import { featureByKey } from '../../features/registry';
@@ -20,7 +20,9 @@ import ScheduleScreen from './ScheduleScreen';
 import SendInvitesScreen from '../guests/SendInvitesScreen';
 import ChecklistScreen from './ChecklistScreen';
 import BudgetScreen, { BudgetCategoryScreen } from './BudgetScreen';
-import MessagesScreen, { ThreadScreen } from './MessagesScreen';
+import MessagesScreen, { ThreadScreen, WhatsAppComposeSheet } from './MessagesScreen';
+import { countryFromWedding } from '@/lib/countryFromVenue';
+import { DEFAULT_COUNTRY } from '@/lib/phoneE164';
 import SeatingScreen from './SeatingScreen';
 import PollsScreen from './PollsScreen';
 import MusicScreen from './MusicScreen';
@@ -222,29 +224,58 @@ function BudgetCategoryContainer({ category, back }) {
 
 /* ── Messages ────────────────────────────────────────────────────────── */
 
+const WHATSAPP_PHONE_KEY = 'whatsapp_phone';
+
+function useWhatsappPhone() {
+  const [phone, setPhone] = useState('');
+  React.useEffect(() => { prefGet(WHATSAPP_PHONE_KEY).then((v) => setPhone(v || '')); }, []);
+  const save = async (v) => { setPhone(v); await prefSet(WHATSAPP_PHONE_KEY, v || ''); };
+  return [phone, save];
+}
+
 function MessagesContainer({ back }) {
   const navigate = useNavigate();
   const { base } = useContext(ShellContext);
   const m = useEntity('GuestMessage', '-created_date');
+  const wd = useWeddingDetails();
+  const [phone, savePhone] = useWhatsappPhone();
   const markRead = async (msg) => {
     try {
       await m.optimistic((list) => (list || []).map((x) => (x.id === msg.id ? { ...x, read: !msg.read } : x)), () => m.updateQuiet(msg.id, { ...msg, read: !msg.read }), () => toast.error('Could not save that. Put back the way it was.'));
     } catch { /* rolled back */ }
   };
-  return <MessagesScreen messages={m.data || []} onOpen={(msg) => navigate(`${base}/plan/messages/${msg.id}`)} onMarkRead={markRead} loading={m.loading} error={m.error} onRetry={m.reload} back={back} onRefresh={m.reload} />;
+  return <MessagesScreen messages={m.data || []} onOpen={(msg) => navigate(`${base}/plan/messages/${msg.id}`)} onMarkRead={markRead} whatsappPhone={phone} onWhatsappPhone={savePhone} country={countryFromWedding(wd.details) || DEFAULT_COUNTRY} loading={m.loading} error={m.error} onRetry={m.reload} back={back} onRefresh={m.reload} />;
 }
 
 function ThreadContainer({ id, back }) {
   const api = useApi();
   const m = useEntity('GuestMessage', '-created_date');
   const wd = useWeddingDetails();
+  const guests = useGuests();
   const [sending, setSending] = useState(false);
+  const [compose, setCompose] = useState(false);
+  const [vars, setVars] = useState({ state: 'loading', variables: {} });
   const message = (m.data || []).find((x) => x.id === id);
+  const guest = useMemo(() => (message ? (guests.data || []).find((g) => g.email && message.guest_email && g.email.toLowerCase() === message.guest_email.toLowerCase()) || null : null), [guests.data, message]);
   // Opening a thread marks it read, as Messages.jsx does when a message is expanded.
   const marked = React.useRef(false);
   React.useEffect(() => {
     if (message && !message.read && !marked.current) { marked.current = true; m.update(message.id, { ...message, read: true }).catch(() => {}); }
   }, [message, m]);
+  // WhatsAppCompose's variables: the invitation's names and date, this guest's RSVP link, the venues from the wedding details.
+  React.useEffect(() => {
+    if (!compose) return;
+    let alive = true;
+    (async () => {
+      let rsvpLink = '';
+      try { if (guest?.id) { const map = await api.guestLinks([guest.id], { throwOnFailure: true }); rsvpLink = map[guest.id]?.rsvpUrl || ''; } } catch { /* unavailable */ }
+      const inv = await api.wedding.invitation().catch(() => null);
+      const d = wd.details || {};
+      if (!alive) return;
+      setVars({ state: rsvpLink ? 'ready' : 'unavailable', variables: { couple_names: inv?.couple_names || [d.couple1Name, d.couple2Name].filter(Boolean).join(' & '), wedding_date: inv?.wedding_date || d.weddingDate || '', rsvp_link: rsvpLink, venue: d.mainCeremony?.venueName || 'venue TBD', ceremony_time: d.mainCeremony?.startTime || 'TBD', ceremony_venue: d.mainCeremony?.venueName || 'TBD', reception_time: d.reception?.startTime || 'TBD', reception_venue: d.reception?.venueName || 'TBD' } });
+    })();
+    return () => { alive = false; };
+  }, [compose, guest, api, wd.details]);
   const reply = async (replyText) => {
     setSending(true);
     const tid = toast.loading('Sending reply');
@@ -257,7 +288,13 @@ function ThreadContainer({ id, back }) {
       toast.error(e?.message || 'Could not send the reply.', { id: tid });
     } finally { setSending(false); }
   };
-  return <ThreadScreen message={message} onReply={reply} sending={sending} back={back} />;
+  const toggleRead = async () => { try { await m.update(message.id, { ...message, read: !message.read }); toast.success(message.read ? 'Marked unread' : 'Marked read'); } catch { toast.error('Could not save that.'); } };
+  return (
+    <>
+      <ThreadScreen message={message} onReply={reply} sending={sending} back={back} onToggleRead={message ? toggleRead : undefined} onWhatsApp={message ? () => setCompose(true) : undefined} />
+      <WhatsAppComposeSheet open={compose} onClose={() => setCompose(false)} guest={{ id: guest?.id, name: message?.guest_name }} phone={guest?.phone || ''} variables={vars.variables} linkState={vars.state} country={countryFromWedding(wd.details) || DEFAULT_COUNTRY} />
+    </>
+  );
 }
 
 /* ── Seating ─────────────────────────────────────────────────────────── */
