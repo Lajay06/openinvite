@@ -59,7 +59,11 @@ function nameVariants(nameMotion, ease) {
 
 const ACTIVE_PHASES = new Set(['scrim', 'kicker', 'names', 'holding']);
 
-export default function EntranceMoment({ weddingSlug, weddingDetails, theme, typography, universeConfig, forcePlay = false, onDone }) {
+export default function EntranceMoment({ weddingSlug, weddingDetails, theme, typography, universeConfig, forcePlay = false, onDone, guestFirstName = null }) {
+  // ACCEPTED, NOT YET USED. The recognised guest's first name (or null) arrives
+  // here from MultiPageWeddingWebsite so the greeting package can render it; in
+  // this package the overlay is byte-identical to before.
+  void guestFirstName;
   const prefersReducedOS = useReducedMotion();
   const universeKey = normalizeUniverseKey(weddingDetails?.activeUniverse) || 'london';
   const config = getEntranceConfig(universeKey);
