@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { Search, X, Star, MapPin, Loader2, Globe, Plus, Heart, Clock, Navigation, ExternalLink } from 'lucide-react';
+import { Search, X, Star, MapPin, Loader2, Plus, Heart, Clock, Navigation, ExternalLink } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -246,7 +246,7 @@ export default function ExperienceGuideTab({ details }) {
           <TabsList className="w-full justify-start">
             <TabsTrigger value="places">Places</TabsTrigger>
             <TabsTrigger value="itinerary">Itinerary</TabsTrigger>
-            <TabsTrigger value="publish">Publish</TabsTrigger>
+            <TabsTrigger value="setup">Setup</TabsTrigger>
           </TabsList>
 
           <TabsContent value="places" className="mt-8">
@@ -270,8 +270,8 @@ export default function ExperienceGuideTab({ details }) {
             />
           </TabsContent>
 
-          <TabsContent value="publish" className="mt-8">
-            <PublishTab
+          <TabsContent value="setup" className="mt-8">
+            <SetupTab
               details={details}
               guide={guide}
               destination={destination}
@@ -1177,10 +1177,22 @@ function AddActivityInline({ block, allSavedPlaces, onAdd }) {
   );
 }
 
-// ── Publish tab (includes Setup fields) ───────────────────────────────────────
+// ── Setup tab ────────────────────────────────────────────────────────────────
+//
+// WAS THE PUBLISH TAB. Saving the itinerary is the end of it (owner ruling):
+// the guide's visibility is the design studio's page toggle and nothing else,
+// so the publish button and the published switch are gone from here. What is
+// left is what this tab always also held — the hero photo, the editorial
+// intro and the vibes — which is setup, not publication.
+//
+// experienceGuide.published IS STILL READ, and deliberately. It is the door
+// that makes an already-published guide visible for couples who have it set,
+// and nothing here writes it any more, so no new record can acquire it. The
+// one thing that clears it is the studio toggle being switched off, in
+// WBLeftPanel.jsx — otherwise a legacy flag would outvote the new control and
+// a couple could never take their guide down.───
 
-function PublishTab({ details, guide, destination, onSaveField, onGenerateIntro, onToggleVibe }) {
-  const isPublished = guide.published;
+function SetupTab({ details, guide, destination, onSaveField, onGenerateIntro, onToggleVibe }) {
 
   return (
     <div style={{ maxWidth: 720 }}>
@@ -1238,35 +1250,6 @@ function PublishTab({ details, guide, destination, onSaveField, onGenerateIntro,
         </div>
       </div>
 
-      {/* Publish toggle */}
-      <div style={{ borderTop: '1px solid rgba(10,10,10,0.12)', paddingTop: 28 }}>
-        {!isPublished ? (
-          <div style={{ textAlign: 'center', padding: '32px 24px' }}>
-            <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(10,10,10,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-              <Globe size={22} color="rgba(10,10,10,0.3)" strokeWidth={1.5} />
-            </div>
-            <h3 style={{ fontSize: 17, fontWeight: 600, color: '#0A0A0A', margin: '0 0 8px', fontFamily: PJS }}>
-              Your guide is hidden
-            </h3>
-            <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 24px', fontFamily: PJS, lineHeight: 1.6, maxWidth: 380, marginLeft: 'auto', marginRight: 'auto' }}>
-              When published, a "Guide" link appears in your guest suite navigation.
-            </p>
-            <button onClick={() => onSaveField('published', true)} className="btn-primary" style={{ fontSize: 14, padding: '10px 28px' }}>
-              Publish guide
-            </button>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0' }}>
-            <div>
-              <p style={{ fontSize: 14, fontWeight: 600, color: '#0A0A0A', margin: '0 0 2px', fontFamily: PJS }}>Guide is live</p>
-              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.45)', margin: 0, fontFamily: PJS }}>
-                Guests can access this from your guest suite navigation.
-              </p>
-            </div>
-            <Switch checked={true} onCheckedChange={v => onSaveField('published', v)} />
-          </div>
-        )}
-      </div>
     </div>
   );
 }
