@@ -77,7 +77,7 @@ export const SAMPLE_MYKONOS = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'Nothing until dinner, then everything. Send us what belongs after ten.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song. Loud is fine.' },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'Nothing before ten.' },
   registryContent: { registryMessage: 'You are crossing water to be here. Nothing needs to come with you. Nothing on the list needs a suitcase either.', noGiftsPlease: false },
 
   qna: [

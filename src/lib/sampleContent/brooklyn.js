@@ -85,7 +85,7 @@ export const SAMPLE_BROOKLYN = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'The playlist is long and it is not finished. Add something to it.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song. Loud is fine.' },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'Loud is fine.' },
   registryContent: { registryMessage: 'You turning up is the gift. A list exists. It is four items long.', noGiftsPlease: false },
 
   qna: [

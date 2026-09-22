@@ -78,7 +78,7 @@ export const SAMPLE_ASPEN = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'A trio through dinner and something considerably louder from ten. Send us the second half.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song, and it has to work at altitude.' },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'Thin air, so nothing subtle.' },
   registryContent: { registryMessage: 'Getting here in February is the gift and we know what it costs. The excess is listed anyway.', noGiftsPlease: false },
 
   qna: [

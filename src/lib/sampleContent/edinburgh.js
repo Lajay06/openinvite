@@ -81,7 +81,7 @@ export const SAMPLE_EDINBURGH = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'A fiddle and a piano while we eat, and dancing from nine once the tables are cleared. Send us what you want played at ten.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song, and it should be one you will actually get up for.' },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'It should be one you will actually dance to.' },
   registryContent: { registryMessage: 'The house is small and full, and between us we have kept the same furniture for a decade. What we would like is a week away; there is a fund for it, and little else.', noGiftsPlease: false },
 
   qna: [

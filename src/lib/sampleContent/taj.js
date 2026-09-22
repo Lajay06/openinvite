@@ -79,7 +79,7 @@ export const SAMPLE_TAJ = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'There are musicians in the pavilion for the ceremony and something with a great deal more volume in the courtyard. Tell us what belongs in the courtyard.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song, and it will be played.' },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'It will be played. That is a promise.' },
   registryContent: { registryMessage: 'Many of you are flying a long way. That is more than enough, but there are ideas for anyone who cannot arrive empty-handed.', noGiftsPlease: false },
 
   qna: [

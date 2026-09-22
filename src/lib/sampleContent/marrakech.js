@@ -89,7 +89,7 @@ export const SAMPLE_MARRAKECH = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'There is drumming on the roof once it is dark, and it goes on a long time. Tell us what else belongs up there.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song, and we will make room for it.' },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'Roof music, after dark.' },
   registryContent: { registryMessage: 'Crossing a continent counts for more than anything wrapped. A handful of things are written down for the determined.', noGiftsPlease: false },
 
   qna: [
