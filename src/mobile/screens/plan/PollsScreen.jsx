@@ -15,7 +15,7 @@ import { exportText } from '../../native';
 const SEGMENTS = [{ key: 'polls', label: 'Polls' }, { key: 'games', label: 'Games' }];
 
 /**
- * Polls.jsx's templates. The `emoji` is data for the couple's site
+ * Polls.jsx's templates. The `emoji` is data for the couple's guest suite
  * (WeddingPollsPage renders it); the app never draws it, so it is written
  * as code points rather than a glyph in this file.
  */
@@ -57,7 +57,7 @@ export default function PollsScreen({ polls = [], votes = [], comments = [], gam
   const countFor = (poll, o) => (countsByPoll.get(poll.id) || {})[o.id] || 0;
   const live = polls.filter((p) => p.isActive !== false);
   const ended = polls.filter((p) => p.isActive === false);
-  const remove = async (p) => { if (!(await confirm({ title: 'Delete this poll', body: `${p.title} and its votes come off your site.`, action: 'Delete' }))) return; await onDelete(p); setSheet(null); };
+  const remove = async (p) => { if (!(await confirm({ title: 'Delete this poll', body: `${p.title} and its votes come off your guest suite.`, action: 'Delete' }))) return; await onDelete(p); setSheet(null); };
   const actions = segment === 'polls' ? [{ icon: Plus, label: 'New poll', onClick: () => setSheet({ pick: true }) }] : [{ icon: Plus, label: 'New game', onClick: () => setGameSheet({ create: true }) }];
   const subtitle = loading ? '' : segment === 'polls' ? `${live.length} live` : `${games.filter((g) => g.is_active !== false).length} open`;
 
@@ -70,7 +70,7 @@ export default function PollsScreen({ polls = [], votes = [], comments = [], gam
             <EmptyState icon={BarChart2} text="No polls yet. Ask your guests something and watch the answers come in." actionLabel="New poll" onAction={() => setSheet({ pick: true })} />
           ) : (
             <>
-              {siteUrl && <p className="oi-m-meta">Guests vote on your site under Polls. Results show in the guest suite.</p>}
+              {siteUrl && <p className="oi-m-meta">Guests vote on your guest suite under Polls. Results show in the guest suite.</p>}
               {[...live, ...ended].map((p) => <PollCard key={p.id} poll={p} countFor={countFor} comments={comments.filter((c) => c.poll_id === p.id)} onEdit={() => setSheet({ poll: p })} onEnd={() => onEnd(p)} onReopen={() => onReopen(p)} onDelete={() => remove(p)} onShare={() => onShare(p)} />)}
             </>
           )

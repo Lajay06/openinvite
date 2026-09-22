@@ -29,7 +29,7 @@
  * when it is not. The one deliberate repeat is not a slot at all: the
  * couple's own cover photo is their identity and shows on the Home hero,
  * the Account card and the lock screen, the way a profile photo would.
- * In the preview that is `fixtureCover`; the Site tab previews the site's
+ * In the preview that is `fixtureCover`; the Guest suite tab previews the guest suite's
  * own hero block (`fixtureSite`) and the Home heroes exclude site blocks,
  * so no library photo is drawn twice.
  *
@@ -38,7 +38,7 @@
  */
 
 export interface ImageSlot {
-  /** Cloudinary public id (version prefix included where the site uses one), or '' when todo. */
+  /** Cloudinary public id (version prefix included where the desktop uses one), or '' when todo. */
   id: string;
   alt: string;
   /** Where the slot is drawn. */
@@ -61,7 +61,7 @@ export const IMAGES = {
   heroDays: { id: 'hf_20260904_055316_4efc8628-77ed-4737-83bd-d0715cf99d43_eoixpp', alt: 'A couple in an arched doorway, forehead to forehead', usedIn: 'Home hero, days to go', screen: 'home', size: { w: 358, h: 448 }, ratio: '4/5', focal: '50% 30%' },
   heroReplies: { id: 'DTS_BANDITS_PALI_MENDEZ_Photos_ID14215_bykr7b', alt: 'A couple walking hand in hand at sunset', usedIn: 'Home hero, replies', screen: 'home', size: { w: 358, h: 448 }, ratio: '4/5', focal: '50% 40%' },
   heroAva: { id: 'hf_20260904_112950_ee43be91-2036-4b97-8ff9-f490913bfded_q6rrgk', alt: 'A couple laughing at a bar table', usedIn: 'Home hero, from Ava', screen: 'home', size: { w: 358, h: 448 }, ratio: '4/5', focal: '50% 35%' },
-  heroShare: { id: 'pin_marrakech_couple', alt: 'Friends on a rooftop at dusk with a tray of drinks', usedIn: 'Home hero, share your site', screen: 'home', size: { w: 358, h: 448 }, ratio: '4/5', focal: '50% 40%' },
+  heroShare: { id: 'pin_marrakech_couple', alt: 'Friends on a rooftop at dusk with a tray of drinks', usedIn: 'Home hero, share your guest suite', screen: 'home', size: { w: 358, h: 448 }, ratio: '4/5', focal: '50% 40%' },
   /* ── Home keep-planning cards: six fixed photos by position, whatever feature lands there, so no Plan tile photo is drawn twice ── */
   keepPlanning1: { id: 'DTS_SNOWBOUND_Daniel_Farò_Photos_ID12430_hmrv0c', alt: 'A couple under a yellow blanket with mugs', usedIn: 'Home, keep planning card 1', screen: 'home', size: { w: 240, h: 180 }, ratio: '4/3' },
   keepPlanning2: { id: 'DTS_Like_a_Movie_Foster___Asher_Photos_ID1042_qaddk3', alt: 'Running along a white wall', usedIn: 'Home, keep planning card 2', screen: 'home', size: { w: 240, h: 180 }, ratio: '4/3' },
@@ -133,7 +133,7 @@ export const IMAGES = {
   placeMarket3: { id: 'DTS_FIRST_ROUND_JELLY_LUISE_Photos_ID10648_vcwiko', alt: 'A close portrait with a glass', usedIn: 'Demo: marketplace result 3, the beauty salon', screen: 'marketplace', size: { w: 72, h: 72 }, ratio: '1/1', focal: '50% 30%' },
   /* ── Fixture stand-ins for the couple\'s own uploads (preview and demo only) ── */
   fixtureCover: { id: 'aspen-hero_zeblit', alt: 'A couple running through snow between pines', usedIn: 'Fixture cover photo, the couple\'s identity: Home hero 1, the Account card, the lock screen', screen: 'home', size: { w: 390, h: 488 }, ratio: '4/5', focal: '50% 45%' },
-  fixtureSite: { id: 'hf_20260905_024502_4d83f52a-6e0b-4646-8139-ecb322b66c97_wvmeaa', alt: 'A snowball fight under the pines', usedIn: 'Fixture site hero block: the Site tab preview', screen: 'site', size: { w: 342, h: 428 }, ratio: '4/5', focal: '50% 40%' },
+  fixtureSite: { id: 'hf_20260905_024502_4d83f52a-6e0b-4646-8139-ecb322b66c97_wvmeaa', alt: 'A snowball fight under the pines', usedIn: 'Fixture guest suite hero block: the Guest suite tab preview', screen: 'site', size: { w: 342, h: 428 }, ratio: '4/5', focal: '50% 40%' },
   fixtureStory1: { id: 'florence-hero_up7h6h', alt: 'A couple wheeling a bicycle down a stone lane', usedIn: 'Fixture Our Story photo 1: Home hero', screen: 'home', size: { w: 390, h: 488 }, ratio: '4/5', focal: '50% 45%' },
   fixtureStory2: { id: 'hf_20260917_170201_de2267ae-fe05-4cfc-8a7c-5733336600d0_ybyaaj', alt: 'A couple dressed up on a bridge at night', usedIn: 'Fixture Our Story photo 2: Home hero', screen: 'home', size: { w: 390, h: 488 }, ratio: '4/5', focal: '50% 35%' },
   fixtureStory3: { id: 'hf_20260905_002721_b09968b5-48aa-43ca-ad4f-76ac3cee3ccf_ly1f2r', alt: 'A couple against a city skyline', usedIn: 'Fixture Our Story photo 3: Home hero', screen: 'home', size: { w: 390, h: 488 }, ratio: '4/5', focal: '50% 35%' },

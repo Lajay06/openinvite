@@ -9,14 +9,14 @@ export function siteOrigin() {
   return window.location.origin;
 }
 
-/** The couple's published site address, or '' when they have no slug yet. */
+/** The couple's published guest suite address, or '' when they have no slug yet. */
 export function siteUrlFor(details) {
   return details?.slug ? `${siteOrigin()}/w/${details.slug}` : '';
 }
 
 /**
  * Hand off to a desktop page. On the web that is a normal in-app navigation
- * (the dashboard is right there); natively it opens the live site in the
+ * (the dashboard is right there); natively it opens the live guest suite in the
  * system browser, because the desktop dashboard is not bundled for a phone.
  */
 export function openDesktop(navigate, path) {

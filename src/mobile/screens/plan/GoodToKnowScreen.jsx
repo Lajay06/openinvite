@@ -96,7 +96,7 @@ export default function GoodToKnowScreen({ policies = {}, guestExperience = {}, 
                   </div>
                 ))}
               </RowGroup>
-              <p className="oi-m-meta" style={{ marginTop: 8 }}>The switch shows a section on your site. Tap a row to write it.</p>
+              <p className="oi-m-meta" style={{ marginTop: 8 }}>The switch shows a section on your guest suite. Tap a row to write it.</p>
             </section>
             <section>
               <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Styling quiz</h2>
@@ -120,7 +120,7 @@ export default function GoodToKnowScreen({ policies = {}, guestExperience = {}, 
                 </div>
                 <div className="oi-m-row" style={{ minHeight: 68 }}>
                   <span className="oi-m-row__tile oi-m-row__tile--neutral"><Users size={19} strokeWidth={1.75} /></span>
-                  <div className="oi-m-row__body"><div className="oi-m-row__label">The circle</div><div className="oi-m-row__sub" style={{ whiteSpace: 'normal' }}>Show guests the wedding party on your site</div></div>
+                  <div className="oi-m-row__body"><div className="oi-m-row__label">The circle</div><div className="oi-m-row__sub" style={{ whiteSpace: 'normal' }}>Show guests the wedding party on your guest suite</div></div>
                   <Switch on={!!ge.showCircle} onChange={(on) => setGE('showCircle', on)} label="Show the circle" />
                 </div>
               </RowGroup>

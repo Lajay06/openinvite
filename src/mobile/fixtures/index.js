@@ -273,7 +273,7 @@ export const FIXTURE_DETAILS_EXTRA = {
     socialMedia: { noCeremony: true, tagUs: true, hashtag: '#PriyaAndTomDoByron', message: '', display: true },
     children: { option: 'all', message: 'Little ones are welcome all day.', display: true },
     dietary: { description: 'Vegetarian, vegan and gluten free are all covered.', contactName: 'Priya', contactEmail: 'priya@example.com', display: true },
-    gifts: { option: 'welcome', registryUrl: '', message: 'Your company is the gift. If you would like to give something, the registry is on the site.', display: true },
+    gifts: { option: 'welcome', registryUrl: '', message: 'Your company is the gift. If you would like to give something, the registry is on the guest suite.', display: true },
     dressCode: { guidance: 'Cocktail, barefoot welcome.', weatherNote: 'March is warm; bring a layer for the evening.', display: true },
     lateArrival: { policy: '', display: false },
     other: { text: '', display: false },

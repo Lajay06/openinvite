@@ -129,7 +129,7 @@ function ChangeAddressSheet({ open, currentSlug, onClose, onChange }) {
       </>
     )}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <p className="oi-m-meta">Your site is at openinvite.com.au/w/{currentSlug}. Links you have already shared keep working.</p>
+        <p className="oi-m-meta">Your guest suite is at openinvite.com.au/w/{currentSlug}. Links you have already shared keep working.</p>
         <TextField label="New address" value={wanted} onChange={(e) => setWanted(e.target.value)} placeholder="jay-ella" autoCapitalize="off" autoCorrect="off" />
         <TextField label="Type it again" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="jay-ella" autoCapitalize="off" autoCorrect="off" error={confirm && !matches ? 'The two do not match yet.' : same ? 'That is already your address.' : ''} />
         {cleaned ? <p className="oi-m-meta">It will read openinvite.com.au/w/{cleaned}</p> : wanted.trim() ? <p className="oi-m-field__error" role="alert">Letters, numbers and hyphens.</p> : null}
@@ -201,7 +201,7 @@ function EventsSegment({ d, onSave, onInvitePrompt }) {
     }
   };
   const removeCustom = async (ev) => {
-    if (!(await confirm({ title: 'Remove this event', body: `${ev.name || 'This event'} comes off your site and every guest's invitation list.`, action: 'Remove' }))) return;
+    if (!(await confirm({ title: 'Remove this event', body: `${ev.name || 'This event'} comes off your guest suite and every guest's invitation list.`, action: 'Remove' }))) return;
     const key = ev._kind === 'post' ? 'postWeddingEvents' : 'preWeddingEvents';
     await onSave(key, (d[key] || []).filter((e) => e.id !== ev.id));
     setSheet(null);

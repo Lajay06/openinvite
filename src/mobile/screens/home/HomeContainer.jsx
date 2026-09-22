@@ -35,7 +35,7 @@ export default function HomeContainer() {
   const firstName = (details?.couple1Name || user?.full_name || '').split(' ')[0];
   const coupleName = details?.couple1Name && details?.couple2Name ? `${details.couple1Name} & ${details.couple2Name}` : details?.couple1Name || details?.couple2Name || '';
   const daysToGo = details?.weddingDate ? daysUntilWedding(details.weddingDate) : null;
-  // The couple's own photos take priority here and on the Site preview; with
+  // The couple's own photos take priority here and on the Guest suite preview; with
   // none, the hero draws from the app/ folder (goal 4, phase 1), never from
   // the universe's sample content.
   // Hero i draws the couple's own photo i (cover, then Our Story), and the
@@ -105,7 +105,7 @@ export default function HomeContainer() {
     } catch { /* rolled back */ }
   };
   const share = async () => {
-    const r = await shareLink({ title: coupleName ? `${coupleName}'s wedding` : 'Our wedding', text: 'Here is our wedding site.', url: siteUrl });
+    const r = await shareLink({ title: coupleName ? `${coupleName}'s wedding` : 'Our wedding', text: 'Here is our guest suite.', url: siteUrl });
     if (r === 'copied') toast.success('Link copied');
     if (r === 'failed') toast.error('Could not share the link.');
   };

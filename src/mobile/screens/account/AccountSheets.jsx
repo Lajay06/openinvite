@@ -35,7 +35,7 @@ export function AccountDetailsSheet({ open, user, currencyCode, onClose, onSave,
         <TextField label="Your name" value={f.full_name} onChange={(e) => setF((s) => ({ ...s, full_name: e.target.value }))} autoCapitalize="words" error={error} />
         <TextField label="Email" value={user?.email || ''} readOnly />
         <SelectField label="Currency" value={f.currency} onChange={(e) => setF((s) => ({ ...s, currency: e.target.value }))} options={CURRENCY_OPTIONS} />
-        <PillChoice label="Temperature" options={UNITS} value={f.tempUnit} onChange={(v) => v && setF((s) => ({ ...s, tempUnit: v }))} hint="For the weather on your site and in the app" />
+        <PillChoice label="Temperature" options={UNITS} value={f.tempUnit} onChange={(v) => v && setF((s) => ({ ...s, tempUnit: v }))} hint="For the weather on your guest suite and in the app" />
         <RowGroup><Row icon={KeyRound} tile="neutral" label="Password and account" sub="Change your password or delete your account on the website" onClick={onDesktop} /></RowGroup>
       </div>
     </BottomSheet>

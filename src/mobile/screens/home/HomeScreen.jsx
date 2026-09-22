@@ -24,7 +24,7 @@ export default function HomeScreen({
   const countdown = daysToGo == null ? null : daysToGo > 1 ? `${daysToGo}` : daysToGo === 1 ? 'Tomorrow' : daysToGo === 0 ? 'Today' : null;
   const heroes = [];
   if (!loading) {
-    heroes.push({ key: 'days', image: img(0), label: coupleName || 'Your wedding', number: countdown && daysToGo > 1 ? countdown : undefined, title: countdown && daysToGo > 1 ? 'days to go' : countdown || coupleName, sub: weddingDate ? dateLong(weddingDate) : 'Add your date in Event details', action: siteUrl ? 'View your site' : 'Event details', onAction: siteUrl ? () => onOpenFeature?.('site') : () => onOpenFeature?.('event-details') });
+    heroes.push({ key: 'days', image: img(0), label: coupleName || 'Your wedding', number: countdown && daysToGo > 1 ? countdown : undefined, title: countdown && daysToGo > 1 ? 'days to go' : countdown || coupleName, sub: weddingDate ? dateLong(weddingDate) : 'Add your date in Event details', action: siteUrl ? 'View guest suite' : 'Event details', onAction: siteUrl ? () => onOpenFeature?.('site') : () => onOpenFeature?.('event-details') });
     if (rsvp && rsvp.invited > 0) heroes.push({ key: 'rsvp', image: img(1), label: 'Replies', number: rsvp.attending, title: `attending so far`, sub: rsvpSentence(rsvp), action: 'See who is yet to reply', onAction: onOpenGuests, progress: { value: rsvp.attending + rsvp.declined, max: rsvp.invited } });
     const lead = Array.isArray(briefing) ? (briefing[0]?.lead || briefing[0]?.body) : briefing;
     if (lead) heroes.push({ key: 'ava', image: img(2), label: 'From Ava', title: lead, action: 'Ask Ava', onAction: onOpenAva });

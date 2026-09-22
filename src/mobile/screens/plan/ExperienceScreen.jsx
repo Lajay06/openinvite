@@ -195,7 +195,7 @@ export default function ExperienceScreen({ guide = {}, destination = '', onSave,
         ) : (
           <>
             <div className="oi-m-card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div className="oi-m-row" style={{ padding: 0, background: 'transparent' }}><div className="oi-m-row__body"><div className="oi-m-row__label">Published</div><div className="oi-m-row__sub">Guests see the guide on your site</div></div><Switch on={!!guide.published} onChange={(v) => save({ published: v })} label="Published" /></div>
+              <div className="oi-m-row" style={{ padding: 0, background: 'transparent' }}><div className="oi-m-row__body"><div className="oi-m-row__label">Published</div><div className="oi-m-row__sub">Guests see the guide on your guest suite</div></div><Switch on={!!guide.published} onChange={(v) => save({ published: v })} label="Published" /></div>
             </div>
             <div className="oi-m-card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <TextField label="Hero photo link" type="url" inputMode="url" autoCapitalize="off" value={hero} onChange={(e) => setHero(e.target.value)} onBlur={() => hero !== (guide.heroPhotoUrl || '') && save({ heroPhotoUrl: hero })} placeholder="https://" />

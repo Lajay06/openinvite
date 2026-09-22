@@ -205,7 +205,7 @@ const TYPE_DESCRIPTIONS = {
 export function EmailTemplatesSheet({ open, onClose, onUse }) {
   return (
     <BottomSheet open={open} onClose={onClose} title="Email templates">
-      <p className="oi-m-meta" style={{ marginBottom: 12 }}>Every email uses your site's universe styling and your real details. Choose one to see it and send it.</p>
+      <p className="oi-m-meta" style={{ marginBottom: 12 }}>Every email uses your guest suite's universe styling and your real details. Choose one to see it and send it.</p>
       <RowGroup>
         {Object.entries(TYPE_LABELS).map(([type, label]) => <Row key={type} icon={Send} tile="neutral" label={label} sub={TYPE_DESCRIPTIONS[type] || ''} wrap onClick={() => onUse(type)} />)}
       </RowGroup>

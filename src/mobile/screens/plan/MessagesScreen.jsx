@@ -36,7 +36,7 @@ export default function MessagesScreen({ messages = [], onOpen, onMarkRead, what
       <FilterPills options={FILTERS} value={filter} onChange={setFilter} />
       <div className="oi-m-stack" style={{ marginTop: 12 }}>
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : messages.length === 0 ? (
-          <EmptyState icon={MessageCircle} text="No messages yet. When a guest writes to you from your site, it lands here." />
+          <EmptyState icon={MessageCircle} text="No messages yet. When a guest writes to you from your guest suite, it lands here." />
         ) : visible.length === 0 ? (
           <EmptyState icon={MailOpen} text="Nothing here for this filter." />
         ) : (
@@ -73,7 +73,7 @@ function WhatsAppNumberSheet({ open, onClose, phone, country, onSave }) {
       </>
     )}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <p className="oi-m-meta">Shown to guests on your site so they can message you. Kept on this device, as the website keeps it in the browser.</p>
+        <p className="oi-m-meta">Shown to guests on your guest suite so they can message you. Kept on this device, as the website keeps it in the browser.</p>
         <SelectField label="Country" value={iso} onChange={(e) => setIso(e.target.value)} options={COUNTRY_OPTIONS} />
         <TextField label="Number" type="tel" inputMode="tel" value={v} onChange={(e) => setV(e.target.value)} placeholder="+61 4..." error={bad ? 'That does not look like a phone number. Include the country code.' : ''} />
         {phone && toWaMe(phone) && <p className="oi-m-meta">Guests reach you at wa.me/{toWaMe(phone)}</p>}

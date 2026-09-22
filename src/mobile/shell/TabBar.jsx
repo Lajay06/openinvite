@@ -7,7 +7,7 @@ export const TABS = [
   { key: 'home', label: 'Home', icon: Home, path: '' },
   { key: 'guests', label: 'Guests', icon: Users, path: 'guests' },
   { key: 'plan', label: 'Plan', icon: LayoutGrid, path: 'plan' },
-  { key: 'site', label: 'Site', icon: Globe, path: 'site' },
+  { key: 'site', label: 'Guest suite', icon: Globe, path: 'site' }, // Guest suite is the brand's name for the couple's guest-facing pages (goal 6)
   { key: 'account', label: 'Account', icon: UserRound, path: 'account' },
 ];
 

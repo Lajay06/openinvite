@@ -99,7 +99,7 @@ export default function PlanFeatureContainer() {
 function desktopBody(key) {
   return {
     'send-invites': 'Sending invitations picks guests, an email design and a preview side by side. That works best on a laptop.',
-    invitations: 'Designing the invitation uses the full builder. Open it on desktop and the result shows on your site.',
+    invitations: 'Designing the invitation uses the full builder. Open it on desktop and the result shows on your guest suite.',
     considerations: 'Considerations is a long read tailored to your ceremony and traditions. It reads best on a bigger screen.',
   }[key] || 'Best on desktop for now.';
 }
@@ -528,8 +528,8 @@ function PollsContainer({ back }) {
   const remove = async (p) => { await persist(polls.filter((x) => x.id !== p.id)); toast.success('Poll deleted'); };
   const share = async (p) => {
     const url = siteUrl ? `${siteUrl}/polls` : '';
-    if (!url) { toast.error('Your site has no address yet, so there is no link to share.'); return; }
-    const r = await shareLink({ title: p.title, text: 'Have your say on our wedding site.', url });
+    if (!url) { toast.error('Your guest suite has no address yet, so there is no link to share.'); return; }
+    const r = await shareLink({ title: p.title, text: 'Have your say on our guest suite.', url });
     if (r === 'copied') toast.success('Link copied'); if (r === 'failed') toast.error('Could not share the link.');
   };
   const createGame = async (data) => { await games.create(data); toast.success('Game created'); };
@@ -601,7 +601,7 @@ function QnaContainer({ back }) {
   const suggest = async () => {
     const d = wd.details || {};
     const have = (d.qna || []).map((q) => q.question).filter(Boolean);
-    const out = await api.llm(`You are Ava, helping a couple write the questions and answers their guests read on their site. Prefer the questions guests actually ask: travel, timing, dress code, children, parking. Answer in the couple's own plain voice, a sentence or two each. Suggest four questions guests will ask that are not answered yet.\nCouple: ${d.couple1Name || ''} and ${d.couple2Name || ''}. Date: ${d.weddingDate || 'not set'}. Ceremony: ${d.mainCeremony?.venueName || ''} ${d.mainCeremony?.venueAddress || ''}. Dress code: ${d.mainCeremony?.dressCode || 'not set'}.\nAlready answered: ${have.join('; ') || 'nothing yet'}.`,
+    const out = await api.llm(`You are Ava, helping a couple write the questions and answers their guests read on their guest suite. Prefer the questions guests actually ask: travel, timing, dress code, children, parking. Answer in the couple's own plain voice, a sentence or two each. Suggest four questions guests will ask that are not answered yet.\nCouple: ${d.couple1Name || ''} and ${d.couple2Name || ''}. Date: ${d.weddingDate || 'not set'}. Ceremony: ${d.mainCeremony?.venueName || ''} ${d.mainCeremony?.venueAddress || ''}. Dress code: ${d.mainCeremony?.dressCode || 'not set'}.\nAlready answered: ${have.join('; ') || 'nothing yet'}.`,
       { response_json_schema: { type: 'object', properties: { questions: { type: 'array', items: { type: 'object', properties: { question: { type: 'string' }, answer: { type: 'string' } } } } } } });
     return Array.isArray(out?.questions) ? out.questions.filter((q) => q?.question) : [];
   };
