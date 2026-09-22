@@ -237,6 +237,13 @@
 .oi-m-iconbtn:active { transform: scale(0.94); background: var(--m-press); }
 .oi-m-iconbtn--ghost { background: transparent; }
 .oi-m-iconbtn--dark { background: rgba(10, 10, 10, 0.45); color: #FFFFFF; }
+/* The brand mark on a tab root (goal 8): 28px, no wordmark, inside a 44px tap target. */
+.oi-m-mark { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; margin-left: -8px; flex-shrink: 0; border-radius: 50%; }
+.oi-m-mark img { width: 28px; height: 28px; display: block; }
+.oi-m-mark--btn { background: none; border: 0; padding: 0; transition: transform var(--m-fast) var(--m-ease); }
+.oi-m-mark--btn:active { transform: scale(0.94); }
+/* The messages button's unread count: a small primary pill, the same place the dot sits. */
+.oi-m-badge { position: absolute; top: 6px; right: 4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--m-r-pill); background: var(--m-primary); color: #FFFFFF; font-size: 11px; line-height: 18px; font-weight: 600; text-align: center; border: 2px solid var(--m-bg); box-sizing: content-box; }
 .oi-m-dot {
   position: absolute;
   top: 10px;

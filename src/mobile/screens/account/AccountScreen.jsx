@@ -11,7 +11,7 @@ import { initials } from '../../lib/format';
  */
 export default function AccountScreen({ name, email, coupleName, weddingDate, photo, planLabel, planNote, trialDaysLeft, showPurchases, onUpgrade, onDetails, onEventDetails, onCollaborators, onNotifications, onNotificationSettings, onHelp, onContact, onLogout, loading, appLock = null, subtitle, detailsSub, onTitleLongPress, onTestNotification }) {
   return (
-    <Screen title="Account" subtitle={subtitle} bell onTitleLongPress={onTitleLongPress}>
+    <Screen title="Account" subtitle={subtitle} root onTitleLongPress={onTitleLongPress}>
       <div className="oi-m-stack oi-m-stack--24">
         {loading ? <Skeleton kind="block" style={{ height: 200 }} /> : (
           <div className="oi-m-card oi-m-card--flush">

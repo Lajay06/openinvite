@@ -10,7 +10,7 @@ import { Row, RowGroup, PillButton, StatusPill, Skeleton, ErrorState, SmartImage
  */
 export default function SiteScreen({ universeName, isLive, siteUrl, previewImage, coupleName, onView, onShare, onOpen, onOpenDesktop, onTogglePublish, passwordOn = false, onPassword, loading, error, onRetry }) {
   return (
-    <Screen title="Guest suite" bell>
+    <Screen title="Guest suite" root>
       <div className="oi-m-stack oi-m-stack--24">
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <Skeleton kind="hero" /> : (
           <div className="oi-m-card oi-m-card--flush">

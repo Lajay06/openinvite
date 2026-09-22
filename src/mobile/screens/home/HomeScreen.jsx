@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Users, Wallet, CheckCircle2, Receipt } from 'lucide-react';
+import { Users, Wallet, CheckCircle2, Receipt } from 'lucide-react';
 import Screen from '../../shell/Screen';
 import { HeroCard, PeekCarousel, StatCard, PanelCard, ImageCard, Row, RowGroup, PillButton, Skeleton, ErrorState, ProgressBar, StatusPill } from '../../ui';
 import { money, dateLong, dueLabel, dateShort } from '../../lib/format';
@@ -44,7 +44,7 @@ export default function HomeScreen({
   }
   const heroes = pickHeroes({ first, middle, last }, heroSeed).map((h, i) => ({ ...h, image: img(i) }));
   return (
-    <Screen title={firstName ? `Hi ${firstName}` : 'Hi'} bell actions={[{ icon: Search, label: 'Search', onClick: onSearch }]} onRefresh={onRefresh}>
+    <Screen title={firstName ? `Hi ${firstName}` : 'Hi'} root onRefresh={onRefresh}>
       <div className="oi-m-stack oi-m-stack--24">
         {error && !loading ? <ErrorState onRetry={onRetry} /> : null}
 

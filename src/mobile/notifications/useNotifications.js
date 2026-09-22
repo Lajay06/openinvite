@@ -71,6 +71,8 @@ export default function useNotifications({ base = '/m', symbol = '$' } = {}) {
   }, [raw, state, symbol, base]);
 
   const unread = items.filter((i) => i.unread).length;
+  // The messages button's own count (goal 8): guest messages not yet read, by the record's own flag, whatever the notification settings say.
+  const unreadMessages = (raw?.messages || []).filter((m) => !m.read).length;
   const latestUnseen = items.find((i) => i.unread && !state.bannerSeen.includes(i.id) && i.ts > Date.now() - 6 * 3600000) || null;
 
   const markAllRead = useCallback(async () => {
@@ -100,7 +102,7 @@ export default function useNotifications({ base = '/m', symbol = '$' } = {}) {
     await saveBannerSeen(next);
   }, [state.bannerSeen]);
 
-  return { items, unread, loading: raw == null && !error, error, reload: load, markAllRead, markRead, settings: state.settings, setSettings, latestUnseen, bannerShown };
+  return { items, unread, unreadMessages, loading: raw == null && !error, error, reload: load, markAllRead, markRead, settings: state.settings, setSettings, latestUnseen, bannerShown };
 }
 
 async function fetchSongRequests() {

@@ -99,7 +99,7 @@ function usePreviewNotifications(banner) {
       .map((it) => ({ ...it, unread: it.readOnServer != null ? !it.readOnServer && it.ts > seenAt : it.ts > seenAt && !dismissed.includes(it.id) }));
     const latestUnseen = banner ? items.find((i) => i.unread && !bannerSeen.includes(i.id)) || null : null;
     return {
-      items, unread: items.filter((i) => i.unread).length, loading: false, error: null, reload: async () => {},
+      items, unread: items.filter((i) => i.unread).length, unreadMessages: FIXTURE_MESSAGES.filter((m) => !m.read).length, loading: false, error: null, reload: async () => {},
       markAllRead: async () => setSeenAt(NOW + 1), markRead: async (it) => setDismissed((d) => [...d, it.id]), settings, setSettings: async (s) => setSettings(s),
       latestUnseen, bannerShown: async (it) => setBannerSeen((b) => [...b, it.id]),
     };

@@ -5,16 +5,18 @@ import ScreenHeader, { CompactBar } from './ScreenHeader';
 /**
  * A screen: the scroll container, the large title, and the compact bar.
  * Lists scroll inside this element, so the tab bar and the Ava button never
- * move. `bell` marks a tab root: the bell becomes the rightmost action.
+ * move. `root` marks a tab root: the brand mark top left and the fixed
+ * search, messages and notifications buttons top right (goal 8); any
+ * `actions` passed are ignored there.
  *
  * props
  *   title, subtitle
- *   actions   [{ icon, label, onClick }] up to two circular buttons top right
- *   bell      true on tab roots
+ *   actions   [{ icon, label, onClick }] up to two circular buttons top right (not on a root)
+ *   root      true on tab roots
  *   back      true (history back) | string (route) | function
  *   onRefresh async fn; enables pull to refresh (touch only)
  */
-export default function Screen({ title, subtitle, actions, bell = false, back, onRefresh, footer, onTitleLongPress, children }) {
+export default function Screen({ title, subtitle, actions, root = false, back, onRefresh, footer, onTitleLongPress, children }) {
   const ref = useRef(null);
   const raf = useRef(0);
   const [compact, setCompact] = useState(false);
@@ -56,7 +58,7 @@ export default function Screen({ title, subtitle, actions, bell = false, back, o
 
   return (
     <div style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-      <CompactBar title={title} compact={compact} actions={actions} onBack={onBack} bell={bell} />
+      <CompactBar title={title} compact={compact} actions={actions} onBack={onBack} root={root} />
       <div className="oi-m-screen" ref={ref} onScroll={onScroll} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         {(pull > 0 || refreshing) && (
           <div className="oi-m-meta" style={{ textAlign: 'center', height: refreshing ? 32 : pull, overflow: 'hidden', transition: refreshing ? 'height 200ms' : undefined, lineHeight: '32px' }}>

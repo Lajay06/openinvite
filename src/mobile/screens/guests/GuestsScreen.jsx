@@ -143,7 +143,7 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
       <Screen
         title={selecting ? `${selected.size} selected` : 'Guests'}
         subtitle={loading ? '' : selecting ? 'Tap guests to add them' : `${guests.length} guest${guests.length === 1 ? '' : 's'}`}
-        bell={!back && !selecting}
+        root={!back && !selecting}
         back={back}
         actions={actions}
         onRefresh={selecting ? undefined : onRefresh}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import Screen from '../../shell/Screen';
 import { FeatureTile, ProgressBar, ErrorState, Skeleton } from '../../ui';
 import { GROUPS, featuresIn } from '../../features/registry';
@@ -39,7 +39,7 @@ function useOpenGroups() {
 export default function PlanHubScreen({ data, symbol = '$', progress, onOpen, onSearch, loading, error, onRetry }) {
   const [openGroups, toggleGroup] = useOpenGroups();
   return (
-    <Screen title="Plan" bell actions={[{ icon: Search, label: 'Search', onClick: onSearch }]}>
+    <Screen title="Plan" root>
       <div className="oi-m-stack oi-m-stack--24">
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? (
           <>
