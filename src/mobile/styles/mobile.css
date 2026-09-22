@@ -676,6 +676,7 @@ select.oi-m-input { background-image: none; padding-right: 44px; }
 .oi-m-search__bar { display: flex; align-items: center; gap: 8px; padding: 8px var(--m-gutter); }
 .oi-m-search__field { flex: 1; min-height: 48px; display: flex; align-items: center; gap: 10px; background: var(--m-card); border-radius: var(--m-r-pill); padding: 0 8px 0 16px; }
 .oi-m-search__input { flex: 1; min-width: 0; min-height: 44px; background: transparent; border: 0; outline: none; border-radius: 0; -webkit-appearance: none; appearance: none; }
+.oi-m-search__input::-webkit-search-cancel-button, .oi-m-search__input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
 .oi-m-search__results { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 0 24px; }
 
 /* ── In-app notification banner ─────────────────────────────────────── */

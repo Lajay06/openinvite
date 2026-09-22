@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useOpenById } from '../../lib/openById';
 import { Wallet, Plus, Receipt, CreditCard, Search, Download, Sparkles, Pencil, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Screen from '../../shell/Screen';
@@ -37,9 +38,11 @@ export function summariseBudget(items = [], plan = null) {
  * (the desktop's flags, saving suggestions and Ava's insights), Expenses
  * (search, every expense with edit and delete). Both exports.
  */
-export default function BudgetScreen({ items = [], plan = null, symbol = '$', onOpenCategory, onAdd, onDelete, onMarkPaid, onSavePlan, onAsk, loading, error, onRetry, back, openAdd = false, onRefresh }) {
+export default function BudgetScreen({ items = [], plan = null, symbol = '$', onOpenCategory, onAdd, onDelete, onMarkPaid, onSavePlan, onAsk, loading, error, onRetry, back, openAdd = false, openExpense = null, onRefresh }) {
   const [segment, setSegment] = useSegment(SEGMENTS);
   const [sheet, setSheet] = useState({ open: openAdd, item: null });
+  // Reached from global search with an expense id: its sheet opens once the list is in.
+  useOpenById(items, openExpense, useCallback((i) => setSheet({ open: true, item: i }), []));
   const [planner, setPlanner] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [q, setQ] = useState('');

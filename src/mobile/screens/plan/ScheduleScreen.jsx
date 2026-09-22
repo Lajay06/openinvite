@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useOpenById } from '../../lib/openById';
 import { Plus, Calendar, ListChecks, Store, Flag, Clock, Copy, CalendarPlus, Download, ExternalLink, ArrowUp, ArrowDown, Trash2, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Screen from '../../shell/Screen';
@@ -57,9 +58,11 @@ const dayTitle = (date) => (date ? new Date(`${date}T00:00:00`).toLocaleDateStri
  * full form. Run sheet shows each event's items. Calendar carries the
  * Google Calendar subscription and the .ics and CSV exports.
  */
-export default function ScheduleScreen({ items = [], sources = {}, feedUrl, feedState = 'loading', onCreate, onUpdate, onDelete, onReorder, onOpenHome, loading, error, onRetry, back, openAdd = false, onRefresh }) {
+export default function ScheduleScreen({ items = [], sources = {}, feedUrl, feedState = 'loading', onCreate, onUpdate, onDelete, onReorder, onOpenHome, loading, error, onRetry, back, openAdd = false, openEvent = null, onRefresh }) {
   const [segment, setSegment] = useSegment(SEGMENTS);
   const [sheet, setSheet] = useState(openAdd ? { item: null } : null);
+  // Reached from global search with an event id: its details open once the list is in.
+  useOpenById(items, openEvent, useCallback((it) => setSheet({ item: it }), []));
   const [confirm, confirmEl] = useConfirm();
   const considerations = useConsiderations('schedule');
   const [type, setType] = useState('all');

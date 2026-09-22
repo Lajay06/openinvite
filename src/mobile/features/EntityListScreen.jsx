@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useOpenById } from '../lib/openById';
 import { Plus, Inbox, LayoutGrid, List as ListIcon } from 'lucide-react';
 import Screen from '../shell/Screen';
 import { FilterPills, EmptyState, ErrorState, SkeletonRows, ItemCard, ItemList, GroupedList, Row, SmartImage, StatusPill, useListView } from '../ui';
@@ -14,7 +15,7 @@ import { useConfirm } from '../ui/ConfirmSheet';
  * `schema.gridToggle` adds the circular view toggle that swaps cards for a
  * two-column image grid, remembered locally.
  */
-export default function EntityListScreen({ schema, items = [], onCreate, onUpdate, onDelete, loading, error, onRetry, back, subtitle, extraActions = [], header = null, onRefresh }) {
+export default function EntityListScreen({ schema, items = [], onCreate, onUpdate, onDelete, loading, error, onRetry, back, subtitle, extraActions = [], header = null, onRefresh, openId = null }) {
   const [filter, setFilter] = useState('all');
   const [sheet, setSheet] = useState({ open: false, item: null });
   const [view, setView] = useListView(schema.entity, 'cards');
@@ -46,7 +47,9 @@ export default function EntityListScreen({ schema, items = [], onCreate, onUpdat
     await onDelete(sheet.item.id);
     setSheet({ open: false, item: null });
   };
-  const openItem = (it) => setSheet({ open: true, item: it });
+  const openItem = useCallback((it) => setSheet({ open: true, item: it }), []);
+  // Reached from global search with an item id (registry products, links and funds): its sheet opens once the list is in.
+  useOpenById(items, openId, openItem);
   const actions = [
     ...extraActions,
     ...(schema.gridToggle ? [{ icon: view === 'grid' ? ListIcon : LayoutGrid, label: view === 'grid' ? 'Show as list' : 'Show as grid', onClick: () => setView(view === 'grid' ? 'cards' : 'grid') }] : []),

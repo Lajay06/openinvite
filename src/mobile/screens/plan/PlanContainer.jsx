@@ -157,7 +157,7 @@ function ScheduleContainer({ back }) {
     const to = { todo: 'checklist', vendor: 'vendors', deadline: 'event-details', music: 'music', wd: 'event-details', livestream: 'event-details', custom: 'event-details' }[kind];
     if (to) navigate(`${base}/plan/${to}`);
   };
-  return <ScheduleScreen items={s.data || []} sources={extra.data || {}} feedUrl={feed.data} feedState={feed.loading ? 'loading' : feed.data ? 'ready' : 'unavailable'} onCreate={wrap(s.create, 'Event added')} onUpdate={wrap(s.update, 'Event updated')} onDelete={wrap(s.remove, 'Event deleted')} onReorder={async (x, y) => { await s.updateQuiet(x.id, { start_time: y.start_time }); await s.updateQuiet(y.id, { start_time: x.start_time }); s.reload(); }} onOpenHome={openHome} loading={s.loading} error={s.error} onRetry={() => { s.reload(); extra.reload(); }} back={back} openAdd={params.get('add') === '1'} onRefresh={async () => { s.reload(); extra.reload(); }} />;
+  return <ScheduleScreen items={s.data || []} sources={extra.data || {}} feedUrl={feed.data} feedState={feed.loading ? 'loading' : feed.data ? 'ready' : 'unavailable'} onCreate={wrap(s.create, 'Event added')} onUpdate={wrap(s.update, 'Event updated')} onDelete={wrap(s.remove, 'Event deleted')} onReorder={async (x, y) => { await s.updateQuiet(x.id, { start_time: y.start_time }); await s.updateQuiet(y.id, { start_time: x.start_time }); s.reload(); }} onOpenHome={openHome} loading={s.loading} error={s.error} onRetry={() => { s.reload(); extra.reload(); }} back={back} openAdd={params.get('add') === '1'} openEvent={params.get('event')} onRefresh={async () => { s.reload(); extra.reload(); }} />;
 }
 
 /* ── Send invites ────────────────────────────────────────────────────── */
@@ -300,7 +300,7 @@ function ChecklistContainer({ back }) {
   const update = async (id, fields) => { await taskWrites.update(id, fields); toast.success('Saved'); tasks.reload(); };
   const remove = async (t) => { try { await taskWrites.remove(t.id); toast.success('Task removed'); tasks.reload(); } catch { toast.error('Could not remove that task.'); } };
   const move = async (t, status) => { await taskWrites.move(t, status); tasks.reload(); };
-  return <ChecklistScreen tasks={tasks.data || []} onToggle={toggle} onAdd={add} onUpdate={update} onMove={move} onRemove={remove} loading={tasks.loading} error={tasks.error} onRetry={tasks.reload} back={back} openAdd={params.get('add') === '1'} onRefresh={tasks.reload} />;
+  return <ChecklistScreen tasks={tasks.data || []} onToggle={toggle} onAdd={add} onUpdate={update} onMove={move} onRemove={remove} loading={tasks.loading} error={tasks.error} onRetry={tasks.reload} back={back} openAdd={params.get('add') === '1'} openTask={params.get('task')} onRefresh={tasks.reload} />;
 }
 
 function BudgetContainer({ back }) {
@@ -326,7 +326,7 @@ function BudgetContainer({ back }) {
   const savePlan = async (plan) => { await budgetWrites.savePlan(plan); toast.success('Plan saved'); budget.reload(); };
   return (
     <>
-      <BudgetScreen items={budget.data?.items || []} plan={budget.data?.plan || null} symbol={symbol} onOpenCategory={(c) => navigate(`${base}/plan/budget/${c}`)} onAdd={save} onDelete={remove} onMarkPaid={markPaid} onSavePlan={savePlan} onAsk={(prompt, opts) => api.llm(prompt, opts)} loading={budget.loading} error={budget.error} onRetry={budget.reload} back={back} openAdd={params.get('add') === '1'} onRefresh={budget.reload} />
+      <BudgetScreen items={budget.data?.items || []} plan={budget.data?.plan || null} symbol={symbol} onOpenCategory={(c) => navigate(`${base}/plan/budget/${c}`)} onAdd={save} onDelete={remove} onMarkPaid={markPaid} onSavePlan={savePlan} onAsk={(prompt, opts) => api.llm(prompt, opts)} loading={budget.loading} error={budget.error} onRetry={budget.reload} back={back} openAdd={params.get('add') === '1'} openExpense={params.get('expense')} onRefresh={budget.reload} />
       {confirmEl}
     </>
   );
@@ -580,6 +580,7 @@ function MusicContainer({ back }) {
 /* ── Registry ────────────────────────────────────────────────────────── */
 
 function RegistryContainer({ back }) {
+  const [params] = useSearchParams();
   const api = useApi();
   const symbol = useSymbol();
   const wd = useWeddingDetails();
@@ -589,7 +590,7 @@ function RegistryContainer({ back }) {
   const received = useEntity('ReceivedGift');
   const wrap = (e) => ({ items: e.data || [], loading: e.loading, error: e.error, reload: e.reload, create: async (v) => { await e.create(v); toast.success('Added'); }, update: async (id, v) => { await e.update(id, v); toast.success('Saved'); }, remove: async (id) => { await e.remove(id); toast.success('Removed'); } });
   const registryUrl = wd.details?.slug ? `${siteOrigin()}/w/${wd.details.slug}/registry` : '';
-  return <RegistryScreen lists={{ links: wrap(links), products: wrap(products), funds: wrap(funds), received: wrap(received) }} symbol={symbol} registryUrl={registryUrl} onAsk={(prompt) => api.llm(prompt)} back={back} />;
+  return <RegistryScreen lists={{ links: wrap(links), products: wrap(products), funds: wrap(funds), received: wrap(received) }} symbol={symbol} registryUrl={registryUrl} onAsk={(prompt) => api.llm(prompt)} back={back} openId={params.get('item')} />;
 }
 
 /* ── Guest suite editors on WeddingDetails ───────────────────────────── */

@@ -19,7 +19,7 @@ const SEGMENTS = [{ key: 'overview', label: 'Overview' }, { key: 'links', label:
  * (ReceivedGift with the giver from the guest list, search, thanked, and
  * Ava's thank-you note). The GuestSuiteRegistry mirror is this screen too.
  */
-export default function RegistryScreen({ lists, symbol = '$', registryUrl = '', onAsk, back }) {
+export default function RegistryScreen({ lists, symbol = '$', registryUrl = '', onAsk, back, openId = null }) {
   const [segment, setSegment] = useSegment(SEGMENTS);
   const [share, setShare] = useState(false);
   const [purchase, setPurchase] = useState(null); // product
@@ -101,7 +101,7 @@ export default function RegistryScreen({ lists, symbol = '$', registryUrl = '', 
   );
   return (
     <>
-      <EntityListScreen key={segment} schema={{ ...schemas[segment], title: 'Registry', emptyImage: imageUrl('emptyRegistry') }} items={l.items} onCreate={l.create} onUpdate={l.update} onDelete={l.remove} loading={l.loading} error={l.error} onRetry={l.reload} back={back} subtitle={schemas[segment].title.toLowerCase()} header={header} onRefresh={l.reload} />
+      <EntityListScreen key={segment} schema={{ ...schemas[segment], title: 'Registry', emptyImage: imageUrl('emptyRegistry') }} items={l.items} onCreate={l.create} onUpdate={l.update} onDelete={l.remove} loading={l.loading} error={l.error} onRetry={l.reload} back={back} subtitle={schemas[segment].title.toLowerCase()} header={header} onRefresh={l.reload} openId={openId} />
       {purchase && <PurchaseSheet product={purchase} onClose={() => setPurchase(null)} onSave={async (data) => { const p = purchase; await lists.products.update(p.id, { quantity_purchased: (p.quantity_purchased || 0) + data.quantity, purchased_by: [...(p.purchased_by || []), { ...data, purchase_date: new Date().toISOString() }] }); setPurchase(null); }} />}
     </>
   );

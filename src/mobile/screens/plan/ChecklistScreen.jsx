@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useOpenById } from '../../lib/openById';
 import { ListChecks, Plus, ChevronDown, Download, ArrowUpDown, MoveRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Screen from '../../shell/Screen';
@@ -42,8 +43,10 @@ const GROUP_TITLES = { overdue: 'Overdue', soon: 'Next 30 days', later: 'Later' 
  * collapsible Completed section; an Undo toast lasts four seconds; a
  * completed task can be unticked from the Completed section.
  */
-export default function ChecklistScreen({ tasks = [], onToggle, onAdd, onUpdate, onMove, onRemove, loading, error, onRetry, back, openAdd = false, onRefresh }) {
+export default function ChecklistScreen({ tasks = [], onToggle, onAdd, onUpdate, onMove, onRemove, loading, error, onRetry, back, openAdd = false, openTask = null, onRefresh }) {
   const [sheet, setSheet] = useState(openAdd ? { task: null } : null);
+  // Reached from global search with a task id: its detail sheet opens once the list is in.
+  useOpenById(tasks, openTask, useCallback((t) => setSheet({ task: t }), []));
   const [view, setView] = useState('list');
   const [moving, setMoving] = useState(null); // the task whose column is being chosen
   const [filter, setFilter] = useState('All');
