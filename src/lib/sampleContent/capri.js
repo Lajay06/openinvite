@@ -80,7 +80,7 @@ export const SAMPLE_CAPRI = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'There is a small band through dinner and a record player afterward. Tell us what belongs on it.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song, the one that gets you up from the table.' },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'Whatever gets you up from the table.' },
   registryContent: { registryMessage: 'Come, eat, stay late. That is all of it. If something must be given, the list will not take long to read.', noGiftsPlease: false },
 
   qna: [

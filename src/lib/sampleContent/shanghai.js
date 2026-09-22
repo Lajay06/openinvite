@@ -85,7 +85,7 @@ export const SAMPLE_SHANGHAI = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'A quartet for the ceremony and a set from eleven, once the courses stop. Send us what belongs after eleven.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song. Loud is fine after eleven.' },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'After eleven, loud is fine.' },
   registryContent: { registryMessage: 'The apartment is small and needs nothing. There is a fund toward flights for the family coming furthest, which matters more to us than anything else written down.', noGiftsPlease: false },
 
   qna: [

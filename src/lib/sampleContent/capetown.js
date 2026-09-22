@@ -80,7 +80,7 @@ export const SAMPLE_CAPETOWN = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'A guitar while we eat and a proper set after the plates go. Tell us what you want to hear in the second half.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'Send us the one you would get up for.' },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'The one you would get up for.' },
   registryContent: { registryMessage: 'We have kept house together for years and are short of nothing. There is a fund for the trip, and a handful of things besides.', noGiftsPlease: false },
 
   qna: [

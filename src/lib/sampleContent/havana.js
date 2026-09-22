@@ -228,7 +228,7 @@ export const SAMPLE_HAVANA = {
   music: {
     guestRequestsEnabled: true,
     playlists: [],
-    requestMessage: 'One song. The one that would get you out of your chair.',
+    requestMessage: 'Something that would get you out of your chair.',
   },
 
   registryContent: {

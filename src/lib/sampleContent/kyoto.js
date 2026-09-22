@@ -83,7 +83,7 @@ export const SAMPLE_KYOTO = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'One player, in the room, for about twenty minutes. Tell us the piece you would want to hear in a quiet room.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One piece each.' },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'For a quiet room.' },
   registryContent: { registryMessage: 'The house is small and finished. What is listed will be used and then used up: tea, paper, one good knife.', noGiftsPlease: false },
 
   qna: [

@@ -79,7 +79,7 @@ export const SAMPLE_MONACO = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'A pianist on the terrace and a set on the deck from eleven. Tell us what belongs after eleven.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song, and it has to survive being played loudly.' },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'It has to survive being played loudly.' },
   registryContent: { registryMessage: 'Between us we already own two of everything, including opinions. Two or three things are listed; everything else goes to the sailing school on the far side of the port.', noGiftsPlease: false },
 
   qna: [

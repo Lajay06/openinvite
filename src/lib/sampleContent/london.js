@@ -93,7 +93,7 @@ export const SAMPLE_LONDON = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'There is a quartet early and a rather louder arrangement later. Tell us what belongs in the second half.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song, and we will find room for it.' },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'The second half is yours.' },
   registryContent: { registryMessage: 'We have a home already, and everything in it. There is a list, kept deliberately small.', noGiftsPlease: false },
 
   qna: [
