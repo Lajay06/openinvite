@@ -19,7 +19,7 @@ import {
   FIXTURE_USER, FIXTURE_WEDDING, FIXTURE_GUESTS, FIXTURE_TASKS, FIXTURE_BUDGET, FIXTURE_SCHEDULE, FIXTURE_VENDORS, FIXTURE_MESSAGES,
   FIXTURE_SONG_REQUESTS, FIXTURE_MUSIC, FIXTURE_POLL_VOTES, FIXTURE_GIFTS, FIXTURE_REGISTRY, FIXTURE_VOWS, FIXTURE_MOODBOARD, FIXTURE_TABLES, FIXTURE_NOTIFICATION_ENTITY,
 } from './index';
-import { FIXTURE_PLACES, FIXTURE_PLACE_DETAILS, FIXTURE_GAMES, FIXTURE_GAME_RESPONSES, FIXTURE_VENDOR_LOGS, FIXTURE_VENDOR_TASKS, FIXTURE_POLL_COMMENTS, FIXTURE_INVITATION } from './extra';
+import { FIXTURE_PLACES, FIXTURE_PLACE_DETAILS, FIXTURE_GAMES, FIXTURE_GAME_RESPONSES, FIXTURE_VENDOR_LOGS, FIXTURE_VENDOR_TASKS, FIXTURE_POLL_COMMENTS, FIXTURE_INVITATION, FIXTURE_CONTACTS } from './extra';
 
 const clone = (v) => JSON.parse(JSON.stringify(v));
 const genId = (p = 'x') => `${p}${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
@@ -276,6 +276,8 @@ export function createPreviewApi() {
       return 'Demo mode. The connected app asks Ava here.';
     },
     upload: async () => ({ file_url: imageUrl('fixturePin1') }),
+    // The phone's contacts (goal 8): the fixtures, after the pause the permission sheet would take; nothing is read from a device.
+    contacts: async () => { await new Promise((r) => setTimeout(r, 700)); return { status: 'granted', contacts: clone(FIXTURE_CONTACTS) }; },
     updateMe: async (patch) => Object.assign(FIXTURE_USER, patch),
   };
 }

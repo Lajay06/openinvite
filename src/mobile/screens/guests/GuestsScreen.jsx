@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Search, Plus, Users, MoreHorizontal, Upload, Download, Send, CheckSquare, X, Mail, ChevronDown, ArrowUpDown, SlidersHorizontal } from 'lucide-react';
+import { Search, Plus, Users, MoreHorizontal, Upload, Download, Send, CheckSquare, X, Mail, ChevronDown, ArrowUpDown, SlidersHorizontal, BookUser } from 'lucide-react';
 import Screen from '../../shell/Screen';
 import { FilterPills, SearchScreen, SkeletonRows, ErrorState, EmptyState, StatusPill, ProgressBar, RowGroup, SwipeRow, SWIPE_ICONS, BottomSheet, Row, Checkbox, PillButton, SelectField } from '../../ui';
 import { imageUrl } from '../../images';
@@ -81,7 +81,7 @@ export function GuestRow({ guest, onClick, event, selectable, selected, onSelect
  * The guest list: stats, status filters, an event filter, tag groupings,
  * search, select mode with the bulk actions, import, export, send.
  */
-export default function GuestsScreen({ guests = [], filter = 'all', onFilter, eventFilter = 'all', onEventFilter, weddingEvents = [], onOpenGuest, onAdd, onQuickAdd, onRename, onRemove, onImport, onExport, onSend, onTemplates, selected, onToggleSelect, onSelectAll, onClearSelection, onBulk, loading, error, onRetry, groupings = [], guestRoles = {}, back, onRefresh }) {
+export default function GuestsScreen({ guests = [], filter = 'all', onFilter, eventFilter = 'all', onEventFilter, weddingEvents = [], onOpenGuest, onAdd, onQuickAdd, onRename, onRemove, onImport, onImportContacts, onExport, onSend, onTemplates, selected, onToggleSelect, onSelectAll, onClearSelection, onBulk, loading, error, onRetry, groupings = [], guestRoles = {}, back, onRefresh }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
   const [q, setQ] = useState('');
@@ -201,7 +201,10 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
             </div>
           )}
           {!loading && !error && !selecting && (
-            <button type="button" className="oi-m-pill oi-m-pill--secondary oi-m-pill--block" onClick={onAdd}>Add a guest with every detail</button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button type="button" className="oi-m-pill oi-m-pill--secondary" style={{ flex: 1 }} onClick={onAdd}>Add with every detail</button>
+              {onImportContacts && <button type="button" className="oi-m-pill oi-m-pill--secondary" style={{ flex: 1 }} onClick={onImportContacts}><BookUser size={18} strokeWidth={1.75} /> From contacts</button>}
+            </div>
           )}
           {!loading && !error && !selecting && considerations.row}
         </div>
@@ -227,6 +230,7 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
       <BottomSheet open={actionsOpen} onClose={() => setActionsOpen(false)} title="Guest list">
         <RowGroup>
           <Row icon={Plus} tile="primary" label="Add a guest" onClick={() => { setActionsOpen(false); onAdd(); }} />
+          {onImportContacts && <Row icon={BookUser} tile="neutral" label="From contacts" sub="Pick people from your phone's contacts" onClick={() => { setActionsOpen(false); onImportContacts(); }} />}
           <Row icon={CheckSquare} tile="neutral" label="Select guests" sub="Set events, tags, category or dietary for several at once" onClick={() => { setActionsOpen(false); onSelectAll([]); }} />
           <Row icon={Send} tile="neutral" label="Send invites" sub="Save the date, invitation, reminder, update, thank you" onClick={() => { setActionsOpen(false); onSend(); }} />
           {onTemplates && <Row icon={Mail} tile="neutral" label="Email templates" sub="See each email and send it" onClick={() => { setActionsOpen(false); onTemplates(); }} />}

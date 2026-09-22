@@ -493,6 +493,50 @@ export async function pickPhoto(source: 'camera' | 'library'): Promise<File | nu
   }
 }
 
+/* ── Goal 8: the phone's contacts, for the guest list ─────────────────── */
+
+const CONTACTS_LOADER = () => import('@capacitor-community/contacts');
+
+export interface PhoneContact {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+}
+
+/**
+ * Read the phone's contacts as guests-to-be: one name, the primary (else
+ * first) email and phone, and the primary (else first) postal address as
+ * one line. Permission is asked for here and nowhere else, so the prompt
+ * appears only when the couple taps "From contacts". Web: 'unavailable'.
+ * A refusal is 'denied'; the caller says so and offers the file import.
+ */
+export async function readContacts(): Promise<{ status: 'granted' | 'denied' | 'unavailable'; contacts: PhoneContact[] }> {
+  if (!isNative()) return { status: 'unavailable', contacts: [] };
+  try {
+    const mod: Plugin = await CONTACTS_LOADER();
+    let perm = await mod.Contacts.checkPermissions();
+    if (perm?.contacts !== 'granted' && perm?.contacts !== 'limited') perm = await mod.Contacts.requestPermissions();
+    if (perm?.contacts !== 'granted' && perm?.contacts !== 'limited') return { status: 'denied', contacts: [] };
+    const r = await mod.Contacts.getContacts({ projection: { name: true, phones: true, emails: true, postalAddresses: true } });
+    const pick = <T extends { isPrimary?: boolean | null }>(list?: T[]): T | undefined => (list || []).find((x) => x?.isPrimary) || (list || [])[0];
+    const contacts: PhoneContact[] = (r?.contacts || []).map((c: any) => {
+      const n = c.name || {};
+      const name = (n.display || [n.given, n.middle, n.family].filter(Boolean).join(' ') || '').trim();
+      const email = (pick(c.emails)?.address || '').trim();
+      const phone = (pick(c.phones)?.number || '').trim();
+      const a = pick(c.postalAddresses);
+      const address = a ? [a.street, a.neighborhood, a.city, a.region, a.postcode, a.country].filter(Boolean).join(', ') : '';
+      return { id: String(c.contactId || name), name, email, phone, address };
+    }).filter((c: PhoneContact) => c.name || c.email || c.phone);
+    contacts.sort((x, y) => x.name.localeCompare(y.name, 'en'));
+    return { status: 'granted', contacts };
+  } catch {
+    return { status: 'unavailable', contacts: [] };
+  }
+}
+
 /** Network: current status and a listener. Web: navigator.onLine and the online/offline events. */
 export async function networkStatus(): Promise<boolean> {
   const mod = await load('network');

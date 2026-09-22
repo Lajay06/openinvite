@@ -43,9 +43,9 @@ export function SelectField({ label, error, id, options, placeholder, ...rest })
 }
 
 /** A 44px checkbox with a 24px box. */
-export function Checkbox({ checked, onChange, label }) {
+export function Checkbox({ checked, onChange, label, disabled = false }) {
   return (
-    <button type="button" role="checkbox" aria-checked={checked} aria-label={label} className="oi-m-check" onClick={() => onChange(!checked)}>
+    <button type="button" role="checkbox" aria-checked={checked} aria-label={label} className="oi-m-check" disabled={disabled} onClick={() => !disabled && onChange(!checked)}>
       <span className={`oi-m-check__box${checked ? ' oi-m-check__box--on' : ''}`}>
         {checked && <Check size={16} strokeWidth={3} />}
       </span>

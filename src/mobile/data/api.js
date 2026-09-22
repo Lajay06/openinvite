@@ -28,6 +28,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
  *   vendors.saveFromPlaces(vendor, details) / vendors.savedPlaceIds()
  *   vows.setPin(id, pin) / vows.unlock(id, pin) / vows.clearPin(id)   -> { ok, error? }
  *   llm(prompt, opts)          InvokeLLM
+ *   contacts()                 the phone's contacts (goal 8): { status, contacts[] }; fixtures in a demo
  *   upload(file)               -> { file_url }
  *   updateMe(patch)
  */

@@ -13,6 +13,7 @@ import { saveVendorFromPlaces, getSavedPlaceIds } from '@/lib/vendorPlaces';
 import { fetchGuestLinks } from '@/lib/guestLinks';
 import { syncWeddingAddress } from '@/lib/weddingAddress';
 import { InvokeLLM, UploadFile } from '@/integrations/Core';
+import { readContacts } from '../native';
 import { setPin, unlock, clearPin } from '@/lib/vowPinLock';
 import { authHeaders } from './api';
 
@@ -98,6 +99,8 @@ export function createRealApi(user) {
     },
     vows: { setPin, unlock, clearPin },
     llm: (prompt, opts = {}) => InvokeLLM({ prompt, add_context_from_internet: false, ...opts }),
+    // The phone's contacts (goal 8), through the native plugin; 'unavailable' on the web.
+    contacts: () => readContacts(),
     upload: (file) => UploadFile({ file }),
     updateMe: (patch) => base44.auth.updateMe(patch),
   };

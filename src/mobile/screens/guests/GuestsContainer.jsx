@@ -5,6 +5,7 @@ import GuestsScreen from './GuestsScreen';
 import GuestDetailScreen from './GuestDetailScreen';
 import GuestFormSheet from './GuestFormSheet';
 import { SetEventsSheet, ImportGuestsSheet, BulkActionsSheet, EmailTemplatesSheet } from './GuestSheets';
+import ContactsImportSheet from './ContactsImportSheet';
 import { ShellContext } from '../../shell/MobileShell';
 import { useGuests, useWedding, useGuestWrites } from '../../data/wedding';
 import { useApi, useSymbol } from '../../data/api';
@@ -49,6 +50,7 @@ export default function GuestsContainer() {
   const [selected, setSelected] = useState(null); // Set | null
   const [bulkOpen, setBulkOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [contactsOpen, setContactsOpen] = useState(false);
   const [linksText, setLinksText] = useState('');
   const [templatesOpen, setTemplatesOpen] = useState(false); // shown when the clipboard refuses, as Guests.jsx does
   const [events, setEvents] = useState(null); // { guests, autoSend } for the set-events sheet
@@ -226,6 +228,7 @@ export default function GuestsContainer() {
           onTemplates={() => setTemplatesOpen(true)}
           onRemove={(g) => removeGuest(g)}
           onImport={() => setImportOpen(true)}
+          onImportContacts={() => setContactsOpen(true)}
           onExport={exportCsv}
           onSend={() => goSend(selected ? [...selected] : [])}
           selected={selected}
@@ -243,6 +246,7 @@ export default function GuestsContainer() {
       <SetEventsSheet open={!!events} guests={events?.guests || []} weddingEvents={weddingEvents} onUpdate={updateGuest} onClose={() => setEvents(null)} onSaved={(newly) => { reload(); if (events?.autoSend && events?.guests?.length === 1) { goSend([events.guests[0].id]); return; } if (newly?.length && events?.guests?.length === 1) toast((t) => <span>Invited to {newly.length} new event{newly.length === 1 ? '' : 's'}<button type="button" className="oi-m-toast-action" onClick={() => { toast.dismiss(t.id); goSend([events.guests[0].id], newly); }}>Send invite</button></span>, { duration: 6000 }); }} />
       <EmailTemplatesSheet open={templatesOpen} onClose={() => setTemplatesOpen(false)} onUse={(type) => { setTemplatesOpen(false); navigate(`${base}/plan/send-invites?type=${type}`); }} />
       <ImportGuestsSheet open={importOpen} onClose={() => setImportOpen(false)} existingGuests={list} country={country} onCreate={(data) => guestWrites.create(data, d)} onImported={reload} />
+      <ContactsImportSheet open={contactsOpen} onClose={() => setContactsOpen(false)} api={api} existingGuests={list} country={country} onCreate={(data) => guestWrites.create(data, d)} onImported={reload} onInvite={(created) => navigate(`${base}/plan/send-invites?ids=${created.map((g) => g.id).filter(Boolean).join(',')}`)} />
       <BulkActionsSheet open={bulkOpen} onClose={() => setBulkOpen(false)} guests={selectedGuests} onSetCategory={bulk.setCategory} onSetDietary={bulk.setDietary} onAddTag={bulk.addTag} onRemoveTag={bulk.removeTag} onSetEvents={() => setEvents({ guests: selectedGuests, autoSend: false })} onCopyLinks={() => copyLinks(selectedGuests)} onSend={() => goSend(selectedGuests.map((g) => g.id))} onDelete={bulk.remove} />
       <BottomSheet open={!!bulkInvite} onClose={() => setBulkInvite(null)} title={bulkInvite ? `Invite everyone to ${bulkInvite.event.name}?` : ''} footer={bulkInvite ? (
         <>

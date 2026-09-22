@@ -75,3 +75,25 @@ export const FIXTURE_INVITATION = { id: 'inv1', couple_names: 'Priya & Tom', wed
     { id: 'text_1', type: 'text', content: { text: 'Priya & Tom' }, styles: { padding: '40px', margin: '20px 0', textAlign: 'center', fontSize: '2rem', color: '#ffffff', fontWeight: 'bold' } },
     { id: 'date_1', type: 'text', content: { text: 'March 20, 2027' }, styles: { padding: '10px', margin: '0', textAlign: 'center', fontSize: '1.25rem', color: '#ffffff' } },
   ] }], selectedSection: 0, selectedElement: null } };
+
+/**
+ * The demo's phone contacts (goal 8): what "From contacts" lists in a demo
+ * build. Three are already on the guest list (by email, by phone, by name)
+ * so the duplicate marks show; the rest are new.
+ */
+export const FIXTURE_CONTACTS = [
+  { id: 'c1', name: 'Amelia Nguyen', email: 'amelia.nguyen@example.com', phone: '+61412000001', address: '12 Lawson St, Byron Bay NSW 2481' },
+  { id: 'c2', name: 'Ben Okafor', email: 'ben.okafor@example.com', phone: '+61412000101', address: '' },
+  { id: 'c3', name: 'Chloe Martin', email: '', phone: '+61412000102', address: '4/18 Marine Pde, Byron Bay NSW 2481' },
+  { id: 'c4', name: 'Dev Patel', email: 'dev.patel@example.com', phone: '', address: '' },
+  { id: 'c5', name: 'Elena Rossi', email: 'elena.rossi@example.com', phone: '+61412000104', address: '77 Bangalow Rd, Byron Bay NSW 2481' },
+  { id: 'c6', name: 'Farah Haddad', email: 'farah.haddad@example.com', phone: '+61412000105', address: '' },
+  { id: 'c7', name: 'George Lin', email: '', phone: '+61412000106', address: '' },
+  { id: 'c8', name: 'Harper Robinson', email: 'harper.r@example.com', phone: '+61412000002', address: '' },
+  { id: 'c9', name: 'Isla Fraser', email: 'isla.fraser@example.com', phone: '+61412000108', address: '3 Kingsley St, Byron Bay NSW 2481' },
+  { id: 'c10', name: 'Jonah Weiss', email: 'jonah.weiss@example.com', phone: '+61412000109', address: '' },
+  { id: 'c11', name: 'Ruby Thompson', email: 'ruby.t.work@example.com', phone: '', address: '' },
+  { id: 'c12', name: 'Mum', email: 'lakshmi.nair@example.com', phone: '+61412000111', address: '9 Vista Ct, Chatswood NSW 2067' },
+  { id: 'c13', name: 'Sam Byrne (plumber)', email: '', phone: '+61412000112', address: '' },
+  { id: 'c14', name: 'Tessa Moore', email: 'tessa.moore@example.com', phone: '+61412000113', address: '' },
+];

@@ -35,6 +35,8 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSContactsUsageDescription</key>
+	<string>Openinvite reads your contacts only when you tap From contacts, so you can add people to your guest list.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Openinvite uses the camera so you can take a photo for your moodboard or your site.</string>
 	<key>NSFaceIDUsageDescription</key>
