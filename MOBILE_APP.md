@@ -252,7 +252,7 @@ Every icon-only button carries an `aria-label` (header actions, the bell, item-c
 3. Command line: `xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath ios/DerivedData build`, then `xcrun simctl install booted <DerivedData>/Build/Products/Debug-iphonesimulator/App.app` and `xcrun simctl launch --console-pty booted au.com.openinvite.app` (the console shows the Capacitor bridge and `console.error` from the web app). Screenshots: `xcrun simctl io booted screenshot out.png`.
    - **Xcode 27**: `Simulator.app` was renamed `DeviceHub.app` and moved to `Xcode.app/Contents/Applications/`. `npx cap run ios` builds fine and then fails at "Deploying" with "Simulator.app does not exist"; that is a Capacitor CLI path bug, not a build failure. The simctl steps above do not need the window at all. To get the window: `open -a /Applications/Xcode.app/Contents/Applications/DeviceHub.app`.
    - `xcrun simctl openurl booted "openinvite://..."` puts up an "Open in Openinvite?" alert on iOS 27 that has to be tapped in the window.
-   - Local builds have no `.env`, so `VITE_BASE44_APP_ID` is unset and the SDK warns at build time. Vercel supplies it in CI. For sign-in to work in a local simulator build, `vercel env pull` first.
+   - Local builds have no `.env`, so `VITE_BASE44_APP_ID` is unset and the SDK warns at build time. Vercel supplies it in CI. Sign-in still works locally: `base44Client.js` falls back to a committed app id when the variable is absent. Do **not** `vercel env pull` to silence the warning — goal 9 records why that breaks sign-in instead of fixing it.
 4. A real iPhone: sign in with an Apple ID under Xcode > Settings > Accounts, set the team on the App target under Signing & Capabilities, plug the phone in, trust the computer, select it as the destination and Run. For a personal team the app expires after seven days; the Apple Developer Program lifts that and is needed for TestFlight and push. Face ID is not gated: `NSFaceIDUsageDescription` in `Info.plist` is all the biometric prompt needs, and a personal team signs it.
 5. Deep links on the simulator: `xcrun simctl openurl booted "openinvite://m/plan/budget"`.
 
@@ -303,7 +303,7 @@ Also observed:
 
 ### Roadmap, re-ordered for what is left before TestFlight
 
-1. Owner: Apple Developer Program, CORS for the shell origin, the Base44 redirect URL, `vercel env pull` for local builds. Xcode is installed.
+1. Owner: Apple Developer Program, CORS for the shell origin, the Base44 redirect URL. Xcode is installed. (`vercel env pull` was listed here and is struck: goal 9 found it breaks a local build rather than enabling one.)
 2. Run on a device; check Face ID, the camera, deep links and the keyboard on real hardware. The simulator run is done; the launch screen finding (item 8) is the one thing to settle before TestFlight.
 3. Approve and apply the push schema; ship the triggers; then registration, then the fan-out (order in the proposal).
 4. TestFlight build with the current icon; a designed icon when one exists.
@@ -540,15 +540,22 @@ Three builds now, and the Account title says which is on the phone:
 | `npm run mobile:real` | `VITE_MOBILE_REAL=1`: the production bundle, pointed at the production API and the Base44 app, then `npx cap sync` | Live |
 | `npm run mobile:build` | the same production bundle without the label | none |
 
-**The Base44 app id.** `src/api/base44Client.js` reads `VITE_BASE44_APP_ID` at build time. Pull it into the local, uncommitted env file before a real build:
+**The Base44 app id.** `src/api/base44Client.js` reads `VITE_BASE44_APP_ID` at build time **and falls back to a committed literal when it is unset** (`import.meta.env.VITE_BASE44_APP_ID || '<id>'`, line 6). That fallback is the app the desktop site uses, so a real build needs no env file at all:
 
 ```
-vercel env pull .env.local
 npm run mobile:real
 npm run mobile:ios
 ```
 
-`.env.local` is ignored by git (`.gitignore` lists `.env`, `.env.*` and `.env*.local`; confirmed 2026-09-22), and nothing in this document or the commits prints a value. The Stripe, Turnstile and Spotify keys in the same file are public client ids by design; the server keys never reach a `VITE_` name.
+**Do not run `vercel env pull` for this.** It was the instruction here until goal 9 and it is wrong: it breaks the build it claims to fix. See "The env file that broke sign-in" under goal 9. The base44 vite plugin still prints `Warning: VITE_BASE44_APP_ID is not set` on a build with no env file — that warning reads the environment, not the fallback, and is expected. What matters is that the id reaches the bundle, which is checkable without printing it:
+
+```
+FALLBACK=$(grep -o "VITE_BASE44_APP_ID || '[^']*'" src/api/base44Client.js | sed "s/.*|| '//;s/'//")
+grep -rqF "$FALLBACK" ios/App/App/public/assets/ && echo "app id is in the bundle Xcode will build"
+grep -rqF '[SENSITIVE]' ios/App/App/public/ && echo "PLACEHOLDER LEAKED — delete .env.local"
+```
+
+If a local build ever does need a real secret (none of the mobile builds do today), `.env.local` is ignored by git (`.gitignore` lists `.env`, `.env.*` and `.env*.local`; confirmed 2026-09-22) and nothing in this document or the commits prints a value. The Stripe, Turnstile and Spotify keys are public client ids by design; the server keys never reach a `VITE_` name.
 
 **Where the calls go.** Natively, `src/mobile/native.ts` rewrites every same-origin `/api/` request to `API_ORIGIN`, which is now `https://www.openinvite.com.au`. The apex answers a CORS preflight with a 307 to www, and no browser follows a redirect on a preflight, so the earlier `https://openinvite.com.au` base could never have loaded anything from the shell. Links the couple shares keep the apex.
 
@@ -730,14 +737,61 @@ too, so neither order leaks a request out of a demo build. The sentence is
 restored and the ordering is now written down where the next reader will find
 it.
 
+### The env file that broke sign-in
+
+Found after the three fixes above, running a real build on the phone: sign-in
+failed with **"App not found"** on a build that had signed in fine an hour
+earlier. The difference between the two builds was `.env.local`.
+
+**What happens.** `vercel env pull` cannot read back a variable marked
+**Sensitive** in Vercel. Sensitive variables are write-only: a build running
+on Vercel gets the value, but the CLI writes the literal string
+`[SENSITIVE]` into the file in its place. Twenty-five of the forty-seven keys
+in this project's pull came back that way, `VITE_BASE44_APP_ID` among them.
+Pulling `--environment=production` instead of development changes nothing;
+sensitive is sensitive in every environment.
+
+**Why that is worse than having no value at all.** `base44Client.js` line 6 is
+`import.meta.env.VITE_BASE44_APP_ID || '<committed fallback>'`. With no env
+file the variable is undefined, the `||` fires, and the fallback — a real app
+id — is what ships. With the pulled file the variable is the truthy string
+`"[SENSITIVE]"`, which wins the `||` and is sent to Base44 as the app id.
+Hence "App not found". **A placeholder shadows a fallback; an absent variable
+does not.** Two keys in the repo have `||` fallbacks that a placeholder can
+shadow this way: `VITE_BASE44_APP_ID` (`src/api/base44Client.js`) and
+`VITE_POSTHOG_HOST` (`src/lib/analytics.js`).
+
+**The ruling: a mobile build takes no env file.** `.env.local` is deleted and
+`npm run mobile:real` is run with none. Confirmed by hashing rather than
+printing: the id in `ios/App/App/public/assets/` matches the fallback in
+`base44Client.js` (sha1 equal), and the string `[SENSITIVE]` appears nowhere
+in `dist/` or the iOS bundle. The instruction that caused this — "`vercel env
+pull .env.local` before a real build", written in goal 8 — is removed from the
+three places it appeared.
+
+**How it was diagnosed without reading a secret.** The pulled value was
+compared to the source fallback by sha1 (mismatch), then characterised by
+length and character class (11 characters, containing `[` and `]`, no digits),
+then identified by hashing candidate placeholder strings until one matched.
+No value was printed at any point. Worth keeping as the method: an env value
+can be identified by hash when it turns out not to be a secret at all.
+
+**Also reverted:** `vercel env pull` appends `.env*` to `.gitignore`. It is
+redundant here (`.env.*` on line 3 and `.env*.local` on line 38 already cover
+`.env.local`) and it is harmful: gitignore is last-match-wins, so a `.env*`
+appended at the end re-ignores `.env.example`, which line 4 deliberately
+un-ignores with `!.env.example`. That file stayed visible only because it is
+already tracked. The line was backed out.
+
 ### Verify (goal 9)
 
 `npm run build` exits 0 before each of the four commits; `npm run lint` passes;
 `npm run mobile:real` builds and syncs (13 iOS plugins). `git diff` for this
 goal touches `src/mobile/**` and the three mobile markdown files only. A real
-build still needs `VITE_BASE44_APP_ID` from `vercel env pull .env.local`
-before it is installed, or the bundle cannot sign in (the base44 plugin warns
-at build time when it is missing).
+build needs **no** env file: the committed fallback in `base44Client.js` is
+the app id, and the build was confirmed to carry it into
+`ios/App/App/public/assets/` with no `[SENSITIVE]` string anywhere in the
+bundle.
 
 ## Keeping parity
 
@@ -859,6 +913,7 @@ Stated plainly, in order of weight.
 - **Purchases in the app.** Every upgrade / checkout / billing-portal call to action is hidden when `isNative()`. Stripe Checkout inside an App Store binary is a review risk (guideline 3.1.1) and the current `window.location.href` to `checkout.stripe.com` would strand the couple on the live website anyway. Options: sell only on the web and say so in the app (what v0 does), StoreKit / Play Billing, or Stripe in the system browser with a deep-link return. The trial banner, `ChoosePlan`, `Pricing` and `Account` are desktop pages and untouched.
 - **Should mobile web visitors be sent to `/m`?** Nothing redirects today. The dashboard's own phone treatment is what `MOBILE_AUDIT.md` describes. If yes, the place is `Layout.jsx` or `App.jsx` behind a `(max-width: 1023px)` + `pointer: coarse` check, with a way back to the desktop view.
 - **Two edits to `App.jsx` beyond registering routes**, both small and both in the router file: the native start-path redirect (`/` and `/DailyUpdate` to `/m` when `isNative()`) and the static import of `native.ts` that makes the API rewrite install before `AuthProvider`. Written up here because the brief allows router edits "to register `/m/*` routes" and these are adjacent to that.
+- **The committed app-id fallback in `src/api/base44Client.js`** (line 6) is now load-bearing for this lane: goal 9's ruling is that a mobile build takes no env file, which works *because* that fallback is there. It is a public client identifier, not a secret, so it is not a leak — but it does mean a local build silently talks to production whenever the variable is absent, which is what made the "App not found" failure confusing in both directions. If the product lane ever removes or changes it, `npm run mobile:real` stops signing in and the instructions under goal 8 need rewriting. A `VITE_` name is the wrong place for a value the build must not do without; naming it in `.env.example` with a comment would be the smaller fix. Not this branch's call.
 - **`eslint.config.js`**: add `src/mobile/**/*.{js,jsx,ts}` to the linted set so the React and hooks rules apply.
 - **`DashboardPageHeader`**: CLAUDE.md requires it on every dashboard page. The mobile screens are not `Layout` pages and use `ScreenHeader` instead; this is the mobile exception the brief anticipates and should be written into `DESIGN_SPEC.md` if the shell ships.
 - **Ava's action cards navigate to desktop routes** (`/Guests`, `/Budget`) because `AvaChatPod` calls `navigate()` with those paths. In the shell that opens the desktop dashboard inside the webview. Either the pod learns a base path (an edit to `AvaChatPod.jsx`), or the shell intercepts those navigations.
