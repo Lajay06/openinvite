@@ -412,7 +412,7 @@ A fresh subagent given only `MOBILE_PARITY.md`, the desktop source and the mobil
 - **WhatsApp QR pairing** is desktop-only; the mobile Messages screen takes the number and composes messages natively instead.
 - **Exports** (`jszip` bundles, CSV, ICS) go through the native Share sheet as text or a file; the desktop's direct downloads have no equivalent in a webview.
 - **The Plan hub's good-to-know stat** counted `enabled`, which the desktop never writes; it now counts `display`.
-- **Collaborator sessions** are desktop-only: the app signs in as the couple and never reads `/api/collaborator-data`. Supporting a collaborator on the phone means the read-only overlay on every screen.
+- **Collaborator sessions** are desktop-only: the app signs in as the couple and never reads `/api/collaborator-data`. Supporting a collaborator on the phone means the read-only overlay on every screen. *Settled in goal 9 (2026-09-22): deferred by the owner, and written up as a future goal — idea 15 in `MOBILE_IDEAS.md` — with the entry point, the endpoints and the effort.*
 - **Ava's quick actions** seed the question into the pod's box (the pod is shared with the desktop's Layout and is not edited); on desktop the modal sends the quick action at once. One tap more on the phone.
 
 ## Goal 6: launch experience, guest suite naming, polish (2026-09-22)
@@ -591,6 +591,153 @@ The daily set was re-cast to people facing the camera, faces whole, eyes open, w
 ### Verify (goal 8)
 
 `npm run build` exits 0; `npm run mobile:demo` and `npx cap sync` pass (12 plugins, contacts included); `npm run mobile:real` builds and syncs without being run against production from the terminal; `npm run test:guest-counts` passes (9 checks: all events, every fixture event, the constructed edge cases). The preview screenshot run gained twelve screens (`guests-stat-filter`, `site-preview-sheet`, `plan-invitations-preview`, `plan-send-invites-groups`, `plan-budget-forecast`, `plan-budget-health-run`, `guests-from-contacts`, `plan-schedule-calendar` and the four offline screens); all 115 pass the width, tap-target, input-size and shadow checks (the script now opens a fresh page every twenty screens, since headless Chromium stopped answering screenshots after about forty navigations in one page, and treats the couple's designs inside the two previews as artwork, not chrome). `git diff main --stat` touches only `src/mobile/**`, `assets/` (none), `ios/`, `android/`, `package.json`, `package-lock.json`, `scripts/mobile-preview-screenshots.mjs`, the new `scripts/test-guest-counts.mjs`, `mobile-screenshots/`, `CORS_PROPOSAL.md` and the three mobile markdown files. Inside `src/mobile/`: no photo twice, one guest label set, no color outside the tokens (the mark's gradient is the icon's own artwork; the guest suite and invitation previews draw the couple's designs, which are exempt as artwork), no font size outside the scale beyond the daily takeover's three.
+
+## Goal 9: the real account's first sign-in (2026-09-22)
+
+Three findings from the owner's first run of a real build on the phone, and
+what each turned out to be. No `api/` file is touched; `src/mobile/` only.
+
+### Finding 1: a real wedding rendered as an empty one
+
+Signed in with a real account, Home said "Hi jaygalaxy23", "Add your date in
+Event details" and Replies 0 to a couple with a full wedding on desktop.
+Nothing was wrong with the wedding. Three reads had failed and none of them
+said so.
+
+**Why.** The ownership-scoped helpers fail SOFT by design:
+`getMyWeddingDetails()` answers `null` and `getMyRecords()` /
+`getMyGuestsWithRsvp()` answer `[]` when the request itself fails, because a
+dashboard tab that renders "no guests yet" beats one that throws. Those three
+are exactly the reads that go through the app's own `/api/*`
+(`/api/my-wedding-details`, `/api/my-guests`, `/api/my-guests-rsvp`), which
+the shell cannot reach until `CORS_PROPOSAL.md` is merged. So every screen
+drew a wedding that had never arrived, and the failure was invisible.
+
+**Where each request goes in real mode.** Every call Home, Guests and the Plan
+hub make, by the path it takes:
+
+| Path | Calls | In the shell |
+|---|---|---|
+| Base44 direct (`/api/apps/<app id>/…` through Vercel's rewrite) | `base44.auth.me()`, then `.filter({ created_by_id })` on Note, Budget, Schedule, Vendor, GuestMessage, RegistryItem, RegistryProduct, CustomGift, ReceivedGift, Music, VowSpeech, MoodboardItem, Table, GuestbookEntry, Photo, PollVote, Notification; `InvokeLLM`; `UploadFile`; `base44.auth.updateMe`; the seating writes in `tableAssignment` | **Works today.** That path answers `access-control-allow-origin: *` (probed 2026-09-22) |
+| The app's own `/api/*` | `GET/PUT /api/my-wedding-details`; `GET /api/my-guests`, `GET /api/my-guests-rsvp`, `POST/PUT/DELETE /api/my-guests`; `POST /api/my-guest-links`; `GET/POST /api/song-request-review`; `POST /api/send-invites`; `POST /api/send-guest-reply`; `POST /api/questionnaire-responses-for-owner`; `POST /api/places-search`, `GET /api/place-details`, `/api/places-photo`; `POST /api/vow-pin`; `GET /api/schedule-feed-url`; `POST /api/claim-slug`, `POST /api/change-address` | **Blocked** until the shell's origin is in `ALLOWED_ORIGINS`. Blocker 1 below |
+
+**How the wedding is picked, desktop and mobile.** Both go through
+`/api/my-wedding-details`, which takes the caller's non-test `WeddingDetails`
+rows, sorts by `created_date` and returns the newest, warning server-side when
+there is more than one (the "Alex & Sam" telemetry). There is no "selected
+wedding" concept anywhere in the repo, so an owner with several weddings
+resolves identically on both. The one divergence is a collaborator session,
+which the desktop enters only through `?collabOwner=<ownerUserId>`; `/m` has
+no entry point for it, so the app is owner-only. That stays out of scope by
+owner decision (2026-09-22) and is now idea 15 in `MOBILE_IDEAS.md`.
+
+Checked while here and found already correct: `createMyWeddingDetails()`
+re-reads strictly at write time and throws rather than creating, so a failed
+read can never make the second wedding record that would silently substitute
+for the couple's own.
+
+**What changed.** The mobile seam asks for `strict` on all three helpers
+(`createRealApi`), so a failure throws and the error states every list already
+has do the reporting. `null` from `wedding.get()` still means "this couple has
+no wedding record yet"; a throw now means "we could not find out", and those
+are different screens. Where a failed read would make a screen state a
+falsehood, the failure is the whole load's and is no longer caught:
+`usePlanData`, `useDailyUpdate` and `useBudget` let the wedding read reject,
+so Home and the Plan hub show their error state with a retry, the daily
+takeover does not appear at all, and the guest list counts a failed wedding
+read as its own (the wedding carries the events every filter acts on).
+Everything else stays soft and NAMED, so the "some numbers are incomplete"
+panel can say which: messages and song requests joined guests, to-dos, budget,
+schedule and vendors there. `HomeScreen` renders the error alone when nothing
+came back at all, rather than drawing heroes over a failed load.
+
+**The greeting.** It fell back to `user.full_name`, which Base44 fills with the
+email's local part when an account is created without a name — which is where
+"jaygalaxy23" came from. Names now come from `coupleDisplayName` /
+`coupleNameParts`, the one owner of the couple's names on the desktop, legacy
+`coupleNames` fallback included. The account's own name is used only when it is
+not the email in disguise (`src/mobile/lib/greeting.js` compares it to the
+email's local part with punctuation stripped); otherwise the screen says plain
+"Hi". The Guest suite and Account cards took the same helper, so no mobile
+screen hand-rolls the " & " join any more.
+
+**Fixed and live on the web at `/m` today. Still waiting on CORS:** every row
+in the second half of the table above.
+
+### Finding 2: the priming screen could not be answered
+
+"Turn on notifications" and "Not now" did nothing in a real build.
+
+**Why the buttons looked dead.** `usePrimingGate` read the stored choice once,
+on mount. Both buttons wrote it with `prefSet` and navigated home, and nothing
+told the gate the value had moved, so the redirect in `MobileApp.jsx` fired
+again and put the couple back on the screen they had just answered. The gate
+now owns the state it gates on: it returns `{ show, record }`, and
+`record(choice)` moves the state and stores the value together, so the
+redirect is closed by the same render that navigates away. "Turn on" asks the
+system permission AFTER recording, not before — a refused prompt is still an
+answer, and the screen has no business asking twice. Both buttons disable
+while the choice is in flight, and a device that cannot store the choice still
+gets past the screen rather than being held on it.
+
+**Why it appeared over a Replies count of 0.** The feed's ten sources each fell
+back to an empty list on failure without saying so. The `Notification` rows —
+read through the SDK, which the shell can reach — carried real, older
+`rsvp_received` rows, while the guest list those replies would be counted
+against comes from `/api/my-guests`, which it cannot. One source answered,
+nine did not, and the gate could not tell the difference. Every source is now
+named when it fails, `useNotifications` exposes `failed` and `complete`, and
+the ask ("your first reply is in") requires a feed that loaded all of it. The
+notification center shows its error state with a retry when it comes back
+blank on a failed load, instead of "Nothing yet".
+
+### Finding 3: the welcome slides
+
+All three showed couples who looked alike, and on two of them nobody was
+looking at the camera: screen 2 was a couple photographed from behind, screen
+3 a single guest laughing with her eyes shut — not a couple at all.
+
+Screens 2 and 3 now carry a couple walking hand in hand down a market lane
+(`marrakech-hero_sbciuz`) and a couple dressed up on a bridge at night
+(`hf_20260917_170201_de2267ae…_ybyaaj`). Both face the camera, both have their
+eyes open, and neither resembles the other or screen 1.
+
+Every one of the sixteen photos in `app/` that no slot held was viewed at the
+welcome crop first, and not one passes the test — the pool is backs turned,
+closed eyes, motion blur, a bouquet and a martini, as goal 8 found when it
+re-cast the daily set. So the two photos came from slots that held
+face-to-camera couples, and those slots took the two the welcome screens were
+using: the party cake photo took the Marketplace tile, where a 4/3 crop shows
+the couple that the tall welcome crop had cut in half, and the snow photo took
+the demo couple's second Our Story photo, where its small figures in a wide
+white field read as a story rather than an empty slide. Nothing entered or left
+the library; the four slots swapped in two pairs. 81 slots, 81 photos,
+`duplicateIds()` still empty. The market lane is a wide photo cropped tall, so
+its crop is pinned to the faces (`gravity: 'faces'`) rather than left to
+`g_auto`'s guess.
+
+### A comment that had been spliced
+
+`installNativeApiBase`'s docblock in `native.ts` had two lines of another
+comment and an `import './demo';` spliced into the middle of a sentence. The
+import was INSIDE the block comment, so it was dead text, not a second import
+— the demo guard is installed by `demo.ts` itself at module load, evaluated by
+App.jsx's `import { isDemoBuild } from './mobile/demo'` on the line after this
+module's. Checked while repairing it: App.jsx imports `native` first, so the
+demo guard wraps the API rewrite and sees the relative path, which
+`allowed()` refuses on its own origin; it refuses the rewritten absolute URL
+too, so neither order leaks a request out of a demo build. The sentence is
+restored and the ordering is now written down where the next reader will find
+it.
+
+### Verify (goal 9)
+
+`npm run build` exits 0 before each of the four commits; `npm run lint` passes;
+`npm run mobile:real` builds and syncs (13 iOS plugins). `git diff` for this
+goal touches `src/mobile/**` and the three mobile markdown files only. A real
+build still needs `VITE_BASE44_APP_ID` from `vercel env pull .env.local`
+before it is installed, or the bundle cannot sign in (the base44 plugin warns
+at build time when it is missing).
 
 ## Keeping parity
 

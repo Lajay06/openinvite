@@ -296,10 +296,16 @@ export async function registerBackButton(onBack: () => boolean): Promise<() => v
  * to API_ORIGIN (the www host: the apex answers a preflight with a redirect,
  * which no browser follows), for both fetch (the /api/*.js endpoints) and
  * XMLHttpRequest (the SDK's axios). It runs at module load, which App.jsx's
- * static // Demo builds refuse network calls; the guard must be in place before the
-// API rewrite below and before AuthProvider. No-op unless VITE_MOBILE_DEMO=1.
-import './demo';
-import puts before AuthProvider's first `auth.me()`.
+ * static import puts before AuthProvider's first `auth.me()`.
+ *
+ * The demo build's network guard (src/mobile/demo.ts) patches the same two
+ * functions and is installed by demo.ts itself at module load; App.jsx's
+ * `import { isDemoBuild } from './mobile/demo'` is what evaluates it, on the
+ * line after this module's own import. So the guard wraps the rewrite and
+ * sees the relative path, which `allowed()` refuses on its own origin; it
+ * refuses the rewritten absolute URL too, so neither order leaks a request
+ * out of a demo. Nothing here imports demo.ts, and nothing should: two
+ * import sites would install the guard twice.
  *
  * What it does NOT do: make the server accept the request. api/_lib/security.js
  * reflects Access-Control-Allow-Origin only for the production hostnames, so
