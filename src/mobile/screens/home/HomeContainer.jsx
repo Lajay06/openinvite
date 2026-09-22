@@ -17,6 +17,7 @@ import { useApi, useSymbol } from '../../data/api';
 import { hapticLight, shareLink } from '../../native';
 import { siteUrlFor } from '../../lib/links';
 import { homeHeroImages, imageUrl } from '../../lib/images';
+import { heroSeed } from './heroPool';
 import { leastTouched, featureByKey } from '../../features/registry';
 import { summariseBudget } from '../plan/BudgetScreen';
 
@@ -41,7 +42,16 @@ export default function HomeContainer() {
   // Hero i draws the couple's own photo i (cover, then Our Story), and the
   // decorative slot for that position when they have fewer: a photo is never
   // repeated across the four heroes to fill a gap.
-  const images = useMemo(() => { const own = homeHeroImages(details); return [imageUrl('heroDays'), imageUrl('heroReplies'), imageUrl('heroAva'), imageUrl('heroShare')].map((u, i) => own[i] || u); }, [details]);
+  // The couple's own photos (goal 6): the cover and Our Story, then their
+  // moodboard pins and the guest suite gallery; the standard app photos
+  // stand in for each position they have not filled.
+  const images = useMemo(() => {
+    const own = [...homeHeroImages(details), ...(d.moodboard || []).map((m) => m.image_url), ...(d.photos || []).map((p) => p.url || p.image_url)].filter((u, i, arr) => u && arr.indexOf(u) === i);
+    return [imageUrl('heroDays'), imageUrl('heroReplies'), imageUrl('heroAva'), imageUrl('heroShare')].map((u, i) => own[i] || u);
+  }, [details, d.moodboard, d.photos]);
+  // The rotation point for the hero pool, one step per app open.
+  const [seed, setSeed] = useState(0);
+  useEffect(() => { let live = true; heroSeed().then((n) => { if (live) setSeed(n); }); return () => { live = false; }; }, []);
   const siteUrl = siteUrlFor(details);
 
   const rsvp = useMemo(() => {
@@ -129,6 +139,10 @@ export default function HomeContainer() {
       numbers={numbers}
       failedSources={failed.length ? formatSourceList(failed) : ''}
       latest={latest}
+      songRequests={(d.songRequests || []).filter((r) => r.status === 'pending').length}
+      guestbook={d.guestbook || []}
+      unreadMessages={(d.messages || []).filter((m) => !m.read).length}
+      heroSeed={seed}
       onOpenGuests={() => navigate(`${base}/guests?filter=awaiting`)}
       onOpenBudget={() => navigate(`${base}/plan/budget`)}
       onOpenTasks={() => navigate(`${base}/plan/checklist`)}

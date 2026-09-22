@@ -5,6 +5,7 @@ import { HeroCard, PeekCarousel, StatCard, PanelCard, ImageCard, Row, RowGroup, 
 import { money, dateLong, dueLabel, dateShort } from '../../lib/format';
 import ActivityRow from '../../notifications/ActivityRow';
 import { imageUrl } from '../../images';
+import { pickHeroes } from './heroPool';
 
 /** Keep-planning cards draw a fixed photo by position (images.ts), never the feature's Plan tile photo. */
 const KEEP_PLANNING = ['keepPlanning1', 'keepPlanning2', 'keepPlanning3', 'keepPlanning4', 'keepPlanning5', 'keepPlanning6'];
@@ -16,20 +17,27 @@ const KEEP_PLANNING = ['keepPlanning1', 'keepPlanning2', 'keepPlanning3', 'keepP
  */
 export default function HomeScreen({
   firstName, coupleName, weddingDate, daysToGo, images = [], siteUrl,
-  rsvp, budget, tasks = [], payments = [], keepPlanning = [], briefing, badge = null, thisWeek = [], numbers = [], failedSources = '', latest = [],
+  rsvp, budget, tasks = [], payments = [], keepPlanning = [], briefing, badge = null, thisWeek = [], numbers = [], failedSources = '', latest = [], songRequests = 0, guestbook = [], unreadMessages = 0, heroSeed = 0,
   onOpenGuests, onOpenBudget, onOpenTasks, onCompleteTask, onOpenFeature, onOpenAva, onShare, onSearch, onOpenLatest, onOpenNotifications, onOpenLink,
   loading = false, error = null, onRetry, onRefresh,
 }) {
   const img = (i) => images[i] || '';
   const countdown = daysToGo == null ? null : daysToGo > 1 ? `${daysToGo}` : daysToGo === 1 ? 'Tomorrow' : daysToGo === 0 ? 'Today' : null;
-  const heroes = [];
+  // The pool of cards real data backs (goal 6): days to go first, then three of the rest in rotation.
+  const pool = [];
   if (!loading) {
-    heroes.push({ key: 'days', image: img(0), label: coupleName || 'Your wedding', number: countdown && daysToGo > 1 ? countdown : undefined, title: countdown && daysToGo > 1 ? 'days to go' : countdown || coupleName, sub: weddingDate ? dateLong(weddingDate) : 'Add your date in Event details', action: siteUrl ? 'View guest suite' : 'Event details', onAction: siteUrl ? () => onOpenFeature?.('site') : () => onOpenFeature?.('event-details') });
-    if (rsvp && rsvp.invited > 0) heroes.push({ key: 'rsvp', image: img(1), label: 'Replies', number: rsvp.attending, title: `attending so far`, sub: rsvpSentence(rsvp), action: 'See who is yet to reply', onAction: onOpenGuests, progress: { value: rsvp.attending + rsvp.declined, max: rsvp.invited } });
+    pool.push({ key: 'days', label: coupleName || 'Your wedding', number: countdown && daysToGo > 1 ? countdown : undefined, title: countdown && daysToGo > 1 ? 'days to go' : countdown || coupleName, sub: weddingDate ? dateLong(weddingDate) : 'Add your date in Event details', action: siteUrl ? 'View guest suite' : 'Event details', onAction: siteUrl ? () => onOpenFeature?.('site') : () => onOpenFeature?.('event-details') });
+    if (rsvp && rsvp.invited > 0) pool.push({ key: 'rsvp', label: 'Replies', number: rsvp.attending, title: 'attending so far', sub: rsvpSentence(rsvp), action: 'See who is yet to reply', onAction: onOpenGuests, progress: { value: rsvp.attending + rsvp.declined, max: rsvp.invited } });
     const lead = Array.isArray(briefing) ? (briefing[0]?.lead || briefing[0]?.body) : briefing;
-    if (lead) heroes.push({ key: 'ava', image: img(2), label: 'From Ava', title: lead, action: 'Ask Ava', onAction: onOpenAva });
-    if (siteUrl) heroes.push({ key: 'share', image: img(3), label: 'Your site', title: 'Share it with your guests', sub: siteUrl.replace(/^https?:\/\//, ''), action: 'Share link', onAction: onShare });
+    if (lead) pool.push({ key: 'ava', label: 'From Ava', title: lead, action: 'Ask Ava', onAction: onOpenAva });
+    if (siteUrl) pool.push({ key: 'share', title: 'Guest suite', sub: 'Share with your guests', action: 'Share link', onAction: onShare });
+    if (payments[0]) pool.push({ key: 'payment', label: `Due ${dateShort(payments[0].payment_date)}`, number: money(payments[0].actual_amount || payments[0].budgeted_amount, budget?.symbol), title: `${payments[0].item_name}${payments[0].vendor ? ` to ${payments[0].vendor}` : ''}`, action: 'Open budget', onAction: onOpenBudget });
+    if (tasks[0]) pool.push({ key: 'task', label: dueLabel(tasks[0].due_date) || 'Next task', title: tasks[0].title, sub: tasks.length > 1 ? `${tasks.length - 1} more open` : undefined, action: 'Open to do', onAction: onOpenTasks });
+    if (songRequests > 0) pool.push({ key: 'songs', label: 'Song requests', number: songRequests, title: songRequests === 1 ? 'song to review' : 'songs to review', action: 'Review requests', onAction: () => onOpenFeature?.('music') });
+    else if (guestbook[0]) pool.push({ key: 'guestbook', label: 'Guestbook', title: guestbook[0].message ? `"${String(guestbook[0].message).slice(0, 90)}${String(guestbook[0].message).length > 90 ? '...' : ''}"` : 'A new entry', sub: guestbook[0].name || guestbook[0].guest_name || '', action: 'Open guest suite', onAction: () => onOpenFeature?.('site') });
+    if (unreadMessages > 0) pool.push({ key: 'messages', label: 'Messages', number: unreadMessages, title: unreadMessages === 1 ? 'unread message' : 'unread messages', action: 'Read them', onAction: () => onOpenFeature?.('messages') });
   }
+  const heroes = pickHeroes(pool, heroSeed).map((h, i) => ({ ...h, image: img(i) }));
   return (
     <Screen title={firstName ? `Hi ${firstName}` : 'Hi'} bell actions={[{ icon: Search, label: 'Search', onClick: onSearch }]} onRefresh={onRefresh}>
       <div className="oi-m-stack oi-m-stack--24">
