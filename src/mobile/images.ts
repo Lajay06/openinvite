@@ -21,8 +21,9 @@
  * here too, so no Cloudinary id lives anywhere else in src/mobile/.
  *
  * `todo: true` marks a slot that has no good photo; the gallery shows the
- * marker and the slot draws a color panel. Two are todo after goal 6
- * (tileEmergency, tileConsiderations): the library is spent.
+ * marker and the slot draws a color panel. None are todo after goal 6:
+ * the owner added 22 photos to `app` on 2026-09-22 and the two tiles that
+ * waited (tileEmergency, tileConsiderations) took theirs from that batch.
  *
  * ONCE, APP-WIDE (goal 5). A public id may appear in one slot only, and
  * `duplicateIds()` is empty by construction: /m/preview/images throws
@@ -78,7 +79,8 @@ export const IMAGES = {
   tileSeating: { id: 'DTS_Banquet_Daniel_Farò_Photos_ID5359_z6zqs8', alt: 'A dinner table from above, plates and wine', usedIn: 'Plan hub, Seating tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
   tileWeddingParty: { id: 'DTS_VINYL_TASTE_Ivan_Resnik_Photos_ID14915_xtfezz', alt: 'Two friends laughing on a doorstep', usedIn: 'Plan hub, Wedding party tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 30%' },
   tileMoodboard: { id: 'DTS_Natural_Beauty_Rob_Christain_Crosby_Photos_ID2680_fnyjzd', alt: 'A bouquet held against pink', usedIn: 'Plan hub, Moodboard tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
-  tileStyling: { id: 'DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8869_rpi65n', alt: 'A satin suit and a smile', usedIn: 'Plan hub, Styling tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 0%', gravity: 'north' },
+  /* Goal 6 photo fix: the earlier photo was framed below the chin, so every crop cut the face; this one is an outfit with no face to cut. */
+  tileStyling: { id: 'DTS_FIRST_ROUND_JELLY_LUISE_Photos_ID10632_ecexru', alt: 'A silver skirt and a pink cocktail', usedIn: 'Plan hub, Styling tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
   tileBeauty: { id: 'DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8875_cwnpxl', alt: 'Getting ready at a bathroom mirror', usedIn: 'Plan hub, Beauty tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
   tileFood: { id: 'DTS_LAST_SUPPER_PALI_MENDEZ_Photos_ID13819_kvl7b7', alt: 'A croquembouche and bowls of berries', usedIn: 'Plan hub, Food & beverage tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
   tileMusic: { id: 'DTS_Pride_Agustín_Farías_Photos_ID5544_sgsmaz', alt: 'A party under falling tinsel', usedIn: 'Plan hub, Music tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
@@ -105,9 +107,9 @@ export const IMAGES = {
   tileSuiteTransport: { id: 'DTS_BANDITS_PALI_MENDEZ_Photos_ID14261_wcy4l1', alt: 'A piggyback through the desert', usedIn: 'Plan hub, guest suite Getting here tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
   tileExperience: { id: 'DTS_Springtime_Rob_Christain_Crosby_Photos_ID3094_kjiq9v', alt: 'Skating down a palm-lined street', usedIn: 'Plan hub, Experience guide tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 60%' },
   tileGoodToKnow: { id: 'DTS_LAST_SUPPER_PALI_MENDEZ_Photos_ID13840_nxtipc', alt: 'A martini against red velvet', usedIn: 'Plan hub, Good to know tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
-  /* Goal 6 asks for photos on these two; the library has none left, so they wait as color panels (2 more photos needed). */
-  tileEmergency: { id: '', alt: 'A phone in hand', usedIn: 'Plan hub, Emergency contact tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', todo: true, tone: 'neutral' },
-  tileConsiderations: { id: '', alt: 'Reading together', usedIn: 'Plan hub, Considerations tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', todo: true, tone: 'neutral' },
+  /* Goal 6 photo fixes: both from the owner's 2026-09-22 batch, used nowhere else. */
+  tileEmergency: { id: 'DTS_SOJOURN_Franco_Dupuy_Photos_ID10782_kwgbsm', alt: 'Head down over a laptop in a booth', usedIn: 'Plan hub, Emergency contact tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 0%', gravity: 'north' },
+  tileConsiderations: { id: 'DTS_Passion_Economy_Daniel_Farò_Photos_ID4725_lxcdnt', alt: 'A glass of water with a sprig of flowers', usedIn: 'Plan hub, Considerations tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
   tileSuitePolls: { id: 'DTS_Pride_Agustín_Farías_Photos_ID5510_dn4jws', alt: 'A kiss at sunset', usedIn: 'Plan hub, Guest polls tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
   /* ── Empty states ── */
   emptyVendors: { id: 'DTS_Banquet_Daniel_Farò_Photos_ID5367_hgnaqg', alt: 'Hands serving plates at a counter', usedIn: 'My vendors, empty state', screen: 'vendors', size: { w: 326, h: 183 }, ratio: '16/9' },
