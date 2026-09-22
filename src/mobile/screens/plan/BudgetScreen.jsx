@@ -11,11 +11,9 @@ import { BUDGET_CATEGORIES, budgetCategoryLabel } from '@/lib/budgetCategories';
 import { money, dateShort } from '../../lib/format';
 import { exportText } from '../../native';
 import ExpenseFormSheet from './ExpenseFormSheet';
+import BudgetForecast from './BudgetForecast';
 
 const SEGMENTS = [{ key: 'overview', label: 'Overview' }, { key: 'forecast', label: 'Forecasting' }, { key: 'expenses', label: 'Expenses' }];
-/* BudgetForecasting.jsx's benchmarks and tips, verbatim. */
-const BENCHMARKS = { venue: { pct: 0.31, label: 'Venue' }, catering: { pct: 0.29, label: 'Catering' }, photography: { pct: 0.10, label: 'Photography' }, flowers: { pct: 0.08, label: 'Flowers' }, music: { pct: 0.05, label: 'Music / Entertainment' }, attire: { pct: 0.07, label: 'Attire' }, transportation: { pct: 0.02, label: 'Transportation' }, decorations: { pct: 0.03, label: 'Decorations' }, rings: { pct: 0.02, label: 'Rings' }, beauty: { pct: 0.02, label: 'Beauty' }, stationery: { pct: 0.01, label: 'Stationery' }, honeymoon: { pct: 0.04, label: 'Honeymoon' }, miscellaneous: { pct: 0.02, label: 'Miscellaneous' } };
-const TIPS = { catering: 'Opt for buffet or family-style service instead of plated; it saves 15 to 25 percent.', photography: 'Book a newer photographer building their portfolio for half the cost of established names.', flowers: 'Use greenery-heavy arrangements and seasonal blooms; that saves up to 40 percent.', venue: 'Consider off-peak dates (Fridays, Sundays) for 20 to 30 percent venue discounts.', attire: 'Sample sales, consignment boutiques, or trunk shows can cut costs by 30 to 50 percent.', music: 'A curated Spotify playlist with a good sound system can replace a live band.', decorations: 'DIY centerpieces and candles significantly reduce decoration costs.', transportation: 'Shuttle buses shared among guests are far cheaper than individual cars.', honeymoon: 'Traveling in shoulder season (May, September) cuts flights and hotels by about 30 percent.' };
 
 export function summariseBudget(items = [], plan = null) {
   const spent = items.reduce((s, i) => s + (i.actual_amount || 0), 0);
@@ -105,7 +103,7 @@ export default function BudgetScreen({ items = [], plan = null, symbol = '$', on
               </>
             )
           ) : segment === 'forecast' ? (
-            <Forecast items={items} stats={stats} symbol={symbol} onAsk={onAsk} />
+            <BudgetForecast items={items} stats={stats} symbol={symbol} onAsk={onAsk} />
           ) : (
             <>
               {items.length > 0 && <FilterPills options={[{ key: 'all', label: 'All' }, ...BUDGET_CATEGORIES.filter((c) => items.some((i) => i.category === c.key)).map((c) => ({ key: c.key, label: c.label, count: items.filter((i) => i.category === c.key).length }))]} value={catFilter} onChange={setCatFilter} />}
@@ -157,77 +155,6 @@ function PlannerSheet({ open, onClose, plan, items, symbol, committed, onSave })
         {BUDGET_CATEGORIES.map((c) => <TextField key={c.key} label={c.label} type="number" inputMode="decimal" value={cats[c.key] ?? ''} onChange={(e) => setCats((s) => ({ ...s, [c.key]: e.target.value }))} placeholder="0" />)}
       </div>
     </BottomSheet>
-  );
-}
-
-/** BudgetForecasting.jsx without the chart: the flags, the saving suggestions, the remaining-by-category list, Ava's insights. */
-function Forecast({ items, stats, symbol, onAsk }) {
-  const [ai, setAi] = useState(null);
-  const [busy, setBusy] = useState(false);
-  const [showAll, setShowAll] = useState(false);
-  const fmt = (n) => money(n, symbol);
-  const categoryData = useMemo(() => { const m = {}; items.forEach((i) => { const c = i.category || 'miscellaneous'; if (!m[c]) m[c] = { budgeted: 0, spent: 0, count: 0 }; m[c].budgeted += i.budgeted_amount || 0; m[c].spent += i.actual_amount || 0; m[c].count++; }); return m; }, [items]);
-  const flags = useMemo(() => Object.entries(categoryData).flatMap(([cat, d]) => {
-    const b = BENCHMARKS[cat]; if (!b || stats.totalBudgeted === 0) return [];
-    const amt = b.pct * stats.totalBudgeted;
-    const overBudget = d.spent > d.budgeted && d.budgeted > 0;
-    const overBench = d.budgeted > amt * 1.3;
-    const severity = overBudget ? 'high' : overBench ? 'medium' : null;
-    return severity ? [{ cat, label: b.label, severity, tip: overBudget ? `Actual spend exceeds budget by ${fmt(d.spent - d.budgeted)}. Consider renegotiating with your vendor.` : `Your planned spend is ${fmt(d.budgeted - amt)} above the typical allocation (${fmt(amt)}).` }] : [];
-  }).sort((a, b) => (b.severity === 'high' ? 1 : 0) - (a.severity === 'high' ? 1 : 0)), [categoryData, stats]); // eslint-disable-line react-hooks/exhaustive-deps
-  const suggestions = useMemo(() => Object.entries(categoryData).flatMap(([cat, d]) => { const b = BENCHMARKS[cat]; if (!b || stats.totalBudgeted === 0) return []; const amt = b.pct * stats.totalBudgeted; if (d.budgeted <= amt * 1.2) return []; const savings = d.budgeted - amt; return [{ cat, label: b.label, savings, tip: TIPS[cat] || `Reducing ${b.label} to industry norms could save you ${fmt(savings)}.` }]; }).sort((a, b) => b.savings - a.savings).slice(0, 5), [categoryData, stats]); // eslint-disable-line react-hooks/exhaustive-deps
-  const ask = async () => {
-    setBusy(true);
-    try {
-      const summary = Object.entries(categoryData).map(([category, d]) => ({ category, budgeted: d.budgeted, spent: d.spent, variance: d.spent - d.budgeted }));
-      const r = await onAsk(`You are an expert wedding budget consultant. Analyze this couple's wedding budget data and provide actionable insights.\n\nBudget summary: Total budgeted $${stats.totalBudgeted}, Total spent $${stats.totalSpent}, Remaining $${stats.remaining}.\n\nCategory breakdown: ${JSON.stringify(summary)}\n\nIndustry benchmarks: Venue ~31%, Catering ~29%, Photography ~10%, Flowers ~8%, Music ~5%, Attire ~7%.\n\nProvide:\n1. Top 3 most urgent financial risks with specific dollar amounts\n2. Top 3 highest-ROI cost saving actions with estimated savings\n3. A brief overall financial health score (1-10) with one sentence rationale\n\nBe concise, specific, and use dollar figures.`, { response_json_schema: { type: 'object', properties: { health_score: { type: 'number' }, health_rationale: { type: 'string' }, risks: { type: 'array', items: { type: 'object', properties: { title: { type: 'string' }, detail: { type: 'string' }, urgency: { type: 'string' } } } }, savings_actions: { type: 'array', items: { type: 'object', properties: { action: { type: 'string' }, estimated_saving: { type: 'string' } } } } } } });
-      setAi(r && typeof r === 'object' ? r : null);
-      if (!r || typeof r !== 'object') toast.error('Ava did not return insights.');
-    } catch { toast.error('Ava could not look at the budget just now.'); } finally { setBusy(false); }
-  };
-  if (items.length === 0) return <EmptyState icon={Wallet} text="Add a few expenses and the forecast shows what is over, what could save you money, and what Ava thinks." />;
-  const shown = showAll ? flags : flags.slice(0, 3);
-  return (
-    <>
-      <div className="oi-m-grid2">
-        <StatCard icon={Wallet} label="Budget used" number={`${Math.round(stats.percentageUsed)}%`} />
-        <StatCard icon={AlertTriangle} label="Flags" numeric={flags.length} ink />
-      </div>
-      <section>
-        <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Watch</h2>
-        {flags.length === 0 ? <div className="oi-m-card"><p className="oi-m-body">Nothing is over budget or well above the usual split. Keep going.</p></div> : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {shown.map((f) => <div key={f.cat} className="oi-m-card" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}><span className="oi-m-body oi-m-strong">{f.label}</span><StatusPill tone={f.severity === 'high' ? 'no' : 'warn'}>{f.severity === 'high' ? 'Over budget' : 'Above the norm'}</StatusPill></div><p className="oi-m-meta" style={{ color: 'var(--m-text)' }}>{f.tip}</p></div>)}
-            {flags.length > 3 && <PillButton variant="secondary" size="sm" onClick={() => setShowAll((v) => !v)} style={{ alignSelf: 'flex-start' }}>{showAll ? 'Show fewer' : `Show all ${flags.length}`}</PillButton>}
-          </div>
-        )}
-      </section>
-      {suggestions.length > 0 && (
-        <section>
-          <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Where you could save</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {suggestions.map((x) => <div key={x.cat} className="oi-m-card" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}><span className="oi-m-body oi-m-strong">{x.label}</span><span className="oi-m-body oi-m-strong">{fmt(x.savings)}</span></div><p className="oi-m-meta" style={{ color: 'var(--m-text)' }}>{x.tip}</p></div>)}
-          </div>
-        </section>
-      )}
-      <section>
-        <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Against the usual split</h2>
-        <RowGroup>
-          {Object.entries(BENCHMARKS).filter(([k]) => categoryData[k]).map(([k, b]) => { const d = categoryData[k]; const amt = b.pct * stats.totalBudgeted; return <Row key={k} label={b.label} sub={`Usually about ${Math.round(b.pct * 100)}%, ${fmt(amt)}`} value={fmt(d.budgeted)} trailing={d.budgeted > amt * 1.3 ? <StatusPill tone="warn">High</StatusPill> : undefined} />; })}
-        </RowGroup>
-      </section>
-      <section>
-        <h2 className="oi-m-section" style={{ marginBottom: 12 }}>From Ava</h2>
-        {!ai ? <PanelCard tone="ink" mark="✦" label="From Ava" body="Ask Ava to read the numbers: the three biggest risks, the three best savings, and a health score." action={busy ? 'Reading the numbers' : 'Ask Ava'} onClick={busy ? undefined : ask} /> : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {ai.health_score != null && <div className="oi-m-card"><div className="oi-m-meta">Health score</div><div className="oi-m-num" style={{ fontSize: 28, lineHeight: '34px' }}>{ai.health_score} of 10</div>{ai.health_rationale && <p className="oi-m-meta" style={{ color: 'var(--m-text)', marginTop: 4 }}>{ai.health_rationale}</p>}</div>}
-            {(ai.risks || []).map((r, i) => <div key={i} className="oi-m-card"><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}><span className="oi-m-body oi-m-strong">{r.title}</span>{r.urgency && <StatusPill tone="warn">{r.urgency}</StatusPill>}</div><p className="oi-m-meta" style={{ color: 'var(--m-text)' }}>{r.detail}</p></div>)}
-            {(ai.savings_actions || []).map((a, i) => <div key={i} className="oi-m-card"><div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}><span className="oi-m-body">{a.action}</span>{a.estimated_saving && <span className="oi-m-body oi-m-strong" style={{ flexShrink: 0 }}>{a.estimated_saving}</span>}</div></div>)}
-            <PillButton variant="secondary" size="sm" icon={Sparkles} onClick={ask} disabled={busy} style={{ alignSelf: 'flex-start' }}>Ask again</PillButton>
-          </div>
-        )}
-      </section>
-    </>
   );
 }
 

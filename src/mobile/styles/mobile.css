@@ -503,6 +503,28 @@
 .oi-m-sitepreview-sheet__pages { flex-shrink: 0; padding: 4px 0 12px; }
 /* The frame scrolls its own content and contains the guest nav's fixed menu (translateZ, as FullScreenPreview.jsx's phone frame). */
 .oi-m-sitepreview-sheet__frame { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; background: #FFFFFF; transform: translateZ(0); scrollbar-width: none; }
+/* Budget forecasting (goal 8): the health panel and the projection graph, on the tokens. */
+.oi-m-health { display: flex; flex-direction: column; min-height: 0; }
+.oi-m-health__label { margin-bottom: 6px; }
+.oi-m-health__score { display: flex; align-items: baseline; margin-top: 4px; }
+.oi-m-health__of { opacity: 0.8; }
+.oi-m-health__why { margin-top: 8px; opacity: 0.88; }
+.oi-m-health__line { margin-top: 8px; }
+.oi-m-health__fail { margin-top: 8px; color: #FFFFFF; }
+.oi-m-chart svg { display: block; overflow: visible; }
+.oi-m-chart__grid { stroke: var(--m-line); stroke-width: 1; }
+.oi-m-chart__tick { font-size: 10px; fill: var(--m-text-2); font-family: inherit; }
+.oi-m-chart__area--planned { fill: rgba(10, 10, 10, 0.06); }
+.oi-m-chart__area--actual { fill: var(--m-primary-soft); }
+.oi-m-chart__line { fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.oi-m-chart__line--planned { stroke: var(--m-text-2); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.oi-m-chart__line--actual { stroke: var(--m-primary); stroke-width: 2; }
+.oi-m-chart__dot { fill: var(--m-primary); }
+.oi-m-chart__legend { display: flex; align-items: center; gap: 16px; margin-top: 10px; font-size: 13px; line-height: 18px; color: var(--m-text-2); }
+.oi-m-chart__legend span { display: inline-flex; align-items: center; gap: 6px; }
+.oi-m-chart__swatch { display: inline-block; width: 12px; height: 3px; border-radius: var(--m-r-pill); }
+.oi-m-chart__swatch--planned { background: var(--m-text-2); }
+.oi-m-chart__swatch--actual { background: var(--m-primary); }
 /* The guest list's four numbers (goal 8): a 2 by 2 grid of tappable stats inside the card. Active: number and label in primary. */
 .oi-m-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; margin-bottom: 12px; }
 .oi-m-stat-btn { display: flex; flex-direction: column; align-items: flex-start; text-align: left; min-height: 56px; padding: 4px 0; margin: 0; background: none; border: 0; border-radius: var(--m-r-input); color: var(--m-text); font: inherit; transition: transform var(--m-fast) var(--m-ease); }
