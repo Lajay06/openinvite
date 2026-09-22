@@ -82,7 +82,7 @@ export const SAMPLE_EDINBURGH = {
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'A fiddle and a piano while we eat, and dancing from nine once the tables are cleared. Send us what you want played at ten.' },
   music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song, and it should be one you will actually get up for.' },
-  registryContent: { registryMessage: 'The house is small and full and we have both been keeping the same furniture for a decade. If you would like to mark the day, there is a short list and a fund for a week away.', noGiftsPlease: false },
+  registryContent: { registryMessage: 'The house is small and full, and between us we have kept the same furniture for a decade. What we would like is a week away; there is a fund for it, and little else.', noGiftsPlease: false },
 
   qna: [
     { question: 'How cold will it be?', answer: 'Close to freezing, and the chapel is not heated. Coats stay on and nobody minds.' },

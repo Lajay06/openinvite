@@ -80,7 +80,7 @@ export const SAMPLE_MONACO = {
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'A pianist on the terrace and a set on the deck from eleven. Tell us what belongs after eleven.' },
   music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song, and it has to survive being played loudly.' },
-  registryContent: { registryMessage: 'Between us we already own two of everything. If you would like to give something, there is a short list, and the rest goes to the sailing school on the far side of the port.', noGiftsPlease: false },
+  registryContent: { registryMessage: 'Between us we already own two of everything, including opinions. Two or three things are listed; everything else goes to the sailing school on the far side of the port.', noGiftsPlease: false },
 
   qna: [
     { question: 'What time should we arrive?', answer: 'By half past six. The gate at the top of the steps is locked at ten to seven and there is no second entrance.' },

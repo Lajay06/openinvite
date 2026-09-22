@@ -94,7 +94,7 @@ export const SAMPLE_LONDON = {
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'There is a quartet early and a rather louder arrangement later. Tell us what belongs in the second half.' },
   music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song, and we will find room for it.' },
-  registryContent: { registryMessage: 'We have a home already, and everything in it. If you would like to mark the day, there is a short list.', noGiftsPlease: false },
+  registryContent: { registryMessage: 'We have a home already, and everything in it. There is a list, kept deliberately small.', noGiftsPlease: false },
 
   qna: [
     { question: 'What time should we arrive?', answer: 'From half past two. The ceremony begins at three and runs about twenty minutes.' },

@@ -232,7 +232,7 @@ export const SAMPLE_HAVANA = {
   },
 
   registryContent: {
-    registryMessage: 'Coming is the gift. If you want to mark it with something, there is a short list.',
+    registryMessage: 'Coming is the gift. Everything else is optional, and briefly listed.',
     noGiftsPlease: false,
   },
 

@@ -78,7 +78,7 @@ export const SAMPLE_MYKONOS = {
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'Nothing until dinner, then everything. Send us what belongs after ten.' },
   music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song. Loud is fine.' },
-  registryContent: { registryMessage: 'You are crossing water to be here, and that is the gift. If you want to give something anyway, the list is short.', noGiftsPlease: false },
+  registryContent: { registryMessage: 'You are crossing water to be here. Nothing needs to come with you. Nothing on the list needs a suitcase either.', noGiftsPlease: false },
 
   qna: [
     { question: 'How do we get up to the chapel?', answer: 'A gravel track, five minutes on foot from the parking. Cars cannot make the last part.' },

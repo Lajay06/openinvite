@@ -93,7 +93,7 @@ export const SAMPLE_BALI = {
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'A guitar at the table and a proper set once it is dark. Tell us what you want played after the plates go.' },
   music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song each, and it should be one you would dance to on sand.' },
-  registryContent: { registryMessage: 'You have flown a long way and that is more than enough. If you would like to give something anyway, there is a short list and a fund for the beach clean the village runs.', noGiftsPlease: false },
+  registryContent: { registryMessage: 'You have flown a long way and that is more than enough. Anything further can go to the beach clean the village runs.', noGiftsPlease: false },
 
   qna: [
     { question: 'What time should we arrive?', answer: 'By half past four. The light goes fast and the ceremony starts at five whatever happens.' },
