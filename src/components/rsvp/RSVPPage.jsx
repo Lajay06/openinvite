@@ -304,6 +304,10 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
   // back button returns to it. The token travels once as ?rsvp= and is stripped
   // by the site on arrival.
   const [redirected, setRedirected] = useState(false);
+  // Whether the couple has polls this guest has not answered — read on load,
+  // and again from activePolls after a submit. It decides whether the done
+  // screen OFFERS the polls, never whether it jumps to them.
+  const [hasUnvotedPolls, setHasUnvotedPolls] = useState(false);
   useEffect(() => {
     if (embedded || redirected) return;
     const slug = wedding?.slug;
@@ -461,7 +465,10 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
           const existingVotes = g.poll_votes || {};
           const hasUnvotedPolls = activePollsList.length > 0 &&
             activePollsList.some(p => !existingVotes[p.id]);
-          setStep(hasUnvotedPolls ? 'polls' : 'done');
+          // The same rule on the way back in: a guest who has already replied
+          // sees that their reply stands, with the polls offered below it.
+          setStep('done');
+          setHasUnvotedPolls(hasUnvotedPolls);
         }
         // else step stays 'rsvp' (default)
       } catch (e) {
@@ -623,8 +630,16 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
         dietary_restrictions: serializeDietaryPills(dietaryPicked, dietaryOther),
         email,
       }));
-      // Advance to polls if any active, otherwise straight to done
-      setStep(activePolls.length > 0 ? 'polls' : 'done');
+      // ── A REPLY ENDS ON THE REPLY (owner ruling, Run 6 U3) ─────────────
+      //
+      // This sent every guest who had just answered straight into the couple's
+      // polls, without asking. A guest who came to say yes was handed a
+      // questionnaire instead of a confirmation, and the one thing they came
+      // for — "did that land?" — scrolled away underneath it.
+      //
+      // The polls are still there and still one tap away: the done screen
+      // offers them when any are unanswered. Offered, not imposed.
+      setStep('done');
     } catch (err) {
       console.error('RSVP submit error', err);
       alert('Something went wrong. Please try again.');
@@ -818,6 +833,23 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
                     Also attending: {attendees.join(', ')}
                   </p>
                 )}
+              </div>
+            )}
+
+            {/* THE POLLS, OFFERED. They used to open on their own the moment a
+                reply was saved; now they wait here for a guest who wants them. */}
+            {(hasUnvotedPolls || activePolls.length > 0) && (
+              <div style={{ marginTop: 26 }}>
+                <button
+                  data-open-polls
+                  onClick={() => setStep('polls')}
+                  style={{
+                    border: `1px solid ${theme.accent}`, background: 'none', color: theme.accent,
+                    borderRadius: 999, padding: '9px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer', ...F,
+                  }}
+                >
+                  {activePolls.length > 1 ? 'Answer their questions' : 'Answer their question'}
+                </button>
               </div>
             )}
 
