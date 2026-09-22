@@ -89,7 +89,7 @@ export const IMAGES = {
   tilePhotography: { id: 'DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14202_q14mwq', alt: 'A kiss in a tall window, seen from the street', usedIn: 'Plan hub, Photography tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 78%' },
   tileGuestGifts: { id: 'DTS_Philia_Daniel_Farò_Photos_ID4659_pnnku3', alt: 'A hand holding a bottle of champagne', usedIn: 'Plan hub, Guest gifts tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
   tileVendors: { id: 'DTS_MOTHERLY_Shauna_Summers_Photos_ID10728_vz25fa', alt: 'Arranging flowers in a vase', usedIn: 'Plan hub, My vendors tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 35%' },
-  tileMarketplace: { id: 'marrakech-hero_sbciuz', alt: 'A couple in a souk', usedIn: 'Plan hub, Marketplace tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
+  tileMarketplace: { id: 'DTS_NU_NUPTIALS_Shauna_Summers_Photos_ID10310_o5dcie', alt: 'Sharing cake at the party', usedIn: 'Plan hub, Marketplace tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 35%' },
   tileCeremony: { id: 'DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14213_wbsnwi', alt: 'A couple on the steps in their wedding clothes', usedIn: 'Plan hub, Ceremony details tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 40%' },
   tileTransport: { id: 'hf_20260904_063711_294c70f5-51b6-4194-bef1-72f6cf26aa3f_hc1r7a', alt: 'A couple in the back of a car at night', usedIn: 'Plan hub, Getting here tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
   tileAccommodation: { id: 'DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_-_Print_ew6e2a', alt: 'Two in bathrobes on a hotel bed', usedIn: 'Plan hub, Stay tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
@@ -123,8 +123,18 @@ export const IMAGES = {
      goes the moment the shell has painted. The 14 pool photos went back to the unused list; seven of them are the
      bundled daily update set below. */
   welcome1: { id: 'DTS_BANDITS_PALI_MENDEZ_Photos_ID14280_cddisg', alt: 'A couple under a wide sky', usedIn: 'Welcome, screen 1', screen: 'welcome', size: { w: 390, h: 844 }, ratio: '4/5', focal: '50% 35%' },
-  welcome2: { id: 'DTS_Like_a_Movie_Foster___Asher_Photos_ID1041_mudxwa', alt: 'Carrying each other through the snow', usedIn: 'Welcome, screen 2', screen: 'welcome', size: { w: 390, h: 844 }, ratio: '4/5', focal: '50% 40%' },
-  welcome3: { id: 'DTS_NU_NUPTIALS_Shauna_Summers_Photos_ID10310_o5dcie', alt: 'Sharing cake at the party', usedIn: 'Welcome, screen 3', screen: 'welcome', size: { w: 390, h: 844 }, ratio: '4/5', focal: '50% 40%' },
+  /* The three welcome slides are the first thing anyone sees, and they showed
+     three couples who looked alike — and on two of them nobody was looking at
+     the camera at all: screen 2 was a couple photographed from behind, screen 3
+     a single guest laughing with her eyes shut. Screens 2 and 3 now carry
+     couples who face the camera with their eyes open and who look nothing like
+     each other or like screen 1. Nothing entered or left the library: these two
+     photos and the two that were here swapped slots in pairs, so every photo is
+     still used exactly once (tileMarketplace and fixtureStory2 below). The
+     market lane is a wide photo cropped tall, so its crop is pinned to the
+     faces rather than left to g_auto. */
+  welcome2: { id: 'marrakech-hero_sbciuz', alt: 'A couple walking hand in hand down a market lane', usedIn: 'Welcome, screen 2', screen: 'welcome', size: { w: 390, h: 844 }, ratio: '4/5', focal: '50% 35%', gravity: 'faces' },
+  welcome3: { id: 'hf_20260917_170201_de2267ae-fe05-4cfc-8a7c-5733336600d0_ybyaaj', alt: 'A couple dressed up on a bridge at night', usedIn: 'Welcome, screen 3', screen: 'welcome', size: { w: 390, h: 844 }, ratio: '4/5', focal: '50% 30%' },
   login: { id: 'DTS_First_Date_Marlen_Stahlhuth_Photos_ID4795_upbdbr', alt: 'A couple sitting on a wall under the sky', usedIn: 'Mobile login, top panel', screen: 'login', size: { w: 390, h: 260 }, ratio: '3/2', focal: '50% 40%' },
   priming: { id: 'DTS_Weirdly_Ever_After_Agustín_Farías_Photos_ID8960_nspx4l', alt: 'A kiss on the cheek against orange', usedIn: 'Notification priming, top panel', screen: 'priming', size: { w: 390, h: 260 }, ratio: '3/2', focal: '50% 35%' },
   lock: { id: 'DTS_Tradition_Chris_Abatzis_Photos_ID9150_yiunlp', alt: 'A couple in a mountain meadow', usedIn: 'Face ID lock screen (the couple\'s own photo first)', screen: 'lock', size: { w: 390, h: 844 }, ratio: '4/5' },
@@ -155,7 +165,7 @@ export const IMAGES = {
   fixtureCover: { id: 'aspen-hero_zeblit', alt: 'A couple running through snow between pines', usedIn: 'Fixture cover photo, the couple\'s identity: Home hero 1, the Account card, the lock screen', screen: 'home', size: { w: 390, h: 488 }, ratio: '4/5', focal: '50% 45%' },
   fixtureSite: { id: 'hf_20260905_024502_4d83f52a-6e0b-4646-8139-ecb322b66c97_wvmeaa', alt: 'A snowball fight under the pines', usedIn: 'Fixture guest suite hero block: the Guest suite tab preview', screen: 'site', size: { w: 342, h: 428 }, ratio: '4/5', focal: '50% 40%' },
   fixtureStory1: { id: 'florence-hero_up7h6h', alt: 'A couple wheeling a bicycle down a stone lane', usedIn: 'Fixture Our Story photo 1: Home hero', screen: 'home', size: { w: 390, h: 488 }, ratio: '4/5', focal: '50% 45%' },
-  fixtureStory2: { id: 'hf_20260917_170201_de2267ae-fe05-4cfc-8a7c-5733336600d0_ybyaaj', alt: 'A couple dressed up on a bridge at night', usedIn: 'Fixture Our Story photo 2: Home hero', screen: 'home', size: { w: 390, h: 488 }, ratio: '4/5', focal: '50% 35%' },
+  fixtureStory2: { id: 'DTS_Like_a_Movie_Foster___Asher_Photos_ID1041_mudxwa', alt: 'Carrying each other through the snow', usedIn: 'Fixture Our Story photo 2: Home hero', screen: 'home', size: { w: 390, h: 488 }, ratio: '4/5', focal: '50% 40%' },
   fixtureStory3: { id: 'hf_20260905_002721_b09968b5-48aa-43ca-ad4f-76ac3cee3ccf_ly1f2r', alt: 'A couple against a city skyline', usedIn: 'Fixture Our Story photo 3: Home hero', screen: 'home', size: { w: 390, h: 488 }, ratio: '4/5', focal: '50% 35%' },
   fixturePin1: { id: 'DTS_TERRA_Chris_Abatzis_Photos_ID13220_kxcbio', alt: 'Lilies in red light', usedIn: 'Fixture moodboard pin 1', screen: 'moodboard', size: { w: 170, h: 170 }, ratio: '1/1' },
   fixturePin2: { id: 'DTS_Quiet_Glamour_DTS_Studio_Photos_ID8376_ove6fd', alt: 'Flowers carried down a street', usedIn: 'Fixture moodboard pin 2', screen: 'moodboard', size: { w: 170, h: 170 }, ratio: '1/1' },
