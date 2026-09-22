@@ -560,6 +560,24 @@ npm run mobile:ios
 
 **`CORS_PROPOSAL.md`** at the repo root carries the exact two-line diff to `api/_lib/security.js` (`capacitor://localhost` and `https://localhost`, no wildcard), why each is needed, and the `curl` to verify it after deploy. It is for the product lane; the mobile branch does not touch `api/`.
 
+### Calendar sync (item 10): the feed is down, the rows wait for it
+
+The desktop's subscribe link comes from `GET /api/schedule-feed-url`, which returns `https://<host>/api/schedule.ics?w=<wedding id>&t=<token>`. Verified on 2026-09-22 from the terminal, no credentials, nothing read:
+
+| Request | Answer |
+|---|---|
+| `GET https://www.openinvite.com.au/api/schedule-feed-url` | 401 JSON (the route exists; it wants a signed-in caller) |
+| `GET https://www.openinvite.com.au/api/schedule.ics?w=x&t=y` | **404**, empty |
+| `OPTIONS` on the same | 404 |
+| `/api/schedule.ics`, `/api/schedule`, `/api/schedule.ics.js`, `/api/schedule.ics/` | 404 every one |
+| `https://openinvite.com.au/api/schedule.ics?...` (the apex) | 307 to www, then the same 404 |
+
+So the feed file `api/schedule.ics.js` (last changed in #817 on 2026-09-20) is not served as a route on production at all, whatever the token; this is the 404 the product lane was diagnosing. A sibling endpoint (`/api/song-request-review`) answers 401 on the same host, so it is that one file, not the deployment. The mobile lane does not touch `api/`; one thing worth the product lane's look is the dotted basename, the only function in `api/` with one.
+
+**What the app does about it.** Per the goal, the subscribe button stays hidden: `api.calendarFeed()` (`src/mobile/data/realApi.js`) asks for the URL and then fetches it, and the Calendar segment shows the subscribe panel and the two rows only when the feed itself answers 200 with `text/calendar`. Today that is never, so the segment says calendar subscribing is not available yet and points to the snapshot and the per-event file. In the native shell the check is cross-origin and blocked until `CORS_PROPOSAL.md` lands, so the rows stay hidden there too, correctly. The webcal:// subscribe and the Google Calendar hand-off are already written (`openHome` in `PlanContainer.jsx`) and switch on by themselves once the feed answers.
+
+**What did ship:** every event's sheet has **Add to calendar**, the existing single-event `.ics` through the share sheet (`exportText`), which needs no feed.
+
 ## Keeping parity
 
 `MOBILE_PARITY.md` is the source of truth for what the app does and how it matches the desktop. Every desktop planning feature has an entry there naming its fields, actions, modals, integrations and states, what the mobile screen does, and a status line; the owner's decisions that deliberately diverge (no QR codes, no direct email to guests, canvases desktop-only) are recorded there too, so a parity sweep does not add them back.

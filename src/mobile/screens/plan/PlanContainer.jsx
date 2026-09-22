@@ -149,7 +149,14 @@ function ScheduleContainer({ back }) {
     ]);
     return { vendors, invitation, wd, weddingDate: wd?.weddingDate || null, todos, customPages, liveStreams };
   }, []);
-  const feed = useLoad(() => api.json('/api/schedule-feed-url').then((d) => d.url || null).catch(() => null), []);
+  // The subscribe feed, only once it answers (goal 8, item 10). The desktop
+  // shows the link the moment /api/schedule-feed-url returns one, but on
+  // 2026-09-22 the feed itself, /api/schedule.ics, answered 404 to every
+  // request on production, so a couple who tapped through got an error page.
+  // The rows stay hidden until a GET of the URL returns a calendar. In the
+  // shell that check is cross-origin and blocked until CORS_PROPOSAL.md
+  // lands, so the rows stay hidden there too; MOBILE_PARITY.md has the record.
+  const feed = useLoad(() => api.calendarFeed(), []);
   const wrap = (fn, ok) => async (...a) => { const r = await fn(...a); toast.success(ok); return r; };
   const openHome = (kind, url) => {
     if (kind === 'google-calendar') { const webcal = String(url).replace(/^https?:/, 'webcal:'); return openExternal(`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcal)}`); }

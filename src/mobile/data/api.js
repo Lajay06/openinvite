@@ -29,6 +29,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
  *   vows.setPin(id, pin) / vows.unlock(id, pin) / vows.clearPin(id)   -> { ok, error? }
  *   llm(prompt, opts)          InvokeLLM
  *   contacts()                 the phone's contacts (goal 8): { status, contacts[] }; fixtures in a demo
+ *   calendarFeed()             the subscribe URL once the feed answers with a calendar, else null (goal 8)
  *   upload(file)               -> { file_url }
  *   updateMe(patch)
  */

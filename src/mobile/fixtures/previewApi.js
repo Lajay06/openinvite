@@ -278,6 +278,8 @@ export function createPreviewApi() {
     upload: async () => ({ file_url: imageUrl('fixturePin1') }),
     // The phone's contacts (goal 8): the fixtures, after the pause the permission sheet would take; nothing is read from a device.
     contacts: async () => { await new Promise((r) => setTimeout(r, 700)); return { status: 'granted', contacts: clone(FIXTURE_CONTACTS) }; },
+    // The demo's calendar feed: the desktop's URL shape, answered as verified (the real api checks the feed itself).
+    calendarFeed: async () => { await gate(null, { empty: null }); return 'https://www.openinvite.com.au/api/schedule.ics?w=preview-wedding&t=demo'; },
     updateMe: async (patch) => Object.assign(FIXTURE_USER, patch),
   };
 }

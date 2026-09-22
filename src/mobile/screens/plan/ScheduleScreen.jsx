@@ -10,7 +10,7 @@ import FormSheet from '../../features/FormSheet';
 import { timeLabel } from '../../lib/format';
 import { buildScheduleEvents, groupEventsByDay, WHEN_LABEL, WHEN_RANK, ROW_HOME, PLANNING_CATEGORIES, CATEGORY_LABEL, eventsInSchedule, runSheetFor, unplaceableCount } from '@/lib/scheduleEvents';
 import { sortScheduleItems } from '@/lib/scheduleOrder';
-import { buildIcsCalendar } from '@/lib/ics';
+import { buildIcsCalendar, slugifyForFilename } from '@/lib/ics';
 import { exportText } from '../../native';
 import { useConsiderations } from '../../features/ConsiderationsSheet';
 
@@ -152,7 +152,7 @@ export default function ScheduleScreen({ items = [], sources = {}, feedUrl, feed
                 <section>
                   <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Subscribe</h2>
                   {feedState === 'loading' ? <SkeletonRows count={2} /> : feedState === 'unavailable' || !feedUrl ? (
-                    <div className="oi-m-card"><p className="oi-m-body">Calendar subscribing is not switched on for this wedding yet.</p></div>
+                    <div className="oi-m-card"><p className="oi-m-body">Calendar subscribing is not available for this wedding yet. Download a snapshot below, or add an event to your calendar from its sheet.</p></div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                       <PanelCard tone="ink" label="Google Calendar" title="Subscribe to your schedule" body="Your schedule events, kept up to date. To-dos and deadlines stay here. Google refreshes every few hours." action="Open Google Calendar" onClick={() => onOpenHome?.('google-calendar', feedUrl)} />
@@ -178,7 +178,14 @@ export default function ScheduleScreen({ items = [], sources = {}, feedUrl, feed
       {sheet && (
         <FormSheet open full title={sheet.item ? 'Edit event' : 'Add event'} fields={SCHEDULE_FIELDS} initial={sheet.item || { category: 'other', ...(sheet.preset || {}) }} required={['event_name', 'event_date', 'start_time']} onClose={() => setSheet(null)}
           onSave={async (v) => { if (sheet.item) { await onUpdate(sheet.item.id, v); } else { await onCreate(v); } }}
-          onDelete={sheet.item ? () => remove(sheet.item) : undefined} deleteLabel="Delete" saveLabel={sheet.item ? 'Save' : 'Add event'} />
+          onDelete={sheet.item ? () => remove(sheet.item) : undefined} deleteLabel="Delete" saveLabel={sheet.item ? 'Save' : 'Add event'}>
+          {/* Goal 8: one event into the phone's calendar, the existing single-event .ics through the share sheet; no feed needed. */}
+          {sheet.item && (
+            <RowGroup>
+              <Row icon={CalendarPlus} tile="neutral" label="Add to calendar" sub="This event, as a calendar file" chevron={false} onClick={async () => { const r = await exportText(`${slugifyForFilename(sheet.item.event_name || 'event')}.ics`, 'text/calendar', buildIcsCalendar([sheet.item], sheet.item.event_name || 'Wedding event')); if (r === 'failed') toast.error('Could not make the calendar file'); else if (r !== 'native') toast.success('Calendar file ready'); }} />
+            </RowGroup>
+          )}
+        </FormSheet>
       )}
       {confirmEl}
       {considerations.sheet}

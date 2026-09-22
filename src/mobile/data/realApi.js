@@ -101,6 +101,17 @@ export function createRealApi(user) {
     llm: (prompt, opts = {}) => InvokeLLM({ prompt, add_context_from_internet: false, ...opts }),
     // The phone's contacts (goal 8), through the native plugin; 'unavailable' on the web.
     contacts: () => readContacts(),
+    // The calendar subscribe URL, verified: null unless the feed itself answers with a calendar (goal 8, item 10).
+    calendarFeed: async () => {
+      const url = await json('/api/schedule-feed-url').then((d) => d.url || null).catch(() => null);
+      if (!url) return null;
+      try {
+        const res = await fetch(url, { method: 'GET' });
+        const type = res.headers.get('content-type') || '';
+        if (res.ok && /text\/calendar/i.test(type)) return url;
+      } catch { /* cross-origin in the shell, or down: hidden either way */ }
+      return null;
+    },
     upload: (file) => UploadFile({ file }),
     updateMe: (patch) => base44.auth.updateMe(patch),
   };
