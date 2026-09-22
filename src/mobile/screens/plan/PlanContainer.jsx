@@ -249,6 +249,7 @@ function InvitationsContainer({ back }) {
   const navigate = useNavigate();
   const { base } = useContext(ShellContext);
   const inv = useLoad(() => api.wedding.invitation().catch(() => null), []);
+  const wd = useWeddingDetails();
   // InvitationBuilder.jsx's starter design, verbatim, so the desktop builder opens the same record.
   const create = async ({ coupleNames, weddingDate }) => {
     const shown = weddingDate ? new Date(`${weddingDate}T00:00:00`).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
@@ -264,7 +265,7 @@ function InvitationsContainer({ back }) {
     inv.reload();
   };
   const url = inv.data ? `${siteOrigin()}/guest-invitation/${inv.data.id}` : '';
-  return <InvitationsScreen invitation={inv.data} invitationUrl={url} loading={inv.loading} error={inv.error} onRetry={inv.reload} onCreate={create} onDesktop={() => openDesktop(navigate, '/Invitations')} onSend={() => navigate(`${base}/plan/send-invites`)} back={back} />;
+  return <InvitationsScreen invitation={inv.data} details={wd.details} invitationUrl={url} loading={inv.loading} error={inv.error} onRetry={inv.reload} onCreate={create} onDesktop={() => openDesktop(navigate, '/Invitations')} onSend={() => navigate(`${base}/plan/send-invites`)} back={back} />;
 }
 
 /* ── Generic ─────────────────────────────────────────────────────────── */

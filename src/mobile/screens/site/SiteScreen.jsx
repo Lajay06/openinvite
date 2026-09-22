@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { ExternalLink, Share2, Palette, LayoutTemplate, Sparkles, Clock, HelpCircle, Gift, Hotel, Car, MapPin, ScrollText, BarChart2, Monitor, Lock, X } from 'lucide-react';
 import Screen from '../../shell/Screen';
-import { Row, RowGroup, PillButton, StatusPill, Skeleton, ErrorState, SmartImage, Switch } from '../../ui';
+import { Row, RowGroup, PillButton, StatusPill, Skeleton, ErrorState, Switch } from '../../ui';
+import { SitePreviewFrame, SitePreviewSheet } from './SitePreview';
 import { prefGet, prefSet } from '../../native';
 
 /** The desktop-only note at the top (goal 8): closed once, hidden for good on this device. */
@@ -14,8 +15,9 @@ const NOTE_PREF = 'suite_desktop_note_closed';
  * says the builder and Ava's Studio happen on a laptop; it closes once and
  * stays closed, and a small row at the bottom keeps the reminder.
  */
-export default function SiteScreen({ universeName, isLive, siteUrl, previewImage, coupleName, onView, onShare, onOpen, onOpenDesktop, onTogglePublish, passwordOn = false, onPassword, loading, error, onRetry }) {
+export default function SiteScreen({ details, universeName, isLive, siteUrl, coupleName, onView, onShare, onOpen, onOpenDesktop, onTogglePublish, passwordOn = false, onPassword, loading, error, onRetry }) {
   const [noteClosed, setNoteClosed] = useState(true);
+  const [previewOpen, setPreviewOpen] = useState(false);
   useEffect(() => { let live = true; prefGet(NOTE_PREF).then((v) => { if (live) setNoteClosed(v === '1'); }).catch(() => { if (live) setNoteClosed(false); }); return () => { live = false; }; }, []);
   const closeNote = () => { setNoteClosed(true); prefSet(NOTE_PREF, '1').catch(() => {}); };
   return (
@@ -30,18 +32,16 @@ export default function SiteScreen({ universeName, isLive, siteUrl, previewImage
         )}
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <Skeleton kind="hero" /> : (
           <div className="oi-m-card oi-m-card--flush">
+            {/* The desktop renderer, scaled into the tile (SitePreview.jsx); tap for the full preview. */}
             <div style={{ position: 'relative', padding: '12px 12px 0' }}>
-              <div style={{ position: 'relative', borderRadius: 'var(--m-r-image)', overflow: 'hidden', background: 'var(--m-ink)', aspectRatio: '4 / 5' }}>
-                <SmartImage src={previewImage} alt={universeName ? `${universeName} universe` : 'Your guest suite'} width={340} ratio="4/5" square eager tone="ink" />
-                <div className="oi-m-hero__scrim" />
-                <div style={{ position: 'absolute', left: 20, right: 20, bottom: 20, color: '#FFFFFF' }}>
-                  <div className="oi-m-hero__label">{universeName || 'Choose a universe'}</div>
-                  <div className="oi-m-hero__title" style={{ fontSize: 17, lineHeight: '22px' }}>{coupleName || 'Your wedding'}</div>
-                </div>
-                <div style={{ position: 'absolute', top: 12, right: 12 }}><StatusPill tone={isLive ? 'ok' : 'light'}>{isLive ? 'Live' : 'Draft'}</StatusPill></div>
-              </div>
+              <SitePreviewFrame details={details} width={342} onOpen={() => setPreviewOpen(true)} />
+              <div style={{ position: 'absolute', top: 24, right: 24 }}><StatusPill tone={isLive ? 'ok' : 'light'}>{isLive ? 'Live' : 'Draft'}</StatusPill></div>
             </div>
             <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div>
+                <div className="oi-m-row__label">{coupleName || 'Your wedding'}</div>
+                <div className="oi-m-row__sub">{universeName ? `${universeName} universe` : 'Choose a universe'}</div>
+              </div>
               {siteUrl ? <p className="oi-m-meta" style={{ overflowWrap: 'anywhere' }}>{siteUrl.replace(/^https?:\/\//, '')}</p> : <p className="oi-m-meta">Your guest suite does not have an address yet. Choose one in the studio on desktop.</p>}
               <div className="oi-m-row" style={{ padding: 0, minHeight: 44, background: 'transparent' }}>
                 <div className="oi-m-row__body"><div className="oi-m-row__label">{isLive ? 'Guest suite is live' : 'Guest suite is hidden'}</div><div className="oi-m-row__sub">{isLive ? 'Guests can open it at the address above' : siteUrl ? 'Only you can see it until you go live' : 'Choose an address first'}</div></div>
@@ -90,6 +90,7 @@ export default function SiteScreen({ universeName, isLive, siteUrl, previewImage
           <Row icon={Monitor} tile="neutral" label="Edit on a laptop" sub="The builder and Ava's Studio need a bigger screen" onClick={() => onOpenDesktop('/studio/website')} />
         </RowGroup>
       </div>
+      <SitePreviewSheet details={details} open={previewOpen} onClose={() => setPreviewOpen(false)} />
     </Screen>
   );
 }

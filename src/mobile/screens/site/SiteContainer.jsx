@@ -2,7 +2,6 @@ import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { getUniverse } from '@/lib/universeCatalog';
-import { siteImageFor } from '../../lib/images';
 import { ShellContext } from '../../shell/MobileShell';
 import SiteScreen from './SiteScreen';
 import { PasswordSheet } from './SiteSheets';
@@ -21,7 +20,6 @@ export default function SiteContainer() {
   const d = wedding.data;
   const universeId = d?.activeUniverse || '';
   const universe = universeId ? getUniverse(universeId) : null;
-  const previewImage = siteImageFor(d);
   const { base } = useContext(ShellContext);
   const siteUrl = siteUrlFor(d);
   const coupleName = d?.couple1Name && d?.couple2Name ? `${d.couple1Name} & ${d.couple2Name}` : '';
@@ -49,7 +47,7 @@ export default function SiteContainer() {
       onTogglePublish={togglePublish}
       passwordOn={!!d?.websitePasswordEnabled}
       onPassword={() => setSheet('password')}
-      previewImage={previewImage}
+      details={d}
       coupleName={coupleName}
       siteUrl={siteUrl}
       onView={() => openExternal(siteUrl)}

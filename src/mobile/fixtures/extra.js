@@ -69,4 +69,9 @@ export const FIXTURE_POLL_COMMENTS = [
   { id: 'pc2', poll_id: 'p1', wedding_id: 'preview-wedding', text: 'Anything but Mr Brightside please.', guest_name: 'Leo Chen', created_date: '2026-09-15T00:00:00Z' },
 ];
 
-export const FIXTURE_INVITATION = { id: 'inv1', couple_names: 'Priya & Tom', wedding_date: '2027-03-20', created_date: '2026-08-01T00:00:00Z', updated_date: '2026-09-12T00:00:00Z', template: 'tulum' };
+export const FIXTURE_INVITATION = { id: 'inv1', couple_names: 'Priya & Tom', wedding_date: '2027-03-20', created_date: '2026-08-01T00:00:00Z', updated_date: '2026-09-12T00:00:00Z', template: 'tulum',
+  // InvitationBuilder.jsx's starter design, so the demo's preview (InvitationPreview.jsx) draws what a new invitation draws.
+  design: { globalStyles: { fontFamily: 'Playfair Display', scrollDirection: 'vertical', transitionType: 'fade', parallax: true }, sections: [{ id: 'hero', name: 'Hero Section', background: { type: 'gradient', value: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }, components: [
+    { id: 'text_1', type: 'text', content: { text: 'Priya & Tom' }, styles: { padding: '40px', margin: '20px 0', textAlign: 'center', fontSize: '2rem', color: '#ffffff', fontWeight: 'bold' } },
+    { id: 'date_1', type: 'text', content: { text: 'March 20, 2027' }, styles: { padding: '10px', margin: '0', textAlign: 'center', fontSize: '1.25rem', color: '#ffffff' } },
+  ] }], selectedSection: 0, selectedElement: null } };

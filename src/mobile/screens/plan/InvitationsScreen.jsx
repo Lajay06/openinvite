@@ -5,14 +5,17 @@ import Screen from '../../shell/Screen';
 import { PanelCard, RowGroup, Row, TextField, PillButton, SkeletonRows, ErrorState } from '../../ui';
 import { shareLink } from '../../native';
 import { dateLong } from '../../lib/format';
+import { InvitationPreviewFrame, InvitationPreviewSheet } from './InvitationPreview';
 
 /**
  * Invitations. The builder is a canvas and stays on desktop; what is not
  * canvas lives here: InvitationBuilder.jsx's first-invitation form
  * (couple names and date, Invitation.create with the starter design) and
  * InvitationStudio.jsx's Copy invitation link. Sending is under Send invites.
+ * The preview is the studio's own renderer (InvitationPreview.jsx), view only.
  */
-export default function InvitationsScreen({ invitation, invitationUrl, loading, error, onRetry, onCreate, onDesktop, onSend, back }) {
+export default function InvitationsScreen({ invitation, details, invitationUrl, loading, error, onRetry, onCreate, onDesktop, onSend, back }) {
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [names, setNames] = useState('');
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [busy, setBusy] = useState(false);
@@ -29,7 +32,13 @@ export default function InvitationsScreen({ invitation, invitationUrl, loading, 
       <div className="oi-m-stack oi-m-stack--24">
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={3} /> : invitation ? (
           <>
-            <PanelCard tone="ink" label={saved ? `Saved ${dateLong(saved)}` : 'Your invitation'} title={invitation.couple_names || 'Your invitation'} body="The design is drawn in the builder on desktop. Share the link, or send it to guests from here." />
+            <div className="oi-m-card oi-m-card--flush">
+              <div style={{ padding: '12px 12px 0' }}><InvitationPreviewFrame invitation={invitation} details={details} width={342} onOpen={() => setPreviewOpen(true)} /></div>
+              <div style={{ padding: 16 }}>
+                <div className="oi-m-row__label">{invitation.couple_names || 'Your invitation'}</div>
+                <div className="oi-m-row__sub">{saved ? `Saved ${dateLong(saved)}. ` : ''}The design is drawn in the builder on desktop. Share the link, or send it to guests from here.</div>
+              </div>
+            </div>
             <RowGroup>
               <Row icon={Link2} tile="neutral" label="Copy invitation link" sub={invitationUrl.replace(/^https?:\/\//, '')} onClick={copy} chevron={false} />
               <Row icon={Send} tile="neutral" label="Send invites" sub="Email or WhatsApp, with each guest's RSVP link" onClick={onSend} />
@@ -47,6 +56,7 @@ export default function InvitationsScreen({ invitation, invitationUrl, loading, 
           </>
         )}
       </div>
+      <InvitationPreviewSheet invitation={invitation} details={details} open={previewOpen} onClose={() => setPreviewOpen(false)} />
     </Screen>
   );
 }
