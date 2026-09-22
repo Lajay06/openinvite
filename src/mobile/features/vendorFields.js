@@ -9,7 +9,7 @@ const t = (name, label, extra = {}) => ({ name, label, type: 'text', ...extra })
 const ta = (name, label, extra = {}) => ({ name, label, type: 'textarea', ...extra });
 const opt = (arr) => arr.map(([value, label]) => ({ value, label }));
 
-export const VENDOR_CATEGORIES = opt([['venue', 'Venue'], ['catering', 'Catering'], ['photography', 'Photography'], ['videography', 'Videography'], ['flowers', 'Flowers & florist'], ['music', 'Music & DJ'], ['bakery', 'Bakery & cake'], ['transportation', 'Transportation'], ['beauty', 'Beauty & hair'], ['attire', 'Attire & fashion'], ['planning', 'Wedding planning'], ['decorations', 'Decorations'], ['entertainment', 'Entertainment'], ['other', 'Other']]);
+export const VENDOR_CATEGORIES = opt([['venue', 'Venue'], ['catering', 'Catering'], ['photography', 'Photography'], ['videography', 'Videography'], ['flowers', 'Flowers & florist'], ['music', 'Music & DJ'], ['bakery', 'Bakery & cake'], ['transportation', 'Transport'], ['beauty', 'Beauty & hair'], ['attire', 'Attire & fashion'], ['planning', 'Wedding planning'], ['decorations', 'Decorations'], ['entertainment', 'Entertainment'], ['other', 'Other']]);
 export const VENDOR_STATUSES = opt([['researching', 'Researching'], ['contacted', 'Contacted'], ['meeting_scheduled', 'Meeting scheduled'], ['quoted', 'Quoted'], ['booked', 'Booked'], ['rejected', 'Rejected']]);
 export const PRICE_RANGES = opt([['$', '$ Budget friendly'], ['$$', '$$ Moderate'], ['$$$', '$$$ Premium'], ['$$$$', '$$$$ Luxury']]);
 export const PHOTO_STYLES = opt([['candid', 'Candid'], ['traditional', 'Traditional'], ['artistic', 'Artistic'], ['documentary', 'Documentary'], ['cinematic', 'Cinematic'], ['vintage', 'Vintage'], ['modern', 'Modern'], ['natural', 'Natural']]);

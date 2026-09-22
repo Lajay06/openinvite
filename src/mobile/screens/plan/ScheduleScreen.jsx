@@ -20,7 +20,7 @@ const TYPE_ORDER = Object.keys(WHEN_RANK).sort((a, b) => WHEN_RANK[a] - WHEN_RAN
 const TYPE_ICON = { planning: Calendar, 'wedding-day': Calendar, after: Calendar, todo: ListChecks, vendor: Store, deadline: Flag };
 
 /** ScheduleForm.jsx's fields, the category grouped as planning item or part of an event. */
-const CATEGORIES = [['ceremony', 'Ceremony'], ['reception', 'Reception'], ['photography', 'Photography'], ['preparation', 'Preparation'], ['transportation', 'Transportation'], ['rehearsal', 'Rehearsal'], ['pre_wedding', 'Pre-wedding'], ['post_wedding', 'Post-wedding'], ['other', 'Other']];
+const CATEGORIES = [['ceremony', 'Ceremony'], ['reception', 'Reception'], ['photography', 'Photography'], ['preparation', 'Preparation'], ['transportation', 'Transport'], ['rehearsal', 'Rehearsal'], ['pre_wedding', 'Pre-wedding'], ['post_wedding', 'Post-wedding'], ['other', 'Other']];
 const CATEGORY_OPTIONS = [
   ...CATEGORIES.filter(([v]) => PLANNING_CATEGORIES.has(v)).map(([value, label]) => ({ value, label: `Planning: ${label}` })),
   ...CATEGORIES.filter(([v]) => !PLANNING_CATEGORIES.has(v)).map(([value, label]) => ({ value, label: `Part of an event: ${label}` })),

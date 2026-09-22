@@ -18,7 +18,7 @@ const typeLabel = (t) => TRANSPORT_TYPES.find(([k]) => k === t)?.[1] || 'Transpo
 /**
  * The guest suite's Stay and Getting here editors, as the desktop
  * pages: Google Places search (through PlaceField, with Use my location
- * and add by hand), a note for guests, a badge (accommodation) or a type
+ * and add by hand), a note for guests, a badge (Stay) or a type
  * (transport), the website from place details at add time, cards with
  * the photo, Open in Maps, the website, remove; transport's notes with
  * add, edit and remove; and Ava's recommendations, each resolved through
@@ -55,7 +55,7 @@ export default function SuitePlacesScreen({ kind, places = [], notes = [], desti
     setAva({ busy: true });
     try {
       const prompt = isStay
-        ? `Recommend 4 accommodation options for wedding guests staying near ${destination}. Include one luxury hotel, one mid-range hotel, one budget hotel, and one boutique/unique stay. For each suggest a REAL property that likely exists near this location.\n\nReturn ONLY valid JSON, no markdown:\n{"suggestions":[\n  {"name":"Exact hotel name","area":"neighborhood or distance from venue","priceRange":"$200-300/night","description":"2 sentences: why it's great for wedding guests, any standout feature","badge":"Luxury pick"},\n  ...\n]}\n\nBadge options: "Luxury pick", "Best value", "Closest to venue", "Budget friendly", "Boutique pick"`
+        ? `Recommend 4 places to stay for wedding guests staying near ${destination}. Include one luxury hotel, one mid-range hotel, one budget hotel, and one boutique/unique stay. For each suggest a REAL property that likely exists near this location.\n\nReturn ONLY valid JSON, no markdown:\n{"suggestions":[\n  {"name":"Exact hotel name","area":"neighborhood or distance from venue","priceRange":"$200-300/night","description":"2 sentences: why it's great for wedding guests, any standout feature","badge":"Luxury pick"},\n  ...\n]}\n\nBadge options: "Luxury pick", "Best value", "Closest to venue", "Budget friendly", "Boutique pick"`
         : `Give transport advice for wedding guests getting to and around ${destination}. Cover: nearest airport(s), how to get from airport to venue area, public transport, rideshare/taxi tips, parking, and any wedding-day transport note.\n\nReturn ONLY valid JSON, no markdown:\n{"suggestions":[\n  {"type":"airport","name":"Exact airport name","description":"1-2 sentences: distance, transport options to venue area","isPlace":true},\n  {"type":"rideshare","name":"Rideshare & taxi","description":"Rideshare availability, estimated fare, pickup tips","isPlace":false},\n  {"type":"public_transport","name":"Public transport","description":"Best public transport routes to the venue area","isPlace":false},\n  {"type":"parking","name":"Parking","description":"Venue parking availability and nearby options","isPlace":false},\n  {"type":"tip","name":"Wedding day shuttle","description":"Recommend couples arrange a shuttle if venue is remote","isPlace":false}\n]}\n\nType options: "airport", "train_station", "rideshare", "public_transport", "parking", "tip"\nisPlace: true only for actual places (airports, stations) that can be found on Google Maps`;
       const response = await api.llm(prompt);
       const text = typeof response === 'string' ? response : JSON.stringify(response);

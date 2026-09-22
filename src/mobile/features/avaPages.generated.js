@@ -9,11 +9,11 @@
 export const AVA_PAGES = {
   "Accommodation": {
     "title": "Stay",
-    "systemPrompt": "You are Ava, a wedding accommodation advisor. Help recommend places to stay and plan guest accommodation.",
+    "systemPrompt": "You are Ava, a wedding stay advisor. Help recommend places to stay and plan where guests stay.",
     "quickActions": [
-      "What should I consider when recommending accommodation?",
+      "What should I consider when recommending places to stay?",
       "How do I negotiate a group rate at a hotel?",
-      "What information should I include in an accommodation guide?",
+      "What information should I include in a guide to where guests stay?",
       "Tips for guests traveling from interstate or overseas"
     ]
   },
