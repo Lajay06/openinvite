@@ -105,13 +105,27 @@ export default function VenueSearchPanel({ venue, onChange, locationBias = '', l
     if (!navigator.geolocation) { setGeoState('unavailable'); return; }
     setGeoState('loading');
     navigator.geolocation.getCurrentPosition(
-      pos => { geoCoordsRef.current = { lat: pos.coords.latitude, lng: pos.coords.longitude }; setGeoState('active'); },
+      pos => {
+        geoCoordsRef.current = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setGeoState('active');
+        // COORDINATES ARE ONLY USEFUL IF SOMETHING USES THEM. They land in a
+        // ref, which does not re-render, so before this line the button
+        // changed its own label to "Using your location" and nothing else
+        // happened: the results on screen were still the unbiased ones, and
+        // the coordinates first took effect on the guest's NEXT keystroke.
+        // Re-running the query the guest already typed is the whole fix.
+        if (query.trim().length >= 2) search(query);
+      },
       err => { console.warn('[Geo]', err.message); setGeoState('error'); },
       { timeout: 8000, maximumAge: 300000 }
     );
   };
 
-  const clearGeo = () => { geoCoordsRef.current = null; setGeoState('idle'); };
+  const clearGeo = () => {
+    geoCoordsRef.current = null;
+    setGeoState('idle');
+    if (query.trim().length >= 2) search(query);
+  };
 
   // Venue already set — show chip with change option
   if (venue?.name && !showDropdown && !showManual) {
@@ -190,7 +204,7 @@ export default function VenueSearchPanel({ venue, onChange, locationBias = '', l
           {showDropdown && results.length > 0 && (
             <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100, background: '#FFF', border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, marginTop: 4, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', maxHeight: 260, overflowY: 'auto' }}>
               {results.map((place, i) => (
-                <button key={place.place_id} onClick={() => handleSelect(place)}
+                <button type="button" key={place.place_id} onClick={() => handleSelect(place)}
                   style={{ width: '100%', display: 'flex', gap: 10, padding: '10px 12px', alignItems: 'center', background: '#FFF', border: 'none', borderBottom: i < results.length - 1 ? '1px solid rgba(10,10,10,0.05)' : 'none', cursor: 'pointer', textAlign: 'left' }}
                   onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,10,10,0.03)'; }}
                   onMouseLeave={e => { e.currentTarget.style.background = '#FFF'; }}
@@ -208,7 +222,7 @@ export default function VenueSearchPanel({ venue, onChange, locationBias = '', l
                   </div>
                 </button>
               ))}
-              <button onClick={() => setShowDropdown(false)}
+              <button type="button" onClick={() => setShowDropdown(false)}
                 style={{ width: '100%', padding: '7px 12px', background: 'rgba(10,10,10,0.02)', border: 'none', borderTop: '1px solid rgba(10,10,10,0.06)', cursor: 'pointer', fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
                 Close
               </button>
