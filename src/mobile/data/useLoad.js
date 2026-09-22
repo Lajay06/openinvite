@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { cacheRead, cacheWrite } from './offlineCache';
 
 const TIMEOUT_MS = 15000;
 
@@ -12,13 +13,19 @@ const TIMEOUT_MS = 15000;
  *
  * `fn` is read through a ref, so callers can pass an inline function; the
  * load re-runs when `deps` change (compared by value) or on reload().
+ *
+ * `options.cacheKey` (goal 8, the offline day): every successful load is
+ * kept on the device under the key, and a failed load answers from it,
+ * with `fromCache: true` and `cachedAt` so the screen can say so. See
+ * offlineCache.js. `options.userId` scopes the key to the account.
  */
-export default function useLoad(fn, deps = []) {
+export default function useLoad(fn, deps = [], options = {}) {
   const fnRef = useRef(fn);
   fnRef.current = fn;
+  const { cacheKey = null, userId = null } = options;
   const key = JSON.stringify(deps);
   const [tick, setTick] = useState(0);
-  const [state, setState] = useState({ data: null, loading: true, error: null, timedOut: false });
+  const [state, setState] = useState({ data: null, loading: true, error: null, timedOut: false, fromCache: false, cachedAt: null });
 
   useEffect(() => {
     let alive = true;
@@ -27,13 +34,17 @@ export default function useLoad(fn, deps = []) {
     (async () => {
       try {
         const data = await Promise.race([fnRef.current(), timeout]);
-        if (alive) setState({ data, loading: false, error: null, timedOut: false });
+        if (alive) setState({ data, loading: false, error: null, timedOut: false, fromCache: false, cachedAt: null });
+        if (cacheKey) cacheWrite(userId, cacheKey, data);
       } catch (err) {
-        if (alive) setState((s) => ({ data: s.data, loading: false, error: err || new Error('Failed to load'), timedOut: !!err?.timedOut }));
+        const cached = cacheKey ? await cacheRead(userId, cacheKey) : null;
+        if (!alive) return;
+        if (cached) setState({ data: cached.data, loading: false, error: null, timedOut: false, fromCache: true, cachedAt: cached.at });
+        else setState((s) => ({ ...s, data: s.data, loading: false, error: err || new Error('Failed to load'), timedOut: !!err?.timedOut }));
       }
     })();
     return () => { alive = false; };
-  }, [key, tick]);
+  }, [key, tick, cacheKey, userId]);
 
   const reload = useCallback(() => setTick((t) => t + 1), []);
 

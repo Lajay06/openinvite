@@ -6,6 +6,7 @@ import { usePlanData, useEntity, useWeddingDetails } from '../../data/plan';
 import { useTasks, useBudget, useGuests, useTaskWrites, useBudgetWrites } from '../../data/wedding';
 import { useApi, useSymbol } from '../../data/api';
 import useLoad from '../../data/useLoad';
+import { useOfflineGuard, offlineNotice } from '../../data/offlineDay';
 import { hapticLight, shareLink, openExternal, prefGet, prefSet } from '../../native';
 import { openDesktop, siteUrlFor, siteOrigin } from '../../lib/links';
 import { useConfirm } from '../../ui/ConfirmSheet';
@@ -140,15 +141,18 @@ function ScheduleContainer({ back }) {
   const navigate = useNavigate();
   const { base } = useContext(ShellContext);
   const [params] = useSearchParams();
-  const s = useEntity('Schedule', 'start_time');
+  // The run sheet is one of the four screens kept on the device for the offline day (goal 8): the rows and the timeline's sources.
+  const { guard } = useOfflineGuard();
+  const s = useEntity('Schedule', 'start_time', { cache: true });
   // The timeline's other sources, as ScheduleHub.jsx loads them, each failing soft.
   const extra = useLoad(async () => {
     const soft = (p) => p.catch(() => []);
     const [vendors, invitation, wd, todos, customPages, liveStreams] = await Promise.all([
       soft(api.list('Vendor')), api.wedding.invitation().catch(() => null), api.wedding.get().catch(() => null), soft(api.list('Note')), soft(api.list('CustomEventPage')), soft(api.list('LiveStream')),
     ]);
+    if (!wd && !vendors.length && !todos.length) throw new Error('offline'); // nothing came back: let the cache answer
     return { vendors, invitation, wd, weddingDate: wd?.weddingDate || null, todos, customPages, liveStreams };
-  }, []);
+  }, [], { cacheKey: 'schedule-sources', userId: api.user?.id });
   // The subscribe feed, only once it answers (goal 8, item 10). The desktop
   // shows the link the moment /api/schedule-feed-url returns one, but on
   // 2026-09-22 the feed itself, /api/schedule.ics, answered 404 to every
@@ -164,7 +168,7 @@ function ScheduleContainer({ back }) {
     const to = { todo: 'checklist', vendor: 'vendors', deadline: 'event-details', music: 'music', wd: 'event-details', livestream: 'event-details', custom: 'event-details' }[kind];
     if (to) navigate(`${base}/plan/${to}`);
   };
-  return <ScheduleScreen items={s.data || []} sources={extra.data || {}} feedUrl={feed.data} feedState={feed.loading ? 'loading' : feed.data ? 'ready' : 'unavailable'} onCreate={wrap(s.create, 'Event added')} onUpdate={wrap(s.update, 'Event updated')} onDelete={wrap(s.remove, 'Event deleted')} onReorder={async (x, y) => { await s.updateQuiet(x.id, { start_time: y.start_time }); await s.updateQuiet(y.id, { start_time: x.start_time }); s.reload(); }} onOpenHome={openHome} loading={s.loading} error={s.error} onRetry={() => { s.reload(); extra.reload(); }} back={back} openAdd={params.get('add') === '1'} openEvent={params.get('event')} onRefresh={async () => { s.reload(); extra.reload(); }} />;
+  return <ScheduleScreen notice={offlineNotice(s, extra)} items={s.data || []} sources={extra.data || {}} feedUrl={feed.data} feedState={feed.loading ? 'loading' : feed.data ? 'ready' : 'unavailable'} onCreate={guard(wrap(s.create, 'Event added'))} onUpdate={guard(wrap(s.update, 'Event updated'))} onDelete={guard(wrap(s.remove, 'Event deleted'))} onReorder={guard(async (x, y) => { await s.updateQuiet(x.id, { start_time: y.start_time }); await s.updateQuiet(y.id, { start_time: x.start_time }); s.reload(); })} onOpenHome={openHome} loading={s.loading} error={s.error} onRetry={() => { s.reload(); extra.reload(); }} back={back} openAdd={params.get('add') === '1'} openEvent={params.get('event')} onRefresh={async () => { s.reload(); extra.reload(); }} />;
 }
 
 /* ── Send invites ────────────────────────────────────────────────────── */
@@ -219,28 +223,31 @@ function VendorsContainer({ back }) {
   const { base } = useContext(ShellContext);
   const [params] = useSearchParams();
   const symbol = useSymbol();
-  const e = useEntity('Vendor', '-created_date');
+  // Vendor contacts are kept on the device for the offline day (goal 8).
+  const { guard } = useOfflineGuard();
+  const e = useEntity('Vendor', '-created_date', { cache: true });
   const wrap = (fn, ok) => async (...a) => { const r = await fn(...a); toast.success(ok); return r; };
-  return <VendorsScreen items={e.data || []} symbol={symbol} initialCategory={params.get('category') || 'all'} onCreate={wrap(e.create, 'Vendor added')} onUpdate={wrap(e.update, 'Saved')} onDelete={wrap((v) => e.remove(v.id), 'Vendor deleted')} onToggleFavorite={async (v) => { await e.update(v.id, { is_favourite: !v.is_favourite }); hapticLight(); }} onOpen={(v) => navigate(`${base}/plan/vendors/${v.id}`)} loading={e.loading} error={e.error} onRetry={e.reload} back={back} onRefresh={e.reload} openAdd={params.get('add') === '1'} />;
+  return <VendorsScreen notice={offlineNotice(e)} items={e.data || []} symbol={symbol} initialCategory={params.get('category') || 'all'} onCreate={wrap(e.create, 'Vendor added')} onUpdate={wrap(e.update, 'Saved')} onDelete={wrap((v) => e.remove(v.id), 'Vendor deleted')} onToggleFavorite={async (v) => { await e.update(v.id, { is_favourite: !v.is_favourite }); hapticLight(); }} onOpen={(v) => navigate(`${base}/plan/vendors/${v.id}`)} loading={e.loading} error={e.error} onRetry={e.reload} back={back} onRefresh={e.reload} openAdd={params.get('add') === '1'} />;
 }
 
 function VendorDetailContainer({ id, back }) {
   const api = useApi();
   const navigate = useNavigate();
   const symbol = useSymbol();
-  const vendors = useEntity('Vendor', '-created_date');
+  const vendors = useEntity('Vendor', '-created_date', { cache: true });
   const logs = useFiltered('VendorLog', { vendor_id: id }, '-created_date');
   const tasks = useFiltered('VendorTask', { vendor_id: id }, 'due_date');
   const [edit, setEdit] = useState(false);
+  const { guard } = useOfflineGuard();
   const vendor = (vendors.data || []).find((v) => v.id === id);
   return (
     <>
-      <VendorDetailScreen vendor={vendor} logs={logs.data || []} tasks={tasks.data || []} symbol={symbol} back={back} loading={vendors.loading && !vendor} error={vendors.error} onRetry={vendors.reload}
-        onEdit={() => setEdit(true)}
-        onDelete={async () => { await vendors.remove(id); toast.success('Vendor deleted'); navigate(back, { replace: true }); }}
-        onToggleFavourite={async () => { await vendors.update(id, { is_favourite: !vendor?.is_favourite }); hapticLight(); }}
-        onAddLog={async (v) => { await logs.create(v); toast.success(v.type === 'document' ? 'Document added' : 'Logged'); }}
-        onDeleteLog={async (l) => { await logs.remove(l.id); }}
+      <VendorDetailScreen notice={offlineNotice(vendors)} vendor={vendor} logs={logs.data || []} tasks={tasks.data || []} symbol={symbol} back={back} loading={vendors.loading && !vendor} error={vendors.error} onRetry={vendors.reload}
+        onEdit={guard(() => setEdit(true))}
+        onDelete={guard(async () => { await vendors.remove(id); toast.success('Vendor deleted'); navigate(back, { replace: true }); })}
+        onToggleFavourite={guard(async () => { await vendors.update(id, { is_favourite: !vendor?.is_favourite }); hapticLight(); })}
+        onAddLog={guard(async (v) => { await logs.create(v); toast.success(v.type === 'document' ? 'Document added' : 'Logged'); })}
+        onDeleteLog={guard(async (l) => { await logs.remove(l.id); })}
         onUpload={(file) => api.upload(file)}
         onAddTask={async (v) => { await tasks.create(v); toast.success('Task added'); }}
         onToggleTask={async (t) => { await tasks.update(t.id, { completed: !t.completed }); hapticLight(); }}
@@ -282,9 +289,12 @@ function DetailsContainer({ f, back }) {
   const api = useApi();
   const navigate = useNavigate();
   const { base } = useContext(ShellContext);
-  const wd = useWeddingDetails();
+  // Emergency contacts are kept on the device for the offline day (goal 8); the other detail pages load as before.
+  const dayOf = f.key === 'emergency';
+  const { guard } = useOfflineGuard();
+  const wd = useWeddingDetails({ cache: dayOf });
   const schema = DETAILS[f.key];
-  return <DetailsScreen schema={schema} details={wd.details} onSave={wd.save} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} user={api.user} onOpenVendors={(category, id) => navigate(`${base}/plan/vendors${id ? `/${id}` : `?category=${category}`}`)} />;
+  return <DetailsScreen notice={dayOf ? offlineNotice(wd) : undefined} schema={schema} details={wd.details} onSave={dayOf ? guard(wd.save) : wd.save} loading={wd.loading} error={wd.error} onRetry={wd.reload} back={back} user={api.user} onOpenVendors={(category, id) => navigate(`${base}/plan/vendors${id ? `/${id}` : `?category=${category}`}`)} />;
 }
 
 function EntityContainer({ f, back }) {
@@ -447,9 +457,11 @@ function ThreadContainer({ id, back }) {
 function SeatingContainer({ back }) {
   const navigate = useNavigate();
   const api = useApi();
-  const tables = useEntity('Table', '-created_date');
-  const guests = useGuests();
-  const wd = useWeddingDetails();
+  // Seating is kept on the device for the offline day (goal 8): tables, who sits where, the guests and the events.
+  const { guard } = useOfflineGuard();
+  const tables = useEntity('Table', '-created_date', { cache: true });
+  const guests = useGuests({ cache: true });
+  const wd = useWeddingDetails({ cache: true });
   const [activeEventId, setActiveEventId] = useState(RECEPTION_EVENT_ID);
   const [manualEvents, setManualEvents] = useState([]);
   const weddingEvents = useMemo(() => getWeddingEvents(wd.details), [wd.details]);
@@ -506,7 +518,7 @@ Return assignments[], unassigned[], and summary.`, { add_context_from_internet: 
       toast.success(`${ok} seated${err > 0 ? `, ${err} could not be` : ''}`, { id: tid });
     } catch { toast.error('Could not apply the plan', { id: tid }); }
   };
-  return <SeatingScreen tables={all} guests={guests.data || []} weddingEvents={weddingEvents} activeEventId={activeEventId} onEvent={setActiveEventId} manualEvents={manualEvents} onAddEventTab={(id) => { setManualEvents((m) => [...m, id]); setActiveEventId(id); }} onAddTable={addTable} onUpdateTable={updateTable} onDeleteTable={deleteTable} onSeat={seat} onUnseat={unseat} onAvaPlan={avaPlan} onApplyPlan={applyPlan} loading={tables.loading || guests.loading} error={tables.error || guests.error} onRetry={() => { tables.reload(); guests.reload(); }} back={back} onDesktop={() => openDesktop(navigate, '/Seating')} onRefresh={async () => { tables.reload(); guests.reload(); }} />;
+  return <SeatingScreen notice={offlineNotice(tables, guests, wd)} tables={all} guests={guests.data || []} weddingEvents={weddingEvents} activeEventId={activeEventId} onEvent={setActiveEventId} manualEvents={manualEvents} onAddEventTab={(id) => { setManualEvents((m) => [...m, id]); setActiveEventId(id); }} onAddTable={guard(addTable)} onUpdateTable={guard(updateTable)} onDeleteTable={guard(deleteTable)} onSeat={guard(seat)} onUnseat={guard(unseat)} onAvaPlan={guard(avaPlan)} onApplyPlan={guard(applyPlan)} loading={tables.loading || guests.loading} error={tables.error || guests.error} onRetry={() => { tables.reload(); guests.reload(); }} back={back} onDesktop={() => openDesktop(navigate, '/Seating')} onRefresh={async () => { tables.reload(); guests.reload(); }} />;
 }
 
 /* ── Polls and games: WeddingDetails.polls as Polls.jsx persists them; Questionnaire records ── */

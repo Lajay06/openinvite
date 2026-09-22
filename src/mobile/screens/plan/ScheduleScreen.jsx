@@ -58,7 +58,7 @@ const dayTitle = (date) => (date ? new Date(`${date}T00:00:00`).toLocaleDateStri
  * full form. Run sheet shows each event's items. Calendar carries the
  * Google Calendar subscription and the .ics and CSV exports.
  */
-export default function ScheduleScreen({ items = [], sources = {}, feedUrl, feedState = 'loading', onCreate, onUpdate, onDelete, onReorder, onOpenHome, loading, error, onRetry, back, openAdd = false, openEvent = null, onRefresh }) {
+export default function ScheduleScreen({ notice, items = [], sources = {}, feedUrl, feedState = 'loading', onCreate, onUpdate, onDelete, onReorder, onOpenHome, loading, error, onRetry, back, openAdd = false, openEvent = null, onRefresh }) {
   const [segment, setSegment] = useSegment(SEGMENTS);
   const [sheet, setSheet] = useState(openAdd ? { item: null } : null);
   // Reached from global search with an event id: its details open once the list is in.
@@ -100,7 +100,7 @@ export default function ScheduleScreen({ items = [], sources = {}, feedUrl, feed
   const actions = segment === 'events' || segment === 'timeline' ? [{ icon: Plus, label: 'Add event', onClick: () => setSheet({ item: null }) }] : [];
 
   return (
-    <Screen title="Schedule" subtitle={loading ? '' : `${items.length} event${items.length === 1 ? '' : 's'} of yours, ${events.length} on the timeline`} back={back} actions={actions} onRefresh={onRefresh}>
+    <Screen notice={notice} title="Schedule" subtitle={loading ? '' : `${items.length} event${items.length === 1 ? '' : 's'} of yours, ${events.length} on the timeline`} back={back} actions={actions} onRefresh={onRefresh}>
       <Segments options={SEGMENTS} value={segment} onChange={setSegment} />
       {segment === 'timeline' && <FilterPills options={[{ key: 'all', label: 'All', count: counts.all }, ...TYPE_ORDER.filter((t) => counts[t]).map((t) => ({ key: t, label: WHEN_LABEL[t], count: counts[t] }))]} value={type} onChange={setType} />}
       <div className="oi-m-stack oi-m-stack--24" style={{ paddingTop: segment === 'timeline' ? 16 : 0 }}>

@@ -10,9 +10,10 @@ export function useWedding() {
 }
 
 /** Guests with the per-event RSVP overlay, as Guests.jsx loads them. */
-export function useGuests() {
+export function useGuests({ cache = false } = {}) {
   const api = useApi();
-  return useLoad(() => api.guests.list(), []);
+  // `cache` keeps the last list on the device for the offline day (seating); offlineCache.js.
+  return useLoad(() => api.guests.list(), [], cache ? { cacheKey: 'guests', userId: api.user?.id } : {});
 }
 
 /** To-do tasks are Note records with view_type 'todo', as TodoList.jsx filters them. */

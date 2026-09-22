@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useApi } from './api';
 import useLoad from './useLoad';
+import { cacheRead, cacheWrite } from './offlineCache';
 
 /**
  * Everything the Plan hub's live stats need, loaded once, each part
@@ -38,9 +39,10 @@ export function usePlanData() {
 }
 
 /** A generic entity list with the same create/update/delete the desktop pages call. */
-export function useEntity(name, sort = '-created_date') {
+export function useEntity(name, sort = '-created_date', { cache = false } = {}) {
   const api = useApi();
-  const load = useLoad(() => api.list(name, sort), [name, sort]);
+  // `cache` keeps the last list on the device for the offline day (offlineCache.js); the four day-of screens ask for it.
+  const load = useLoad(() => api.list(name, sort), [name, sort], cache ? { cacheKey: `entity:${name}`, userId: api.user?.id } : {});
   const writes = useMemo(() => ({
     create: async (fields) => { const r = await api.create(name, fields); load.reload(); return r; },
     update: async (id, fields) => { const r = await api.update(name, id, fields); load.reload(); return r; },
@@ -70,11 +72,12 @@ export function useFiltered(name, query, sort) {
  * emergencyContacts, budget, dayVendorContacts, contactPerson) through
  * /api/my-wedding-details PUT. `save(null, patch)` writes top-level fields.
  */
-export function useWeddingDetails() {
+export function useWeddingDetails({ cache = false } = {}) {
   const api = useApi();
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [cached, setCached] = useState(null); // { at } when the details came from the offline cache
   const alive = useRef(true);
   useEffect(() => () => { alive.current = false; }, []);
   const load = useCallback(async () => {
@@ -83,9 +86,16 @@ export function useWeddingDetails() {
       if (!alive.current) return;
       setDetails(d || {});
       setError(null);
-    } catch (e) { if (alive.current) setError(e); }
+      setCached(null);
+      if (cache) cacheWrite(api.user?.id, 'wedding', d || {});
+    } catch (e) {
+      // The offline day (goal 8): the last details kept on the device stand in, read only.
+      const c = cache ? await cacheRead(api.user?.id, 'wedding') : null;
+      if (!alive.current) return;
+      if (c) { setDetails(c.data || {}); setError(null); setCached({ at: c.at }); } else setError(e);
+    }
     if (alive.current) setLoading(false);
-  }, [api]);
+  }, [api, cache]);
   useEffect(() => { load(); }, [load]);
 
   const save = useCallback(async (key, value, encrypted) => {
@@ -94,5 +104,5 @@ export function useWeddingDetails() {
     setDetails((d) => ({ ...(d || {}), ...patch }));
   }, [api]);
 
-  return { details, loading, error, reload: load, save, id: api.wedding.id() };
+  return { details, loading, error, reload: load, save, id: api.wedding.id(), fromCache: !!cached, cachedAt: cached?.at || null };
 }

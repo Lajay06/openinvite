@@ -15,8 +15,9 @@ import ScreenHeader, { CompactBar } from './ScreenHeader';
  *   root      true on tab roots
  *   back      true (history back) | string (route) | function
  *   onRefresh async fn; enables pull to refresh (touch only)
+ *   notice    one line under the title (goal 8: the offline day's "last updated")
  */
-export default function Screen({ title, subtitle, actions, root = false, back, onRefresh, footer, onTitleLongPress, children }) {
+export default function Screen({ title, subtitle, actions, root = false, back, onRefresh, footer, onTitleLongPress, notice, children }) {
   const ref = useRef(null);
   const raf = useRef(0);
   const [compact, setCompact] = useState(false);
@@ -66,6 +67,7 @@ export default function Screen({ title, subtitle, actions, root = false, back, o
           </div>
         )}
         <ScreenHeader title={title} subtitle={subtitle} onLongPress={onTitleLongPress} />
+        {notice && <p className="oi-m-notice" role="status">{notice}</p>}
         <div className="oi-m-stagger" style={{ display: 'contents' }}>{children}</div>
         {footer && <div style={{ height: 88 }} />}
       </div>

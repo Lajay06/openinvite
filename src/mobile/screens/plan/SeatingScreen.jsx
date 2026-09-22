@@ -23,7 +23,7 @@ const resolveEventId = (row) => row.event_id || RECEPTION_EVENT_ID;
  * everyone invited and not declined, a plus-one appears only where the
  * event granted one, and plus-one ids are the synthetic `host::plus-one`.
  */
-export default function SeatingScreen({ tables = [], guests = [], weddingEvents = [], activeEventId, onEvent, manualEvents = [], onAddEventTab, onAddTable, onUpdateTable, onDeleteTable, onSeat, onUnseat, onAvaPlan, onApplyPlan, loading, error, onRetry, back, onDesktop, onRefresh }) {
+export default function SeatingScreen({ notice, tables = [], guests = [], weddingEvents = [], activeEventId, onEvent, manualEvents = [], onAddEventTab, onAddTable, onUpdateTable, onDeleteTable, onSeat, onUnseat, onAvaPlan, onApplyPlan, loading, error, onRetry, back, onDesktop, onRefresh }) {
   const [tableSheet, setTableSheet] = useState(null); // { table } | { create: true }
   const [seatSheet, setSeatSheet] = useState(null); // { table, seatIndex } | { attendee }
   const [attendingOnly, setAttendingOnly] = useState(false);
@@ -78,7 +78,7 @@ export default function SeatingScreen({ tables = [], guests = [], weddingEvents 
   };
 
   return (
-    <Screen title="Seating" subtitle={loading ? '' : `${eventTables.length} table${eventTables.length === 1 ? '' : 's'}, ${attendees.length - seatedCount} to seat`} back={back} actions={[{ icon: Plus, label: 'Add table', onClick: () => setTableSheet({ create: true }) }]} onRefresh={onRefresh}>
+    <Screen notice={notice} title="Seating" subtitle={loading ? '' : `${eventTables.length} table${eventTables.length === 1 ? '' : 's'}, ${attendees.length - seatedCount} to seat`} back={back} actions={[{ icon: Plus, label: 'Add table', onClick: () => setTableSheet({ create: true }) }]} onRefresh={onRefresh}>
       {tabs.length + addable.length > 1 && <FilterPills options={[...tabs.map((e) => ({ key: e.event_id, label: e.name })), ...(addable.length ? [{ key: '__add', label: 'Add event' }] : [])]} value={activeEvent.event_id} onChange={(k) => (k === '__add' ? setTableSheet({ addEvent: true }) : onEvent(k))} />}
       <div className="oi-m-stack oi-m-stack--24" style={{ paddingTop: 16 }}>
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={4} /> : (

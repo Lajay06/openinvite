@@ -29,7 +29,7 @@ import { useConsiderations } from './ConsiderationsSheet';
  *
  * props: schema, details, onSave, loading, error, onRetry, back, user
  */
-export default function DetailsScreen({ schema, details, onSave, loading, error, onRetry, back, subtitle, user, onOpenVendors }) {
+export default function DetailsScreen({ schema, details, onSave, loading, error, onRetry, back, subtitle, user, onOpenVendors, notice }) {
   // The desktop's Considerations tab, on the pages that have one (schema.considerations names PageConsiderations' key).
   const considerations = useConsiderations(schema.considerations || 'none');
   const [data, setData] = useState(details || {});
@@ -97,7 +97,7 @@ export default function DetailsScreen({ schema, details, onSave, loading, error,
   const sections = schema.sections.filter((s) => !segments || (s.segment || segments[0].key) === segment);
 
   return (
-    <Screen title={schema.title} subtitle={status === 'saving' ? 'Saving' : status === 'saved' ? 'Saved' : status === 'failed' ? 'Could not save. Check your connection.' : subtitle} back={back}>
+    <Screen notice={notice} title={schema.title} subtitle={status === 'saving' ? 'Saving' : status === 'saved' ? 'Saved' : status === 'failed' ? 'Could not save. Check your connection.' : subtitle} back={back}>
       {segments && <Segments options={segments} value={segment} onChange={setSegment} />}
       <div className="oi-m-stack oi-m-stack--24">
         {error && !loading ? <ErrorState onRetry={onRetry} timedOut={error?.timedOut} /> : loading ? (<><Skeleton kind="block" /><Skeleton kind="block" /></>) : (

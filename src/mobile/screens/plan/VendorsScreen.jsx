@@ -35,7 +35,7 @@ const STATUS_LABEL = Object.fromEntries(VENDOR_STATUSES.map((s) => [s.value, s.l
  * VendorForm (the photo and video fields for those two categories), and
  * a vendor screen with communications, documents and tasks.
  */
-export default function VendorsScreen({ items = [], symbol = '$', initialCategory = 'all', onCreate, onUpdate, onDelete, onOpen, onToggleFavorite, loading, error, onRetry, back, onRefresh, openAdd = false }) {
+export default function VendorsScreen({ notice, items = [], symbol = '$', initialCategory = 'all', onCreate, onUpdate, onDelete, onOpen, onToggleFavorite, loading, error, onRetry, back, onRefresh, openAdd = false }) {
   const [sort, setSort] = useState({ key: 'added', dir: 'asc' });
   const [status, setStatus] = useState('all');
   const [category, setCategory] = useState(initialCategory);
@@ -52,7 +52,7 @@ export default function VendorsScreen({ items = [], symbol = '$', initialCategor
   const card = (v) => <ItemCard key={v.id} icon={Store} tile={v.is_favourite ? 'tint' : 'neutral'} action={onToggleFavorite ? { icon: Star, label: v.is_favourite ? `Remove ${v.name} from favorites` : `Add ${v.name} to favorites`, tone: v.is_favourite ? 'primary' : 'neutral', onClick: () => onToggleFavorite(v) } : undefined} title={v.name} meta={[CATEGORY_LABEL[v.category] || v.category, v.contact_person].filter(Boolean).join(', ')} value={v.quoted_price ? money(v.quoted_price, symbol) : ''} badge={VENDOR_STATUS_LABEL[v.status] || STATUS_LABEL[v.status] || v.status} badgeTone={VENDOR_STATUS_TONE[v.status] || 'neutral'} onClick={() => onOpen(v)} action={v.phone ? { icon: Phone, label: `Call ${v.name}`, onClick: () => openExternal(`tel:${v.phone}`) } : undefined} />;
   return (
     <>
-      <Screen title="My vendors" subtitle={loading ? '' : `${items.length} vendor${items.length === 1 ? '' : 's'}: ${booked} booked, ${quoted} quoted, ${researching} researching`} back={back} onRefresh={onRefresh} actions={[{ icon: Search, label: 'Search vendors', onClick: () => setSearchOpen(true) }, { icon: Plus, label: 'Add vendor', onClick: () => setSheet({ item: null }) }]}>
+      <Screen notice={notice} title="My vendors" subtitle={loading ? '' : `${items.length} vendor${items.length === 1 ? '' : 's'}: ${booked} booked, ${quoted} quoted, ${researching} researching`} back={back} onRefresh={onRefresh} actions={[{ icon: Search, label: 'Search vendors', onClick: () => setSearchOpen(true) }, { icon: Plus, label: 'Add vendor', onClick: () => setSheet({ item: null }) }]}>
         <FilterPills options={STATUS_FILTERS.map(([key, label]) => ({ key, label, count: key === 'all' ? undefined : items.filter((v) => v.status === key).length }))} value={status} onChange={setStatus} />
         <div style={{ marginTop: 8 }}><FilterPills options={CATEGORY_FILTERS.filter(([k]) => k === 'all' || items.some((v) => v.category === k)).map(([key, label]) => ({ key, label }))} value={category} onChange={setCategory} /></div>
         <div className="oi-m-stack oi-m-stack--24" style={{ paddingTop: 12 }}>
@@ -103,7 +103,7 @@ const LOG_TYPES = [['email', 'Email'], ['call', 'Call'], ['meeting', 'Meeting'],
 const DOC_TYPES = ['contract', 'invoice', 'quote', 'receipt', 'other'].map((t) => ({ value: t, label: t.charAt(0).toUpperCase() + t.slice(1) }));
 const LOG_ICON = { email: Mail, call: PhoneCall, meeting: Users, note: MessageSquare, document: FileText };
 
-export function VendorDetailScreen({ vendor, logs = [], tasks = [], symbol = '$', onEdit, onDelete, onToggleFavourite, onAddLog, onDeleteLog, onUpload, onAddTask, onToggleTask, onDeleteTask, loading, error, onRetry, back }) {
+export function VendorDetailScreen({ notice, vendor, logs = [], tasks = [], symbol = '$', onEdit, onDelete, onToggleFavourite, onAddLog, onDeleteLog, onUpload, onAddTask, onToggleTask, onDeleteTask, loading, error, onRetry, back }) {
   const [tab, setTab] = useSegment(TABS);
   const [logSheet, setLogSheet] = useState(null); // 'log' | 'doc'
   const [taskSheet, setTaskSheet] = useState(false);
@@ -117,7 +117,7 @@ export function VendorDetailScreen({ vendor, logs = [], tasks = [], symbol = '$'
   const kv = (k, v) => (v != null && v !== '' && v !== false ? <div className="oi-m-kv" key={k}><div className="oi-m-kv__k">{k}</div><div className="oi-m-kv__v">{v === true ? 'Yes' : String(v)}</div></div> : null);
   const isPhoto = vendor.category === 'photography' || vendor.category === 'videography';
   return (
-    <Screen title={vendor.name} subtitle={[CATEGORY_LABEL[vendor.category] || vendor.category, VENDOR_STATUS_LABEL[vendor.status] || vendor.status].filter(Boolean).join(', ')} back={back} actions={[{ icon: Star, label: vendor.is_favourite ? 'Remove from favorites' : 'Add to favorites', onClick: onToggleFavourite }, { icon: Pencil, label: 'Edit vendor', onClick: onEdit }]}>
+    <Screen notice={notice} title={vendor.name} subtitle={[CATEGORY_LABEL[vendor.category] || vendor.category, VENDOR_STATUS_LABEL[vendor.status] || vendor.status].filter(Boolean).join(', ')} back={back} actions={[{ icon: Star, label: vendor.is_favourite ? 'Remove from favorites' : 'Add to favorites', onClick: onToggleFavourite }, { icon: Pencil, label: 'Edit vendor', onClick: onEdit }]}>
       <Segments options={TABS.map((t) => (t.key === 'tasks' ? { ...t, label: `Tasks ${done}/${tasks.length}` } : t))} value={tab} onChange={setTab} />
       <div className="oi-m-stack oi-m-stack--24">
         {tab === 'about' && (
