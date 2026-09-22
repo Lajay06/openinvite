@@ -9,8 +9,8 @@ import OfflineBanner, { NetworkProvider } from './OfflineBanner';
 import useEdgeSwipeBack from './useEdgeSwipeBack';
 import BottomSheet from '../ui/BottomSheet';
 import Banner from '../notifications/Banner';
-import LaunchSequence, { NATIVE_HOLD } from './LaunchSequence';
-import { bootNative, registerBackButton, registerDeepLinks, hideSplash, setStatusBarDark } from '../native';
+import DailyUpdateHost from './DailyUpdateHost';
+import { bootNative, registerBackButton, registerDeepLinks, hideSplash } from '../native';
 import '../styles/mobile.css';
 
 /**
@@ -23,14 +23,8 @@ import '../styles/mobile.css';
  */
 export const ShellContext = React.createContext({ base: '/m', unread: 0, openAva: () => {}, closeAva: () => {}, notifications: null, search: null });
 
-// The launch sequence runs once per app open, not on every mount of the
-// shell (a route change, a lock, a reload of the tree keep it away).
-let launchShown = false;
-
-export default function MobileShell({ base = '/m', renderAva, showAva = true, notifications = null, search = null, lockPhoto = '', forcedOffline = false, forcedLock = false, launch = null }) {
+export default function MobileShell({ base = '/m', renderAva, showAva = true, notifications = null, search = null, lockPhoto = '', forcedOffline = false, forcedLock = false, daily = null, forceDaily = false }) {
   const [avaOpen, setAvaOpen] = useState(false);
-  const [launching, setLaunching] = useState(() => !!launch && !launchShown);
-  useEffect(() => { if (launching) launchShown = true; }, [launching]);
   const navigate = useNavigate();
   const rootRef = useRef(null);
   useEdgeSwipeBack(base, rootRef);
@@ -39,13 +33,16 @@ export default function MobileShell({ base = '/m', renderAva, showAva = true, no
   const avaOpenRef = useRef(avaOpen);
   avaOpenRef.current = avaOpen;
 
-  // Boot: status bar and keyboard, then the splash goes once the shell has
-  // painted its first frame (a short fade is in capacitor.config.ts).
+  // Boot: status bar and keyboard, and the native launch screen goes the
+  // moment this shell has painted its first frame (goal 7: no in-app splash,
+  // no minimum; two frames in, so the paint has happened, then a 200ms fade
+  // set in capacitor.config.ts). The line logged is the cold-start marker
+  // MOBILE_APP.md's timings read from the simulator's console.
   useEffect(() => {
-    bootNative().then(() => { if (launching) setStatusBarDark(true); });
-    const t = setTimeout(() => hideSplash(), NATIVE_HOLD);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    bootNative();
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => { raf2 = requestAnimationFrame(() => { hideSplash(); console.info(`[oi] shell painted ${Math.round(performance.now())}ms after the page started`); }); });
+    return () => { cancelAnimationFrame(raf1); cancelAnimationFrame(raf2); };
   }, []);
 
   // openinvite:// and universal links route into /m; auth callbacks store
@@ -129,7 +126,7 @@ export default function MobileShell({ base = '/m', renderAva, showAva = true, no
         )}
         {banner && <Banner item={banner} onDone={onBannerDone} />}
         <OfflineBanner />
-        {launching && launch && <LaunchSequence ready={!!launch.ready} photo={launch.photo} alt={launch.alt} daily={launch.daily} forceDaily={!!launch.forceDaily} onDone={() => setLaunching(false)} />}
+        {daily && <DailyUpdateHost daily={daily} force={forceDaily} />}
       </div>
       </AppLock>
       </NetworkProvider>

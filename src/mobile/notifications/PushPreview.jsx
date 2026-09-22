@@ -28,7 +28,7 @@ export default function PushPreview() {
   const [expanded, setExpanded] = useState(0);
   // The demo couple's cover, the couple's own photo on their lock screen
   // (the one identity photo the once-only rule allows; its former wallpaper
-  // slot joined the splash pool in goal 6).
+  // slot was the goal 6 splash pool's, now retired with the pool in goal 7).
   const wallpaper = useMemo(() => deliver(imageUrl('fixtureCover'), { width: 390, height: 844, dpr: 2 }), []);
   const items = SAMPLE.map(([type, data, when]) => ({ type, when, ...notificationCopy(type, data) }));
   const now = new Date('2026-09-21T09:41:00');

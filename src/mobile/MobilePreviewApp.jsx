@@ -19,12 +19,11 @@ import PrimingScreen from './screens/firstrun/PrimingScreen';
 import { buildFeed } from './notifications/feed';
 import { defaultSettings } from './notifications/store';
 import { isDemoBuild } from './demo';
-import { LaunchSplash } from './shell/LaunchSequence';
 import DailyUpdate from './shell/DailyUpdate';
-import useLaunch from './shell/useLaunch';
-import { isNative } from './native';
+import { dailyPhoto } from './shell/dailyPhotos';
+import { useDailyUpdate } from './data/dailyUpdate';
 import { daysUntilWedding } from '@/lib/weddingCountdown';
-import { coupleImages, imageUrl } from './lib/images';
+import { coupleImages } from './lib/images';
 import {
   FIXTURE_WEDDING, FIXTURE_GUESTS, FIXTURE_TASKS, FIXTURE_BUDGET, FIXTURE_AVA_MESSAGES,
   FIXTURE_MESSAGES, FIXTURE_SONG_REQUESTS, FIXTURE_POLLS, FIXTURE_POLL_VOTES, FIXTURE_GIFTS, FIXTURE_NOTIFICATION_ENTITY,
@@ -52,27 +51,26 @@ export default function MobilePreviewApp() {
 }
 
 /**
- * The launch sequence runs in the preview only inside the native shell (the
- * demo build starts here); /m/preview/splash and /m/preview/daily-update
- * show the two screens on their own for the web preview and its screenshots,
- * and `?launch=1` (or `?launch=daily`, forcing the once-a-day screen) runs
- * the whole sequence on the web.
+ * The daily update (goal 7) shows over the dashboard by the shell's own
+ * rules inside the native shell (the demo build starts here). On the web,
+ * `?daily=1` on any shell route forces it, and /m/preview/daily-update
+ * shows the card on its own for the screenshot run.
  */
 function MobilePreviewInner() {
-  const launch = useLaunch();
+  const dailyLoad = useDailyUpdate();
+  const daily = useMemo(() => ({ ready: !dailyLoad.loading, content: dailyLoad.content }), [dailyLoad.loading, dailyLoad.content]);
 
   const [params] = useSearchParams();
   const notifications = usePreviewNotifications(params.get('banner') === '1');
-  const daily = launch.daily;
+  const photo = dailyPhoto();
   return (
       <Routes>
         <Route path="push" element={<PushPreview />} />
         <Route path="welcome" element={<div className="oi-mobile-root"><WelcomeScreen onStart={() => {}} onLogin={() => {}} /></div>} />
         <Route path="login" element={<div className="oi-mobile-root"><LoginScreen onSubmit={() => {}} providers={[{ key: 'google', label: 'Continue with Google' }, { key: 'apple', label: 'Continue with Apple' }]} onForgot={() => {}} onSignUp={() => {}} onBack={() => {}} error={params.get('state') === 'error' ? 'That email and password did not match. Try again.' : ''} /></div>} />
         <Route path="priming" element={<div className="oi-mobile-root"><PrimingScreen onTurnOn={() => {}} onNotNow={() => {}} recorded={params.get('state') === 'recorded'} /></div>} />
-        <Route path="splash" element={<div className="oi-mobile-root"><LaunchSplash photo={launch.photo || imageUrl('splash1')} alt={launch.alt} /></div>} />
-        <Route path="daily-update" element={<div className="oi-mobile-root">{daily ? <DailyUpdate photo={daily.photo} alt={daily.alt} dateLabel={daily.dateLabel} greeting={daily.greeting} lines={daily.lines} onGo={() => {}} /> : null}</div>} />
-        <Route element={<MobileShell base={PREVIEW_BASE} renderAva={({ openDetail }) => <PreviewAva openDetail={openDetail} />} notifications={notifications} forcedOffline={params.get('offline') === '1'} forcedLock={params.get('lock') === '1'} lockPhoto={coupleImages(FIXTURE_WEDDING)[0]} launch={isNative() || params.get('launch') ? { ...launch, forceDaily: params.get('launch') === 'daily' } : null} />}>
+        <Route path="daily-update" element={<div className="oi-mobile-root">{daily.content ? <DailyUpdate photo={photo.src} alt={photo.alt} dateLabel={daily.content.dateLabel} greeting={daily.content.greeting} lines={daily.content.lines} onGo={() => {}} /> : null}</div>} />
+        <Route element={<MobileShell base={PREVIEW_BASE} renderAva={({ openDetail }) => <PreviewAva openDetail={openDetail} />} notifications={notifications} forcedOffline={params.get('offline') === '1'} forcedLock={params.get('lock') === '1'} lockPhoto={coupleImages(FIXTURE_WEDDING)[0]} daily={daily} forceDaily={params.get('daily') === '1'} />}>
           <Route index element={<HomeContainer />} />
           <Route path="guests" element={<GuestsContainer />} />
           <Route path="guests/:id" element={<GuestsContainer />} />

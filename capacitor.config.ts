@@ -12,8 +12,9 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   ios: {
     contentInset: 'never',
-    // Ink, DESIGN_SPEC.md's black: the native launch screen, this webview
-    // background and the in-app splash are one continuous surface.
+    // Ink, DESIGN_SPEC.md's black: the native launch screen and this webview
+    // background are one surface, so nothing else is ever seen behind the
+    // shell before it paints (goal 7).
     backgroundColor: '#0A0A0A',
     // No link previews or pinch zoom: the shell is an app, not a page.
     allowsLinkPreview: false,
@@ -28,17 +29,18 @@ const config: CapacitorConfig = {
   },
   plugins: {
     SplashScreen: {
+      // The shell hides it the moment it has painted its first frame
+      // (MobileShell.jsx); no minimum, a short fade.
       launchAutoHide: false,
-      launchFadeOutDuration: 250,
+      launchFadeOutDuration: 200,
       backgroundColor: '#0A0A0A',
       showSpinner: false,
       splashFullScreen: true,
       splashImmersive: true,
     },
     StatusBar: {
-      // The launch chain (native launch screen, in-app splash, greeting) is
-      // ink, so the bar starts with light content; the shell switches it to
-      // dark content when the dashboard settles (native.ts).
+      // The native launch screen is ink, so the bar starts with light
+      // content; the shell switches it to dark content as it boots (native.ts).
       style: 'DARK',
       backgroundColor: '#0A0A0A',
       overlaysWebView: true,

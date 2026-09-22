@@ -125,6 +125,6 @@ Order of preference: the couple's own imagery (cover photo, guest suite photo bl
 
 Stills only, on every photo (goal 6): no zoom, no parallax, no scale, no crossfade within a photo. Nothing derives motion from an image whose public id starts with `DTS_`.
 
-Where images belong: the splash (a pool, one photo per open), the daily update, Home hero carousel, Home "keep planning" carousel, Plan hub tiles, Guest suite tab preview, vendor and registry cards where the data has photos, empty states where a photo helps, the Account profile card. Where they do not: forms, dense lists, budget tables.
+Where images belong: the daily update (seven bundled photos, one per weekday; goal 7 removed the in-app splash and its pool, the native launch screen is the mark on ink and nothing else), Home hero carousel, Home "keep planning" carousel, Plan hub tiles, Guest suite tab preview, vendor and registry cards where the data has photos, empty states where a photo helps, the Account profile card. Where they do not: forms, dense lists, budget tables.
 
 Every decorative slot is named once, in `src/mobile/images.ts`, with its public id, alt text, where it is drawn, the size to supply and a `todo` marker while it waits for a photo. `/m/preview/images` renders that file as a gallery. No decorative Cloudinary id lives anywhere else in `src/mobile/`.

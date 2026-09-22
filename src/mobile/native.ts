@@ -333,7 +333,6 @@ installNativeApiBase();
 export async function bootNative(): Promise<void> {
   if (!isNative()) return;
   await Promise.all([configureStatusBar(), configureKeyboard()]);
-  await hideSplash();
 }
 
 /* ── Goal 3: deep links, biometric lock, camera, network ───────────────── */

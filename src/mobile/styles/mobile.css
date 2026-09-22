@@ -856,21 +856,6 @@ select.oi-m-input { background-image: none; padding-right: 44px; }
 .oi-m-login__title { position: absolute; left: 20px; right: 20px; bottom: 20px; z-index: 2; display: flex; flex-direction: column; gap: 4px; }
 .oi-m-login__form { display: flex; flex-direction: column; gap: 16px; padding: 24px 16px calc(var(--m-safe-bottom) + 24px); }
 
-/* ── Launch sequence: splash, then greeting, over the shell ─────────── */
-.oi-m-launch { position: absolute; inset: 0; z-index: 71; background: var(--m-ink); display: flex; align-items: center; justify-content: center; overflow: hidden; transition: opacity 420ms var(--m-ease); }
-.oi-m-launch--leaving { opacity: 0; pointer-events: none; }
-.oi-m-launch__photo { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 0; }
-.oi-m-launch__photo img { width: 100%; height: 100%; object-fit: cover; }
-.oi-m-launch__scrim { position: absolute; inset: 0; background: var(--m-scrim); }
-.oi-m-launch__scrim::before { content: ""; position: absolute; inset: 0; background: rgba(10, 10, 10, 0.38); }
-.oi-m-launch__logo { position: relative; width: 160px; height: auto; }
-.oi-m-greeting { position: absolute; inset: 0; z-index: 70; background: var(--m-bg); color: var(--m-text); display: flex; align-items: center; padding: 0 var(--m-gutter); animation: oi-m-greeting-in 420ms var(--m-ease) both; transition: opacity 420ms var(--m-ease), transform 420ms var(--m-ease); }
-.oi-m-greeting--leaving { opacity: 0; transform: translateY(-32px); pointer-events: none; }
-.oi-m-greeting__inner { width: 100%; padding-bottom: 10vh; }
-.oi-m-greeting__title { font-size: 28px; line-height: 34px; font-weight: 600; margin: 0; }
-.oi-m-greeting__line { font-size: 15px; line-height: 22px; color: var(--m-text-2); margin: 12px 0 0; }
-@keyframes oi-m-greeting-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-
 @keyframes oi-m-fade-in { from { opacity: 0; } to { opacity: 1; } }
 
 /* ── The daily update (goal 6): the couple's photo over the brand-red panel ── */
@@ -891,11 +876,6 @@ select.oi-m-input { background-image: none; padding-right: 44px; }
 @media (prefers-reduced-motion: reduce) {
   .oi-m-daily { animation: oi-m-fade-in 300ms both; transition: opacity 300ms; }
   .oi-m-daily--leaving { transform: none; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .oi-m-greeting { animation: oi-m-fade-in 300ms both; transition: opacity 300ms; }
-  .oi-m-greeting--leaving { transform: none; }
-  @keyframes oi-m-fade-in { from { opacity: 0; } to { opacity: 1; } }
 }
 
 /* ── Activity rows: Home's "Latest" and the notification center ────── */

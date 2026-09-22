@@ -14,7 +14,7 @@ import SearchContainer from './screens/search/SearchContainer';
 import useNotifications from './notifications/useNotifications';
 import { useWedding } from './data/wedding';
 import { heroImageFor } from './lib/images';
-import useLaunch from './shell/useLaunch';
+import { useDailyUpdate } from './data/dailyUpdate';
 import { useAuth } from '@/lib/AuthContext';
 import { PrimingContainer, usePrimingGate, WELCOME_PREF } from './screens/firstrun/FirstRunContainers';
 import { isNative, prefGet } from './native';
@@ -41,8 +41,9 @@ function MobileAppInner() {
   const wedding = useWedding();
   const navigate = useNavigate();
   const showPriming = usePrimingGate(notifications);
-  // The launch sequence (goal 6): the splash pool photo for this open and the daily update from the desktop's own day state.
-  const launch = useLaunch();
+  // The daily update (goals 6 and 7), from the desktop's own day state; the shell decides when it shows.
+  const dailyLoad = useDailyUpdate();
+  const daily = useMemo(() => ({ ready: !dailyLoad.loading, content: dailyLoad.content }), [dailyLoad.loading, dailyLoad.content]);
   // Native first launch: the welcome screens once, tracked locally.
   useEffect(() => { if (isNative()) prefGet(WELCOME_PREF).then((v) => { if (!v) navigate('/m/welcome', { replace: true }); }); }, [navigate]);
   const renderAva = ({ onClose, openDetail }) => (
@@ -51,7 +52,7 @@ function MobileAppInner() {
   if (showPriming && !window.location.pathname.endsWith('/priming')) return <Navigate to={`${MOBILE_BASE}/priming`} replace />;
   return (
     <Routes>
-      <Route element={<MobileShell base={MOBILE_BASE} renderAva={renderAva} notifications={notifications} lockPhoto={heroImageFor(wedding.data)} launch={launch} />}>
+      <Route element={<MobileShell base={MOBILE_BASE} renderAva={renderAva} notifications={notifications} lockPhoto={heroImageFor(wedding.data)} daily={daily} />}>
         <Route index element={<HomeContainer />} />
         <Route path="guests" element={<GuestsContainer />} />
         <Route path="guests/:id" element={<GuestsContainer />} />

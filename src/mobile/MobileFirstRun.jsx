@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { WelcomeContainer, LoginContainer } from './screens/firstrun/FirstRunContainers';
 import { bootNative, hideSplash, registerDeepLinks } from './native';
-import { NATIVE_HOLD } from './shell/LaunchSequence';
 import './styles/mobile.css';
 
 /** /m/welcome and /m/login, outside the auth guard. Wrapped in the mobile root for tokens and safe areas. */
@@ -14,12 +13,13 @@ export default function MobileFirstRun({ screen }) {
   // following) never mounts. Found on the first simulator run: the splash
   // sat over the welcome screen forever. No-ops on the web.
   //
-  // Boot: status bar and keyboard, then the splash goes once the screen has
-  // painted (a short fade is in capacitor.config.ts).
+  // Boot: status bar and keyboard, and the launch screen goes the moment
+  // this screen has painted (the same two frames as MobileShell).
   useEffect(() => {
     bootNative();
-    const t = setTimeout(() => hideSplash(), NATIVE_HOLD);
-    return () => clearTimeout(t);
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => { raf2 = requestAnimationFrame(() => hideSplash()); });
+    return () => { cancelAnimationFrame(raf1); cancelAnimationFrame(raf2); };
   }, []);
 
   // The provider sign-in returns to openinvite://auth?access_token=... while

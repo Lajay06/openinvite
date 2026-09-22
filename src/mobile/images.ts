@@ -11,7 +11,7 @@
  *
  * ONE LIBRARY. Every id here is one of the 95 photos in the Cloudinary
  * folder `app` (cloud dsr84xknv; 73 at goal 5, 22 more added by the owner
- * on 2026-09-22 for the splash pool), plus the airport and poolside photos
+ * on 2026-09-22), plus the airport and poolside photos
  * the owner added at the cloud's root, listed through the Admin API and
  * viewed one by one before it was assigned. Each photo is
  * used once across the whole app, so no photo repeats on a screen; the
@@ -48,7 +48,9 @@ export interface ImageSlot {
   screen: string;
   /** The CSS pixel size the slot is drawn at, before 2x/3x. */
   size: { w: number; h: number };
-  ratio: '4/5' | '4/3' | '16/9' | '1/1' | '3/2';
+  ratio: '4/5' | '4/3' | '16/9' | '1/1' | '3/2' | '10/7';
+  /** Goal 7: the file under src/mobile/assets/daily/ this slot ships as; the app draws that file, never the network. */
+  bundled?: string;
   /** object-position when the default center crop loses the subject. */
   focal?: string;
   /** Cloudinary crop gravity for the slot (north, south, face) where g_auto cuts the subject; lib/images.js deliver() honors it. */
@@ -116,31 +118,26 @@ export const IMAGES = {
   emptyGuests: { id: 'DTS_BEHIND_THE_SCENES_Shauna_Summers_Photos_ID8234_esice8', alt: 'Two friends laughing over a phone', usedIn: 'Guests, empty state', screen: 'guests', size: { w: 326, h: 183 }, ratio: '16/9', focal: '50% 30%' },
   emptyMoodboard: { id: 'DTS_DECADENT_Debora_Spanhol_Photos_ID12475_viqbsz', alt: 'A dessert table of pink cakes', usedIn: 'Moodboard, empty state', screen: 'moodboard', size: { w: 326, h: 183 }, ratio: '16/9' },
   emptyRegistry: { id: 'DTS_WANDER_Jessica_MADAVO_Photos_ID12138_dpboww', alt: 'A flower stall in full bloom', usedIn: 'Registry, empty state', screen: 'registry', size: { w: 326, h: 183 }, ratio: '16/9' },
-  /* ── Launch and first run ── */
-  /* The splash pool (goal 6): one photo per open, never the same twice running, the whole pool before a repeat (lib/splashPool.js).
-     14 photos: the two from goal 6's first pass and 12 of the 22 the owner added on 2026-09-22, each viewed at the phone's
-     crop behind the logo and scrim (calm, sharp, faces whole, eyes open). Six more are needed for the 20 the goal asks for. */
-  splash1: { id: 'kyoto-hero_vlwgtw', alt: 'A couple walking through a bamboo grove', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5', focal: '50% 50%' },
+  /* ── First run ── */
+  /* Goal 7: no in-app splash and no splash pool. The native launch screen (the mark on ink) is the only splash and it
+     goes the moment the shell has painted. The 14 pool photos went back to the unused list; seven of them are the
+     bundled daily update set below. */
   welcome1: { id: 'DTS_BANDITS_PALI_MENDEZ_Photos_ID14280_cddisg', alt: 'A couple under a wide sky', usedIn: 'Welcome, screen 1', screen: 'welcome', size: { w: 390, h: 844 }, ratio: '4/5', focal: '50% 35%' },
   welcome2: { id: 'DTS_Like_a_Movie_Foster___Asher_Photos_ID1041_mudxwa', alt: 'Carrying each other through the snow', usedIn: 'Welcome, screen 2', screen: 'welcome', size: { w: 390, h: 844 }, ratio: '4/5', focal: '50% 40%' },
   welcome3: { id: 'DTS_NU_NUPTIALS_Shauna_Summers_Photos_ID10310_o5dcie', alt: 'Sharing cake at the party', usedIn: 'Welcome, screen 3', screen: 'welcome', size: { w: 390, h: 844 }, ratio: '4/5', focal: '50% 40%' },
   login: { id: 'DTS_First_Date_Marlen_Stahlhuth_Photos_ID4795_upbdbr', alt: 'A couple sitting on a wall under the sky', usedIn: 'Mobile login, top panel', screen: 'login', size: { w: 390, h: 260 }, ratio: '3/2', focal: '50% 40%' },
   priming: { id: 'DTS_Weirdly_Ever_After_Agustín_Farías_Photos_ID8960_nspx4l', alt: 'A kiss on the cheek against orange', usedIn: 'Notification priming, top panel', screen: 'priming', size: { w: 390, h: 260 }, ratio: '3/2', focal: '50% 35%' },
   lock: { id: 'DTS_Tradition_Chris_Abatzis_Photos_ID9150_yiunlp', alt: 'A couple in a mountain meadow', usedIn: 'Face ID lock screen (the couple\'s own photo first)', screen: 'lock', size: { w: 390, h: 844 }, ratio: '4/5' },
-  /* ── Preview artifacts ── */
-  splash2: { id: 'hf_20260905_005926_9ff8ad93-21a0-4c2f-8f41-94cd140aa0ee_ib1qrr', alt: 'Steps down to the sea between flowering walls', usedIn: 'In-app splash pool, behind the logo (was the push preview wallpaper; that mock now draws the demo couple\'s cover)', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
-  splash3: { id: 'hf_20260904_112950_c28145cb-425f-4060-803e-0ef8ad0474c9_okqxth', alt: 'A couple walking a seawall at sunset', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
-  splash4: { id: 'hf_20260903_232125_e3d26c1d-ea6a-4374-9443-107018d470f2_fn7vuc', alt: 'Leaping into the sea from the rocks', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
-  splash5: { id: 'hf_20260904_090923_faab7fc5-e634-424b-95b7-39315dccbcf3_qe3lsz', alt: 'Laughing in a blue doorway', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
-  splash6: { id: 'hf_20260903_230909_75ff5eec-e9d1-46cf-95d2-5867030db959_hqk13n', alt: 'Two helmets in a car mirror', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
-  splash7: { id: 'DTS_ISOLA_Daniel_Farò_Photos_ID13167_iwrgom', alt: 'An open window onto the hills', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
-  splash8: { id: 'DTS_SILVER_HOUR_Franco_Dupuy_Photos_ID14693_qexopz', alt: 'Carrying tulips through a flower market', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
-  splash9: { id: 'DTS_DECADENT_Debora_Spanhol_Photos_ID12510_ebyjqj', alt: 'A raspberry cake with a ribbon', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
-  splash10: { id: 'DTS_SOFT_LUXE_Daniel_Farò_Photos_ID10822_kqgeik', alt: 'Carrying a wrapped bouquet', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
-  splash11: { id: 'DTS_Early_Honey_Moon_Tino_Renato_Photos_ID3576_v8vxs0', alt: 'Breakfast by the pool under palms', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
-  splash12: { id: 'DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8872_o6lwqt', alt: 'Glasses raised together', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
-  splash13: { id: 'DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14202_q14mwq', alt: 'A kiss in a tall window', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
-  splash14: { id: 'DTS_EAT_RICH_Fanette_Guilloud_Photos_ID13901_olnatb', alt: 'Olives in a martini', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
+  /* ── The daily update (goal 7): seven photos bundled into the app at build time (src/mobile/assets/daily/<day>.webp, 800 by 560 WebP,
+     downloaded from app/ during development and committed) so the card's photo is on screen with no loading gap. Rotated by the day of
+     the week (shell/dailyPhotos.js). Calm, bright, eyes open, faces whole. These seven count as used and appear nowhere else. ── */
+  dailyMon: { id: 'kyoto-hero_vlwgtw', alt: 'A couple walking through a bamboo grove', usedIn: 'Daily update, Mondays', screen: 'daily', size: { w: 390, h: 273 }, ratio: '10/7', bundled: 'mon' },
+  dailyTue: { id: 'hf_20260905_005926_9ff8ad93-21a0-4c2f-8f41-94cd140aa0ee_ib1qrr', alt: 'Steps down to the sea between flowering walls', usedIn: 'Daily update, Tuesdays', screen: 'daily', size: { w: 390, h: 273 }, ratio: '10/7', bundled: 'tue' },
+  dailyWed: { id: 'hf_20260904_112950_c28145cb-425f-4060-803e-0ef8ad0474c9_okqxth', alt: 'A couple walking a seawall at sunset', usedIn: 'Daily update, Wednesdays', screen: 'daily', size: { w: 390, h: 273 }, ratio: '10/7', bundled: 'wed' },
+  dailyThu: { id: 'DTS_ISOLA_Daniel_Farò_Photos_ID13167_iwrgom', alt: 'An open window onto the hills', usedIn: 'Daily update, Thursdays', screen: 'daily', size: { w: 390, h: 273 }, ratio: '10/7', bundled: 'thu' },
+  dailyFri: { id: 'DTS_DECADENT_Debora_Spanhol_Photos_ID12510_ebyjqj', alt: 'A raspberry cake with a ribbon', usedIn: 'Daily update, Fridays', screen: 'daily', size: { w: 390, h: 273 }, ratio: '10/7', gravity: 'north', bundled: 'fri' },
+  dailySat: { id: 'DTS_Early_Honey_Moon_Tino_Renato_Photos_ID3576_v8vxs0', alt: 'Breakfast by the pool under palms', usedIn: 'Daily update, Saturdays', screen: 'daily', size: { w: 390, h: 273 }, ratio: '10/7', bundled: 'sat' },
+  dailySun: { id: 'DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8872_o6lwqt', alt: 'Glasses raised together', usedIn: 'Daily update, Sundays', screen: 'daily', size: { w: 390, h: 273 }, ratio: '10/7', bundled: 'sun' },
   /* ── Demo place tiles: what Google's photo would be in the connected app (preview and demo only) ── */
   placeCeremony: { id: 'tulum-hero_pfdffd', alt: 'A wedding party on the sand', usedIn: 'Demo: the ceremony venue photo on Event details, and the Places search result', screen: 'event-details', size: { w: 358, h: 200 }, ratio: '16/9' },
   placeReception: { id: 'C17E98A9-5E5C-410A-B3F5-46098E2DFD6C_buezni', alt: 'A shared table from above', usedIn: 'Demo: the reception venue photo on Event details', screen: 'event-details', size: { w: 358, h: 200 }, ratio: '16/9' },
@@ -152,7 +149,7 @@ export const IMAGES = {
   placeMarket1: { id: 'hf_20260904_090213_dcaa917a-e117-4610-8618-a399139999a4_jv74kl', alt: 'A black and white portrait in a doorway', usedIn: 'Demo: marketplace result 1, the photographer', screen: 'marketplace', size: { w: 72, h: 72 }, ratio: '1/1', focal: '50% 35%' },
   placeMarket2: { id: 'DTS_New_Friends_and_Old_Cameras_Maresa_Smith_Photos_ID521_tkvtqe', alt: 'An armful of purple flowers', usedIn: 'Demo: marketplace result 2, the florist', screen: 'marketplace', size: { w: 72, h: 72 }, ratio: '1/1' },
   placeMarket3: { id: 'DTS_FIRST_ROUND_JELLY_LUISE_Photos_ID10648_vcwiko', alt: 'A close portrait with a glass', usedIn: 'Demo: marketplace result 3, the beauty salon', screen: 'marketplace', size: { w: 72, h: 72 }, ratio: '1/1', focal: '50% 30%' },
-  /* ── The demo couple's photos (goal 6): stand-ins for the couple's own uploads, treated as theirs on the Home heroes, the daily update, the Account card, the lock screen and the Guest suite preview; used nowhere else ── */
+  /* ── The demo couple's photos (goal 6): stand-ins for the couple's own uploads, treated as theirs on the Home heroes, the Account card, the lock screen and the Guest suite preview; used nowhere else (goal 7 moved the daily update to the bundled set above) ── */
   fixtureCover: { id: 'aspen-hero_zeblit', alt: 'A couple running through snow between pines', usedIn: 'Fixture cover photo, the couple\'s identity: Home hero 1, the Account card, the lock screen', screen: 'home', size: { w: 390, h: 488 }, ratio: '4/5', focal: '50% 45%' },
   fixtureSite: { id: 'hf_20260905_024502_4d83f52a-6e0b-4646-8139-ecb322b66c97_wvmeaa', alt: 'A snowball fight under the pines', usedIn: 'Fixture guest suite hero block: the Guest suite tab preview', screen: 'site', size: { w: 342, h: 428 }, ratio: '4/5', focal: '50% 40%' },
   fixtureStory1: { id: 'florence-hero_up7h6h', alt: 'A couple wheeling a bicycle down a stone lane', usedIn: 'Fixture Our Story photo 1: Home hero', screen: 'home', size: { w: 390, h: 488 }, ratio: '4/5', focal: '50% 45%' },
