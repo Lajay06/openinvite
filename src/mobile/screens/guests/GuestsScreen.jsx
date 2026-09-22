@@ -3,27 +3,25 @@ import { Search, Plus, Users, MoreHorizontal, Upload, Download, Send, CheckSquar
 import Screen from '../../shell/Screen';
 import { FilterPills, SearchScreen, SkeletonRows, ErrorState, EmptyState, StatusPill, ProgressBar, RowGroup, SwipeRow, SWIPE_ICONS, BottomSheet, Row, Checkbox, PillButton, SelectField } from '../../ui';
 import { imageUrl } from '../../images';
-import { isAttending, isDeclined, isPending, isAwaitingPrimary, tallyAttendees } from '@/lib/guestRsvpTally';
-import { resolveAttendees } from '@/lib/attendees';
+import { isPending } from '@/lib/guestRsvpTally';
+import { countGuests, guestMatchesStat, GUEST_STAT_LABELS } from './guestCounts';
 import { prefGet, prefSet } from '../../native';
 import { useConsiderations } from '../../features/ConsiderationsSheet';
 
 import { getGuestEventResponse } from '@/lib/weddingEvents';
 import { initials, RSVP_LABEL, RSVP_TONE, GUEST_CATEGORY_LABEL } from '../../lib/format';
 
+/** One label set everywhere (goal 8): the four stats, then "Not yet invited" as a list filter only. */
 export const GUEST_FILTERS = [
   { key: 'all', label: 'All' },
-  { key: 'attending', label: 'Attending' },
-  { key: 'awaiting', label: 'Awaiting' },
-  { key: 'declined', label: 'Declined' },
+  ...GUEST_STAT_LABELS,
   { key: 'not_invited', label: 'Not yet invited' },
 ];
 
-export function applyGuestFilter(list, key) {
+/** The list under a filter. With an event on, the four statuses read that event's reply (guestCounts.js). */
+export function applyGuestFilter(list, key, event = null) {
   switch (key) {
-    case 'attending': return list.filter(isAttending);
-    case 'declined': return list.filter(isDeclined);
-    case 'awaiting': return list.filter(isAwaitingPrimary);
+    case 'invited': case 'attending': case 'declined': case 'awaiting': return list.filter((g) => guestMatchesStat(g, key, event));
     case 'not_invited': return list.filter((g) => !g.invite_sent_at); // Guests.jsx: never sent, whatever they replied
     default: return list;
   }
@@ -46,7 +44,7 @@ export function suggestTitleCase(name) {
 }
 const CASE_DISMISS_KEY = 'name_case_dismissed';
 
-const EVENT_STATUS = { yes: ['ok', 'Yes'], no: ['no', 'No'], pending: ['warn', 'Awaiting'] };
+const EVENT_STATUS = { yes: ['ok', 'Attending'], no: ['no', 'Declined'], pending: ['warn', 'Awaiting reply'] };
 
 /** One guest row: initials tile, name, sub line, status pill (per event when an event filter is on). */
 export function GuestRow({ guest, onClick, event, selectable, selected, onSelect, role, caseSuggestion, onRename, onDismissCase }) {
@@ -99,15 +97,15 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
   const selecting = !!selected;
   const considerations = useConsiderations('guests');
 
-  const filters = useMemo(() => {
-    const counts = { all: guests.length, attending: applyGuestFilter(guests, 'attending').length, awaiting: applyGuestFilter(guests, 'awaiting').length, declined: applyGuestFilter(guests, 'declined').length, not_invited: applyGuestFilter(guests, 'not_invited').length };
-    return [...GUEST_FILTERS.map((f) => ({ ...f, count: counts[f.key] })), ...groupings];
-  }, [guests, groupings]);
   const event = eventFilter !== 'all' ? weddingEvents.find((e) => e.event_id === eventFilter) : null;
+  const filters = useMemo(() => {
+    const inEvent = event ? guests.filter((g) => getGuestEventResponse(g, event).invited) : guests;
+    return [...GUEST_FILTERS.map((f) => ({ ...f, count: f.key === 'all' ? inEvent.length : applyGuestFilter(inEvent, f.key, event).length })), ...groupings];
+  }, [guests, groupings, event]);
 
   const visible = useMemo(() => {
     const grouping = groupings.find((g) => g.key === filter);
-    let list = grouping ? guests.filter(grouping.test) : applyGuestFilter(guests, filter);
+    let list = grouping ? guests.filter(grouping.test) : applyGuestFilter(guests, filter, event);
     if (event) list = list.filter((g) => getGuestEventResponse(g, event).invited);
     return sortGuests(list, sort);
   }, [guests, filter, groupings, event, sort]);
@@ -119,20 +117,10 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
     return visible.filter((g) => [g.name, g.email, g.phone, g.plus_one_name].some((v) => (v || '').toLowerCase().includes(s)));
   }, [visible, q]);
 
-  // Guests.jsx's stat cards: total with plus-ones, invited, attending and awaiting over the attendee list; per-event counts when an event filter is on.
-  const stats = useMemo(() => {
-    const attendees = resolveAttendees(guests);
-    const { combined, plusOnes } = tallyAttendees(attendees);
-    const byId = new Map(guests.map((g) => [g.id, g]));
-    const awaiting = attendees.filter((a) => !!byId.get(a.isPlusOne ? a.hostGuestId : a.id)?.invite_sent_at && isPending(a)).length;
-    return { total: guests.length + plusOnes.total, plusOnes: plusOnes.total, invited: guests.filter((g) => g.invite_sent_at).length, attending: combined.attending, declined: combined.declined, awaiting };
-  }, [guests]);
-  const eventStats = useMemo(() => {
-    if (!event) return null;
-    const out = { invited: 0, yes: 0, no: 0, pending: 0 };
-    for (const g of guests) { const r = getGuestEventResponse(g, event); if (!r.invited) continue; out.invited++; if (r.status === 'yes') out.yes++; else if (r.status === 'no') out.no++; else out.pending++; }
-    return out;
-  }, [guests, event]);
+  // The four numbers, one label set, for the event on the filter or for all events (guestCounts.js, the desktop's logic).
+  const counts = useMemo(() => countGuests(guests, event), [guests, event]);
+  const plusOnes = !event && counts.plusOnes ? counts.plusOnes.invited : 0;
+  const statFilter = GUEST_STAT_LABELS.some((s) => s.key === filter) ? filter : null;
 
   const actions = selecting
     ? [{ icon: X, label: 'Done selecting', onClick: onClearSelection }]
@@ -157,25 +145,15 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
         {!loading && guests.length > 0 && !selecting && (
           <div className="oi-m-stack" style={{ marginBottom: 16 }}>
             <div className="oi-m-card">
-              {eventStats ? (
-                <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
-                  <Stat n={eventStats.invited} label="Invited" />
-                  <Stat n={eventStats.yes} label="Yes" />
-                  <Stat n={eventStats.no} label="No" />
-                  <Stat n={eventStats.pending} label="Pending" />
-                </div>
-              ) : (
-                <>
-                  {/* One line at 390px, never wrapped: the count, the word, the plus-ones (goal 6). */}
-                  <div className="oi-m-section" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: 12 }}>{stats.total} guest{stats.total === 1 ? '' : 's'}{stats.plusOnes ? ` \u00b7 ${stats.plusOnes} plus-one${stats.plusOnes === 1 ? '' : 's'}` : ''}</div>
-                  <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
-                    <Stat n={stats.invited} label="Invited" />
-                    <Stat n={stats.attending} label="Attending" />
-                    <Stat n={stats.awaiting} label="Awaiting" />
-                  </div>
-                </>
-              )}
-              <ProgressBar value={filters[1].count + filters[3].count} max={guests.filter((g) => g.invite_sent_at).length} note={summary(guests, filters)} />
+              {/* One line at 390px, never wrapped: the count, the word, the plus-ones (goal 6); per event, the event's name. */}
+              <div className="oi-m-section" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: 12 }}>{event ? event.name : `${guests.length} guest${guests.length === 1 ? '' : 's'}${plusOnes ? ` \u00b7 ${plusOnes} plus-one${plusOnes === 1 ? '' : 's'}` : ''}`}</div>
+              {/* The four stats, same labels for every event filter; tap one to filter the list to it, tap again to clear (goal 8). */}
+              <div className="oi-m-stats" role="group" aria-label="Guest numbers">
+                {GUEST_STAT_LABELS.map((st) => (
+                  <Stat key={st.key} n={counts[st.key]} label={st.label} sub={plusOnes && counts.plusOnes[st.key] ? `${counts.guests[st.key]} guest${counts.guests[st.key] === 1 ? '' : 's'}, ${counts.plusOnes[st.key]} plus-one${counts.plusOnes[st.key] === 1 ? '' : 's'}` : ''} active={statFilter === st.key} onClick={() => onFilter(statFilter === st.key ? 'all' : st.key)} />
+                ))}
+              </div>
+              <ProgressBar value={counts.attending + counts.declined} max={counts.invited} note={summary(counts, event)} />
               {/* The tab root keeps the bell top right, so the list's actions live here, not in the header. */}
               <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                 <PillButton variant="primary" size="sm" icon={Plus} onClick={onAdd} style={{ flex: 1 }}>Add a guest</PillButton>
@@ -260,18 +238,17 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
   );
 }
 
-function Stat({ n, label }) {
+function Stat({ n, label, sub, active, onClick }) {
   return (
-    <div style={{ flex: 1, minWidth: 0 }}>
-      <div className="oi-m-num" style={{ fontSize: 28, lineHeight: '34px' }}>{n}</div>
-      <div className="oi-m-meta">{label}</div>
-    </div>
+    <button type="button" className={`oi-m-stat-btn${active ? ' oi-m-stat-btn--on' : ''}`} onClick={onClick} aria-pressed={active}>
+      <span className="oi-m-num" style={{ fontSize: 28, lineHeight: '34px' }}>{n}</span>
+      <span className="oi-m-meta oi-m-stat-btn__label">{label}</span>
+      {sub && <span className="oi-m-meta oi-m-stat-btn__sub">{sub}</span>}
+    </button>
   );
 }
 
-function summary(guests, filters) {
-  const invited = guests.filter((g) => g.invite_sent_at).length;
-  if (!invited) return 'No invitations sent yet.';
-  const awaiting = filters[2].count;
-  return awaiting ? `${awaiting} of ${invited} invited guests still to reply.` : 'Everyone you invited has replied.';
+function summary(counts, event) {
+  if (!counts.invited) return event ? 'No one is invited to this event yet.' : 'No invitations sent yet.';
+  return counts.awaiting ? `${counts.awaiting} of ${counts.invited} invited still to reply.` : 'Everyone invited has replied.';
 }

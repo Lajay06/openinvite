@@ -28,6 +28,7 @@
     "test:us-english-spelling": "node scripts/test-us-english-spelling.mjs",
     "test:weather-states": "node scripts/test-weather-states.mjs",
     "test:attendees": "node scripts/test-attendees.mjs",
+    "test:guest-counts": "node scripts/test-guest-counts.mjs",
     "test:table-assignment": "node scripts/test-table-assignment.mjs",
     "test:single-table-write-path": "node scripts/test-single-table-write-path.mjs",
     "test:no-use-before-define-ratchet": "node scripts/test-no-use-before-define-ratchet.mjs",

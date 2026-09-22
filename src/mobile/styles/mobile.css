@@ -489,6 +489,12 @@
 .oi-m-tile__stat { font-size: 13px; line-height: 18px; color: var(--m-text-2); }
 .oi-m-tile--photo .oi-m-tile__stat { color: var(--m-on-dark-2); }
 
+/* The guest list's four numbers (goal 8): a 2 by 2 grid of tappable stats inside the card. Active: number and label in primary. */
+.oi-m-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; margin-bottom: 12px; }
+.oi-m-stat-btn { display: flex; flex-direction: column; align-items: flex-start; text-align: left; min-height: 56px; padding: 4px 0; margin: 0; background: none; border: 0; border-radius: var(--m-r-input); color: var(--m-text); font: inherit; transition: transform var(--m-fast) var(--m-ease); }
+.oi-m-stat-btn:active { transform: scale(0.98); }
+.oi-m-stat-btn--on .oi-m-num, .oi-m-stat-btn--on .oi-m-stat-btn__label { color: var(--m-primary); }
+.oi-m-stat-btn__sub { display: block; font-size: 12px; line-height: 16px; }
 .oi-m-stat { background: var(--m-card); border-radius: var(--m-r-card); padding: 16px; display: flex; flex-direction: column; gap: 12px; min-height: 132px; text-align: left; width: 100%; }
 .oi-m-stat--ink { background: var(--m-ink); color: var(--m-on-dark); }
 .oi-m-stat--ink .oi-m-meta { color: var(--m-on-dark-2); }

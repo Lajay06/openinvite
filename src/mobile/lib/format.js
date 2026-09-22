@@ -56,7 +56,7 @@ export const GUEST_CATEGORY_LABEL = {
   partners_friends: "Partner's friends",
 };
 
-export const RSVP_LABEL = { pending: 'Awaiting', attending: 'Attending', declined: 'Declined', maybe: 'Maybe' };
+export const RSVP_LABEL = { pending: 'Awaiting reply', attending: 'Attending', declined: 'Declined', maybe: 'Maybe' };
 export const RSVP_TONE = { pending: 'warn', attending: 'ok', declined: 'no', maybe: 'neutral' };
 
 export const VENDOR_STATUS_LABEL = { booked: 'Booked', quoted: 'Quoted', meeting_scheduled: 'Meeting scheduled', contacted: 'Contacted', researching: 'Researching', rejected: 'Not going ahead' };

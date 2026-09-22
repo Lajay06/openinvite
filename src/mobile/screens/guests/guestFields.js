@@ -12,7 +12,7 @@ import { needsCountryCode, toE164, COUNTRIES } from '@/lib/phoneE164';
 export const COUNTRY_OPTIONS = COUNTRIES.map((c) => ({ value: c.iso, label: `${c.label} +${c.dial}` }));
 
 export const GUEST_CATEGORIES = [['family', 'Family'], ['friends', 'Friends'], ['colleagues', 'Colleagues'], ['partners_family', "Partner's family"], ['partners_friends', "Partner's friends"]].map(([value, label]) => ({ value, label }));
-export const RSVP_STATUSES = [['pending', 'Pending'], ['attending', 'Attending'], ['declined', 'Declined'], ['maybe', 'Maybe']].map(([value, label]) => ({ value, label }));
+export const RSVP_STATUSES = [['pending', 'Awaiting reply'], ['attending', 'Attending'], ['declined', 'Declined'], ['maybe', 'Maybe']].map(([value, label]) => ({ value, label }));
 
 const KNOWN = new Set(DIETARY_OPTIONS.filter((o) => o !== 'None' && o !== 'Other'));
 

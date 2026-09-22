@@ -8,7 +8,7 @@ import { getGuestEventResponse, mealOptionLabel, effectiveMealChoice } from '@/l
 import { hasPlusOne, plusOneRsvpStatus, plusOneDisplayName } from '@/lib/plusOne';
 
 const CHANNEL_LABELS = { email: 'Email', whatsapp: 'WhatsApp', 'email+whatsapp': 'Email and WhatsApp', 'whatsapp+email': 'Email and WhatsApp' };
-const EVENT_STATUS = { yes: ['ok', 'Yes'], no: ['no', 'No'], pending: ['warn', 'Awaiting'] };
+const EVENT_STATUS = { yes: ['ok', 'Attending'], no: ['no', 'Declined'], pending: ['warn', 'Awaiting reply'] };
 const fmtWhen = (iso) => { if (!iso) return ''; const d = new Date(iso); return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }); };
 
 /**
