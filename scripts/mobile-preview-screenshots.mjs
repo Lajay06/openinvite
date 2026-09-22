@@ -31,6 +31,7 @@ const SHOTS = [
   ['/m/preview/guests/g3', 'guest-detail'],
   ['/m/preview/plan', 'plan-hub'],
   ['/m/preview/plan', 'plan-hub-scrolled', 'scroll'],
+  ['/m/preview/plan', 'plan-hub-guest-suite', 'expand'],
   ['/m/preview/plan/checklist', 'plan-checklist'],
   ['/m/preview/plan/checklist?add=1', 'plan-add-task-sheet'],
   ['/m/preview/plan/budget', 'plan-budget'],
@@ -134,6 +135,8 @@ for (const [route, name, action] of SHOTS.filter(([, n]) => !ONLY || ONLY.has(n)
   await page.goto(`${BASE}${route}`, { waitUntil: 'networkidle', timeout: 30000 }).catch((e) => errors.push(`goto ${route}: ${e.message}`));
   await page.waitForTimeout(700);
   if (action === 'ava') { await page.click('button[aria-label="Ask Ava"]'); await page.waitForTimeout(500); }
+  // Every accordion group open, scrolled to the guest suite tiles.
+  if (action === 'expand') { for (const el of await page.$$('.oi-m-acc__head[aria-expanded=false]')) await el.click(); await page.waitForTimeout(600); await page.evaluate(() => { document.querySelector('.oi-m-screen').scrollTop = 2900; }); await page.waitForTimeout(500); }
   if (action === 'scroll') { await page.evaluate(() => { document.querySelector('.oi-m-screen').scrollTop = 600; }); await page.waitForTimeout(500); }
   if (action?.startsWith('type:')) { await page.keyboard.type(action.slice(5)); await page.waitForTimeout(500); }
   if (action?.startsWith('tap:')) { await page.getByRole('button', { name: action.slice(4) }).first().click(); await page.waitForTimeout(500); }

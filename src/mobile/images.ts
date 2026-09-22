@@ -10,7 +10,8 @@
  * src/mobile/. /m/preview/images renders this file as a gallery.
  *
  * ONE LIBRARY. Every id here is one of the 73 photos in the Cloudinary
- * folder `app` (cloud dsr84xknv), plus the airport photo added afterwards, listed through the Admin API on
+ * folder `app` (cloud dsr84xknv), plus the airport and poolside photos the
+ * owner added afterwards at the cloud's root, listed through the Admin API on
  * 2026-09-21 and viewed one by one before it was assigned. Each photo is
  * used once across the whole app, so no photo repeats on a screen; the
  * `screen` field is what /m/preview/images checks. Crops are chosen so no
@@ -89,7 +90,7 @@ export const IMAGES = {
   tileBudget: { id: 'DTS_SOJOURN_Franco_Dupuy_Photos_ID10730_je7niq', alt: 'Working on a laptop, racket by the wall', usedIn: 'Plan hub, Budget tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 35%' },
   tileRegistry: { id: 'DTS_THE_INTERN_Shauna_Summers_Photos_ID11406_giy6nx', alt: 'Carrying an armful of wrapped parcels', usedIn: 'Plan hub, Registry tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
   tileHoneymoon: { id: 'tulum-hero_nbr4op', alt: 'A couple walking along a beach', usedIn: 'Plan hub, Honeymoon tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
-  /* Goal 5: the tiles that were icon panels. Five stay icon tiles: Send invites, Invitations and Considerations hand off to desktop, Emergency contact is a form, and the guest suite Accommodation tile waits for a photo (the one unassigned photo, a couple in bed, has closed eyes in its focal area and stays out, as goal 4 ruled). */
+  /* Goal 5: the tiles that were icon panels. Four stay icon tiles on purpose: Send invites, Invitations and Considerations hand off to desktop, Emergency contact is a form. The one library photo still unassigned (a couple in bed) has closed eyes in its focal area and stays out, as goal 4 ruled. */
   tileChecklist: { id: 'DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14188_oqc9dm', alt: 'A game of chess by the window', usedIn: 'Plan hub, To do tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 40%' },
   tilePolls: { id: 'hf_20260917_161857_658d1c99-742d-4bba-930c-4d52299b90c9_ccpphs', alt: 'Drinks at a party', usedIn: 'Plan hub, Polls & games tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 35%' },
   tileMessages: { id: 'hf_20260904_010212_e9bf35e3-c220-4d78-8595-01d39c75be7e_se9wle', alt: 'Sitting close on a leather banquette', usedIn: 'Plan hub, Messages tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 40%' },
@@ -98,6 +99,7 @@ export const IMAGES = {
   tileSuiteSchedule: { id: 'DTS_LUNAR_Daniel_Farò_Photos_ID11268_bm3gla', alt: 'Dusk by the water', usedIn: 'Plan hub, guest suite Schedule tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
   tileQna: { id: 'DTS_SILVER_HOUR_Franco_Dupuy_Photos_ID14690_mjiupn', alt: 'Dressed up outside a cafe', usedIn: 'Plan hub, Q&A tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 30%' },
   tileSuiteRegistry: { id: 'hf_20260905_095507_0842f0f9-82bb-462a-9756-c6d1b1cb4486_po7vnk', alt: 'Grilling together at night', usedIn: 'Plan hub, guest suite Registry tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 40%' },
+  tileSuiteAccommodation: { id: 'DTS_Remote_Studio_Tino_Renato_Photos_ID3731_bqr4fe', alt: 'Reading on a poolside lounger', usedIn: 'Plan hub, guest suite Accommodation tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 60%' },
   tileSuiteTransport: { id: 'DTS_BANDITS_PALI_MENDEZ_Photos_ID14261_wcy4l1', alt: 'A piggyback through the desert', usedIn: 'Plan hub, guest suite Transport tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
   tileExperience: { id: 'DTS_Springtime_Rob_Christain_Crosby_Photos_ID3094_kjiq9v', alt: 'Skating down a palm-lined street', usedIn: 'Plan hub, Experience guide tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 60%' },
   tileGoodToKnow: { id: 'DTS_LAST_SUPPER_PALI_MENDEZ_Photos_ID13840_nxtipc', alt: 'A martini against red velvet', usedIn: 'Plan hub, Good to know tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
