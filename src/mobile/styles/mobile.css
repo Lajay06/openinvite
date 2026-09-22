@@ -858,24 +858,32 @@ select.oi-m-input { background-image: none; padding-right: 44px; }
 
 @keyframes oi-m-fade-in { from { opacity: 0; } to { opacity: 1; } }
 
-/* ── The daily update (goal 6): the couple's photo over the brand-red panel ── */
-.oi-m-daily { position: absolute; inset: 0; z-index: 70; background: var(--m-primary); display: flex; flex-direction: column; overflow: hidden; animation: oi-m-fade-in 420ms both; transition: opacity 420ms var(--m-ease), transform 420ms var(--m-ease); }
-.oi-m-daily--leaving { opacity: 0; transform: translateY(24%); pointer-events: none; }
-.oi-m-daily__photo { position: relative; flex: 0 0 36%; min-height: 220px; background: var(--m-ink); }
-.oi-m-daily__photo .oi-m-img, .oi-m-daily__blank { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 0; }
-.oi-m-daily__photo .oi-m-img img { width: 100%; height: 100%; object-fit: cover; }
+/* ── The daily update (goal 7): a three-quarter card over the dimmed dashboard ── */
+.oi-m-daily-root { position: absolute; inset: 0; z-index: 70; display: flex; flex-direction: column; justify-content: flex-end; }
+.oi-m-daily-scrim { position: absolute; inset: 0; background: rgba(10, 10, 10, 0.42); opacity: 0; transition: opacity var(--m-move) var(--m-ease); }
+.oi-m-daily { position: relative; height: 75%; min-height: 560px; max-height: calc(100% - var(--m-safe-top) - 8px); border-radius: var(--m-r-sheet) var(--m-r-sheet) 0 0; overflow: hidden; background: var(--m-primary); box-shadow: var(--m-elev); display: flex; flex-direction: column; transform: translateY(100%); transition: transform 320ms var(--m-spring); }
+.oi-m-daily-root--open .oi-m-daily-scrim { opacity: 1; }
+.oi-m-daily-root--open .oi-m-daily { transform: translateY(0); }
+.oi-m-daily-root--closing .oi-m-daily-scrim { opacity: 0; }
+.oi-m-daily-root--closing .oi-m-daily { transform: translateY(100%); transition: transform 240ms var(--m-ease); }
+.oi-m-daily__photo { position: relative; flex: 0 1 34%; min-height: 150px; background: var(--m-ink); }
+.oi-m-daily__photo img, .oi-m-daily__blank { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.oi-m-daily__handle { position: absolute; top: 10px; left: 50%; width: 40px; height: 5px; margin-left: -20px; border-radius: var(--m-r-pill); background: rgba(255, 255, 255, 0.7); }
 /* The panel: flat brand red under an 8 percent ink wash (white text 5:1, AA), its top corners rounded 28px over the photo. */
-.oi-m-daily__panel { position: relative; flex: 1; margin-top: -28px; border-radius: 28px 28px 0 0; background: color-mix(in srgb, var(--m-primary) 92%, var(--m-ink)); color: #FFFFFF; display: flex; flex-direction: column; padding: 28px var(--m-gutter) calc(var(--m-safe-bottom) + 16px); }
+.oi-m-daily__panel { position: relative; flex: 1 0 auto; min-height: 0; max-height: calc(100% - 150px); margin-top: -28px; border-radius: 28px 28px 0 0; background: color-mix(in srgb, var(--m-primary) 92%, var(--m-ink)); color: #FFFFFF; display: flex; flex-direction: column; padding: 24px var(--m-gutter) calc(var(--m-safe-bottom) + 12px); }
 @supports not (background: color-mix(in srgb, red 92%, black)) { .oi-m-daily__panel { background: #CF324D; } }
 .oi-m-daily__inner { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; }
-.oi-m-daily__date { font-size: 13px; line-height: 18px; font-weight: 600; margin: 0 0 12px; color: #FFFFFF; }
-.oi-m-daily__greeting { font-size: 40px; line-height: 46px; font-weight: 600; margin: 0 0 16px; color: #FFFFFF; overflow-wrap: anywhere; }
+.oi-m-daily__date { font-size: 13px; line-height: 18px; font-weight: 600; margin: 0 0 10px; color: #FFFFFF; }
+.oi-m-daily__greeting { font-size: 40px; line-height: 46px; font-weight: 600; margin: 0 0 14px; color: #FFFFFF; overflow-wrap: anywhere; }
 .oi-m-daily__line { font-size: 20px; line-height: 28px; font-weight: 500; margin: 0; color: #FFFFFF; overflow-wrap: anywhere; }
 .oi-m-daily__line + .oi-m-daily__line { margin-top: 16px; }
-.oi-m-daily__go { margin-top: 20px; background: #FFFFFF; color: var(--m-primary); min-height: 52px; }
+.oi-m-daily__go { margin-top: 16px; background: #FFFFFF; color: var(--m-primary); min-height: 52px; flex-shrink: 0; }
+.oi-m-daily__skip { flex-shrink: 0; align-self: center; min-height: 44px; margin-top: 4px; padding: 0 16px; background: none; border: 0; font: inherit; font-size: 15px; line-height: 20px; font-weight: 600; color: #FFFFFF; border-radius: var(--m-r-pill); }
+.oi-m-daily__skip:active { background: rgba(255, 255, 255, 0.12); }
 @media (prefers-reduced-motion: reduce) {
-  .oi-m-daily { animation: oi-m-fade-in 300ms both; transition: opacity 300ms; }
-  .oi-m-daily--leaving { transform: none; }
+  .oi-m-daily { transition: opacity 300ms; transform: none; opacity: 0; }
+  .oi-m-daily-root--open .oi-m-daily { opacity: 1; }
+  .oi-m-daily-root--closing .oi-m-daily { transform: none; opacity: 0; }
 }
 
 /* ── Activity rows: Home's "Latest" and the notification center ────── */

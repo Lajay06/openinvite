@@ -14,7 +14,7 @@ import ScreenHeader, { CompactBar } from './ScreenHeader';
  *   back      true (history back) | string (route) | function
  *   onRefresh async fn; enables pull to refresh (touch only)
  */
-export default function Screen({ title, subtitle, actions, bell = false, back, onRefresh, footer, children }) {
+export default function Screen({ title, subtitle, actions, bell = false, back, onRefresh, footer, onTitleLongPress, children }) {
   const ref = useRef(null);
   const raf = useRef(0);
   const [compact, setCompact] = useState(false);
@@ -63,7 +63,7 @@ export default function Screen({ title, subtitle, actions, bell = false, back, o
             {refreshing ? 'Updating' : pull > 56 ? 'Release to update' : ''}
           </div>
         )}
-        <ScreenHeader title={title} subtitle={subtitle} />
+        <ScreenHeader title={title} subtitle={subtitle} onLongPress={onTitleLongPress} />
         <div className="oi-m-stagger" style={{ display: 'contents' }}>{children}</div>
         {footer && <div style={{ height: 88 }} />}
       </div>

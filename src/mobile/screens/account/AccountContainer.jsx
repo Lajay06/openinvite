@@ -44,7 +44,7 @@ export default function AccountContainer() {
     if (isPreview) bump((n) => n + 1); else await auth.checkAppState?.();
   };
   const savePrefs = async (next) => { await api.updateMe({ notification_prefs: next }); if (isPreview) bump((n) => n + 1); else await auth.checkAppState?.(); };
-  const { base } = useContext(ShellContext);
+  const { base, showDailyUpdate } = useContext(ShellContext);
   const wedding = useWedding();
   const d = wedding.data;
   const coupleName = d?.couple1Name && d?.couple2Name ? `${d.couple1Name} & ${d.couple2Name}` : d?.couple1Name || '';
@@ -84,6 +84,8 @@ export default function AccountContainer() {
         onLogout={() => logout()}
         loading={isLoadingAuth}
         appLock={isNative() ? appLock : null}
+        // Review builds only (goal 7): a long press on the title brings the daily update back whatever the day's answer.
+        onTitleLongPress={isDemoBuild || import.meta.env.DEV ? showDailyUpdate : undefined}
       />
       {collab && <CollaborateModal onClose={() => setCollab(false)} />}
       <AccountDetailsSheet open={sheet === 'details'} user={user} currencyCode={currencyCode} onClose={() => setSheet(null)} onSave={saveDetails} onDesktop={() => { setSheet(null); openDesktop(navigate, '/account'); }} />

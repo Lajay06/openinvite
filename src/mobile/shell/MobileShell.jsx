@@ -21,7 +21,7 @@ import '../styles/mobile.css';
  * preview): the bell reads `unread`, the banner reads `latestUnseen`.
  * `renderAva({ onClose })` supplies the chat for the Ava sheet.
  */
-export const ShellContext = React.createContext({ base: '/m', unread: 0, openAva: () => {}, closeAva: () => {}, notifications: null, search: null });
+export const ShellContext = React.createContext({ base: '/m', unread: 0, openAva: () => {}, closeAva: () => {}, notifications: null, search: null, showDailyUpdate: () => {} });
 
 export default function MobileShell({ base = '/m', renderAva, showAva = true, notifications = null, search = null, lockPhoto = '', forcedOffline = false, forcedLock = false, daily = null, forceDaily = false }) {
   const [avaOpen, setAvaOpen] = useState(false);
@@ -90,7 +90,10 @@ export default function MobileShell({ base = '/m', renderAva, showAva = true, no
   // The page-scoped Ava: the screen's desktop page, its voice line and its quick actions ride into the pod (avaContext.js).
   const [avaDetail, setAvaDetail] = useState(null);
   const openAva = useCallback((extra = {}) => { setAvaDetail({ ...(avaDetailFor(window.location.pathname, base) || {}), ...extra }); setAvaOpen(true); }, [base]);
-  const ctx = { base, unread: notifications?.unread || 0, openAva, closeAva: () => setAvaOpen(false), notifications, search };
+  // The daily update on demand (the demo build's long press on the Account title): a counter the host watches.
+  const [dailyReplay, setDailyReplay] = useState(0);
+  const showDailyUpdate = useCallback(() => setDailyReplay((n) => n + 1), []);
+  const ctx = { base, unread: notifications?.unread || 0, openAva, closeAva: () => setAvaOpen(false), notifications, search, showDailyUpdate };
 
   return (
     <ShellContext.Provider value={ctx}>
@@ -126,7 +129,7 @@ export default function MobileShell({ base = '/m', renderAva, showAva = true, no
         )}
         {banner && <Banner item={banner} onDone={onBannerDone} />}
         <OfflineBanner />
-        {daily && <DailyUpdateHost daily={daily} force={forceDaily} />}
+        {daily && <DailyUpdateHost daily={daily} force={forceDaily} replay={dailyReplay} />}
       </div>
       </AppLock>
       </NetworkProvider>

@@ -59,7 +59,7 @@ The scale is small and calm (goal 4, after the owner's phone test; the reference
 | Class | Size / line | Use |
 |---|---|---|
 | `.oi-m-title` | 28 / 34 | the one screen title |
-| `.oi-m-daily__greeting`, `.oi-m-daily__line`, `.oi-m-daily__date` | 40 / 46, 20 / 28, 13 / 18 | the daily update only (goal 6): the one screen allowed above the scale, bold on purpose; the dashboard after it is calm |
+| `.oi-m-daily__greeting`, `.oi-m-daily__line`, `.oi-m-daily__date` | 40 / 46, 20 / 28, 13 / 18 | the daily update card only (goals 6 and 7): the one surface allowed above the scale, bold on purpose; the dashboard behind it is calm |
 | `.oi-m-hero-num` | 44 / 48 (34 / 38 when long) | days to go, totals |
 | `.oi-m-num`, `.oi-m-stat__num` | 28 / 34 | stat numbers |
 | `.oi-m-section`, `.oi-m-grouped__title`, sheet titles | 17 / 22 | section headings above rows and tiles |
@@ -96,6 +96,7 @@ Sentence case everywhere, including badges and tab labels. Lucide icons only. No
 | `SmartImage` | Cloudinary delivery with `f_auto,q_auto,c_fill,g_auto` at 2x and 3x, fixed aspect ratio, tinted placeholder, lazy below the fold, alt text always. Never a broken box: falls back to a color panel. |
 | `PillButton`, `FilterPills`, `ProgressBar`, `EmptyState`, `ErrorState`, `Skeleton`, `SearchScreen`, form fields | As in v0, restyled to the tokens. |
 | `Banner` | The in-app notification: a rounded card that drops from the top with the elevation token, stays four seconds, swipes away, opens on tap. |
+| `DailyUpdate` | The daily update (goal 7): a three-quarter-height card that springs up over the dimmed dashboard, 28px top corners, the elevation token; a bundled photo on top (about a third), the brand-red panel below with the date, greeting and lines, "Let's go" as a white pill and "Not again today" as a white text button. Swipe down closes it. Shown on every cold start and after 15 minutes in the background (`DailyUpdateHost`). |
 
 ## Lists
 

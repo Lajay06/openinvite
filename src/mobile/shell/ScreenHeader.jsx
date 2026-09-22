@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useRef } from 'react';
 import { ArrowLeft, Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ShellContext } from './MobileShell';
@@ -34,11 +34,15 @@ export function CompactBar({ title, compact, actions = [], onBack, bell = false 
   );
 }
 
-export default function ScreenHeader({ title, subtitle }) {
+/** `onLongPress` (600ms on the title) is a hidden hook for review builds; nothing in the layout changes with it. */
+export default function ScreenHeader({ title, subtitle, onLongPress }) {
+  const timer = useRef(null);
+  const start = onLongPress ? () => { clearTimeout(timer.current); timer.current = setTimeout(onLongPress, 600); } : undefined;
+  const stop = onLongPress ? () => clearTimeout(timer.current) : undefined;
   return (
     <header className="oi-m-header">
       <div className="oi-m-header__title">
-        <h1 className="oi-m-title">{title}</h1>
+        <h1 className="oi-m-title" onTouchStart={start} onTouchEnd={stop} onTouchMove={stop} onMouseDown={start} onMouseUp={stop} onMouseLeave={stop}>{title}</h1>
         {subtitle && <p className="oi-m-meta" style={{ marginTop: 4 }}>{subtitle}</p>}
       </div>
     </header>

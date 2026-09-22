@@ -75,7 +75,7 @@ const SHOTS = [
   ['/m/preview/notifications/settings', 'notification-settings'],
   ['/m/preview/push', 'push-lock-screen'],
   ['/m/preview/images', 'image-slots'],
-  ['/m/preview/daily-update', 'launch-daily-update'],
+  ['/m/preview?daily=1', 'daily-update'],
   ['/m/preview/welcome', 'welcome'],
   ['/m/preview/login', 'login'],
   ['/m/preview/login?state=error', 'login-error'],
