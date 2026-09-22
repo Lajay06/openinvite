@@ -85,8 +85,8 @@ export const IMAGES = {
   tileVendors: { id: 'DTS_MOTHERLY_Shauna_Summers_Photos_ID10728_vz25fa', alt: 'Arranging flowers in a vase', usedIn: 'Plan hub, My vendors tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 35%' },
   tileMarketplace: { id: 'marrakech-hero_sbciuz', alt: 'A couple in a souk', usedIn: 'Plan hub, Marketplace tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
   tileCeremony: { id: 'DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14213_wbsnwi', alt: 'A couple on the steps in their wedding clothes', usedIn: 'Plan hub, Ceremony details tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 40%' },
-  tileTransport: { id: 'hf_20260904_063711_294c70f5-51b6-4194-bef1-72f6cf26aa3f_hc1r7a', alt: 'A couple in the back of a car at night', usedIn: 'Plan hub, Transport tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
-  tileAccommodation: { id: 'DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_-_Print_ew6e2a', alt: 'Two in bathrobes on a hotel bed', usedIn: 'Plan hub, Accommodation tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
+  tileTransport: { id: 'hf_20260904_063711_294c70f5-51b6-4194-bef1-72f6cf26aa3f_hc1r7a', alt: 'A couple in the back of a car at night', usedIn: 'Plan hub, Getting here tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
+  tileAccommodation: { id: 'DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_-_Print_ew6e2a', alt: 'Two in bathrobes on a hotel bed', usedIn: 'Plan hub, Stay tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
   tileBudget: { id: 'DTS_SOJOURN_Franco_Dupuy_Photos_ID10730_je7niq', alt: 'Working on a laptop, racket by the wall', usedIn: 'Plan hub, Budget tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 35%' },
   tileRegistry: { id: 'DTS_THE_INTERN_Shauna_Summers_Photos_ID11406_giy6nx', alt: 'Carrying an armful of wrapped parcels', usedIn: 'Plan hub, Registry tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
   tileHoneymoon: { id: 'tulum-hero_nbr4op', alt: 'A couple walking along a beach', usedIn: 'Plan hub, Honeymoon tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
@@ -99,8 +99,8 @@ export const IMAGES = {
   tileSuiteSchedule: { id: 'DTS_LUNAR_Daniel_Farò_Photos_ID11268_bm3gla', alt: 'Dusk by the water', usedIn: 'Plan hub, guest suite Schedule tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
   tileQna: { id: 'DTS_SILVER_HOUR_Franco_Dupuy_Photos_ID14690_mjiupn', alt: 'Dressed up outside a cafe', usedIn: 'Plan hub, Q&A tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 30%' },
   tileSuiteRegistry: { id: 'hf_20260905_095507_0842f0f9-82bb-462a-9756-c6d1b1cb4486_po7vnk', alt: 'Grilling together at night', usedIn: 'Plan hub, guest suite Registry tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 40%' },
-  tileSuiteAccommodation: { id: 'DTS_Remote_Studio_Tino_Renato_Photos_ID3731_bqr4fe', alt: 'Reading on a poolside lounger', usedIn: 'Plan hub, guest suite Accommodation tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 60%' },
-  tileSuiteTransport: { id: 'DTS_BANDITS_PALI_MENDEZ_Photos_ID14261_wcy4l1', alt: 'A piggyback through the desert', usedIn: 'Plan hub, guest suite Transport tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
+  tileSuiteAccommodation: { id: 'DTS_Remote_Studio_Tino_Renato_Photos_ID3731_bqr4fe', alt: 'Reading on a poolside lounger', usedIn: 'Plan hub, guest suite Stay tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 60%' },
+  tileSuiteTransport: { id: 'DTS_BANDITS_PALI_MENDEZ_Photos_ID14261_wcy4l1', alt: 'A piggyback through the desert', usedIn: 'Plan hub, guest suite Getting here tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
   tileExperience: { id: 'DTS_Springtime_Rob_Christain_Crosby_Photos_ID3094_kjiq9v', alt: 'Skating down a palm-lined street', usedIn: 'Plan hub, Experience guide tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3', focal: '50% 60%' },
   tileGoodToKnow: { id: 'DTS_LAST_SUPPER_PALI_MENDEZ_Photos_ID13840_nxtipc', alt: 'A martini against red velvet', usedIn: 'Plan hub, Good to know tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
   tileSuitePolls: { id: 'DTS_Pride_Agustín_Farías_Photos_ID5510_dn4jws', alt: 'A kiss at sunset', usedIn: 'Plan hub, Guest polls tile', screen: 'plan', size: { w: 171, h: 148 }, ratio: '4/3' },
@@ -110,7 +110,8 @@ export const IMAGES = {
   emptyMoodboard: { id: 'DTS_DECADENT_Debora_Spanhol_Photos_ID12475_viqbsz', alt: 'A dessert table of pink cakes', usedIn: 'Moodboard, empty state', screen: 'moodboard', size: { w: 326, h: 183 }, ratio: '16/9' },
   emptyRegistry: { id: 'DTS_WANDER_Jessica_MADAVO_Photos_ID12138_dpboww', alt: 'A flower stall in full bloom', usedIn: 'Registry, empty state', screen: 'registry', size: { w: 326, h: 183 }, ratio: '16/9' },
   /* ── Launch and first run ── */
-  splash: { id: 'kyoto-hero_vlwgtw', alt: 'A couple walking through a bamboo grove', usedIn: 'In-app splash, behind the logo (once per app open)', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5', focal: '50% 50%' },
+  /* The splash pool (goal 6): one photo per open, never the same twice running, the whole pool before a repeat (lib/splashPool.js). Two photos, because the library is spent: 18 more are needed for the 20 the goal asks for. */
+  splash1: { id: 'kyoto-hero_vlwgtw', alt: 'A couple walking through a bamboo grove', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5', focal: '50% 50%' },
   welcome1: { id: 'DTS_BANDITS_PALI_MENDEZ_Photos_ID14280_cddisg', alt: 'A couple under a wide sky', usedIn: 'Welcome, screen 1', screen: 'welcome', size: { w: 390, h: 844 }, ratio: '4/5', focal: '50% 35%' },
   welcome2: { id: 'DTS_Like_a_Movie_Foster___Asher_Photos_ID1041_mudxwa', alt: 'Carrying each other through the snow', usedIn: 'Welcome, screen 2', screen: 'welcome', size: { w: 390, h: 844 }, ratio: '4/5', focal: '50% 40%' },
   welcome3: { id: 'DTS_NU_NUPTIALS_Shauna_Summers_Photos_ID10310_o5dcie', alt: 'Sharing cake at the party', usedIn: 'Welcome, screen 3', screen: 'welcome', size: { w: 390, h: 844 }, ratio: '4/5', focal: '50% 40%' },
@@ -118,7 +119,7 @@ export const IMAGES = {
   priming: { id: 'DTS_Weirdly_Ever_After_Agustín_Farías_Photos_ID8960_nspx4l', alt: 'A kiss on the cheek against orange', usedIn: 'Notification priming, top panel', screen: 'priming', size: { w: 390, h: 260 }, ratio: '3/2', focal: '50% 35%' },
   lock: { id: 'DTS_Tradition_Chris_Abatzis_Photos_ID9150_yiunlp', alt: 'A couple in a mountain meadow', usedIn: 'Face ID lock screen (the couple\'s own photo first)', screen: 'lock', size: { w: 390, h: 844 }, ratio: '4/5' },
   /* ── Preview artifacts ── */
-  lockScreenWallpaper: { id: 'hf_20260905_005926_9ff8ad93-21a0-4c2f-8f41-94cd140aa0ee_ib1qrr', alt: 'Steps down to the sea between flowering walls', usedIn: '/m/preview/push wallpaper (the couple\'s own photo when they have one)', screen: 'push', size: { w: 390, h: 844 }, ratio: '4/5' },
+  splash2: { id: 'hf_20260905_005926_9ff8ad93-21a0-4c2f-8f41-94cd140aa0ee_ib1qrr', alt: 'Steps down to the sea between flowering walls', usedIn: 'In-app splash pool, behind the logo (was the push preview wallpaper; that mock now draws the demo couple\'s cover)', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
   /* ── Demo place tiles: what Google's photo would be in the connected app (preview and demo only) ── */
   placeCeremony: { id: 'tulum-hero_pfdffd', alt: 'A wedding party on the sand', usedIn: 'Demo: the ceremony venue photo on Event details, and the Places search result', screen: 'event-details', size: { w: 358, h: 200 }, ratio: '16/9' },
   placeReception: { id: 'C17E98A9-5E5C-410A-B3F5-46098E2DFD6C_buezni', alt: 'A shared table from above', usedIn: 'Demo: the reception venue photo on Event details', screen: 'event-details', size: { w: 358, h: 200 }, ratio: '16/9' },

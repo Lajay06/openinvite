@@ -26,9 +26,10 @@ export default function PushPreview() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [expanded, setExpanded] = useState(0);
-  // The manifest's wallpaper slot, not the fixture cover: the cover already
-  // draws on Home, Account and the lock screen (goal 5, once app-wide).
-  const wallpaper = useMemo(() => deliver(imageUrl('lockScreenWallpaper'), { width: 390, height: 844, dpr: 2 }), []);
+  // The demo couple's cover, the couple's own photo on their lock screen
+  // (the one identity photo the once-only rule allows; its former wallpaper
+  // slot joined the splash pool in goal 6).
+  const wallpaper = useMemo(() => deliver(imageUrl('fixtureCover'), { width: 390, height: 844, dpr: 2 }), []);
   const items = SAMPLE.map(([type, data, when]) => ({ type, when, ...notificationCopy(type, data) }));
   const now = new Date('2026-09-21T09:41:00');
   const grouped = params.get('grouped') !== '0';

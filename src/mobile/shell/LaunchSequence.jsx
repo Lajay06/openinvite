@@ -115,5 +115,5 @@ export default function LaunchSequence({ ready, firstName, line, photo, alt, onD
 
 /** The splash photo, from the manifest. */
 export function launchPhoto() {
-  return imageUrl('splash');
+  return imageUrl('splash1');
 }
