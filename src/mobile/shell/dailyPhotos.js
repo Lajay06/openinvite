@@ -10,7 +10,8 @@ import { IMAGES } from '../images';
 /**
  * The daily update's photos (goal 7): seven files bundled into the app at
  * build time, so the card's photo is on screen the instant the card is,
- * with nothing waiting on the network. 800 by 560 WebP, about 15 to 110 KB
+ * with nothing waiting on the network. 800 by 800 WebP (goal 8: the photo
+ * fills the top 45 percent of the screen, near enough square), about 35 to 90 KB
  * each. Which one shows turns over with the day of the week. The slots in
  * images.ts (dailyMon to dailySun) record where each came from in the
  * Cloudinary `app` folder, so the once-only check covers them. `?no-inline`

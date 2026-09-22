@@ -1,17 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { hapticLight } from '../native';
+import { hapticLight, setStatusBarDark } from '../native';
 
 /**
- * The daily update (goal 6, reshaped in goal 7): the desktop's briefing,
- * said the same way, as a three-quarter-height card that slides up over the
- * dashboard, which stays visible and dimmed behind it. The photo on top is
- * one of the seven bundled with the app (shell/dailyPhotos.js), so it is
- * there the instant the card is; the rest is the brand-red panel with the
- * date, the greeting, the status line and the first move.
+ * The daily update (goal 6, reshaped in goal 7, full screen in goal 8): the
+ * desktop's briefing, said the same way, as a takeover that covers the whole
+ * screen edge to edge. Nothing of the dashboard is visible behind it. The
+ * photo fills the top 45 percent and runs under the status bar (a light
+ * wash keeps the time and battery readable); it is one of the seven bundled
+ * with the app (shell/dailyPhotos.js), so it is there the instant the
+ * takeover is. The brand-red panel fills the bottom 55 percent and meets the
+ * photo with a 28px rounded top edge: the date, the greeting, the status
+ * line and the first move.
  *
  * Three ways out, all the same close: "Let's go" (the white pill), a swipe
- * down on the card, and "Not again today" (the text button), which also
- * asks the host to keep it away until the next calendar day.
+ * down anywhere on it, and "Not again today" (the text button), which also
+ * asks the host to keep it away until the next calendar day. Closing fades
+ * the takeover out over the dashboard.
  *
  * Bold on purpose. The type here (40/46 greeting, 20/28 lines) is the one
  * screen allowed above the app's scale; the dashboard after it is calm.
@@ -28,12 +32,13 @@ export default function DailyUpdate({ photo, alt = '', dateLabel, greeting, line
   const drag = useRef({ y: 0, dy: 0, on: false });
   const done = useRef(null);
 
-  // Springs up on the frame after mount. The status bar keeps its dark
-  // content: the dimmed page behind the card is a mid grey, and dark text
-  // reads better on it than light.
+  // Fades in on the frame after mount. The photo runs under the status bar,
+  // so its content turns light for as long as the takeover is up and back
+  // to dark (the page) when it goes.
   useEffect(() => {
     const t = setTimeout(() => setPhase('open'), 20);
-    return () => clearTimeout(t);
+    setStatusBarDark(true);
+    return () => { clearTimeout(t); setStatusBarDark(false); };
   }, []);
 
   const close = (cb) => {
@@ -50,6 +55,8 @@ export default function DailyUpdate({ photo, alt = '', dateLabel, greeting, line
 
   // Swipe down closes it. The text panel scrolls when the type is large, so
   // a drag that starts inside a scrolled panel is a scroll, not a dismiss.
+  // The takeover follows the finger; past the threshold it lets go into the
+  // same fade as the buttons, from wherever it was dragged to.
   const onTouchStart = (e) => {
     const inScrolledPanel = innerRef.current && innerRef.current.contains(e.target) && innerRef.current.scrollTop > 0;
     drag.current = { y: e.touches[0].clientY, dy: 0, on: !inScrolledPanel };
@@ -64,16 +71,16 @@ export default function DailyUpdate({ photo, alt = '', dateLabel, greeting, line
     if (!drag.current.on) return;
     const { dy } = drag.current;
     drag.current.on = false;
-    if (dy > SWIPE_PX) { if (cardRef.current) cardRef.current.style.transform = ''; close(onGo); return; }
+    if (dy > SWIPE_PX) { close(onGo); return; }
     if (cardRef.current) cardRef.current.style.transform = '';
   };
 
   return (
     <div className={`oi-m-daily-root oi-m-daily-root--${phase}`} role="dialog" aria-modal="true" aria-label="Your daily update">
-      <div className="oi-m-daily-scrim" onClick={() => close(onGo)} aria-hidden="true" />
       <div className="oi-m-daily" ref={cardRef} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         <div className="oi-m-daily__photo">
-          {photo ? <img src={photo} alt={alt} width={800} height={560} decoding="sync" loading="eager" /> : <div className="oi-m-daily__blank" />}
+          {photo ? <img src={photo} alt={alt} width={800} height={800} decoding="sync" loading="eager" /> : <div className="oi-m-daily__blank" />}
+          <div className="oi-m-daily__top-scrim" aria-hidden="true" />
           <span className="oi-m-daily__handle" aria-hidden="true" />
         </div>
         <div className="oi-m-daily__panel">

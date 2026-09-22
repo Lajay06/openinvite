@@ -859,19 +859,25 @@ select.oi-m-input { background-image: none; padding-right: 44px; }
 
 @keyframes oi-m-fade-in { from { opacity: 0; } to { opacity: 1; } }
 
-/* ── The daily update (goal 7): a three-quarter card over the dimmed dashboard ── */
-.oi-m-daily-root { position: absolute; inset: 0; z-index: 70; display: flex; flex-direction: column; justify-content: flex-end; }
-.oi-m-daily-scrim { position: absolute; inset: 0; background: rgba(10, 10, 10, 0.42); opacity: 0; transition: opacity var(--m-move) var(--m-ease); }
-.oi-m-daily { position: relative; height: 75%; min-height: 560px; max-height: calc(100% - var(--m-safe-top) - 8px); border-radius: var(--m-r-sheet) var(--m-r-sheet) 0 0; overflow: hidden; background: var(--m-primary); box-shadow: var(--m-elev); display: flex; flex-direction: column; transform: translateY(100%); transition: transform 320ms var(--m-spring); }
-.oi-m-daily-root--open .oi-m-daily-scrim { opacity: 1; }
-.oi-m-daily-root--open .oi-m-daily { transform: translateY(0); }
-.oi-m-daily-root--closing .oi-m-daily-scrim { opacity: 0; }
-.oi-m-daily-root--closing .oi-m-daily { transform: translateY(100%); transition: transform 240ms var(--m-ease); }
-.oi-m-daily__photo { position: relative; flex: 0 1 34%; min-height: 150px; background: var(--m-ink); }
+/* ── The daily update (goal 8): a full-screen takeover, edge to edge ──
+   Nothing of the dashboard shows behind it: the photo fills the top 45
+   percent and runs under the status bar, the red panel the bottom 55,
+   meeting the photo with a 28px rounded top edge. It fades in on open and
+   fades out on close (the dashboard shows through the fade); a swipe down
+   drags it along and lets go into the same fade. The status bar turns to
+   light content while it is up (DailyUpdate.jsx). ── */
+.oi-m-daily-root { position: absolute; inset: 0; z-index: 70; opacity: 0; transition: opacity 320ms var(--m-ease); }
+.oi-m-daily-root--open { opacity: 1; }
+.oi-m-daily-root--closing { opacity: 0; transition: opacity 240ms var(--m-ease); }
+.oi-m-daily { position: absolute; inset: 0; overflow: hidden; background: var(--m-primary); display: flex; flex-direction: column; transform: scale(1.02); transition: transform 320ms var(--m-ease); }
+.oi-m-daily-root--open .oi-m-daily { transform: none; }
+.oi-m-daily__photo { position: relative; flex: 0 0 45%; min-height: 0; background: var(--m-ink); }
 .oi-m-daily__photo img, .oi-m-daily__blank { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
-.oi-m-daily__handle { position: absolute; top: 10px; left: 50%; width: 40px; height: 5px; margin-left: -20px; border-radius: var(--m-r-pill); background: rgba(255, 255, 255, 0.7); }
+/* A light wash under the status bar so the time and battery stay readable on any photo; nothing else is tinted. */
+.oi-m-daily__top-scrim { position: absolute; left: 0; right: 0; top: 0; height: calc(var(--m-safe-top) + 56px); background: linear-gradient(to bottom, rgba(10, 10, 10, 0.4) 0%, rgba(10, 10, 10, 0) 100%); pointer-events: none; }
+.oi-m-daily__handle { position: absolute; top: calc(var(--m-safe-top) + 10px); left: 50%; width: 40px; height: 5px; margin-left: -20px; border-radius: var(--m-r-pill); background: rgba(255, 255, 255, 0.7); }
 /* The panel: flat brand red under an 8 percent ink wash (white text 5:1, AA), its top corners rounded 28px over the photo. */
-.oi-m-daily__panel { position: relative; flex: 1 0 auto; min-height: 0; max-height: calc(100% - 150px); margin-top: -28px; border-radius: 28px 28px 0 0; background: color-mix(in srgb, var(--m-primary) 92%, var(--m-ink)); color: #FFFFFF; display: flex; flex-direction: column; padding: 24px var(--m-gutter) calc(var(--m-safe-bottom) + 12px); }
+.oi-m-daily__panel { position: relative; flex: 1 1 55%; min-height: 0; margin-top: -28px; border-radius: 28px 28px 0 0; background: color-mix(in srgb, var(--m-primary) 92%, var(--m-ink)); color: #FFFFFF; display: flex; flex-direction: column; padding: 24px var(--m-gutter) calc(var(--m-safe-bottom) + 12px); }
 @supports not (background: color-mix(in srgb, red 92%, black)) { .oi-m-daily__panel { background: #CF324D; } }
 .oi-m-daily__inner { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; }
 .oi-m-daily__date { font-size: 13px; line-height: 18px; font-weight: 600; margin: 0 0 10px; color: #FFFFFF; }
@@ -882,9 +888,7 @@ select.oi-m-input { background-image: none; padding-right: 44px; }
 .oi-m-daily__skip { flex-shrink: 0; align-self: center; min-height: 44px; margin-top: 4px; padding: 0 16px; background: none; border: 0; font: inherit; font-size: 15px; line-height: 20px; font-weight: 600; color: #FFFFFF; border-radius: var(--m-r-pill); }
 .oi-m-daily__skip:active { background: rgba(255, 255, 255, 0.12); }
 @media (prefers-reduced-motion: reduce) {
-  .oi-m-daily { transition: opacity 300ms; transform: none; opacity: 0; }
-  .oi-m-daily-root--open .oi-m-daily { opacity: 1; }
-  .oi-m-daily-root--closing .oi-m-daily { transform: none; opacity: 0; }
+  .oi-m-daily { transform: none; transition: none; }
 }
 
 /* ── Activity rows: Home's "Latest" and the notification center ────── */
