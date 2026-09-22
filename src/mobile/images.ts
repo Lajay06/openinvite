@@ -9,10 +9,11 @@
  * No Cloudinary id for a decorative slot may live anywhere else in
  * src/mobile/. /m/preview/images renders this file as a gallery.
  *
- * ONE LIBRARY. Every id here is one of the 73 photos in the Cloudinary
- * folder `app` (cloud dsr84xknv), plus the airport and poolside photos the
- * owner added afterwards at the cloud's root, listed through the Admin API on
- * 2026-09-21 and viewed one by one before it was assigned. Each photo is
+ * ONE LIBRARY. Every id here is one of the 95 photos in the Cloudinary
+ * folder `app` (cloud dsr84xknv; 73 at goal 5, 22 more added by the owner
+ * on 2026-09-22 for the splash pool), plus the airport and poolside photos
+ * the owner added at the cloud's root, listed through the Admin API and
+ * viewed one by one before it was assigned. Each photo is
  * used once across the whole app, so no photo repeats on a screen; the
  * `screen` field is what /m/preview/images checks. Crops are chosen so no
  * face is cut (`focal`), and photos with closed eyes in the focal area were
@@ -114,7 +115,9 @@ export const IMAGES = {
   emptyMoodboard: { id: 'DTS_DECADENT_Debora_Spanhol_Photos_ID12475_viqbsz', alt: 'A dessert table of pink cakes', usedIn: 'Moodboard, empty state', screen: 'moodboard', size: { w: 326, h: 183 }, ratio: '16/9' },
   emptyRegistry: { id: 'DTS_WANDER_Jessica_MADAVO_Photos_ID12138_dpboww', alt: 'A flower stall in full bloom', usedIn: 'Registry, empty state', screen: 'registry', size: { w: 326, h: 183 }, ratio: '16/9' },
   /* ── Launch and first run ── */
-  /* The splash pool (goal 6): one photo per open, never the same twice running, the whole pool before a repeat (lib/splashPool.js). Two photos, because the library is spent: 18 more are needed for the 20 the goal asks for. */
+  /* The splash pool (goal 6): one photo per open, never the same twice running, the whole pool before a repeat (lib/splashPool.js).
+     14 photos: the two from goal 6's first pass and 12 of the 22 the owner added on 2026-09-22, each viewed at the phone's
+     crop behind the logo and scrim (calm, sharp, faces whole, eyes open). Six more are needed for the 20 the goal asks for. */
   splash1: { id: 'kyoto-hero_vlwgtw', alt: 'A couple walking through a bamboo grove', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5', focal: '50% 50%' },
   welcome1: { id: 'DTS_BANDITS_PALI_MENDEZ_Photos_ID14280_cddisg', alt: 'A couple under a wide sky', usedIn: 'Welcome, screen 1', screen: 'welcome', size: { w: 390, h: 844 }, ratio: '4/5', focal: '50% 35%' },
   welcome2: { id: 'DTS_Like_a_Movie_Foster___Asher_Photos_ID1041_mudxwa', alt: 'Carrying each other through the snow', usedIn: 'Welcome, screen 2', screen: 'welcome', size: { w: 390, h: 844 }, ratio: '4/5', focal: '50% 40%' },
@@ -124,6 +127,18 @@ export const IMAGES = {
   lock: { id: 'DTS_Tradition_Chris_Abatzis_Photos_ID9150_yiunlp', alt: 'A couple in a mountain meadow', usedIn: 'Face ID lock screen (the couple\'s own photo first)', screen: 'lock', size: { w: 390, h: 844 }, ratio: '4/5' },
   /* ── Preview artifacts ── */
   splash2: { id: 'hf_20260905_005926_9ff8ad93-21a0-4c2f-8f41-94cd140aa0ee_ib1qrr', alt: 'Steps down to the sea between flowering walls', usedIn: 'In-app splash pool, behind the logo (was the push preview wallpaper; that mock now draws the demo couple\'s cover)', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
+  splash3: { id: 'hf_20260904_112950_c28145cb-425f-4060-803e-0ef8ad0474c9_okqxth', alt: 'A couple walking a seawall at sunset', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
+  splash4: { id: 'hf_20260903_232125_e3d26c1d-ea6a-4374-9443-107018d470f2_fn7vuc', alt: 'Leaping into the sea from the rocks', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
+  splash5: { id: 'hf_20260904_090923_faab7fc5-e634-424b-95b7-39315dccbcf3_qe3lsz', alt: 'Laughing in a blue doorway', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
+  splash6: { id: 'hf_20260903_230909_75ff5eec-e9d1-46cf-95d2-5867030db959_hqk13n', alt: 'Two helmets in a car mirror', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
+  splash7: { id: 'DTS_ISOLA_Daniel_Farò_Photos_ID13167_iwrgom', alt: 'An open window onto the hills', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
+  splash8: { id: 'DTS_SILVER_HOUR_Franco_Dupuy_Photos_ID14693_qexopz', alt: 'Carrying tulips through a flower market', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
+  splash9: { id: 'DTS_DECADENT_Debora_Spanhol_Photos_ID12510_ebyjqj', alt: 'A raspberry cake with a ribbon', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
+  splash10: { id: 'DTS_SOFT_LUXE_Daniel_Farò_Photos_ID10822_kqgeik', alt: 'Carrying a wrapped bouquet', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
+  splash11: { id: 'DTS_Early_Honey_Moon_Tino_Renato_Photos_ID3576_v8vxs0', alt: 'Breakfast by the pool under palms', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
+  splash12: { id: 'DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8872_o6lwqt', alt: 'Glasses raised together', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
+  splash13: { id: 'DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14202_q14mwq', alt: 'A kiss in a tall window', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
+  splash14: { id: 'DTS_EAT_RICH_Fanette_Guilloud_Photos_ID13901_olnatb', alt: 'Olives in a martini', usedIn: 'In-app splash pool, behind the logo', screen: 'splash', size: { w: 390, h: 844 }, ratio: '4/5' },
   /* ── Demo place tiles: what Google's photo would be in the connected app (preview and demo only) ── */
   placeCeremony: { id: 'tulum-hero_pfdffd', alt: 'A wedding party on the sand', usedIn: 'Demo: the ceremony venue photo on Event details, and the Places search result', screen: 'event-details', size: { w: 358, h: 200 }, ratio: '16/9' },
   placeReception: { id: 'C17E98A9-5E5C-410A-B3F5-46098E2DFD6C_buezni', alt: 'A shared table from above', usedIn: 'Demo: the reception venue photo on Event details', screen: 'event-details', size: { w: 358, h: 200 }, ratio: '16/9' },
