@@ -25,7 +25,7 @@ export function dayKey(now = new Date()) {
  */
 export function splitSentence(sentence, greeting) {
   const rest = String(sentence || '').startsWith(greeting) ? String(sentence).slice(greeting.length).trim() : String(sentence || '');
-  const lines = rest.replace(/\s[—–]\s/g, ', ').split(/(?<=\.)\s+(?=[A-Z])/).map((l) => l.trim()).filter(Boolean);
+  const lines = rest.replace(/\s[\u2014\u2013]\s/g, ', ').split(/(?<=\.)\s+(?=[A-Z])/).map((l) => l.trim()).filter(Boolean);
   return lines;
 }
 

@@ -34,6 +34,7 @@ const SHOTS = [
   ['/m/preview/plan', 'plan-hub'],
   ['/m/preview/plan', 'plan-hub-scrolled', 'scroll'],
   ['/m/preview/plan', 'plan-hub-guest-suite', 'expand'],
+  ['/m/preview/plan', 'tab-bar-over-content', 'expand'],
   ['/m/preview/plan/checklist', 'plan-checklist'],
   ['/m/preview/plan/checklist?add=1', 'plan-add-task-sheet'],
   ['/m/preview/plan/budget', 'plan-budget'],

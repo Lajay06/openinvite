@@ -413,6 +413,34 @@ A fresh subagent given only `MOBILE_PARITY.md`, the desktop source and the mobil
 - **Collaborator sessions** are desktop-only: the app signs in as the couple and never reads `/api/collaborator-data`. Supporting a collaborator on the phone means the read-only overlay on every screen.
 - **Ava's quick actions** seed the question into the pod's box (the pod is shared with the desktop's Layout and is not edited); on desktop the modal sends the quick action at once. One tap more on the phone.
 
+## Goal 6: launch experience, guest suite naming, polish (2026-09-22)
+
+Built against `MOBILE_APP_GOAL_6.md`, one commit per item (items 2 and 4 share one, because the launch timing is defined by the daily update stage). Everything the goal asks for is in except the photos the library does not have; see "Photos" below.
+
+### What changed
+
+1. **App icon.** The Openinvite mark (the arch) on ink, cropped from `public/openinvite-logo.png` and resampled, not redrawn; adaptive foreground and background for Android; the native launch screens show the mark alone, the in-app splash keeps the full wordmark. See the icon-source note under goal 3.
+2. **Launch timing.** Native screen at least 1.2s (`NATIVE_HOLD`, the web layer hides it on that timer), the photo splash at least 1.8s after that and never shorter (`MIN_SPLASH`, at most 6s waiting on data), a crossfade with the next screen already underneath, then the daily update on the first open of each local day (`daily_update_date` in the preferences), then the dashboard. Reduced motion is plain fades.
+3. **Splash pool.** `splashN` slots in `images.ts`; `lib/splashPool.js` draws a shuffled order down in the preferences, the whole pool before a repeat and never the same photo twice running. The pool holds two photos (see "Photos").
+4. **Daily update.** `shell/DailyUpdate.jsx` over `data/dailyUpdate.js`: the desktop's own `resolveDayState` and `avaSentence` over the same stores, so the phone says exactly what `/DailyUpdate` says; the greeting, the status line and the first move under `Briefing.jsx`'s date. Top third one of the couple's own photos (by day of the year), the rest the brand-red panel with white text at 40/46, 20/28 and 13/18, "Let's go" as a white pill. The flat brand red measures 4.37:1 against white, under AA for the 20px and 13px lines, so the panel carries an 8 percent ink wash (`color-mix`, `#CF324D` where unsupported) that takes it to 5:1; the greeting at 40px passed either way. No truncation at 130 percent text size. `/m/preview/daily-update` shows it; `?launch=1` or `?launch=daily` runs the whole sequence on the web. The greeting screen from goal 4 is retired.
+5. **Guest suite naming.** The tab, the screen, every heading, button, empty state, notification line, Ava prompt, account row and fixture that meant the couple's guest-facing pages. "Website" remains where it means the Openinvite desktop product.
+6. **Hero carousel.** A pool of up to eight cards from real data, four shown, days to go first, the rest rotating by a counter that moves once per app open (`screens/home/heroPool.js`); the share card is Guest suite, Share with your guests, Share link. Hero photos are the couple's own (cover, Our Story, moodboard pins, the guest suite gallery), the standard photos standing in for unfilled positions; the parallax and scale on the hero photo are gone (stills only).
+7. **Frosted glass tab bar** and the same glass on the compact top bar, with a solid fallback for no `backdrop-filter` and for Reduce Transparency.
+8. **Guests tidy.** "99 guests · 17 plus-ones" on one line; search, sort and filter as one bar of 44px pills at 15/20, sort and filter opening sheets.
+9. **Photo fixes.** The Styling tile crops from the top through a per-slot Cloudinary gravity (`gravity` in `images.ts`, honored by `deliver()`); the photo is framed below the eyes, so no crop shows the whole face and a different photo would. Emergency contact and Considerations tiles have slots waiting for photos.
+10. **No QR codes, no direct email to guests.** The Guest suite tab's QR and Email your guests sheets, the Music share QR, the Registry share sheet's email, text, WhatsApp and Facebook rows, the guest profile's email and WhatsApp taps, and the SendEmail seam are gone; Share link and View guest suite stay; guests are reached through Send invites. Recorded in `MOBILE_PARITY.md` as owner decisions.
+11. **Keeping parity**, below.
+
+### Photos
+
+The `app/` library is spent: goal 5 assigned every usable photo (74 slots, 74 photos, the one left out having closed eyes). Goal 6 asks for a splash pool of 20 to 30 unused photos, two more tiles and a demo couple pool. What was done with what exists: the splash pool holds 2 photos (the Kyoto grove and the former push-preview wallpaper, which the push mock gave up for the demo couple's cover); the demo couple pool is the five fixture stand-ins already reserved for the couple's own photos; the Emergency contact and Considerations tiles wait as color panels. `/m/preview/images` reads 76 slots, 74 photos, no repeats, 2 need a photo. **Photos still needed: 20 to reach the goal's minimum (18 for the splash pool, 1 each for the two tiles), 30 for a 30-photo pool.** Unused photos in `app/`: 0. Pool photos, when they come, should be calm and strong with faces clear and eyes open, since the full logo and the scrim sit over them.
+
+The one deliberate repeat stays the couple's own cover (identity: the first Home hero, the daily update by the day, the Account card, the lock screen and the push mock); the Beach Hotel is both the welcome-drinks venue and accommodation place 1 in the demo. Both are data, not library slots.
+
+### Verify (goal 6)
+
+`npm run mobile:demo` and `npx cap sync` pass; `npm run build` exits 0; 102 preview screenshots pass the width, tap-target, input-size and shadow checks, including the daily update, the splash and the tab bar over scrolled content; `git diff main --stat` touches only `src/mobile/**`, `assets/`, `ios/`, `android/`, `mobile-screenshots/`, the three markdown files and the screenshot script. Inside `src/mobile/`: no photo rendered twice outside the identity exception above, no QR code, no direct email to guests, no `site` or `website` meaning the guest suite, no off-brand color (the daily update's `#CF324D` fallback is the brand red under the ink wash), no font size outside the scale except the daily update's three.
+
 ## Keeping parity
 
 `MOBILE_PARITY.md` is the source of truth for what the app does and how it matches the desktop. Every desktop planning feature has an entry there naming its fields, actions, modals, integrations and states, what the mobile screen does, and a status line; the owner's decisions that deliberately diverge (no QR codes, no direct email to guests, canvases desktop-only) are recorded there too, so a parity sweep does not add them back.

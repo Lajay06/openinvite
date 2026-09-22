@@ -1,12 +1,11 @@
 import React from 'react';
-import { Mail, Phone, Pencil, MessageCircle, Link2, Send, CalendarCheck, Gift } from 'lucide-react';
+import { Mail, Phone, Pencil, Link2, Send, CalendarCheck, Gift } from 'lucide-react';
 import Screen from '../../shell/Screen';
 import { Row, RowGroup, StatusPill, PillButton, ErrorState, Skeleton } from '../../ui';
 import { openExternal } from '../../native';
 import { initials, RSVP_LABEL, RSVP_TONE, GUEST_CATEGORY_LABEL, dateShort, money } from '../../lib/format';
 import { getGuestEventResponse, mealOptionLabel, effectiveMealChoice } from '@/lib/weddingEvents';
 import { hasPlusOne, plusOneRsvpStatus, plusOneDisplayName } from '@/lib/plusOne';
-import { toWaMe } from '@/lib/phoneE164';
 
 const CHANNEL_LABELS = { email: 'Email', whatsapp: 'WhatsApp', 'email+whatsapp': 'Email and WhatsApp', 'whatsapp+email': 'Email and WhatsApp' };
 const EVENT_STATUS = { yes: ['ok', 'Yes'], no: ['no', 'No'], pending: ['warn', 'Awaiting'] };
@@ -79,9 +78,9 @@ export default function GuestDetailScreen({ guest, role = '', weddingEvents = []
           <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Contact</h2>
           {guest.email || guest.phone ? (
             <RowGroup>
-              {guest.email && <Row icon={Mail} tile="neutral" label={guest.email} sub="Email" onClick={() => openExternal(`mailto:${guest.email}`)} chevron={false} />}
+              {/* Contact details are shown, not dialed into email or WhatsApp: guests are reached through Send invites (owner decision, goal 6). A call stays. */}
+              {guest.email && <Row icon={Mail} tile="neutral" label={guest.email} sub="Email" chevron={false} />}
               {guest.phone && <Row icon={Phone} tile="neutral" label={guest.phone} sub="Call" onClick={() => openExternal(`tel:${guest.phone}`)} chevron={false} />}
-              {guest.phone && toWaMe(guest.phone) && <Row icon={MessageCircle} tile="neutral" label="Message on WhatsApp" sub={guest.phone} onClick={() => openExternal(`https://wa.me/${toWaMe(guest.phone)}`)} chevron={false} />}
             </RowGroup>
           ) : <div className="oi-m-card"><p className="oi-m-meta">No email or phone yet. Add one to send an invitation.</p></div>}
         </section>

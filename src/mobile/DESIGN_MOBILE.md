@@ -17,7 +17,7 @@ All scoped under `.oi-mobile-root` as CSS custom properties in `src/mobile/style
 | Token | Value | Used for |
 |---|---|---|
 | `--m-r-card` | 20px | cards, panels, row groups, the notification banner |
-| `--m-r-image` | 16px | images, tiles, the site preview frame |
+| `--m-r-image` | 16px | images, tiles, the guest suite preview frame |
 | `--m-r-input` | 14px | inputs, selects, textareas |
 | `--m-r-sheet` | 28px | bottom sheets, top corners only |
 | `--m-r-pill` | 999px | pills, buttons, filter chips, status badges |
@@ -58,7 +58,8 @@ The scale is small and calm (goal 4, after the owner's phone test; the reference
 
 | Class | Size / line | Use |
 |---|---|---|
-| `.oi-m-title`, `.oi-m-greeting__title` | 28 / 34 | the one screen title, and the greeting |
+| `.oi-m-title` | 28 / 34 | the one screen title |
+| `.oi-m-daily__greeting`, `.oi-m-daily__line`, `.oi-m-daily__date` | 40 / 46, 20 / 28, 13 / 18 | the daily update only (goal 6): the one screen allowed above the scale, bold on purpose; the dashboard after it is calm |
 | `.oi-m-hero-num` | 44 / 48 (34 / 38 when long) | days to go, totals |
 | `.oi-m-num`, `.oi-m-stat__num` | 28 / 34 | stat numbers |
 | `.oi-m-section`, `.oi-m-grouped__title`, sheet titles | 17 / 22 | section headings above rows and tiles |
@@ -115,16 +116,15 @@ Transform and opacity only. `prefers-reduced-motion` removes movement and keeps 
 - Press: every tappable card and button scales to 0.98 and back, 120ms (`.oi-m-press`).
 - Screen entry: content fades up 8px, staggered 40ms per block, 240ms each (`.oi-m-stagger > *`).
 - Hero numbers count up once on first view (`useCountUp`). Progress bars animate to their value.
-- Subtle parallax on the hero photo while scrolling, at most 12px (`useParallax`).
 - Carousels snap. Light haptic on tab change, task completion, toggles and pull to refresh when native.
 - Springs are CSS: `cubic-bezier(0.34, 1.4, 0.64, 1)` on the tab indicator and sheets. No new animation library; framer-motion is a repo dependency but the shell does not need it.
 
 ## Imagery
 
-Order of preference: the couple's own imagery (cover photo, site photo blocks, Our Story photos), then the sample content for their universe, then a color panel. A slot never shows a broken or empty box.
+Order of preference: the couple's own imagery (cover photo, guest suite photo blocks, Our Story photos, moodboard pins, the guest suite gallery), then the standard `app/` photos, then a color panel. A slot never shows a broken or empty box. The Home hero carousel and the daily update wear the couple's own photos (goal 6); everything below the hero keeps the `app/` photos chosen for it. In the preview the demo couple's photos are the fixture stand-ins in `images.ts`, used nowhere else.
 
-Stills only. Nothing derives motion from an image whose public id starts with `DTS_`. The scroll parallax on a static hero is fine.
+Stills only, on every photo (goal 6): no zoom, no parallax, no scale, no crossfade within a photo. Nothing derives motion from an image whose public id starts with `DTS_`.
 
-Where images belong: Home hero carousel, Home "keep planning" carousel, Plan hub tiles, Site tab preview, vendor and registry cards where the data has photos, empty states where a photo helps, the Account profile card. Where they do not: forms, dense lists, budget tables.
+Where images belong: the splash (a pool, one photo per open), the daily update, Home hero carousel, Home "keep planning" carousel, Plan hub tiles, Guest suite tab preview, vendor and registry cards where the data has photos, empty states where a photo helps, the Account profile card. Where they do not: forms, dense lists, budget tables.
 
 Every decorative slot is named once, in `src/mobile/images.ts`, with its public id, alt text, where it is drawn, the size to supply and a `todo` marker while it waits for a photo. `/m/preview/images` renders that file as a gallery. No decorative Cloudinary id lives anywhere else in `src/mobile/`.
