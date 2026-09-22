@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import toast from 'react-hot-toast';
+import { linesFor } from '@/lib/goodToKnow';
 
 function Toggle({ value, onChange }) {
   return (
@@ -29,6 +30,18 @@ function PolicySection({ title, children }) {
 
 const inputStyle = { width: '100%', borderBottom: '1px solid #DDD', border: 'none', padding: '8px 0', fontSize: 14, outline: 'none', boxSizing: 'border-box', fontFamily: "'Plus Jakarta Sans', sans-serif" };
 const textareaStyle = { width: '100%', border: '1px solid #EEEEEE', padding: '10px 12px', fontSize: 14, outline: 'none', resize: 'vertical', boxSizing: 'border-box', fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.6, minHeight: 80 };
+
+/** The line guests will read under Photographs, as the site computes it. */
+function GuestsWillSee({ lines }) {
+  return (
+    <div style={{ marginTop: 10, marginBottom: 12 }}>
+      <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', display: 'block', marginBottom: 6, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>On the site</span>
+      <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: lines.length ? '#0A0A0A' : 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        {lines.length ? lines.join(' ') : 'Nothing under Photographs until the toggle is on or a message is written.'}
+      </p>
+    </div>
+  );
+}
 
 function DisplayToggle({ value, onChange }) {
   return (
@@ -93,6 +106,8 @@ export default function PoliciesTab({ details }) {
         </div>
         <label style={{ fontSize: 12, fontWeight: 600, color: '#555', display: 'block', marginBottom: 6 }}>Custom Message</label>
         <textarea style={textareaStyle} value={policies.photography.message} onChange={e => set('photography', 'message', e.target.value)} placeholder="We'd love for you to be fully present during our ceremony..." />
+        {/* What guests will read, by the site's own rule (src/lib/goodToKnow.js). Display only. */}
+        <GuestsWillSee lines={linesFor('photography', policies.photography)} />
         <DisplayToggle value={policies.photography.display} onChange={v => set('photography', 'display', v)} />
       </PolicySection>
 

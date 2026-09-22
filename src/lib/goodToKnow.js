@@ -70,7 +70,13 @@ export function linesFor(key, p) {
       if (p.message) out.push(p.message);
       break;
     case 'photography':
-      if (p.unplugged) out.push('We are having an unplugged ceremony — please keep phones and cameras away until afterwards.');
+      // THE COUPLE'S NOTE REPLACES THE PLATFORM SENTENCE. With the toggle on
+      // and a note written, the row used to say the same thing twice — the
+      // platform's line, then the couple's — on every sample and for every
+      // couple the editor's placeholder invites to write. The platform speaks
+      // only when the couple said nothing. The editors show the couple which
+      // line guests will see, through this same function.
+      if (p.unplugged && !p.message) out.push('We are having an unplugged ceremony — please keep phones and cameras away until afterwards.');
       if (p.message) out.push(p.message);
       break;
     case 'socialMedia':

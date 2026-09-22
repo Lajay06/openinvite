@@ -7,6 +7,7 @@ import DetailsSection from '@/components/event-details/DetailsSection';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import { validateUploadFile } from '@/lib/uploadValidation';
+import { linesFor } from '@/lib/goodToKnow';
 import toast from 'react-hot-toast';
 
 // Curated royalty-free background tracks (round 7 ask #15) — deliberately
@@ -33,6 +34,21 @@ const textareaStyle = {
 const fieldLabel = {
   fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', display: 'block', marginBottom: 6, fontFamily: PJS,
 };
+
+/**
+ * The line guests will read under Photographs, as the site computes it. Quiet
+ * and factual: a label and the sentence, or a note that nothing will show.
+ */
+function GuestsWillSee({ lines }) {
+  return (
+    <div style={{ marginTop: 10 }}>
+      <span style={fieldLabel}>On the site</span>
+      <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: lines.length ? '#0A0A0A' : 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
+        {lines.length ? lines.join(' ') : 'Nothing under Photographs until the toggle is on or a message is written.'}
+      </p>
+    </div>
+  );
+}
 
 function Toggle({ value, onChange }) {
   return (
@@ -265,6 +281,10 @@ export default function GuestSuitePolicies() {
             <div>
               <label style={fieldLabel}>Custom message</label>
               <textarea style={textareaStyle} value={policies.photography.message} onChange={e => set('photography', 'message', e.target.value)} placeholder="We'd love for you to be fully present during our ceremony…" />
+              {/* What guests will read, computed by the site's own rule (src/lib/goodToKnow.js):
+                  the couple's note when there is one, the platform's unplugged sentence
+                  when the toggle is on and the note is empty. Display only; nothing saved. */}
+              <GuestsWillSee lines={linesFor('photography', policies.photography)} />
             </div>
             <DisplayToggle value={policies.photography.display} onChange={v => set('photography', 'display', v)} />
           </DetailsSection>
