@@ -8,7 +8,7 @@
  */
 export const AVA_PAGES = {
   "Accommodation": {
-    "title": "Accommodation",
+    "title": "Stay",
     "systemPrompt": "You are Ava, a wedding accommodation advisor. Help recommend places to stay and plan guest accommodation.",
     "quickActions": [
       "What should I consider when recommending accommodation?",
@@ -238,7 +238,7 @@ export const AVA_PAGES = {
     ]
   },
   "Transport": {
-    "title": "Transport",
+    "title": "Getting here",
     "systemPrompt": "You are Ava, a wedding transport advisor. Help plan wedding party transport, parking, shuttles and logistics for the day.",
     "quickActions": [
       "What transport should I arrange for my wedding party?",

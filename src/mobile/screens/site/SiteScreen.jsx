@@ -56,8 +56,8 @@ export default function SiteScreen({ universeName, isLive, siteUrl, previewImage
             <Row icon={Clock} tile="neutral" label="Schedule" sub="What guests see on the day" onClick={() => onOpen('suite-schedule')} />
             <Row icon={HelpCircle} tile="neutral" label="Q&A" sub="Dress code, parking, the small questions" onClick={() => onOpen('qna')} />
             <Row icon={Gift} tile="neutral" label="Registry" onClick={() => onOpen('registry')} />
-            <Row icon={Hotel} tile="neutral" label="Accommodation" onClick={() => onOpen('suite-accommodation')} />
-            <Row icon={Car} tile="neutral" label="Transport" onClick={() => onOpen('suite-transport')} />
+            <Row icon={Hotel} tile="neutral" label="Stay" onClick={() => onOpen('suite-accommodation')} />
+            <Row icon={Car} tile="neutral" label="Getting here" onClick={() => onOpen('suite-transport')} />
             <Row icon={MapPin} tile="neutral" label="Experience guide" onClick={() => onOpen('experience')} />
             <Row icon={ScrollText} tile="neutral" label="Good to know" onClick={() => onOpen('good-to-know')} />
             <Row icon={BarChart2} tile="neutral" label="Guest polls" onClick={() => onOpen('polls')} />

@@ -16,7 +16,7 @@ export const TRANSPORT_TYPES = [['airport', 'Airport'], ['train_station', 'Train
 const typeLabel = (t) => TRANSPORT_TYPES.find(([k]) => k === t)?.[1] || 'Transport';
 
 /**
- * The guest suite's Accommodation and Transport editors, as the desktop
+ * The guest suite's Stay and Getting here editors, as the desktop
  * pages: Google Places search (through PlaceField, with Use my location
  * and add by hand), a note for guests, a badge (accommodation) or a type
  * (transport), the website from place details at add time, cards with
@@ -36,7 +36,8 @@ export default function SuitePlacesScreen({ kind, places = [], notes = [], desti
   const [noteSheet, setNoteSheet] = useState(null); // { note } | { note: null }
   const [ava, setAva] = useState(null); // { busy } | { suggestions }
   const [confirm, confirmEl] = useConfirm();
-  const title = isStay ? 'Accommodation' : 'Transport';
+  // PR #822 (owner ruling 2026-09-21): Stay and Getting here everywhere, as the live guest suite names them.
+  const title = isStay ? 'Stay' : 'Getting here';
 
   const remove = async (p) => { if (!(await confirm({ title: `Remove ${p.name}`, body: 'It comes off your site.', action: 'Remove' }))) return; await onSave(places.filter((x) => (x.id || x.place_id) !== (p.id || p.place_id)), notes); };
   const addPlace = async (place, extra) => {
@@ -151,7 +152,7 @@ function AddPlaceSheet({ isStay, destination, onClose, onAdd }) {
     <BottomSheet open onClose={onClose} title={isStay ? 'Add a place to stay' : 'Add a place'} full footer={(
       <>
         <PillButton variant="secondary" onClick={onClose} disabled={busy}>Cancel</PillButton>
-        <PillButton variant="primary" icon={Plus} style={{ flex: 1 }} disabled={!place?.name || busy} onClick={async () => { setBusy(true); try { await onAdd(place, { note: note.trim(), badge: badge || null, type, website_url: website.trim() || null }); } finally { setBusy(false); } }}>{busy ? 'Adding' : isStay ? 'Add accommodation' : 'Add place'}</PillButton>
+        <PillButton variant="primary" icon={Plus} style={{ flex: 1 }} disabled={!place?.name || busy} onClick={async () => { setBusy(true); try { await onAdd(place, { note: note.trim(), badge: badge || null, type, website_url: website.trim() || null }); } finally { setBusy(false); } }}>{busy ? 'Adding' : isStay ? 'Add a place to stay' : 'Add place'}</PillButton>
       </>
     )}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

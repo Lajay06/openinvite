@@ -121,7 +121,7 @@ export const DETAILS = {
     ],
   },
   transport: {
-    title: 'Transport',
+    title: 'Getting here',
     segments: [{ key: 'overview', label: 'Overview' }, { key: 'shuttles', label: 'Shuttles' }, { key: 'parking', label: 'Parking' }, { key: 'public', label: 'Public transport' }, { key: 'rideshare', label: 'Rideshare' }, { key: 'notes', label: 'Notes' }],
     sections: [
       { title: 'Getting there', segment: 'overview', key: 'transport', fields: [sel('recommendedMode', 'Recommended transport mode', [['rideshare', 'Rideshare or taxi'], ['drive', 'Drive and park'], ['public', 'Public transport'], ['shuttle', "Couple's shuttle"], ['walk', 'Walk'], ['hire', 'Car hire']]), ta('coupleNote', 'Note for your wedding party')] },
@@ -136,11 +136,11 @@ export const DETAILS = {
     ],
   },
   accommodation: {
-    title: 'Accommodation',
+    title: 'Stay',
     segments: [{ key: 'overview', label: 'Overview' }, { key: 'properties', label: 'Properties' }, { key: 'notes', label: 'Notes' }],
     sections: [
       { title: 'The weekend', segment: 'overview', key: 'accommodation', fields: [t('checkInDate', 'Check in', { type: 'date' }), t('checkOutDate', 'Check out', { type: 'date' }), ta('coupleNote', 'Note to guests', { placeholder: 'We have gathered a few nearby places to stay for the wedding weekend' })] },
-      { title: 'Accommodation options', segment: 'properties', key: 'accommodation', list: { name: 'manualProperties', label: 'Property', plural: 'properties', id: uid, image: 'photoUrl', row: (p) => ({ title: p.name || 'Property', sub: [p.isPinned ? 'Pinned' : '', p.isMainGuestHotel ? 'Main guest hotel' : '', p.isClosestToVenue ? 'Closest to venue' : '', p.isBestValue ? 'Best value' : '', ...(p.tags || [])].filter(Boolean).join(', ') || p.address, image: p.photoUrl }), fields: [t('photoUrl', 'Photo', { type: 'image' }), t('name', 'Property name', { type: 'search' }), t('address', 'Address'), ta('description', 'Description'), t('website', 'Website', { type: 'url' }), t('phone', 'Phone', { type: 'tel' }), t('bookingCode', 'Booking code', { placeholder: 'SMITHWEDDING2026' }), ta('coupleNote', 'Note to guests'), { name: 'tags', label: 'Tags', type: 'pills', multi: true, options: ['Great for families', 'Closest to venue', 'Budget-friendly', 'Where most guests are staying', 'Premium option', 'Great for groups', 'Near the city', 'Near the airport', 'Parking available', 'Walk to venue'] }, t('isMainGuestHotel', 'Main guest hotel', { type: 'toggle' }), t('isClosestToVenue', 'Closest to venue', { type: 'toggle' }), t('isBestValue', 'Best value', { type: 'toggle' }), t('isPinned', 'Pin to top', { type: 'toggle' })] } },
+      { title: 'Properties', segment: 'properties', key: 'accommodation', list: { name: 'manualProperties', label: 'Property', plural: 'properties', id: uid, image: 'photoUrl', row: (p) => ({ title: p.name || 'Property', sub: [p.isPinned ? 'Pinned' : '', p.isMainGuestHotel ? 'Main guest hotel' : '', p.isClosestToVenue ? 'Closest to venue' : '', p.isBestValue ? 'Best value' : '', ...(p.tags || [])].filter(Boolean).join(', ') || p.address, image: p.photoUrl }), fields: [t('photoUrl', 'Photo', { type: 'image' }), t('name', 'Property name', { type: 'search' }), t('address', 'Address'), ta('description', 'Description'), t('website', 'Website', { type: 'url' }), t('phone', 'Phone', { type: 'tel' }), t('bookingCode', 'Booking code', { placeholder: 'SMITHWEDDING2026' }), ta('coupleNote', 'Note to guests'), { name: 'tags', label: 'Tags', type: 'pills', multi: true, options: ['Great for families', 'Closest to venue', 'Budget-friendly', 'Where most guests are staying', 'Premium option', 'Great for groups', 'Near the city', 'Near the airport', 'Parking available', 'Walk to venue'] }, t('isMainGuestHotel', 'Main guest hotel', { type: 'toggle' }), t('isClosestToVenue', 'Closest to venue', { type: 'toggle' }), t('isBestValue', 'Best value', { type: 'toggle' }), t('isPinned', 'Pin to top', { type: 'toggle' })] } },
       { title: 'Notes', segment: 'notes', key: 'accommodation', fields: [ta('additionalNotes', 'Additional accommodation notes')] },
     ],
   },
@@ -157,11 +157,11 @@ export const DETAILS = {
   },
   honeymoon: {
     title: 'Honeymoon',
-    segments: [{ key: 'planning', label: 'Planning' }, { key: 'travel', label: 'Travel' }, { key: 'stay', label: 'Accommodation' }, { key: 'notes', label: 'Notes' }],
+    segments: [{ key: 'planning', label: 'Planning' }, { key: 'travel', label: 'Travel' }, { key: 'stay', label: 'Stay' }, { key: 'notes', label: 'Notes' }],
     sections: [
       { title: 'Where', segment: 'planning', key: 'honeymoonDetails', fields: [t('destination', 'Destination', { type: 'search' }), t('departureDate', 'Leaving', { type: 'date' }), t('returnDate', 'Back', { type: 'date' }), t('budget', 'Budget', { type: 'number' })] },
       { title: 'Travel', segment: 'travel', key: 'honeymoonDetails', fields: [t('departureAirport', 'Departure airport'), t('flightReference', 'Flight or booking reference'), t('travelInsurance', 'Travel insurance', { type: 'toggle' }), ta('travelInsuranceDetails', 'Insurance details', { showIf: (v) => !!v.travelInsurance })] },
-      { title: 'Accommodation', segment: 'stay', key: 'honeymoonDetails', fields: [t('hotelName', 'Hotel or resort name', { type: 'search' }), t('checkInDate', 'Check in', { type: 'date' }), t('checkOutDate', 'Check out', { type: 'date' }), t('bookingReference', 'Booking reference'), t('confirmationNumber', 'Confirmation number')] },
+      { title: 'Stay', segment: 'stay', key: 'honeymoonDetails', fields: [t('hotelName', 'Hotel or resort name', { type: 'search' }), t('checkInDate', 'Check in', { type: 'date' }), t('checkOutDate', 'Check out', { type: 'date' }), t('bookingReference', 'Booking reference'), t('confirmationNumber', 'Confirmation number')] },
       { title: 'Notes', segment: 'notes', key: 'honeymoonDetails', fields: [ta('activitiesPlanned', 'Activities planned'), ta('packingNotes', 'Packing notes'), ta('notes', 'Additional notes')] },
     ],
   },

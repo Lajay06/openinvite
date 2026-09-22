@@ -204,14 +204,18 @@ itself stays on desktop and is noted.
 **Gaps.** The Google search link.
 **Status.** Done (phase 1): four segments as the desktop's tabs; the celebrant name carries the Google search link; the encrypted split (celebrant and license through the encrypted PUT) is unchanged.
 
-### Transport (`/transport`) → `/m/plan/transport`
+### Getting here, formerly Transport (`/transport`) → `/m/plan/transport`
+
+**Naming (PR #822, owner ruling 2026-09-21).** The desktop calls this section "Getting here" everywhere now, as the live guest suite does; the mobile tile, screen title and Site tab row say "Getting here" too. Keys, routes and the `transportation` category value are unchanged.
 
 **Desktop.** Tabs Overview, Shuttles, Parking, Public transport, Rideshare, Notes. `transport`: `recommendedMode` (rideshare, drive, public, shuttle, walk, hire), `coupleNote`; `shuttles[]` (`name`, `type` coach / shuttle / minibus / transfer / limo, `pickupLocation`, `pickupTime`, `returnTime`, `dropoffLocation`, `capacity`, `contact`, `notes`); `parking` (`venueParking`, `venueParkingNotes`, `nearbyCarParks[]` with `name`, `address`, `distance`, `cost`, `streetParking`, `accessibilityNotes`); `publicTransport` (`generalNotes`, `routes[]` with `type` train / bus / tram / metro / ferry, `notes`, `totalTime`); `rideshare` (`pickupLocation`, `dropoffLocation`, `lateNightNote`); `freeTextNotes`. Ava.
 **Mobile (found).** Recommended mode as free text; parking with `nearbyCarParks` as a textarea (wrong shape); shuttles list with type as text.
 **Gaps.** Mode select; shuttle type select; car parks as a list; public transport routes; rideshare.
 **Status.** Done (phase 1): Overview (recommended mode with the desktop's six values, note for the wedding party), Shuttles (name, type with the five values, pickups, drop-offs, times, seats, contact, notes), Parking (venue parking switch and notes, street parking, accessibility parking, nearby car parks as a list with name, address, distance, cost), Public transport (general notes, routes with the five types, summary and travel time), Rideshare (pickup, drop-off, late-night note), Notes.
 
-### Accommodation (`/accommodation`) → `/m/plan/accommodation`
+### Stay, formerly Accommodation (`/accommodation`) → `/m/plan/accommodation`
+
+**Naming (PR #822, owner ruling 2026-09-21).** The desktop calls this section "Stay" everywhere now, as the live guest suite does; the mobile tile, screen title and Site tab row say "Stay" too. Keys, routes and the `accommodation` category value are unchanged.
 
 **Desktop.** Tabs Overview, Properties, Notes. `accommodation`: `checkInDate`, `checkOutDate`, `coupleNote`, `additionalNotes`; `manualProperties[]` (**Add property** modal: `photoUrl`, `name` with a Google search link, `address`, `website`, `phone`, `bookingCode`, `coupleNote`, `tags[]` from ten options, flags `isMainGuestHotel`, `isClosestToVenue`, `isBestValue`, `isPinned`), edit, delete. Ava.
 **Mobile (found).** Dates and notes; places with name, address, url (wrong key), phone, priceRange (not a desktop field), notes.
@@ -266,14 +270,18 @@ itself stays on desktop and is noted.
 
 Mirror of Registry. **Status.** Parity through the registry screen.
 
-### Accommodation (`/GuestSuiteAccommodation`) → `/m/plan/suite-accommodation`
+### Stay, formerly Accommodation (`/GuestSuiteAccommodation`) → `/m/plan/suite-accommodation`
+
+**Naming (PR #822, owner ruling 2026-09-21).** The desktop calls this section "Stay" everywhere now, as the live guest suite does; the mobile tile, screen title and Site tab row say "Stay" too. Keys, routes and the `guestSuiteAccommodation` category value are unchanged.
 
 **Desktop.** Google Places search (with Use my location), select a result, `note`, `badge` (Closest to venue, Best value, Where most guests are staying, Luxury pick, Budget friendly), Add (fetches `website` from place details; stores `place_id, name, address, rating, price_level, photo_url, maps_url, website_url, note, badge`); Add manually (`name`, `address`, `url`, `badge`, `note`); cards with photo, badge, remove. Ava recommends four places (`InvokeLLM`, each resolved through Places search, add one by one). Saved on `guestSuiteAccommodation.places`.
 **Mobile (found).** Places by hand (name, address, note, website); no search, no photo, no badge.
 **Gaps.** Places search with photo, badge, Ava recommendations.
 **Status.** Built in phase 1 with `PlaceField` and the badge; Ava recommendations.
 
-### Transport (`/GuestSuiteTransport`) → `/m/plan/suite-transport`
+### Getting here, formerly Transport (`/GuestSuiteTransport`) → `/m/plan/suite-transport`
+
+**Naming (PR #822, owner ruling 2026-09-21).** The desktop calls this section "Getting here" everywhere now, as the live guest suite does; the mobile tile, screen title and Site tab row say "Getting here" too. Keys, routes and the `guestSuiteTransport` category value are unchanged.
 
 **Desktop.** As accommodation, with `type` (airport, train_station, bus_station, car_rental, ferry, other) instead of a badge; plus `notes[]` (`title`, `text`) add, edit, remove; Ava recommends places and notes. Saved on `guestSuiteTransport.{places, notes}`.
 **Mobile (found).** Places by hand; no notes.
