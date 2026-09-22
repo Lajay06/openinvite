@@ -256,7 +256,7 @@ export const SAMPLE_HAVANA = {
     },
     lateArrival: {
       display: true,
-      policy: 'Come in at the back. Somebody will find you a chair.',
+      policy: 'Slip in on the courtyard side. Somebody will find you a chair.',
     },
   },
 

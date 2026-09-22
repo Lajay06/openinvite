@@ -91,7 +91,7 @@ export const SAMPLE_TAJ = {
 
   weddingPolicies: {
     dressCode: { display: true, guidance: 'Ruby, gold, deep green, anything with color in it. Not ivory, and not white.', weatherNote: 'Warm until seven and cool by ten. The courtyard is open to the sky.' },
-    photography: { display: true, unplugged: true, message: 'Nothing raised during the ceremony. The pavilion is small and the light is the whole picture.' },
+    photography: { display: true, unplugged: true, message: 'No screens in the pavilion. It is small, and the light is the whole picture.' },
     lateArrival: { display: true, policy: 'Walk down the side of the water and take a seat at the back. Nobody will turn around.' },
   },
 

@@ -100,7 +100,7 @@ export const SAMPLE_TULUM = {
   ],
 
   weddingPolicies: {
-    dressCode: { display: true, guidance: 'Loose and light. Heels sink, so leave them behind.', weatherNote: 'It cools off quickly once the sun goes. Bring something for your shoulders.' },
+    dressCode: { display: true, guidance: 'Loose and light. Heels sink, so leave them behind.', weatherNote: 'It cools off quickly once the sun goes. Long sleeves after dark.' },
     photography: { display: true, unplugged: true, message: 'Once the ceremony is over, photograph everything.' },
     lateArrival: { display: true, policy: 'Walk down and join us. Nobody will look round.' },
   },
