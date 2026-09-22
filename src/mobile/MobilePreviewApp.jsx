@@ -19,10 +19,12 @@ import PrimingScreen from './screens/firstrun/PrimingScreen';
 import { buildFeed } from './notifications/feed';
 import { defaultSettings } from './notifications/store';
 import { isDemoBuild } from './demo';
-import { LaunchSplash, Greeting, briefingLine, launchPhoto } from './shell/LaunchSequence';
+import { LaunchSplash } from './shell/LaunchSequence';
+import DailyUpdate from './shell/DailyUpdate';
+import useLaunch from './shell/useLaunch';
 import { isNative } from './native';
 import { daysUntilWedding } from '@/lib/weddingCountdown';
-import { coupleImages } from './lib/images';
+import { coupleImages, imageUrl } from './lib/images';
 import {
   FIXTURE_WEDDING, FIXTURE_GUESTS, FIXTURE_TASKS, FIXTURE_BUDGET, FIXTURE_AVA_MESSAGES,
   FIXTURE_MESSAGES, FIXTURE_SONG_REQUESTS, FIXTURE_POLLS, FIXTURE_POLL_VOTES, FIXTURE_GIFTS, FIXTURE_NOTIFICATION_ENTITY,
@@ -43,35 +45,34 @@ const NOW = new Date('2026-09-21T09:00:00+10:00').getTime();
  * sheet where a screen has one. /m/preview/push is the lock screen mock,
  * /m/preview/images the photo manifest.
  */
-function previewBriefing() {
-  return briefingLine({ daysToGo: daysUntilWedding(FIXTURE_WEDDING.weddingDate), newReplies: 3 });
+export default function MobilePreviewApp() {
+  const api = useMemo(() => createPreviewApi(), []);
+  if (!import.meta.env.DEV && !isDemoBuild) return <Navigate to="/m" replace />;
+  return <ApiContext.Provider value={api}><MobilePreviewInner /></ApiContext.Provider>;
 }
 
 /**
  * The launch sequence runs in the preview only inside the native shell (the
- * demo build starts here); /m/preview/splash and /m/preview/greeting show
- * the two screens on their own for the web preview and its screenshots.
+ * demo build starts here); /m/preview/splash and /m/preview/daily-update
+ * show the two screens on their own for the web preview and its screenshots,
+ * and `?launch=1` (or `?launch=daily`, forcing the once-a-day screen) runs
+ * the whole sequence on the web.
  */
-function previewLaunch() {
-  if (!isNative()) return null;
-  return { ready: true, firstName: FIXTURE_WEDDING.couple1Name, line: previewBriefing(), photo: launchPhoto(), alt: 'A couple laughing together outdoors' };
-}
+function MobilePreviewInner() {
+  const launch = useLaunch();
 
-export default function MobilePreviewApp() {
   const [params] = useSearchParams();
   const notifications = usePreviewNotifications(params.get('banner') === '1');
-  const api = useMemo(() => createPreviewApi(), []);
-  if (!import.meta.env.DEV && !isDemoBuild) return <Navigate to="/m" replace />;
+  const daily = launch.daily;
   return (
-    <ApiContext.Provider value={api}>
       <Routes>
         <Route path="push" element={<PushPreview />} />
         <Route path="welcome" element={<div className="oi-mobile-root"><WelcomeScreen onStart={() => {}} onLogin={() => {}} /></div>} />
         <Route path="login" element={<div className="oi-mobile-root"><LoginScreen onSubmit={() => {}} providers={[{ key: 'google', label: 'Continue with Google' }, { key: 'apple', label: 'Continue with Apple' }]} onForgot={() => {}} onSignUp={() => {}} onBack={() => {}} error={params.get('state') === 'error' ? 'That email and password did not match. Try again.' : ''} /></div>} />
         <Route path="priming" element={<div className="oi-mobile-root"><PrimingScreen onTurnOn={() => {}} onNotNow={() => {}} recorded={params.get('state') === 'recorded'} /></div>} />
-        <Route path="splash" element={<div className="oi-mobile-root"><LaunchSplash photo={launchPhoto()} alt="A couple laughing together outdoors" /></div>} />
-        <Route path="greeting" element={<div className="oi-mobile-root"><Greeting salutation="Good morning" firstName={FIXTURE_WEDDING.couple1Name} line={previewBriefing()} /></div>} />
-        <Route element={<MobileShell base={PREVIEW_BASE} renderAva={({ openDetail }) => <PreviewAva openDetail={openDetail} />} notifications={notifications} forcedOffline={params.get('offline') === '1'} forcedLock={params.get('lock') === '1'} lockPhoto={coupleImages(FIXTURE_WEDDING)[0]} launch={previewLaunch()} />}>
+        <Route path="splash" element={<div className="oi-mobile-root"><LaunchSplash photo={launch.photo || imageUrl('splash1')} alt={launch.alt} /></div>} />
+        <Route path="daily-update" element={<div className="oi-mobile-root">{daily ? <DailyUpdate photo={daily.photo} alt={daily.alt} dateLabel={daily.dateLabel} greeting={daily.greeting} lines={daily.lines} onGo={() => {}} /> : null}</div>} />
+        <Route element={<MobileShell base={PREVIEW_BASE} renderAva={({ openDetail }) => <PreviewAva openDetail={openDetail} />} notifications={notifications} forcedOffline={params.get('offline') === '1'} forcedLock={params.get('lock') === '1'} lockPhoto={coupleImages(FIXTURE_WEDDING)[0]} launch={isNative() || params.get('launch') ? { ...launch, forceDaily: params.get('launch') === 'daily' } : null} />}>
           <Route index element={<HomeContainer />} />
           <Route path="guests" element={<GuestsContainer />} />
           <Route path="guests/:id" element={<GuestsContainer />} />
@@ -88,7 +89,6 @@ export default function MobilePreviewApp() {
           <Route path="*" element={<Navigate to={PREVIEW_BASE} replace />} />
         </Route>
       </Routes>
-    </ApiContext.Provider>
   );
 }
 

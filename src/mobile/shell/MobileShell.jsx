@@ -9,7 +9,7 @@ import OfflineBanner, { NetworkProvider } from './OfflineBanner';
 import useEdgeSwipeBack from './useEdgeSwipeBack';
 import BottomSheet from '../ui/BottomSheet';
 import Banner from '../notifications/Banner';
-import LaunchSequence from './LaunchSequence';
+import LaunchSequence, { NATIVE_HOLD } from './LaunchSequence';
 import { bootNative, registerBackButton, registerDeepLinks, hideSplash, setStatusBarDark } from '../native';
 import '../styles/mobile.css';
 
@@ -43,7 +43,7 @@ export default function MobileShell({ base = '/m', renderAva, showAva = true, no
   // painted its first frame (a short fade is in capacitor.config.ts).
   useEffect(() => {
     bootNative().then(() => { if (launching) setStatusBarDark(true); });
-    const t = setTimeout(() => hideSplash(), 350);
+    const t = setTimeout(() => hideSplash(), NATIVE_HOLD);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -129,7 +129,7 @@ export default function MobileShell({ base = '/m', renderAva, showAva = true, no
         )}
         {banner && <Banner item={banner} onDone={onBannerDone} />}
         <OfflineBanner />
-        {launching && launch && <LaunchSequence ready={!!launch.ready} firstName={launch.firstName} line={launch.line} photo={launch.photo} alt={launch.alt} onDone={() => setLaunching(false)} />}
+        {launching && launch && <LaunchSequence ready={!!launch.ready} photo={launch.photo} alt={launch.alt} daily={launch.daily} forceDaily={!!launch.forceDaily} onDone={() => setLaunching(false)} />}
       </div>
       </AppLock>
       </NetworkProvider>

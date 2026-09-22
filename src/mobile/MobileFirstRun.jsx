@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { WelcomeContainer, LoginContainer } from './screens/firstrun/FirstRunContainers';
 import { bootNative, hideSplash, registerDeepLinks } from './native';
+import { NATIVE_HOLD } from './shell/LaunchSequence';
 import './styles/mobile.css';
 
 /** /m/welcome and /m/login, outside the auth guard. Wrapped in the mobile root for tokens and safe areas. */
@@ -17,7 +18,7 @@ export default function MobileFirstRun({ screen }) {
   // painted (a short fade is in capacitor.config.ts).
   useEffect(() => {
     bootNative();
-    const t = setTimeout(() => hideSplash(), 350);
+    const t = setTimeout(() => hideSplash(), NATIVE_HOLD);
     return () => clearTimeout(t);
   }, []);
 

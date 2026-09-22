@@ -73,7 +73,7 @@ const SHOTS = [
   ['/m/preview/push', 'push-lock-screen'],
   ['/m/preview/images', 'image-slots'],
   ['/m/preview/splash', 'launch-splash'],
-  ['/m/preview/greeting', 'launch-greeting'],
+  ['/m/preview/daily-update', 'launch-daily-update'],
   ['/m/preview/welcome', 'welcome'],
   ['/m/preview/login', 'login'],
   ['/m/preview/login?state=error', 'login-error'],
@@ -153,7 +153,7 @@ for (const [route, name, action] of SHOTS.filter(([, n]) => !ONLY || ONLY.has(n)
   });
   // A loading state is skeletons by design, so presence is not asked of it.
   // The launch screens are deliberately sparse (a logo; a greeting and one line).
-  const ok = (m.chars > 100 || name.includes('state-loading') || name.startsWith('launch-')) && m.wide === 0 && m.small === 0 && m.inputs === 0 && m.shadows === 0;
+  const ok = (m.chars > 100 || name.includes('state-loading') || name === 'launch-splash') && m.wide === 0 && m.small === 0 && m.inputs === 0 && m.shadows === 0;
   if (!ok) failures++;
   console.log(`  ${ok ? 'PASS' : 'FAIL'}  ${name.padEnd(26)} chars=${m.chars} wide=${m.wide} tap<44=${m.small}/${m.inter} inputs<16=${m.inputs} shadows=${m.shadows}`);
 }
