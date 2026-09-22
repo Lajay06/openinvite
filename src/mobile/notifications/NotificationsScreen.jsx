@@ -11,8 +11,11 @@ import ActivityRow, { ActivityGroupTitle } from './ActivityRow';
  * shared activity rows (ActivityRow, the same as Home's "Latest"). Tap
  * opens the item's screen. Presentational: everything comes in as props.
  */
-export default function NotificationsScreen({ items = [], loading, error, onRetry, onMarkAllRead, onOpen, onSettings, back, now = Date.now() }) {
+export default function NotificationsScreen({ items = [], loading, error, failed = [], onRetry, onMarkAllRead, onOpen, onSettings, back, now = Date.now() }) {
   const navigate = useNavigate();
+  // An empty center with every source down is not "nothing yet", it is a
+  // failed load; the couple gets the error and a retry, not a reassurance.
+  const blank = !loading && !error && items.length === 0 && failed.length > 0;
   const groups = groupByTime(items, now);
   const unread = items.filter((i) => i.unread).length;
   return (
@@ -26,7 +29,7 @@ export default function NotificationsScreen({ items = [], loading, error, onRetr
       ]}
     >
       <div className="oi-m-stack oi-m-stack--24">
-        {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : items.length === 0 ? (
+        {(error || blank) && !loading ? <ErrorState timedOut={!!error?.timedOut} onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : items.length === 0 ? (
           <EmptyState icon={BellOff} text="Nothing yet. Replies, messages and requests will show up here as they arrive." />
         ) : (
           groups.map((g) => (

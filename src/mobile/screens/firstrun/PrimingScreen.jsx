@@ -5,11 +5,10 @@ import { imageUrl } from '../../images';
 
 /**
  * Notification priming: what the couple will hear about, and two honest
- * buttons. "Turn on" only records the choice for now; the system prompt
- * comes with real push. Shown once, the first time something notable
- * happens (the first reply arrives).
+ * buttons. Both record the choice and close the screen; "Turn on" asks the
+ * system first. Shown once, the first time a reply really is in.
  */
-export default function PrimingScreen({ onTurnOn, onNotNow, recorded = false }) {
+export default function PrimingScreen({ onTurnOn, onNotNow, recorded = false, busy = false }) {
   return (
     <div className="oi-m-login">
       <div className="oi-m-login__top">
@@ -32,8 +31,8 @@ export default function PrimingScreen({ onTurnOn, onNotNow, recorded = false }) 
           <p className="oi-m-body oi-m-strong" style={{ textAlign: 'center' }}>Noted. Notifications are coming soon and this phone is first in line.</p>
         ) : (
           <>
-            <PillButton variant="primary" block onClick={onTurnOn}>Turn on notifications</PillButton>
-            <PillButton variant="ghost" block onClick={onNotNow}>Not now</PillButton>
+            <PillButton variant="primary" block onClick={onTurnOn} disabled={busy}>Turn on notifications</PillButton>
+            <PillButton variant="ghost" block onClick={onNotNow} disabled={busy}>Not now</PillButton>
           </>
         )}
       </div>

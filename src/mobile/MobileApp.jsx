@@ -40,7 +40,7 @@ function MobileAppInner() {
   const notifications = useNotifications({ base: MOBILE_BASE, symbol });
   const wedding = useWedding();
   const navigate = useNavigate();
-  const showPriming = usePrimingGate(notifications);
+  const priming = usePrimingGate(notifications);
   // The daily update (goals 6 and 7), from the desktop's own day state; the shell decides when it shows.
   const dailyLoad = useDailyUpdate();
   const daily = useMemo(() => ({ ready: !dailyLoad.loading, content: dailyLoad.content }), [dailyLoad.loading, dailyLoad.content]);
@@ -49,7 +49,11 @@ function MobileAppInner() {
   const renderAva = ({ onClose, openDetail }) => (
     <AvaChatPod onClose={onClose} openDetail={openDetail || null} messages={messages} setMessages={setMessages} dismissed={dismissed} setDismissed={setDismissed} onClear={() => { setMessages([]); setDismissed(new Set()); }} />
   );
-  if (showPriming && !window.location.pathname.endsWith('/priming')) return <Navigate to={`${MOBILE_BASE}/priming`} replace />;
+  // The gate owns "seen", so recording a choice closes this redirect in the
+  // same render the screen navigates away in. It used to read the stored
+  // value once on mount, which sent the couple straight back to the screen
+  // they had just answered.
+  if (priming.show && !window.location.pathname.endsWith('/priming')) return <Navigate to={`${MOBILE_BASE}/priming`} replace />;
   return (
     <Routes>
       <Route element={<MobileShell base={MOBILE_BASE} renderAva={renderAva} notifications={notifications} lockPhoto={heroImageFor(wedding.data)} daily={daily} />}>
@@ -64,7 +68,7 @@ function MobileAppInner() {
         <Route path="search" element={<SearchContainer />} />
         <Route path="notifications" element={<NotificationsContainer />} />
         <Route path="notifications/settings" element={<NotificationSettingsContainer />} />
-        <Route path="priming" element={<PrimingContainer />} />
+        <Route path="priming" element={<PrimingContainer onChoice={priming.record} />} />
         <Route path="*" element={<Navigate to={MOBILE_BASE} replace />} />
       </Route>
     </Routes>
@@ -75,7 +79,7 @@ function NotificationsContainer() {
   const navigate = useNavigate();
   const { notifications, base } = useContext(ShellContext);
   const n = notifications || {};
-  return <NotificationsScreen items={n.items || []} loading={n.loading} error={n.error} onRetry={n.reload} onMarkAllRead={n.markAllRead} onOpen={(it) => n.markRead?.(it)} onSettings={() => navigate(`${base}/notifications/settings`)} back={base} />;
+  return <NotificationsScreen items={n.items || []} loading={n.loading} error={n.error} failed={n.failed || []} onRetry={n.reload} onMarkAllRead={n.markAllRead} onOpen={(it) => n.markRead?.(it)} onSettings={() => navigate(`${base}/notifications/settings`)} back={base} />;
 }
 
 function NotificationSettingsContainer() {

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { base44 } from '@/api/base44Client';
@@ -83,12 +83,30 @@ export function LoginContainer() {
   );
 }
 
-/** Whether the priming screen should show: never seen, and a reply has arrived. */
+/**
+ * Whether the priming screen should show, and how it is closed.
+ *
+ * TWO BUGS LIVED HERE. The gate read the pref ONCE, on mount, and the
+ * screen wrote it with prefSet and navigated away — so the gate still said
+ * "show", the redirect in MobileApp fired again, and both buttons looked
+ * dead. `record()` is now the only way the screen finishes, and it moves
+ * this state as well as the stored value.
+ *
+ * And the ask itself has to be TRUE. It says "your first reply is in", so
+ * it may only appear when a reply really is in: a feed that loaded every
+ * one of its sources (`complete`), carrying an rsvp item. A couple whose
+ * guest list had not loaded saw the ask over a Replies count of 0, off the
+ * one source that had.
+ */
 export function usePrimingGate(notifications) {
   const [seen, setSeen] = useState(true);
   useEffect(() => { prefGet(PRIMING_PREF).then((v) => setSeen(!!v)); }, []);
-  const hasReply = (notifications?.items || []).some((i) => i.type.startsWith('rsvp_'));
-  return !seen && hasReply;
+  const record = useCallback(async (choice) => {
+    setSeen(true);
+    await prefSet(PRIMING_PREF, choice);
+  }, []);
+  const hasReply = !!notifications?.complete && (notifications?.items || []).some((i) => i.type.startsWith('rsvp_'));
+  return { show: !seen && hasReply, record };
 }
 
 /**
@@ -98,23 +116,38 @@ export function usePrimingGate(notifications) {
  * same screen and prompt lead to three test notifications, then back to
  * Account.
  */
-export function PrimingContainer({ onDone }) {
+export function PrimingContainer({ onDone, onChoice }) {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const { base, notifications } = useContext(ShellContext);
   const [recorded, setRecorded] = useState(params.get('state') === 'recorded');
+  const [busy, setBusy] = useState(false);
   const test = params.get('test') === '1';
   const home = () => (onDone ? onDone() : navigate(base, { replace: true }));
+  /**
+   * BOTH BUTTONS RECORD AND LEAVE. The choice is written first — through
+   * the gate's own `record` where it owns the state, so the screen cannot
+   * be shown again the moment it navigates — and only then does "Turn on"
+   * ask the system. A refused system prompt is still a recorded choice:
+   * the couple answered, and the screen has no business asking twice.
+   */
   const finish = async (choice) => {
-    await prefSet(PRIMING_PREF, choice);
+    if (busy) return;
+    setBusy(true);
+    try {
+      if (onChoice) await onChoice(choice); else await prefSet(PRIMING_PREF, choice);
+    } catch { /* a device that cannot store the choice still gets past this screen */ }
     if (choice !== 'on') { if (test) navigate(`${base}/account`, { replace: true }); else home(); return; }
     const permission = await requestNotificationPermission();
-    if (!test) { setRecorded(true); setTimeout(home, 1800); return; }
+    if (!test) {
+      if (permission === 'denied') { toast('Notifications are off for Openinvite in Settings.'); home(); return; }
+      setRecorded(true); setTimeout(home, 1800); return;
+    }
     if (permission === 'denied') toast.error('Notifications are off for Openinvite in Settings.');
     else if (permission === 'unavailable') toast('Test notifications need the phone app.');
     else if (await sendTestNotifications(base, notifications?.items || [])) toast.success('Three are on their way. Lock your phone.');
     else toast.error('Could not schedule them.');
     navigate(`${base}/account`, { replace: true });
   };
-  return <PrimingScreen onTurnOn={() => finish('on')} onNotNow={() => finish('later')} recorded={recorded} />;
+  return <PrimingScreen onTurnOn={() => finish('on')} onNotNow={() => finish('later')} recorded={recorded} busy={busy} />;
 }
