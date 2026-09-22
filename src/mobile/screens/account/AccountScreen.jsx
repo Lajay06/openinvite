@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserRound, Users, CreditCard, Bell, LifeBuoy, MessageSquare, LogOut, CalendarDays, ArrowUpRight, BellRing, ScanFace } from 'lucide-react';
+import { UserRound, Users, CreditCard, Bell, LifeBuoy, MessageSquare, LogOut, CalendarDays, ArrowUpRight, BellRing, ScanFace, Smartphone } from 'lucide-react';
 import Screen from '../../shell/Screen';
 import { Row, RowGroup, PillButton, Skeleton, SmartImage, PanelCard, Switch } from '../../ui';
 import { initials } from '../../lib/format';
@@ -9,7 +9,7 @@ import { initials } from '../../lib/format';
  * rows. `showPurchases` is false inside the native shell, so no upgrade,
  * checkout or billing-portal call to action renders there.
  */
-export default function AccountScreen({ name, email, coupleName, weddingDate, photo, planLabel, planNote, trialDaysLeft, showPurchases, onUpgrade, onDetails, onEventDetails, onCollaborators, onNotifications, onNotificationSettings, onHelp, onContact, onLogout, loading, appLock = null, subtitle, detailsSub, onTitleLongPress }) {
+export default function AccountScreen({ name, email, coupleName, weddingDate, photo, planLabel, planNote, trialDaysLeft, showPurchases, onUpgrade, onDetails, onEventDetails, onCollaborators, onNotifications, onNotificationSettings, onHelp, onContact, onLogout, loading, appLock = null, subtitle, detailsSub, onTitleLongPress, onTestNotification }) {
   return (
     <Screen title="Account" subtitle={subtitle} bell onTitleLongPress={onTitleLongPress}>
       <div className="oi-m-stack oi-m-stack--24">
@@ -41,6 +41,7 @@ export default function AccountScreen({ name, email, coupleName, weddingDate, ph
           <Row icon={CreditCard} tile="neutral" label="Plan" value={planLabel} onClick={showPurchases ? onUpgrade : undefined} chevron={!!showPurchases} />
           <Row icon={BellRing} tile="neutral" label="Notifications" sub="What you hear about, and when" onClick={onNotificationSettings} />
           <Row icon={Bell} tile="neutral" label="Email notifications" sub="Which emails you get" onClick={onNotifications} />
+          {onTestNotification && <Row icon={Smartphone} tile="tint" label="Send a test notification" sub="Three on the lock screen, half a minute apart" onClick={onTestNotification} />}
           {appLock && (
             <div className="oi-m-row" style={{ minHeight: 68 }}>
               <span className="oi-m-row__tile oi-m-row__tile--neutral"><ScanFace size={19} strokeWidth={1.75} /></span>

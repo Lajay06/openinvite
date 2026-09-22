@@ -49,6 +49,13 @@ const config: CapacitorConfig = {
       resize: 'native',
       resizeOnFullScreen: true,
     },
+    LocalNotifications: {
+      // Goal 7's test notification. While the app is open iOS shows nothing
+      // itself: the shell draws its own banner from the received event. On
+      // the lock screen and in the notification center they show as usual.
+      presentationOptions: [],
+      iconColor: '#E03553',
+    },
   },
 };
 

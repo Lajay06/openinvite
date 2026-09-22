@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import WelcomeScreen from './WelcomeScreen';
 import LoginScreen from './LoginScreen';
 import PrimingScreen from './PrimingScreen';
 import { BottomSheet, PillButton } from '../../ui';
-import { isNative, openExternal, prefGet, prefSet, PROD_ORIGIN, APP_SCHEME } from '../../native';
+import { isNative, openExternal, prefGet, prefSet, requestNotificationPermission, PROD_ORIGIN, APP_SCHEME } from '../../native';
+import { ShellContext } from '../../shell/MobileShell';
+import { sendTestNotifications } from '../../notifications/testNotification';
 
 export const WELCOME_PREF = 'welcome_seen';
 export const PRIMING_PREF = 'notif_priming';
@@ -88,14 +91,30 @@ export function usePrimingGate(notifications) {
   return !seen && hasReply;
 }
 
-/** /m/priming: records the choice locally; the system prompt comes with real push. */
+/**
+ * /m/priming: records the choice locally and, natively, asks the system
+ * (goal 7: local notifications carry the test notification; real push is
+ * still to come). With `?test=1` (the Account row in review builds) the
+ * same screen and prompt lead to three test notifications, then back to
+ * Account.
+ */
 export function PrimingContainer({ onDone }) {
   const navigate = useNavigate();
-  const [recorded, setRecorded] = useState(false);
+  const [params] = useSearchParams();
+  const { base, notifications } = useContext(ShellContext);
+  const [recorded, setRecorded] = useState(params.get('state') === 'recorded');
+  const test = params.get('test') === '1';
+  const home = () => (onDone ? onDone() : navigate(base, { replace: true }));
   const finish = async (choice) => {
     await prefSet(PRIMING_PREF, choice);
-    if (choice === 'on') { setRecorded(true); setTimeout(() => (onDone ? onDone() : navigate('/m', { replace: true })), 1800); }
-    else if (onDone) onDone(); else navigate('/m', { replace: true });
+    if (choice !== 'on') { if (test) navigate(`${base}/account`, { replace: true }); else home(); return; }
+    const permission = await requestNotificationPermission();
+    if (!test) { setRecorded(true); setTimeout(home, 1800); return; }
+    if (permission === 'denied') toast.error('Notifications are off for Openinvite in Settings.');
+    else if (permission === 'unavailable') toast('Test notifications need the phone app.');
+    else if (await sendTestNotifications(base, notifications?.items || [])) toast.success('Three are on their way. Lock your phone.');
+    else toast.error('Could not schedule them.');
+    navigate(`${base}/account`, { replace: true });
   };
   return <PrimingScreen onTurnOn={() => finish('on')} onNotNow={() => finish('later')} recorded={recorded} />;
 }

@@ -10,7 +10,7 @@ import useEdgeSwipeBack from './useEdgeSwipeBack';
 import BottomSheet from '../ui/BottomSheet';
 import Banner from '../notifications/Banner';
 import DailyUpdateHost from './DailyUpdateHost';
-import { bootNative, registerBackButton, registerDeepLinks, hideSplash } from '../native';
+import { bootNative, registerBackButton, registerDeepLinks, hideSplash, onNotificationOpened, onNotificationReceived } from '../native';
 import '../styles/mobile.css';
 
 /**
@@ -54,6 +54,16 @@ export default function MobileShell({ base = '/m', renderAva, showAva = true, no
       navigate(path);
     }).then((d) => { dispose = d; });
     return () => dispose();
+  }, [navigate]);
+
+  // A local notification (goal 7's test): a tap from the lock screen opens
+  // its screen by the same link the notification center uses; one that
+  // lands while the app is open shows as the in-app banner.
+  useEffect(() => {
+    let disposeOpen = () => {}; let disposeReceived = () => {};
+    onNotificationOpened((link) => navigate(link)).then((d) => { disposeOpen = d; });
+    onNotificationReceived((n) => setBanner({ id: `local:${Date.now()}`, type: n.type, title: n.title, body: n.body, link: n.link, ts: Date.now() })).then((d) => { disposeReceived = d; });
+    return () => { disposeOpen(); disposeReceived(); };
   }, [navigate]);
 
   // Tapping outside an input dismisses the keyboard.

@@ -58,6 +58,7 @@ const LOADERS: Record<string, () => Promise<Plugin>> = {
   preferences: () => import('@capacitor/preferences'),
   app: () => import('@capacitor/app'),
   network: () => import('@capacitor/network'),
+  'local-notifications': () => import('@capacitor/local-notifications'),
 };
 
 async function load(name: string): Promise<Plugin | null> {
@@ -499,4 +500,66 @@ export async function onNetworkChange(cb: (online: boolean) => void): Promise<()
   const on = () => cb(true); const off = () => cb(false);
   window.addEventListener('online', on); window.addEventListener('offline', off);
   return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); };
+}
+
+/* ── Goal 7: local notifications (the test notification) ─────────────── */
+
+/**
+ * Local notifications need no Apple push setup and no paid program, which
+ * is why the test notification under Account uses them (goal 7). Real push
+ * still needs the backend in PUSH_BACKEND_PROPOSAL.md; these wrappers are
+ * the same shape it will use. Every one is a no-op on the web.
+ */
+
+export type LocalNotice = { id: number; title: string; body: string; at: Date; link: string; type: string };
+
+/** The system prompt. 'granted' | 'denied' | 'unavailable' (the web, or no plugin). */
+export async function requestNotificationPermission(): Promise<'granted' | 'denied' | 'unavailable'> {
+  const mod = await load('local-notifications');
+  if (!mod) return 'unavailable';
+  try {
+    const r = await mod.LocalNotifications.requestPermissions();
+    return r.display === 'granted' ? 'granted' : 'denied';
+  } catch { return 'unavailable'; }
+}
+
+/**
+ * Schedules notifications for a moment each. `link` rides in `extra` so a
+ * tap can open the matching screen (onNotificationOpened) the way the
+ * notification center's rows do. iOS draws the app icon itself.
+ */
+export async function scheduleLocalNotifications(list: LocalNotice[]): Promise<boolean> {
+  const mod = await load('local-notifications');
+  if (!mod) return false;
+  try {
+    await mod.LocalNotifications.schedule({
+      notifications: list.map((n) => ({ id: n.id, title: n.title, body: n.body, schedule: { at: n.at }, extra: { link: n.link, type: n.type }, sound: undefined })),
+    });
+    return true;
+  } catch { return false; }
+}
+
+/** A notification tapped from the lock screen or the notification center: hands its link to the caller. Disposer returned. */
+export async function onNotificationOpened(cb: (link: string, notice: { title: string; body: string; type: string }) => void): Promise<() => void> {
+  const mod = await load('local-notifications');
+  if (!mod) return () => {};
+  try {
+    const handle = await mod.LocalNotifications.addListener('localNotificationActionPerformed', (a: { notification: { title?: string; body?: string; extra?: { link?: string; type?: string } } }) => {
+      const n = a?.notification || {};
+      cb(n.extra?.link || '/m', { title: n.title || '', body: n.body || '', type: n.extra?.type || 'briefing' });
+    });
+    return () => { try { handle.remove(); } catch { /* no-op */ } };
+  } catch { return () => {}; }
+}
+
+/** A notification delivered while the app is open (iOS shows none itself, see capacitor.config.ts): the shell draws its banner. Disposer returned. */
+export async function onNotificationReceived(cb: (notice: { title: string; body: string; type: string; link: string }) => void): Promise<() => void> {
+  const mod = await load('local-notifications');
+  if (!mod) return () => {};
+  try {
+    const handle = await mod.LocalNotifications.addListener('localNotificationReceived', (n: { title?: string; body?: string; extra?: { link?: string; type?: string } }) => {
+      cb({ title: n?.title || '', body: n?.body || '', type: n?.extra?.type || 'briefing', link: n?.extra?.link || '/m' });
+    });
+    return () => { try { handle.remove(); } catch { /* no-op */ } };
+  } catch { return () => {}; }
 }

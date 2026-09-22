@@ -15,7 +15,7 @@ import PushPreview from './notifications/PushPreview';
 import ImageGalleryScreen from './screens/preview/ImageGalleryScreen';
 import WelcomeScreen from './screens/firstrun/WelcomeScreen';
 import LoginScreen from './screens/firstrun/LoginScreen';
-import PrimingScreen from './screens/firstrun/PrimingScreen';
+import { PrimingContainer } from './screens/firstrun/FirstRunContainers';
 import { buildFeed } from './notifications/feed';
 import { defaultSettings } from './notifications/store';
 import { isDemoBuild } from './demo';
@@ -65,7 +65,6 @@ function MobilePreviewInner() {
         <Route path="push" element={<PushPreview />} />
         <Route path="welcome" element={<div className="oi-mobile-root"><WelcomeScreen onStart={() => {}} onLogin={() => {}} /></div>} />
         <Route path="login" element={<div className="oi-mobile-root"><LoginScreen onSubmit={() => {}} providers={[{ key: 'google', label: 'Continue with Google' }, { key: 'apple', label: 'Continue with Apple' }]} onForgot={() => {}} onSignUp={() => {}} onBack={() => {}} error={params.get('state') === 'error' ? 'That email and password did not match. Try again.' : ''} /></div>} />
-        <Route path="priming" element={<div className="oi-mobile-root"><PrimingScreen onTurnOn={() => {}} onNotNow={() => {}} recorded={params.get('state') === 'recorded'} /></div>} />
         <Route path="daily-update" element={<Navigate to={`${PREVIEW_BASE}?daily=1`} replace />} />
         <Route element={<MobileShell base={PREVIEW_BASE} renderAva={({ openDetail }) => <PreviewAva openDetail={openDetail} />} notifications={notifications} forcedOffline={params.get('offline') === '1'} forcedLock={params.get('lock') === '1'} lockPhoto={coupleImages(FIXTURE_WEDDING)[0]} daily={daily} forceDaily={params.get('daily') === '1'} />}>
           <Route index element={<HomeContainer />} />
@@ -81,6 +80,7 @@ function MobilePreviewInner() {
           <Route path="notifications" element={<PreviewNotifications />} />
           <Route path="notifications/settings" element={<PreviewNotificationSettings />} />
           <Route path="images" element={<ImageGalleryScreen back={PREVIEW_BASE} />} />
+          <Route path="priming" element={<PrimingContainer />} />
           <Route path="*" element={<Navigate to={PREVIEW_BASE} replace />} />
         </Route>
       </Routes>

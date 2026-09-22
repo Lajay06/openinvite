@@ -86,6 +86,8 @@ export default function AccountContainer() {
         appLock={isNative() ? appLock : null}
         // Review builds only (goal 7): a long press on the title brings the daily update back whatever the day's answer.
         onTitleLongPress={isDemoBuild || import.meta.env.DEV ? showDailyUpdate : undefined}
+        // Review builds only (goal 7): the priming screen, the system prompt, then three real notifications on the lock screen.
+        onTestNotification={isDemoBuild || import.meta.env.DEV ? () => navigate(`${base}/priming?test=1`) : undefined}
       />
       {collab && <CollaborateModal onClose={() => setCollab(false)} />}
       <AccountDetailsSheet open={sheet === 'details'} user={user} currencyCode={currencyCode} onClose={() => setSheet(null)} onSave={saveDetails} onDesktop={() => { setSheet(null); openDesktop(navigate, '/account'); }} />
