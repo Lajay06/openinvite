@@ -3,6 +3,7 @@ import { Camera, Share2, Baby, Utensils, Gift, Shirt, Clock, FileText, Wand2, Us
 import Screen from '../../shell/Screen';
 import { RowGroup, ErrorState, SkeletonRows, Switch, BottomSheet, PillButton, TextField, TextAreaField } from '../../ui';
 import PillChoice from '../../ui/PillChoice';
+import { linesFor } from '@/lib/goodToKnow';
 
 /* GuestSuitePolicies.jsx's shape, verbatim: each policy's own fields plus `display`. */
 export const EMPTY_POLICIES = {
@@ -65,7 +66,12 @@ export default function GoodToKnowScreen({ policies = {}, guestExperience = {}, 
   const summaryOf = (key) => {
     const v = p[key] || {};
     switch (key) {
-      case 'photography': return v.unplugged ? 'Unplugged ceremony' : v.message || 'Snap away';
+      // PR #831: the couple's note REPLACES the platform's unplugged sentence,
+      // so the row cannot report the toggle — it reports the line guests read,
+      // through the same linesFor() the guest site and both web editors use.
+      // It used to say "Unplugged ceremony" over a note that said something
+      // else entirely, and never showed the couple their own words.
+      case 'photography': return linesFor('photography', v).join(' ') || 'Snap away';
       case 'socialMedia': return [v.noCeremony ? 'No posts from the ceremony' : '', v.tagUs ? 'Tag us' : '', v.hashtag].filter(Boolean).join(', ') || v.message || 'Not set';
       case 'children': return CHILDREN.find((c) => c.value === v.option)?.label || 'Not set';
       case 'dietary': return v.description || 'Not set';
@@ -139,6 +145,25 @@ function merge(policies) {
   return out;
 }
 
+/**
+ * The line guests will read under Photographs, computed by the site's own
+ * rule. Because the couple's note replaces the platform's unplugged
+ * sentence (PR #831), a couple whose note is not about phones would lose
+ * that sentence without knowing; this is where they see it go. Display
+ * only, nothing is saved. GuestSuitePolicies.jsx and the studio's
+ * PoliciesTab.jsx show the same thing in the same words.
+ */
+function GuestsWillSee({ lines }) {
+  return (
+    <div>
+      <span className="oi-m-field__label">On the site</span>
+      <p className="oi-m-body" style={{ margin: '4px 0 0', paddingLeft: 4, color: lines.length ? 'var(--m-text)' : 'var(--m-text-2)' }}>
+        {lines.length ? lines.join(' ') : 'Nothing under Photographs until the toggle is on or a message is written.'}
+      </p>
+    </div>
+  );
+}
+
 /** One policy's own fields, edited in place; every change queues a save. */
 function PolicySheet({ section, value: v, eventDressCode, onChange, onClose }) {
   const toggle = (field, label) => <div className="oi-m-row" style={{ padding: '8px 4px', background: 'transparent' }}><div className="oi-m-row__body"><div className="oi-m-row__label oi-m-row__label--wrap">{label}</div></div><Switch on={!!v[field]} onChange={(on) => onChange(field, on)} label={label} /></div>;
@@ -147,7 +172,7 @@ function PolicySheet({ section, value: v, eventDressCode, onChange, onClose }) {
   return (
     <BottomSheet open onClose={onClose} title={section.label} full footer={<PillButton variant="primary" block onClick={onClose}>Done</PillButton>}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {section.key === 'photography' && <>{toggle('unplugged', 'Unplugged ceremony')}{area('message', 'Custom message', { placeholder: 'Phones away for the ceremony, then snap away.' })}</>}
+        {section.key === 'photography' && <>{toggle('unplugged', 'Unplugged ceremony')}{area('message', 'Custom message', { placeholder: 'Phones away for the ceremony, then snap away.' })}<GuestsWillSee lines={linesFor('photography', v)} /></>}
         {section.key === 'socialMedia' && <>{toggle('noCeremony', 'No posting during the ceremony')}{toggle('tagUs', 'Tag us in your photos')}{text('hashtag', 'Hashtag', { placeholder: '#OurWedding', autoCapitalize: 'off' })}{area('message', 'Custom message')}</>}
         {section.key === 'children' && <><PillChoice label="Children" options={CHILDREN} value={v.option || 'all'} onChange={(o) => o && onChange('option', o)} />{area('message', 'Custom message', { placeholder: 'Little ones are welcome all day.' })}</>}
         {section.key === 'dietary' && <>{area('description', 'Available options', { placeholder: 'We offer vegetarian, vegan and gluten free options.' })}{text('contactName', 'Contact name', { autoCapitalize: 'words' })}{text('contactEmail', 'Contact email', { type: 'email', inputMode: 'email', autoCapitalize: 'off' })}</>}
