@@ -125,17 +125,35 @@ const SHOTS = [
   ['/m/preview/plan/invitations', 'plan-invitations'],
   ['/m/preview/account', 'account-details-sheet', 'tap:Account details'],
   ['/m/preview/account', 'account-email-sheet', 'tap:Email notifications'],
+  // Goal 8: the changed screens.
+  ['/m/preview/guests?filter=attending', 'guests-stat-filter'],
+  ['/m/preview/site', 'site-preview-sheet', 'tap:Open the guest suite preview'],
+  ['/m/preview/plan/invitations', 'plan-invitations-preview', 'tap:Open the invitation preview'],
+  ['/m/preview/plan/send-invites', 'plan-send-invites-groups', 'tap:All guests'],
+  ['/m/preview/plan/budget?segment=forecast', 'plan-budget-forecast'],
+  ['/m/preview/plan/budget?segment=forecast', 'plan-budget-health-run', 'tap:Update my health'],
+  ['/m/preview/guests', 'guests-from-contacts', 'tap:From contacts'],
+  ['/m/preview/plan/schedule?segment=share', 'plan-schedule-calendar'],
+  ['/m/preview/plan/schedule?offline=1&state=error&segment=runsheet', 'plan-schedule-offline'],
+  ['/m/preview/plan/seating?offline=1&state=error', 'plan-seating-offline'],
+  ['/m/preview/plan/vendors?offline=1&state=error', 'plan-vendors-offline'],
+  ['/m/preview/plan/emergency?offline=1&state=error', 'plan-emergency-offline'],
 ];
 
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
-const page = await ctx.newPage();
+let page = await ctx.newPage();
 const errors = [];
 page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
 let failures = 0;
+let shotsOnPage = 0;
 
 const ONLY = process.env.ONLY ? new Set(process.env.ONLY.split(',')) : null;
 for (const [route, name, action] of SHOTS.filter(([, n]) => !ONLY || ONLY.has(n))) {
+  // A fresh page every twenty screens (goal 8): after about forty navigations in one
+  // page, headless Chromium stops answering screenshot requests and the run times out.
+  if (shotsOnPage >= 20) { await page.close(); page = await ctx.newPage(); page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`)); shotsOnPage = 0; }
+  shotsOnPage++;
   await page.goto(`${BASE}${route}`, { waitUntil: 'networkidle', timeout: 30000 }).catch((e) => errors.push(`goto ${route}: ${e.message}`));
   await page.waitForTimeout(700);
   if (action === 'ava') { await page.click('button[aria-label="Ask Ava"]'); await page.waitForTimeout(500); }
@@ -143,13 +161,15 @@ for (const [route, name, action] of SHOTS.filter(([, n]) => !ONLY || ONLY.has(n)
   if (action === 'expand') { for (const el of await page.$$('.oi-m-acc__head[aria-expanded=false]')) await el.click(); await page.waitForTimeout(600); await page.evaluate(() => { document.querySelector('.oi-m-screen').scrollTop = 2900; }); await page.waitForTimeout(500); }
   if (action === 'scroll') { await page.evaluate(() => { document.querySelector('.oi-m-screen').scrollTop = 600; }); await page.waitForTimeout(500); }
   if (action?.startsWith('type:')) { await page.keyboard.type(action.slice(5)); await page.waitForTimeout(500); }
-  if (action?.startsWith('tap:')) { await page.getByRole('button', { name: action.slice(4) }).first().click(); await page.waitForTimeout(500); }
+  if (action?.startsWith('tap:')) { await page.getByRole('button', { name: action.slice(4) }).or(page.getByRole('tab', { name: action.slice(4) })).first().click(); await page.waitForTimeout(500); }
   await page.screenshot({ path: `${DIR}/${name}.png` });
   const m = await page.evaluate(() => {
     const vw = window.innerWidth;
     const all = [...document.querySelectorAll('.oi-mobile-root *')];
     const wide = all.filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.right > vw + 1 && !el.closest('.oi-m-filters, .oi-m-peek, .oi-m-segments, .oi-m-welcome__slides, .oi-m-ava-quick'); }).length;
-    const inter = [...document.querySelectorAll('.oi-mobile-root a[href], .oi-mobile-root button:not([data-preview-control]), .oi-mobile-root input, .oi-mobile-root select, .oi-mobile-root textarea, .oi-mobile-root [role=button]')].filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < window.innerHeight; });
+    // Goal 8: the guest suite and invitation previews draw the couple's own site through the desktop renderers; what is inside them is
+    // the couple's design (the artwork exemption), and the scaled tile is inert besides, so neither is a tap target of the app's chrome.
+    const inter = [...document.querySelectorAll('.oi-mobile-root a[href], .oi-mobile-root button:not([data-preview-control]), .oi-mobile-root input, .oi-mobile-root select, .oi-mobile-root textarea, .oi-mobile-root [role=button]')].filter((el) => !el.closest('[inert], .oi-m-sitepreview-sheet__frame')).filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < window.innerHeight; });
     const small = inter.filter((el) => { const r = el.getBoundingClientRect(); return Math.min(r.width, r.height) < 44; }).length;
     const inputs = [...document.querySelectorAll('.oi-mobile-root input, .oi-mobile-root textarea, .oi-mobile-root select')].filter((el) => el.getBoundingClientRect().width > 0 && parseFloat(getComputedStyle(el).fontSize) < 16).length;
     const shadows = all.filter((el) => { const b = getComputedStyle(el).boxShadow; return b && b !== 'none' && !/0px 8px 24px/.test(b); }).length;

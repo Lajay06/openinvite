@@ -1,6 +1,6 @@
 # Openinvite mobile: what to add next
 
-Research only (goal 7, item 6, 2026-09-22). Nothing here is built. Each idea says what it is, who does it, why a couple would care, the effort, whether it needs the paid Apple Developer Program or a backend change, and a recommendation. The top ten are ranked at the end.
+Research (goal 7, item 6, 2026-09-22); goal 8 built three of these, marked **Built** or **Blocked** below. Everything else is unbuilt. Each idea says what it is, who does it, why a couple would care, the effort, whether it needs the paid Apple Developer Program or a backend change, and a recommendation. The top ten are ranked at the end.
 
 What the app already does is the baseline: instant launch, the daily update card, the full planner at parity with the desktop (guests, budget, schedule, vendors, registry, messages, polls, seating view, the guest suite tools), global search, Face ID lock, a derived notification center with an in-app banner, the native share sheet, camera and library into the moodboard, and a local test notification. Real push needs the backend in `PUSH_BACKEND_PROPOSAL.md` and the paid program; several ideas below sit behind it.
 
@@ -64,6 +64,8 @@ Recommendation: yes, third. It is the feature most likely to be used weekly duri
 
 ### 5. Calendar sync
 
+**Blocked (goal 8, 2026-09-22).** The desktop's feed, `/api/schedule.ics`, answers 404 on production, so the subscribe button stays hidden until the feed answers with a calendar (the check is in `api.calendarFeed()`; the webcal and Google hand-offs are written and switch on by themselves). What did ship: Add to calendar on every event's sheet, the single-event `.ics` through the share sheet. Record in `MOBILE_APP.md`.
+
 What: subscribe the couple's calendar to the schedule (the `.ics` feed already exists on the desktop) from the app in one tap, and add single events to the phone's calendar. Optionally, the wedding date itself as an all-day event with the countdown in its notes.
 Who: Airbnb (add to calendar), Qantas (flights to calendar), The Knot (events to calendar).
 Why: the schedule lives where the couple looks at time; the rehearsal dinner, the final fitting and the vendor calls stop being surprises.
@@ -72,6 +74,8 @@ Needs: nothing.
 Recommendation: yes, and soon: it is a small change with clear value.
 
 ### 6. Contacts import for guests
+
+**Built (goal 8, 2026-09-22).** `@capacitor-community/contacts`; From contacts on Guests, duplicates marked, the existing create mutation, Invite now into Send invites; fixtures in a demo.
 
 What: pick people from the phone's Contacts to add as guests (name, email, phone, address), with a multi-select and duplicate detection against the guest list.
 Who: The Knot, Zola, WithJoy, Hitched.
@@ -90,6 +94,8 @@ Needs: nothing.
 Recommendation: fold into idea 4 rather than build alone.
 
 ### 8. Offline mode for the wedding day
+
+**Built (goal 8, 2026-09-22).** The run sheet, seating, vendor contacts and emergency contacts keep the last data loaded on the device (`offlineCache.js`), open read only with no signal under the offline banner with a last-updated line, and refresh the cache every time they load online. Writes on those screens are guarded offline with a plain explanation.
 
 What: the run sheet, seating, vendor contacts and emergency contacts cached on the phone so they open with no signal (a marquee, a vineyard, a basement bar). Read-only when offline, with the offline banner the shell already has.
 Who: WithJoy (guest pages), Airbnb (trip details offline), airline apps (boarding passes).
@@ -151,9 +157,9 @@ Flag: every checkout call to action is hidden natively by decision (App Store ru
 | 1 | Home Screen and Lock Screen widgets | medium | for distribution only | no | most visible, lowest risk, shares its data with 2 and 3 |
 | 2 | Wedding-day Live Activity | medium to large | for distribution | no (local); yes for push updates | the day-of feature that matches the references |
 | 3 | Share extension into the moodboard and vendors | medium | no | no | weekly use during planning |
-| 4 | Calendar sync | small | no | no | the feed exists; one tap away |
-| 5 | Contacts import for guests | small to medium | no | no | makes the phone the better place for the guest list |
-| 6 | Offline mode for the day | medium | no | no | the day must not fail |
+| 4 | Calendar sync | small | no | no | blocked in goal 8: the feed answers 404; per-event add shipped |
+| 5 | Contacts import for guests | small to medium | no | no | built in goal 8 |
+| 6 | Offline mode for the day | medium | no | no | built in goal 8 |
 | 7 | Siri shortcuts and App Intents | small to medium | no | no | cheap, rides on 1 |
 | 8 | Real push | large | yes | yes | unblocks freshness everywhere; needs an owner decision first |
 | 9 | Wallet pass for the couple | medium | yes | yes (a signing endpoint) | a nice touch; guest passes only without a barcode |

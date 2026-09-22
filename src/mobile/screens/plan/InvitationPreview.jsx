@@ -22,7 +22,7 @@ export function InvitationPreviewFrame({ invitation, details, width = 342, onOpe
   if (!invitation) return null;
   return (
     <button type="button" className="oi-m-sitepreview oi-m-press" style={{ width, height }} onClick={onOpen} aria-label="Open the invitation preview">
-      <div className="oi-m-sitepreview__scale" style={{ width: PHONE_W, height: Math.round(height / scale), transform: `scale(${scale})` }} aria-hidden="true">
+      <div className="oi-m-sitepreview__scale" style={{ width: PHONE_W, height: Math.round(height / scale), transform: `scale(${scale})` }} aria-hidden="true" inert="">
         <InvitationPreviewWithNav invitation={invitation} weddingDetails={details} currentPage="main" onPageChange={() => {}} />
       </div>
       <span className="oi-m-sitepreview__hint"><Maximize2 size={14} strokeWidth={2} /> Preview</span>

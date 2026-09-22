@@ -52,7 +52,7 @@ export function SitePreviewFrame({ details, width = 342, onOpen, label = 'Open t
   if (!details) return null;
   return (
     <button type="button" className="oi-m-sitepreview oi-m-press" style={{ width, height }} onClick={onOpen} aria-label={label}>
-      <div className="oi-m-sitepreview__scale" style={{ width: PHONE_W, height: Math.round(height / scale), transform: `scale(${scale})` }} aria-hidden="true">
+      <div className="oi-m-sitepreview__scale" style={{ width: PHONE_W, height: Math.round(height / scale), transform: `scale(${scale})` }} aria-hidden="true" inert="">
         <RealWebsitePreview details={details} currentPage="home" onNavigate={() => {}} />
       </div>
       <span className="oi-m-sitepreview__hint"><Maximize2 size={14} strokeWidth={2} /> Preview</span>

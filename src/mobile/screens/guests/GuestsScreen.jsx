@@ -202,8 +202,8 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
           )}
           {!loading && !error && !selecting && (
             <div style={{ display: 'flex', gap: 8 }}>
-              <button type="button" className="oi-m-pill oi-m-pill--secondary" style={{ flex: 1 }} onClick={onAdd}>Add with every detail</button>
-              {onImportContacts && <button type="button" className="oi-m-pill oi-m-pill--secondary" style={{ flex: 1 }} onClick={onImportContacts}><BookUser size={18} strokeWidth={1.75} /> From contacts</button>}
+              <button type="button" className="oi-m-pill oi-m-pill--secondary oi-m-pill--sm" style={{ flex: 1, minWidth: 0, padding: '0 12px' }} onClick={onAdd}>Add with every detail</button>
+              {onImportContacts && <button type="button" className="oi-m-pill oi-m-pill--secondary oi-m-pill--sm" style={{ flex: 1, minWidth: 0, padding: '0 12px' }} onClick={onImportContacts}><BookUser size={18} strokeWidth={1.75} /> From contacts</button>}
             </div>
           )}
           {!loading && !error && !selecting && considerations.row}
