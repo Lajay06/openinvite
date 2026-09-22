@@ -25,7 +25,7 @@ const STATUS_LABELS = { all: 'All', pending: 'Pending', approved: 'Approved', de
  * /api/song-request-review), the playlist link (Spotify, Apple Music or
  * YouTube, parsed for its source), the Settings sheet (guest requests on
  * or off, approval, one per guest, the message guests see), Share (the
- * site's music page, a QR), Notes, and the vendor roster. The Music
+ * guest suite's music page), Notes, and the vendor roster. The Music
  * entity tracks (add, edit, delete) stay as the phone's own playlist editor.
  */
 export default function MusicScreen({ tracks = [], requests = [], settings = {}, playlistUrl = '', shareUrl = '', onPlaylistUrl, onSettings, onCreate, onUpdate, onDelete, onReview, onOpenVendors, loading, error, onRetry, back, onRefresh }) {
@@ -61,7 +61,7 @@ export default function MusicScreen({ tracks = [], requests = [], settings = {},
       <div className="oi-m-stack oi-m-stack--24" style={{ paddingTop: segment === 'requests' ? 16 : 0 }}>
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : segment === 'requests' ? (
           requests.length === 0 ? (
-            <EmptyState icon={Music2} text={!settings.guestRequestsEnabled ? 'Song requests are switched off. Turn them on under settings and guests can suggest songs from your site.' : 'No requests yet. Guests can suggest songs from your site.'} />
+            <EmptyState icon={Music2} text={!settings.guestRequestsEnabled ? 'Song requests are switched off. Turn them on under settings and guests can suggest songs from your guest suite.' : 'No requests yet. Guests can suggest songs from your guest suite.'} />
           ) : visible.length === 0 ? <EmptyState icon={Music2} text="Nothing here for this filter." /> : (
             <RowGroup>
               {visible.map((r) => {
@@ -93,7 +93,7 @@ export default function MusicScreen({ tracks = [], requests = [], settings = {},
             <section>
               <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Your playlist</h2>
               <div className="oi-m-card" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <p className="oi-m-meta">Paste a link to your playlist on Spotify, Apple Music or YouTube. Guests see it on your site.</p>
+                <p className="oi-m-meta">Paste a link to your playlist on Spotify, Apple Music or YouTube. Guests see it on your guest suite.</p>
                 <TextField label="Playlist link" type="url" inputMode="url" autoCapitalize="off" value={link} onChange={(e) => setLink(e.target.value)} onBlur={saveLink} placeholder="https://open.spotify.com/playlist/..." error={link && !source ? 'That does not look like a Spotify, Apple Music or YouTube link.' : ''} />
                 {link && source && <PillButton variant="secondary" size="sm" icon={ExternalLink} onClick={() => openExternal(link)} style={{ alignSelf: 'flex-start' }}>Open on {source}</PillButton>}
               </div>
@@ -163,25 +163,17 @@ function SettingsSheet({ open, onClose, settings, onSave }) {
   );
 }
 
-/** SharePlaylist.jsx: the site's music page, with a QR drawn locally. */
+/** SharePlaylist.jsx's link: the guest suite's music page, through the native share sheet (owner decision, goal 6: no QR codes in the app). */
 function ShareSheet({ open, onClose, url }) {
-  const [svg, setSvg] = useState('');
-  useEffect(() => {
-    if (!open || !url) return;
-    let alive = true;
-    import('qrcode').then((qr) => qr.toString(url, { type: 'svg', margin: 1, width: 180, color: { dark: '#0A0A0A', light: '#FFFFFF' } })).then((s) => { if (alive) setSvg(s); }).catch(() => {});
-    return () => { alive = false; };
-  }, [open, url]);
   return (
     <BottomSheet open={open} onClose={onClose} title="Share with guests">
-      {!url ? <p className="oi-m-body">Your site has no address yet, so there is no link to share until then.</p> : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
-          <p className="oi-m-meta" style={{ alignSelf: 'stretch' }}>Guests open this page to see the playlist and suggest songs.</p>
-          {svg && <div style={{ width: 180, height: 180, borderRadius: 16, overflow: 'hidden', background: '#FFFFFF' }} dangerouslySetInnerHTML={{ __html: svg }} aria-label="QR code for the playlist page" role="img" />}
-          <div className="oi-m-meta" style={{ overflowWrap: 'anywhere', textAlign: 'center' }}>{url.replace(/^https?:\/\//, '')}</div>
+      {!url ? <p className="oi-m-body">Your guest suite has no address yet, so there is no link to share until then.</p> : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <p className="oi-m-meta">Guests open this page to see the playlist and suggest songs.</p>
+          <div className="oi-m-meta" style={{ overflowWrap: 'anywhere' }}>{url.replace(/^https?:\/\//, '')}</div>
           <div style={{ display: 'flex', gap: 8 }}>
             <PillButton variant="secondary" icon={Copy} onClick={async () => { try { await navigator.clipboard.writeText(url); toast.success('Link copied'); } catch { toast.error('Could not copy'); } }}>Copy link</PillButton>
-            <PillButton variant="primary" icon={Share2} onClick={async () => { const r = await shareLink({ title: 'Our wedding playlist', text: 'Suggest a song for the dance floor.', url }); if (r === 'copied') toast.success('Link copied'); }}>Share</PillButton>
+            <PillButton variant="primary" icon={Share2} style={{ flex: 1 }} onClick={async () => { const r = await shareLink({ title: 'Our wedding playlist', text: 'Suggest a song for the dance floor.', url }); if (r === 'copied') toast.success('Link copied'); }}>Share link</PillButton>
           </div>
         </div>
       )}

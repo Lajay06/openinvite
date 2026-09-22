@@ -197,32 +197,6 @@ export async function exportText(filename: string, mime: string, content: string
   }
 }
 
-/**
- * Hand a generated image (the site's QR code as a PNG data URL) to the
- * couple: the Web Share API with a File where the webview offers it (iOS 15+
- * does, and the share sheet saves to Photos), otherwise a download. With
- * neither, the caller shows the image and the couple long-presses it.
- */
-export async function exportImage(filename: string, dataUrl: string): Promise<'web' | 'download' | 'failed'> {
-  try {
-    const blob = await (await fetch(dataUrl)).blob();
-    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function' && typeof File !== 'undefined') {
-      const file = new File([blob], filename, { type: blob.type || 'image/png' });
-      if (typeof navigator.canShare !== 'function' || navigator.canShare({ files: [file] })) {
-        try { await navigator.share({ title: filename, files: [file] }); return 'web'; } catch { /* dismissed */ }
-      }
-    }
-    if (isNative()) return 'failed';
-    const url = URL.createObjectURL(blob);
-    const el = document.createElement('a');
-    el.href = url; el.download = filename; el.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    return 'download';
-  } catch {
-    return 'failed';
-  }
-}
-
 /** External links open in the system browser natively, a new tab on the web. */
 export async function openExternal(url: string): Promise<void> {
   const mod = await load('browser');

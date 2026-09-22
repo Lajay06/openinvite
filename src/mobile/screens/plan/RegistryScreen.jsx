@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Gift, Share2, ShoppingBag, Copy, Mail, MessageCircle, MessageSquare, Sparkles, Check, Undo2 } from 'lucide-react';
+import { Gift, Share2, ShoppingBag, Copy, Sparkles, Check, Undo2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Screen from '../../shell/Screen';
 import { StatCard, PanelCard, RowGroup, Row, ProgressBar, BottomSheet, PillButton, TextField, TextAreaField, ErrorState, SkeletonRows, ItemList, ItemCard } from '../../ui';
@@ -52,7 +52,7 @@ export default function RegistryScreen({ lists, symbol = '$', registryUrl = '', 
 
   if (segment === 'overview') {
     return (
-      <Screen title="Registry" subtitle={loading ? '' : `${links.length + products.length + funds.length} on your site`} back={back} actions={[{ icon: Share2, label: 'Share the registry', onClick: () => setShare(true) }]}>
+      <Screen title="Registry" subtitle={loading ? '' : `${links.length + products.length + funds.length} on your guest suite`} back={back} actions={[{ icon: Share2, label: 'Share the registry', onClick: () => setShare(true) }]}>
         <Segments options={SEGMENTS} value={segment} onChange={setSegment} />
         <div className="oi-m-stack oi-m-stack--24">
           {loading ? <SkeletonRows count={4} /> : lists.links?.error ? <ErrorState onRetry={lists.links.reload} /> : (
@@ -67,7 +67,7 @@ export default function RegistryScreen({ lists, symbol = '$', registryUrl = '', 
                 <ProgressBar value={totalPurchased} max={totalRequested || 1} note={totalRequested ? `${totalPurchased} of ${totalRequested} products bought.` : 'Add products to track what gets bought.'} />
               </div>
               {links.length + products.length + funds.length === 0 ? (
-                <PanelCard tone="neutral" label="Nothing listed yet" title="Start your registry" body="Link a store, list the products you want, or set up a cash fund. Guests see it on your site." action="Add a platform" onClick={() => setSegment('links')} />
+                <PanelCard tone="neutral" label="Nothing listed yet" title="Start your registry" body="Link a store, list the products you want, or set up a cash fund. Guests see it on your guest suite." action="Add a platform" onClick={() => setSegment('links')} />
               ) : (
                 <>
                   {links.length > 0 && <section><h2 className="oi-m-section" style={{ marginBottom: 12 }}>Registry platforms</h2><RowGroup>{links.map((l) => <Row key={l.id} icon={Gift} tile="neutral" label={l.store_name} sub={l.description || (l.url || '').replace(/^https?:\/\//, '')} onClick={l.url ? () => openExternal(l.url) : undefined} chevron={false} />)}</RowGroup></section>}
@@ -144,21 +144,17 @@ function ThankYouHelper({ v, setV, onAsk }) {
   return <PillButton variant="secondary" size="sm" icon={Sparkles} onClick={go} disabled={busy} style={{ alignSelf: 'flex-start' }}>{busy ? 'Ava is writing' : 'Ask Ava to write the thank you'}</PillButton>;
 }
 
-/** ShareRegistryModal: the registry page link by copy, share sheet, email, SMS, WhatsApp. */
+/** ShareRegistryModal's link: copy, or the native share sheet (owner decision, goal 6: no email, text, WhatsApp or Facebook rows; guests are reached through Send invites). */
 function ShareSheet({ open, onClose, url, links, products }) {
   const message = `Check out our wedding registry. We have registered at ${links} store${links === 1 ? '' : 's'} and have ${products} item${products === 1 ? '' : 's'} on our list. ${url}`;
   return (
     <BottomSheet open={open} onClose={onClose} title="Share your registry">
-      {!url ? <p className="oi-m-body">Your site has no address yet, so there is no registry link to share until then.</p> : (
+      {!url ? <p className="oi-m-body">Your guest suite has no address yet, so there is no registry link to share until then.</p> : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div className="oi-m-meta" style={{ overflowWrap: 'anywhere' }}>{url.replace(/^https?:\/\//, '')}</div>
           <RowGroup>
             <Row icon={Copy} tile="neutral" label="Copy the link" onClick={async () => { try { await navigator.clipboard.writeText(url); toast.success('Link copied'); } catch { toast.error('Could not copy'); } }} chevron={false} />
-            <Row icon={Share2} tile="neutral" label="Share" sub="The share sheet" onClick={async () => { const r = await shareLink({ title: 'Our wedding registry', text: message, url }); if (r === 'copied') toast.success('Link copied'); }} chevron={false} />
-            <Row icon={Mail} tile="neutral" label="Email" onClick={() => openExternal(`mailto:?subject=${encodeURIComponent('Our Wedding Registry')}&body=${encodeURIComponent(message)}`)} chevron={false} />
-            <Row icon={MessageSquare} tile="neutral" label="Text message" onClick={() => openExternal(`sms:?body=${encodeURIComponent(message)}`)} chevron={false} />
-            <Row icon={MessageCircle} tile="neutral" label="WhatsApp" onClick={() => openExternal(`https://wa.me/?text=${encodeURIComponent(message)}`)} chevron={false} />
-            <Row icon={Share2} tile="neutral" label="Facebook" onClick={() => openExternal(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`)} chevron={false} />
+            <Row icon={Share2} tile="neutral" label="Share link" sub="The share sheet" onClick={async () => { const r = await shareLink({ title: 'Our wedding registry', text: message, url }); if (r === 'copied') toast.success('Link copied'); }} chevron={false} />
           </RowGroup>
         </div>
       )}

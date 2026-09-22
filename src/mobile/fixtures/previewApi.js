@@ -263,6 +263,5 @@ export function createPreviewApi() {
     },
     upload: async () => ({ file_url: imageUrl('fixturePin1') }),
     updateMe: async (patch) => Object.assign(FIXTURE_USER, patch),
-    sendEmail: async () => { await new Promise((r) => setTimeout(r, 200)); return { ok: true }; },
   };
 }

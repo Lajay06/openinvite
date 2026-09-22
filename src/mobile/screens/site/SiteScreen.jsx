@@ -1,22 +1,22 @@
 import React from 'react';
-import { ExternalLink, Share2, Palette, LayoutTemplate, Sparkles, Clock, HelpCircle, Gift, Hotel, Car, MapPin, ScrollText, BarChart2, Monitor, Lock, QrCode, Mail } from 'lucide-react';
+import { ExternalLink, Share2, Palette, LayoutTemplate, Sparkles, Clock, HelpCircle, Gift, Hotel, Car, MapPin, ScrollText, BarChart2, Monitor, Lock } from 'lucide-react';
 import Screen from '../../shell/Screen';
 import { Row, RowGroup, PillButton, StatusPill, Skeleton, ErrorState, SmartImage, PanelCard, Switch } from '../../ui';
 
 /**
- * Site: a large preview of the guest site in a rounded frame, the universe
+ * Guest suite: a large preview of it in a rounded frame, the universe
  * and live status, share and view, then rows into the guest-suite editors
  * (in the app) and the design tools (desktop).
  */
-export default function SiteScreen({ universeName, isLive, siteUrl, previewImage, coupleName, onView, onShare, onOpen, onOpenDesktop, onTogglePublish, passwordOn = false, onPassword, onQr, onEmailGuests, loading, error, onRetry }) {
+export default function SiteScreen({ universeName, isLive, siteUrl, previewImage, coupleName, onView, onShare, onOpen, onOpenDesktop, onTogglePublish, passwordOn = false, onPassword, loading, error, onRetry }) {
   return (
-    <Screen title="Site" bell>
+    <Screen title="Guest suite" bell>
       <div className="oi-m-stack oi-m-stack--24">
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <Skeleton kind="hero" /> : (
           <div className="oi-m-card oi-m-card--flush">
             <div style={{ position: 'relative', padding: '12px 12px 0' }}>
               <div style={{ position: 'relative', borderRadius: 'var(--m-r-image)', overflow: 'hidden', background: 'var(--m-ink)', aspectRatio: '4 / 5' }}>
-                <SmartImage src={previewImage} alt={universeName ? `${universeName} universe` : 'Your site'} width={340} ratio="4/5" square eager tone="ink" />
+                <SmartImage src={previewImage} alt={universeName ? `${universeName} universe` : 'Your guest suite'} width={340} ratio="4/5" square eager tone="ink" />
                 <div className="oi-m-hero__scrim" />
                 <div style={{ position: 'absolute', left: 20, right: 20, bottom: 20, color: '#FFFFFF' }}>
                   <div className="oi-m-hero__label">{universeName || 'Choose a universe'}</div>
@@ -26,13 +26,13 @@ export default function SiteScreen({ universeName, isLive, siteUrl, previewImage
               </div>
             </div>
             <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {siteUrl ? <p className="oi-m-meta" style={{ overflowWrap: 'anywhere' }}>{siteUrl.replace(/^https?:\/\//, '')}</p> : <p className="oi-m-meta">Your site does not have an address yet. Choose one in the studio on desktop.</p>}
+              {siteUrl ? <p className="oi-m-meta" style={{ overflowWrap: 'anywhere' }}>{siteUrl.replace(/^https?:\/\//, '')}</p> : <p className="oi-m-meta">Your guest suite does not have an address yet. Choose one in the studio on desktop.</p>}
               <div className="oi-m-row" style={{ padding: 0, minHeight: 44, background: 'transparent' }}>
-                <div className="oi-m-row__body"><div className="oi-m-row__label">{isLive ? 'Website is live' : 'Website is hidden'}</div><div className="oi-m-row__sub">{isLive ? 'Guests can open it at the address above' : siteUrl ? 'Only you can see it until you go live' : 'Choose an address first'}</div></div>
-                <Switch on={isLive} onChange={onTogglePublish} label="Website is live" />
+                <div className="oi-m-row__body"><div className="oi-m-row__label">{isLive ? 'Guest suite is live' : 'Guest suite is hidden'}</div><div className="oi-m-row__sub">{isLive ? 'Guests can open it at the address above' : siteUrl ? 'Only you can see it until you go live' : 'Choose an address first'}</div></div>
+                <Switch on={isLive} onChange={onTogglePublish} label="Guest suite is live" />
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
-                <PillButton variant="primary" icon={ExternalLink} onClick={onView} disabled={!siteUrl} style={{ flex: 1 }}>View site</PillButton>
+                <PillButton variant="primary" icon={ExternalLink} onClick={onView} disabled={!siteUrl} style={{ flex: 1 }}>View guest suite</PillButton>
                 <PillButton variant="secondary" icon={Share2} onClick={onShare} disabled={!siteUrl} style={{ flex: 1 }}>Share link</PillButton>
               </div>
             </div>
@@ -43,9 +43,7 @@ export default function SiteScreen({ universeName, isLive, siteUrl, previewImage
           <section>
             <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Share</h2>
             <RowGroup>
-              <Row icon={Lock} tile="neutral" label="Password protection" sub={passwordOn ? 'On. Guests enter a password to open the site' : 'Off. Anyone with the link can open the site'} onClick={onPassword} />
-              <Row icon={QrCode} tile="neutral" label="QR code" sub="For invitations and signs" onClick={onQr} />
-              <Row icon={Mail} tile="neutral" label="Email your guests" sub="Send the site to your guest list" onClick={onEmailGuests} />
+              <Row icon={Lock} tile="neutral" label="Password protection" sub={passwordOn ? 'On. Guests enter a password to open the guest suite' : 'Off. Anyone with the link can open the guest suite'} onClick={onPassword} />
             </RowGroup>
           </section>
         )}
