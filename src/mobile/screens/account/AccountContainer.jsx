@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { useApi } from '../../data/api';
-import { isDemoBuild } from '../../demo';
+import { isDemoBuild, isRealBuild } from '../../demo';
 import { getTrialStatus } from '@/lib/trialStatus';
 import CollaborateModal from '@/components/layout/CollaborateModal';
 import AccountScreen from './AccountScreen';
@@ -62,7 +62,7 @@ export default function AccountContainer() {
   return (
     <>
       <AccountScreen
-        subtitle={isDemoBuild ? 'Demo data' : undefined}
+        subtitle={isDemoBuild ? 'Demo data' : isRealBuild ? 'Live' : undefined}
         name={user?.full_name}
         email={user?.email}
         coupleName={coupleName}

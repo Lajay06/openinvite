@@ -12,7 +12,7 @@ import { toWaMe } from '@/lib/phoneE164';
 import { coupleDisplayName } from '@/lib/coupleNames';
 import { getWeddingEvents, getGuestEventResponse, getEventVenueAndDate } from '@/lib/weddingEvents';
 import { renderInvitationEmail, getTypeComposeDefaults, getBannerImageUrl, getDefaultBannerChoice, buildGuestCtaUrl } from '@/lib/emailTemplate';
-import { PROD_ORIGIN } from '../../lib/links';
+import { siteOrigin } from '../../lib/links';
 import { InvitationPreviewSheet } from '../plan/InvitationPreview';
 
 /* SendInvitesModal.jsx's types, default filters and filter tabs, verbatim. */
@@ -22,7 +22,8 @@ const FILTER_TABS = [{ key: 'not_invited', label: 'Not yet invited' }, { key: 'a
 const STEPS = ['Select guests', 'Compose', 'Channel', 'Review and send'];
 /** The desktop's guest categories, offered as groups to choose at once (GuestForm's category list). */
 const GROUP_CATEGORIES = ['family', 'friends', 'colleagues', 'partners_family', 'partners_friends'];
-const RSVP_BASE = `${typeof window === 'undefined' ? PROD_ORIGIN : window.location.origin}/rsvp/`;
+// The public origin, never the shell's (capacitor://localhost is not a link a guest can open): lib/links.js.
+const RSVP_BASE = `${siteOrigin()}/rsvp/`;
 
 const buildRsvpUrl = (token) => { if (!token) throw new Error('Refusing to build an RSVP link from an empty token.'); return RSVP_BASE + token; };
 function buildWhatsAppMessage(guest, coupleName, weddingDate, rsvpUrl) {
@@ -91,7 +92,7 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
   const coupleName = coupleDisplayName(wedding);
   const weddingDate = wedding?.weddingDate || '';
   const venue = wedding?.mainCeremony?.venueName || '';
-  const siteUrl = wedding?.slug ? `${typeof window === 'undefined' ? PROD_ORIGIN : window.location.origin}/w/${wedding.slug}` : '';
+  const siteUrl = wedding?.slug ? `${siteOrigin()}/w/${wedding.slug}` : '';
   const dateStr = weddingDate ? new Date(weddingDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
   const universeId = wedding?.activeUniverse;
   const weddingEvents = useMemo(() => (wedding ? getWeddingEvents(wedding).map((ev) => ({ ...ev, ...getEventVenueAndDate(wedding, ev) })) : []), [wedding]);

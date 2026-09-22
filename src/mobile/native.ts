@@ -24,6 +24,14 @@ declare global {
 
 /** Production origin: where the API lives when the page is not served by Vercel. */
 export const PROD_ORIGIN = 'https://openinvite.com.au';
+/**
+ * The host the shell's API calls go to (goal 8). The apex redirects to www
+ * with a 307, and a CORS preflight may not follow a redirect, so every call
+ * the apex received from the shell failed before it reached an endpoint.
+ * Links the couple shares keep the apex (PROD_ORIGIN); the site redirects
+ * them itself.
+ */
+export const API_ORIGIN = 'https://www.openinvite.com.au';
 
 /** True only inside the Capacitor iOS or Android shell. */
 export function isNative(): boolean {
@@ -285,7 +293,8 @@ export async function registerBackButton(onBack: () => boolean): Promise<() => v
  * those paths resolve to the app bundle and fail.
  *
  * This installs, natively only, a rewrite of any same-origin `/api/` request
- * to PROD_ORIGIN, for both fetch (the /api/*.js endpoints) and
+ * to API_ORIGIN (the www host: the apex answers a preflight with a redirect,
+ * which no browser follows), for both fetch (the /api/*.js endpoints) and
  * XMLHttpRequest (the SDK's axios). It runs at module load, which App.jsx's
  * static // Demo builds refuse network calls; the guard must be in place before the
 // API rewrite below and before AuthProvider. No-op unless VITE_MOBILE_DEMO=1.
@@ -294,10 +303,13 @@ import puts before AuthProvider's first `auth.me()`.
  *
  * What it does NOT do: make the server accept the request. api/_lib/security.js
  * reflects Access-Control-Allow-Origin only for the production hostnames, so
- * the shell's origin must be added there before any data loads natively. See
- * MOBILE_APP.md, "Needs a decision".
+ * the shell's origin must be added there before the app's own /api/*
+ * endpoints answer natively (CORS_PROPOSAL.md). The SDK's own calls
+ * (/api/apps/*, sign-in included) ride Vercel's proxy to base44.app, which
+ * answers every origin with a wildcard and reflects the requested headers,
+ * so those work from the shell today (probed 2026-09-22, MOBILE_APP.md).
  */
-export function installNativeApiBase(origin: string = PROD_ORIGIN): void {
+export function installNativeApiBase(origin: string = API_ORIGIN): void {
   if (typeof window === 'undefined' || !isNative()) return;
   const w = window as any;
   if (w.__oiNativeApiBase) return;

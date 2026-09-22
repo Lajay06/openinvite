@@ -530,6 +530,36 @@ Send invites posts to the same `/api/send-invites` the desktop uses, so a real b
 
 A demo build (`npm run mobile:demo`) runs the same screens against the fixtures and sends nothing: the preview api answers the endpoint after a short pause.
 
+### The real login track (item 8)
+
+Three builds now, and the Account title says which is on the phone:
+
+| Command | What it builds | Account subtitle |
+|---|---|---|
+| `npm run mobile:demo` | `VITE_MOBILE_DEMO=1`: the fixtures, no network | Demo data |
+| `npm run mobile:real` | `VITE_MOBILE_REAL=1`: the production bundle, pointed at the production API and the Base44 app, then `npx cap sync` | Live |
+| `npm run mobile:build` | the same production bundle without the label | none |
+
+**The Base44 app id.** `src/api/base44Client.js` reads `VITE_BASE44_APP_ID` at build time. Pull it into the local, uncommitted env file before a real build:
+
+```
+vercel env pull .env.local
+npm run mobile:real
+npm run mobile:ios
+```
+
+`.env.local` is ignored by git (`.gitignore` lists `.env`, `.env.*` and `.env*.local`; confirmed 2026-09-22), and nothing in this document or the commits prints a value. The Stripe, Turnstile and Spotify keys in the same file are public client ids by design; the server keys never reach a `VITE_` name.
+
+**Where the calls go.** Natively, `src/mobile/native.ts` rewrites every same-origin `/api/` request to `API_ORIGIN`, which is now `https://www.openinvite.com.au`. The apex answers a CORS preflight with a 307 to www, and no browser follows a redirect on a preflight, so the earlier `https://openinvite.com.au` base could never have loaded anything from the shell. Links the couple shares keep the apex.
+
+**Email and password sign-in through the native shell, without the custom-scheme redirect.** Probed on 2026-09-22 with `OPTIONS` requests carrying `Origin: capacitor://localhost` (the iOS shell's origin), no credentials, nothing run against production from the app:
+
+- The SDK's sign-in and entity calls go to `/api/apps/<app id>/...`, which Vercel rewrites to base44.app. That path answers `access-control-allow-origin: *` and reflects `authorization` in the allowed headers. `loginViaEmailPassword` is an XHR to that path and stores the token in the WebView's localStorage, which persists across launches. **So email and password sign-in works from the shell with no redirect and no dashboard change**, and so do `base44.entities.*` reads and writes.
+- The app's own endpoints (`/api/my-guests`, `/api/my-wedding-details`, `/api/my-guest-links`, `/api/send-invites`, the feed, Places, the song review, the vow PIN) answer the preflight without an `access-control-allow-origin` for the shell, so the browser blocks them. Until `CORS_PROPOSAL.md` is merged, a signed-in real build shows those screens' error states; Home's hero, the guest list and the budget read through the endpoints and are among them.
+- Google and Apple sign-in still need `openinvite://auth` registered in the Base44 app's auth settings (the owner does this by hand); they are not part of this track.
+
+**`CORS_PROPOSAL.md`** at the repo root carries the exact two-line diff to `api/_lib/security.js` (`capacitor://localhost` and `https://localhost`, no wildcard), why each is needed, and the `curl` to verify it after deploy. It is for the product lane; the mobile branch does not touch `api/`.
+
 ## Keeping parity
 
 `MOBILE_PARITY.md` is the source of truth for what the app does and how it matches the desktop. Every desktop planning feature has an entry there naming its fields, actions, modals, integrations and states, what the mobile screen does, and a status line; the owner's decisions that deliberately diverge (no QR codes, no direct email to guests, canvases desktop-only) are recorded there too, so a parity sweep does not add them back.

@@ -14,6 +14,17 @@
  */
 export const isDemoBuild: boolean = import.meta.env.VITE_MOBILE_DEMO === '1';
 
+/**
+ * The real build (goal 8): `VITE_MOBILE_REAL=1` at build time (`npm run
+ * mobile:real`). Nothing in the bundle changes but the Account screen's
+ * "Live" label, the counterpart of the demo's "Demo data", so the owner
+ * always knows which build is on the phone. The data path is the same as
+ * any production bundle: the native rewrite in native.ts sends every /api/
+ * call to the production host and the Base44 app id comes from
+ * VITE_BASE44_APP_ID in the local, uncommitted .env.local (MOBILE_APP.md).
+ */
+export const isRealBuild: boolean = import.meta.env.VITE_MOBILE_REAL === '1' && !isDemoBuild;
+
 /** Hosts that may still be fetched in a demo: the app's own bundle and the image CDN. */
 const ALLOWED_HOSTS = ['res.cloudinary.com'];
 

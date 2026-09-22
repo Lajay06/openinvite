@@ -109,6 +109,7 @@
     "mobile:screenshots": "node scripts/mobile-preview-screenshots.mjs",
     "mobile:build": "npm run build && npx cap sync",
     "mobile:demo": "VITE_MOBILE_DEMO=1 npm run build && npx cap sync",
+    "mobile:real": "VITE_MOBILE_REAL=1 npm run build && npx cap sync",
     "mobile:ios": "npx cap open ios",
     "mobile:android": "npx cap open android"
   },
