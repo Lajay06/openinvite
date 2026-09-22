@@ -96,7 +96,7 @@ export const SAMPLE_SHANGHAI = {
   ],
 
   weddingPolicies: {
-    dressCode: { display: true, guidance: 'Formal. Jade, gold, black lacquer, deep green. Not white and not ivory.', weatherNote: 'The room is cool and the terrace is windy at that height. Something over your shoulders.' },
+    dressCode: { display: true, guidance: 'Formal. Jade, gold, black lacquer, deep green. Not white and not ivory.', weatherNote: 'The room is cool and the terrace is windy at that height. Dress for the terrace, not the room.' },
     photography: { display: true, unplugged: true, message: 'Nothing raised for the eighteen minutes. The glass reflects every screen in the room.' },
     lateArrival: { display: true, policy: 'If the doors are closed, wait in the lobby on forty-one. Someone will bring you in between courses.' },
   },
