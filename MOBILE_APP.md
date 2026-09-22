@@ -511,6 +511,25 @@ Real push still needs the backend in `PUSH_BACKEND_PROPOSAL.md` (a device token 
 
 `npm run mobile:demo` and `npx cap sync` pass; `npm run build` exits 0; 103 preview screenshots pass the width, tap-target, input-size and shadow checks (three new: `daily-update`, `search-results`, `notification-priming-test`; `launch-splash` and `launch-daily-update` retired); `git diff 71d3b5bc --name-only` (the branch before goal 7) touches only `src/mobile/**`, `ios/`, `android/`, `capacitor.config.ts`, `package.json`, `package-lock.json`, `mobile-screenshots/`, the markdown files and the screenshot script. Inside `src/mobile/`: no photo twice (the daily set included, checked by id in `images.ts`), no color outside the tokens (the new CSS uses white, the tokens and the `#CF324D` fallback), no font size outside the scale beyond the daily card's three.
 
+## Goal 8: owner fixes, the real login track, contacts, calendar, the offline day (2026-09-22)
+
+Built against `MOBILE_APP_GOAL_8.md`, one commit per item.
+
+### Send invites: a safe test for the owner
+
+Send invites posts to the same `/api/send-invites` the desktop uses, so a real build sends real email. To try it without reaching a guest:
+
+1. On Guests, tap **Add a guest** and add yourself: your own name, your own email, and your own mobile number in international form (`+61...`).
+2. Open **Send invites** (Guests, More, or the Plan hub). Leave the type on **Invitation**.
+3. Use the search box to find yourself and make sure **1 chosen** is the count. Do not tap a group pill or "Select all shown"; either one adds every guest it names.
+4. Tap **Next** through Compose (Preview the email and Preview the invitation show what goes out; **Send a test to me** emails the account's address without touching any guest) and choose **Email and WhatsApp** on Channel.
+5. On Review and send, check the recipients list shows only you, then tap **Send invitations**. Nothing has sent yet.
+6. The confirmation sheet says **Send to 1 guest**, names you, and states the channel. Tap it.
+7. The email arrives at your address; WhatsApp opens a chat to your own number with the message and your RSVP link filled in. The result screen lists you as **Sent**; a failure lists you as **Failed** with **Send again**.
+8. Delete the test guest afterwards (swipe the row, or the profile's Remove) so the count is right.
+
+A demo build (`npm run mobile:demo`) runs the same screens against the fixtures and sends nothing: the preview api answers the endpoint after a short pause.
+
 ## Keeping parity
 
 `MOBILE_PARITY.md` is the source of truth for what the app does and how it matches the desktop. Every desktop planning feature has an entry there naming its fields, actions, modals, integrations and states, what the mobile screen does, and a status line; the owner's decisions that deliberately diverge (no QR codes, no direct email to guests, canvases desktop-only) are recorded there too, so a parity sweep does not add them back.

@@ -173,7 +173,8 @@ function SendInvitesContainer({ back }) {
   // Ultra only, as Guests.jsx gates it: a Pro plan cannot send.
   // Guests.jsx: the Pro plan cannot send; free (trial) and Ultra can.
   const canSend = (api.user?.plan || 'free') !== 'pro';
-  return <SendInvitesScreen guests={guests.data || []} wedding={wd.details} user={api.user} initialSelectedIds={ids} restrictEventIds={events.length ? events : null} initialType={params.get('type') || 'invite'} canSend={canSend} onSent={() => navigate(back)} back={back} loading={guests.loading || wd.loading} error={guests.error} onRetry={guests.reload} />;
+  const inv = useLoad(() => api.wedding.invitation().catch(() => null), []);
+  return <SendInvitesScreen guests={guests.data || []} wedding={wd.details} invitation={inv.data} user={api.user} initialSelectedIds={ids} restrictEventIds={events.length ? events : null} initialType={params.get('type') || 'invite'} canSend={canSend} onSent={() => navigate(back)} back={back} loading={guests.loading || wd.loading} error={guests.error} onRetry={guests.reload} />;
 }
 
 /* ── Moodboard ───────────────────────────────────────────────────────── */

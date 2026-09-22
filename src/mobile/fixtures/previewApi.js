@@ -182,7 +182,9 @@ async function json(path, init = {}) {
     const hit = q === 'wedding vendor' ? FIXTURE_PLACES.filter((x) => x.keywords.includes('vendor')) : FIXTURE_PLACES.filter((x) => !q || x.keywords.some((k) => q.includes(k)));
     return { places: clone((hit.length ? hit : FIXTURE_PLACES).slice(0, 6).map(({ keywords, ...rest }) => rest)) };
   }
-  if (p === '/api/send-guest-reply' || p === '/api/send-invites' || p === '/api/contact') return { ok: true, sent: (body.guests || []).length };
+  // A demo send goes nowhere: a realistic pause, then the endpoint's own success shape (goal 8, item 6).
+  if (p === '/api/send-invites') { await new Promise((r) => setTimeout(r, 900)); return { ok: true, sent: (body.guests || []).length, skipped: 0 }; }
+  if (p === '/api/send-guest-reply' || p === '/api/contact') return { ok: true, sent: (body.guests || []).length };
   if (p === '/api/questionnaire-responses-for-owner') return { responses: clone(store.gameResponses) };
   if (p === '/api/my-guest-links') return { links: Object.fromEntries((body.guestIds || []).map((id) => [id, { token: `demo-${id}`, rsvpUrl: `https://openinvite.com.au/rsvp/demo-${id}`, plusOneToken: body.includePlusOne ? `demo-${id}-po` : undefined }])) };
   if (p === '/api/vow-pin') {
