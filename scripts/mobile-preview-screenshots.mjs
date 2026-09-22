@@ -27,6 +27,8 @@ const SHOTS = [
   ['/m/preview?banner=1', 'home-banner'],
   ['/m/preview/guests', 'guests'],
   ['/m/preview/guests', 'guests-search', 'tap:Search guests'],
+  ['/m/preview/guests', 'guests-sort-sheet', 'tap:Sort'],
+  ['/m/preview/guests', 'guests-filter-sheet', 'tap:Filter'],
   ['/m/preview/guests?add=1', 'guests-add-sheet'],
   ['/m/preview/guests/g3', 'guest-detail'],
   ['/m/preview/plan', 'plan-hub'],

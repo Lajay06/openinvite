@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Search, Plus, Users, MoreHorizontal, Upload, Download, Send, CheckSquare, X, Mail } from 'lucide-react';
+import { Search, Plus, Users, MoreHorizontal, Upload, Download, Send, CheckSquare, X, Mail, ChevronDown, ArrowUpDown, SlidersHorizontal } from 'lucide-react';
 import Screen from '../../shell/Screen';
 import { FilterPills, SearchScreen, SkeletonRows, ErrorState, EmptyState, StatusPill, ProgressBar, RowGroup, SwipeRow, SWIPE_ICONS, BottomSheet, Row, Checkbox, PillButton, SelectField } from '../../ui';
 import { imageUrl } from '../../images';
@@ -30,7 +30,7 @@ export function applyGuestFilter(list, key) {
 }
 
 /** GuestList.jsx's sortable columns. */
-const SORTS = [{ value: 'added', label: 'Newest first' }, { value: 'name', label: 'Name' }, { value: 'category', label: 'Category' }, { value: 'status', label: 'RSVP status' }, { value: 'table', label: 'Table' }];
+const SORTS = [{ value: 'added', label: 'Newest' }, { value: 'name', label: 'Name' }, { value: 'category', label: 'Category' }, { value: 'status', label: 'RSVP status' }, { value: 'table', label: 'Table' }];
 function sortGuests(list, key) {
   if (key === 'added') return list;
   const acc = { name: (g) => g.name || '', category: (g) => g.category || '', status: (g) => g.rsvp_status || '', table: (g) => g.table_assignment || '' }[key];
@@ -88,6 +88,8 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
   const [actionsOpen, setActionsOpen] = useState(false);
   const [q, setQ] = useState('');
   const [sort, setSort] = useState('added');
+  const [sortOpen, setSortOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
   const [quick, setQuick] = useState('');
   const [quickBusy, setQuickBusy] = useState(false);
   const [dismissedCase, setDismissedCase] = useState(() => new Set());
@@ -134,7 +136,7 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
 
   const actions = selecting
     ? [{ icon: X, label: 'Done selecting', onClick: onClearSelection }]
-    : [{ icon: Search, label: 'Search guests', onClick: () => setSearchOpen(true) }];
+    : [];
 
   return (
     <>
@@ -163,12 +165,15 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
                   <Stat n={eventStats.pending} label="Pending" />
                 </div>
               ) : (
-                <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
-                  <Stat n={stats.total} label={stats.plusOnes ? `Guests, ${stats.plusOnes} plus one${stats.plusOnes === 1 ? '' : 's'}` : 'Guests'} />
-                  <Stat n={stats.invited} label="Invited" />
-                  <Stat n={stats.attending} label="Attending" />
-                  <Stat n={stats.awaiting} label="Awaiting" />
-                </div>
+                <>
+                  {/* One line at 390px, never wrapped: the count, the word, the plus-ones (goal 6). */}
+                  <div className="oi-m-section" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: 12 }}>{stats.total} guest{stats.total === 1 ? '' : 's'}{stats.plusOnes ? ` \u00b7 ${stats.plusOnes} plus-one${stats.plusOnes === 1 ? '' : 's'}` : ''}</div>
+                  <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
+                    <Stat n={stats.invited} label="Invited" />
+                    <Stat n={stats.attending} label="Attending" />
+                    <Stat n={stats.awaiting} label="Awaiting" />
+                  </div>
+                </>
               )}
               <ProgressBar value={filters[1].count + filters[3].count} max={guests.filter((g) => g.invite_sent_at).length} note={summary(guests, filters)} />
               {/* The tab root keeps the bell top right, so the list's actions live here, not in the header. */}
@@ -179,15 +184,16 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
             </div>
           </div>
         )}
-        <FilterPills options={filters} value={filter} onChange={onFilter} />
+        {!selecting && (
+          <div className="oi-m-ctrl">
+            <button type="button" className="oi-m-ctrl__pill oi-m-ctrl__pill--fit" onClick={() => setSearchOpen(true)} aria-label="Search guests"><Search size={18} strokeWidth={1.75} /><span>Search</span></button>
+            <button type="button" className="oi-m-ctrl__pill" onClick={() => setSortOpen(true)} aria-label={`Sort: ${SORTS.find((o) => o.value === sort)?.label}`}><ArrowUpDown size={18} strokeWidth={1.75} /><span className="oi-m-ctrl__text">{SORTS.find((o) => o.value === sort)?.label}</span><ChevronDown size={16} strokeWidth={1.75} /></button>
+            <button type="button" className={`oi-m-ctrl__pill${filter !== 'all' ? ' oi-m-ctrl__pill--on' : ''}`} onClick={() => setFilterOpen(true)} aria-label={`Filter: ${filters.find((f) => f.key === filter)?.label || 'All'}`}><SlidersHorizontal size={18} strokeWidth={1.75} /><span className="oi-m-ctrl__text">{filters.find((f) => f.key === filter)?.label || 'All'}</span><ChevronDown size={16} strokeWidth={1.75} /></button>
+          </div>
+        )}
         {weddingEvents.length > 1 && (
           <div style={{ marginTop: 8 }}>
             <FilterPills options={[{ key: 'all', label: 'Every event' }, ...weddingEvents.map((e) => ({ key: e.event_id, label: e.name }))]} value={eventFilter} onChange={onEventFilter} />
-          </div>
-        )}
-        {!loading && !error && guests.length > 0 && !selecting && (
-          <div style={{ display: 'flex', gap: 8, marginTop: 12, alignItems: 'flex-end' }}>
-            <div style={{ flex: 1 }}><SelectField label="Sort" value={sort} onChange={(e) => setSort(e.target.value)} options={SORTS} /></div>
           </div>
         )}
         <div className="oi-m-stack" style={{ marginTop: 12 }}>
@@ -222,6 +228,12 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
           {!loading && !error && !selecting && considerations.row}
         </div>
       </Screen>
+      <BottomSheet open={sortOpen} onClose={() => setSortOpen(false)} title="Sort by">
+        <RowGroup>{SORTS.map((o) => <Row key={o.value} label={o.label} value={o.value === sort ? 'Chosen' : ''} onClick={() => { setSort(o.value); setSortOpen(false); }} chevron={false} />)}</RowGroup>
+      </BottomSheet>
+      <BottomSheet open={filterOpen} onClose={() => setFilterOpen(false)} title="Show">
+        <RowGroup>{filters.map((f) => <Row key={f.key} label={f.label} sub={typeof f.count === 'number' ? `${f.count} guest${f.count === 1 ? '' : 's'}` : undefined} value={f.key === filter ? 'Chosen' : ''} onClick={() => { onFilter(f.key); setFilterOpen(false); }} chevron={false} />)}</RowGroup>
+      </BottomSheet>
       {considerations.sheet}
       <SearchScreen open={searchOpen} onClose={() => { setSearchOpen(false); setQ(''); }} value={q} onChange={setQ} placeholder="Search by name, email or phone">
         {q.trim() === '' ? (

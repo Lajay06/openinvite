@@ -997,6 +997,14 @@ select.oi-m-input { background-image: none; padding-right: 44px; }
 .oi-m-considerations span[style] { font-size: 12px !important; line-height: 16px !important; }
 .oi-m-considerations > div > div:first-child p, .oi-m-considerations h3 { font-size: 17px !important; line-height: 22px !important; }
 
+/* One control bar (goal 6): search, sort and filter as the same 44px pill, 15/20, a chevron on the ones that open a sheet. */
+.oi-m-ctrl { display: flex; gap: 8px; padding: 0 var(--m-gutter); }
+.oi-m-ctrl__pill { flex: 1 1 0; min-width: 0; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 12px; border-radius: var(--m-r-pill); border: 1px solid var(--m-line); background: var(--m-card); color: var(--m-text); font-size: 15px; line-height: 20px; font-weight: 600; }
+.oi-m-ctrl__pill--on { background: var(--m-ink); color: var(--m-on-dark); border-color: var(--m-ink); }
+.oi-m-ctrl__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oi-m-ctrl__pill svg { flex-shrink: 0; }
+.oi-m-ctrl__pill--fit { flex: 0 0 auto; }
+
 /* Undo toast: a pill with a text action. */
 .oi-m-toast-action { background: none; border: 0; color: #FFFFFF; font-weight: 600; text-decoration: underline; margin-left: 12px; min-height: 32px; }
 
