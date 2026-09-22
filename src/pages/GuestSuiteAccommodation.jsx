@@ -207,13 +207,24 @@ function AddPlaceCard({ destination, onAdd }) {
       pos => {
         geoCoordsRef.current = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setGeoState('active');
+        // COORDINATES ARE ONLY USEFUL IF SOMETHING USES THEM. They land in a
+        // ref, which does not re-render, so before this line the button
+        // changed its own label to "Using your location" and nothing else
+        // happened: the results on screen were still the unbiased ones, and
+        // the coordinates first took effect on the guest's NEXT keystroke.
+        // Re-running the query the guest already typed is the whole fix.
+        if (query.trim().length >= 2) search(query);
       },
       err => { console.warn('[Geolocation]', err.message); setGeoState('error'); },
       { timeout: 8000, maximumAge: 300000 }
     );
   };
 
-  const clearGeo = () => { geoCoordsRef.current = null; setGeoState('idle'); };
+  const clearGeo = () => {
+    geoCoordsRef.current = null;
+    setGeoState('idle');
+    if (query.trim().length >= 2) search(query);
+  };
 
   return (
     <div style={{ border: '1px solid rgba(10,10,10,0.1)', borderRadius: 8, padding: '20px 24px', marginBottom: 32 }}>

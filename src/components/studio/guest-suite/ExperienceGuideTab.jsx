@@ -377,13 +377,27 @@ function PlacesTab({ details, destination, allSavedPlaces, onAddPlace, onRemoveP
     if (!navigator.geolocation) { setGeoState('unavailable'); return; }
     setGeoState('loading');
     navigator.geolocation.getCurrentPosition(
-      pos => { geoCoordsRef.current = { lat: pos.coords.latitude, lng: pos.coords.longitude }; setGeoState('active'); },
+      pos => {
+        geoCoordsRef.current = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setGeoState('active');
+        // COORDINATES ARE ONLY USEFUL IF SOMETHING USES THEM. They land in a
+        // ref, which does not re-render, so before this line the button
+        // changed its own label to "Using your location" and nothing else
+        // happened: the results on screen were still the unbiased ones, and
+        // the coordinates first took effect on the guest's NEXT keystroke.
+        // Re-running the query the guest already typed is the whole fix.
+        if (query.trim().length >= 2) handleSearch(query);
+      },
       err => { console.warn('[Geolocation]', err.message); setGeoState('error'); },
       { timeout: 8000, maximumAge: 300000 }
     );
   };
 
-  const clearGeo = () => { geoCoordsRef.current = null; setGeoState('idle'); };
+  const clearGeo = () => {
+    geoCoordsRef.current = null;
+    setGeoState('idle');
+    if (query.trim().length >= 2) handleSearch(query);
+  };
 
   const visiblePlaces = filterCat === 'all'
     ? allSavedPlaces
