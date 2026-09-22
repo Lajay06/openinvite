@@ -413,6 +413,12 @@ A fresh subagent given only `MOBILE_PARITY.md`, the desktop source and the mobil
 - **Collaborator sessions** are desktop-only: the app signs in as the couple and never reads `/api/collaborator-data`. Supporting a collaborator on the phone means the read-only overlay on every screen.
 - **Ava's quick actions** seed the question into the pod's box (the pod is shared with the desktop's Layout and is not edited); on desktop the modal sends the quick action at once. One tap more on the phone.
 
+## Keeping parity
+
+`MOBILE_PARITY.md` is the source of truth for what the app does and how it matches the desktop. Every desktop planning feature has an entry there naming its fields, actions, modals, integrations and states, what the mobile screen does, and a status line; the owner's decisions that deliberately diverge (no QR codes, no direct email to guests, canvases desktop-only) are recorded there too, so a parity sweep does not add them back.
+
+A new or changed couple-facing planning feature on the desktop must get a matching entry in `MOBILE_PARITY.md` and a matching mobile screen, sheet or field, in the same change or the next one on this lane. The owner is adding a "Mobile impact" line rule to the product lane: every PR that adds or changes such a feature carries one line in its description saying what the app must do about it (PR #822's Stay and Getting here rename was the first, recorded retroactively). This file does not edit `CLAUDE.md`; the rule lives with the product lane.
+
 ## How to run
 
 **Preview (no sign-in, fixture data, dev only)**
