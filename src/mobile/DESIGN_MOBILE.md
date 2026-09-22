@@ -82,7 +82,7 @@ Sentence case everywhere, including badges and tab labels. Lucide icons only. No
 
 | Component | What it is |
 |---|---|
-| `TabBar` | A floating white pill, inset 12px from the sides and above the bottom safe area, backdrop blur, the elevation token. Active tab: icon and label in primary, a small spring on select. |
+| `TabBar` | A floating frosted-glass pill (goal 6): inset 12px from the sides and above the home indicator, fully rounded, white at 70 percent over `backdrop-filter: blur(24px) saturate(180%)`, a hairline white inner border at 40 percent, the elevation token; content scrolls visibly underneath. Solid white where `backdrop-filter` is unsupported or Reduce Transparency is on. The compact top bar that appears on scroll wears the same glass. Active tab: icon and label in primary, a small spring on select. |
 | `ScreenHeader` / `Screen` | Large title left, up to two circular 44px white icon buttons right. On tab roots the rightmost is always the notifications bell with an unread dot. Collapses to a compact blurred bar past 48px of scroll. |
 | `HeroCard` | Full width, 4:5, photo with scrim, small label, big title or number, one pill button. Sits in `HeroCarousel` with dot pagination. |
 | `ImageCard` | Photo on top (16px), title, one line, optional sentence-case badge. For peek carousels and two-column grids. |
