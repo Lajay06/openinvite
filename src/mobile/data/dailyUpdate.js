@@ -41,7 +41,10 @@ export function useDailyUpdate() {
     const failed = [];
     const soft = (p, name) => p.catch(() => { failed.push(name); return []; });
     const [details, guests, notes, schedule, budget, vendors] = await Promise.all([
-      api.wedding.get().catch(() => null),
+      // Not caught: the takeover names the couple and counts their day, so
+      // a failed read of the wedding means no card at all rather than one
+      // written about a wedding the app could not see.
+      api.wedding.get(),
       soft(api.guests.list(), 'guests'),
       soft(api.list('Note', '-created_date'), 'to-dos'),
       soft(api.list('Schedule', 'start_time'), 'schedule'),

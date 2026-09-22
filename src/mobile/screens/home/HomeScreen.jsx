@@ -19,7 +19,7 @@ export default function HomeScreen({
   firstName, coupleName, weddingDate, daysToGo, images = [], siteUrl,
   rsvp, budget, tasks = [], payments = [], keepPlanning = [], briefing, badge = null, thisWeek = [], numbers = [], failedSources = '', latest = [], songRequests = 0, guestbook = [], unreadMessages = 0, heroSeed = 0,
   onOpenGuests, onOpenBudget, onOpenTasks, onCompleteTask, onOpenFeature, onOpenAva, onShare, onSearch, onOpenLatest, onOpenNotifications, onOpenLink,
-  loading = false, error = null, onRetry, onRefresh,
+  loading = false, error = null, onRetry, onRefresh, loaded = true,
 }) {
   const img = (i) => images[i] || '';
   const countdown = daysToGo == null ? null : daysToGo > 1 ? `${daysToGo}` : daysToGo === 1 ? 'Tomorrow' : daysToGo === 0 ? 'Today' : null;
@@ -43,10 +43,20 @@ export default function HomeScreen({
     if (siteUrl) last = { key: 'share', label: 'Guest suite', title: 'Share with your guests', sub: 'One link for everything they need', action: 'Share link', onAction: onShare };
   }
   const heroes = pickHeroes({ first, middle, last }, heroSeed).map((h, i) => ({ ...h, image: img(i) }));
+  // Nothing came back at all: the error is the whole screen. Drawing the
+  // heroes over a failed load is how "Add your date in Event details"
+  // reached a couple who set theirs months ago.
+  if (error && !loading && !loaded) {
+    return (
+      <Screen title={firstName ? `Hi ${firstName}` : 'Hi'} root onRefresh={onRefresh}>
+        <ErrorState timedOut={!!error?.timedOut} onRetry={onRetry} />
+      </Screen>
+    );
+  }
   return (
     <Screen title={firstName ? `Hi ${firstName}` : 'Hi'} root onRefresh={onRefresh}>
       <div className="oi-m-stack oi-m-stack--24">
-        {error && !loading ? <ErrorState onRetry={onRetry} /> : null}
+        {error && !loading ? <ErrorState timedOut={!!error?.timedOut} onRetry={onRetry} /> : null}
 
         {loading ? <Skeleton kind="hero" /> : (
           <div style={{ margin: '0 calc(-1 * var(--m-gutter))' }}>

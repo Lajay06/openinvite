@@ -15,6 +15,7 @@ import { useWedding } from '../../data/wedding';
 import { heroImageFor } from '../../lib/images';
 import { dateLong } from '../../lib/format';
 import { ShellContext } from '../../shell/MobileShell';
+import { coupleDisplayName } from '@/lib/coupleNames';
 
 const PLAN_LABELS = { free: 'Free trial', pro: 'Pro', ultra: 'Ultra' };
 
@@ -47,7 +48,7 @@ export default function AccountContainer() {
   const { base, showDailyUpdate } = useContext(ShellContext);
   const wedding = useWedding();
   const d = wedding.data;
-  const coupleName = d?.couple1Name && d?.couple2Name ? `${d.couple1Name} & ${d.couple2Name}` : d?.couple1Name || '';
+  const coupleName = coupleDisplayName(d || {});
   const trial = getTrialStatus(user);
   const planLabel = PLAN_LABELS[trial.plan] || 'Free trial';
   const showPurchases = !isNative();

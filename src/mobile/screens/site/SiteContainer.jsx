@@ -9,6 +9,7 @@ import { useWedding } from '../../data/wedding';
 import { useApi } from '../../data/api';
 import { openExternal, shareLink } from '../../native';
 import { siteUrlFor, openDesktop } from '../../lib/links';
+import { coupleDisplayName } from '@/lib/coupleNames';
 
 export default function SiteContainer() {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ export default function SiteContainer() {
   const universe = universeId ? getUniverse(universeId) : null;
   const { base } = useContext(ShellContext);
   const siteUrl = siteUrlFor(d);
-  const coupleName = d?.couple1Name && d?.couple2Name ? `${d.couple1Name} & ${d.couple2Name}` : '';
+  const coupleName = coupleDisplayName(d || {});
 
   const share = async () => {
     const result = await shareLink({ title: coupleName ? `${coupleName}'s wedding` : 'Our wedding', text: 'Here is our guest suite.', url: siteUrl });

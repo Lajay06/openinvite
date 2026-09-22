@@ -20,6 +20,8 @@ import { homeHeroImages, imageUrl } from '../../lib/images';
 import { heroSeed } from './heroPool';
 import { leastTouched, featureByKey } from '../../features/registry';
 import { summariseBudget } from '../plan/BudgetScreen';
+import { coupleDisplayName } from '@/lib/coupleNames';
+import { greetingName } from '../../lib/greeting';
 
 /** Home, from the same loaders the Plan hub uses, plus the notification feed for "Latest". */
 export default function HomeContainer() {
@@ -33,8 +35,11 @@ export default function HomeContainer() {
   const d = plan.data || {};
   const details = d.details;
 
-  const firstName = (details?.couple1Name || user?.full_name || '').split(' ')[0];
-  const coupleName = details?.couple1Name && details?.couple2Name ? `${details.couple1Name} & ${details.couple2Name}` : details?.couple1Name || details?.couple2Name || '';
+  // The couple's own names, resolved the way the desktop resolves them
+  // (coupleDisplayName owns them, legacy `coupleNames` fallback included).
+  // Never the email's local part: see lib/greeting.js.
+  const firstName = greetingName(details, user);
+  const coupleName = coupleDisplayName(details || {});
   const daysToGo = details?.weddingDate ? daysUntilWedding(details.weddingDate) : null;
   // The couple's own photos take priority here and on the Guest suite preview; with
   // none, the hero draws from the app/ folder (goal 4, phase 1), never from
@@ -156,6 +161,7 @@ export default function HomeContainer() {
       onOpenLink={(to) => navigate(to)}
       loading={plan.loading}
       error={plan.error}
+      loaded={plan.data != null}
       onRetry={plan.reload}
       onRefresh={async () => { hapticLight(); await plan.reload(); await notifications?.reload?.(); }}
     />

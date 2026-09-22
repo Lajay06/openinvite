@@ -22,11 +22,16 @@ export function useTasks() {
   return useLoad(async () => (await api.list('Note', '-created_date')).filter((n) => n.view_type === 'todo'), []);
 }
 
-/** Itemised Budget records plus the saved plan on WeddingDetails, as Budget.jsx loads them. */
+/**
+ * Itemised Budget records plus the saved plan on WeddingDetails, as
+ * Budget.jsx loads them. Neither read is caught: a budget drawn without its
+ * plan says "Set a total" to a couple who set one, which is the silent
+ * empty this screen must never show.
+ */
 export function useBudget() {
   const api = useApi();
   return useLoad(async () => {
-    const [items, details] = await Promise.all([api.list('Budget', '-created_date'), api.wedding.get().catch(() => null)]);
+    const [items, details] = await Promise.all([api.list('Budget', '-created_date'), api.wedding.get()]);
     return { items, plan: details?.budget || null };
   }, []);
 }

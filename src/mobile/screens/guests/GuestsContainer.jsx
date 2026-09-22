@@ -92,7 +92,10 @@ export default function GuestsContainer() {
     else { setSelected(new Set(list.map((g) => g.id))); setEvents({ guests: list, autoSend: false }); }
   }, [params, setParams, guests.loading, d, weddingEvents, list]);
 
-  const reload = () => { guests.reload(); tables.reload(); };
+  const reload = () => { guests.reload(); tables.reload(); wedding.reload(); };
+  // The wedding carries the events every filter and every invite acts on, so
+  // a failed read of it is the list's failure too, not a list with no events.
+  const loadError = guests.error || wedding.error;
 
   // Guests.jsx's one-shot token backfill: a guest whose RSVP token was never
   // minted (has_rsvp_token === false) gets one on first load, server-side.
@@ -208,7 +211,7 @@ export default function GuestsContainer() {
           onCopyLink={() => copyLinks([current])}
           onSendInvite={() => { if (!(current.event_responses || []).length && weddingEvents.length) setEvents({ guests: [current], autoSend: true }); else goSend([current.id]); }}
           loading={guests.loading && !current}
-          error={guests.error}
+          error={loadError}
           onRetry={reload}
         />
       ) : (
@@ -237,7 +240,7 @@ export default function GuestsContainer() {
           onClearSelection={() => setSelected(null)}
           onBulk={() => setBulkOpen(true)}
           loading={guests.loading}
-          error={guests.error}
+          error={loadError}
           onRetry={reload}
           onRefresh={async () => { reload(); }}
         />

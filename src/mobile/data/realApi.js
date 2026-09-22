@@ -30,26 +30,41 @@ async function json(path, init = {}) {
   return body || {};
 }
 
-/** Builds the api for the signed-in user. `user` comes from AuthContext. */
+/**
+ * Builds the api for the signed-in user. `user` comes from AuthContext.
+ *
+ * EVERY READ IS STRICT. The ownership-scoped helpers fail SOFT by default —
+ * getMyWeddingDetails() answers null and getMyRecords()/getMyGuestsWithRsvp()
+ * answer [] when the request itself fails, because a dashboard tab that
+ * renders "no guests yet" beats one that throws. On the phone that default
+ * is a lie the couple cannot see through: with the app's own /api/*
+ * endpoints unreachable (CORS_PROPOSAL.md), a real wedding rendered as
+ * "Add your date in Event details" and "Replies 0" with no error anywhere.
+ *
+ * So the mobile seam asks for `strict`, and the screens' own error states —
+ * which every list already has — do the reporting. `null` from
+ * wedding.get() still means "this couple has no wedding record yet"; a
+ * throw now means "we could not find out", and those are different screens.
+ */
 export function createRealApi(user) {
   let weddingId = null;
   return {
     mode: 'real',
     user,
-    list: (entity, sort) => getMyRecords(entity, sort),
+    list: (entity, sort) => getMyRecords(entity, sort, undefined, { strict: true }),
     filter: (entity, query, sort) => base44.entities[entity].filter(query, sort),
     create: (entity, fields) => base44.entities[entity].create(fields),
     update: (entity, id, fields) => base44.entities[entity].update(id, fields),
     remove: (entity, id) => base44.entities[entity].delete(id),
     guests: {
-      list: () => getMyGuestsWithRsvp('created_date'),
+      list: () => getMyGuestsWithRsvp('created_date', undefined, { strict: true }),
       /** New guests default to invited for the main events, as Guests.jsx's handleSubmit does. */
       create: (fields, details) => createGuest(fields.event_responses ? fields : { ...fields, event_responses: defaultEventResponses(getWeddingEvents(details)) }),
       update: (id, fields) => updateGuest(id, fields),
       remove: (id) => deleteGuest(id),
     },
     wedding: {
-      get: async () => { const d = await getMyWeddingDetails(); weddingId = d?.id || weddingId; return d; },
+      get: async () => { const d = await getMyWeddingDetails({ strict: true }); weddingId = d?.id || weddingId; return d; },
       invitation: () => getMyInvitation(),
       /**
        * Plaintext keys through WeddingDetails.update (creating the record
@@ -81,7 +96,9 @@ export function createRealApi(user) {
       photo: (ref, w = 600) => (ref ? `/api/places-photo?ref=${encodeURIComponent(ref)}&maxwidth=${w}` : null),
     },
     songRequests: {
-      list: () => json('/api/song-request-review').then((d) => d.requests || []).catch(() => []),
+      // Throws like every other read: the callers name it in their "some
+      // numbers are incomplete" list rather than showing nothing at all.
+      list: () => json('/api/song-request-review').then((d) => d.requests || []),
       review: (songRequestId, action) => json('/api/song-request-review', { method: 'POST', body: JSON.stringify({ songRequestId, action }) }),
     },
     guestLinks: (ids, opts) => fetchGuestLinks(ids, opts),

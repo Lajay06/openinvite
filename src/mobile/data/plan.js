@@ -7,6 +7,12 @@ import { cacheRead, cacheWrite } from './offlineCache';
  * Everything the Plan hub's live stats need, loaded once, each part
  * failing soft to [] so one slow entity never blanks the hub. The same
  * loaders the desktop pages use, through the api seam.
+ *
+ * The wedding details are the exception and are NOT caught: they carry the
+ * couple's names, their date and their site, so a screen built on a failed
+ * read of them states falsehoods ("Add your date in Event details" to a
+ * couple who set one months ago). A failure there is the whole load's
+ * failure, and Home and the Plan hub show their error state with a retry.
  */
 export function usePlanData() {
   const api = useApi();
@@ -15,19 +21,19 @@ export function usePlanData() {
     const failed = [];
     const soft = (p, name) => p.catch(() => { if (name) failed.push(name); return []; });
     const [details, guests, tasks, budget, schedule, vendors, messages, registryItems, registryProducts, customGifts, gifts, music, songRequests, vows, moodboard, tables, guestbook, photos] = await Promise.all([
-      api.wedding.get().catch(() => null),
+      api.wedding.get(),
       soft(api.guests.list(), 'guests'),
       soft(api.list('Note', '-created_date'), 'to-dos'),
       soft(api.list('Budget', '-created_date'), 'budget'),
       soft(api.list('Schedule', 'start_time'), 'schedule'),
       soft(api.list('Vendor', '-created_date'), 'vendors'),
-      soft(api.list('GuestMessage', '-created_date')),
+      soft(api.list('GuestMessage', '-created_date'), 'messages'),
       soft(api.list('RegistryItem', '-created_date')),
       soft(api.list('RegistryProduct', '-created_date')),
       soft(api.list('CustomGift', '-created_date')),
       soft(api.list('ReceivedGift', '-created_date')),
       soft(api.list('Music', '-created_date')),
-      soft(api.songRequests.list()),
+      soft(api.songRequests.list(), 'song requests'),
       soft(api.list('VowSpeech', '-created_date')),
       soft(api.list('MoodboardItem', '-created_date')),
       soft(api.list('Table', '-created_date')),
