@@ -31,7 +31,7 @@ itself stays on desktop and is noted.
 ### Daily update (`/DailyUpdate`) → `/m` Home
 
 **Desktop.** Greeting, day state, stat tiles (replies, budget, tasks, vendors), Ava briefing, latest activity. No forms. Ava: `AvaChatPod`.
-**Mobile.** Hero carousel (days to go, replies, from Ava, share the site), stat pair, Next up (payments due and open tasks, tap to complete), keep planning, from Ava, latest three notifications, pull to refresh. Ava opens the same pod in a sheet.
+**Mobile.** The daily update card on every open (goal 7: the desktop's own greeting and day-state sentence, a bundled photo, Let's go, Not again today, swipe to close), then Home: hero carousel (days to go first, two rotating cards from RSVPs, from Ava, budget, next payment, next task, song requests or guestbook, the guest suite share card last, every card labelled), stat pair, Next up (payments due and open tasks, tap to complete), keep planning, from Ava, latest three notifications, pull to refresh. Ava opens the same pod in a sheet. Global search (goal 7) covers the desktop top bar's pages, guests, vendors and to-dos plus events, budget, registry and messages, each result opening its own screen or sheet.
 **Gaps.** None on content. Owner fix 1: the Next up cards are unequal heights.
 **Status.** Done. Owner fix 1: every Next up card is 156px, titles clamp to two lines, meta and body to one, content aligned to the top with the action at the foot.
 

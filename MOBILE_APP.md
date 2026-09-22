@@ -172,7 +172,7 @@ The feed is capped to the last thirty days and sixty items. Types the couple has
 
 ### Global search
 
-`/m/search` (the magnifier on Home and Plan) searches guests by name and email, tasks by title, vendors by name and category, and features by name, over the same loaded data as the hub.
+`/m/search` (the magnifier on Home and Plan) searches guests by name and email, tasks by title, vendors by name and category, and features by name, over the same loaded data as the hub. *Goal 7 widened it to events, budget, registry and messages, made every result open its own destination, and added recent searches; see "Global search" under goal 7.*
 
 ### Stubs, skips and blockers added in goal 2
 
@@ -331,6 +331,8 @@ In real mode the couple's own photos still lead the Home hero and the Site previ
 
 ### Launch sequence
 
+*Superseded by goal 7 (below): there is no in-app splash and no greeting any more; the native screen goes the moment the shell paints, and the daily update is a card over the dashboard.*
+
 Tap the icon, a branded native screen, the in-app splash, a greeting, then the dashboard. Verified on the simulator frame by frame; no black frame anywhere.
 
 | Step | What | Where |
@@ -420,8 +422,8 @@ Built against `MOBILE_APP_GOAL_6.md`, one commit per item (items 2 and 4 share o
 ### What changed
 
 1. **App icon.** The Openinvite mark (the arch) on ink, cropped from `public/openinvite-logo.png` and resampled, not redrawn; adaptive foreground and background for Android; the native launch screens show the mark alone, the in-app splash keeps the full wordmark. See the icon-source note under goal 3.
-2. **Launch timing.** Native screen at least 1.2s (`NATIVE_HOLD`, the web layer hides it on that timer), the photo splash at least 1.8s after that and never shorter (`MIN_SPLASH`, at most 6s waiting on data), a crossfade with the next screen already underneath, then the daily update on the first open of each local day (`daily_update_date` in the preferences), then the dashboard. Reduced motion is plain fades.
-3. **Splash pool.** `splashN` slots in `images.ts`; `lib/splashPool.js` draws a shuffled order down in the preferences, the whole pool before a repeat and never the same photo twice running. The pool holds 14 photos (see "Photos").
+2. **Launch timing** (retired in goal 7, see below). Native screen at least 1.2s (`NATIVE_HOLD`, the web layer hides it on that timer), the photo splash at least 1.8s after that and never shorter (`MIN_SPLASH`, at most 6s waiting on data), a crossfade with the next screen already underneath, then the daily update on the first open of each local day (`daily_update_date` in the preferences), then the dashboard. Reduced motion is plain fades.
+3. **Splash pool** (retired in goal 7; the 14 photos went back to the unused list and seven of them became the bundled daily set). `splashN` slots in `images.ts`; `lib/splashPool.js` draws a shuffled order down in the preferences, the whole pool before a repeat and never the same photo twice running. The pool holds 14 photos (see "Photos").
 4. **Daily update.** `shell/DailyUpdate.jsx` over `data/dailyUpdate.js`: the desktop's own `resolveDayState` and `avaSentence` over the same stores, so the phone says exactly what `/DailyUpdate` says; the greeting, the status line and the first move under `Briefing.jsx`'s date. Top third one of the couple's own photos (by day of the year), the rest the brand-red panel with white text at 40/46, 20/28 and 13/18, "Let's go" as a white pill. The flat brand red measures 4.37:1 against white, under AA for the 20px and 13px lines, so the panel carries an 8 percent ink wash (`color-mix`, `#CF324D` where unsupported) that takes it to 5:1; the greeting at 40px passed either way. No truncation at 130 percent text size. `/m/preview/daily-update` shows it; `?launch=1` or `?launch=daily` runs the whole sequence on the web. The greeting screen from goal 4 is retired.
 5. **Guest suite naming.** The tab, the screen, every heading, button, empty state, notification line, Ava prompt, account row and fixture that meant the couple's guest-facing pages. "Website" remains where it means the Openinvite desktop product.
 6. **Hero carousel.** A pool of up to eight cards from real data, four shown, days to go first, the rest rotating by a counter that moves once per app open (`screens/home/heroPool.js`); the share card is Guest suite, Share with your guests, Share link. Hero photos are the couple's own (cover, Our Story, moodboard pins, the guest suite gallery), the standard photos standing in for unfilled positions; the parallax and scale on the hero photo are gone (stills only).
@@ -440,6 +442,74 @@ The one deliberate repeat stays the couple's own cover (identity: the first Home
 ### Verify (goal 6)
 
 `npm run mobile:demo` and `npx cap sync` pass; `npm run build` exits 0; 102 preview screenshots pass the width, tap-target, input-size and shadow checks, including the daily update, the splash and the tab bar over scrolled content; `git diff main --stat` touches only `src/mobile/**`, `assets/`, `ios/`, `android/`, `mobile-screenshots/`, the three markdown files and the screenshot script. Inside `src/mobile/`: no photo rendered twice outside the identity exception above, no QR code, no direct email to guests, no `site` or `website` meaning the guest suite, no off-brand color (the daily update's `#CF324D` fallback is the brand red under the ink wash), no font size outside the scale except the daily update's three.
+
+## Goal 7: instant launch, the daily update on every open, search, the test notification (2026-09-22)
+
+Built against `MOBILE_APP_GOAL_7.md`, one commit per item.
+
+### Instant launch
+
+There is no in-app splash and no splash pool any more. The native launch screen (the mark on ink, unchanged) is the only splash, and the web layer hides it the moment `MobileShell` has painted its first frame: two `requestAnimationFrame`s after mount, then `SplashScreen.hide()` with a 200ms fade (`capacitor.config.ts`), no minimum. `bootNative()` no longer hides it itself. The webview background stays ink so nothing shows behind the shell before it paints, and Home paints its skeletons at once while the planner data loads. The daily update no longer gates anything: it slides up over the dashboard once its words are in.
+
+**Cold-start timings, iPhone 18 Pro simulator (iOS 27.0), debug build, the demo bundle, launched with `xcrun simctl launch` with the console attached.** Offsets are from the launch command; the first column is when Capacitor starts loading the page, which is the same before and after (process start is the system's). Three runs each, the first launch after an install discarded (it is slow for everything on iOS).
+
+| | Loading app at capacitor://localhost | WebView loaded | Native splash hidden | Dashboard visible |
+|---|---|---|---|---|
+| Before (goal 6 build) | 1.84 to 2.07 s | +0.5 s | +0.8 s (the photo splash was already covering the shell) | +4.0 to 4.3 s, and on the first open of a day held until "Let's go" |
+| After (goal 7) | 1.84 to 1.89 s | +0.5 to 0.6 s | +0.7 to 0.8 s, the same moment the dashboard is on screen | +0.7 to 0.8 s |
+
+The shell's own marker (`[oi] shell painted Nms after the page started`, logged from `MobileShell`) reads 209 to 257ms, under the 500ms target. Frame captures (`xcrun simctl io screenshot` every 400ms during a launch) show: the home screen, the mark on ink from the app's zoom animation on, then the dashboard with the daily update card at about 2.9s from the command. No grey and no blank frame. One finding on the way: a simulator build installed unsigned (`CODE_SIGNING_ALLOWED=NO`) shows pure black instead of the launch storyboard, because SpringBoard refuses to render its launch snapshot for a denylisted app (`Snapshot generation request ... rejected due to the app being denylisted` in the log); a signed build ("Sign to Run Locally", which is what Xcode and `xcodebuild` do by default) renders the mark. Goal 6's black-frame note was the same symptom from another cause.
+
+### The daily update, on every open
+
+`shell/DailyUpdateHost.jsx` decides, `shell/DailyUpdate.jsx` draws. It shows on every cold start (once per JS load), and again when the app comes back from the background after 15 minutes or more (`App.appStateChange`, the same event the Face ID lock uses); not on a tab change and not after a few seconds away. "Not again today" writes the local day to the preferences (`daily_update_skip`) and the card stays away until the next calendar day; "Let's go" and a swipe down on the card close it for that open. The words are still the desktop's own (`data/dailyUpdate.js`, unchanged). The card is three-quarter height over the dimmed dashboard: 28px top corners, the elevation token, a grab handle over the photo, the photo about a third, the brand-red panel with the date, greeting and lines, "Let's go" as the white pill and "Not again today" as a white text button at 15/20 and 44px tall. Reduced motion fades instead of sliding. At 130 percent text the photo gives way (down to 150px) and the panel scrolls; the buttons stay.
+
+**Photos.** Seven photos are bundled with the app at build time, `src/mobile/assets/daily/{mon..sun}.webp`, 800 by 560 WebP (15 to 110 KB), downloaded from the `app/` folder during development and committed; `?no-inline` keeps them files in `dist/assets` (the desktop Vite config base64-inlines every non-font asset). `shell/dailyPhotos.js` picks one by `Date.getDay()` and decodes it when the shell mounts, so the card never waits on it. They are seven of the retired splash pool, chosen for calm, bright, eyes open and faces whole: the bamboo grove (Mon), the flowering lane (Tue), the seawall at sunset (Wed), the open window (Thu), the raspberry cake (Fri, cropped from the top), breakfast by the pool (Sat), glasses raised (Sun). They are slots in `images.ts` (`dailyMon` to `dailySun`, `bundled`) so the once-only check covers them; they appear nowhere else. The other seven pool photos are unused again (see "Photos" below).
+
+**Review builds.** A long press on the Account title (600ms) brings the card back whatever the day's answer (`showDailyUpdate` on the shell context; demo builds and dev only). On the web, `?daily=1` on any preview route forces it; `/m/preview/daily-update` redirects there. The web preview never shows it on its own, so the screenshot run is not covered by it.
+
+### Global search
+
+Every result navigates to its own destination and search closes as it goes; back returns to search with the query intact, because the query rides in `?q=` (`SearchScreenPage`). Return (the keyboard's search key; the bar is a form) opens the top result. With the field empty, the last five searches show under "Recent" with a Clear button (`search_recent` in the preferences). The browser's own clear button on `type="search"` is hidden; the app's stays.
+
+| Result | Matches on | Opens |
+|---|---|---|
+| Planner (features) | name | the feature screen |
+| Guests | name, email | `/guests/:id`, the guest profile |
+| Tasks | title | `/plan/checklist?task=:id`, the task detail sheet |
+| Events | event name, location | `/plan/schedule?event=:id`, the event's sheet |
+| Vendors | name, category | `/plan/vendors/:id`, vendor detail |
+| Budget | item, vendor, category | `/plan/budget?expense=:id`, the expense sheet |
+| Registry | product, platform, fund name | `/plan/registry?segment=products|links|funds&item=:id`, the item's sheet |
+| Messages | guest, message, subject | `/plan/messages/:id`, the thread |
+
+The desktop's top bar searches pages, guests, vendors and to-dos; the app covers those and the four more. The open-by-id is one hook, `lib/openById.js`, used by `ChecklistScreen`, `ScheduleScreen`, `BudgetScreen` and `EntityListScreen` (the registry's three lists): the sheet opens once the list is in and does not reopen after it is closed. Every row in the table was tapped in the preview by a Playwright walk (guest, task, event, vendor, expense, platform, product, fund, message, feature), each landing on the destination with the sheet open where one is named, and back returning to `/search?q=`.
+
+### Home hero cards
+
+Days to go first, always; the guest suite share card last, always; between them two cards from the pool real data backs (RSVPs, from Ava, budget, next payment, next task, song requests or the guestbook), rotating from a point that moves once per app open (`heroPool.js`, `pickHeroes({ first, middle, last })`). Every card carries a label: Days to go, RSVPs, From Ava, Budget, Next payment, Next up, Song requests, Guestbook, Messages, Guest suite. The budget card shows what is left against the total with a progress bar and the spent figure under it.
+
+### The test notification
+
+`@capacitor/local-notifications` (8.3.1) is the one new dependency; `cap sync` added it to `ios/App/CapApp-SPM/Package.swift` and the Android gradle files. Under Account in demo builds and dev, "Send a test notification" opens the priming screen with `?test=1`; "Turn on notifications" records the choice, asks the system (`LocalNotifications.requestPermissions`), then schedules three notifications from the copy catalog 10, 20 and 30 seconds out (`notifications/testNotification.js`): a reply, a payment due and the briefing, in the feed's own words where it has them, otherwise samples from the same templates. Each carries its screen's link in `extra`; a tap from the lock screen fires `localNotificationActionPerformed` and the shell navigates to it, the same link the notification center's row uses. One that lands while the app is open fires `localNotificationReceived` and the shell shows the in-app banner (iOS itself shows nothing in the foreground: `presentationOptions: []`). The priming screen's normal path (the first reply) now asks the system too. The tab bar and the Ava button hide on the priming route.
+
+To try it on the phone: Account, Send a test notification, Turn on notifications, Allow, then lock the phone. The three arrive over the next half minute; tap one and the app opens on Guests, Budget or Home. Denied in Settings shows "Notifications are off for Openinvite in Settings"; the web shows "Test notifications need the phone app".
+
+**Verified here:** the plugin links and the app boots with it (the simulator build); the whole flow on the web preview (row, priming screen, the unavailable toast, back to Account); the copy. **Not verified here:** the lock-screen result and the tap, which need a finger: the simulator accepts no synthetic taps from this session and `simctl openurl` stops at the "Open in Openinvite?" alert. The owner's phone test is the check.
+
+Real push still needs the backend in `PUSH_BACKEND_PROPOSAL.md` (a device token entity, a fan-out function, APNs and FCM keys) and the paid Apple Developer Program; the wrappers in `native.ts` (`requestNotificationPermission`, `scheduleLocalNotifications`, `onNotificationOpened`, `onNotificationReceived`) are the shape it will use.
+
+### Research
+
+`MOBILE_IDEAS.md`: fourteen ideas with effort, program and backend needs and a recommendation, the top ten ranked (widgets, the wedding-day Live Activity, a share extension, calendar sync, Contacts import, offline for the day, Siri, real push, a Wallet pass, capture shortcuts); room blocks, in-app purchase, a guest app and vendor messaging flagged against owner decisions or stage.
+
+### Photos
+
+`/m/preview/images` reads 81 slots, 81 photos, no repeats, none needing a photo (88 before: 14 pool slots out, 7 daily slots in). Unused photos in `app/` are now 16: the 9 from goal 6 and the 7 pool photos that did not become daily photos (the leap into the sea from the rocks, laughing in the blue doorway, the two helmets in the car mirror, the tulips at the flower market, the wrapped bouquet, the kiss in the tall window, the olives in a martini). The one deliberate repeat stays the couple's own cover.
+
+### Verify (goal 7)
+
+`npm run mobile:demo` and `npx cap sync` pass; `npm run build` exits 0; 103 preview screenshots pass the width, tap-target, input-size and shadow checks (three new: `daily-update`, `search-results`, `notification-priming-test`; `launch-splash` and `launch-daily-update` retired); `git diff 71d3b5bc --name-only` (the branch before goal 7) touches only `src/mobile/**`, `ios/`, `android/`, `capacitor.config.ts`, `package.json`, `package-lock.json`, `mobile-screenshots/`, the markdown files and the screenshot script. Inside `src/mobile/`: no photo twice (the daily set included, checked by id in `images.ts`), no color outside the tokens (the new CSS uses white, the tokens and the `#CF324D` fallback), no font size outside the scale beyond the daily card's three.
 
 ## Keeping parity
 
@@ -591,7 +661,7 @@ The exact redirect URLs that will need registering are therefore
 ## Roadmap, in order
 
 1. Deep links for auth (above), plus CORS for the shell origin, which gates everything.
-2. Push notifications (`@capacitor/push-notifications`; APNs and FCM; a device-token field would need a schema decision).
+2. Push notifications (`@capacitor/push-notifications`; APNs and FCM; a device-token field would need a schema decision). Local notifications are in since goal 7 (the test notification); `MOBILE_IDEAS.md` ranks what comes after.
 3. Face ID / biometric unlock in front of the stored session.
 4. Camera upload for the moodboard and cover photo (`@capacitor/camera` plus the existing Cloudinary upload path).
 5. App Store and Play Store assets: icons, splash, screenshots, privacy labels; a `mobile:assets` step with `@capacitor/assets`.

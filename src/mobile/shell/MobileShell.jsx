@@ -32,6 +32,8 @@ export default function MobileShell({ base = '/m', renderAva, showAva = true, no
   const { pathname } = useLocation();
   const avaOpenRef = useRef(avaOpen);
   avaOpenRef.current = avaOpen;
+  // The priming screen is a full-screen ask: no tab bar or Ava button over it.
+  const fullScreenRoute = /\/priming$/.test(pathname);
 
   // Boot: status bar and keyboard, and the native launch screen goes the
   // moment this shell has painted its first frame (goal 7: no in-app splash,
@@ -121,8 +123,8 @@ export default function MobileShell({ base = '/m', renderAva, showAva = true, no
           }}
         />
         <Outlet />
-        <TabBar base={base} />
-        {showAva && (
+        {!fullScreenRoute && <TabBar base={base} />}
+        {showAva && !fullScreenRoute && (
           <button type="button" className="oi-m-ava" onClick={() => openAva()} aria-label="Ask Ava">
             <span aria-hidden="true">✦</span>
           </button>
