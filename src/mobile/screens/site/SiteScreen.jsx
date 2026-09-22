@@ -1,17 +1,33 @@
-import React from 'react';
-import { ExternalLink, Share2, Palette, LayoutTemplate, Sparkles, Clock, HelpCircle, Gift, Hotel, Car, MapPin, ScrollText, BarChart2, Monitor, Lock } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ExternalLink, Share2, Palette, LayoutTemplate, Sparkles, Clock, HelpCircle, Gift, Hotel, Car, MapPin, ScrollText, BarChart2, Monitor, Lock, X } from 'lucide-react';
 import Screen from '../../shell/Screen';
-import { Row, RowGroup, PillButton, StatusPill, Skeleton, ErrorState, SmartImage, PanelCard, Switch } from '../../ui';
+import { Row, RowGroup, PillButton, StatusPill, Skeleton, ErrorState, SmartImage, Switch } from '../../ui';
+import { prefGet, prefSet } from '../../native';
+
+/** The desktop-only note at the top (goal 8): closed once, hidden for good on this device. */
+const NOTE_PREF = 'suite_desktop_note_closed';
 
 /**
  * Guest suite: a large preview of it in a rounded frame, the universe
  * and live status, share and view, then rows into the guest-suite editors
- * (in the app) and the design tools (desktop).
+ * (in the app) and the design tools (desktop). A slim note under the title
+ * says the builder and Ava's Studio happen on a laptop; it closes once and
+ * stays closed, and a small row at the bottom keeps the reminder.
  */
 export default function SiteScreen({ universeName, isLive, siteUrl, previewImage, coupleName, onView, onShare, onOpen, onOpenDesktop, onTogglePublish, passwordOn = false, onPassword, loading, error, onRetry }) {
+  const [noteClosed, setNoteClosed] = useState(true);
+  useEffect(() => { let live = true; prefGet(NOTE_PREF).then((v) => { if (live) setNoteClosed(v === '1'); }).catch(() => { if (live) setNoteClosed(false); }); return () => { live = false; }; }, []);
+  const closeNote = () => { setNoteClosed(true); prefSet(NOTE_PREF, '1').catch(() => {}); };
   return (
     <Screen title="Guest suite" root>
       <div className="oi-m-stack oi-m-stack--24">
+        {!noteClosed && (
+          <div className="oi-m-note" role="note">
+            <Monitor size={18} strokeWidth={1.75} className="oi-m-note__icon" aria-hidden="true" />
+            <p className="oi-m-note__text">Editing your guest suite and Ava's Studio happens on a laptop. Changes you make there show up here.</p>
+            <button type="button" className="oi-m-note__close" onClick={closeNote} aria-label="Close this note"><X size={18} strokeWidth={1.75} /></button>
+          </div>
+        )}
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <Skeleton kind="hero" /> : (
           <div className="oi-m-card oi-m-card--flush">
             <div style={{ position: 'relative', padding: '12px 12px 0' }}>
@@ -70,9 +86,9 @@ export default function SiteScreen({ universeName, isLive, siteUrl, previewImage
             <Row icon={Sparkles} tile="tint" label="Ava studio" sub="Best on desktop" onClick={() => onOpenDesktop('/studio/ava')} />
           </RowGroup>
         </section>
-        <PanelCard tone="neutral" body="The builder and Ava studio need a bigger screen. Open them on a laptop and everything you change shows up here.">
-          <Monitor size={18} strokeWidth={1.75} style={{ color: 'var(--m-text-2)' }} />
-        </PanelCard>
+        <RowGroup>
+          <Row icon={Monitor} tile="neutral" label="Edit on a laptop" sub="The builder and Ava's Studio need a bigger screen" onClick={() => onOpenDesktop('/studio/website')} />
+        </RowGroup>
       </div>
     </Screen>
   );
