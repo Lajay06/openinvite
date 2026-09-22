@@ -49,7 +49,10 @@ export function deliver(url, { width, height, dpr = 2 } = {}) {
   if (!id) return url;
   const w = Math.round(width * dpr);
   const h = height ? Math.round(height * dpr) : null;
-  const t = ['f_auto', 'q_auto', 'c_fill', 'g_auto', `w_${w}`, h ? `h_${h}` : null].filter(Boolean).join(',');
+  // A slot may name its crop gravity (images.ts `gravity`, carried in the
+  // URL as a g_ segment) where g_auto's choice cuts the subject.
+  const g = /\/image\/upload\/g_([a-z_]+)\//.exec(url)?.[1] || 'auto';
+  const t = ['f_auto', 'q_auto', 'c_fill', `g_${g}`, `w_${w}`, h ? `h_${h}` : null].filter(Boolean).join(',');
   return `${CLOUD}/${t}/${id}`;
 }
 

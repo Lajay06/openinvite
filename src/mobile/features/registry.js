@@ -89,7 +89,7 @@ export const FEATURES = [
     stat: (d) => (d.details?.transport?.shuttles?.length ? count(d.details.transport.shuttles, 'shuttle') : 'Plan the trip') },
   { key: 'accommodation', group: 'day', label: 'Stay', icon: Hotel, desktop: '/accommodation', path: 'accommodation', image: imageUrl('tileAccommodation'), kind: 'details', depth: 'light',
     stat: (d) => count(d.details?.accommodation?.manualProperties, 'place') },
-  { key: 'emergency', group: 'day', label: 'Emergency contact', icon: Phone, desktop: '/emergency-contact', path: 'emergency', kind: 'details', depth: 'full',
+  { key: 'emergency', group: 'day', label: 'Emergency contact', icon: Phone, desktop: '/emergency-contact', path: 'emergency', image: imageUrl('tileEmergency'), kind: 'details', depth: 'full',
     stat: (d) => (d.details?.emergencyContacts?.primary?.name ? d.details.emergencyContacts.primary.name : 'Add a contact') },
   // Finances
   { key: 'budget', group: 'finances', label: 'Budget', icon: Wallet, desktop: '/Budget', path: 'budget', image: imageUrl('tileBudget'), kind: 'custom', depth: 'full',
@@ -109,7 +109,7 @@ export const FEATURES = [
   // Extras
   { key: 'honeymoon', group: 'extras', label: 'Honeymoon', icon: Plane, desktop: '/honeymoon', path: 'honeymoon', image: imageUrl('tileHoneymoon'), kind: 'details', depth: 'light',
     stat: (d) => (d.details?.honeymoonDetails?.destination ? d.details.honeymoonDetails.destination : 'Dream a little') },
-  { key: 'considerations', group: 'extras', label: 'Considerations', icon: Lightbulb, desktop: '/Considerations', path: 'considerations', kind: 'desktop', depth: 'view', stat: () => 'Read on desktop' },
+  { key: 'considerations', group: 'extras', label: 'Considerations', icon: Lightbulb, desktop: '/Considerations', path: 'considerations', image: imageUrl('tileConsiderations'), kind: 'desktop', depth: 'view', stat: () => 'Read on desktop' },
 ];
 
 export const featureByKey = (key) => FEATURES.find((f) => f.key === key);
