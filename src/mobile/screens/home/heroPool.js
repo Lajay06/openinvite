@@ -1,11 +1,13 @@
 import { prefGet, prefSet } from '../../native';
 
 /**
- * The hero carousel's rotation (goal 6): "Days to go" is always first; the
- * next three come from the pool of cards real data backs, starting from a
- * point that moves on every app open, so the owner does not see the same
- * set each time. The counter lives in the preferences and moves once per
- * JS load (one app open), not on every visit to Home.
+ * The hero carousel's rotation (goals 6 and 7): "Days to go" is always
+ * first and the guest suite share card always last; between them two cards
+ * from the pool real data backs (RSVPs, from Ava, budget, next payment, next
+ * task, song requests or the guestbook), starting from a point that moves
+ * on every app open, so the owner does not see the same pair each time.
+ * The counter lives in the preferences and moves once per JS load (one app
+ * open), not on every visit to Home.
  */
 const ROTATION_PREF = 'hero_rotation';
 let seedPromise = null;
@@ -16,13 +18,15 @@ export function heroSeed() {
   return seedPromise;
 }
 
-/** Four cards: the first, then three of the rest in rotation (fewer when fewer exist). */
-export function pickHeroes(cards, seed = 0, count = 4) {
-  if (!cards.length) return [];
-  const [first, ...rest] = cards;
-  if (rest.length <= count - 1) return [first, ...rest];
-  const start = seed % rest.length;
+/** first, then `count` of the middle in rotation (fewer when fewer exist), then last. */
+export function pickHeroes({ first, middle = [], last = null }, seed = 0, count = 2) {
   const out = [];
-  for (let i = 0; i < count - 1; i += 1) out.push(rest[(start + i) % rest.length]);
-  return [first, ...out];
+  if (first) out.push(first);
+  if (middle.length <= count) out.push(...middle);
+  else {
+    const start = seed % middle.length;
+    for (let i = 0; i < count; i += 1) out.push(middle[(start + i) % middle.length]);
+  }
+  if (last) out.push(last);
+  return out;
 }

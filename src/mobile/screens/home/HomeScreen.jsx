@@ -23,21 +23,26 @@ export default function HomeScreen({
 }) {
   const img = (i) => images[i] || '';
   const countdown = daysToGo == null ? null : daysToGo > 1 ? `${daysToGo}` : daysToGo === 1 ? 'Tomorrow' : daysToGo === 0 ? 'Today' : null;
-  // The pool of cards real data backs (goal 6): days to go first, then three of the rest in rotation.
-  const pool = [];
+  // The hero cards (goal 7): days to go first, the guest suite share card
+  // last, two rotating between them from the pool real data backs. Every
+  // card carries a small label saying what it is, so a line like "Three
+  // course dinner, 82 guests" is never ambiguous.
+  let first = null; let last = null; const middle = [];
   if (!loading) {
-    pool.push({ key: 'days', label: coupleName || 'Your wedding', number: countdown && daysToGo > 1 ? countdown : undefined, title: countdown && daysToGo > 1 ? 'days to go' : countdown || coupleName, sub: weddingDate ? dateLong(weddingDate) : 'Add your date in Event details', action: siteUrl ? 'View guest suite' : 'Event details', onAction: siteUrl ? () => onOpenFeature?.('site') : () => onOpenFeature?.('event-details') });
-    if (rsvp && rsvp.invited > 0) pool.push({ key: 'rsvp', label: 'Replies', number: rsvp.attending, title: 'attending so far', sub: rsvpSentence(rsvp), action: 'See who is yet to reply', onAction: onOpenGuests, progress: { value: rsvp.attending + rsvp.declined, max: rsvp.invited } });
+    const dayLabel = countdown && daysToGo > 1 ? 'Days to go' : 'Your wedding';
+    first = { key: 'days', label: dayLabel, number: countdown && daysToGo > 1 ? countdown : undefined, title: countdown && daysToGo > 1 ? (coupleName || 'until the day') : countdown || coupleName, sub: weddingDate ? dateLong(weddingDate) : 'Add your date in Event details', action: siteUrl ? 'View guest suite' : 'Event details', onAction: siteUrl ? () => onOpenFeature?.('site') : () => onOpenFeature?.('event-details') };
+    if (rsvp && rsvp.invited > 0) middle.push({ key: 'rsvp', label: 'RSVPs', number: rsvp.attending, title: 'attending so far', sub: rsvpSentence(rsvp), action: 'See who is yet to reply', onAction: onOpenGuests, progress: { value: rsvp.attending + rsvp.declined, max: rsvp.invited } });
     const lead = Array.isArray(briefing) ? (briefing[0]?.lead || briefing[0]?.body) : briefing;
-    if (lead) pool.push({ key: 'ava', label: 'From Ava', title: lead, action: 'Ask Ava', onAction: onOpenAva });
-    if (siteUrl) pool.push({ key: 'share', title: 'Guest suite', sub: 'Share with your guests', action: 'Share link', onAction: onShare });
-    if (payments[0]) pool.push({ key: 'payment', label: `Due ${dateShort(payments[0].payment_date)}`, number: money(payments[0].actual_amount || payments[0].budgeted_amount, budget?.symbol), title: `${payments[0].item_name}${payments[0].vendor ? ` to ${payments[0].vendor}` : ''}`, action: 'Open budget', onAction: onOpenBudget });
-    if (tasks[0]) pool.push({ key: 'task', label: dueLabel(tasks[0].due_date) || 'Next task', title: tasks[0].title, sub: tasks.length > 1 ? `${tasks.length - 1} more open` : undefined, action: 'Open to do', onAction: onOpenTasks });
-    if (songRequests > 0) pool.push({ key: 'songs', label: 'Song requests', number: songRequests, title: songRequests === 1 ? 'song to review' : 'songs to review', action: 'Review requests', onAction: () => onOpenFeature?.('music') });
-    else if (guestbook[0]) pool.push({ key: 'guestbook', label: 'Guestbook', title: guestbook[0].message ? `"${String(guestbook[0].message).slice(0, 90)}${String(guestbook[0].message).length > 90 ? '...' : ''}"` : 'A new entry', sub: guestbook[0].name || guestbook[0].guest_name || '', action: 'Open guest suite', onAction: () => onOpenFeature?.('site') });
-    if (unreadMessages > 0) pool.push({ key: 'messages', label: 'Messages', number: unreadMessages, title: unreadMessages === 1 ? 'unread message' : 'unread messages', action: 'Read them', onAction: () => onOpenFeature?.('messages') });
+    if (lead) middle.push({ key: 'ava', label: 'From Ava', title: lead, action: 'Ask Ava', onAction: onOpenAva });
+    if (budget && budget.total > 0) middle.push({ key: 'budget', label: 'Budget', number: money(Math.max(0, budget.total - budget.spent), budget.symbol), title: `left of ${money(budget.total, budget.symbol)}`, sub: `${money(budget.spent, budget.symbol)} spent so far`, action: 'Open budget', onAction: onOpenBudget, progress: { value: Math.min(budget.spent, budget.total), max: budget.total } });
+    if (payments[0]) middle.push({ key: 'payment', label: 'Next payment', number: money(payments[0].actual_amount || payments[0].budgeted_amount, budget?.symbol), title: `${payments[0].item_name}${payments[0].vendor ? ` to ${payments[0].vendor}` : ''}`, sub: `Due ${dateShort(payments[0].payment_date)}`, action: 'Open budget', onAction: onOpenBudget });
+    if (tasks[0]) middle.push({ key: 'task', label: 'Next up', title: tasks[0].title, sub: [dueLabel(tasks[0].due_date), tasks.length > 1 ? `${tasks.length - 1} more open` : ''].filter(Boolean).join(', '), action: 'Open to do', onAction: onOpenTasks });
+    if (songRequests > 0) middle.push({ key: 'songs', label: 'Song requests', number: songRequests, title: songRequests === 1 ? 'song to review' : 'songs to review', action: 'Review requests', onAction: () => onOpenFeature?.('music') });
+    else if (guestbook[0]) middle.push({ key: 'guestbook', label: 'Guestbook', title: guestbook[0].message ? `"${String(guestbook[0].message).slice(0, 90)}${String(guestbook[0].message).length > 90 ? '...' : ''}"` : 'A new entry', sub: guestbook[0].name || guestbook[0].guest_name || '', action: 'Open guest suite', onAction: () => onOpenFeature?.('site') });
+    if (unreadMessages > 0) middle.push({ key: 'messages', label: 'Messages', number: unreadMessages, title: unreadMessages === 1 ? 'unread message' : 'unread messages', action: 'Read them', onAction: () => onOpenFeature?.('messages') });
+    if (siteUrl) last = { key: 'share', label: 'Guest suite', title: 'Share with your guests', sub: 'One link for everything they need', action: 'Share link', onAction: onShare };
   }
-  const heroes = pickHeroes(pool, heroSeed).map((h, i) => ({ ...h, image: img(i) }));
+  const heroes = pickHeroes({ first, middle, last }, heroSeed).map((h, i) => ({ ...h, image: img(i) }));
   return (
     <Screen title={firstName ? `Hi ${firstName}` : 'Hi'} bell actions={[{ icon: Search, label: 'Search', onClick: onSearch }]} onRefresh={onRefresh}>
       <div className="oi-m-stack oi-m-stack--24">

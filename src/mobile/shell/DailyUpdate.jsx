@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { hapticLight, setStatusBarDark } from '../native';
+import { hapticLight } from '../native';
 
 /**
  * The daily update (goal 6, reshaped in goal 7): the desktop's briefing,
@@ -28,11 +28,12 @@ export default function DailyUpdate({ photo, alt = '', dateLabel, greeting, line
   const drag = useRef({ y: 0, dy: 0, on: false });
   const done = useRef(null);
 
-  // Springs up on the frame after mount; light status bar content over the dimmed dashboard.
+  // Springs up on the frame after mount. The status bar keeps its dark
+  // content: the dimmed page behind the card is a mid grey, and dark text
+  // reads better on it than light.
   useEffect(() => {
     const t = setTimeout(() => setPhase('open'), 20);
-    setStatusBarDark(true);
-    return () => { clearTimeout(t); setStatusBarDark(false); };
+    return () => clearTimeout(t);
   }, []);
 
   const close = (cb) => {
