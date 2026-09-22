@@ -176,7 +176,7 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
         )}
         <div className="oi-m-stack" style={{ marginTop: 12 }}>
           {error && !loading ? (
-            <ErrorState onRetry={onRetry} />
+            <ErrorState what="your guest list" onRetry={onRetry} />
           ) : loading ? (
             <SkeletonRows count={8} />
           ) : guests.length === 0 ? (

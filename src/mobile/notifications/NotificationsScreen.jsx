@@ -29,7 +29,7 @@ export default function NotificationsScreen({ items = [], loading, error, failed
       ]}
     >
       <div className="oi-m-stack oi-m-stack--24">
-        {(error || blank) && !loading ? <ErrorState timedOut={!!error?.timedOut} onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : items.length === 0 ? (
+        {(error || blank) && !loading ? <ErrorState what="your notifications" timedOut={!!error?.timedOut} onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : items.length === 0 ? (
           <EmptyState icon={BellOff} text="Nothing yet. Replies, messages and requests will show up here as they arrive." />
         ) : (
           groups.map((g) => (

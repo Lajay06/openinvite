@@ -23,7 +23,7 @@ const fmtWhen = (iso) => { if (!iso) return ''; const d = new Date(iso); return 
  */
 export default function GuestDetailScreen({ guest, role = '', weddingEvents = [], mealOptions = [], gifts = [], symbol = '$', back, onEdit, onEditEvents, onDelete, onCopyLink, onSendInvite, loading, error, onRetry }) {
   if (loading) return <Screen title="Guest" back={back}><div className="oi-m-stack oi-m-stack--24"><Skeleton kind="block" /><Skeleton kind="block" /></div></Screen>;
-  if (error) return <Screen title="Guest" back={back}><div className="oi-m-stack"><ErrorState onRetry={onRetry} /></div></Screen>;
+  if (error) return <Screen title="Guest" back={back}><div className="oi-m-stack"><ErrorState what="this guest" onRetry={onRetry} /></div></Screen>;
   if (!guest) return <Screen title="Guest" back={back}><div className="oi-m-stack"><p className="oi-m-body">This guest is not on your list any more.</p></div></Screen>;
   const status = guest.rsvp_status || 'pending';
   const invited = !!guest.invite_sent_at;

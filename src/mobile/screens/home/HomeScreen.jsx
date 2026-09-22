@@ -49,14 +49,14 @@ export default function HomeScreen({
   if (error && !loading && !loaded) {
     return (
       <Screen title={firstName ? `Hi ${firstName}` : 'Hi'} root onRefresh={onRefresh}>
-        <ErrorState timedOut={!!error?.timedOut} onRetry={onRetry} />
+        <ErrorState what="your wedding" timedOut={!!error?.timedOut} onRetry={onRetry} />
       </Screen>
     );
   }
   return (
     <Screen title={firstName ? `Hi ${firstName}` : 'Hi'} root onRefresh={onRefresh}>
       <div className="oi-m-stack oi-m-stack--24">
-        {error && !loading ? <ErrorState timedOut={!!error?.timedOut} onRetry={onRetry} /> : null}
+        {error && !loading ? <ErrorState what="your wedding" timedOut={!!error?.timedOut} onRetry={onRetry} /> : null}
 
         {loading ? <Skeleton kind="hero" /> : (
           <div style={{ margin: '0 calc(-1 * var(--m-gutter))' }}>

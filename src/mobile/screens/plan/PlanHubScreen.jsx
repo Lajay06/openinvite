@@ -41,7 +41,7 @@ export default function PlanHubScreen({ data, symbol = '$', progress, onOpen, on
   return (
     <Screen title="Plan" root>
       <div className="oi-m-stack oi-m-stack--24">
-        {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? (
+        {error && !loading ? <ErrorState what="your wedding" onRetry={onRetry} /> : loading ? (
           <>
             <Skeleton kind="block" />
             <div className="oi-m-grid2"><Skeleton kind="block" style={{ height: 148 }} /><Skeleton kind="block" style={{ height: 148 }} /></div>
