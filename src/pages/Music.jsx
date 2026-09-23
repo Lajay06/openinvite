@@ -1,4 +1,3 @@
-import { FilterPill } from '@/components/shared/TableToolbar';
 import { OptionAccordion, OptionAccordionSection } from '@/components/shared/OptionAccordion';
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
@@ -17,6 +16,8 @@ import AvaModal from '@/components/layout/AvaModal';
 import { useCollaboratorContext } from '@/lib/collaboratorContext';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import CountUp from "@/components/shared/CountUp";
+import MusicTable from '@/components/music/MusicTable';
+import { TAG_ORDER, TAG_LABEL } from '@/lib/musicRows';
 import { DEFAULT_MUSIC_REQUEST_MESSAGE } from '@/lib/musicCopy';
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -44,20 +45,6 @@ const playlistInputStyle = {
 const pillStyle = {
   borderRadius: 999, padding: '3px 10px', fontSize: 11, fontWeight: 600,
   fontFamily: PJS, color: '#0A0A0A', border: '1px solid rgba(10,10,10,0.15)',
-};
-const requestRowStyle = {
-  display: 'flex', alignItems: 'flex-start', gap: 16, padding: '14px 0',
-  borderBottom: '1px solid rgba(10,10,10,0.12)',
-};
-const requestTitleStyle = {
-  fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, margin: 0,
-};
-const requestMetaStyle = {
-  fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '2px 0 0',
-};
-const requestNoteStyle = {
-  fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
-  margin: '6px 0 0', fontStyle: 'italic',
 };
 
 const TABS = [
@@ -109,6 +96,85 @@ function SettingsModal({ details, updateMusic, onClose }) {
   );
 }
 
+/**
+ * ADD OR EDIT ONE SONG.
+ *
+ * Round two, item 12: "Done when a couple can build a playlist WITHOUT ANY
+ * EXTERNAL SERVICE." Until now they could not. Every track in the product
+ * arrived one way — a guest asked for it and the couple approved — and the
+ * page's own add/edit handlers existed with nothing rendering them, so there
+ * was no screen on which a couple could type in a song of their own, retag one
+ * or fix a typo.
+ *
+ * Song and artist are what the Music entity requires; tag and notes are the
+ * two columns the table exists to make editable.
+ */
+function SongModal({ track, onSave, onClose }) {
+  const [song, setSong] = useState(track?.song_title || '');
+  const [artist, setArtist] = useState(track?.artist || '');
+  const [tag, setTag] = useState(track?.category || 'general');
+  const [notes, setNotes] = useState(track?.notes || '');
+  const editing = !!track?.id;
+  const ready = song.trim() && artist.trim();
+
+  return (
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent hideClose title={editing ? 'Edit song' : 'Add a song'} className="max-w-[440px] p-0 gap-0">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
+          <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>{editing ? 'Edit song' : 'Add a song'}</span>
+          <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
+        </div>
+        <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span style={labelStyle}>Song</span>
+            <input value={song} onChange={e => setSong(e.target.value)} placeholder="Song title" style={playlistInputStyle} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span style={labelStyle}>Artist</span>
+            <input value={artist} onChange={e => setArtist(e.target.value)} placeholder="Artist" style={playlistInputStyle} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span style={labelStyle}>Tag</span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {TAG_ORDER.map(t => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setTag(t)}
+                  style={{
+                    padding: '6px 14px', borderRadius: 999, cursor: 'pointer', fontFamily: PJS,
+                    fontSize: 12, fontWeight: 600,
+                    background: tag === t ? '#0A0A0A' : 'transparent',
+                    color: tag === t ? '#FFFFFF' : 'rgba(10,10,10,0.6)',
+                    border: `1px solid ${tag === t ? '#0A0A0A' : 'rgba(10,10,10,0.18)'}`,
+                  }}
+                >
+                  {TAG_LABEL[t]}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span style={labelStyle}>Notes</span>
+            <Textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Anything the band or DJ should know" />
+          </div>
+        </div>
+        <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.12)', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+          <button onClick={onClose} className="btn-editorial-secondary" style={{ fontSize: 13 }}>Cancel</button>
+          <button
+            onClick={() => onSave({ song_title: song.trim(), artist: artist.trim(), category: tag, notes: notes.trim() })}
+            disabled={!ready}
+            className="btn-primary"
+            style={{ fontSize: 13, opacity: ready ? 1 : 0.4 }}
+          >
+            {editing ? 'Save' : 'Add song'}
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function MusicPage() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('playlist');
@@ -123,14 +189,10 @@ export default function MusicPage() {
   // the underlying set empties teaches a couple that the product rearranges
   // itself, and they stop trusting where things are. A stable position plus a
   // count directs attention without moving the furniture.
-  const [requestFilter, setRequestFilter] = useState('all');
-  const [showSearch, setShowSearch] = useState(false);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [showAddLink, setShowAddLink] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [editingTrack, setEditingTrack] = useState(null);
+  const [songModal, setSongModal] = useState(null); // null | 'new' | track
   const [avaOpen, setAvaOpen] = useState(false);
   const [addingPlaylist, setAddingPlaylist] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState('');
@@ -303,9 +365,6 @@ export default function MusicPage() {
   };
 
   const allRequests = songRequests || [];
-  const visibleRequests = requestFilter === 'all'
-    ? allRequests
-    : allRequests.filter(r => (r.status || 'pending') === requestFilter);
   // Counts derived once from the guarded list. The filter buttons previously
   // called songRequests.filter() inline, which threw before react-query
   // resolved and took the whole page to the error boundary.
@@ -323,13 +382,6 @@ export default function MusicPage() {
   const REQUEST_STATUSES = ['pending', 'approved', 'declined', 'added'];
   // 'all' is a VIEW, not a status — it stays out of REQUEST_STATUSES so the
   // coverage guard keeps checking a real partition of the schema's enum.
-  const REQUEST_TABS = ['all', ...REQUEST_STATUSES];
-  const STATUS_LABELS = { all: 'All', pending: 'Pending', approved: 'Approved', declined: 'Declined', added: 'On the playlist' };
-  const requestCounts = {
-    all: allRequests.length,
-    ...Object.fromEntries(
-      REQUEST_STATUSES.map(k => [k, allRequests.filter(r => (r.status || 'pending') === k).length])),
-  };
   const reviewRequest = (songRequestId, action) => reviewRequestMutation.mutate({ songRequestId, action });
 
   const pendingCount = (songRequests || []).filter(r => r.status === 'pending').length;
@@ -345,26 +397,24 @@ export default function MusicPage() {
   const shareSummary = details?.slug ? [`openinvite.com.au/w/${details.slug}`] : [];
   const guestCount = (songRequests || []).length;
 
-  const closeAddPanels = () => { setShowSearch(false); setShowAddForm(false); setShowAddLink(false); setEditingTrack(null); };
 
-  const handleAddTrack = async (track) => {
+  // ONE MODAL, TWO JOBS. `songModal` is null when closed, the string 'new'
+  // when adding, and the track itself when editing — the same shape the event
+  // form on Event details uses, so there is no second piece of state that can
+  // disagree about which of the two is happening.
+  const handleEditTrack = (track) => setSongModal(track);
+  const handleSaveSong = async (fields) => {
     try {
-      await addTrackMutation.mutateAsync(track);
-      closeAddPanels();
-      toast.success('Track added');
+      if (songModal && songModal !== 'new') {
+        await updateTrackMutation.mutateAsync({ id: songModal.id, updates: fields });
+        toast.success('Song updated');
+      } else {
+        await addTrackMutation.mutateAsync(fields);
+        toast.success('Song added');
+      }
+      setSongModal(null);
     } catch {
-      toast.error('Failed to add track');
-    }
-  };
-
-  const handleEditTrack = (track) => { setEditingTrack(track); setShowAddForm(true); setShowSearch(false); setShowAddLink(false); };
-  const handleUpdateTrack = async (updated) => {
-    try {
-      await updateTrackMutation.mutateAsync({ id: editingTrack.id, updates: updated });
-      setEditingTrack(null); setShowAddForm(false);
-      toast.success('Track updated');
-    } catch {
-      toast.error('Failed to update track');
+      toast.error('Could not save that song — try again.');
     }
   };
   const handleDeleteTrack = async (id) => {
@@ -373,13 +423,6 @@ export default function MusicPage() {
       await deleteTrackMutation.mutateAsync(id);
     } catch {
       toast.error('Failed to remove track');
-    }
-  };
-  const handleToggleApproval = async (track) => {
-    try {
-      await updateTrackMutation.mutateAsync({ id: track.id, updates: { approved: !track.approved } });
-    } catch {
-      toast.error('Failed to update track');
     }
   };
 
@@ -525,66 +568,42 @@ export default function MusicPage() {
             </section>
             </OptionAccordionSection>
 
-            <OptionAccordionSection sectionKey="requests" title="Song requests" summary={requestsSummary}>
-            {/* ── 2. Song requests ─────────────────────────────────────── */}
+            <OptionAccordionSection sectionKey="requests" title="Your songs" summary={requestsSummary}>
+            {/* ── 2. The table ─────────────────────────────────────────────
+                Round two, item 12: one table, like every other table in the
+                product — song, artist, tag, notes — with the guests' requests
+                in it, carrying Approve and Decline.
+
+                WHAT THIS REPLACES IS NOT ONLY A LIST OF REQUESTS. The couple's
+                own tracks are real Music records, created when a request is
+                approved, and until now NO SCREEN IN THE PRODUCT SHOWED THEM.
+                `playlistTracks` was read once, for a number in the stat strip.
+                The whole CRUD layer — add, edit, delete, approve — already
+                existed on this page with nothing rendering it. */}
             <section>
-              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                <div>
-                  <p style={helpTextStyle}>What your guests have asked for.</p>
-                </div>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
+                <p style={helpTextStyle}>Your songs, and what your guests have asked for.</p>
                 {!readOnly && (
-                  <button onClick={() => setShowSettings(true)} className="btn-editorial-secondary" style={{ fontSize: 12 }}>
-                    Request settings
-                  </button>
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    <button onClick={() => setSongModal('new')} className="btn-primary" style={{ fontSize: 12 }}>
+                      Add a song
+                    </button>
+                    <button onClick={() => setShowSettings(true)} className="btn-editorial-secondary" style={{ fontSize: 12 }}>
+                      Request settings
+                    </button>
+                  </div>
                 )}
               </div>
-
-              <div style={{ display: 'flex', gap: 8, margin: '16px 0 20px', flexWrap: 'wrap' }}>
-                {/* FILTERS, NOT ACTIONS. These were btn-primary /
-                    btn-editorial-secondary — the button vocabulary — so a
-                    chosen filter looked like a thing that would DO something.
-                    A filter narrows a list; it is a pill. */}
-                {REQUEST_TABS.map(f => (
-                  <FilterPill
-                    key={f}
-                    label={`${STATUS_LABELS[f]} (${requestCounts[f]})`}
-                    active={requestFilter === f}
-                    onClick={() => setRequestFilter(f)}
-                  />
-                ))}
-              </div>
-
-              {visibleRequests.length === 0 ? (
-                <p style={{ ...helpTextStyle, margin: 0 }}>
-                  {requestFilter === 'all'
-                    ? 'No song requests yet. They appear here as guests send them.'
-                    : requestFilter === 'pending'
-                      ? 'No requests waiting on you.'
-                      : requestFilter === 'added'
-                        ? 'No requests have been added to your playlist yet.'
-                        : `No ${requestFilter} requests yet.`}
-                </p>
-              ) : (
-                <div style={{ borderTop: '1px solid rgba(10,10,10,0.12)' }}>
-                  {visibleRequests.map(req => (
-                    <div key={req.id} style={requestRowStyle}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={requestTitleStyle}>{req.title}</p>
-                        <p style={requestMetaStyle}>
-                          {req.artist}{req.submittedBy ? ` · requested by ${req.submittedBy}` : ''}
-                        </p>
-                        {req.guestNote && <p style={requestNoteStyle}>{req.guestNote}</p>}
-                      </div>
-                      {!readOnly && (req.status || 'pending') === 'pending' && (
-                        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-                          <button onClick={() => reviewRequest(req.id, 'approve')} className="btn-primary" style={{ fontSize: 11 }}>Approve</button>
-                          <button onClick={() => reviewRequest(req.id, 'decline')} className="btn-editorial-secondary" style={{ fontSize: 11 }}>Decline</button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
+              <MusicTable
+                tracks={playlistTracks}
+                requests={allRequests}
+                loading={false}
+                readOnly={readOnly}
+                onEdit={handleEditTrack}
+                onDelete={handleDeleteTrack}
+                onApprove={(id) => reviewRequest(id, 'approve')}
+                onDecline={(id) => reviewRequest(id, 'decline')}
+              />
             </section>
             </OptionAccordionSection>
 
@@ -638,6 +657,14 @@ export default function MusicPage() {
       {/* Modals */}
 
       {/* Settings modal */}
+      {songModal && (
+        <SongModal
+          track={songModal === 'new' ? null : songModal}
+          onSave={handleSaveSong}
+          onClose={() => setSongModal(null)}
+        />
+      )}
+
       {showSettings && (
         <SettingsModal
           details={details}
