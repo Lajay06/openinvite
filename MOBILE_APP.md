@@ -797,7 +797,9 @@ bundle.
 
 `MOBILE_PARITY.md` is the source of truth for what the app does and how it matches the desktop. Every desktop planning feature has an entry there naming its fields, actions, modals, integrations and states, what the mobile screen does, and a status line; the owner's decisions that deliberately diverge (no QR codes, no direct email to guests, canvases desktop-only) are recorded there too, so a parity sweep does not add them back.
 
-A new or changed couple-facing planning feature on the desktop must get a matching entry in `MOBILE_PARITY.md` and a matching mobile screen, sheet or field, in the same change or the next one on this lane. The owner is adding a "Mobile impact" line rule to the product lane: every PR that adds or changes such a feature carries one line in its description saying what the app must do about it (PR #822's Stay and Getting here rename was the first, recorded retroactively). This file does not edit `CLAUDE.md`; the rule lives with the product lane.
+A new or changed couple-facing planning feature on the desktop must get a matching entry in `MOBILE_PARITY.md` and a matching mobile screen, sheet or field, in the same change or the next one on this lane.
+
+**The "Mobile impact" line rule lives in one place: `MOBILE_PARITY.md`, "The Mobile impact line — how a desktop change reaches the phone".** Who writes it, why "Mobile impact: none" is a real answer and the commonest one, what to do when a carried item is a rename, and what PRs #822 and #831 each taught. It was stated in short here as well, and two statements of one rule is how a rule drifts; this is the pointer, that is the rule. This file does not edit `CLAUDE.md`; the rule lives with the product lane.
 
 ## How to run
 
