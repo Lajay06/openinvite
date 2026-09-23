@@ -20,6 +20,7 @@ import CountUp from "@/components/shared/CountUp";
 
 import { sortScheduleItems } from '@/lib/scheduleOrder';
 import { buildScheduleEvents } from '@/lib/scheduleEvents';
+import { buildScheduleWorkbook, downloadScheduleWorkbook } from '@/lib/scheduleWorkbook';
 import ScheduleTable from '../components/schedule/ScheduleTable';
 import SubscribeCalendar from '../components/schedule/SubscribeCalendar';
 import RunSheet from '../components/schedule/RunSheet';
@@ -72,7 +73,7 @@ export default function ScheduleHub() {
   const location = useLocation();
   const navigate  = useNavigate();
 
-  // ── Shared schedule data (for stat strip, Export CSV, Add event) ──────────
+  // ── Shared schedule data (for stat strip, Export, Add event) ──────────────
   const [scheduleItems, setScheduleItems] = useState([]);
   // The list and the calendar read ONE set of events, so "the list shows every
   // event the calendar shows" is a property rather than a coincidence. The
@@ -229,23 +230,31 @@ export default function ScheduleHub() {
     { label: "Vendor dates",    value: timelineStats.vendor },
   ];
 
-  // ── Export CSV ────────────────────────────────────────────────────────────
-  const exportSchedule = () => {
-    const csvContent = [
-      ["Event Name","Date","Start Time","End Time","Location","Category","Responsible Person","Description","Notes"].join(","),
-      ...scheduleItems.map(item =>
-        [item.event_name, item.event_date || "", item.start_time, item.end_time || "",
-         item.location || "", item.category || "", item.responsible_person || "",
-         item.description || "", item.notes || ""]
-        .map(f => `"${f}"`).join(",")
-      ),
-    ].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url  = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url; link.download = "wedding-schedule.csv"; link.click();
-    URL.revokeObjectURL(url);
-    toast.success("Schedule exported");
+  // ── Export — ONE BUTTON, ONE WORKBOOK, TWO SHEETS ─────────────────────────
+  //
+  // Round two, item 9. The CSV this replaces mapped `scheduleItems` — the
+  // Schedule entity's own rows, and nothing else. The List on this page shows
+  // more: to-dos with a date, vendor meetings and contract dates, the RSVP and
+  // music deadlines, the ceremony and reception. So a couple who exported
+  // their schedule got a file missing "book the celebrant" and every other row
+  // they could see, with nothing saying so.
+  //
+  // The workbook's first sheet is built from `events` — the same rows the List
+  // renders — so the file and the page can no longer disagree. The second is
+  // every event's run sheet, one after another, each row naming its event.
+  //
+  // The .ics button below is NOT "the export" and stays. It answers a
+  // different question: put these dates in my calendar, not give me the file.
+  const exportSchedule = async () => {
+    const tid = toast.loading('Building your workbook…');
+    try {
+      await downloadScheduleWorkbook(buildScheduleWorkbook({ events, scheduleItems }));
+      toast.success('Schedule exported', { id: tid });
+    } catch {
+      // xlsx is loaded on demand, so this is the one failure worth naming: a
+      // couple on a dropped connection presses the button and nothing happens.
+      toast.error('Could not build the workbook — check your connection and try again.', { id: tid });
+    }
   };
 
   // ── Add to calendar (.ics) — full schedule ────────────────────────────────
@@ -358,7 +367,7 @@ export default function ScheduleHub() {
             className="btn-editorial-secondary"
             style={{ opacity: scheduleItems.length === 0 ? 0.4 : 1 }}
           >
-            Export CSV
+            Export
           </button>
           <button
             onClick={exportScheduleIcs}
