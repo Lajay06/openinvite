@@ -3,16 +3,21 @@ import { Plus, X, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';
 import { OptionAccordion, OptionAccordionSection, OptionPill } from '@/components/shared/OptionAccordion';
-import { FAITH_OPTIONS, FAITH_FOR_INTERFAITH, CULTURE_REGIONS, CULTURE_CROSS_CUTTING } from '@/lib/weddingThemeOptions';
+import {
+  FAITH_OPTIONS, FAITH_FOR_INTERFAITH, CULTURE_REGIONS, CULTURE_CROSS_CUTTING,
+  AESTHETIC_OPTIONS, ATMOSPHERE_OPTIONS, SETTING_OPTIONS,
+} from '@/lib/weddingThemeOptions';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-// Round 8 ask #11: every option list on this page ordered alphabetically.
-const AESTHETIC_OPTIONS  = ['Beach', 'Boho', 'Classic', 'Garden', 'Glamorous', 'Luxury', 'Minimalist', 'Modern', 'Romantic', 'Rustic', 'Vintage'];
-
-const ATMOSPHERE_OPTIONS = ['Big party', 'Destination', 'Formal & elegant', 'Intimate & relaxed', 'Multi-day', 'Outdoor & nature'];
-const SEASON_OPTIONS     = ['Autumn', 'Spring', 'Summer', 'Winter'];
-const SETTING_OPTIONS    = ['Indoor', 'Mix of both', 'Outdoor'];
+// THE OPTION LISTS LIVE IN src/lib/weddingThemeOptions.js NOW, all five of
+// them, because onboarding asks the same five questions from the same source.
+// Round 8 ask #11 still holds there: every list ordered alphabetically.
+//
+// SEASON_OPTIONS IS GONE WITH THE QUESTION. Round two, item 7: season is no
+// longer asked, it is derived — hemisphere from the venue, season from the
+// date, in src/lib/weddingSeason.js. A couple who told us the date and the
+// venue has already answered it.
 
 const headingStyle = { fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, margin: '0 0 14px' };
 const subLabelStyle = { fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: '0 0 10px', display: 'block' };
@@ -108,40 +113,26 @@ export default function ThemeSection({ theme, onSave, readOnly = false }) {
         </div>
       </OptionAccordionSection>
 
-      <OptionAccordionSection
-        sectionKey="faith"
-        title="Faith or religion"
-        summary={local.faith ? [local.faith === 'Interfaith' && interfaithPicks.length === 2 ? `Interfaith: ${interfaithPicks.join(' and ')}` : local.faith] : []}
-      >
+      <OptionAccordionSection sectionKey="atmosphere" title="Atmosphere" summary={local.atmosphere || []}>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {FAITH_OPTIONS.map(opt => (
+          {ATMOSPHERE_OPTIONS.map(opt => (
             <OptionPill key={opt} label={opt}
-              selected={local.faith === opt}
-              onClick={() => setFaith(opt)}
+              selected={(local.atmosphere || []).includes(opt)}
+              onClick={() => toggleMulti('atmosphere', opt)}
               disabled={readOnly} />
           ))}
         </div>
+      </OptionAccordionSection>
 
-        {local.faith === 'Interfaith' && (
-          <div style={{ marginTop: 16, padding: '14px 16px', border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, background: '#FAFAFA' }}>
-            <span style={subLabelStyle}>
-              Select the two faiths — {interfaithPicks.length}/2 selected
-            </span>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {FAITH_FOR_INTERFAITH.map(opt => (
-                <OptionPill key={opt} label={opt} size="compact"
-                  selected={interfaithPicks.includes(opt)}
-                  onClick={() => toggleInterfaithPick(opt)}
-                  disabled={readOnly} />
-              ))}
-            </div>
-            {interfaithPicks.length === 2 && (
-              <p style={{ fontSize: 12, color: '#E03553', fontFamily: PJS, margin: '10px 0 0', fontWeight: 600 }}>
-                ✓ {interfaithPicks[0]} and {interfaithPicks[1]}
-              </p>
-            )}
-          </div>
-        )}
+      <OptionAccordionSection sectionKey="setting" title="Setting" summary={local.setting ? [local.setting] : []}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {SETTING_OPTIONS.map(opt => (
+            <OptionPill key={opt} label={opt}
+              selected={local.setting === opt}
+              onClick={() => setSingle('setting', opt)}
+              disabled={readOnly} />
+          ))}
+        </div>
       </OptionAccordionSection>
 
       <OptionAccordionSection
@@ -243,37 +234,40 @@ export default function ThemeSection({ theme, onSave, readOnly = false }) {
         )}
       </OptionAccordionSection>
 
-      <OptionAccordionSection sectionKey="atmosphere" title="Atmosphere" summary={local.atmosphere || []}>
+      <OptionAccordionSection
+        sectionKey="faith"
+        title="Faith or religion"
+        summary={local.faith ? [local.faith === 'Interfaith' && interfaithPicks.length === 2 ? `Interfaith: ${interfaithPicks.join(' and ')}` : local.faith] : []}
+      >
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {ATMOSPHERE_OPTIONS.map(opt => (
+          {FAITH_OPTIONS.map(opt => (
             <OptionPill key={opt} label={opt}
-              selected={(local.atmosphere || []).includes(opt)}
-              onClick={() => toggleMulti('atmosphere', opt)}
+              selected={local.faith === opt}
+              onClick={() => setFaith(opt)}
               disabled={readOnly} />
           ))}
         </div>
-      </OptionAccordionSection>
 
-      <OptionAccordionSection sectionKey="season" title="Season" summary={local.season ? [local.season] : []}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {SEASON_OPTIONS.map(opt => (
-            <OptionPill key={opt} label={opt}
-              selected={local.season === opt}
-              onClick={() => setSingle('season', opt)}
-              disabled={readOnly} />
-          ))}
-        </div>
-      </OptionAccordionSection>
-
-      <OptionAccordionSection sectionKey="setting" title="Setting" summary={local.setting ? [local.setting] : []}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {SETTING_OPTIONS.map(opt => (
-            <OptionPill key={opt} label={opt}
-              selected={local.setting === opt}
-              onClick={() => setSingle('setting', opt)}
-              disabled={readOnly} />
-          ))}
-        </div>
+        {local.faith === 'Interfaith' && (
+          <div style={{ marginTop: 16, padding: '14px 16px', border: '1px solid rgba(10,10,10,0.12)', borderRadius: 6, background: '#FAFAFA' }}>
+            <span style={subLabelStyle}>
+              Select the two faiths — {interfaithPicks.length}/2 selected
+            </span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {FAITH_FOR_INTERFAITH.map(opt => (
+                <OptionPill key={opt} label={opt} size="compact"
+                  selected={interfaithPicks.includes(opt)}
+                  onClick={() => toggleInterfaithPick(opt)}
+                  disabled={readOnly} />
+              ))}
+            </div>
+            {interfaithPicks.length === 2 && (
+              <p style={{ fontSize: 12, color: '#E03553', fontFamily: PJS, margin: '10px 0 0', fontWeight: 600 }}>
+                ✓ {interfaithPicks[0]} and {interfaithPicks[1]}
+              </p>
+            )}
+          </div>
+        )}
       </OptionAccordionSection>
 
       </OptionAccordion>

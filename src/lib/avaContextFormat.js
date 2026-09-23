@@ -15,6 +15,7 @@ import { resolveAttendees, MEAL_CHOSEN } from './attendees.js';
 import { mealOptionLabel } from './weddingEvents.js';
 import { coupleDisplayName } from './coupleNames.js';
 import { daysUntilWedding, countdownForPrompt } from './weddingCountdown.js';
+import { deriveSeason } from './weddingSeason.js';
 
 /**
  * THE FORMATTING, SPLIT OUT SO IT CAN BE TESTED.
@@ -167,13 +168,24 @@ export function formatWeddingContext({ guests = [], budget = [], vendors = [], s
   const styleTagsLine = !theme.aesthetic?.length && wd.weddingStyle?.length
     ? `Style/ceremony/vibe tags: ${wd.weddingStyle.join(', ')}`
     : '';
+  // deriveSeason returns null without a parseable country on the venue
+  // address, and that is correct: an absent season beats a guessed one — a
+  // fixed northern table once told a New Year's Eve wedding in Sydney it was
+  // a winter wedding.
+  const season = theme.season || deriveSeason(weddingDate, wd.mainCeremony?.address);
+  const seasonLine = season ? `Season: ${season}` : '';
+
   const themeLines = [
     theme.aesthetic?.length  ? `Aesthetic: ${theme.aesthetic.join(', ')}` : '',
     styleTagsLine,
     faithLine,
     cultureLine,
     theme.atmosphere?.length ? `Atmosphere: ${theme.atmosphere.join(', ')}` : '',
-    theme.season ? `Season: ${theme.season}` : '',
+    // SEASON IS DERIVED, NOT ASKED (round two, item 7). theme.season is kept
+    // first only so a couple who answered the old question still sees their
+    // own answer; everyone else gets the hemisphere-aware derivation from the
+    // date and the venue, which is the answer the question was trying to get.
+    seasonLine,
     theme.setting ? `Setting: ${theme.setting}` : '',
   ].filter(Boolean);
 

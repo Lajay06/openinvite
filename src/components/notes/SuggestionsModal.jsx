@@ -3,6 +3,7 @@ import { X, Plus, Brain, Loader2, Clock } from "lucide-react";
 import { InvokeLLM } from '@/integrations/Core';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { deriveSeason } from '@/lib/weddingSeason';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -94,7 +95,19 @@ export default function SuggestionsModal({ isOpen, onClose, onAddSuggestion }) {
   const loadWeddingTheme = async () => {
     try {
       const details = await getMyWeddingDetails();
-      if (details?.theme) setWeddingTheme(details.theme);
+      // SEASON IS DERIVED, NOT ASKED (round two, item 7). The question is gone
+      // from both Event details and onboarding; the date and the venue already
+      // answer it, and deriveSeason is hemisphere-aware where the old fixed
+      // table was not. A stored answer from before the question was removed
+      // still wins, so nobody's own pick is overridden.
+      if (details?.theme) {
+        setWeddingTheme({
+          ...details.theme,
+          season: details.theme.season
+            || deriveSeason(details.weddingDate, details.mainCeremony?.address)
+            || '',
+        });
+      }
     } catch (e) { /* ignore */ }
   };
 
