@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Sparkles, ChevronLeft, Check, Copy } from 'lucide-react';
 import RulesBasedStyleQuestionnaire from './RulesBasedStyleQuestionnaire';
+import { getWeddingEvents, getEventVenueAndDate } from '@/lib/weddingEvents';
+import { buildStylingQuizPrompt, stylingQuizSchema } from '@/lib/stylingQuizPrompt';
 import { deriveSeason } from '@/lib/weddingSeason';
 
 import { coupleDisplayName } from '@/lib/coupleNames';
@@ -54,41 +56,10 @@ const STEPS = [
   },
 ];
 
-const RESULT_SCHEMA = {
-  type: 'object',
-  properties: {
-    mainOutfit: {
-      type: 'object',
-      properties: {
-        title: { type: 'string' },
-        description: { type: 'string' },
-        colors: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: { name: { type: 'string' }, hex: { type: 'string' } },
-            required: ['name', 'hex'],
-          },
-        },
-        fabric: { type: 'string' },
-        styleNotes: { type: 'array', items: { type: 'string' } },
-      },
-      required: ['title', 'description', 'colors', 'fabric', 'styleNotes'],
-    },
-    alternatives: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: { title: { type: 'string' }, description: { type: 'string' } },
-        required: ['title', 'description'],
-      },
-    },
-    avoid: { type: 'array', items: { type: 'string' } },
-    practicalTips: { type: 'array', items: { type: 'string' } },
-    outfitMood: { type: 'string' },
-  },
-  required: ['mainOutfit', 'alternatives', 'avoid', 'practicalTips', 'outfitMood'],
-};
+// RESULT_SCHEMA MOVED, AND GREW A perEvent ARRAY. It lives in
+// src/lib/stylingQuizPrompt.js beside the prompt it belongs to, so the shape
+// asked for and the shape rendered cannot drift apart, and so a test can hold
+// both to the ruling without a browser.
 
 // ── Main component ────────────────────────────────────────────────────────────
 
@@ -106,7 +77,18 @@ export default function WeddingStylePage(props) {
 
 function AIStyleQuestionnaire({ weddingDetails, theme, typography }) {
   const [phase, setPhase] = useState('questionnaire'); // 'questionnaire' | 'loading' | 'results' | 'error'
+  // WHICH EVENTS FIRST, THEN THE GUEST. Round two, item 10: the quiz is per
+  // event, so the first thing it needs is which events this guest is actually
+  // going to — a question it never asked, which is why it could only ever
+  // style them once, against the ceremony's dress code.
+  //
+  // Step -1 is that question, and only when there is more than one event to
+  // choose between: a wedding with a ceremony and a reception and nothing else
+  // has nobody to ask, and an extra screen answering itself is worse than no
+  // screen.
   const [step, setStep] = useState(0);
+  const [attendingIds, setAttendingIds] = useState(null); // null until chosen
+  const [pending, setPending] = useState([]);
   const [answers, setAnswers] = useState({ gender: '', style: '', comfort: '', budget: '', notes: '' });
   const [results, setResults] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -116,8 +98,16 @@ function AIStyleQuestionnaire({ weddingDetails, theme, typography }) {
   // Without it deriveSeason returns null and every surface below omits
   // the season rather than guessing at one.
   const season = deriveSeason(weddingDetails.weddingDate, weddingDetails.mainCeremony?.address);
-  const dressCode = weddingDetails.mainCeremony?.dressCode;
-  const weddingStyle = Array.isArray(weddingDetails.weddingStyle) ? weddingDetails.weddingStyle[0] : null;
+  // EVERY EVENT, WITH ITS OWN DRESS CODE — not mainCeremony's, which is what
+  // the prompt used to read and the whole reason a Hindu ceremony and a
+  // cocktail reception got one answer between them.
+  const events = useMemo(() => getWeddingEvents(weddingDetails).map((e) => {
+    const vd = getEventVenueAndDate(weddingDetails, e);
+    return { ...e, venue: vd.venue, date: vd.date || weddingDetails.weddingDate || '' };
+  }), [weddingDetails]);
+  const attending = attendingIds === null
+    ? events
+    : events.filter((e) => attendingIds.includes(e.event_id));
 
   const currentStep = STEPS[step];
   const isLastStep = step === STEPS.length - 1;
@@ -137,48 +127,17 @@ function AIStyleQuestionnaire({ weddingDetails, theme, typography }) {
 
   const handleSubmit = async () => {
     setPhase('loading');
-    const prompt = `You are a wedding outfit stylist. Generate outfit recommendations for a wedding guest.
-
-WEDDING DETAILS:
-- Couple: ${coupleNames}
-- Date: ${weddingDetails.weddingDate || 'not specified'}
-- Style: ${weddingStyle || 'elegant'}
-- Dress code: ${dressCode || 'smart casual'}
-- Venue: ${weddingDetails.mainCeremony?.venueName || weddingDetails.venueType || 'not specified'}
-${season ? `- Season: ${season}\n` : ''}
-GUEST PREFERENCES:
-- Gender identity: ${answers.gender}
-- Style vibe: ${answers.style}
-- Comfort preference: ${answers.comfort}
-- Budget: ${answers.budget}
-- Additional context: ${answers.notes || 'none'}
-
-Return a JSON object with exactly this structure:
-{
-  "mainOutfit": {
-    "title": "outfit name/description",
-    "description": "2-3 sentence explanation of why this works for this specific wedding",
-    "colors": [
-      {"name": "color name", "hex": "#hexcode"},
-      {"name": "color name", "hex": "#hexcode"},
-      {"name": "color name", "hex": "#hexcode"}
-    ],
-    "fabric": "fabric suggestion",
-    "styleNotes": ["tip 1", "tip 2", "tip 3"]
-  },
-  "alternatives": [
-    {"title": "alternative outfit title", "description": "one line description"},
-    {"title": "alternative outfit title", "description": "one line description"}
-  ],
-  "avoid": ["thing to avoid 1", "thing to avoid 2", "thing to avoid 3"],
-  "practicalTips": ["tip 1 specific to this venue/season", "tip 2", "tip 3"],
-  "outfitMood": "one word mood or aesthetic"
-}`;
-
+    const prompt = buildStylingQuizPrompt({
+      weddingDetails,
+      coupleNames,
+      attending,
+      answers,
+      season,
+    });
     try {
       const raw = await base44.integrations.Core.InvokeLLM({
         prompt,
-        response_json_schema: RESULT_SCHEMA,
+        response_json_schema: stylingQuizSchema(),
       });
       const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
       setResults(parsed);
@@ -198,6 +157,8 @@ Return a JSON object with exactly this structure:
   const handleRetake = () => {
     setPhase('questionnaire');
     setStep(0);
+    setAttendingIds(null);
+    setPending([]);
     setAnswers({ gender: '', style: '', comfort: '', budget: '', notes: '' });
     setResults(null);
   };
@@ -263,6 +224,46 @@ Return a JSON object with exactly this structure:
         </div>
 
         <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 24px 80px' }}>
+
+          {/* ONE CARD PER EVENT, ABOVE THE OVERALL ONE.
+              Round two, item 10: "A Hindu ceremony followed by a cocktail
+              reception gets two different answers." These are those answers,
+              in the order the events run; the card below is what holds them
+              together — the palette, the fabrics, what carries over. */}
+          {(results.perEvent || []).length > 0 && (
+            <div style={{ marginBottom: 20 }}>
+              <p style={{ fontFamily: bfont, fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', color: `${theme.lightText}50`, margin: '0 0 12px' }}>
+                Event by event
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {results.perEvent.map((ev, i) => (
+                  <div key={i} style={{ border: `1px solid ${theme.lightText}15`, padding: '20px 22px' }}>
+                    <p style={{ fontFamily: bfont, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: theme.accent, margin: '0 0 8px' }}>
+                      {ev.event}
+                    </p>
+                    <p style={{ fontFamily: bfont, fontSize: 15, fontWeight: 600, color: theme.lightText, margin: '0 0 6px' }}>
+                      {ev.title}
+                    </p>
+                    <p style={{ fontFamily: bfont, fontSize: 14, color: `${theme.lightText}80`, margin: 0, lineHeight: 1.7 }}>
+                      {ev.description}
+                    </p>
+                    {ev.fabric && (
+                      <p style={{ fontFamily: bfont, fontSize: 13, color: `${theme.lightText}65`, margin: '10px 0 0', lineHeight: 1.6 }}>
+                        {ev.fabric}
+                      </p>
+                    )}
+                    {(ev.styleNotes || []).length > 0 && (
+                      <ul style={{ margin: '10px 0 0', padding: '0 0 0 16px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        {ev.styleNotes.map((note, n) => (
+                          <li key={n} style={{ fontFamily: bfont, fontSize: 13, color: `${theme.lightText}70`, lineHeight: 1.6 }}>{note}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Main outfit card */}
           <div style={{ background: theme.darkBg, padding: 32, marginBottom: 20 }}>
@@ -394,12 +395,62 @@ Return a JSON object with exactly this structure:
     );
   }
 
+  // ── Which events? ──
+  //
+  // Asked only when there is a choice to make. A wedding with one event has
+  // nobody to ask, and a screen that answers itself is worse than no screen.
+  if (attendingIds === null && events.length > 1) {
+    const toggle = (id) => setPending((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    return (
+      <div style={{ minHeight: '100vh', background: theme.lightBg, fontFamily: bfont }}>
+        <div style={{ maxWidth: 560, margin: '0 auto', padding: '60px 24px 80px' }}>
+          <h2 style={{ fontFamily: hfont, fontSize: 'clamp(1.5rem, 4vw, 2.4rem)', fontWeight: hweight, fontStyle: hstyle, color: theme.lightText, margin: '0 0 12px', lineHeight: 1.2 }}>
+            Which of these are you coming to?
+          </h2>
+          <p style={{ fontFamily: bfont, fontSize: 15, color: `${theme.lightText}70`, margin: '0 0 28px', lineHeight: 1.65 }}>
+            Each one has its own dress code, so each one gets its own answer.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
+            {events.map((e) => {
+              const on = pending.includes(e.event_id);
+              return (
+                <button
+                  key={e.event_id}
+                  onClick={() => toggle(e.event_id)}
+                  style={{
+                    textAlign: 'left', padding: '16px 20px', cursor: 'pointer', fontFamily: bfont,
+                    background: on ? theme.darkBg : 'transparent',
+                    color: on ? theme.darkText : theme.lightText,
+                    border: `1px solid ${on ? theme.darkBg : `${theme.lightText}20`}`,
+                  }}
+                >
+                  <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>{e.name}</span>
+                  <span style={{ display: 'block', fontSize: 13, opacity: 0.7, marginTop: 2 }}>
+                    {e.dressCode ? e.dressCode : 'No dress code given'}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <button
+            onClick={() => setAttendingIds(pending.length ? pending : events.map((e) => e.event_id))}
+            style={{ padding: '12px 26px', borderRadius: 999, background: theme.accent, color: '#FFFFFF', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 700, fontFamily: bfont }}
+          >
+            {pending.length ? 'Continue \u2192' : 'All of them \u2192'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // ── Questionnaire ──
 
+  // THE CHIPS NAME THE EVENTS, not one dress code. They read as the answer the
+  // quiz is about to give, and "Dress code: cocktail" was only ever the
+  // CEREMONY's — printed over a wedding whose reception said something else.
   const chips = [
-    dressCode && `Dress code: ${dressCode}`,
+    ...attending.map((e) => (e.dressCode ? `${e.name}: ${e.dressCode}` : e.name)),
     season,
-    weddingStyle,
   ].filter(Boolean);
 
   return (
