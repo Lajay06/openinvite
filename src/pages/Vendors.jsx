@@ -190,9 +190,14 @@ export default function VendorsPage() {
 
       {/* Stat strip */}
       <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
+        {/* 24/32 and minHeight 80, the same box every other summary strip in
+            the product uses. This one was 20/32 with no floor, so a couple
+            moving between My vendors and any neighbouring page saw the band
+            change height under the same header. */}
         {STAT_CARDS.map((s, i) => (
           <div key={s.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{
-            padding: '20px 32px',
+            padding: '24px 32px',
+            minHeight: 80,
             borderRight: i < STAT_CARDS.length - 1 ? '1px solid rgba(10,10,10,0.12)' : 'none',
           }}>
             <p style={statLabelStyle}>{s.label}</p>
