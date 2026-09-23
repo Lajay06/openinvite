@@ -135,10 +135,29 @@ export function getGuestEventResponse(guest, event) {
   const existing = responses.find(r => r.event_id === event.event_id);
   if (existing) return existing;
 
-  const hasAnyResponses = responses.length > 0;
+  // A MAIN EVENT DEFAULTS TO INVITED, WHATEVER ELSE THE GUEST HAS ANSWERED.
+  //
+  // This read `hasAnyResponses ? false : event.isMain`, which conflates two
+  // different things: "this guest has answered something, somewhere" and
+  // "this guest was left off the wedding day". A guest who was set for one
+  // pre-wedding event — by the RSVP flow, or by Set events on the guest
+  // list — thereby stopped counting as invited to the ceremony and the
+  // reception, because their responses array was no longer empty and held no
+  // entry for those two.
+  //
+  // Seating is where that showed. Its pool is `invited && (yes|pending)` per
+  // event, so a whole guest list could resolve to nobody, while tables and
+  // seats kept counting because those are read off Table rows. That is how
+  // the page came to say 12 tables, 120 seats, 0 guests beside a guest list
+  // of 244.
+  //
+  // Being at the wedding is the baseline; a pre-wedding event is the opt-in.
+  // An absent entry now means invited for a main event and not invited for
+  // the rest. An explicit entry still wins over both, so nobody the couple
+  // actually removed is re-invited by this.
   return {
     event_id: event.event_id,
-    invited: hasAnyResponses ? false : event.isMain,
+    invited: !!event.isMain,
     status: 'pending',
     meal_choice: null,
     plus_ones: 0,
