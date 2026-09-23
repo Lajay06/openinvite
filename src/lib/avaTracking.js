@@ -38,6 +38,7 @@ export const TRACKING_REQUEST = [
   '',
   'Write EXACTLY THREE separate blocks, one per line, and no more.',
   'Each block is a bold lead phrase of at most six words in **double asterisks**, then ONE plain sentence after it on the same line.',
+  'The lead phrase is a heading. It ends with no punctuation at all — no colon, no dash, no full stop.',
   'Every block must be built on a real number or date from the wedding context above: how far out the date is, how many guests have not replied, how many things are overdue, when the next event is, or money in dollars.',
   '',
   'NEVER a percentage of anything. NEVER an exclamation mark. NEVER an emoji.',
@@ -55,6 +56,36 @@ const LEAD_WORD_CAP = 6;
  * @param {string} text
  * @returns {Array<{lead:string, body:string}>}
  */
+/**
+ * A LEAD IS A HEADING, AND A HEADING DOES NOT END IN A COLON.
+ *
+ * The owner's walk-through: "99 days until the wedding:" and "61 invitations:"
+ * — a colon dangling off a bold line with the sentence on the line below it.
+ *
+ * It is stripped here rather than only asked for in the prompt because the
+ * prompt cannot enforce anything. A model handed "a bold lead phrase, then one
+ * plain sentence" punctuates the lead the way it would in prose, and it is
+ * right to in prose; the page is what makes it a heading. The instruction is
+ * added too, so the usual case never needs the strip, but the page is correct
+ * even on the reply that ignores it.
+ *
+ * Only a colon, and only a trailing one. A lead that reads "Two weeks: the
+ * caterer" is not a shape the prompt asks for, and nothing here rewrites the
+ * middle of a sentence.
+ */
+function dropColon(s) {
+  return String(s || '').trim().replace(/\s*:+$/, '');
+}
+
+/**
+ * The same colon, on the other side of the asterisks. A model writing
+ * `**99 days until the wedding**: you are on track.` puts it at the head of
+ * the body instead, where it reads as a stray mark opening the sentence.
+ */
+function dropLeadingColon(s) {
+  return String(s || '').trim().replace(/^:+\s*/, '');
+}
+
 export function parseTrackingBlocks(text) {
   return String(text || '')
     .split(/\n+/)
@@ -66,7 +97,7 @@ export function parseTrackingBlocks(text) {
     .filter(Boolean)
     .map((line) => {
       const m = /^\*\*(.+?)\*\*\s*(.*)$/.exec(line);
-      return m ? { lead: m[1].trim(), body: m[2].trim() } : { lead: '', body: line };
+      return m ? { lead: dropColon(m[1]), body: dropLeadingColon(m[2]) } : { lead: '', body: line.trim() };
     });
 }
 
