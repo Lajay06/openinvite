@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle2, Circle, XCircle, ArrowRight } from 'lucide-react';
+import { CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import { useNavigate } from 'react-router-dom';
 import { getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
-import CountUp from "@/components/shared/CountUp";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -14,104 +13,6 @@ const labelStyle = {
   color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
 };
 
-const ESSENTIALS_DEFAULT = [
-  'Book the venue',
-  'Choose a photographer',
-  'Send save the dates',
-  'Book the caterer',
-  'Finalise guest list',
-  'Order wedding dress/suit',
-  'Book celebrant/officiant',
-  'Arrange places for guests to stay',
-];
-
-const NICE_TO_HAVE_DEFAULT = [
-  'Hire a videographer',
-  'Arrange flowers and florals',
-  'Book hair and makeup',
-  'Plan honeymoon',
-  'Create guest suite',
-  'Arrange transport',
-];
-
-function loadChecklist() {
-  try {
-    const saved = localStorage.getItem('oi_checklist');
-    if (saved) return JSON.parse(saved);
-    // eslint-disable-next-line no-empty -- best-effort cache read; falls through to a sane empty default below
-  } catch {}
-  return { essentials: [], niceToHave: [] };
-}
-
-
-function ProgressBar({ value }) {
-  return (
-    <div style={{ height: 3, background: 'rgba(10,10,10,0.08)', width: '100%' }}>
-      <div style={{ height: '100%', width: `${value}%`, background: 'linear-gradient(90deg, #E03553, #803D81)', transition: 'width 0.5s' }} />
-    </div>
-  );
-}
-
-function CheckItem({ item, onToggle }) {
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={onToggle}
-      onKeyDown={e => e.key === 'Enter' && onToggle()}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 12,
-        padding: '12px 8px',
-        borderBottom: '1px solid rgba(10,10,10,0.06)',
-        opacity: item.done ? 0.5 : 1,
-        cursor: 'pointer',
-        transition: 'background 0.15s',
-        outline: 'none',
-      }}
-      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,10,10,0.02)'; }}
-      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
-    >
-      {item.done
-        ? <CheckCircle2 size={16} style={{ color: '#E03553', flexShrink: 0 }} />
-        : <Circle size={16} style={{ color: 'rgba(10,10,10,0.45)', flexShrink: 0 }} />
-      }
-      <span style={{
-        fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS,
-        textDecoration: item.done ? 'line-through' : 'none',
-      }}>
-        {item.title}
-      </span>
-    </div>
-  );
-}
-
-function ChecklistSection({ title, items, onToggle }) {
-  const done = items.filter(i => i.done).length;
-  const progress = items.length > 0 ? Math.round((done / items.length) * 100) : 0;
-
-  return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-        <span style={labelStyle}>{title}</span>
-        <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>{done}/{items.length}</span>
-      </div>
-      <div style={{ marginBottom: 12 }}>
-        {/* CALM PASS PR5. State is "next", never "done": a bar and a
-            percentage grade a couple against a checklist they did not write,
-            and every wedding leaves some of it undone on purpose. What is
-            useful is how much is left, in items they can act on. */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-          <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>
-            {items.length - done === 0 ? 'Nothing left here' : `${items.length - done} left`}
-          </span>
-        </div>
-      </div>
-      {items.map((item, i) => (
-        <CheckItem key={i} item={item} onToggle={() => onToggle(i)} />
-      ))}
-    </div>
-  );
-}
 
 // --- Planning overview ---
 
@@ -290,137 +191,48 @@ function PlanningOverview() {
 
 // --- Main page ---
 
-const TABS = [
-  { key: 'my-checklist', label: 'My checklist' },
-  { key: 'overview',     label: 'Planning overview' },
-];
-
+/**
+ * THE SUB-TAB BAR IS GONE, AND SO IS "MY CHECKLIST" — owner ruling, round two
+ * item 6: "delete the 'My checklist' sub-tab entirely. Keep Planning overview.
+ * Remove the sub-tab bar and its heading so the Checklist tab opens straight
+ * into Planning overview."
+ *
+ * WHY THAT LIST WAS NEVER REAL DATA, which is worth recording because it is
+ * the reason nothing is being migrated. My checklist read and wrote
+ * `localStorage['oi_checklist']` and nothing else. It never reached Base44, so
+ * it lived in one browser on one device: a couple who ticked twelve items on a
+ * laptop opened the same page on a phone to an empty list, a collaborator saw
+ * nothing at all, and clearing site data erased it with no warning and no
+ * copy. There is no server-side row to move, and a backfill would have nothing
+ * to read from.
+ *
+ * The stat strip goes with it. Its three figures — Overall progress,
+ * Essentials done, Nice-to-haves done — counted that list and only that list,
+ * so keeping the strip would leave three zeros over a list that no longer
+ * exists.
+ *
+ * What stays: the page header (when not embedded in the To do hub), the Ava
+ * button, and Planning overview, which reads the couple's real records.
+ */
 export default function ChecklistPage({ embedded = false }) {
-  const [lists, setLists] = useState(() => loadChecklist());
-  const [activeTab, setActiveTab] = useState('my-checklist');
   const [avaOpen, setAvaOpen] = useState(false);
-
-  useEffect(() => {
-    localStorage.setItem('oi_checklist', JSON.stringify(lists));
-  }, [lists]);
-
-  const toggleEssential = (idx) => {
-    setLists(prev => ({ ...prev, essentials: prev.essentials.map((it, i) => i === idx ? { ...it, done: !it.done } : it) }));
-  };
-
-  const toggleNice = (idx) => {
-    setLists(prev => ({ ...prev, niceToHave: prev.niceToHave.map((it, i) => i === idx ? { ...it, done: !it.done } : it) }));
-  };
-
-  const allItems = [...lists.essentials, ...lists.niceToHave];
-  const totalDone = allItems.filter(i => i.done).length;
-  const overallProgress = allItems.length > 0 ? Math.round((totalDone / allItems.length) * 100) : 0;
-  const essentialsDone = lists.essentials.filter(i => i.done).length;
-  const niceDone = lists.niceToHave.filter(i => i.done).length;
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
       {!embedded && <DashboardPageHeader title="Checklist" subtitle="Track every task from first steps to big day" />}
-
-      {/* Stat strip */}
-      <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
-        {[
-          { label: 'Overall progress', value: overallProgress, suffix: '%' },
-          { label: 'Essentials done', value: essentialsDone },
-          { label: 'Nice-to-haves done', value: niceDone },
-        ].map((s, i, arr) => (
-          <div key={i} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.12)' : 'none' }}>
-            <p style={{ ...labelStyle, margin: 0, marginBottom: 10 }}>{s.label}</p>
-            <p style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: PJS, lineHeight: 1, margin: 0 }}>
-              <CountUp to={s.value} suffix={s.suffix || ''} />
-            </p>
-          </div>
-        ))}
-      </div>
 
       {/* Ava button */}
       <div style={{ padding: '16px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <AvaButton label="Ask Ava to review your checklist" onClick={() => setAvaOpen(true)} />
       </div>
 
-      {/* Tab bar */}
-      <div style={{ display: 'flex', borderBottom: '1px solid rgba(10,10,10,0.12)', padding: '0 32px' }}>
-        {TABS.map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              padding: '14px 0', marginRight: 28,
-              fontSize: 13, fontWeight: 600, fontFamily: PJS,
-              color: activeTab === tab.key ? '#E03553' : '#444444',
-              borderBottom: activeTab === tab.key ? '2px solid #E03553' : '2px solid transparent',
-              transition: 'color 0.15s',
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {activeTab === 'my-checklist' && (
-        <>
-          {allItems.length === 0 ? (
-            <div style={{ padding: '64px 32px', textAlign: 'center' }}>
-              <p style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, marginBottom: 8 }}>
-                Your checklist is empty
-              </p>
-              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, maxWidth: 360, margin: '0 auto 24px' }}>
-                Switch to the Planning overview tab to track your key wedding milestones.
-              </p>
-              <button
-                onClick={() => setActiveTab('overview')}
-                style={{
-                  background: '#0A0A0A', color: '#FFFFFF', border: 'none', cursor: 'pointer',
-                  fontSize: 12, fontWeight: 600, fontFamily: PJS,
-                  padding: '10px 24px', borderRadius: 999,
-                }}
-              >
-                View planning overview
-              </button>
-            </div>
-          ) : (
-            <>
-              {/* Overall progress bar */}
-              <div style={{ padding: '20px 32px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span style={labelStyle}>Overall completion</span>
-                  <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>
-                    {allItems.length - totalDone === 0 ? 'Nothing left' : `${allItems.length - totalDone} left`}
-                  </span>
-                </div>
-              </div>
-
-              {/* Two-column checklist */}
-              <div style={{ padding: '32px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48 }}>
-                <ChecklistSection
-                  title="Essentials"
-                  items={lists.essentials}
-                  onToggle={toggleEssential}
-                />
-                <ChecklistSection
-                  title="Nice to have"
-                  items={lists.niceToHave}
-                  onToggle={toggleNice}
-                />
-              </div>
-            </>
-          )}
-        </>
-      )}
-
-      {activeTab === 'overview' && <PlanningOverview />}
+      <PlanningOverview />
 
       <AvaModal
         isOpen={avaOpen}
         onClose={() => setAvaOpen(false)}
         pageTitle="Checklist"
-        systemPrompt="You are Ava, a wedding planning checklist advisor. Help prioritise tasks and stay on track."
+        systemPrompt="You are Ava, a wedding planning checklist advisor. Help prioritize tasks and stay on track."
         quickActions={["What should I do this month?", "Am I behind schedule?", "Most important tasks right now", "12-month wedding checklist"]}
       />
     </div>
