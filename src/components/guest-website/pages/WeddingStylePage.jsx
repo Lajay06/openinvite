@@ -395,54 +395,6 @@ function AIStyleQuestionnaire({ weddingDetails, theme, typography }) {
     );
   }
 
-  // ── Which events? ──
-  //
-  // Asked only when there is a choice to make. A wedding with one event has
-  // nobody to ask, and a screen that answers itself is worse than no screen.
-  if (attendingIds === null && events.length > 1) {
-    const toggle = (id) => setPending((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-    return (
-      <div style={{ minHeight: '100vh', background: theme.lightBg, fontFamily: bfont }}>
-        <div style={{ maxWidth: 560, margin: '0 auto', padding: '60px 24px 80px' }}>
-          <h2 style={{ fontFamily: hfont, fontSize: 'clamp(1.5rem, 4vw, 2.4rem)', fontWeight: hweight, fontStyle: hstyle, color: theme.lightText, margin: '0 0 12px', lineHeight: 1.2 }}>
-            Which of these are you coming to?
-          </h2>
-          <p style={{ fontFamily: bfont, fontSize: 15, color: `${theme.lightText}70`, margin: '0 0 28px', lineHeight: 1.65 }}>
-            Each one has its own dress code, so each one gets its own answer.
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
-            {events.map((e) => {
-              const on = pending.includes(e.event_id);
-              return (
-                <button
-                  key={e.event_id}
-                  onClick={() => toggle(e.event_id)}
-                  style={{
-                    textAlign: 'left', padding: '16px 20px', cursor: 'pointer', fontFamily: bfont,
-                    background: on ? theme.darkBg : 'transparent',
-                    color: on ? theme.darkText : theme.lightText,
-                    border: `1px solid ${on ? theme.darkBg : `${theme.lightText}20`}`,
-                  }}
-                >
-                  <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>{e.name}</span>
-                  <span style={{ display: 'block', fontSize: 13, opacity: 0.7, marginTop: 2 }}>
-                    {e.dressCode ? e.dressCode : 'No dress code given'}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          <button
-            onClick={() => setAttendingIds(pending.length ? pending : events.map((e) => e.event_id))}
-            style={{ padding: '12px 26px', borderRadius: 999, background: theme.accent, color: '#FFFFFF', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 700, fontFamily: bfont }}
-          >
-            {pending.length ? 'Continue \u2192' : 'All of them \u2192'}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   // ── Questionnaire ──
 
   // THE CHIPS NAME THE EVENTS, not one dress code. They read as the answer the
@@ -493,6 +445,60 @@ function AIStyleQuestionnaire({ weddingDetails, theme, typography }) {
           </div>
         )}
 
+        {/* ── WHICH EVENTS? ──
+            Round two, item 10: the quiz is per event, so the first thing it
+            needs is which events this guest is actually going to — a question
+            it never asked, which is why it could only ever style them once,
+            against the ceremony's dress code.
+
+            INSIDE THE PAGE, NOT IN FRONT OF IT. A first pass put this on its
+            own screen ahead of the questionnaire; that took "What will you
+            wear?" off the first thing a guest sees, which is the page
+            introducing itself. It is the first QUESTION, under the same
+            heading, in the same shell.
+
+            Asked only when there is a choice to make: a wedding with one event
+            has nobody to ask, and a screen that answers itself is worse than
+            no screen. */}
+        {attendingIds === null && events.length > 1 ? (
+          <div>
+            <h2 style={{ fontFamily: hfont, fontSize: 'clamp(1.5rem, 4vw, 2.4rem)', fontWeight: hweight, fontStyle: hstyle, color: theme.lightText, margin: '0 0 12px', lineHeight: 1.2 }}>
+              Which of these are you coming to?
+            </h2>
+            <p style={{ fontFamily: bfont, fontSize: 15, color: `${theme.lightText}70`, margin: '0 0 28px', lineHeight: 1.65 }}>
+              Each one has its own dress code, so each one gets its own answer.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
+              {events.map((e) => {
+                const on = pending.includes(e.event_id);
+                return (
+                  <button
+                    key={e.event_id}
+                    onClick={() => setPending((prev) => (prev.includes(e.event_id) ? prev.filter((x) => x !== e.event_id) : [...prev, e.event_id]))}
+                    style={{
+                      textAlign: 'left', padding: '16px 20px', cursor: 'pointer', fontFamily: bfont,
+                      background: on ? theme.darkBg : 'transparent',
+                      color: on ? theme.darkText : theme.lightText,
+                      border: `1px solid ${on ? theme.darkBg : `${theme.lightText}20`}`,
+                    }}
+                  >
+                    <span style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>{e.name}</span>
+                    <span style={{ display: 'block', fontSize: 13, opacity: 0.7, marginTop: 2 }}>
+                      {e.dressCode ? e.dressCode : 'No dress code given'}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => setAttendingIds(pending.length ? pending : events.map((e) => e.event_id))}
+              style={{ padding: '12px 26px', borderRadius: 999, background: theme.accent, color: '#FFFFFF', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 700, fontFamily: bfont }}
+            >
+              {pending.length ? 'Continue \u2192' : 'All of them \u2192'}
+            </button>
+          </div>
+        ) : (
+        <>
         {/* Back button */}
         {step > 0 && (
           <button
@@ -565,6 +571,8 @@ function AIStyleQuestionnaire({ weddingDetails, theme, typography }) {
               );
             })}
           </div>
+        )}
+        </>
         )}
       </div>
     </div>
