@@ -13,6 +13,41 @@
  * step advance) and the final saveOnboarding — one place owns this mapping
  * so the two can never drift apart.
  */
+/**
+ * The ceremony venue as onboarding knows it.
+ *
+ * A picked Places result is an object with all five fields. A typed answer is
+ * a bare string with the city in `data.location` beside it and no place to
+ * fetch a photo from — null for the three, not undefined, so a couple who
+ * re-answers with a typed venue clears a photo of the venue they left rather
+ * than keeping it under a new name.
+ */
+export function buildCeremonyVenue(data) {
+  const v = data?.venue;
+  // NOTHING ANSWERED YET, SO NOTHING WRITTEN. This payload is also the
+  // write-as-you-go draft, sent on every step advance including the ones
+  // before the venue is asked for. Returning a filled-out object of blanks
+  // there would send empty strings and nulls over a venue the couple already
+  // has — undefined drops the key from the request body instead.
+  if (!v && !data?.location) return undefined;
+  if (v && typeof v === 'object') {
+    return {
+      venueName: v.name || '',
+      address: v.address || '',
+      placeId: v.placeId || null,
+      mapsUrl: v.mapsUrl || null,
+      photoUrl: v.photoUrl || null,
+    };
+  }
+  return {
+    venueName: v || '',
+    address: data?.location || '',
+    placeId: null,
+    mapsUrl: null,
+    photoUrl: null,
+  };
+}
+
 export function buildWeddingDetailsPayload(data) {
   return {
     coupleNames: `${data.couple1Name || ''} & ${data.couple2Name || ''}`,
@@ -25,10 +60,22 @@ export function buildWeddingDetailsPayload(data) {
     // apostrophe went into a live URL. It had been doing that since the
     // beginning. The address is derived once, after the record exists, by
     // src/lib/weddingAddress.js.
-    mainCeremony: {
-      venueName: typeof data.venue === 'object' ? data.venue?.name : data.venue,
-      address: typeof data.venue === 'object' ? data.venue?.address : data.location,
-    },
+    // THE WHOLE VENUE, NOT TWO OF ITS FIVE FIELDS. OnboardingStep3Location
+    // uses the same VenueSearchPanel the Event details form does, so
+    // `data.venue` arrives as { name, address, placeId, mapsUrl, photoUrl }.
+    // This wrote venueName and address and dropped the other three on the
+    // floor — every couple's ceremony venue lost its Google Places photo, its
+    // maps link and the place id that could have fetched either back, at the
+    // one moment the ceremony venue is ever set. The reception venue is only
+    // ever set from the Event details form, which keeps all five, which is
+    // exactly why Reception showed a picture and Ceremony never did.
+    //
+    // The photo is not only the event card's. mainCeremony.photoUrl is the
+    // invitation email's venue banner (SendInvitesModal, EmailTemplates) and
+    // the Universe studio's venue image, so this dropped three features at
+    // once and none of them could report it — an absent photo looks like a
+    // couple who did not pick one.
+    mainCeremony: buildCeremonyVenue(data),
     // guestCount written as string to match EventDetails.jsx (e.target.value from a number input)
     // guestType uses lowercase tile ids matching the enum: 'intimate' | 'celebration' | 'grand'
     guestCount: data.guestCount != null ? String(data.guestCount) : undefined,
