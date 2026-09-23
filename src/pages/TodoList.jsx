@@ -236,36 +236,16 @@ export default function TodoList({ embedded = false }) {
     t.status === col || (col === 'Ideas' && !t.status)
   );
 
-  // Notes export (E3). The Note entity IS the couple's notes surface: 16 live
-  // rows on the fixture, all view_type 'todo', spread across the kanban.
-  // Status is exported because it is the one field the kanban view carries
-  // that a list view does not -- a CSV without it would silently flatten
-  // Ideas / In progress / Done into an undifferentiated list.
+  // THE CSV EXPORT IS GONE — owner ruling, round two item 6: "To do: remove
+  // the Export CSV button." exportNotes went with it rather than being left
+  // unreferenced.
   //
-  // Note is a plain entity with no encrypted fields, so getMyRecords' rows are
-  // already the real values (Guest and WeddingDetails are the encrypted ones).
-  const exportNotes = () => {
-    if (tasks.length === 0) { toast.error('Nothing to export yet'); return; }
-    const csv = [
-      ['Task', 'Status', 'Done', 'Priority', 'Due date', 'Category', 'Timeline', 'Description'].join(','),
-      ...tasks.map(t => [
-        t.title || '',
-        t.status || 'Ideas',
-        t.completed ? 'Yes' : 'No',
-        t.priority || '',
-        t.due_date || '',
-        t.category || '',
-        t.wedding_timeline || '',
-        t.description || '',
-      ].map(f => `"${String(f).replace(/"/g, '""')}"`).join(',')),
-    ].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url; link.download = 'wedding-notes.csv'; link.click();
-    URL.revokeObjectURL(url);
-    toast.success('Notes exported');
-  };
+  // What it carried is not lost: a to-do with a date is already a row on the
+  // schedule, and the schedule's export is where a list of them leaves the
+  // product. The reasoning for its columns — that the kanban `status` is the
+  // one fact a flat list drops, so Ideas / In progress / Done do not collapse
+  // into each other — is kept in tests/persistence/notes-export.mjs, where a
+  // future export can start from a complete answer rather than a fresh guess.
 
   const done  = tasks.filter(t => t.completed).length;
   const total = tasks.length;
@@ -300,14 +280,6 @@ export default function TodoList({ embedded = false }) {
               {/* Calm pass PR5 — "next", not a completion count. */}
               {total - done === 0 ? 'Nothing left' : `${total - done} left`}
             </span>
-            <button
-              onClick={exportNotes}
-              disabled={tasks.length === 0}
-              className="btn-editorial-secondary"
-              style={{ opacity: tasks.length === 0 ? 0.4 : 1, fontSize: 12, padding: '6px 14px' }}
-            >
-              Export CSV
-            </button>
           </div>
         </div>
 

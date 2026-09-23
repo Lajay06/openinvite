@@ -1,17 +1,38 @@
 /**
- * Notes export (E3).
+ * The To do page has no export, and this file is why.
  *
- * Which entity is "notes" was not obvious and is worth recording. There are
- * TWO routed surfaces both titled "To do list":
- *   /TodoList (TodoList.jsx) -> the Note entity, with the kanban `status`
- *   /Notes    (Notes.jsx)    -> the Task entity, no kanban
- * Only /TodoList is linked from the sidebar, and on the live app Note holds
- * 16 rows while Task holds ZERO across every account. So Note is the couple's
- * notes data and Task is a vestigial surface.
+ * ── THE RULING ─────────────────────────────────────────────────────────────
  *
- * `status` is the field that earns this its own export: it is the only thing
- * the kanban view carries that a list view does not, so a CSV without it
- * flattens Ideas / In progress / Done into an undifferentiated list.
+ * Round two, item 6: "To do: remove the Export CSV button." Removed, along
+ * with its handler — a handler nothing calls is not a smaller change, it is a
+ * bigger one, because the next reader has to work out whether it is dead.
+ *
+ * ── WHAT THIS GUARD USED TO ASSERT, AND WHY IT IS KEPT ─────────────────────
+ *
+ * Until now this file held seventeen checks on the shape of that CSV, and the
+ * findings behind them are worth more than the checks were:
+ *
+ *   WHICH ENTITY "notes" MEANS. There are TWO routed surfaces both titled
+ *   "To do list" — /TodoList (TodoList.jsx) reads the Note entity, with the
+ *   kanban `status`; /Notes (Notes.jsx) reads Task, with no kanban. Only
+ *   /TodoList is linked from the sidebar, and on the live app Note held 16
+ *   rows while Task held ZERO across every account. Note is the couple's
+ *   data; Task is a vestigial surface.
+ *
+ *   WHY `status` EARNED ITS OWN COLUMN. It is the only thing the kanban view
+ *   carries that a list view does not, so a flat export without it collapses
+ *   Ideas / In progress / Done into an undifferentiated list. It sat SECOND,
+ *   not buried, and beside `Done` rather than merged into it — a note can be
+ *   In progress and not done, and those are different facts.
+ *
+ *   THE EIGHT COLUMNS, in order: Task, Status, Done, Priority, Due date,
+ *   Category, Timeline, Description. Quotes inside free text were doubled per
+ *   RFC 4180 rather than stripped.
+ *
+ * A to-do with a date is already a row on the schedule, so a list of them
+ * still leaves the product — through the schedule's export, not this page's.
+ * If an export ever returns here, it starts from the paragraph above rather
+ * than from a fresh guess at what a useful one contains.
  */
 import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
@@ -25,36 +46,26 @@ const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 export async function runNotesExport() {
   const results = [];
   const check = (n, ok, d) => results.push(ok ? pass(n, d) : fail(n, 'see name', d));
-  console.log('\n  Notes export — the kanban status is the point:\n');
+  console.log('\n  To do — no export, and no half-removed one:\n');
 
-  check('an export exists on the notes surface', /const exportNotes = \(\) =>/.test(CODE), 'exportNotes');
-  check('it writes its own file', /wedding-notes\.csv/.test(CODE), 'wedding-notes.csv');
+  check('the Export CSV button is gone', !/Export CSV/.test(CODE), 'no button');
+  check('  and so is its handler, rather than being left unreferenced',
+    !/exportNotes/.test(CODE), 'no exportNotes');
+  check('  nothing on the page still builds a CSV',
+    !/wedding-notes\.csv/.test(CODE) && !/text\/csv/.test(CODE), 'no blob, no filename');
+  check('  and no download link is left behind',
+    !/link\.download/.test(CODE) && !/createObjectURL/.test(CODE), 'no anchor');
 
-  const hdr = CODE.match(/\['Task', 'Status'[^\]]*\]/);
-  const cols = hdr ? [...hdr[0].matchAll(/'([^']+)'/g)].map(m => m[1]) : [];
-  check('  header parsed', cols.length === 8, cols.join('|'));
-  check('  Status is the SECOND column, not buried', cols[1] === 'Status', cols[1]);
-  for (const c of ['Task', 'Status', 'Done', 'Priority', 'Due date', 'Category', 'Timeline', 'Description']) {
-    check(`    exports "${c}"`, cols.includes(c), cols.includes(c) ? 'yes' : 'MISSING');
-  }
+  // The row the button sat in still has to render its one remaining child.
+  check('the count beside it survives the removal',
+    /Nothing left/.test(CODE) && /\$\{total - done\} left|left`/.test(CODE), 'the "N left" line');
 
-  // Done and Status are different facts: a note can be In progress and not done.
-  check('Status and Done are separate columns (not collapsed)',
-    cols.includes('Status') && cols.includes('Done'), 'both present');
-  check('  an unset status defaults to Ideas, matching the schema default',
-    /t\.status \|\| 'Ideas'/.test(CODE), "|| 'Ideas'");
-
-  // the source rows
-  check('exports the same filtered rows the page renders',
-    /\.\.\.tasks\.map\(t =>/.test(CODE), 'maps `tasks`');
-  check("  `tasks` is Note filtered to view_type 'todo'",
+  // The page itself is unchanged in what it reads — this was a chrome removal,
+  // not a data change, and a regression here would be the real damage.
+  check('the page still reads Note filtered to view_type "todo"',
     /getMyRecords\('Note'/.test(CODE) && /view_type === 'todo'/.test(CODE), 'Note + todo filter');
-
-  // CSV correctness: notes are free text and will contain quotes
-  check('embedded quotes are escaped, not truncated',
-    /replace\(\/"\/g, '""'\)/.test(CODE), 'doubled per RFC 4180');
-  check('the button is disabled with nothing to export',
-    /disabled=\{tasks\.length === 0\}/.test(CODE), 'guarded');
+  check('  and still keeps Status and Done as separate facts on screen',
+    /status/.test(CODE) && /completed/.test(CODE), 'kanban intact');
 
   return results;
 }
