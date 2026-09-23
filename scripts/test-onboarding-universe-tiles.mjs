@@ -57,8 +57,13 @@ for (const width of [390, 1440]) {
   await step(() => page.getByRole('button', { name: /^Not sure yet/ }).first().click({ timeout: 8000 }).catch(() => {}));
   await step(() => page.getByRole('button', { name: 'Celebration', exact: false }).first().click({ timeout: 8000 }).catch(() => {}));
   await step(() => page.getByRole('button', { name: /^Continue/ }).first().click({ timeout: 8000 }).catch(() => {}));
-  await step(() => page.getByRole('button', { name: /^Vibe$/ }).first().click({ timeout: 8000 }).catch(() => {}));
-  const pill = page.getByRole('button').filter({ hasNotText: /Style|Ceremony type|Vibe|Back|Continue/ });
+  // THE CELEBRATION STEP ASKS FIVE SECTIONS NOW, NOT THREE. Round two, item 7
+  // replaced Style / Ceremony type & faith / Vibe with the five Event details
+  // asks — What's the aesthetic?, Atmosphere, Setting, Cultures and
+  // traditions, Faith or religion — so a walkthrough looking for a "Vibe"
+  // header stalled here and everything after it reported as unreachable.
+  await step(() => page.getByRole('button', { name: /^Atmosphere$/ }).first().click({ timeout: 8000 }).catch(() => {}));
+  const pill = page.getByRole('button').filter({ hasNotText: /aesthetic|Atmosphere|Setting|Cultures and traditions|Faith or religion|Back|Continue/ });
   if (await pill.count() > 0) await step(() => pill.first().click({ timeout: 8000 }).catch(() => {}));
   await step(() => page.getByRole('button', { name: /^Continue/ }).first().click({ timeout: 8000 }).catch(() => {}));
   await step(() => page.getByRole('button', { name: /^Got it, let's go/ }).first().click({ timeout: 8000 }).catch(() => {}));

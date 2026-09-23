@@ -494,12 +494,14 @@ try {
       act: async () => page.getByRole('button', { name: 'Celebration', exact: false }).first().click() },
 
     { name: 'weddingType',
-      at: () => page.getByRole('button', { name: /^Vibe$/ }),
+      // Five sections now, not three — round two item 7 replaced Style /
+      // Ceremony type & faith / Vibe with the five Event details asks.
+      at: () => page.getByRole('button', { name: /^Atmosphere$/ }),
       act: async (l) => {
         // Open a section, choose one pill, and only then does Continue exist.
         await l.click();
         await page.waitForTimeout(500);
-        const pills = page.getByRole('button').filter({ hasNotText: /Vibe|Style|Ceremony type|Back|Continue/ });
+        const pills = page.getByRole('button').filter({ hasNotText: /aesthetic|Atmosphere|Setting|Cultures and traditions|Faith or religion|Back|Continue/ });
         if (await pills.count() > 0) await pills.first().click();
         await page.waitForTimeout(400);
         await page.getByRole('button', { name: /^Continue/ }).first().click();
