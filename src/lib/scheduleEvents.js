@@ -28,7 +28,7 @@
  * an RSVP deadline do not happen anywhere. The list omits the line rather than
  * printing a blank label.
  */
-import { sortScheduleItems, compareScheduleItems, minutesOfDay } from './scheduleOrder.js';
+import { sortScheduleItems, compareScheduleItems, sortScheduleRows } from './scheduleOrder.js';
 
 /** Normalized events from every source the Schedule page reads. Pure. */
 /**
@@ -270,23 +270,20 @@ export function groupEventsByDay(events = []) {
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
     .map(([date, items]) => ({
       date,
-      // WITHIN A DAY: untimed first, then by time as MINUTES.
+      // WITHIN A DAY: by time, and an untimed item sorts LAST.
       //
-      // The untimed-first half is this list's own ruling and is guarded — an
-      // all-day item heads its day rather than trailing it. Only the second
-      // half was wrong: it compared times as strings, so
+      // Two things were wrong here. It compared times as strings, so
       // [Party 23:00, Breakfast 9:00, Lunch 12:30] came back Lunch, Party,
-      // Breakfast, an unpadded 9:00 sorting last because "9" is greater than
-      // "1" as text. minutesOfDay parses instead of comparing.
+      // Breakfast — an unpadded 9:00 sorting last because "9" is greater
+      // than "1" as text. And it put untimed items FIRST, which was this
+      // list's own convention and nobody else's: the run sheet, the guest
+      // site and the shared comparator all sort them last.
       //
-      // NOTE: the run sheet and the guest site sort untimed LAST, through
-      // compareScheduleItems. Both conventions are deliberate and both are
-      // guarded, so the difference is raised rather than resolved here.
-      events: items.slice().sort((x, y) => {
-        if (!x.time && y.time) return -1;
-        if (x.time && !y.time) return 1;
-        return minutesOfDay(x.time) - minutesOfDay(y.time);
-      }),
+      // Owner's ruling: untimed sorts last, everywhere. Within a day the
+      // timed items are the day's structure and an untimed one is a note
+      // hanging off it, so it belongs at the end. One rule now, and
+      // sortScheduleRows is that rule.
+      events: sortScheduleRows(items),
     }));
   // Last, and only when there is one — an empty "No date yet" heading over
   // nothing is noise on every well-formed wedding.

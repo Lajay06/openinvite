@@ -21,11 +21,12 @@
  * compareScheduleItems for the entity fields, compareScheduleRows for the flat
  * {date, time} rows, minutesOfDay wherever a time is ordered at all.
  *
- * ONE DIFFERENCE IS LEFT STANDING, DELIBERATELY. The grouped list sorts an
- * untimed item to the TOP of its day and is guarded on that; the run sheet and
- * the shared comparator sort it LAST. Both are existing rulings, so unifying
- * them would change guarded behaviour on a guest-facing surface — that is the
- * owner's call and is raised in the PR rather than taken here.
+ * UNTIMED SORTS LAST, EVERYWHERE (owner's ruling, 2026-09-23). The grouped
+ * list used to put an untimed item at the TOP of its day, alone among the
+ * surfaces; the run sheet, the guest site and the shared comparator all sorted
+ * it last. Within a day the timed items are the day's structure and an untimed
+ * one is a note hanging off it. One rule, and tests/persistence/
+ * schedule-list-first.mjs was updated to assert it rather than the old one.
  *
  * THE FIXTURE IS DELIBERATELY SHUFFLED, and carries each fault on purpose: a
  * January date after a December one, an unpadded morning time against a
@@ -101,13 +102,10 @@ export async function runScheduleChronological() {
   check('  and its Time column parses minutes rather than comparing text',
     /compare: \(a, b\) => minutesOfDay\(a\) - minutesOfDay\(b\)/.test(table), 'minutesOfDay');
   const events = read('src/lib/scheduleEvents.js');
-  // The list keeps its own guarded convention — untimed heads its day — and
-  // only the time comparison changes. See the PR: the run sheet sorts untimed
-  // LAST, and reconciling the two is the owner's call, not this guard's.
-  check('  the day grouping keeps untimed first but parses the time',
-    /if \(!x\.time && y\.time\) return -1;/.test(events)
-      && /minutesOfDay\(x\.time\) - minutesOfDay\(y\.time\)/.test(events)
-      && !/String\(a\.time\)\.localeCompare/.test(events), 'untimed first, time parsed');
+  check('  and the day grouping sorts through it too, untimed last',
+    /events: sortScheduleRows\(items\)/.test(events)
+      && !/String\(a\.time\)\.localeCompare/.test(events)
+      && !/if \(!x\.time && y\.time\) return -1;/.test(events), 'one rule, no local convention');
   const runSheet = read('src/components/schedule/RunSheet.jsx');
   check('  the run sheet still uses it', /compareScheduleItems\(/.test(runSheet), 'unchanged');
 
