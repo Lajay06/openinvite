@@ -4,7 +4,7 @@ import TableToolbar from '@/components/shared/TableToolbar';
 import { Pill } from '@/components/shared/DataTable';
 import { OUTLINE_PILL, CELL_STRONG, CELL_MUTED, CELL_SECONDARY, CELL_NOWRAP } from '@/lib/tablePills';
 import { naturalCompare, sortRows, nextSortState } from '@/lib/tableSort';
-import { compareScheduleRows, compareDayThenTime } from '@/lib/scheduleOrder';
+import { compareScheduleRows, minutesOfDay } from '@/lib/scheduleOrder';
 import { WHEN_LABEL, WHEN_RANK, ROW_HOME } from '@/lib/scheduleEvents';
 
 /**
@@ -28,13 +28,15 @@ import { WHEN_LABEL, WHEN_RANK, ROW_HOME } from '@/lib/scheduleEvents';
  */
 
 const COLUMN_SORTS = {
-  // DATE AND TIME SORT CHRONOLOGICALLY, not as text. naturalCompare reads
-  // a date as a string, so a Friday in January sorted before the Thursday in
-  // December before it, and a time as a string too, so an unpadded '9:00'
-  // landed after '17:00'. Both now defer to the one comparator in
-  // src/lib/scheduleOrder.js that the run sheet and the guest site already use.
-  date:     { getValue: (e) => e, compare: (a, b) => compareDayThenTime(a?.date, a?.time, b?.date, b?.time) },
-  time:     { getValue: (e) => e, compare: (a, b) => compareDayThenTime(a?.date, a?.time, b?.date, b?.time) },
+  // The stored ISO date, never the printed label — "7 September" against
+  // "12 March" is a lexical coin toss, which is what this column is guarded
+  // against. ISO strings already compare correctly as text, so the value is
+  // what changes here, not the comparator.
+  date:     { getValue: (e) => e.date || '', compare: naturalCompare },
+  // TIME IS PARSED, NOT COMPARED AS TEXT. naturalCompare read "9:00" against
+  // "17:00" as strings, so an unpadded morning sorted after the afternoon.
+  // minutesOfDay turns both into minutes past midnight first.
+  time:     { getValue: (e) => e.time || '', compare: (a, b) => minutesOfDay(a) - minutesOfDay(b) },
   title:    { getValue: (e) => e.title || '', compare: naturalCompare },
   when:     { getValue: (e) => (e.when ? WHEN_RANK[e.when] : null), compare: (a, b) => a - b },
   location: { getValue: (e) => e.location || '', compare: naturalCompare },

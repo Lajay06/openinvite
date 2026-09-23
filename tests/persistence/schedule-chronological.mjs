@@ -16,11 +16,16 @@
  *     `String(a.time).localeCompare(String(b.time))`, which has the same
  *     padding fault.
  *
- * The run sheet and the guest site's celebration page were already using the
- * shared comparator in src/lib/scheduleOrder.js, so three surfaces disagreed
- * about what "first" meant. They all use it now: compareScheduleItems for the
- * entity's own fields, compareScheduleRows for the flat {date, time} rows the
- * page, list, calendar and exports are built from. One rule, two field names.
+ * The run sheet and the guest site were already using the shared comparator in
+ * src/lib/scheduleOrder.js. The time parsing is now shared by all of them:
+ * compareScheduleItems for the entity fields, compareScheduleRows for the flat
+ * {date, time} rows, minutesOfDay wherever a time is ordered at all.
+ *
+ * ONE DIFFERENCE IS LEFT STANDING, DELIBERATELY. The grouped list sorts an
+ * untimed item to the TOP of its day and is guarded on that; the run sheet and
+ * the shared comparator sort it LAST. Both are existing rulings, so unifying
+ * them would change guarded behaviour on a guest-facing surface — that is the
+ * owner's call and is raised in the PR rather than taken here.
  *
  * THE FIXTURE IS DELIBERATELY SHUFFLED, and carries each fault on purpose: a
  * January date after a December one, an unpadded morning time against a
@@ -91,13 +96,18 @@ export async function runScheduleChronological() {
   check('the Schedule table sorts through the shared comparator',
     /\[\.\.\.filtered\]\.sort\(compareScheduleRows\)/.test(table)
       && !/naturalCompare\(a\.date/.test(table), 'no naturalCompare on date/time');
-  check('  and so do its Date and Time column headers',
-    (table.match(/compare: \(a, b\) => compareDayThenTime\(a\?\.date, a\?\.time, b\?\.date, b\?\.time\)/g) || []).length === 2,
-    'both columns');
+  check('  its Date column sorts the stored ISO string, not the printed label',
+    /date:\s+\{ getValue: \(e\) => e\.date \|\| '', compare: naturalCompare \}/.test(table), 'stored value');
+  check('  and its Time column parses minutes rather than comparing text',
+    /compare: \(a, b\) => minutesOfDay\(a\) - minutesOfDay\(b\)/.test(table), 'minutesOfDay');
   const events = read('src/lib/scheduleEvents.js');
-  check('  and the day grouping sorts within a day through it too',
-    /events: sortScheduleRows\(items\)/.test(events)
-      && !/String\(a\.time\)\.localeCompare/.test(events), 'no string compare on time');
+  // The list keeps its own guarded convention — untimed heads its day — and
+  // only the time comparison changes. See the PR: the run sheet sorts untimed
+  // LAST, and reconciling the two is the owner's call, not this guard's.
+  check('  the day grouping keeps untimed first but parses the time',
+    /if \(!x\.time && y\.time\) return -1;/.test(events)
+      && /minutesOfDay\(x\.time\) - minutesOfDay\(y\.time\)/.test(events)
+      && !/String\(a\.time\)\.localeCompare/.test(events), 'untimed first, time parsed');
   const runSheet = read('src/components/schedule/RunSheet.jsx');
   check('  the run sheet still uses it', /compareScheduleItems\(/.test(runSheet), 'unchanged');
 

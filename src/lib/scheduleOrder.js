@@ -41,7 +41,7 @@ export function compareDayThenTime(aDay, aTime, bDay, bTime) {
   const da = String(aDay || NO_DAY);
   const db = String(bDay || NO_DAY);
   if (da !== db) return da.localeCompare(db);
-  return minutes(aTime) - minutes(bTime);
+  return minutesOfDay(aTime) - minutesOfDay(bTime);
 }
 
 /**
@@ -57,7 +57,7 @@ export function compareDayThenTime(aDay, aTime, bDay, bTime) {
  * An unparseable or missing time sorts last within its day, for the same
  * reason an undated item sorts last overall: absent is not zero.
  */
-function minutes(t) {
+export function minutesOfDay(t) {
   const m = /^(\d{1,2}):(\d{2})/.exec(t || '');
   if (!m) return Number.MAX_SAFE_INTEGER;
   return Number(m[1]) * 60 + Number(m[2]);
