@@ -432,6 +432,38 @@ diff, not its title, and diff the strings against `origin/main` rather than
 the working tree — this branch runs behind main, so the tree is the wrong
 reference and will quietly agree with the stale version.
 
+### The one failure in that guard that is not a failure
+
+**`tests/persistence/stay-getting-here.mjs` reports one hit in `src/mobile/`
+and it is a false positive. Do not "fix" the code it points at.**
+
+```
+src/mobile/screens/plan/PlanContainer.jsx:88: ";\n    case 'suite-accommodation': return"
+```
+
+The guard finds JSX text with `>((?:[^<>{}]|\{[^{}<>]*\})+)<`, which matches
+whatever sits between a `>` and a `<` **anywhere in a file**, not only inside
+an element's children. `PlanContainer.jsx` routes its features through a
+switch whose arms return JSX on consecutive lines, so the source between one
+arm's closing `/>` and the next arm's opening `<` is read as a text node:
+
+```jsx
+case 'good-to-know': return <GoodToKnowContainer back={back} />;
+case 'suite-accommodation': return <SuitePlacesContainer kind="accommodation" />;
+```
+
+That reproduces it in two lines. The captured string is a **route key**, which
+#822's own ruling protects ("stored field names and category keys, route
+paths… not touched"), and no reformatting removes it, because the word IS the
+route: splitting the case label across lines keeps it inside the captured
+region. Renaming the route would break every link and deep link that names it.
+
+So the count to expect on this branch is **1, at that line**. A merge or a CI
+run that reports exactly that is green for this lane's purposes; anything more
+is a real hit and should be read. The fix belongs in the guard — a NOT_COPY
+entry, or a JSX-text match anchored to an element's children — and the guard
+is the product lane's file. Raised there 2026-09-23, not worked around here.
+
 **The instrument.** `tests/persistence/stay-getting-here.mjs` on main scans
 every string literal and JSX text node in `src/`, which includes
 `src/mobile/`. Running a shipping lane's own guard against this branch is the
