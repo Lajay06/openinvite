@@ -136,8 +136,12 @@ export const NAV_SECTIONS = [
     label: "Guests",
     icon: Users,
     items: [
+      // POLLS & GAMES IS NOT A GUEST-LIST JOB — owner ruling, round two item 6.
+      // Guests is the group a couple opens to do something TO their guest
+      // list: add people, message them, seat them, name the party. A quiz is
+      // something the couple makes, and it now sits at the end of Style and
+      // experience with the other things they make.
       { icon: Users,         label: "Guest list",    url: createPageUrl("Guests") },
-      { icon: BarChart2,     label: "Polls & games", url: createPageUrl("Polls") },
       { icon: MessageCircle, label: "Messages",      url: createPageUrl("Messages") },
       { icon: LayoutGrid,    label: "Seating",       url: createPageUrl("Seating") },
       { icon: UserCheck,     label: "Wedding party", url: "/wedding-party" },
@@ -155,6 +159,8 @@ export const NAV_SECTIONS = [
       { icon: Camera,          label: "Photography",     url: createPageUrl("Photography") },
       { icon: FileText,        label: "Vows & speeches", url: createPageUrl("VowsSpeeches") },
       { icon: Package,         label: "Guest gifts",     url: "/wedding-favours" },
+      // Last in the group, as the ruling puts it.
+      { icon: BarChart2,       label: "Polls & games",   url: createPageUrl("Polls") },
     ],
   },
   {
