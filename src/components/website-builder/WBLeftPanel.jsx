@@ -60,10 +60,24 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
 
   const toggle = (slug) => {
     if (ALWAYS_ON_PAGES.includes(slug)) return;
-    const next = enabledPages.includes(slug)
+    const turningOff = enabledPages.includes(slug);
+    const next = turningOff
       ? enabledPages.filter(p => p !== slug)
       : [...enabledPages, slug];
     onChange('enabledPages', next);
+
+    // TURNING THE EXPERIENCE PAGE OFF ALSO CLEARS THE LEGACY PUBLISH FLAG.
+    //
+    // The guest site decides a page is available with an OR:
+    // enabledPages.includes(page) || subPageAvailability[page] === true, and
+    // for 'experience' that second term is experienceGuide.published — the
+    // flag the retired Publish tab used to set. Without this line a couple
+    // who had published the guide could switch the page off here and it would
+    // stay up, because the old flag outvotes the new control. Nothing writes
+    // the flag any more, so this only ever has to run down, never up.
+    if (turningOff && slug === 'experience' && details.experienceGuide?.published) {
+      onChange('experienceGuide', { ...details.experienceGuide, published: false });
+    }
   };
 
   // ── ONE LIST, BECAUSE THE COUPLE ARRANGED ONE LIST ─────────────────────
