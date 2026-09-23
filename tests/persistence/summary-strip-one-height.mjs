@@ -42,14 +42,26 @@ const root = (p) => resolve(__dir, '../../', p);
 const read = (p) => readFileSync(root(p), 'utf8');
 const strip = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 
-/** Every page rendering the 48px summary tile. */
+/**
+ * Every page rendering the 48px summary tile.
+ *
+ * CHECKLIST IS NOT HERE ANY MORE, and the two changes that took it out landed
+ * an hour apart. This guard was written naming Checklist as a tile page; the
+ * ruling in the same item then deleted "My checklist" entirely, and its strip
+ * with it — the three figures counted that list and only that list, so keeping
+ * them would have left three zeros over a list that no longer existed.
+ *
+ * Each PR was green on its own branch and main was red once both were in,
+ * because neither branch had the other's half. Recorded rather than quietly
+ * deleted: the lesson is that a guard which ENUMERATES pages has to be
+ * re-checked against any PR in flight that removes one.
+ */
 const PAGES = [
   'src/pages/Guests.jsx',
   'src/pages/Budget.jsx',
   'src/pages/Seating.jsx',
   'src/pages/ScheduleHub.jsx',
   'src/pages/Calendar.jsx',
-  'src/pages/Checklist.jsx',
   'src/pages/Messages.jsx',
   'src/pages/Moodboard.jsx',
   'src/pages/Music.jsx',
