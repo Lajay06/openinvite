@@ -1,4 +1,5 @@
 import AmountInput from '@/components/shared/AmountInput';
+import VendorPlacesSearch from './VendorPlacesSearch';
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,6 +54,9 @@ const PHOTO_STYLES = [
 const BLANK_VENDOR = {
   name: "", category: "", contact_person: "", phone: "", email: "",
   website: "", address: "", rating: "", price_range: "",
+  // Filled by the Places search above the form, never typed. Kept on every
+  // vendor's formData so an edit does not drop what an add established.
+  google_place_id: "", google_rating: null, google_reviews_count: null,
   status: "researching", quoted_price: "", contract_date: "",
   payment_schedule: "", notes: "",
   // Photography/videography-only fields — see the section rendered below,
@@ -87,6 +91,12 @@ export default function VendorForm({ vendor, onSubmit, onCancel, defaultCategory
 
   const set = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
 
+  // A PICK FILLS, IT DOES NOT REPLACE. Merged over what is already there, so
+  // the couple's own answers — status, quoted price, contract date, payment
+  // schedule, notes — survive a search run after they started typing. Every
+  // filled field stays editable afterwards.
+  const applyPlace = (fields) => setFormData(prev => ({ ...prev, ...fields }));
+
   const toggleStyle = (s) => {
     const cur = formData.style || [];
     set('style', cur.includes(s) ? cur.filter(x => x !== s) : [...cur, s]);
@@ -99,6 +109,10 @@ export default function VendorForm({ vendor, onSubmit, onCancel, defaultCategory
     const num = (v) => (v === '' || v == null ? null : parseFloat(v));
     onSubmit({
       ...formData,
+      // Empty string is not a place id. Written as null so a vendor typed by
+      // hand does not claim an identity it does not have — findMyVendorByPlaceId
+      // filters on the value, and '' would match every other hand-typed vendor.
+      google_place_id: formData.google_place_id || null,
       rating: num(formData.rating),
       quoted_price: num(formData.quoted_price),
       // Only sent when actually relevant — keeps a non-photography vendor's
@@ -124,6 +138,8 @@ export default function VendorForm({ vendor, onSubmit, onCancel, defaultCategory
   return (
       <form onSubmit={handleSubmit}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px 32px' }}>
+
+          <VendorPlacesSearch onPick={applyPlace} />
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, gridColumn: '1 / -1' }}>
             <Label htmlFor="name">Business name *</Label>
