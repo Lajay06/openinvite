@@ -20,6 +20,25 @@ const ALLOWED_ORIGINS = new Set([
   'https://openinvite.com.au',
   'https://www.openinvite.com.au',
   'https://openinvite-pearl.vercel.app',
+  // ── The native app (Capacitor) ────────────────────────────────────────────
+  // The WebView's page origin is fixed by the platform, not by a hostname
+  // anyone can register: iOS serves the bundle from capacitor://localhost,
+  // Android from https://localhost (Capacitor's default androidScheme, which
+  // capacitor.config.ts leaves alone). Both ARE the app's own bundle, and a
+  // web page cannot present either — a browser will not load capacitor:// at
+  // all, and https://localhost needs a certificate for localhost that the
+  // phone's WebView issues to itself.
+  //
+  // `http://localhost` is deliberately NOT here: that is the origin a local
+  // dev server also presents, and the Android project uses the https scheme.
+  //
+  // This only decides whether the browser lets the app READ a response. Every
+  // endpoint still requires its own Authorization header, and no response
+  // sets Access-Control-Allow-Credentials, so a listed origin cannot ride a
+  // session it does not already hold. Guarded by
+  // tests/persistence/cors-allow-list.mjs.
+  'capacitor://localhost',
+  'https://localhost',
 ]);
 
 /**
