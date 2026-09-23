@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Plus, Lock } from 'lucide-react';
 import Screen from '../shell/Screen';
+import { useSaveSubtitle } from '../lib/saveStatus';
 import { Row, RowGroup, PillButton, ErrorState, Skeleton, EmptyState, SmartImage, PanelCard } from '../ui';
 import Segments, { useSegment } from '../ui/Segments';
 import { SchemaField, coerce, fieldVisible } from './FieldRenderer';
@@ -78,15 +79,26 @@ export default function DetailsScreen({ schema, details, onSave, loading, error,
   };
   const flush = async () => {
     const jobs = pending.current;
+    // Nothing queued means nothing to report. Without this the reconnect
+    // retry would fall through to setStatus('saved') and tell the couple
+    // their work went up when nothing was sent.
+    if (Object.keys(jobs).length === 0) return;
     pending.current = {};
     try {
       if (jobs.top) await onSave(null, jobs.top, false);
       for (const [key, job] of Object.entries(jobs)) { if (key === 'top') continue; await onSave(key, job.whole, job.encrypted); }
       setStatus('saved');
       setTimeout(() => setStatus((s) => (s === 'saved' ? 'idle' : s)), 1500);
-    } catch { setStatus('failed'); }
+    } catch {
+      // The patch goes BACK. It used to be dropped here, so a failed save
+      // left nothing to retry and the couple's typing was gone. Anything
+      // queued while this was in flight is layered on top and wins.
+      pending.current = { ...jobs, ...pending.current };
+      setStatus('failed');
+    }
   };
   useEffect(() => () => clearTimeout(timer.current), []);
+  const saveSubtitle = useSaveSubtitle({ status, what: schema.title, retry: flush });
 
   const valueOf = (section, f) => {
     if (section.key == null) return data[f.name];
@@ -97,7 +109,7 @@ export default function DetailsScreen({ schema, details, onSave, loading, error,
   const sections = schema.sections.filter((s) => !segments || (s.segment || segments[0].key) === segment);
 
   return (
-    <Screen notice={notice} title={schema.title} subtitle={status === 'saving' ? 'Saving' : status === 'saved' ? 'Saved' : status === 'failed' ? 'Could not save. Check your connection.' : subtitle} back={back}>
+    <Screen notice={notice} title={schema.title} subtitle={saveSubtitle ?? subtitle} back={back}>
       {segments && <Segments options={segments} value={segment} onChange={setSegment} />}
       <div className="oi-m-stack oi-m-stack--24">
         {error && !loading ? <ErrorState onRetry={onRetry} timedOut={error?.timedOut} /> : loading ? (<><Skeleton kind="block" /><Skeleton kind="block" /></>) : (

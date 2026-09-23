@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Plus, MapPin, Pencil, Trash2, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Screen from '../../shell/Screen';
+import { useSaveSubtitle } from '../../lib/saveStatus';
 import { PillButton, ErrorState, Skeleton, EmptyState, BottomSheet, TextField, SmartImage, StatusPill } from '../../ui';
 import PillChoice from '../../ui/PillChoice';
 import Segments, { useSegment } from '../../ui/Segments';
@@ -37,17 +38,27 @@ export default function EventDetailsScreen({ details, onSave, onChangeAddress, o
   const [segment, setSegment] = useSegment(SEGMENTS);
   const [status, setStatus] = useState('idle');
   const d = details || {};
-  const subtitle = status === 'saving' ? 'Saving' : status === 'saved' ? 'Saved' : status === 'failed' ? 'Could not save. Check your connection.' : '';
-  const flag = async (p) => { setStatus('saving'); try { await p; setStatus('saved'); setTimeout(() => setStatus((s) => (s === 'saved' ? 'idle' : s)), 1500); } catch { setStatus('failed'); throw new Error('save'); } };
+  // `flag` takes the save as a THUNK, not a promise already in flight, so
+  // the reconnect retry has something to run again. The last failed one is
+  // kept for exactly that and cleared the moment it succeeds.
+  const lastJob = useRef(null);
+  const flag = async (run) => {
+    lastJob.current = run;
+    setStatus('saving');
+    try { await run(); lastJob.current = null; setStatus('saved'); setTimeout(() => setStatus((s) => (s === 'saved' ? 'idle' : s)), 1500); }
+    catch { setStatus('failed'); throw new Error('save'); }
+  };
+  const retrySave = () => { const run = lastJob.current; if (run) flag(run).catch(() => {}); };
+  const subtitle = useSaveSubtitle({ status, what: 'Event details', retry: retrySave }) ?? '';
   return (
     <Screen title="Event details" subtitle={subtitle} back={back}>
       <Segments options={SEGMENTS} value={segment} onChange={setSegment} />
       <div className="oi-m-stack oi-m-stack--24">
         {error && !loading ? <ErrorState onRetry={onRetry} timedOut={error?.timedOut} /> : loading ? (<><Skeleton kind="block" /><Skeleton kind="block" /></>) : (
           <>
-            {segment === 'details' && <DetailsSegment d={d} onSave={(patch) => flag(onSave(null, patch))} onChangeAddress={onChangeAddress} />}
-            {segment === 'events' && <EventsSegment d={d} onSave={(key, value) => flag(onSave(key, value))} onInvitePrompt={onInvitePrompt} />}
-            {segment === 'theme' && <ThemeSegment theme={d.theme || {}} onSave={(theme) => flag(onSave('theme', theme))} />}
+            {segment === 'details' && <DetailsSegment d={d} onSave={(patch) => flag(() => onSave(null, patch))} onChangeAddress={onChangeAddress} />}
+            {segment === 'events' && <EventsSegment d={d} onSave={(key, value) => flag(() => onSave(key, value))} onInvitePrompt={onInvitePrompt} />}
+            {segment === 'theme' && <ThemeSegment theme={d.theme || {}} onSave={(theme) => flag(() => onSave('theme', theme))} />}
           </>
         )}
       </div>

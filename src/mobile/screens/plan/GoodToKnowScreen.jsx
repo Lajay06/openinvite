@@ -4,6 +4,7 @@ import Screen from '../../shell/Screen';
 import { RowGroup, ErrorState, SkeletonRows, Switch, BottomSheet, PillButton, TextField, TextAreaField } from '../../ui';
 import PillChoice from '../../ui/PillChoice';
 import { linesFor } from '@/lib/goodToKnow';
+import { useSaveSubtitle } from '../../lib/saveStatus';
 
 /* GuestSuitePolicies.jsx's shape, verbatim: each policy's own fields plus `display`. */
 export const EMPTY_POLICIES = {
@@ -53,16 +54,26 @@ export default function GoodToKnowScreen({ policies = {}, guestExperience = {}, 
   useEffect(() => { setP(merge(policies)); }, [policies]);
   useEffect(() => { setGe({ ...EMPTY_GUEST_EXPERIENCE, ...guestExperience, backgroundMusic: { ...EMPTY_GUEST_EXPERIENCE.backgroundMusic, ...(guestExperience.backgroundMusic || {}) } }); }, [guestExperience]);
   useEffect(() => () => clearTimeout(timer.current), []);
+  // The pending job goes BACK on failure (it used to be dropped, leaving
+  // nothing to retry), and `flush` is what the reconnect retry re-runs.
+  const flush = async () => {
+    const job = pending.current;
+    if (!job) return;
+    pending.current = null;
+    try { await onSave(job.policies, job.guestExperience); setStatus('saved'); setTimeout(() => setStatus((s) => (s === 'saved' ? 'idle' : s)), 1500); }
+    catch { pending.current = pending.current || job; setStatus('failed'); }
+  };
   const queue = (nextP, nextGe) => {
     pending.current = { policies: nextP, guestExperience: nextGe };
     setStatus('saving');
     clearTimeout(timer.current);
-    timer.current = setTimeout(async () => { const job = pending.current; pending.current = null; try { await onSave(job.policies, job.guestExperience); setStatus('saved'); setTimeout(() => setStatus((s) => (s === 'saved' ? 'idle' : s)), 1500); } catch { setStatus('failed'); } }, 900);
+    timer.current = setTimeout(flush, 900);
   };
   const set = (key, field, value) => { const next = { ...p, [key]: { ...(p[key] || {}), [field]: value } }; setP(next); queue(next, ge); };
   const setGE = (field, value) => { const next = { ...ge, [field]: value }; setGe(next); queue(p, next); };
   const shown = SECTIONS.filter((s) => p[s.key]?.display).length;
-  const subtitle = status === 'saving' ? 'Saving' : status === 'saved' ? 'Saved' : status === 'failed' ? 'Could not save. Check your connection.' : loading ? '' : `${shown} shown to guests`;
+  const saveSubtitle = useSaveSubtitle({ status, what: 'Good to know', retry: flush });
+  const subtitle = saveSubtitle ?? (loading ? '' : `${shown} shown to guests`);
   const summaryOf = (key) => {
     const v = p[key] || {};
     switch (key) {

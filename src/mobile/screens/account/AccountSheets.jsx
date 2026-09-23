@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { KeyRound } from 'lucide-react';
 import { BottomSheet, PillButton, TextField, SelectField, Switch, Row, RowGroup } from '../../ui';
 import PillChoice from '../../ui/PillChoice';
+import { useOnline } from '../../shell/OfflineBanner';
 import { CURRENCIES } from '@/contexts/CurrencyContext';
 import { DEFAULT_NOTIFICATION_PREFS } from '@/lib/notificationPrefs';
 
@@ -15,6 +16,7 @@ const UNITS = [{ value: 'C', label: 'Celsius' }, { value: 'F', label: 'Fahrenhei
  * desktop page: the auth surface is locked by CLAUDE.md.
  */
 export function AccountDetailsSheet({ open, user, currencyCode, onClose, onSave, onDesktop }) {
+  const offline = !useOnline();
   const [f, setF] = useState({ full_name: '', currency: 'USD', tempUnit: 'C' });
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -22,7 +24,7 @@ export function AccountDetailsSheet({ open, user, currencyCode, onClose, onSave,
   const submit = async () => {
     if (!f.full_name.trim()) { setError('Add your name.'); return; }
     setSaving(true);
-    try { await onSave({ ...f, full_name: f.full_name.trim() }); onClose(); } catch { setError('Could not save. Check your connection and try again.'); } finally { setSaving(false); }
+    try { await onSave({ ...f, full_name: f.full_name.trim() }); onClose(); } catch { setError(offline ? 'You are offline. Your details are not saved. Try again once you are back on a connection.' : 'Your details did not save. Try again.'); } finally { setSaving(false); }
   };
   return (
     <BottomSheet open={open} onClose={onClose} title="Account details" footer={(
@@ -51,6 +53,7 @@ const PREF_ROWS = [
 
 /** Email notification preferences, as Account.jsx's Notifications tab: each switch saves `notification_prefs` at once. */
 export function EmailPreferencesSheet({ open, user, onClose, onSave }) {
+  const offline = !useOnline();
   const [prefs, setPrefs] = useState(() => ({ ...DEFAULT_NOTIFICATION_PREFS, ...(user?.notification_prefs || {}) }));
   const [failed, setFailed] = useState(false);
   useEffect(() => { if (open) { setPrefs({ ...DEFAULT_NOTIFICATION_PREFS, ...(user?.notification_prefs || {}) }); setFailed(false); } }, [open, user]);
@@ -75,7 +78,7 @@ export function EmailPreferencesSheet({ open, user, onClose, onSave }) {
           );
         })}
       </RowGroup>
-      {failed && <p className="oi-m-field__error" role="alert" style={{ marginTop: 12 }}>Could not save. Check your connection and try again.</p>}
+      {failed && <p className="oi-m-field__error" role="alert" style={{ marginTop: 12 }}>{offline ? 'You are offline. Your notification settings are not saved. Try again once you are back on a connection.' : 'Your notification settings did not save. Try again.'}</p>}
     </BottomSheet>
   );
 }
