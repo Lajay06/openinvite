@@ -2,6 +2,7 @@ import React from 'react';
 import { MapPin, Plane, Train, Bus, Car, Ship, Navigation2, ExternalLink, FileText } from 'lucide-react';
 import SectionReveal from '../SectionReveal';
 import GuestPageHeading from '../GuestPageHeading';
+import { pageAnchorFor } from '../layouts/sectionMarks';
 import { isMotionEnabled } from '@/lib/universeStyling';
 
 const TYPE_ICONS = {
@@ -40,6 +41,10 @@ export default function WeddingTransportPage({ weddingDetails, theme, typography
     color: theme.lightText,
     opacity: 0.8,
   };
+  // The intro follows the page anchor — the mark above it — on its own edge:
+  // a left mark over a centered sentence was the mismatch on this page.
+  const anchor = pageAnchorFor(universeConfig);
+  const intro = { textAlign: anchor, maxWidth: 560, margin: anchor === 'center' ? '0 auto 48px' : '0 0 48px' };
 
   const label = {
     fontSize: 11,
@@ -63,7 +68,7 @@ export default function WeddingTransportPage({ weddingDetails, theme, typography
           <GuestPageHeading title={"Getting here"} theme={theme} typography={typography} universeConfig={universeConfig} />
         </SectionReveal>
 
-        <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' }}>
+        <SectionReveal anchorRole="paragraph" universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, ...intro }}>
           Here's everything you need to know to get to the venue.
         </SectionReveal>
 

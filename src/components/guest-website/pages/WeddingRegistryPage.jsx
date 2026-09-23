@@ -2,6 +2,7 @@ import React from 'react';
 import { ExternalLink } from 'lucide-react';
 import SectionReveal from '../SectionReveal';
 import GuestPageHeading from '../GuestPageHeading';
+import { pageAnchorFor } from '../layouts/sectionMarks';
 import { isMotionEnabled } from '@/lib/universeStyling';
 
 import { coupleDisplayName } from '@/lib/coupleNames';
@@ -150,13 +151,16 @@ export default function WeddingRegistryPage({ weddingDetails, theme, typography,
           <>
             {content.registryMessage && (
               <SectionReveal
+                anchorRole="paragraph"
                 universeConfig={universeConfig} disabled={motionDisabled}
                 style={{
                   fontFamily: typography.bodyFont,
                   fontSize: '1rem',
                   lineHeight: 1.8,
                   marginBottom: '40px',
-                  textAlign: 'center'
+                  // The page anchor: this message follows the mark above it
+                  // (GuestPageHeading), which is left in seventeen universes.
+                  textAlign: pageAnchorFor(universeConfig)
                 }}
               >
                 {content.registryMessage}

@@ -25,6 +25,7 @@ import SubscribeCalendar from '../components/schedule/SubscribeCalendar';
 import RunSheet from '../components/schedule/RunSheet';
 import PageConsiderations from '../components/shared/PageConsiderations';
 import { getMyInvitation, getMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { syncCalendarFeed } from '@/lib/calendarFeedSync';
 import TableToolbar from '@/components/shared/TableToolbar';
 const Schedule = base44.entities.Schedule;
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -154,6 +155,14 @@ export default function ScheduleHub() {
         getMyWeddingDetails().then((details) => {
           setWd(details || null);
           setWeddingDate(details?.weddingDate || inv?.wedding_date || null);
+          // THE SUBSCRIBE FEED'S COPY OF THE SCHEDULE. Every writer on this
+          // page ends here, so this one call is the chokepoint for all four,
+          // and running it on an ordinary load is what repairs a copy that
+          // fell behind (src/lib/calendarFeedSync.js). A failure is logged,
+          // not toasted: the schedule saved; the feed catches up next visit.
+          syncCalendarFeed(data, details).catch((err) => {
+            console.error('[ScheduleHub] calendar feed sync failed:', err?.message || err);
+          });
         }).catch(() => {});
         getMyRecords('Note').then((n) => setTodos(n || [])).catch(() => {});
         getMyRecords('CustomEventPage').then((c) => setCustomPages(c || [])).catch(() => {});

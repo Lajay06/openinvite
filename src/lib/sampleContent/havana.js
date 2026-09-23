@@ -228,11 +228,11 @@ export const SAMPLE_HAVANA = {
   music: {
     guestRequestsEnabled: true,
     playlists: [],
-    requestMessage: 'One song. The one that would get you out of your chair.',
+    requestMessage: 'Something that would get you out of your chair.',
   },
 
   registryContent: {
-    registryMessage: 'Coming is the gift. If you want to mark it with something, there is a short list.',
+    registryMessage: 'Coming is the gift. Everything else is optional, and briefly listed.',
     noGiftsPlease: false,
   },
 
@@ -256,7 +256,7 @@ export const SAMPLE_HAVANA = {
     },
     lateArrival: {
       display: true,
-      policy: 'Come in at the back. Somebody will find you a chair.',
+      policy: 'Slip in on the courtyard side. Somebody will find you a chair.',
     },
   },
 

@@ -60,7 +60,7 @@ export const SAMPLE_EDINBURGH = {
     blocks: [
       { id: 'ed1', type: 'heading', order: 0, content: { text: 'Two in the afternoon, while there is still light', kicker: 'The day' } },
       { id: 'ed2', type: 'paragraph', order: 1, content: {
-        text: 'It gets dark here at four in the winter, which is why the ceremony is at two and why everything after it happens indoors with the fires lit. Dinner is at six and the hall stays open long after. There is nowhere to be afterward and no reason to leave early.',
+        text: 'It gets dark here at four in the winter, which is why the ceremony is at two and why everything after it happens indoors with the fires lit. Dinner is at six and the hall stays open long after. There is nothing after it, and the bar stays open.',
       } },
       { id: 'ed3', type: 'quote', order: 2, content: { text: 'It will be cold and it will be dark and we would not have it any other way.', attribution: 'Fiona & Callum' } },
       { id: 'ed4', type: 'photo', order: 3, content: { url: img(EDINBURGH_IMAGES.home[0], 1400) } },
@@ -81,8 +81,8 @@ export const SAMPLE_EDINBURGH = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'A fiddle and a piano while we eat, and dancing from nine once the tables are cleared. Send us what you want played at ten.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song, and it should be one you will actually get up for.' },
-  registryContent: { registryMessage: 'The house is small and full and we have both been keeping the same furniture for a decade. If you would like to mark the day, there is a short list and a fund for a week away.', noGiftsPlease: false },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'It should be one you will actually dance to.' },
+  registryContent: { registryMessage: 'The house is small and full, and between us we have kept the same furniture for a decade. What we would like is a week away; there is a fund for it, and little else.', noGiftsPlease: false },
 
   qna: [
     { question: 'How cold will it be?', answer: 'Close to freezing, and the chapel is not heated. Coats stay on and nobody minds.' },

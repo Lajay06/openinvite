@@ -19,18 +19,18 @@ export default function TransportationOptions({ weddingLocation, weddingCity }) 
 
   const loadTransportation = async () => {
     setLoading(true);
-    const toastId = toast.loading('Finding transportation options...');
+    const toastId = toast.loading('Finding transport options…');
 
     try {
       const response = await InvokeLLM({
-        prompt: `Find the top 6 real transportation options for wedding guests traveling to ${weddingCity}, ${weddingLocation}.
+        prompt: `Find the top 6 real transport options for wedding guests traveling to ${weddingCity}, ${weddingLocation}.
         
         Include specific services like:
         - Airport shuttle services (with company names)
         - Ride-sharing (Uber/Lyft availability)
         - Local taxi companies
         - Rental car companies
-        - Public transportation options
+        - Public transport options
         - Private car services
         
         For each option, provide:
@@ -70,12 +70,12 @@ export default function TransportationOptions({ weddingLocation, weddingCity }) 
 
       setOptions(response.options || []);
       setHasLoaded(true);
-      toast.success('Transportation options loaded!', { id: toastId });
+      toast.success('Transport options loaded', { id: toastId });
     } catch (error) {
-      console.error('Error loading transportation:', error);
+      console.error('Error loading transport options:', error);
       setOptions([]);
       setHasLoaded(true);
-      toast.error('Could not load transportation', { id: toastId });
+      toast.error('Could not load transport options', { id: toastId });
     }
 
     setLoading(false);
@@ -85,7 +85,7 @@ export default function TransportationOptions({ weddingLocation, weddingCity }) 
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <Loader2 className="w-12 h-12 text-[#0A0A0A] animate-spin mb-4" />
-        <p className="text-[rgba(10,10,10,0.6)]">Finding transportation in {weddingCity}...</p>
+        <p className="text-[rgba(10,10,10,0.6)]">Finding transport options in {weddingCity}…</p>
       </div>
     );
   }
@@ -94,7 +94,7 @@ export default function TransportationOptions({ weddingLocation, weddingCity }) 
     <div className="space-y-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-[#0A0A0A]">Transportation Options</h2>
+          <h2 className="text-2xl font-bold text-[#0A0A0A]">Getting here</h2>
           <p className="text-sm mt-1" style={{ color: color.textMuted }}>Getting around {weddingCity}</p>
         </div>
       </div>

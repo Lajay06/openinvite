@@ -82,8 +82,8 @@ export const SAMPLE_FLORENCE = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'Nothing arranged and no band booked. If you play, bring it. If you do not, send us something for the speakers after midnight.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song, or one instrument. Either is welcome.' },
-  registryContent: { registryMessage: 'We have far too much of everything already, most of it half finished. If you would like to mark the day, there is a short list, and the rest goes toward the roof of the studio.', noGiftsPlease: false },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'A song, or an instrument. Either is welcome.' },
+  registryContent: { registryMessage: 'We have far too much of everything already, most of it half finished. If you want to help finish something, the studio roof is first in line.', noGiftsPlease: false },
 
   qna: [
     { question: 'What time should we arrive?', answer: 'Any time after five. The ceremony is at six and nothing before it is arranged.' },

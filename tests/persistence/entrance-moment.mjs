@@ -75,7 +75,9 @@ export async function runEntranceMoment() {
 
   const checks = [
     { name: 'First-visit-only: reads a localStorage flag keyed to the wedding', re: /localStorage\.getItem\(storageKey\)/ },
-    { name: 'First-visit-only: writes the localStorage flag once played/skipped', re: /localStorage\.setItem\(storageKey,\s*'1'\)/ },
+    // The flag now records HOW it played (SEEN_UNGREETED / SEEN_GREETED) so a
+    // stranger's viewing can be replayed once, greeted — guest greeting, package three.
+    { name: 'First-visit-only: writes the localStorage flag once played/skipped', re: /localStorage\.setItem\(storageKey,\s*seen\)/ },
     { name: 'Accessibility: prefers-reduced-motion skips the animation entirely', re: /prefersReducedOS/ },
     { name: 'Tap/click skips immediately (onClick handler present)', re: /onClick=\{skip\}/ },
     { name: 'Touch skips immediately too (onTouchStart handler present)', re: /onTouchStart=\{skip\}/ },

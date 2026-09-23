@@ -76,8 +76,8 @@ export const SAMPLE_SEOUL = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'One player during the ceremony, and something quiet through lunch. Send us what you would like to hear over a long meal.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song. It has to work at a conversational volume.' },
-  registryContent: { registryMessage: 'The apartment is finished and there is nothing we need. If you would like to give something, there is a short list of small things.', noGiftsPlease: false },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'Nothing that stops the conversation.' },
+  registryContent: { registryMessage: 'The apartment is finished and there is nothing we need. What is listed is small on purpose.', noGiftsPlease: false },
 
   qna: [
     { question: 'What time should we arrive?', answer: 'By twenty to eleven. The lift is slow and there are five floors.' },

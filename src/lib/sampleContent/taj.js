@@ -79,8 +79,8 @@ export const SAMPLE_TAJ = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'There are musicians in the pavilion for the ceremony and something with a great deal more volume in the courtyard. Tell us what belongs in the courtyard.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song, and it will be played.' },
-  registryContent: { registryMessage: 'Many of you are flying a long way, and that is more than enough. If you would like to give something as well, there is a short list.', noGiftsPlease: false },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'It will be played. That is a promise.' },
+  registryContent: { registryMessage: 'Many of you are flying a long way. That is more than enough, but there are ideas for anyone who cannot arrive empty-handed.', noGiftsPlease: false },
 
   qna: [
     { question: 'What time should we arrive?', answer: 'By half past four. The pavilion is at the far end of the garden and the walk takes ten minutes at an unhurried pace.' },
@@ -91,7 +91,7 @@ export const SAMPLE_TAJ = {
 
   weddingPolicies: {
     dressCode: { display: true, guidance: 'Ruby, gold, deep green, anything with color in it. Not ivory, and not white.', weatherNote: 'Warm until seven and cool by ten. The courtyard is open to the sky.' },
-    photography: { display: true, unplugged: true, message: 'Nothing raised during the ceremony. The pavilion is small and the light is the whole picture.' },
+    photography: { display: true, unplugged: true, message: 'No screens in the pavilion. It is small, and the light is the whole picture.' },
     lateArrival: { display: true, policy: 'Walk down the side of the water and take a seat at the back. Nobody will turn around.' },
   },
 

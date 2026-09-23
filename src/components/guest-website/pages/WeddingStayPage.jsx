@@ -2,6 +2,7 @@ import React from 'react';
 import { MapPin, Star, ExternalLink, Hotel } from 'lucide-react';
 import SectionReveal from '../SectionReveal';
 import GuestPageHeading from '../GuestPageHeading';
+import { pageAnchorFor } from '../layouts/sectionMarks';
 import { isMotionEnabled } from '@/lib/universeStyling';
 
 export default function WeddingStayPage({ weddingDetails, theme, typography, universeConfig }) {
@@ -24,6 +25,10 @@ export default function WeddingStayPage({ weddingDetails, theme, typography, uni
     color: theme.lightText,
     opacity: 0.8,
   };
+  // The intro follows the page anchor — the mark above it — on its own edge:
+  // a left mark over a centered sentence was the mismatch on this page.
+  const anchor = pageAnchorFor(universeConfig);
+  const intro = { textAlign: anchor, maxWidth: 560, margin: anchor === 'center' ? '0 auto 48px' : '0 0 48px' };
 
   const card = {
     backgroundColor: theme.darkBg,
@@ -49,13 +54,13 @@ export default function WeddingStayPage({ weddingDetails, theme, typography, uni
         </SectionReveal>
 
         {accom.coupleNote && (
-          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' }}>
+          <SectionReveal anchorRole="paragraph" universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, ...intro }}>
             {accom.coupleNote}
           </SectionReveal>
         )}
 
         {!accom.coupleNote && (
-          <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, textAlign: 'center', maxWidth: 560, margin: '0 auto 48px' }}>
+          <SectionReveal anchorRole="paragraph" universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ ...body, ...intro }}>
             We've curated a few great places to stay so you can find something that suits your style and budget.
           </SectionReveal>
         )}
@@ -196,7 +201,7 @@ export default function WeddingStayPage({ weddingDetails, theme, typography, uni
         {places.length === 0 && legacy.length === 0 && (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ textAlign: 'center', padding: '60px 24px' }}>
             <p style={{ ...body, opacity: 0.4, fontStyle: 'italic' }}>
-              Accommodation recommendations will be added here by the couple.
+              Places to stay will be added here by the couple.
             </p>
           </SectionReveal>
         )}

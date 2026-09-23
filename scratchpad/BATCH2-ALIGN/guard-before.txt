@@ -1,0 +1,872 @@
+
+  Page anchor parity — 320 page renders (20 universes × 8 pages × 2 viewports) — commit 0d068b69, instrumentation only, rendered from page-anchor-parity.json
+
+  ❌ FAIL   390  london     home         anchor=center mark:center@195 heading:center@195 paragraph:left@189 quote:center@195
+             · paragraph textAlign left ≠ anchor center
+             · paragraph center 189.4 vs mark 195.0 (Δ5.6)
+  ✅ PASS   390  london     our-story    anchor=center mark:center@195 paragraph:center@198
+  ✅ PASS   390  london     celebration  anchor=center mark:center@195 heading:center@195
+  ✅ PASS   390  london     rsvp         anchor=center mark:center@195 heading:center@195 paragraph:center@195
+  ✅ PASS   390  london     registry     anchor=center mark:center@195 paragraph:center@195
+  ✅ PASS   390  london     music        anchor=center mark:center@195 paragraph:center@195
+  ✅ PASS   390  london     stay         anchor=center mark:center@195 paragraph:center@195
+  ✅ PASS   390  london     transport    anchor=center mark:center@195 paragraph:center@195
+  ❌ FAIL   390  tulum      home         anchor=center mark:center@195 heading:center@195 paragraph:left@179 quote:center@195
+             · paragraph textAlign left ≠ anchor center
+             · paragraph center 179.0 vs mark 195.0 (Δ16.0)
+  ❌ FAIL   390  tulum      our-story    anchor=center paragraph:left@188
+             · no mark on the page
+  ❌ FAIL   390  tulum      celebration  anchor=center mark:center@195 heading:left@95
+             · heading textAlign left ≠ anchor center
+             · heading center 95.1 vs mark 195.0 (Δ99.9)
+  ❌ FAIL   390  tulum      rsvp         anchor=center heading:center@195 paragraph:left@187
+             · no mark on the page
+  ✅ PASS   390  tulum      registry     anchor=center mark:center@195 paragraph:center@195
+  ✅ PASS   390  tulum      music        anchor=center mark:center@195 paragraph:center@195
+  ✅ PASS   390  tulum      stay         anchor=center mark:center@195 paragraph:center@195
+  ✅ PASS   390  tulum      transport    anchor=center mark:center@195 paragraph:center@195
+  ❌ FAIL   390  kyoto      home         anchor=left   mark:left@24 heading:center@30 paragraph:left@24 quote:center@47
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 29.9 vs mark 24.0 (Δ5.9)
+             · quote left edge 47.2 vs mark 24.0 (Δ23.2)
+  ✅ PASS   390  kyoto      our-story    anchor=left   mark:left@48 paragraph:left@48
+  ❌ FAIL   390  kyoto      celebration  anchor=left   mark:left@32 heading:left@53
+             · heading left edge 53.0 vs mark 32.0 (Δ21.0)
+  ✅ PASS   390  kyoto      rsvp         anchor=left   mark:left@48 heading:left@48 paragraph:left@48
+  ❌ FAIL   390  kyoto      registry     anchor=left   mark:left@24 paragraph:center@36
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 35.8 vs mark 24.0 (Δ11.8)
+  ❌ FAIL   390  kyoto      music        anchor=left   mark:left@24 paragraph:center@50
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 50.5 vs mark 24.0 (Δ26.5)
+  ❌ FAIL   390  kyoto      stay         anchor=left   mark:left@24 paragraph:center@36
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 36.1 vs mark 24.0 (Δ12.1)
+  ❌ FAIL   390  kyoto      transport    anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.3 vs mark 24.0 (Δ10.3)
+  ❌ FAIL   390  capri      home         anchor=left   mark:left@24 heading:center@47 paragraph:left@24 quote:center@73
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 47.2 vs mark 24.0 (Δ23.2)
+             · quote left edge 72.8 vs mark 24.0 (Δ48.8)
+  ✅ PASS   390  capri      our-story    anchor=left   mark:left@32 paragraph:left@32
+  ✅ PASS   390  capri      celebration  anchor=left   mark:left@32 heading:left@32
+  ✅ PASS   390  capri      rsvp         anchor=left   mark:left@32 heading:left@32 paragraph:left@32
+  ❌ FAIL   390  capri      registry     anchor=left   mark:left@24 paragraph:center@46
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 45.9 vs mark 24.0 (Δ21.9)
+  ❌ FAIL   390  capri      music        anchor=left   mark:left@24 paragraph:center@42
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 42.5 vs mark 24.0 (Δ18.5)
+  ❌ FAIL   390  capri      stay         anchor=left   mark:left@24 paragraph:center@36
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 36.1 vs mark 24.0 (Δ12.1)
+  ❌ FAIL   390  capri      transport    anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.3 vs mark 24.0 (Δ10.3)
+  ❌ FAIL   390  marrakech  home         anchor=left   mark:left@24 heading:center@50 paragraph:left@24 quote:center@37
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 50.4 vs mark 24.0 (Δ26.4)
+             · quote left edge 37.4 vs mark 24.0 (Δ13.4)
+  ✅ PASS   390  marrakech  our-story    anchor=left   mark:left@40 paragraph:left@40
+  ✅ PASS   390  marrakech  celebration  anchor=left   mark:left@32 heading:left@32
+  ❌ FAIL   390  marrakech  rsvp         anchor=left   mark:center@24 heading:center@158 paragraph:left@64
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+             · heading textAlign center ≠ anchor left
+             · heading left edge 157.7 vs mark 24.0 (Δ133.7)
+             · paragraph left edge 64.0 vs mark 24.0 (Δ40.0)
+  ❌ FAIL   390  marrakech  registry     anchor=left   mark:left@24 paragraph:center@37
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 36.7 vs mark 24.0 (Δ12.7)
+  ❌ FAIL   390  marrakech  music        anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.0 vs mark 24.0 (Δ10.0)
+  ❌ FAIL   390  marrakech  stay         anchor=left   mark:left@24 paragraph:center@36
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 36.1 vs mark 24.0 (Δ12.1)
+  ❌ FAIL   390  marrakech  transport    anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.3 vs mark 24.0 (Δ10.3)
+  ❌ FAIL   390  brooklyn   home         anchor=left   mark:center@24 heading:center@86 paragraph:left@24 quote:center@68
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 85.6 vs mark 24.0 (Δ61.6)
+             · quote left edge 67.6 vs mark 24.0 (Δ43.6)
+  ✅ PASS   390  brooklyn   our-story    anchor=left   mark:left@32 paragraph:left@32
+  ❌ FAIL   390  brooklyn   celebration  anchor=left   heading:right@154
+             · no mark on the page
+  ✅ PASS   390  brooklyn   rsvp         anchor=left   mark:left@32 heading:left@32 paragraph:left@32
+  ❌ FAIL   390  brooklyn   registry     anchor=left   mark:left@24 paragraph:center@36
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 36.2 vs mark 24.0 (Δ12.2)
+  ❌ FAIL   390  brooklyn   music        anchor=left   mark:left@24 paragraph:center@38
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 38.0 vs mark 24.0 (Δ14.0)
+  ❌ FAIL   390  brooklyn   stay         anchor=left   mark:left@24 paragraph:center@36
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 36.1 vs mark 24.0 (Δ12.1)
+  ❌ FAIL   390  brooklyn   transport    anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.3 vs mark 24.0 (Δ10.3)
+  ❌ FAIL   390  bali       home         anchor=left   mark:left@24 heading:center@32 paragraph:left@24 quote:center@34
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 31.7 vs mark 24.0 (Δ7.7)
+             · quote left edge 33.9 vs mark 24.0 (Δ9.9)
+  ✅ PASS   390  bali       our-story    anchor=left   mark:left@40 paragraph:left@40
+  ✅ PASS   390  bali       celebration  anchor=left   mark:left@32 heading:left@32
+  ✅ PASS   390  bali       rsvp         anchor=left   mark:left@40 heading:left@40 paragraph:left@40
+  ❌ FAIL   390  bali       registry     anchor=left   mark:left@24 paragraph:center@41
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 41.0 vs mark 24.0 (Δ17.0)
+  ❌ FAIL   390  bali       music        anchor=left   mark:left@24 paragraph:center@32
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 31.8 vs mark 24.0 (Δ7.8)
+  ❌ FAIL   390  bali       stay         anchor=left   mark:left@24 paragraph:center@36
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 36.1 vs mark 24.0 (Δ12.1)
+  ❌ FAIL   390  bali       transport    anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.3 vs mark 24.0 (Δ10.3)
+  ❌ FAIL   390  paris      home         anchor=center mark:center@195 heading:center@195 paragraph:left@196 quote:center@195
+             · paragraph textAlign left ≠ anchor center
+  ✅ PASS   390  paris      our-story    anchor=center mark:center@195 paragraph:center@197
+  ✅ PASS   390  paris      celebration  anchor=center mark:center@195 heading:center@195
+  ✅ PASS   390  paris      rsvp         anchor=center mark:center@195 heading:center@195 paragraph:center@195
+  ✅ PASS   390  paris      registry     anchor=center mark:center@195 paragraph:center@195
+  ✅ PASS   390  paris      music        anchor=center mark:center@195 paragraph:center@195
+  ✅ PASS   390  paris      stay         anchor=center mark:center@195 paragraph:center@195
+  ✅ PASS   390  paris      transport    anchor=center mark:center@195 paragraph:center@195
+  ❌ FAIL   390  capetown   home         anchor=left   mark:left@24 heading:center@38 paragraph:left@24 quote:center@34
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 37.7 vs mark 24.0 (Δ13.7)
+             · quote left edge 34.1 vs mark 24.0 (Δ10.1)
+  ✅ PASS   390  capetown   our-story    anchor=left   mark:left@48 paragraph:left@48
+  ✅ PASS   390  capetown   celebration  anchor=left   mark:left@32 heading:left@32
+  ✅ PASS   390  capetown   rsvp         anchor=left   mark:left@48 heading:left@48 paragraph:left@48
+  ❌ FAIL   390  capetown   registry     anchor=left   mark:left@24 paragraph:center@46
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 46.1 vs mark 24.0 (Δ22.1)
+  ❌ FAIL   390  capetown   music        anchor=left   mark:left@24 paragraph:center@30
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 29.6 vs mark 24.0 (Δ5.6)
+  ❌ FAIL   390  capetown   stay         anchor=left   mark:left@24 paragraph:center@36
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 36.1 vs mark 24.0 (Δ12.1)
+  ❌ FAIL   390  capetown   transport    anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.3 vs mark 24.0 (Δ10.3)
+  ❌ FAIL   390  mykonos    home         anchor=left   mark:center@24 heading:center@40 paragraph:left@24 quote:center@43
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 39.7 vs mark 24.0 (Δ15.7)
+             · quote left edge 42.8 vs mark 24.0 (Δ18.8)
+  ✅ PASS   390  mykonos    our-story    anchor=left   mark:left@48 paragraph:left@48
+  ✅ PASS   390  mykonos    celebration  anchor=left   mark:left@32 heading:left@32
+  ✅ PASS   390  mykonos    rsvp         anchor=left   mark:left@48 heading:left@48 paragraph:left@48
+  ❌ FAIL   390  mykonos    registry     anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.3 vs mark 24.0 (Δ10.3)
+  ❌ FAIL   390  mykonos    music        anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 33.5 vs mark 24.0 (Δ9.5)
+  ❌ FAIL   390  mykonos    stay         anchor=left   mark:left@24 paragraph:center@36
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 36.1 vs mark 24.0 (Δ12.1)
+  ❌ FAIL   390  mykonos    transport    anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.3 vs mark 24.0 (Δ10.3)
+  ❌ FAIL   390  amalfi     home         anchor=left   mark:left@24 heading:center@32 paragraph:left@24 quote:center@32
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 31.7 vs mark 24.0 (Δ7.7)
+             · quote left edge 31.9 vs mark 24.0 (Δ7.9)
+  ✅ PASS   390  amalfi     our-story    anchor=left   mark:left@32 paragraph:left@32
+  ❌ FAIL   390  amalfi     celebration  anchor=left   mark:center@32 heading:left@32
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+  ❌ FAIL   390  amalfi     rsvp         anchor=left   heading:center@155 paragraph:left@64
+             · no mark on the page
+  ❌ FAIL   390  amalfi     registry     anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.0 vs mark 24.0 (Δ10.0)
+  ❌ FAIL   390  amalfi     music        anchor=left   mark:left@24 paragraph:center@28
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 28.2 vs mark 24.0 (Δ4.2)
+  ❌ FAIL   390  amalfi     stay         anchor=left   mark:left@24 paragraph:center@36
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 36.1 vs mark 24.0 (Δ12.1)
+  ❌ FAIL   390  amalfi     transport    anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.3 vs mark 24.0 (Δ10.3)
+  ❌ FAIL   390  sedona     home         anchor=left   mark:left@24 heading:center@29 paragraph:left@24 quote:center@36
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 29.4 vs mark 24.0 (Δ5.4)
+             · quote left edge 35.7 vs mark 24.0 (Δ11.7)
+  ✅ PASS   390  sedona     our-story    anchor=left   mark:left@32 paragraph:left@32
+  ❌ FAIL   390  sedona     celebration  anchor=left   mark:center@32 heading:left@32
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+  ❌ FAIL   390  sedona     rsvp         anchor=left   heading:center@155 paragraph:left@64
+             · no mark on the page
+  ❌ FAIL   390  sedona     registry     anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.0 vs mark 24.0 (Δ10.0)
+  ❌ FAIL   390  sedona     music        anchor=left   mark:left@24 paragraph:center@32
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 31.8 vs mark 24.0 (Δ7.8)
+  ❌ FAIL   390  sedona     stay         anchor=left   mark:left@24 paragraph:center@36
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 36.1 vs mark 24.0 (Δ12.1)
+  ❌ FAIL   390  sedona     transport    anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.3 vs mark 24.0 (Δ10.3)
+  ❌ FAIL   390  aspen      home         anchor=left   mark:left@24 heading:center@51 paragraph:left@24 quote:center@46
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 50.7 vs mark 24.0 (Δ26.7)
+             · quote left edge 46.4 vs mark 24.0 (Δ22.4)
+  ✅ PASS   390  aspen      our-story    anchor=left   mark:left@32 paragraph:left@32
+  ❌ FAIL   390  aspen      celebration  anchor=left   mark:center@32 heading:left@32
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+  ❌ FAIL   390  aspen      rsvp         anchor=left   heading:center@155 paragraph:left@64
+             · no mark on the page
+  ❌ FAIL   390  aspen      registry     anchor=left   mark:left@24 paragraph:center@25
+             · paragraph textAlign center ≠ anchor left
+  ❌ FAIL   390  aspen      music        anchor=left   mark:left@24 paragraph:center@68
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 68.2 vs mark 24.0 (Δ44.2)
+  ❌ FAIL   390  aspen      stay         anchor=left   mark:left@24 paragraph:center@36
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 36.1 vs mark 24.0 (Δ12.1)
+  ❌ FAIL   390  aspen      transport    anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.3 vs mark 24.0 (Δ10.3)
+  ❌ FAIL   390  taj        home         anchor=left   mark:center@24 heading:center@34 paragraph:left@24 quote:center@34
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 34.0 vs mark 24.0 (Δ10.0)
+             · quote left edge 33.9 vs mark 24.0 (Δ9.9)
+  ✅ PASS   390  taj        our-story    anchor=left   mark:left@32 paragraph:left@32
+  ❌ FAIL   390  taj        celebration  anchor=left   mark:center@32 heading:left@32
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+  ❌ FAIL   390  taj        rsvp         anchor=left   heading:center@155 paragraph:left@64
+             · no mark on the page
+  ❌ FAIL   390  taj        registry     anchor=left   mark:left@24 paragraph:center@36
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 35.5 vs mark 24.0 (Δ11.5)
+  ❌ FAIL   390  taj        music        anchor=left   mark:left@24 paragraph:center@46
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 46.5 vs mark 24.0 (Δ22.5)
+  ❌ FAIL   390  taj        stay         anchor=left   mark:left@24 paragraph:center@36
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 36.1 vs mark 24.0 (Δ12.1)
+  ❌ FAIL   390  taj        transport    anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.3 vs mark 24.0 (Δ10.3)
+  ❌ FAIL   390  havana     home         anchor=left   mark:left@24 heading:center@58 paragraph:left@24 quote:center@24
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 58.0 vs mark 24.0 (Δ34.0)
+  ✅ PASS   390  havana     our-story    anchor=left   mark:left@32 paragraph:left@32
+  ❌ FAIL   390  havana     celebration  anchor=left   mark:center@32 heading:left@32
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+  ❌ FAIL   390  havana     rsvp         anchor=left   heading:center@155 paragraph:left@64
+             · no mark on the page
+  ❌ FAIL   390  havana     registry     anchor=left   mark:left@24 paragraph:center@38
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 38.5 vs mark 24.0 (Δ14.5)
+  ❌ FAIL   390  havana     music        anchor=left   mark:left@24 paragraph:center@43
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 42.9 vs mark 24.0 (Δ18.9)
+  ❌ FAIL   390  havana     stay         anchor=left   mark:left@24 paragraph:center@36
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 36.1 vs mark 24.0 (Δ12.1)
+  ❌ FAIL   390  havana     transport    anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.3 vs mark 24.0 (Δ10.3)
+  ❌ FAIL   390  edinburgh  home         anchor=left   mark:left@24 heading:center@24 paragraph:left@24 quote:center@37
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · quote left edge 36.9 vs mark 24.0 (Δ12.9)
+  ✅ PASS   390  edinburgh  our-story    anchor=left   mark:left@32 paragraph:left@32
+  ❌ FAIL   390  edinburgh  celebration  anchor=left   mark:center@32 heading:left@32
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+  ❌ FAIL   390  edinburgh  rsvp         anchor=left   heading:center@155 paragraph:left@64
+             · no mark on the page
+  ❌ FAIL   390  edinburgh  registry     anchor=left   mark:left@24 paragraph:center@35
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.9 vs mark 24.0 (Δ10.9)
+  ❌ FAIL   390  edinburgh  music        anchor=left   mark:left@24 paragraph:center@30
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 30.4 vs mark 24.0 (Δ6.4)
+  ❌ FAIL   390  edinburgh  stay         anchor=left   mark:left@24 paragraph:center@36
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 36.1 vs mark 24.0 (Δ12.1)
+  ❌ FAIL   390  edinburgh  transport    anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.3 vs mark 24.0 (Δ10.3)
+  ❌ FAIL   390  monaco     home         anchor=left   mark:center@24 heading:center@38 paragraph:left@24 quote:center@47
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 38.1 vs mark 24.0 (Δ14.1)
+             · quote left edge 47.4 vs mark 24.0 (Δ23.4)
+  ✅ PASS   390  monaco     our-story    anchor=left   mark:left@32 paragraph:left@32
+  ❌ FAIL   390  monaco     celebration  anchor=left   mark:center@32 heading:left@32
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+  ❌ FAIL   390  monaco     rsvp         anchor=left   heading:center@155 paragraph:left@64
+             · no mark on the page
+  ❌ FAIL   390  monaco     registry     anchor=left   mark:left@24 paragraph:center@30
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 30.5 vs mark 24.0 (Δ6.5)
+  ❌ FAIL   390  monaco     music        anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.4 vs mark 24.0 (Δ10.4)
+  ❌ FAIL   390  monaco     stay         anchor=left   mark:left@24 paragraph:center@36
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 36.1 vs mark 24.0 (Δ12.1)
+  ❌ FAIL   390  monaco     transport    anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.3 vs mark 24.0 (Δ10.3)
+  ❌ FAIL   390  florence   home         anchor=left   mark:left@24 heading:center@25 paragraph:left@24 quote:center@28
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · quote left edge 27.6 vs mark 24.0 (Δ3.6)
+  ✅ PASS   390  florence   our-story    anchor=left   mark:left@32 paragraph:left@32
+  ❌ FAIL   390  florence   celebration  anchor=left   mark:center@32 heading:left@32
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+  ❌ FAIL   390  florence   rsvp         anchor=left   heading:center@155 paragraph:left@64
+             · no mark on the page
+  ❌ FAIL   390  florence   registry     anchor=left   mark:left@24 paragraph:center@39
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 38.8 vs mark 24.0 (Δ14.8)
+  ❌ FAIL   390  florence   music        anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.0 vs mark 24.0 (Δ10.0)
+  ❌ FAIL   390  florence   stay         anchor=left   mark:left@24 paragraph:center@36
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 36.1 vs mark 24.0 (Δ12.1)
+  ❌ FAIL   390  florence   transport    anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.3 vs mark 24.0 (Δ10.3)
+  ❌ FAIL   390  seoul      home         anchor=left   mark:center@24 heading:center@52 paragraph:left@24 quote:center@35
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 52.2 vs mark 24.0 (Δ28.2)
+             · quote left edge 35.1 vs mark 24.0 (Δ11.1)
+  ✅ PASS   390  seoul      our-story    anchor=left   mark:left@32 paragraph:left@32
+  ❌ FAIL   390  seoul      celebration  anchor=left   mark:center@32 heading:left@32
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+  ❌ FAIL   390  seoul      rsvp         anchor=left   heading:center@151 paragraph:left@64
+             · no mark on the page
+  ❌ FAIL   390  seoul      registry     anchor=left   mark:left@24 paragraph:center@33
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 32.7 vs mark 24.0 (Δ8.7)
+  ❌ FAIL   390  seoul      music        anchor=left   mark:left@24 paragraph:center@24
+             · paragraph textAlign center ≠ anchor left
+  ❌ FAIL   390  seoul      stay         anchor=left   mark:left@24 paragraph:center@36
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 36.1 vs mark 24.0 (Δ12.1)
+  ❌ FAIL   390  seoul      transport    anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.3 vs mark 24.0 (Δ10.3)
+  ❌ FAIL   390  shanghai   home         anchor=left   mark:left@24 heading:center@38 paragraph:left@24 quote:center@25
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 38.3 vs mark 24.0 (Δ14.3)
+  ✅ PASS   390  shanghai   our-story    anchor=left   mark:left@32 paragraph:left@32
+  ❌ FAIL   390  shanghai   celebration  anchor=left   mark:center@32 heading:left@32
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+  ❌ FAIL   390  shanghai   rsvp         anchor=left   heading:center@155 paragraph:left@64
+             · no mark on the page
+  ❌ FAIL   390  shanghai   registry     anchor=left   mark:left@24 paragraph:center@35
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 35.4 vs mark 24.0 (Δ11.4)
+  ❌ FAIL   390  shanghai   music        anchor=left   mark:left@24 paragraph:center@47
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 47.4 vs mark 24.0 (Δ23.4)
+  ❌ FAIL   390  shanghai   stay         anchor=left   mark:left@24 paragraph:center@36
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 36.1 vs mark 24.0 (Δ12.1)
+  ❌ FAIL   390  shanghai   transport    anchor=left   mark:left@24 paragraph:center@34
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 34.3 vs mark 24.0 (Δ10.3)
+  ❌ FAIL  1440  london     home         anchor=center mark:center@720 heading:center@720 paragraph:left@345 quote:center@720
+             · paragraph textAlign left ≠ anchor center
+             · paragraph center 344.6 vs mark 720.0 (Δ375.4)
+  ✅ PASS  1440  london     our-story    anchor=center mark:center@720 paragraph:center@723
+  ✅ PASS  1440  london     celebration  anchor=center mark:center@720 heading:center@720
+  ✅ PASS  1440  london     rsvp         anchor=center mark:center@720 heading:center@720 paragraph:center@720
+  ✅ PASS  1440  london     registry     anchor=center mark:center@720 paragraph:center@720
+  ✅ PASS  1440  london     music        anchor=center mark:center@720 paragraph:center@720
+  ✅ PASS  1440  london     stay         anchor=center mark:center@720 paragraph:center@720
+  ✅ PASS  1440  london     transport    anchor=center mark:center@720 paragraph:center@720
+  ❌ FAIL  1440  tulum      home         anchor=center mark:center@720 heading:center@720 paragraph:left@344 quote:center@720
+             · paragraph textAlign left ≠ anchor center
+             · paragraph center 344.2 vs mark 720.0 (Δ375.8)
+  ❌ FAIL  1440  tulum      our-story    anchor=center paragraph:left@716
+             · no mark on the page
+  ❌ FAIL  1440  tulum      celebration  anchor=center mark:center@720 heading:left@331
+             · heading textAlign left ≠ anchor center
+             · heading center 330.5 vs mark 720.0 (Δ389.5)
+  ❌ FAIL  1440  tulum      rsvp         anchor=center heading:center@720 paragraph:left@709
+             · no mark on the page
+  ✅ PASS  1440  tulum      registry     anchor=center mark:center@720 paragraph:center@720
+  ✅ PASS  1440  tulum      music        anchor=center mark:center@720 paragraph:center@720
+  ✅ PASS  1440  tulum      stay         anchor=center mark:center@720 paragraph:center@720
+  ✅ PASS  1440  tulum      transport    anchor=center mark:center@720 paragraph:center@720
+  ❌ FAIL  1440  kyoto      home         anchor=left   mark:left@360 heading:center@472 paragraph:left@24 quote:center@422
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 472.3 vs mark 360.0 (Δ112.3)
+             · paragraph left edge 24.0 vs mark 360.0 (Δ336.0)
+             · quote left edge 421.6 vs mark 360.0 (Δ61.6)
+  ✅ PASS  1440  kyoto      our-story    anchor=left   mark:left@400 paragraph:left@400
+  ❌ FAIL  1440  kyoto      celebration  anchor=left   mark:left@232 heading:left@253
+             · heading left edge 253.0 vs mark 232.0 (Δ21.0)
+  ✅ PASS  1440  kyoto      rsvp         anchor=left   mark:left@500 heading:left@500 paragraph:left@500
+  ❌ FAIL  1440  kyoto      registry     anchor=left   mark:left@370 paragraph:center@372
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 372.4 vs mark 370.0 (Δ2.4)
+  ❌ FAIL  1440  kyoto      music        anchor=left   mark:left@320 paragraph:center@342
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 341.7 vs mark 320.0 (Δ21.7)
+  ❌ FAIL  1440  kyoto      stay         anchor=left   mark:left@290 paragraph:center@447
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 447.3 vs mark 290.0 (Δ157.3)
+  ❌ FAIL  1440  kyoto      transport    anchor=left   mark:left@290 paragraph:center@535
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 534.7 vs mark 290.0 (Δ244.7)
+  ❌ FAIL  1440  capri      home         anchor=left   mark:left@360 heading:center@498 paragraph:left@24 quote:center@486
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 498.3 vs mark 360.0 (Δ138.3)
+             · paragraph left edge 24.0 vs mark 360.0 (Δ336.0)
+             · quote left edge 485.6 vs mark 360.0 (Δ125.6)
+  ✅ PASS  1440  capri      our-story    anchor=left   mark:left@340 paragraph:left@340
+  ✅ PASS  1440  capri      celebration  anchor=left   mark:left@232 heading:left@232
+  ✅ PASS  1440  capri      rsvp         anchor=left   mark:left@480 heading:left@480 paragraph:left@480
+  ❌ FAIL  1440  capri      registry     anchor=left   mark:left@370 paragraph:center@394
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 394.4 vs mark 370.0 (Δ24.4)
+  ❌ FAIL  1440  capri      music        anchor=left   mark:left@320 paragraph:center@387
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 387.1 vs mark 320.0 (Δ67.1)
+  ❌ FAIL  1440  capri      stay         anchor=left   mark:left@290 paragraph:center@447
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 447.3 vs mark 290.0 (Δ157.3)
+  ❌ FAIL  1440  capri      transport    anchor=left   mark:left@290 paragraph:center@535
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 534.7 vs mark 290.0 (Δ244.7)
+  ❌ FAIL  1440  marrakech  home         anchor=left   mark:left@360 heading:center@503 paragraph:left@24 quote:center@421
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 503.0 vs mark 360.0 (Δ143.0)
+             · paragraph left edge 24.0 vs mark 360.0 (Δ336.0)
+             · quote left edge 421.2 vs mark 360.0 (Δ61.2)
+  ✅ PASS  1440  marrakech  our-story    anchor=left   mark:left@500 paragraph:left@500
+  ✅ PASS  1440  marrakech  celebration  anchor=left   mark:left@232 heading:left@232
+  ❌ FAIL  1440  marrakech  rsvp         anchor=left   mark:center@460 heading:center@664 paragraph:left@500
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+             · heading textAlign center ≠ anchor left
+             · heading left edge 664.0 vs mark 460.0 (Δ204.0)
+             · paragraph left edge 500.0 vs mark 460.0 (Δ40.0)
+  ❌ FAIL  1440  marrakech  registry     anchor=left   mark:left@370 paragraph:center@385
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 385.2 vs mark 370.0 (Δ15.2)
+  ❌ FAIL  1440  marrakech  music        anchor=left   mark:left@320 paragraph:center@338
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 338.1 vs mark 320.0 (Δ18.1)
+  ❌ FAIL  1440  marrakech  stay         anchor=left   mark:left@290 paragraph:center@447
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 447.3 vs mark 290.0 (Δ157.3)
+  ❌ FAIL  1440  marrakech  transport    anchor=left   mark:left@290 paragraph:center@535
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 534.7 vs mark 290.0 (Δ244.7)
+  ❌ FAIL  1440  brooklyn   home         anchor=left   mark:center@360 heading:center@556 paragraph:left@24 quote:center@550
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 555.9 vs mark 360.0 (Δ195.9)
+             · paragraph left edge 24.0 vs mark 360.0 (Δ336.0)
+             · quote left edge 550.1 vs mark 360.0 (Δ190.1)
+  ✅ PASS  1440  brooklyn   our-story    anchor=left   mark:left@270 paragraph:left@270
+  ❌ FAIL  1440  brooklyn   celebration  anchor=left   heading:right@884
+             · no mark on the page
+  ✅ PASS  1440  brooklyn   rsvp         anchor=left   mark:left@480 heading:left@480 paragraph:left@480
+  ❌ FAIL  1440  brooklyn   registry     anchor=left   mark:left@370 paragraph:center@524
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 524.3 vs mark 370.0 (Δ154.3)
+  ❌ FAIL  1440  brooklyn   music        anchor=left   mark:left@320 paragraph:center@507
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 506.5 vs mark 320.0 (Δ186.5)
+  ❌ FAIL  1440  brooklyn   stay         anchor=left   mark:left@290 paragraph:center@447
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 447.3 vs mark 290.0 (Δ157.3)
+  ❌ FAIL  1440  brooklyn   transport    anchor=left   mark:left@290 paragraph:center@535
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 534.7 vs mark 290.0 (Δ244.7)
+  ❌ FAIL  1440  bali       home         anchor=left   mark:left@360 heading:center@393 paragraph:left@24 quote:center@417
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 392.5 vs mark 360.0 (Δ32.5)
+             · paragraph left edge 24.0 vs mark 360.0 (Δ336.0)
+             · quote left edge 416.7 vs mark 360.0 (Δ56.7)
+  ✅ PASS  1440  bali       our-story    anchor=left   mark:left@330 paragraph:left@330
+  ✅ PASS  1440  bali       celebration  anchor=left   mark:left@232 heading:left@232
+  ✅ PASS  1440  bali       rsvp         anchor=left   mark:left@460 heading:left@460 paragraph:left@460
+  ❌ FAIL  1440  bali       registry     anchor=left   mark:left@370 paragraph:center@393
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 393.0 vs mark 370.0 (Δ23.0)
+  ❌ FAIL  1440  bali       music        anchor=left   mark:left@320 paragraph:center@364
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 364.4 vs mark 320.0 (Δ44.4)
+  ❌ FAIL  1440  bali       stay         anchor=left   mark:left@290 paragraph:center@447
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 447.3 vs mark 290.0 (Δ157.3)
+  ❌ FAIL  1440  bali       transport    anchor=left   mark:left@290 paragraph:center@535
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 534.7 vs mark 290.0 (Δ244.7)
+  ❌ FAIL  1440  paris      home         anchor=center mark:center@720 heading:center@720 paragraph:left@346 quote:center@720
+             · paragraph textAlign left ≠ anchor center
+             · paragraph center 345.6 vs mark 720.0 (Δ374.4)
+  ✅ PASS  1440  paris      our-story    anchor=center mark:center@720 paragraph:center@723
+  ✅ PASS  1440  paris      celebration  anchor=center mark:center@720 heading:center@720
+  ✅ PASS  1440  paris      rsvp         anchor=center mark:center@720 heading:center@720 paragraph:center@720
+  ✅ PASS  1440  paris      registry     anchor=center mark:center@720 paragraph:center@720
+  ✅ PASS  1440  paris      music        anchor=center mark:center@720 paragraph:center@720
+  ✅ PASS  1440  paris      stay         anchor=center mark:center@720 paragraph:center@720
+  ✅ PASS  1440  paris      transport    anchor=center mark:center@720 paragraph:center@720
+  ❌ FAIL  1440  capetown   home         anchor=left   mark:left@360 heading:center@484 paragraph:left@24 quote:center@431
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 484.1 vs mark 360.0 (Δ124.1)
+             · paragraph left edge 24.0 vs mark 360.0 (Δ336.0)
+             · quote left edge 431.4 vs mark 360.0 (Δ71.4)
+  ✅ PASS  1440  capetown   our-story    anchor=left   mark:left@360 paragraph:left@360
+  ✅ PASS  1440  capetown   celebration  anchor=left   mark:left@232 heading:left@232
+  ✅ PASS  1440  capetown   rsvp         anchor=left   mark:left@480 heading:left@480 paragraph:left@480
+  ❌ FAIL  1440  capetown   registry     anchor=left   mark:left@370 paragraph:center@377
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 377.3 vs mark 370.0 (Δ7.3)
+  ❌ FAIL  1440  capetown   music        anchor=left   mark:left@320 paragraph:center@345
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 345.2 vs mark 320.0 (Δ25.2)
+  ❌ FAIL  1440  capetown   stay         anchor=left   mark:left@290 paragraph:center@447
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 447.3 vs mark 290.0 (Δ157.3)
+  ❌ FAIL  1440  capetown   transport    anchor=left   mark:left@290 paragraph:center@535
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 534.7 vs mark 290.0 (Δ244.7)
+  ❌ FAIL  1440  mykonos    home         anchor=left   mark:center@360 heading:center@403 paragraph:left@24 quote:center@408
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 403.0 vs mark 360.0 (Δ43.0)
+             · paragraph left edge 24.0 vs mark 360.0 (Δ336.0)
+             · quote left edge 407.7 vs mark 360.0 (Δ47.7)
+  ✅ PASS  1440  mykonos    our-story    anchor=left   mark:left@340 paragraph:left@340
+  ✅ PASS  1440  mykonos    celebration  anchor=left   mark:left@232 heading:left@232
+  ✅ PASS  1440  mykonos    rsvp         anchor=left   mark:left@490 heading:left@490 paragraph:left@490
+  ❌ FAIL  1440  mykonos    registry     anchor=left   mark:left@370 paragraph:center@381
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 380.7 vs mark 370.0 (Δ10.7)
+  ❌ FAIL  1440  mykonos    music        anchor=left   mark:left@320 paragraph:center@475
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 475.4 vs mark 320.0 (Δ155.4)
+  ❌ FAIL  1440  mykonos    stay         anchor=left   mark:left@290 paragraph:center@447
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 447.3 vs mark 290.0 (Δ157.3)
+  ❌ FAIL  1440  mykonos    transport    anchor=left   mark:left@290 paragraph:center@535
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 534.7 vs mark 290.0 (Δ244.7)
+  ❌ FAIL  1440  amalfi     home         anchor=left   mark:left@360 heading:center@392 paragraph:left@24 quote:center@405
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 392.1 vs mark 360.0 (Δ32.1)
+             · paragraph left edge 24.0 vs mark 360.0 (Δ336.0)
+             · quote left edge 405.3 vs mark 360.0 (Δ45.3)
+  ✅ PASS  1440  amalfi     our-story    anchor=left   mark:left@340 paragraph:left@340
+  ❌ FAIL  1440  amalfi     celebration  anchor=left   mark:center@232 heading:left@232
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+  ❌ FAIL  1440  amalfi     rsvp         anchor=left   heading:center@660 paragraph:left@500
+             · no mark on the page
+  ❌ FAIL  1440  amalfi     registry     anchor=left   mark:left@370 paragraph:center@381
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 380.7 vs mark 370.0 (Δ10.7)
+  ❌ FAIL  1440  amalfi     music        anchor=left   mark:left@320 paragraph:center@345
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 345.2 vs mark 320.0 (Δ25.2)
+  ❌ FAIL  1440  amalfi     stay         anchor=left   mark:left@290 paragraph:center@447
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 447.3 vs mark 290.0 (Δ157.3)
+  ❌ FAIL  1440  amalfi     transport    anchor=left   mark:left@290 paragraph:center@535
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 534.7 vs mark 290.0 (Δ244.7)
+  ❌ FAIL  1440  sedona     home         anchor=left   mark:left@360 heading:center@472 paragraph:left@24 quote:center@449
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 471.5 vs mark 360.0 (Δ111.5)
+             · paragraph left edge 24.0 vs mark 360.0 (Δ336.0)
+             · quote left edge 448.9 vs mark 360.0 (Δ88.9)
+  ✅ PASS  1440  sedona     our-story    anchor=left   mark:left@340 paragraph:left@340
+  ❌ FAIL  1440  sedona     celebration  anchor=left   mark:center@232 heading:left@232
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+  ❌ FAIL  1440  sedona     rsvp         anchor=left   heading:center@660 paragraph:left@500
+             · no mark on the page
+  ❌ FAIL  1440  sedona     registry     anchor=left   mark:left@370 paragraph:center@384
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 383.8 vs mark 370.0 (Δ13.8)
+  ❌ FAIL  1440  sedona     music        anchor=left   mark:left@320 paragraph:center@339
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 339.3 vs mark 320.0 (Δ19.3)
+  ❌ FAIL  1440  sedona     stay         anchor=left   mark:left@290 paragraph:center@447
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 447.3 vs mark 290.0 (Δ157.3)
+  ❌ FAIL  1440  sedona     transport    anchor=left   mark:left@290 paragraph:center@535
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 534.7 vs mark 290.0 (Δ244.7)
+  ❌ FAIL  1440  aspen      home         anchor=left   mark:left@360 heading:center@461 paragraph:left@24 quote:center@402
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 461.0 vs mark 360.0 (Δ101.0)
+             · paragraph left edge 24.0 vs mark 360.0 (Δ336.0)
+             · quote left edge 401.8 vs mark 360.0 (Δ41.8)
+  ✅ PASS  1440  aspen      our-story    anchor=left   mark:left@340 paragraph:left@340
+  ❌ FAIL  1440  aspen      celebration  anchor=left   mark:center@232 heading:left@232
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+  ❌ FAIL  1440  aspen      rsvp         anchor=left   heading:center@660 paragraph:left@500
+             · no mark on the page
+  ❌ FAIL  1440  aspen      registry     anchor=left   mark:left@370 paragraph:center@390
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 389.6 vs mark 370.0 (Δ19.6)
+  ❌ FAIL  1440  aspen      music        anchor=left   mark:left@320 paragraph:center@398
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 397.6 vs mark 320.0 (Δ77.6)
+  ❌ FAIL  1440  aspen      stay         anchor=left   mark:left@290 paragraph:center@447
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 447.3 vs mark 290.0 (Δ157.3)
+  ❌ FAIL  1440  aspen      transport    anchor=left   mark:left@290 paragraph:center@535
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 534.7 vs mark 290.0 (Δ244.7)
+  ❌ FAIL  1440  taj        home         anchor=left   mark:center@360 heading:center@426 paragraph:left@24 quote:center@424
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 426.1 vs mark 360.0 (Δ66.1)
+             · paragraph left edge 24.0 vs mark 360.0 (Δ336.0)
+             · quote left edge 423.9 vs mark 360.0 (Δ63.9)
+  ✅ PASS  1440  taj        our-story    anchor=left   mark:left@340 paragraph:left@340
+  ❌ FAIL  1440  taj        celebration  anchor=left   mark:center@232 heading:left@232
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+  ❌ FAIL  1440  taj        rsvp         anchor=left   heading:center@660 paragraph:left@500
+             · no mark on the page
+  ❌ FAIL  1440  taj        registry     anchor=left   mark:left@370 paragraph:center@406
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 406.2 vs mark 370.0 (Δ36.2)
+  ❌ FAIL  1440  taj        music        anchor=left   mark:left@320 paragraph:center@348
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 348.3 vs mark 320.0 (Δ28.3)
+  ❌ FAIL  1440  taj        stay         anchor=left   mark:left@290 paragraph:center@447
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 447.3 vs mark 290.0 (Δ157.3)
+  ❌ FAIL  1440  taj        transport    anchor=left   mark:left@290 paragraph:center@535
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 534.7 vs mark 290.0 (Δ244.7)
+  ❌ FAIL  1440  havana     home         anchor=left   mark:left@360 heading:center@515 paragraph:left@24 quote:center@447
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 514.5 vs mark 360.0 (Δ154.5)
+             · paragraph left edge 24.0 vs mark 360.0 (Δ336.0)
+             · quote left edge 446.9 vs mark 360.0 (Δ86.9)
+  ✅ PASS  1440  havana     our-story    anchor=left   mark:left@340 paragraph:left@340
+  ❌ FAIL  1440  havana     celebration  anchor=left   mark:center@232 heading:left@232
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+  ❌ FAIL  1440  havana     rsvp         anchor=left   heading:center@660 paragraph:left@500
+             · no mark on the page
+  ❌ FAIL  1440  havana     registry     anchor=left   mark:left@370 paragraph:center@453
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 452.8 vs mark 370.0 (Δ82.8)
+  ❌ FAIL  1440  havana     music        anchor=left   mark:left@320 paragraph:center@430
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 430.2 vs mark 320.0 (Δ110.2)
+  ❌ FAIL  1440  havana     stay         anchor=left   mark:left@290 paragraph:center@447
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 447.3 vs mark 290.0 (Δ157.3)
+  ❌ FAIL  1440  havana     transport    anchor=left   mark:left@290 paragraph:center@535
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 534.7 vs mark 290.0 (Δ244.7)
+  ❌ FAIL  1440  edinburgh  home         anchor=left   mark:left@360 heading:center@395 paragraph:left@24 quote:center@416
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 394.8 vs mark 360.0 (Δ34.8)
+             · paragraph left edge 24.0 vs mark 360.0 (Δ336.0)
+             · quote left edge 415.8 vs mark 360.0 (Δ55.8)
+  ✅ PASS  1440  edinburgh  our-story    anchor=left   mark:left@340 paragraph:left@340
+  ❌ FAIL  1440  edinburgh  celebration  anchor=left   mark:center@232 heading:left@232
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+  ❌ FAIL  1440  edinburgh  rsvp         anchor=left   heading:center@660 paragraph:left@500
+             · no mark on the page
+  ❌ FAIL  1440  edinburgh  registry     anchor=left   mark:left@370 paragraph:center@372
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 372.2 vs mark 370.0 (Δ2.2)
+  ❌ FAIL  1440  edinburgh  music        anchor=left   mark:left@320 paragraph:center@334
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 334.0 vs mark 320.0 (Δ14.0)
+  ❌ FAIL  1440  edinburgh  stay         anchor=left   mark:left@290 paragraph:center@447
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 447.3 vs mark 290.0 (Δ157.3)
+  ❌ FAIL  1440  edinburgh  transport    anchor=left   mark:left@290 paragraph:center@535
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 534.7 vs mark 290.0 (Δ244.7)
+  ❌ FAIL  1440  monaco     home         anchor=left   mark:center@360 heading:center@440 paragraph:left@24 quote:center@433
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 440.1 vs mark 360.0 (Δ80.1)
+             · paragraph left edge 24.0 vs mark 360.0 (Δ336.0)
+             · quote left edge 432.7 vs mark 360.0 (Δ72.7)
+  ✅ PASS  1440  monaco     our-story    anchor=left   mark:left@340 paragraph:left@340
+  ❌ FAIL  1440  monaco     celebration  anchor=left   mark:center@232 heading:left@232
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+  ❌ FAIL  1440  monaco     rsvp         anchor=left   heading:center@660 paragraph:left@500
+             · no mark on the page
+  ❌ FAIL  1440  monaco     registry     anchor=left   mark:left@370 paragraph:center@374
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 374.0 vs mark 370.0 (Δ4.0)
+  ❌ FAIL  1440  monaco     music        anchor=left   mark:left@320 paragraph:center@393
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 392.8 vs mark 320.0 (Δ72.8)
+  ❌ FAIL  1440  monaco     stay         anchor=left   mark:left@290 paragraph:center@447
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 447.3 vs mark 290.0 (Δ157.3)
+  ❌ FAIL  1440  monaco     transport    anchor=left   mark:left@290 paragraph:center@535
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 534.7 vs mark 290.0 (Δ244.7)
+  ❌ FAIL  1440  florence   home         anchor=left   mark:left@360 heading:center@389 paragraph:left@24 quote:center@421
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 389.1 vs mark 360.0 (Δ29.1)
+             · paragraph left edge 24.0 vs mark 360.0 (Δ336.0)
+             · quote left edge 420.7 vs mark 360.0 (Δ60.7)
+  ✅ PASS  1440  florence   our-story    anchor=left   mark:left@340 paragraph:left@340
+  ❌ FAIL  1440  florence   celebration  anchor=left   mark:center@232 heading:left@232
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+  ❌ FAIL  1440  florence   rsvp         anchor=left   heading:center@660 paragraph:left@500
+             · no mark on the page
+  ❌ FAIL  1440  florence   registry     anchor=left   mark:left@370 paragraph:center@381
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 380.6 vs mark 370.0 (Δ10.6)
+  ❌ FAIL  1440  florence   music        anchor=left   mark:left@320 paragraph:center@335
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 334.6 vs mark 320.0 (Δ14.6)
+  ❌ FAIL  1440  florence   stay         anchor=left   mark:left@290 paragraph:center@447
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 447.3 vs mark 290.0 (Δ157.3)
+  ❌ FAIL  1440  florence   transport    anchor=left   mark:left@290 paragraph:center@535
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 534.7 vs mark 290.0 (Δ244.7)
+  ❌ FAIL  1440  seoul      home         anchor=left   mark:center@360 heading:center@379 paragraph:left@24 quote:center@409
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 378.8 vs mark 360.0 (Δ18.8)
+             · paragraph left edge 24.0 vs mark 360.0 (Δ336.0)
+             · quote left edge 408.7 vs mark 360.0 (Δ48.7)
+  ✅ PASS  1440  seoul      our-story    anchor=left   mark:left@340 paragraph:left@340
+  ❌ FAIL  1440  seoul      celebration  anchor=left   mark:center@232 heading:left@232
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+  ❌ FAIL  1440  seoul      rsvp         anchor=left   heading:center@655 paragraph:left@500
+             · no mark on the page
+  ❌ FAIL  1440  seoul      registry     anchor=left   mark:left@370 paragraph:center@376
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 376.2 vs mark 370.0 (Δ6.2)
+  ❌ FAIL  1440  seoul      music        anchor=left   mark:left@320 paragraph:center@322
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 322.1 vs mark 320.0 (Δ2.1)
+  ❌ FAIL  1440  seoul      stay         anchor=left   mark:left@290 paragraph:center@447
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 447.3 vs mark 290.0 (Δ157.3)
+  ❌ FAIL  1440  seoul      transport    anchor=left   mark:left@290 paragraph:center@535
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 534.7 vs mark 290.0 (Δ244.7)
+  ❌ FAIL  1440  shanghai   home         anchor=left   mark:left@360 heading:center@485 paragraph:left@24 quote:center@443
+             · heading textAlign center ≠ anchor left
+             · quote textAlign center ≠ anchor left
+             · heading left edge 485.0 vs mark 360.0 (Δ125.0)
+             · paragraph left edge 24.0 vs mark 360.0 (Δ336.0)
+             · quote left edge 442.7 vs mark 360.0 (Δ82.7)
+  ✅ PASS  1440  shanghai   our-story    anchor=left   mark:left@340 paragraph:left@340
+  ❌ FAIL  1440  shanghai   celebration  anchor=left   mark:center@232 heading:left@232
+             · mark paints center, declared left
+             · mark textAlign center ≠ anchor left
+  ❌ FAIL  1440  shanghai   rsvp         anchor=left   heading:center@660 paragraph:left@500
+             · no mark on the page
+  ❌ FAIL  1440  shanghai   registry     anchor=left   mark:left@370 paragraph:center@373
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 372.7 vs mark 370.0 (Δ2.7)
+  ❌ FAIL  1440  shanghai   music        anchor=left   mark:left@320 paragraph:center@334
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 334.4 vs mark 320.0 (Δ14.4)
+  ❌ FAIL  1440  shanghai   stay         anchor=left   mark:left@290 paragraph:center@447
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 447.3 vs mark 290.0 (Δ157.3)
+  ❌ FAIL  1440  shanghai   transport    anchor=left   mark:left@290 paragraph:center@535
+             · paragraph textAlign center ≠ anchor left
+             · paragraph left edge 534.7 vs mark 290.0 (Δ244.7)
+
+  92/320 passed, 228 failed.
+  Defect classes:
+     153  paragraph left edge # vs mark # (Δ#)
+     136  paragraph textAlign center ≠ anchor left
+      36  heading textAlign center ≠ anchor left
+      36  heading left edge # vs mark # (Δ#)
+      34  quote textAlign center ≠ anchor left
+      32  quote left edge # vs mark # (Δ#)
+      32  mark paints center, declared left
+      32  mark textAlign center ≠ anchor left
+      26  no mark on the page
+       6  paragraph textAlign left ≠ anchor center
+       5  paragraph center # vs mark # (Δ#)
+       2  heading textAlign left ≠ anchor center
+       2  heading center # vs mark # (Δ#)
+GUARD EXIT 1

@@ -86,9 +86,9 @@ const ARTICLES = {
         <li style={S.li}><strong>Guests:</strong> Guest list, Polls & games, Messages, Seating, Wedding party</li>
         <li style={S.li}><strong>Style & experience:</strong> Moodboard, Styling, Beauty, Food & beverage, Music, Photography, Vows & speeches, Guest gifts</li>
         <li style={S.li}><strong>Vendors:</strong> My vendors, Marketplace</li>
-        <li style={S.li}><strong>On the day:</strong> Ceremony details, Transport, Accommodation, Emergency contact</li>
+        <li style={S.li}><strong>On the day:</strong> Ceremony details, Getting here, Stay, Emergency contact</li>
         <li style={S.li}><strong>Finances:</strong> Budget, Registry</li>
-        <li style={S.li}><strong>Guest Suite:</strong> Schedule, Q&A, Registry, Accommodation, Transport, Experience guide, Good to know, Guest polls</li>
+        <li style={S.li}><strong>Guest Suite:</strong> Schedule, Q&A, Registry, Stay, Getting here, Experience guide, Good to know, Guest polls</li>
         <li style={S.li}><strong>Extras:</strong> Honeymoon, Considerations</li>
       </ul>
       <p style={S.p}>At the bottom of the sidebar: Account settings, Collaborate, Quick tips, Help center, Leave dashboard.</p>
@@ -171,7 +171,7 @@ const ARTICLES = {
         <li style={S.li}>"Let Ava decide what's next" — Ava analyzes your progress and recommends the next action</li>
       </ul>
       <h3 style={S.h3}>Building your website with Ava</h3>
-      <p style={S.p}>The guided flow has 10 steps, one at a time: cover photo, welcome message, love story, ceremony details (auto-filled from Event Details), reception details (auto-filled), RSVP settings, travel and accommodation, registry, music, and FAQ.</p>
+      <p style={S.p}>The guided flow has 10 steps, one at a time: cover photo, welcome message, love story, ceremony details (auto-filled from Event Details), reception details (auto-filled), RSVP settings, getting here and where to stay, registry, music, and FAQ.</p>
       <p style={S.p}>At each step: Ava gives you a prompt and a hint; a live mini-preview shows your changes in real time; "✦ Use Ava's suggestion" fills the field with a smart default; "Skip for now" moves forward without filling; "← Previous" goes back without losing progress.</p>
       <div style={S.tip}><p style={S.tipText}><strong>Light/Dark mode toggle:</strong> available on the Ava's Studio home screen.</p></div>
     </div>
@@ -518,7 +518,7 @@ const ARTICLES = {
         <li style={S.li}>The budget breakdown shows how much is allocated and spent</li>
       </ol>
       <h3 style={S.h3}>Budget categories</h3>
-      <p style={S.p}>Venue, Catering & Beverages, Photography & Videography, Florals & Décor, Entertainment, Attire, Hair & Makeup, Stationery & Invitations, Transport, Accommodation, Honeymoon, Gifts & Favours, Celebrant / Officiant, Miscellaneous.</p>
+      <p style={S.p}>Venue, Catering, Photography, Flowers, Music, Attire, Transport, Decorations, Rings, Stationery, Beauty, Honeymoon, Miscellaneous.</p>
       <h3 style={S.h3}>Adding expenses</h3>
       <ol style={S.ol}>
         <li style={S.li}>Click "+ Add Expense"</li>
@@ -624,7 +624,7 @@ const ARTICLES = {
   'Building your run sheet': (
     <div>
       <p style={S.p}>Your run sheet (Schedule → Run sheet) is the minute-by-minute plan for the day — different from your general schedule, which just lists events. The run sheet is what you'd hand to your photographer, MC, or venue coordinator.</p>
-      <p style={S.p}>Add each event with a start and end time, location, and category (ceremony, reception, transportation, and so on) — category shows as a colored pill so the sheet is scannable at a glance. Build it backwards from your ceremony time: hair and makeup, vendor arrivals, transport, then every reception moment (entrances, speeches, first dance, cake cutting, band/DJ sets).</p>
+      <p style={S.p}>Add each event with a start and end time, location, and category (ceremony, reception, transport, and so on) — category shows as a colored pill so the sheet is scannable at a glance. Build it backwards from your ceremony time: hair and makeup, vendor arrivals, transport, then every reception moment (entrances, speeches, first dance, cake cutting, band/DJ sets).</p>
       <div style={S.tip}><p style={S.tipText}><strong>Tip:</strong> Share the run sheet with anyone helping on the day — your MC and venue coordinator especially. It's the document that keeps everyone on time without needing you.</p></div>
     </div>
   ),

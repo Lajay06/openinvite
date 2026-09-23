@@ -35,6 +35,6 @@ export const ULTRA_EXTRAS = [
   "Universes (20 guest suite styles)",
   "Digital invitations via email & WhatsApp",
   "Online RSVP pages for guests",
-  "Guest suite: accommodation, transport & experience guide",
+  "Guest suite: stay, getting here & experience guide",
   "Save the dates & thank you cards",
 ];

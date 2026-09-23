@@ -71,9 +71,9 @@ export const SAMPLE_LONDON = {
     blocks: [
       { id: 'ln1', type: 'heading', order: 0, content: { text: 'A quiet afternoon, then a long evening', kicker: 'The day' } },
       { id: 'ln2', type: 'paragraph', order: 1, content: {
-        text: 'We are marrying in a room with tall windows, and afterward we are going upstairs for dinner. There is no schedule to keep beyond arriving, and no part of the day you need to prepare for.',
+        text: 'We are marrying in a room with tall windows, and afterward we are going upstairs for dinner. There is no schedule beyond the hour on the invitation, and nothing that needs rehearsing.',
       } },
-      { id: 'ln3', type: 'quote', order: 2, content: { text: 'Come as you would to a good dinner. That is the whole of it.', attribution: 'Nora & Julian' } },
+      { id: 'ln3', type: 'quote', order: 2, content: { text: 'A good dinner that begins with vows. That is the whole of it.', attribution: 'Nora & Julian' } },
       { id: 'ln4', type: 'photo', order: 3, content: { url: img(LONDON_IMAGES.home[0], 1400) } },
       { id: 'ln5', type: 'photo', order: 4, content: { url: img(LONDON_IMAGES.home[1], 1400) } },
 
@@ -93,8 +93,8 @@ export const SAMPLE_LONDON = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'There is a quartet early and a rather louder arrangement later. Tell us what belongs in the second half.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song, and we will find room for it.' },
-  registryContent: { registryMessage: 'We have a home already, and everything in it. If you would like to mark the day, there is a short list.', noGiftsPlease: false },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'The second half is yours.' },
+  registryContent: { registryMessage: 'We have a home already, and everything in it. There is a list, kept deliberately small.', noGiftsPlease: false },
 
   qna: [
     { question: 'What time should we arrive?', answer: 'From half past two. The ceremony begins at three and runs about twenty minutes.' },

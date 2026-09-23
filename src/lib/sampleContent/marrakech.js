@@ -69,7 +69,7 @@ export const SAMPLE_MARRAKECH = {
       { id: 'mk2', type: 'paragraph', order: 1, content: {
         text: 'We are marrying downstairs as the heat goes out of the day, and eating upstairs once it is dark. The stairs are the only difficult part and somebody will help you with them.',
       } },
-      { id: 'mk3', type: 'quote', order: 2, content: { text: 'Stay for the whole evening. It only gets better after ten.', attribution: 'Yasmin & Idris' } },
+      { id: 'mk3', type: 'quote', order: 2, content: { text: 'The evening is long on purpose. It only gets better after ten.', attribution: 'Yasmin & Idris' } },
       { id: 'mk4', type: 'photo', order: 3, content: { url: img(MARRAKECH_IMAGES.home[0], 1400) } },
       { id: 'mk5', type: 'photo', order: 4, content: { url: img(MARRAKECH_IMAGES.home[1], 1400) } },
 
@@ -89,8 +89,8 @@ export const SAMPLE_MARRAKECH = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'There is drumming on the roof once it is dark, and it goes on a long time. Tell us what else belongs up there.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song, and we will make room for it.' },
-  registryContent: { registryMessage: 'Coming this far is the whole gift. If you would rather mark it with something, there is a short list.', noGiftsPlease: false },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'Roof music, after dark.' },
+  registryContent: { registryMessage: 'Crossing a continent counts for more than anything wrapped. A handful of things are written down for the determined.', noGiftsPlease: false },
 
   qna: [
     { question: 'What time should we arrive?', answer: 'From five. The ceremony begins at half past, downstairs in the courtyard.' },

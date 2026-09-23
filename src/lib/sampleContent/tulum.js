@@ -69,7 +69,7 @@ export const SAMPLE_TULUM = {
       { id: 'tu2', type: 'paragraph', order: 1, content: {
         text: 'We are marrying on the sand at the end of the afternoon, and eating afterward under the palms. Shoes are optional and mostly a nuisance. Stay as long as you like.',
       } },
-      { id: 'tu3', type: 'quote', order: 2, content: { text: 'Bring nothing. Everything you need is already there.', attribution: 'Imogen & Kai' } },
+      { id: 'tu3', type: 'quote', order: 2, content: { text: 'Bring nothing. It is all already there.', attribution: 'Imogen & Kai' } },
       { id: 'tu4', type: 'photo', order: 3, content: { url: img(TULUM_IMAGES.home[0], 1400) } },
       { id: 'tu5', type: 'photo', order: 4, content: { url: img(TULUM_IMAGES.home[1], 1400) } },
 
@@ -89,8 +89,8 @@ export const SAMPLE_TULUM = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'There is a guitar at sunset and something considerably louder after dark. Tell us what belongs to the second half.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song. The one you would put on at midnight.' },
-  registryContent: { registryMessage: 'Getting here is the gift, and we know what it costs. If you want to mark it anyway, there is a short list.', noGiftsPlease: false },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'The one you would put on at midnight.' },
+  registryContent: { registryMessage: 'Getting here costs what it costs, and that is gift enough. A few small things are listed for anyone who disagrees.', noGiftsPlease: false },
 
   qna: [
     { question: 'What time should we arrive?', answer: 'From four. The ceremony starts at half past and the light is best just after.' },
@@ -100,7 +100,7 @@ export const SAMPLE_TULUM = {
   ],
 
   weddingPolicies: {
-    dressCode: { display: true, guidance: 'Loose and light. Heels sink, so leave them behind.', weatherNote: 'It cools off quickly once the sun goes. Bring something for your shoulders.' },
+    dressCode: { display: true, guidance: 'Loose and light. Heels sink, so leave them behind.', weatherNote: 'It cools off quickly once the sun goes. Long sleeves after dark.' },
     photography: { display: true, unplugged: true, message: 'Once the ceremony is over, photograph everything.' },
     lateArrival: { display: true, policy: 'Walk down and join us. Nobody will look round.' },
   },

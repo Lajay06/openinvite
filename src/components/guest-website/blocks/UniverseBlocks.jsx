@@ -64,26 +64,8 @@ import FlorenceVine from '../layouts/FlorenceVine';
 import SeoulOrb from '../layouts/SeoulOrb';
 import ShanghaiCloud from '../layouts/ShanghaiCloud';
 
-import MinimalSectionMark from '../layouts/MinimalSectionMark';
-import KyotoSectionMark from '../layouts/KyotoSectionMark';
-import EditorialSectionKicker from '../layouts/EditorialSectionKicker';
-import BrooklynSectionMark from '../layouts/BrooklynSectionMark';
-import BaliSectionMark from '../layouts/BaliSectionMark';
-import ParisSectionMark from '../layouts/ParisSectionMark';
-import CapriSectionMark from '../layouts/CapriSectionMark';
-import CapeTownSectionMark from '../layouts/CapeTownSectionMark';
-import MykonosSectionMark from '../layouts/MykonosSectionMark';
-import AmalfiSectionMark from '../layouts/AmalfiSectionMark';
-import SedonaSectionMark from '../layouts/SedonaSectionMark';
-import AspenSectionMark from '../layouts/AspenSectionMark';
-import TajSectionMark from '../layouts/TajSectionMark';
-import HavanaSectionMark from '../layouts/HavanaSectionMark';
-import EdinburghSectionMark from '../layouts/EdinburghSectionMark';
-import MonacoSectionMark from '../layouts/MonacoSectionMark';
-import FlorenceSectionMark from '../layouts/FlorenceSectionMark';
-import SeoulSectionMark from '../layouts/SeoulSectionMark';
-import ShanghaiSectionMark from '../layouts/ShanghaiSectionMark';
 import { parseWeddingDate } from '@/lib/guestDate';
+import { SECTION_MARK_BY_LAYOUT, pageAnchorFor } from '../layouts/sectionMarks';
 import { readableInkOn, contrastRatio } from '@/lib/surfaceTint';
 
 // Per-universe divider accent for `spacer` (variant 'rule') — every entry
@@ -111,28 +93,8 @@ const DIVIDER_BY_LAYOUT = {
   'shanghai-glamour': ShanghaiCloud,
 };
 
-// Per-universe kicker mark for `heading`'s optional kicker label.
-const KICKER_BY_LAYOUT = {
-  'london-minimal': MinimalSectionMark,
-  'kyoto-vertical': KyotoSectionMark,
-  'editorial-masthead': EditorialSectionKicker,
-  'brooklyn-offgrid': BrooklynSectionMark,
-  'bali-organic': BaliSectionMark,
-  'paris-couture': ParisSectionMark,
-  'capri-citrus': CapriSectionMark,
-  'capetown-estate': CapeTownSectionMark,
-  'mykonos-whitewash': MykonosSectionMark,
-  'amalfi-citrus': AmalfiSectionMark,
-  'sedona-mesa': SedonaSectionMark,
-  'aspen-lodge': AspenSectionMark,
-  'taj-pavilion': TajSectionMark,
-  'havana-deco': HavanaSectionMark,
-  'edinburgh-estate': EdinburghSectionMark,
-  'monaco-marina': MonacoSectionMark,
-  'florence-editorial': FlorenceSectionMark,
-  'seoul-glass': SeoulSectionMark,
-  'shanghai-glamour': ShanghaiSectionMark,
-};
+// Per-universe kicker mark for `heading`'s optional kicker label — the same
+// map GuestPageHeading draws page titles from, so the two cannot drift.
 
 export function UniverseDivider({ universeConfig, theme }) {
   const Divider = DIVIDER_BY_LAYOUT[universeConfig?.layout] || HairlineRule;
@@ -144,14 +106,14 @@ export function UniverseDivider({ universeConfig, theme }) {
 }
 
 export function UniverseKicker({ text, universeConfig, theme, typography }) {
-  const Kicker = KICKER_BY_LAYOUT[universeConfig?.layout];
+  const Kicker = SECTION_MARK_BY_LAYOUT[universeConfig?.layout];
   if (Kicker) {
     return <Kicker kicker={text} theme={theme} typography={typography} textColor={theme.lightText} accentColor={theme.accent} />;
   }
   // No matching universe layout (e.g. Tulum, or no universe set) — a plain,
   // sentence-case label, never uppercase (house rule).
   return (
-    <p style={{ fontFamily: typography.bodyFont, fontSize: 13, fontWeight: 600, letterSpacing: '0.04em', color: theme.accent, margin: '0 0 8px' }}>
+    <p data-oi-anchor="mark" style={{ fontFamily: typography.bodyFont, fontSize: 13, fontWeight: 600, letterSpacing: '0.04em', color: theme.accent, margin: '0 0 8px' }}>
       {text}
     </p>
   );
@@ -202,37 +164,55 @@ function EmptyPlaceholder({ theme, typography, label }) {
 }
 
 // ── Text ──────────────────────────────────────────────────────────
+//
+// ONE COLUMN, ONE ANCHOR. The heading sat centered in a 720 column with auto
+// margins, the paragraph sat left with `margin: 0` — so it started at the
+// page's 24px inset, not at the column's edge — and the quote sat centered in
+// a 640 column. Three widths, three edges, and a kicker whose own SectionMark
+// set textAlign left against the heading's centered wrapper. That is the
+// "hero centered, text under it left, it all just looks off" the owner saw
+// in every universe (Batch 2, phase two).
+//
+// Now every text block shares TEXT_COLUMN, centered on the page as a block,
+// and its text follows the page anchor — the universe's own SectionMark: left
+// for seventeen, center for London, Paris and a universe with no layout. The
+// mark is artwork and does not change; the body follows it. A couple's own
+// `style.align` still wins over the anchor: owner-typed choices are never
+// rewritten. The guard is scripts/test-page-anchor-parity.mjs.
+const TEXT_COLUMN = 720;
+const textColumn = (align) => ({ textAlign: align, maxWidth: TEXT_COLUMN, marginLeft: 'auto', marginRight: 'auto' });
+
 function HeadingBlock({ content, theme, typography, universeConfig, editable, style }) {
   if (!content.text && editable) {
     return <EmptyPlaceholder theme={theme} typography={typography} label="Heading — click to add text" />;
   }
-  const align = style?.align || 'center';
+  const align = style?.align || pageAnchorFor(universeConfig);
   return (
-    <div style={{ textAlign: align, maxWidth: 720, margin: align === 'center' ? '0 auto' : 0 }}>
+    <div style={textColumn(align)}>
       {content.kicker && <UniverseKicker text={content.kicker} universeConfig={universeConfig} theme={theme} typography={typography} />}
-      <h2 style={headingStyle(typography, theme, { fontSize: SIZE_PRESETS.heading[sizeStep(style)] })}>{content.text}</h2>
+      <h2 data-oi-anchor="heading" style={headingStyle(typography, theme, { fontSize: SIZE_PRESETS.heading[sizeStep(style)] })}>{content.text}</h2>
     </div>
   );
 }
 
-function SubheadingBlock({ content, theme, typography, editable, style }) {
+function SubheadingBlock({ content, theme, typography, universeConfig, editable, style }) {
   if (!content.text && editable) {
     return <EmptyPlaceholder theme={theme} typography={typography} label="Subheading — click to add text" />;
   }
-  const align = style?.align || 'center';
+  const align = style?.align || pageAnchorFor(universeConfig);
   return (
-    <h3 style={{ ...headingStyle(typography, theme, { fontSize: SIZE_PRESETS.subheading[sizeStep(style)] }), textAlign: align, maxWidth: 640, margin: align === 'center' ? '0 auto' : 0 }}>
+    <h3 data-oi-anchor="heading" style={{ ...headingStyle(typography, theme, { fontSize: SIZE_PRESETS.subheading[sizeStep(style)] }), ...textColumn(align) }}>
       {content.text}
     </h3>
   );
 }
 
-function ParagraphBlock({ content, theme, typography, editable, style }) {
+function ParagraphBlock({ content, theme, typography, universeConfig, editable, style }) {
   if (!content.text && editable) {
     return <EmptyPlaceholder theme={theme} typography={typography} label="Paragraph — click to add text" />;
   }
-  const align = resolveAlign(style, 'paragraph', 'left');
-  return <p style={{ ...bodyStyle(typography, theme, { fontSize: SIZE_PRESETS.body[sizeStep(style)] }), maxWidth: 640, margin: align === 'center' ? '0 auto' : 0, textAlign: align, whiteSpace: 'pre-wrap' }}>{content.text}</p>;
+  const align = resolveAlign(style, 'paragraph', pageAnchorFor(universeConfig));
+  return <p data-oi-anchor="paragraph" style={{ ...bodyStyle(typography, theme, { fontSize: SIZE_PRESETS.body[sizeStep(style)] }), ...textColumn(align), whiteSpace: 'pre-wrap' }}>{content.text}</p>;
 }
 
 // A quote has always been forced to italic. It is a choice now, and the DEFAULT
@@ -240,14 +220,14 @@ function ParagraphBlock({ content, theme, typography, editable, style }) {
 // QuoteBlock and QuoteBannerBlock — the near-duplicate pair, both converted.
 const quoteFontStyle = (style) => (style?.fontStyle === 'normal' ? 'normal' : 'italic');
 
-function QuoteBlock({ content, theme, typography, editable, style }) {
+function QuoteBlock({ content, theme, typography, universeConfig, editable, style }) {
   if (!content.text && editable) {
     return <EmptyPlaceholder theme={theme} typography={typography} label="Quote — click to add text" />;
   }
-  const align = style?.align || 'center';
+  const align = style?.align || pageAnchorFor(universeConfig);
   return (
-    <div style={{ textAlign: align, maxWidth: 640, margin: align === 'center' ? '0 auto' : 0 }}>
-      <p style={headingStyle(typography, theme, { fontStyle: quoteFontStyle(style), fontSize: SIZE_PRESETS.quote[sizeStep(style)], lineHeight: 1.5, marginBottom: 12 })}>“{content.text}”</p>
+    <div style={textColumn(align)}>
+      <p data-oi-anchor="quote" style={headingStyle(typography, theme, { fontStyle: quoteFontStyle(style), fontSize: SIZE_PRESETS.quote[sizeStep(style)], lineHeight: 1.5, marginBottom: 12 })}>“{content.text}”</p>
       {content.attribution && <p style={{ fontFamily: typography.bodyFont, fontSize: 13, color: theme.accent, margin: 0 }}>— {content.attribution}</p>}
     </div>
   );

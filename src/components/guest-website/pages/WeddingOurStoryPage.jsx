@@ -49,7 +49,7 @@ function GenericStoryComposition({ SectionMark, weddingDetails, theme, typograph
         </SectionReveal>
 
         {storyText && (
-          <SectionReveal universeConfig={universeConfig} disabled={!motionEnabled} style={{ fontFamily: typography.headingFont, fontSize: 'clamp(1.15rem, 2.2vw, 1.375rem)', lineHeight: 1.7, marginBottom: 56, whiteSpace: 'pre-wrap' }}>
+          <SectionReveal anchorRole="paragraph" universeConfig={universeConfig} disabled={!motionEnabled} style={{ fontFamily: typography.headingFont, fontSize: 'clamp(1.15rem, 2.2vw, 1.375rem)', lineHeight: 1.7, marginBottom: 56, whiteSpace: 'pre-wrap' }}>
             {storyText}
           </SectionReveal>
         )}
@@ -131,7 +131,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
           </SectionReveal>
 
           {storyText && (
-            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontFamily: typography.bodyFont, fontSize: 'clamp(1rem, 2vw, 1.1875rem)', lineHeight: 1.85, marginBottom: 72, whiteSpace: 'pre-wrap' }}>
+            <SectionReveal anchorRole="paragraph" universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontFamily: typography.bodyFont, fontSize: 'clamp(1rem, 2vw, 1.1875rem)', lineHeight: 1.85, marginBottom: 72, whiteSpace: 'pre-wrap' }}>
               {storyText}
             </SectionReveal>
           )}
@@ -175,7 +175,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
           </SectionReveal>
 
           {storyText && (
-            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontFamily: typography.headingFont, fontSize: 'clamp(1.15rem, 2.2vw, 1.375rem)', lineHeight: 1.7, marginBottom: 56, whiteSpace: 'pre-wrap' }}>
+            <SectionReveal anchorRole="paragraph" universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontFamily: typography.headingFont, fontSize: 'clamp(1.15rem, 2.2vw, 1.375rem)', lineHeight: 1.7, marginBottom: 56, whiteSpace: 'pre-wrap' }}>
               {storyText}
             </SectionReveal>
           )}
@@ -219,7 +219,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
           </SectionReveal>
 
           {storyText && (
-            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontFamily: typography.bodyFont, fontSize: 'clamp(1rem, 2vw, 1.1875rem)', lineHeight: 1.8, marginBottom: 88, whiteSpace: 'pre-wrap' }}>
+            <SectionReveal anchorRole="paragraph" universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontFamily: typography.bodyFont, fontSize: 'clamp(1rem, 2vw, 1.1875rem)', lineHeight: 1.8, marginBottom: 88, whiteSpace: 'pre-wrap' }}>
               {storyText}
             </SectionReveal>
           )}
@@ -266,7 +266,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
           </SectionReveal>
 
           {storyText && (
-            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontFamily: typography.headingFont, fontSize: 'clamp(1.1rem, 2.2vw, 1.3rem)', lineHeight: 1.85, marginBottom: 72, whiteSpace: 'pre-wrap' }}>
+            <SectionReveal anchorRole="paragraph" universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontFamily: typography.headingFont, fontSize: 'clamp(1.1rem, 2.2vw, 1.3rem)', lineHeight: 1.85, marginBottom: 72, whiteSpace: 'pre-wrap' }}>
               {storyText}
             </SectionReveal>
           )}
@@ -311,7 +311,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
           </SectionReveal>
 
           {storyText && (
-            <SectionReveal
+            <SectionReveal anchorRole="paragraph"
               universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
               style={{ fontFamily: typography.headingFont, fontSize: 'clamp(1.05rem, 2vw, 1.3rem)', lineHeight: 2.1, marginBottom: 96, whiteSpace: 'pre-wrap' }}
             >
@@ -361,7 +361,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
           </SectionReveal>
 
           {storyText && (
-            <SectionReveal
+            <SectionReveal anchorRole="paragraph"
               universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
               style={{ fontFamily: typography.bodyFont, fontSize: 'clamp(1.05rem, 2vw, 1.25rem)', lineHeight: 1.75, marginBottom: 64, maxWidth: 640, whiteSpace: 'pre-wrap' }}
             >
@@ -413,7 +413,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
           </SectionReveal>
 
           {storyText && (
-            <SectionReveal
+            <SectionReveal anchorRole="paragraph"
               universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
               style={{ fontFamily: typography.headingFont, fontSize: 'clamp(1.1rem, 2.2vw, 1.375rem)', lineHeight: 1.85, marginBottom: 56, whiteSpace: 'pre-wrap' }}
             >
@@ -459,28 +459,35 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
   return (
     <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100vh', padding: containerPadding }}>
       <div style={{ maxWidth: containerMaxWidth, margin: containerMargin }}>
-        {isMinimal && (
+        {/* A universe with no layout key (tulum) fell through both flags
+            below and rendered NO title at all — no mark, no sr-only h1 —
+            while every other universe opened with its mark. It takes the
+            minimal mark, which is what GuestPageHeading gives it on every
+            other page (Batch 2, phase two). The mark is centered, so the
+            text under it is centered too, as london's is. */}
+        {!isEditorial && (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <h1 className="sr-only">{copy.storyKicker || 'Our story'}</h1>
-            <MinimalSectionMark kicker={copy.storyKicker} theme={theme} typography={typography} />
+            <MinimalSectionMark kicker={copy.storyKicker || 'Our story'} theme={theme} typography={typography} />
           </SectionReveal>
         )}
         {isEditorial && (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
+            <h1 className="sr-only">{copy.storyKicker || 'Our story'}</h1>
             <EditorialSectionKicker kicker={copy.storyKicker} theme={theme} typography={typography} />
           </SectionReveal>
         )}
 
         {/* Story text */}
         {storyText && (
-          <SectionReveal
+          <SectionReveal anchorRole="paragraph"
             universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
             style={{
               fontFamily: isMinimal ? typography.headingFont : isEditorial ? typography.headingFont : typography.bodyFont,
               fontSize: isMinimal ? 'clamp(1.15rem, 2.2vw, 1.5rem)' : isEditorial ? 'clamp(1.25rem, 2.6vw, 1.75rem)' : 'clamp(1rem, 2vw, 1.125rem)',
               fontStyle: isEditorial ? 'italic' : 'normal',
               lineHeight: isMinimal ? 1.75 : isEditorial ? 1.55 : 1.8,
-              textAlign: isMinimal ? 'center' : 'left',
+              textAlign: isEditorial ? 'left' : 'center',
               marginBottom: isMinimal ? '88px' : '60px',
               whiteSpace: 'pre-wrap'
             }}

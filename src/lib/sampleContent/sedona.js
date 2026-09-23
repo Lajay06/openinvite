@@ -79,8 +79,8 @@ export const SAMPLE_SEDONA = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'A guitar and a fiddle at the house, and nothing amplified until the plates are cleared. Send us what you want played after that.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song. It has to work outside.' },
-  registryContent: { registryMessage: 'Getting out here is expensive and we know it, so consider that the gift. If you would rather bring something, the list is short and mostly for the land.', noGiftsPlease: false },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'It has to work outside.' },
+  registryContent: { registryMessage: 'Getting out here is expensive and we know it. Consider the flight your part. Whatever is left over, the land could use.', noGiftsPlease: false },
 
   qna: [
     { question: 'How far out is it?', answer: 'Twelve miles from town. The last four are dirt road, graded, and fine in any car if you take them slowly.' },

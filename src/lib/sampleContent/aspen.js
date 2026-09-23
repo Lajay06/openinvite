@@ -78,8 +78,8 @@ export const SAMPLE_ASPEN = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'A trio through dinner and something considerably louder from ten. Send us the second half.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song, and it has to work at altitude.' },
-  registryContent: { registryMessage: 'Getting here in February is the gift and we know exactly what it costs. If you would like to give something as well, the list is short.', noGiftsPlease: false },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'Thin air, so nothing subtle.' },
+  registryContent: { registryMessage: 'Getting here in February is the gift and we know what it costs. The excess is listed anyway.', noGiftsPlease: false },
 
   qna: [
     { question: 'How cold is the clearing?', answer: 'Around minus ten at half past three, colder if there is wind. Fifteen minutes, and there is somewhere warm at both ends.' },

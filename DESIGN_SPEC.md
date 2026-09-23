@@ -324,3 +324,31 @@ route. The previous pass inventoried by grepping and missed rows: a filter row
 is not a syntactic shape, it is three buttons that happen to sit beside each
 other, and the pages that had it wrong had it wrong in four different syntaxes.
 
+
+## The guest site's page anchor — owner ruling, 2026-09-20 (Batch 2, phase two)
+
+Within a guest page, the kicker, the heading, the paragraph and the quote
+share ONE alignment and ONE left edge. That anchor is the universe's own
+SectionMark: left for the seventeen whose marks set `textAlign: left` or lay
+out as a flex row, centered for London, Paris and a universe with no layout
+key (which takes the Minimal mark). The mark is artwork and stays as
+designed; the body follows it instead of fighting it.
+
+- The anchor is declared on the mark (`Component.anchor`) and resolved by
+  `pageAnchorFor(universeConfig)` in
+  `src/components/guest-website/layouts/sectionMarks.js`, the one map from
+  layout to mark that `GuestPageHeading` and `UniverseBlocks` share.
+- Home text blocks share one 720 column, centered on the page as a block,
+  with text aligned to the anchor. A couple's own `style.align` still wins.
+- Page intros (Registry, Music, Stay, Transport, RSVP) and Celebration day
+  headers take the anchor; they never hard-code `center`.
+- Hero mastheads are excluded: left in Bali, Cape Town, Marrakech, Florence,
+  Sedona, right in Brooklyn, vertical in Kyoto, centered elsewhere. That
+  variation is design, not drift.
+- A decorated block whose glyphs are inset (a flex-row mark after its icon,
+  Kyoto's date after its rule, the RSVP intro inside its form card) declares
+  its edge with `data-oi-anchor-root`.
+- Guard: `scripts/test-page-anchor-parity.mjs` — 20 universes × 8 prose
+  pages × 390/1440, painted first line + elementFromPoint, never rectangles
+  alone. FAQ and Polls rows are shared UI, left by construction, and are not
+  measured; Good to know and Experience keep their plain centered h1.

@@ -11,7 +11,7 @@ const CATEGORIES = [
   { value: "reception",      label: "Reception" },
   { value: "photography",    label: "Photography" },
   { value: "preparation",    label: "Preparation" },
-  { value: "transportation", label: "Transportation" },
+  { value: "transportation", label: "Transport" },
   { value: "rehearsal",      label: "Rehearsal" },
   { value: "pre_wedding",    label: "Pre-wedding" },
   { value: "post_wedding",   label: "Post-wedding" },

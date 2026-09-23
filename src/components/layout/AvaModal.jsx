@@ -7,6 +7,7 @@ import { executeAvaAction, filterActionsToMirror } from '@/lib/avaExecute';
 import { parseActions } from '@/lib/avaActions';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords, getMyWeddingDetails, putMyWeddingDetails } from '@/lib/resolveMyWedding';
+import { syncMyCalendarFeed } from '@/lib/calendarFeedSync';
 import { buildWeddingContext } from '@/lib/avaContext';
 import { buildAvaPrompt, ACTION_MIRROR, unwrapLlmReply } from '@/lib/avaRequest';
 import { filterUnbackedOffers } from '@/lib/avaOfferFilter';
@@ -92,7 +93,7 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle, body }
         entities: base44.entities, createGuest, updateGuest, navigate, currentPath: location.pathname,
         listTodos: () => getMyRecords('Note'),
         readWeddingDetails: getMyWeddingDetails,
-        putWeddingFields: putMyWeddingDetails,
+        putWeddingFields: putMyWeddingDetails, syncCalendarFeed: syncMyCalendarFeed,
         listVendors: () => getMyRecords('Vendor'),
         listGuests: () => getMyRecords('Guest'),
       });

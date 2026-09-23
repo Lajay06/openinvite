@@ -864,8 +864,8 @@ const EDITED_ELSEWHERE = {
   styling:     ['Your styling notes are written on the Styling page.', '/Styling'],
   polls:       ['Polls are written on the Guest polls page.', '/GuestSuitePolls'],
   faq:         ['Questions and answers are written on the Q&A page.', '/QandA'],
-  stay:        ['Places to stay are added on the Accommodation page.', '/GuestSuiteAccommodation'],
-  transport:   ['Getting-here details are set on the Transport page.', '/GuestSuiteTransport'],
+  stay:        ['Places to stay are added on the Stay page.', '/GuestSuiteAccommodation'],
+  transport:   ['Routes and places are set on the Getting here page.', '/GuestSuiteTransport'],
   experience:  ['The experience guide is written on the Experience guide page.', '/GuestSuiteExperience'],
 };
 

@@ -28,7 +28,21 @@
  * sheet. A subscribed calendar is readable by anyone the couple has ever
  * shared their phone's calendar with, and by anyone who obtains the link. A
  * denylist would leak the next field somebody adds to the entity; an allowlist
- * cannot.
+ * cannot. The list is src/lib/calendarFeedProjection.js's FEED_FIELDS, shared
+ * with every writer of the projection, and applied again here on the way out.
+ *
+ * ── THE EVENTS COME FROM THE WEDDING ROW, NOT FROM SCHEDULE ────────────────
+ *
+ * Schedule.read is owner-scoped ({created_by_id: "{{user.id}}"}) and the admin
+ * key is not a superuser: an owner-scoped list answers `200 []`, silently
+ * (BASE44_PLATFORM_NOTES.md). This handler has no session — Google and Apple
+ * fetch it — so it can only ever hold the admin key, and on 2026-09-20 it
+ * served a valid, EMPTY calendar to a correct token on production. The six
+ * allowlisted fields are therefore projected onto WeddingDetails.calendarFeed
+ * by the couple's own session whenever the schedule changes (the hub's load
+ * path and Ava's create_schedule, both through src/lib/calendarFeedSync.js),
+ * and this handler reads that row — which is read:null, and which it already
+ * read to find the wedding. Schedule is never asked for anything here.
  *
  * ── READ-SIDE ONLY ─────────────────────────────────────────────────────────
  *
@@ -37,26 +51,13 @@
  */
 import { buildIcsCalendar } from '../src/lib/ics.js';
 import { calendarFeedTokenMatches } from './_lib/calendarFeedToken.js';
+import { FEED_FIELDS, pickFeedFields } from '../src/lib/calendarFeedProjection.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 
-function unwrapList(payload) {
-  if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload?.data)) return payload.data;
-  if (Array.isArray(payload?.results)) return payload.results;
-  return [];
-}
-
-/** The only fields that leave this server. */
-export const FEED_FIELDS = ['event_name', 'event_date', 'start_time', 'end_time', 'location', 'description'];
-
-/** Copies ONLY the allowlisted fields off a row. */
-export function pickFeedFields(row) {
-  const out = {};
-  for (const f of FEED_FIELDS) if (row?.[f] != null) out[f] = row[f];
-  return out;
-}
+/** The only fields that leave this server — one list, shared with the writers. */
+export { FEED_FIELDS, pickFeedFields };
 
 /** The same empty answer for every reason to refuse. */
 function notFound(res) {
@@ -79,30 +80,19 @@ export default async function handler(req, res, fetchImpl = fetch) {
   const adminKey = process.env.BASE44_ADMIN_KEY;
   if (!adminKey) return notFound(res);
 
-  // THE SCHEDULE IS THE OWNER'S, NOT THE WEDDING'S. Schedule rows carry no
-  // wedding_id at all (list_entity_schemas, 2026-09-20): the hub reads them
-  // with getMyRecords(), i.e. by created_by_id = the signed-in user. So the
-  // join goes token -> wedding -> its created_by_id -> that user's rows. The
-  // previous filter compared created_by_id to the WEDDING id and matched
-  // nothing for a real wedding — an empty calendar with a valid token.
-  // Bearer on both reads, not `?api_key=`: the query form answers `200 []`
-  // on every LIST (BASE44_PLATFORM_NOTES.md, "not User-specific"). Lists
-  // come back wrapped.
+  // ONE READ, of the wedding row. Bearer, not `?api_key=`: the query form
+  // answers `200 []` on every LIST (BASE44_PLATFORM_NOTES.md, "not
+  // User-specific"). The row carries the projection the couple's own session
+  // wrote (see the header); a wedding that has none yet is an empty calendar,
+  // not a refusal — a 404 here would tell a subscribed client the link died.
   const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${adminKey}` };
-  let rows = [];
+  let events = [];
   try {
     const w = await fetchImpl(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/WeddingDetails/${encodeURIComponent(weddingId)}`, { method: 'GET', headers });
     if (!w.ok) return notFound(res);
     const wedding = await w.json();
-    const ownerId = wedding?.created_by_id;
-    if (!ownerId) return notFound(res);
-
-    const q = encodeURIComponent(JSON.stringify({ created_by_id: ownerId }));
-    const r = await fetchImpl(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/Schedule?q=${q}&limit=500`, { method: 'GET', headers });
-    if (!r.ok) return notFound(res);
-    // The admin key is not a superuser bypass and does not scope a list for
-    // us, so the owner filter is applied here too, whatever the query did.
-    rows = unwrapList(await r.json()).filter((x) => x?.created_by_id === ownerId);
+    if (!wedding?.id) return notFound(res);
+    events = Array.isArray(wedding.calendarFeed?.events) ? wedding.calendarFeed.events : [];
   } catch {
     return notFound(res);
   }
@@ -112,8 +102,13 @@ export default async function handler(req, res, fetchImpl = fetch) {
   // UID schedule-undefined@ — one identical UID for the whole schedule, which
   // a calendar client dedupes down to a single event. That is the "only the
   // after party arrived". An opaque record id in a UID is not one of the
-  // fields the allowlist exists to keep in.
-  const ics = buildIcsCalendar(rows.map((r) => ({ id: r.id, ...pickFeedFields(r) })), 'Wedding schedule');
+  // fields the allowlist exists to keep in. The pick is applied again HERE,
+  // on stored events, so a projection written by an older or hand-rolled
+  // writer still cannot carry a disallowed field out.
+  const ics = buildIcsCalendar(
+    events.filter((e) => e && e.id != null).map((e) => ({ id: e.id, ...pickFeedFields(e) })),
+    'Wedding schedule',
+  );
   res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
   // PRIVATE. A shared cache in front of this would serve one couple's schedule
   // to the next request for the same URL, which is fine, and to a proxy that

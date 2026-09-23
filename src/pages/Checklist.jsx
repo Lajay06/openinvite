@@ -22,7 +22,7 @@ const ESSENTIALS_DEFAULT = [
   'Finalise guest list',
   'Order wedding dress/suit',
   'Book celebrant/officiant',
-  'Arrange accommodation for guests',
+  'Arrange places for guests to stay',
 ];
 
 const NICE_TO_HAVE_DEFAULT = [

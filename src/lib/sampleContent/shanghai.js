@@ -85,8 +85,8 @@ export const SAMPLE_SHANGHAI = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'A quartet for the ceremony and a set from eleven, once the courses stop. Send us what belongs after eleven.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song. Loud is fine after eleven.' },
-  registryContent: { registryMessage: 'The apartment is small and there is nothing it needs. If you would like to give something, there is a short list, and a fund toward the flights for the family coming furthest.', noGiftsPlease: false },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'After eleven, loud is fine.' },
+  registryContent: { registryMessage: 'The apartment is small and needs nothing. There is a fund toward flights for the family coming furthest, which matters more to us than anything else written down.', noGiftsPlease: false },
 
   qna: [
     { question: 'What time should we arrive?', answer: 'Six, in the north lobby. The elevators take four minutes and the doors close at twenty-five past.' },
@@ -96,7 +96,7 @@ export const SAMPLE_SHANGHAI = {
   ],
 
   weddingPolicies: {
-    dressCode: { display: true, guidance: 'Formal. Jade, gold, black lacquer, deep green. Not white and not ivory.', weatherNote: 'The room is cool and the terrace is windy at that height. Something over your shoulders.' },
+    dressCode: { display: true, guidance: 'Formal. Jade, gold, black lacquer, deep green. Not white and not ivory.', weatherNote: 'The room is cool and the terrace is windy at that height. Dress for the terrace, not the room.' },
     photography: { display: true, unplugged: true, message: 'Nothing raised for the eighteen minutes. The glass reflects every screen in the room.' },
     lateArrival: { display: true, policy: 'If the doors are closed, wait in the lobby on forty-one. Someone will bring you in between courses.' },
   },
@@ -111,7 +111,7 @@ export const SAMPLE_SHANGHAI = {
   transport: { enabledModes: ['train', 'taxi', 'airport'] },
   guestSuiteTransport: {
     places: [
-      { id: 'sample-sh-t1', name: 'The metro', type: 'train_station', address: 'Exit two, then a covered walk', note: 'Six minutes to the north lobby. Last train at eleven, which is well before you will want it.' },
+      { id: 'sample-sh-t1', name: 'The metro', type: 'train_station', address: 'Exit two, then a covered walk', note: 'Six minutes to the north lobby. Last train at eleven; taxis after that.' },
       { id: 'sample-sh-t2', name: 'Taxis', type: 'taxi', address: 'The rank on the north side', note: 'Plentiful. Have the tower name written down; the corner has two of them.' },
       { id: 'sample-sh-t3', name: 'From the airport', type: 'airport', address: 'Fifty minutes, or twenty on the fast train', note: 'The train is faster than the car at every hour of the day.' },
     ],

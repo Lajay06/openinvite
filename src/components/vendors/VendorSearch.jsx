@@ -74,7 +74,7 @@ const CATEGORIES = [
   { value: "florist",                label: "Florists" },
   { value: "wedding dj",             label: "DJ & music" },
   { value: "wedding cake",           label: "Wedding cakes" },
-  { value: "transportation",         label: "Transportation" },
+  { value: "transportation",         label: "Transport" },
   { value: "hair salon",             label: "Hair & beauty" },
   { value: "wedding dress",          label: "Attire" },
   { value: "wedding planner",        label: "Wedding planners" },

@@ -60,7 +60,7 @@ export const SAMPLE_CAPRI = {
       { id: 'cp2', type: 'paragraph', order: 1, content: {
         text: 'We are marrying on a terrace in the late afternoon, and then we are eating outside for as long as the evening allows. There is more food than anyone needs and no speeches you have to sit still for.',
       } },
-      { id: 'cp3', type: 'quote', order: 2, content: { text: 'Come hungry. That is the only preparation.', attribution: 'Beatrix & Elio' } },
+      { id: 'cp3', type: 'quote', order: 2, content: { text: 'Come hungry. The kitchen has been at it since Thursday.', attribution: 'Beatrix & Elio' } },
       { id: 'cp4', type: 'photo', order: 3, content: { url: img(CAPRI_IMAGES.home[0], 1400) } },
       { id: 'cp5', type: 'photo', order: 4, content: { url: img(CAPRI_IMAGES.home[1], 1400) } },
 
@@ -80,8 +80,8 @@ export const SAMPLE_CAPRI = {
 
   rsvpContent: { rsvpDeadline: null },
   musicContent: { customMessage: 'There is a small band through dinner and a record player afterward. Tell us what belongs on it.' },
-  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'One song, the one that gets you up from the table.' },
-  registryContent: { registryMessage: 'You coming this far is the gift. If you would rather mark it with something, there is a short list.', noGiftsPlease: false },
+  music: { guestRequestsEnabled: true, playlists: [], requestMessage: 'Whatever gets you up from the table.' },
+  registryContent: { registryMessage: 'Come, eat, stay late. That is all of it. If something must be given, the list will not take long to read.', noGiftsPlease: false },
 
   qna: [
     { question: 'What time should we arrive?', answer: 'From half past four. The ceremony is short and starts on the hour.' },

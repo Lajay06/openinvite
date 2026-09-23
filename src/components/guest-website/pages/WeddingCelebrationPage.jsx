@@ -6,6 +6,8 @@ import { accentText } from '@/lib/surfaceTint';
 import EditorialSectionKicker from '../layouts/EditorialSectionKicker';
 import ZelligeDivider from '../layouts/ZelligeDivider';
 import MinimalSectionMark from '../layouts/MinimalSectionMark';
+import BrooklynSectionMark from '../layouts/BrooklynSectionMark';
+import { sectionMarkFor, pageAnchorFor } from '../layouts/sectionMarks';
 import HairlineRule from '../layouts/HairlineRule';
 import KyotoSectionMark from '../layouts/KyotoSectionMark';
 import VerticalRule from '../layouts/VerticalRule';
@@ -113,6 +115,9 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
   // wedding has no universeConfig at all. Both fall back to the exact words
   // the removed serif title printed, so no new universe voice is invented.
   const celebrationKicker = copy.celebrationKicker || 'The celebration';
+  const DefaultMark = sectionMarkFor(universeConfig);
+  // The page anchor: the day headers below follow the mark above them.
+  const anchor = pageAnchorFor(universeConfig);
 
   const T   = typography;
   const hFont = T.headingFont;
@@ -183,16 +188,14 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
           </SectionReveal>
         ) : isBrooklyn ? (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <div style={{ marginBottom: 80, display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-              {/* P2e: serif title removed — brooklyn's celebrationKicker IS
-                  "The party", so this printed the same words twice, exactly
-                  like the other four branches. */}
-              <TicketStub color={acc} width={200} height={12} />
-              {celebrationKicker && (
-                <h1 className="wb-body-face" style={{ fontFamily: bFont, fontSize: 12, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: acc, opacity: 0.8, margin: '16px 0 0' }}>
-                  {celebrationKicker}
-                </h1>
-              )}
+            <div style={{ marginBottom: 80 }}>
+              {/* Brooklyn's own SectionMark — the ticket stub and the kicker in
+                  a row — as on every other brooklyn page. This branch drew a
+                  right-aligned stub over a right-aligned kicker, the one page
+                  where brooklyn's title sat on the opposite edge from its
+                  Registry, Music, Stay and Transport titles (Batch 2, phase
+                  two: the body follows the mark; the mark is the same mark). */}
+              <BrooklynSectionMark as="h1" kicker={celebrationKicker} theme={theme} typography={typography} accentColor={acc} />
             </div>
           </SectionReveal>
         ) : isBali ? (
@@ -218,10 +221,13 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
           </SectionReveal>
         ) : (
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            {/* P2e: the default branch had no SectionMark, so it gets the same
-                kicker-only heading the layout branches use rather than losing
-                its title outright. */}
-            <MinimalSectionMark as="h1" kicker={celebrationKicker} theme={theme} typography={typography} />
+            {/* P2e gave the default branch the Minimal mark so it would not
+                lose its title. That branch is eleven universes, and ten of
+                them have marks of their own, all left-anchored — so this page
+                opened centered while their Registry, Music, Stay and
+                Transport opened left. The universe's own mark now, as
+                GuestPageHeading resolves it; tulum still gets Minimal. */}
+            <DefaultMark as="h1" kicker={celebrationKicker} theme={theme} typography={typography} accentColor={acc} />
           </SectionReveal>
         )}
 
@@ -248,11 +254,11 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
 
                 {/* Day header */}
                 {dateKey && (
-                  <div style={{
+                  <div data-oi-anchor-root="" style={{
                     marginBottom: 64,
                     paddingBottom: (isEditorial || isMinimal || isKyoto || isBali || isParis || isCapri || isMykonos || isCapeTown) ? 0 : 28,
                     borderBottom: (isEditorial || isMinimal || isKyoto || isBali || isParis || isCapri || isMykonos || isCapeTown) ? 'none' : `1px solid ${lt}14`,
-                    textAlign: (isMinimal || isParis) ? 'center' : isBrooklyn ? 'right' : 'left',
+                    textAlign: anchor,
                     display: isKyoto ? 'flex' : 'block',
                     gap: isKyoto ? 20 : undefined,
                   }}>
@@ -271,7 +277,7 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
                           {dayOfWeek}
                         </p>
                       )}
-                      <h2 style={{
+                      <h2 data-oi-anchor="heading" style={{
                         fontFamily: hFont, fontWeight: hWt,
                         fontSize: isBrooklyn ? 'clamp(2.2rem, 5.5vw, 3.5rem)' : 'clamp(1.6rem, 3.5vw, 2.5rem)',
                         letterSpacing: isBrooklyn ? '0.01em' : isMykonos ? '-0.01em' : '-0.02em',
@@ -286,7 +292,7 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
                         <HairlineRule color={lt} opacity={0.2} width={40} style={{ margin: '28px auto 0' }} />
                       )}
                       {isBrooklyn && (
-                        <TicketStub color={acc} width={120} height={10} style={{ marginTop: 20, marginLeft: 'auto' }} />
+                        <TicketStub color={acc} width={120} height={10} style={{ marginTop: 20 }} />
                       )}
                       {isBali && (
                         <WaveDivider color={lt} opacity={0.3} height={16} style={{ maxWidth: 140, marginTop: 24 }} />

@@ -171,7 +171,7 @@ const makeSteps = (data, update, mode) => [
     avaHint: "Add travel notes, parking info, and recommended hotels.",
     avaSuggestion: "Add 2-3 nearby hotel options at different price points.",
     field: 'accommodationNotes',
-    renderInput: () => <AvaInput label="TRAVEL & ACCOMMODATION NOTES" value={data.accommodationNotes} onChange={v => update('accommodationNotes', v)} placeholder="Parking is available at the venue. We recommend staying at..." rows={4} mode={mode} />,
+    renderInput: () => <AvaInput label="GETTING HERE & STAY NOTES" value={data.accommodationNotes} onChange={v => update('accommodationNotes', v)} placeholder="Parking is available at the venue. We recommend staying at..." rows={4} mode={mode} />,
   },
   {
     avaPrompt: "Share your registry.",
