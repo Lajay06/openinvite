@@ -58,6 +58,29 @@ function replaceMergeTags(str, guestName, coupleName, dateStr, rsvpUrl) {
  * the real thing, and a guard can drive this handler end to end with a stubbed
  * Resend rather than asserting the shape of a copy of the code.
  */
+/**
+ * Known web origins, and the safe base for a guest-facing link.
+ *
+ * A COPY, deliberately. api/rsvp-link-request.js:82 has the same four lines
+ * for the same reason: an Origin header is attacker-controlled, so a link
+ * built from it verbatim could point a guest anywhere. This change is not
+ * allowed to touch another file under api/, so it carries its own copy rather
+ * than reaching into a sibling. If a third caller needs it, that is the moment
+ * it earns a home in api/_lib.
+ */
+const KNOWN_ORIGINS = new Set([
+  'https://openinvite.com.au',
+  'https://www.openinvite.com.au',
+  'https://openinvite-pearl.vercel.app',
+]);
+
+function resolveBaseUrl(originHeader) {
+  if (originHeader && (KNOWN_ORIGINS.has(originHeader) || originHeader.endsWith('.vercel.app'))) {
+    return originHeader;
+  }
+  return 'https://openinvite.com.au';
+}
+
 export default async function handler(req, res, {
   sendBatch = (b) => resend.batch.send(b),
   verifyUser = verifyBase44User,
@@ -114,13 +137,46 @@ export default async function handler(req, res, {
       return res.status(403).json({ error: 'None of the supplied guests belong to your wedding.' });
     }
 
+    // AN UNPUBLISHED SITE IS NOT SENDABLE.
+    //
+    // Every link in these emails opens the couple's site. While the site is
+    // unpublished, api/wedding-by-slug.js:314 refuses it, so each guest who
+    // follows one meets a page saying the invitation does not work — and the
+    // couple has already spent the one moment they get with that guest.
+    //
+    // WHAT THIS LAYER IS AND IS NOT. `websiteEnabled` arrives in the request
+    // body, so this refuses a mis-wired or stale client, not a crafted
+    // request; re-reading the flag from Base44 here would mean a new call
+    // carrying the admin key, which this change is not permitted to add. The
+    // caller is already authenticated as the owner of these guests, so the
+    // worst a crafted request buys is a broken link to the sender's own site.
+    // The refusal a couple actually meets is this one plus the client's, in
+    // SendInvitesModal.handleSend.
+    if (wedding.websiteEnabled !== true) {
+      return res.status(409).json({
+        error: 'Your website is not published yet, so these links would not work. Publish it from Design studio, then send.',
+        reason: 'website_unpublished',
+      });
+    }
+
     const coupleName = sanitizeString(wedding.coupleName) || '';
     const weddingDate = sanitizeString(wedding.weddingDate) || '';
     const venue = sanitizeString(wedding.venue) || '';
     // The invitation CTA opens the couple's site. Sanitized like every other
     // caller-supplied string, and empty is fine — the template falls back to
     // the RSVP link rather than rendering a button with no destination.
-    const siteUrl = sanitizeString(wedding.siteUrl) || '';
+    // THE SITE URL IS DERIVED HERE, not taken on trust.
+    //
+    // It used to be whatever the client put in `wedding.siteUrl`, so the
+    // destination of every guest-facing button depended on a value the caller
+    // supplied. The slug is the couple's own published address and the base is
+    // resolved from a known origin, so the button cannot be pointed elsewhere
+    // by the request. The client's value stays as a fallback for a caller that
+    // has not been updated yet.
+    const slug = sanitizeString(wedding.slug) || '';
+    const siteUrl = slug
+      ? `${resolveBaseUrl(req.headers.origin)}/w/${encodeURIComponent(slug)}`
+      : sanitizeString(wedding.siteUrl) || '';
 
     // Guest-facing from-name is the couple's own names, not "Openinvite" —
     // this email should read as coming from them (email branding audit).
