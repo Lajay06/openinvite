@@ -165,17 +165,32 @@ export async function runDataTable() {
       && /<AvaModal/.test(hub) && /pageTitle="Schedule"/.test(hub)
       && !/linear-gradient/.test(hub),
       'one pill, one shell, no gradient');
-    check('  and the Guest Suite line is a note under the title, not a pill in the action row',
-      /Visible to guests in your Guest Suite/.test(hub) && !/✨ Visible/.test(hub)
-        && /padding: "0 32px 14px"/.test(hub),
-      'a note about the page, not a control');
+    // THE NOTE IS GONE, AND THIS CHECK IS THE INVERSE OF WHAT IT WAS.
+    // It asserted that "Visible to guests in your Guest Suite" sat as a note
+    // under the title rather than as a pill in the action row — which was the
+    // right fix for the problem it was written about, a sentence dressed as
+    // something you could press. The owner's round-two ruling removes the
+    // sentence outright, and takes the 14px band with it: that band is what
+    // held the vertical separators between the summary cards off the heading
+    // edge, which is the other half of the same instruction.
+    //
+    // What the original check was really about is kept: no pill, no sparkle.
+    check('  and the Guest Suite line is gone, so the strip meets the heading',
+      !/Visible to guests in your Guest Suite/.test(hub) && !/✨ Visible/.test(hub)
+        && !/padding: "0 32px 14px"/.test(hub),
+      'no note, no band, no control');
     // The tiles count what the List actually SHOWS. "Total events" over a
     // list that now includes to-dos would name a different thing than it counts.
-    check('PLANT: the stat tiles are the guest list\'s, and honest about the wider set',
-      /statLabelStyle/.test(hub) && /statValueStyle/.test(hub) && /\{s\.sub && !loadingStats/.test(hub)
+    // THE SUB-LINE IS GONE TOO, on the same ruling. This asserted a sub-line
+    // "only where it earns one", and on this page all four earned one, which
+    // made it the only strip in the product where every card ran two lines
+    // taller than the Guest list's — the strip the rest were built to match.
+    // The labels still name what they count, which is what the check was for.
+    check('PLANT: the stat tiles are the guest list\'s, heading and number only',
+      /statLabelStyle/.test(hub) && /statValueStyle/.test(hub) && !/\{s\.sub && !loadingStats/.test(hub)
         && /label: "On the timeline"/.test(hub) && /label: "To-dos due"/.test(hub)
-        && /on the day · \$\{timelineStats\.around\} around it/.test(hub),
-      'label, figure, and a sub-line only where it earns one');
+        && /label: "Vendor dates"/.test(hub),
+      'label and figure, and nothing under them');
     // THE DEDUPE IS GONE WITH THE PICKER IT WAS FOR. The select lists EVENTS
     // (categories) now, not individual rows, so two rows named "First dance"
     // are two moments inside one event rather than two identical options —

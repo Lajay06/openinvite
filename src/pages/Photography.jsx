@@ -115,8 +115,11 @@ export default function PhotographyPage() {
           { label: 'Photographers', value: stats.photographersCount },
           { label: 'Videographers', value: stats.videographersCount },
           { label: 'Booked', value: stats.bookedCount },
+        // minHeight 80 is the floor every other summary strip in the product
+        // declares. This one had none, so the band was shorter than its
+        // neighbours by whatever the figure happened not to fill.
         ].map((stat, i, arr) => (
-          <div key={stat.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.12)' : undefined }}>
+          <div key={stat.label} className="grow shrink basis-1/2 min-w-0 lg:flex-1" style={{ padding: '24px 32px', minHeight: 80, borderRight: i < arr.length - 1 ? '1px solid rgba(10,10,10,0.12)' : 'none' }}>
             {loading
               ? <div style={{ width: 60, height: 36, background: 'rgba(10,10,10,0.06)' }} />
               : <div style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
