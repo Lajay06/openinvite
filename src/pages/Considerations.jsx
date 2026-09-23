@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
-import { weddingCharacterLine } from '@/lib/weddingCharacterLine';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -835,10 +834,6 @@ function AccordionItem({ item }) {
 export default function Considerations() {
   const [weddingStyle, setWeddingStyle] = useState([]);
   const [faith, setFaith] = useState('');
-  // THE WHOLE THEME, NOT ONE FIELD OF IT. This page loaded weddingStyle and
-  // theme.faith and nothing else, which is why the banner had one word to
-  // print. Setting, atmosphere and culture were all in the record already.
-  const [theme, setTheme] = useState({});
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('cultural');
 
@@ -848,7 +843,6 @@ export default function Considerations() {
         r = r || {};
         setWeddingStyle(Array.isArray(r.weddingStyle) ? r.weddingStyle : []);
         setFaith(r.theme?.faith || '');
-        setTheme(r.theme || {});
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -862,10 +856,9 @@ export default function Considerations() {
   );
 
   const profile = buildProfile(weddingStyle, faith);
-  // ONE SENTENCE, NOT A ROW OF PILLS. The banner read "Personalized for:
-  // Muslim" — faith alone, because faith was the only thing loaded. A category
-  // applied to a person, where a description of their day belonged.
-  const characterLine = weddingCharacterLine(theme);
+  // faith no longer lives inside weddingStyle (profile.raw) once it's set —
+  // add it back into the "Personalized for" banner so it's still shown.
+  const contextPills = faith && faith !== 'Non-religious' ? [faith, ...profile.raw] : profile.raw;
   const tabItems = buildTabItems(tab, profile);
 
   return (
@@ -877,10 +870,18 @@ export default function Considerations() {
 
       {/* Context banner */}
       <div style={{ padding: '16px 32px 0', maxWidth: 860, margin: '0 auto' }}>
-        {characterLine ? (
-          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, margin: 0, lineHeight: 1.6 }}>
-            {characterLine}
-          </p>
+        {contextPills.length > 0 ? (
+          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+            <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Personalized for:</span>
+            {contextPills.map(pill => (
+              <span key={pill} style={{
+                padding: '3px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600,
+                background: 'rgba(10,10,10,0.06)', color: 'rgba(10,10,10,0.6)', fontFamily: PJS,
+              }}>
+                {pill}
+              </span>
+            ))}
+          </div>
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 13, color: 'rgba(10,10,10,0.45)', fontFamily: PJS }}>
