@@ -215,25 +215,18 @@ export default function ScheduleHub() {
     };
   }, [events, scheduleItems]);
 
+  // HEADING AND NUMBER, AND NOTHING ELSE — owner ruling, round two item 6.
+  // Each of the four carried a second line under the figure ("11 on the day ·
+  // 10 around it", "the ones you add and edit here"). Four of them made this
+  // the only strip in the product where EVERY card was two lines taller than
+  // the Guest list's, which is the strip every other page was built to match.
+  // A figure that needs a sentence under it to be read is a figure with the
+  // wrong label; these labels are fine.
   const STAT_CARDS = [
-    {
-      label: "On the timeline", value: timelineStats.total,
-      sub: timelineStats.total
-        ? `${timelineStats.onTheDay} on the day · ${timelineStats.around} around it`
-        : null,
-    },
-    {
-      label: "Your events", value: timelineStats.scheduleRows,
-      sub: timelineStats.scheduleRows ? "the ones you add and edit here" : null,
-    },
-    {
-      label: "To-dos due", value: timelineStats.todo,
-      sub: timelineStats.todo ? "open, with a date" : null,
-    },
-    {
-      label: "Vendor dates", value: timelineStats.vendor,
-      sub: timelineStats.deadline ? `${timelineStats.deadline} deadline${timelineStats.deadline === 1 ? '' : 's'} too` : null,
-    },
+    { label: "On the timeline", value: timelineStats.total },
+    { label: "Your events",     value: timelineStats.scheduleRows },
+    { label: "To-dos due",      value: timelineStats.todo },
+    { label: "Vendor dates",    value: timelineStats.vendor },
   ];
 
   // ── Export CSV ────────────────────────────────────────────────────────────
@@ -315,13 +308,13 @@ export default function ScheduleHub() {
         title="Schedule"
         subtitle="Calendar and run sheet for your wedding"
       />
-      {/* A NOTE ABOUT THE PAGE, not a control in a row of controls — it was a
-          pill sitting beside the buttons, which is where a thing you can press
-          belongs. Nothing here is pressable. */}
-      <p style={{ margin: 0, padding: "0 32px 14px", fontFamily: PJS, fontSize: 12, color: "rgba(10,10,10,0.6)" }}>
-        Visible to guests in your Guest Suite
-      </p>
-
+      {/* THE NOTE IS GONE, and the strip now sits against the header the way
+          it does on every other page. Owner ruling, round two item 6: remove
+          the line "Visible to guests in your guest suite", and the separators
+          between the cards must reach the heading edge. They are the same
+          instruction — the note was the 14px band between the header's rule
+          and the top of the strip, so the vertical separators started below
+          the heading instead of at it. */}
       {/* 2 ── Stat strip — identical wrapper to Budget */}
       <div className="flex flex-wrap w-full" style={{ borderBottom: "1px solid rgba(10,10,10,0.12)" }}>
         {STAT_CARDS.map((s, i) => (
@@ -331,9 +324,6 @@ export default function ScheduleHub() {
               ? <div style={{ width: 60, height: 36, background: "rgba(10,10,10,0.06)" }} />
               : <p style={statValueStyle}><CountUp to={s.value} /></p>
             }
-            {s.sub && !loadingStats && (
-              <p style={{ fontSize: 11, color: "rgba(10,10,10,0.6)", fontFamily: PJS, margin: "4px 0 0" }}>{s.sub}</p>
-            )}
           </div>
         ))}
       </div>
