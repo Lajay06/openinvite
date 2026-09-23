@@ -28,7 +28,7 @@
  * an RSVP deadline do not happen anywhere. The list omits the line rather than
  * printing a blank label.
  */
-import { sortScheduleItems, compareScheduleItems } from './scheduleOrder.js';
+import { sortScheduleItems, compareScheduleItems, sortScheduleRows } from './scheduleOrder.js';
 
 /** Normalized events from every source the Schedule page reads. Pure. */
 /**
@@ -270,11 +270,11 @@ export function groupEventsByDay(events = []) {
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
     .map(([date, items]) => ({
       date,
-      events: items.slice().sort((a, b) => {
-        if (!a.time && b.time) return -1;
-        if (a.time && !b.time) return 1;
-        return String(a.time).localeCompare(String(b.time));
-      }),
+      // Within a day, the shared comparator decides — it parses a time to
+      // minutes, where this compared strings and put an unpadded '9:00'
+      // after '17:00'. An item with no time still sorts last, because
+      // minutes() returns MAX_SAFE_INTEGER for one it cannot read.
+      events: sortScheduleRows(items),
     }));
   // Last, and only when there is one — an empty "No date yet" heading over
   // nothing is noise on every well-formed wedding.

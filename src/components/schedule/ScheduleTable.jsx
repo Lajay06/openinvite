@@ -4,6 +4,7 @@ import TableToolbar from '@/components/shared/TableToolbar';
 import { Pill } from '@/components/shared/DataTable';
 import { OUTLINE_PILL, CELL_STRONG, CELL_MUTED, CELL_SECONDARY, CELL_NOWRAP } from '@/lib/tablePills';
 import { naturalCompare, sortRows, nextSortState } from '@/lib/tableSort';
+import { compareScheduleRows, compareDayThenTime } from '@/lib/scheduleOrder';
 import { WHEN_LABEL, WHEN_RANK, ROW_HOME } from '@/lib/scheduleEvents';
 
 /**
@@ -27,8 +28,13 @@ import { WHEN_LABEL, WHEN_RANK, ROW_HOME } from '@/lib/scheduleEvents';
  */
 
 const COLUMN_SORTS = {
-  date:     { getValue: (e) => e.date || '', compare: naturalCompare },
-  time:     { getValue: (e) => e.time || '', compare: naturalCompare },
+  // DATE AND TIME SORT CHRONOLOGICALLY, not as text. naturalCompare reads
+  // a date as a string, so a Friday in January sorted before the Thursday in
+  // December before it, and a time as a string too, so an unpadded '9:00'
+  // landed after '17:00'. Both now defer to the one comparator in
+  // src/lib/scheduleOrder.js that the run sheet and the guest site already use.
+  date:     { getValue: (e) => e, compare: (a, b) => compareDayThenTime(a?.date, a?.time, b?.date, b?.time) },
+  time:     { getValue: (e) => e, compare: (a, b) => compareDayThenTime(a?.date, a?.time, b?.date, b?.time) },
   title:    { getValue: (e) => e.title || '', compare: naturalCompare },
   when:     { getValue: (e) => (e.when ? WHEN_RANK[e.when] : null), compare: (a, b) => a - b },
   location: { getValue: (e) => e.location || '', compare: naturalCompare },
@@ -94,8 +100,9 @@ export default function ScheduleTable({ events = [], onEdit, onDelete, onOpen, l
 
   // Default order is date then time, so the third click of a header lands
   // somewhere meaningful rather than on the stores' resolve order.
-  const base = useMemo(() => [...filtered].sort((a, b) =>
-    naturalCompare(a.date || '', b.date || '') || naturalCompare(a.time || '', b.time || '')), [filtered]);
+  // The default order the page opens on, and the order every export starts
+  // from: day, then time, through the shared comparator.
+  const base = useMemo(() => [...filtered].sort(compareScheduleRows), [filtered]);
   const rows = sortRows(base, sortState, COLUMN_SORTS);
 
   const COLUMNS = [

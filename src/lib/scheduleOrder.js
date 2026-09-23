@@ -72,3 +72,27 @@ export function compareScheduleItems(a, b) {
 export function sortScheduleItems(items) {
   return (items || []).slice().sort(compareScheduleItems);
 }
+
+/**
+ * The FLAT row shape — `{ date, time }` — that scheduleEvents.js builds for
+ * the page, the list, the calendar, the run sheet and every export.
+ *
+ * A second name for the same rule, not a second rule. The Schedule entity
+ * calls its fields event_date and start_time; the flattened rows that carry
+ * to-dos, deadlines and vendor meetings alongside them call the same two
+ * things date and time. Both go through compareDayThenTime, so there is one
+ * answer to "what comes first" no matter which shape a caller is holding.
+ *
+ * Before this existed the table sorted with naturalCompare on both fields.
+ * That reads a date as text, so a Friday in January sorted before the
+ * Thursday in December that precedes it, and it reads a time as text too, so
+ * "9:00" came after "17:00" wherever a value was not zero-padded.
+ */
+export function compareScheduleRows(a, b) {
+  return compareDayThenTime(a?.date, a?.time, b?.date, b?.time);
+}
+
+/** Sorted copy of flat rows. */
+export function sortScheduleRows(rows) {
+  return (rows || []).slice().sort(compareScheduleRows);
+}
