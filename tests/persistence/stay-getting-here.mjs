@@ -105,6 +105,19 @@ function userFacingText(src) {
   while ((m = re.exec(src))) {
     const text = m[1] ?? m[2] ?? m[3] ?? m[4];
     if (!text || !text.trim()) continue;
+    // A `>` and a `<` on different statements are not a text node. Two
+    // adjacent JSX-returning arms —
+    //
+    //   case 'a': return <A back={back} />;
+    //   case 'b': return <B kind="accommodation" />;
+    //
+    // put a `>` at the end of one line and a `<` at the start of the next,
+    // and the alternation above happily spans them, capturing
+    // `";\n case 'b': return "` — source code, read as prose, holding a word
+    // this guard looks for. It cost nothing yet only because no file in the
+    // tree has that shape; it would have fired on the first one that did.
+    // Real JSX text carries none of these.
+    if (m[4] !== undefined && /[;]|=>|\/>|\breturn\b/.test(text)) continue;
     const before = src.slice(src.lastIndexOf('\n', m.index) + 1, m.index);
     out.push({ text: text.trim(), line: lineOf(m.index), jsx: m[4] !== undefined, before });
   }
@@ -154,6 +167,11 @@ export async function runStayGettingHere() {
   check('  the probe catches a bare label', probe(`label: "Accommodation",\n<X title="Transportation" />`) === 2, '2 hits');
   check('  the probe skips a stored key and a route', probe(`v.category === 'transportation'; go('/accommodation'); createPageUrl("GuestSuiteAccommodation")`) === 0, '0 hits');
   check('  the probe skips a component key', probe(`"Accommodation": Accommodation,\nconst X = new Set(['Accommodation']);\n<L currentPageName="Accommodation">`) === 0, '0 hits');
+  // The shape that would have fired on the first file to carry it: two
+  // adjacent JSX-returning switch arms, the second naming a protected route key.
+  check('  the probe does not read two adjacent JSX arms as one text node',
+    probe(["case 'good-to-know': return <GoodToKnowContainer back={back} />;",
+           "case 'suite-accommodation': return <SuitePlacesContainer kind=\"accommodation\" />;"].join('\n')) === 0, '0 hits');
   check('  the probe skips a comment', probe(`// the Accommodation page\n/* Transportation */`) === 0, '0 hits');
 
   // The two names the ruling chose are what the sidebar and the builder say.
