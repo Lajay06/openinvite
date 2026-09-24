@@ -86,13 +86,22 @@ export async function runMusicIsATable() {
     !/requestRowStyle/.test(PAGE) && !/REQUEST_TABS/.test(PAGE), 'no second list');
 
   // ── Approve and Decline, on requests only ─────────────────────────────────
-  check('requests carry Approve and Decline', /label: 'Approve'/.test(TABLE) && /label: 'Decline'/.test(TABLE), 'both');
+  // IN THE ROW, NOT IN THE MENU. DataTable's row actions sit behind a "···"
+  // dropdown, which is right for Edit and Remove — you go looking for those.
+  // It is wrong for a request waiting on a decision: the owner's walk-through
+  // reported these controls MISSING when they were merely conditional, and a
+  // dropdown is one more place for them to be missing from.
+  check('requests carry Approve and Decline', />Approve</.test(TABLE) && />Decline</.test(TABLE), 'both');
+  check('  in the row itself, not behind the actions menu',
+    /key: 'answer'/.test(TABLE) && !/label: 'Approve'/.test(TABLE), 'an answer column');
   check('  wired to the existing server-side review endpoint',
     /onApprove=\{\(id\) => reviewRequest\(id, 'approve'\)\}/.test(PAGE)
       && /onDecline=\{\(id\) => reviewRequest\(id, 'decline'\)\}/.test(PAGE),
     'song-request-review');
   check('  and only on a request nobody has answered',
-    /if \(isActionable\(r\)\)/.test(TABLE), 'isActionable');
+    /isActionable\(r\) && !readOnly \? \(/.test(TABLE), 'isActionable');
+  check('  so an answered row offers nothing, and a track’s menu is untouched',
+    /if \(r\.kind !== 'track'\) return \[\];/.test(TABLE), 'no menu on a request');
   check('a track carries Edit and Remove instead',
     /label: 'Edit'/.test(TABLE) && /label: 'Remove'/.test(TABLE), 'the couple’s own rows');
 

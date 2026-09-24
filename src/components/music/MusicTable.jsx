@@ -105,6 +105,24 @@ export default function MusicTable({
       render: (r) => r.askedBy || '—',
     },
     {
+      // THE ONE ROW ASKING FOR SOMETHING ANSWERS IN THE ROW.
+      //
+      // DataTable's row actions live behind a "···" menu, which is right for
+      // Edit and Remove — you go looking for those. It is wrong for a request
+      // waiting on a decision: the owner's walk-through reported Approve and
+      // Decline as MISSING when they were merely conditional, and a menu is
+      // one more place for them to be missing from. They render in the row,
+      // and only on a request nobody has answered.
+      key: 'answer', label: '', sortable: false,
+      cellStyle: CELL_NOWRAP,
+      render: (r) => (isActionable(r) && !readOnly ? (
+        <span style={{ display: 'inline-flex', gap: 8 }}>
+          <button onClick={() => onApprove && onApprove(r.sourceId)} className="btn-primary" style={{ fontSize: 11 }}>Approve</button>
+          <button onClick={() => onDecline && onDecline(r.sourceId)} className="btn-editorial-secondary" style={{ fontSize: 11 }}>Decline</button>
+        </span>
+      ) : null),
+    },
+    {
       key: 'notes', label: 'Notes', sortable: true,
       // ONE LINE, WITH THE WHOLE THING ON HOVER — the same rule the schedule
       // table follows, so a long guest note does not make every other row
@@ -148,12 +166,8 @@ export default function MusicTable({
         isSelectable={(r) => !readOnly && r.kind === 'track'}
         actions={(r) => {
           if (readOnly) return [];
-          if (isActionable(r)) {
-            return [
-              ...(onApprove ? [{ label: 'Approve', onClick: () => onApprove(r.sourceId) }] : []),
-              ...(onDecline ? [{ label: 'Decline', onClick: () => onDecline(r.sourceId), danger: true }] : []),
-            ];
-          }
+          // A waiting request answers in its own row, above. Nothing goes in
+          // the menu for it, so the menu does not appear at all.
           if (r.kind !== 'track') return [];
           return [
             ...(onEdit ? [{ label: 'Edit', onClick: () => onEdit(r.raw) }] : []),

@@ -26,12 +26,32 @@
  * answered one offers neither. A guard that only proved the buttons exist
  * would pass on a page that showed them on every row, including the ones the
  * couple has already decided.
+ *
+ * ── THE SHAPE CHANGED; THE CLAIM DID NOT ───────────────────────────────────
+ *
+ * Round two, item 12 rebuilt this page as a table, and the hand-rolled request
+ * rows and their four status tabs went with it. Both of this guard's claims
+ * still hold and are still checked, on the new shape:
+ *
+ *   THE WIDTH  unchanged — the panel and its content, at both widths.
+ *   THE ANSWER Approve and Decline are in the ROW, not behind the table's
+ *              "···" menu. That is deliberate and it is what this guard is
+ *              about: the walk-through reported these controls MISSING when
+ *              they were merely conditional, and a dropdown is one more place
+ *              for them to be missing from.
+ *   THE SECTION opens on the songs table now, not on the playlist link. A
+ *              table like every other table in the product is not one a couple
+ *              has to unfold to find the thing waiting on them.
+ *
+ * The status TABS are gone on purpose and are not checked here: every request
+ * is a row with its status printed on it, and test-song-status-coverage.mjs
+ * holds that property where it now lives.
  */
 import { chromium } from 'playwright';
 import { seededContext } from './lib/renderHarness.mjs';
 
 const BASE = process.env.CAPTURE_BASE_URL || 'http://localhost:4208';
-const SECTIONS = ['Your playlist', 'Song requests', 'Share with guests'];
+const SECTIONS = ['Your playlist', 'Your songs', 'Share with guests'];
 const WAITING = 'Just Like Heaven';
 const ANSWERED = 'This Must Be the Place';
 
@@ -70,9 +90,12 @@ for (const [w, h] of [[1440, 950], [390, 844]]) {
     `panel ${r.panelW}px, content ${r.innerW}px, ${r.panelW - r.innerW}px unused`);
   check('  all three sections are there', r.sections.length === 3,
     r.sections.map((x) => x.title).join(' · ') || 'none');
-  check(`    "${SECTIONS[0]}" is open`, r.sections[0]?.open === true, `open=${r.sections[0]?.open}`);
-  check('    and the other two are collapsed', r.sections.slice(1).every((x) => x.open === false),
-    r.sections.slice(1).map((x) => `${x.title}=${x.open}`).join(' · '));
+  // THE TABLE OPENS, not the playlist link. See the header.
+  const open = r.sections.find((x) => x.open);
+  check('    the songs table is the section that opens', open?.title === 'Your songs', `open=${open?.title}`);
+  check('    and the other two are collapsed',
+    r.sections.filter((x) => x.title !== 'Your songs').every((x) => x.open === false),
+    r.sections.filter((x) => x.title !== 'Your songs').map((x) => `${x.title}=${x.open}`).join(' · '));
   await ctx.close();
 }
 
@@ -82,18 +105,28 @@ for (const [w, h] of [[1440, 950], [390, 844]]) {
   const page = await ctx.newPage();
   await page.goto(`${BASE}/Music`, { waitUntil: 'domcontentloaded', timeout: 60000 }).catch(() => {});
   await page.waitForTimeout(7000);
-  await page.getByRole('button', { name: /^Song requests/ }).first().click({ timeout: 10000 }).catch(() => {});
+  // The songs table already opens by default; this is a no-op when it is
+  // open and reopens it if a future change collapses it, so the controls are
+  // checked either way.
+  const songs = page.getByRole('button', { name: /^Your songs/ }).first();
+  if (await songs.count() > 0 && (await songs.getAttribute('aria-expanded')) === 'false') {
+    await songs.click({ timeout: 10000 }).catch(() => {});
+  }
   await page.waitForTimeout(1500);
 
   const rows = await page.evaluate(([waiting, answered]) => {
     const out = {};
     for (const name of [waiting, answered]) {
-      const p = [...document.querySelectorAll('p')].find((x) => (x.innerText || '').trim() === name);
-      const row = p ? p.closest('div').parentElement : null;
-      out[name] = row ? [...row.querySelectorAll('button')].map((b) => (b.innerText || '').trim()) : null;
+      // A TABLE ROW NOW, not a stack of <p>s. The song title is a cell; the
+      // controls, if any, are buttons in the same <tr>.
+      const cell = [...document.querySelectorAll('td')].find((x) => (x.innerText || '').trim() === name);
+      const row = cell ? cell.closest('tr') : null;
+      out[name] = row ? [...row.querySelectorAll('button')].map((b) => (b.innerText || '').trim()).filter(Boolean) : null;
     }
+    // The four views the toolbar offers. Named so a filter quietly dropped is
+    // caught, without pinning the counts, which move with the fixture.
     const filters = [...document.querySelectorAll('button')].map((b) => (b.innerText || '').trim())
-      .filter((t) => /^(All|Pending|Approved|Declined|On the playlist) \(/.test(t));
+      .filter((t) => /^(All|Waiting on you|Your playlist|Guest requests) \(/.test(t));
     return { ...out, filters };
   }, [WAITING, ANSWERED]);
 
@@ -104,7 +137,7 @@ for (const [w, h] of [[1440, 950], [390, 844]]) {
   check('  and declined', !!rows[WAITING]?.includes('Decline'), (rows[WAITING] || []).join(' · ') || 'no buttons');
   check('  the answered one offers neither', !(rows[ANSWERED] || []).some((t) => /approve|decline/i.test(t)),
     (rows[ANSWERED] || []).join(' · ') || 'no buttons, as it should be');
-  check('  and every status can be filtered to', rows.filters.length === 5, rows.filters.join(' · ') || 'no filters');
+  check('  and the four views are all offered', rows.filters.length === 4, rows.filters.join(' · ') || 'no filters');
   await ctx.close();
 }
 

@@ -533,7 +533,13 @@ export default function MusicPage() {
               cap never bound (326px of 390), so it was a desktop-only defect
               and reads as content stacked on the left. */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
-            <OptionAccordion initialOpenKey="playlist" headingSize={13} showEmptyState={false}>
+            {/* THE TABLE IS WHAT THIS PAGE IS NOW, so it is the section that opens.
+                "Your playlist" — the link to Spotify or Apple Music — is the
+                SECONDARY action in the ruling, and it was opening first while
+                the songs and the requests waiting on an answer sat collapsed
+                behind it. A table like every other table in the product is not
+                one a couple has to unfold. */}
+            <OptionAccordion initialOpenKey="requests" headingSize={13} showEmptyState={false}>
 
             <OptionAccordionSection sectionKey="playlist" title="Your playlist" summary={playlistSummary}>
             {/* ── 1. Your playlist ─────────────────────────────────────── */}
