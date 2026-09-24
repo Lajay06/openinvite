@@ -57,7 +57,11 @@ const GUESTS = [{ name: 'Ada Guest', email: 'guest@example.com', rsvpUrl: 'https
 const BODY = {
   type: 'invite',
   guests: GUESTS,
-  wedding: { coupleNames: 'Smoke & Alias', weddingDate: '2027-05-01', venue: 'A hall' },
+  // websiteEnabled and slug are preconditions now, not decoration: the
+  // endpoint refuses to mail links to an unpublished site, so a fixture that
+  // is testing the RESULT SHAPE has to be a couple who could legitimately
+  // send. See tests/persistence/invite-entrance-and-publish-gate.mjs.
+  wedding: { coupleNames: 'Smoke & Alias', weddingDate: '2027-05-01', venue: 'A hall', slug: 'smoke-and-alias', websiteEnabled: true },
   universeId: 'paris',
 };
 

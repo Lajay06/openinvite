@@ -481,6 +481,18 @@ export default function SendInvitesModal({
   };
 
   const handleSend = async () => {
+    // REFUSED, NOT WARNED. Every link in these emails opens the couple's
+    // site, and an unpublished site answers each one with "this invitation
+    // does not work". A dialog the couple can click past would still spend
+    // the one arrival each guest gets, so this stops and says where to go.
+    if (!wedding?.slug) {
+      toast.error('Claim your website address first — Design studio, then Share.');
+      return;
+    }
+    if (wedding?.websiteEnabled !== true) {
+      toast.error('Your website is not published yet, so these links would not work. Publish it in Design studio, then send.');
+      return;
+    }
     setSending(true);
     const tid = toast.loading(`Sending ${TYPE_LABELS[type].toLowerCase()}s…`);
     try {
@@ -519,7 +531,7 @@ export default function SendInvitesModal({
             universeId,
             bannerChoice,
             guests: recipients,
-            wedding: { coupleName, weddingDate, venue, siteUrl, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl },
+            wedding: { coupleName, weddingDate, venue, siteUrl, slug: wedding?.slug, websiteEnabled: wedding?.websiteEnabled, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl },
             customSubject: subject,
             customBody: messageBody,
           };
@@ -590,7 +602,7 @@ export default function SendInvitesModal({
         bannerChoice,
         isTest: true,
         guests: [{ email: user.email, name: 'Test guest', rsvpUrl: previewRsvpUrl, events: previewEvents }],
-        wedding: { coupleName, weddingDate, venue, siteUrl, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl },
+        wedding: { coupleName, weddingDate, venue, siteUrl, slug: wedding?.slug, websiteEnabled: wedding?.websiteEnabled, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl },
         customSubject: subject,
         customBody: messageBody,
       };

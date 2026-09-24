@@ -127,8 +127,16 @@ export const EMAIL_TYPES = Object.keys(TYPE_CONFIG);
  * the "Or copy this link" line, and the plain-text part — and three copies of a
  * ternary is how they drift apart.
  */
-export function buildGuestCtaUrl({ showDate, siteUrl, rsvpToken, rsvpUrl }) {
-  if (showDate && siteUrl && rsvpToken) {
+export function buildGuestCtaUrl({ siteUrl, rsvpToken, rsvpUrl }) {
+  // EVERY TYPE LANDS ON THE ENTRANCE, not just the two that show a date.
+  // This used to be gated on `showDate`, which is a layout flag about whether
+  // the email prints the wedding date — nothing to do with where its button
+  // goes. The effect was that an invitation and a save-the-date opened the
+  // couple's site while a reminder, an update and both thank-yous dropped the
+  // guest on the bare RSVP form, skipping the entrance, the names, and the
+  // whole invitation the couple designed. One rule now: if there is a site and
+  // a token, the button opens the site as that guest.
+  if (siteUrl && rsvpToken) {
     const sep = siteUrl.includes('?') ? '&' : '?';
     return `${siteUrl}${sep}rsvp=${encodeURIComponent(rsvpToken)}`;
   }
@@ -385,7 +393,7 @@ export function renderInvitationEmail({
   // `?rsvp=` is the path the site already has — MultiPageWeddingWebsite
   // consumes it in a useState initialiser, before any fetch, and strips it from
   // the address bar so it never rides along in a Referer header.
-  const ctaUrl = buildGuestCtaUrl({ showDate: cfg.showDate, siteUrl, rsvpToken, rsvpUrl });
+  const ctaUrl = buildGuestCtaUrl({ siteUrl, rsvpToken, rsvpUrl });
 
   const messageHtml = message ? `
           <tr>
