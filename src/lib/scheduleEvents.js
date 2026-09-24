@@ -98,7 +98,10 @@ export function buildScheduleEvents({
       id: 'wedding-day',
       title: `Wedding day: ${invitation.couple_names || 'Your wedding'}`,
       date: invitation.wedding_date, time: '', location: '',
-      description: 'Your special day!', type: 'wedding',
+      // Owner copy, round two. "Your special day!" was the one exclamation
+      // mark left in product chrome, on a row that appears in the schedule
+      // list, the calendar and the workbook — three surfaces, one shout.
+      description: 'The part everyone came for.', type: 'wedding',
     });
     // The RSVP deadline is emitted below as a DEADLINE row, with its own pill.
     // It was here as a plain 'wedding' row and would otherwise appear twice.
