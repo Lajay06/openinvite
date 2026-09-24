@@ -1,4 +1,5 @@
 import React from 'react';
+import WhatsHereControl from '@/components/guidance/WhatsHereControl';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -27,11 +28,15 @@ export default function DashboardPageHeader({ title, subtitle, actions }) {
           </span>
         )}
       </div>
-      {actions && (
-        <div style={{ flexShrink: 0 }}>
-          {actions}
-        </div>
-      )}
+      {/* THE GUIDANCE CONTROL SITS WITH THE PAGE'S OWN ACTIONS, and renders
+          nothing at all until the guidance flag is on — round two, item 17.
+          Here rather than on each page because every dashboard page already
+          uses this header, so one change covers all of them and the control
+          cannot drift a few pixels per page. */}
+      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+        {actions}
+        <WhatsHereControl />
+      </div>
     </div>
   );
 }
