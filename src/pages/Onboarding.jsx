@@ -79,6 +79,21 @@ const CORE_STEPS = ['names', 'date', 'location', 'guestCount', 'weddingType', 'a
 // re-deriving "is this a Pro account" separately.
 function isStepVisible(step, plan) {
   if (step === 'universe') return plan !== 'pro';
+  // pathA-cultural ASKED A QUESTION THAT IS NOW ASKED EARLIER, ONCE.
+  //
+  // Round two, item 7: onboarding and Event details must ask the same five
+  // questions in the same order "so a couple never answers the same question
+  // twice". Cultures and traditions is one of the five, and the weddingType
+  // step now asks it with the same CULTURE_REGIONS list this page used. Left
+  // visible, it would ask it a second time, three steps later, and the second
+  // answer would overwrite the first.
+  //
+  // HIDDEN, NOT DELETED FROM STEPS. draft.onboardingStepIndex is a plain
+  // absolute index into STEPS, so removing an entry would silently move every
+  // couple with a saved draft onto a different step. This is the mechanism
+  // that exists for exactly that reason, and nextVisibleIndex walks past it in
+  // both directions.
+  if (step === 'pathA-cultural') return false;
   return true;
 }
 

@@ -2,9 +2,16 @@
 /**
  * THE EDGE OF A ROW SAYS WHETHER YOU HAVE ANSWERED IT.
  *
- * "Tell us about your celebration" is three accordion sections — Style,
- * Ceremony type & faith, Vibe — and every one of them drew the same
- * hardcoded `rgba(10,10,10,0.12)` in every state. Open, answered, untouched:
+ * "Tell us about your celebration" is now FIVE accordion sections, not three.
+ * Round two, item 7: the step used to ask Style, Ceremony type & faith and
+ * Vibe — its own vocabulary, landing in the flat weddingStyle array — and now
+ * asks the same five questions Event details asks, in the same order, writing
+ * to the same theme fields: What's the aesthetic? · Atmosphere · Setting ·
+ * Cultures and traditions · Faith or religion.
+ *
+ * THE RULE THIS GUARD IS ABOUT DID NOT CHANGE, and neither did the reason it
+ * exists: every section drew the same hardcoded `rgba(10,10,10,0.12)` in every
+ * state. Open, answered, untouched:
  * identical. A couple part-way through could not tell from the page which
  * rows were done.
  *
@@ -22,8 +29,8 @@
  *
  * ── ALL THREE, IN EVERY STATE THEY CAN REACH ───────────────────────────────
  *
- * The rule is "the same on all three", so the assertion is per section per
- * state rather than a spot check: a fix applied to Style and not to Vibe would
+ * The rule is "the same on all of them", so the assertion is per section per
+ * state rather than a spot check: a fix applied to one and not another would
  * pass any single-section test.
  */
 import { chromium } from 'playwright';
@@ -31,7 +38,10 @@ import { seededContext, ONBOARDING_SEED, ONBOARDING_USER } from './lib/renderHar
 import { color } from '../src/styles/tokens.js';
 
 const BASE = process.env.CAPTURE_BASE_URL || 'http://localhost:4195';
-const SECTIONS = ['Style', 'Ceremony type & faith', 'Vibe'];
+// The five, in the order the step asks them. Faith is last, which is the point
+// of that order — the owner does not want a religion question among the first
+// things anyone sees.
+const SECTIONS = ["What's the aesthetic?", 'Atmosphere', 'Setting', 'Cultures and traditions', 'Faith or religion'];
 
 const results = [];
 const check = (name, ok, detail) => {
@@ -74,9 +84,9 @@ for (const width of [390, 1440]) {
   await page.getByRole('button', { name: /^Continue/ }).first().click({ timeout: 8000 }).catch(() => {});
   await page.waitForTimeout(2200);
 
-  const here = await page.getByRole('button', { name: /^Vibe$/ }).count() > 0;
+  const here = await page.getByRole('button', { name: /^Atmosphere$/ }).count() > 0;
   // PRESENCE BEFORE PROPERTIES: an absent accordion has no wrong border.
-  check('the celebration step was reached', here, here ? 'three sections to read' : 'the wizard did not get here');
+  check('the celebration step was reached', here, here ? 'five sections to read' : 'the wizard did not get here');
   if (!here) { await ctx.close(); continue; }
 
   /** The painted bottom border of each section, with the state it claims. */
@@ -125,20 +135,24 @@ for (const width of [390, 1440]) {
       s ? `${s.state}, ${s.colour}` : 'section not found');
     // and the other two are not black at the same time
     const others = SECTIONS.filter((x) => x !== t).map((x) => seen[x]);
-    check(`    and the other two are not`, others.every((o) => o && norm(o.colour) !== EXPECT.open),
+    check(`    and none of the others is`, others.every((o) => o && norm(o.colour) !== EXPECT.open),
       others.map((o, i) => `${SECTIONS.filter((x) => x !== t)[i]} ${o?.colour}`).join(', '));
   }
 
   // ── answered and collapsed is the stronger grey ───────────────────────────
-  // Vibe is open from the loop above; choose a pill in it, then collapse it.
-  const pill = page.getByRole('button').filter({ hasNotText: /Style|Ceremony type|Vibe|Back|Continue/ });
+  // The LAST section is open from the loop above; choose a pill in it, then
+  // collapse it. Named through SECTIONS rather than spelled out, so a later
+  // reorder does not leave this half of the guard pointing at a section that
+  // is no longer the open one.
+  const LAST = SECTIONS[SECTIONS.length - 1];
+  const pill = page.getByRole('button').filter({ hasNotText: new RegExp(`${SECTIONS.map((s2) => s2.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')}|Back|Continue`) });
   if (await pill.count() > 0) await pill.first().click({ timeout: 8000 }).catch(() => {});
   await page.waitForTimeout(600);
-  await page.getByRole('button', { name: 'Vibe', exact: true }).first().click({ timeout: 8000 }).catch(() => {});
+  await page.getByRole('button', { name: LAST, exact: true }).first().click({ timeout: 8000 }).catch(() => {});
   await page.waitForTimeout(800);
   seen = await read();
-  const v = seen.Vibe;
-  check('  "Vibe" answered and collapsed is the stronger grey',
+  const v = seen[LAST];
+  check(`  "${LAST}" answered and collapsed is the stronger grey`,
     !!v && v.state === 'answered' && norm(v.colour) === EXPECT.answered,
     v ? `${v.state}, ${v.colour}` : 'section not found');
   check('    and it is not the untouched token any more', !!v && norm(v.colour) !== EXPECT.untouched,
