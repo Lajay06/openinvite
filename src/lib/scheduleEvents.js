@@ -28,7 +28,7 @@
  * an RSVP deadline do not happen anywhere. The list omits the line rather than
  * printing a blank label.
  */
-import { sortScheduleItems, compareScheduleItems } from './scheduleOrder.js';
+import { sortScheduleItems, compareScheduleItems, sortScheduleRows } from './scheduleOrder.js';
 
 /** Normalized events from every source the Schedule page reads. Pure. */
 /**
@@ -273,11 +273,20 @@ export function groupEventsByDay(events = []) {
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
     .map(([date, items]) => ({
       date,
-      events: items.slice().sort((a, b) => {
-        if (!a.time && b.time) return -1;
-        if (a.time && !b.time) return 1;
-        return String(a.time).localeCompare(String(b.time));
-      }),
+      // WITHIN A DAY: by time, and an untimed item sorts LAST.
+      //
+      // Two things were wrong here. It compared times as strings, so
+      // [Party 23:00, Breakfast 9:00, Lunch 12:30] came back Lunch, Party,
+      // Breakfast — an unpadded 9:00 sorting last because "9" is greater
+      // than "1" as text. And it put untimed items FIRST, which was this
+      // list's own convention and nobody else's: the run sheet, the guest
+      // site and the shared comparator all sort them last.
+      //
+      // Owner's ruling: untimed sorts last, everywhere. Within a day the
+      // timed items are the day's structure and an untimed one is a note
+      // hanging off it, so it belongs at the end. One rule now, and
+      // sortScheduleRows is that rule.
+      events: sortScheduleRows(items),
     }));
   // Last, and only when there is one — an empty "No date yet" heading over
   // nothing is noise on every well-formed wedding.

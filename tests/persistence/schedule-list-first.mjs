@@ -138,12 +138,19 @@ export async function runScheduleListFirst() {
       days.map(d => d.date).join(' → '));
     const wedding = days.find(d => d.date === '2027-07-03');
     check('  and a day\'s events come out in time order',
-      JSON.stringify(wedding.events.map(e => e.time || '')) === JSON.stringify(['', '', '11:00', '15:00', '18:00']),
+      JSON.stringify(wedding.events.map(e => e.time || '')) === JSON.stringify(['11:00', '15:00', '18:00', '', '']),
       wedding.events.map(e => `${e.time || 'all-day'} ${e.title}`).join(' | '));
-    check('  every untimed event sorts to the top of its day, not to midnight or past 6pm',
-      wedding.events.slice(0, 2).every(e => !e.time)
-        && wedding.events.map(e => e.id).slice(0, 2).sort().join() === 'custom-2,wedding-day',
-      'a null time stringifies to "null" and sorts after "18:00" on a plain compare');
+    // OWNER'S RULING, 2026-09-23: untimed sorts LAST, everywhere. This asserted
+    // the opposite — untimed first — which was this list's own convention while
+    // the run sheet, the guest site and the shared comparator all sorted last.
+    // Within a day the timed items are the day's structure and an untimed one
+    // is a note hanging off it, so it belongs at the end. The original reason
+    // for the check stands and is unchanged: a null time must never be READ as
+    // a time, because `String(null)` sorts after "18:00" on a plain compare.
+    check('  every untimed event sorts to the end of its day, never read as a time',
+      wedding.events.slice(-2).every(e => !e.time)
+        && wedding.events.map(e => e.id).slice(-2).sort().join() === 'custom-2,wedding-day',
+      'untimed last, and not stringified into the middle of the day');
     check('the list carries location where there is one and blank where there is not',
       events.find(e => e.id === 'schedule-s1').location === 'The Old Observatory'
         && events.find(e => e.id === 'deadline-rsvp').location === '',
