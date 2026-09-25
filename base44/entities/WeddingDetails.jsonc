@@ -75,6 +75,15 @@
         "dressCode": {
           "type": "string"
         },
+        "dressCodePills": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dressCodeNotes": {
+          "type": "string"
+        },
         "parkingInfo": {
           "type": "string"
         },
@@ -120,6 +129,15 @@
           "type": "string"
         },
         "dressCode": {
+          "type": "string"
+        },
+        "dressCodePills": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dressCodeNotes": {
           "type": "string"
         },
         "parkingInfo": {
@@ -311,13 +329,35 @@
     "preWeddingEvents": {
       "type": "array",
       "items": {
-        "type": "object"
+        "type": "object",
+        "properties": {
+          "dressCodePills": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dressCodeNotes": {
+            "type": "string"
+          }
+        }
       }
     },
     "postWeddingEvents": {
       "type": "array",
       "items": {
-        "type": "object"
+        "type": "object",
+        "properties": {
+          "dressCodePills": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dressCodeNotes": {
+            "type": "string"
+          }
+        }
       }
     },
     "qna": {
@@ -1367,6 +1407,23 @@
         },
         "updatedAt": {
           "type": "string"
+        }
+      }
+    },
+    "guidanceState": {
+      "type": "object",
+      "properties": {
+        "tourSeenAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dismissed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     }
