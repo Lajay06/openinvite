@@ -329,35 +329,13 @@
     "preWeddingEvents": {
       "type": "array",
       "items": {
-        "type": "object",
-        "properties": {
-          "dressCodePills": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "dressCodeNotes": {
-            "type": "string"
-          }
-        }
+        "type": "object"
       }
     },
     "postWeddingEvents": {
       "type": "array",
       "items": {
-        "type": "object",
-        "properties": {
-          "dressCodePills": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "dressCodeNotes": {
-            "type": "string"
-          }
-        }
+        "type": "object"
       }
     },
     "qna": {
