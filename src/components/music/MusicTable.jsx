@@ -3,7 +3,7 @@ import DataTable, { Pill } from '@/components/shared/DataTable';
 import TableToolbar from '@/components/shared/TableToolbar';
 import { OUTLINE_PILL, CELL_STRONG, CELL_MUTED, CELL_SECONDARY, CELL_NOWRAP } from '@/lib/tablePills';
 import { naturalCompare, sortRows, nextSortState } from '@/lib/tableSort';
-import { buildMusicRows, isActionable, TAG_LABEL, TAG_ORDER, KIND_LABEL, STATUS_LABEL } from '@/lib/musicRows';
+import { buildMusicRows, isActionable, TAG_ORDER, KIND_LABEL, STATUS_LABEL } from '@/lib/musicRows';
 
 /**
  * MUSIC › THE TABLE — the same table as the guest list, on the same shell.
@@ -30,7 +30,12 @@ import { buildMusicRows, isActionable, TAG_LABEL, TAG_ORDER, KIND_LABEL, STATUS_
 const COLUMN_SORTS = {
   song:    { getValue: (r) => r.song || '', compare: naturalCompare },
   artist:  { getValue: (r) => r.artist || '', compare: naturalCompare },
-  tag:     { getValue: (r) => (r.tag ? TAG_ORDER.indexOf(r.tag) : TAG_ORDER.length), compare: (a, b) => a - b },
+  // THE DAY'S ORDER FOR THE SIX, THEN THE COUPLE'S OWN, THEN UNTAGGED. A
+  // couple's own tag has no place in a wedding-day sequence, so it sorts after
+  // the six rather than being forced into the middle of them.
+  tag:     { getValue: (r) => (r.tag ? (TAG_ORDER.indexOf(r.tag) === -1 ? TAG_ORDER.length : TAG_ORDER.indexOf(r.tag)) : TAG_ORDER.length + 1),
+             compare: (a, b) => a - b },
+  playlist: { getValue: (r) => r.playlist || '', compare: naturalCompare },
   kind:    { getValue: (r) => KIND_LABEL[r.kind] || '', compare: naturalCompare },
   askedBy: { getValue: (r) => r.askedBy || '', compare: naturalCompare },
   notes:   { getValue: (r) => r.notes || '', compare: naturalCompare },
@@ -51,11 +56,16 @@ const FILTERS = [
 
 export default function MusicTable({
   tracks = [], requests = [], loading, readOnly = false,
-  onEdit, onDelete, onApprove, onDecline,
+  playlists = [], onEdit, onDelete, onApprove, onDecline,
 }) {
   const [sortState, setSortState] = useState({ field: null, direction: 'asc' });
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
+  // THE ACCORDION IS A FILTER, NOT A SECOND STORE. "The accordion groups by
+  // playlist name" — and the only honest way to group a flat table is to narrow
+  // it, so the playlist select narrows the same rows rather than duplicating
+  // them under headings that could fall out of step.
+  const [playlist, setPlaylist] = useState('all');
   const [selectedIds, setSelectedIds] = useState(new Set());
 
   const base = useMemo(() => buildMusicRows({ tracks, requests }), [tracks, requests]);
@@ -73,10 +83,12 @@ export default function MusicTable({
       if (filter === 'waiting' && !isActionable(r)) return false;
       if (filter === 'track' && r.kind !== 'track') return false;
       if (filter === 'request' && r.kind !== 'request') return false;
+      if (playlist === '__none' && r.playlist) return false;
+      if (playlist !== 'all' && playlist !== '__none' && r.playlist !== playlist) return false;
       if (!q) return true;
       return `${r.song} ${r.artist} ${r.askedBy}`.toLowerCase().includes(q);
     });
-  }, [base, search, filter]);
+  }, [base, search, filter, playlist]);
 
   // The default order is buildMusicRows' own — waiting first, then the day's
   // order. sortRows only takes over once a header is pressed.
@@ -87,9 +99,15 @@ export default function MusicTable({
     { key: 'artist', label: 'Artist', sortable: true, cellStyle: CELL_SECONDARY, render: (r) => r.artist || '—' },
     {
       key: 'tag', label: 'Tag', sortable: true,
+      // The couple's own tag is outlined in their own ink, so it reads as
+      // theirs rather than as one of ours they have not heard of.
       render: (r) => (r.tag
-        ? <Pill style={OUTLINE_PILL}>{TAG_LABEL[r.tag] || r.tag}</Pill>
+        ? <Pill style={r.tagIsOwn ? { ...OUTLINE_PILL, color: '#803D81', borderColor: 'rgba(128,61,129,0.45)' } : OUTLINE_PILL}>{r.tagLabel}</Pill>
         : <span style={CELL_MUTED}>—</span>),
+    },
+    {
+      key: 'playlist', label: 'Playlist', sortable: true, cellStyle: { ...CELL_SECONDARY, ...CELL_NOWRAP },
+      render: (r) => r.playlist || <span style={CELL_MUTED}>—</span>,
     },
     {
       key: 'kind', label: 'From', sortable: true,
@@ -147,6 +165,14 @@ export default function MusicTable({
         filters={FILTERS.map((f) => ({ ...f, label: `${f.label} (${counts[f.val]})` }))}
         activeFilter={filter}
         onFilter={setFilter}
+        select={playlists.length > 0 ? {
+          value: playlist, onChange: setPlaylist, placeholder: 'All playlists',
+          options: [
+            { value: 'all', label: 'All playlists' },
+            ...playlists.map((p) => ({ value: p, label: p })),
+            { value: '__none', label: 'Not in a playlist' },
+          ],
+        } : null}
       />
 
       <DataTable

@@ -54,15 +54,61 @@ export const STATUS_LABEL = {
   declined: 'Declined',
 };
 
+/**
+ * THE TAG A ROW ACTUALLY SHOWS — the enum value, or the couple's own words.
+ *
+ * `category` is a fixed six-value enum, so "the couple's own" could never live
+ * in it; `categoryOther` was declared beside it on 2026-09-25 for exactly that.
+ * EXACTLY ONE IS EVER SET: choosing a declared category clears the other, and
+ * setting the other clears the category. Both set is a state nothing writes,
+ * and if a row ever arrives that way the declared category wins — it is the one
+ * the schema can validate.
+ */
+export function resolveTag(track) {
+  const t = track && typeof track === 'object' ? track : {};
+  const category = typeof t.category === 'string' ? t.category.trim() : '';
+  if (category) return { tag: category, label: TAG_LABEL[category] || category, isOwn: false };
+  const own = typeof t.categoryOther === 'string' ? t.categoryOther.trim() : '';
+  if (own) return { tag: own, label: own, isOwn: true };
+  return { tag: '', label: '', isOwn: false };
+}
+
+/** Which playlist a track belongs to. A name, or nothing. */
+export function resolvePlaylist(track) {
+  const t = track && typeof track === 'object' ? track : {};
+  return typeof t.playlist === 'string' ? t.playlist.trim() : '';
+}
+
+/**
+ * The playlist names a couple has made, from WeddingDetails.music.playlists[].
+ *
+ * THE NAMES LIVE ON THE WEDDING; THE MEMBERSHIP LIVES ON THE TRACK. A playlist
+ * is not an entity — it is a string on the tracks that belong to it — so this
+ * list is the vocabulary and Music.playlist is the assignment. A track whose
+ * playlist is not in this list is orphaned, which is why assignment is a select
+ * over these names rather than free text.
+ */
+export function playlistNames(details) {
+  const rows = details?.music?.playlists;
+  if (!Array.isArray(rows)) return [];
+  return [...new Set(rows.map((p) => (typeof p === 'string' ? p : p?.name))
+    .filter((n) => typeof n === 'string' && n.trim())
+    .map((n) => n.trim()))];
+}
+
 /** A track row. */
 function trackRow(t) {
+  const { tag, label, isOwn } = resolveTag(t);
   return {
     id: `track-${t.id}`,
     sourceId: t.id,
     kind: 'track',
     song: t.song_title || '',
     artist: t.artist || '',
-    tag: t.category || '',
+    tag,
+    tagLabel: label,
+    tagIsOwn: isOwn,
+    playlist: resolvePlaylist(t),
     notes: t.notes || '',
     // A track created from a guest's request keeps the fact in view: it is the
     // couple's now, but they did not choose it out of nowhere.
@@ -81,6 +127,11 @@ function requestRow(r) {
     song: r.title || '',
     artist: r.artist || '',
     tag: '',
+    tagLabel: '',
+    tagIsOwn: false,
+    // A REQUEST IS NOT IN A PLAYLIST YET. It becomes a track when the couple
+    // approves it, and that is when it can be assigned one.
+    playlist: '',
     notes: r.guestNote || '',
     askedBy: r.submittedBy || '',
     status: r.status || 'pending',
