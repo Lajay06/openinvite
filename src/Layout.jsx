@@ -9,6 +9,12 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AnimatedSidebar, MobileSidebarContent } from "./components/layout/AnimatedSidebar";
 import TipsModal from "./components/dashboard/TipsModal";
+import FirstRunTour from "./components/guidance/FirstRunTour";
+// The pure predicate, from the file that exists so it can be tested outside a
+// browser. A COLLABORATOR IS NEVER SHOWN THE TOUR: it walks the couple through
+// their own wedding, and a planner with access to six weddings would meet it
+// on each of them.
+import { isOnboardingComplete } from "./lib/onboardingComplete";
 import NotificationBell from "./components/layout/NotificationBell";
 import CollaborateModal from "./components/layout/CollaborateModal";
 import AvaChatPod from "./components/layout/AvaChatPod";
@@ -720,6 +726,13 @@ function LayoutShell({ children, currentPageName }) {
 
       {showCollaborateModal && <CollaborateModal onClose={() => setShowCollaborateModal(false)} />}
       {showTipsModal && <TipsModal onClose={() => setShowTipsModal(false)} />}
+
+      {/* THE FIRST-RUN TOUR. Renders null until the record has loaded, the
+          flag is on, onboarding is complete and guidanceState.tourSeenAt is
+          still null — so on every load after the first it costs one mount and
+          nothing else. It does NOT replace the Quick tips modal above; see the
+          note in that PR about the two things now sharing that name. */}
+      <FirstRunTour onboardingComplete={!isCollaborating && isOnboardingComplete(user)} />
 
       {/* ── Floating Ava button ──────────────────────────── */}
       <div style={{ position: 'fixed', bottom: 32, right: 32, zIndex: 8000, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12 }}>
