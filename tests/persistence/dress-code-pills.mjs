@@ -132,7 +132,7 @@ export async function runDressCodePills() {
   check('up to six per event', MAX_DRESS_CODE_PILLS === 6, String(MAX_DRESS_CODE_PILLS));
   check('notes are one line of 160', DRESS_CODE_NOTES_MAX === 160, String(DRESS_CODE_NOTES_MAX));
   check('  with the placeholder as written',
-    DRESS_CODE_NOTES_PLACEHOLDER === "Anything guests should know — heels and grass, a chilly courtyard, a colour you'd love to see.",
+    DRESS_CODE_NOTES_PLACEHOLDER === "Anything guests should know — heels and grass, a chilly courtyard, a color you'd love to see.",
     DRESS_CODE_NOTES_PLACEHOLDER);
 
   // ── precedence: pills, else the legacy string ─────────────────────────────

@@ -62,7 +62,7 @@ export const MAX_DRESS_CODE_PILLS = 6;
 export const DRESS_CODE_NOTES_MAX = 160;
 
 export const DRESS_CODE_NOTES_PLACEHOLDER =
-  "Anything guests should know — heels and grass, a chilly courtyard, a colour you'd love to see.";
+  "Anything guests should know — heels and grass, a chilly courtyard, a color you'd love to see.";
 
 /**
  * This event's dress code, however it was recorded.
