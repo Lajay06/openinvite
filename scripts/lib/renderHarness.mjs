@@ -96,6 +96,18 @@ export const SEED = {
     // partner2Name were seed inventions read by ZERO product files; the real
     // fields are couple1Name / couple2Name.
     slug: 'ada-and-alan', guestCount: '41', created_by: 'fixture@example.com',
+    // THIS COUPLE HAS ALREADY SEEN THE TOUR, and the fixture has to say so.
+    //
+    // The first-run tour is a modal, and with guidance on by default it opens
+    // over the dashboard whenever guidanceState.tourSeenAt is null — correct for
+    // a couple's first load, wrong for this fixture. Ada and Alan are 300 days
+    // out with 41 guests, a schedule and replies in; they met the tour long ago.
+    // Left unseeded, the modal covered the sidebar and test-sidebar-groups
+    // reported the groups as "not clickable" — a guard failing on something it
+    // does not test, which is the worst kind of red.
+    //
+    // A guard that WANTS the tour seeds tourSeenAt: null on its own context.
+    guidanceState: { tourSeenAt: iso(-200), dismissed: [] },
     // A CUSTOM EVENT, because without one the per-event invite flow cannot be
     // rendered at all: getWeddingEvents derives only Ceremony and Reception
     // from the main record, both isMain, and every guest is already invited to

@@ -63,6 +63,10 @@ export const LIVE_CREDENTIAL_GUARDS = new Set([
   'collaborator-invite.mjs',
   'endpoint-auth.mjs',
   'guest.mjs',
+  // Writes a real WeddingDetails record to prove guidanceState persists. The
+  // decisions are guarded credential-free in guidance-remembered.mjs; only the
+  // round trip needs a live record, because a dropped field returns 200.
+  'guidance-persistence.mjs',
   'guestlist-editable.mjs',
   'notifications.mjs',
   'onboarding.mjs',
