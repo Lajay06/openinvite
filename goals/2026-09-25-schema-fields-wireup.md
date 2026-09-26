@@ -1,5 +1,33 @@
 # Schema fields wire-up
 
+> **CLOSED 2026-09-27.** All four items merged; zero open PRs; `main` at
+> `1126fa1c`, `test:ci` 3765/3765.
+>
+> | item | PR | merge commit |
+> |---|---|---|
+> | 1 — mirror sync (RULE 12) | #855 | `73cb7c85f63a4e9b3eefea29f1cf81795b529e03` |
+> | 2 — guidance on, and remembered | #856 | `5c5fdd55e4310ab8c159c62f6f1ffd40ebd33874` |
+> | 3 — dress code pills and notes | #857 | `1126fa1ce021b1f89777873bb804ff02a0373c37` |
+> | 4 — Music playlists and the couple's own tag | #858 | `bcd79f6b76a1c6c250fd38c02e031c476cb17d11` |
+>
+> Two decisions taken during the run that outlived it:
+>
+> - **`preWeddingEvents[]` / `postWeddingEvents[]` items must stay bare
+>   `{ "type": "object" }`.** The first attempt at item 3 declared the two new
+>   fields on them; that gives the item a property list of two and leaves the
+>   other twenty-one a custom event carries undeclared, and a custom entity
+>   silently drops what it does not declare. Reverted the same day, zero rows
+>   updated in between. Guarded by `mirror-declares-the-new-fields.mjs`.
+> - **Two things are called "Quick tips":** `TipsModal` (the existing 7-card
+>   feature modal in the sidebar) and `QuickTipsTour` (the 6-stop page walk that
+>   now opens on first run). Both shipped; neither was touched. Still the
+>   owner's call.
+>
+> Left open deliberately: Messages (no `GuestMessage` row exists anywhere), the
+> Guest Suite Polls summary strip, and the Base44 MCP schema read — see
+> "Not in this goal" below. The dead-handlers sweep is in `backlog.md`.
+
+
 Thirteen declarations were added to the live Base44 schema on 2026-09-25 and verified against the mirror (additive only, zero removals). This goal syncs the mirror and finishes the three items that stopped in round 2 for want of them. Every item here touches couple-facing planning, so every PR carries a "Mobile impact" line; where the mobile shell would need the same thing, say so in the line — the web terminal never writes to the mobile branch.
 
 ## 1. Mirror sync (RULE 12)
