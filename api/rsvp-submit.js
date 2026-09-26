@@ -56,9 +56,22 @@
  * Required env var: BASE44_ADMIN_KEY — server-side-only Base44 service token.
  */
 
+import { Resend } from 'resend';
 import { applyCors, checkRateLimit, getClientIp, sanitizeString, isValidEmail } from './_lib/security.js';
+import { renderRsvpConfirmationEmail } from '../src/lib/emailTemplate.js';
 import { resolveGuestByToken } from './_lib/rsvpAuth.js';
 import { notify } from './_lib/notify.js';
+// THE COUPLE'S ADDRESS, FOR Reply-To. WeddingDetails carries no email — the
+// couple's address lives on the User entity — so this is the only way to make
+// a guest's reply reach them. Same helper, same purpose, as
+// api/rsvp-link-request.js:220; notify() already calls it from this request.
+import { getBase44User } from './_lib/base44Admin.js';
+// THE COUPLE'S NAME, THROUGH THE ONE READER. test:couple-names bars reading
+// `coupleNames` off the record directly, and it is right to: the display name
+// has a fallback chain (coupleNames, then couple1Name & couple2Name) and a
+// sender that read the field raw would print an empty string for any wedding
+// that only has the two halves.
+import { coupleDisplayName } from './_lib/coupleNames.js';
 import { hashId, encryptPayload } from './_lib/questionnaireCrypto.js';
 
 const BASE44_API = 'https://base44.app/api';
@@ -66,6 +79,38 @@ const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda223
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY;
 
 const MAX_TEXT_LENGTH = 1000;
+
+// Same Resend/FROM shape as api/send-invites.js and api/send-guest-reply.js.
+const resend = new Resend(process.env.RESEND_API_KEY);
+const SUPPORT_ADDRESS = 'hello@openinvite.com.au';
+
+/**
+ * WHERE THE CONFIRMATION GOES, in the owner's order of preference.
+ *
+ * Goal 2026-09-27 item 1: "the address submitted in the RSVP form; if empty and
+ * the guest arrived by token, the Guest record's email; if neither, skip".
+ *
+ * Every caller here arrived by token — resolveGuestByToken is the only way in —
+ * so the second clause is really "the address the couple has on file". A
+ * plus-one replying gets their own, not the primary guest's: they are a
+ * different person and the reply belongs to them.
+ *
+ * NO EMAIL IS NOT AN ERROR. A guest with no address must still be able to
+ * reply, which the owner ruled explicitly, so this returns '' and the caller
+ * counts the skip.
+ *
+ * EXPORTED so a guard can drive the decision without a network call. The
+ * endpoint has no `deps` seam (unlike api/send-invites.js and
+ * api/webhooks/stripe.js) and adding five of them to a live RSVP path is a
+ * bigger change than this item; the DECISION is what the ruling is about, and
+ * it is a function of three plain values.
+ */
+export function confirmationRecipient({ submittedEmail, guest, isPlusOne }) {
+  if (submittedEmail) return submittedEmail;
+  const onFile = isPlusOne ? guest?.plus_one_email : guest?.email;
+  const clean = sanitizeString(onFile || '').trim();
+  return clean && isValidEmail(clean) ? clean : '';
+}
 const VALID_STATUSES = new Set(['yes', 'no', 'pending']);
 
 /**
@@ -198,7 +243,73 @@ export default async function handler(req, res) {
       emailCta: 'View guest list',
     });
 
-    return res.status(200).json({ ok: true });
+    // ── THE GUEST'S OWN RECEIPT ────────────────────────────────────────────
+    //
+    // Goal 2026-09-27 item 1. Reply-To is the couple, like every other
+    // guest-facing email we send; From is the support address wearing the
+    // couple's name, so it arrives looking like it came from them.
+    //
+    // AFTER the rows are written and the couple is notified, and awaited for
+    // the same reason notify() is: a Vercel function can freeze the moment it
+    // responds, so fire-and-forget is not a send.
+    //
+    // NOTHING HERE CAN FAIL THE RSVP. The reply is already saved; a bounced
+    // confirmation must not turn a successful submit into an error the guest
+    // sees and retries.
+    let confirmation = 'skipped';
+    const recipient = confirmationRecipient({ submittedEmail: email, guest, isPlusOne });
+    // Falls back to the support address if the lookup fails, exactly as
+    // rsvp-link-request does — a confirmation with a support Reply-To is worth
+    // more than no confirmation.
+    const owner = recipient ? await getBase44User(wedding.created_by_id, BASE44_ADMIN_KEY).catch(() => null) : null;
+    const ownerEmail = owner?.email || '';
+
+    // NEVER ON THE COUPLE'S OWN PREVIEW. A test guest row is the preview path;
+    // a couple walking their own flow does not need a receipt for it.
+    //
+    // THE LIMIT, STATED: if a couple previews using a REAL guest's token we
+    // cannot tell that apart from the guest replying, and should not try —
+    // guessing would mean withholding a receipt from a guest who earned one.
+    if (guest.is_test) {
+      confirmation = 'skipped-test';
+    } else if (!recipient) {
+      // Not an error. A guest with no address can still reply; they just have
+      // no inbox for us to confirm it to.
+      console.log('[rsvp-submit] no address for a confirmation — skipping');
+    } else {
+      try {
+        const coupleName = coupleDisplayName(wedding);
+        const attending = eventResponses.some(r => r.status === 'yes');
+        const firstEvent = eventResponses[0] || null;
+        const { subject, html, text } = renderRsvpConfirmationEmail({
+          universeId: wedding.activeUniverse,
+          coupleNames: coupleName,
+          guestName: isPlusOne ? (guest.plus_one_name || guest.name) : guest.name,
+          attending,
+          eventName: firstEvent?.event_id === 'main-ceremony' ? 'Ceremony'
+            : firstEvent?.event_id === 'reception' ? 'Reception' : '',
+          date: wedding.weddingDate || '',
+          venueName: wedding.mainCeremony?.venueName || '',
+          design: wedding.emailDesign,
+        });
+        const fromName = coupleName || 'Openinvite';
+        await resend.emails.send({
+          from: `${fromName} <${SUPPORT_ADDRESS}>`,
+          to: recipient,
+          replyTo: ownerEmail || SUPPORT_ADDRESS,
+          subject,
+          html,
+          text,
+        });
+        confirmation = 'sent';
+      } catch (mailErr) {
+        // Logged, never surfaced — see above.
+        console.error('[rsvp-submit] confirmation email failed:', mailErr.message);
+        confirmation = 'failed';
+      }
+    }
+
+    return res.status(200).json({ ok: true, confirmation });
   } catch (err) {
     console.error('[rsvp-submit] Error:', err.message);
     return res.status(500).json({ error: 'Something went wrong — please try again.' });
