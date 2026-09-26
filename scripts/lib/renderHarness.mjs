@@ -232,8 +232,22 @@ export const PUBLISHED_WEDDING = {
   // that seed showed dietary, message and Submit -- every secondary field -- and
   // not the question the page exists to ask, and it went to owner review that
   // way. A reviewer cannot see what is absent. These stay.
-  mainCeremony: { venueName: 'The Old Observatory', address: '12 Greenwich Park, London', startTime: '15:00', time: '15:00' },
-  reception: { venueName: 'The Long Room', address: '12 Greenwich Park, London', startTime: '18:00', time: '18:00' },
+  // DRESS CODE IN BOTH FORMS, ON PURPOSE. The ceremony carries PILLS plus a
+  // note; the reception carries only the LEGACY string. That is the one seed
+  // shape that can prove both halves of the rule in a single render: pills and
+  // their note appear where a couple set them, and a wedding that never opened
+  // the new editor still renders exactly the page it rendered before.
+  mainCeremony: {
+    venueName: 'The Old Observatory', address: '12 Greenwich Park, London',
+    startTime: '15:00', time: '15:00',
+    dressCodePills: ['Garden party', 'Comfortable shoes'],
+    dressCodeNotes: 'The lawn is uneven, so heels are a gamble.',
+  },
+  reception: {
+    venueName: 'The Long Room', address: '12 Greenwich Park, London',
+    startTime: '18:00', time: '18:00',
+    dressCode: 'Black tie optional',
+  },
   rsvpContent: { rsvpDeadline: iso(200) },
   // COUPLE-AUTHORED BLOCKS. Unseeded until now, which is why the block gap
   // (P2d) and four of the eleven heading conversions could not be

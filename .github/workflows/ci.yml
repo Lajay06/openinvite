@@ -552,6 +552,23 @@ jobs:
           exit $STATUS
 
       # The edge of a row says whether you have answered it.
+      # Dress code, as a guest sees it. The fixture carries pills + a note on
+      # the ceremony and only the LEGACY string on the reception, so one render
+      # proves both halves: pills where a couple set them, and the old page
+      # unchanged where they did not.
+      - name: Dress code renders as pills, and the legacy string still renders
+        run: |
+          npx vite preview --port 4216 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4216 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4216 npm run test:dress-code-render
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       - name: The celebration accordions show their state in their border
         run: |
           npx vite preview --port 4195 --strictPort &

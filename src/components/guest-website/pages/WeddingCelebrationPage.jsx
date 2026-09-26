@@ -24,6 +24,7 @@ import VineRule from '../layouts/VineRule';
 import UniverseBlocks from '../blocks/UniverseBlocks';
 
 import { compareDayThenTime } from '@/lib/scheduleOrder';
+import { resolveDressCode } from '@/lib/dressCode';
 function fmtTime(t) {
   if (!t) return '';
   const [h, m] = t.split(':').map(Number);
@@ -58,7 +59,11 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
       _id: 'ceremony', _title: 'Ceremony', _date: weddingDate,
       startTime: ceremony.startTime || ceremony.time || '', endTime: ceremony.endTime || '',
       venueName: ceremony.venueName || '', address: ceremony.address || '',
-      dressCode: ceremony.dressCode || '', notes: ceremony.notes || '',
+      // NAMED, NOT SPREAD: resolveDressCode returns { pills, notes } and this
+      // event already has its own `notes`. Spreading collided, and the
+      // dress-code note was overwritten before it could render.
+      pills: resolveDressCode(ceremony).pills, dressCodeNotes: resolveDressCode(ceremony).notes,
+      notes: ceremony.notes || '',
     });
   }
 
@@ -67,7 +72,11 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
       _id: 'reception', _title: 'Reception', _date: weddingDate,
       startTime: reception.startTime || reception.time || '', endTime: reception.endTime || '',
       venueName: reception.venueName || '', address: reception.address || '',
-      dressCode: reception.dressCode || '', notes: reception.notes || '',
+      // NAMED, NOT SPREAD: resolveDressCode returns { pills, notes } and this
+      // event already has its own `notes`. Spreading collided, and the
+      // dress-code note was overwritten before it could render.
+      pills: resolveDressCode(reception).pills, dressCodeNotes: resolveDressCode(reception).notes,
+      notes: reception.notes || '',
     });
   }
 
@@ -79,7 +88,8 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
         startTime: ev.startTime || ev.time || '', endTime: ev.endTime || '',
         venueName: ev.venueName || ev.venue || '',
         address: ev.venueAddress || ev.address || '',
-        dressCode: ev.dressCode || '', notes: ev.details || ev.notes || '',
+        pills: resolveDressCode(ev).pills, dressCodeNotes: resolveDressCode(ev).notes,
+        notes: ev.details || ev.notes || '',
       });
     }
   });
@@ -409,19 +419,31 @@ function EventDetails({ ev, timeStr, lt, acc, hFont, bFont, hWt, noPhoto, style:
         </div>
       )}
 
-      {/* Dress code — quiet pill, sentence case, no loud color */}
-      {ev.dressCode && (
-        <div style={{ marginBottom: 22 }}>
-          <span style={{
-            display: 'inline-flex', alignItems: 'center',
-            padding: '4px 12px', borderRadius: 999,
-            fontSize: 11, fontWeight: 600, fontFamily: bFont, letterSpacing: '0.04em',
-            background: `${lt}0D`, color: `${lt}70`,
-            border: `1px solid ${lt}18`,
-          }}>
-            {ev.dressCode}
-          </span>
+      {/* Dress code — quiet pills, sentence case, no loud color.
+          ONE PILL EACH, and the legacy single string arrives here as a
+          one-element array through resolveDressCode, so a wedding that never
+          opens the new editor renders exactly the page it renders today. The
+          note sits beneath, in the event's own voice, only when it says
+          something. */}
+      {ev.pills?.length > 0 && (
+        <div style={{ marginBottom: ev.dressCodeNotes ? 10 : 22, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {ev.pills.map((pill) => (
+            <span key={pill} style={{
+              display: 'inline-flex', alignItems: 'center',
+              padding: '4px 12px', borderRadius: 999,
+              fontSize: 11, fontWeight: 600, fontFamily: bFont, letterSpacing: '0.04em',
+              background: `${lt}0D`, color: `${lt}70`,
+              border: `1px solid ${lt}18`,
+            }}>
+              {pill}
+            </span>
+          ))}
         </div>
+      )}
+      {ev.dressCodeNotes && (
+        <p style={{ fontFamily: bFont, fontSize: '0.8125rem', color: `${lt}70`, margin: '0 0 22px', lineHeight: 1.55 }}>
+          {ev.dressCodeNotes}
+        </p>
       )}
 
       {/* Notes */}
