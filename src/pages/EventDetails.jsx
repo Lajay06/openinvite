@@ -26,6 +26,10 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 import SectionHeading, { CONTENT_WIDTH, sectionDivider, FIELD_GAP } from '../components/event-details/SectionHeading';
 
 import { syncWeddingAddress } from '@/lib/weddingAddress';
+import {
+  DRESS_CODE_PILLS, MAX_DRESS_CODE_PILLS, DRESS_CODE_NOTES_MAX,
+  DRESS_CODE_NOTES_PLACEHOLDER, resolveDressCode, togglePill, addCustomPill,
+} from '@/lib/dressCode';
 import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
 const TABS = [
   { key: 'details', label: 'Details' },
@@ -218,6 +222,7 @@ function EventForm({ event, isFixed, fixedType, isPost, onSave, onCancel, locati
 
   const defaultKind = isPost ? 'post' : 'pre';
   const [kind, setKind] = useState(defaultKind);
+  const [ownPill, setOwnPill] = useState('');
   const [form, setForm] = useState({
     name: event?.name || '',
     type: event?.type || (isPost ? POST_WEDDING_TYPES[0] : PRE_WEDDING_TYPES[0]),
@@ -226,6 +231,11 @@ function EventForm({ event, isFixed, fixedType, isPost, onSave, onCancel, locati
     endTime: event?.endTime || '',
     venue: initVenue(),
     dressCode: event?.dressCode || '',
+    // SEEDED THROUGH THE RESOLVER, so an event that only ever had the legacy
+    // string opens with that string as its first pill — the editor shows what
+    // the guest site shows, which is the rule this whole item turns on.
+    dressCodePills: resolveDressCode(event).pills,
+    dressCodeNotes: resolveDressCode(event).notes,
     parkingInfo: event?.parkingInfo || '',
     accessibilityNotes: event?.accessibilityNotes || '',
     notes: isFixed ? (event?.notes || '') : (event?.details || event?.notes || ''),
@@ -266,6 +276,8 @@ function EventForm({ event, isFixed, fixedType, isPost, onSave, onCancel, locati
       endTime: form.endTime || '',
       time: form.startTime || '',
       dressCode: form.dressCode,
+      dressCodePills: form.dressCodePills,
+      dressCodeNotes: form.dressCodeNotes,
       parkingInfo: form.parkingInfo,
       accessibilityNotes: form.accessibilityNotes,
       notes: form.notes,
@@ -361,9 +373,98 @@ function EventForm({ event, isFixed, fixedType, isPost, onSave, onCancel, locati
 
           {/* Details */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 24, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
+            {/* DRESS CODE — PILLS, THEN ONE LINE OF NOTES.
+                The free-text field this replaces is still written (form.dressCode
+                is untouched on save) because it is the fallback for every
+                wedding that answered in it; the guest site prefers pills when
+                there are any. Nothing is backfilled. */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <Label htmlFor="ev-dress">Dress code</Label>
-              <Input id="ev-dress" value={form.dressCode} onChange={e => set('dressCode', e.target.value)} placeholder="e.g. Black tie, smart casual" />
+              <Label>Dress code</Label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {DRESS_CODE_PILLS.map(pill => {
+                  const on = form.dressCodePills.includes(pill);
+                  const full = !on && form.dressCodePills.length >= MAX_DRESS_CODE_PILLS;
+                  return (
+                    <button
+                      key={pill}
+                      type="button"
+                      disabled={full}
+                      onClick={() => set('dressCodePills', togglePill(form.dressCodePills, pill))}
+                      style={{
+                        padding: '6px 14px', borderRadius: 999, fontFamily: PJS,
+                        fontSize: 12, fontWeight: 600,
+                        cursor: full ? 'default' : 'pointer',
+                        background: on ? '#0A0A0A' : 'transparent',
+                        color: on ? '#FFFFFF' : (full ? 'rgba(10,10,10,0.3)' : 'rgba(10,10,10,0.6)'),
+                        border: `1px solid ${on ? '#0A0A0A' : 'rgba(10,10,10,0.18)'}`,
+                      }}
+                    >
+                      {pill}
+                    </button>
+                  );
+                })}
+                {/* A pill the couple typed. The vocabulary is a starting point:
+                    the wedding that needs "sarong, shoes off" is exactly the one
+                    twelve English options cannot describe. */}
+                {form.dressCodePills.filter(p => !DRESS_CODE_PILLS.includes(p)).map(own => (
+                  <button
+                    key={own}
+                    type="button"
+                    onClick={() => set('dressCodePills', togglePill(form.dressCodePills, own))}
+                    style={{
+                      padding: '6px 14px', borderRadius: 999, fontFamily: PJS,
+                      fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                      background: '#0A0A0A', color: '#FFFFFF', border: '1px solid #0A0A0A',
+                    }}
+                  >
+                    {own}
+                  </button>
+                ))}
+              </div>
+              {/* EventForm is only ever opened for an editable wedding — every
+                  entry point is behind a !readOnly check and handleSaveEvent
+                  refuses outright — so nothing in this form guards on it. */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                  <Input
+                    id="ev-dress-own"
+                    value={ownPill}
+                    onChange={e => setOwnPill(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        set('dressCodePills', addCustomPill(form.dressCodePills, ownPill));
+                        setOwnPill('');
+                      }
+                    }}
+                    placeholder="Add your own"
+                    style={{ maxWidth: 220 }}
+                  />
+                  <button
+                    type="button"
+                    className="btn-editorial-secondary"
+                    style={{ fontSize: 12 }}
+                    disabled={!ownPill.trim() || form.dressCodePills.length >= MAX_DRESS_CODE_PILLS}
+                    onClick={() => {
+                      set('dressCodePills', addCustomPill(form.dressCodePills, ownPill));
+                      setOwnPill('');
+                    }}
+                  >
+                    Add
+                  </button>
+                <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
+                  {form.dressCodePills.length} of {MAX_DRESS_CODE_PILLS}
+                </span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <Label htmlFor="ev-dress-notes">Notes</Label>
+              <Input
+                id="ev-dress-notes"
+                value={form.dressCodeNotes}
+                maxLength={DRESS_CODE_NOTES_MAX}
+                onChange={e => set('dressCodeNotes', e.target.value)}
+                placeholder={DRESS_CODE_NOTES_PLACEHOLDER}
+              />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <Label htmlFor="ev-parking">Parking info</Label>
@@ -764,6 +865,8 @@ export default function EventDetailsPage() {
         startTime: saved.startTime || '',
         endTime:   saved.endTime   || '',
         dressCode: saved.dressCode,
+        dressCodePills: saved.dressCodePills,
+        dressCodeNotes: saved.dressCodeNotes,
         parkingInfo: saved.parkingInfo,
         accessibilityNotes: saved.accessibilityNotes,
         notes: saved.notes,

@@ -1,4 +1,5 @@
 import { parseWeddingDate } from './guestDate.js';
+import { resolveDressCode } from './dressCode.js';
 /**
  * src/lib/weddingEvents.js
  *
@@ -44,9 +45,15 @@ export function getWeddingEvents(weddingDetails) {
   const pre = weddingDetails?.preWeddingEvents || [];
   const post = weddingDetails?.postWeddingEvents || [];
 
+  // DRESS CODE THROUGH THE ONE RESOLVER. The styling quiz reads pills first,
+  // then the legacy string — and `dressCode` below is the RESOLVED value, so
+  // every consumer of getWeddingEvents gets pills where a couple set them
+  // without each having to know the precedence.
   const main = [
-    { event_id: MAIN_CEREMONY_EVENT_ID, name: 'Ceremony', date: null, startTime: mc.startTime || '', isMain: true, dressCode: mc.dressCode || '' },
-    { event_id: RECEPTION_EVENT_ID, name: 'Reception', date: null, startTime: rc.startTime || '', isMain: true, dressCode: rc.dressCode || '' },
+    { event_id: MAIN_CEREMONY_EVENT_ID, name: 'Ceremony', date: null, startTime: mc.startTime || '', isMain: true,
+      dressCode: resolveDressCode(mc).pills, dressCodeNotes: resolveDressCode(mc).notes },
+    { event_id: RECEPTION_EVENT_ID, name: 'Reception', date: null, startTime: rc.startTime || '', isMain: true,
+      dressCode: resolveDressCode(rc).pills, dressCodeNotes: resolveDressCode(rc).notes },
   ].sort((a, b) => cmpTime(a.startTime, b.startTime));
 
   const custom = [...pre, ...post]
@@ -57,7 +64,8 @@ export function getWeddingEvents(weddingDetails) {
       date: e.date || null,
       startTime: e.startTime || e.time || '',
       isMain: false,
-      dressCode: e.dressCode || '',
+      dressCode: resolveDressCode(e).pills,
+      dressCodeNotes: resolveDressCode(e).notes,
     }))
     .sort((a, b) => {
       const da = safeDateMs(a.date), db = safeDateMs(b.date);
