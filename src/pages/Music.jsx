@@ -17,7 +17,7 @@ import { useCollaboratorContext } from '@/lib/collaboratorContext';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import CountUp from "@/components/shared/CountUp";
 import MusicTable from '@/components/music/MusicTable';
-import { TAG_ORDER, TAG_LABEL } from '@/lib/musicRows';
+import { TAG_ORDER, TAG_LABEL, resolveTag, playlistNames } from '@/lib/musicRows';
 import { DEFAULT_MUSIC_REQUEST_MESSAGE } from '@/lib/musicCopy';
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -109,13 +109,18 @@ function SettingsModal({ details, updateMusic, onClose }) {
  * Song and artist are what the Music entity requires; tag and notes are the
  * two columns the table exists to make editable.
  */
-function SongModal({ track, onSave, onClose }) {
+function SongModal({ track, playlists = [], onSave, onClose }) {
   const [song, setSong] = useState(track?.song_title || '');
   const [artist, setArtist] = useState(track?.artist || '');
-  const [tag, setTag] = useState(track?.category || 'general');
+  const resolved = resolveTag(track);
+  // 'other' is a UI state, never a stored value. The stored shape is exactly
+  // one of category / categoryOther — see handleSave below.
+  const [tag, setTag] = useState(resolved.isOwn ? 'other' : (resolved.tag || 'general'));
+  const [own, setOwn] = useState(resolved.isOwn ? resolved.tag : '');
+  const [playlist, setPlaylist] = useState(track?.playlist || '');
   const [notes, setNotes] = useState(track?.notes || '');
   const editing = !!track?.id;
-  const ready = song.trim() && artist.trim();
+  const ready = song.trim() && artist.trim() && (tag !== 'other' || own.trim());
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -136,11 +141,11 @@ function SongModal({ track, onSave, onClose }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <span style={labelStyle}>Tag</span>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {TAG_ORDER.map(t => (
+              {[...TAG_ORDER, 'other'].map(t => (
                 <button
                   key={t}
                   type="button"
-                  onClick={() => setTag(t)}
+                  onClick={() => { setTag(t); if (t !== 'other') setOwn(''); }}
                   style={{
                     padding: '6px 14px', borderRadius: 999, cursor: 'pointer', fontFamily: PJS,
                     fontSize: 12, fontWeight: 600,
@@ -149,11 +154,40 @@ function SongModal({ track, onSave, onClose }) {
                     border: `1px solid ${tag === t ? '#0A0A0A' : 'rgba(10,10,10,0.18)'}`,
                   }}
                 >
-                  {TAG_LABEL[t]}
+                  {t === 'other' ? 'Something else…' : TAG_LABEL[t]}
                 </button>
               ))}
             </div>
+            {/* CHOOSING IT REVEALS THE FIELD, and choosing any of the six hides
+                it and clears what was typed — so the two can never both be set.
+                `category` is a fixed enum; this is the only place a couple's
+                own words can go. */}
+            {tag === 'other' && (
+              <input
+                value={own}
+                onChange={e => setOwn(e.target.value)}
+                placeholder="Your own tag"
+                maxLength={40}
+                style={playlistInputStyle}
+              />
+            )}
           </div>
+          {playlists.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <span style={labelStyle}>Playlist</span>
+              {/* A SELECT OVER THE NAMES THE COUPLE HAS MADE, not free text. The
+                  names live on the wedding record; this is the assignment, and a
+                  name that is not one of theirs would orphan the track. */}
+              <select
+                value={playlist}
+                onChange={e => setPlaylist(e.target.value)}
+                style={{ ...playlistInputStyle, appearance: 'auto' }}
+              >
+                <option value="">Not in a playlist</option>
+                {playlists.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+          )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <span style={labelStyle}>Notes</span>
             <Textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Anything the band or DJ should know" />
@@ -162,7 +196,17 @@ function SongModal({ track, onSave, onClose }) {
         <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(10,10,10,0.12)', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
           <button onClick={onClose} className="btn-editorial-secondary" style={{ fontSize: 13 }}>Cancel</button>
           <button
-            onClick={() => onSave({ song_title: song.trim(), artist: artist.trim(), category: tag, notes: notes.trim() })}
+            onClick={() => onSave({
+              song_title: song.trim(),
+              artist: artist.trim(),
+              // NEVER BOTH. One of the two carries the tag and the other is
+              // cleared to '' — not left undefined, because an undefined field
+              // is not a write and the old value would survive the edit.
+              category: tag === 'other' ? '' : tag,
+              categoryOther: tag === 'other' ? own.trim() : '',
+              playlist,
+              notes: notes.trim(),
+            })}
             disabled={!ready}
             className="btn-primary"
             style={{ fontSize: 13, opacity: ready ? 1 : 0.4 }}
@@ -426,15 +470,28 @@ export default function MusicPage() {
     }
   };
 
+  // CREATE PLAYLIST — it existed and nothing called it.
+  //
+  // "a name is a string on the tracks that belong to it, nothing else". So this
+  // appends a NAME to WeddingDetails.music.playlists[] and stops there; a track
+  // joins it by having Music.playlist set to that name. No ids to keep in step,
+  // no membership list to fall out of date, and trackCount is not stored because
+  // it is a count of rows that already exist.
+  //
+  // The existing rows are objects with { id, name, … } — playlistNames() reads
+  // both shapes, so old rows keep working and new ones are the plain name the
+  // ruling describes.
   const handleAddPlaylist = () => {
     const name = newPlaylistName.trim();
     if (!name) return;
+    if (playlistNames(details).some(n => n.toLowerCase() === name.toLowerCase())) {
+      toast.error('You already have a playlist with that name.');
+      return;
+    }
     const current = details?.music?.playlists || [];
-    const newPl = { id: `custom-${Date.now()}`, name, trackCount: 0, enabled: true };
-    updateMutation.mutate({ music: { ...(details?.music || {}), playlists: [...current, newPl] } });
+    updateMutation.mutate({ music: { ...(details?.music || {}), playlists: [...current, name] } });
     setNewPlaylistName('');
     setAddingPlaylist(false);
-    setActivePlaylist(newPl);
   };
 
 
@@ -590,10 +647,31 @@ export default function MusicPage() {
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
                 <p style={helpTextStyle}>Your songs, and what your guests have asked for.</p>
                 {!readOnly && (
-                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
                     <button onClick={() => setSongModal('new')} className="btn-primary" style={{ fontSize: 12 }}>
                       Add a song
                     </button>
+                    {/* CREATE PLAYLIST — names one, and that is all it does. */}
+                    {addingPlaylist ? (
+                      <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
+                        <input
+                          autoFocus
+                          value={newPlaylistName}
+                          onChange={e => setNewPlaylistName(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddPlaylist(); } }}
+                          placeholder="Playlist name"
+                          maxLength={60}
+                          style={{ ...playlistInputStyle, width: 180 }}
+                        />
+                        <button onClick={handleAddPlaylist} className="btn-primary" style={{ fontSize: 12 }}>Create</button>
+                        <button onClick={() => { setAddingPlaylist(false); setNewPlaylistName(''); }}
+                          className="btn-editorial-secondary" style={{ fontSize: 12 }}>Cancel</button>
+                      </span>
+                    ) : (
+                      <button onClick={() => setAddingPlaylist(true)} className="btn-editorial-secondary" style={{ fontSize: 12 }}>
+                        Create playlist
+                      </button>
+                    )}
                     <button onClick={() => setShowSettings(true)} className="btn-editorial-secondary" style={{ fontSize: 12 }}>
                       Request settings
                     </button>
@@ -601,6 +679,7 @@ export default function MusicPage() {
                 )}
               </div>
               <MusicTable
+                playlists={playlistNames(details)}
                 tracks={playlistTracks}
                 requests={allRequests}
                 loading={false}
@@ -665,6 +744,7 @@ export default function MusicPage() {
       {/* Settings modal */}
       {songModal && (
         <SongModal
+          playlists={playlistNames(details)}
           track={songModal === 'new' ? null : songModal}
           onSave={handleSaveSong}
           onClose={() => setSongModal(null)}
