@@ -151,11 +151,25 @@ export async function runMusicIsATable() {
     lib.TAG_ORDER.every((t) => declared.includes(t)) && lib.TAG_ORDER.length === declared.length,
     lib.TAG_ORDER.join(', '));
 
-  // ── The stop, recorded where it happened ──────────────────────────────────
-  check('category is still a fixed enum — a couple’s own tag has nowhere to go',
-    /"category":\s*\{\s*"type":\s*"string",\s*"enum"/.test(SCHEMA), 'schema unchanged');
-  check('  and no field on a track could name a playlist',
-    !/"playlist"/.test(SCHEMA), 'nothing to assign a track to');
+  // ── THE STOP IS CLEARED, AND THIS PAIR IS THE INVERSE OF WHAT IT WAS ──────
+  //
+  // These two checks recorded a stop condition: `category` was a fixed
+  // six-value enum with nothing beside it, so "the couple's own" tag had
+  // nowhere to go and a track could not name a playlist. That was the reason
+  // two parts of round two's item 12 were not built.
+  //
+  // The owner declared `Music.playlist` and `Music.categoryOther` in Base44 on
+  // 2026-09-25 and the mirror is synced from a verified live export, so the
+  // claim is now false and the checks assert the opposite. The enum itself is
+  // unchanged and still checked above; `categoryOther` sits beside it rather
+  // than widening it.
+  //
+  // The FEATURE that uses them is not built here — this is the mirror sync.
+  check('the enum is still the fixed six — categoryOther sits beside it, not inside it',
+    /"category":\s*\{\s*"type":\s*"string",\s*"enum"/.test(SCHEMA), 'enum unchanged');
+  check('  a track can name its playlist now', /"playlist"/.test(SCHEMA), 'Music.playlist declared');
+  check('  and a tag outside the enum has somewhere to go',
+    /"categoryOther"/.test(SCHEMA), 'Music.categoryOther declared');
 
   return results;
 }

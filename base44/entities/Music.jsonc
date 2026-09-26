@@ -78,6 +78,26 @@
     "notes": {
       "type": "string",
       "description": "Additional notes about the song"
+    },
+    // A PLAYLIST NAME, AND A TAG THE ENUM DOES NOT COVER. Added to the live
+    // schema by the owner in the Base44 chat, 2026-09-25, and verified
+    // field-by-field against a live export before this mirror was written.
+    //
+    // `playlist` is the NAME of the playlist a track belongs to — the string
+    // is the whole relationship, because a playlist is not an entity.
+    // WeddingDetails.music.playlists[] holds the names; this holds which one.
+    //
+    // `categoryOther` is the escape hatch from `category`, which is a fixed
+    // six-value enum and so could never hold "the couple's own" tag. Exactly
+    // one of the two is ever set: choosing a declared category clears this,
+    // and setting this clears the category.
+    "playlist": {
+      "type": "string",
+      "description": "Free-text playlist notes or link"
+    },
+    "categoryOther": {
+      "type": "string",
+      "description": "Free-text for a category not covered by the enum"
     }
   },
   "required": [

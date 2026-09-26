@@ -75,6 +75,28 @@
         "dressCode": {
           "type": "string"
         },
+        // PILLS AND A NOTE, BESIDE THE STRING THAT CAME FIRST. Added to the
+        // live schema by the owner in the Base44 chat, 2026-09-25, and
+        // verified field-by-field against a live export before this mirror was
+        // written. `dressCode` stays: it is the fallback for every wedding
+        // that answered before pills existed, and there is no backfill.
+        //
+        // NOT ON preWeddingEvents[] / postWeddingEvents[]. They were declared
+        // there on 2026-09-25 and REVERTED the same day, because those items
+        // are bare `{ "type": "object" }` — declaring two properties on them
+        // would have left the other twenty-one a custom event carries
+        // undeclared, and a custom entity silently drops what it does not
+        // declare. On those items these two fields are undeclared like
+        // everything else, which is what makes them safe.
+        "dressCodePills": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dressCodeNotes": {
+          "type": "string"
+        },
         "parkingInfo": {
           "type": "string"
         },
@@ -120,6 +142,28 @@
           "type": "string"
         },
         "dressCode": {
+          "type": "string"
+        },
+        // PILLS AND A NOTE, BESIDE THE STRING THAT CAME FIRST. Added to the
+        // live schema by the owner in the Base44 chat, 2026-09-25, and
+        // verified field-by-field against a live export before this mirror was
+        // written. `dressCode` stays: it is the fallback for every wedding
+        // that answered before pills existed, and there is no backfill.
+        //
+        // NOT ON preWeddingEvents[] / postWeddingEvents[]. They were declared
+        // there on 2026-09-25 and REVERTED the same day, because those items
+        // are bare `{ "type": "object" }` — declaring two properties on them
+        // would have left the other twenty-one a custom event carries
+        // undeclared, and a custom entity silently drops what it does not
+        // declare. On those items these two fields are undeclared like
+        // everything else, which is what makes them safe.
+        "dressCodePills": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dressCodeNotes": {
           "type": "string"
         },
         "parkingInfo": {
@@ -1423,6 +1467,34 @@
           }
         },
         "updatedAt": { "type": "string" }
+      }
+    },
+    // WHERE THE GUIDANCE SYSTEM REMEMBERS ITSELF. Added to the live schema by
+    // the owner in the Base44 chat, 2026-09-25, and verified field-by-field
+    // against a live export before this mirror was written.
+    //
+    // `tourSeenAt` is an ISO timestamp rather than a boolean, so "has the tour
+    // been shown" and "when" are one field instead of two that can disagree.
+    // `["string", "null"]` is live's own type, not a convenience: null is the
+    // never-shown state and has to be writable.
+    //
+    // `dismissed` holds the page paths whose "What's here" panel the couple has
+    // closed for good — the keys of src/lib/pageGuidance.js.
+    "guidanceState": {
+      "type": "object",
+      "properties": {
+        "tourSeenAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dismissed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
       }
     }
   },
