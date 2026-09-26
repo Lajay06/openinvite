@@ -3,6 +3,8 @@ import { useLocation } from 'react-router-dom';
 import { HelpCircle } from 'lucide-react';
 import { guidanceFor } from '@/lib/pageGuidance';
 import { isGuidanceEnabled } from '@/lib/guidanceFlag';
+import { isDismissed } from '@/lib/guidanceState';
+import { useGuidanceState } from '@/hooks/useGuidanceState';
 import WhatsHerePanel from './WhatsHerePanel';
 
 /**
@@ -18,11 +20,16 @@ import WhatsHerePanel from './WhatsHerePanel';
  *
  * ── THREE REASONS IT RENDERS NOTHING ───────────────────────────────────────
  *
- *   the flag is off        — the default, until guidanceState exists
+ *   the flag is off        — an off switch now, not the default
  *   the path has no entry  — a page nobody wrote guidance for says nothing
  *                            rather than opening an empty panel
  *   there is no router     — the header is rendered in tests and previews
  *                            outside a Router, where useLocation would throw
+ *   the couple dismissed it — "do not show this again", remembered in
+ *                            WeddingDetails.guidanceState.dismissed. The
+ *                            CONTROL goes too, not just the panel: a button
+ *                            that reopens what you closed for good is not a
+ *                            dismissal, it is a snooze.
  *
  * The third is why the hook is wrapped: taking out every dashboard page in a
  * preview would be a far worse failure than the control not appearing.
@@ -38,10 +45,17 @@ function usePathname() {
 export default function WhatsHereControl() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  // The hook runs unconditionally — React requires that — and its own guards
+  // mean it writes nothing until the record has loaded.
+  const { ready, state, dismiss } = useGuidanceState();
+
   if (!isGuidanceEnabled() || !pathname) return null;
 
   const guidance = guidanceFor(pathname);
   if (!guidance) return null;
+  if (isDismissed(state, pathname)) return null;
+
+  const onDismiss = ready ? () => { dismiss(pathname); setOpen(false); } : undefined;
 
   return (
     <>
@@ -64,7 +78,7 @@ export default function WhatsHereControl() {
         <HelpCircle size={16} />
       </button>
       {open && (
-        <WhatsHerePanel guidance={guidance} onClose={() => setOpen(false)} />
+        <WhatsHerePanel guidance={guidance} onClose={() => setOpen(false)} onDismiss={onDismiss} />
       )}
     </>
   );

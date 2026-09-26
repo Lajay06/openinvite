@@ -31,18 +31,30 @@
 
 export const GUIDANCE_FLAG_KEY = 'oi_guidance';
 
-/** True only when the flag has been deliberately set. Anything else is off. */
+/**
+ * ON BY DEFAULT SINCE 2026-09-26, because the field it was waiting for exists.
+ *
+ * The flag was off because the tour is shown ONCE and a panel is dismissed ONE
+ * AT A TIME, and both facts have to be remembered per couple. Without
+ * WeddingDetails.guidanceState a tour that "shows once" showed on every load.
+ * The owner declared the field on 2026-09-25, so the guarantee is keepable and
+ * the default flips.
+ *
+ * THE FLAG STAYS, as an off switch rather than an on switch: 'off' turns the
+ * whole system back off in one browser without a deploy. Anything else — unset,
+ * junk, a storage read that throws — is on, so the default does not depend on
+ * storage being readable.
+ */
 export function isGuidanceEnabled() {
   try {
-    return localStorage.getItem(GUIDANCE_FLAG_KEY) === 'on';
+    return localStorage.getItem(GUIDANCE_FLAG_KEY) !== 'off';
   } catch {
-    return false;
+    return true;
   }
 }
 
 /**
- * THE FIELD THE OWNER MUST ADD, named here so it is findable from the code
- * rather than only from a report:
+ * THE FIELD, DECLARED LIVE 2026-09-25 and mirrored under RULE 12:
  *
  *   WeddingDetails.guidanceState : object
  *     { tourSeenAt: string|null, dismissed: string[] }
@@ -51,8 +63,8 @@ export function isGuidanceEnabled() {
  * field rather than a boolean that loses the answer to the second question.
  * `dismissed` holds the paths whose panel the couple has closed for good.
  *
- * Base44 silently drops undeclared fields, so writing this before the field
- * exists would look like it worked and persist nothing — which is exactly the
- * failure this flag exists to avoid.
+ * Base44 silently drops undeclared fields, which is why nothing wrote it until
+ * it existed. src/lib/guidanceState.js owns the reads and the transitions;
+ * src/hooks/useGuidanceState.js owns the round trip.
  */
 export const GUIDANCE_STATE_FIELD = 'guidanceState';

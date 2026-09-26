@@ -95,6 +95,7 @@ import { runTrialClientLock } from '../tests/persistence/trial-client-lock.mjs';
 import { runTodoListSchema } from '../tests/persistence/todo-list-schema.mjs';
 import { runNotifications } from '../tests/persistence/notifications.mjs';
 import { runOnboardingCronWindow } from '../tests/persistence/onboarding-cron-window.mjs';
+import { runGuidancePersistence } from '../tests/persistence/guidance-persistence.mjs';
 
 if (!EMAIL || !PASS) {
   console.error('✗ BASE44_TEST_EMAIL and BASE44_TEST_PASSWORD must be set in .env.local');
@@ -188,6 +189,9 @@ async function run() {
     await runModule('runTodoListSchema', () => runTodoListSchema(token));
     await runModule('runNotifications', () => runNotifications(token));
     await runModule('runOnboardingCronWindow', () => runOnboardingCronWindow());
+    // Creates and deletes its own sentinel record — see the module header for
+    // why the round trip cannot be proved credential-free.
+    await runModule('runGuidancePersistence', () => runGuidancePersistence(token));
     await runModule('runSchemaDriftGuard', () => runSchemaDriftGuard());
   await runModule('runAvaActionValidation', () => runAvaActionValidation());
   await runModule('runDailyUpdateLoadStates', () => runDailyUpdateLoadStates());

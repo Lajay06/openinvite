@@ -93,16 +93,32 @@ export async function runGuidanceBehindAFlag() {
   // ── Off by default ────────────────────────────────────────────────────────
   check('the control is behind the flag',
     /if \(!isGuidanceEnabled\(\)/.test(CONTROL), 'isGuidanceEnabled');
-  check('  and the flag is off unless deliberately set',
-    /getItem\(GUIDANCE_FLAG_KEY\) === 'on'/.test(FLAG), "only 'on' is on");
-  check('  a storage read that throws is off, not a crash',
-    /catch \{\s*return false;\s*\}/.test(FLAG), 'try/catch');
+  // ON BY DEFAULT SINCE 2026-09-26, AND THIS PAIR IS THE INVERSE OF WHAT IT WAS.
+  //
+  // The flag defaulted OFF because the tour is shown once and a panel is
+  // dismissed one at a time, and neither could be remembered:
+  // WeddingDetails.guidanceState did not exist. The owner declared it on
+  // 2026-09-25, so the guarantee is keepable and the default flips.
+  //
+  // It is an OFF switch now, not an on switch, and the direction matters: a
+  // storage read that throws must leave the system ON, because the alternative
+  // is a browser with blocked site data silently losing a feature.
+  check('  the flag is now an off switch — only \'off\' turns it off',
+    /getItem\(GUIDANCE_FLAG_KEY\) !== 'off'/.test(FLAG), "anything but 'off' is on");
+  check('  a storage read that throws leaves it ON, not broken',
+    /catch \{\s*return true;\s*\}/.test(FLAG), 'try/catch returns true');
 
   // ── The stop, named in the code and not only in a report ──────────────────
   check('the field the owner must add is named in the source',
     /GUIDANCE_STATE_FIELD = 'guidanceState'/.test(FLAG), 'guidanceState');
-  check('  and nothing writes it yet',
-    !/guidanceState:/.test(FLAG + PANEL + TOUR + CONTROL), 'no silent write to an undeclared field');
+  // IT IS WRITTEN NOW, and where matters: one hook owns the round trip, so
+  // there is one place that can refuse to write on a wedding that has not
+  // loaded. A component writing it directly would have to repeat that guard.
+  const HOOK = strip(read('src/hooks/useGuidanceState.js'));
+  check('  the field is written through one hook, not from a component',
+    /guidanceState: next/.test(HOOK)
+      && !/guidanceState:/.test(PANEL + TOUR + CONTROL),
+    'useGuidanceState owns the write');
 
   // THE PANEL, THE TOUR, THE CONTROL AND THE FLAG ARE CHECKED FIRST ON
   // PURPOSE. Without the content module there is no model to assert on, but
