@@ -1,5 +1,39 @@
 # Guest notes and Messages
 
+> **CLOSED 2026-09-27.** All four items merged; zero open PRs; `main` at
+> `79ff81db`, `test:ci` 3941/3941.
+>
+> | item | PR | merge commit |
+> |---|---|---|
+> | 1 — RSVP confirmation email | #861 | `bd16d4ab39b6684ac91bf00ca31a2f1df12f6b77` |
+> | 2 — guest note endpoints | #862 | `cf4a2562d9237874c09fdd823629ba5f1c22cc06` |
+> | 3 — "Send a note" on the guest site | #863 | `8c2785fadaa607bab6f7dd94287d43c726d1ccdb` |
+> | 4 — Messages, honest | **#865**, replacing #864 | `79ff81db2b406d220ad982fa32322fa2e66c1aca` |
+>
+> #864 carried item 4 and was **closed by GitHub, not merged**: it was based on
+> #862's branch, #862's squash-merge deleted that branch, and GitHub closes a
+> dependent PR rather than retargeting it. A closed PR's base cannot be changed.
+> The content was replayed onto `main` as #865 — the same seven files and the
+> same +356/-9. The rule that came out of it is in WORKFLOW.md: no stacked PRs.
+>
+> Three decisions taken during the run that outlived it:
+>
+> - **The email lives only in `encrypted_guest`.** Item 2 asked for `hashId` on
+>   the address; the owner's addendum then put the address inside the blob and
+>   named the expected live diff as exactly two fields. There is no hash column
+>   and adding one would be a schema change, so `hashId` is unused here.
+> - **The channel filter and channel labels never existed.** Item 4 asked for
+>   their removal; the pills were already status-only and no row rendered a
+>   channel. The guard asserts their absence so the ruling holds going forward.
+> - **Guest notes have no erasure path.** `GuestMessage.delete` stayed
+>   owner-scoped while `read` and `update` went to `null`, so an
+>   admin-key-written note cannot be deleted by anyone. Deliberately unchanged
+>   in this goal; recorded in `BASE44_PLATFORM_NOTES.md`'s right-to-erasure
+>   section and in `backlog.md`.
+>
+> The post-merge live pass on `la.jay06+smoke01` is **not** part of this closure
+> and had not run when the goal was closed — see the session report.
+
 Guests can already reach the couple by replying to the invitation (Reply-To is the couple on every guest-facing email — keep it that way). What is missing: a guest hears nothing after RSVPing, has no way to ask a question from the site itself, and the Messages page describes a route that was never built. Four items. Every item carries a "Mobile impact" line.
 
 ## 1. RSVP confirmation email

@@ -9,6 +9,10 @@ Every change goes through a feature branch → PR → Vercel preview → merge.
 **Every PR must be merged or closed in the same session it is opened.**  
 Never leave a session with an open PR. An open PR is work that has not shipped — it is easy to forget, and it creates stacking conflicts when new work starts on top of an unmerged base. If a PR genuinely can't merge yet, say so explicitly and decide what to do before moving on.
 
+**No stacked PRs.**  
+Squash-merge deletes the base branch and GitHub closes the dependent PR rather than retargeting it. Sequence conflicting changes as separate PRs replayed onto `main` after the first lands.  
+Measured 2026-09-27: #864 was based on #862's branch and was closed, unmerged, the moment #862 landed — and a closed PR's base cannot be changed. Because the parent was squashed, the orphaned branch no longer shared a merge base with `main`, so a fresh PR from it showed the parent's files re-applied (7 files became 17). It had to be replayed onto `main` as #865.
+
 **"Done" means merged to main AND verified on openinvite.com.au.**  
 Not "build passes." Not "PR opened." Not "Vercel preview looks good." Done = on main = live.
 
