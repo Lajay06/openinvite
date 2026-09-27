@@ -31,8 +31,26 @@
 >   in this goal; recorded in `BASE44_PLATFORM_NOTES.md`'s right-to-erasure
 >   section and in `backlog.md`.
 >
-> The post-merge live pass on `la.jay06+smoke01` is **not** part of this closure
-> and had not run when the goal was closed — see the session report.
+> **LIVE PASS COMPLETE, 2026-09-28**, on `la.jay06+smoke01` (owner-run). Note
+> submitted from the published site; it appeared in Messages with the sidebar
+> badge at 1; mark-read succeeded; reply sent and **delivered** to
+> `la.jay06+notiftest01`, Reply-To the smoke couple. Messages works end to end.
+>
+> That pass proved the one thing CI cannot: an admin-key `PUT` on a
+> `created_by_id: "anonymous"` row succeeds now that `GuestMessage.update` RLS is
+> `null`. Corroborated by two `/api/guest-note-update` 200s in the production
+> logs.
+>
+> It also found two defects, both fixed after this closure:
+>
+> - **The reply failed and the row printed `mailto:…`** — one cause, two
+>   symptoms: `isValidEmail` accepted a scheme prefix, so an address pasted from
+>   a mailto link was stored and then refused by Resend. Fixed in **#866**
+>   (`9d67009d`), which also added the no-token RSVP gate's note form.
+> - **The email said "The couple" instead of the names** — `Messages.jsx` sent
+>   `Invitation.couple_names`, a different record from the wedding, and the
+>   server never resolved them. Fixed in **#867**, resolving server-side with
+>   `coupleDisplayName()`.
 
 Guests can already reach the couple by replying to the invitation (Reply-To is the couple on every guest-facing email — keep it that way). What is missing: a guest hears nothing after RSVPing, has no way to ask a question from the site itself, and the Messages page describes a route that was never built. Four items. Every item carries a "Mobile impact" line.
 
