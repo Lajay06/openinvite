@@ -9,6 +9,13 @@ only names a topic is a reminder, not a task, and reminders rot.
 
 ---
 
+## Unread rsvpCta values
+
+19 universe rsvpCta values are unread since #866 (button is global "Send my
+link"). Remove in a copy-cleanup pass, with the ruling doc amended, not before.
+
+---
+
 ## British spellings outside the diff-based guard
 
 British spellings outside the diff-based guard: `'display is honoured'` in
