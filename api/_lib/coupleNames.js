@@ -71,3 +71,30 @@ export function coupleNameParts(wedding, f1 = '', f2 = '') {
   const [s1 = '', s2 = ''] = stored.split(' & ').map(s => s.trim());
   return [s1 || f1, s2 || f2];
 }
+
+/**
+ * Just the first names, for copy that speaks TO a guest ABOUT the couple —
+ * "A question for Ada & Alan?" rather than "A question for Ada Lovelace &
+ * Alan Turing?". A surname in a sentence addressed to a wedding guest reads
+ * like a form, not like an invitation.
+ *
+ * FIRST WORD, NOT SOMETHING CLEVERER. A stored partner name is whatever the
+ * couple typed in one box, so "Mary-Jane" is one word and stays whole, "Ada
+ * Lovelace" yields "Ada", and "The Smiths" yields "The" — which is why this
+ * is only ever used in a sentence beside the full names the page already
+ * shows, never as the only naming of the couple on a surface.
+ *
+ * Falls back all the way to coupleDisplayName's own fallback, so a wedding
+ * that names nobody produces a sentence with no name in it rather than a
+ * sentence with a gap.
+ *
+ * @param {object} wedding
+ * @param {string} [fallback='']
+ * @returns {string} e.g. "Ada & Alan", or "Ada" when only one name is known
+ */
+export function coupleFirstNames(wedding, fallback = '') {
+  const firsts = coupleNameParts(wedding)
+    .map(n => String(n || '').trim().split(/\s+/)[0])
+    .filter(Boolean);
+  return firsts.length > 0 ? firsts.join(' & ') : coupleDisplayName(wedding, fallback);
+}

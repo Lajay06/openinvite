@@ -7,6 +7,7 @@ import { resolveColors, resolveTypography, resolveUniverseConfig, isMotionEnable
 import { formSurfaces } from '@/lib/surfaceTint';
 import { loadFontFamilies, familiesFromGoogleSpec } from '@/lib/selfHostedFonts';
 import SectionReveal from '@/components/guest-website/SectionReveal';
+import GuestNoteForm from '@/components/guest-website/GuestNoteForm';
 import { buildIcs, buildGoogleCalendarUrl } from '@/lib/calendarLinks';
 import { formatWeddingDate } from '@/lib/guestDate';
 import { greetableFirstName } from '@/lib/guestGreeting';
@@ -861,6 +862,23 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
             </button>
           </div>
         </SectionReveal>
+
+        {/* AFTER THE REPLY, NOT BESIDE IT. A note box on the form itself would
+            compete with the one question the page is asking; here it catches
+            the guest who has just answered and then thought of something.
+            PREFILLED, because this guest arrived on a token and the page
+            already knows their name and address — asking again would be the
+            product forgetting who it just recorded. */}
+        <div style={{ marginTop: 48, paddingTop: 36, borderTop: `1px solid ${theme.accent}22` }}>
+          <GuestNoteForm
+            weddingDetails={wedding}
+            theme={theme}
+            typography={typography}
+            universeConfig={universeConfig}
+            prefillName={guest?.name || ''}
+            prefillEmail={guest?.email || ''}
+          />
+        </div>
       </PageShell>
     );
   }

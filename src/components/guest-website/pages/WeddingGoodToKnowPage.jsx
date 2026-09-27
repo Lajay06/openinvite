@@ -3,6 +3,7 @@ import SectionReveal from '../SectionReveal';
 import { OptionAccordion, OptionAccordionSection } from '@/components/shared/OptionAccordion';
 import { isMotionEnabled } from '@/lib/universeStyling';
 import { visibleSections } from '@/lib/goodToKnow';
+import GuestNoteForm from '../GuestNoteForm';
 
 /**
  * WeddingGoodToKnowPage — the guest-facing side of Guest Suite → Good to know
@@ -96,6 +97,20 @@ export default function WeddingGoodToKnowPage({ weddingDetails, theme, typograph
             </p>
           </SectionReveal>
         )}
+
+        {/* A QUESTION THIS PAGE DID NOT ANSWER. Good to know is where a guest
+            comes to find out about children, dress code and gifts — so it is
+            also where they arrive at the one thing the couple did not think to
+            write down. No prefill here: a visitor reading the site has not
+            necessarily arrived on a token, so there is nobody to recognize. */}
+        <div style={{ marginTop: sections.length > 0 ? 56 : 24, paddingTop: 40, borderTop: `1px solid ${theme.accent}22` }}>
+          <GuestNoteForm
+            weddingDetails={weddingDetails}
+            theme={theme}
+            typography={typography}
+            universeConfig={universeConfig}
+          />
+        </div>
       </div>
     </div>
   );

@@ -6,4 +6,4 @@
  * src/lib/claimSlug.js's canonicalSlug re-export. See api/_lib/coupleNames.js
  * for why the field has an owner at all.
  */
-export { coupleDisplayName, coupleNameParts } from '../../api/_lib/coupleNames.js';
+export { coupleDisplayName, coupleNameParts, coupleFirstNames } from '../../api/_lib/coupleNames.js';
