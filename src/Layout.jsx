@@ -19,7 +19,7 @@ import NotificationBell from "./components/layout/NotificationBell";
 import CollaborateModal from "./components/layout/CollaborateModal";
 import AvaChatPod from "./components/layout/AvaChatPod";
 import { base44 } from '@/api/base44Client';
-import { getMyWeddingDetails, getMyInvitation, getMyRecords } from '@/lib/resolveMyWedding';
+import { getMyWeddingDetails, getMyInvitation } from '@/lib/resolveMyWedding';
 import { createPageUrl } from '@/utils';
 import { Toaster } from 'react-hot-toast';
 import { daysUntilWedding, countdownLabel } from '@/lib/weddingCountdown';
@@ -75,6 +75,28 @@ function ContentAreaFallback() {
 // Messages.jsx after marking a message read. A prefix match
 // (queryClient.invalidateQueries({ queryKey: [LAYOUT_QUERY_KEY] }))
 // invalidates every variant regardless of the isCollaborating suffix.
+/**
+ * The couple's own guest notes, for the unread count on the sidebar.
+ *
+ * Fails SOFT to an empty list: a sidebar that renders no badge is a much
+ * better outcome than a layout that throws, and Promise.allSettled below
+ * would swallow a rejection into the same empty list anyway — this just makes
+ * that explicit and logs it.
+ */
+async function fetchGuestNotes() {
+  try {
+    const res = await fetch('/api/guest-notes', {
+      headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
+    });
+    if (!res.ok) return [];
+    const { notes } = await res.json();
+    return notes || [];
+  } catch (err) {
+    console.warn('[Layout] Could not read guest notes for the unread count:', err.message);
+    return [];
+  }
+}
+
 export const LAYOUT_QUERY_KEY = 'layoutData';
 
 const noLayoutPages = [
@@ -444,7 +466,13 @@ function LayoutShell({ children, currentPageName }) {
         return { user: currentUser, unreadMessagesCount: 0, weddingName: '', weddingDetails: null };
       }
       const [messagesResult, invitationResult, weddingDetailsResult] = await Promise.allSettled([
-        getMyRecords('GuestMessage'),
+        // NOT getMyRecords('GuestMessage'). Every note is created by
+        // api/guest-note-submit.js with the admin key on behalf of an anonymous
+        // guest, and Base44 stamps those rows created_by_id: "anonymous" — so a
+        // created_by_id-scoped query returns nothing and this count was
+        // permanently zero. api/guest-notes.js scopes by the caller's own
+        // wedding_id instead, the same read Messages.jsx now uses.
+        fetchGuestNotes(),
         getMyInvitation(),
         getMyWeddingDetails(),
       ]);
@@ -467,6 +495,10 @@ function LayoutShell({ children, currentPageName }) {
   });
 
   const user = layoutData?.user ?? null;
+  // COMPUTED SINCE THE NOTIFICATIONS WORK AND RENDERED NOWHERE. The count was
+  // in this object and no component ever received it, so a couple with four
+  // unread notes saw the same sidebar as a couple with none.
+  const unreadMessagesCount = layoutData?.unreadMessagesCount ?? 0;
   const weddingName = layoutData?.weddingName ?? '';
   const weddingDetails = layoutData?.weddingDetails ?? null;
 
@@ -674,6 +706,7 @@ function LayoutShell({ children, currentPageName }) {
           onOpenTips={() => setShowTipsModal(true)}
           topOffset={contentTopOffset}
           collaboratorPermissions={collaboratorPermissions}
+          unreadMessagesCount={unreadMessagesCount}
         />
       </div>
 
@@ -720,6 +753,7 @@ function LayoutShell({ children, currentPageName }) {
             onClose={() => setMobileMenuOpen(false)}
             onCollaborate={() => { setMobileMenuOpen(false); setShowCollaborateModal(true); }}
             collaboratorPermissions={collaboratorPermissions}
+            unreadMessagesCount={unreadMessagesCount}
           />
         </SheetContent>
       </Sheet>
