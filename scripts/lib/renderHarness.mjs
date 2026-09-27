@@ -84,6 +84,7 @@ import { assertSeedMatchesSchemas } from './seedSchema.mjs';
 import { CONTRACTS } from './stubContracts.mjs';
 import { blockRemoteImages } from './blockRemoteImages.mjs';
 import { pickGuestSafeFields } from '../../api/_lib/guestSafeWedding.js';
+import { decorateGuestNote } from '../../api/_lib/guestNotePii.js';
 const DAY = 86400000;
 const iso = (offsetDays) => new Date(Date.now() + offsetDays * DAY).toISOString();
 
@@ -190,7 +191,11 @@ export const SEED = {
   // unstamped row white-screens the page behind the error boundary. The seed
   // omitted it and the page rendered its error state, not its list.
   GuestMessage: [
-    { id:'gm1', guest_id:'g1', guest_name:'Grace Hopper', message:'Cannot wait!',    read:false, replied:false, created_date: iso(-3), created_by:'fixture@example.com' },
+    // THE ADDRESS CARRIES THE DEFECT THE LIVE PASS FOUND, on purpose: a value
+    // pasted out of a mailto link. decorateGuestNote normalizes it on read, so
+    // a guard can drive the reply and assert the couple's email goes to the
+    // real address rather than to "mailto:…", which is what Resend refused.
+    { id:'gm1', guest_id:'g1', guest_name:'Grace Hopper', guest_email:'mailto:grace@example.com', message:'Cannot wait!',    read:false, replied:false, created_date: iso(-3), created_by:'fixture@example.com' },
     { id:'gm2', guest_name:'Alan Turing',  message:'Congratulations', read:true,  replied:true,  created_date: iso(-1), reply_sent_at: iso(-1), created_by:'fixture@example.com' },
   ],
   // ONE WAITING AND ONE ALREADY ANSWERED. A page whose review controls only
@@ -608,7 +613,14 @@ function resolveStub(url, seed, user, json, onEntity, fail = () => json(null), r
     // `notes` off that object, gets undefined, and renders its empty state with
     // every note seeded — the sixth stub-vs-reality mismatch of that class in
     // this file, and the first one a catch-all would have caused silently.
-    if (/\/api\/guest-notes/.test(url))       return json({ notes: seed.GuestMessage ?? [] });
+    // THROUGH decorateGuestNote, THE WAY THE ENDPOINT RETURNS THEM.
+    //
+    // api/guest-notes.js maps every row through it: that is where the address
+    // and the message come out of encrypted_guest, and — since 2026-09-27 —
+    // where an address stored with a `mailto:` prefix is normalized. A stub
+    // that returned the raw rows would hand the page a shape the endpoint never
+    // produces, and the reply path's own fix would be untestable here.
+    if (/\/api\/guest-notes/.test(url))       return json({ notes: (seed.GuestMessage ?? []).map(decorateGuestNote) });
     if (/\/api\/guest-/.test(url))            return json({ ok: true });
     return json([]);
 }

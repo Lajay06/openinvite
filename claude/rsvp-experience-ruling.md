@@ -10,6 +10,24 @@ ticket that consumes it opens."
 
 ## `rsvpIntro` — 19 lines, verbatim as accepted
 
+> **AMENDED 2026-09-28 — `bali` only, owner ruling.** Reviewing all 19 lines
+> beside the gate's new global functional sentence ("Enter the email your
+> invitation was sent to and we'll send your link again."), the owner struck one:
+>
+> > "Universe intros: strike bali only. Replace its rsvpIntro with, verbatim:
+> > 'Say yes right here. Leave the address they have for you and your own link
+> > will make its way over.' All other 18 stay."
+>
+> `bali`'s row below carries the new line. The other 18 are unchanged from the
+> 2026-08-24 acceptance. The previous bali line was:
+>
+> > Say yes right here. Leave whichever address reaches you best and your own
+> > link will make its way over to you.
+>
+> This is an amendment to the accepted set, not a correction of the code to the
+> doc or the doc to the code — the guard's pre-mortem above names that hazard,
+> and the protection is that this diff is reviewable and dated.
+
 Shown on the RSVP page to a visitor the site does not recognise. Replaces the
 lost-property framing the owner reported as "not fixed and talks about
 resending".
@@ -21,7 +39,7 @@ resending".
 | `capri` | This is the part where you say yes! Type in the email the couple has for you and your own link comes straight back. |
 | `marrakech` | Replies are taken here. The email the couple holds for you is all we need, and your own link is sent onward, meant for no one else. |
 | `brooklyn` | RSVP here. Enter the address they'd send to. Your link comes back. |
-| `bali` | Say yes right here. Leave whichever address reaches you best and your own link will make its way over to you. |
+| `bali` | Say yes right here. Leave the address they have for you and your own link will make its way over. |
 | `paris` | Your reply belongs here. The email the couple has for you is enough, and your own link will follow, gladly. |
 | `capetown` | We would love your reply here. Share the email the couple has for you, and your own link will be sent along with our thanks. |
 | `mykonos` | Answering is quick. Give the address they have for you and your link comes straight back. |

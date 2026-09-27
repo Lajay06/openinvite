@@ -196,7 +196,13 @@ export async function runGuestNoteEndpoints() {
   r.push(stubIdx > -1 && catchAllIdx > -1 && stubIdx < catchAllIdx
     ? pass('the guest-notes stub sits above the /api/guest- catch-all')
     : fail('the guest-notes stub sits above the /api/guest- catch-all', 'stub < catch-all', `stub@${stubIdx} catch-all@${catchAllIdx}`));
-  has('the stub returns the { notes } envelope', HARNESS, 'json({ notes: seed.GuestMessage');
+  has('the stub returns the { notes } envelope', HARNESS, 'json({ notes: (seed.GuestMessage');
+  // AND DECORATES LIKE THE ENDPOINT DOES. api/guest-notes.js maps every row
+  // through decorateGuestNote — that is where the address and the message come
+  // out of the blob, and where a `mailto:` prefix is normalized. A stub that
+  // returned raw rows would hand the page a shape the endpoint never produces,
+  // which is the mismatch class this harness file documents six times over.
+  has('  through decorateGuestNote, the same as the endpoint', HARNESS, '.map(decorateGuestNote)');
   has('a contract asserts that envelope', CONTRACTS, "match: '/api/guest-notes'");
 
   // ── 8. the crypto, driven for real ───────────────────────────────────────

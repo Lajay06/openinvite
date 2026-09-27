@@ -29,6 +29,7 @@
  */
 
 import { encryptPayload, decryptPayload } from './questionnaireCrypto.js';
+import { normalizeEmail } from './security.js';
 
 /**
  * @param {{email?: string, message?: string}} fields
@@ -70,11 +71,19 @@ export function readGuestNoteBlob(blob) {
 export function decorateGuestNote(row) {
   const blob = readGuestNoteBlob(row?.encrypted_guest);
   const { encrypted_guest: _dropped, ...rest } = row || {};
+  // NORMALIZED ON THE WAY OUT, NOT ONLY ON THE WAY IN.
+  //
+  // A row written before the write path normalized can hold "mailto:a@b.com",
+  // and the couple has no way to edit a guest's address — so fixing only the
+  // write path would leave every already-stored note permanently unreplyable.
+  // Doing it here repairs those rows on read, with no migration and nothing
+  // rewritten at rest. Idempotent for every row that was already clean.
+  const rawEmail = blob?.email ?? rest.guest_email ?? '';
   return {
     ...rest,
     // BLOB FIRST, PLAINTEXT SECOND. Every row this app writes has the blob and
     // an empty column; a pre-feature row has the column and no blob.
-    guest_email: blob?.email ?? rest.guest_email ?? '',
+    guest_email: normalizeEmail(rawEmail),
     message: blob?.message ?? rest.message ?? '',
   };
 }

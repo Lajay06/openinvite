@@ -6,8 +6,11 @@
  * (tests/persistence/guest-note-form.mjs) proves the copy and the placement
  * rules; this proves the four things only a browser can:
  *
- *   IT IS PAINTED, on both surfaces — the bottom of Good to know, and the
- *   bottom of the RSVP page once a reply is actually in. The RSVP one is
+ *   IT IS PAINTED, on all three surfaces — the bottom of Good to know, the
+ *   bottom of the RSVP page once a reply is actually in, and beneath the
+ *   NO-TOKEN RSVP gate, which is what a guest sees when they open the RSVP tab
+ *   without an invitation link. No RSVP test covered that arrival at all before
+ *   this one: every existing pass either carried a token or drove the form. The RSVP one is
  *   reached by DRIVING THE FLOW (tap yes, submit), not by seeding a done
  *   state, because the requirement is "after a reply is submitted" and a
  *   seeded state would not prove the step it belongs to.
@@ -133,6 +136,61 @@ for (const [w, h] of [[390, 844], [1440, 950]]) {
       check('  the form keeps a side gutter', !!box && box.x >= 16, box ? `x=${Math.round(box.x)}` : 'no box');
       check('  and never runs wider than the viewport',
         !!box && box.width <= fits.win, box ? `${Math.round(box.width)}px` : 'no box');
+    }
+    await ctx.close();
+  }
+
+  // ── the no-token RSVP gate ────────────────────────────────────────────────
+  //
+  // A GUEST WITH NO LINK. This is the retrieve-my-invitation screen, and until
+  // now it offered one thing: an email box. If the address was not on the list,
+  // or the question was something else, it answered nothing at all.
+  {
+    const ctx = await seededContext(browser, { width: w, height: h });
+    const page = await ctx.newPage();
+    await page.goto(`${BASE}/w/${PUBLISHED_WEDDING.slug}/rsvp`,
+      { waitUntil: 'domcontentloaded', timeout: 60000 }).catch(() => {});
+    await page.waitForTimeout(4500);
+
+    const text = await page.evaluate(() => document.body.innerText || '');
+    check('  the no-token gate rendered', /RSVP/.test(text) && /YOUR EMAIL|Your email/i.test(text),
+      'the retrieve-link screen');
+
+    const form = page.locator('[data-guest-note-form]');
+    const painted = await form.count();
+    check('  the note form is painted beneath the gate', painted === 1, `${painted} found`);
+
+    if (painted === 1) {
+      await form.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(600);
+
+      // THE GATE'S OWN HEADING, not the after-reply one. A guest here may be
+      // looking for their invitation rather than asking a question.
+      check(`  with the gate's own heading`,
+        text.includes(`Can't find your invitation, or have a question for ${FIRSTS}?`),
+        `looking for "Can't find your invitation, or have a question for ${FIRSTS}?"`);
+      check('  and not the after-reply heading',
+        !text.includes(`A question for ${FIRSTS}?`), 'one heading, not both');
+
+      // NOBODY HAS BEEN RECOGNISED ON THIS PATH.
+      check('  nothing is prefilled on the gate',
+        (await form.locator('input').first().inputValue()) === ''
+        && (await form.locator('input[type=email]').inputValue()) === '',
+        'no token, no guess');
+
+      const refusal = await measureRefusal(page, form);
+      check('  the button refuses an empty note here too', refusal.empty === true, 'disabled');
+      check('  and accepts a complete one', refusal.complete === false, 'enabled');
+
+      const fits = await page.evaluate(() => ({
+        doc: document.documentElement.scrollWidth,
+        win: window.innerWidth,
+      }));
+      check('  the gate page does not scroll sideways', fits.doc <= fits.win,
+        `${fits.doc} <= ${fits.win}`);
+      const box = await form.boundingBox();
+      check('  the form keeps a side gutter on the gate', !!box && box.x >= 16,
+        box ? `x=${Math.round(box.x)}` : 'no box');
     }
     await ctx.close();
   }

@@ -614,6 +614,22 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
 
+      # The owner's live pass found the reply failing on an address pasted out of
+      # a mailto link. This drives the reply end to end against a stubbed sender
+      # and reads the recipient off the actual request body.
+      - name: The couple's reply reaches the guest's real address
+        run: |
+          npx vite preview --port 4220 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4220 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4220 npm run test:messages-reply
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       # Select is the answer, so Select advances — and keeps the answer.
       - name: The onboarding universe picker advances on Select
         run: |

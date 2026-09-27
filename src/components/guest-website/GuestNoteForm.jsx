@@ -28,6 +28,12 @@ import { coupleFirstNames } from '@/lib/coupleNames';
  * souvenir vocabulary: a universe evokes its place through type and palette,
  * never through the words in a form label.
  *
+ * THE HEADING IS OVERRIDABLE, as a function of the first names rather than a
+ * finished string, so a caller cannot accidentally hard-code a couple's names
+ * into copy. The default is the after-reply wording; the no-token RSVP gate
+ * passes its own, because a guest who landed there may be looking for their
+ * invitation rather than asking a question.
+ *
  * FIRST NAMES, NOT FULL ONES. "A question for Ada Lovelace & Alan Turing?"
  * reads like a form; the guest is on the couple's own site and knows who they
  * are. See coupleFirstNames.
@@ -42,7 +48,7 @@ const STATUS = { idle: 'idle', sending: 'sending', sent: 'sent' };
 
 export default function GuestNoteForm({
   weddingDetails, theme, typography, universeConfig,
-  prefillName = '', prefillEmail = '',
+  prefillName = '', prefillEmail = '', heading,
 }) {
   const slug = weddingDetails?.slug;
   const firstNames = coupleFirstNames(weddingDetails, 'the couple');
@@ -141,7 +147,7 @@ export default function GuestNoteForm({
     outline: 'none',
   };
 
-  const heading = {
+  const headingStyle = {
     fontFamily: typography.headingFont,
     fontWeight: typography.headingWeight,
     fontStyle: typography.headingStyle || 'normal',
@@ -178,7 +184,7 @@ export default function GuestNoteForm({
   return (
     <SectionReveal {...reveal}>
       <div style={{ maxWidth: 460, margin: '0 auto' }} data-guest-note-form>
-        <h2 style={heading}>A question for {firstNames}?</h2>
+        <h2 style={headingStyle}>{heading ? heading(firstNames) : `A question for ${firstNames}?`}</h2>
         <p style={{ ...body, margin: '0 0 24px' }}>
           Send them a note and they will reply to your email.
         </p>
