@@ -54,6 +54,14 @@ export const CONTRACTS = [
     ok: (b) => b && 'guest' in b && 'wedding' in b,
     want: '{ guest, wedding }' },
 
+  // ORDER MATTERS FOR THIS ONE. The harness answers /api/guest-* with a bare
+  // { ok: true } catch-all, so a /api/guest-notes stub placed below it is dead
+  // code that reads as present. This contract fails if that happens.
+  { match: '/api/guest-notes',
+    cite: 'api/guest-notes.js — res.status(200).json({ notes })',
+    ok: (b) => b && Array.isArray(b.notes),
+    want: '{ notes: [...] }' },
+
   { match: '/api/wedding-attendees',
     cite: 'api/wedding-attendees.js — res.status(200).json({ attendees, circle })',
     ok: (b) => b && Array.isArray(b.attendees) && Array.isArray(b.circle),
