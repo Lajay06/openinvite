@@ -732,6 +732,23 @@ client-supplied one.** This closes off the simplest fix direction
 entirely — there is no way to make these rows "really" owned by the
 wedding owner at write time.
 
+**Extended to `GuestMessage`, 2026-09-27, by a deliberate owner change.** The
+account owner added `wedding_id` and `encrypted_guest` to `GuestMessage`,
+emptied its `required`, and set `read` and `update` RLS to `null` so
+`api/guest-note-submit.js` could write a guest's note and the couple could
+actually read it back. `delete` was deliberately left at
+`{created_by_id: "{{user.id}}"}`. So the gap above now covers guest notes as
+well: a note is stamped `created_by_id: "anonymous"` at create, no real session
+can match that, and **no one can delete an individual note through the
+product** — not the couple whose wedding it belongs to, not the admin key.
+Unlike an RSVP or a poll vote, a note is free text a guest typed, so a "please
+delete what I wrote" request is more likely here than anywhere else in the app.
+The fix direction is unchanged and now also unblocked, because the field it
+needs exists: `verifyBase44User` + resolve the caller's own wedding +
+admin-key `DELETE` every `GuestMessage` matching `{wedding_id: caller's own,
+id}`. Not built — there is no UI for it yet and the owner has not asked for
+one. Recorded so the next person does not rediscover it from a silent 404.
+
 **Actual fix direction, given the above — the only one left**: don't try
 to fix ownership via RLS at all. Route the mutation itself through a
 server-mediated endpoint that does the ownership check in application
