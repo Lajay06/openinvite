@@ -71,11 +71,7 @@
       "description": "Optional AES-256-GCM ciphertext of the guest's identifying fields, for privacy-preserving storage of guest PII associated with this message."
     }
   },
-  "required": [
-    "guest_name",
-    "guest_email",
-    "message"
-  ],
+  "required": [],
   "rls": {
     "create": null,
     "read": null,
