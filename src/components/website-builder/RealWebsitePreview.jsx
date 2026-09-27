@@ -36,6 +36,7 @@ import WeddingFAQPage from '@/components/guest-website/pages/WeddingFAQPage';
 import WeddingStayPage from '@/components/guest-website/pages/WeddingStayPage';
 import WeddingTransportPage from '@/components/guest-website/pages/WeddingTransportPage';
 import WeddingExperiencePage from '@/components/guest-website/pages/WeddingExperiencePage';
+import WeddingGoodToKnowPage from '@/components/guest-website/pages/WeddingGoodToKnowPage';
 
 import { coupleDisplayName } from '@/lib/coupleNames';
 import { withSampleContent } from '@/lib/sampleContent/mergeSample';
@@ -52,6 +53,12 @@ const PAGE_COMPONENTS = {
   'stay':         WeddingStayPage,
   'transport':    WeddingTransportPage,
   'experience':   WeddingExperiencePage,
+  // GOOD TO KNOW WAS MISSING FROM THIS MAP AND PRESENT IN THE NAV. The nav
+  // above offers it whenever visibleSections() finds anything (line ~157), and
+  // picking it fell through to `|| WeddingHomePage` — so a couple checking
+  // their policies on the canvas was shown the HOME page and no error. Editors
+  // show what guests see, so it is listed here with the rest.
+  'good-to-know': WeddingGoodToKnowPage,
 };
 
 export default function RealWebsitePreview({ details: ownDetails, currentPage = 'home', onNavigate, editable = false, onRequestInsert, onMoveBlock, onDeleteBlock, onSelectBlock, selectedBlockId, replayEntranceKey }) {

@@ -569,6 +569,22 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
 
+      # A guest with a question now has somewhere to put it. Both placements are
+      # driven, not seeded: the RSVP one is reached by tapping yes and
+      # submitting, because the requirement is "after a reply is submitted".
+      - name: The note form renders on both guest surfaces, at 390 and 1440
+        run: |
+          npx vite preview --port 4217 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4217 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4217 npm run test:guest-note-render
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       - name: The celebration accordions show their state in their border
         run: |
           npx vite preview --port 4195 --strictPort &
