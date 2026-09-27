@@ -242,6 +242,7 @@ export const ENTITY_FIELDS = {
   "GuestMessage": {
     "fields": [
       "channel",
+      "encrypted_guest",
       "guest_email",
       "guest_id",
       "guest_name",
@@ -251,14 +252,11 @@ export const ENTITY_FIELDS = {
       "replied",
       "reply",
       "reply_sent_at",
+      "wedding_id",
       "whatsapp_contact_date",
       "whatsapp_contacted"
     ],
-    "required": [
-      "guest_email",
-      "guest_name",
-      "message"
-    ],
+    "required": [],
     "enums": {
       "channel": [
         "in_app",

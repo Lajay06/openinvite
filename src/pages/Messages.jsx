@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { FilterPill } from '@/components/shared/TableToolbar';
 import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { base44 } from '@/api/base44Client';
 import { getMyRecords, getMyInvitation } from '@/lib/resolveMyWedding';
 import { toE164 } from '@/lib/phoneE164';
 import { LAYOUT_QUERY_KEY } from '@/Layout';
@@ -28,7 +27,37 @@ const formatStored = (value, pattern) => {
 };
 
 
-const GuestMessage = base44.entities.GuestMessage;
+/**
+ * NOTES COME FROM AN ENDPOINT, NOT FROM base44.entities.GuestMessage.
+ *
+ * Every note is created by api/guest-note-submit.js with the admin key on
+ * behalf of an anonymous guest, and Base44 stamps those rows
+ * created_by_id: "anonymous" — its own value, which no real session can ever
+ * match. So getMyRecords('GuestMessage'), which filters {created_by_id: me.id},
+ * returned nothing and could never have returned anything; and an update from
+ * here 403'd, which is the same defect that broke the song-request review panel
+ * until 2026-08-17. api/guest-notes.js resolves the caller's own wedding
+ * server-side and scopes by wedding_id instead, and decrypts the address and
+ * message text out of encrypted_guest on the way — the key for that is derived
+ * from BASE44_ADMIN_KEY, which the browser can never hold.
+ */
+const authHeaders = () => ({
+  'Content-Type': 'application/json',
+  Authorization: `Bearer ${localStorage.getItem('base44_access_token')}`,
+});
+
+/** One note write — mark read/unread, or record a reply. Throws on a refusal. */
+async function updateNote(noteId, body) {
+  const res = await fetch('/api/guest-note-update', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ noteId, ...body }),
+  });
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({}));
+    throw new Error(payload.error || 'Could not update that note');
+  }
+}
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -85,11 +114,16 @@ export default function MessagesPage() {
 
   const loadMessages = async () => {
     try {
-      const data = await getMyRecords('GuestMessage', '-created_date');
+      const res = await fetch('/api/guest-notes', { headers: authHeaders() });
+      if (!res.ok) throw new Error('Could not load notes');
+      const { notes } = await res.json();
+      const data = notes || [];
       setMessages(data);
-      const unread = data.filter(msg => !msg.read);
-      for (const msg of unread) {
-        await GuestMessage.update(msg.id, { ...msg, read: true });
+      // OPENING THE PAGE IS READING THEM, as it always was. One request per
+      // unread note rather than one client write per unread note — same
+      // behavior, through the only path that can actually write the row.
+      for (const msg of data.filter(m => !m.read)) {
+        await updateNote(msg.id, { action: 'read' }).catch(() => {});
       }
       // AUDIT_2026-07.md S3/S4: the top bar's bell badge (Layout.jsx) reads
       // GuestMessage.read status through a cached React Query result —
@@ -148,9 +182,8 @@ export default function MessagesPage() {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error || 'Failed to send reply email');
       }
-      await GuestMessage.update(messageId, {
-        ...message, reply: replyText, replied: true, reply_sent_at: new Date().toISOString(),
-      });
+      // AFTER the email, never before: reply_sent_at means the email went out.
+      await updateNote(messageId, { action: 'reply', replyText });
       setReplyingTo(null);
       setReplyText('');
       toast.success('Reply sent', { id: tid });
@@ -165,7 +198,7 @@ export default function MessagesPage() {
   const toggleRead = async (messageId) => {
     try {
       const message = messages.find(msg => msg.id === messageId);
-      await GuestMessage.update(messageId, { ...message, read: !message.read });
+      await updateNote(messageId, { action: message.read ? 'unread' : 'read' });
       loadMessages();
     } catch (error) {
       console.error('Error updating message:', error);
@@ -269,7 +302,7 @@ export default function MessagesPage() {
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
                     <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                      {message.guest_name}
+                      {message.guest_name || 'A guest'}
                     </span>
                       <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: message.read ? 'rgba(10,10,10,0.06)' : 'rgba(224,53,83,0.1)', color: message.read ? '#444444' : '#E03553', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                         {message.read ? 'Read' : 'New'}

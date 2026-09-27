@@ -601,6 +601,14 @@ function resolveStub(url, seed, user, json, onEntity, fail = () => json(null), r
     // needed this route paid the same diagnosis. It is stubbed once, here.
     if (/\/api\/rsvp-lookup/.test(url))       return json({ guest: RSVP_GUEST, wedding: PUBLISHED_WEDDING });
     if (/\/api\/wedding-attendees/.test(url)) return json({ attendees: [], circle: [] });
+    // THE ENVELOPE IS { notes }, and this MUST sit above the /api/guest-
+    // catch-all below. api/guest-notes.js ends in res.json({ notes }) and
+    // Messages.jsx destructures that name; the catch-all answers every
+    // /api/guest-* path with { ok: true }, so without this line the page reads
+    // `notes` off that object, gets undefined, and renders its empty state with
+    // every note seeded — the sixth stub-vs-reality mismatch of that class in
+    // this file, and the first one a catch-all would have caused silently.
+    if (/\/api\/guest-notes/.test(url))       return json({ notes: seed.GuestMessage ?? [] });
     if (/\/api\/guest-/.test(url))            return json({ ok: true });
     return json([]);
 }
