@@ -61,21 +61,21 @@
       "type": "string",
       "format": "date-time",
       "description": "When the couple's reply was actually emailed to the guest via Resend (api/send-guest-reply.js) — distinct from 'replied', which just means the reply text was saved"
+    },
+    "wedding_id": {
+      "type": "string",
+      "description": "Optional link to the WeddingDetails record this message belongs to."
+    },
+    "encrypted_guest": {
+      "type": "string",
+      "description": "Optional AES-256-GCM ciphertext of the guest's identifying fields, for privacy-preserving storage of guest PII associated with this message."
     }
   },
-  "required": [
-    "guest_name",
-    "guest_email",
-    "message"
-  ],
+  "required": [],
   "rls": {
     "create": null,
-    "read": {
-      "created_by_id": "{{user.id}}"
-    },
-    "update": {
-      "created_by_id": "{{user.id}}"
-    },
+    "read": null,
+    "update": null,
     "delete": {
       "created_by_id": "{{user.id}}"
     }
