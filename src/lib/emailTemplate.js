@@ -539,3 +539,134 @@ ${markCellHtml}
 
   return { html, text };
 }
+
+/**
+ * THE RSVP CONFIRMATION — the one email a guest gets after replying.
+ *
+ * ── WHY IT DID NOT EXIST ───────────────────────────────────────────────────
+ *
+ * api/rsvp-submit.js wrote the RsvpResponse rows, notified the couple, and
+ * returned `{ ok: true }`. The guest heard nothing — no acknowledgement that
+ * the reply landed, and no record in their inbox of what they said. So the
+ * only way to check was to open the link again and hope the form remembered.
+ *
+ * ── WHY IT IS ITS OWN FUNCTION AND NOT A TYPE ON THE INVITATION ────────────
+ *
+ * renderInvitationEmail is the couple's outbound voice: a banner, the couple's
+ * names as the headline, their personal message, an RSVP button. This is a
+ * receipt. It has no banner, no CTA, and the headline is not the couple's
+ * names — it is what the guest just said. Adding it as a TYPE_CONFIG entry
+ * would have meant threading `showBanner: false`, `showRsvp: false`,
+ * `showEvents: false` and a different headline through a function the invite
+ * path depends on, days after that path last changed.
+ *
+ * It shares what should be shared — the universe's palette, fonts and divider,
+ * through the same helpers — so it looks like the couple's other email without
+ * being built out of it.
+ *
+ * ── THE COPY IS THE OWNER'S, VERBATIM ──────────────────────────────────────
+ *
+ * Goal 2026-09-27 item 1. Do not rewrite it to suit a guard; the one edit made
+ * to it was the owner's own (see the US-English ruling on dressCode.js).
+ *
+ * "Skip the middle line for any event with no date" — an event line reading
+ * "Ceremony · · The Old Observatory" is worse than no line, and a guest who
+ * replied to something undated has nothing to be reminded of.
+ *
+ * @param {object} opts
+ * @param {boolean} opts.attending  did they say yes to anything
+ * @param {string} [opts.eventName] / [opts.date] / [opts.venueName]
+ * @returns {{ subject: string, html: string, text: string }}
+ */
+export function renderRsvpConfirmationEmail({
+  universeId,
+  coupleNames,
+  guestName,
+  attending,
+  eventName,
+  date,
+  venueName,
+  design,
+}) {
+  const style = getUniverseEmailStyle(universeId);
+  const pal = emailPalette(style, normalizeVariant(design?.paletteVariant));
+  const { pageBg, cardBg, ink, inkMuted, inkFaint, hairline, accent } = pal;
+  const { fontDisplay, fontBody, divider } = style;
+
+  const names = coupleNames || 'the couple';
+  const firstName = guestName ? guestName.split(' ')[0] : 'there';
+  const subject = `Your reply to ${names} is in`;
+
+  const verdict = attending
+    ? "You're coming — lovely."
+    : "You can't make it — they'll miss you.";
+
+  // THE MIDDLE LINE, OR NOTHING. A date is what makes it worth printing; the
+  // name and venue alone are facts the guest already has.
+  const eventLine = date
+    ? [eventName, formatEventDate(date), venueName].filter(Boolean).join(' · ')
+    : '';
+
+  const lines = [
+    `Hi ${firstName},`,
+    verdict,
+    eventLine,
+    'Need to change anything? Use the same link you came from.',
+    `Replying to this email goes straight to ${names}.`,
+  ].filter(Boolean);
+
+  const bodyHtml = lines.map((line, i) => {
+    const isVerdict = i === 1;
+    const size = isVerdict ? 18 : 14;
+    const color = isVerdict ? ink : inkMuted;
+    return `              <p style="margin:0 0 ${isVerdict ? 18 : 12}px;font-size:${size}px;line-height:1.6;color:${color};font-family:${fontBody};">${escapeHtml(line)}</p>`;
+  }).join('\n');
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${escapeHtml(subject)}</title>
+</head>
+<body style="margin:0;padding:0;background:${pageBg};font-family:${fontBody};">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(verdict)}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${pageBg};padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:${cardBg};border:1px solid ${hairline};">
+          <tr>
+            <td style="padding:44px 40px 0;">
+              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:${accent};font-family:${fontBody};">Your reply is in</p>
+              <h1 style="margin:0;font-family:${fontDisplay};font-weight:400;font-size:32px;color:${ink};line-height:1.15;">${escapeHtml(names)}</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 40px 0;">
+              ${dividerHtml(divider, accent)}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 40px 0;">
+${bodyHtml}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px 40px 0;">
+              <div style="height:1px;background:${hairline};"></div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 40px 36px;" align="center">
+              <img src="${EMAIL_LOGO_MARK_URL}" width="11" height="11" alt="" style="display:block;width:11px;height:11px;opacity:0.5;" />
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  return { subject, html, text: lines.join('\n\n') };
+}
