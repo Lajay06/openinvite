@@ -47,6 +47,8 @@ const strip = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm,
 const FORM = strip(read('src/components/guest-website/GuestNoteForm.jsx'));
 const GTK = strip(read('src/components/guest-website/pages/WeddingGoodToKnowPage.jsx'));
 const RSVP = strip(read('src/components/rsvp/RSVPPage.jsx'));
+const GATE = strip(read('src/components/guest-website/pages/WeddingRSVPPage.jsx'));
+const THEMES = read('src/lib/websiteThemes.js');
 const PREVIEW = strip(read('src/components/website-builder/RealWebsitePreview.jsx'));
 const CI = read('.github/workflows/ci.yml');
 const PKG = read('package.json');
@@ -68,8 +70,11 @@ export async function runGuestNoteForm() {
     FORM.length > 0, 'src/components/guest-website/GuestNoteForm.jsx');
 
   // ── the copy, verbatim ───────────────────────────────────────────────────
-  check('the heading is the owner\'s sentence',
-    FORM.includes('A question for {firstNames}?'), 'A question for {coupleFirstNames}?');
+  // THE DEFAULT HEADING, now that the prop exists. It moved from JSX text into a
+  // template literal when the no-token gate needed its own wording, so the old
+  // assertion on the JSX form went stale — which is the check doing its job.
+  check('the after-reply heading is the owner\'s sentence',
+    FORM.includes('`A question for ${firstNames}?`'), 'A question for {coupleFirstNames}?');
   check('  and it uses FIRST names, not the full ones',
     /coupleFirstNames\(weddingDetails/.test(FORM) && !/coupleDisplayName/.test(FORM),
     'coupleFirstNames');
@@ -132,6 +137,73 @@ export async function runGuestNoteForm() {
     doneAt > -1 && formAt > doneAt && pollsAt > formAt,
     `done@${doneAt} form@${formAt} polls@${pollsAt}`);
   check('  exactly once on that page', (RSVP.match(/<GuestNoteForm/g) || []).length === 1, 'one form');
+
+  // ── the no-token RSVP gate ────────────────────────────────────────────────
+  //
+  // THE THIRD PLACEMENT. A guest who opens the RSVP tab with no invitation link
+  // gets the retrieve-my-link screen, and it offered one thing: an email box.
+  // If the address was not on the guest list, or the question was something
+  // else, the screen answered nothing.
+  //
+  // NINE BRANCHES, because this page renders a different layout per universe.
+  // A placement added to one of them would look done and reach one eighth of
+  // the weddings, so the count is the assertion.
+  const GATE_BRANCHES = 9;
+  check('the gate renders the note form in every universe branch',
+    (GATE.match(/<GuestNoteForm/g) || []).length === GATE_BRANCHES,
+    `${(GATE.match(/<GuestNoteForm/g) || []).length} of ${GATE_BRANCHES}`);
+  check("  with the gate's own heading, passed as a function of the first names",
+    (GATE.match(/heading=\{\(firstNames\) => `Can't find your invitation, or have a question for \$\{firstNames\}\?`\}/g) || []).length === GATE_BRANCHES,
+    'verbatim, and no couple name hard-coded');
+  check('  and no prefill, because nobody has been recognised on this path',
+    !/prefillName/.test(GATE) && !/prefillEmail/.test(GATE), 'no guess');
+  check('the heading is overridable rather than duplicated',
+    /heading \? heading\(firstNames\) : `A question for \$\{firstNames\}\?`/.test(FORM),
+    'one component, two headings');
+
+  // ── the gate copy, as a DEFAULT under the voices ──────────────────────────
+  //
+  // BOTH STRINGS ARE UNIVERSE-OVERRIDABLE, and 19 universes override each one.
+  // The new wording is the shared fallback; it does not displace a voice. The
+  // file's own comment at RecognisedRsvp says why: "Getting this wrong renders
+  // the shared fallback under every one of the 19 voices, which is exactly what
+  // the per-universe line exists to avoid."
+  check('the framing default is defined once, not nine times',
+    /const GATE_FRAMING = 'Your reply is tied to your personal invitation\.';/.test(GATE),
+    'one definition');
+  check('the functional sentence is defined once and is GLOBAL',
+    /const GATE_FUNCTIONAL = "Enter the email your invitation was sent to and we'll send your link again\.";/.test(GATE),
+    'owner ruling: not overridable');
+  check('the button label is defined once and is GLOBAL',
+    /const GATE_CTA = 'Send my link';/.test(GATE), 'owner ruling: not overridable');
+
+  // THE VOICE REPLACES THE FRAMING, NEVER THE FUNCTIONAL SENTENCE. Both appear
+  // in every branch, in that order — a branch that dropped the functional half
+  // would leave a guest on that universe with no instruction at all.
+  check('every branch renders the voice-or-framing, then the functional sentence',
+    (GATE.match(/\{copy\.rsvpIntro \|\| GATE_FRAMING\} \{GATE_FUNCTIONAL\}/g) || []).length === GATE_BRANCHES,
+    `${(GATE.match(/\{copy\.rsvpIntro \|\| GATE_FRAMING\} \{GATE_FUNCTIONAL\}/g) || []).length} of ${GATE_BRANCHES}`);
+  check('every branch uses the global button label',
+    (GATE.match(/: GATE_CTA\}/g) || []).length === GATE_BRANCHES,
+    `${(GATE.match(/: GATE_CTA\}/g) || []).length} of ${GATE_BRANCHES}`);
+  check('  and copy.rsvpCta is no longer read anywhere',
+    !/copy\.rsvpCta/.test(GATE), 'the button is not overridable');
+  check('the old strings are gone',
+    !/Each guest responds using their own personal invite link/.test(GATE)
+      && !/Send me my RSVP link/.test(GATE), 'both replaced');
+  // THE VOICES ARE UNTOUCHED, asserted by count so a later sweep cannot thin
+  // them. capri's exclamation mark is named in CLAUDE.md as owner-approved.
+  check('all 19 universe rsvpIntro voices survive',
+    (THEMES.match(/rsvpIntro:/g) || []).length === 19,
+    `${(THEMES.match(/rsvpIntro:/g) || []).length} of 19`);
+  check("  including capri's owner-approved line",
+    THEMES.includes('This is the part where you say yes!'), 'not stripped');
+  // rsvpCta IS NOW UNREAD, and left in place deliberately rather than swept:
+  // deleting 19 lines of the owner's voiced copy is their call, not a
+  // side effect of making the button global. Reported in the PR.
+  check('the 19 rsvpCta values are still present, now unread',
+    (THEMES.match(/rsvpCta:/g) || []).length === 19,
+    'left for the owner to strike, not swept');
 
   // ── editors show what guests see ─────────────────────────────────────────
   for (const f of EDITORS) {

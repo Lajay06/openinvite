@@ -96,8 +96,14 @@ export async function runGuestRecognition() {
   check('a recognised guest gets the real form on the tab',
     /if \(recognisedToken\)/.test(tab) && /<RsvpForm token=\{token\} embedded \/>/.test(tab),
     'no email box, no second step');
+  // THE BUTTON STRING MOVED to a module constant when the owner made the gate's
+  // functional copy global (2026-09-27) — this asserted the old literal 'Send me
+  // my RSVP link' and went red on a bridge that was working. The property is the
+  // bridge's presence, so it is asserted on the parts that make it one: the
+  // intro the universe may voice, the global CTA, and the link-request call.
   check('  an unrecognised visitor still gets the email bridge',
-    /rsvpIntro/.test(tab) && /Send me my RSVP link/.test(tab), 'fallback state, not the page');
+    /rsvpIntro/.test(tab) && /GATE_CTA/.test(tab) && /rsvp-link-request/.test(tab),
+    'fallback state, not the page');
   check('  the not-you control is present and not buried',
     /Not you\? Use a different invitation/.test(tab) && /onClick=\{onForgetGuest\}/.test(tab),
     'shared phones');

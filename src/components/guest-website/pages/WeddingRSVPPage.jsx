@@ -18,10 +18,34 @@ import CapeTownSectionMark from '../layouts/CapeTownSectionMark';
 import VineRule from '../layouts/VineRule';
 import { getCachedWeddingPassword } from '@/lib/guestSitePassword';
 import RsvpForm from '@/components/rsvp/RSVPPage';
+import GuestNoteForm from '../GuestNoteForm';
 import { formSurfaces } from '@/lib/surfaceTint';
 
 const STATUS = { idle: 'idle', sending: 'sending', sent: 'sent', error: 'error' };
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
+
+/**
+ * THE GATE'S COPY, AND WHICH HALF A UNIVERSE MAY SPEAK IN ITS OWN VOICE.
+ *
+ * Owner ruling 2026-09-27: "universe voices may keep their own INTRO line if
+ * they already tell the guest what happens; the functional sentence and the
+ * button are global and not overridable."
+ *
+ * So the paragraph is two parts. The FRAMING is a default that any of the 19
+ * universe voices replaces — that is what `copy.rsvpIntro` is for, and the
+ * comment on RecognisedRsvp below explains why flattening those voices under one
+ * fallback is the thing to avoid. The FUNCTIONAL sentence is appended every
+ * time, in every universe, because a guest who cannot find their invitation
+ * needs to be told what this box does in words that do not vary.
+ *
+ * ONE DEFINITION EACH, not nine copies. This page has nine per-universe layout
+ * branches and the old strings were written out nine times apiece; a change
+ * then had to be made nine times or it was made wrong.
+ */
+const GATE_FRAMING = 'Your reply is tied to your personal invitation.';
+const GATE_FUNCTIONAL = "Enter the email your invitation was sent to and we'll send your link again.";
+/** Global, and deliberately not `copy.rsvpCta` — see the ruling above. */
+const GATE_CTA = 'Send my link';
 
 export default function WeddingRSVPPage({
   weddingDetails, theme, typography, universeConfig,
@@ -113,7 +137,7 @@ export default function WeddingRSVPPage({
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <p data-oi-anchor="paragraph" style={{ margin: '0 0 40px', fontSize: '0.9375rem', fontFamily: typography.bodyFont, lineHeight: 1.75 }}>
-              {copy.rsvpIntro || "Each guest responds using their own personal invite link. If you can't find yours, enter the email your invite was sent to and we'll send it straight to your inbox."}
+              {copy.rsvpIntro || GATE_FRAMING} {GATE_FUNCTIONAL}
             </p>
           </SectionReveal>
 
@@ -170,10 +194,26 @@ export default function WeddingRSVPPage({
                   marginTop: '8px',
                 }}
               >
-                {status === STATUS.sending ? 'Sending…' : (copy.rsvpCta || 'Send me my RSVP link')}
+                {status === STATUS.sending ? 'Sending…' : GATE_CTA}
               </button>
             </SectionReveal>
           )}
+
+          {/* THE GUEST WHO CANNOT FIND THEIR INVITATION HAD NOWHERE TO GO.
+              This screen asks for an address and sends a link; if the address
+              is not on the list, or the question is something else entirely,
+              it answered nothing. The note form is the same component and the
+              same endpoint as the after-reply one, with no prefill — nobody
+              has been recognized on this path, so there is nothing to know. */}
+          <div style={{ marginTop: 56, paddingTop: 40, borderTop: `1px solid ${theme.accent}22` }}>
+            <GuestNoteForm
+              weddingDetails={weddingDetails}
+              theme={theme}
+              typography={typography}
+              universeConfig={universeConfig}
+              heading={(firstNames) => `Can't find your invitation, or have a question for ${firstNames}?`}
+            />
+          </div>
         </div>
       </div>
     );
@@ -202,7 +242,7 @@ export default function WeddingRSVPPage({
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <p data-oi-anchor="paragraph" className="wb-display-face" style={{ margin: '0 0 32px', fontSize: '1rem', fontFamily: typography.headingFont, lineHeight: 1.65 }}>
-              {copy.rsvpIntro || "Each guest responds using their own personal invite link. If you can't find yours, enter the email your invite was sent to and we'll send it straight to your inbox."}
+              {copy.rsvpIntro || GATE_FRAMING} {GATE_FUNCTIONAL}
             </p>
           </SectionReveal>
 
@@ -258,10 +298,26 @@ export default function WeddingRSVPPage({
                   marginTop: '4px',
                 }}
               >
-                {status === STATUS.sending ? 'Sending…' : (copy.rsvpCta || 'Send me my RSVP link')}
+                {status === STATUS.sending ? 'Sending…' : GATE_CTA}
               </button>
             </SectionReveal>
           )}
+
+          {/* THE GUEST WHO CANNOT FIND THEIR INVITATION HAD NOWHERE TO GO.
+              This screen asks for an address and sends a link; if the address
+              is not on the list, or the question is something else entirely,
+              it answered nothing. The note form is the same component and the
+              same endpoint as the after-reply one, with no prefill — nobody
+              has been recognized on this path, so there is nothing to know. */}
+          <div style={{ marginTop: 56, paddingTop: 40, borderTop: `1px solid ${theme.accent}22` }}>
+            <GuestNoteForm
+              weddingDetails={weddingDetails}
+              theme={theme}
+              typography={typography}
+              universeConfig={universeConfig}
+              heading={(firstNames) => `Can't find your invitation, or have a question for ${firstNames}?`}
+            />
+          </div>
         </div>
       </div>
     );
@@ -290,7 +346,7 @@ export default function WeddingRSVPPage({
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <p data-oi-anchor="paragraph" style={{ margin: '0 0 40px', fontSize: '0.9375rem', fontFamily: typography.bodyFont, lineHeight: 1.75 }}>
-              {copy.rsvpIntro || "Each guest responds using their own personal invite link. If you can't find yours, enter the email your invite was sent to and we'll send it straight to your inbox."}
+              {copy.rsvpIntro || GATE_FRAMING} {GATE_FUNCTIONAL}
             </p>
           </SectionReveal>
 
@@ -346,10 +402,26 @@ export default function WeddingRSVPPage({
                   marginTop: '4px',
                 }}
               >
-                {status === STATUS.sending ? 'Sending…' : (copy.rsvpCta || 'Send me my RSVP link')}
+                {status === STATUS.sending ? 'Sending…' : GATE_CTA}
               </button>
             </SectionReveal>
           )}
+
+          {/* THE GUEST WHO CANNOT FIND THEIR INVITATION HAD NOWHERE TO GO.
+              This screen asks for an address and sends a link; if the address
+              is not on the list, or the question is something else entirely,
+              it answered nothing. The note form is the same component and the
+              same endpoint as the after-reply one, with no prefill — nobody
+              has been recognized on this path, so there is nothing to know. */}
+          <div style={{ marginTop: 56, paddingTop: 40, borderTop: `1px solid ${theme.accent}22` }}>
+            <GuestNoteForm
+              weddingDetails={weddingDetails}
+              theme={theme}
+              typography={typography}
+              universeConfig={universeConfig}
+              heading={(firstNames) => `Can't find your invitation, or have a question for ${firstNames}?`}
+            />
+          </div>
         </div>
       </div>
     );
@@ -378,7 +450,7 @@ export default function WeddingRSVPPage({
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <p data-oi-anchor="paragraph" className="wb-display-face" style={{ margin: '0 0 32px', fontSize: '1rem', fontFamily: typography.headingFont, lineHeight: 1.8 }}>
-              {copy.rsvpIntro || "Each guest responds using their own personal invite link. If you can't find yours, enter the email your invite was sent to and we'll send it straight to your inbox."}
+              {copy.rsvpIntro || GATE_FRAMING} {GATE_FUNCTIONAL}
             </p>
           </SectionReveal>
 
@@ -436,10 +508,26 @@ export default function WeddingRSVPPage({
                   marginTop: '4px',
                 }}
               >
-                {status === STATUS.sending ? 'Sending…' : (copy.rsvpCta || 'Send me my RSVP link')}
+                {status === STATUS.sending ? 'Sending…' : GATE_CTA}
               </button>
             </SectionReveal>
           )}
+
+          {/* THE GUEST WHO CANNOT FIND THEIR INVITATION HAD NOWHERE TO GO.
+              This screen asks for an address and sends a link; if the address
+              is not on the list, or the question is something else entirely,
+              it answered nothing. The note form is the same component and the
+              same endpoint as the after-reply one, with no prefill — nobody
+              has been recognized on this path, so there is nothing to know. */}
+          <div style={{ marginTop: 56, paddingTop: 40, borderTop: `1px solid ${theme.accent}22` }}>
+            <GuestNoteForm
+              weddingDetails={weddingDetails}
+              theme={theme}
+              typography={typography}
+              universeConfig={universeConfig}
+              heading={(firstNames) => `Can't find your invitation, or have a question for ${firstNames}?`}
+            />
+          </div>
         </div>
       </div>
     );
@@ -468,7 +556,7 @@ export default function WeddingRSVPPage({
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <p data-oi-anchor="paragraph" style={{ margin: '0 0 48px', fontSize: '1rem', fontFamily: typography.bodyFont, lineHeight: 1.9, opacity: 0.85 }}>
-              {copy.rsvpIntro || "Each guest responds using their own personal invite link. If you can't find yours, enter the email your invite was sent to and we'll send it straight to your inbox."}
+              {copy.rsvpIntro || GATE_FRAMING} {GATE_FUNCTIONAL}
             </p>
           </SectionReveal>
 
@@ -525,10 +613,26 @@ export default function WeddingRSVPPage({
                   marginTop: '8px',
                 }}
               >
-                {status === STATUS.sending ? 'Sending…' : (copy.rsvpCta || 'Send me my RSVP link')}
+                {status === STATUS.sending ? 'Sending…' : GATE_CTA}
               </button>
             </SectionReveal>
           )}
+
+          {/* THE GUEST WHO CANNOT FIND THEIR INVITATION HAD NOWHERE TO GO.
+              This screen asks for an address and sends a link; if the address
+              is not on the list, or the question is something else entirely,
+              it answered nothing. The note form is the same component and the
+              same endpoint as the after-reply one, with no prefill — nobody
+              has been recognized on this path, so there is nothing to know. */}
+          <div style={{ marginTop: 56, paddingTop: 40, borderTop: `1px solid ${theme.accent}22` }}>
+            <GuestNoteForm
+              weddingDetails={weddingDetails}
+              theme={theme}
+              typography={typography}
+              universeConfig={universeConfig}
+              heading={(firstNames) => `Can't find your invitation, or have a question for ${firstNames}?`}
+            />
+          </div>
         </div>
       </div>
     );
@@ -557,7 +661,7 @@ export default function WeddingRSVPPage({
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <p data-oi-anchor="paragraph" style={{ margin: '0 0 36px', fontSize: '1rem', fontFamily: typography.bodyFont, lineHeight: 1.7 }}>
-              {copy.rsvpIntro || "Each guest responds using their own personal invite link. If you can't find yours, enter the email your invite was sent to and we'll send it straight to your inbox."}
+              {copy.rsvpIntro || GATE_FRAMING} {GATE_FUNCTIONAL}
             </p>
           </SectionReveal>
 
@@ -614,10 +718,26 @@ export default function WeddingRSVPPage({
                   marginTop: '8px',
                 }}
               >
-                {status === STATUS.sending ? 'Sending…' : (copy.rsvpCta || 'Send me my RSVP link')}
+                {status === STATUS.sending ? 'Sending…' : GATE_CTA}
               </button>
             </SectionReveal>
           )}
+
+          {/* THE GUEST WHO CANNOT FIND THEIR INVITATION HAD NOWHERE TO GO.
+              This screen asks for an address and sends a link; if the address
+              is not on the list, or the question is something else entirely,
+              it answered nothing. The note form is the same component and the
+              same endpoint as the after-reply one, with no prefill — nobody
+              has been recognized on this path, so there is nothing to know. */}
+          <div style={{ marginTop: 56, paddingTop: 40, borderTop: `1px solid ${theme.accent}22` }}>
+            <GuestNoteForm
+              weddingDetails={weddingDetails}
+              theme={theme}
+              typography={typography}
+              universeConfig={universeConfig}
+              heading={(firstNames) => `Can't find your invitation, or have a question for ${firstNames}?`}
+            />
+          </div>
         </div>
       </div>
     );
@@ -646,7 +766,7 @@ export default function WeddingRSVPPage({
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <p data-oi-anchor="paragraph" className="wb-display-face" style={{ margin: '0 0 32px', fontSize: '1rem', fontFamily: typography.headingFont, lineHeight: 1.75 }}>
-              {copy.rsvpIntro || "Each guest responds using their own personal invite link. If you can't find yours, enter the email your invite was sent to and we'll send it straight to your inbox."}
+              {copy.rsvpIntro || GATE_FRAMING} {GATE_FUNCTIONAL}
             </p>
           </SectionReveal>
 
@@ -704,10 +824,26 @@ export default function WeddingRSVPPage({
                   marginTop: '4px',
                 }}
               >
-                {status === STATUS.sending ? 'Sending…' : (copy.rsvpCta || 'Send me my RSVP link')}
+                {status === STATUS.sending ? 'Sending…' : GATE_CTA}
               </button>
             </SectionReveal>
           )}
+
+          {/* THE GUEST WHO CANNOT FIND THEIR INVITATION HAD NOWHERE TO GO.
+              This screen asks for an address and sends a link; if the address
+              is not on the list, or the question is something else entirely,
+              it answered nothing. The note form is the same component and the
+              same endpoint as the after-reply one, with no prefill — nobody
+              has been recognized on this path, so there is nothing to know. */}
+          <div style={{ marginTop: 56, paddingTop: 40, borderTop: `1px solid ${theme.accent}22` }}>
+            <GuestNoteForm
+              weddingDetails={weddingDetails}
+              theme={theme}
+              typography={typography}
+              universeConfig={universeConfig}
+              heading={(firstNames) => `Can't find your invitation, or have a question for ${firstNames}?`}
+            />
+          </div>
         </div>
       </div>
     );
@@ -736,7 +872,7 @@ export default function WeddingRSVPPage({
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
             <p data-oi-anchor="paragraph" className="wb-display-face" style={{ margin: '0 0 48px', fontSize: '1rem', fontFamily: typography.headingFont, fontStyle: 'italic', lineHeight: 1.7, opacity: 0.85 }}>
-              {copy.rsvpIntro || "Each guest responds using their own personal invite link. If you can't find yours, enter the email your invite was sent to and we'll send it straight to your inbox."}
+              {copy.rsvpIntro || GATE_FRAMING} {GATE_FUNCTIONAL}
             </p>
           </SectionReveal>
 
@@ -808,10 +944,26 @@ export default function WeddingRSVPPage({
                   marginTop: '8px'
                 }}
               >
-                {status === STATUS.sending ? 'Sending…' : (copy.rsvpCta || 'Send me my RSVP link')}
+                {status === STATUS.sending ? 'Sending…' : GATE_CTA}
               </button>
             </SectionReveal>
           )}
+
+          {/* THE GUEST WHO CANNOT FIND THEIR INVITATION HAD NOWHERE TO GO.
+              This screen asks for an address and sends a link; if the address
+              is not on the list, or the question is something else entirely,
+              it answered nothing. The note form is the same component and the
+              same endpoint as the after-reply one, with no prefill — nobody
+              has been recognized on this path, so there is nothing to know. */}
+          <div style={{ marginTop: 56, paddingTop: 40, borderTop: `1px solid ${theme.accent}22` }}>
+            <GuestNoteForm
+              weddingDetails={weddingDetails}
+              theme={theme}
+              typography={typography}
+              universeConfig={universeConfig}
+              heading={(firstNames) => `Can't find your invitation, or have a question for ${firstNames}?`}
+            />
+          </div>
         </div>
       </div>
     );
@@ -891,7 +1043,7 @@ export default function WeddingRSVPPage({
             color: theme.darkText,
             opacity: 0.85,
           }}>
-            {copy.rsvpIntro || "Each guest responds using their own personal invite link. If you can't find yours, enter the email your invite was sent to and we'll send it straight to your inbox."}
+            {copy.rsvpIntro || GATE_FRAMING} {GATE_FUNCTIONAL}
           </p>
 
           {status === STATUS.sent ? (
@@ -963,11 +1115,27 @@ export default function WeddingRSVPPage({
                   marginTop: '4px'
                 }}
               >
-                {status === STATUS.sending ? 'Sending…' : (copy.rsvpCta || 'Send me my RSVP link')}
+                {status === STATUS.sending ? 'Sending…' : GATE_CTA}
               </button>
             </>
           )}
         </SectionReveal>
+
+        {/* THE GUEST WHO CANNOT FIND THEIR INVITATION HAD NOWHERE TO GO.
+            This screen asks for an address and sends a link; if the address
+            is not on the list, or the question is something else entirely,
+            it answered nothing. The note form is the same component and the
+            same endpoint as the after-reply one, with no prefill — nobody
+            has been recognized on this path, so there is nothing to know. */}
+        <div style={{ marginTop: 56, paddingTop: 40, borderTop: `1px solid ${theme.accent}22` }}>
+          <GuestNoteForm
+            weddingDetails={weddingDetails}
+            theme={theme}
+            typography={typography}
+            universeConfig={universeConfig}
+            heading={(firstNames) => `Can't find your invitation, or have a question for ${firstNames}?`}
+          />
+        </div>
       </div>
     </div>
   );

@@ -189,7 +189,51 @@ export function sanitizeString(str) {
 export function isValidEmail(email) {
   if (typeof email !== 'string') return false;
   if (email.length > 320) return false;
+  // A SCHEME PREFIX IS NOT PART OF AN ADDRESS, AND THIS USED TO ACCEPT ONE.
+  //
+  // `[^\s@]+` matches anything that is not whitespace and not an at-sign, so
+  // ':' and '<' passed straight through and all of these were "valid":
+  //
+  //     mailto:someone@example.com        <someone@example.com>
+  //     MAILTO:someone@example.com        javascript:x@y.com
+  //
+  // Found 2026-09-27 by an owner live pass on the guest-note form: an address
+  // pasted from a mailto link was accepted, encrypted, stored, and then handed
+  // to Resend as the recipient, which refused it — so the couple's reply failed
+  // with "Something went wrong" and the Messages row displayed the prefix as
+  // part of the address. Two symptoms, one permissive regex.
+  //
+  // Rejecting rather than repairing here, because a validator that silently
+  // rewrites its input cannot be used to decide whether to refuse. Callers that
+  // want to be forgiving normalize FIRST — see normalizeEmail below.
+  //
+  // Neither ':' nor '<' nor '>' is legal in an unquoted local part, so this is
+  // strictly narrowing: every address that was really an address still passes.
+  if (/[:<>]/.test(email)) return false;
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+/**
+ * The address a human meant, out of what they actually pasted.
+ *
+ * Strips a `mailto:` scheme and the angle brackets of a `Name <addr>` form,
+ * then trims and lowercases. Does NOT validate — run isValidEmail on the
+ * result, which is the arrangement that lets a caller be forgiving about shape
+ * without being forgiving about correctness.
+ *
+ * @param {unknown} email
+ * @returns {string} '' when there is nothing usable
+ */
+export function normalizeEmail(email) {
+  if (typeof email !== 'string') return '';
+  return email
+    .trim()
+    .replace(/^mailto:/i, '')
+    // `Ada Lovelace <ada@example.com>` and the bare `<ada@example.com>` both
+    // reduce to the address; anything before the bracket is a display name.
+    .replace(/^[^<]*<([^>]*)>$/, '$1')
+    .trim()
+    .toLowerCase();
 }
 
 /**

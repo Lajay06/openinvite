@@ -52,6 +52,7 @@ import {
   getClientIp,
   sanitizeString,
   isValidEmail,
+  normalizeEmail,
   verifyTurnstileToken,
 } from './_lib/security.js';
 import { guestGateBlocks, GUEST_GATE_MESSAGE } from './_lib/guestSafeWedding.js';
@@ -88,7 +89,13 @@ export default async function handler(req, res) {
   // Body only, never a query string (#449).
   const candidatePassword = typeof req.body?.password === 'string' ? req.body.password : '';
   const name = sanitizeString(req.body?.name || '').slice(0, MAX_NAME_LENGTH);
-  const email = sanitizeString(req.body?.email || '').toLowerCase().slice(0, MAX_EMAIL_LENGTH);
+  // NORMALIZED BEFORE IT IS JUDGED. A guest who pastes their address out of a
+  // mailto link sends "mailto:them@example.com", and the old validator accepted
+  // it — so it was encrypted, stored, and later handed to Resend as a recipient,
+  // which refused it. The couple's reply then failed with "Something went wrong"
+  // and the Messages row printed the prefix as part of the address. Stripping
+  // the scheme is kinder than refusing a guest over a paste.
+  const email = normalizeEmail(sanitizeString(req.body?.email || '')).slice(0, MAX_EMAIL_LENGTH);
   const message = sanitizeString(req.body?.message || '').slice(0, MAX_MESSAGE_LENGTH);
   const turnstileToken = req.body?.turnstileToken;
 

@@ -108,7 +108,8 @@
     "test:builder-header-390": "node scripts/test-builder-header-390.mjs",
     "test:experiences-plain": "node scripts/test-experiences-plain.mjs",
     "test:design-tab-contrast": "node scripts/test-design-tab-contrast.mjs",
-    "test:messages-badge": "node scripts/test-messages-badge.mjs"
+    "test:messages-badge": "node scripts/test-messages-badge.mjs",
+    "test:messages-reply": "node scripts/test-messages-reply.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.48",
