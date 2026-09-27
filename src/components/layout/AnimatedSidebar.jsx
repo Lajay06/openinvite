@@ -142,7 +142,9 @@ export const NAV_SECTIONS = [
       // something the couple makes, and it now sits at the end of Style and
       // experience with the other things they make.
       { icon: Users,         label: "Guest list",    url: createPageUrl("Guests") },
-      { icon: MessageCircle, label: "Messages",      url: createPageUrl("Messages") },
+      // countKey, not a label match. The badge's source is declared on the item
+      // that shows it, so renaming "Messages" cannot silently unwire the count.
+      { icon: MessageCircle, label: "Messages",      url: createPageUrl("Messages"), countKey: 'unreadMessages' },
       { icon: LayoutGrid,    label: "Seating",       url: createPageUrl("Seating") },
       { icon: UserCheck,     label: "Wedding party", url: "/wedding-party" },
     ],
@@ -338,7 +340,7 @@ function GroupHeader({ section, open, onToggle }) {
   );
 }
 
-function NavItem({ icon: Icon, label, url, onClick, isActive, showBadge, disabled, disabledTooltip }) {
+function NavItem({ icon: Icon, label, url, onClick, isActive, showBadge, count = 0, disabled, disabledTooltip }) {
   return (
     <div
       onClick={disabled ? undefined : onClick}
@@ -381,6 +383,23 @@ function NavItem({ icon: Icon, label, url, onClick, isActive, showBadge, disable
       >
         {label}
       </span>
+      {/* A COUNT ONLY WHEN THERE IS SOMETHING TO COUNT. A zero badge is a
+          permanent mark on a row that has nothing waiting behind it, which
+          teaches a couple to stop reading the badge. */}
+      {count > 0 && (
+        <span
+          aria-label={`${count} unread`}
+          style={{
+            fontSize: 9, fontWeight: 800, background: "#E03553", color: "#FFFFFF",
+            // A PILL, so it stays round at any digit count — 999px, per the
+            // one rounding exception the spec allows.
+            padding: "1px 6px", borderRadius: 999, flexShrink: 0,
+            minWidth: 16, textAlign: "center", fontFamily: PJS,
+          }}
+        >
+          {count > 99 ? '99+' : count}
+        </span>
+      )}
       {showBadge && (
         <span style={{
           fontSize: 8, fontWeight: 800, background: "linear-gradient(135deg, #FBBF24, #F59E0B)",
@@ -396,7 +415,7 @@ function NavItem({ icon: Icon, label, url, onClick, isActive, showBadge, disable
 
 // ── Desktop sidebar ───────────────────────────────────────────────────────────
 
-export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOffset = 48, collaboratorPermissions = null }) {
+export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOffset = 48, collaboratorPermissions = null, unreadMessagesCount = 0 }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -503,6 +522,7 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
                   isActive={!guestSuiteDisabled && isActive(item.url)}
                   onClick={() => navigate(item.url.split("?")[0])}
                   showBadge={item.ultraBadge && !canAccessUltra}
+                  count={item.countKey === 'unreadMessages' ? unreadMessagesCount : 0}
                   disabled={guestSuiteDisabled}
                   disabledTooltip="Upgrade to Ultra to unlock your guest suite"
                 />
@@ -604,7 +624,7 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
 
 // ── Mobile sidebar content (used inside Sheet) ────────────────────────────────
 
-export function MobileSidebarContent({ weddingName, onClose, onCollaborate, collaboratorPermissions = null }) {
+export function MobileSidebarContent({ weddingName, onClose, onCollaborate, collaboratorPermissions = null, unreadMessagesCount = 0 }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -748,6 +768,18 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
                     <span style={{ fontSize: 14, fontWeight: 600, color: active ? "#E03553" : "#0A0A0A", fontFamily: PJS, flex: 1 }}>
                       {item.label}
                     </span>
+                    {item.countKey === 'unreadMessages' && unreadMessagesCount > 0 && (
+                      <span
+                        aria-label={`${unreadMessagesCount} unread`}
+                        style={{
+                          fontSize: 10, fontWeight: 800, background: "#E03553", color: "#FFFFFF",
+                          padding: "1px 7px", borderRadius: 999, flexShrink: 0,
+                          minWidth: 18, textAlign: "center", fontFamily: PJS,
+                        }}
+                      >
+                        {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
+                      </span>
+                    )}
                     {item.ultraBadge && !canAccessUltraMobile && (
                       <span style={{
                         fontSize: 9, fontWeight: 800, background: "linear-gradient(135deg, #FBBF24, #F59E0B)",

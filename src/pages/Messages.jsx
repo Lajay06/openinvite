@@ -409,13 +409,24 @@ export default function MessagesPage() {
         )) : (
           <div style={{ padding: '64px 0', textAlign: 'center', border: '1px solid rgba(10,10,10,0.12)' }}>
             <MessageCircle size={36} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 16px' }} />
+            {/* THE EMPTY STATE USED TO DESCRIBE A ROUTE THAT DID NOT EXIST.
+                "once guests start reaching out through the guest portal" —
+                there was no guest portal, nothing in this repo had ever created
+                a GuestMessage, and the sentence read as "no notes yet" rather
+                than as "no such feature". It is true now, and it says what a
+                couple actually needs to know next: the reply goes to email, not
+                back into this page.
+
+                THE FILTERED STATE IS UNTOUCHED, per the ruling. A search that
+                matches nothing is a different fact from a page with nothing on
+                it, and it already said so. */}
             <p style={{ fontSize: 15, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 6 }}>
-              {searchTerm || filterStatus !== 'all' ? 'No messages found' : 'No messages yet'}
+              {searchTerm || filterStatus !== 'all' ? 'No messages found' : 'No notes yet'}
             </p>
             <p style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               {searchTerm || filterStatus !== 'all'
                 ? 'Try adjusting your search or filter.'
-                : 'Guest messages will appear here once guests start reaching out through the guest portal.'}
+                : 'When a guest sends you a note from your site, it lands here. Replies go to their email.'}
             </p>
           </div>
         )}

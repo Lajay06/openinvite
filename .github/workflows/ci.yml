@@ -569,6 +569,22 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
 
+      # The unread count was computed and rendered nowhere. The desktop sidebar
+      # is hidden lg:flex, so it stays in the DOM at phone width — this measures
+      # visibility, not presence, or it would pass on the hidden one.
+      - name: The unread count is visible on both sidebars
+        run: |
+          npx vite preview --port 4218 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4218 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4218 npm run test:messages-badge
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       - name: The celebration accordions show their state in their border
         run: |
           npx vite preview --port 4195 --strictPort &
