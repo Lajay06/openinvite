@@ -18,6 +18,16 @@ sweep, rename with care (`recognisedToken` is an identifier).
 
 ---
 
+## Good to know has no row in the studio page list
+
+Good to know has no row in the studio page list (WBLeftPanel / WEDDING_PAGES):
+couples cannot see, toggle or reorder it; visibility is derived from
+`weddingPolicies[*].display` + content. Needs a row with a switch and a
+decision: switch replaces the derived rule, or AND/OR with it. No data
+backfill — default the switch to the derived value.
+
+---
+
 ## Guest notes — no erasure path
 
 Guest notes — no erasure path: GuestMessage delete is owner-scoped and
