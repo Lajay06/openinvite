@@ -9,6 +9,14 @@ only names a topic is a reminder, not a task, and reminders rot.
 
 ---
 
+## Guest notes — no erasure path
+
+Guest notes — no erasure path: GuestMessage delete is owner-scoped and
+admin-written rows are anonymous; needs a mediated delete endpoint (couple
+deletes a guest's note on request). Same class as RsvpResponse.
+
+---
+
 ## Dead handlers sweep
 
 Handlers declared and never wired. Two found so far, both by accident rather
