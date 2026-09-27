@@ -9,6 +9,15 @@ only names a topic is a reminder, not a task, and reminders rot.
 
 ---
 
+## British spellings outside the diff-based guard
+
+British spellings outside the diff-based guard: `'display is honoured'` in
+`tests/persistence/publish-parity.mjs`; `recognisedToken` and
+`recognise`/`recognised` comments in `WeddingRSVPPage.jsx` / `RSVPPage.jsx`. One
+sweep, rename with care (`recognisedToken` is an identifier).
+
+---
+
 ## Guest notes — no erasure path
 
 Guest notes — no erasure path: GuestMessage delete is owner-scoped and
