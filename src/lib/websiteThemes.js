@@ -836,7 +836,7 @@ export const UNIVERSE_CONFIGS = {
       storyKicker: 'Our story',
       celebrationKicker: 'The celebration',
       rsvpKicker: 'Join us',
-      rsvpIntro: 'Say yes right here. Leave whichever address reaches you best and your own link will make its way over to you.',
+      rsvpIntro: 'Say yes right here. Leave the address they have for you and your own link will make its way over.',
       rsvpWelcome: 'Say yes right here.',
       rsvpCta: 'Send my invitation',
       rsvpSent: 'That\'s with us. If that address is on the list, your invitation is making its way over — have a look in your inbox, and in spam. If it doesn\'t turn up, ask the couple to put you on the list.',
