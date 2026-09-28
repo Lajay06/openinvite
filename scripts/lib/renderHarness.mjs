@@ -197,6 +197,18 @@ export const SEED = {
     // real address rather than to "mailto:…", which is what Resend refused.
     { id:'gm1', guest_id:'g1', guest_name:'Grace Hopper', guest_email:'mailto:grace@example.com', message:'Cannot wait!',    read:false, replied:false, created_date: iso(-3), created_by:'fixture@example.com' },
     { id:'gm2', guest_name:'Alan Turing',  message:'Congratulations', read:true,  replied:true,  created_date: iso(-1), reply_sent_at: iso(-1), created_by:'fixture@example.com' },
+    // THREE SHAPES THAT REACHED A REAL GUEST, one per row, all read:true so the
+    // unread count stays 1 for the badge guard. Each was accepted by the old
+    // validator and refused by Resend; decorateGuestNote normalizes them on read.
+    //   gm1  mailto:            owner live pass 2026-09-27
+    //   gm3  trailing full stop owner live pass 2026-09-28
+    //   gm4  angle brackets     the ruling's other named shape
+    { id:'gm3', guest_name:'Nelly', guest_email:'nelly@example.com.', message:'Trailing stop', read:true, replied:false, created_date: iso(-2), created_by:'fixture@example.com' },
+    // `Name <addr>`, NOT the bare `<addr>`. A planted removal of the unwrap left
+    // the bare form passing: the surrounding-bracket strip handles it too, so the
+    // fixture was covered twice and tested neither mechanism on its own. Only the
+    // unwrap can drop a display name.
+    { id:'gm4', guest_name:'Bracket', guest_email:'Bracket Guest <bracket@example.com>', message:'Angle brackets', read:true, replied:false, created_date: iso(-4), created_by:'fixture@example.com' },
   ],
   // ONE WAITING AND ONE ALREADY ANSWERED. A page whose review controls only
   // render for a PENDING request cannot be measured off an empty list, and a
