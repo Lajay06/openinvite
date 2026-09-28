@@ -311,10 +311,20 @@ export function OptionPill({ label, selected, onClick, faceFamily = font.family,
         cursor: disabled ? 'not-allowed' : 'pointer',
       }}
     >
-      {/* Reserved slot: present in layout whether or not it is shown, so
-          selecting a pill never shifts the pills beside it. */}
+      {/* TWO RESERVED SLOTS, ONE EACH SIDE, SO THE LABEL IS ACTUALLY CENTERED.
+          There was one, on the left, and it held its space when hidden — which
+          kept the pill from changing width as it was selected, the property this
+          comment used to claim and still keeps. What it did NOT do was center
+          the label: with `[tick][gap][label]` inside a content-width button, the
+          text box's center sat 7.96px to the RIGHT of the pill's center at both
+          390 and 1440 — measured, in every state, on every pill.
+          A mirrored slot after the label costs the same 15.92px on the other
+          side and puts the text back on the pill's axis. Reserving nothing when
+          unselected would have centered it too, and would have made every pill
+          jump wider the moment a couple tapped it. */}
       <span aria-hidden="true" style={{ visibility: selected ? 'visible' : 'hidden', fontSize: compact ? 10 : 11, lineHeight: 1 }}>✓</span>
       {label}
+      <span aria-hidden="true" style={{ visibility: 'hidden', fontSize: compact ? 10 : 11, lineHeight: 1 }}>✓</span>
     </button>
   );
 }
