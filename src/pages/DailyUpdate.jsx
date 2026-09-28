@@ -65,7 +65,7 @@ const LINK_LABEL = {
  *                            them, and "Budget used 64%" is barred here
  *                            anyway (spec 5.2, no percentages)
  *   the tips modal           Layout.jsx already hosts it, reached from
- *                            "Quick tips" in the sidebar. Nothing is orphaned
+ *                            "Studio tour" in the sidebar. Nothing is orphaned
  */
 export default function DailyUpdate() {
   const collab = useCollaboratorContext();

@@ -1,38 +1,37 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { HelpCircle } from 'lucide-react';
-import { guidanceFor } from '@/lib/pageGuidance';
 import { isGuidanceEnabled } from '@/lib/guidanceFlag';
-import { isDismissed } from '@/lib/guidanceState';
 import { useGuidanceState } from '@/hooks/useGuidanceState';
+import { chapterKeyForRoute, chapterProgressKey } from '@/lib/studioTour';
 import WhatsHerePanel from './WhatsHerePanel';
+import { useTourContext } from './TourContext';
 
 /**
- * THE ONE CONTROL, IN THE ONE PLACE.
+ * THE ONE CONTROL, IN THE ONE PLACE, AND NOW IT OPENS THE TOUR.
  *
- * Round two, item 17: the panel is "opened from a consistent control, the way
- * Ava is both global and page-specific."
+ * It lives inside DashboardPageHeader, which every dashboard page already uses,
+ * a product rule and the reason this is one change rather than thirty-seven.
  *
- * It lives inside DashboardPageHeader, which every dashboard page already uses
- * — a product rule, and the reason this is one change rather than thirty-seven.
- * A control added page by page would be in a slightly different place on each
- * of them within a month.
+ * ── TWO REASONS IT RENDERS NOTHING, DOWN FROM FOUR ─────────────────────────
  *
- * ── THREE REASONS IT RENDERS NOTHING ───────────────────────────────────────
+ *   the flag is off        an off switch for the whole guidance system
+ *   there is no router     the header renders in tests and previews outside a
+ *                          Router, where useLocation would throw
  *
- *   the flag is off        — an off switch now, not the default
- *   the path has no entry  — a page nobody wrote guidance for says nothing
- *                            rather than opening an empty panel
- *   there is no router     — the header is rendered in tests and previews
- *                            outside a Router, where useLocation would throw
- *   the couple dismissed it — "do not show this again", remembered in
- *                            WeddingDetails.guidanceState.dismissed. The
- *                            CONTROL goes too, not just the panel: a button
- *                            that reopens what you closed for good is not a
- *                            dismissal, it is a snooze.
+ * THE OTHER TWO ARE GONE, AND DELIBERATELY:
  *
- * The third is why the hook is wrapped: taking out every dashboard page in a
- * preview would be a far worse failure than the control not appearing.
+ *   "the path has no entry" was right when the panel read per-page guidance and
+ *   a page nobody had written would have opened empty. Every page maps to a
+ *   chapter now, with the welcome chapter as the fallback, so there is always
+ *   something to open.
+ *
+ *   "the couple dismissed it" has to go, because chapter 8 of the tour is
+ *   titled "The question mark is always there." and its lead reads "Every page
+ *   has one." A control that hides itself after a dismissal would make the
+ *   tour's own copy false on the pages where it had been hidden. The dismissed
+ *   list is untouched and its path entries are simply no longer read here;
+ *   tour progress uses "tour:" prefixed keys, so nothing collides.
  */
 function usePathname() {
   try {
@@ -42,33 +41,40 @@ function usePathname() {
   }
 }
 
-export default function WhatsHereControl() {
+export default function WhatsHereControl({ tourContext = null }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  // The hook runs unconditionally — React requires that — and its own guards
-  // mean it writes nothing until the record has loaded.
+  // The hook runs unconditionally, React requires that, and its own guards mean
+  // it writes nothing until the record has loaded.
   const { ready, state, dismiss } = useGuidanceState();
+  // MERGED, NOT REPLACED. The shell knows the names, the page knows its
+  // numbers, and passing only one of them showed a personalized lead beside a
+  // nameless welcome.
+  const context = useTourContext(tourContext);
 
   if (!isGuidanceEnabled() || !pathname) return null;
 
-  const guidance = guidanceFor(pathname);
-  if (!guidance) return null;
-  if (isDismissed(state, pathname)) return null;
-
-  const onDismiss = ready ? () => { dismiss(pathname); setOpen(false); } : undefined;
+  const startChapterKey = chapterKeyForRoute(pathname);
+  const dismissed = state?.dismissed || [];
+  // Chapter progress is recorded the same way a panel dismissal was, behind a
+  // prefix, so no schema field was added for the tour.
+  const onChapterComplete = ready
+    ? (key) => { if (!dismissed.includes(chapterProgressKey(key))) dismiss(chapterProgressKey(key)); }
+    : undefined;
 
   return (
     <>
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="What's here"
+        aria-label="Studio tour for this page"
         title="What's here"
+        data-tour-target="whats-here-control"
         style={{
           background: 'none',
           border: 'none',
           cursor: 'pointer',
-          // iconMuted — an enabled icon-only control, 3:1 against white.
+          // iconMuted, an enabled icon-only control, 3:1 against white.
           color: 'rgba(10,10,10,0.45)',
           display: 'flex',
           alignItems: 'center',
@@ -78,7 +84,13 @@ export default function WhatsHereControl() {
         <HelpCircle size={16} />
       </button>
       {open && (
-        <WhatsHerePanel guidance={guidance} onClose={() => setOpen(false)} onDismiss={onDismiss} />
+        <WhatsHerePanel
+          startChapterKey={startChapterKey}
+          context={context}
+          dismissed={dismissed}
+          onClose={() => setOpen(false)}
+          onChapterComplete={onChapterComplete}
+        />
       )}
     </>
   );

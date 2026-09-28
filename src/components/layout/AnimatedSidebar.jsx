@@ -415,7 +415,7 @@ function NavItem({ icon: Icon, label, url, onClick, isActive, showBadge, count =
 
 // ── Desktop sidebar ───────────────────────────────────────────────────────────
 
-export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOffset = 48, collaboratorPermissions = null, unreadMessagesCount = 0 }) {
+export function AnimatedSidebar({ weddingName, onOpenTour, onCollaborate, topOffset = 48, collaboratorPermissions = null, unreadMessagesCount = 0 }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -535,12 +535,14 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
       {/* Bottom static actions */}
       <div style={{ borderTop: "1px solid rgba(10,10,10,0.12)", paddingTop: 4, paddingBottom: 4, flexShrink: 0 }}>
 
-        {/* Quick tips */}
-        {!isCollaborator && onOpenTips && (
+        {/* STUDIO TOUR, in Quick tips' old position. The 7-card modal and the
+            6-stop tour it used to open are retired; this opens the one tour,
+            from the last chapter the couple had not reached. */}
+        {!isCollaborator && onOpenTour && (
           <div
-            onClick={onOpenTips}
-            aria-label="Quick tips"
-            {...interactiveRowProps(onOpenTips)}
+            onClick={onOpenTour}
+            aria-label="Studio tour"
+            {...interactiveRowProps(onOpenTour)}
             style={{
               display: "flex", alignItems: "center", gap: 8,
               padding: "7px 12px", cursor: "pointer",
@@ -551,7 +553,7 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
           >
             <HelpCircle size={14} strokeWidth={1.8} style={{ color: "rgba(10,10,10,0.45)", flexShrink: 0 }} />
             <span style={{ fontSize: 12, fontWeight: 600, color: "#0A0A0A", fontFamily: PJS }}>
-              Quick tips
+              Studio tour
             </span>
           </div>
         )}
@@ -624,7 +626,7 @@ export function AnimatedSidebar({ weddingName, onOpenTips, onCollaborate, topOff
 
 // ── Mobile sidebar content (used inside Sheet) ────────────────────────────────
 
-export function MobileSidebarContent({ weddingName, onClose, onCollaborate, collaboratorPermissions = null, unreadMessagesCount = 0 }) {
+export function MobileSidebarContent({ weddingName, onClose, onCollaborate, onOpenTour, collaboratorPermissions = null, unreadMessagesCount = 0 }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -826,8 +828,17 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, coll
             border, so the feel-pass property guard skipped it; the guard is
             unchanged and this exemption lives here at the site. */}
         <div style={{ height: 1, background: "rgba(10,10,10,0.12)", margin: "0 16px" }} />
-        {/* Account + Collaborate */}
+        {/* STUDIO TOUR, ACCOUNT, COLLABORATE.
+            The tour row is new here. The brief said "next to Help center", and
+            this sheet has no Help center row: its bottom actions are Account,
+            Collaborate and Log out. So it takes the position it has on the
+            desktop sidebar, above those, which is the same reading of "where
+            the tour lives" without inventing a Help row to sit beside.
+            WHY MOBILE NEEDS A NAMED DOOR AT ALL: on a phone the question mark
+            only ever opens the CURRENT page's chapter, so without this there is
+            no way to reach the tour from the start. */}
         {[
+          ...(isCollaboratorMobile || !onOpenTour ? [] : [{ icon: HelpCircle, label: "Studio tour", action: () => { onClose?.(); onOpenTour?.(); } }]),
           { icon: CreditCard, label: "Account",      action: () => { onClose?.(); navigate("/account"); } },
           ...(isCollaboratorMobile ? [] : [{ icon: UserPlus, label: "Collaborate", action: () => { onClose?.(); onCollaborate?.(); } }]),
         ].map((item, i) => (

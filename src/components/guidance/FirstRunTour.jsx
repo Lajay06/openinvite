@@ -2,40 +2,40 @@ import React, { useEffect, useState } from 'react';
 import { isGuidanceEnabled } from '@/lib/guidanceFlag';
 import { hasSeenTour } from '@/lib/guidanceState';
 import { useGuidanceState } from '@/hooks/useGuidanceState';
-import QuickTipsTour from './QuickTipsTour';
+import { chapterProgressKey } from '@/lib/studioTour';
+import StudioTour from './StudioTour';
 
 /**
  * THE TOUR, SHOWN ONCE, AND THE THING THAT DECIDES "ONCE".
  *
- * Round two item 17 built QuickTipsTour and mounted it nowhere, because
- * "shown once after onboarding completes" was not keepable without somewhere
- * to record that it had been. WeddingDetails.guidanceState.tourSeenAt exists
- * now, so this is the mount.
+ * ── THREE CONDITIONS, AND WHAT EACH ONE DECIDES ────────────────────────────
  *
- * ── FOUR CONDITIONS, ALL OF THEM NECESSARY ─────────────────────────────────
+ * Owner ruling, 2026-09-28: "First-run takeover is decided by
+ * guidanceState.tourSeenAt only. A couple with tourSeenAt set never sees it
+ * again, even if the tour has new chapters later." THAT RULING GOVERNS
+ * RE-SHOW: nothing but tourSeenAt may ever bring this back, and in particular
+ * no count of completed chapters may, so adding a tenth chapter later does not
+ * reopen the takeover for a couple who has finished the nine.
  *
- *   the flag is on      — 'off' in this browser turns the system off entirely
- *   the record loaded   — no id, no memory; showing a once-only tour that
- *                         cannot be recorded is showing it every time
- *   tourSeenAt is null  — the whole point
- *   onboarding is done  — "after onboarding completes". A couple still in the
- *                         wizard is being walked through the product already.
+ * The other two conditions decide WHEN IT FIRST APPEARS, never whether it
+ * returns:
+ *
+ *   the flag is on      'off' in this browser turns the guidance system off
+ *                       entirely, and removing that would remove the escape
+ *                       hatch for every surface that uses it
+ *   onboarding is done  a couple still inside the wizard is being walked
+ *                       through the product already
  *
  * ── IT WRITES BEFORE IT CLOSES, AND ON BOTH EXITS ──────────────────────────
  *
- * Done and Skip both count as seen. A tour a couple skipped and then met again
- * on the next load is worse than one they never saw, because the second time
- * they know it is not listening. QuickTipsTour calls onFinish for both.
- *
- * ── WHY A SEPARATE COMPONENT ───────────────────────────────────────────────
- *
- * Layout.jsx is the shell every page renders inside. Putting the four
- * conditions and a hook in it would put guidance's load on every page's
- * critical path; here it is one mount that renders null until it has reason
- * not to.
+ * Owner ruling: "The 'Later' button writes tourSeenAt the same as finishing
+ * does. No nagging, no 'remind me'." That was already this file's behavior and
+ * its reasoning, kept: a tour a couple skipped and then met again on the next
+ * load is worse than one they never saw, because the second time they know it
+ * is not listening.
  */
-export default function FirstRunTour({ onboardingComplete }) {
-  const { ready, state, markTourSeen } = useGuidanceState();
+export default function FirstRunTour({ onboardingComplete, context = {} }) {
+  const { ready, state, markTourSeen, dismiss } = useGuidanceState();
   const [dismissedThisSession, setDismissedThisSession] = useState(false);
 
   // WRITE ONCE, EVEN IF THE COUPLE NAVIGATES MID-TOUR. Without this, closing
@@ -49,8 +49,16 @@ export default function FirstRunTour({ onboardingComplete }) {
   if (!ready || !onboardingComplete) return null;
   if (hasSeenTour(state) || dismissedThisSession || !opened) return null;
 
+  const dismissedKeys = state?.dismissed || [];
+
   return (
-    <QuickTipsTour
+    <StudioTour
+      mode="takeover"
+      context={context}
+      dismissed={dismissedKeys}
+      onChapterComplete={(key) => {
+        if (!dismissedKeys.includes(chapterProgressKey(key))) dismiss(chapterProgressKey(key));
+      }}
       onFinish={markTourSeen}
       onClose={() => { markTourSeen(); setDismissedThisSession(true); }}
     />

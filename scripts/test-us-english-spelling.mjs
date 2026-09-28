@@ -119,6 +119,12 @@ const ALLOWLIST_SUBSTRINGS = [
   'handleToggleFavourite', 'onToggleFavourite', 'FavouriteStar',
   'favourItems', 'setFavourItems', 'maidOfHonour', 'personalisationDetails',
   'data.personalised', 'personalised: v', 'personalised =', "personalised}",
+  // A DIRECT QUOTATION OF THE OWNER'S BRIEF, which CLAUDE.md names as one of
+  // the two legitimate uses of this list: "for third-party identifiers and
+  // direct quotations". src/lib/studioTour.js quotes goal 2026-09-28 verbatim
+  // where it explains why the guests chapter has a second lead, and changing a
+  // quotation's spelling would misquote him to satisfy a guard.
+  "'Personalise the lead",
   "status: 'cancelled'", 'cancelled:', 'let cancelled',
   'cancelled = false', 'cancelled = true', "'cancelled'",
   'value="favourites"',

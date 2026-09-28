@@ -52,7 +52,7 @@ export function chapterProgressKey(chapterKey) {
  *
  * `spotlight` names the control "Try it" should point at. It is a string here,
  * not a selector, because a selector in a data file is a coupling the mobile
- * shell cannot honour; the web tour maps these names to selectors itself.
+ * shell cannot honor; the web tour maps these names to selectors itself.
  */
 export const CHAPTERS = [
   {
@@ -91,7 +91,7 @@ export const CHAPTERS = [
     routes: ['/Guests', '/Messages', '/Seating', '/wedding-party'],
     title: 'The people.',
     lead: 'Guest list, replies, seating and notes, all connected.',
-    // PERSONALISED WHEN THE NUMBERS EXIST. The brief: 'Personalise the lead
+    // PERSONALIZED WHEN THE NUMBERS EXIST. The brief: 'Personalise the lead
     // with live numbers when present: "{n} guests, {m} replied so far."'
     // Both are read from data the dashboard has already loaded; the tour never
     // makes a read of its own.
@@ -143,7 +143,8 @@ export const CHAPTERS = [
     // different chapter than the one that sent them. Longest route match is why
     // '/studio' still resolves to design studio.
     routes: [
-      '/studio/guest-suite', '/studio/website',
+      '/studio/guest-suite', '/studio/guest-suite/share', '/studio/guest-suite/policies',
+      '/studio/guest-suite/assets', '/studio/website',
       '/GuestSuiteSchedule', '/QandA', '/GuestSuiteRegistry', '/GuestSuiteAccommodation',
       '/GuestSuiteTransport', '/GuestSuiteExperience', '/GuestSuitePolicies', '/GuestSuitePolls',
     ],
@@ -151,7 +152,11 @@ export const CHAPTERS = [
     lead: 'Publish the guest site, then send invitations from the guest list.',
     body: "Invitations go out by email in your names, each with the guest's personal link. Replies come back to the list. The guest site stays live and you can keep editing it; saves are published.",
     tip: 'Send yourself a test invitation first. It is the fastest way to see the whole journey as a guest.',
-    tryIt: { label: 'Guest Suite', to: '/studio/guest-suite', spotlight: 'guest-suite-publish' },
+    // THE SHARE TAB, NOT THE PAGE. The Publish control lives on
+    // /studio/guest-suite/share (StudioShareTab), and the tab is read from the
+    // PATH rather than a query param, so landing on /studio/guest-suite would
+    // open the website tab and spotlight nothing.
+    tryIt: { label: 'Guest Suite', to: '/studio/guest-suite/share', spotlight: 'guest-suite-publish' },
   },
   {
     key: 'help',
@@ -165,6 +170,57 @@ export const CHAPTERS = [
     tryIt: { label: 'the question mark', to: null, spotlight: 'whats-here-control', pulseOnly: true },
   },
 ];
+
+/**
+ * THE RECORDINGS, IN ONE MAP, SO THE RECORDING PR EDITS ONE BLOCK.
+ *
+ * Every chapter shows a placeholder poster until its footage exists. That is
+ * deliberate and it is the owner's instruction for this PR: "ship the UI with
+ * poster frames from Cloudinary placeholders so the layout is real before the
+ * footage is." A 1280 by 720 poster reserves the right box from the first
+ * commit, so the recording PR changes data and not markup.
+ *
+ * ONE SHARED PLACEHOLDER, not nine identical grey rectangles at nine paths.
+ * Nine would carry no more information than one and would be nine things to
+ * find and delete later.
+ *
+ * webm is what Playwright produces. mp4 and the poster come from Cloudinary
+ * DELIVERY DERIVATIVES of that same upload rather than from local exports,
+ * because this checkout has no ffmpeg: the same public id served as .mp4 and
+ * as .jpg. That is why a chapter needs only one uploaded asset.
+ */
+export const PLACEHOLDER_POSTER =
+  'https://res.cloudinary.com/dsr84xknv/image/upload/v1790635009/studio-tour/_placeholder/poster-placeholder.png';
+
+/** chapter key -> { poster, webm, mp4 }. Null video means the poster only. */
+export const MEDIA = {
+  welcome: null,
+  'event-details': null,
+  schedule: null,
+  guests: null,
+  style: null,
+  'design-studio': null,
+  ava: null,
+  publish: null,
+  help: null,
+};
+
+/**
+ * What a chapter should show.
+ *
+ * Always returns a poster, so no caller has to decide what to draw when the
+ * footage is missing. `hasFootage` is the flag the reduced-motion and preload
+ * logic reads, rather than each caller testing for null itself.
+ */
+export function mediaFor(chapterKey) {
+  const entry = MEDIA[chapterKey] || null;
+  return {
+    poster: entry?.poster || PLACEHOLDER_POSTER,
+    webm: entry?.webm || null,
+    mp4: entry?.mp4 || null,
+    hasFootage: !!(entry && entry.webm),
+  };
+}
 
 /** The card after the last chapter. */
 export const FINALE = {

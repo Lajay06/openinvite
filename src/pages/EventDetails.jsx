@@ -602,8 +602,22 @@ function EventCardRow({ event, isFixed, fixedType, isPost, weddingDate, onEdit, 
 // page's default "details" tab — resolved synchronously in useState's own
 // lazy initializer (not an effect) so the very first render already has the
 // right tab mounted, before useAvaFocus's own effect looks for the element.
+const TABS_FROM_URL = ['details', 'events', 'theme'];
+
 function initialTab() {
-  return new URLSearchParams(window.location.search).get('ava_focus') === 'day' ? 'events' : 'details';
+  const params = new URLSearchParams(window.location.search);
+  // ava_focus KEEPS PRECEDENCE. It is a deep link from Ava to a specific card,
+  // so a tour link that disagreed with it would take a couple away from the
+  // thing Ava had just pointed at.
+  if (params.get('ava_focus') === 'day') return 'events';
+  // ?tab= IS THE TOUR'S DOOR. The studio tour's event-details chapter sends a
+  // couple to the Theme tab with the aesthetic pills spotlighted, and this tab
+  // is state rather than a route, so without reading the parameter the link
+  // landed on Details and the spotlight found nothing. It failed quietly, which
+  // is the worst way for it to fail.
+  const asked = params.get('tab');
+  if (TABS_FROM_URL.includes(asked)) return asked;
+  return 'details';
 }
 
 export default function EventDetailsPage() {

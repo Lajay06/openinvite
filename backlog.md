@@ -9,6 +9,15 @@ only names a topic is a reminder, not a task, and reminders rot.
 
 ---
 
+## Help Center title case
+
+`src/pages/Help.jsx:730` reads "Back to Help Center" in title case where every
+other reference in the product is "Help center" in sentence case. Sentence case
+is the chrome rule, so this is drift rather than an exemption. One line, left
+for a copy pass rather than folded into an unrelated PR.
+
+---
+
 ## Unread rsvpCta values
 
 19 universe rsvpCta values are unread since #866 (button is global "Send my

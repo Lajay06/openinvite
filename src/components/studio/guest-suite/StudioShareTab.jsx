@@ -176,7 +176,7 @@ export default function StudioShareTab({ details: propDetails }) {
             {hasAddress ? siteUrl : <>Add your names in <a href="/EventDetails" style={{ color: '#E03553', fontWeight: 600 }}>Event details</a> and your address follows.</>}
           </p>
         </div>
-        <button onClick={togglePublish} disabled={!hasAddress && !details?.websiteEnabled} style={{ padding: '10px 24px', background: details?.websiteEnabled ? 'transparent' : 'linear-gradient(135deg, #E03553, #803D81)', color: details?.websiteEnabled ? '#E03553' : '#FFF', border: details?.websiteEnabled ? '1px solid #E03553' : 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: sans }}>
+        <button data-tour-target="guest-suite-publish" onClick={togglePublish} disabled={!hasAddress && !details?.websiteEnabled} style={{ padding: '10px 24px', background: details?.websiteEnabled ? 'transparent' : 'linear-gradient(135deg, #E03553, #803D81)', color: details?.websiteEnabled ? '#E03553' : '#FFF', border: details?.websiteEnabled ? '1px solid #E03553' : 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: sans }}>
           {details?.websiteEnabled ? 'Unpublish' : 'Publish Website'}
         </button>
         {details?.websiteEnabled && details?.slug && (

@@ -134,11 +134,25 @@ export async function runGuidanceRemembered() {
   check('  a collaborator is never shown it',
     /!isCollaborating && isOnboardingComplete\(user\)/.test(LAYOUT), 'owner sessions only');
 
-  // ── a dismissed panel takes its control with it ───────────────────────────
-  check('a dismissed page hides the control, not just the panel',
-    /if \(isDismissed\(state, pathname\)\) return null;/.test(CONTROL), 'no snooze button');
-  check('  and dismissal is offered only once the record has loaded',
-    /const onDismiss = ready \?/.test(CONTROL), 'no promise the product cannot keep');
+  // ── THE DISMISSED LIST NOW RECORDS CHAPTERS, NOT HIDDEN PAGES ─────────────
+  //
+  // These two checks used to assert that a per-path dismissal hid the question
+  // mark and that "do not show this again" was offered only once the record had
+  // loaded. Goal 2026-09-28 retired both: the tour's own chapter 8 is titled
+  // "The question mark is always there." with the lead "Every page has one.",
+  // and a control that hid itself would have made that copy false on the pages
+  // where it had been hidden.
+  //
+  // The FIELD is unchanged and still owner-scoped, so what is worth asserting
+  // is that the same list now carries chapter progress behind a prefix, which
+  // is what let this ship with no schema change at all.
+  check('the control no longer hides itself on a dismissed page',
+    !/if \(isDismissed\(state, pathname\)\) return null;/.test(CONTROL),
+    'chapter 8 promises every page has one');
+  check('  and the dismissed list carries chapter progress instead',
+    /chapterProgressKey/.test(CONTROL), 'a prefix, not a new field');
+  check('  written only once per chapter',
+    /if \(!dismissed\.includes\(chapterProgressKey\(key\)\)\)/.test(CONTROL), 'no repeat writes');
 
   return results;
 }

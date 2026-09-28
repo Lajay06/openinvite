@@ -99,6 +99,11 @@ export default function StudioHub() {
             return (
               <motion.div
                 key={i}
+                /* The tour's design-studio chapter points "Try it" here. Keyed
+                   off the card's own title rather than its index, because the
+                   card order is data and an index would silently point at
+                   whatever moved into position two. */
+                data-tour-target={card.title === 'My Universe' ? 'studio-my-universe' : undefined}
                 onClick={card.action}
                 {...interactiveDivProps(card.action, { label: card.title })}
                 whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}

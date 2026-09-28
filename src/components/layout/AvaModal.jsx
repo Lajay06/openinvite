@@ -277,6 +277,7 @@ function AvaModalDialog({ onClose, systemPrompt, quickActions, pageTitle, body }
         {/* Input */}
         <div style={{ padding: '12px 20px 16px', borderTop: '1px solid rgba(10,10,10,0.12)', flexShrink: 0, display: 'flex', gap: 10, alignItems: 'flex-end' }}>
           <input
+            data-tour-target="ava-composer"
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}

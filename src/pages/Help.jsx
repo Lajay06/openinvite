@@ -91,7 +91,7 @@ const ARTICLES = {
         <li style={S.li}><strong>Guest Suite:</strong> Schedule, Q&A, Registry, Stay, Getting here, Experience guide, Good to know, Guest polls</li>
         <li style={S.li}><strong>Extras:</strong> Honeymoon, Considerations</li>
       </ul>
-      <p style={S.p}>At the bottom of the sidebar: Account settings, Collaborate, Quick tips, Help center, Leave dashboard.</p>
+      <p style={S.p}>At the bottom of the sidebar: Account settings, Collaborate, Studio tour, Help center, Leave dashboard.</p>
     </div>
   ),
   'Inviting a collaborator': (

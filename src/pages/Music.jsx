@@ -668,7 +668,9 @@ export default function MusicPage() {
                           className="btn-editorial-secondary" style={{ fontSize: 12 }}>Cancel</button>
                       </span>
                     ) : (
-                      <button onClick={() => setAddingPlaylist(true)} className="btn-editorial-secondary" style={{ fontSize: 12 }}>
+                      <button
+                        data-tour-target="music-create-playlist"
+                        onClick={() => setAddingPlaylist(true)} className="btn-editorial-secondary" style={{ fontSize: 12 }}>
                         Create playlist
                       </button>
                     )}
