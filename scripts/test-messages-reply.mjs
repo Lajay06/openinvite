@@ -15,10 +15,12 @@
  *
  * WHAT THIS DRIVES, END TO END, that no source check can:
  *
- *   THE RECIPIENT IS THE REAL ADDRESS. The fixture row deliberately stores
- *   "mailto:grace@example.com"; the guard reads the body of the actual
- *   /api/send-guest-reply request the page makes and asserts it carries
- *   "grace@example.com". A source check could only assert that a function named
+ *   THE RECIPIENT IS THE REAL ADDRESS, for every shape that has reached a real
+ *   guest. Three rows are seeded, each storing a form the old validator accepted
+ *   and Resend refused — "mailto:grace@example.com" (live pass 2026-09-27),
+ *   "nelly@example.com." (live pass 2026-09-28) and "<bracket@example.com>" —
+ *   and the guard reads the body of the actual /api/send-guest-reply request the
+ *   page makes for each. A source check could only assert that a function named
  *   normalizeEmail is called somewhere.
  *
  *   THE EMAIL GOES BEFORE THE RECORD. reply_sent_at means "the email went out",
@@ -57,9 +59,18 @@ const check = (name, ok, detail) => {
   console.log(`  ${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? `  (${detail})` : ''}`);
 };
 
-/** What the fixture stores, and what it must become. */
-const STORED = (SEED.GuestMessage || [])[0].guest_email;
-const EXPECTED = 'grace@example.com';
+/**
+ * Every stored shape that has reached a real guest, and what it must become.
+ * `stored` is read off the seed so the table cannot drift from the fixture.
+ */
+const storedFor = (id) => ((SEED.GuestMessage || []).find((m) => m.id === id) || {}).guest_email;
+const SHAPES = [
+  { id: 'gm1', name: 'Grace Hopper', expected: 'grace@example.com',   why: 'mailto:' },
+  { id: 'gm3', name: 'Nelly',        expected: 'nelly@example.com',   why: 'trailing full stop' },
+  { id: 'gm4', name: 'Bracket',      expected: 'bracket@example.com', why: 'angle brackets' },
+].map((sh) => ({ ...sh, stored: storedFor(sh.id) }));
+const STORED = SHAPES[0].stored;
+const EXPECTED = SHAPES[0].expected;
 
 const browser = await chromium.launch();
 
@@ -86,43 +97,56 @@ for (const [w, h] of [[390, 844], [1440, 950]]) {
   check('  Messages rendered with the seeded note', /Grace Hopper/.test(text),
     text.length ? `${text.length} chars` : 'empty');
 
-  // THE ROW PRINTS AN ADDRESS, NOT A LINK. Read off the painted DOM.
-  check('  the row shows the real address', text.includes(EXPECTED), EXPECTED);
-  check('  and never the mailto: scheme', !/mailto:/i.test(text),
-    /mailto:/i.test(text) ? `still printing ${STORED}` : 'no scheme in the label');
-
-  // Drive the reply.
-  const replyBtn = page.locator('button[title="Reply"]').first();
-  await replyBtn.click().catch(() => {});
-  await page.waitForTimeout(800);
-  const box = page.locator('textarea').first();
-  await box.fill('Yes — there is parking behind the church.').catch(() => {});
-  await page.waitForTimeout(300);
-  await page.getByRole('button', { name: /Send reply/ }).click().catch(() => {});
-  await page.waitForTimeout(4000);
-
-  const send = calls.find((c) => c.path.includes('send-guest-reply'));
-  const record = calls.find((c) => c.path.includes('guest-note-update') && c.body?.action === 'reply');
-
-  check('  the reply email was requested', !!send, send ? send.path : 'no request observed');
-  if (send) {
-    check('  addressed to the real address, not the stored scheme',
-      send.body?.guestEmail === EXPECTED, JSON.stringify(send.body?.guestEmail));
-    check('  carrying the reply text', /parking behind the church/.test(send.body?.replyText || ''),
-      'the couple\'s words');
-    check('  and the guest name', send.body?.guestName === 'Grace Hopper', JSON.stringify(send.body?.guestName));
+  // THE ROWS PRINT ADDRESSES, NOT THE STORED JUNK. Read off the painted DOM.
+  for (const sh of SHAPES) {
+    check(`  the ${sh.why} row shows the real address`, text.includes(sh.expected), sh.expected);
+    check(`    and never ${JSON.stringify(sh.stored)}`, !text.includes(sh.stored),
+      text.includes(sh.stored) ? `still printing ${sh.stored}` : 'normalized on read');
   }
+  check('  and no mailto: scheme anywhere on the page', !/mailto:/i.test(text),
+    /mailto:/i.test(text) ? `still printing ${STORED}` : 'no scheme in any label');
 
-  check('  the note was then marked replied', !!record, record ? 'guest-note-update action=reply' : 'no record write');
-  if (send && record) {
-    // ORDER AS OBSERVED. reply_sent_at means the email went out; recording it
-    // before a successful send would be a false record.
-    check('  the email went out BEFORE the record was written',
-      calls.indexOf(send) < calls.indexOf(record),
-      `send@${calls.indexOf(send)} record@${calls.indexOf(record)}`);
-    check('  and the record names the same note',
-      typeof record.body?.noteId === 'string' && record.body.noteId.length > 0,
-      JSON.stringify(record.body?.noteId));
+  // ── one reply per stored shape ─────────────────────────────────────────────
+  //
+  // BY ROW, NOT BY INDEX. The rows are ordered newest-first by created_date, so
+  // an index would silently re-target the moment a fixture date changed. Each
+  // row is found by the guest's name and its own Reply button clicked.
+  for (const shape of SHAPES) {
+    const before = calls.length;
+    const row = page.locator('div', { hasText: shape.name }).filter({ has: page.locator('button[title="Reply"]') }).last();
+    await row.locator('button[title="Reply"]').click().catch(() => {});
+    await page.waitForTimeout(800);
+    await page.locator('textarea').first().fill(`Yes — ${shape.name}, there is parking behind the church.`).catch(() => {});
+    await page.waitForTimeout(300);
+    await page.getByRole('button', { name: /Send reply/ }).click().catch(() => {});
+    await page.waitForTimeout(4000);
+
+    const fresh = calls.slice(before);
+    const send = fresh.find((c) => c.path.includes('send-guest-reply'));
+    const record = fresh.find((c) => c.path.includes('guest-note-update') && c.body?.action === 'reply');
+
+    check(`  [${shape.why}] the reply email was requested`, !!send,
+      send ? send.path : 'no request observed');
+    if (send) {
+      check(`  [${shape.why}] addressed to the real address, not ${JSON.stringify(shape.stored)}`,
+        send.body?.guestEmail === shape.expected, JSON.stringify(send.body?.guestEmail));
+      check(`  [${shape.why}] carrying the reply text`,
+        /parking behind the church/.test(send.body?.replyText || ''), 'the couple\'s words');
+      check(`  [${shape.why}] and the guest name`,
+        send.body?.guestName === shape.name, JSON.stringify(send.body?.guestName));
+    }
+    check(`  [${shape.why}] the note was then marked replied`, !!record,
+      record ? 'guest-note-update action=reply' : 'no record write');
+    if (send && record) {
+      // ORDER AS OBSERVED. reply_sent_at means the email went out; recording it
+      // before a successful send would be a false record.
+      check(`  [${shape.why}] the email went out BEFORE the record was written`,
+        fresh.indexOf(send) < fresh.indexOf(record),
+        `send@${fresh.indexOf(send)} record@${fresh.indexOf(record)}`);
+      check(`  [${shape.why}] and the record names a note`,
+        typeof record.body?.noteId === 'string' && record.body.noteId.length > 0,
+        JSON.stringify(record.body?.noteId));
+    }
   }
 
   await ctx.close();

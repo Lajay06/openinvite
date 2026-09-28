@@ -189,51 +189,108 @@ export function sanitizeString(str) {
 export function isValidEmail(email) {
   if (typeof email !== 'string') return false;
   if (email.length > 320) return false;
-  // A SCHEME PREFIX IS NOT PART OF AN ADDRESS, AND THIS USED TO ACCEPT ONE.
+
+  // ── WHY THIS IS RULES AND NOT A REGEX ──────────────────────────────────────
   //
-  // `[^\s@]+` matches anything that is not whitespace and not an at-sign, so
-  // ':' and '<' passed straight through and all of these were "valid":
+  // Two owner live passes, two refusals from Resend, one permissive pattern:
   //
-  //     mailto:someone@example.com        <someone@example.com>
-  //     MAILTO:someone@example.com        javascript:x@y.com
+  //   2026-09-27  mailto:la.jay06+notiftest01@gmail.com   a pasted mailto link
+  //   2026-09-28  la.jay06+notiftest01@gmail.com.         a trailing full stop
   //
-  // Found 2026-09-27 by an owner live pass on the guest-note form: an address
-  // pasted from a mailto link was accepted, encrypted, stored, and then handed
-  // to Resend as the recipient, which refused it — so the couple's reply failed
-  // with "Something went wrong" and the Messages row displayed the prefix as
-  // part of the address. Two symptoms, one permissive regex.
+  // The original was `/^[^\s@]+@[^\s@]+\.[^\s@]+$/`, and "not whitespace and
+  // not an at-sign" admits ':' '<' ',' ';' and a trailing '.' alike. The first
+  // fix added `if (/[:<>]/.test(email)) return false`, which closed one shape
+  // and left the other — a narrower patch than the defect, which is why the
+  // same class came back the next day.
   //
-  // Rejecting rather than repairing here, because a validator that silently
-  // rewrites its input cannot be used to decide whether to refuse. Callers that
-  // want to be forgiving normalize FIRST — see normalizeEmail below.
+  // So the domain is checked as a DOMAIN — dot-separated labels, each of
+  // alphanumerics and hyphens, none starting or ending with a hyphen, none
+  // empty (which is what a leading, trailing or doubled dot produces), and a
+  // final label of at least two letters. A trailing stop makes the last label
+  // empty and fails on the rule, not on a character blacklist that has to
+  // anticipate the next paste.
   //
-  // Neither ':' nor '<' nor '>' is legal in an unquoted local part, so this is
-  // strictly narrowing: every address that was really an address still passes.
-  if (/[:<>]/.test(email)) return false;
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  // STILL REJECTS RATHER THAN REPAIRS. A validator that rewrites its input
+  // cannot be used to decide whether to refuse. Callers that want to be
+  // forgiving normalize FIRST — see normalizeEmail below, and
+  // api/guest-note-submit.js for the pattern.
+  //
+  // NOTHING IS LOOSENED. Every rule below is a subset of what the old pattern
+  // accepted; scripts/test-email-validation.mjs runs both over the fixture set
+  // and asserts no previously accepted address is now refused.
+
+  // Exactly one at-sign. (The old pattern got this from `[^\s@]+` on both
+  // sides; stated directly here so the local/domain split is unambiguous.)
+  const at = email.indexOf('@');
+  if (at < 1 || at !== email.lastIndexOf('@')) return false;
+
+  const local = email.slice(0, at);
+  const domain = email.slice(at + 1);
+
+  // A local part may hold a great deal — dots, plus tags, hyphens — but not
+  // whitespace, and not the punctuation that means something else in an
+  // address context: '<' '>' wrap one, ':' introduces a scheme, ',' and ';'
+  // separate recipients.
+  if (/[\s<>:,;]/.test(local)) return false;
+
+  if (!domain || /\s/.test(domain)) return false;
+  const labels = domain.split('.');
+  if (labels.length < 2) return false;
+  for (const label of labels) {
+    // Empty means a leading dot, a trailing dot, or '..' — the trailing-stop
+    // case lands here.
+    if (!label) return false;
+    if (label.startsWith('-') || label.endsWith('-')) return false;
+    if (/[^A-Za-z0-9-]/.test(label)) return false;
+  }
+  // Two letters minimum, letters only: no all-numeric or single-character TLD.
+  if (!/^[A-Za-z]{2,}$/.test(labels[labels.length - 1])) return false;
+
+  return true;
 }
 
 /**
  * The address a human meant, out of what they actually pasted.
  *
- * Strips a `mailto:` scheme and the angle brackets of a `Name <addr>` form,
- * then trims and lowercases. Does NOT validate — run isValidEmail on the
- * result, which is the arrangement that lets a caller be forgiving about shape
- * without being forgiving about correctness.
+ * Does NOT validate — run isValidEmail on the result. That split is what lets a
+ * caller be forgiving about shape without being forgiving about correctness.
+ *
+ * In order: trim; drop a `mailto:` scheme; unwrap `Name <addr>`; then strip
+ * surrounding quotes or brackets and trailing `. , ; :` until neither applies,
+ * because they arrive interleaved — `"a@b.com".` needs both, in that order.
+ *
+ * THE DOMAIN IS LOWER-CASED AND THE LOCAL PART IS NOT. Domains are
+ * case-insensitive; a local part is not, by the spec, and folding it is a
+ * change to an identifier we were given rather than a repair of it. The earlier
+ * version lower-cased the whole string.
  *
  * @param {unknown} email
  * @returns {string} '' when there is nothing usable
  */
 export function normalizeEmail(email) {
   if (typeof email !== 'string') return '';
-  return email
-    .trim()
-    .replace(/^mailto:/i, '')
-    // `Ada Lovelace <ada@example.com>` and the bare `<ada@example.com>` both
-    // reduce to the address; anything before the bracket is a display name.
-    .replace(/^[^<]*<([^>]*)>$/, '$1')
-    .trim()
-    .toLowerCase();
+
+  let v = email.trim().replace(/^mailto:/i, '').trim();
+
+  // `Ada Lovelace <ada@example.com>` and the bare `<ada@example.com>` both
+  // reduce to the address; anything before the bracket is a display name.
+  const wrapped = /^[^<]*<([^>]*)>$/.exec(v);
+  if (wrapped) v = wrapped[1].trim();
+
+  // UNTIL NEITHER APPLIES. One pass in a fixed order cannot handle both
+  // `"a@b.com".` and `(a@b.com,` — the punctuation and the wrapper each
+  // uncover the other.
+  let previous;
+  do {
+    previous = v;
+    v = v.replace(/^[\s"'`([{<]+/, '').replace(/[\s"'`)\]}>]+$/, '');
+    v = v.replace(/[.,;:]+$/, '');
+    v = v.trim();
+  } while (v !== previous);
+
+  const at = v.lastIndexOf('@');
+  if (at === -1) return v;
+  return `${v.slice(0, at)}@${v.slice(at + 1).toLowerCase()}`;
 }
 
 /**
