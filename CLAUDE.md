@@ -11,11 +11,24 @@ hashed-identifier pattern, the User-entity auth quirk, schema drift, env
 var sourcing). Update it when you learn something new the same way.
 
 ## Rules
-- Em dashes: NOT a product rule. In marketing copy we author for publication,
-  prefer sentence structure over em-dash parentheticals — an authoring-time
-  editorial preference enforced by the marketing lane, never by a sweep and
-  never over product strings. Product copy is untouched; the canon trial
-  sentence contains one.
+- NO EM DASHES OR EN DASHES in user-facing copy or in docs. Use a comma, a
+  colon, or a full stop. Owner ruling 2026-09-28, at the start of the studio
+  tour goal, and it supersedes the narrower preference this bullet used to
+  record (which applied to marketing copy only and explicitly not to product
+  strings).
+  This is a RULING, and it postdates the code: thousands of existing lines
+  carry these characters, so they are drift, not violations anyone committed.
+  There is NO SWEEP. The canon trial sentence keeps its dash, and so does every
+  other string already shipped, until someone edits that line for another
+  reason.
+  Enforced for NEW strings only, by `npm run test:calm-copy`, which reads
+  added lines in `origin/main...HEAD` and nothing else. In scope: product
+  source (src/pages, src/components, src/lib) and every markdown document.
+  Out of scope: comments in source. The US-English guard makes the opposite
+  call there because its reason is about WORDS travelling out of a comment into
+  a label; a dash in prose about code is punctuation, and a phrase lifted into
+  a label gets caught at the label. `SKIP_COMMENTS_IN_SOURCE` in
+  scripts/test-calm-copy.mjs is the one line that reverses that decision.
 - NO LOANWORD FLOURISHES IN UNIVERSE COPY. A universe evokes its place through
   typography, imagery, palette and motion — never through souvenir vocabulary.
   The reductio is the test: if paris says "avec plaisir", kyoto says "hai" and

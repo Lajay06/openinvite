@@ -135,6 +135,13 @@ jobs:
           GH_EVENT_BEFORE: ${{ github.event.before }}
         run: npm run test:us-english-spelling
 
+      # The dash rule, beside the spelling rule: both are diff based, both read
+      # added lines only, and both exist because the rule postdates the code.
+      - name: Calm copy, no em or en dashes in new copy or docs
+        env:
+          GH_EVENT_BEFORE: ${{ github.event.before }}
+        run: npm run test:calm-copy
+
       - name: Lint
         run: npm run lint
 

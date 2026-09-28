@@ -26,6 +26,7 @@
     "test:marketing-hero-consistency": "node scripts/test-marketing-hero-consistency.mjs",
     "test:prerendered-freshness": "node scripts/test-prerendered-freshness.mjs",
     "test:us-english-spelling": "node scripts/test-us-english-spelling.mjs",
+    "test:calm-copy": "node scripts/test-calm-copy.mjs",
     "test:weather-states": "node scripts/test-weather-states.mjs",
     "test:attendees": "node scripts/test-attendees.mjs",
     "test:table-assignment": "node scripts/test-table-assignment.mjs",
