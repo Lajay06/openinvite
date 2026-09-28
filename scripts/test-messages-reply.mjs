@@ -29,9 +29,26 @@
  *   painted, so it is read off the DOM.
  *
  * The sender is stubbed — this is a test of the reply path, not of Resend.
+ *
+ * ── AND THE EMAIL CARRIES THE COUPLE'S NAMES ───────────────────────────────
+ *
+ * Second owner live pass, 2026-09-28: the reply arrived, and every place it
+ * should have named the couple said "The couple" instead. Messages.jsx sent
+ * Invitation.couple_names — a DIFFERENT RECORD from the wedding — so a couple
+ * with names on WeddingDetails and no Invitation row sent an empty string, and
+ * one fallback reached a real guest four times over. The names are resolved
+ * server-side now, from the wedding the caller was just authenticated against.
+ *
+ * The four places are asserted by RENDERING the template with the fixture
+ * wedding's real names, plus a control that a nameless wedding still falls back
+ * — without it, "no 'The couple' anywhere" would also pass on a build that
+ * deleted the fallback and printed a gap where a name goes.
  */
+import { readFileSync } from 'fs';
 import { chromium } from 'playwright';
-import { seededContext, SEED } from './lib/renderHarness.mjs';
+import { seededContext, SEED, PUBLISHED_WEDDING } from './lib/renderHarness.mjs';
+import { coupleDisplayName } from '../api/_lib/coupleNames.js';
+import { renderGuestReplyEmail } from '../src/lib/guestReplyEmailTemplate.js';
 
 const BASE = process.env.CAPTURE_BASE_URL || 'http://localhost:4220';
 const results = [];
@@ -112,6 +129,57 @@ for (const [w, h] of [[390, 844], [1440, 950]]) {
 }
 
 await browser.close();
+
+// ── the email names the couple, in all four places ───────────────────────────
+console.log('\n  the reply email, rendered with the fixture wedding\'s own names:');
+{
+  const NAMES = coupleDisplayName(PUBLISHED_WEDDING);
+  check('  the fixture wedding has names to print', !!NAMES, JSON.stringify(NAMES));
+
+  const mail = renderGuestReplyEmail({
+    guestName: 'Grace Hopper',
+    coupleNames: NAMES,
+    originalMessage: 'Cannot wait!',
+    replyText: 'Yes — there is parking behind the church.',
+  });
+  // The template escapes for HTML, so '&' arrives as '&amp;' in the body.
+  const escaped = NAMES.replace(/&/g, '&amp;');
+
+  check('  1/4 subject names the couple', mail.subject === `${NAMES} replied to your note`,
+    JSON.stringify(mail.subject));
+  check('  2/4 eyebrow names the couple', mail.html.includes(`A reply from ${escaped}`),
+    `A reply from ${escaped}`);
+  check('  3/4 footer names the couple',
+    mail.html.includes(`This is a reply to the note you sent ${escaped} from their wedding site. Replying to this email goes straight to them.`),
+    'verbatim');
+  // 4/4 IS THE FROM NAME, AND IT IS BUILT IN THE ENDPOINT, not the template —
+  // so it is asserted on the endpoint's own resolution rather than on this HTML.
+  const EP = readFileSync(new URL('../api/send-guest-reply.js', import.meta.url), 'utf8');
+  check('  4/4 the From name is the resolved names',
+    /const fromName = cleanCoupleNames \|\| 'Openinvite';/.test(EP)
+      && /const cleanCoupleNames = coupleDisplayName\(wedding\) \|\| '';/.test(EP),
+    'same construction as send-invites.js');
+  check('    resolved from the caller\'s own wedding, not the request body',
+    /const wedding = await getMyWedding\(caller\.id\);/.test(EP)
+      && !/sanitizeString\(coupleNames\)/.test(EP),
+    'the body value is ignored');
+
+  check('  the heading greets the guest and nothing else',
+    mail.html.includes('Hi Grace,') && !/Hi Grace, .* replied/.test(mail.html), 'Hi {firstName},');
+  check('  the quoted note is labelled "Your note"', mail.html.includes('>Your note<'), 'not "Your message"');
+
+  // THE WHOLE POINT.
+  check('  "The couple" never renders when the wedding has names',
+    !mail.html.includes('The couple') && !mail.subject.includes('The couple'),
+    'no fallback anywhere');
+
+  // CONTROL. A build that deleted the fallback would pass the check above while
+  // printing a gap — so the nameless case must still produce the fallback.
+  const nameless = renderGuestReplyEmail({ guestName: 'Grace', coupleNames: '', originalMessage: 'x', replyText: 'y' });
+  check('  control: a wedding with no names still falls back',
+    nameless.subject === 'The couple replied to your note', JSON.stringify(nameless.subject));
+}
+
 const failed = results.filter((r) => !r).length;
 console.log(`\n  ${results.length - failed}/${results.length} checks passed`);
 if (failed) { console.log(`  ${failed} FAILED`); process.exit(1); }
