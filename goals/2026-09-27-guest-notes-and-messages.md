@@ -41,7 +41,8 @@
 > `null`. Corroborated by two `/api/guest-note-update` 200s in the production
 > logs.
 >
-> It also found two defects, both fixed after this closure:
+> It also found three defects, all fixed after this closure, and each fix
+> confirmed by a further owner-run pass on `la.jay06+smoke01`:
 >
 > - **The reply failed and the row printed `mailto:…`** — one cause, two
 >   symptoms: `isValidEmail` accepted a scheme prefix, so an address pasted from
@@ -49,8 +50,28 @@
 >   (`9d67009d`), which also added the no-token RSVP gate's note form.
 > - **The email said "The couple" instead of the names** — `Messages.jsx` sent
 >   `Invitation.couple_names`, a different record from the wedding, and the
->   server never resolved them. Fixed in **#867**, resolving server-side with
->   `coupleDisplayName()`.
+>   server never resolved them. Fixed in **#867** (`2f45cfd4`), resolving
+>   server-side with `coupleDisplayName()`.
+> - **A trailing full stop failed the same way** — `la.jay06+notiftest01@gmail.com.`
+>   was accepted and refused by Resend, one day after the `mailto:` case. The
+>   first fix had been a character blacklist, so it closed one shape and left the
+>   class open. Fixed in **#868** (`74b5b3c9`): the domain is checked AS a domain
+>   — dot-separated labels, none empty, a final label of at least two letters —
+>   so a trailing stop fails on a rule rather than on a list that has to
+>   anticipate the next paste. `normalizeEmail` also repairs on the READ path, so
+>   notes already stored with a bad address became replyable with no migration.
+>
+> **FINAL LIVE PASS, 2026-09-28 (#868):** the reply on the "nelly" note — the
+> trailing-dot address, a row that already existed — was **delivered**, and the
+> From name, subject, eyebrow and footer all read **"Smoke & Alias"**. That
+> closes both the validation class and the naming defect on a real send, and it
+> confirms the read-path repair works on a row nobody could edit.
+>
+> The lesson worth carrying: the first email-validation fix was too narrow
+> because it patched the shape in front of it. `tests/persistence/
+> email-validation.mjs` now keeps the historical validator verbatim and sweeps
+> every address in the repository through both, so a future change cannot loosen
+> the rules or silently refuse an address the product used to accept.
 
 Guests can already reach the couple by replying to the invitation (Reply-To is the couple on every guest-facing email — keep it that way). What is missing: a guest hears nothing after RSVPing, has no way to ask a question from the site itself, and the Messages page describes a route that was never built. Four items. Every item carries a "Mobile impact" line.
 
