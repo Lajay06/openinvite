@@ -1,5 +1,33 @@
 # Studio tour
 
+> **CLOSED 2026-09-30.** Shipped and confirmed on openinvite.com.au: the live
+> bundle carries the nine chapters' recording URLs, 9 desktop posters and 18
+> mp4 derivatives, with the placeholder poster left only as the fallback a
+> chapter without footage would use.
+>
+> | PR | merged | what it was |
+> | --- | --- | --- |
+> | [#870](https://github.com/Lajay06/openinvite/pull/870) | `496d705f` | The dash rule this goal opened with, as a diff based guard |
+> | [#871](https://github.com/Lajay06/openinvite/pull/871) | `1a009041` | The nine chapters as data, checked against this document |
+> | [#872](https://github.com/Lajay06/openinvite/pull/872) | `e1ffbcf5` | The tour itself; TipsModal and QuickTipsTour retired in the same PR |
+> | [#873](https://github.com/Lajay06/openinvite/pull/873) | `d3b76bf9` | A green verify says nothing about the browser lane |
+> | [#874](https://github.com/Lajay06/openinvite/pull/874) | `4d55b82c` | The CI budget to 50, after #872 was cut at 35m17s with 148 of 149 steps green |
+> | [#875](https://github.com/Lajay06/openinvite/pull/875) | `c4aaf39a` | Eighteen recordings, nine chapters at 1440 and 390 |
+> | [#876](https://github.com/Lajay06/openinvite/pull/876) | `6e27ada1` | Both guards mean the same thing by "a comment" |
+>
+> **Not done, and each one has a home.**
+>
+> 1. **Split the browser guards into a parallel CI job.** 28m25s of main's
+>    34m33s is guards run one at a time against their own preview server. The
+>    50 minute cap is the second raise and buys time rather than fixing the
+>    shape; ci.yml says to do the split instead of a third raise. Next goal.
+> 2. **`src/lib/pageGuidance.js` is unread since #872.** Fold any purpose or
+>    actions text worth keeping into the chapters, then delete it. In
+>    backlog.md.
+> 3. **`guest-font-effect` reports 2 text elements below 4.5:1 on /w/ routes
+>    and still passes.** Either fix the contrast or make the guard fail on it.
+>    In backlog.md.
+
 One guided tour of the studio, to Openinvite standard. It replaces three things: the "Quick tips" sidebar item and its 7-card TipsModal, and the 6-stop QuickTipsTour that opens on first run. Those are retired in this goal. The "?" control on every page header stays and becomes a door into the tour.
 
 ## What it is
