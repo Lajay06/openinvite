@@ -278,7 +278,18 @@ export const MEDIA = {
       seconds: 17.83,
     },
   },
-  ava: null,
+  ava: {
+    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1790669021/studio-tour/ava/1440.jpg',
+    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1790669021/studio-tour/ava/1440.webm',
+    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1790669021/studio-tour/ava/1440.mp4',
+    seconds: 14.67,
+    phone: {
+      poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1790669020/studio-tour/ava/390.jpg',
+      webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1790669020/studio-tour/ava/390.webm',
+      mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1790669020/studio-tour/ava/390.mp4',
+      seconds: 14.3,
+    },
+  },
   publish: {
     poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1790663183/studio-tour/publish/1440.jpg',
     webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1790663183/studio-tour/publish/1440.webm',

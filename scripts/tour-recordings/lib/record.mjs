@@ -31,6 +31,7 @@ import { dirname } from 'node:path';
 import { SEED, stubBackend, FIXTURE_USER } from '../../lib/renderHarness.mjs';
 import { countRemoteImages } from '../../lib/blockRemoteImages.mjs';
 import { installCursor, cursorFor } from './cursor.mjs';
+import { routeAvaFixture } from './avaFixture.mjs';
 import { startEncoder } from './ffmpeg.mjs';
 
 export const FPS = 30;
@@ -65,6 +66,10 @@ export async function recordingContext(browser, { width, height }) {
     localStorage.setItem('oi_auth', '1');
   });
   await stubBackend(ctx, { seed: RECORDING_SEED, user: FIXTURE_USER });
+  // AFTER stubBackend, DELIBERATELY. Playwright matches routes in reverse
+  // order of registration, so the last one registered wins: this is what makes
+  // the Ava fixture answer the call the general stub would otherwise swallow.
+  await routeAvaFixture(ctx);
   await installCursor(ctx);
   ctx.__cloudinary = countRemoteImages(ctx);
   return ctx;

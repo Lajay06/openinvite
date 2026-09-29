@@ -48,8 +48,22 @@ async function head(url) {
       measuredBy: 'HEAD',
     };
     if (out.status === 200 && !out.bytes) {
-      const total = await rangedSize(url);
-      if (total) { out.bytes = total; out.measuredBy = 'range'; }
+      // A COLD DERIVATIVE HAS NO SIZE YET, WHICH IS NOT THE SAME AS BEING
+      // OVERSIZED. The first request for a transcode is what builds it, and
+      // while it builds, Cloudinary answers 200 with neither a Content-Length
+      // nor a Content-Range. That is a state that has not begun, not a
+      // measurement, and reading it as a failure is how this guard reported
+      // ava @ 1440 as unbounded thirty seconds before the same URL returned
+      // 273,490 bytes. So it waits and asks again rather than failing on a
+      // number that does not exist yet.
+      for (const waitMs of [0, 4000, 8000]) {
+        if (waitMs) await new Promise((r) => setTimeout(r, waitMs));
+        const total = await rangedSize(url);
+        if (total) { out.bytes = total; out.measuredBy = waitMs ? `range after ${waitMs / 1000}s` : 'range'; break; }
+        const retry = await fetch(url, { method: 'HEAD', redirect: 'follow' }).catch(() => null);
+        const len = Number(retry?.headers.get('content-length') || 0);
+        if (len) { out.bytes = len; out.measuredBy = waitMs ? `HEAD after ${waitMs / 1000}s` : 'HEAD'; break; }
+      }
     }
     return out;
   } catch (e) {
