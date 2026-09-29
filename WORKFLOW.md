@@ -13,9 +13,18 @@ Never leave a session with an open PR. An open PR is work that has not shipped �
 Squash-merge deletes the base branch and GitHub closes the dependent PR rather than retargeting it. Sequence conflicting changes as separate PRs replayed onto `main` after the first lands.  
 Measured 2026-09-27: #864 was based on #862's branch and was closed, unmerged, the moment #862 landed — and a closed PR's base cannot be changed. Because the parent was squashed, the orphaned branch no longer shared a merge base with `main`, so a fresh PR from it showed the parent's files re-applied (7 files became 17). It had to be replayed onto `main` as #865.
 
-**`npm run verify` does not cover the browser lane.**  
-It derives its steps from `ci.yml` and then excludes every step that starts a preview server, with the reason printed: "starts a preview server and runs browser tests against it; needs a live server". That is 48 guards a green verify says nothing about. A change to shared chrome, anything under `src/components/layout/` or imported by `DashboardPageHeader`, needs those guards run before the PR, not after CI fails.  
-Measured 2026-09-29 on #872: `verify` was green and CI failed on `test:ava-page-modal`, because one import inside the shared page header put `avaOpen` in every page's import graph. Run them with `CAPTURE_BASE_URL` pointed at one preview server; note that `VAR=x eval "$cmd"` does NOT pass the variable to the child in zsh, and an unquoted `$cmd` is not word-split either, so export the variable and keep each guard's log.
+**`npm run verify` still does not cover the browser lane, and now it says so.**  
+It derives its steps from `ci.yml` and excludes anything that needs a live preview server, which is the whole browser lane: 48 guards a green verify says nothing about. A change to shared chrome, anything under `src/components/layout/` or imported by `DashboardPageHeader`, needs those guards run before the PR, not after CI fails.  
+Measured 2026-09-29 on #872: `verify` was green and CI failed on `test:ava-page-modal`, because one import inside the shared page header put `avaOpen` into every page's import graph.  
+**With the split, run the shard, not the loop.** It is one command each, the same one CI runs:
+
+```bash
+npm run test:shard-a      # 27 guards, about 15m35s
+npm run test:shard-b      # 21 guards, about 15m37s
+npm run test:shard-a -- --list   # what is in it, and what each one cost
+```
+
+`npm run verify` prints both lines at the end of its own run, so the lane is named rather than silently missing. The shard lists, ports and measured seconds live in `.github/browser-shards.json`; rebalancing is an edit to that file, not to the workflow. Each guard's full output is written to `browser-shard-logs/`, which CI uploads as an artifact when a shard fails.
 
 **"Done" means merged to main AND verified on openinvite.com.au.**  
 Not "build passes." Not "PR opened." Not "Vercel preview looks good." Done = on main = live.
@@ -57,6 +66,36 @@ The script:
 3. Pushes the branch to origin
 4. Opens a GitHub PR (`gh pr create`) with a template body
 5. Prints the PR URL and reminds you to check the Vercel preview
+
+---
+
+## Merge authorization, and what `pr:green` means
+
+A merge authorization is valid only if it carries **all five marks** (DECISION-LOG,
+R38, 2026-09-07): the PR number, the full 40-character head SHA, the file list,
+the gate stated in words, and the fact that it is written as an authorization.
+A line missing any of them is not a line, and the response is to stop, quote it
+back and ask.
+
+**The gate, in words, is now four checks, not two.** The browser lane was split
+out of `Build & test` on 2026-09-30, so `pr:green` means:
+
+| check | what it covers |
+| --- | --- |
+| `Build & test` | install, build, lint, the persistence suite, the diff guards, the prerender guards |
+| `Browser guards A` | 27 of the 48 browser guards, balanced by measured time |
+| `Browser guards B` | the other 21 |
+| `Vercel Preview Comments` | and `Vercel` where present |
+
+`npm run pr:merge <n>` runs `scripts/pr-checks-green.mjs`, which requires all of
+those to be PRESENT and SUCCESS: absence is not success, and SKIPPED and NEUTRAL
+are not either. Before the split one name covered the whole lane; a gate that
+still asked about one would call a PR green with 48 guards red or missing.
+
+**The GitHub ruleset is a separate thing and it is owner-only.** It decides what
+may merge; `pr-checks-green.mjs` decides what this repository's own tooling will
+call green. Both have to name the three CI checks, and only one of them is
+changed by editing a file.
 
 ---
 
@@ -134,6 +173,12 @@ checks also run in CI, where they cannot be skipped.
 `main` has branch protection enabled:
 - PR required before merging (no direct pushes)
 - Vercel deployment check must pass before merging (optional but recommended)
+- **Three CI checks must pass, not one.** The browser lane was split out of
+  `Build & test` on 2026-09-30, so the required set is `Build & test`,
+  `Browser guards A` and `Browser guards B`. A ruleset that still named only
+  the first would let a PR merge with 48 guards red or absent. Adding or
+  removing a required check is done by the owner in GitHub settings;
+  `scripts/pr-checks-green.mjs` names the same three, and that half is a file.
 - CI / Build & test check (`.github/workflows/ci.yml`) must pass before merging —
   install, build, lint, the credential-free subset of the persistence suite
   (`npm run test:ci`, see `scripts/test-ci.mjs`), and the marketing-routes smoke test

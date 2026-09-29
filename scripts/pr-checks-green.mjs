@@ -68,8 +68,20 @@ const MAY_SKIP = {
  * at all, and a gate that only inspects the rows it was handed will call that
  * green — the same defect as counting SKIPPED, one layer earlier. Absence is
  * not success.
+ *
+ * THE TWO BROWSER SHARDS ARE HERE BECAUSE THE LANE MOVED, 2026-09-30. It used
+ * to be 38 steps inside Build & test, so one name covered all of it. It is now
+ * two jobs beside it, and a gate that still asked about one name would call a
+ * PR green while both shards were absent or red: the 48 guards would be
+ * running and blocking nothing. Adding them here is the same requirement, said
+ * in three names instead of one.
+ *
+ * THIS IS NOT THE BRANCH RULESET. That is GitHub's own setting, owner only,
+ * and it decides what may MERGE. This decides what this repository's own
+ * tooling will call green. Both have to name the shards; only one of them is
+ * changed by editing a file.
  */
-const MUST_BE_PRESENT = ['Build & test'];
+const MUST_BE_PRESENT = ['Build & test', 'Browser guards A', 'Browser guards B'];
 
 const TERMINAL = ['SUCCESS', 'FAILURE', 'CANCELLED', 'TIMED_OUT', 'ACTION_REQUIRED', 'NEUTRAL', 'SKIPPED', 'STALE', 'STARTUP_FAILURE'];
 const NOT_RUN  = ['SKIPPED', 'NEUTRAL'];
