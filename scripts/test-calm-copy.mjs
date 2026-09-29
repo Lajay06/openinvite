@@ -75,7 +75,8 @@ const DOC_OUT_OF_SCOPE = [
 
 /**
  * Comments are out of scope in source. ONE LINE, so the owner can reverse the
- * decision by deleting it rather than by rewriting the walk.
+ * decision by deleting it rather than by rewriting the walk. What "a comment"
+ * means is decided by nonCommentResidue below, not by what a line starts with.
  */
 const SKIP_COMMENTS_IN_SOURCE = true;
 
@@ -111,9 +112,73 @@ function resolveDiffBase() {
 const isSource = (f) => SOURCE_SCOPE.some((re) => re.test(f)) && !SOURCE_OUT_OF_SCOPE.some((re) => re.test(f));
 const isDoc = (f) => DOC_SCOPE.some((re) => re.test(f)) && !DOC_OUT_OF_SCOPE.some((re) => re.test(f));
 
-function isCommentLine(line) {
-  const t = line.trim();
-  return t.startsWith('//') || t.startsWith('/*') || t.startsWith('*') || t.startsWith('{/*');
+/**
+ * THE COMMENT SKIP IS SYMMETRIC NOW, AND IT WAS NOT.
+ *
+ * It used to ask what a line STARTS WITH: `//`, `/*`, `*` or `{/*`. That makes
+ * two lines carrying the same dash in the same comment behave differently.
+ *
+ *   // a dash here was skipped
+ *
+ *   /* and a dash here was skipped, because the line starts with a slash-star
+ *      but a dash on THIS line was flagged, because it starts with neither
+ *   *\/
+ *
+ * The same is true of a trailing comment: `const x = 1; // note` was scanned in
+ * full, so a dash in the note was a finding while the identical dash on a line
+ * of its own was not.
+ *
+ * So the question is no longer what a line starts with. Each line is reduced to
+ * the text that is NOT inside a comment, and only that residue is checked. A
+ * `//` line and a continuation line inside a block comment both reduce to
+ * nothing and are both skipped; a dash in code or in a string is caught
+ * wherever it sits on the line; and `{/* ... *\/}` in JSX reduces to its braces,
+ * which carry no dash.
+ *
+ * WHY THE WHOLE FILE AND NOT THE PATCH. Block comments span lines and a diff
+ * hands you added lines only, so the state a line is in cannot be known from
+ * the patch. The file is read at HEAD and scanned from the top, which is also
+ * why this guard says to commit before running it.
+ *
+ * Known limit, stated rather than hidden: the scanner understands strings,
+ * template literals and both comment forms, but not a regular expression
+ * literal whose pattern contains a comment opener: a regex matching a literal
+ * slash-star would put the scanner into a block it never leaves. (That example
+ * cannot be written out here, because the escape sequence for it ends this very
+ * comment, which is a small demonstration of the class of bug.) No file in this repository does that, and the failure is
+ * visible (the rest of the file stops being checked) rather than silent.
+ */
+function nonCommentResidue(text) {
+  const lines = String(text).split('\n');
+  const out = [];
+  let inBlock = false;
+  let inStr = null;
+  for (const line of lines) {
+    let residue = '';
+    for (let i = 0; i < line.length; i += 1) {
+      const c = line[i];
+      const d = line[i + 1];
+      if (inBlock) {
+        if (c === '*' && d === '/') { inBlock = false; i += 1; }
+        continue;
+      }
+      if (inStr) {
+        residue += c;
+        if (c === '\\') { residue += d ?? ''; i += 1; continue; }
+        if (c === inStr) inStr = null;
+        continue;
+      }
+      if (c === '/' && d === '/') break;
+      if (c === '/' && d === '*') { inBlock = true; i += 1; continue; }
+      if (c === '"' || c === "'" || c === '`') { inStr = c; residue += c; continue; }
+      residue += c;
+    }
+    out.push(residue);
+  }
+  // A template literal that is never closed would swallow the rest of the file,
+  // so the string state is reset at end of file rather than carried anywhere.
+  inStr = null;
+  return out;
 }
 
 const base = resolveDiffBase();
@@ -149,6 +214,16 @@ for (const file of scoped) {
   let patch;
   try { patch = git(`diff ${range} -- "${file}"`); } catch { continue; }
 
+  // THE COMMENT MAP IS BUILT FROM THE WHOLE FILE, ONCE. A block comment spans
+  // lines and a patch shows added lines only, so whether a line sits inside one
+  // cannot be read off the diff. If the file cannot be read at HEAD, which is
+  // what a deletion looks like, the residue falls back to the raw lines and the
+  // guard errs towards checking rather than skipping.
+  let residue = null;
+  if (isSource(file) && SKIP_COMMENTS_IN_SOURCE) {
+    try { residue = nonCommentResidue(git(`show HEAD:"${file}"`)); } catch { residue = null; }
+  }
+
   let lineNo = 0;
   for (const raw of patch.split('\n')) {
     // Track the new-file line number from each hunk header.
@@ -160,10 +235,13 @@ for (const file of scoped) {
     lineNo += 1;
 
     const line = raw.slice(1);
-    if (isSource(file) && SKIP_COMMENTS_IN_SOURCE && isCommentLine(line)) continue;
+    // Only the part of the line that is not inside a comment. A `//` line and a
+    // continuation line inside a block comment both reduce to nothing, so both
+    // are skipped, which is the whole point of doing it this way.
+    const subject = residue ? (residue[lineNo - 1] ?? line) : line;
 
     for (const [ch, name] of BANNED) {
-      if (line.includes(ch)) {
+      if (subject.includes(ch)) {
         findings.push({ file, lineNo, name, text: line.trim().slice(0, 100) });
         break;
       }

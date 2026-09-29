@@ -17,10 +17,17 @@
  * excluding marketing/home/public, src/lib/), flags any of the banned
  * British/Australian spellings below as a whole word.
  *
- * COMMENTS ARE IN SCOPE (owner ruling, 2026-08-30) — the line below about
- * skipping comment-only lines describes what this guard used to do, and the
- * ruling is why it no longer does: comments become strings the moment someone
- * lifts a phrase out of one into a label, and the spelling travels with it.
+ * COMMENTS ARE IN SCOPE (owner ruling, 2026-08-30): comments become strings the
+ * moment someone lifts a phrase out of one into a label, and the spelling
+ * travels with it.
+ *
+ * THAT WAS TRUE OF THE HEADER AND FALSE OF THE CODE FOR A MONTH. The walk kept
+ * `if (isCommentLine(content)) continue;` long after the ruling, so a line
+ * opening with two slashes was invisible while a block-comment continuation
+ * line starting with anything but a star was scanned: the guard enforced a rule
+ * its own documentation denied, and in one direction only. The skip is gone and
+ * the two are alike again. It is diff based, so nothing is swept; only newly
+ * added comment lines are read.
  * A small ALLOWLIST covers known legitimate code identifiers that
  * happen to contain a banned word (BRAND_COLOURS, is_favourite, etc. —
  * renaming those is a much bigger refactor, tracked separately, not what
@@ -169,11 +176,6 @@ function inScope(file) {
   return true;
 }
 
-function isCommentLine(line) {
-  const t = line.trim();
-  return t.startsWith('//') || t.startsWith('/*') || t.startsWith('*') || t.startsWith('{/*');
-}
-
 function isAllowlisted(line) {
   return ALLOWLIST_SUBSTRINGS.some((s) => line.includes(s));
 }
@@ -232,7 +234,10 @@ for (const file of scopedFiles) {
     if (!raw.startsWith('+')) continue;
     lineNo += 1;
     const content = raw.slice(1);
-    if (isCommentLine(content)) continue;
+    // NO COMMENT SKIP. It was here, and it contradicted the header above.
+    // ALLOWLIST_SUBSTRINGS is the escape hatch the ruling names, for
+    // third-party identifiers and direct quotations, and it applies to a
+    // comment exactly as it applies to a string.
     if (isAllowlisted(content)) continue;
     const match = BANNED_RE.exec(content);
     if (match) {
