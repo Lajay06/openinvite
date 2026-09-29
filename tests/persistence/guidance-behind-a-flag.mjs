@@ -36,6 +36,7 @@
 import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { existsSync } from 'node:fs';
 import { pass, fail } from './_shared.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -47,7 +48,10 @@ const NAV = strip(read('src/components/layout/AnimatedSidebar.jsx'));
 const HEADER = strip(read('src/components/layout/DashboardPageHeader.jsx'));
 const CONTROL = strip(read('src/components/guidance/WhatsHereControl.jsx'));
 const PANEL = strip(read('src/components/guidance/WhatsHerePanel.jsx'));
-const TOUR = strip(read('src/components/guidance/QuickTipsTour.jsx'));
+// THE TOUR ITSELF, in place of the retired QuickTipsTour: the "written through
+// one hook" property below is about no component writing the field directly,
+// and the tour is now the component that could.
+const TOURBODY = strip(read('src/components/guidance/StudioTour.jsx'));
 const FLAG = strip(read('src/lib/guidanceFlag.js'));
 
 /** Every route the sidebar links to, however it is written. */
@@ -56,6 +60,11 @@ function navRoutes() {
   for (const m of NAV.matchAll(/url:\s*createPageUrl\("([^"]+)"\)/g)) out.add(`/${m[1].replace(/ /g, '-')}`);
   for (const m of NAV.matchAll(/url:\s*"(\/[^"]*)"/g)) out.add(m[1]);
   return [...out];
+}
+
+/** Whether a path is still in the tree. The retired files must not return. */
+function trackedExists(relativePath) {
+  return existsSync(root(relativePath));
 }
 
 export async function runGuidanceBehindAFlag() {
@@ -68,25 +77,40 @@ export async function runGuidanceBehindAFlag() {
   const G = lib.PAGE_GUIDANCE;
   check('there is a guidance content model', !!G && typeof G === 'object', 'pageGuidance.js');
 
-  // ── The two layers exist ──────────────────────────────────────────────────
-  check('there is a "What’s here" panel', /export default function WhatsHerePanel/.test(PANEL), 'WhatsHerePanel');
-  check('  it renders the purpose, the actions and the loop',
-    /\{purpose\}/.test(PANEL) && /actions\.map/.test(PANEL) && /\{loop\}/.test(PANEL), 'all three');
-  check('  and dismissal is offered only when there is somewhere to record it',
-    /onDismiss \?/.test(PANEL), 'no promise the product cannot keep');
-  check('there is a "Quick tips" tour', /export default function QuickTipsTour/.test(TOUR), 'QuickTipsTour');
-  check('  which reads the same content rather than restating it',
-    /PAGE_GUIDANCE\[stop\.path\]/.test(TOUR), 'one source');
-  const stops = [...TOUR.matchAll(/path: '([^']+)'/g)].map((m) => m[1]);
-  check('  and every stop it walks has guidance', stops.length > 0 && stops.every((p) => !!G[p]), stops.join(', '));
+  // ── ONE HELP SYSTEM, NOT TWO ──────────────────────────────────────────────
+  //
+  // Goal 2026-09-28 retired the 7-card TipsModal and the 6-stop QuickTipsTour
+  // and made the question mark a door into the studio tour. These checks moved
+  // with that ruling: what they used to assert about the per-page panel and
+  // about Quick tips is now false BY DECISION, and the properties worth keeping
+  // are that the panel still exists, that it opens the tour rather than a
+  // second body of content, and that neither retired component came back.
+  check('the "?" panel still exists', /export default function WhatsHerePanel/.test(PANEL), 'WhatsHerePanel');
+  check('  and it opens the tour rather than its own content',
+    /<StudioTour/.test(PANEL) && !/\{purpose\}/.test(PANEL), 're-pointed, not a second system');
+  check('  on the chapter the page belongs to',
+    /startChapterKey/.test(PANEL) && /chapterKeyForRoute/.test(CONTROL), 'page to chapter');
+  // ASSERTED AS ABSENCES. main must never carry both help systems at once, and
+  // the way that regresses is a file coming back, not a check going red.
+  check('the 6-stop Quick tips tour is gone', !trackedExists('src/components/guidance/QuickTipsTour.jsx'),
+    'retired');
+  check('  and the 7-card tips modal with it', !trackedExists('src/components/dashboard/TipsModal.jsx'),
+    'retired');
+  check('  with nothing left importing either',
+    !/QuickTipsTour|TipsModal/.test(CONTROL + PANEL + HEADER), 'no dangling import');
 
   // ── One control, in the one place ─────────────────────────────────────────
   check('the control lives in the shared page header',
-    /<WhatsHereControl \/>/.test(HEADER), 'DashboardPageHeader');
+    /<WhatsHereControl\b/.test(HEADER), 'DashboardPageHeader');
   check('  so it is one change, not one per page',
     (HEADER.match(/<WhatsHereControl/g) || []).length === 1, 'once');
-  check('  and it renders nothing on a page with no guidance',
-    /if \(!guidance\) return null;/.test(CONTROL), 'no empty panel');
+  // THE CONTROL IS NOW ALWAYS THERE, and that is the tour's own copy: chapter 8
+  // is titled "The question mark is always there." and its lead reads "Every
+  // page has one." The two conditions that used to hide it, a page with no
+  // guidance entry and a per-path dismissal, would each have made that false.
+  check('  and every page has one, because the tour says so',
+    !/if \(!guidance\) return null;/.test(CONTROL) && !/isDismissed\(state, pathname\)/.test(CONTROL),
+    'no page without a door');
   check('  or outside a router, where useLocation would throw',
     /catch \{\s*return null;\s*\}/.test(CONTROL), 'wrapped');
 
@@ -117,7 +141,7 @@ export async function runGuidanceBehindAFlag() {
   const HOOK = strip(read('src/hooks/useGuidanceState.js'));
   check('  the field is written through one hook, not from a component',
     /guidanceState: next/.test(HOOK)
-      && !/guidanceState:/.test(PANEL + TOUR + CONTROL),
+      && !/guidanceState:/.test(PANEL + CONTROL + TOURBODY),
     'useGuidanceState owns the write');
 
   // THE PANEL, THE TOUR, THE CONTROL AND THE FLAG ARE CHECKED FIRST ON

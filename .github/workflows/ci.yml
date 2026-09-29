@@ -654,6 +654,24 @@ jobs:
           kill $SERVER_PID 2>/dev/null || true
           exit $STATUS
 
+      # Six things the goal names, all of them browser facts: the first-run
+      # takeover, the sidebar entry, the "?" landing on the page's own chapter,
+      # resume from a half-finished tour, reduced motion showing posters, and
+      # keyboard navigation. The seed is varied per case, because the fixture
+      # wedding has already seen the tour.
+      - name: The studio tour, as a couple meets it, at 390 and 1440
+        run: |
+          npx vite preview --port 4222 --strictPort &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4222 > /dev/null; then break; fi
+            sleep 1
+          done
+          CAPTURE_BASE_URL=http://localhost:4222 npm run test:studio-tour-render
+          STATUS=$?
+          kill $SERVER_PID 2>/dev/null || true
+          exit $STATUS
+
       # Select is the answer, so Select advances — and keeps the answer.
       - name: The onboarding universe picker advances on Select
         run: |

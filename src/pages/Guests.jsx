@@ -754,7 +754,16 @@ export default function Guests() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
 
-      <DashboardPageHeader title="Guests" subtitle="Manage your guest list, invitations and RSVPs" />
+      {/* tourContext: the tour's guests chapter has a lead that uses live
+          numbers, and the tour is forbidden from fetching anything. This page
+          already holds the list, so the numbers come from the stats it has
+          computed rather than from a read of its own. "Replied" is attending
+          plus declined: both are answers, and a guest who said no has replied. */}
+      <DashboardPageHeader
+        title="Guests"
+        subtitle="Manage your guest list, invitations and RSVPs"
+        tourContext={{ guestCount: stats.total, repliedCount: stats.attending + stats.declined }}
+      />
 
       {/* Stat strip */}
       <div className="flex flex-wrap w-full" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
@@ -800,6 +809,7 @@ export default function Guests() {
               </button>
               <span title={isPro ? upgradeTooltip : undefined} style={isPro ? { cursor: 'not-allowed', display: 'inline-flex' } : {}}>
                 <button
+                  data-tour-target="guests-send-invitations"
                   onClick={openSendForSelection}
                   disabled={isPro}
                   className="btn-primary"

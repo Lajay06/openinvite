@@ -3,7 +3,7 @@ import WhatsHereControl from '@/components/guidance/WhatsHereControl';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-export default function DashboardPageHeader({ title, subtitle, actions }) {
+export default function DashboardPageHeader({ title, subtitle, actions, tourContext = null }) {
   return (
     <div
       className="flex items-center justify-between gap-4 px-4 md:px-8"
@@ -35,7 +35,15 @@ export default function DashboardPageHeader({ title, subtitle, actions }) {
           cannot drift a few pixels per page. */}
       <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
         {actions}
-        <WhatsHereControl />
+        {/* tourContext IS HOW A PAGE PERSONALISES THE TOUR WITHOUT A NEW READ.
+            The tour's guests chapter has a lead that uses live numbers, and the
+            goal forbids the tour from fetching anything: "It never makes a new
+            read." Layout does not load the guest list, so it cannot supply
+            them. The Guests page already has its list in hand, so it passes the
+            counts down here and the question mark on that page shows the
+            personalized lead. Every other page passes nothing and the chapter
+            keeps its own words. */}
+        <WhatsHereControl tourContext={tourContext} />
       </div>
     </div>
   );

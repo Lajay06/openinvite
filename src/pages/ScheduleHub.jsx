@@ -362,6 +362,7 @@ export default function ScheduleHub() {
         {/* Right: Export + Add */}
         <div className="flex flex-wrap items-center gap-[10px]">
           <button
+            data-tour-target="schedule-export"
             onClick={exportSchedule}
             disabled={scheduleItems.length === 0}
             className="btn-editorial-secondary"

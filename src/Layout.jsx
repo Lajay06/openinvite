@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, Suspense } from "react";
-import { AVA_OPEN_EVENT } from '@/lib/avaOpen';
+import { AVA_OPEN_EVENT, openAva } from '@/lib/avaOpen';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from "react-router-dom";
 import { X, Sparkles, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning, Users, LogOut, Loader2, User, Bell, CreditCard, HelpCircle } from "lucide-react";
@@ -8,8 +8,12 @@ import { track, reset as analyticsReset } from '@/lib/analytics';
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AnimatedSidebar, MobileSidebarContent } from "./components/layout/AnimatedSidebar";
-import TipsModal from "./components/dashboard/TipsModal";
 import FirstRunTour from "./components/guidance/FirstRunTour";
+import StudioTour from "./components/guidance/StudioTour";
+import { TourContextProvider } from "./components/guidance/TourContext";
+import { chapterProgressKey, nextUnfinishedChapterKey } from "@/lib/studioTour";
+import { coupleFirstNames } from "@/lib/coupleNames";
+import { useGuidanceState } from "@/hooks/useGuidanceState";
 // The pure predicate, from the file that exists so it can be tested outside a
 // browser. A COLLABORATOR IS NEVER SHOWN THE TOUR: it walks the couple through
 // their own wedding, and a planner with access to six weddings would meet it
@@ -409,7 +413,11 @@ export default function Layout({ children, currentPageName }) {
 function LayoutShell({ children, currentPageName }) {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [showCollaborateModal, setShowCollaborateModal] = React.useState(false);
-  const [showTipsModal, setShowTipsModal] = React.useState(false);
+  // THE SIDEBAR'S DOOR INTO THE TOUR. "Studio tour" replaces "Quick tips" in
+  // the same position, and opens from the last unfinished chapter rather than
+  // always from the start, so a couple who stopped halfway is not made to
+  // walk the first four again.
+  const [showTour, setShowTour] = React.useState(false);
   const [chatOpen, setChatOpen] = React.useState(false);
   // What the pod was opened WITH: the page, an optional seed question, and an
   // optional sentence about what that page is for. Set by the openAva event.
@@ -502,6 +510,35 @@ function LayoutShell({ children, currentPageName }) {
   const weddingName = layoutData?.weddingName ?? '';
   const weddingDetails = layoutData?.weddingDetails ?? null;
 
+  // ── WHAT THE TOUR IS TOLD, AND WHAT IT IS NOT ────────────────────────────
+  //
+  // The goal's constraint: "It never makes a new read." So the tour is handed
+  // only what this query has already loaded. That is the couple's first names,
+  // from the wedding record.
+  //
+  // GUEST COUNTS ARE NOT HERE, and that is why chapter 3's personalised lead
+  // ("{n} guests, {m} replied so far.") does not appear from these two mounts.
+  // Layout does not load the guest list and loading it to decorate one sentence
+  // would be exactly the new read the goal forbids. The Guests page HAS its
+  // list, so it passes the numbers through DashboardPageHeader's tourContext
+  // and the question mark there shows the personalised lead.
+  const { state: guidanceStateForTour, dismiss: dismissGuidance } = useGuidanceState();
+  const guidanceDismissed = guidanceStateForTour?.dismissed ?? [];
+  // onOpenAva IS SUPPLIED HERE, NOT IMPORTED BY THE TOUR. The tour is rendered
+  // from DashboardPageHeader, which every page imports, so an import of
+  // avaOpen inside it reached every page's import graph and made fourteen
+  // pages look like Ask Ava pages to scripts/lib/avaEntryPoints.mjs. The shell
+  // already owns the pod, so the shell hands the capability down.
+  const tourContext = React.useMemo(
+    () => ({ coupleFirstNames: coupleFirstNames(weddingDetails, ''), onOpenAva: () => openAva() }),
+    [weddingDetails],
+  );
+  const tourResume = nextUnfinishedChapterKey(guidanceDismissed);
+  const onTourChapter = React.useCallback((key) => {
+    const progressKey = chapterProgressKey(key);
+    if (!guidanceDismissed.includes(progressKey)) dismissGuidance(progressKey);
+  }, [guidanceDismissed, dismissGuidance]);
+
   React.useEffect(() => {
     const invalidate = () => queryClient.invalidateQueries({ queryKey: [LAYOUT_QUERY_KEY] });
     window.addEventListener('weddingDetailsSaved', invalidate);
@@ -588,6 +625,9 @@ function LayoutShell({ children, currentPageName }) {
   );
 
   return (
+    /* The shell's half of the tour's context: the couple's first names, from a
+       record this query already loaded. Each page adds what only it has. */
+    <TourContextProvider value={tourContext}>
     <div className="min-h-screen" style={{ background: '#FFFFFF' }}>
       {/* THE TOAST, IN THE APP'S OWN TOKENS.
           It was a black rectangle — #111 ground, white text, square corners —
@@ -703,7 +743,7 @@ function LayoutShell({ children, currentPageName }) {
         <AnimatedSidebar
           weddingName={weddingName}
           onCollaborate={() => setShowCollaborateModal(true)}
-          onOpenTips={() => setShowTipsModal(true)}
+          onOpenTour={() => setShowTour(true)}
           topOffset={contentTopOffset}
           collaboratorPermissions={collaboratorPermissions}
           unreadMessagesCount={unreadMessagesCount}
@@ -752,6 +792,7 @@ function LayoutShell({ children, currentPageName }) {
             weddingName={weddingName}
             onClose={() => setMobileMenuOpen(false)}
             onCollaborate={() => { setMobileMenuOpen(false); setShowCollaborateModal(true); }}
+            onOpenTour={() => setShowTour(true)}
             collaboratorPermissions={collaboratorPermissions}
             unreadMessagesCount={unreadMessagesCount}
           />
@@ -759,14 +800,31 @@ function LayoutShell({ children, currentPageName }) {
       </Sheet>
 
       {showCollaborateModal && <CollaborateModal onClose={() => setShowCollaborateModal(false)} />}
-      {showTipsModal && <TipsModal onClose={() => setShowTipsModal(false)} />}
+      {/* THE TOUR, OPENED ON PURPOSE from the sidebar. Separate mount from the
+          first-run takeover below because they answer different questions: this
+          one is a couple asking, that one is the product offering. */}
+      {showTour && (
+        <StudioTour
+          mode="panel"
+          startChapterKey={tourResume}
+          context={tourContext}
+          dismissed={guidanceDismissed}
+          onClose={() => setShowTour(false)}
+          onChapterComplete={onTourChapter}
+          onOpenAva={() => openAva()}
+        />
+      )}
 
       {/* THE FIRST-RUN TOUR. Renders null until the record has loaded, the
           flag is on, onboarding is complete and guidanceState.tourSeenAt is
-          still null — so on every load after the first it costs one mount and
-          nothing else. It does NOT replace the Quick tips modal above; see the
-          note in that PR about the two things now sharing that name. */}
-      <FirstRunTour onboardingComplete={!isCollaborating && isOnboardingComplete(user)} />
+          still null, so on every load after the first it costs one mount and
+          nothing else. The Quick tips modal it used to sit beside is retired:
+          one help system, not two. */}
+      <FirstRunTour
+        onboardingComplete={!isCollaborating && isOnboardingComplete(user)}
+        context={tourContext}
+        onOpenAva={() => openAva()}
+      />
 
       {/* ── Floating Ava button ──────────────────────────── */}
       <div style={{ position: 'fixed', bottom: 32, right: 32, zIndex: 8000, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12 }}>
@@ -843,5 +901,6 @@ function LayoutShell({ children, currentPageName }) {
         </Suspense>
       </div>
     </div>
+    </TourContextProvider>
   );
 }

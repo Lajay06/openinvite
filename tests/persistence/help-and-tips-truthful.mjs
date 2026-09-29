@@ -45,7 +45,9 @@ const sourceFiles = (dir = 'src') => trackedUnder(dir, /\.(jsx?|mjs)$/);
 // The surfaces whose whole job is to explain the product.
 const EXPLAINERS = [
   'src/pages/Help.jsx',
-  'src/components/dashboard/TipsModal.jsx',
+  // TipsModal.jsx was retired with the studio tour (goal 2026-09-28). The
+  // surface it explained is now src/lib/studioTour.js, listed below.
+  'src/lib/studioTour.js',
   'src/components/studio/UniverseSelectedChoice.jsx',
   'src/components/onboarding/OnboardingStepUniverse.jsx',
 ];
@@ -66,8 +68,11 @@ export async function runHelpAndTipsTruthful() {
   const help = read('src/pages/Help.jsx');
   check('the Help center still has its articles', (help.match(/': \(/g) || []).length >= 20,
     `${(help.match(/': \(/g) || []).length} sections`);
-  const tips = read('src/components/dashboard/TipsModal.jsx');
-  check('  and Quick tips still has its tips', (tips.match(/number: '/g) || []).length >= 5,
+  // THE TOUR REPLACED QUICK TIPS, so the thing that must still have content is
+  // the chapter list. Counted out of the data file rather than asserted as a
+  // number here, so adding a tenth chapter does not fail this.
+  const tips = read('src/lib/studioTour.js');
+  check('  and the studio tour still has its chapters', (tips.match(/^    key: '/gm) || []).length >= 5,
     `${(tips.match(/number: '/g) || []).length} tips`);
 
   for (const file of EXPLAINERS) {

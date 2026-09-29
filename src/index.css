@@ -1575,3 +1575,28 @@ body {
     background-position: 65% 50%;
   }
 }
+
+/* ── The tour's spotlight ring ─────────────────────────────────────────────
+   src/lib/tourSpotlight.js adds this class to whatever control a chapter's
+   "Try it" points at, and removes it on a timer.
+
+   AN OUTLINE, NOT A BOX-SHADOW. The spec bars box-shadow on cards, and a ring
+   drawn with one would be the same declaration arriving by another name. An
+   outline also sits outside the element's own box, so it cannot move the
+   control it is pointing at by a pixel.
+
+   prefers-reduced-motion drops the animation and keeps the ring, because the
+   ring is the information and the pulse is only the attention. */
+.oi-tour-spotlight {
+  outline: 2px solid #E03553 !important;
+  outline-offset: 3px;
+  animation: oi-tour-pulse 1.1s ease-out 2;
+}
+@keyframes oi-tour-pulse {
+  0%   { outline-color: #E03553; }
+  50%  { outline-color: rgba(224,53,83,0.25); }
+  100% { outline-color: #E03553; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .oi-tour-spotlight { animation: none; }
+}

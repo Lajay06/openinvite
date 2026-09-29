@@ -103,7 +103,11 @@ export default function ThemeSection({ theme, onSave, readOnly = false }) {
       <OptionAccordion headingSize={13} headingWeight={700}>
 
       <OptionAccordionSection sectionKey="aesthetic" title="What's the aesthetic?" summary={local.aesthetic || []}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        {/* The tour's event-details chapter points "Try it" at this group. The
+            attribute is what src/lib/tourSpotlight.js looks for; a structural
+            selector would break the first time this section was restyled, and
+            break silently. */}
+        <div data-tour-target="theme-aesthetic-pills" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {AESTHETIC_OPTIONS.map(opt => (
             <OptionPill key={opt} label={opt}
               selected={(local.aesthetic || []).includes(opt)}
