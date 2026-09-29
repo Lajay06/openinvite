@@ -58,6 +58,10 @@ export const LIVE_CREDENTIAL_GUARDS = new Set([
   // Cloudinary, not Base44: it verifies HERO_MASTERS against the real assets,
   // which is the one thing the CI-lane hero guard cannot know.
   'hero-masters-live.mjs',
+  // Cloudinary again, and the same split: tour-recordings.mjs checks the media
+  // map offline in CI, and this one HEADs what is actually delivered, which is
+  // the only place the 1.5 MB ceiling can be enforced.
+  'tour-recordings-live.mjs',
   // Signs up a real account and sends a real email. The owner runs it.
   'run-launch-smoke.mjs',
   'collaborator-invite.mjs',

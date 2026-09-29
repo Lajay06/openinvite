@@ -208,6 +208,13 @@ export default [
       "scripts/prerender.mjs",
       "scripts/capture/videos.mjs",
       "tests/motion/capture.mjs",
+      // The tour recorder, two entries by the criterion above rather than one
+      // scripts/tour-recordings/** pattern: cursor.mjs animates a drawn pointer
+      // inside the page and record.mjs seeds localStorage through an init
+      // script. The chapter files beside them drive Playwright from node and
+      // lint clean without being listed, which is the criterion working.
+      "scripts/tour-recordings/lib/cursor.mjs",
+      "scripts/tour-recordings/lib/record.mjs",
     ],
     languageOptions: {
       globals: { ...globals.node, ...globals.browser },
