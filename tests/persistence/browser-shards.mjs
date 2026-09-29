@@ -99,5 +99,16 @@ export function runBrowserShards() {
     !/vite preview --port/.test(ci),
     (ci.match(/vite preview --port/g) || []).length + ' left');
 
+  // THE ONE NON-BROWSER STEP THAT SAT INSIDE THE LANE, PINNED HERE BECAUSE IT
+  // WAS ALMOST LOST WITH IT. The prerendered freshness guard started no server
+  // and was not a browser guard, but it sat between two that were, and the
+  // range-based removal that took the lane out took it as well: each block
+  // ended at the NEXT step's name line, which is past the following block's
+  // start, so deleting bottom-up with stale indices consumed one step more
+  // than it was given. Nothing failed. A diff of the step NAMES against main
+  // found it, 39 gone where 38 were meant to be.
+  check('Build & test still runs the prerendered freshness guard',
+    /npm run test:prerendered-freshness/.test(ci), 'not a browser guard, and not in a shard');
+
   return r;
 }

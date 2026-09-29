@@ -118,6 +118,22 @@ jobs:
       - name: Prerendered asset references guard
         run: node scripts/apply-prerendered.mjs
 
+      # RESTORED, AND IT SHOULD NEVER HAVE LEFT. It sat after the browser
+      # guards before the split and was deleted with them by a range-based
+      # removal whose ranges overlapped: each browser block ended at the NEXT
+      # step's name line, which is past the following block's start, so
+      # deleting bottom-up with stale indices consumed one step more than it
+      # was given. It starts no preview server and is not a browser guard; it
+      # is here now, beside the other prerendered guard, because they are the
+      # same family and because a step's position in this job is free.
+      #
+      # Caught by diffing the step NAMES on main against the step names here,
+      # not by reading the diff: 39 steps had gone where 38 were meant to.
+      - name: Prerendered freshness guard
+        env:
+          GH_EVENT_BEFORE: ${{ github.event.before }}
+        run: npm run test:prerendered-freshness
+
       # Structural guard, not a reminder: fails if a marketing-page source
       # file changed without prerendered/ also changing in the same diff.
       # Added 2026-08-04 after four consecutive marketing PRs merged in a
