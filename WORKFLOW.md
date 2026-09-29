@@ -13,6 +13,10 @@ Never leave a session with an open PR. An open PR is work that has not shipped â
 Squash-merge deletes the base branch and GitHub closes the dependent PR rather than retargeting it. Sequence conflicting changes as separate PRs replayed onto `main` after the first lands.  
 Measured 2026-09-27: #864 was based on #862's branch and was closed, unmerged, the moment #862 landed â€” and a closed PR's base cannot be changed. Because the parent was squashed, the orphaned branch no longer shared a merge base with `main`, so a fresh PR from it showed the parent's files re-applied (7 files became 17). It had to be replayed onto `main` as #865.
 
+**`npm run verify` does not cover the browser lane.**  
+It derives its steps from `ci.yml` and then excludes every step that starts a preview server, with the reason printed: "starts a preview server and runs browser tests against it; needs a live server". That is 48 guards a green verify says nothing about. A change to shared chrome, anything under `src/components/layout/` or imported by `DashboardPageHeader`, needs those guards run before the PR, not after CI fails.  
+Measured 2026-09-29 on #872: `verify` was green and CI failed on `test:ava-page-modal`, because one import inside the shared page header put `avaOpen` in every page's import graph. Run them with `CAPTURE_BASE_URL` pointed at one preview server; note that `VAR=x eval "$cmd"` does NOT pass the variable to the child in zsh, and an unquoted `$cmd` is not word-split either, so export the variable and keep each guard's log.
+
 **"Done" means merged to main AND verified on openinvite.com.au.**  
 Not "build passes." Not "PR opened." Not "Vercel preview looks good." Done = on main = live.
 

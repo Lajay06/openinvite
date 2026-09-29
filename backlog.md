@@ -70,3 +70,17 @@ second kind would remove the evidence that a feature was never finished.
 Worth noting for whoever runs it: `eslint`'s `unused-vars` already finds most of
 these and is configured as a warning, so they do not fail CI. The report is the
 deliverable, not a lint rule change.
+
+---
+
+## pageGuidance.js unread since the Studio tour
+
+`src/lib/pageGuidance.js` is unread since the Studio tour (#872); fold any
+purpose/actions text worth keeping into the chapters, then delete.
+
+---
+
+## guest-font-effect passes on a contrast failure
+
+`guest-font-effect` reports 2 text elements below 4.5:1 on /w/ routes and still
+passes; either fix the contrast or make the guard fail on it.
