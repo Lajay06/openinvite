@@ -26,6 +26,7 @@
  * chapter says.
  */
 import { CHAPTERS, MEDIA, PLACEHOLDER_POSTER, mediaFor } from '../../src/lib/studioTour.js';
+import { pass, fail } from './_shared.mjs';
 
 /** How far a measured recording may sit from its chapter's target, in seconds. */
 const DRIFT = 3;
@@ -34,13 +35,14 @@ const MIN_SECONDS = 8;
 const MAX_SECONDS = 20;
 
 export function runTourRecordings() {
-  const results = [];
-  const check = (name, ok, detail) => {
-    results.push(ok);
-    console.log(`  ${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? `  (${detail})` : ''}`);
-  };
+  // THE RUNNER SPREADS WHAT THIS RETURNS. scripts/test-ci.mjs does
+  // `results.push(...await fn())`, so a guard returns an ARRAY OF BOOLEANS and
+  // nothing else; returning a summary object crashes the module before a single
+  // assertion is counted, and the run reports it as crashed rather than failed.
+  const r = [];
+  const check = (name, ok, detail) => r.push(ok ? pass(name, detail) : fail(name, 'see name', detail));
 
-  console.log('\nTour recordings (map only, no network):');
+  console.log('\n  Tour recordings, read off the media map with no network:\n');
 
   // ── 1. every chapter is accounted for, either footage or an honest null ──
   const keys = CHAPTERS.map((c) => c.key);
@@ -107,7 +109,5 @@ export function runTourRecordings() {
       phone.webm === entry.phone?.webm, phone.webm === entry.phone?.webm ? '390' : 'fell back');
   }
 
-  const failed = results.filter((r) => !r).length;
-  console.log(`  ${results.length - failed}/${results.length} checks passed`);
-  return { total: results.length, failed };
+  return r;
 }

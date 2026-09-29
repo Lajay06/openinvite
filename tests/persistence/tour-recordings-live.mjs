@@ -33,6 +33,7 @@
  * than a warm one and that is not a failure.
  */
 import { CHAPTERS, MEDIA } from '../../src/lib/studioTour.js';
+import { pass, fail } from './_shared.mjs';
 
 /** The goal's ceiling, in bytes. */
 const MAX_BYTES = 1.5 * 1024 * 1024;
@@ -68,18 +69,16 @@ async function rangedSize(url) {
 }
 
 export async function runTourRecordingsLive() {
-  const results = [];
-  const check = (name, ok, detail) => {
-    results.push(ok);
-    console.log(`  ${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? `  (${detail})` : ''}`);
-  };
+  // An array of booleans, because scripts/test-persistence.mjs spreads it.
+  const r = [];
+  const check = (name, ok, detail) => r.push(ok ? pass(name, detail) : fail(name, 'see name', detail));
 
-  console.log('\nTour recordings, as delivered:');
+  console.log('\n  Tour recordings, as Cloudinary actually serves them:\n');
 
   const recorded = CHAPTERS.map((c) => c.key).filter((k) => MEDIA[k]);
   if (!recorded.length) {
     console.log('  no chapter has footage yet, nothing to deliver');
-    return { total: 0, failed: 0 };
+    return r;
   }
 
   const kb = (n) => `${(n / 1024).toFixed(0)} KB`;
@@ -92,22 +91,20 @@ export async function runTourRecordingsLive() {
         ['mp4', 'video/mp4', true],
         ['poster', 'image/', false],
       ]) {
-        const r = await head(side[field]);
+        const res = await head(side[field]);
         const at = `${key} @ ${label} ${field}`;
-        check(`${at} is served`, r.status === 200, r.error || `HTTP ${r.status}`);
-        if (r.status !== 200) continue;
-        check(`${at} is ${wantType}`, r.type.startsWith(wantType), r.type || 'no content type');
+        check(`${at} is served`, res.status === 200, res.error || `HTTP ${res.status}`);
+        if (res.status !== 200) continue;
+        check(`${at} is ${wantType}`, res.type.startsWith(wantType), res.type || 'no content type');
         if (capped) {
-          check(`${at} is at or under 1.5 MB`, r.bytes > 0 && r.bytes <= MAX_BYTES,
-            r.bytes ? `${kb(r.bytes)}, by ${r.measuredBy}` : 'no size from HEAD or a ranged GET');
+          check(`${at} is at or under 1.5 MB`, res.bytes > 0 && res.bytes <= MAX_BYTES,
+            res.bytes ? `${kb(res.bytes)}, by ${res.measuredBy}` : 'no size from HEAD or a ranged GET');
         } else {
-          console.log(`        ${at}: ${kb(r.bytes)}`);
+          console.log(`        ${at}: ${kb(res.bytes)}`);
         }
       }
     }
   }
 
-  const failed = results.filter((r) => !r).length;
-  console.log(`  ${results.length - failed}/${results.length} checks passed`);
-  return { total: results.length, failed };
+  return r;
 }
