@@ -30,7 +30,7 @@
  */
 import { chromium } from 'playwright';
 import { seededContext, SEED } from './lib/renderHarness.mjs';
-import { CHAPTERS, chapterProgressKey } from '../src/lib/studioTour.js';
+import { CHAPTERS, chapterProgressKey, chapterKeyForRoute, mediaFor, PLACEHOLDER_POSTER } from '../src/lib/studioTour.js';
 
 const BASE = process.env.CAPTURE_BASE_URL || 'http://localhost:4222';
 const results = [];
@@ -188,6 +188,16 @@ for (const [w, h] of [[390, 844], [1440, 950]]) {
     const ratio = box ? box.width / box.height : 0;
     check('  the poster reserves a 16 by 9 box', !!box && Math.abs(ratio - 16 / 9) < 0.1,
       box ? `${Math.round(box.width)} by ${Math.round(box.height)}, ratio ${ratio.toFixed(2)}` : 'no box');
+    // THE MAP IS WIRED, WHICH IS A DIFFERENT QUESTION FROM THE BYTES ARRIVING.
+    // This asserts the src the panel asked for is the one the media map holds
+    // for the page's own chapter, which is the half a blocked-image harness can
+    // answer honestly. Whether Cloudinary serves it, and how many bytes it
+    // serves, is tests/persistence/tour-recordings-live.mjs.
+    const src = await page.locator('[data-tour-media="poster"]').first().getAttribute('src');
+    const chapterHere = chapterKeyForRoute('/Guests');
+    const expected = mediaFor(chapterHere).poster;
+    check(`  the poster is ${chapterHere}'s own frame from the media map`, src === expected,
+      src === expected ? (src === PLACEHOLDER_POSTER ? 'the placeholder, no footage yet' : 'recorded') : String(src).slice(-46));
     await ctx.close();
   }
 

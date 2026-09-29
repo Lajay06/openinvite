@@ -192,17 +192,128 @@ export const CHAPTERS = [
 export const PLACEHOLDER_POSTER =
   'https://res.cloudinary.com/dsr84xknv/image/upload/v1790635009/studio-tour/_placeholder/poster-placeholder.png';
 
-/** chapter key -> { poster, webm, mp4 }. Null video means the poster only. */
+/**
+ * chapter key -> the desktop recording, with the phone one nested.
+ *
+ *   { poster, webm, mp4, seconds, phone: { poster, webm, mp4, seconds } }
+ *
+ * null means no footage yet, and the chapter shows the shared placeholder.
+ *
+ * `seconds` IS MEASURED, not chosen: scripts/tour-recordings/record-all.mjs
+ * counts the frames it wrote and divides by the frame rate, so the number here
+ * is the length of the file. CHAPTERS[].seconds stays the TARGET the script is
+ * written against, and tests/persistence/tour-recordings.mjs bounds the drift
+ * between the two.
+ */
 export const MEDIA = {
-  welcome: null,
-  'event-details': null,
-  schedule: null,
-  guests: null,
-  style: null,
-  'design-studio': null,
-  ava: null,
-  publish: null,
-  help: null,
+  welcome: {
+    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1790663161/studio-tour/welcome/1440.jpg',
+    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1790663161/studio-tour/welcome/1440.webm',
+    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1790663161/studio-tour/welcome/1440.mp4',
+    seconds: 13.87,
+    phone: {
+      poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1790663160/studio-tour/welcome/390.jpg',
+      webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1790663160/studio-tour/welcome/390.webm',
+      mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1790663160/studio-tour/welcome/390.mp4',
+      seconds: 14.97,
+    },
+  },
+  'event-details': {
+    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1790663165/studio-tour/event-details/1440.jpg',
+    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1790663165/studio-tour/event-details/1440.webm',
+    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1790663165/studio-tour/event-details/1440.mp4',
+    seconds: 18,
+    phone: {
+      poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1790663162/studio-tour/event-details/390.jpg',
+      webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1790663162/studio-tour/event-details/390.webm',
+      mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1790663162/studio-tour/event-details/390.mp4',
+      seconds: 17.3,
+    },
+  },
+  schedule: {
+    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1790663168/studio-tour/schedule/1440.jpg',
+    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1790663168/studio-tour/schedule/1440.webm',
+    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1790663168/studio-tour/schedule/1440.mp4',
+    seconds: 14.23,
+    phone: {
+      poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1790663166/studio-tour/schedule/390.jpg',
+      webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1790663166/studio-tour/schedule/390.webm',
+      mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1790663166/studio-tour/schedule/390.mp4',
+      seconds: 13.2,
+    },
+  },
+  guests: {
+    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1790663173/studio-tour/guests/1440.jpg',
+    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1790663173/studio-tour/guests/1440.webm',
+    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1790663173/studio-tour/guests/1440.mp4',
+    seconds: 18.4,
+    phone: {
+      poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1790663171/studio-tour/guests/390.jpg',
+      webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1790663171/studio-tour/guests/390.webm',
+      mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1790663171/studio-tour/guests/390.mp4',
+      seconds: 17.73,
+    },
+  },
+  style: {
+    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1790663177/studio-tour/style/1440.jpg',
+    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1790663177/studio-tour/style/1440.webm',
+    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1790663177/studio-tour/style/1440.mp4',
+    seconds: 16.53,
+    phone: {
+      poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1790663174/studio-tour/style/390.jpg',
+      webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1790663174/studio-tour/style/390.webm',
+      mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1790663174/studio-tour/style/390.mp4',
+      seconds: 15.9,
+    },
+  },
+  'design-studio': {
+    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1790663181/studio-tour/design-studio/1440.jpg',
+    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1790663181/studio-tour/design-studio/1440.webm',
+    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1790663181/studio-tour/design-studio/1440.mp4',
+    seconds: 18.37,
+    phone: {
+      poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1790663179/studio-tour/design-studio/390.jpg',
+      webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1790663179/studio-tour/design-studio/390.webm',
+      mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1790663179/studio-tour/design-studio/390.mp4',
+      seconds: 17.83,
+    },
+  },
+  ava: {
+    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1790688371/studio-tour/ava/1440.jpg',
+    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1790688371/studio-tour/ava/1440.webm',
+    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1790688371/studio-tour/ava/1440.mp4',
+    seconds: 14.77,
+    phone: {
+      poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1790688364/studio-tour/ava/390.jpg',
+      webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1790688364/studio-tour/ava/390.webm',
+      mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1790688364/studio-tour/ava/390.mp4',
+      seconds: 14.33,
+    },
+  },
+  publish: {
+    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1790663183/studio-tour/publish/1440.jpg',
+    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1790663183/studio-tour/publish/1440.webm',
+    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1790663183/studio-tour/publish/1440.mp4',
+    seconds: 16.63,
+    phone: {
+      poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1790663182/studio-tour/publish/390.jpg',
+      webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1790663182/studio-tour/publish/390.webm',
+      mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1790663182/studio-tour/publish/390.mp4',
+      seconds: 15.5,
+    },
+  },
+  help: {
+    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1790663186/studio-tour/help/1440.jpg',
+    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1790663186/studio-tour/help/1440.webm',
+    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1790663186/studio-tour/help/1440.mp4',
+    seconds: 11.83,
+    phone: {
+      poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1790663185/studio-tour/help/390.jpg',
+      webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1790663185/studio-tour/help/390.webm',
+      mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1790663185/studio-tour/help/390.mp4',
+      seconds: 11.43,
+    },
+  },
 };
 
 /**
@@ -211,13 +322,23 @@ export const MEDIA = {
  * Always returns a poster, so no caller has to decide what to draw when the
  * footage is missing. `hasFootage` is the flag the reduced-motion and preload
  * logic reads, rather than each caller testing for null itself.
+ *
+ * `phone` PICKS THE 390 RECORDING, and nothing in the web panel passes it yet.
+ * Both widths are recorded and both are in the map, because the brief asks for
+ * both and because the mobile shell will import this file rather than keep its
+ * own; what the web panel draws is unchanged, which is the recording PR's own
+ * constraint: the media map moves, the markup does not. A chapter with only
+ * the desktop set falls back to it rather than losing its footage, so a phone
+ * caller never gets less than a web caller.
  */
-export function mediaFor(chapterKey) {
-  const entry = MEDIA[chapterKey] || null;
+export function mediaFor(chapterKey, { phone = false } = {}) {
+  const chapter = MEDIA[chapterKey] || null;
+  const entry = (phone && chapter?.phone) || chapter;
   return {
     poster: entry?.poster || PLACEHOLDER_POSTER,
     webm: entry?.webm || null,
     mp4: entry?.mp4 || null,
+    seconds: entry?.seconds ?? null,
     hasFootage: !!(entry && entry.webm),
   };
 }

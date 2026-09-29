@@ -101,4 +101,4 @@ Render guard at 390 and 1440 for: first-run takeover, sidebar entry, "?" entry l
 
 ## Not in this goal
 
-Help center content. Ava's own onboarding. Translations.
+Help center content. Ava's own onboarding. Translations. Split the browser guards into a parallel CI job; next goal after this one closes.
