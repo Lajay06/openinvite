@@ -16,6 +16,16 @@
  * against a local preview server. There is no path from a production build to
  * this file, which is the point of it being under scripts/.
  *
+ * THE LAST TWO SENTENCES ARE THE OWNER'S SECOND DRAFT, AND THE REASON IS THE
+ * PRODUCT. The first version closed with an offer to draft a note, suggest
+ * readings or add to dos, and filterUnbackedOffers removed that sentence
+ * before a couple could read it, because no POD_MIRROR action backs any of the
+ * three. The rule is right: an offer the pod cannot honour must never reach the
+ * couple. So the copy changed rather than the filter, on the owner's line, and
+ * the reply now ends on advice Ava can give rather than on work she cannot do.
+ * Nothing in this file is edited to satisfy a guard; when the product removed a
+ * sentence, that was reported and the owner rewrote it.
+ *
  * THE DELAY IS THE PRODUCT'S OWN ARRIVAL, NOT AN EFFECT. AvaChatPod does not
  * stream: it sets `loading`, which draws three pulsing dots
  * (AvaChatPod.jsx:315), and appends the finished bubble when the reply lands.
@@ -29,7 +39,7 @@
 export const AVA_QUESTION = 'What am I missing for the ceremony?';
 
 /** The owner's reply, verbatim. */
-export const AVA_REPLY = 'I have read your ceremony as it stands. The time, the place and who is marrying you are all set. Three things are still open. Nobody is down to hold the rings. There is no reading yet, and whoever gives one will want a few weeks with it. And the processional music is blank, so the musicians will choose for you. I can draft a note to your celebrant, suggest three readings that suit a garden ceremony, or add all three as to dos. Which first?';
+export const AVA_REPLY = 'I have read your ceremony as it stands. The time, the place and who is marrying you are all set. Three things are still open. Nobody is down to hold the rings. There is no reading yet, and whoever gives one will want a few weeks with it. And the processional music is blank, so the musicians will choose for you. Settle the rings first; that is one message to whoever you trust most. The reading and the music can wait until next week.';
 
 /** How long the dots pulse before the bubble arrives. */
 export const AVA_THINKING_MS = 1900;
