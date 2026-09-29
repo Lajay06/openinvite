@@ -34,7 +34,7 @@ import StudioTour from './StudioTour';
  * load is worse than one they never saw, because the second time they know it
  * is not listening.
  */
-export default function FirstRunTour({ onboardingComplete, context = {} }) {
+export default function FirstRunTour({ onboardingComplete, context = {}, onOpenAva }) {
   const { ready, state, markTourSeen, dismiss } = useGuidanceState();
   const [dismissedThisSession, setDismissedThisSession] = useState(false);
 
@@ -59,6 +59,7 @@ export default function FirstRunTour({ onboardingComplete, context = {} }) {
       onChapterComplete={(key) => {
         if (!dismissedKeys.includes(chapterProgressKey(key))) dismiss(chapterProgressKey(key));
       }}
+      onOpenAva={onOpenAva}
       onFinish={markTourSeen}
       onClose={() => { markTourSeen(); setDismissedThisSession(true); }}
     />

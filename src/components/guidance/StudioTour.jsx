@@ -5,7 +5,6 @@ import {
   CHAPTERS, FINALE, chapterProgressKey, completedCount,
   mediaFor, resolveChapter, totalTimeLabel,
 } from '@/lib/studioTour';
-import { openAva } from '@/lib/avaOpen';
 import { spotlight } from '@/lib/tourSpotlight';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -121,6 +120,24 @@ function ChapterMedia({ chapterKey, title, active, adjacent, reducedMotion }) {
   );
 }
 
+/**
+ * onOpenAva IS A PROP, AND THAT IS NOT A STYLE CHOICE.
+ *
+ * This component used to `import { openAva } from '@/lib/avaOpen'`. It is
+ * rendered by WhatsHerePanel, which is rendered by WhatsHereControl, which
+ * lives in DashboardPageHeader, which EVERY dashboard page imports. So that one
+ * import put avaOpen in every page's import graph, and
+ * scripts/lib/avaEntryPoints.mjs walks that graph to decide which pages offer
+ * Ask Ava: fourteen pages that offer nothing of the kind became Ava pages, and
+ * CI failed with "undeclared: Admin, AvaStudio, Calendar, Considerations,
+ * DailyUpdate, ...".
+ *
+ * Adding those pages to that guard's expectations would have been the wrong
+ * repair: they do not offer Ask Ava, and the guard was right. The tour asks its
+ * HOST to open Ava now. Layout already imports avaOpen and already provides the
+ * tour context, so the capability travels down without the module travelling
+ * into the header.
+ */
 export default function StudioTour({
   mode = 'panel',
   startChapterKey = null,
@@ -129,6 +146,7 @@ export default function StudioTour({
   onClose,
   onFinish,
   onChapterComplete,
+  onOpenAva,
 }) {
   const navigate = useNavigate();
   const reducedMotion = usePrefersReducedMotion();
@@ -239,13 +257,13 @@ export default function StudioTour({
     if (!target) return;
     if (target.opens === 'ava') {
       if (onClose) onClose();
-      openAva();
+      if (onOpenAva) onOpenAva();
       return;
     }
     if (target.spotlight) spotlight(target.spotlight, { pulseOnly: !!target.pulseOnly });
     if (target.to) navigate(target.to);
     if (onClose) onClose();
-  }, [chapter, navigate, onClose]);
+  }, [chapter, navigate, onClose, onOpenAva]);
 
   const overlay = {
     position: 'fixed',

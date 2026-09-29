@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, Suspense } from "react";
-import { AVA_OPEN_EVENT } from '@/lib/avaOpen';
+import { AVA_OPEN_EVENT, openAva } from '@/lib/avaOpen';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from "react-router-dom";
 import { X, Sparkles, Sun, CloudSun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning, Users, LogOut, Loader2, User, Bell, CreditCard, HelpCircle } from "lucide-react";
@@ -524,8 +524,13 @@ function LayoutShell({ children, currentPageName }) {
   // and the question mark there shows the personalised lead.
   const { state: guidanceStateForTour, dismiss: dismissGuidance } = useGuidanceState();
   const guidanceDismissed = guidanceStateForTour?.dismissed ?? [];
+  // onOpenAva IS SUPPLIED HERE, NOT IMPORTED BY THE TOUR. The tour is rendered
+  // from DashboardPageHeader, which every page imports, so an import of
+  // avaOpen inside it reached every page's import graph and made fourteen
+  // pages look like Ask Ava pages to scripts/lib/avaEntryPoints.mjs. The shell
+  // already owns the pod, so the shell hands the capability down.
   const tourContext = React.useMemo(
-    () => ({ coupleFirstNames: coupleFirstNames(weddingDetails, '') }),
+    () => ({ coupleFirstNames: coupleFirstNames(weddingDetails, ''), onOpenAva: () => openAva() }),
     [weddingDetails],
   );
   const tourResume = nextUnfinishedChapterKey(guidanceDismissed);
@@ -806,6 +811,7 @@ function LayoutShell({ children, currentPageName }) {
           dismissed={guidanceDismissed}
           onClose={() => setShowTour(false)}
           onChapterComplete={onTourChapter}
+          onOpenAva={() => openAva()}
         />
       )}
 
@@ -817,6 +823,7 @@ function LayoutShell({ children, currentPageName }) {
       <FirstRunTour
         onboardingComplete={!isCollaborating && isOnboardingComplete(user)}
         context={tourContext}
+        onOpenAva={() => openAva()}
       />
 
       {/* ── Floating Ava button ──────────────────────────── */}

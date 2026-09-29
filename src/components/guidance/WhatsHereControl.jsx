@@ -50,7 +50,11 @@ export default function WhatsHereControl({ tourContext = null }) {
   // MERGED, NOT REPLACED. The shell knows the names, the page knows its
   // numbers, and passing only one of them showed a personalized lead beside a
   // nameless welcome.
-  const context = useTourContext(tourContext);
+  // onOpenAva TRAVELS IN THE CONTEXT, not in an import. See StudioTour's note:
+  // importing the opener here would put it in every page's import graph through
+  // DashboardPageHeader. It is separated from the personalisation values so
+  // resolveChapter is never handed a function.
+  const { onOpenAva, ...context } = useTourContext(tourContext);
 
   if (!isGuidanceEnabled() || !pathname) return null;
 
@@ -90,6 +94,7 @@ export default function WhatsHereControl({ tourContext = null }) {
           dismissed={dismissed}
           onClose={() => setOpen(false)}
           onChapterComplete={onChapterComplete}
+          onOpenAva={onOpenAva}
         />
       )}
     </>

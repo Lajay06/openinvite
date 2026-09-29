@@ -27,7 +27,7 @@ import StudioTour from './StudioTour';
  * chapter a couple reads from the question mark would slowly stop matching the
  * one they read on first run.
  */
-export default function WhatsHerePanel({ startChapterKey, context, dismissed, onClose, onChapterComplete }) {
+export default function WhatsHerePanel({ startChapterKey, context, dismissed, onClose, onChapterComplete, onOpenAva }) {
   return (
     <StudioTour
       mode="panel"
@@ -36,6 +36,7 @@ export default function WhatsHerePanel({ startChapterKey, context, dismissed, on
       dismissed={dismissed}
       onClose={onClose}
       onChapterComplete={onChapterComplete}
+      onOpenAva={onOpenAva}
     />
   );
 }
