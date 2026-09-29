@@ -76,47 +76,101 @@ function useIsNarrow() {
  *
  * ONLY THE CURRENT AND NEXT CHAPTER PRELOAD, per the brief. Everything else
  * gets preload="none", so opening the tour does not pull nine videos.
+ *
+ * ── THE VIDEO IS KEYED, AND THAT IS THE WHOLE OF DEFECT 1 ──────────────────
+ *
+ * Changing the `src` of a <source> element does NOT change what a media
+ * element is playing. The browser resolves its source once, at load, and
+ * afterwards the <source> children are inert markup. One <ChapterMedia> is
+ * rendered at a time, so React reused the same <video> node for all nine
+ * chapters and only swapped the source attributes: the poster changed, the
+ * words changed, and the footage stayed on whichever chapter the tour was
+ * opened at.
+ *
+ * Measured on main before this fix, panel at 1440, stepping through all nine:
+ * currentSrc read `studio-tour/guests/1440.webm` on every one of them while
+ * currentTime went on advancing from the same file. `key={chapterKey}` makes
+ * each chapter its own element, and the effect below calls load() as well, so
+ * a future refactor that drops the key fails loudly rather than silently
+ * playing the wrong chapter.
+ *
+ * ── THE BOX COMES FROM THE FRAME, NOT FROM WHAT IS LOADED ─────────────────
+ *
+ * The media used to carry `aspect-ratio: 16 / 9` on itself, which asks a
+ * REPLACED element to ignore its own intrinsic size. That holds in a browser
+ * that supports it and leaves a <video> at its default 300 by 150 in one that
+ * does not, or before its metadata arrives: a small first chapter, then a
+ * large one from the second on, which is exactly the shape of the report.
+ * The aspect now lives on a plain <div> that holds no intrinsic size of its
+ * own, and the media fills it absolutely. Nothing the browser loads, or fails
+ * to load, can change the box.
  */
 function ChapterMedia({ chapterKey, title, active, adjacent, reducedMotion }) {
   const media = mediaFor(chapterKey);
   const showVideo = media.hasFootage && !reducedMotion;
+  const videoRef = useRef(null);
 
+  // BELT AND BRACES BESIDE THE KEY. A keyed element is already a new one, so
+  // this is a second line of defense rather than the fix: if the key is ever
+  // removed, load() still re-resolves the sources on a chapter change.
+  useEffect(() => {
+    const el = videoRef.current;
+    if (el && typeof el.load === 'function') el.load();
+  }, [chapterKey, showVideo]);
+
+  // A DIV, NOT THE MEDIA, HOLDS THE SHAPE. It has no intrinsic size to fall
+  // back to, so the box is the same before the footage loads, after it loads,
+  // and if it never loads at all.
   const frame = {
+    position: 'relative',
     width: '100%',
-    aspectRatio: '16 / 9',
     maxWidth: '100%',
-    display: 'block',
+    aspectRatio: '16 / 9',
     background: '#F5F5F5',
+    overflow: 'hidden',
+    display: 'block',
+  };
+  const fill = {
+    position: 'absolute',
+    inset: 0,
+    width: '100%',
+    height: '100%',
+    display: 'block',
     objectFit: 'cover',
   };
 
-  if (!showVideo) {
-    return (
-      <img
-        src={media.poster}
-        alt=""
-        aria-hidden="true"
-        data-tour-media="poster"
-        style={frame}
-      />
-    );
-  }
-
   return (
-    <video
-      data-tour-media="video"
-      poster={media.poster}
-      autoPlay={active}
-      muted
-      loop
-      playsInline
-      preload={active || adjacent ? 'metadata' : 'none'}
-      aria-label={title}
-      style={frame}
-    >
-      {media.webm && <source src={media.webm} type="video/webm" />}
-      {media.mp4 && <source src={media.mp4} type="video/mp4" />}
-    </video>
+    <div data-tour-media-frame style={frame}>
+      {showVideo ? (
+        <video
+          key={chapterKey}
+          ref={videoRef}
+          data-tour-media="video"
+          data-tour-media-key={chapterKey}
+          poster={media.poster}
+          autoPlay={active}
+          muted
+          loop
+          playsInline
+          preload={active || adjacent ? 'metadata' : 'none'}
+          aria-label={title}
+          style={fill}
+        >
+          {media.webm && <source src={media.webm} type="video/webm" />}
+          {media.mp4 && <source src={media.mp4} type="video/mp4" />}
+        </video>
+      ) : (
+        <img
+          key={chapterKey}
+          src={media.poster}
+          alt=""
+          aria-hidden="true"
+          data-tour-media="poster"
+          data-tour-media-key={chapterKey}
+          style={fill}
+        />
+      )}
+    </div>
   );
 }
 

@@ -216,6 +216,69 @@ for (const [w, h] of [[390, 844], [1440, 950]]) {
       !!panel && panel.width <= fits.win + 1, panel ? `${Math.round(panel.width)}px` : 'no box');
     await ctx.close();
   }
+
+  // ── 7. the footage follows the chapter, and the box never moves ──────────
+  //
+  // TWO DEFECTS THE OWNER SAW ON PRODUCTION, ONE GUARD, because they are read
+  // off the same walk through all nine chapters.
+  //
+  // The first: swapping the `src` of a <source> does not change what a media
+  // element plays, so one reused <video> kept playing whichever chapter the
+  // tour was opened at while the words and the poster changed around it.
+  // Measured before the fix: currentSrc read studio-tour/guests/1440 on all
+  // nine. This asserts each chapter's own path appears in currentSrc.
+  //
+  // The second: an aspect-ratio on a REPLACED element is ignored by a browser
+  // that lacks it and by one that has not loaded the media yet, which leaves a
+  // <video> at its default 300 by 150. The aspect now lives on a plain div, so
+  // this asserts the box is identical on every chapter.
+  //
+  // THE HARNESS BLOCKS CLOUDINARY, so no footage actually arrives and the
+  // element may settle on the mp4 rather than the webm. That is why the
+  // assertion is on the PATH inside currentSrc and not on the extension, and
+  // why it is a source-selection check rather than a playback one.
+  {
+    const { ctx, page } = await open(browser, { width: w, height: h, path: '/DailyUpdate' });
+    await page.locator('[data-tour-target="whats-here-control"]').first().click().catch(() => {});
+    await page.waitForTimeout(1300);
+    for (let i = 0; i < CHAPTERS.length + 2; i += 1) await page.keyboard.press('ArrowLeft');
+    await page.waitForTimeout(700);
+
+    const seen = [];
+    for (const chapter of CHAPTERS) {
+      await page.waitForTimeout(650);
+      const read = await page.evaluate(() => {
+        const el = document.querySelector('[data-tour-media="video"], [data-tour-media="poster"]');
+        if (!el) return null;
+        const r = el.getBoundingClientRect();
+        return {
+          key: el.getAttribute('data-tour-media-key'),
+          src: el.currentSrc || el.getAttribute('src') || '',
+          w: Math.round(r.width), h: Math.round(r.height),
+        };
+      });
+      seen.push({ chapter: chapter.key, ...(read || {}) });
+      await page.keyboard.press('ArrowRight');
+    }
+
+    const wrongKey = seen.filter((x) => x.key !== x.chapter);
+    check('  the media element is keyed to the chapter it belongs to',
+      wrongKey.length === 0,
+      wrongKey.length ? wrongKey.map((x) => `${x.chapter} showed ${x.key}`).join(', ') : `${seen.length} of ${seen.length}`);
+
+    const wrongSrc = seen.filter((x) => !String(x.src).includes(`studio-tour/${x.chapter}/`));
+    check('  and its source follows the chapter, not the one the tour opened at',
+      wrongSrc.length === 0,
+      wrongSrc.length ? `${wrongSrc.length} stale: ${String(wrongSrc[0].src).slice(-40)}` : 'all nine');
+
+    const boxes = [...new Set(seen.map((x) => `${x.w}x${x.h}`))];
+    check('  the media box is the same on every chapter',
+      boxes.length === 1, boxes.join(', '));
+    const [bw, bh] = String(boxes[0] || '0x0').split('x').map(Number);
+    check('  and it is a 16 by 9 box, not a default video size',
+      bw > 0 && Math.abs(bw / bh - 16 / 9) < 0.06, `${bw} by ${bh}`);
+    await ctx.close();
+  }
 }
 
 await browser.close();
