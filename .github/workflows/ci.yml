@@ -479,11 +479,17 @@ jobs:
       - name: Browser guards A
         run: node scripts/run-browser-shard.mjs A
 
-      # EVERY GUARD'S OUTPUT, NOT JUST THE FIRST FAILURE'S. The shard runs all
-      # of its guards even after one fails, so a red run names every broken
-      # guard at once instead of one per run. These are their full logs.
+      # EVERY GUARD'S OUTPUT, NOT JUST THE FIRST FAILURE'S, AND ON EVERY RUN.
+      # The shard runs all of its guards even after one fails, so a red run
+      # names every broken guard at once instead of one per run.
+      #
+      # `always()`, not `failure()`, because of timings.json. The shard file
+      # says to rebalance from a green run's numbers, and a green run used to
+      # upload nothing: GitHub truncates the downloadable log of a long job, so
+      # on run 36719776024 shard B's guard timings came back and shard A's did
+      # not. The instruction read as possible until someone tried it.
       - name: Guard logs
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: browser-guards-a-logs
@@ -586,11 +592,17 @@ jobs:
       - name: Browser guards B
         run: node scripts/run-browser-shard.mjs B
 
-      # EVERY GUARD'S OUTPUT, NOT JUST THE FIRST FAILURE'S. The shard runs all
-      # of its guards even after one fails, so a red run names every broken
-      # guard at once instead of one per run. These are their full logs.
+      # EVERY GUARD'S OUTPUT, NOT JUST THE FIRST FAILURE'S, AND ON EVERY RUN.
+      # The shard runs all of its guards even after one fails, so a red run
+      # names every broken guard at once instead of one per run.
+      #
+      # `always()`, not `failure()`, because of timings.json. The shard file
+      # says to rebalance from a green run's numbers, and a green run used to
+      # upload nothing: GitHub truncates the downloadable log of a long job, so
+      # on run 36719776024 shard B's guard timings came back and shard A's did
+      # not. The instruction read as possible until someone tried it.
       - name: Guard logs
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: browser-guards-b-logs

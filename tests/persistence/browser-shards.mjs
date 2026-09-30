@@ -95,6 +95,14 @@ export function runBrowserShards() {
       ci.includes(`run-browser-shard.mjs ${letter}`), s.job);
     check(`  and declares it as "${s.job}"`, ci.includes(`name: ${s.job}`));
   }
+  // THE REBALANCE HAS TO BE POSSIBLE, which is not the same as being written
+  // down. The shard file tells the next person to re-measure from a green run;
+  // that instruction was unusable while the logs uploaded only on failure and
+  // GitHub truncated the ones it did keep.
+  check('a green run keeps its timings, not only a red one',
+    (ci.match(/if: always\(\)/g) || []).length >= 2,
+    `${(ci.match(/if: always\(\)/g) || []).length} always() upload(s)`);
+
   check('ci.yml starts no preview server of its own any more',
     !/vite preview --port/.test(ci),
     (ci.match(/vite preview --port/g) || []).length + ' left');
