@@ -129,27 +129,6 @@ jobs:
       #
       # Caught by diffing the step NAMES on main against the step names here,
       # not by reading the diff: 39 steps had gone where 38 were meant to.
-      # THE ONE STEP IN THIS JOB THAT STILL LAUNCHES A BROWSER, which is why
-      # the Playwright provisioning below did not leave with the browser lane.
-      #
-      # It reaches Playwright through `await import('playwright')`
-      # (test-prerendered-freshness.mjs:284), so the static scan that decided
-      # what this job still needed did not see it: the scan looked for
-      # `from 'playwright'` and found only scripts that were leaving. The step
-      # then failed exactly the way its own comment says it failed once before,
-      # "Executable doesn't exist", because the install was no longer there.
-      #
-      # It renders every marketing route whenever a diff cannot answer the
-      # question, so it also starts a preview server of its own, inside the
-      # script rather than in this file. It stays here rather than moving to a
-      # shard because it is diff based and needs the deep clone above, which
-      # the shards deliberately do not take.
-      - name: Prerendered freshness guard
-        env:
-          GH_EVENT_BEFORE: ${{ github.event.before }}
-        run: npm run test:prerendered-freshness
-
-
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         id: playwright-cache
@@ -199,6 +178,31 @@ jobs:
       - name: Install Playwright Chromium
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install chromium
+
+      # THE ONE STEP IN THIS JOB THAT STILL LAUNCHES A BROWSER, which is why
+      # the Playwright provisioning ABOVE did not leave with the browser lane,
+      # and why it is above rather than below. Putting it back in the wrong
+      # order failed identically to not putting it back at all: the guard says
+      # "Executable doesn't exist" either way, because a step cannot use what a
+      # later step installs. That is the third time this file has taught the
+      # same lesson, and the guard's own comment records the first.
+      #
+      # It reaches Playwright through `await import('playwright')`
+      # (test-prerendered-freshness.mjs:284), so the static scan that decided
+      # what this job still needed did not see it: the scan looked for
+      # `from 'playwright'` and found only scripts that were leaving. The step
+      # then failed exactly the way its own comment says it failed once before,
+      # "Executable doesn't exist", because the install was no longer there.
+      #
+      # It renders every marketing route whenever a diff cannot answer the
+      # question, so it also starts a preview server of its own, inside the
+      # script rather than in this file. It stays here rather than moving to a
+      # shard because it is diff based and needs the deep clone above, which
+      # the shards deliberately do not take.
+      - name: Prerendered freshness guard
+        env:
+          GH_EVENT_BEFORE: ${{ github.event.before }}
+        run: npm run test:prerendered-freshness
 
       # Structural guard, not a reminder: fails if a marketing-page source
       # file changed without prerendered/ also changing in the same diff.

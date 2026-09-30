@@ -110,5 +110,18 @@ export function runBrowserShards() {
   check('Build & test still runs the prerendered freshness guard',
     /npm run test:prerendered-freshness/.test(ci), 'not a browser guard, and not in a shard');
 
+  // AND THE BROWSER IS INSTALLED BEFORE IT, which is a different question and
+  // has now been answered wrongly three times. That guard reaches Playwright
+  // through `await import('playwright')`, so no static scan of imports finds
+  // it, and a step cannot use what a later step installs: restoring the
+  // provisioning below the guard failed identically to not restoring it at
+  // all, with the same "Executable doesn't exist". Position is the property,
+  // so position is what is asserted.
+  const installAt = ci.indexOf('npx playwright install chromium');
+  const guardAt = ci.indexOf('npm run test:prerendered-freshness');
+  check('  and installs Chromium before it, not after',
+    installAt > -1 && guardAt > -1 && installAt < guardAt,
+    installAt < guardAt ? 'install first' : 'THE GUARD RUNS BEFORE ITS BROWSER EXISTS');
+
   return r;
 }
