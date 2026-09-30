@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
+import OpeninviteLogo from '@/components/public/OpeninviteLogo';
 
 // Paths are lowercase to match what the site actually serves. React Router
 // matches case-insensitively so "/Features" routed fine, but isActive() below
@@ -82,9 +83,7 @@ export default function PublicNav() {
           }}
           className="hidden md:flex"
         >
-          <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-            <img src="/openinvite-logo.png" alt="openinvite" style={{ height: 20, width: "auto", display: "block" }} />
-          </Link>
+          <OpeninviteLogo size={17} ground="dark" />
 
           <div style={{ width: 1, height: 16, background: "rgba(255,255,255,0.15)" }} />
 
@@ -159,9 +158,7 @@ export default function PublicNav() {
         {/* Mobile full bar — always shown on mobile */}
         <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#0A0A0A]/95 backdrop-blur-sm border-b border-[#222222]">
           <div className="px-6 h-16 flex items-center justify-between">
-            <Link to="/" style={{ textDecoration: "none" }}>
-              <img src="/openinvite-logo.png" alt="openinvite" style={{ height: 24, width: "auto" }} />
-            </Link>
+            <OpeninviteLogo size={20} ground="dark" />
             <button className="text-white" onClick={() => setOpen(!open)}>
               {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -199,9 +196,7 @@ export default function PublicNav() {
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0A]/95 backdrop-blur-sm border-b border-[#222222]">
         <div className="max-w-[1200px] mx-auto px-6 lg:px-12 h-16 flex items-center justify-between">
-          <Link to="/" style={{ textDecoration: "none" }}>
-            <img src="/openinvite-logo.png" alt="openinvite" style={{ height: 28, width: "auto" }} />
-          </Link>
+          <OpeninviteLogo size={24} ground="dark" />
 
           <div className="hidden md:flex items-center gap-8">
             {NAV_LINKS.map((link) => (
