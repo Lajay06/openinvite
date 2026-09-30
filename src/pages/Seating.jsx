@@ -12,6 +12,7 @@ import { Search, Trash2, ZoomIn, ZoomOut, RotateCcw, Users, Pencil, Monitor, Plu
 import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';
 import { validateUploadFile } from '@/lib/uploadValidation';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { interactiveDivProps } from '@/lib/a11y';
 
 import { buildTablesWithGuests } from '@/lib/seatingChart';
@@ -90,6 +91,9 @@ const CANVAS_W = 1400;
 const CANVAS_H = 900;
 
 export default function SeatingPage() {
+  // The shared breakpoint, not a second opinion: src/hooks/use-mobile.jsx
+  // is what the marketing end cap and the tour page already ask.
+  const isNarrow = useIsMobile();
   const [guests, setGuests] = useState([]);
   const [tables, setTables] = useState([]);
   const [venueAssets, setVenueAssets] = useState([]);
@@ -1005,10 +1009,43 @@ export default function SeatingPage() {
         </div>
 
         {/* ── Three-panel layout ── */}
-        <div style={{ display: 'flex', border: '1px solid rgba(10,10,10,0.12)', height: 650 }}>
+        {/* IT STACKS ON A PHONE, AND THE CANVAS IS WHAT YOU SEE.
+            Left 200 plus right 260 is 460px of panel that never shrinks, and at
+            390 the viewport has 326 to give. Three panels beside each other
+            gave the canvas `flex: 1` of nothing: it rendered ZERO PIXELS WIDE,
+            and the page scrolled sideways by 103px carrying the panels with it.
+            test:dashboard-no-overflow carried that as a named exception from
+            the day it was written.
+            Making the frame scroll sideways fixed the page and not the product:
+            the overflow was contained, and a couple on a phone still had to drag
+            past a 200px library to reach a canvas that was not there. So at
+            narrow widths the three panels become three rows, the canvas gets a
+            real height of its own, and the only thing that scrolls sideways is
+            the canvas inside its own frame, which is what it did already.
+            AND THE CANVAS COMES FIRST, because stacking alone put it 476px of
+            library below the fold: the couple opened the seating page and saw a
+            list of layout items, not their tables. `order` moves it visually
+            without moving it in the DOM, so the reading order for a screen
+            reader stays library, canvas, guests, which is the order the page
+            describes itself in.
+            Nothing changes above the breakpoint. */}
+        <div style={{
+          display: 'flex',
+          flexDirection: isNarrow ? 'column' : 'row',
+          border: '1px solid rgba(10,10,10,0.12)',
+          height: isNarrow ? 'auto' : 650,
+        }}>
 
           {/* Left: Layout items */}
-          <div style={{ width: 200, borderRight: '1px solid rgba(10,10,10,0.12)', flexShrink: 0 }}>
+          <div style={{
+            width: isNarrow ? '100%' : 200,
+            order: isNarrow ? 2 : 0,
+            maxHeight: isNarrow ? 300 : 'none',
+            overflowY: isNarrow ? 'auto' : 'visible',
+            borderRight: isNarrow ? 'none' : '1px solid rgba(10,10,10,0.12)',
+            borderTop: isNarrow ? '1px solid rgba(10,10,10,0.12)' : 'none',
+            flexShrink: 0,
+          }}>
             <VenueAssetLibrary
               onAddTable={() => setShowAddTable(true)}
               onAddAsset={handleAddAsset}
@@ -1020,7 +1057,19 @@ export default function SeatingPage() {
 
           {/* Centre: Canvas */}
           <div
-            style={{ flex: 1, position: 'relative', overflow: 'auto', cursor: draggingItem ? 'grabbing' : 'default', ...canvasGrid }}
+            style={{
+              flex: 1,
+              // A ROW HAS NO HEIGHT OF ITS OWN. Stacked, `flex: 1` against an
+              // auto-height parent gives the canvas nothing, which is the same
+              // way it got zero WIDTH when it was a column beside two panels.
+              minHeight: isNarrow ? 420 : 0,
+              width: isNarrow ? '100%' : 'auto',
+              order: isNarrow ? 1 : 0,
+              position: 'relative',
+              overflow: 'auto',
+              cursor: draggingItem ? 'grabbing' : 'default',
+              ...canvasGrid,
+            }}
             onMouseMove={handleCanvasMouseMove}
             onMouseUp={handleCanvasMouseUp}
             onMouseLeave={handleCanvasMouseUp}
@@ -1151,7 +1200,14 @@ export default function SeatingPage() {
           </div>
 
           {/* Right: Guest panel */}
-          <div style={{ width: 260, borderLeft: '1px solid rgba(10,10,10,0.12)', flexShrink: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{
+            width: isNarrow ? '100%' : 260,
+            order: isNarrow ? 3 : 0,
+            maxHeight: isNarrow ? 520 : 'none',
+            borderLeft: isNarrow ? 'none' : '1px solid rgba(10,10,10,0.12)',
+            borderTop: isNarrow ? '1px solid rgba(10,10,10,0.12)' : 'none',
+            flexShrink: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden',
+          }}>
 
             {selectedTable ? (
               /* ── TABLE DETAIL MODE ── */

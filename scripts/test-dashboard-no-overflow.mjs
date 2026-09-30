@@ -20,41 +20,30 @@
  * an element wider than the viewport INSIDE its own horizontally scrollable
  * container — a tab row that scrolls within itself is the fix, not the bug.
  *
- * DECLARED BLIND SPOT — bounding-rect detection cannot see an element whose own
- * scrollWidth exceeds its box. When the probe reports overflow but names no
- * offender, that is this limit, not a mystery: the element's rect sits inside
- * the viewport while its CONTENT does not. photography is exactly this case.
- * Do not go hunting for an element that was never findable this way; measure
- * scrollWidth per element instead.
+ * THE BLIND SPOT IS CLOSED, 2026-09-30. Bounding-rect detection cannot see an
+ * element whose own scrollWidth exceeds its box: its rect sits inside the
+ * viewport while its CONTENT does not. photography was exactly that case, and
+ * the probe could report the overflow while naming no offender. It now asks
+ * both questions, rect first and then content, and prints which one answered.
+ * The rect pass is kept rather than replaced, because the two find different
+ * things: a 1400px canvas escaping its container is a rect finding, and six
+ * tab labels squeezed into boxes too small for them is a content finding.
  *
- * NAMED EXCEPTIONS, not a lowered bar. Two surfaces are known debt and carry an
- * explicit entry each. They still get measured, and they FAIL if they get
- * worse. A named exception is debt with a name on it; a relaxed threshold is a
- * probe that stops noticing.
+ * NO EXCEPTIONS. There were two, seating at 103px and photography at 8px,
+ * carried from the day this was written. They were not exceptions; they were
+ * two dashboard pages that scrolled sideways on a phone, and they were only
+ * visible at all once this guard started running in CI (2026-09-30, with the
+ * browser lane split). Both are fixed: the seating frame scrolls within itself
+ * and the photography tab row does too. Any overflow now fails.
  */
 /* eslint-env browser */
-/* global document, window */
+/* global document, window, getComputedStyle */
 import { chromium } from 'playwright';
 import { seededContext } from './lib/renderHarness.mjs';
 
 const BASE = process.env.CAPTURE_BASE_URL || 'http://localhost:4173';
 const WIDTH = 390;
 const CONTROL = process.argv.includes('--control');
-
-/**
- * surface -> { px, why }. Measured at the time of writing. The probe fails if
- * the surface exceeds its recorded figure, so these cannot quietly grow.
- */
-const KNOWN = {
-  seating: {
-    px: 103,
-    why: 'a 1400px canvas sits in a scroll container whose own width computes to 0, so it escapes — not a min-width case',
-  },
-  photography: {
-    px: 8,
-    why: 'driven by an element\'s own scrollWidth rather than its position; invisible to bounding-rect detection (see DECLARED BLIND SPOT)',
-  },
-};
 
 const SURFACES = [
   'dashboard', 'guests', 'seating', 'budget', 'schedule', 'vendors', 'beauty',
@@ -95,24 +84,35 @@ for (const surface of SURFACES) {
   measured++;
   const over = await page.evaluate(() =>
     document.documentElement.scrollWidth - window.innerWidth);
-  const known = KNOWN[surface];
-  if (over > 0 && known && over <= known.px) {
-    console.log(`  \u25b3 ${surface.padEnd(13)} +${over}px  KNOWN EXCEPTION (<=${known.px}px)`);
-    console.log(`      ${known.why}`);
-    continue;
-  }
-  if (over > 0 && known) {
-    console.log(`  \u274c ${surface.padEnd(13)} +${over}px  EXCEEDS its recorded ${known.px}px — the exception is getting worse`);
-    failures++; continue;
-  }
   if (over > 0) {
     const who = await page.evaluate(() => {
       const vw = window.innerWidth;
-      const w = [...document.querySelectorAll('*')]
+      const name = (e) => `<${e.tagName.toLowerCase()}${e.className && typeof e.className === 'string' ? '.' + e.className.trim().split(/\s+/)[0] : ''}> "${(e.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 28)}"`;
+      // AN ELEMENT INSIDE A HORIZONTALLY CONTAINED ANCESTOR IS NOT THE BUG.
+      // A tab row or a canvas frame that scrolls within itself is the fix, and
+      // its children legitimately sit past the viewport.
+      const contained = (e) => {
+        for (let n = e.parentElement; n && n !== document.documentElement; n = n.parentElement) {
+          const ox = getComputedStyle(n).overflowX;
+          if (ox === 'auto' || ox === 'scroll' || ox === 'hidden') return true;
+        }
+        return false;
+      };
+      const all = [...document.querySelectorAll('*')];
+      // 1. BY RECT: an element whose box escapes the viewport.
+      const byRect = all
         .map(e => ({ e, b: e.getBoundingClientRect() }))
-        .filter(x => x.b.width > 0 && x.b.right > vw + 1)
+        .filter(x => x.b.width > 0 && x.b.right > vw + 1 && !contained(x.e))
         .sort((a, b) => b.b.right - a.b.right)[0];
-      return w ? `<${w.e.tagName.toLowerCase()}> "${(w.e.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 28)}"` : '?';
+      if (byRect) return `by rect, right=${Math.round(byRect.b.right)}  ${name(byRect.e)}`;
+      // 2. BY CONTENT: an element whose own scrollWidth exceeds its box. This
+      // is what the rect pass cannot see, and what photography was.
+      const byContent = all
+        .filter(e => e.clientWidth > 0 && e.scrollWidth > e.clientWidth + 1 && getComputedStyle(e).overflowX === 'visible')
+        .map(e => ({ e, excess: e.scrollWidth - e.clientWidth }))
+        .sort((a, b) => b.excess - a.excess)[0];
+      if (byContent) return `by content, ${byContent.e.scrollWidth}px in a ${byContent.e.clientWidth}px box  ${name(byContent.e)}`;
+      return 'no offender found by either pass';
     });
     console.log(`  ❌ ${surface.padEnd(13)} +${over}px   ${who}`);
     failures++;
@@ -122,7 +122,7 @@ for (const surface of SURFACES) {
 }
 await browser.close();
 
-console.log(`\n  ${measured}/${SURFACES.length} surfaces measured, ${failures} failing, ${Object.keys(KNOWN).length} named exceptions\n`);
+console.log(`\n  ${measured}/${SURFACES.length} surfaces measured, ${failures} failing, no exceptions\n`);
 if (CONTROL) {
   if (failures > 0) { console.log('  CONTROL PASSED — the probe fails when overflow exists.\n'); process.exit(0); }
   console.log('  CONTROL FAILED — the probe did NOT catch an injected 780px row.\n'); process.exit(1);
