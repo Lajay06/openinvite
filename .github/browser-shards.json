@@ -6,7 +6,7 @@
     "file, not to the workflow: .github/workflows/ci.yml reads the lists from here.",
     "To re-measure, take the step times from main's last green run and re-run the balance.",
     "`note` is the comment that sat above the guard's step in ci.yml before the split. The steps are gone; the reasons they record are not, so they moved here rather than being deleted with the YAML that carried them.",
-    "`unassigned` is the escape hatch WITH A REASON, and it is not a place to park work. tests/persistence/browser-shards.mjs requires every browser guard in package.json to be in exactly one shard or named here, so a guard cannot go missing quietly the way these two did."
+    "2026-09-30: test:dashboard-no-overflow (28s) and test:guest-essentials-reachable (134s) moved out of `unassigned` and into the lane, after both were run against a preview of main and both passed. They had been registered in package.json and never run by CI, on main or before it. They went one to each shard rather than both to the lighter one: 162 seconds into a pair two seconds apart would have left them 160s apart and needed the balance budget widened to hold it, and the budget is the thing keeping this file honest."
   ],
   "measuredFrom": {
     "run": 36631295476,
@@ -21,7 +21,7 @@
     "A": {
       "job": "Browser guards A",
       "port": 4223,
-      "measuredSeconds": 935,
+      "measuredSeconds": 963,
       "guards": [
         {
           "name": "Marketing-routes + guest-font-effect + no-invalid-date (against this build)",
@@ -92,6 +92,12 @@
           "note": "MOVED HERE FROM BEFORE THE BUILD STEPS, 2026-09-08, because it now needs a browser and this is the first point in the job that has one.  #709 gave this guard a fallback: when a diff cannot answer the question \u2014 an empty range, or any run on main \u2014 it renders all fourteen marketing routes and compares bodies. That fallback fired on main immediately after #709 merged and crashed on `browserType.launch: Executable doesn't exist`, because it sat at line 87, one hundred and seventy lines before `npx playwright install`.  The guard was right and its placement was wrong. It stays a required step; it simply runs after Chromium exists. The diff path costs the same wherever it sits, and the fallback cannot run anywhere earlier. Needs the same preview server and browser as the guards above. The resume path it checks was written long ago and inert until c832e9e declared onboardingDraft \u2014 so this is the first CI run it has ever had. The breadcrumb's WORDS and its painted-ness, on two universe routes. Each hides the other's failure: right words behind an overlay reads correct in the DOM; wrong words on screen reads correct in a screenshot."
         },
         {
+          "name": "The dashboard does not scroll sideways at 390",
+          "script": "test:dashboard-no-overflow",
+          "seconds": 28,
+          "note": "Sixteen dashboard surfaces measured at 390 for horizontal overflow. Written after eight of them were found scrolling sideways with nobody measuring; registered in package.json and never run by CI until 2026-09-30. Two named exceptions inside their own allowances, seating at +103px and photography at +8px, both declared in the script."
+        },
+        {
           "name": "The full-page preview offers the devices the canvas does",
           "seconds": 27,
           "script": "test:full-preview-devices",
@@ -143,13 +149,19 @@
     "B": {
       "job": "Browser guards B",
       "port": 4224,
-      "measuredSeconds": 937,
+      "measuredSeconds": 1071,
       "guards": [
         {
           "name": "The studio tour, as a couple meets it, at 390 and 1440",
           "seconds": 142,
           "script": "test:studio-tour-render",
           "note": "Six things the goal names, all of them browser facts: the first-run takeover, the sidebar entry, the \"?\" landing on the page's own chapter, resume from a half-finished tour, reduced motion showing posters, and keyboard navigation. The seed is varied per case, because the fixture wedding has already seen the tour."
+        },
+        {
+          "name": "A guest can always reach the date and a way to reply",
+          "script": "test:guest-essentials-reachable",
+          "seconds": 134,
+          "note": "Four stored page configurations, including a couple who has switched off every page they are allowed to. A reachability check rather than a removal check, because 'are they gone from the hero' passes on a site where they exist nowhere at all. Registered in package.json and never run by CI until 2026-09-30."
         },
         {
           "name": "The hero switches, on every universe",
@@ -274,17 +286,8 @@
     }
   },
   "balance": {
-    "deltaSeconds": 2,
+    "deltaSeconds": 108,
     "budgetSeconds": 120
   },
-  "unassigned": [
-    {
-      "script": "test:dashboard-no-overflow",
-      "reason": "Registered in package.json and never run by CI, on main or before it. Found by the split, not caused by it: the search for 'every browser guard' turned up 50 where ci.yml ran 48. Held for the owner rather than added, because adding a guard nobody has run is a change to what the lane checks, which this goal excludes."
-    },
-    {
-      "script": "test:guest-essentials-reachable",
-      "reason": "The same, and the same reason. Its header says what it covers: a guest must always be able to find the date and a way to reply, on a site whose couple has switched off every page they are allowed to."
-    }
-  ]
+  "unassigned": []
 }
