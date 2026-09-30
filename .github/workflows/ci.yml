@@ -46,36 +46,32 @@ jobs:
   test:
     name: Build & test
     runs-on: ubuntu-latest
-    # 50, AND THIS IS THE SECOND RAISE. A timeout is there to stop a hang, not
-    # to ration a suite that is honestly getting longer; at the old ceiling it
-    # had become a tax on adding coverage, paid in a failure mode that names
-    # the wrong cause.
+    # 30, AND THE SPLIT IS WHY IT COULD COME DOWN.
     #
-    # 20 -> 35, on 2026-09-13. A PR went red with Build & test = CANCELLED,
-    # which reads like a concurrency race and was not one: the job had run out
-    # of its 20 minutes. main's own runs were taking 19m30s, 97% of the budget,
-    # and had been at 18m40s before that, so the margin was already under a
-    # minute and the next guard to be added was going to spend it whoever
-    # added it.
+    # This budget went 20 -> 35 -> 50 in seventeen days, each raise buying time
+    # for a serial browser lane that was growing faster than the ceiling. The
+    # last raise said so in this comment: "THE RAISE IS NOT THE FIX, AND THE
+    # NEXT ONE SHOULD NOT HAPPEN. Splitting them into a parallel job is the next
+    # goal." That happened, on 2026-09-30.
     #
-    # 35 -> 50, on 2026-09-29, the same bill one budget later. #872's run was
-    # cut at 35m17s: 148 of its 149 steps passed, and the one killed was the
-    # last, "Marketing-routes + guest-font-effect + no-invalid-date", stopped
-    # at 428s of the 471s it needs. Nothing was wrong with the branch. main's
-    # four preceding green runs were 34m33s, 34m29s, 34m45s and 34m33s, so the
-    # margin was under 30 seconds, and #872 added one 142-second guard.
-    # Re-running would have reproduced it exactly, which is what separates
-    # this from a flake.
+    # MEASURED, on the same workflow either side of the split:
     #
-    # THE RAISE IS NOT THE FIX, AND THE NEXT ONE SHOULD NOT HAPPEN. The serial
-    # browser lane is the whole cost. Measured on main's run 36493258069:
-    # 34m33s in total, of which 28m25s is browser guards run one at a time,
-    # each starting its own vite preview, and 2m48s is everything that comes
-    # before the first of them. They share nothing. Splitting them into a
-    # parallel job is the next goal after the studio tour closes, and it is
-    # tracked in OPEN-TICKETS as "split the browser guards into a parallel CI
-    # job". If a third raise is ever proposed, do the split instead.
-    timeout-minutes: 50
+    #   before, run 36631295476     Build & test 36m01s, one job, wall 36m01s
+    #   after,  run 36650641291     Build & test  4m47s
+    #                               Browser guards A 14m54s
+    #                               Browser guards B 14m48s
+    #                               wall clock 14m54s
+    #
+    # What is left in this job is install, build, lint, the credential-free
+    # persistence suite, the diff guards and the two prerendered guards, of
+    # which the freshness guard is the only slow one at about three and a half
+    # minutes because it renders every marketing route. 30 is six times what
+    # the job now takes, which is a hang detector rather than a ration. The
+    # shards carry their own 25.
+    #
+    # If this ever needs raising again, the question to ask first is what moved
+    # BACK into this job, not how much more time it should be given.
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
