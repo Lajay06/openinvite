@@ -111,7 +111,9 @@
     "test:design-tab-contrast": "node scripts/test-design-tab-contrast.mjs",
     "test:messages-badge": "node scripts/test-messages-badge.mjs",
     "test:messages-reply": "node scripts/test-messages-reply.mjs",
-    "test:studio-tour-render": "node scripts/test-studio-tour-render.mjs"
+    "test:studio-tour-render": "node scripts/test-studio-tour-render.mjs",
+    "test:shard-a": "node scripts/run-browser-shard.mjs A",
+    "test:shard-b": "node scripts/run-browser-shard.mjs B"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.48",

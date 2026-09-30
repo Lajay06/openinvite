@@ -50,7 +50,7 @@ const RSVP = strip(read('src/components/rsvp/RSVPPage.jsx'));
 const GATE = strip(read('src/components/guest-website/pages/WeddingRSVPPage.jsx'));
 const THEMES = read('src/lib/websiteThemes.js');
 const PREVIEW = strip(read('src/components/website-builder/RealWebsitePreview.jsx'));
-const CI = read('.github/workflows/ci.yml');
+const SHARDS = read('.github/browser-shards.json');
 const PKG = read('package.json');
 
 /** Every editor panel that edits Good to know or the RSVP content. */
@@ -221,8 +221,17 @@ export async function runGuestNoteForm() {
   // ── the render pass is registered, or it never runs ──────────────────────
   check('the 390/1440 render pass has an npm script',
     /"test:guest-note-render"/.test(PKG), 'package.json');
-  check('  and a CI lane that runs it',
-    /npm run test:guest-note-render/.test(CI), 'ci.yml');
+  // THE LANE MOVED, 2026-09-30, AND SO DID THIS CHECK. The browser guards used
+  // to be written out in ci.yml, one step each, so "is it in CI" was a grep of
+  // that file. They are two sharded jobs now and the list lives in
+  // .github/browser-shards.json, which is what ci.yml reads. The question is
+  // unchanged: is this render pass registered somewhere that runs it. Only the
+  // file holding the answer has changed.
+  //
+  // tests/persistence/browser-shards.mjs asks the general form of this for
+  // every browser guard at once, and found two that were in neither place.
+  check('  and a CI shard that runs it',
+    /"test:guest-note-render"/.test(SHARDS), '.github/browser-shards.json');
 
   return r;
 }

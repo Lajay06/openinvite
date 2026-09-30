@@ -2090,20 +2090,30 @@ Post-launch. No code until then.
 
 ## Split the browser guards into a parallel CI job
 
-The serial lane is at ~19 minutes. `timeout-minutes` went 20 -> 35 on
-2026-09-13 because a PR went red with `CANCELLED` when the eleventh dialog in
-`test:modal-scale` took the job past its budget — a failure that names the
-wrong cause and cost a round of looking at concurrency groups that were
-behaving correctly.
+**CLOSED 2026-09-30.** Done in the CI split goal
+(goals/2026-09-30-ci-split.md).
 
-That bought margin; it did not change the shape. Most of the 19 minutes is
-browser guards run one after another, each starting its own `vite preview` on
-its own port. They share nothing and could be a second job running beside the
-source guards, or a matrix over the ports already assigned (4173, 4179-4193).
+The measure this ticket set was "main's own run, 19m30s at the time of
+writing". That number was two timeout raises out of date by the time the work
+started: the serial lane had grown to **31m12s of a 36m01s run** (main's run
+36631295476 on 4b6fd692, 2026-09-29), with 38 steps each booting their own
+vite preview.
 
-The measure to beat: main's own run, 19m30s at the time of writing.
+After: `Build & test` keeps everything that is not a browser guard, and two
+jobs beside it, **Browser guards A** and **Browser guards B**, carry the 48
+guards, balanced by measured duration to within two seconds of each other. The
+lists, the ports and the per-guard seconds are data in
+`.github/browser-shards.json`; `scripts/run-browser-shard.mjs` runs a shard,
+locally or in CI, with one command.
 
-Post-launch. No code until then.
+The before and after wall times are recorded in the goal's closing block.
+
+Two guards turned up in the search that had never run in CI at all, on main or
+before it: `test:dashboard-no-overflow` and `test:guest-essentials-reachable`.
+They are declared in the shard file's `unassigned` list with their reason, and
+`tests/persistence/browser-shards.mjs` now fails on any browser guard that is
+in neither a shard nor that list. Adding them to the lane is a separate
+decision, because it changes what the lane checks.
 
 ## 23 WeddingDetails.create paths, no chokepoint
 

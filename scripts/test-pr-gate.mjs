@@ -22,6 +22,12 @@ function expect(label, rows, wantOk, wantMode, maySkip = {}, mergeable = null) {
   else { console.error(`  FAIL  ${label}  -> ok=${v.ok} mode=${v.mode}, expected ok=${wantOk} mode=${wantMode}`); failed++; }
 }
 
+/** For the cases that assert a verdict rather than a named mode. */
+function report(label, ok, mode) {
+  if (ok) console.log(`  pass  ${label}  -> ${mode}`);
+  else { console.error(`  FAIL  ${label}  -> ${mode}`); failed++; }
+}
+
 // green
 expect('all SUCCESS', [BUILD, R('Vercel', 'SUCCESS')], true, 'green');
 
@@ -75,6 +81,28 @@ expect('  and an UNKNOWN mergeable state does not refuse on its own',
   [BUILD, R('Vercel', 'SUCCESS')], true, 'green', {}, 'UNKNOWN');
 expect('  a conflicting PR with a genuinely absent check still says conflicting',
   [R('Vercel', 'SUCCESS')], false, 'conflicting', {}, 'CONFLICTING');
+
+// ── THE DEFAULT LIST, WHICH IS WHAT pr:merge ACTUALLY USES ─────────────────
+//
+// Every case above passes its own mustBePresent, so none of them would notice
+// if the default stopped naming the browser shards. That is the exact shape of
+// the defect the split could introduce: the guards run, and nothing requires
+// them. These two call evaluate the way the merge path calls it.
+{
+  const all = [R('Build & test', 'SUCCESS'), R('Browser guards A', 'SUCCESS'),
+               R('Browser guards B', 'SUCCESS'), R('Vercel Preview Comments', 'SUCCESS')];
+  const v = evaluate(all, undefined, undefined, 'MERGEABLE');
+  report('the default list is green when both shards and Build & test pass', v.ok === true, v.mode);
+
+  const withoutShards = [R('Build & test', 'SUCCESS'), R('Vercel Preview Comments', 'SUCCESS')];
+  const w = evaluate(withoutShards, undefined, undefined, 'MERGEABLE');
+  report('and refuses when the browser shards are absent', w.ok === false, w.mode);
+
+  const oneRed = [R('Build & test', 'SUCCESS'), R('Browser guards A', 'SUCCESS'),
+                  R('Browser guards B', 'FAILURE')];
+  const x = evaluate(oneRed, undefined, undefined, 'MERGEABLE');
+  report('and refuses when one shard is red', x.ok === false, x.mode);
+}
 
 console.log(failed ? `\n  ${failed} failure(s)` : '\n  the gate refuses everything it should');
 process.exit(failed ? 1 : 0);

@@ -72,6 +72,12 @@ const EXCLUDED = [
   [/^npx playwright install/, 'CI-only browser provisioning'],
   [/^npm run audit:ci$/, 'hits the npm registry; slow and network-dependent, so CI-only'],
   [/^sudo rm -f \/etc\/apt\/sources\.list\.d\/google-chrome/, 'CI-only runner apt cleanup ahead of playwright install-deps (#790)'],
+  // THE BROWSER LANE IS STILL EXCLUDED, IT IS JUST ONE LINE NOW. Each shard
+  // boots a preview server and runs sixteen minutes of guards against it, so
+  // running it inside verify would turn a two-minute check into a forty-minute
+  // one. The difference the split makes is that it is now a single named
+  // command you can run yourself, which the footer below prints.
+  [/^node scripts\/run-browser-shard\.mjs/, 'starts a preview server and runs half the browser lane; see the shard summary below'],
 ];
 
 // GitHub expression substitution. An unresolved ${{ }} must never be handed to
@@ -174,7 +180,33 @@ for (const step of steps) {
   }
 }
 
+/**
+ * THE BROWSER LANE, NAMED RATHER THAN SILENTLY ABSENT.
+ *
+ * "verify passed" has never meant the browser guards passed, and before the
+ * split it did not say so: 38 excluded steps scrolled past in a list nobody
+ * read, and a change to shared chrome went to CI without them (#872, which
+ * failed on test:ava-page-modal after a green verify). The lane is now two
+ * named commands, and this footer is where a local run is told about them.
+ */
+function printShardSummary() {
+  let doc;
+  try { doc = JSON.parse(readFileSync('.github/browser-shards.json', 'utf8')); } catch { return; }
+  const shards = Object.entries(doc.shards || {});
+  if (!shards.length) return;
+  console.log('\n  The browser lane is NOT in the count above. It is two shards:\n');
+  for (const [letter, sh] of shards) {
+    const mins = `${Math.floor(sh.measuredSeconds / 60)}m${String(sh.measuredSeconds % 60).padStart(2, '0')}s`;
+    const guards = sh.guards.reduce((n, g) => n + (g.scripts ? g.scripts.length : 1), 0);
+    console.log(`    npm run test:shard-${letter.toLowerCase()}   ${String(guards).padStart(2)} guards, about ${mins}, port ${sh.port}`);
+  }
+  console.log('\n  Run the shard your change could break BEFORE opening the PR. A change');
+  console.log('  to shared chrome, or to anything DashboardPageHeader imports, can break');
+  console.log('  a guard in either of them.');
+}
+
 console.log();
+printShardSummary();
 if (failed.length) {
   console.log(`${steps.length - failed.length}/${steps.length} passed. FAILED: ${failed.join(', ')}`);
   process.exit(1);

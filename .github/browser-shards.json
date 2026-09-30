@@ -1,0 +1,290 @@
+{
+  "_comment": [
+    "Which browser guard runs in which CI shard, and how long it took when it was last measured.",
+    "The shards are balanced by MEASURED DURATION, never by name or by count: A carries fewer",
+    "guards because it carries the one that takes 459 seconds. Rebalancing is an edit to this",
+    "file, not to the workflow: .github/workflows/ci.yml reads the lists from here.",
+    "To re-measure, take the step times from main's last green run and re-run the balance.",
+    "`note` is the comment that sat above the guard's step in ci.yml before the split. The steps are gone; the reasons they record are not, so they moved here rather than being deleted with the YAML that carried them.",
+    "`unassigned` is the escape hatch WITH A REASON, and it is not a place to park work. tests/persistence/browser-shards.mjs requires every browser guard in package.json to be in exactly one shard or named here, so a guard cannot go missing quietly the way these two did."
+  ],
+  "measuredFrom": {
+    "run": 36631295476,
+    "sha": "4b6fd692",
+    "branch": "main",
+    "date": "2026-09-29",
+    "runTotalSeconds": 2161,
+    "browserLaneSeconds": 1872,
+    "everythingElseSeconds": 289
+  },
+  "shards": {
+    "A": {
+      "job": "Browser guards A",
+      "port": 4223,
+      "measuredSeconds": 935,
+      "guards": [
+        {
+          "name": "Marketing-routes + guest-font-effect + no-invalid-date (against this build)",
+          "seconds": 459,
+          "ownStep": true,
+          "reason": "Eleven guards against one server, chained so a failure stops the rest, plus five warm-up requests before Playwright first navigates. Kept verbatim as its own step.",
+          "port": 4173,
+          "scripts": [
+            "test:marketing-routes",
+            "test:guest-font-effect",
+            "test:table-typography",
+            "test:schedule-tabs",
+            "test:daily-update-paint",
+            "test:ava-safe-area",
+            "test:type-scale",
+            "test:filter-pills",
+            "test:universe-typography",
+            "test:guest-no-invalid-date",
+            "test:guest-export-address"
+          ],
+          "note": "Serves this PR's own build (not production \u2014 CAPTURE_BASE_URL defaults to https://openinvite.com.au otherwise, which would test whatever's already live instead of the change under review) and points the marketing-routes smoke test at it."
+        },
+        {
+          "name": "The note form renders on both guest surfaces, at 390 and 1440",
+          "seconds": 53,
+          "script": "test:guest-note-render",
+          "note": "A guest with a question now has somewhere to put it. Both placements are driven, not seeded: the RSVP one is reached by tapping yes and submitting, because the requirement is \"after a reply is submitted\"."
+        },
+        {
+          "name": "The onboarding universe picker advances on Select",
+          "seconds": 51,
+          "script": "test:onboarding-universe-select",
+          "note": "Select is the answer, so Select advances \u2014 and keeps the answer."
+        },
+        {
+          "name": "The onboarding universe tiles are the universes' own heroes",
+          "seconds": 45,
+          "script": "test:onboarding-universe-tiles",
+          "note": "The picker shows the picture the universe actually shows."
+        },
+        {
+          "name": "The celebration accordions show their state in their border",
+          "seconds": 41,
+          "script": "test:onboarding-accordion-borders"
+        },
+        {
+          "name": "The guest-count cards fit their text at 360, 390 and 430",
+          "seconds": 34,
+          "script": "test:onboarding-card-fit",
+          "note": "Text stays inside its box: three choice cards that did not fit a phone."
+        },
+        {
+          "name": "The preview's device frames scroll and contain their menus",
+          "seconds": 32,
+          "script": "test:preview-device-scroll",
+          "note": "The device frame scrolls its own content, and the menu opens inside it."
+        },
+        {
+          "name": "The Music page uses its width and a request can be answered",
+          "seconds": 30,
+          "script": "test:music-layout-review",
+          "note": "The Music page uses its page, and a request can be answered."
+        },
+        {
+          "name": "Custom pages keep their order, and the builder shows its controls",
+          "seconds": 28,
+          "script": "test:builder-custom-pages",
+          "note": "MOVED HERE FROM BEFORE THE BUILD STEPS, 2026-09-08, because it now needs a browser and this is the first point in the job that has one.  #709 gave this guard a fallback: when a diff cannot answer the question \u2014 an empty range, or any run on main \u2014 it renders all fourteen marketing routes and compares bodies. That fallback fired on main immediately after #709 merged and crashed on `browserType.launch: Executable doesn't exist`, because it sat at line 87, one hundred and seventy lines before `npx playwright install`.  The guard was right and its placement was wrong. It stays a required step; it simply runs after Chromium exists. The diff path costs the same wherever it sits, and the fallback cannot run anywhere earlier. Needs the same preview server and browser as the guards above. The resume path it checks was written long ago and inert until c832e9e declared onboardingDraft \u2014 so this is the first CI run it has ever had. The breadcrumb's WORDS and its painted-ness, on two universe routes. Each hides the other's failure: right words behind an overlay reads correct in the DOM; wrong words on screen reads correct in a screenshot."
+        },
+        {
+          "name": "The full-page preview offers the devices the canvas does",
+          "seconds": 27,
+          "script": "test:full-preview-devices",
+          "note": "The builder has two preview surfaces, each with its own copy of the device list and the widths. This measures both in one run and compares them, so the next divergence is a red run rather than a report."
+        },
+        {
+          "name": "A custom page opens with an add control and keeps what it is given",
+          "seconds": 24,
+          "script": "test:custom-page-blocks",
+          "note": "The other half of the same report, which needed a schema field before it could be built. Checks the canvas, the SAVE PAYLOAD, and the published site, because the render bug lived in two components and a pass that only looked at the builder would have missed the guest's."
+        },
+        {
+          "name": "Onboarding resumes where the couple left it",
+          "seconds": 22,
+          "script": "test:onboarding-resume"
+        },
+        {
+          "name": "The seating grid reaches the edge of the frame at every zoom",
+          "seconds": 21,
+          "script": "test:seating-canvas",
+          "note": "The corners, at minimum and maximum zoom. The middle of the frame was never the broken part \u2014 a guard that sampled it would have passed on every build this fixes."
+        },
+        {
+          "name": "The unread count is visible on both sidebars",
+          "seconds": 20,
+          "script": "test:messages-badge",
+          "note": "The unread count was computed and rendered nowhere. The desktop sidebar is hidden lg:flex, so it stays in the DOM at phone width \u2014 this measures visibility, not presence, or it would pass on the hidden one."
+        },
+        {
+          "name": "The Add guest dialog is at the page's scale",
+          "seconds": 17,
+          "script": "test:modal-scale",
+          "note": "A dialog is not bigger than the page behind it. Measured against that page's own primary button, read live rather than pinned."
+        },
+        {
+          "name": "The home hero keeps both faces at phone widths",
+          "seconds": 16,
+          "script": "test:home-hero-faces",
+          "note": "The home hero keeps both faces at phone widths."
+        },
+        {
+          "name": "The guest list's category pills say the words",
+          "seconds": 15,
+          "script": "test:guest-pills-case",
+          "note": "A pill says the words, not the value."
+        }
+      ]
+    },
+    "B": {
+      "job": "Browser guards B",
+      "port": 4224,
+      "measuredSeconds": 937,
+      "guards": [
+        {
+          "name": "The studio tour, as a couple meets it, at 390 and 1440",
+          "seconds": 142,
+          "script": "test:studio-tour-render",
+          "note": "Six things the goal names, all of them browser facts: the first-run takeover, the sidebar entry, the \"?\" landing on the page's own chapter, resume from a half-finished tour, reduced motion showing posters, and keyboard navigation. The seed is varied per case, because the fixture wedding has already seen the tour."
+        },
+        {
+          "name": "The hero switches, on every universe",
+          "seconds": 112,
+          "script": "test:hero-toggles",
+          "note": "Every universe, because \"names off\" is one CSS rule resting on an assumption held across twenty layout files: the h1 in a Masthead is the couple's names. The kicker check is what separates hiding the names from hiding the masthead."
+        },
+        {
+          "name": "A page-level Ask Ava opens that page's own modal",
+          "seconds": 100,
+          "script": "test:ava-page-modal",
+          "note": "One Ask Ava button, one page modal, and the pod stays where it is."
+        },
+        {
+          "name": "Every text block on a guest page follows its universe's mark",
+          "seconds": 68,
+          "script": "test:page-anchor-parity",
+          "note": "One anchor per page: the kicker, heading, paragraph and quote follow the universe's own mark, in all twenty, at 390 and 1440."
+        },
+        {
+          "name": "The country picker offers the world",
+          "seconds": 65,
+          "script": "test:country-picker",
+          "note": "The full ISO list, searchable, with SVG flags \u2014 and no emoji in it."
+        },
+        {
+          "name": "The couple's reply reaches the guest's real address",
+          "seconds": 51,
+          "script": "test:messages-reply",
+          "note": "The owner's live pass found the reply failing on an address pasted out of a mailto link. This drives the reply end to end against a stubbed sender and reads the recipient off the actual request body."
+        },
+        {
+          "name": "The studio's rotate notice appears only in portrait",
+          "seconds": 47,
+          "script": "test:studio-rotate-notice",
+          "note": "A quiet line, portrait only, and editing never stops."
+        },
+        {
+          "name": "A custom page reaches the list, the order and the nav",
+          "seconds": 43,
+          "script": "test:custom-page-in-nav",
+          "note": "A page a couple makes is a page their guests can reach."
+        },
+        {
+          "name": "The universe breadcrumb says where it goes",
+          "seconds": 37,
+          "script": "test:universe-breadcrumb"
+        },
+        {
+          "name": "Every label in the builder's right panel can be read",
+          "seconds": 33,
+          "script": "test:design-tab-contrast",
+          "note": "Measured from paint, not from source: what a label is painted ON is decided by an ancestor several levels up, so the label's own color was never the whole story. Every <label> in the right panel, on all four of its surfaces, because the defect was in a shared primitive."
+        },
+        {
+          "name": "The Experiences page names its days plainly and reserves no empty space",
+          "seconds": 31,
+          "script": "test:experiences-plain",
+          "note": "The Experiences page says what is there, and reserves no room for what is not."
+        },
+        {
+          "name": "The sample banner shows while editing and nowhere else",
+          "seconds": 30,
+          "script": "test:sample-banner-scope",
+          "note": "The sample-content banner is editing chrome, and stays there."
+        },
+        {
+          "name": "A couple can message a guest without \"connecting\" anything",
+          "seconds": 28,
+          "script": "test:whatsapp-gate",
+          "note": "The send is not gated on a number nobody sends from."
+        },
+        {
+          "name": "The guest nav follows its frame, not the window",
+          "seconds": 25,
+          "script": "test:guest-nav-container",
+          "note": "Four states, and the last two are the ones a container query can break: a real phone, which must be unchanged, and a real desktop, which a query firing at every width would hand a hamburger."
+        },
+        {
+          "name": "The vendor detail is a row of the table, not a popup",
+          "seconds": 22,
+          "script": "test:table-row-expand",
+          "note": "\"Clicking the chevron shows more\" is true of a popup too, so the SHAPE is what is asserted: a <tr>, in the same table, with no dialog on the page afterwards."
+        },
+        {
+          "name": "The sidebar groups open shut and remember what you open",
+          "seconds": 21,
+          "script": "test:sidebar-groups",
+          "note": "Collapsed by default, remembered per device, and a chevron rather than a text caret. All three are claims about the rendered DOM after a mount \u2014 and the memory is checked by RELOADING, since reading state back without one proves only that it is in memory."
+        },
+        {
+          "name": "The Beauty page opens on one person and squeezes no columns",
+          "seconds": 21,
+          "script": "test:beauty-collapsed",
+          "note": "The Beauty page opens on one person, at the page's own size."
+        },
+        {
+          "name": "Nothing in the builder overflows itself at 390",
+          "seconds": 17,
+          "script": "test:builder-header-390",
+          "note": "Two pieces of text in the same pixels is checkable; \"does it look right\" is not. Every pair of leaf items in the bar is compared, at both widths, and the desktop shape is pinned so a phone fix cannot quietly restyle it."
+        },
+        {
+          "name": "The builder Settings tab works and can be read",
+          "seconds": 16,
+          "script": "test:settings-tab",
+          "note": "P4's audit, kept as a gate. Five controls exercised, plus the one thing source review cannot see: a control can work perfectly and be unreadable, and the two values live in different components."
+        },
+        {
+          "name": "Dress code renders as pills, and the legacy string still renders",
+          "seconds": 15,
+          "script": "test:dress-code-render",
+          "note": "The edge of a row says whether you have answered it. Dress code, as a guest sees it. The fixture carries pills + a note on the ceremony and only the LEGACY string on the reception, so one render proves both halves: pills where a couple set them, and the old page unchanged where they did not."
+        },
+        {
+          "name": "A stay offers its website when it has one, and not when it does not",
+          "seconds": 13,
+          "script": "test:stay-website-link",
+          "note": "A stay's own website, where a guest can reach it."
+        }
+      ]
+    }
+  },
+  "balance": {
+    "deltaSeconds": 2,
+    "budgetSeconds": 120
+  },
+  "unassigned": [
+    {
+      "script": "test:dashboard-no-overflow",
+      "reason": "Registered in package.json and never run by CI, on main or before it. Found by the split, not caused by it: the search for 'every browser guard' turned up 50 where ci.yml ran 48. Held for the owner rather than added, because adding a guard nobody has run is a change to what the lane checks, which this goal excludes."
+    },
+    {
+      "script": "test:guest-essentials-reachable",
+      "reason": "The same, and the same reason. Its header says what it covers: a guest must always be able to find the date and a way to reply, on a site whose couple has switched off every page they are allowed to."
+    }
+  ]
+}

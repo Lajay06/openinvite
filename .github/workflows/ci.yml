@@ -118,6 +118,92 @@ jobs:
       - name: Prerendered asset references guard
         run: node scripts/apply-prerendered.mjs
 
+      # RESTORED, AND IT SHOULD NEVER HAVE LEFT. It sat after the browser
+      # guards before the split and was deleted with them by a range-based
+      # removal whose ranges overlapped: each browser block ended at the NEXT
+      # step's name line, which is past the following block's start, so
+      # deleting bottom-up with stale indices consumed one step more than it
+      # was given. It starts no preview server and is not a browser guard; it
+      # is here now, beside the other prerendered guard, because they are the
+      # same family and because a step's position in this job is free.
+      #
+      # Caught by diffing the step NAMES on main against the step names here,
+      # not by reading the diff: 39 steps had gone where 38 were meant to.
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      # GOOGLE'S APT SOURCE IS NOT A DEPENDENCY OF ANYTHING HERE, and on
+      # 2026-09-09 it took every run in this repo down with it:
+      #
+      #   E: Failed to fetch https://dl.google.com/linux/chrome-stable/deb/
+      #      dists/stable/main/binary-amd64/Packages.gz  Hash Sum mismatch
+      #
+      # The runner image ships that source configured for Chrome-the-browser.
+      # Playwright installs its own Chromium and needs only Ubuntu packages —
+      # libnss3, libasound2 and the rest — so the Google source contributes
+      # nothing and `apt-get update` fails the whole step when its index is
+      # bad. Removing it removes the dependency, rather than teaching the job
+      # to ignore a failure.
+      #
+      # NOT `|| true`, NOT continue-on-error, NOT a swallowed apt exit. If
+      # Ubuntu's own archive is down the browser lane still cannot run and
+      # this job still fails — an upstream outage blocks, it never passes.
+      # The fix removes a source we never needed; it does not make failure
+      # look like success.
+      #
+      # Both filename shapes: apt is migrating from one-line `.list` files to
+      # deb822 `.sources`, and a fix that only knows the old spelling stops
+      # working the day the runner image switches — silently, and looking
+      # exactly like the outage it was written for.
+      - name: Remove Google's apt source
+        run: sudo rm -f /etc/apt/sources.list.d/google-chrome*.list /etc/apt/sources.list.d/google-chrome*.sources
+
+      # ONE INSTALL-DEPS, ON BOTH PATHS. It used to run only on a cache HIT,
+      # while a cache MISS got its deps via `install --with-deps` — two ways
+      # to do one thing, and they diverged: the outage above broke only the
+      # warm path, so a cold-cache run went green and a warm one failed on
+      # identical code. The OS deps are never in the cache (they live in
+      # system package directories, not ~/.cache/ms-playwright), so every run
+      # needs them and every run now installs them the same way.
+      - name: Install Playwright OS dependencies
+        run: npx playwright install-deps chromium
+
+      # The browser BINARY is the only thing the cache holds, so this is the
+      # only step that is conditional. No --with-deps: the step above owns
+      # that, for both paths.
+      - name: Install Playwright Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install chromium
+
+      # THE ONE STEP IN THIS JOB THAT STILL LAUNCHES A BROWSER, which is why
+      # the Playwright provisioning ABOVE did not leave with the browser lane,
+      # and why it is above rather than below. Putting it back in the wrong
+      # order failed identically to not putting it back at all: the guard says
+      # "Executable doesn't exist" either way, because a step cannot use what a
+      # later step installs. That is the third time this file has taught the
+      # same lesson, and the guard's own comment records the first.
+      #
+      # It reaches Playwright through `await import('playwright')`
+      # (test-prerendered-freshness.mjs:284), so the static scan that decided
+      # what this job still needed did not see it: the scan looked for
+      # `from 'playwright'` and found only scripts that were leaving. The step
+      # then failed exactly the way its own comment says it failed once before,
+      # "Executable doesn't exist", because the install was no longer there.
+      #
+      # It renders every marketing route whenever a diff cannot answer the
+      # question, so it also starts a preview server of its own, inside the
+      # script rather than in this file. It stays here rather than moving to a
+      # shard because it is diff based and needs the deep clone above, which
+      # the shards deliberately do not take.
+      - name: Prerendered freshness guard
+        env:
+          GH_EVENT_BEFORE: ${{ github.event.before }}
+        run: npm run test:prerendered-freshness
+
       # Structural guard, not a reminder: fails if a marketing-page source
       # file changed without prerendered/ also changing in the same diff.
       # Added 2026-08-04 after four consecutive marketing PRs merged in a
@@ -302,6 +388,48 @@ jobs:
       - name: Run CI test suite (credential-free)
         run: npm run test:ci
 
+  # ── A: half the browser lane, measured rather than counted ─────────────
+  #
+  # WHY TWO JOBS AND NOT ONE. The lane was 31m12s of a 36m01s run, because 38
+  # steps each booted their own vite preview and ran one guard against it. They
+  # share nothing, so nothing was making them sequential except the job they
+  # sat in. Two jobs beside Build & test bring a PR in at about 17 minutes.
+  #
+  # WHY THE SPLIT IS BY TIME, NOT BY NAME. Shard A holds 17 entries and
+  # 935s of measured work; the other holds a different number of entries and
+  # the same amount of time. Balancing by count would have put the 459-second
+  # marketing group beside sixteen more and left the other shard idle.
+  #
+  # The lists, the ports and the measured seconds are all in
+  # .github/browser-shards.json, and scripts/run-browser-shard.mjs is what runs
+  # them. Rebalancing is an edit to that file. Running a shard the way CI runs
+  # it, before opening a PR, is `npm run test:shard-a`.
+  browser-a:
+    name: Browser guards A
+    runs-on: ubuntu-latest
+    # 25, against about 16 minutes of guards plus 70 seconds of setup. A
+    # timeout is there to stop a hang, not to ration the suite: that lesson
+    # cost this repository two raises of the old serial job's budget.
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        # NO fetch-depth HERE. The deep clone in Build & test is for the
+        # diff-based guards, and no browser guard reads git history.
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         id: playwright-cache
@@ -352,675 +480,123 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install chromium
 
-      # MOVED HERE FROM BEFORE THE BUILD STEPS, 2026-09-08, because it now
-      # needs a browser and this is the first point in the job that has one.
+      - name: Browser guards A
+        run: node scripts/run-browser-shard.mjs A
+
+      # EVERY GUARD'S OUTPUT, NOT JUST THE FIRST FAILURE'S. The shard runs all
+      # of its guards even after one fails, so a red run names every broken
+      # guard at once instead of one per run. These are their full logs.
+      - name: Guard logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-guards-a-logs
+          path: browser-shard-logs/
+          retention-days: 7
+
+
+  # ── B: half the browser lane, measured rather than counted ─────────────
+  #
+  # WHY TWO JOBS AND NOT ONE. The lane was 31m12s of a 36m01s run, because 38
+  # steps each booted their own vite preview and ran one guard against it. They
+  # share nothing, so nothing was making them sequential except the job they
+  # sat in. Two jobs beside Build & test bring a PR in at about 17 minutes.
+  #
+  # WHY THE SPLIT IS BY TIME, NOT BY NAME. Shard B holds 21 entries and
+  # 937s of measured work; the other holds a different number of entries and
+  # the same amount of time. Balancing by count would have put the 459-second
+  # marketing group beside sixteen more and left the other shard idle.
+  #
+  # The lists, the ports and the measured seconds are all in
+  # .github/browser-shards.json, and scripts/run-browser-shard.mjs is what runs
+  # them. Rebalancing is an edit to that file. Running a shard the way CI runs
+  # it, before opening a PR, is `npm run test:shard-b`.
+  browser-b:
+    name: Browser guards B
+    runs-on: ubuntu-latest
+    # 25, against about 16 minutes of guards plus 70 seconds of setup. A
+    # timeout is there to stop a hang, not to ration the suite: that lesson
+    # cost this repository two raises of the old serial job's budget.
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        # NO fetch-depth HERE. The deep clone in Build & test is for the
+        # diff-based guards, and no browser guard reads git history.
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      # GOOGLE'S APT SOURCE IS NOT A DEPENDENCY OF ANYTHING HERE, and on
+      # 2026-09-09 it took every run in this repo down with it:
       #
-      # #709 gave this guard a fallback: when a diff cannot answer the
-      # question — an empty range, or any run on main — it renders all
-      # fourteen marketing routes and compares bodies. That fallback fired on
-      # main immediately after #709 merged and crashed on
-      # `browserType.launch: Executable doesn't exist`, because it sat at line
-      # 87, one hundred and seventy lines before `npx playwright install`.
+      #   E: Failed to fetch https://dl.google.com/linux/chrome-stable/deb/
+      #      dists/stable/main/binary-amd64/Packages.gz  Hash Sum mismatch
       #
-      # The guard was right and its placement was wrong. It stays a required
-      # step; it simply runs after Chromium exists. The diff path costs the
-      # same wherever it sits, and the fallback cannot run anywhere earlier.
-      # Needs the same preview server and browser as the guards above. The
-      # resume path it checks was written long ago and inert until c832e9e
-      # declared onboardingDraft — so this is the first CI run it has ever had.
-      # The breadcrumb's WORDS and its painted-ness, on two universe routes.
-      # Each hides the other's failure: right words behind an overlay reads
-      # correct in the DOM; wrong words on screen reads correct in a
-      # screenshot.
-      - name: Custom pages keep their order, and the builder shows its controls
-        run: |
-          npx vite preview --port 4181 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4181 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4181 npm run test:builder-custom-pages
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
+      # The runner image ships that source configured for Chrome-the-browser.
+      # Playwright installs its own Chromium and needs only Ubuntu packages —
+      # libnss3, libasound2 and the rest — so the Google source contributes
+      # nothing and `apt-get update` fails the whole step when its index is
+      # bad. Removing it removes the dependency, rather than teaching the job
+      # to ignore a failure.
+      #
+      # NOT `|| true`, NOT continue-on-error, NOT a swallowed apt exit. If
+      # Ubuntu's own archive is down the browser lane still cannot run and
+      # this job still fails — an upstream outage blocks, it never passes.
+      # The fix removes a source we never needed; it does not make failure
+      # look like success.
+      #
+      # Both filename shapes: apt is migrating from one-line `.list` files to
+      # deb822 `.sources`, and a fix that only knows the old spelling stops
+      # working the day the runner image switches — silently, and looking
+      # exactly like the outage it was written for.
+      - name: Remove Google's apt source
+        run: sudo rm -f /etc/apt/sources.list.d/google-chrome*.list /etc/apt/sources.list.d/google-chrome*.sources
 
-      # The builder has two preview surfaces, each with its own copy of the
-      # device list and the widths. This measures both in one run and compares
-      # them, so the next divergence is a red run rather than a report.
-      - name: The full-page preview offers the devices the canvas does
-        run: |
-          npx vite preview --port 4182 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4182 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4182 npm run test:full-preview-devices
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
+      # ONE INSTALL-DEPS, ON BOTH PATHS. It used to run only on a cache HIT,
+      # while a cache MISS got its deps via `install --with-deps` — two ways
+      # to do one thing, and they diverged: the outage above broke only the
+      # warm path, so a cold-cache run went green and a warm one failed on
+      # identical code. The OS deps are never in the cache (they live in
+      # system package directories, not ~/.cache/ms-playwright), so every run
+      # needs them and every run now installs them the same way.
+      - name: Install Playwright OS dependencies
+        run: npx playwright install-deps chromium
 
-      # The other half of the same report, which needed a schema field before
-      # it could be built. Checks the canvas, the SAVE PAYLOAD, and the
-      # published site, because the render bug lived in two components and a
-      # pass that only looked at the builder would have missed the guest's.
-      - name: A custom page opens with an add control and keeps what it is given
-        run: |
-          npx vite preview --port 4183 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4183 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4183 npm run test:custom-page-blocks
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
+      # The browser BINARY is the only thing the cache holds, so this is the
+      # only step that is conditional. No --with-deps: the step above owns
+      # that, for both paths.
+      - name: Install Playwright Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install chromium
 
-      # Every universe, because "names off" is one CSS rule resting on an
-      # assumption held across twenty layout files: the h1 in a Masthead is
-      # the couple's names. The kicker check is what separates hiding the
-      # names from hiding the masthead.
-      - name: The hero switches, on every universe
-        run: |
-          npx vite preview --port 4184 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4184 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4184 npm run test:hero-toggles
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
+      - name: Browser guards B
+        run: node scripts/run-browser-shard.mjs B
 
-      # Collapsed by default, remembered per device, and a chevron rather than
-      # a text caret. All three are claims about the rendered DOM after a
-      # mount — and the memory is checked by RELOADING, since reading state
-      # back without one proves only that it is in memory.
-      - name: The sidebar groups open shut and remember what you open
-        run: |
-          npx vite preview --port 4185 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4185 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4185 npm run test:sidebar-groups
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # "Clicking the chevron shows more" is true of a popup too, so the
-      # SHAPE is what is asserted: a <tr>, in the same table, with no dialog
-      # on the page afterwards.
-      - name: The vendor detail is a row of the table, not a popup
-        run: |
-          npx vite preview --port 4193 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4193 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4193 npm run test:table-row-expand
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # P4's audit, kept as a gate. Five controls exercised, plus the one
-      # thing source review cannot see: a control can work perfectly and be
-      # unreadable, and the two values live in different components.
-      - name: The builder Settings tab works and can be read
-        run: |
-          npx vite preview --port 4186 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4186 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4186 npm run test:settings-tab
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # The corners, at minimum and maximum zoom. The middle of the frame was
-      # never the broken part — a guard that sampled it would have passed on
-      # every build this fixes.
-      - name: The seating grid reaches the edge of the frame at every zoom
-        run: |
-          npx vite preview --port 4190 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4190 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4190 npm run test:seating-canvas
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # Four states, and the last two are the ones a container query can
-      # break: a real phone, which must be unchanged, and a real desktop,
-      # which a query firing at every width would hand a hamburger.
-      - name: The guest nav follows its frame, not the window
-        run: |
-          npx vite preview --port 4188 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4188 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4188 npm run test:guest-nav-container
-      # Two pieces of text in the same pixels is checkable; "does it look
-      # right" is not. Every pair of leaf items in the bar is compared, at
-      # both widths, and the desktop shape is pinned so a phone fix cannot
-      # quietly restyle it.
-      - name: Nothing in the builder overflows itself at 390
-        run: |
-          npx vite preview --port 4187 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4187 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4187 npm run test:builder-header-390
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # Measured from paint, not from source: what a label is painted ON is
-      # decided by an ancestor several levels up, so the label's own color was
-      # never the whole story. Every <label> in the right panel, on all four of
-      # its surfaces, because the defect was in a shared primitive.
-      - name: Every label in the builder's right panel can be read
-        run: |
-          npx vite preview --port 4189 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4189 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4189 npm run test:design-tab-contrast
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # A dialog is not bigger than the page behind it. Measured against that
-      # page's own primary button, read live rather than pinned.
-      - name: The Add guest dialog is at the page's scale
-        run: |
-          npx vite preview --port 4192 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4192 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4192 npm run test:modal-scale
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # Text stays inside its box: three choice cards that did not fit a phone.
-      - name: The guest-count cards fit their text at 360, 390 and 430
-        run: |
-          npx vite preview --port 4194 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4194 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4194 npm run test:onboarding-card-fit
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # The edge of a row says whether you have answered it.
-      # Dress code, as a guest sees it. The fixture carries pills + a note on
-      # the ceremony and only the LEGACY string on the reception, so one render
-      # proves both halves: pills where a couple set them, and the old page
-      # unchanged where they did not.
-      - name: Dress code renders as pills, and the legacy string still renders
-        run: |
-          npx vite preview --port 4216 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4216 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4216 npm run test:dress-code-render
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # A guest with a question now has somewhere to put it. Both placements are
-      # driven, not seeded: the RSVP one is reached by tapping yes and
-      # submitting, because the requirement is "after a reply is submitted".
-      - name: The note form renders on both guest surfaces, at 390 and 1440
-        run: |
-          npx vite preview --port 4217 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4217 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4217 npm run test:guest-note-render
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      - name: The celebration accordions show their state in their border
-        run: |
-          npx vite preview --port 4195 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4195 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4195 npm run test:onboarding-accordion-borders
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # The unread count was computed and rendered nowhere. The desktop sidebar
-      # is hidden lg:flex, so it stays in the DOM at phone width — this measures
-      # visibility, not presence, or it would pass on the hidden one.
-      - name: The unread count is visible on both sidebars
-        run: |
-          npx vite preview --port 4218 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4218 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4218 npm run test:messages-badge
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # The owner's live pass found the reply failing on an address pasted out of
-      # a mailto link. This drives the reply end to end against a stubbed sender
-      # and reads the recipient off the actual request body.
-      - name: The couple's reply reaches the guest's real address
-        run: |
-          npx vite preview --port 4220 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4220 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4220 npm run test:messages-reply
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # Six things the goal names, all of them browser facts: the first-run
-      # takeover, the sidebar entry, the "?" landing on the page's own chapter,
-      # resume from a half-finished tour, reduced motion showing posters, and
-      # keyboard navigation. The seed is varied per case, because the fixture
-      # wedding has already seen the tour.
-      - name: The studio tour, as a couple meets it, at 390 and 1440
-        run: |
-          npx vite preview --port 4222 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4222 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4222 npm run test:studio-tour-render
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # Select is the answer, so Select advances — and keeps the answer.
-      - name: The onboarding universe picker advances on Select
-        run: |
-          npx vite preview --port 4196 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4196 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4196 npm run test:onboarding-universe-select
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # A quiet line, portrait only, and editing never stops.
-      - name: The studio's rotate notice appears only in portrait
-        run: |
-          npx vite preview --port 4197 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4197 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4197 npm run test:studio-rotate-notice
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # The picker shows the picture the universe actually shows.
-      - name: The onboarding universe tiles are the universes' own heroes
-        run: |
-          npx vite preview --port 4198 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4198 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4198 npm run test:onboarding-universe-tiles
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # The device frame scrolls its own content, and the menu opens inside it.
-      - name: The preview's device frames scroll and contain their menus
-        run: |
-          npx vite preview --port 4199 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4199 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4199 npm run test:preview-device-scroll
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # A page a couple makes is a page their guests can reach.
-      - name: A custom page reaches the list, the order and the nav
-        run: |
-          npx vite preview --port 4201 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4201 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4201 npm run test:custom-page-in-nav
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # A stay's own website, where a guest can reach it.
-      - name: A stay offers its website when it has one, and not when it does not
-        run: |
-          npx vite preview --port 4206 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4206 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4206 npm run test:stay-website-link
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # The Beauty page opens on one person, at the page's own size.
-      - name: The Beauty page opens on one person and squeezes no columns
-        run: |
-          npx vite preview --port 4207 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4207 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4207 npm run test:beauty-collapsed
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # The Experiences page says what is there, and reserves no room for what is not.
-      - name: The Experiences page names its days plainly and reserves no empty space
-        run: |
-          npx vite preview --port 4205 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4205 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4205 npm run test:experiences-plain
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # The Music page uses its page, and a request can be answered.
-      - name: The Music page uses its width and a request can be answered
-        run: |
-          npx vite preview --port 4208 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4208 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4208 npm run test:music-layout-review
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # The sample-content banner is editing chrome, and stays there.
-      - name: The sample banner shows while editing and nowhere else
-        run: |
-          npx vite preview --port 4209 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4209 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4209 npm run test:sample-banner-scope
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # The home hero keeps both faces at phone widths.
-      - name: The home hero keeps both faces at phone widths
-        run: |
-          npx vite preview --port 4202 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4202 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4202 npm run test:home-hero-faces
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # A pill says the words, not the value.
-      - name: The guest list's category pills say the words
-        run: |
-          npx vite preview --port 4204 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4204 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4204 npm run test:guest-pills-case
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # One Ask Ava button, one page modal, and the pod stays where it is.
-      - name: A page-level Ask Ava opens that page's own modal
-        run: |
-          npx vite preview --port 4203 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4203 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4203 npm run test:ava-page-modal
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # The send is not gated on a number nobody sends from.
-      - name: A couple can message a guest without "connecting" anything
-        run: |
-          npx vite preview --port 4210 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4210 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4210 npm run test:whatsapp-gate
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # The full ISO list, searchable, with SVG flags — and no emoji in it.
-      - name: The country picker offers the world
-        run: |
-          npx vite preview --port 4211 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4211 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4211 npm run test:country-picker
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      - name: The universe breadcrumb says where it goes
-        run: |
-          npx vite preview --port 4180 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4180 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4180 npm run test:universe-breadcrumb
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      - name: Onboarding resumes where the couple left it
-        run: |
-          npx vite preview --port 4179 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4179 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4179 npm run test:onboarding-resume
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      # One anchor per page: the kicker, heading, paragraph and quote follow
-      # the universe's own mark, in all twenty, at 390 and 1440.
-      - name: Every text block on a guest page follows its universe's mark
-        run: |
-          npx vite preview --port 4214 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4214 > /dev/null; then break; fi
-            sleep 1
-          done
-          CAPTURE_BASE_URL=http://localhost:4214 npm run test:page-anchor-parity
-          STATUS=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $STATUS
-
-      - name: Prerendered freshness guard
-        env:
-          GH_EVENT_BEFORE: ${{ github.event.before }}
-        run: npm run test:prerendered-freshness
-
-      # Serves this PR's own build (not production — CAPTURE_BASE_URL
-      # defaults to https://openinvite.com.au otherwise, which would test
-      # whatever's already live instead of the change under review) and
-      # points the marketing-routes smoke test at it.
-      - name: Marketing-routes + guest-font-effect + no-invalid-date (against this build)
-        run: |
-          npx vite preview --port 4173 --strictPort &
-          SERVER_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:4173 > /dev/null; then break; fi
-            sleep 1
-          done
-          # A basic curl response doesn't mean the server is warmed up for a
-          # real navigation yet — on a first CI run, the very first Playwright
-          # route (waitUntil: networkidle) timed out at 30s here while every
-          # other route (same page, ~2s each right after) passed fine
-          # locally and in this same run. A few more real HTTP round-trips
-          # before Playwright's first navigation avoids paying that cold-start
-          # cost inside the 30s budget the smoke test itself enforces.
-          for i in $(seq 1 5); do curl -sf http://localhost:4173/ > /dev/null; done
-          CAPTURE_BASE_URL=http://localhost:4173 npm run test:marketing-routes
-          TEST_EXIT=$?
-          # The EFFECT-level half of guest typography. The static parity probe
-          # in test:ci checks that files DECLARE the universe's faces; this
-          # renders the pages and reads getComputedStyle, because
-          # src/index.css's `* { font-family: … !important }` can override a
-          # declaration and did on three routes. Same server, no extra boot.
-          if [ $TEST_EXIT -eq 0 ]; then
-            CAPTURE_BASE_URL=http://localhost:4173 npm run test:guest-font-effect
-            TEST_EXIT=$?
-          fi
-          # Every guest of every wedding once saw "Invalid Date" as a day header
-          # on the celebration page, in all 20 universes, because the call sat
-          # inside a try/catch that could not fire — toLocaleDateString RETURNS
-          # "Invalid Date" rather than throwing. Source review read it as
-          # defended. Only a render shows the text a guest actually gets.
-          # R37: one table shell for every list-shaped surface. The static
-          # half (data-table.mjs, in test:ci) proves the pages IMPORT it; only
-          # a render proves they look the same, because src/index.css's
-          # `* { font-family: … !important }` and a Tailwind class three layers
-          # up decide the cell. Same server, no extra boot.
-          if [ $TEST_EXIT -eq 0 ]; then
-            CAPTURE_BASE_URL=http://localhost:4173 npm run test:table-typography
-            TEST_EXIT=$?
-          fi
-          # THE TAB HAS TO MOUNT. The run sheet went to the error boundary on
-          # the owner's own record while every source check was green: no test
-          # had ever rendered that tab WITH ROWS IN IT, and the crash needed
-          # rows. Source checks cannot see this class at all.
-          if [ $TEST_EXIT -eq 0 ]; then
-            CAPTURE_BASE_URL=http://localhost:4173 npm run test:schedule-tabs
-            TEST_EXIT=$?
-          fi
-          # The daily update paints before Ava speaks. The briefing endpoint is
-          # held open for 6s and the check is whether the page is already
-          # there — the owner's "~10 seconds, shows nothing while loading".
-          if [ $TEST_EXIT -eq 0 ]; then
-            CAPTURE_BASE_URL=http://localhost:4173 npm run test:daily-update-paint
-            TEST_EXIT=$?
-          fi
-          # Nothing interactive under the floating Ava button. elementFromPoint
-          # at its rect on a page set — the owner found the Send invites
-          # "Next" behind it, and no source scan can see that.
-          if [ $TEST_EXIT -eq 0 ]; then
-            CAPTURE_BASE_URL=http://localhost:4173 npm run test:ava-safe-area
-            TEST_EXIT=$?
-          fi
-          # No page declares its own type scale or button size, and every
-          # filter row is the shared pill. Both are render questions: the
-          # previous pill inventory was done by grepping and missed rows.
-          if [ $TEST_EXIT -eq 0 ]; then
-            CAPTURE_BASE_URL=http://localhost:4173 npm run test:type-scale
-            TEST_EXIT=$?
-          fi
-          if [ $TEST_EXIT -eq 0 ]; then
-            CAPTURE_BASE_URL=http://localhost:4173 npm run test:filter-pills
-            TEST_EXIT=$?
-          fi
-          # Every universe shows its own face. A source check passes on this
-          # forever — the JSX declares the face and index.css's `*` rule
-          # overrules it with !important. Only the render knows which won.
-          if [ $TEST_EXIT -eq 0 ]; then
-            CAPTURE_BASE_URL=http://localhost:4173 npm run test:universe-typography
-            TEST_EXIT=$?
-          fi
-          if [ $TEST_EXIT -eq 0 ]; then
-            CAPTURE_BASE_URL=http://localhost:4173 npm run test:guest-no-invalid-date
-
-          # The postal address a couple types must come back out of the export.
-          # Asserting the column exists would pass while the value was blank —
-          # this clicks Export, captures the real download, and reads it.
-          CAPTURE_BASE_URL=http://localhost:4173 npm run test:guest-export-address
-            TEST_EXIT=$?
-          fi
-          kill "$SERVER_PID" 2>/dev/null || true
-          exit $TEST_EXIT
+      # EVERY GUARD'S OUTPUT, NOT JUST THE FIRST FAILURE'S. The shard runs all
+      # of its guards even after one fails, so a red run names every broken
+      # guard at once instead of one per run. These are their full logs.
+      - name: Guard logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-guards-b-logs
+          path: browser-shard-logs/
+          retention-days: 7
