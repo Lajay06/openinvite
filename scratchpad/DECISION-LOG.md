@@ -5087,6 +5087,15 @@ spelled the same way as a pass.
 4. the **gate stated in words**
 5. written as an **authorization**
 
+> **Addendum, 2026-09-30.** Mark 4 is the gate stated in words, and the words
+> changed when the browser lane was split out of `Build & test` into
+> `Browser guards A` and `Browser guards B`. A gate stated as "Build & test
+> SUCCESS" alone now covers about six minutes of a run and says nothing about
+> the 48 browser guards. `pr:green` names all three CI checks plus Vercel, and
+> `scripts/pr-checks-green.mjs` requires each to be present and successful.
+> The ruling itself is unchanged: five marks, and a line missing one is not a
+> line.
+
 Anything shorter, however it is headed, is **not a line**. The response to one
 that is short is to **stop, quote it back, and ask** — never to act on it.
 

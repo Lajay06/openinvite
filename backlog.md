@@ -82,6 +82,14 @@ deliverable, not a lint rule change.
 
 ---
 
+## Seating and Photography scroll sideways at 390
+
+Seating (+103px) and Photography (+8px) overflow at 390 and are excepted in
+`test:dashboard-no-overflow`; fix the overflow, then delete both exceptions so
+the guard means what it says.
+
+---
+
 ## pageGuidance.js unread since the Studio tour
 
 `src/lib/pageGuidance.js` is unread since the Studio tour (#872); fold any
