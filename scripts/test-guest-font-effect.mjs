@@ -283,7 +283,16 @@ async function main() {
   await browser.close();
   console.log(`\n  ${ROUTES.length - failures}/${ROUTES.length} guest routes render the faces they declare`);
   console.log(`  ${contrastFailures} text element(s) below the 4.5:1 contrast floor\n`);
-  process.exit(failures ? 1 : 0);
+  // CONTRAST FAILS THE GUARD NOW, 2026-09-30. It was counted, printed with a
+  // ⚠ and then ignored by the exit code, so the run said "2 text element(s)
+  // below the 4.5:1 contrast floor" and went green. A measurement nothing acts
+  // on is a comment with a number in it.
+  //
+  // The two it was reporting were one element on two routes: the quote
+  // attribution, drawing raw theme.accent at 2.27:1 on london's cream. Fixed
+  // by lifting the accent toward the palette's own ink rather than by moving a
+  // palette token, so the universe keeps its signal color.
+  process.exit(failures || contrastFailures ? 1 : 0);
 }
 
 main().catch((e) => { console.error('  FATAL:', e.message); process.exit(1); });

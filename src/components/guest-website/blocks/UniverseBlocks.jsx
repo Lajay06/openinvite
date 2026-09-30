@@ -66,7 +66,7 @@ import ShanghaiCloud from '../layouts/ShanghaiCloud';
 
 import { parseWeddingDate } from '@/lib/guestDate';
 import { SECTION_MARK_BY_LAYOUT, pageAnchorFor } from '../layouts/sectionMarks';
-import { readableInkOn, contrastRatio } from '@/lib/surfaceTint';
+import { readableInkOn, contrastRatio, accentText, accentOn } from '@/lib/surfaceTint';
 
 // Per-universe divider accent for `spacer` (variant 'rule') — every entry
 // here is one of the already-built, reused-as-is primitives from
@@ -220,6 +220,23 @@ function ParagraphBlock({ content, theme, typography, universeConfig, editable, 
 // QuoteBlock and QuoteBannerBlock — the near-duplicate pair, both converted.
 const quoteFontStyle = (style) => (style?.fontStyle === 'normal' ? 'normal' : 'italic');
 
+/**
+ * The quote attribution's style.
+ *
+ * THE COLOR IS LIFTED UNTIL IT IS READABLE, not replaced. Raw theme.accent
+ * measured 2.27:1 against london's cream on the guest site, and
+ * test:guest-font-effect reported it and passed anyway. The caller passes
+ * accentText(theme) on the light ground and accentOn(accent, darkBg, darkText)
+ * on the banner's dark one, because the two halves of a universe need mixing
+ * in opposite directions. No palette token moves.
+ */
+const attributionStyle = (typography, color, marginTop) => ({
+  fontFamily: typography.bodyFont,
+  fontSize: 13,
+  color,
+  ...(marginTop ? { marginTop } : { margin: 0 }),
+});
+
 function QuoteBlock({ content, theme, typography, universeConfig, editable, style }) {
   if (!content.text && editable) {
     return <EmptyPlaceholder theme={theme} typography={typography} label="Quote — click to add text" />;
@@ -228,7 +245,7 @@ function QuoteBlock({ content, theme, typography, universeConfig, editable, styl
   return (
     <div style={textColumn(align)}>
       <p data-oi-anchor="quote" style={headingStyle(typography, theme, { fontStyle: quoteFontStyle(style), fontSize: SIZE_PRESETS.quote[sizeStep(style)], lineHeight: 1.5, marginBottom: 12 })}>“{content.text}”</p>
-      {content.attribution && <p style={{ fontFamily: typography.bodyFont, fontSize: 13, color: theme.accent, margin: 0 }}>— {content.attribution}</p>}
+      {content.attribution && <p style={attributionStyle(typography, accentText(theme), 0)}>{content.attribution}</p>}
     </div>
   );
 }
@@ -427,7 +444,7 @@ function QuoteBannerBlock({ content, theme, typography, editable, style }) {
       <p style={headingStyle(typography, theme, { color: theme.darkText, fontStyle: quoteFontStyle(style), fontSize: 'clamp(1.25rem, 3vw, 1.75rem)', maxWidth: 720, marginLeft: 'auto', marginRight: 'auto' })}>
         “{content.text}”
       </p>
-      {content.attribution && <p style={{ fontFamily: typography.bodyFont, fontSize: 13, color: theme.accent, marginTop: 12 }}>— {content.attribution}</p>}
+      {content.attribution && <p style={attributionStyle(typography, accentOn(theme.accent, theme.darkBg, theme.darkText), 12)}>{content.attribution}</p>}
     </div>
   );
 }
