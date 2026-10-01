@@ -27,7 +27,21 @@
  * of them are summarised, and the exit code is non-zero if any failed.
  *
  * Each guard's output is written to browser-shard-logs/<script>.log whether it
- * passes or fails, which is what the workflow uploads on failure.
+ * passes or fails, and browser-shard-logs/timings.json records how long each
+ * one took. The workflow uploads that directory on EVERY run, not only on
+ * failure, and the reason is a measurement that could not be taken:
+ *
+ *   The shard file says to rebalance from a green run's step times. That
+ *   worked while each guard was its own CI step and the API could be asked.
+ *   A shard is one step now, so the timings live in its stdout, and GitHub's
+ *   downloadable log for a long job is TRUNCATED: on run 36719776024, shard
+ *   B's 22 guard lines came back and shard A's came back not at all, the log
+ *   stopping partway through an apt step. A green run that cannot be measured
+ *   cannot be rebalanced from, and the instruction to do so would have read
+ *   as possible until someone tried it.
+ *
+ *   timings.json is the answer: written every run, uploaded every run, and
+ *   the numbers are the same ones this file prints.
  */
 import { readFileSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { spawn, spawnSync } from 'node:child_process';
@@ -129,6 +143,18 @@ try {
 
 const failed = results.filter((r) => !r.ok);
 const total = Math.round((Date.now() - started) / 1000);
+
+// THE NUMBERS A REBALANCE NEEDS, in a file rather than in a log that may be
+// truncated before anyone reads it.
+writeFileSync(`${LOG_DIR}/timings.json`, `${JSON.stringify({
+  shard: letter,
+  job: shard.job,
+  port: shard.port,
+  measuredSeconds: shard.measuredSeconds,
+  ranSeconds: total,
+  at: new Date().toISOString(),
+  guards: results.map((r) => ({ script: r.script, seconds: r.seconds, ok: r.ok })),
+}, null, 2)}\n`);
 console.log(`\n───────────────────────────────────────────────────────`);
 console.log(`  ${results.length - failed.length}/${results.length} guards passed in ${Math.floor(total / 60)}m${total % 60}s`);
 if (failed.length) {
