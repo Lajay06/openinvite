@@ -141,12 +141,32 @@ export function formSurfaces(theme = {}) {
  * 3:1 of those, and they are not this function's business.
  */
 export function accentText(theme = {}) {
-  const accent = theme.accent, ground = theme.lightBg, ink = theme.lightText;
+  return accentOn(theme.accent, theme.lightBg, theme.lightText);
+}
+
+/**
+ * The same idea on ANY ground, because a universe has two.
+ *
+ * accentText answers for the light half. The quote banner sits on `darkBg`
+ * with the accent on top of it, and asking the light-half helper about a dark
+ * ground gives a color mixed toward the wrong ink. This is the general form:
+ * keep the accent's hue, walk it toward the ink of the ground it is on until
+ * it separates, and fall back to that ink if it never does.
+ *
+ * The accent is the universe's signal color, so it is lifted rather than
+ * replaced. A couple's palette is their design; an unreadable line is nobody's.
+ *
+ * @param {string} accent    the universe's accent
+ * @param {string} ground    the background the text sits on
+ * @param {string} ink       the ground's own text color, the direction to mix
+ * @param {number} minRatio  4.5 for normal text (WCAG 1.4.3)
+ */
+export function accentOn(accent, ground, ink, minRatio = 4.5) {
   if (!toRgb(accent) || !toRgb(ground) || !toRgb(ink)) return accent;
   let out = accent;
   for (let t = 0; t <= 1.0001; t += 0.05) {
     out = mixHex(accent, ink, t);
-    if (contrastRatio(out, ground) >= 4.5) return out;
+    if (contrastRatio(out, ground) >= minRatio) return out;
   }
   return ink;                                   // last resort: the text color
 }
