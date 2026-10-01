@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, ChevronDown, ChevronRight, CalendarPlus, Pencil, MessageCircle } from "lucide-react";
+import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, ChevronDown, ChevronRight, Pencil, MessageCircle } from "lucide-react";
 import { getGuestEventResponse, effectiveMealChoice, mealOptionLabel } from "@/lib/weddingEvents";
 import GuestAvatar from "@/components/shared/GuestAvatar";
 import { interactiveDivProps } from '@/lib/a11y';
@@ -49,7 +49,7 @@ export function EventChip({ event, response }) {
   if (!response.invited) {
     return (
       <span style={{ ...CHIP_BASE, background: 'transparent', border: '1px solid rgba(10,10,10,0.15)', color: 'rgba(10,10,10,0.6)' }}>
-        {event.name} — not invited
+        {event.name} · not invited
       </span>
     );
   }
@@ -94,14 +94,6 @@ function plusOneEventResponse(guest, event) {
     plus_one_names: [],
     responded_at: own?.responded_at || null,
   };
-}
-
-function NotYetInvitedChip() {
-  return (
-    <span style={{ ...CHIP_BASE, background: 'transparent', border: '1px dashed rgba(10,10,10,0.25)', color: 'rgba(10,10,10,0.6)' }}>
-      Not yet invited
-    </span>
-  );
 }
 
 /* ── Per-guest status chips + "Set events & send" for uninvited guests ──── */
@@ -165,73 +157,68 @@ function NameCaseSuggestion({ guest, onUpdate, dismissed, onDismiss }) {
   );
 }
 
-function GuestStatusCell({ guest, weddingEvents, onSetEventsAndSend, onEditEvents, readOnly, filterEvent }) {
+/**
+ * WHAT THIS GUEST IS INVITED TO, AND WHETHER THEY HAVE ANSWERED, in one chip
+ * each, toggled where they sit.
+ *
+ * IT USED TO SAY "NOT YET INVITED" TO GUESTS WHO WERE INVITED. The cell asked
+ * whether the guest had any event_responses at all and, when they had none,
+ * drew that chip and a "Set events & send" button. But an absent entry does
+ * not mean uninvited: weddingEvents.js resolves it as invited for the ceremony
+ * and the reception and not invited for a custom event, and that is what the
+ * RSVP form, seating and Send invites all act on. So the row contradicted
+ * every surface that used it, for every guest a couple had not explicitly
+ * edited, which is most of them.
+ *
+ * It now draws the RESOLVED set, always, for every event. A guest with no
+ * stored entries reads exactly as the rest of the product already treats them.
+ *
+ * TOGGLING IN PLACE, and writing the whole set. Clicking a chip flips that one
+ * event and persists every event's resolved state alongside it
+ * (resolveAllEventResponses), per the owner's ruling. A status the guest has
+ * already given survives being removed from an event, which is what the modal
+ * this replaces promised in words and now holds by construction.
+ */
+function GuestStatusCell({ guest, weddingEvents, onToggleEvent, readOnly, filterEvent, busyEventId }) {
   // Round 8 ask #14: filtered to one event, this column shows THAT event's
-  // response only — not every event this guest is invited to — so it
+  // response only -- not every event this guest is invited to -- so it
   // reads as "their answer to the thing you're looking at" rather than a
-  // truncated version of the normal all-events view. Every row reaching
-  // here is already guaranteed invited:true for filterEvent (Guests.jsx's
-  // filteredGuests excludes anyone who isn't), so this never falls into
-  // the "not yet invited" branch below.
+  // truncated version of the normal all-events view.
   if (filterEvent) {
     const response = getGuestEventResponse(guest, filterEvent);
     return <EventChip event={filterEvent} response={response} />;
   }
 
-  const hasResponses = Array.isArray(guest.event_responses) && guest.event_responses.length > 0;
-
-  if (!hasResponses) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-        <NotYetInvitedChip />
-        {!readOnly && weddingEvents.length > 0 && (
-          <button
-            type="button"
-            onClick={() => onSetEventsAndSend(guest)}
-            title="Choose which events to invite this guest to, then send"
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 4,
-              background: 'none', border: '1px solid rgba(10,10,10,0.15)', borderRadius: 999,
-              padding: '2px 8px', fontSize: 10, fontWeight: 600, color: '#E03553',
-              cursor: 'pointer', fontFamily: PJS,
-            }}
-          >
-            <CalendarPlus size={11} />
-            Set events &amp; send
-          </button>
-        )}
-      </div>
-    );
-  }
-
   if (weddingEvents.length === 0) {
-    return <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>—</span>;
+    return <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>-</span>;
   }
 
-  const chips = weddingEvents.map(event => (
-    <EventChip key={event.event_id} event={event} response={getGuestEventResponse(guest, event)} />
-  ));
+  const chips = weddingEvents.map((event) => {
+    const response = getGuestEventResponse(guest, event);
+    if (readOnly) return <EventChip key={event.event_id} event={event} response={response} />;
+    const busy = busyEventId === `${guest.id}:${event.event_id}`;
+    return (
+      <button
+        key={event.event_id}
+        type="button"
+        data-invited-to={event.event_id}
+        aria-pressed={response.invited}
+        disabled={busy}
+        onClick={() => onToggleEvent?.(guest, event, !response.invited)}
+        title={response.invited
+          ? `Remove ${guest.name} from ${event.name}. Their answer is kept.`
+          : `Invite ${guest.name} to ${event.name}`}
+        style={{
+          background: 'none', border: 'none', padding: 0, margin: 0,
+          cursor: busy ? 'progress' : 'pointer', opacity: busy ? 0.5 : 1, lineHeight: 0,
+        }}
+      >
+        <EventChip event={event} response={response} />
+      </button>
+    );
+  });
 
-  if (readOnly) {
-    return <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, maxWidth: 320 }}>{chips}</div>;
-  }
-
-  // The whole chip row is clickable — reopens the same event-checkbox
-  // control used by "Set events & send", pre-checked with current state,
-  // so invites stay editable at any time, not just before the first send.
-  return (
-    <button
-      type="button"
-      onClick={() => onEditEvents?.(guest)}
-      title="Edit which events this guest is invited to"
-      style={{
-        display: 'flex', flexWrap: 'wrap', gap: 5, maxWidth: 320,
-        background: 'none', border: 'none', padding: 0, margin: 0, cursor: 'pointer', textAlign: 'left',
-      }}
-    >
-      {chips}
-    </button>
-  );
+  return <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, maxWidth: 320 }}>{chips}</div>;
 }
 
 /* ── Last sent — invite_sent_at + invite_channel ─────────────────────────── */
@@ -750,7 +737,7 @@ function AddGuestRow({ onQuickAdd, columnCount }) {
 /* ─── Main component ─────────────────────────────────────────────────────── */
 export default function GuestList({
   guests, onEdit, onDelete, onUpdate, onQuickAdd, guestRoles = {}, loading, weddingEvents = [],
-  selectedIds, onToggleSelect, onToggleSelectAll, onSetEventsAndSend, onEditEvents, scrollToGuestId,
+  selectedIds, onToggleSelect, onToggleSelectAll, onEditEvents, onToggleEvent, busyEventId, scrollToGuestId,
   highlightedGuestId,
   readOnly = false,
   filterEvent = null,
@@ -957,7 +944,7 @@ export default function GuestList({
     { key: 'contact',  label: 'Contact' },
     { key: 'category', label: 'Category',  sortable: true },
     { key: 'tags',     label: 'Tags' },
-    { key: 'status',   label: 'Status',    sortable: true },
+    { key: 'status',   label: 'Invited to', sortable: true },
     { key: 'lastSent', label: 'Last sent' },
     { key: 'table',    label: 'Table',     sortable: true, headStyle: { textAlign: 'center' } },
     { key: 'plusOne',  label: '+1' },
@@ -1086,7 +1073,7 @@ export default function GuestList({
 
                   {/* ── Status — per-event chips (replaces RSVP + Invited to) ── */}
                   <TableCell className="align-middle">
-                    <GuestStatusCell guest={guest} weddingEvents={weddingEvents} onSetEventsAndSend={onSetEventsAndSend} onEditEvents={onEditEvents} readOnly={readOnly} filterEvent={filterEvent} />
+                    <GuestStatusCell guest={guest} weddingEvents={weddingEvents} onToggleEvent={onToggleEvent} readOnly={readOnly} filterEvent={filterEvent} busyEventId={busyEventId} />
                   </TableCell>
 
                   {/* ── Last sent ── */}
