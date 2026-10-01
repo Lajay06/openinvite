@@ -21,7 +21,7 @@
     "A": {
       "job": "Browser guards A",
       "port": 4223,
-      "measuredSeconds": 963,
+      "measuredSeconds": 970,
       "guards": [
         {
           "name": "Marketing-routes + guest-font-effect + no-invalid-date (against this build)",
@@ -143,6 +143,12 @@
           "seconds": 15,
           "script": "test:guest-pills-case",
           "note": "A pill says the words, not the value."
+        },
+        {
+          "name": "The header and the footer draw one lockup",
+          "script": "test:logo-lockup",
+          "seconds": 7,
+          "note": "Screenshots both marketing logos and scans their pixels, because the header is a single <img> whose mark and wordmark are not DOM nodes and have no geometry a style read could reach. Asserts they come from the same component and that the wordmark sits at the same height against the mark in both, which is the artwork's own 29.4% rather than a centring."
         }
       ]
     },
@@ -286,7 +292,7 @@
     }
   },
   "balance": {
-    "deltaSeconds": 108,
+    "deltaSeconds": 101,
     "budgetSeconds": 120
   },
   "unassigned": []

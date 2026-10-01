@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import CookieBanner from "./CookieBanner";
+import OpeninviteLogo from '@/components/public/OpeninviteLogo';
 
 export default function PublicFooter() {
   return (
@@ -10,31 +11,7 @@ export default function PublicFooter() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
           {/* Logo col */}
           <div>
-            {/* The source asset is one combined icon+wordmark PNG with a
-                white "Openinvite" wordmark baked in, meant for dark
-                backgrounds — filter:brightness(0) (the old approach) makes
-                the text readable on this white footer but flattens the
-                icon's color gradient along with it. Cropping to just the
-                icon (via background-position, natural aspect ratio) keeps
-                its color, and the wordmark renders as real black text
-                instead. */}
-            <Link to="/" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-              <div
-                aria-hidden="true"
-                style={{
-                  width: 41,
-                  height: 48,
-                  flexShrink: 0,
-                  backgroundImage: "url(/openinvite-logo.png)",
-                  backgroundSize: "208px 48px",
-                  backgroundPosition: "0 0",
-                  backgroundRepeat: "no-repeat",
-                }}
-              />
-              <span style={{ fontSize: 26, fontWeight: 700, color: "#0A0A0A", fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: "-0.02em" }}>
-                Openinvite
-              </span>
-            </Link>
+            <OpeninviteLogo size={34} ground="light" />
             <p style={{ color: 'rgba(10,10,10,0.6)', fontSize: 15, fontWeight: 600, lineHeight: 1.7 }}>
               You should enjoy yourself.
             </p>

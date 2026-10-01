@@ -215,6 +215,10 @@ export default [
       // lint clean without being listed, which is the criterion working.
       "scripts/tour-recordings/lib/cursor.mjs",
       "scripts/tour-recordings/lib/record.mjs",
+      // The logo lockup guard rasterises each logo into a canvas inside the
+      // page, because the header's mark and wordmark are one <img> and have no
+      // geometry a DOM read could reach.
+      "scripts/test-logo-lockup.mjs",
     ],
     languageOptions: {
       globals: { ...globals.node, ...globals.browser },
