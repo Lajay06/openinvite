@@ -135,10 +135,22 @@ export default function PhotographyPage() {
       </div>
 
       {/* Tab bar */}
-      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', padding: '0 32px' }}>
+      {/* SIX TABS DO NOT FIT IN 390, AND THEY WERE BEING SQUEEZED RATHER THAN
+          SCROLLED. Every button shrank below its own text: "Videographers"
+          rendered 24px wide around 94px of content, and the row pushed 8px
+          past the window, which is the whole dashboard scrolling sideways on a
+          phone. The guard carried it as a named exception and could not even
+          name the offender, because an element whose CONTENT overflows its box
+          is invisible to bounding-rect detection.
+          flexShrink: 0 stops the squeezing, nowrap stops the wrapping, and
+          overflowX on the row is what the guard's own header calls the fix:
+          "a tab row that scrolls within itself is the fix, not the bug".
+          Nothing changes at a width where six tabs fit. */}
+      <div style={{ borderBottom: '1px solid rgba(10,10,10,0.12)', display: 'flex', padding: '0 32px', overflowX: 'auto' }}>
         {TABS.map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
             style={{ padding: '14px 0', marginRight: 32, fontSize: 13, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", background: 'none', border: 'none', cursor: 'pointer',
+              flexShrink: 0, whiteSpace: 'nowrap',
               color: activeTab === tab.key ? '#E03553' : '#444444',
               borderBottom: activeTab === tab.key ? '2px solid #E03553' : '2px solid transparent',
             }}>
