@@ -1,5 +1,50 @@
 # Small fixes: overflow, logo, contrast
 
+> **CLOSED 2026-10-01.** All three items shipped, with the guards that were
+> waiting to mean what they say now meaning it.
+>
+> | PR | merged | what it was |
+> | --- | --- | --- |
+> | [#881](https://github.com/Lajay06/openinvite/pull/881) | `08dca2ae` | Seating and Photography stop scrolling the page sideways at 390; the overflow guard loses both exceptions and gains a content pass |
+> | [#882](https://github.com/Lajay06/openinvite/pull/882) | `2dd2a1e3` | One logo component on both grounds, with a pixel-scanning guard |
+> | [#883](https://github.com/Lajay06/openinvite/pull/883) | `aa0c60bb` | The quote attribution clears 4.5:1, and the contrast guard now fails |
+> | [#884](https://github.com/Lajay06/openinvite/pull/884) | `0d21cefd` | A green shard keeps its timings, so the rebalance became possible |
+> | [#885](https://github.com/Lajay06/openinvite/pull/885) | `3ab64c0c` | The rebalance itself, read from those timings |
+> | [#877](https://github.com/Lajay06/openinvite/pull/877) | `f9c0ca1e` | Before the goal opened: the tour's footage follows its chapter |
+> | docs | `ff29c76b` | DECISION-LOG addendum under R38, and the overflow backlog line |
+>
+> **Measured, before and after.**
+>
+> | | before | after |
+> | --- | --- | --- |
+> | seating at 390 | page +103px, canvas 0px wide | page +0px, canvas 324 x 900, first on the page |
+> | photography at 390 | page +8px | page +0px |
+> | logo offset, header vs footer | 0.281 against 0.177 | 0.281 against 0.257, tolerance 0.05 |
+> | guest text under 4.5:1 | 2 elements at 2.27:1 | 0 |
+> | shard balance | A 970s, B 1071s, 101s apart | A 915s, B 919s, 4s apart |
+>
+> **What the work found that nobody was looking for.** The first seating fix
+> contained the page and left the canvas rendering zero pixels wide, which only
+> a measurement caught. PublicNav had three logo sites, not one, and the one
+> serving the home page was neither of the two first converted. The logo
+> component could not live in components/shared/ because the design-system
+> sweep bars letter-spacing there. And the shard file's instruction to
+> rebalance from a green run was unusable until #884, because GitHub truncates
+> the log of a long job.
+>
+> **Carried forward.**
+>
+> 1. **746px of page chrome sits above the seating canvas at 390.** The canvas
+>    is reachable without horizontal dragging now and is the first thing in its
+>    frame, but the page header, stat cards and event tabs push it to the
+>    bottom of a phone's first screen. Reworking that is a page redesign, not
+>    an overflow fix.
+> 2. **A marketing change ships its regenerated prerendered/ snapshots in the
+>    same commit.** #882 touched PublicNav and PublicFooter and needed all
+>    fourteen regenerated; the freshness guard is what catches it, and it
+>    catches it only after the fact. The rule is in WORKFLOW.md and worth
+>    knowing before starting, not after.
+
 Three product items that fell out of the studio tour and CI split goals. Each is small, each has a guard already waiting to mean what it says.
 
 ## 1. Two dashboard pages scroll sideways on a phone
