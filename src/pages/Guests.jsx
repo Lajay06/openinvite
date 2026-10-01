@@ -26,7 +26,7 @@ import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import EmailTemplates from "../components/guests/EmailTemplates";
 import PageConsiderations from '../components/shared/PageConsiderations';
-import { getWeddingEvents, defaultEventResponses, getGuestEventResponse, toggleEventInvite, effectiveMealChoice, mealOptionLabel } from '@/lib/weddingEvents';
+import { getWeddingEvents, defaultEventResponses, getGuestEventResponse, resolveAllEventResponses, effectiveMealChoice, mealOptionLabel } from '@/lib/weddingEvents';
 import CountUp from "@/components/shared/CountUp";
 import { fetchGuestLinks } from '@/lib/guestLinks';
 import { copyFromPromise } from '@/lib/copyToClipboard';
@@ -140,8 +140,6 @@ export default function Guests() {
   // it the only place the count can be stated before the write runs, and the
   // only place the outcome can be reported after it.
   const [searchParams, setSearchParams] = useSearchParams();
-  const [bulkInvite, setBulkInvite] = useState(null); // {event, count} | null
-  const [bulkBusy, setBulkBusy] = useState(false);
   const [autoSendAfterSetEvents, setAutoSendAfterSetEvents] = useState(null); // guestId
   const [editingEventsGuestId, setEditingEventsGuestId] = useState(null); // guestId, for the "edit events" (not auto-send) flow
   const [scrollToGuestId, setScrollToGuestId] = useState(null); // set right after a guest is added, so its row scrolls into view once it lands at the bottom
@@ -316,10 +314,11 @@ export default function Guests() {
     }
   };
 
-  // Both entry points from EventDetails. `inviteAll` opens a confirmation
-  // STATING THE COUNT — a bulk write that neither announces its size nor
-  // confirms its outcome is the silent-action defect at the largest blast
-  // radius in the product. `setEvents` just opens the existing picker.
+  // Both entry points from EventDetails. `inviteAll` now runs the same bulk
+  // path the selection bar's "Invite to..." uses, with its confirmation turned
+  // on so the count is still stated before the write: one code path for one
+  // operation, which is what folding the old dialog in means. `setEvents`
+  // still opens the picker.
   useEffect(() => {
     if (guests.length === 0 || weddingEvents.length === 0) return;
     const inviteAll = searchParams.get('inviteAll');
@@ -336,33 +335,99 @@ export default function Guests() {
       return;
     }
     if (inviteAll) {
-      const notYet = guests.filter(g => !getGuestEventResponse(g, event).invited);
-      setBulkInvite({ event, count: notYet.length, total: guests.length, guests: notYet });
+      applyEventToGuests(event, true, guests);
     } else {
       setSetEventsGuests(guests);
     }
     setSearchParams({}, { replace: true });
   }, [guests, weddingEvents, searchParams, setSearchParams]);
 
-  const runBulkInvite = async () => {
-    if (!bulkInvite || bulkBusy) return;
-    setBulkBusy(true);
-    const { event, guests: targets } = bulkInvite;
+  // ── TOGGLING ONE EVENT ON ONE GUEST, FROM THE ROW ────────────────────────
+  //
+  // The whole resolved set goes to the server, not the one chip that was
+  // clicked (resolveAllEventResponses, and the owner's ruling it carries).
+  // `busyEventId` keys on guest AND event so two chips on the same row can be
+  // pressed in turn without the second looking disabled.
+  const [busyEventId, setBusyEventId] = useState(null);
+  const handleToggleEvent = async (guest, event, invited) => {
+    if (readOnly) return;
+    const key = `${guest.id}:${event.event_id}`;
+    setBusyEventId(key);
+    try {
+      await updateGuest(guest.id, {
+        event_responses: resolveAllEventResponses(guest, weddingEvents, { [event.event_id]: invited }),
+      });
+      await loadGuests();
+    } catch {
+      // The row still shows the old state, which is the truth until a write
+      // lands, so the toast is the whole report.
+      toast.error(`Could not ${invited ? 'invite' : 'remove'} ${guest.name}. Try again.`);
+    } finally {
+      setBusyEventId(null);
+    }
+  };
+
+  // ── BULK: INVITE TO, AND REMOVE FROM ──────────────────────────────────────
+  //
+  // ADDITIVE AND SUBTRACTIVE, which a checkbox cannot be. Set events asks
+  // "which events is this set invited to" and answers for every event at once,
+  // so it cannot say "add these fifty to the welcome drinks and leave
+  // everything else alone" -- unchecking is indistinguishable from "mixed".
+  // Two named actions can.
+  // ── BULK: INVITE TO, AND REMOVE FROM ──────────────────────────────────────
+  //
+  // ADDITIVE AND SUBTRACTIVE, which a checkbox cannot be. Set events asks
+  // "which events is this set invited to" and answers for every event at once,
+  // so it cannot say "add these fifty to the welcome drinks and leave
+  // everything else alone": unchecking an event and leaving it mixed look the
+  // same to it. Two named actions can.
+  //
+  // THE COUNT IS STATED BEFORE THE WRITE RUNS, in the product's own dialog and
+  // not a native confirm. Both halves of that matter. The count is the
+  // property the prompt this replaced existed for, in its own words: "a bulk
+  // write that neither announces its size nor confirms its outcome is the
+  // silent-action defect at the largest blast radius in the product." The
+  // dialog is because tests/persistence counts native dialogs as a ratchet
+  // that may only fall, and reaching for window.confirm here would have been
+  // the twenty-ninth.
+  const [pendingBulkEvent, setPendingBulkEvent] = useState(null);
+  const [bulkEventBusy, setBulkEventBusy] = useState(false);
+
+  const applyEventToGuests = (event, invited, pool) => {
+    const targets = pool.filter(
+      (g) => getGuestEventResponse(g, event).invited !== invited,
+    );
+    if (targets.length === 0) {
+      toast(`Nothing to change: ${invited ? 'everyone selected is already invited to' : 'nobody selected is invited to'} ${event.name}.`);
+      return;
+    }
+    setPendingBulkEvent({ event, invited, targets });
+  };
+
+  const runPendingBulkEvent = async () => {
+    if (!pendingBulkEvent || bulkEventBusy) return;
+    const { event, invited, targets } = pendingBulkEvent;
+    setBulkEventBusy(true);
     let done = 0, failed = 0;
     for (const g of targets) {
       try {
-        await updateGuest(g.id, { event_responses: toggleEventInvite(g, event, true) });
+        await updateGuest(g.id, {
+          event_responses: resolveAllEventResponses(g, weddingEvents, { [event.event_id]: invited }),
+        });
         done++;
       } catch { failed++; }
     }
-    setBulkBusy(false);
-    setBulkInvite(null);
-    // REPORT THE OUTCOME, including a partial one. A bulk write that says
+    setBulkEventBusy(false);
+    setPendingBulkEvent(null);
+    // REPORT THE OUTCOME, INCLUDING A PARTIAL ONE. A bulk write that says
     // nothing afterwards is indistinguishable from one that did nothing.
-    if (failed === 0) toast.success(`${done} guest${done === 1 ? '' : 's'} invited to ${event.name}`);
-    else toast.error(`${done} invited, ${failed} could not be updated. Try again for the rest.`);
-    loadGuests();
+    if (failed === 0) toast.success(`${done} guest${done === 1 ? '' : 's'} ${invited ? 'invited to' : 'removed from'} ${event.name}`);
+    else toast.error(`${done} ${invited ? 'invited' : 'removed'}, ${failed} could not be updated. Try again for the rest.`);
+    await loadGuests();
   };
+
+  const handleBulkEvent = (event, invited) => applyEventToGuests(event, invited, selectedGuests);
+
 
   const handleInlineUpdate = async (guestId, updates) => {
     // table_assignment has its own write path (Table.assigned_guests is the
@@ -539,6 +604,29 @@ export default function Guests() {
     }
     return { invited, yes, no, pending };
   }, [guests, activeEvent]);
+
+  // ── PER EVENT, WHEN THERE IS MORE THAN ONE ───────────────────────────────
+  //
+  // A wedding with 500 at the ceremony and 300 at the reception cannot read
+  // its guest list off one pair of numbers. The cards above answer "how many
+  // people", which is still the right question for a single-event wedding and
+  // the wrong one the moment the events differ.
+  //
+  // REPLIED MEANS ANSWERED, not attending: a no is a reply. The pair is
+  // invited and replied because that is what a couple chases.
+  const perEventCounts = React.useMemo(() => {
+    if (weddingEvents.length < 2) return [];
+    return weddingEvents.map((event) => {
+      let invited = 0, replied = 0;
+      for (const g of guests) {
+        const r = getGuestEventResponse(g, event);
+        if (!r.invited) continue;
+        invited++;
+        if (r.status === 'yes' || r.status === 'no') replied++;
+      }
+      return { event, invited, replied };
+    });
+  }, [guests, weddingEvents]);
 
   const STAT_CARDS = activeEvent ? [
     { label: `Invited to ${activeEvent.name}`, value: eventStats.invited },
@@ -781,6 +869,53 @@ export default function Guests() {
         ))}
       </div>
 
+      {/* PER EVENT, UNDER THE CARDS, when the wedding has more than one and the
+          list is not already filtered to one. The cards answer "how many
+          people"; this answers "how many for each thing", which is the
+          question a wedding with different guest lists per event is actually
+          asking. */}
+      {!activeEvent && perEventCounts.length > 0 && !loading && (
+        <div
+          data-per-event-counts
+          className="flex flex-wrap w-full"
+          style={{ borderBottom: '1px solid rgba(10,10,10,0.12)', padding: '12px 32px', gap: 24 }}
+        >
+          {perEventCounts.map(({ event, invited, replied }) => (
+            <div key={event.event_id} style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 12 }}>
+              <span style={{ fontWeight: 700, color: '#0A0A0A' }}>{event.name}</span>
+              <span style={{ color: 'rgba(10,10,10,0.6)' }}>{`  ${invited} invited, ${replied} replied`}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {pendingBulkEvent && (
+        <Dialog open onOpenChange={(o) => { if (!o && !bulkEventBusy) setPendingBulkEvent(null); }}>
+          <DialogContent className="max-w-[420px]">
+            <div style={{ padding: 24, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: '0 0 6px' }}>
+                {pendingBulkEvent.invited
+                  ? `Invite ${pendingBulkEvent.targets.length} guest${pendingBulkEvent.targets.length === 1 ? '' : 's'} to ${pendingBulkEvent.event.name}?`
+                  : `Remove ${pendingBulkEvent.targets.length} guest${pendingBulkEvent.targets.length === 1 ? '' : 's'} from ${pendingBulkEvent.event.name}?`}
+              </p>
+              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px', lineHeight: 1.6 }}>
+                {pendingBulkEvent.invited
+                  ? 'Guests already invited are left as they are.'
+                  : 'Their answers are kept, so you can put them back without losing a reply.'}
+              </p>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                <button className="btn-editorial-secondary" disabled={bulkEventBusy} onClick={() => setPendingBulkEvent(null)}>
+                  Cancel
+                </button>
+                <button className="btn-primary" disabled={bulkEventBusy} onClick={runPendingBulkEvent}>
+                  {bulkEventBusy ? 'Working…' : (pendingBulkEvent.invited ? 'Invite' : 'Remove')}
+                </button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
       {/* Ava + toolbar row */}
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         {!isCollaborating && <AvaButton label="Ask Ava to help manage your guest list" onClick={() => setAvaOpen(true)} />}
@@ -870,6 +1005,8 @@ export default function Guests() {
                     onSetDietary={(dietary) => handleBulkUpdate({ dietary_restrictions: dietary || null })}
                     onAddTag={handleBulkAddTag}
                     onRemoveTag={handleBulkRemoveTag}
+                    weddingEvents={weddingEvents}
+                    onBulkEvent={handleBulkEvent}
                     onDelete={handleBulkDelete}
                   />
                   <button onClick={openSetEventsForSelection} className="btn-editorial-secondary" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -940,8 +1077,9 @@ export default function Guests() {
               selectedIds={selectedIds}
               onToggleSelect={readOnly ? undefined : toggleSelect}
               onToggleSelectAll={readOnly ? undefined : toggleSelectAll}
-              onSetEventsAndSend={readOnly ? undefined : handleSetEventsAndSend}
               onEditEvents={readOnly ? undefined : handleEditEvents}
+              onToggleEvent={readOnly ? undefined : handleToggleEvent}
+              busyEventId={busyEventId}
               scrollToGuestId={scrollToGuestId}
               highlightedGuestId={highlightedGuestId}
               readOnly={readOnly}
@@ -995,34 +1133,6 @@ export default function Guests() {
           Guest record on the wedding — the largest blast radius any couple
           action has. It states the number first and reports the result after,
           including a partial failure. */}
-      {bulkInvite && (
-        <Dialog open onOpenChange={(o) => { if (!o && !bulkBusy) setBulkInvite(null); }}>
-          <DialogContent className="max-w-[420px]">
-            <div style={{ padding: 24 }}>
-              <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: '0 0 6px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                {bulkInvite.count === 0
-                  ? `Everyone is already invited to ${bulkInvite.event.name}`
-                  : `Invite ${bulkInvite.count} guest${bulkInvite.count === 1 ? '' : 's'} to ${bulkInvite.event.name}?`}
-              </p>
-              <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px', lineHeight: 1.6, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                {bulkInvite.count === 0
-                  ? `All ${bulkInvite.total} guests on your list can already see it.`
-                  : `Your list has ${bulkInvite.total}. This updates the ${bulkInvite.count} who cannot see this event yet, and changes nothing else.`}
-              </p>
-              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-                <button className="btn-editorial-secondary" disabled={bulkBusy} onClick={() => setBulkInvite(null)}>
-                  {bulkInvite.count === 0 ? 'Close' : 'Cancel'}
-                </button>
-                {bulkInvite.count > 0 && (
-                  <button className="btn-primary" disabled={bulkBusy} onClick={runBulkInvite}>
-                    {bulkBusy ? 'Inviting…' : `Invite ${bulkInvite.count}`}
-                  </button>
-                )}
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
 
       {setEventsGuests && (
         <SetEventsModal

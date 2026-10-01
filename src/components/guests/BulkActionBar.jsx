@@ -19,7 +19,7 @@ const barBtn = {
    Friends). Tags are additive/subtractive instead (add/remove a single tag
    across the selection), since different guests may already carry
    different tags — a bulk "set" would blow away everyone else's tags. */
-export default function BulkActionBar({ count, selectedGuests, onSetCategory, onSetDietary, onAddTag, onRemoveTag, onDelete }) {
+export default function BulkActionBar({ count, selectedGuests, weddingEvents = [], onSetCategory, onSetDietary, onAddTag, onRemoveTag, onBulkEvent, onDelete }) {
   const [tagInput, setTagInput] = useState('');
 
   const tagsInSelection = [...new Set(selectedGuests.flatMap(g => Array.isArray(g.tags) ? g.tags : []))].sort();
@@ -115,6 +115,45 @@ export default function BulkActionBar({ count, selectedGuests, onSetCategory, on
           )}
         </PopoverContent>
       </Popover>
+
+      {/* ADDITIVE AND SUBTRACTIVE, which the Set events checkboxes cannot be.
+          That control answers "which events is this whole set invited to" and
+          writes every event at once, so it has no way to say "add these fifty
+          to the welcome drinks and leave the rest alone": unchecking an event
+          and leaving it mixed look the same to it. Two named actions can. */}
+      {weddingEvents.length > 0 && onBulkEvent && (
+        <>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button style={barBtn}>
+                Invite to... <ChevronDown size={13} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              {weddingEvents.map((ev) => (
+                <DropdownMenuItem key={ev.event_id} onClick={() => onBulkEvent(ev, true)} style={{ fontFamily: PJS, fontSize: 13 }}>
+                  {ev.name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button style={barBtn}>
+                Remove from... <ChevronDown size={13} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              {weddingEvents.map((ev) => (
+                <DropdownMenuItem key={ev.event_id} onClick={() => onBulkEvent(ev, false)} style={{ fontFamily: PJS, fontSize: 13 }}>
+                  {ev.name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
+      )}
 
       <button
         onClick={onDelete}
