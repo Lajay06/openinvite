@@ -12,7 +12,8 @@
  */
 import { tallyAttendees, guestCounts } from './guestRsvpTally.js';
 import { resolveAttendees, MEAL_CHOSEN } from './attendees.js';
-import { mealOptionLabel } from './weddingEvents.js';
+import { mealOptionLabel, getWeddingEvents, getGuestEventResponse } from './weddingEvents.js';
+import { tallyEventsForGuests } from './eventTallies.js';
 import { coupleDisplayName } from './coupleNames.js';
 import { daysUntilWedding, countdownForPrompt } from './weddingCountdown.js';
 import { deriveSeason } from './weddingSeason.js';
@@ -113,6 +114,32 @@ export function formatWeddingContext({ guests = [], budget = [], vendors = [], s
   // the prompt). Capped at 400 names to keep the prompt bounded for very
   // large guest lists — plenty for real weddings, and the aggregate counts
   // above still cover anything past the cap.
+  // ── THE EVENT DIMENSION ─────────────────────────────────────────────────
+  //
+  // Ava was handed the wedding as one thing: invitations sent, invitations
+  // pending, people coming. Asked "who is coming to the welcome drinks" she
+  // had nothing to answer from and answered about the wedding instead, which
+  // is worse than saying she does not know. Every number she needed was on
+  // Guest.event_responses already.
+  //
+  // NUMBERED, AND EACH GUEST LISTS ONLY WHAT THEY ARE INVITED TO. Spelling the
+  // event names out on 400 guest lines would be several thousand tokens of
+  // repetition for the common case where everyone is invited to everything, so
+  // the events are numbered once here and a guest line carries the numbers.
+  // The line is omitted entirely when a guest is invited to all of them, and
+  // the block below says so, which keeps the usual wedding free.
+  const eventTallies = tallyEventsForGuests(wd, guests);
+  const allEvents = getWeddingEvents(wd);
+  const eventNumber = new Map(allEvents.map((ev, i) => [ev.event_id, i + 1]));
+  const eventsBlock = eventTallies.length
+    ? `\n\nEVENTS. REPLIES ARE COUNTED PER INVITATION, exactly as the invitations line above.
+A guest is invited to a main event unless the couple removed them, and to a
+custom event only if the couple added them.
+${eventTallies.map((t) => `[${eventNumber.get(t.event_id)}] ${t.name}: ${t.invited} invited, ${t.replied} replied (${t.yes} yes, ${t.no} no)`).join('\n')}
+In the guest list below, "events 1,3" names the events that guest is invited
+to. A guest line with no events note is invited to all of them.`
+    : '';
+
   const GUEST_LIST_CAP = 400;
   // Guest records by id, for the ONE field an attendee deliberately does not
   // carry. table_assignment is guest-only — a plus-one cannot hold a table
@@ -145,6 +172,17 @@ export function formatWeddingContext({ guests = [], budget = [], vendors = [], s
     // Guest row of its own, so it gets no id and cannot be the subject of an
     // update; the executor refuses it by name rather than writing to its host.
     const idTag = a.isPlusOne ? '' : ` [id ${a.id}]`;
+    // WHICH EVENTS, and only when it is not all of them. A plus-one does not
+    // hold an invited flag of its own — event_responses lives on the guest
+    // record and the plus-one travels with it — so it reports its host's set,
+    // which is the truth rather than a blank.
+    const forInvites = a.isPlusOne ? guestById.get(a.hostGuestId) : guestById.get(a.id);
+    const invitedNums = allEvents
+      .filter((ev) => getGuestEventResponse(forInvites, ev).invited)
+      .map((ev) => eventNumber.get(ev.event_id));
+    if (forInvites && invitedNums.length < allEvents.length) {
+      parts.push(invitedNums.length ? `events ${invitedNums.join(',')}` : 'invited to no event');
+    }
     return `${name}${idTag} — ${parts.join(', ')}`;
   });
   const guestListBlock = guestListLines.length
@@ -247,7 +285,7 @@ ${expectedGuestLine ? expectedGuestLine + '\n' : ''}GUESTS — state the populat
 form is "${totalAttendees} people, which is ${guests.length} guests plus ${Math.max(0, totalAttendees - guests.length)} plus ones".
 REPLIES ARE COUNTED PER INVITATION and ATTENDANCE PER PERSON — never mix them.
 Invitations: ${counts.invitations.total} sent, ${counts.invitations.pending} still to reply.
-People coming: ${confirmed} of ${totalAttendees}.${guestListBlock}
+People coming: ${confirmed} of ${totalAttendees}.${eventsBlock}${guestListBlock}
 
 BUDGET — two stores, named as the Budget page names them (spec 5.1):
 ${plan

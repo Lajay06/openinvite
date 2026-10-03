@@ -4,6 +4,7 @@ import { getMyWeddingDetails, getMyRecords, getMyGuestsWithRsvp } from '@/lib/re
 import { loadDashboardSources, formatSourceList } from '@/lib/dashboardSources';
 import { daysUntilWedding, countdownLabel } from '@/lib/weddingCountdown';
 import { guestCounts } from '@/lib/guestRsvpTally';
+import { tallyEventsForGuests, eventCountLine, tallyIsInformative } from '@/lib/eventTallies';
 import { coupleDisplayName } from '@/lib/coupleNames';
 import { useCollaboratorContext } from '@/lib/collaboratorContext';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
@@ -257,6 +258,19 @@ export default function DailyUpdate() {
   // invitations/people split the owner ruled on (#694, the 94-vs-61 answer)
   // and the vendor count. The union is six, deduped, each labelled with WHICH
   // quantity it is — which was the whole point of that ruling.
+  // ── THE SAME NUMBERS, PER EVENT ─────────────────────────────────────────
+  //
+  // The tiles above report the wedding as one thing. For a wedding with 500 at
+  // the ceremony and 300 at the reception that is an average of two different
+  // questions, and "61 still to reply" does not say which event is waiting.
+  //
+  // SHOWN ONLY WHEN THE EVENTS DIFFER, which is not the same as there being
+  // more than one: every wedding has a ceremony and a reception, so a couple
+  // who has never used the per-event control would otherwise get a breakdown
+  // of two identical numbers under six tiles that already said it.
+  const eventTallies = tallyEventsForGuests(wd, guests);
+  const showEventTallies = tallyIsInformative(eventTallies);
+
   const snapCards = [
     { label: 'Guests coming',       value: String(counts.people.attending) },
     { label: 'People invited',      value: String(counts.people.total) },
@@ -397,6 +411,29 @@ export default function DailyUpdate() {
                   </div>
                 );
               })}
+
+              {/* PER EVENT, UNDER THE TILES. The same column, because it is
+                  the same question answered more precisely, and a couple
+                  reading "Invitations pending" should find the breakdown
+                  beneath it rather than somewhere else on the page. Counted
+                  per invitation, like the tile above it. */}
+              {showEventTallies && (
+                <div data-per-event-counts style={{ borderTop: '1px solid rgba(10,10,10,0.06)', paddingTop: 24, marginTop: 24 }}>
+                  <div style={{ fontFamily: PJS, fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', marginBottom: 12 }}>
+                    By event
+                  </div>
+                  {eventTallies.map((t) => (
+                    <div key={t.event_id} style={{ marginBottom: 10 }}>
+                      <div style={{ fontFamily: PJS, fontSize: 13, fontWeight: 700, color: '#0A0A0A' }}>
+                        {t.name}
+                      </div>
+                      <div style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.6)', marginTop: 2 }}>
+                        {eventCountLine(t)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
