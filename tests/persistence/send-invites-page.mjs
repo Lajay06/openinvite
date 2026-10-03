@@ -68,12 +68,17 @@ export async function runSendInvitesPage() {
   check('  the page frame is full width',
     /minHeight: 'calc\(100vh - 48px\)'/.test(flow) && !/width: 'min\(94vw, 1240px\)'[\s\S]{0,80}asPage/.test(flow),
     'no 1240px cap on the page');
-  check('  all four steps are still one flow',
-    ['step === 1', 'step === 2', 'step === 3', 'step === 4'].every((k) => flow.includes(k)),
-    'Select guests · Compose · Channel · Review & send');
+  // FIVE STEPS SINCE 2026-10-03, not four: "Which event is this about?" was
+  // added in front of Select guests. What this pair asserts is unchanged and
+  // is the point of it: every step is one flow in one component, review comes
+  // before send, and Send appears only on the last step. The count moved, the
+  // property did not.
+  check('  all five steps are still one flow',
+    ['step === 1', 'step === 2', 'step === 3', 'step === 4', 'step === 5'].every((k) => flow.includes(k)),
+    'Event · Select guests · Compose · Channel · Review & send');
   check('  and the review step still comes before the send',
-    flow.indexOf('step === 4') > flow.indexOf('step === 3')
-      && /step < 4 \? \(/.test(flow), 'Next up to 4, Send only at 4');
+    flow.indexOf('step === 5') > flow.indexOf('step === 4')
+      && /step < 5 \? \(/.test(flow), 'Next up to 5, Send only at 5');
 
   // ── WHAT A PAGE OWES THAT A PANEL DID NOT ───────────────────────────────
   check('PLANT: a page leaves, it does not close',
@@ -132,8 +137,11 @@ export async function runSendInvitesPage() {
     check('  a save-the-date does NOT mark guests invited', writesInvite,
       writesInvite ? 'only invite/reminder write invite_sent_at'
         : 'the write-back condition changed — a save-the-date may now be marking guests invited');
+    // `list.filter`, NOT `guests.filter`, since 2026-10-03: the event step now
+    // narrows the pool first and these filters compose onto it. The assertion
+    // is the same one, that this filter reads invite_sent_at.
     check('    which is what keeps "Not yet invited" honest',
-      /filter === 'not_invited'\) list = guests\.filter\(g => !g\.invite_sent_at\)/.test(modal),
+      /filter === 'not_invited'\) list = list\.filter\(g => !g\.invite_sent_at\)/.test(modal),
       'the invitation send reads invite_sent_at, so an announcement must not set it');
   }
 

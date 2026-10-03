@@ -68,6 +68,11 @@ const TYPE_CONFIG = {
   invite: {
     kicker: "You're invited",
     showEvents: false,
+    // ONE EVENT KEEPS THE DATE LINE AND NOTHING ELSE, which is what the
+    // comment above argues for. More than one and the guest is told which
+    // ones, by name and date, because the alternative is an invitation that
+    // does not say what it is inviting them to.
+    showEventsWhenSeveral: true,
     showDate: true,
     showRsvp: true,
     ctaLabel: 'Open your invitation',
@@ -349,7 +354,27 @@ export function renderInvitationEmail({
 
   const preheader = `${cfg.kicker}${coupleNames ? `: ${coupleNames}` : ''}.`;
 
-  const eventBlocksHtml = cfg.showEvents ? events.map(ev => {
+  // ── WHICH EVENTS THIS EMAIL LISTS ────────────────────────────────────────
+  //
+  // THE INVITE LISTS THEM WHEN THERE IS MORE THAN ONE, and not otherwise. A
+  // guest invited to one thing needs the date, which the line below already
+  // gives in the display face; a guest invited to three needs to know which
+  // three, and the invitation is where they find out.
+  //
+  // IT IS STILL NAME AND DATE ONLY. The reason this type carried
+  // showEvents: false is in its own comment above and has not stopped being
+  // true: "venue and schedule are the site's to reveal". So the invite's lines
+  // drop the venue the reminder and the update keep. The rule is the type's,
+  // not the renderer's, which is why it reads off cfg rather than a parameter.
+  //
+  // WHAT "MORE THAN ONE" COUNTS. The guest's OWN events, which is the only
+  // thing this function is given: `events` arrives already filtered to what
+  // this guest is invited to (SendInvitesModal.buildGuestEvents). A wedding
+  // with a ceremony and a reception therefore has two, and its invites gain
+  // two lines. That is the goal's rule read literally, and it is worth saying
+  // out loud because it changes the common case, not only the unusual one.
+  const showEventsHere = cfg.showEvents || (cfg.showEventsWhenSeveral && events.length > 1);
+  const eventBlocksHtml = showEventsHere ? events.map(ev => {
     const dateStr = formatEventDate(ev.date);
     const metaLine = [dateStr, ev.startTime].filter(Boolean).join(' · ');
     return `
@@ -357,7 +382,7 @@ export function renderInvitationEmail({
             <td style="padding:20px 40px 0;">
               <p style="margin:0 0 3px;font-family:${fontDisplay};font-weight:400;font-size:19px;color:${textColor};">${escapeHtml(ev.name)}</p>
               ${metaLine ? `<p style="margin:0;font-size:14px;color:${inkMuted};font-family:${fontBody};">${escapeHtml(metaLine)}</p>` : ''}
-              ${ev.venue ? `<p style="margin:2px 0 0;font-size:14px;color:${inkMuted};font-family:${fontBody};">${escapeHtml(ev.venue)}</p>` : ''}
+              ${ev.venue && cfg.showEvents ? `<p style="margin:2px 0 0;font-size:14px;color:${inkMuted};font-family:${fontBody};">${escapeHtml(ev.venue)}</p>` : ''}
             </td>
           </tr>`;
   }).join('') : '';
@@ -522,10 +547,13 @@ ${markCellHtml}
   const textLines = [
     `${cfg.kicker.toUpperCase()}: ${coupleNames || 'The Wedding'}`,
     '',
-    ...(cfg.showEvents ? events.flatMap(ev => {
+    // THE PLAIN-TEXT HALF FOLLOWS THE SAME RULE, and it has to be said twice
+    // because the two halves are built separately. A text part that disagreed
+    // with the HTML is the version a screen reader and a plain-text client get.
+    ...(showEventsHere ? events.flatMap(ev => {
       const dateStr = formatEventDate(ev.date);
       const metaLine = [dateStr, ev.startTime].filter(Boolean).join(' · ');
-      return [ev.name, metaLine, ev.venue, ''].filter(l => l !== undefined && l !== '');
+      return [ev.name, metaLine, cfg.showEvents ? ev.venue : '', ''].filter(l => l !== undefined && l !== '');
     }) : []),
     message || '',
     '',
