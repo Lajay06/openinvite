@@ -115,8 +115,12 @@ export const SEED = {
     // those. The opt-in path this seeds — a custom event nobody is invited to
     // yet — is the state the invite prompt exists to resolve.
     preWeddingEvents: [
-      { id: 'welcome-drinks', name: 'Welcome drinks', date: iso(299).slice(0, 10),
-        startTime: '18:00', venueName: 'The Trafalgar Tavern' },
+      // event_id EXPLICITLY, not left to the `event_id || id` fallback in
+      // getWeddingEvents: the Guest rows above key their entries on it, and a
+      // fixture whose two halves agree only by a fallback is one rename away
+      // from silently inviting nobody to anything.
+      { id: 'welcome-drinks', event_id: 'welcome-drinks', name: 'Welcome drinks',
+        date: iso(299).slice(0, 10), startTime: '18:00', venueName: 'The Trafalgar Tavern' },
     ],
   }],
   // EVERY FIELD BELOW IS A REAL ONE, checked against base44/entities/*.jsonc by
@@ -131,14 +135,58 @@ export const SEED = {
   // CELL. Four different values, including the two-word `partners_family`
   // whose declared label carries an apostrophe — the case a sentence-case
   // helper alone gets wrong. See pillLabel in src/lib/tablePills.js.
+  // ── PER-EVENT INVITATIONS, EXPRESSED THE WAY THE PRODUCT WRITES THEM ─────
+  //
+  // Every guest below carries a FULL RESOLVED SET: one entry per event, every
+  // time. That is the Guests page's own contract ("every write of
+  // event_responses from the Guests page is the full resolved set for that
+  // guest"), so a fixture of partial arrays would be a shape the product never
+  // stores, and a guard reading it would be measuring something that cannot
+  // happen.
+  //
+  // THE THREE CASES THE GOAL NAMES, and which guest carries each:
+  //
+  //   g3 Alan      NOT invited to Welcome drinks. A stated removal, not the
+  //                absent-entry default, so a guard can tell the two apart.
+  //   g4 Edsger    NOT invited to the Reception. He is the DECLINED guest with
+  //                no table on purpose: the seating pool is
+  //                `invited && (yes|pending)` per RECEPTION_EVENT_ID, so
+  //                removing a seated, attending guest from the reception would
+  //                take him out of Seating's pool and fail test:seating-canvas
+  //                for a reason that has nothing to do with seating.
+  //   g1, g2       Invited to all three.
+  //
+  // So the counts differ per event (4 / 3 / 3), which is what makes the
+  // per-event breakdown worth rendering at all, and no guest is uninvited from
+  // a MAIN event they were seated at.
   Guest: [
     // PHONE ON g1, AND A guest_id ON THE MESSAGE FROM HER BELOW. See
     // instrument failure 8: without both, the Messages page's WhatsApp
     // control cannot render in any guard.
-    { id:'g1', name:'Grace Hopper',  email:'grace@example.com',  phone:'+61412345678', rsvp_status:'attending', table_assignment:'t1', meal_choice:'chicken', category:'family',           event_responses:[], created_by:'fixture@example.com' },
-    { id:'g2', name:'Katherine J.',  email:'kj@example.com',     rsvp_status:'attending', table_assignment:'t1', meal_choice:'fish',    category:'partners_family', event_responses:[], created_by:'fixture@example.com' },
-    { id:'g3', name:'Alan Turing',   email:'alan@example.com',   rsvp_status:'pending',   table_assignment:'t2', category:'friends',    event_responses:[], created_by:'fixture@example.com' },
-    { id:'g4', name:'Edsger D.',     email:'edsger@example.com', rsvp_status:'declined',  category:'colleagues', event_responses:[], created_by:'fixture@example.com' },
+    { id:'g1', name:'Grace Hopper',  email:'grace@example.com',  phone:'+61412345678', rsvp_status:'attending', table_assignment:'t1', meal_choice:'chicken', category:'family',           created_by:'fixture@example.com',
+      event_responses:[
+        { event_id:'main-ceremony',  invited:true,  status:'yes' },
+        { event_id:'reception',      invited:true,  status:'yes' },
+        { event_id:'welcome-drinks', invited:true,  status:'yes' },
+      ] },
+    { id:'g2', name:'Katherine J.',  email:'kj@example.com',     rsvp_status:'attending', table_assignment:'t1', meal_choice:'fish',    category:'partners_family', created_by:'fixture@example.com',
+      event_responses:[
+        { event_id:'main-ceremony',  invited:true,  status:'yes' },
+        { event_id:'reception',      invited:true,  status:'yes' },
+        { event_id:'welcome-drinks', invited:true,  status:'pending' },
+      ] },
+    { id:'g3', name:'Alan Turing',   email:'alan@example.com',   rsvp_status:'pending',   table_assignment:'t2', category:'friends',    created_by:'fixture@example.com',
+      event_responses:[
+        { event_id:'main-ceremony',  invited:true,  status:'pending' },
+        { event_id:'reception',      invited:true,  status:'pending' },
+        { event_id:'welcome-drinks', invited:false, status:'pending' },
+      ] },
+    { id:'g4', name:'Edsger D.',     email:'edsger@example.com', rsvp_status:'declined',  category:'colleagues', created_by:'fixture@example.com',
+      event_responses:[
+        { event_id:'main-ceremony',  invited:true,  status:'no' },
+        { event_id:'reception',      invited:false, status:'pending' },
+        { event_id:'welcome-drinks', invited:true,  status:'no' },
+      ] },
   ],
   Table: [
     { id:'t1', name:'Table 1', capacity:8,  shape:'round', x:200, y:200, assigned_guests:[{ seat_index:0, guest_id:'g1' }, { seat_index:1, guest_id:'g2' }], created_by:'fixture@example.com' },
@@ -277,6 +325,29 @@ export const PUBLISHED_WEDDING = {
     startTime: '18:00', time: '18:00',
     dressCode: 'Black tie optional',
   },
+  // ── A CUSTOM EVENT ON THE PUBLISHED SITE, AND WHO MAY SEE IT ─────────────
+  //
+  // The published fixture had the ceremony and the reception and nothing else,
+  // so there was no event that could be private: both main events default to
+  // invited for everyone, and a wedding where every event is public cannot
+  // show that any of it is filtered.
+  preWeddingEvents: [
+    { id: 'welcome-drinks', event_id: 'welcome-drinks', name: 'Welcome drinks',
+      date: iso(299).slice(0, 10), startTime: '18:00', venueName: 'The Trafalgar Tavern',
+      dressCode: 'Come as you are' },
+  ],
+  // WHAT THE SERVER COMPUTED, pinned rather than derived.
+  //
+  // api/wedding-by-slug.js works this out per request from the couple's guest
+  // list: an event is public when every guest is invited to it. Here it is a
+  // literal, for one reason worth stating. The harness must run against main,
+  // and the resolver that computes it ships in its own PR; a fixture that
+  // imported it would be unable to load until that PR landed. The INVARIANT is
+  // guarded instead: tests/persistence/per-event-fixtures.mjs recomputes this
+  // from PUBLISHED_GUESTS with getGuestEventResponse and fails if the two
+  // disagree, so the literal cannot drift away from the guest list it claims
+  // to describe.
+  publicEventIds: ['main-ceremony', 'reception'],
   rsvpContent: { rsvpDeadline: iso(200) },
   // COUPLE-AUTHORED BLOCKS. Unseeded until now, which is why the block gap
   // (P2d) and four of the eleven heading conversions could not be
@@ -439,8 +510,70 @@ export const RSVP_GUEST = {
   event_responses: [], poll_votes: {}, plus_ones: [],
 };
 
+/**
+ * THE PUBLISHED WEDDING'S GUEST LIST, as the server reads it to decide which
+ * events are public. Only event_responses matters; the names are here so a
+ * failure names a person rather than a row index.
+ *
+ * ONE GUEST REMOVED FROM THE CUSTOM EVENT, which is the whole fixture: the
+ * Welcome drinks are therefore NOT public and appear only on a personal link,
+ * while the ceremony and the reception stay public because nobody has been
+ * removed from either.
+ *
+ * THE RECEPTION IS DELIBERATELY LEFT PUBLIC. A guest removed from it would
+ * make the rule's other half visible here too, and it would also take the
+ * reception off the public celebration page, where the LEGACY dress-code
+ * string lives and nowhere else (PUBLISHED_WEDDING.reception.dressCode).
+ * test:dress-code-render would go red for a reason that has nothing to do
+ * with dress codes. The removed-from-a-main-event case is carried by
+ * PER_EVENT_GUEST below, on a personal link, where it costs nothing.
+ */
+export const PUBLISHED_GUESTS = [
+  { id: 'pg1', name: 'Grace Hopper', event_responses: [
+    { event_id: 'main-ceremony',  invited: true,  status: 'yes' },
+    { event_id: 'reception',      invited: true,  status: 'yes' },
+    { event_id: 'welcome-drinks', invited: false, status: 'pending' },
+  ] },
+  { id: 'pg2', name: 'Bea Lovelace', event_responses: [
+    { event_id: 'main-ceremony',  invited: true, status: 'yes' },
+    { event_id: 'reception',      invited: true, status: 'yes' },
+    { event_id: 'welcome-drinks', invited: true, status: 'yes' },
+  ] },
+];
+
+/**
+ * THE GUEST A PER-EVENT PERSONAL LINK RESOLVES TO, and the one case the public
+ * fixture cannot carry: invited to the ceremony and the Welcome drinks, and
+ * NOT to the reception.
+ *
+ * Her link therefore proves both halves of the rule in a single render. She
+ * sees an event the public site hides, and she does not see an event the
+ * public site shows.
+ *
+ * SEPARATE FROM RSVP_GUEST, never a change to it. That fixture's
+ * `event_responses: []` is load-bearing for every existing /rsvp render pass,
+ * and its own comment says why; the stub below routes on the token so both
+ * exist at once and nothing already green has to move.
+ */
+export const PER_EVENT_GUEST = {
+  id: 'pg2', name: 'Bea Lovelace', first_name: 'Bea', last_name: 'Lovelace',
+  email: 'bea@example.com', rsvp_status: 'pending', invited: true,
+  event_responses: [
+    { event_id: 'main-ceremony',  invited: true,  status: 'pending' },
+    { event_id: 'reception',      invited: false, status: 'pending' },
+    { event_id: 'welcome-drinks', invited: true,  status: 'pending' },
+  ],
+  poll_votes: {}, plus_ones: [],
+};
+
 /** The token any /rsvp/:token render should use; the stub ignores its value. */
 export const RSVP_TOKEN = 'harness-token-not-a-real-token';
+
+/**
+ * The token that resolves to PER_EVENT_GUEST instead. Any other token still
+ * resolves to RSVP_GUEST, so every existing pass is unchanged.
+ */
+export const PER_EVENT_TOKEN = 'harness-token-per-event-guest';
 
 export const FIXTURE_USER = {
   id: 'u1', email: 'fixture@example.com', full_name: 'Render Fixture',
@@ -607,8 +740,15 @@ function resolveStub(url, seed, user, json, onEntity, fail = () => json(null), r
       // the allowlist would drop customGifts and registryProducts, which the
       // real response does carry — a stub that is wrong in the other direction
       // is still wrong.
-      const { customGifts = [], registryProducts = [] } = PUBLISHED_WEDDING;
-      return json({ ...pickGuestSafeFields(PUBLISHED_WEDDING), customGifts, registryProducts });
+      // publicEventIds is merged in the same way and for the same reason: the
+      // real handler computes it after the allowlist and spreads it onto the
+      // response, so it is not a WeddingDetails field and pickGuestSafeFields
+      // neither knows nor should know about it.
+      const { customGifts = [], registryProducts = [], publicEventIds } = PUBLISHED_WEDDING;
+      return json({
+        ...pickGuestSafeFields(PUBLISHED_WEDDING), customGifts, registryProducts,
+        ...(publicEventIds ? { publicEventIds } : {}),
+      });
     }
     // THE INVITATION ROUTE. /rsvp/:token is a real guest surface — change-your-
     // reply, the address line and the hero all render here — and it could not be
@@ -616,7 +756,18 @@ function resolveStub(url, seed, user, json, onEntity, fail = () => json(null), r
     // `[]` below, RSVPPage destructured `{ guest }` off an array, and the page
     // died on `undefined.poll_votes` behind an error boundary. Every pass that
     // needed this route paid the same diagnosis. It is stubbed once, here.
-    if (/\/api\/rsvp-lookup/.test(url))       return json({ guest: RSVP_GUEST, wedding: PUBLISHED_WEDDING });
+    // TOKEN-AWARE, for one extra guest. Every token but PER_EVENT_TOKEN still
+    // resolves to RSVP_GUEST, so nothing that was green has moved; the one
+    // extra token carries the per-event case, which needs a guest whose
+    // invited set is neither everything nor the default.
+    if (/\/api\/rsvp-lookup/.test(url)) {
+      let tok = null;
+      try { tok = new URL(url).searchParams.get('token'); } catch { /* non-URL */ }
+      return json({
+        guest: tok === PER_EVENT_TOKEN ? PER_EVENT_GUEST : RSVP_GUEST,
+        wedding: PUBLISHED_WEDDING,
+      });
+    }
     if (/\/api\/wedding-attendees/.test(url)) return json({ attendees: [], circle: [] });
     // THE ENVELOPE IS { notes }, and this MUST sit above the /api/guest-
     // catch-all below. api/guest-notes.js ends in res.json({ notes }) and

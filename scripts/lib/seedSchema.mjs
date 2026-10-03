@@ -163,9 +163,14 @@ const driftKey = (path) => path.replace(/^(\w+)\[\d+\]/, '$1');
  * websitePassword; `customGifts` and `registryProducts` are built at line 134
  * from the CustomGift and RegistryProduct entities. Declaring any of them as
  * storage would mirror a derived fact — the drift the schema warns about.
+ *
+ * `publicEventIds` is the fifth, and the clearest case of the four reasons
+ * above: it is which events the whole guest list is invited to, computed per
+ * request from the Guest rows. Storing it would be a cache of a question the
+ * guest list already answers, wrong from the first toggle onward.
  */
 export const API_DERIVED_ON_WEDDING_RESPONSE = new Set([
-  'locked', 'passwordProtected', 'customGifts', 'registryProducts',
+  'locked', 'passwordProtected', 'customGifts', 'registryProducts', 'publicEventIds',
 ]);
 
 /**
