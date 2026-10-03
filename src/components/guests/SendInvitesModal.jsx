@@ -75,7 +75,7 @@ function replaceMergeTags(str, guestName, coupleName, dateStr) {
     .replace(/\[RSVP link\]/gi, '[RSVP link]');
 }
 
-const STEP_LABELS = ['Select guests', 'Compose', 'Channel', 'Review & send'];
+const STEP_LABELS = ['Event', 'Select guests', 'Compose', 'Channel', 'Review & send'];
 const F = { fontFamily: "'Plus Jakarta Sans', sans-serif" };
 
 export const TYPE_LABELS = {
@@ -228,6 +228,9 @@ export default function SendInvitesModal({
   const { user } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [step, setStep] = useState(1);
+  // null means every event, which is what this drawer did before the step
+  // existed, so an unchanged choice is an unchanged send.
+  const [sendEventId, setSendEventId] = useState(null);
   const [wedding, setWedding] = useState(null);
 
   // Step 1
@@ -339,13 +342,23 @@ export default function SendInvitesModal({
   const hasWeddingPhoto = !!wedding?.coverPhoto;
   const hasVenuePhoto = !!wedding?.mainCeremony?.photoUrl;
 
-  // Filtered guest list for Step 1
+  // Filtered guest list for the Select guests step.
+  //
+  // THE EVENT NARROWS IT FIRST. "Only guests invited to it will be on the
+  // list" is the promise the step above makes, so it is applied before the
+  // status filters rather than alongside them: a reminder for the welcome
+  // drinks should chase the people invited to the welcome drinks, not everyone
+  // who has not replied to anything.
   const filteredGuests = useMemo(() => {
-    let list = guests;
-    if (filter === 'not_invited') list = guests.filter(g => !g.invite_sent_at);
-    else if (filter === 'awaiting') list = guests.filter(isAwaitingPrimary);
-    else if (filter === 'attending') list = guests.filter(isAttending);
-    else if (filter === 'declined') list = guests.filter(isDeclined);
+    const sendEvent = sendEventId ? weddingEvents.find((e) => e.event_id === sendEventId) : null;
+    let list = sendEvent ? guests.filter((g) => getGuestEventResponse(g, sendEvent).invited) : guests;
+    // FROM `list`, NOT FROM `guests`. These used to restart from the full
+    // guest list, which was harmless while nothing narrowed it first and would
+    // have silently thrown the event choice away the moment one did.
+    if (filter === 'not_invited') list = list.filter(g => !g.invite_sent_at);
+    else if (filter === 'awaiting') list = list.filter(isAwaitingPrimary);
+    else if (filter === 'attending') list = list.filter(isAttending);
+    else if (filter === 'declined') list = list.filter(isDeclined);
     // 'all' — no filter
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -355,7 +368,7 @@ export default function SendInvitesModal({
       );
     }
     return list;
-  }, [guests, filter, search]);
+  }, [guests, filter, search, sendEventId, weddingEvents]);
 
   // Auto-select when filter changes
   useEffect(() => {
@@ -621,8 +634,8 @@ export default function SendInvitesModal({
     }
   };
 
-  const canProceedStep1 = selected.size > 0;
-  const canProceedStep2 = subject.trim().length > 0;
+  const canProceedStep2 = selected.size > 0;
+  const canProceedStep3 = subject.trim().length > 0;
 
   // ── Preview pane — shared across every step ──────────────────────────────
   const previewPane = (
@@ -735,8 +748,49 @@ export default function SendInvitesModal({
           {/* Left: step content (scrollable) */}
           <div style={{ flex: 1, overflow: 'auto', padding: '28px 32px', minWidth: 0 }}>
 
-            {/* ── STEP 1: Select guests ──────────────────────────────────── */}
+            {/* ── STEP 1: Which event ────────────────────────────────────── */}
             {step === 1 && (
+              <div>
+                <h3 style={{ fontSize: 14, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
+                  Which event is this about?
+                </h3>
+                <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px' }}>
+                  Only guests invited to it will be on the list.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {[{ event_id: null, name: 'All events' }, ...weddingEvents].map((ev) => {
+                    const on = sendEventId === ev.event_id;
+                    const count = ev.event_id === null
+                      ? guests.length
+                      : guests.filter((g) => getGuestEventResponse(g, ev).invited).length;
+                    return (
+                      <button
+                        key={ev.event_id || 'all'}
+                        type="button"
+                        data-send-event={ev.event_id || 'all'}
+                        aria-pressed={on}
+                        onClick={() => setSendEventId(ev.event_id)}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '12px 14px', textAlign: 'left', cursor: 'pointer',
+                          background: on ? 'rgba(224,53,83,0.06)' : '#FFFFFF',
+                          border: `1px solid ${on ? '#E03553' : 'rgba(10,10,10,0.12)'}`,
+                          ...F,
+                        }}
+                      >
+                        <span style={{ fontSize: 14, fontWeight: on ? 700 : 600, color: '#0A0A0A' }}>{ev.name}</span>
+                        <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)' }}>
+                          {count} guest{count === 1 ? '' : 's'}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* ── STEP 2: Select guests ──────────────────────────────────── */}
+            {step === 2 && (
               <div>
                 <h3 style={{ fontSize: 14, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
                   Who are you sending to?
@@ -851,7 +905,7 @@ export default function SendInvitesModal({
             )}
 
             {/* ── STEP 2: Compose ────────────────────────────────────────── */}
-            {step === 2 && (
+            {step === 3 && (
               <div>
                 <h3 style={{ fontSize: 14, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
                   Compose your message
@@ -927,7 +981,7 @@ export default function SendInvitesModal({
             )}
 
             {/* ── STEP 3: Choose channel ─────────────────────────────────── */}
-            {step === 3 && (
+            {step === 4 && (
               <div>
                 <h3 style={{ fontSize: 14, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
                   How would you like to send?
@@ -1011,7 +1065,7 @@ export default function SendInvitesModal({
             )}
 
             {/* ── STEP 4: Review & send ──────────────────────────────────── */}
-            {step === 4 && (
+            {step === 5 && (
               <div>
                 <h3 style={{ fontSize: 14, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
                   Ready to send?
@@ -1135,18 +1189,18 @@ export default function SendInvitesModal({
 
           {/* Right: next or send button */}
           <div style={{ display: 'flex', gap: 10 }}>
-            {step < 4 ? (
+            {step < 5 ? (
               <button
                 onClick={() => setStep(s => s + 1)}
                 disabled={
-                  (step === 1 && !canProceedStep1) ||
-                  (step === 2 && !canProceedStep2)
+                  (step === 2 && !canProceedStep2) ||
+                  (step === 3 && !canProceedStep3)
                 }
                 style={{
                   display: 'flex', alignItems: 'center', gap: 6, padding: '10px 22px',
                   background: '#E03553', color: '#FFFFFF',
                   border: 'none', borderRadius: 999, fontSize: 12, fontWeight: 700, cursor: 'pointer', ...F,
-                  opacity: ((step === 1 && !canProceedStep1) || (step === 2 && !canProceedStep2)) ? 0.45 : 1,
+                  opacity: ((step === 2 && !canProceedStep2) || (step === 3 && !canProceedStep3)) ? 0.45 : 1,
                   transition: 'opacity 0.15s ease',
                 }}
               >
