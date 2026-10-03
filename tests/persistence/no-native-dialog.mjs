@@ -52,6 +52,11 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
  * honest: a dialog removed without the baseline following leaves slack the
  * next one slips into for free. First time it fired on real work rather than
  * on a plant.
+ *
+ * 27 -> 26 on 2026-10-03: EventDetails.jsx lost its confirm('Remove this
+ * event?'). Deleting an event now has to state how many guests have replied
+ * before it happens, and a native confirm cannot say anything beyond its own
+ * fixed sentence, so the ratchet and the feature wanted the same thing.
  */
 const BASELINE = {
   'src/components/games/GamesManager.jsx': 1,
@@ -65,7 +70,6 @@ const BASELINE = {
   'src/components/vendors/VendorRosterSection.jsx': 1,
   'src/components/vendors/VendorSearch.jsx': 2,
   'src/pages/Budget.jsx': 1,
-  'src/pages/EventDetails.jsx': 1,
   'src/pages/Guests.jsx': 2,
   'src/pages/Music.jsx': 1,
   'src/pages/OurStory.jsx': 1,
