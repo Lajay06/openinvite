@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Check } from 'lucide-react';
-import { getWeddingEvents } from '@/lib/weddingEvents';
+import { visibleEvents } from '@/lib/guestEventVisibility';
 import { STYLE_OPTIONS, BUDGET_BANDS, resolveOutfitGuidance } from '@/lib/stylingRules';
 
 /**
@@ -9,11 +9,23 @@ import { STYLE_OPTIONS, BUDGET_BANDS, resolveOutfitGuidance } from '@/lib/stylin
  * answers are not persisted anywhere. Rendered by WeddingStylePage.jsx
  * when the couple has enabled it via Guest Suite → Policies.
  */
-export default function RulesBasedStyleQuestionnaire({ weddingDetails, theme, typography }) {
-  const events = useMemo(() => getWeddingEvents(weddingDetails), [weddingDetails]);
+export default function RulesBasedStyleQuestionnaire({ weddingDetails, theme, typography, recognisedGuest }) {
+  // ONLY THE EVENTS THIS VISITOR MAY SEE. The quiz asked which events they
+  // were attending and offered the whole wedding to choose from, including
+  // events they were never invited to, which is both the leak and a worse
+  // answer: it would style someone for a party they are not going to.
+  const events = useMemo(() => visibleEvents(weddingDetails, {
+    guest: recognisedGuest,
+    publicIds: weddingDetails?.publicEventIds || null,
+  }), [weddingDetails, recognisedGuest]);
 
+  // A GUEST WE KNOW HAS ALREADY ANSWERED THIS QUESTION, by being invited. The
+  // first screen is skipped rather than pre-filled: asking someone to confirm
+  // a set we are certain of is a step that answers itself.
+  const guestKnown = !!recognisedGuest;
   const [step, setStep] = useState(0); // 0: events, 1: style, 2: budget, 3: results
-  const [attendingIds, setAttendingIds] = useState([]);
+  const [chosenIds, setChosenIds] = useState([]);
+  const attendingIds = guestKnown ? events.map((e) => e.event_id) : chosenIds;
   const [styleId, setStyleId] = useState('');
   const [budgetId, setBudgetId] = useState('');
 
@@ -22,7 +34,7 @@ export default function RulesBasedStyleQuestionnaire({ weddingDetails, theme, ty
   const hweight = typography.headingWeight;
 
   const toggleEvent = (eventId) => {
-    setAttendingIds(prev =>
+    setChosenIds(prev =>
       prev.includes(eventId) ? prev.filter(id => id !== eventId) : [...prev, eventId]
     );
   };
@@ -34,8 +46,8 @@ export default function RulesBasedStyleQuestionnaire({ weddingDetails, theme, ty
   );
 
   const handleRetake = () => {
-    setStep(0);
-    setAttendingIds([]);
+    setStep(guestKnown ? 1 : 0);
+    setChosenIds([]);
     setStyleId('');
     setBudgetId('');
   };
@@ -44,7 +56,12 @@ export default function RulesBasedStyleQuestionnaire({ weddingDetails, theme, ty
   const containerStyle = { maxWidth: 560, margin: '0 auto', padding: '60px 24px 80px' };
 
   // ── Step 0: which events are you attending? ─────────────────────────────────
-  if (step === 0) {
+  // A guest the link identifies has step 0 on their first render and no
+  // question to ask, so the events screen is skipped here rather than by a
+  // state write in an effect: the lookup resolves after the first paint, and
+  // a step that moves under them after they have started is worse than one
+  // skipped.
+  if (step === 0 && !guestKnown) {
     return (
       <div style={shellStyle}>
         <div style={containerStyle}>
@@ -137,13 +154,15 @@ export default function RulesBasedStyleQuestionnaire({ weddingDetails, theme, ty
               );
             })}
           </div>
-          <button
-            type="button"
-            onClick={() => setStep(0)}
-            style={{ marginTop: 24, background: 'none', border: 'none', color: `${theme.lightText}45`, fontSize: 13, fontFamily: bfont, cursor: 'pointer', padding: 0 }}
-          >
-            ← Back
-          </button>
+          {!guestKnown && (
+            <button
+              type="button"
+              onClick={() => setStep(0)}
+              style={{ marginTop: 24, background: 'none', border: 'none', color: `${theme.lightText}45`, fontSize: 13, fontFamily: bfont, cursor: 'pointer', padding: 0 }}
+            >
+              ← Back
+            </button>
+          )}
         </div>
       </div>
     );

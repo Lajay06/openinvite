@@ -24,6 +24,8 @@ import VineRule from '../layouts/VineRule';
 import UniverseBlocks from '../blocks/UniverseBlocks';
 
 import { compareDayThenTime } from '@/lib/scheduleOrder';
+import { visibleEventIdSet } from '@/lib/guestEventVisibility';
+import { MAIN_CEREMONY_EVENT_ID, RECEPTION_EVENT_ID } from '@/lib/weddingEvents';
 import { resolveDressCode } from '@/lib/dressCode';
 function fmtTime(t) {
   if (!t) return '';
@@ -32,7 +34,7 @@ function fmtTime(t) {
   return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'pm' : 'am'}`;
 }
 
-function WeddingCelebrationPageContent({ weddingDetails, theme, typography, universeConfig }) {
+function WeddingCelebrationPageContent({ weddingDetails, theme, typography, universeConfig, recognisedGuest }) {
   const weddingDate = weddingDetails.weddingDate || '';
   const ceremony   = weddingDetails.mainCeremony || {};
   const reception  = weddingDetails.reception    || {};
@@ -54,9 +56,29 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
   // first and the field second.
   const allEvents = [];
 
+  // ── WHO IS LOOKING, AND THEREFORE WHAT THIS PAGE SHOWS ──────────────────
+  //
+  // This page listed every event on the record to everyone, so a wedding with
+  // 500 at the ceremony and 40 at the welcome drinks told all 500 about the
+  // welcome drinks. With a personal link the set is the guest's own; without
+  // one it is the events the whole list is invited to. The rule, and what it
+  // costs, is in src/lib/guestEventVisibility.js.
+  //
+  // _eventId IS THE JOIN, and it is not _id. The custom branch below keys on
+  // `ev.id` while weddingEvents.js keys on `ev.event_id || ev.id`, and the two
+  // main events are 'ceremony'/'reception' here and 'main-ceremony'/'reception'
+  // there. Filtering on _id would have silently dropped the ceremony from
+  // every site, which is why the id each event is INVITABLE by is carried
+  // separately from the id this page renders with.
+  const visibleIds = visibleEventIdSet({
+    wedding: weddingDetails,
+    guest: recognisedGuest,
+    publicIds: weddingDetails.publicEventIds || null,
+  });
+
   if (ceremony.venueName || ceremony.startTime || ceremony.notes) {
     allEvents.push({
-      _id: 'ceremony', _title: 'Ceremony', _date: weddingDate,
+      _id: 'ceremony', _eventId: MAIN_CEREMONY_EVENT_ID, _title: 'Ceremony', _date: weddingDate,
       startTime: ceremony.startTime || ceremony.time || '', endTime: ceremony.endTime || '',
       venueName: ceremony.venueName || '', address: ceremony.address || '',
       // NAMED, NOT SPREAD: resolveDressCode returns { pills, notes } and this
@@ -69,7 +91,7 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
 
   if (reception.venueName || reception.startTime || reception.notes) {
     allEvents.push({
-      _id: 'reception', _title: 'Reception', _date: weddingDate,
+      _id: 'reception', _eventId: RECEPTION_EVENT_ID, _title: 'Reception', _date: weddingDate,
       startTime: reception.startTime || reception.time || '', endTime: reception.endTime || '',
       venueName: reception.venueName || '', address: reception.address || '',
       // NAMED, NOT SPREAD: resolveDressCode returns { pills, notes } and this
@@ -83,7 +105,8 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
   [...preEvents, ...postEvents].forEach(ev => {
     if (ev.name || ev.venueName || ev.startTime) {
       allEvents.push({
-        _id: ev.id || `ev-${Math.random()}`, _title: ev.name || ev.type || 'Event',
+        _id: ev.id || `ev-${Math.random()}`, _eventId: ev.event_id || ev.id || '',
+        _title: ev.name || ev.type || 'Event',
         _date: ev.date || '',
         startTime: ev.startTime || ev.time || '', endTime: ev.endTime || '',
         venueName: ev.venueName || ev.venue || '',
@@ -98,18 +121,23 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
   // right while the two dashboard lists ignored the day entirely — so the rule
   // now lives in one place rather than in the one surface that happened to
   // implement it correctly.
-  allEvents.sort((a, b) => compareDayThenTime(a._date, a.startTime, b._date, b.startTime));
+  // THE FILTER SITS BETWEEN BUILDING AND SORTING, so every event is built the
+  // same way whoever is looking and only the list narrows. An event with no
+  // invitable id at all (a legacy row with neither event_id nor id) is kept:
+  // it cannot be invited to, so it cannot have been restricted either.
+  const visibleEvents = allEvents.filter((ev) => !ev._eventId || visibleIds.has(ev._eventId));
+  visibleEvents.sort((a, b) => compareDayThenTime(a._date, a.startTime, b._date, b.startTime));
 
   // Group by date key
   const dayMap = {};
   const dayOrder = [];
-  allEvents.forEach(ev => {
+  visibleEvents.forEach(ev => {
     const key = ev._date || '';
     if (!dayMap[key]) { dayMap[key] = []; dayOrder.push(key); }
     dayMap[key].push(ev);
   });
 
-  const hasEvents = allEvents.length > 0;
+  const hasEvents = visibleEvents.length > 0;
   const isEditorial = universeConfig?.layout === 'editorial-masthead';
   const isMinimal = universeConfig?.layout === 'london-minimal';
   const isKyoto = universeConfig?.layout === 'kyoto-vertical';

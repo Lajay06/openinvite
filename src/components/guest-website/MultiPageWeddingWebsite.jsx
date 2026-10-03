@@ -148,18 +148,26 @@ export default function MultiPageWeddingWebsite() {
   // the token in a Referer. No token, no request. A slow or failed lookup is
   // silent: the site renders exactly as it does for a stranger, and the RSVP
   // tab still performs its own lookup when it mounts.
-  const [guestFirstName, setGuestFirstName] = useState(null);
+  //
+  // THE WHOLE GUEST IS KEPT NOW, NOT JUST THE NAME. This lookup already
+  // returned event_responses and the component threw them away, which is the
+  // only reason the site could not show a guest their own events: the data was
+  // arriving and being discarded one line before it was needed. The greeting
+  // is still derived through greetableFirstName, so nothing about it changes.
+  const [recognisedGuest, setRecognisedGuest] = useState(null);
+  const guestFirstName = greetableFirstName(recognisedGuest?.name);
   useEffect(() => {
-    if (!recognisedToken) { setGuestFirstName(null); return undefined; }
+    if (!recognisedToken) { setRecognisedGuest(null); return undefined; }
     let stale = false;
     (async () => {
       try {
         const res = await fetch(`/api/rsvp-lookup?token=${encodeURIComponent(recognisedToken)}`);
         if (!res.ok || stale) return;
         const data = await res.json();
-        if (!stale) setGuestFirstName(greetableFirstName(data?.guest?.name));
+        if (!stale) setRecognisedGuest(data?.guest || null);
       } catch {
-        // Offline, blocked, or malformed: the guest is simply not greeted.
+        // Offline, blocked, or malformed: the guest is simply not greeted, and
+        // the site shows them the public set, exactly as it shows a stranger.
       }
     })();
     return () => { stale = true; };
@@ -570,6 +578,7 @@ export default function MultiPageWeddingWebsite() {
             typography={typography}
             universeConfig={universeConfig}
             recognisedToken={recognisedToken}
+            recognisedGuest={recognisedGuest}
             onForgetGuest={forgetGuest}
           />
         </motion.div>
