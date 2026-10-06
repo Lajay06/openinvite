@@ -29,6 +29,7 @@
  * printing a blank label.
  */
 import { sortScheduleItems, compareScheduleItems, sortScheduleRows } from './scheduleOrder.js';
+import { getWeddingEvents, getEventVenueAndDate, MAIN_CEREMONY_EVENT_ID } from './weddingEvents.js';
 
 /** Normalized events from every source the Schedule page reads. Pure. */
 /**
@@ -65,6 +66,7 @@ export const WHEN_RANK = {
  */
 export const ROW_HOME = {
   todo:       { label: 'Open in To do',        to: '/TodoList' },
+  'wedding-event': { label: 'Open in Event details', to: '/EventDetails' },
   vendor:     { label: 'Open in Vendors',      to: '/Vendors' },
   deadline:   { label: 'Open in Event details', to: '/EventDetails' },
   music:      { label: 'Open in Music',        to: '/Music' },
@@ -208,6 +210,57 @@ export function buildScheduleEvents({
     });
   }
 
+  // ── THE EVENTS THE GUESTS SEE ─────────────────────────────────────────
+  //
+  // THE TWO SCHEDULES DID NOT AGREE ABOUT WHAT A WEDDING CONTAINS. The guest
+  // site's celebration page lists the ceremony, the reception and every
+  // pre/post-wedding event the couple created, grouped by day. This page
+  // listed none of them. It had the Schedule entity's rows, the vendor dates,
+  // the deadlines, and the three LEGACY named fields (rehearsal, welcomeDinner,
+  // dayAfterBrunch) that predate preWeddingEvents, and so a couple who added
+  // "Mehndi" and "Recovery brunch" on Event details could see them on their
+  // guests' site and not on their own schedule.
+  //
+  // That is the divergence this closes, and it closes it in this direction on
+  // purpose. The other direction was to publish the Schedule entity's rows to
+  // the guest site, and that is the wrong half to move:
+  //
+  //   Schedule rows carry responsible_person, description and notes, which are
+  //   operational and couple-private ("sister to hold the rings"). There is no
+  //   per-row guest-visible flag and adding one is a schema change.
+  //
+  //   Schedule has NO event_id (base44/entities/Schedule.jsonc), so a row
+  //   cannot be placed under the event it belongs to even if it were public,
+  //   and a guest site that shows a guest a run-sheet item for an event they
+  //   are not invited to is the leak this goal exists to close, in a form that
+  //   per-event invitations cannot filter.
+  //
+  // So: the couple's events are the shared set, and the Schedule entity stays
+  // the couple's own run sheet. Every row here is readOnly and points home to
+  // Event details, exactly as the vendor and legacy rows do.
+  for (const ev of getWeddingEvents(wd)) {
+    const vd = getEventVenueAndDate(wd, ev);
+    const date = vd.date || (ev.isMain ? bigDay : null);
+    if (!date) continue;
+    // AN EMPTY MAIN EVENT IS NOT AN EVENT. getWeddingEvents always returns a
+    // ceremony and a reception, because every wedding has both as structure
+    // whether or not the couple has filled them in. The guest site only draws
+    // one when it has a venue, a time or a note
+    // (WeddingCelebrationPage.jsx:57-80), so this applies the same test: a bare
+    // "Ceremony" row with no time and no place would be this page claiming to
+    // show the same events while showing one the guests cannot see.
+    if (ev.isMain) {
+      const src = ev.event_id === MAIN_CEREMONY_EVENT_ID ? (wd?.mainCeremony || {}) : (wd?.reception || {});
+      if (!src.venueName && !ev.startTime && !src.notes) continue;
+    }
+    events.push({
+      id: `event-${ev.event_id}`, title: ev.name, date: String(date).slice(0, 10),
+      time: ev.startTime || '', location: vd.venue || '', notes: '',
+      type: 'schedule-like', kind: 'wedding-event', matchKind: matchKindOf(ev.name),
+      source: 'Event details', readOnly: true,
+    });
+  }
+
   for (const p of customPages) {
     if (!p?.date) continue;
     const [d, clock] = String(p.date).split('T');
@@ -237,12 +290,36 @@ export function buildScheduleEvents({
   // TIMELINE shows it once: matched on the same date and the same kind, and
   // THE SCHEDULE ROW WINS, because that is the one they can edit here.
   // Nothing is deleted; the other record still exists where it was written.
+  const dayOf = (e) => String(e.date).slice(0, 10);
   const scheduleKeys = new Set(
     all.filter((e) => e.type === 'schedule')
-      .map((e) => `${String(e.date).slice(0, 10)}|${matchKindOf(e.title)}`)
+      .map((e) => `${dayOf(e)}|${matchKindOf(e.title)}`)
       .filter((k) => !k.endsWith('|')));
-  const deduped = all.filter((e) =>
-    !(e.kind === 'wd' && e.matchKind && scheduleKeys.has(`${String(e.date).slice(0, 10)}|${e.matchKind}`)));
+  // ALSO BY TITLE, for the couple's own events. matchKindOf knows three names
+  // (rehearsal, welcome, brunch) and the ceremony and the reception are neither,
+  // so a Schedule row called "Ceremony" on the wedding day would have sat beside
+  // the ceremony event rather than collapsing it. Matched on the day and the
+  // title rather than by teaching matchKindOf two more names, because that
+  // helper's one documented job is the legacy-field match and widening it would
+  // change what it decides everywhere at once.
+  const norm = (t) => String(t || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  const scheduleTitleKeys = new Set(
+    all.filter((e) => e.type === 'schedule')
+      .map((e) => `${dayOf(e)}|${norm(e.title)}`)
+      .filter((k) => !k.endsWith('|')));
+  // THE COUPLE'S EVENT BEATS THE LEGACY NAMED FIELD. A wedding with both a
+  // welcomeDinner and a "Welcome drinks" in preWeddingEvents is one party
+  // entered twice, and the one with an event_id is the one guests RSVP to.
+  const eventKeys = new Set(
+    all.filter((e) => e.kind === 'wedding-event' && e.matchKind)
+      .map((e) => `${dayOf(e)}|${e.matchKind}`));
+  const deduped = all.filter((e) => {
+    const byKind = e.matchKind && scheduleKeys.has(`${dayOf(e)}|${e.matchKind}`);
+    if ((e.kind === 'wd' || e.kind === 'wedding-event') && byKind) return false;
+    if (e.kind === 'wedding-event' && scheduleTitleKeys.has(`${dayOf(e)}|${norm(e.title)}`)) return false;
+    if (e.kind === 'wd' && e.matchKind && eventKeys.has(`${dayOf(e)}|${e.matchKind}`)) return false;
+    return true;
+  });
 
   // STAMPED ON THE WAY OUT, once, so every source gets the same treatment and
   // no caller has to remember to classify a vendor date.
