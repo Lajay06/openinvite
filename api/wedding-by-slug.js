@@ -98,6 +98,11 @@ import { pickGuestSafeCustomGift, pickGuestSafeRegistryProduct } from './_lib/gu
 import { verifyBase44User } from './_lib/auth.js';
 import { resolveWeddingBySlug } from './_lib/resolveWeddingBySlug.js';
 import { previousSlugsOf } from './_lib/slugCanon.js';
+// SERVER-SAFE BY CONSTRUCTION: guestEventVisibility.js imports weddingEvents.js,
+// which imports guestDate.js and dressCode.js, and none of the three touches
+// React, the DOM or any browser global. Same arrangement api/guest-page.js
+// already uses for the sample-content chain.
+import { publicEventIds } from '../src/lib/guestEventVisibility.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -135,6 +140,47 @@ async function fetchGuestSafeRegistry(ownerId) {
     customGifts: gifts.map(pickGuestSafeCustomGift),
     registryProducts: products.map(pickGuestSafeRegistryProduct),
   };
+}
+
+/**
+ * WHICH EVENTS THIS SITE MAY SHOW TO SOMEBODY NOBODY HAS IDENTIFIED.
+ *
+ * Computed here, per request, from the couple's own guest list, and never
+ * stored: the rule is a property of the guest list, so a cached copy of the
+ * answer would be wrong from the first toggle onward. The reasoning for the
+ * rule itself is in src/lib/guestEventVisibility.js; this function is the
+ * read.
+ *
+ * ONLY event_responses LEAVES THE QUERY. Guest rows carry names, emails,
+ * phone numbers and dietary notes, none of which this endpoint is allowed to
+ * return, so the rows are reduced to the one field the rule needs before
+ * anything else happens to them. Nothing derived from a name reaches the
+ * response: the output is a list of the couple's own event ids.
+ *
+ * Same scoping pattern as fetchGuestSafeRegistry above and
+ * api/wedding-attendees.js: Guest has read:null RLS and no wedding-scoping
+ * field, so this created_by_id filter, not RLS, is what keeps one couple's
+ * list from being read alongside every other couple's.
+ *
+ * RETURNS null WHEN IT CANNOT TELL, and null is not an empty list. The client
+ * reads an absent answer as "main events only" (visibleEventIds), which shows
+ * less than the truth rather than more. Returning [] here would empty the
+ * celebration page of every wedding on the platform the next time Base44 was
+ * slow, and returning every event would publish the thing this is for.
+ */
+async function fetchPublicEventIds(wedding) {
+  try {
+    const q = encodeURIComponent(JSON.stringify({ created_by_id: wedding.created_by_id }));
+    const r = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/Guest?q=${q}`,
+      { headers: { Authorization: `Bearer ${BASE44_ADMIN_KEY}` } });
+    if (!r.ok) return null;
+    const responses = unwrapList(await r.json())
+      .filter((g) => g && !g.is_test)
+      .map((g) => ({ event_responses: Array.isArray(g.event_responses) ? g.event_responses : [] }));
+    return publicEventIds(wedding, responses);
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -370,9 +416,21 @@ export default async function handler(req, res) {
       return res.status(200).json({ passwordProtected: true, locked: true });
     }
 
-    const registry = await fetchGuestSafeRegistry(wedding.created_by_id);
+    // Both reads are owner-scoped and independent, so they go together: the
+    // event set costs one more request on a path that already makes three.
+    const [registry, publicIds] = await Promise.all([
+      fetchGuestSafeRegistry(wedding.created_by_id),
+      fetchPublicEventIds(wedding),
+    ]);
 
-    return res.status(200).json({ ...pickGuestSafeFields(wedding), ...registry });
+    // OMITTED, NOT NULLED, when the guest list could not be read. The client
+    // distinguishes "no events are public" from "we do not know", and only an
+    // absent key means the second one.
+    return res.status(200).json({
+      ...pickGuestSafeFields(wedding),
+      ...registry,
+      ...(publicIds ? { publicEventIds: publicIds } : {}),
+    });
   } catch (err) {
     console.error('[wedding-by-slug] Error:', err.message);
     return res.status(500).json({ error: 'Something went wrong — please try again.' });

@@ -46,7 +46,16 @@ export async function runGuestFirstNamePlumbing() {
     body.indexOf('if (!recognisedToken)') > -1 && body.indexOf('if (!recognisedToken)') < body.indexOf('fetch('), 'guard before fetch');
   check('  it calls /api/rsvp-lookup with the encoded token', /fetch\(`\/api\/rsvp-lookup\?token=\$\{encodeURIComponent\(recognisedToken\)\}`\)/.test(body), 'exact URL');
   check('  a failed lookup is swallowed, not thrown', /catch \{/.test(body) && !/console\.(error|warn)/.test(body), 'try/catch, no console noise');
-  check('  the value goes through greetableFirstName', /setGuestFirstName\(greetableFirstName\(data\?\.guest\?\.name\)\)/.test(body)
+  // RE-POINTED 2026-10-03, per-event invitations item 3. This read
+  // `setGuestFirstName(greetableFirstName(data?.guest?.name))` — the effect
+  // derived the name and kept nothing else. The effect now stores the WHOLE
+  // guest, because the site needs their event_responses to show them their own
+  // events, and the name is derived from that one line below. The rule being
+  // guarded has not changed: the name still goes through greetableFirstName
+  // and through nothing else. What moved is where it is computed, so the
+  // assertion follows it rather than pinning a line that no longer exists.
+  check('  the value goes through greetableFirstName', /setRecognisedGuest\(data\?\.guest \|\| null\)/.test(body)
+    && /const guestFirstName = greetableFirstName\(recognisedGuest\?\.name\)/.test(shell)
     && /import \{ greetableFirstName \} from '@\/lib\/guestGreeting'/.test(shell), 'one rule, #825');
   check('  a stale response is ignored after the token changes', /stale = true/.test(body), 'cleanup flag');
 

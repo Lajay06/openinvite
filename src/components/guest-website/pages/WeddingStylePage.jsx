@@ -2,7 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Sparkles, ChevronLeft, Check, Copy } from 'lucide-react';
 import RulesBasedStyleQuestionnaire from './RulesBasedStyleQuestionnaire';
-import { getWeddingEvents, getEventVenueAndDate } from '@/lib/weddingEvents';
+import { getEventVenueAndDate } from '@/lib/weddingEvents';
+import { visibleEvents } from '@/lib/guestEventVisibility';
 import { buildStylingQuizPrompt, stylingQuizSchema } from '@/lib/stylingQuizPrompt';
 import { deriveSeason } from '@/lib/weddingSeason';
 
@@ -75,7 +76,7 @@ export default function WeddingStylePage(props) {
   return <AIStyleQuestionnaire {...props} />;
 }
 
-function AIStyleQuestionnaire({ weddingDetails, theme, typography }) {
+function AIStyleQuestionnaire({ weddingDetails, theme, typography, recognisedGuest }) {
   const [phase, setPhase] = useState('questionnaire'); // 'questionnaire' | 'loading' | 'results' | 'error'
   // WHICH EVENTS FIRST, THEN THE GUEST. Round two, item 10: the quiz is per
   // event, so the first thing it needs is which events this guest is actually
@@ -101,10 +102,20 @@ function AIStyleQuestionnaire({ weddingDetails, theme, typography }) {
   // EVERY EVENT, WITH ITS OWN DRESS CODE — not mainCeremony's, which is what
   // the prompt used to read and the whole reason a Hindu ceremony and a
   // cocktail reception got one answer between them.
-  const events = useMemo(() => getWeddingEvents(weddingDetails).map((e) => {
+  //
+  // AND ONLY THE EVENTS THIS VISITOR MAY SEE. The list used to be every event
+  // on the record, so the question offered a guest events they were never
+  // invited to, and the stylist then dressed them for a party they are not
+  // going to. With a personal link the set is their own invited set, which is
+  // also the answer to the question below, so the question is not asked.
+  const events = useMemo(() => visibleEvents(weddingDetails, {
+    guest: recognisedGuest,
+    publicIds: weddingDetails.publicEventIds || null,
+  }).map((e) => {
     const vd = getEventVenueAndDate(weddingDetails, e);
     return { ...e, venue: vd.venue, date: vd.date || weddingDetails.weddingDate || '' };
-  }), [weddingDetails]);
+  }), [weddingDetails, recognisedGuest]);
+  const guestKnown = !!recognisedGuest;
   const attending = attendingIds === null
     ? events
     : events.filter((e) => attendingIds.includes(e.event_id));
@@ -460,7 +471,7 @@ function AIStyleQuestionnaire({ weddingDetails, theme, typography }) {
             Asked only when there is a choice to make: a wedding with one event
             has nobody to ask, and a screen that answers itself is worse than
             no screen. */}
-        {attendingIds === null && events.length > 1 ? (
+        {attendingIds === null && events.length > 1 && !guestKnown ? (
           <div>
             <h2 style={{ fontFamily: hfont, fontSize: 'clamp(1.5rem, 4vw, 2.4rem)', fontWeight: hweight, fontStyle: hstyle, color: theme.lightText, margin: '0 0 12px', lineHeight: 1.2 }}>
               Which of these are you coming to?
