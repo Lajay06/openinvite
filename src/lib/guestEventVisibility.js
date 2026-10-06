@@ -9,14 +9,49 @@
  * is the thing per-event invitations exist to stop. The RSVP form and the send
  * already read event_responses; the site did not.
  *
- * TWO VISITORS, TWO QUESTIONS.
+ * THREE RULES, AND THE THIRD IS WHY THE FIRST TWO CAN BOTH BE TRUE.
  *
- *   With a personal link   The guest is known, so the answer is their own
- *                          invited set, read from event_responses through the
- *                          same resolver the dashboard uses.
- *   Without one            Nobody is known, so the answer is the set of events
- *                          that are PUBLIC: every event except one the couple
- *                          has taken a guest OFF.
+ *   PUBLIC     What a visitor nobody has identified sees: every event except
+ *              one the couple has taken a guest OFF.
+ *   PERSONAL   What a guest's own link adds: every event they are invited to,
+ *              read from event_responses through the same resolver the
+ *              dashboard uses.
+ *   UNION      What a guest actually sees: the two sets added together. A
+ *              GUEST CAN NEVER SEE FEWER EVENTS THAN A STRANGER.
+ *
+ * WHY THE UNION, AND WHAT IT FIXED. For one release the two rules were applied
+ * separately, and they disagreed. A wedding invites 40 of its 500 guests to the
+ * welcome drinks and leaves the other 460 untouched: nobody has been removed,
+ * so the event is public and a passer-by with no link sees it, while one of
+ * those 460 following their OWN link resolved to not-invited and did not. A
+ * guest saw less than a stranger, and the more personal the link the less it
+ * showed, which is the opposite of what a personal link is for. The union is
+ * the whole fix: the personal set only ever ADDS.
+ *
+ * ONE EXCEPTION, AND IT IS NOT A SOFTENING OF THE UNION. An EXPLICIT
+ * invited:false on this guest's own record always wins, even over the public
+ * set. A removal is a positive act recorded on the guest in hand; a public set
+ * is an answer computed somewhere else, from a list this guest may not have
+ * been in when it was computed.
+ *
+ * It fires whenever the public set says an event is public and this guest's
+ * own record says they were taken off it. Three ways to get there:
+ *
+ *   the failure branch   at the bottom of this file, where the public set
+ *                        could not be computed and the main events are shown
+ *                        on trust. A guest the couple deliberately took off
+ *                        the reception must not be shown the reception
+ *                        because a guest-list read failed somewhere else.
+ *   a stale set          a guest removed after the response was computed, or
+ *                        a cached payload.
+ *   a decoupled set      the render fixture does this deliberately, keeping
+ *                        the reception public while PER_EVENT_GUEST is removed
+ *                        from it, so both halves of the rule can be rendered
+ *                        on one wedding.
+ *
+ * It CANNOT fire against a public set computed from the full current guest
+ * list including this guest, because there a removal is exactly what makes the
+ * event non-public and the two rules already agree.
  *
  * "NOBODY INVITED" IS NOT "REMOVED". Advisor ruling, 2026-10-06, and it
  * replaced the rule this file shipped with, so both are written down.
@@ -48,13 +83,9 @@
  * A WEDDING WITH NO GUEST LIST SHOWS EVERYTHING, now for the plain reason that
  * nobody has been removed from anything.
  *
- * WHAT THE PERSONAL LINK DOES IS UNCHANGED, and the two rules are no longer
- * symmetrical. A guest with no row for a public custom event does not see it
- * on their own link, while a stranger with no link does. The goal is explicit
- * about the personal-link half ("show only the events the guest is invited
- * to"), and this ruling amended only the public half, so the asymmetry is
- * deliberate rather than overlooked. It is raised in #889 for a ruling of its
- * own rather than resolved here by inventing a union.
+ * THE ASYMMETRY THAT RULING LEFT BEHIND IS CLOSED by the union above. It was
+ * raised in #889 rather than resolved there, and the owner ruled for the union
+ * in goals/2026-10-06-per-event-follow-up.md.
  *
  * NO NEW FIELD. The public set is computed per request from the guest list by
  * api/wedding-by-slug.js and never stored, so it cannot drift from the guest
@@ -106,9 +137,38 @@ export function publicEventIds(wedding, guests = []) {
  */
 export function visibleEventIds({ wedding, guest = null, publicIds = null } = {}) {
   const events = getWeddingEvents(wedding);
-  if (guest) {
-    return events.filter((ev) => getGuestEventResponse(guest, ev).invited).map((ev) => ev.event_id);
+  const stranger = new Set(strangerEventIds({ wedding, events, publicIds }));
+  if (!guest) {
+    return events.filter((ev) => stranger.has(ev.event_id)).map((ev) => ev.event_id);
   }
+  // ── THE UNION, WRITTEN SO THE INVARIANT IS STRUCTURAL ───────────────────
+  //
+  // Every id a stranger would get, plus every id this guest is invited to.
+  // Built by filtering the wedding's own event list, so the order is the
+  // wedding's and not the order the two sets happened to be computed in.
+  //
+  // It is the same `stranger` set the branch above returns, which is the point:
+  // "a guest can never see fewer events than a stranger" is not a property
+  // anyone has to remember to keep, because the guest's answer is built FROM
+  // the stranger's answer. There is no arrangement of these three inputs that
+  // can make the guest's set smaller.
+  //
+  // THE ONE EXCEPTION is wasRemovedFrom, and the header lists the three ways it
+  // fires: an explicit removal on this guest's own record beats a public set
+  // that is missing, stale, or computed from a list this guest was not in. It
+  // subtracts nothing from a set computed over the full current list, because
+  // there a removal is what makes the event non-public in the first place.
+  return events
+    .filter((ev) => !wasRemovedFrom(guest, ev)
+      && (stranger.has(ev.event_id) || getGuestEventResponse(guest, ev).invited))
+    .map((ev) => ev.event_id);
+}
+
+/**
+ * What a visitor nobody has identified sees. Split out of visibleEventIds so
+ * the guest's answer can be built from it rather than beside it.
+ */
+function strangerEventIds({ wedding, events, publicIds }) {
   if (Array.isArray(publicIds)) {
     // Intersected rather than returned as given, so an id the server computed
     // against a record the client no longer has cannot resurrect an event.
