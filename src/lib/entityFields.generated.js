@@ -157,14 +157,17 @@ export const ENTITY_FIELDS = {
   "Guest": {
     "fields": [
       "category",
+      "child_age",
       "dietary_restrictions",
       "email",
       "encrypted_guest_pii",
       "event_responses",
+      "household_id",
       "interests",
       "invitation_sent",
       "invite_channel",
       "invite_sent_at",
+      "is_child",
       "is_test",
       "mailing_address",
       "meal_choice",
