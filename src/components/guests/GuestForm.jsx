@@ -6,6 +6,7 @@ import { DEFAULT_COUNTRY, toE164, needsCountryCode } from '@/lib/phoneE164';
 import CountryPicker from '@/components/shared/CountryPicker';
 import { useDefaultCountry } from '@/lib/defaultCountry';
 import { Label } from "@/components/ui/label";
+import { applyStatusToEventResponses } from '@/lib/statusWrite';
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -72,7 +73,7 @@ function NoMenuPointer() {
   );
 }
 
-export default function GuestForm({ guest, onSubmit, onCancel, saving = false, mealOptions = [] }) {
+export default function GuestForm({ guest, onSubmit, onCancel, saving = false, mealOptions = [], weddingEvents = [] }) {
   // CATEGORY STARTS BLANK, NOT 'family'.
   //
   // Owner report: a guest added without choosing a side or group came out as
@@ -207,8 +208,31 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
   const noneActive = dietarySelected.length === 0;
   const poNoneActive = poDietarySelected.length === 0;
 
+  // ── THE STATUS CONTROL WRITES PER-EVENT ANSWERS ──────────────────────────
+  //
+  // Advisor ruling 2026-10-07: the status is derived from event_responses
+  // everywhere, so a status the couple records here has to become a real
+  // per-event answer or it becomes nothing at all. Applied on the way OUT
+  // rather than on every keystroke, so the shape leaving this form is already
+  // the one to persist and the page that saves it needs to know nothing about
+  // events.
+  //
+  // NARROW, NOT THE FULL RESOLVED SET, and src/lib/statusWrite.js carries the
+  // reason at length: the full set would stamp invited:false on every event
+  // this guest is not invited to, and a false is a REMOVAL that takes the
+  // event off the couple's public guest site.
   return (
-      <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData); }}>
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit({
+          ...formData,
+          event_responses: applyStatusToEventResponses({
+            events: weddingEvents,
+            guest: { ...guest, event_responses: guest?.event_responses },
+            status: formData.rsvp_status,
+          }),
+        });
+      }}>
 
         {/* ── THE MODAL STANDARD, AND THIS IS THE REFERENCE ────────────────
             Owner ruling 2026-09-07. Fifteen fields in one flat two-column

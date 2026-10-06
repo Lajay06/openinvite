@@ -9,12 +9,21 @@
  * included) and stored each whole line as a guest's name.
  */
 import { toE164, needsCountryCode, DEFAULT_COUNTRY } from './phoneE164.js';
+import { applyStatusToEventResponses } from './statusWrite.js';
 
 export const TEMPLATE_HEADERS = ['Name', 'Email', 'Phone', 'Plus one (Y/blank)'];
 
 const VALID_RSVP = ['attending', 'declined', 'pending', 'maybe'];
 
-export function rowToGuest(row, country = DEFAULT_COUNTRY) {
+/**
+ * @param {object} row
+ * @param {string} [country]
+ * @param {Array}  [events]  the wedding's events, from getWeddingEvents. Given
+ *   them, an imported RSVP column becomes per-event answers; given none, the
+ *   row carries the flat column alone and nothing reads it. See the note at
+ *   the RSVP line below.
+ */
+export function rowToGuest(row, country = DEFAULT_COUNTRY, events = []) {
   const name = String(row['Name'] ?? '').trim();
   if (!name) throw new Error('Name is required');
 
@@ -36,6 +45,32 @@ export function rowToGuest(row, country = DEFAULT_COUNTRY) {
   // bulk edit, never guessed or defaulted.
   const rsvpRaw = String(row['RSVP'] ?? '').toLowerCase().trim();
   const rsvpStatus = VALID_RSVP.includes(rsvpRaw) ? rsvpRaw : 'pending';
+  // ── AN IMPORTED RSVP IS A PER-EVENT ANSWER NOW ──────────────────────────
+  //
+  // Advisor ruling 2026-10-07: nothing reads the flat column for display, so a
+  // spreadsheet saying "attending" used to import a guest who then read as
+  // awaiting everywhere. The column is still written below, because writers
+  // may set it; this is what makes it mean something.
+  //
+  // THE SAME NARROW WRITE THE EDITOR USES, through the same module, so an
+  // import cannot express an invitation decision the editor cannot. An
+  // imported guest is new and has no entries, so in practice this creates one
+  // entry per MAIN event and none for a custom event, which is the resolver's
+  // own default for a guest nobody has invited to anything yet.
+  //
+  // NO EVENTS, NO ROWS. parseGuestFile is also called from onboarding, where
+  // the wedding may not be loaded; passing none leaves the flat column alone
+  // rather than inventing answers against an empty event list.
+  //
+  // AND A BLANK COLUMN IS NOT A CHOICE. `rsvpStatus` falls back to 'pending'
+  // for an absent or unreadable value, which is right for the flat column and
+  // wrong as an answer: writing two pending entries for a guest whose
+  // spreadsheet said nothing about RSVP is storing data nobody entered. The
+  // rows come only from a value the file actually carried.
+  const rsvpGiven = VALID_RSVP.includes(rsvpRaw);
+  const eventResponses = rsvpGiven
+    ? applyStatusToEventResponses({ events, guest: { event_responses: [] }, status: rsvpStatus })
+    : [];
 
   return {
     name,
@@ -52,6 +87,7 @@ export function rowToGuest(row, country = DEFAULT_COUNTRY) {
     // shows in the preview, `_error` would drop the row.
     phone: phoneValue,
     rsvp_status: rsvpStatus,
+    ...(eventResponses.length > 0 ? { event_responses: eventResponses } : {}),
     table_assignment: String(row['Table'] ?? '').trim() || undefined,
     plus_one: plusOne,
     plus_one_name: String(row['Plus one name'] ?? row['+1 Name'] ?? '').trim() || undefined,
@@ -83,7 +119,7 @@ export async function downloadGuestTemplate() {
  * of +61 numbers and no message saying so. The caller picks the country now,
  * with the same picker every other phone field uses.
  */
-export function parseGuestFile(file, country = DEFAULT_COUNTRY) {
+export function parseGuestFile(file, country = DEFAULT_COUNTRY, events = []) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = async (e) => {
@@ -99,7 +135,7 @@ export function parseGuestFile(file, country = DEFAULT_COUNTRY) {
         }
         resolve(jsonRows.map((row, i) => {
           try {
-            return { ...rowToGuest(row, country), _rowIndex: i + 2, _error: null };
+            return { ...rowToGuest(row, country, events), _rowIndex: i + 2, _error: null };
           } catch (err) {
             return { _rowIndex: i + 2, _error: err.message, name: '—', rsvp_status: '—', plus_one: false };
           }

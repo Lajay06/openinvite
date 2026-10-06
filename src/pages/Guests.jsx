@@ -1044,9 +1044,13 @@ export default function Guests() {
                 <DialogHeader>
                   <DialogTitle>{editingGuest ? 'Edit guest' : 'Add new guest'}</DialogTitle>
                 </DialogHeader>
+                {/* weddingEvents: the editor's status control writes per-event
+                    answers now, so it needs the event list to know which ones
+                    this guest is invited to. See src/lib/statusWrite.js. */}
                 <GuestForm
                   guest={editingGuest}
                   mealOptions={mealOptions}
+                  weddingEvents={weddingEvents}
                   onSubmit={handleSubmit}
                   onCancel={() => { setShowForm(false); setEditingGuest(null); }}
                   saving={saving}
@@ -1111,6 +1115,7 @@ export default function Guests() {
         <ImportGuestModal
           onClose={() => setShowImport(false)}
           onImported={loadGuests}
+          weddingEvents={weddingEvents}
         />
       )}
 
