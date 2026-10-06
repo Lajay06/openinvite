@@ -125,23 +125,75 @@ export async function runGuestSiteEventVisibility() {
         publicEventIds(WEDDING, [g('A', [{ event_id: 'an_event_that_was_deleted', invited: false }])]),
         ['main-ceremony', 'reception', 'welcome_drinks']);
 
-  // THE ASYMMETRY, PINNED RATHER THAN LEFT AMBIGUOUS. The ruling amended the
-  // public half only, so a guest with no row for a public custom event does
-  // not see it on their own link while a stranger does. Asserted here so the
-  // behavior is a decision on the record and not a surprise, and raised in
-  // #889 for a ruling of its own.
+  // ── WITH A LINK: THE UNION ──────────────────────────────────────────────
+  //
+  // A GUEST CAN NEVER SEE FEWER EVENTS THAN A STRANGER. Owner ruling,
+  // goals/2026-10-06-per-event-follow-up.md item 1, closing the asymmetry
+  // raised in #889: for one release the public rule and the personal rule were
+  // applied separately and disagreed, and the guest was the one who lost.
+  //
+  // The case that ruling is about is the first one below, and it is the one
+  // this file previously asserted the other way round.
+
+  // 40 INVITED AND 460 UNTOUCHED. Nobody was removed, so the welcome drinks
+  // are public; the untouched guest resolves to not-invited for a custom
+  // event, so under the old rule their own link hid an event the whole
+  // internet could see.
   {
     const guests = [g('A', [{ event_id: 'welcome_drinks', invited: true }]), g('B', [])];
     const pub = publicEventIds(WEDDING, guests);
-    check('the public page shows a custom event that B\'s own link does not',
-          [pub.includes('welcome_drinks'),
-           visibleEventIds({ wedding: PAYLOAD, publicIds: pub, guest: guests[1] }).includes('welcome_drinks')],
-          [true, false]);
+    check('40 invited and 460 untouched: the event is public',
+          pub.includes('welcome_drinks'), true);
+    check('  and an untouched guest now sees it on their own link',
+          visibleEventIds({ wedding: PAYLOAD, publicIds: pub, guest: guests[1] }),
+          ['main-ceremony', 'reception', 'welcome_drinks']);
+    check('  exactly what a stranger sees, never less',
+          visibleEventIds({ wedding: PAYLOAD, publicIds: pub, guest: guests[1] }),
+          visibleEventIds({ wedding: PAYLOAD, publicIds: pub }));
   }
 
-  // ── WITH A LINK: THE GUEST'S OWN SET ────────────────────────────────────
+  // ONE GUEST REMOVED. The removal hides the event from the public page, and
+  // the union must not hand it back to the guest it was taken from.
+  {
+    const removed = g('B', [{ event_id: 'welcome_drinks', invited: false }]);
+    const guests = [g('A', [{ event_id: 'welcome_drinks', invited: true }]), removed];
+    const pub = publicEventIds(WEDDING, guests);
+    check('one guest removed: the public page hides the event',
+          pub.includes('welcome_drinks'), false);
+    check('  and that guest does not see it on their own link either',
+          visibleEventIds({ wedding: PAYLOAD, publicIds: pub, guest: removed }),
+          ['main-ceremony', 'reception']);
+    check('  while a guest who WAS invited to it still does',
+          visibleEventIds({ wedding: PAYLOAD, publicIds: pub, guest: guests[0] }),
+          ['main-ceremony', 'reception', 'welcome_drinks']);
+  }
 
-  check("a guest the link identifies sees their own events, not the public ones",
+  // A REMOVED GUEST AND AN UNTOUCHED GUEST, SAME WEDDING, SAME EVENT, OPPOSITE
+  // OUTCOMES. Carried on a MAIN event, and that is the whole reason it works:
+  // an untouched guest defaults to INVITED for a main event and to not-invited
+  // for a custom one (weddingEvents.js:141-175). So on the reception the
+  // untouched guest sees it through their own personal set even though one
+  // removal has taken it off the public page, and the removed guest does not.
+  // On a custom event the same pair would both be hidden, which is true but is
+  // not an opposite outcome.
+  {
+    const removed = g('B', [{ event_id: 'reception', invited: false }]);
+    const untouched = g('C', []);
+    const pub = publicEventIds(WEDDING, [removed, untouched]);
+    check('one removal takes the reception off the public page',
+          pub, ['main-ceremony', 'welcome_drinks']);
+    check('  the removed guest does not see the reception',
+          visibleEventIds({ wedding: PAYLOAD, publicIds: pub, guest: removed }),
+          ['main-ceremony', 'welcome_drinks']);
+    check('  and the untouched guest does: opposite outcomes, same event',
+          visibleEventIds({ wedding: PAYLOAD, publicIds: pub, guest: untouched }),
+          ['main-ceremony', 'reception', 'welcome_drinks']);
+  }
+
+  // A NARROW PUBLIC SET AND A GUEST WHO ADDS TO IT TWICE OVER: the welcome
+  // drinks by an explicit invite, and the reception by the main-event default,
+  // because they have no row for it and being at the wedding is the baseline.
+  check("a guest the link identifies sees their own events on top of the public ones",
         visibleEventIds({ wedding: PAYLOAD, publicIds: ['main-ceremony'],
                           guest: g('A', [{ event_id: 'welcome_drinks', invited: true }]) }),
         ['main-ceremony', 'reception', 'welcome_drinks']);
@@ -150,6 +202,33 @@ export async function runGuestSiteEventVisibility() {
         visibleEventIds({ wedding: PAYLOAD, publicIds: ['main-ceremony', 'reception'],
                           guest: g('B', [{ event_id: 'reception', invited: false }]) }),
         ['main-ceremony']);
+
+  // THE EXCEPTION AGAINST A PUBLIC SET THIS GUEST WAS NOT COUNTED IN. The
+  // render fixture is exactly this shape on purpose: PUBLISHED_WEDDING keeps
+  // the reception public while PER_EVENT_GUEST carries invited:false for it, so
+  // one wedding can render both halves of the rule. Measured in a browser at
+  // 390 and 1440 for this PR: her personal link shows Ceremony and Welcome
+  // drinks and no Reception.
+  check('a removal beats a public set computed without this guest',
+        visibleEventIds({ wedding: PAYLOAD, publicIds: ['main-ceremony', 'reception'],
+                          guest: g('B', [{ event_id: 'reception', invited: false },
+                                         { event_id: 'welcome_drinks', invited: true }]) }),
+        ['main-ceremony', 'welcome_drinks']);
+
+  // THE EXCEPTION IN THE FAILURE BRANCH. No public set means the
+  // guest list read failed and the main events are shown on trust. A guest the
+  // couple deliberately took off the reception must not be shown the reception
+  // because a read failed somewhere else, so the explicit removal beats the
+  // fallback set. This is the one case where the union does subtract.
+  check('with no public set, an explicit removal still beats the fallback',
+        visibleEventIds({ wedding: PAYLOAD, guest: g('B', [{ event_id: 'reception', invited: false }]) }),
+        ['main-ceremony']);
+  check('  while an untouched guest gets the fallback in full',
+        visibleEventIds({ wedding: PAYLOAD, guest: g('C', []) }),
+        ['main-ceremony', 'reception']);
+  check('  and a guest invited to a custom event adds it to the fallback',
+        visibleEventIds({ wedding: PAYLOAD, guest: g('A', [{ event_id: 'welcome_drinks', invited: true }]) }),
+        ['main-ceremony', 'reception', 'welcome_drinks']);
 
   check('the server set is intersected, so an id for an event that is gone cannot resurrect it',
         visibleEventIds({ wedding: PAYLOAD, publicIds: ['main-ceremony', 'deleted_event'] }),
