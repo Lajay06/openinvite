@@ -45,9 +45,40 @@ export async function runGuestSiteEventVisibility() {
       : fail(label, JSON.stringify(want), JSON.stringify(got)));
 
   // ── WITHOUT A LINK: WHAT IS PUBLIC ──────────────────────────────────────
+  //
+  // "NOBODY INVITED" IS NOT "REMOVED". Advisor ruling, 2026-10-06. An event is
+  // hidden only when a guest carries an explicit invited:false for it; an
+  // event with no per-event rows on anybody is as public as it was yesterday.
+  //
+  // These cases are written in pairs on purpose: for each shape, the state
+  // that must stay public and the state that must hide, so the rule is pinned
+  // from both sides rather than only from the side that happens to pass.
 
   check('a wedding with no guest list yet shows every event',
         publicEventIds(WEDDING, []), ['main-ceremony', 'reception', 'welcome_drinks']);
+
+  // THE CASE THE RULING IS ABOUT, and the one the first rule got wrong. Every
+  // published wedding with a pre-wedding event and no per-event invitations
+  // set is this case, and its public page must not change.
+  check('a custom event with no per-event rows on any guest stays public',
+        publicEventIds(WEDDING, [g('A', []), g('B', [])]),
+        ['main-ceremony', 'reception', 'welcome_drinks']);
+
+  check('  still public when some guests have rows for OTHER events only',
+        publicEventIds(WEDDING, [
+          g('A', [{ event_id: 'main-ceremony', invited: true }, { event_id: 'reception', invited: true }]),
+          g('B', []),
+        ]),
+        ['main-ceremony', 'reception', 'welcome_drinks']);
+
+  // Forty invited and the rest never touched. Under the superseded rule this
+  // hid the event; under the ruling it does not, because nobody was removed.
+  check('  and still public when some are invited to it and the rest are untouched',
+        publicEventIds(WEDDING, [
+          g('A', [{ event_id: 'welcome_drinks', invited: true }]),
+          g('B', []),
+        ]),
+        ['main-ceremony', 'reception', 'welcome_drinks']);
 
   check('a custom event the whole list is invited to stays public',
         publicEventIds(WEDDING, [
@@ -56,20 +87,57 @@ export async function runGuestSiteEventVisibility() {
         ]),
         ['main-ceremony', 'reception', 'welcome_drinks']);
 
-  check('one guest short and the custom event goes behind personal links',
+  // THE LEAK CASE. One guest taken off, which is what "Remove from..." writes,
+  // and the public page must hide it.
+  check('one guest REMOVED from the custom event hides it from the public page',
         publicEventIds(WEDDING, [
           g('A', [{ event_id: 'welcome_drinks', invited: true }]),
-          g('B', []),
+          g('B', [{ event_id: 'welcome_drinks', invited: false }]),
+        ]),
+        ['main-ceremony', 'reception']);
+
+  check('  one removal is enough, whatever the rest of the list says',
+        publicEventIds(WEDDING, [
+          g('A', [{ event_id: 'welcome_drinks', invited: true }]),
+          g('B', [{ event_id: 'welcome_drinks', invited: true }]),
+          g('C', [{ event_id: 'welcome_drinks', invited: false }]),
         ]),
         ['main-ceremony', 'reception']);
 
   check('a guest removed from the reception takes the reception off the public site',
         publicEventIds(WEDDING, [g('A', [{ event_id: 'reception', invited: false }])]),
-        ['main-ceremony']);
+        ['main-ceremony', 'welcome_drinks']);
 
   check('a main event nobody was explicitly set for is still public',
-        publicEventIds(WEDDING, [g('A', []), g('B', [])]),
+        publicEventIds(WEDDING, [g('A', []), g('B', [])]).slice(0, 2),
         ['main-ceremony', 'reception']);
+
+  // === false, which is the ruling's own word. A row the product writes always
+  // carries a real boolean, so this only decides what happens to a malformed
+  // one: it is not a removal, and the event stays public, which is the
+  // direction the ruling chose wherever the data does not clearly say
+  // otherwise.
+  check('a row with no invited key at all is not a removal',
+        publicEventIds(WEDDING, [g('A', [{ event_id: 'welcome_drinks', status: 'pending' }])]),
+        ['main-ceremony', 'reception', 'welcome_drinks']);
+
+  check('  and neither is a row for a different event',
+        publicEventIds(WEDDING, [g('A', [{ event_id: 'an_event_that_was_deleted', invited: false }])]),
+        ['main-ceremony', 'reception', 'welcome_drinks']);
+
+  // THE ASYMMETRY, PINNED RATHER THAN LEFT AMBIGUOUS. The ruling amended the
+  // public half only, so a guest with no row for a public custom event does
+  // not see it on their own link while a stranger does. Asserted here so the
+  // behavior is a decision on the record and not a surprise, and raised in
+  // #889 for a ruling of its own.
+  {
+    const guests = [g('A', [{ event_id: 'welcome_drinks', invited: true }]), g('B', [])];
+    const pub = publicEventIds(WEDDING, guests);
+    check('the public page shows a custom event that B\'s own link does not',
+          [pub.includes('welcome_drinks'),
+           visibleEventIds({ wedding: PAYLOAD, publicIds: pub, guest: guests[1] }).includes('welcome_drinks')],
+          [true, false]);
+  }
 
   // ── WITH A LINK: THE GUEST'S OWN SET ────────────────────────────────────
 
