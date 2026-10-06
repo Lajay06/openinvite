@@ -84,6 +84,10 @@ import { assertSeedMatchesSchemas } from './seedSchema.mjs';
 import { CONTRACTS } from './stubContracts.mjs';
 import { blockRemoteImages } from './blockRemoteImages.mjs';
 import { pickGuestSafeFields } from '../../api/_lib/guestSafeWedding.js';
+// THE ENDPOINT'S OWN DECISION, not a second copy of it. api/my-guests-rsvp.js
+// exports overlayStatusForGuest for its guard; the stub below uses the same
+// function, so the fixture cannot drift from the endpoint it imitates.
+import { overlayStatusForGuest } from '../../api/my-guests-rsvp.js';
 import { decorateGuestNote } from '../../api/_lib/guestNotePii.js';
 const DAY = 86400000;
 const iso = (offsetDays) => new Date(Date.now() + offsetDays * DAY).toISOString();
@@ -175,7 +179,23 @@ export const SEED = {
         { event_id:'reception',      invited:true,  status:'yes' },
         { event_id:'welcome-drinks', invited:true,  status:'pending' },
       ] },
-    { id:'g3', name:'Alan Turing',   email:'alan@example.com',   rsvp_status:'pending',   table_assignment:'t2', category:'friends',    created_by:'fixture@example.com',
+    // ── THE DISAGREEMENT CASE, AND WHY IT IS ALAN ─────────────────────────
+    //
+    // His flat rsvp_status says ATTENDING and his per-event rows say pending,
+    // so every surface must read him as awaiting. That is the whole of the
+    // 2026-10-07 ruling in one row: before it, the chips said awaiting while
+    // the tally, the RSVP chart and the search said attending, and both were
+    // right about their own source.
+    //
+    // ALAN RATHER THAN GRACE, who the ruling names. Grace's case is "flat
+    // attending, NO rows", and emptying her event_responses would move the
+    // per-event counts from 4/3/3 and take the #895 dashboard guard red for a
+    // reason that has nothing to do with it. Alan's rows stay exactly as they
+    // were, so no count moves: `invited` is untouched, and `replied` counts
+    // only a yes or a no, which his rows do not carry. The property under test
+    // is "the flat column loses", and a flat value that disagrees is all that
+    // needs.
+    { id:'g3', name:'Alan Turing',   email:'alan@example.com',   rsvp_status:'attending', table_assignment:'t2', category:'friends',    created_by:'fixture@example.com',
       event_responses:[
         { event_id:'main-ceremony',  invited:true,  status:'pending' },
         { event_id:'reception',      invited:true,  status:'pending' },
@@ -660,6 +680,35 @@ function resolveStub(url, seed, user, json, onEntity, fail = () => json(null), r
       return json(seed[ent[1]] ?? []);
     }
     // The owner endpoints the dashboard uses for decrypted reads.
+    //
+    // ── TWO ENDPOINTS, TWO ENVELOPES, AND ONE OF THEM WAS WRONG ───────────
+    //
+    // `/api/my-guests` answers `{ guests }` and `/api/my-guests-rsvp` answers
+    // `{ byGuestId }`. One regex answered both with `{ guests }`, so
+    // getMyGuestsWithRsvp read `data?.byGuestId || {}`, got an empty object,
+    // and fell back to the UNENRICHED guest list in every render pass this
+    // harness has ever taken. Fifteen dashboard surfaces call it. Nothing
+    // failed, because falling back is its documented behavior on error, so a
+    // pass that was measuring the raw rows looked exactly like a pass that was
+    // measuring the overlay.
+    //
+    // SIXTH mismatch of this class in this file, and the same lesson each
+    // time: mirror the envelope the endpoint actually returns, not the one the
+    // name suggests. The rsvp one now goes through the endpoint's OWN exported
+    // decision, as the wedding-by-slug stub goes through pickGuestSafeFields,
+    // so a shape the endpoint will not produce cannot reach a render pass.
+    if (/\/api\/my-guests-rsvp/.test(url)) {
+      const byGuestId = {};
+      for (const g of seed.Guest ?? []) {
+        // No RsvpResponse rows in the seed: the couple's own
+        // Guest.event_responses is the only source, which is exactly the state
+        // the 2026-10-07 ruling is about.
+        const { eventResponses, rsvp_status } = overlayStatusForGuest(g, undefined);
+        if (eventResponses.length === 0) continue;
+        byGuestId[g.id] = { event_responses: eventResponses, rsvp_status };
+      }
+      return json({ byGuestId });
+    }
     if (/\/api\/my-guests/.test(url))          return json({ guests: seed.Guest ?? [] });
     // THE RECORD DIRECTLY, not { details }. api/my-wedding-details.js ends in
     // `res.status(200).json(decrypted)` and getMyWeddingDetails() returns
