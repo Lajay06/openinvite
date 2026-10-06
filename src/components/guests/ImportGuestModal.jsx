@@ -13,7 +13,10 @@ import { createGuest } from '@/lib/guestWrites';
 const Guest = base44.entities.Guest;
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-export default function ImportGuestModal({ onClose, onImported }) {
+// weddingEvents: an imported RSVP column becomes per-event answers now, and
+// the parser needs the event list to know which events a new guest is invited
+// to. See src/lib/statusWrite.js for why that write is narrow.
+export default function ImportGuestModal({ onClose, onImported, weddingEvents = [] }) {
   const [rows, setRows] = useState(null);
   const [importing, setImporting] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -38,7 +41,7 @@ export default function ImportGuestModal({ onClose, onImported }) {
       return;
     }
     try {
-      setRows(await parseGuestFile(file, importCountry));
+      setRows(await parseGuestFile(file, importCountry, weddingEvents));
     } catch (err) {
       toast.error(err.message);
     }
