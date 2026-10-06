@@ -271,6 +271,19 @@
         "null"
       ],
       "description": "AES-256-GCM ciphertext of the plus-one's own RSVP token, base64(iv + authTag + ciphertext), keyed with RSVP_TOKEN_KEY. Same construction, contract, and rotation hazard as rsvp_link_id_enc. Written by E2 dual-write; null on unmigrated rows or when no plus-one token exists."
+    },
+    "household_id": {
+      "type": "string",
+      "description": "Groups guests who receive one invitation. Optional; no default. Guests sharing a value here are treated as one household for invitation purposes."
+    },
+    "is_child": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this guest is a child. Optional; defaults to false."
+    },
+    "child_age": {
+      "type": "number",
+      "description": "Child's age in whole years (integer). Optional; no default. Only meaningful when is_child is true."
     }
   },
   "required": [
