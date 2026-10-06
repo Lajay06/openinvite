@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
-import { getMyWeddingDetails, getMyRecords } from "@/lib/resolveMyWedding";
+import { getMyWeddingDetails, getMyRecords, getMyGuestsWithRsvp } from "@/lib/resolveMyWedding";
+import { updateGuest } from "@/lib/guestWrites";
+import { repliesForEvent, guestsToClear } from "@/lib/eventDeletion";
 import { interactiveDivProps } from "@/lib/a11y";
 import { useAvaFocus } from "@/hooks/useAvaFocus";
 import { Loader2, X, MapPin, Trash2, Edit2, Calendar } from "lucide-react";
@@ -22,6 +24,17 @@ import toast from 'react-hot-toast';
 import { useCollaboratorContext } from '@/lib/collaboratorContext';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
+
+// Names the guests who replied, so the refusal is about people and not a
+// number. Past three it stops listing, because a wall of names is no more
+// informative than the count already given above it.
+function namesSentence(names = []) {
+  if (names.length === 0) return '';
+  if (names.length === 1) return `${names[0]} has answered.`;
+  if (names.length === 2) return `${names[0]} and ${names[1]} have answered.`;
+  if (names.length === 3) return `${names[0]}, ${names[1]} and ${names[2]} have answered.`;
+  return `${names[0]}, ${names[1]} and ${names.length - 2} others have answered.`;
+}
 
 import SectionHeading, { CONTENT_WIDTH, sectionDivider, FIELD_GAP } from '../components/event-details/SectionHeading';
 
@@ -928,12 +941,73 @@ export default function EventDetailsPage() {
     }
   };
 
-  const handleDeleteCustom = (evId, isPost) => {
+  // ── DELETING AN EVENT, AND WHAT GOES WITH IT ─────────────────────────────
+  //
+  // This used to be one line: filter the event out of the array and stop.
+  // Every guest's event_responses entry for it stayed behind, pointing at an
+  // event that no longer existed, and so did every RsvpResponse row. Nothing
+  // failed, because nothing joins on them; they are simply orphaned, and they
+  // come back the day a future event is given the same id.
+  //
+  // EVENTDETAILS NOW READS THE GUEST LIST, which the comment above the invite
+  // prompt said it would not do ("EventDetails never becomes a guest writer").
+  // That boundary has to move for this, and it is worth saying why rather than
+  // quietly crossing it: the goal requires the COUNT of replies before the
+  // delete runs, and the guest list is the only place that count exists. Once
+  // the page is reading it, the cleanup belongs in the same operation, because
+  // a delete that half-finishes is worse than one that refuses. The logic
+  // itself is in src/lib/eventDeletion.js, with its own guard, rather than
+  // inline here.
+  const [deleteTarget, setDeleteTarget] = useState(null); // {evId, isPost, name, replies, clears}
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteCustom = async (evId, isPost) => {
     if (readOnly) return;
-    if (!window.confirm('Remove this event?')) return;
+    const key  = isPost ? 'postWeddingEvents' : 'preWeddingEvents';
+    const list = latestRef.current?.[key] || [];
+    const event = list.find(e => e.id === evId) || {};
+    const eventId = event.event_id || evId;
+
+    let guests = [];
+    try {
+      guests = await getMyGuestsWithRsvp();
+    } catch {
+      // A DELETE THAT CANNOT CHECK DOES NOT PROCEED. Failing to read the guest
+      // list is not the same as there being no replies, and treating it as
+      // such is how an answered event gets deleted.
+      toast.error('Could not check this event for replies. Try again.');
+      return;
+    }
+    setDeleteTarget({
+      evId, isPost, name: event.name || 'this event',
+      replies: repliesForEvent(guests, eventId),
+      clears: guestsToClear(guests, eventId),
+    });
+  };
+
+  const runDeleteCustom = async () => {
+    if (!deleteTarget || deleting) return;
+    const { evId, isPost, clears } = deleteTarget;
+    setDeleting(true);
+    let failed = 0;
+    for (const g of clears) {
+      try { await updateGuest(g.id, { event_responses: g.event_responses }); } catch { failed++; }
+    }
+    if (failed > 0) {
+      // THE EVENT STAYS IF ITS TRACES COULD NOT BE CLEARED. Removing it anyway
+      // is exactly the orphaning this whole path exists to stop.
+      setDeleting(false);
+      toast.error(`Could not clear this event from ${failed} guest${failed === 1 ? '' : 's'}. The event was not deleted.`);
+      return;
+    }
     const key  = isPost ? 'postWeddingEvents' : 'preWeddingEvents';
     const list = latestRef.current?.[key] || [];
     update({ [key]: list.filter(e => e.id !== evId) });
+    setDeleting(false);
+    setDeleteTarget(null);
+    toast.success(clears.length > 0
+      ? `${deleteTarget.name} deleted, and cleared from ${clears.length} guest${clears.length === 1 ? '' : 's'}.`
+      : `${deleteTarget.name} deleted.`);
   };
 
   if (loading) return (
@@ -1190,6 +1264,50 @@ export default function EventDetailsPage() {
                   Decide later
                 </button>
               </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Deleting an event: either a refusal that names the count, or a
+          confirmation that says what else the delete will take with it. */}
+      {deleteTarget && (
+        <Dialog open onOpenChange={(o) => { if (!o && !deleting) setDeleteTarget(null); }}>
+          <DialogContent className="max-w-[420px]">
+            <div style={{ padding: 24 }}>
+              {deleteTarget.replies.count > 0 ? (
+                <>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: '0 0 6px', fontFamily: PJS }}>
+                    {deleteTarget.replies.count === 1 ? '1 guest has' : `${deleteTarget.replies.count} guests have`} replied to {deleteTarget.name}
+                  </p>
+                  <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px', lineHeight: 1.6, fontFamily: PJS }}>
+                    Deleting it would throw those replies away. {namesSentence(deleteTarget.replies.names)} Change the event instead, or clear
+                    the replies first if it is really not happening.
+                  </p>
+                  <button className="btn-editorial-secondary" onClick={() => setDeleteTarget(null)}>
+                    Keep this event
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: '0 0 6px', fontFamily: PJS }}>
+                    Delete {deleteTarget.name}?
+                  </p>
+                  <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px', lineHeight: 1.6, fontFamily: PJS }}>
+                    {deleteTarget.clears.length > 0
+                      ? `Nobody has replied yet. It will also be removed from the ${deleteTarget.clears.length === 1 ? '1 guest' : `${deleteTarget.clears.length} guests`} it was on.`
+                      : 'Nobody has replied yet, and no guest is invited to it.'}
+                  </p>
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button className="btn-primary" onClick={runDeleteCustom} disabled={deleting}>
+                      {deleting ? 'Deleting...' : 'Delete event'}
+                    </button>
+                    <button className="btn-editorial-secondary" onClick={() => setDeleteTarget(null)} disabled={deleting}>
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </DialogContent>
         </Dialog>
