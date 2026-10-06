@@ -45,3 +45,5 @@ Items 1 and 2 are dashboard; the shell needs the same control and step, recorded
 ## Not in this goal
 
 Plus-one rules per event. Seating per event beyond what Seating.jsx:321 already does. Save the date targeting. Any schema change.
+
+Closed 2026-10-06 at main 46ff3a1f8193573feb4afd96de1fe93d3b53d431, PRs #886 #887 #888 #889 #890 #891 #892 #893
