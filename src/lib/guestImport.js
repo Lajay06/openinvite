@@ -44,7 +44,22 @@ export function rowToGuest(row, country = DEFAULT_COUNTRY, events = []) {
   // deliberately never read from any import — set afterwards via inline or
   // bulk edit, never guessed or defaulted.
   const rsvpRaw = String(row['RSVP'] ?? '').toLowerCase().trim();
-  const rsvpStatus = VALID_RSVP.includes(rsvpRaw) ? rsvpRaw : 'pending';
+  // ── A SPREADSHEET SAYING "MAYBE" BECOMES AWAITING ───────────────────────
+  //
+  // Advisor ruling 2026-10-07, second pass: Maybe has left the editor because
+  // the per-event status enum is pending, yes, no, and widening it is a schema
+  // change. A file can still carry the word, so it is MAPPED here rather than
+  // stored: the flat column gets 'pending' too, not just the rows, because a
+  // stored 'maybe' nothing can display and nothing can edit is a value with no
+  // way out of the record.
+  //
+  // THE COUPLE IS TOLD. `_maybeMapped` is preview state, stripped before the
+  // guest is created along with every other underscore field, and
+  // ImportGuestModal turns it into a line in the summary. Mapping somebody's
+  // data without saying so is the part that would be wrong.
+  const maybeMapped = rsvpRaw === 'maybe';
+  const rsvpStatus = maybeMapped ? 'pending'
+    : (VALID_RSVP.includes(rsvpRaw) ? rsvpRaw : 'pending');
   // ── AN IMPORTED RSVP IS A PER-EVENT ANSWER NOW ──────────────────────────
   //
   // Advisor ruling 2026-10-07: nothing reads the flat column for display, so a
@@ -67,7 +82,7 @@ export function rowToGuest(row, country = DEFAULT_COUNTRY, events = []) {
   // wrong as an answer: writing two pending entries for a guest whose
   // spreadsheet said nothing about RSVP is storing data nobody entered. The
   // rows come only from a value the file actually carried.
-  const rsvpGiven = VALID_RSVP.includes(rsvpRaw);
+  const rsvpGiven = VALID_RSVP.includes(rsvpRaw);   // 'maybe' included: it maps, it is not ignored
   const eventResponses = rsvpGiven
     ? applyStatusToEventResponses({ events, guest: { event_responses: [] }, status: rsvpStatus })
     : [];
@@ -88,6 +103,7 @@ export function rowToGuest(row, country = DEFAULT_COUNTRY, events = []) {
     phone: phoneValue,
     rsvp_status: rsvpStatus,
     ...(eventResponses.length > 0 ? { event_responses: eventResponses } : {}),
+    ...(maybeMapped ? { _maybeMapped: true } : {}),
     table_assignment: String(row['Table'] ?? '').trim() || undefined,
     plus_one: plusOne,
     plus_one_name: String(row['Plus one name'] ?? row['+1 Name'] ?? '').trim() || undefined,
