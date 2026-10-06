@@ -21,3 +21,5 @@ As CLAUDE.md, plus: no schema change; no new key inside event_responses entries 
 ## Protocol
 
 Two held PRs, item 1 then item 2, with item 3's guards split between them by subject. Diff guards after every commit, before every push. Print both pre-merge blocks together at the end in the narrow format with full 40-character head SHAs and the four checks by name.
+
+Closed 2026-10-07 at main bc87634cec0ec94cb2b368cb8e005d7439911541, PRs #896 #897 #898. Maybe returns when the per-event status enum gains it (owner schema change, Goal 3).
