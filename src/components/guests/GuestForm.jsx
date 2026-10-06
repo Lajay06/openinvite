@@ -324,10 +324,23 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
             <Select value={formData.rsvp_status} onValueChange={v => set('rsvp_status', v)}>
               <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
               <SelectContent>
+                {/* ── NO MAYBE, UNTIL THE PER-EVENT ENUM HAS ONE ──────────
+                    Advisor ruling 2026-10-07, second pass. The status is
+                    derived from event_responses now, and the per-event status
+                    enum is pending, yes, no (base44/entities/Guest.jsonc).
+                    Maybe mapped to pending, so choosing it showed exactly what
+                    Pending shows on every surface: a choice that looked like it
+                    recorded something and recorded nothing.
+
+                    The offer is withdrawn rather than the enum widened,
+                    because widening it is a schema change. An existing guest
+                    whose stored column says 'maybe' is NOT rewritten: nothing
+                    reads the flat column for display, so the value is inert
+                    where it sits, and a sweep would edit records nobody
+                    asked us to touch. */}
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="attending">Attending</SelectItem>
                 <SelectItem value="declined">Declined</SelectItem>
-                <SelectItem value="maybe">Maybe</SelectItem>
               </SelectContent>
             </Select>
           </div>

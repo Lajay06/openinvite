@@ -78,7 +78,7 @@ export default function ImportGuestModal({ onClose, onImported, weddingEvents = 
     await Promise.all(toImport.map(async (row) => {
       // Every underscore field is preview state, not guest data. `_phoneWarning`
       // joined them when the import learned to read a phone number.
-      const { _rowIndex, _error, _phoneWarning, ...guestData } = row;
+      const { _rowIndex, _error, _phoneWarning, _maybeMapped, ...guestData } = row;
       try {
         await createGuest(guestData);
       } catch (err) {
@@ -88,8 +88,21 @@ export default function ImportGuestModal({ onClose, onImported, weddingEvents = 
     setImporting(false);
 
     const importedCount = toImport.length - failed.length;
+    // ── A MAPPED VALUE IS REPORTED, NOT ABSORBED ────────────────────────────
+    //
+    // Maybe has left the status editor (GuestForm.jsx) because the per-event
+    // status enum is pending, yes, no and widening it is a schema change. A
+    // file can still carry the word, so guestImport.js maps it to awaiting and
+    // flags the row. This is the half that tells the couple: their data was
+    // read and then changed, and silence about that is the actual fault,
+    // whatever the mapping.
+    const maybeRows = toImport.filter((r) => r._maybeMapped).length;
+    const maybeLine = maybeRows > 0 ? 'Maybe is recorded as awaiting for now' : '';
+
     if (failed.length === 0 && duplicates.length === 0) {
-      toast.success(`${importedCount} guests imported`, { id: tid });
+      toast.success(
+        maybeLine ? `${importedCount} guests imported · ${maybeLine}` : `${importedCount} guests imported`,
+        { id: tid });
       onImported();
       onClose();
     } else {
@@ -97,6 +110,7 @@ export default function ImportGuestModal({ onClose, onImported, weddingEvents = 
       if (importedCount > 0) parts.push(`${importedCount} imported`);
       if (duplicates.length > 0) parts.push(`${duplicates.length} skipped (already on your list)`);
       if (failed.length > 0) parts.push(`${failed.length} failed`);
+      if (maybeLine) parts.push(maybeLine);
       // THE LIBRARY'S OWN VARIANT, not an icon override. `toast.error` draws its
       // mark in our type; an `icon:` override drew the platform's.
       const troubled = duplicates.length > 0 || failed.length > 0;
