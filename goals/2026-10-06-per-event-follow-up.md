@@ -21,3 +21,5 @@ As CLAUDE.md, plus: no new schema key on mainCeremony or reception; api/rsvp-sub
 ## Protocol
 
 Both PRs held. Run the diff guards (us-english, calm-copy) after every commit and before every push. Print both pre-merge blocks together at the end in the narrow format with full 40-character head SHAs and the four checks by name. Then the item 3 report.
+
+Closed 2026-10-06 at main 1c621150417c13e038bd2fbadbd5fdece14cd305, PRs #894 #895; item 3 ruled by advisor, see goals/2026-10-07-rsvp-status-source.md
