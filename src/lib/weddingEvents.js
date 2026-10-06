@@ -175,6 +175,46 @@ export function getGuestEventResponse(guest, event) {
 }
 
 /**
+ * THE FULL RESOLVED SET, WHICH IS THE ONLY SHAPE THE GUESTS PAGE WRITES.
+ *
+ * Owner ruling, 2026-10-01: "Every write of event_responses from the Guests
+ * page is the full resolved set for that guest, never a single toggle."
+ *
+ * The reason is the defaulting rule above. An absent entry means invited for a
+ * main event and not invited for a custom one, so a guest with no entries at
+ * all is correctly understood as invited to the ceremony and the reception.
+ * The moment one explicit entry is written, that guest still has no entry for
+ * the others -- and they still resolve by the same rule, so nothing breaks
+ * today. But the rule is a FALLBACK, and a record that depends on a fallback
+ * for most of its events is one refactor away from meaning something else.
+ *
+ * So a write from the couple's own control states every event: what they are
+ * invited to and what they are not, explicitly, with any status they had
+ * already given preserved. `overrides` is a map of event_id to the invited
+ * boolean the couple just chose; every other event keeps what it resolves to
+ * now.
+ *
+ * @param {object} guest
+ * @param {Array}  events     every event on the wedding, from getWeddingEvents
+ * @param {object} overrides  { [event_id]: boolean }
+ * @returns {Array} the complete event_responses array to persist
+ */
+export function resolveAllEventResponses(guest, events, overrides = {}) {
+  return events.map((event) => {
+    const current = getGuestEventResponse(guest, event);
+    const invited = Object.prototype.hasOwnProperty.call(overrides, event.event_id)
+      ? !!overrides[event.event_id]
+      : current.invited;
+    // THE ANSWER SURVIVES THE INVITATION. Removing a guest from an event does
+    // not delete what they already said about it: SetEventsModal's own wording
+    // promises that ("their RSVP for it will be kept but hidden"), and a couple
+    // who removes someone by accident must be able to put them back without
+    // having lost their reply.
+    return { ...current, event_id: event.event_id, invited };
+  });
+}
+
+/**
  * Toggles a guest's invited flag for one event, returning the full
  * event_responses array to persist (creating the entry if it didn't exist).
  * Caller is responsible for persisting the result — this is pure.
