@@ -102,6 +102,57 @@ function safeDecrypt(blob) {
   }
 }
 
+/**
+ * ── WHAT THIS ENDPOINT DECIDES ABOUT ONE GUEST ─────────────────────────────
+ *
+ * Two questions, pulled out of the loop so a guard can drive them without a
+ * network call. Same reason api/rsvp-submit.js exports keepOnlyInvitedEvents
+ * and confirmationRecipient: there is no `deps` seam here, and the decisions
+ * are functions of plain values.
+ *
+ * TWO PLACES A GUEST'S PER-EVENT ANSWERS CAN LIVE, and this is the join:
+ *
+ *   RsvpResponse rows        written by the GUEST, through api/rsvp-submit.js
+ *   Guest.event_responses    written by the COUPLE, on their own dashboard
+ *
+ * The rows win when they exist, because they are the guest's own word and the
+ * couple's entry is a record of it. The stored array is the fallback rather
+ * than being ignored, which is the half the old skip threw away.
+ *
+ * @returns {{ eventResponses: Array, rsvp_status: string }}
+ */
+export function overlayStatusForGuest(guest, eventRows) {
+  const eventResponses = eventRows
+    ? toEventResponsesShape(eventRows)
+    : (Array.isArray(guest?.event_responses) ? guest.event_responses : []);
+  // DERIVED, UNCONDITIONALLY. Advisor ruling, 2026-10-07: the status comes
+  // from event_responses everywhere, and Guest.rsvp_status is a landing field
+  // that writers may set and nothing reads for display. This used to be
+  // `eventRows ? derived : guest.rsvp_status`, so the flat column survived for
+  // every guest without rows and the dashboard answered one question twice:
+  // the per-event chips said awaiting while the tally and the search said
+  // attending.
+  return { eventResponses, rsvp_status: deriveRsvpStatus(eventResponses) };
+}
+
+/**
+ * Whether this guest has nothing to overlay at all.
+ *
+ * THE TEST WIDENED, and that is the whole of item 1. It was
+ * `!eventRows && !guestLevel && plusOneRsvpStatus === null`, which read like a
+ * cheap "nothing to say" shortcut and silently excluded every guest whose
+ * answers the COUPLE had recorded: no rows, so skipped, so their flat
+ * Guest.rsvp_status reached every surface untouched. Deriving unconditionally
+ * above would have changed nothing for them, because they never reached it.
+ *
+ * A guest with nothing in either place is still skipped: there is no answer to
+ * report and an entry would only add weight to the response.
+ */
+export function hasNothingToOverlay({ eventRows, guestLevel, plusOneRsvpStatus, storedEventResponses }) {
+  return !eventRows && !guestLevel && plusOneRsvpStatus === null
+    && (storedEventResponses || []).length === 0;
+}
+
 export default async function handler(req, res) {
   if (applyCors(req, res)) return;
   if (req.method !== 'GET') {
@@ -154,9 +205,20 @@ export default async function handler(req, res) {
     const rsvpQuery = encodeURIComponent(JSON.stringify({ wedding_id: wedding.id }));
     const rows = unwrapList(await adminFetch(`/apps/${BASE44_APP_ID}/entities/RsvpResponse?q=${rsvpQuery}`))
       .filter(r => !r.is_test);
-    if (rows.length === 0) {
-      return res.status(200).json({ byGuestId: {} });
-    }
+    // NO EARLY RETURN ON AN EMPTY ROW SET, and this one mattered more than the
+    // per-guest skip below it.
+    //
+    // `if (rows.length === 0) return { byGuestId: {} }` sat here, which is the
+    // same mistake as the old skip at one level up and with a wider blast
+    // radius: a wedding where NOBODY has replied through the guest site got an
+    // empty overlay for every guest, however much the couple had recorded on
+    // Guest.event_responses themselves. That is the common state of a wedding
+    // in its first month, and it is the state the fixture is in.
+    //
+    // The loop below is cheap on an empty row set: every Map is empty, every
+    // lookup misses, and hasNothingToOverlay sends any guest with no stored
+    // array straight past. What it no longer does is decide the answer for a
+    // whole wedding before looking at a single guest.
 
     const eventsByGuestHash = new Map();
     for (const r of latestEventResponses(rows)) {
@@ -180,7 +242,7 @@ export default async function handler(req, res) {
       const eventRows = eventsByGuestHash.get(gHash);
       const guestLevel = guestLevelByGuestHash.get(gHash);
       const decrypted = safeDecrypt(guestLevel?.encrypted_guest_level);
-      const eventResponses = eventRows ? toEventResponsesShape(eventRows) : (g.event_responses || []);
+      const { eventResponses, rsvp_status: derivedStatus } = overlayStatusForGuest(g, eventRows);
 
       let plusOneRsvpStatus = null;
       let plusOneEventResponses = null;
@@ -189,11 +251,13 @@ export default async function handler(req, res) {
         plusOneRsvpStatus = deriveRsvpStatus(plusOneEventResponses);
       }
 
-      if (!eventRows && !guestLevel && plusOneRsvpStatus === null) continue;
+      // The two decisions above, by name. Their reasoning lives with them.
+      if (hasNothingToOverlay({ eventRows, guestLevel, plusOneRsvpStatus,
+                                storedEventResponses: g.event_responses })) continue;
 
       byGuestId[g.id] = {
         event_responses: eventResponses,
-        rsvp_status: eventRows ? deriveRsvpStatus(eventResponses) : g.rsvp_status,
+        rsvp_status: derivedStatus,
         song_request: decrypted?.song_request ?? g.song_request,
         rsvp_note: decrypted?.note ?? g.rsvp_note,
         dietary_restrictions: decrypted?.dietary_restrictions ?? g.dietary_restrictions,

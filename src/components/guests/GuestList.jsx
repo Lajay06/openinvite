@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, ChevronDown, ChevronRight, Pencil, MessageCircle } from "lucide-react";
 import { getGuestEventResponse, effectiveMealChoice, mealOptionLabel } from "@/lib/weddingEvents";
+import { deriveRsvpStatus } from "@/lib/rsvpAggregation";
 import GuestAvatar from "@/components/shared/GuestAvatar";
 import { interactiveDivProps } from '@/lib/a11y';
 import { hasPlusOne, plusOneRsvpStatus, plusOneDisplayName } from '@/lib/plusOne';
@@ -460,10 +461,27 @@ const COLUMN_COUNT = 10;
    per-event chip row. */
 const STATUS_SORT_RANK = { attending: 0, pending: 1, declined: 2 };
 
+/**
+ * THE COLUMN SORTS BY WHAT THE COLUMN SHOWS.
+ *
+ * This had two faults, both left behind by #886, and they pulled in opposite
+ * directions:
+ *
+ *   it ranked by the FLAT guest.rsvp_status, so sorting the "Invited to"
+ *   column ordered rows by a field the column does not display. A guest whose
+ *   chips read awaiting could sort into the attending block.
+ *
+ *   it kept a fourth bucket for "Not yet invited", a chip #886 DELETED. An
+ *   empty event_responses array no longer means "not invited": the resolver
+ *   reads it as invited to the main events and not to the custom ones, which
+ *   is why the chip went. The bucket outlived the state it sorted.
+ *
+ * Both are gone. The rank is now derived from the same per-event answers the
+ * chips are drawn from, through the shared deriveRsvpStatus, so the order a
+ * couple sees is the order of the words they are reading.
+ */
 function guestStatusSortKey(guest) {
-  const hasResponses = Array.isArray(guest.event_responses) && guest.event_responses.length > 0;
-  if (!hasResponses) return 3; // "Not yet invited"
-  return STATUS_SORT_RANK[guest.rsvp_status] ?? 1; // default to "pending" bucket
+  return STATUS_SORT_RANK[deriveRsvpStatus(guest.event_responses || [])] ?? 1;
 }
 
 const SORTABLE_COLUMNS = {

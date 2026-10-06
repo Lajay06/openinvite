@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Users, Store, ListTodo, FileText } from "lucide-react";
 import { createPageUrl } from "@/utils";
-import { getMyRecords } from "@/lib/resolveMyWedding";
+import { getMyRecords, getMyGuestsWithRsvp } from "@/lib/resolveMyWedding";
 import { NAV_SECTIONS } from "./AnimatedSidebar";
 import { preloadPageChunk } from "@/pagePreload";
 
@@ -43,8 +43,14 @@ export default function TopBarSearch() {
   const { data } = useQuery({
     queryKey: ['topbarSearchData'],
     queryFn: async () => {
+      // THE OVERLAID GUESTS, NOT THE RAW ROWS. This read getMyRecords('Guest')
+      // and printed guest.rsvp_status as the result's sub label, which made it
+      // the one surface on the dashboard showing the flat stored column with
+      // nothing reconciling it: the Guests page said awaiting and the search
+      // said attending for the same person. Advisor ruling, 2026-10-07, and
+      // the ruling's own report named this file as the exception.
       const [guests, vendors, notes] = await Promise.all([
-        getMyRecords('Guest', undefined, 500).catch(() => []),
+        getMyGuestsWithRsvp(undefined, 500).catch(() => []),
         getMyRecords('Vendor').catch(() => []),
         getMyRecords('Note').catch(() => []),
       ]);
