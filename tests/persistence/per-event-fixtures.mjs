@@ -20,7 +20,11 @@
  *                      product actually writes (full resolved sets)
  *   THE INVARIANT      PUBLISHED_WEDDING.publicEventIds is pinned rather than
  *                      derived, so the rule is restated here and recomputed
- *                      from PUBLISHED_GUESTS. The two must agree.
+ *                      from PUBLISHED_GUESTS. The two must agree, and the
+ *                      recomputation is held against a second shape of the
+ *                      same guest list with its per-event rows stripped, so
+ *                      the literal is a consequence of the REMOVAL and not of
+ *                      the custom event merely existing.
  *   THE BLAST RADIUS   the assumptions 48 existing browser guards already make
  *                      about this seed are still true, named one at a time, so
  *                      a later fixture edit that breaks one says which
@@ -97,25 +101,48 @@ export async function runPerEventFixtures() {
   check('the published wedding has a custom event too',
         pubEvents.map((e) => e.event_id), [MAIN_CEREMONY_EVENT_ID, RECEPTION_EVENT_ID, WELCOME]);
 
-  // The rule, restated: an event is public when EVERY guest is invited to it.
+  // THE RULE, RESTATED: an event is public unless at least one guest carries an
+  // explicit invited:false for it. Advisor ruling, 2026-10-06. It replaced
+  // "public when every guest is invited", which this file used to restate, and
+  // the difference is the whole point of the ruling: an absent row is not a
+  // removal, so an untouched custom event stays public.
+  //
   // Recomputed here rather than imported, because the resolver ships in its
   // own PR and this fixture has to load on main. If they ever disagree, the
   // literal is the one that is wrong.
-  const recomputed = pubEvents
-    .filter((ev) => PUBLISHED_GUESTS.every((g) => getGuestEventResponse(g, ev).invited))
+  const removedFrom = (guest, eventId) => (guest?.event_responses || [])
+    .some((r) => r?.event_id === eventId && r.invited === false);
+  const publicUnder = (guests) => pubEvents
+    .filter((ev) => !guests.some((g) => removedFrom(g, ev.event_id)))
     .map((ev) => ev.event_id);
-  check('the pinned public set is exactly what the rule computes from the guest list',
-        PUBLISHED_WEDDING.publicEventIds, recomputed);
 
-  check('  so the custom event is not public',
+  check('the pinned public set is exactly what the rule computes from the guest list',
+        PUBLISHED_WEDDING.publicEventIds, publicUnder(PUBLISHED_GUESTS));
+
+  check('  so the custom event is not public, because a guest was removed from it',
         PUBLISHED_WEDDING.publicEventIds.includes(WELCOME), false);
-  check('  and both main events are',
+  check('  and both main events are, because nobody was removed from either',
         [MAIN_CEREMONY_EVENT_ID, RECEPTION_EVENT_ID].every((id) => PUBLISHED_WEDDING.publicEventIds.includes(id)),
         true);
 
   ok('exactly one published guest is removed from the custom event, as the goal asks',
-     PUBLISHED_GUESTS.filter((g) => !getGuestEventResponse(g, { event_id: WELCOME, isMain: false }).invited).length === 1,
-     '1 of 2');
+     PUBLISHED_GUESTS.filter((g) => removedFrom(g, WELCOME)).length === 1, '1 of 2');
+
+  // THE OTHER SHAPE THE RULING NAMES, held against the same fixture: strip the
+  // per-event rows and the custom event must come back. This is the state every
+  // already published wedding with a pre-wedding event is in, and the pinned
+  // literal has to be a consequence of the REMOVAL and not of the custom event
+  // merely existing.
+  check('the same wedding with no per-event rows on any guest keeps the custom event public',
+        publicUnder(PUBLISHED_GUESTS.map((g) => ({ ...g, event_responses: [] }))),
+        [MAIN_CEREMONY_EVENT_ID, RECEPTION_EVENT_ID, WELCOME]);
+
+  check('  and so does inviting some to it while leaving the rest untouched',
+        publicUnder([
+          { id: 'x', event_responses: [{ event_id: WELCOME, invited: true }] },
+          { id: 'y', event_responses: [] },
+        ]),
+        [MAIN_CEREMONY_EVENT_ID, RECEPTION_EVENT_ID, WELCOME]);
 
   // ── THE PERSONAL LINK ───────────────────────────────────────────────────
 
