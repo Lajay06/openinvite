@@ -75,8 +75,15 @@ export async function runRsvpConfirmationEmail() {
       && EP.indexOf('resend.emails.send') > EP.indexOf('await notify('), 'ordered');
   check('  a failed email can never fail the RSVP',
     /catch \(mailErr\)/.test(EP) && /confirmation = 'failed'/.test(EP), 'caught and counted');
+  // RE-POINTED 2026-10-03, per-event invitations item 4. This pinned the
+  // response object exactly as `{ ok: true, confirmation }`, and the endpoint
+  // now also returns `dropped`: the number of submitted event rows that were
+  // thrown away because the guest is not invited to that event. The property
+  // this check is for, that the response COUNTS what happened rather than
+  // answering a bare ok, is the reason the new key exists, so the assertion
+  // names the two keys it is about and allows the shape to grow.
   check('the result shape counts what happened',
-    /return res\.status\(200\)\.json\(\{ ok: true, confirmation \}\)/.test(EP), 'ok + confirmation');
+    /return res\.status\(200\)\.json\(\{ ok: true, confirmation[,}]/.test(EP), 'ok + confirmation');
   check('  including a skip, which the ruling asked for',
     /confirmation = 'skipped'/.test(EP) && /confirmation = 'skipped-test'/.test(EP), 'skipped / skipped-test');
   check('a test guest gets nothing — never on the couple’s own preview',

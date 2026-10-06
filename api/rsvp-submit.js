@@ -73,6 +73,10 @@ import { getBase44User } from './_lib/base44Admin.js';
 // that only has the two halves.
 import { coupleDisplayName } from './_lib/coupleNames.js';
 import { hashId, encryptPayload } from './_lib/questionnaireCrypto.js';
+// SERVER-SAFE BY CONSTRUCTION: weddingEvents.js imports guestDate.js and
+// dressCode.js and nothing else, and none of the three touches React or the
+// DOM. Same arrangement api/guest-page.js uses for the sample-content chain.
+import { getWeddingEvents, getGuestEventResponse } from '../src/lib/weddingEvents.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -148,6 +152,52 @@ async function createRsvpResponse(payload) {
   }
 }
 
+/**
+ * ── A REPLY IS ONLY KEPT FOR AN EVENT THE GUEST IS INVITED TO ──────────────
+ *
+ * sanitizeEventResponses above decides whether a submitted row is WELL FORMED.
+ * It has never decided whether the row is ALLOWED, and those are different
+ * questions: every event_id that arrived with a valid shape was written,
+ * whether or not this guest was invited to that event and whether or not the
+ * event still exists. The token proves who is replying; it says nothing about
+ * what they may reply to.
+ *
+ * That matters more now that the guest site shows a guest only their own
+ * events, because the form can no longer be the check. A stale tab, a shared
+ * link, a hand-made POST or a client bug could each file a row under an event
+ * the couple never invited this guest to, and the dashboard would then count
+ * them as replying to it. Nothing would look wrong: a yes is a yes, whatever
+ * event it is filed under.
+ *
+ * DROPPED, NOT REJECTED, for the reason the sanitizer already gives about
+ * malformed rows: a guest who answered three events correctly and one they
+ * should never have been offered has still answered three, and refusing the
+ * whole submission would lose all four. The count goes back in the response so
+ * a client can tell "saved" from "saved most of it", and it is logged so a
+ * pattern of them is visible.
+ *
+ * A PLUS-ONE INHERITS THE HOST'S SET. `guest` is the host record for both
+ * roles and `role` only says who is speaking, so there is one invited set per
+ * guest row and a plus-one cannot reach past it.
+ *
+ * EXPORTED so a guard can drive the decision without a network call, exactly
+ * as confirmationRecipient above is and for the same reason: the decision is a
+ * function of two plain values, and this endpoint has no `deps` seam.
+ */
+export function keepOnlyInvitedEvents(eventResponses = [], { wedding, guest } = {}) {
+  const invitedEventIds = new Set(
+    getWeddingEvents(wedding)
+      .filter((ev) => getGuestEventResponse(guest, ev).invited)
+      .map((ev) => ev.event_id));
+  const kept = [];
+  const droppedEventIds = [];
+  for (const r of eventResponses) {
+    if (invitedEventIds.has(r.event_id)) kept.push(r);
+    else droppedEventIds.push(r.event_id);
+  }
+  return { kept, droppedEventIds };
+}
+
 export default async function handler(req, res) {
   if (applyCors(req, res)) return;
 
@@ -189,6 +239,13 @@ export default async function handler(req, res) {
     const isPlusOne = role === 'plus_one';
     const guestIdHash = hashId(guest.id);
 
+    // The decision is keepOnlyInvitedEvents, above, with its reasoning.
+    const submittedCount = eventResponses.length;
+    const { kept: invitedResponses, droppedEventIds } = keepOnlyInvitedEvents(eventResponses, { wedding, guest });
+    if (droppedEventIds.length > 0) {
+      console.warn(`[rsvp-submit] dropped ${droppedEventIds.length} of ${submittedCount} event row(s) for an uninvited or unknown event: ${droppedEventIds.join(', ')}`);
+    }
+
     // One row per submitted event (append-only — an event this submission
     // didn't touch simply gets no new row, and its previous latest row still
     // stands under latest-wins aggregation). Plus exactly one guest-level
@@ -196,7 +253,7 @@ export default async function handler(req, res) {
     // unconditionally (even if empty) so a guest clearing a previous song
     // request/note/dietary entry is itself the new latest value.
     await Promise.all([
-      ...eventResponses.map(r => createRsvpResponse({
+      ...invitedResponses.map(r => createRsvpResponse({
         wedding_id: wedding.id,
         guest_id_hash: guestIdHash,
         is_plus_one: isPlusOne,
@@ -227,10 +284,10 @@ export default async function handler(req, res) {
     // guaranteed to finish. notify() already swallows and logs its own
     // errors internally, so this can never turn a successful RSVP into a
     // failed response even if the notification/email step has trouble.
-    const attendingCount = eventResponses.filter(r => r.status === 'yes').length;
-    const declinedCount = eventResponses.filter(r => r.status === 'no').length;
+    const attendingCount = invitedResponses.filter(r => r.status === 'yes').length;
+    const declinedCount = invitedResponses.filter(r => r.status === 'no').length;
     const responseSummary = attendingCount > 0
-      ? `Attending${eventResponses.length > 1 ? ` (${attendingCount} of ${eventResponses.length} events)` : ''}`
+      ? `Attending${invitedResponses.length > 1 ? ` (${attendingCount} of ${invitedResponses.length} events)` : ''}`
       : declinedCount > 0 ? 'Declined' : 'Responded';
     await notify({
       recipientUserId: wedding.created_by_id,
@@ -279,8 +336,8 @@ export default async function handler(req, res) {
     } else {
       try {
         const coupleName = coupleDisplayName(wedding);
-        const attending = eventResponses.some(r => r.status === 'yes');
-        const firstEvent = eventResponses[0] || null;
+        const attending = invitedResponses.some(r => r.status === 'yes');
+        const firstEvent = invitedResponses[0] || null;
         const { subject, html, text } = renderRsvpConfirmationEmail({
           universeId: wedding.activeUniverse,
           coupleNames: coupleName,
@@ -309,7 +366,9 @@ export default async function handler(req, res) {
       }
     }
 
-    return res.status(200).json({ ok: true, confirmation });
+    // `dropped` is always present, so a client reads a number rather than
+    // inferring one from a missing key.
+    return res.status(200).json({ ok: true, confirmation, dropped: droppedEventIds.length });
   } catch (err) {
     console.error('[rsvp-submit] Error:', err.message);
     return res.status(500).json({ error: 'Something went wrong — please try again.' });
