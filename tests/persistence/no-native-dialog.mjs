@@ -57,6 +57,13 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
  * event?'). Deleting an event now has to state how many guests have replied
  * before it happens, and a native confirm cannot say anything beyond its own
  * fixed sentence, so the ratchet and the feature wanted the same thing.
+ *
+ * 26 -> 25 on 2026-10-07: Guests.jsx lost its confirm('Delete this guest?').
+ * The guest delete is an UNDO now, not a question: a confirm asks before
+ * anything happens, which is the wrong moment, and the one occasion the couple
+ * was wrong is the occasion they dismissed it by reflex. The row leaves the
+ * list at once and the write waits thirty seconds. C5,
+ * goals/2026-10-07-households-and-children.md item 3.
  */
 const BASELINE = {
   'src/components/games/GamesManager.jsx': 1,
@@ -70,7 +77,7 @@ const BASELINE = {
   'src/components/vendors/VendorRosterSection.jsx': 1,
   'src/components/vendors/VendorSearch.jsx': 2,
   'src/pages/Budget.jsx': 1,
-  'src/pages/Guests.jsx': 2,
+  'src/pages/Guests.jsx': 1,
   'src/pages/Music.jsx': 1,
   'src/pages/OurStory.jsx': 1,
   'src/pages/Registry.jsx': 3,
