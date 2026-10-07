@@ -69,10 +69,34 @@ for (const [w, h] of [[1440, 950], [390, 844]]) {
   const page = await ctx.newPage();
   await page.goto(`${BASE}/Beauty`, { waitUntil: 'domcontentloaded', timeout: 60000 }).catch(() => {});
   await page.waitForTimeout(7000);
+
+  // THE TAB THIS GUARD IS ABOUT, OPENED BY NAME.
+  //
+  // It used to read whichever tab the page opened on, which was Hair & makeup
+  // until item 7 of goals/2026-10-08-site-fixes-batch-1.md put the Beauty team
+  // tab first and made the page open there. The accordion this guard exists
+  // for still behaves exactly as it did; the guard was simply looking at a
+  // vendor roster, found no sections, and failed three checks.
+  //
+  // THE OLD FIRST CHECK HID THAT: "the hair and makeup tab rendered" only
+  // asserted that the panel had characters in it, and a roster has characters.
+  // Clicking by name is what makes the subject explicit, and the check below
+  // now looks for a field only this tab has.
+  const opened = await page.evaluate(() => {
+    const b = [...document.querySelectorAll('button')]
+      .find((x) => (x.innerText || '').trim() === 'Hair & makeup');
+    if (!b) return false;
+    b.click();
+    return true;
+  });
+  check(`${w}px: the Hair & makeup tab could be opened`, opened, opened ? 'clicked' : 'tab not found');
+  await page.waitForTimeout(1200);
   const r = await readPanel(page);
 
   // PRESENCE BEFORE PROPERTIES: an unrendered panel passes every rule below.
-  check(`${w}px: the hair and makeup tab rendered`, !!r && r.chars > 0, r ? `${r.chars} characters` : 'no panel');
+  check(`${w}px: the hair and makeup tab rendered`,
+    !!r && r.chars > 0 && r.sections.length > 0,
+    r ? `${r.chars} characters, ${r.sections.length} section(s)` : 'no panel');
   if (!r) { await ctx.close(); continue; }
 
   check(`  both people are sections`, r.sections.length === SECTIONS.length,
