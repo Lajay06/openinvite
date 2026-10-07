@@ -211,7 +211,13 @@ export default function CeremonyDetailsPage() {
         ))}
       </div>
 
-      <div style={{ padding: '32px 32px 48px', maxWidth: 760, margin: '0 auto' }}>
+      {/* FULL WIDTH, item 9 of goals/2026-10-08-site-fixes-batch-1.md. This
+          page capped its tab content at 760px and centred it while Getting
+          here and Stay, reached from the same sidebar group, ran full width:
+          four pages in one section, two of each. The ruling is full width
+          everywhere, matching the larger half of the dashboard (Budget,
+          Dashboard, Music, Food & beverage, Guests and the rest). */}
+      <div style={{ padding: '32px 32px 48px' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {/* Celebrant */}
           {activeTab === 'celebrant' && (
