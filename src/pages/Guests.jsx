@@ -1141,7 +1141,18 @@ export default function Guests() {
       </div>
 
       {/* Content */}
-      <div style={{ padding: '32px 32px 48px' }}>
+      {/* THE AVA CORNER IS RESERVED (src/index.css). The guest table ends in
+          the quick-add row, and with a list long enough to reach the bottom of
+          the viewport that input sits UNDER the floating Ava button: a couple
+          with eight guests cannot click the right-hand end of "Type a name and
+          press Enter". Found by test:ava-safe-area the moment item 8 seeded a
+          household, which is the whole reason the fixture grew. */}
+      {/* NO padding-bottom INLINE, which is the half of this that took two
+          runs: an inline shorthand beats the class, so `padding: 32px 32px
+          48px` with oi-ava-safe on it is still 48px and the input is still
+          under the button. The class carries the bottom, including its own
+          88px at 640. */}
+      <div className="oi-ava-safe" style={{ paddingTop: 32, paddingLeft: 32, paddingRight: 32 }}>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="w-full justify-start">
