@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
-import { Loader2, Search, X } from 'lucide-react';
+import { Loader2, Search, X, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useNearMe, NEAR_ME_LABELS } from '@/lib/useNearMe';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -46,6 +47,22 @@ export default function VendorPlacesSearch({ onPick, locationBias = '' }) {
   const [filling, setFilling] = useState(false);
   const [open, setOpen] = useState(false);
   const debounceRef = useRef(null);
+  const queryRef = useRef('');
+  // NEAR ME, item 8 of goals/2026-10-08-site-fixes-batch-1.md.
+  //
+  // THE CYCLE AND HOW IT IS BROKEN: `search` reads nearMe.bias(), and the
+  // hook's onReady has to re-run `search`. Either order is use-before-define,
+  // which this repo bars, so onReady dereferences a ref that is assigned once
+  // `search` exists.
+  //
+  // onReady RE-RUNS THE QUERY ALREADY TYPED, because the coordinates live in a
+  // ref: without it the button would change its label while the results on
+  // screen stayed unbiased until the next keystroke. That lesson is
+  // VenueSearchPanel's, paid for once already.
+  const searchRef = useRef(null);
+  const nearMe = useNearMe({
+    onReady: () => { if (queryRef.current.trim().length >= 2) searchRef.current?.(queryRef.current); },
+  });
 
   const search = async (q) => {
     if (q.trim().length < 2) { setResults([]); setOpen(false); return; }
@@ -54,7 +71,9 @@ export default function VendorPlacesSearch({ onPick, locationBias = '' }) {
       const res = await fetch('/api/places-search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: q.trim(), location: locationBias }),
+        // A REFUSED OR MISSING FIX SPREADS NOTHING, so this is byte-identical
+        // to the body it sent before whenever there are no coordinates.
+        body: JSON.stringify({ q: q.trim(), location: locationBias, ...nearMe.bias() }),
       });
       const data = await res.json();
       setResults(data.places || []);
@@ -65,9 +84,12 @@ export default function VendorPlacesSearch({ onPick, locationBias = '' }) {
     setSearching(false);
   };
 
+  searchRef.current = search;
+
   const onQuery = (e) => {
     const v = e.target.value;
     setQuery(v);
+    queryRef.current = v;
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => search(v), 400);
   };
@@ -141,6 +163,27 @@ export default function VendorPlacesSearch({ onPick, locationBias = '' }) {
             <X size={14} />
           </button>
         )}
+      </div>
+      {/* NEAR ME sits BELOW the field, outside the wrapper the clear button is
+          positioned against: putting it inside moved that button over this row. */}
+      <div style={{ marginTop: 6 }}>
+        <button
+          type="button"
+          data-near-me={nearMe.state}
+          aria-pressed={nearMe.state === 'active'}
+          onClick={() => (nearMe.state === 'active' ? nearMe.clear() : nearMe.request())}
+          disabled={nearMe.state === 'loading'}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            background: 'none', border: 'none', padding: 0,
+            fontFamily: PJS, fontSize: 11, fontWeight: 600,
+            color: nearMe.state === 'active' ? '#E03553' : 'rgba(10,10,10,0.6)',
+            cursor: nearMe.state === 'loading' ? 'progress' : 'pointer',
+          }}
+        >
+          <MapPin size={12} />
+          {NEAR_ME_LABELS[nearMe.state]}
+        </button>
       </div>
 
       {open && (
