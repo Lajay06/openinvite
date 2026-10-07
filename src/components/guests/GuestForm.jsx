@@ -320,6 +320,58 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
             <Input id="table_assignment" value={formData.table_assignment} onChange={e => set('table_assignment', e.target.value)} placeholder="Table number or name" />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {/* ── C7: A CHILD, AND THEIR AGE IF THE COUPLE KNOWS IT ────────
+                The age field appears only when the toggle is on, because an
+                age box beside an unticked "Child" invites a number nobody
+                asked for, and child_age is only meaningful when is_child is
+                true.
+
+                VALIDATED HERE, BECAUSE THE SCHEMA CANNOT. base44 declares
+                child_age as `number`, not integer, so whole years 0 to 17 is
+                this writer's job: the input is stepped and bounded, and the
+                value is coerced on the way out rather than trusted.
+
+                The age is for the couple alone. The guest site never renders
+                it, which is asserted in the item 5 guard. */}
+            <div data-child-controls style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <Checkbox
+                  id="is_child"
+                  checked={formData.is_child === true}
+                  onCheckedChange={(v) => {
+                    set('is_child', v === true);
+                    // UNTICKING CLEARS THE AGE. Leaving a stored 6 on an adult
+                    // is a value nothing displays and nothing can edit, which
+                    // is the shape this repository keeps finding and removing.
+                    if (v !== true) set('child_age', undefined);
+                  }}
+                />
+                <label htmlFor="is_child" style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', cursor: 'pointer', fontFamily: PJS }}>
+                  Child
+                </label>
+              </div>
+              {formData.is_child === true && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 160 }}>
+                  <Label htmlFor="child_age">Age in years</Label>
+                  <Input
+                    id="child_age"
+                    type="number"
+                    min={0}
+                    max={17}
+                    step={1}
+                    value={formData.child_age ?? ''}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      if (raw === '') { set('child_age', undefined); return; }
+                      const n = Math.trunc(Number(raw));
+                      if (!Number.isFinite(n)) return;
+                      set('child_age', Math.min(17, Math.max(0, n)));
+                    }}
+                    placeholder="Optional"
+                  />
+                </div>
+              )}
+            </div>
             <Label>RSVP status</Label>
             <Select value={formData.rsvp_status} onValueChange={v => set('rsvp_status', v)}>
               <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>

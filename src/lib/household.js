@@ -180,6 +180,52 @@ export function counts(guests = []) {
 }
 
 /**
+ * THE LIST AS THE GUESTS PAGE DRAWS IT: households kept together, lead first,
+ * members after.
+ *
+ * ── SORTING AND GROUPING HAVE TO AGREE ─────────────────────────────────────
+ *
+ * The page sorts by whatever column the couple clicked, and a household must
+ * not be torn apart by it. So the SORT decides WHERE a household sits and the
+ * grouping decides the order INSIDE it. A household appears at the position of
+ * its EARLIEST-SORTING member, which is the choice worth naming: it means that
+ * scanning down the list you never pass a member of a household before
+ * reaching the household itself. Placing the block at the LEAD's position
+ * instead would push the group below any member who sorts ahead of the lead,
+ * and a name you can see above the group it belongs to is worse than a lead
+ * that is not first in its own column.
+ *
+ * A household is only reordered internally, never split, and a guest with no
+ * household_id passes through exactly where the sort put them.
+ *
+ * @param {Array} sorted  guests, already in the order the page wants them
+ * @returns {Array<{guest: object, isLead: boolean, size: number, index: number}>}
+ *   one entry per row, in render order. `size` is the household's size, so a
+ *   row can tell whether it is part of one at all.
+ */
+export function groupByHousehold(sorted = []) {
+  const list = (Array.isArray(sorted) ? sorted : []).filter(Boolean);
+  const byKey = new Map();
+  for (const g of list) {
+    const key = householdIdOf(g);
+    if (!key) continue;
+    if (!byKey.has(key)) byKey.set(key, []);
+    byKey.get(key).push(g);
+  }
+  const out = [];
+  const done = new Set();
+  for (const g of list) {
+    const key = householdIdOf(g);
+    if (!key) { out.push({ guest: g, isLead: true, size: 1, index: 0 }); continue; }
+    if (done.has(key)) continue;
+    done.add(key);
+    const members = byKey.get(key).slice().sort(byLeadRule);
+    members.forEach((m, i) => out.push({ guest: m, isLead: i === 0, size: members.length, index: i }));
+  }
+  return out;
+}
+
+/**
  * ── THE THIRD KIND OF WRITE TO event_responses ─────────────────────────────
  *
  * src/lib/statusWrite.js's header names the first two: an INVITATION WRITE
