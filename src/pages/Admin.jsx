@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { RefreshCw, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import { formatDashboardDate } from '@/lib/dashboardDate';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 const ADMIN_EMAIL = 'lajay@openinvite.com.au';
@@ -46,7 +47,8 @@ function TableCell({ children, muted }) {
 
 function formatDate(iso) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+  // Numeric, in the account's format (src/lib/dashboardDate.js).
+  return formatDashboardDate(iso);
 }
 
 function formatAUD(amount) {

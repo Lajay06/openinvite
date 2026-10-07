@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { getNotificationPrefs } from '@/lib/notificationPrefs';
 import { startCheckout, resolveCheckoutPriceId, PLAN_PRICES } from '@/lib/checkoutSession';
 import toast from 'react-hot-toast';
+import { DATE_FORMATS, DATE_FORMAT_LABELS, dateFormatExample, normalizeDateFormat } from '@/lib/dashboardDate';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -80,6 +81,41 @@ const sectionTitleStyle = {
   fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: '0 0 20px', fontFamily: PJS,
 };
 
+/**
+ * WHICH NUMERIC DATE FORMAT THE DASHBOARD USES.
+ *
+ * Item 5 of goals/2026-10-08-site-fixes-batch-1.md. The same two-pill shape as
+ * TempUnitToggle below, because it is the same kind of choice: a display unit,
+ * two options, saved the moment it is tapped. The label and the worked example
+ * both come from src/lib/dashboardDate.js, so the control cannot disagree with
+ * the formatter about what "dmy" looks like.
+ */
+function DateFormatToggle({ value, onChange, saving }) {
+  return (
+    <div style={{ display: 'flex', gap: 8 }}>
+      {DATE_FORMATS.map(f => (
+        <button
+          key={f}
+          onClick={() => onChange(f)}
+          disabled={saving}
+          aria-pressed={value === f}
+          data-date-format={f}
+          title={DATE_FORMAT_LABELS[f]}
+          style={{
+            padding: '7px 14px', borderRadius: 999, fontSize: 12, fontWeight: 700, fontFamily: PJS,
+            cursor: saving ? 'not-allowed' : 'pointer',
+            border: `1.5px solid ${value === f ? '#0A0A0A' : 'rgba(10,10,10,0.15)'}`,
+            background: value === f ? '#0A0A0A' : 'none',
+            color: value === f ? '#FFFFFF' : 'rgba(10,10,10,0.6)',
+          }}
+        >
+          {dateFormatExample(f)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function TempUnitToggle({ value, onChange, saving }) {
   return (
     <div style={{ display: 'flex', gap: 8 }}>
@@ -110,6 +146,8 @@ function SettingsTab({ user, refreshUser }) {
   const [saveStatus, setSaveStatus] = useState('idle');
   const [currencyModalOpen, setCurrencyModalOpen] = useState(false);
   const [tempUnit, setTempUnit] = useState(user?.tempUnit || 'C');
+  const [dateFormat, setDateFormat] = useState(normalizeDateFormat(user?.dateFormat));
+  const [savingDateFormat, setSavingDateFormat] = useState(false);
   const [savingUnit, setSavingUnit] = useState(false);
 
   const handleSaveName = async () => {
@@ -131,6 +169,33 @@ function SettingsTab({ user, refreshUser }) {
       toast.error('Failed to save name');
     }
     setSaving(false);
+  };
+
+  /**
+   * THE SAME PATH AND THE SAME MIRROR as handleTempUnitChange below:
+   * base44.auth.updateMe, then the oi_user cache, then refreshUser. The cache
+   * write is not a nicety here, it is what the formatter reads: two of the
+   * dashboard's date helpers are module-level and cannot call useAuth, so
+   * src/lib/dashboardDate.js reads this key. Without the mirror a couple would
+   * change the setting and see no date change until the next full load.
+   */
+  const handleDateFormatChange = async (next) => {
+    setDateFormat(next);
+    setSavingDateFormat(true);
+    try {
+      await base44.auth.updateMe({ dateFormat: next });
+      try {
+        const stored = JSON.parse(localStorage.getItem('oi_user') || '{}');
+        localStorage.setItem('oi_user', JSON.stringify({ ...stored, dateFormat: next }));
+        // eslint-disable-next-line no-empty -- best-effort local cache mirror; the real save already succeeded via the API above
+      } catch {}
+      toast.success(`Dates now shown as ${dateFormatExample(next)}`);
+      refreshUser?.();
+    } catch {
+      toast.error('Failed to save, please try again');
+      setDateFormat(normalizeDateFormat(user?.dateFormat));
+    }
+    setSavingDateFormat(false);
   };
 
   const handleTempUnitChange = async (unit) => {
@@ -256,6 +321,16 @@ function SettingsTab({ user, refreshUser }) {
           <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS }}>Used for your wedding-day weather</p>
         </div>
         <TempUnitToggle value={tempUnit} onChange={handleTempUnitChange} saving={savingUnit} />
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+        <div>
+          <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 2px', fontFamily: PJS }}>Date format</p>
+          {/* SAYS WHERE IT APPLIES, because it does not apply everywhere: a
+              guest's site and every email keep their written dates. */}
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS }}>Used for dates across your dashboard</p>
+        </div>
+        <DateFormatToggle value={dateFormat} onChange={handleDateFormatChange} saving={savingDateFormat} />
       </div>
 
       <div style={{ padding: '14px 16px', background: 'rgba(10,10,10,0.03)', marginTop: 8 }}>

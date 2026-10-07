@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { interactiveDivProps } from '@/lib/a11y';
+import { formatDashboardDate } from '@/lib/dashboardDate';
 
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAY_NAMES = ['Su','Mo','Tu','We','Th','Fr','Sa'];
@@ -7,7 +8,9 @@ const DAY_NAMES = ['Su','Mo','Tu','We','Th','Fr','Sa'];
 export function formatDateDisplay(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+  // Numeric, in the account's format (src/lib/dashboardDate.js): this is the
+  // value a couple reads back out of the field they just filled in.
+  return formatDashboardDate(d);
 }
 
 export default function DatePicker({ value, onChange, label, placeholder = 'Select date', disabled = false }) {
