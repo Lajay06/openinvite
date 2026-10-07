@@ -9,7 +9,7 @@
  * status themselves, on the guest editor or in an imported spreadsheet, that
  * has to become a real per-event answer or it becomes nothing at all.
  *
- * ── TWO KINDS OF WRITE TO event_responses, AND THEY HAVE DIFFERENT RULES ───
+ * ── THREE KINDS OF WRITE TO event_responses, AND THEY HAVE DIFFERENT RULES ─
  *
  * This is the distinction the module exists to hold, and getting it wrong is
  * visible to guests rather than to the couple.
@@ -28,6 +28,20 @@
  * to, and nothing else. It never adds, removes or changes an `invited` key on
  * an entry that exists; it never creates an entry for an event the guest is
  * not invited to; every other entry comes through byte for byte.
+ *
+ * A HOUSEHOLD COPY adds a person to an existing invitation, and it is the one
+ * exception to the full-set contract above. It copies the LEAD'S STORED
+ * entries exactly: same event ids, same invited values, status back to pending,
+ * responded_at cleared, and nothing at all for an event the lead has no entry
+ * for. It lives in src/lib/household.js as entriesForNewMember, with its own
+ * reasoning, and it is named here because this is where a reader looks for the
+ * rules about this field. Ruled 2026-10-07,
+ * goals/2026-10-07-households-and-children.md item 2.
+ *
+ * The reason it is not the full set is the same reason the status write is
+ * narrow, below: a full set writes invited:false for every event the lead is
+ * not invited to, and a false is a removal that unpublishes the event. Adding
+ * a person to a household must not change what strangers see.
  *
  * ── WHY NARROW, AND IT IS NOT TIDINESS ─────────────────────────────────────
  *
