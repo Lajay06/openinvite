@@ -89,6 +89,7 @@ import { pickGuestSafeFields } from '../../api/_lib/guestSafeWedding.js';
 // function, so the fixture cannot drift from the endpoint it imitates.
 import { overlayStatusForGuest } from '../../api/my-guests-rsvp.js';
 import { decorateGuestNote } from '../../api/_lib/guestNotePii.js';
+import { RICH_SEED, RICH_PUBLISHED } from './fixtures/richWedding.mjs';
 const DAY = 86400000;
 const iso = (offsetDays) => new Date(Date.now() + offsetDays * DAY).toISOString();
 
@@ -532,6 +533,28 @@ export const PUBLISHED_WEDDING = {
 };
 
 /**
+ * THE FIXTURES A CONTEXT CAN BE BUILT FROM, by name.
+ *
+ * `default` is SEED and PUBLISHED_WEDDING, which every render guard is pinned
+ * to and nothing here changes. `rich` is a wedding six weeks out with 212
+ * guests, built for the studio tour recordings and the /tour page
+ * (./fixtures/richWedding.mjs). Pass `fixture: 'rich'` to seededContext or
+ * stubBackend; an explicit `seed` or `published` still wins.
+ */
+export const FIXTURES = Object.freeze({
+  default: Object.freeze({ seed: SEED, published: PUBLISHED_WEDDING }),
+  rich: Object.freeze({ seed: RICH_SEED, published: RICH_PUBLISHED }),
+});
+
+/** The named fixture, or the default for no name. An unknown name throws. */
+export function fixtureFor(name) {
+  if (name == null || name === '') return FIXTURES.default;
+  const f = FIXTURES[name];
+  if (!f) throw new Error(`renderHarness: no fixture named "${name}". Known: ${Object.keys(FIXTURES).join(', ')}`);
+  return f;
+}
+
+/**
  * The rendered contents of #root, from an HTML string.
  *
  * WHY THIS IS A FUNCTION AND NOT A REGEX AT THE CALL SITE. The obvious pattern
@@ -778,14 +801,14 @@ export const isBackend = (url) => {
  * against the shape its real endpoint returns — the check that would have
  * caught the { details: … } envelope on /api/my-wedding-details.
  */
-export function stubBodyFor(url, { seed = SEED, user = FIXTURE_USER } = {}) {
+export function stubBodyFor(url, { seed = SEED, user = FIXTURE_USER, published = PUBLISHED_WEDDING } = {}) {
   let captured;
   const json = (body) => { captured = body; };
-  resolveStub(url, seed, user, json, () => {});
+  resolveStub(url, seed, user, json, () => {}, undefined, null, published);
   return captured;
 }
 
-function resolveStub(url, seed, user, json, onEntity, fail = () => json(null), reqBody = null) {
+function resolveStub(url, seed, user, json, onEntity, fail = () => json(null), reqBody = null, published = PUBLISHED_WEDDING) {
 
     if (/\/me\b|auth\/me|users\/me/.test(url)) return json(user);
 
@@ -885,7 +908,7 @@ function resolveStub(url, seed, user, json, onEntity, fail = () => json(null), r
     if (/\/api\/wedding-by-slug/.test(url)) {
       let slug = null;
       try { slug = new URL(url).searchParams.get('slug'); } catch { /* non-URL */ }
-      if (slug && slug !== PUBLISHED_WEDDING.slug) return fail(404, { error: 'not found' });
+      if (slug && slug !== published.slug) return fail(404, { error: 'not found' });
       // THROUGH THE SAME ALLOWLIST THE ENDPOINT USES, not the raw fixture.
       //
       // This returned PUBLISHED_WEDDING whole, so a guard could assert against
@@ -908,9 +931,9 @@ function resolveStub(url, seed, user, json, onEntity, fail = () => json(null), r
       // real handler computes it after the allowlist and spreads it onto the
       // response, so it is not a WeddingDetails field and pickGuestSafeFields
       // neither knows nor should know about it.
-      const { customGifts = [], registryProducts = [], publicEventIds } = PUBLISHED_WEDDING;
+      const { customGifts = [], registryProducts = [], publicEventIds } = published;
       return json({
-        ...pickGuestSafeFields(PUBLISHED_WEDDING), customGifts, registryProducts,
+        ...pickGuestSafeFields(published), customGifts, registryProducts,
         ...(publicEventIds ? { publicEventIds } : {}),
       });
     }
@@ -939,7 +962,7 @@ function resolveStub(url, seed, user, json, onEntity, fail = () => json(null), r
       }
       return json({
         guest: tok === PER_EVENT_TOKEN ? PER_EVENT_GUEST : RSVP_GUEST,
-        wedding: PUBLISHED_WEDDING,
+        wedding: published,
       });
     }
     if (/\/api\/wedding-attendees/.test(url)) return json({ attendees: [], circle: [] });
@@ -966,7 +989,10 @@ function resolveStub(url, seed, user, json, onEntity, fail = () => json(null), r
  * Stub every backend call a page makes. Returns seeded rows for known
  * entities, `[]` for unknown ones, and the fixture user for identity.
  */
-export async function stubBackend(ctx, { seed = SEED, user = FIXTURE_USER, onEntity } = {}) {
+export async function stubBackend(ctx, { seed, user = FIXTURE_USER, onEntity, published, fixture } = {}) {
+  const chosen = fixtureFor(fixture);
+  seed = seed || chosen.seed;
+  published = published || chosen.published;
   const handler = async (route) => {
     const url = route.request().url();
     const json = (body) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
@@ -976,7 +1002,7 @@ export async function stubBackend(ctx, { seed = SEED, user = FIXTURE_USER, onEnt
     // only the URL cannot mirror the endpoint.
     let reqBody = null;
     try { reqBody = JSON.parse(route.request().postData() || 'null'); } catch { reqBody = null; }
-    return resolveStub(url, seed, user, json, onEntity, fail, reqBody);
+    return resolveStub(url, seed, user, json, onEntity, fail, reqBody, published);
   };
   await ctx.route((url) => isBackend(typeof url === 'string' ? url : url.href), handler);
 }
@@ -987,22 +1013,25 @@ export async function stubBackend(ctx, { seed = SEED, user = FIXTURE_USER, onEnt
  * no-data state, and the pass reports that as clean — which is exactly what
  * `{ details: … }` on /api/my-wedding-details did to every dashboard pass.
  */
-function assertStubContractsSync(seed) {
+function assertStubContractsSync(seed, published) {
   const bad = [];
   for (const c of CONTRACTS) {
-    const body = stubBodyFor(`http://localhost${c.match}`, { seed });
+    const body = stubBodyFor(`http://localhost${c.match}`, { seed, published });
     if (body === undefined) { bad.push(`${c.match}: no stub answers this path`); continue; }
     if (!c.ok(body)) bad.push(`${c.match}\n      want: ${c.want}\n      got : ${JSON.stringify(body).slice(0, 80)}\n      per : ${c.cite}`);
   }
   if (bad.length) throw new Error(`\n  HARNESS STUBS DO NOT MATCH THEIR ENDPOINTS — ${bad.length}:\n    ` + bad.join('\n    ') + '\n');
 }
 
-let seedChecked = false;
-function assertSeedOnce(seed) {
-  if (seedChecked) return;
-  seedChecked = true;
-  const drift = assertSeedMatchesSchemas(seed, { WeddingDetails: [PUBLISHED_WEDDING] });
-  assertStubContractsSync(seed);
+// ONCE PER SEED, not once per process. A run that renders the default
+// fixture and then the rich one checks both; a run that renders one checks it
+// exactly once, as before.
+const seedsChecked = new WeakSet();
+function assertSeedOnce(seed, published = PUBLISHED_WEDDING) {
+  if (seedsChecked.has(seed)) return;
+  seedsChecked.add(seed);
+  const drift = assertSeedMatchesSchemas(seed, { WeddingDetails: [published] });
+  assertStubContractsSync(seed, published);
   if (drift.length) {
     console.log(`  [harness] ${drift.length} known schema-drift field(s) in use — see SCHEMA_DRIFT`);
   }
@@ -1016,11 +1045,14 @@ function assertSeedOnce(seed) {
  * it. A guard that needs to prove a date reads the same everywhere renders a
  * second context in a timezone where the mistake would be visible.
  */
-export async function seededContext(browser, { width, height, seed, user, onEntity, timezoneId } = {}) {
+export async function seededContext(browser, { width, height, seed, user, onEntity, timezoneId, fixture, published } = {}) {
+  const chosen = fixtureFor(fixture);
+  seed = seed || chosen.seed;
+  published = published || chosen.published;
   // VALIDATE BEFORE RENDERING, not after measuring. Five times a seed field the
   // product never reads made a surface render its empty state while the pass
   // reported it clean. This throws instead.
-  assertSeedOnce(seed || SEED);
+  assertSeedOnce(seed, published);
   const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1, ...(timezoneId ? { timezoneId } : {}) });
   await ctx.addInitScript(() => {
     // A dummy string, never a real credential: it exists only to get
@@ -1028,7 +1060,7 @@ export async function seededContext(browser, { width, height, seed, user, onEnti
     localStorage.setItem('base44_access_token', 'render-harness-not-a-real-token');
     localStorage.setItem('oi_auth', '1');
   });
-  await stubBackend(ctx, { seed, user, onEntity });
+  await stubBackend(ctx, { seed, user, onEntity, published });
   // NO RUN MAY BILL THE CLOUDINARY ACCOUNT. 95.6% of last month's 38.5 GB
   // carried the referrer http://localhost:4173/ — this harness and its seven
   // callers. See scripts/lib/blockRemoteImages.mjs.
