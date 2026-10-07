@@ -20,13 +20,13 @@ Only one lane may have a dev server, vite preview or browser open at a time. No 
 
    Vendors and the marketplace: "Every vendor in one place, with contact, quote, deposit and what is still owed. Browse the marketplace for the ones you have not booked yet and send an enquiry without leaving the studio."
 
-   Seating chart and the visualiser: "Drag guests onto tables, see who is still unseated, and walk the room before anyone else does. The visualiser shows the layout the way your guests will see it."
+   Seating chart and the visualizer: "Drag guests onto tables, see who is still unseated, and walk the room before anyone else does. The visualizer shows the layout the way your guests will see it."
 
    Calendar: "One calendar for the whole engagement: deadlines, vendor payments, fittings, and every event on your run sheet. Subscribe from your phone so nothing lives only in the studio."
 
    Ava on every page: "Ava has read your wedding. Ask what is unpaid, who has not replied, or what still needs a decision, on any page, at any hour."
 
-   Mood board: "Pin the looks you keep coming back to, colours, florals, dresses, tables, and keep them next to the plan instead of across six apps."
+   Mood board: "Pin the looks you keep coming back to, colors, florals, dresses, tables, and keep them next to the plan instead of across six apps."
 
    Toasts and speeches: "Who is speaking, in what order, for how long. Speakers get a short brief and a deadline so nobody writes theirs in the car."
 
@@ -44,7 +44,7 @@ Only one lane may have a dev server, vite preview or browser open at a time. No 
 
 5. Date format. Dashboard dates shown as written dates ("18 May 2026") become numeric in the account's chosen format, default day/month/year (18/05/2026). Add "Date format" to Settings with two choices, day/month/year and month/day/year. Guest-facing pages keep their written dates; this is dashboard only. Storage: use an existing per-account preferences field if one exists; if none exists, STOP and report the exact field name and type needed (owner adds it via Base44 chat), then continue with the other items.
 
-6. Tag colours. Each tag gets a distinct colour from a fixed palette of at least eight, chosen deterministically from the tag name so the same tag is always the same colour across sessions and devices. Text contrast must pass on every swatch.
+6. Tag colors. Each tag gets a distinct color from a fixed palette of at least eight, chosen deterministically from the tag name so the same tag is always the same color across sessions and devices. Text contrast must pass on every swatch.
 
 7. Vendor sections, tab order. The vendor tab is first in every vendor-related section. Beauty: the team tab moves from third to first. Music: vendors, then playlist, notes, considerations. Photography: delete the "Photo and video details" tab (it duplicates the two vendor tabs); keep Photographers, Videographers, Shot list, Timeline, Considerations. Catering is already correct; verify and leave it. Any content that lived only in the deleted tab moves to the matching vendor tab before deletion; nothing is dropped.
 
