@@ -20,8 +20,19 @@ function addGlare(cardEl) {
 
 // Real product areas, pulled straight from the app's own sidebar (see
 // AnimatedSidebar.jsx NAV_SECTIONS + the two top-level items + Invitations/
-// Notes, which are real pages without a sidebar entry — 40 tools total,
-// grouped here into 7 honest cards instead of decorative copy).
+// Notes, which are real pages without a sidebar entry), grouped here into
+// honest cards instead of decorative copy.
+//
+// SIX CARDS SINCE 2026-10-08, item 2 of goals/2026-10-08-site-fixes-batch-1.md:
+// the Guest suite card is gone and the ruling is "remove Guest suite, change
+// nothing else", so no other card's order, copy, photo or number moved. It was
+// num 07 and last, which is why 01 to 06 are still contiguous and the set still
+// ends on Plus 1 (the item calls it "Plus one"; the card's own title is the
+// number).
+//
+// The tool count the old comment carried ("40 tools total") is dropped rather
+// than adjusted: nobody recounted the app, and a number nobody has verified is
+// worse than no number.
 const CARDS = [
 {
   num: "01",
@@ -64,13 +75,6 @@ const CARDS = [
   desc: "Bring someone into the planning. Invite your partner, a parent or a friend to share the load.",
   bullets: ["Invite a partner, parent or friend", "Their own login and their own access", "Everyone stays in sync automatically"],
   photo: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_Grand_Design_Daniel_Far%C3%B2_Photos_ID4152_auimyj.jpg"
-},
-{
-  num: "07",
-  title: "Guest suite",
-  desc: "Stay, getting here, guides and polls: the parts of the day your guests actually need to know.",
-  bullets: ["Stay & getting here", "Guest polls & Q&A"],
-  photo: "https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779185630/DTS_Early_Honey_Moon_Tino_Renato_Photos_ID3565_ys7asa.jpg"
 },
 ];
 
