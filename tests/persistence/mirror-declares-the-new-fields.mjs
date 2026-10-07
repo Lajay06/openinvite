@@ -1,5 +1,5 @@
 /**
- * The mirror carries the 2026-09-25 declarations, and no array item was narrowed.
+ * The mirror carries the live declarations, and no array item was narrowed.
  *
  * ── RULE 12 ────────────────────────────────────────────────────────────────
  *
@@ -11,6 +11,14 @@
  * a live export before this mirror was written: guidanceState and its two
  * members, dressCodePills and dressCodeNotes on mainCeremony and on reception,
  * and Music.playlist and Music.categoryOther.
+ *
+ * THREE MORE ON 2026-10-07, on Guest: household_id, is_child and child_age,
+ * applied live by the owner through Base44 chat and diffed shape-aware against
+ * their export before this mirror was touched. They were the only paths that
+ * differed, they are the last three keys in the live property order, and every
+ * existing property, the required list and the whole rls block came back
+ * byte-identical. Nothing reads them yet; they are declared so a write cannot
+ * be silently dropped and so the drop scanner stops calling them drift.
  *
  * ── THE NARROWING THIS GUARD EXISTS FOR ────────────────────────────────────
  *
@@ -124,6 +132,83 @@ export async function runMirrorDeclaresTheNewFields() {
   check('WeddingDetails rls is unchanged — world-readable, owner-writable',
     wd.rls?.create === null && wd.rls?.read === null
       && wd.rls?.update?.created_by_id === '{{user.id}}', JSON.stringify(wd.rls));
+
+  // ── 2026-10-07: THE THREE GUEST FIELDS ─────────────────────────────────
+  //
+  // Declared because an undeclared key is DROPPED, silently, by a custom
+  // entity. A mirror sync with nothing asserting the sync is one careless
+  // edit away from undoing itself, and the failure would be invisible: the
+  // write would appear to succeed and the value would not be there.
+  const guest = loadMirror('Guest');
+  const expected = {
+    household_id: { type: 'string' },
+    is_child:     { type: 'boolean', default: false },
+    child_age:    { type: 'number' },
+  };
+  for (const [name, want] of Object.entries(expected)) {
+    const got = guest.properties?.[name];
+    const okType = got && got.type === want.type;
+    results.push(okType
+      ? pass(`Guest.${name} is declared, type ${want.type}`, JSON.stringify({ type: got.type }))
+      : fail(`Guest.${name} is declared, type ${want.type}`, want.type, got ? JSON.stringify(got.type) : 'MISSING'));
+    if ('default' in want) {
+      results.push(got?.default === want.default
+        ? pass(`  and defaults to ${want.default}`, String(got.default))
+        : fail(`  and defaults to ${want.default}`, String(want.default),
+               got && 'default' in got ? String(got.default) : 'no default'));
+    }
+  }
+
+  // THE LIVE ORDER, which is what makes the next diff against an export cheap.
+  const guestKeys = Object.keys(guest.properties || {});
+  results.push(JSON.stringify(guestKeys.slice(-3)) === JSON.stringify(['household_id', 'is_child', 'child_age'])
+    ? pass('  and the three sit last, in the live order', guestKeys.slice(-3).join(', '))
+    : fail('  and the three sit last, in the live order', 'household_id, is_child, child_age',
+           guestKeys.slice(-3).join(', ')));
+
+  // THE TWO GUEST SHAPES MOST AT RISK FROM A CHAT-DRIVEN EDIT, named in the
+  // authorization for this sync. poll_votes is the bare object; the seven keys
+  // under event_responses are what every per-event surface reads.
+  //
+  // poll_votes IS AN OPEN MAP, NOT A BARE OBJECT, and the distinction is the
+  // whole point. It declares `additionalProperties: { type: string }`, which
+  // says "any key, string values" and keeps every poll id a guest votes in.
+  // What would narrow it is a `properties` LIST, because that is what makes a
+  // custom entity drop the keys it does not name. The first draft of this
+  // check asserted "no constraints at all" and went red against a mirror that
+  // is correct and identical to live, which is the failure mode this guard's
+  // own header warns about: compare the shape that matters, not the one that
+  // is easy to test.
+  const pollVotes = guest.properties?.poll_votes || {};
+  const narrowing = ['properties', 'enum', 'required', 'oneOf', 'anyOf', 'allOf']
+    .filter((c) => c in pollVotes);
+  results.push(narrowing.length === 0 && pollVotes.type === 'object'
+    && pollVotes.additionalProperties?.type === 'string'
+    ? pass('Guest.poll_votes is still an open map, any key to a string',
+           JSON.stringify(pollVotes.additionalProperties))
+    : fail('Guest.poll_votes is still an open map, any key to a string',
+           'additionalProperties string, no property list',
+           narrowing.length ? `narrowed by ${narrowing.join(', ')}` : JSON.stringify(pollVotes)));
+
+  const erKeys = Object.keys(guest.properties?.event_responses?.items?.properties || {});
+  const SEVEN = ['event_id', 'invited', 'status', 'meal_choice', 'plus_ones', 'plus_one_names', 'responded_at'];
+  results.push(JSON.stringify(erKeys) === JSON.stringify(SEVEN)
+    ? pass('Guest.event_responses items still declare the same seven keys, in order', `${erKeys.length} keys`)
+    : fail('Guest.event_responses items still declare the same seven keys, in order',
+           SEVEN.join(', '), erKeys.join(', ') || 'none'));
+
+  const pon = guest.properties?.event_responses?.items?.properties?.plus_one_names || {};
+  results.push(pon.type === 'array' && pon.items?.type === 'string'
+    ? pass('  and plus_one_names is still an array of strings', JSON.stringify(pon.items))
+    : fail('  and plus_one_names is still an array of strings', 'array of string', JSON.stringify(pon)));
+
+  // THE GENERATED MAP CARRIES THEM TOO, which is the half a mirror edit alone
+  // would leave behind: the Ava action validator reads that file, not this one.
+  const generated = readFileSync(root('src/lib/entityFields.generated.js'), 'utf8');
+  const missing = Object.keys(expected).filter((k) => !new RegExp(`"${k}"`).test(generated));
+  results.push(missing.length === 0
+    ? pass('  and entityFields.generated.js was regenerated with all three', 'in the generated map')
+    : fail('  and entityFields.generated.js was regenerated with all three', 'all three', `missing ${missing.join(', ')}`));
 
   return results;
 }

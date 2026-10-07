@@ -271,6 +271,38 @@
         "null"
       ],
       "description": "AES-256-GCM ciphertext of the plus-one's own RSVP token, base64(iv + authTag + ciphertext), keyed with RSVP_TOKEN_KEY. Same construction, contract, and rotation hazard as rsvp_link_id_enc. Written by E2 dual-write; null on unmigrated rows or when no plus-one token exists."
+    },
+    // ── ADDED LIVE 2026-10-07, BY THE OWNER, THROUGH BASE44 CHAT ───────────
+    //
+    // Mirrored here from the live export the owner saved, diffed shape-aware
+    // before this file was touched: the three below are the ONLY paths that
+    // differ, they are the last three keys in the live order, and every
+    // existing property, the required list and the whole rls block came back
+    // byte-identical. poll_votes is still a bare object and
+    // event_responses.items.properties still has its same seven keys in the
+    // same order, which were the two shapes most at risk from a chat-driven
+    // edit.
+    //
+    // NOTHING READS THEM YET. They are declared so a write cannot be silently
+    // dropped (an undeclared key is), and so the drop scanner stops calling
+    // them drift. The feature that uses them comes in its own goal.
+    "household_id": {
+      "type": "string",
+      "description": "Groups guests who receive one invitation. Optional; no default. Guests sharing a value here are treated as one household for invitation purposes."
+    },
+    "is_child": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this guest is a child. Optional; defaults to false."
+    },
+    // NUMBER, NOT INTEGER, and that is the live declaration rather than a
+    // transcription slip: the owner asked for integer years and Base44
+    // declared `number`. The mirror records what is live. Anything that writes
+    // this field has to round or validate on its own; nothing enforces whole
+    // years at the schema.
+    "child_age": {
+      "type": "number",
+      "description": "Child's age in whole years (integer). Optional; no default. Only meaningful when is_child is true."
     }
   },
   "required": [
