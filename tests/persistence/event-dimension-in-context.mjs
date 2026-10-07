@@ -124,9 +124,26 @@ export async function runEventDimensionInContext() {
       /const showEventTallies = tallyIsInformative\(eventTallies\)/],
     ['  rendering the shared count line, not its own wording',
       /\{eventCountLine\(t\)\}/],
-    ['  under the numbers it refines, not somewhere else on the page',
-      /snapCards\.map[\s\S]{0,1400}?data-per-event-counts/],
   ];
+
+  // ── UNDER THE NUMBERS IT REFINES, AS AN ORDER AND NOT A DISTANCE ────────
+  //
+  // RE-POINTED 2026-10-07, households and children item 7. This was
+  // `/snapCards\.map[\s\S]{0,1400}?data-per-event-counts/`, a character
+  // distance, and item 7 added a "By household" strip between the tiles and
+  // this one, which pushed the two markers 1400 characters apart. The property
+  // never changed: the breakdown still sits inside the numbers column, under
+  // the tiles. A distance was the wrong instrument, because any sibling added
+  // between them breaks it while the thing it claims to check stays true.
+  const tiles = page.indexOf('snapCards.map');
+  const strip = page.indexOf('data-per-event-counts');
+  const columnEnd = page.indexOf('</div>', strip);
+  results.push(tiles > -1 && strip > tiles && columnEnd > strip
+    ? pass('Daily update:   under the numbers it refines, not somewhere else on the page',
+           `tiles at ${tiles}, strip at ${strip}`)
+    : fail('Daily update:   under the numbers it refines, not somewhere else on the page',
+           'the strip follows the tiles in the same column',
+           `tiles ${tiles}, strip ${strip}`));
   for (const [label, re] of wiring) {
     results.push(re.test(page) ? pass(`Daily update: ${label}`, 'present')
                                : fail(`Daily update: ${label}`, 'present', 'the line is gone'));
