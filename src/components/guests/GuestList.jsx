@@ -5,6 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, ChevronDown, ChevronRight, Pencil, MessageCircle } from "lucide-react";
 import { getGuestEventResponse, effectiveMealChoice, mealOptionLabel } from "@/lib/weddingEvents";
 import { deriveRsvpStatus } from "@/lib/rsvpAggregation";
+import { groupByHousehold, isChild } from "@/lib/household";
 import GuestAvatar from "@/components/shared/GuestAvatar";
 import { interactiveDivProps } from '@/lib/a11y';
 import { hasPlusOne, plusOneRsvpStatus, plusOneDisplayName } from '@/lib/plusOne';
@@ -755,6 +756,7 @@ function AddGuestRow({ onQuickAdd, columnCount }) {
 /* ─── Main component ─────────────────────────────────────────────────────── */
 export default function GuestList({
   guests, onEdit, onDelete, onUpdate, onQuickAdd, guestRoles = {}, loading, weddingEvents = [],
+  onAddToHousehold, onMoveOutOfHousehold,
   selectedIds, onToggleSelect, onToggleSelectAll, onEditEvents, onToggleEvent, busyEventId, scrollToGuestId,
   highlightedGuestId,
   readOnly = false,
@@ -783,6 +785,10 @@ export default function GuestList({
   };
 
   const sortedGuests = sortRows(guests, sortState, SORTABLE_COLUMNS);
+  // HOUSEHOLDS STAY TOGETHER, whatever the sort. src/lib/household.js decides
+  // where a block sits and the order inside it; this page only draws it.
+  const rows = groupByHousehold(sortedGuests);
+  const householdRowFor = new Map(rows.map((r) => [r.guest.id, r]));
 
   const toggleExpanded = (guestId) => {
     setExpandedGuestIds(prev => {
@@ -981,7 +987,7 @@ export default function GuestList({
       readOnly={readOnly}
       actions
     >
-            {loading ? <SkeletonRows /> : sortedGuests.flatMap((guest) => {
+            {loading ? <SkeletonRows /> : rows.map((r) => r.guest).flatMap((guest) => {
               const rows = [];
               const isExpanded = expandedGuestIds.has(guest.id);
 
@@ -1018,6 +1024,19 @@ export default function GuestList({
                       >
                         {isExpanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
                       </button>
+                      {/* C6: a member of a household sits under its lead. The
+                          indent is the only thing that says so on this row, so
+                          it is a real element rather than padding on the cell:
+                          a nested row still has to line its own columns up
+                          with every other row's. */}
+                      {!(householdRowFor.get(guest.id)?.isLead ?? true) && (
+                        <span
+                          data-household-member
+                          aria-hidden="true"
+                          style={{ width: 18, flexShrink: 0, borderLeft: '1px solid rgba(10,10,10,0.12)',
+                                   alignSelf: 'stretch', marginLeft: 2 }}
+                        />
+                      )}
                       <GuestAvatar name={guest.name} email={guest.email} profilePictureUrl={guest.profile_picture_url} size={32} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         {textCell(guest, 'name',
@@ -1025,6 +1044,17 @@ export default function GuestList({
                             <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS, whiteSpace: 'nowrap' }}>
                               {guest.name}
                             </span>
+                            {/* C7: "Child" or "Child, 6". The age is only ever
+                                shown here, to the couple; the guest site never
+                                renders it. */}
+                            {isChild(guest) && (
+                              <span data-child-label style={{ ...dietaryPillStyle }}>
+                                {Number.isFinite(Number(guest.child_age)) && guest.child_age !== null
+                                  && guest.child_age !== undefined && String(guest.child_age) !== ''
+                                  ? `Child, ${Number(guest.child_age)}`
+                                  : 'Child'}
+                              </span>
+                            )}
                             {guestRoles[guest.id] && (
                               <span style={{ ...dietaryPillStyle, background: '#0A1930', color: '#DDF762' }}>
                                 {guestRoles[guest.id]}
@@ -1126,6 +1156,20 @@ export default function GuestList({
                           <DropdownMenuItem onClick={() => onEdit(guest)}>
                             <Edit2 size={13} style={{ marginRight: 8 }} />Edit
                           </DropdownMenuItem>
+                          {/* C6: one invitation, several people. "Add someone"
+                              copies the LEAD's stored entries, which is the
+                              household copy in src/lib/household.js and the one
+                              exception to the full-resolved-set contract. */}
+                          {onAddToHousehold && (
+                            <DropdownMenuItem onClick={() => onAddToHousehold(guest)}>
+                              <Users size={13} style={{ marginRight: 8 }} />Add someone to this invitation
+                            </DropdownMenuItem>
+                          )}
+                          {onMoveOutOfHousehold && (householdRowFor.get(guest.id)?.size ?? 1) > 1 && (
+                            <DropdownMenuItem onClick={() => onMoveOutOfHousehold(guest)}>
+                              <Users size={13} style={{ marginRight: 8 }} />Move out of this invitation
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem onClick={() => onDelete(guest.id)} style={{ color: '#E03553' }}>
                             <Trash2 size={13} style={{ marginRight: 8 }} />Delete
                           </DropdownMenuItem>

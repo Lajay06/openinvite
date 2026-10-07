@@ -34,7 +34,7 @@ import CopyFallbackModal from '@/components/shared/CopyFallbackModal';
 import { createGuest, updateGuest, deleteGuest } from '@/lib/guestWrites';
 import { findDuplicate } from '@/lib/guestDuplicate';
 import { createPendingDeletes, UNDO_WINDOW_MS } from '@/lib/pendingDelete';
-import { householdIdOf, isChild } from '@/lib/household';
+import { counts as householdCounts, membersOf, leadOf, entriesForNewMember, householdIdOf, isChild } from '@/lib/household';
 import TableToolbar from '@/components/shared/TableToolbar';
 
 // Guarded on the pattern already used by src/lib/app-params.js: read the
@@ -345,6 +345,55 @@ export default function Guests() {
   };
 
   const handleEdit = (guest) => { setEditingGuest(guest); setShowForm(true); };
+
+  // ── C6: ADDING SOMEONE TO AN INVITATION ─────────────────────────────────
+  //
+  // A new row with the same household_id, carrying the LEAD's stored
+  // event_responses entries. src/lib/household.js's entriesForNewMember is the
+  // write, and its header says why it copies rather than resolving: a full
+  // resolved set would stamp invited:false on events the lead is not invited
+  // to, and a false is a removal that takes the event off the couple's public
+  // site. Adding a person must not change what strangers see.
+  //
+  // THE HOUSEHOLD IS CREATED HERE IF THERE ISN'T ONE. A guest who has never
+  // been in a household has no household_id, so the first "add someone" gives
+  // them one and the new row shares it.
+  const handleAddToHousehold = async (guest) => {
+    const tid = toast.loading('Adding someone…');
+    try {
+      const key = (guest.household_id || '').trim() || `hh-${guest.id}`;
+      const members = membersOf({ ...guest, household_id: key }, guests);
+      const lead = leadOf(members) || guest;
+      if (!(guest.household_id || '').trim()) {
+        await updateGuest(guest.id, { household_id: key });
+      }
+      const created = await createGuest({
+        name: 'New guest',
+        household_id: key,
+        event_responses: entriesForNewMember(lead),
+      });
+      toast.success('Added to this invitation', { id: tid });
+      setScrollToGuestId(created.id);
+      setEditingGuest(created);
+      setShowForm(true);
+      loadGuests();
+    } catch (e) {
+      toast.error(e?.message || 'Could not add to this invitation', { id: tid });
+    }
+  };
+
+  // Clearing household_id is the whole of it: the row keeps its own
+  // event_responses, so moving out never changes who is invited to what.
+  const handleMoveOutOfHousehold = async (guest) => {
+    const tid = toast.loading('Moving out…');
+    try {
+      await updateGuest(guest.id, { household_id: '' });
+      toast.success('Moved to its own invitation', { id: tid });
+      loadGuests();
+    } catch (e) {
+      toast.error(e?.message || 'Could not move out of this invitation', { id: tid });
+    }
+  };
 
   // ── DELETE NOW, SEND LATER, UNDO IN BETWEEN ─────────────────────────────
   //
@@ -696,6 +745,14 @@ export default function Guests() {
   //
   // REPLIED MEANS ANSWERED, not attending: a no is a reply. The pair is
   // invited and replied because that is what a couple chases.
+  // ── THE FOUR NUMBERS, FROM THE ONE RESOLVER ─────────────────────────────
+  //
+  // People and invitations are different questions, which is the same ruling
+  // guestRsvpTally.js already carries about replies and attendance: one is per
+  // person, the other per card in the post. src/lib/household.js answers both
+  // so no surface in this goal can word it differently.
+  const hhCounts = React.useMemo(() => householdCounts(guests), [guests]);
+
   const perEventCounts = React.useMemo(() => {
     if (weddingEvents.length < 2) return [];
     return weddingEvents.map((event) => {
@@ -973,6 +1030,31 @@ export default function Guests() {
           people"; this answers "how many for each thing", which is the
           question a wedding with different guest lists per event is actually
           asking. */}
+      {/* ── C6 and C7: PEOPLE AND INVITATIONS ARE DIFFERENT QUESTIONS ──────
+          One is per person, the other per card in the post, and the same
+          ruling already governs replies and attendance in guestRsvpTally.js:
+          report both, never mix them. The adults and children line appears
+          only when there are children, because "41 adults, 0 children" is a
+          sentence about nothing. */}
+      {!loading && guests.length > 0 && (
+        <div
+          data-household-counts
+          style={{ borderBottom: '1px solid rgba(10,10,10,0.12)', padding: '12px 32px',
+                   fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13,
+                   color: 'rgba(10,10,10,0.6)', display: 'flex', gap: 16, flexWrap: 'wrap' }}
+        >
+          <span>
+            <strong style={{ color: '#0A0A0A', fontWeight: 700 }}>{hhCounts.people}</strong>
+            {' '}guests across{' '}
+            <strong style={{ color: '#0A0A0A', fontWeight: 700 }}>{hhCounts.invitations}</strong>
+            {' '}invitations
+          </span>
+          {hhCounts.children > 0 && (
+            <span>{hhCounts.adults} adults, {hhCounts.children} children</span>
+          )}
+        </div>
+      )}
+
       {!activeEvent && perEventCounts.length > 0 && !loading && (
         <div
           data-per-event-counts
@@ -1214,6 +1296,8 @@ export default function Guests() {
               onToggleSelect={readOnly ? undefined : toggleSelect}
               onToggleSelectAll={readOnly ? undefined : toggleSelectAll}
               onEditEvents={readOnly ? undefined : handleEditEvents}
+              onAddToHousehold={readOnly ? undefined : handleAddToHousehold}
+              onMoveOutOfHousehold={readOnly ? undefined : handleMoveOutOfHousehold}
               onToggleEvent={readOnly ? undefined : handleToggleEvent}
               busyEventId={busyEventId}
               scrollToGuestId={scrollToGuestId}
