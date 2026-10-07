@@ -13,7 +13,7 @@
 import { tallyAttendees, guestCounts } from './guestRsvpTally.js';
 import { resolveAttendees, MEAL_CHOSEN } from './attendees.js';
 import { mealOptionLabel, getWeddingEvents, getGuestEventResponse } from './weddingEvents.js';
-import { tallyEventsForGuests } from './eventTallies.js';
+import { tallyEventsForGuests, householdCountLine } from './eventTallies.js';
 import { coupleDisplayName } from './coupleNames.js';
 import { daysUntilWedding, countdownForPrompt } from './weddingCountdown.js';
 import { deriveSeason } from './weddingSeason.js';
@@ -285,7 +285,11 @@ ${expectedGuestLine ? expectedGuestLine + '\n' : ''}GUESTS — state the populat
 form is "${totalAttendees} people, which is ${guests.length} guests plus ${Math.max(0, totalAttendees - guests.length)} plus ones".
 REPLIES ARE COUNTED PER INVITATION and ATTENDANCE PER PERSON — never mix them.
 Invitations: ${counts.invitations.total} sent, ${counts.invitations.pending} still to reply.
-People coming: ${confirmed} of ${totalAttendees}.${eventsBlock}${guestListBlock}
+People coming: ${confirmed} of ${totalAttendees}.
+HOW MANY PEOPLE, AND HOW MANY INVITATIONS. One invitation can cover several people who
+each keep their own row, seat, meal and reply, so "how many people" and "how
+many invitations" are different questions and must not be mixed:
+${householdCountLine(guests)}${eventsBlock}${guestListBlock}
 
 BUDGET — two stores, named as the Budget page names them (spec 5.1):
 ${plan

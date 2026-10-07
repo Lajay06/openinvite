@@ -27,6 +27,7 @@
  */
 
 import { getWeddingEvents, getGuestEventResponse } from './weddingEvents.js';
+import { counts as householdCounts } from './household.js';
 
 /**
  * @param {object} wedding
@@ -57,6 +58,32 @@ export function tallyEventsForGuests(wedding, guests = []) {
  */
 export function eventCountLine({ invited, replied }) {
   return `${invited} invited, ${replied} replied`;
+}
+
+/**
+ * THE GUEST LIST'S FOUR NUMBERS, AS A SENTENCE.
+ *
+ * Item 7 of goals/2026-10-07-households-and-children.md asks that Ava carry
+ * people, adults, children and invitations "through eventTallies.js". It is
+ * routed here rather than imported straight into the context builder so there
+ * is ONE module Ava's numbers about the guest list come from, next to the
+ * per-event ones, and so nothing has to recompute them: src/lib/household.js
+ * stays the only place that counts.
+ *
+ * ONE SENTENCE, NOT FOUR FIELDS, because the prompt is read by a model and a
+ * line it can quote back is worth more than a struct it has to assemble.
+ *
+ * @param {Array} guests
+ * @returns {string}
+ */
+export function householdCountLine(guests = []) {
+  const c = householdCounts(guests);
+  // PLURALISED, INCLUDING THE AWKWARD ONES. "1 adults" in a prompt is a model
+  // reading a sentence nobody wrote, and "1 child" versus "1 children" is the
+  // kind of detail it will reproduce in an answer to the couple.
+  const n = (count, one, many) => `${count} ${count === 1 ? one : many}`;
+  return `${n(c.people, 'person', 'people')} across ${n(c.invitations, 'invitation', 'invitations')}`
+    + `, of whom ${n(c.adults, 'adult', 'adults')} and ${n(c.children, 'child', 'children')}`;
 }
 
 /**

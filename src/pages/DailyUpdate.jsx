@@ -5,6 +5,7 @@ import { loadDashboardSources, formatSourceList } from '@/lib/dashboardSources';
 import { daysUntilWedding, countdownLabel } from '@/lib/weddingCountdown';
 import { guestCounts } from '@/lib/guestRsvpTally';
 import { tallyEventsForGuests, eventCountLine, tallyIsInformative } from '@/lib/eventTallies';
+import { counts as householdCounts } from '@/lib/household';
 import { coupleDisplayName } from '@/lib/coupleNames';
 import { useCollaboratorContext } from '@/lib/collaboratorContext';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
@@ -268,6 +269,21 @@ export default function DailyUpdate() {
   // more than one: every wedding has a ceremony and a reception, so a couple
   // who has never used the per-event control would otherwise get a breakdown
   // of two identical numbers under six tiles that already said it.
+  // ── THE GUEST LIST, COUNTED BOTH WAYS ───────────────────────────────────
+  //
+  // DELIBERATELY NOT A NEW TILE. The tile row already carries "Invitations
+  // pending", and that number means something else: guestRsvpTally counts one
+  // invitation per GUEST ROW, which is the owner's 94-versus-61 ruling and is
+  // not being moved here. Once households exist the two definitions disagree,
+  // three people on one card being three by that count and one by this. Two
+  // tiles both labelled about invitations, meaning different things, would be
+  // worse than no second number at all.
+  //
+  // So it goes in its own strip, in the words the Guests page already uses and
+  // the owner already approved, and the collision is reported rather than
+  // papered over.
+  const hhCounts = householdCounts(guests);
+
   const eventTallies = tallyEventsForGuests(wd, guests);
   const showEventTallies = tallyIsInformative(eventTallies);
 
@@ -417,6 +433,25 @@ export default function DailyUpdate() {
                   reading "Invitations pending" should find the breakdown
                   beneath it rather than somewhere else on the page. Counted
                   per invitation, like the tile above it. */}
+              {guests.length > 0 && (
+                <div
+                  data-household-counts
+                  style={{ borderTop: '1px solid rgba(10,10,10,0.06)', paddingTop: 24, marginTop: 24 }}
+                >
+                  <div style={{ fontFamily: PJS, fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', marginBottom: 8 }}>
+                    By household
+                  </div>
+                  <div style={{ fontFamily: PJS, fontSize: 13, color: '#0A0A0A', fontWeight: 700 }}>
+                    {hhCounts.people} guests across {hhCounts.invitations} invitations
+                  </div>
+                  {hhCounts.children > 0 && (
+                    <div style={{ fontFamily: PJS, fontSize: 12, color: 'rgba(10,10,10,0.6)', marginTop: 2 }}>
+                      {hhCounts.adults} adults, {hhCounts.children} children
+                    </div>
+                  )}
+                </div>
+              )}
+
               {showEventTallies && (
                 <div data-per-event-counts style={{ borderTop: '1px solid rgba(10,10,10,0.06)', paddingTop: 24, marginTop: 24 }}>
                   <div style={{ fontFamily: PJS, fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', marginBottom: 12 }}>
