@@ -7,6 +7,7 @@
     "`note` is the comment that sat above the guard's step in ci.yml before the split. The steps are gone; the reasons they record are not, so they moved here rather than being deleted with the YAML that carried them.",
     "2026-09-30: test:dashboard-no-overflow (28s) and test:guest-essentials-reachable (134s) moved out of `unassigned` and into the lane, after both were run against a preview of main and both passed. They had been registered in package.json and never run by CI, on main or before it. They went one to each shard rather than both to the lighter one: 162 seconds into a pair two seconds apart would have left them 160s apart and needed the balance budget widened to hold it, and the budget is the thing keeping this file honest.",
     "2026-10-01: re-measured and rebalanced from main's run 36829293979. The numbers come from each shard's timings.json artifact rather than from the run log, which GitHub truncates for a long job; that is what #884 was for and this is its first use. Before: A 970s / B 1071s, 101s apart. After: see measuredSeconds.",
+    "2026-10-08: one guard added, not a rebalance. test:invited-to-row (22s) to A, measured locally against a preview of this branch. A 974 -> 996, so A 996 / B 968 and the delta moves from 6s to 28s against a 120s budget. It went to A because the guard reads the Guests page, which A already serves for test:per-event-dashboard, so the two share a warm route rather than paying for it twice.",
     "2026-10-07: one guard added, not a rebalance. test:household-rsvp-390 (24s) to B, measured locally against a preview of this branch. B 944 -> 968, so A 974 / B 968 and the delta falls from 30s to 6s against a 120s budget. It went to B because B was the lighter shard, which is the same rule the 2026-10-06 entry below applied in the other direction.",
     "2026-10-06: two guards added, not a rebalance. test:per-event-dashboard (59s) to A and test:per-event-guest-site (25s) to B, measured locally against a preview of this branch. A 915 -> 974, B 919 -> 944, delta 30s against a 120s budget. Neither shard moved by more than 60s, which is the threshold goals/2026-10-06-per-event-follow-up.md sets for redistributing guards, so nothing moved between shards; only the two new entries and the sums they change are written here. The bigger guard went to A because A was the lighter shard."
   ],
@@ -23,7 +24,7 @@
     "A": {
       "job": "Browser guards A",
       "port": 4223,
-      "measuredSeconds": 974,
+      "measuredSeconds": 996,
       "guards": [
         {
           "name": "Marketing-routes + guest-font-effect + no-invalid-date (against this build)",
@@ -152,6 +153,12 @@
           "seconds": 9,
           "script": "test:dress-code-render",
           "note": "The edge of a row says whether you have answered it. Dress code, as a guest sees it. The fixture carries pills + a note on the ceremony and only the LEGACY string on the reception, so one render proves both halves: pills where a couple set them, and the old page unchanged where they did not."
+        },
+        {
+          "name": "The Invited to column is one row, whatever the wedding looks like",
+          "seconds": 22,
+          "script": "test:invited-to-row",
+          "reason": "Item 4 of goals/2026-10-08-site-fixes-batch-1.md. Never wrapping is a fact about geometry: a source check sees flexWrap nowrap and still misses a chip that pushes the row to a second line, and it cannot see whether tapping the +N pill reveals anything. Against main this is 3 lines at 390."
         },
         {
           "name": "Per-event dashboard: the chips, the counts and the send step",
@@ -312,7 +319,7 @@
     }
   },
   "balance": {
-    "deltaSeconds": 6,
+    "deltaSeconds": 28,
     "budgetSeconds": 120
   },
   "unassigned": []
