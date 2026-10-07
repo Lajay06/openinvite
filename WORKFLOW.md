@@ -282,3 +282,65 @@ before merge, not after.
 
 Claude always works on a feature branch, never on `main`.  
 See `CLAUDE.md` for standing instructions to all AI sessions on this project.
+
+## Two standing rules the owner added on 2026-10-07
+
+Both came out of real damage in one session, so each records what went wrong
+rather than only what to do.
+
+### Never run a guard listed in LIVE_CREDENTIAL_GUARDS
+
+**Before running any guard not named in the brief, read
+`tests/persistence/_registry.mjs`, and never run one listed in
+`LIVE_CREDENTIAL_GUARDS`.**
+
+Those guards sign people up, send mail and write rows to the live Base44
+database. `npm run test:ci` never runs them, by design: that list is the reason
+the CI lane is safe to run from anywhere.
+
+What went wrong: a session hunting for the right guard ran
+`tests/persistence/todo-list-schema.mjs` by name. It is in the live set
+(registry line 82) and it creates and deletes real `Note` records. Nothing was
+written that time, only because `.env.local` held no `BASE44_ADMIN_KEY` and the
+create failed. The protection was an absent credential, not a decision.
+
+Reading the registry first costs one command. Running a live guard by accident
+costs production rows.
+
+### Test the merge in a worktree before opening an overlapping PR
+
+**Before opening any PR that touches a file another open PR also touches, do
+the merge in a scratch worktree and state in the PR body whether it was
+clean.**
+
+What went wrong: #902 and #903 both touched `src/pages/Guests.jsx`. Two PR
+bodies and a status report all said the overlap was "in different regions" and
+that git "should merge them". Both had added their own `import ... from
+'@/lib/household'` at the same position, so the merge conflicted. GitHub only
+said so after #902 had landed, which is the worst moment to find out.
+
+The second problem it exposed is subtler and worth knowing on its own:
+
+> GitHub builds a `pull_request` run from `refs/pull/N/merge`, the base merged
+> with the head. When a conflict appears that ref **cannot be recomputed**, so
+> it keeps pointing at a merge into the OLD base. Re-running the workflow then
+> re-tests the stale tree and reports a green that looks entirely valid.
+
+So a green verdict is only evidence about the tree that will actually land if
+the run **started after** the new base existed, and the merge ref names that
+base. Both are checkable:
+
+```bash
+git fetch -f origin refs/pull/<n>/merge:refs/remotes/origin/pr<n>m
+git log --oneline -1 refs/remotes/origin/pr<n>m   # "Merge <head> into <base>"
+gh api repos/<owner>/<repo>/actions/runs/<id> --jq '.created_at'
+```
+
+The worktree test itself is three commands and leaves nothing behind:
+
+```bash
+git worktree add -q --detach /tmp/wt origin/main
+cd /tmp/wt && git merge --no-commit --no-ff origin/<the-other-branch>
+git diff --name-only --diff-filter=U        # the conflicted paths, if any
+cd - && git worktree remove --force /tmp/wt
+```
