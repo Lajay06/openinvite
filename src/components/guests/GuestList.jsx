@@ -66,6 +66,69 @@ export function EventChip({ event, response }) {
 }
 
 /**
+ * ── ONE ROW OF CHIPS, NEVER TWO ────────────────────────────────────────────
+ *
+ * Item 4 of goals/2026-10-08-site-fixes-batch-1.md. With two or more events
+ * the chips wrapped and broke the row's height, so the ruling is: one row,
+ * never wrapping, up to two chips, then a "+N" pill that opens the rest on
+ * hover or tap, with the column width unchanged.
+ *
+ * EVERY CHIP STAYS IN THE DOM, which is the decision worth naming. The
+ * overflow ones live in this panel rather than being dropped, for three
+ * reasons: a chip is a CONTROL here (clicking it invites or removes), so
+ * dropping it would remove a capability at three events and up; the couple
+ * needs to read a state they cannot see; and scripts/test-per-event-dashboard
+ * .mjs reads every [data-invited-to] in the page to assert who is invited to
+ * what, so a row that renders two of three chips would make that guard report
+ * a fixture that does not exist.
+ *
+ * HOVER AND TAP AND FOCUS. Hover alone is a desktop-only affordance and this
+ * table is read on a phone; tap alone loses the glance. Focus opens it too, so
+ * the keyboard reaches the same controls.
+ */
+function OverflowChips({ hidden: count, children }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span
+      style={{ position: 'relative', display: 'inline-flex', lineHeight: 0 }}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <button
+        type="button"
+        data-invited-overflow={count}
+        aria-expanded={open}
+        aria-label={`Show ${count} more event${count === 1 ? '' : 's'}`}
+        onClick={() => setOpen((v) => !v)}
+        onFocus={() => setOpen(true)}
+        style={{
+          ...CHIP_BASE,
+          background: 'transparent',
+          border: '1px solid rgba(10,10,10,0.15)',
+          color: 'rgba(10,10,10,0.6)',
+          cursor: 'pointer',
+        }}
+      >
+        +{count}
+      </button>
+      {/* IN THE DOM EITHER WAY, laid out only when open: the chips inside are
+          controls and a guard reads them. */}
+      <span
+        data-invited-overflow-panel
+        style={{
+          position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 20,
+          display: open ? 'flex' : 'none', flexWrap: 'wrap', gap: 5,
+          background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.12)',
+          padding: 8, maxWidth: 320, lineHeight: 0,
+        }}
+      >
+        {children}
+      </span>
+    </span>
+  );
+}
+
+/**
  * THE PLUS-ONE'S OWN ANSWER TO ONE EVENT.
  *
  * Owner ruling on review, 2026-09-07: a plus-one's status "needs to have the
@@ -221,7 +284,17 @@ function GuestStatusCell({ guest, weddingEvents, onToggleEvent, readOnly, filter
     );
   });
 
-  return <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, maxWidth: 320 }}>{chips}</div>;
+  // TWO INLINE, THE REST BEHIND THE PILL. nowrap is the whole point of the
+  // item: the row's height stops depending on how many events a wedding has.
+  const INLINE = 2;
+  return (
+    <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: 5, maxWidth: 320 }}>
+      {chips.slice(0, INLINE)}
+      {chips.length > INLINE && (
+        <OverflowChips hidden={chips.length - INLINE}>{chips.slice(INLINE)}</OverflowChips>
+      )}
+    </div>
+  );
 }
 
 /* ── Last sent — invite_sent_at + invite_channel ─────────────────────────── */

@@ -116,6 +116,7 @@
     "test:per-event-guest-site": "node scripts/test-per-event-guest-site.mjs",
     "test:per-event-dashboard": "node scripts/test-per-event-dashboard.mjs",
     "test:household-rsvp-390": "node scripts/test-household-rsvp-390.mjs",
+    "test:invited-to-row": "node scripts/test-invited-to-row.mjs",
     "test:tag-colors": "node scripts/test-tag-colors.mjs",
     "test:shard-a": "node scripts/run-browser-shard.mjs A",
     "test:shard-b": "node scripts/run-browser-shard.mjs B"
