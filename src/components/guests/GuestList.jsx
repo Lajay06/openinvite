@@ -12,6 +12,7 @@ import { hasPlusOne, plusOneRsvpStatus, plusOneDisplayName } from '@/lib/plusOne
 import { naturalCompare, sortRows, nextSortState } from '@/lib/tableSort';
 import DataTable from '@/components/shared/DataTable';
 import { PILL_BASE, pillLabel } from '@/lib/tablePills';
+import { tagColor } from '@/lib/tagColors';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -301,6 +302,11 @@ export function DietaryCell({ value }) {
 }
 
 /* ── Tags pill display ────────────────────────────────────────────────────── */
+// THE SHAPE OF A TAG PILL. Its COLOR comes from the tag's own name now, via
+// src/lib/tagColors.js (item 6 of goals/2026-10-08-site-fixes-batch-1.md):
+// every tag was the same purple, so a row with three of them read as one
+// block. 10px is the row-pill size from src/styles/typeScale.js and does not
+// move.
 const tagPillStyle = {
   display: 'inline-block',
   fontFamily: PJS,
@@ -309,9 +315,6 @@ const tagPillStyle = {
   padding: '2px 8px',
   borderRadius: 999,
   whiteSpace: 'nowrap',
-  background: 'rgba(128,61,129,0.08)',
-  color: '#803D81',
-  border: '1px solid rgba(128,61,129,0.25)',
 };
 
 function TagsDisplay({ tags, hovered }) {
@@ -327,14 +330,22 @@ function TagsDisplay({ tags, hovered }) {
   const rest = items.length - first2.length;
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, flexWrap: 'wrap' }} title={items.join(', ')}>
-      {first2.map(t => (
-        <span key={t} style={{
-          ...tagPillStyle,
-          background: hovered ? 'rgba(128,61,129,0.16)' : tagPillStyle.background,
-          borderColor: hovered ? 'rgba(128,61,129,0.4)' : undefined,
-          transition: 'background 0.1s, border-color 0.1s',
-        }}>{t}</span>
-      ))}
+      {first2.map(t => {
+        const c = tagColor(t);
+        return (
+          <span key={t} data-tag-pill={t} style={{
+            ...tagPillStyle,
+            background: c.background,
+            color: c.color,
+            // HOVER DARKENS THE TAG'S OWN BORDER rather than tinting every
+            // pill purple, which is what the cell used to do and what made
+            // the colors pointless on the one interaction that matters.
+            border: `1px solid ${hovered ? c.color : c.border}`,
+            transition: 'border-color 0.1s',
+          }}>{t}</span>
+        );
+      })}
+      {/* NOT A TAG, so not a swatch: the overflow count stays neutral. */}
       {rest > 0 && <span style={{ ...tagPillStyle, background: 'rgba(10,10,10,0.06)', color: '#444444', border: 'none' }}>+{rest}</span>}
     </span>
   );

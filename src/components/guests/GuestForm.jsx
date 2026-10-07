@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { X, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { tagColor } from '@/lib/tagColors';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -476,19 +477,25 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
             {/* Active tags */}
             {formData.tags && formData.tags.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {formData.tags.map(tag => (
-                  <span key={tag} style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 6,
-                    fontSize: 11, fontWeight: 700, padding: '4px 10px',
-                    borderRadius: 999, background: '#0A0A0A', color: '#FFFFFF',
-                    fontFamily: PJS,
-                  }}>
-                    {tag}
-                    <button type="button" onClick={() => removeTag(tag)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', display: 'flex', padding: 0, lineHeight: 1 }}>
-                      <X size={10} />
-                    </button>
-                  </span>
-                ))}
+                {formData.tags.map(tag => {
+                  // THE SAME SWATCH THE LIST SHOWS. These chips were black on
+                  // white, so the editor was the one place a couple could not
+                  // see which color a tag is about to be.
+                  const c = tagColor(tag);
+                  return (
+                    <span key={tag} data-tag-pill={tag} style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 6,
+                      fontSize: 11, fontWeight: 700, padding: '4px 10px',
+                      borderRadius: 999, background: c.background, color: c.color,
+                      border: `1px solid ${c.border}`, fontFamily: PJS,
+                    }}>
+                      {tag}
+                      <button type="button" onClick={() => removeTag(tag)} aria-label={`Remove ${tag}`} style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.color, opacity: 0.7, display: 'flex', padding: 0, lineHeight: 1 }}>
+                        <X size={10} />
+                      </button>
+                    </span>
+                  );
+                })}
               </div>
             )}
           </div>
