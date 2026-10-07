@@ -95,10 +95,18 @@ export default function PhotographyPage() {
     );
   }
 
+  // "Photo & video details" IS GONE, item 7 of
+  // goals/2026-10-08-site-fixes-batch-1.md, and its contents moved FIRST.
+  //
+  // THE ITEM CALLS IT A DUPLICATE OF THE TWO VENDOR TABS. It was not: those
+  // render the vendor roster, while that tab held the package, the hours, the
+  // length and the two style notes, bound to details.photography.*, and they
+  // existed nowhere else. Deleting the tab alone would have deleted six fields
+  // a couple had filled in. So each half moved to the vendor tab it belongs
+  // to, which is what the goal requires of a deletion, and nothing is dropped.
   const TABS = [
     { key: 'photographers',   label: 'Photographers' },
     { key: 'videographers',   label: 'Videographers' },
-    { key: 'details',         label: 'Photo & video details' },
     { key: 'shot-list',       label: 'Shot list' },
     { key: 'timeline',        label: 'Timeline' },
     { key: 'considerations',  label: 'Considerations' },
@@ -161,19 +169,11 @@ export default function PhotographyPage() {
 
       <div style={{ padding: '32px 32px 48px' }}>
 
-        {/* Photographers tab */}
+        {/* Photographers tab — the roster, then the details that used to sit
+            in their own tab. */}
         {activeTab === 'photographers' && (
-          <VendorRosterSection category="photography" categoryLabel="photography" />
-        )}
-
-        {/* Videographers tab */}
-        {activeTab === 'videographers' && (
-          <VendorRosterSection category="videography" categoryLabel="videography" />
-        )}
-
-        {/* Photo & video details tab */}
-        {activeTab === 'details' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <VendorRosterSection category="photography" categoryLabel="photography" />
             <DetailsSection title="Photographer details" icon={Camera} sectionKey="photographer" onSave={handleDetailsSave} isSaving={isSavingDetails}>
               <VendorContactSection
                 category="photography"
@@ -186,7 +186,14 @@ export default function PhotographyPage() {
               </div>
               <SectionInput label="Photography style" isTextarea value={details.photography?.photographyStyle} onChange={e => handleDetailsUpdate('photographyStyle', e.target.value)} placeholder="Candid, traditional, artistic, documentary, etc." />
             </DetailsSection>
+          </div>
+        )}
 
+        {/* Videographers tab — the roster, then the details that used to sit
+            in their own tab. */}
+        {activeTab === 'videographers' && (
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <VendorRosterSection category="videography" categoryLabel="videography" />
             <DetailsSection title="Videographer details" icon={Video} sectionKey="videographer" onSave={handleDetailsSave} isSaving={isSavingDetails}>
               <VendorContactSection
                 category="videography"
