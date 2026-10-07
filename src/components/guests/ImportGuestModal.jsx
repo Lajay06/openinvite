@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { counts as householdCounts } from '@/lib/household';
 import { X, Upload, Download, AlertCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
@@ -78,7 +79,7 @@ export default function ImportGuestModal({ onClose, onImported, weddingEvents = 
     await Promise.all(toImport.map(async (row) => {
       // Every underscore field is preview state, not guest data. `_phoneWarning`
       // joined them when the import learned to read a phone number.
-      const { _rowIndex, _error, _phoneWarning, _maybeMapped, ...guestData } = row;
+      const { _rowIndex, _error, _phoneWarning, _maybeMapped, _householdLabel, ...guestData } = row;
       try {
         await createGuest(guestData);
       } catch (err) {
@@ -98,10 +99,18 @@ export default function ImportGuestModal({ onClose, onImported, weddingEvents = 
     // whatever the mapping.
     const maybeRows = toImport.filter((r) => r._maybeMapped).length;
     const maybeLine = maybeRows > 0 ? 'Maybe is recorded as awaiting for now' : '';
+    // ── WHAT THE FILE TURNED INTO ───────────────────────────────────────────
+    //
+    // "{n} guests in {m} invitations, {c} children", the owner's words. Counted
+    // from the rows actually imported rather than from the file, so a skipped
+    // duplicate is not reported as a guest who arrived. The one resolver
+    // answers it, so this line and the Guests page count cannot disagree.
+    const hh = householdCounts(toImport.filter((r) => !failed.includes(r._rowIndex)));
+    const shapeLine = `${hh.people} guests in ${hh.invitations} invitations, ${hh.children} children`;
 
     if (failed.length === 0 && duplicates.length === 0) {
       toast.success(
-        maybeLine ? `${importedCount} guests imported · ${maybeLine}` : `${importedCount} guests imported`,
+        [shapeLine, maybeLine].filter(Boolean).join(' · '),
         { id: tid });
       onImported();
       onClose();
@@ -110,6 +119,7 @@ export default function ImportGuestModal({ onClose, onImported, weddingEvents = 
       if (importedCount > 0) parts.push(`${importedCount} imported`);
       if (duplicates.length > 0) parts.push(`${duplicates.length} skipped (already on your list)`);
       if (failed.length > 0) parts.push(`${failed.length} failed`);
+      if (importedCount > 0) parts.push(shapeLine);
       if (maybeLine) parts.push(maybeLine);
       // THE LIBRARY'S OWN VARIANT, not an icon override. `toast.error` draws its
       // mark in our type; an `icon:` override drew the platform's.

@@ -11,7 +11,13 @@
 import { toE164, needsCountryCode, DEFAULT_COUNTRY } from './phoneE164.js';
 import { applyStatusToEventResponses } from './statusWrite.js';
 
-export const TEMPLATE_HEADERS = ['Name', 'Email', 'Phone', 'Plus one (Y/blank)'];
+// Household, Child and Child age join the template, because a couple whose
+// list has families typed them somewhere already and the only question is
+// whether we read them. Household is a free label the couple chooses: rows
+// sharing a non-empty value become one invitation, and the value itself is
+// never shown to anyone.
+export const TEMPLATE_HEADERS = ['Name', 'Email', 'Phone', 'Plus one (Y/blank)',
+  'Household', 'Child (Y/blank)', 'Child age'];
 
 const VALID_RSVP = ['attending', 'declined', 'pending', 'maybe'];
 
@@ -57,6 +63,33 @@ export function rowToGuest(row, country = DEFAULT_COUNTRY, events = []) {
   // guest is created along with every other underscore field, and
   // ImportGuestModal turns it into a line in the summary. Mapping somebody's
   // data without saying so is the part that would be wrong.
+  // ── HOUSEHOLD, CHILD AND AGE ────────────────────────────────────────────
+  //
+  // THE LABEL IS NOT THE KEY. A couple types "Patel" or "Table 4 family" in
+  // the Household column; grouping is by that value, and the household_id the
+  // product stores is derived from it by parseGuestFile, which is the only
+  // place that can see the whole file and therefore the only place that can
+  // give every row with the same label one id. rowToGuest reports the label
+  // and nothing more.
+  //
+  // TRIMMED, AND BLANK MEANS NO HOUSEHOLD, which is household.js's own rule:
+  // a blank cell must not group every blank row into one enormous invitation.
+  const householdLabel = String(row['Household'] ?? '').trim();
+
+  // Y, YES, TRUE or 1, the same looseness the plus-one column already allows,
+  // because a spreadsheet's "yes" column is whatever the couple typed.
+  const childRaw = String(row['Child (Y/blank)'] ?? row['Child'] ?? '').trim().toLowerCase();
+  const isChildRow = ['y', 'yes', 'true', '1'].includes(childRaw);
+
+  // ONLY FOR A CHILD, AND ONLY WHOLE YEARS 0 TO 17. base44 declares child_age
+  // as `number`, so the bound is this writer's job, exactly as it is in the
+  // guest editor. An unreadable age is dropped rather than guessed at, and an
+  // age on a row that is not a child is ignored rather than stored on an adult.
+  const ageRaw = String(row['Child age'] ?? '').trim();
+  const ageNum = ageRaw === '' ? null : Math.trunc(Number(ageRaw));
+  const childAge = isChildRow && ageNum !== null && Number.isFinite(ageNum)
+    && ageNum >= 0 && ageNum <= 17 ? ageNum : undefined;
+
   const maybeMapped = rsvpRaw === 'maybe';
   const rsvpStatus = maybeMapped ? 'pending'
     : (VALID_RSVP.includes(rsvpRaw) ? rsvpRaw : 'pending');
@@ -104,6 +137,11 @@ export function rowToGuest(row, country = DEFAULT_COUNTRY, events = []) {
     rsvp_status: rsvpStatus,
     ...(eventResponses.length > 0 ? { event_responses: eventResponses } : {}),
     ...(maybeMapped ? { _maybeMapped: true } : {}),
+    // The LABEL travels as preview state; parseGuestFile turns it into a
+    // household_id once it can see every row.
+    ...(householdLabel ? { _householdLabel: householdLabel } : {}),
+    ...(isChildRow ? { is_child: true } : {}),
+    ...(childAge !== undefined ? { child_age: childAge } : {}),
     table_assignment: String(row['Table'] ?? '').trim() || undefined,
     plus_one: plusOne,
     plus_one_name: String(row['Plus one name'] ?? row['+1 Name'] ?? '').trim() || undefined,
@@ -135,6 +173,50 @@ export async function downloadGuestTemplate() {
  * of +61 numbers and no message saying so. The caller picks the country now,
  * with the same picker every other phone field uses.
  */
+/**
+ * ── ONE ID PER LABEL, ASSIGNED ONCE THE WHOLE FILE IS IN HAND ──────────────
+ *
+ * rowToGuest sees one row and can only report the LABEL a couple typed in the
+ * Household column. This sees every row, so it is the only place that can give
+ * each label one household_id.
+ *
+ * THE ID IS GENERATED, NOT THE LABEL. A label is free text: a couple may reuse
+ * "Family" across two imports, or across two weddings, and a stored key should
+ * not depend on what they typed. The label never reaches the Guest record.
+ *
+ * A LABEL USED BY ONE ROW ALONE IS NOT A HOUSEHOLD. One person is their own
+ * invitation whether or not they typed a surname beside their name, and giving
+ * them a key would leave a value on the row that nothing reads while the count
+ * line said the same thing either way.
+ *
+ * EXPORTED so a guard can drive it without building a spreadsheet, which is
+ * the same reason api/rsvp-submit.js exports its own decisions.
+ *
+ * @param {Array} parsed  rows from rowToGuest, carrying _householdLabel
+ * @param {() => string} [newId]  injectable, so a guard is not random
+ * @returns {Array} the same rows, with household_id on the grouped ones
+ */
+export function assignHouseholdIds(parsed = [], newId = null) {
+  const rows = Array.isArray(parsed) ? parsed : [];
+  const labelCounts = new Map();
+  for (const r of rows) {
+    if (!r?._householdLabel) continue;
+    labelCounts.set(r._householdLabel, (labelCounts.get(r._householdLabel) || 0) + 1);
+  }
+  const idForLabel = new Map();
+  let n = 0;
+  for (const [label, count] of labelCounts) {
+    if (count > 1) {
+      n += 1;
+      idForLabel.set(label, newId ? newId(label, n) : `hh-${Math.random().toString(36).slice(2, 10)}`);
+    }
+  }
+  return rows.map((r) => {
+    const id = r?._householdLabel ? idForLabel.get(r._householdLabel) : undefined;
+    return id ? { ...r, household_id: id } : r;
+  });
+}
+
 export function parseGuestFile(file, country = DEFAULT_COUNTRY, events = []) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -149,13 +231,14 @@ export function parseGuestFile(file, country = DEFAULT_COUNTRY, events = []) {
           reject(new Error('File is empty or has no data rows'));
           return;
         }
-        resolve(jsonRows.map((row, i) => {
+        const parsed = jsonRows.map((row, i) => {
           try {
             return { ...rowToGuest(row, country, events), _rowIndex: i + 2, _error: null };
           } catch (err) {
             return { _rowIndex: i + 2, _error: err.message, name: '—', rsvp_status: '—', plus_one: false };
           }
-        }));
+        });
+        resolve(assignHouseholdIds(parsed));
       } catch {
         reject(new Error('Failed to parse file — check it is a valid CSV or XLSX'));
       }

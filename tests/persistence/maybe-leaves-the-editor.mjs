@@ -111,11 +111,20 @@ export async function runMaybeLeavesTheEditor() {
   ok('  only when a row was actually mapped',
      /const maybeRows = toImport\.filter\(\(r\) => r\._maybeMapped\)\.length;/.test(modal)
      && /maybeRows > 0 \?/.test(modal), 'conditional on the count');
+  // RE-POINTED 2026-10-07, households and children item 6. The clean-path
+  // toast was the importedCount template and is now joined from a list,
+  // because item 6 added a second line to it ("{n} guests in {m}
+  // invitations, {c} children"). The property is unchanged: the maybe line
+  // reaches BOTH the clean path and the troubled one.
   ok('  on the clean path as well as the troubled one',
-     /\$\{importedCount\} guests imported · \$\{maybeLine\}/.test(modal)
+     /\[shapeLine, maybeLine\]\.filter\(Boolean\)\.join/.test(modal)
      && /if \(maybeLine\) parts\.push\(maybeLine\);/.test(modal), 'both branches');
   ok('  and the flag is stripped before the guest is created',
-     /const \{ _rowIndex, _error, _phoneWarning, _maybeMapped, \.\.\.guestData \} = row;/.test(modal),
+  // RE-POINTED the same day and for the same reason: item 6 added
+  // _householdLabel to the same destructure. Asserted by MEMBERSHIP now
+  // rather than by the exact line, so the next preview field added does not
+  // read as a regression in this one.
+     /const \{[^}]*_maybeMapped[^}]*\.\.\.guestData \} = row;/.test(modal),
      'preview state, not guest data');
 
   return results;

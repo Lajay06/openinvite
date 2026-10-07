@@ -34,7 +34,7 @@ import CopyFallbackModal from '@/components/shared/CopyFallbackModal';
 import { createGuest, updateGuest, deleteGuest } from '@/lib/guestWrites';
 import { findDuplicate } from '@/lib/guestDuplicate';
 import { createPendingDeletes, UNDO_WINDOW_MS } from '@/lib/pendingDelete';
-import { counts as householdCounts, membersOf, leadOf, entriesForNewMember } from '@/lib/household';
+import { counts as householdCounts, membersOf, leadOf, entriesForNewMember, householdIdOf, isChild } from '@/lib/household';
 import TableToolbar from '@/components/shared/TableToolbar';
 
 // Guarded on the pattern already used by src/lib/app-params.js: read the
@@ -805,7 +805,12 @@ export default function Guests() {
       // matters most after the day -- thank-you cards -- and until now it had
       // no route out of the product at all, which made the launch claim of
       // exporting "addresses" untrue.
-      ['Name', 'Email', 'Phone', 'Category', 'RSVP Status', 'Meal Choice', 'Table Assignment', 'Plus One', 'Plus One Name', 'Dietary Restrictions', 'Plus One RSVP', 'Plus One Meal', 'Plus One Dietary', 'Mailing Address', 'Notes', 'Special Requests', 'Plus One Email'].join(','),
+      // Household, Child and Child age are APPENDED, for the third time and the
+      // same reason: a spreadsheet somebody already built a pivot on must not
+      // have its columns move. Household exports the raw household_id rather
+      // than a label, because it is the value the IMPORT reads back to group
+      // rows, and a round trip has to survive it.
+      ['Name', 'Email', 'Phone', 'Category', 'RSVP Status', 'Meal Choice', 'Table Assignment', 'Plus One', 'Plus One Name', 'Dietary Restrictions', 'Plus One RSVP', 'Plus One Meal', 'Plus One Dietary', 'Mailing Address', 'Notes', 'Special Requests', 'Plus One Email', 'Household', 'Child', 'Child age'].join(','),
       // Meal Choice: read through effectiveMealChoice, which ranks the
       // per-event overlay getMyGuestsWithRsvp attaches above the flat
       // Guest.meal_choice column. That column is NO LONGER DEAD — the guest
@@ -828,7 +833,19 @@ export default function Guests() {
         g.mailing_address || '',
         g.notes || '',
         g.special_requests || '',
-        hasPlusOne(g) ? (g.plus_one_email || '') : ''
+        hasPlusOne(g) ? (g.plus_one_email || '') : '',
+        // The key itself, trimmed the way household.js reads it, so a blank
+        // cell and a whitespace cell both export as blank and import back as
+        // "no household" rather than as one enormous invitation.
+        householdIdOf(g) || '',
+        isChild(g) ? 'Yes' : 'No',
+        // ONLY FOR A CHILD, and blank when unknown. A 0 is a real age and must
+        // survive the round trip, so the test is for a finite number rather
+        // than for truthiness.
+        isChild(g) && Number.isFinite(Number(g.child_age)) && g.child_age !== null
+          && g.child_age !== undefined && String(g.child_age) !== ''
+          ? String(Math.trunc(Number(g.child_age)))
+          : ''
       ].map(f => `"${f}"`).join(','))
     ].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
