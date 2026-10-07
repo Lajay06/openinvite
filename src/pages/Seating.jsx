@@ -28,6 +28,7 @@ import AvaModal from '@/components/layout/AvaModal';
 import { useCollaboratorContext } from '@/lib/collaboratorContext';
 import CountUp from "@/components/shared/CountUp";
 import { color } from "@/styles/tokens";
+import { tagColor } from '@/lib/tagColors';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -56,15 +57,20 @@ function MiniTags({ tags }) {
   if (items.length === 0) return null;
   const first2 = items.slice(0, 2);
   const rest = items.length - first2.length;
+  // SHAPE HERE, COLOR FROM THE NAME: the same src/lib/tagColors.js swatch the
+  // guest list uses, so a tag is one color in both places. 8px is this panel's
+  // own sizing and is left alone.
   const pillStyle = {
     display: 'inline-block', fontFamily: PJS,
     fontSize: 8, fontWeight: 600, padding: '1px 6px', borderRadius: 999,
-    whiteSpace: 'nowrap', background: 'rgba(128,61,129,0.08)', color: '#803D81',
-    border: '1px solid rgba(128,61,129,0.25)',
+    whiteSpace: 'nowrap',
   };
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, marginTop: 2 }} title={items.join(', ')}>
-      {first2.map(t => <span key={t} style={pillStyle}>{t}</span>)}
+      {first2.map(t => {
+        const c = tagColor(t);
+        return <span key={t} data-tag-pill={t} style={{ ...pillStyle, background: c.background, color: c.color, border: `1px solid ${c.border}` }}>{t}</span>;
+      })}
       {rest > 0 && <span style={{ ...pillStyle, background: 'rgba(10,10,10,0.06)', color: '#444444', border: 'none' }}>+{rest}</span>}
     </span>
   );

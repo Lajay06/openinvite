@@ -167,13 +167,13 @@ export const SEED = {
     // PHONE ON g1, AND A guest_id ON THE MESSAGE FROM HER BELOW. See
     // instrument failure 8: without both, the Messages page's WhatsApp
     // control cannot render in any guard.
-    { id:'g1', name:'Grace Hopper',  email:'grace@example.com',  phone:'+61412345678', rsvp_status:'attending', table_assignment:'t1', meal_choice:'chicken', category:'family',           created_by:'fixture@example.com',
+    { id:'g1', name:'Grace Hopper',  email:'grace@example.com',  phone:'+61412345678', rsvp_status:'attending', table_assignment:'t1', meal_choice:'chicken', category:'family',           created_by:'fixture@example.com', tags:['Family', 'Work'],
       event_responses:[
         { event_id:'main-ceremony',  invited:true,  status:'yes' },
         { event_id:'reception',      invited:true,  status:'yes' },
         { event_id:'welcome-drinks', invited:true,  status:'yes' },
       ] },
-    { id:'g2', name:'Katherine J.',  email:'kj@example.com',     rsvp_status:'attending', table_assignment:'t1', meal_choice:'fish',    category:'partners_family', created_by:'fixture@example.com',
+    { id:'g2', name:'Katherine J.',  email:'kj@example.com',     rsvp_status:'attending', table_assignment:'t1', meal_choice:'fish',    category:'partners_family', created_by:'fixture@example.com', tags:['Family'],
       event_responses:[
         { event_id:'main-ceremony',  invited:true,  status:'yes' },
         { event_id:'reception',      invited:true,  status:'yes' },
@@ -195,13 +195,13 @@ export const SEED = {
     // only a yes or a no, which his rows do not carry. The property under test
     // is "the flat column loses", and a flat value that disagrees is all that
     // needs.
-    { id:'g3', name:'Alan Turing',   email:'alan@example.com',   rsvp_status:'attending', table_assignment:'t2', category:'friends',    created_by:'fixture@example.com',
+    { id:'g3', name:'Alan Turing',   email:'alan@example.com',   rsvp_status:'attending', table_assignment:'t2', category:'friends',    created_by:'fixture@example.com', tags:['Uni'],
       event_responses:[
         { event_id:'main-ceremony',  invited:true,  status:'pending' },
         { event_id:'reception',      invited:true,  status:'pending' },
         { event_id:'welcome-drinks', invited:false, status:'pending' },
       ] },
-    { id:'g4', name:'Edsger D.',     email:'edsger@example.com', rsvp_status:'declined',  category:'colleagues', created_by:'fixture@example.com',
+    { id:'g4', name:'Edsger D.',     email:'edsger@example.com', rsvp_status:'declined',  category:'colleagues', created_by:'fixture@example.com', tags:['Golf'],
       event_responses:[
         { event_id:'main-ceremony',  invited:true,  status:'no' },
         { event_id:'reception',      invited:false, status:'pending' },
