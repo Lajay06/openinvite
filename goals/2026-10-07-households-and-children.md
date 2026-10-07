@@ -35,3 +35,7 @@ As CLAUDE.md, plus: no schema change beyond the three mirrored fields; no new ke
 ## Protocol
 
 Order 1, 2, 3, 6, 7, 4, 5, 8. One held PR per item (8 may fold into the item it proves if small). Carry on past held PRs. Diff guards after every commit, before every push. Registry's LIVE_CREDENTIAL_GUARDS never run. Blocks together at the end, narrow format, full 40-character SHAs, four checks by name.
+
+Tidy-up for a later small-fixes pass: resolveHousehold queries the untrimmed household_id but filters on the trimmed one.
+
+Closed 2026-10-07 at main 94c4229b96698d2e73a1231f2e5f80882b0cef76, PRs #899 #900 #901 #902 #903 #904 #905 #906 #908 #909
