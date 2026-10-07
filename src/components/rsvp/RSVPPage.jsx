@@ -11,6 +11,10 @@ import GuestNoteForm from '@/components/guest-website/GuestNoteForm';
 import { buildIcs, buildGoogleCalendarUrl } from '@/lib/calendarLinks';
 import { formatWeddingDate } from '@/lib/guestDate';
 import { greetableFirstName } from '@/lib/guestGreeting';
+import {
+  householdForm, seedMemberForms, memberEvents, memberSubmissions,
+  everyMemberAnswered, membersStillToAnswer,
+} from '@/lib/householdRsvp';
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
@@ -136,7 +140,10 @@ function PollCard({ poll, selectedOptionId, onSelect, theme, typography }) {
 }
 
 // ── Per-event RSVP card ────────────────────────────────────────────────────────
-function EventCard({ event, value, onChange, hasPlusOne, mealChoices, hasMealOptions, theme, typography, wedding }) {
+// `idScope` keeps the plus-one checkbox's id unique when the same event is
+// drawn once per member of a household: two controls with one id means the
+// second label points at the first person's checkbox.
+function EventCard({ event, value, onChange, hasPlusOne, mealChoices, hasMealOptions, theme, typography, wedding, idScope = '' }) {
   const F = { fontFamily: typography.bodyFont };
   // F-D: solid fills mixed from the couple's palette. See src/lib/surfaceTint.js
   // — an alpha fill composites over the universe's texture, so its final colour
@@ -233,12 +240,12 @@ function EventCard({ event, value, onChange, hasPlusOne, mealChoices, hasMealOpt
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <input
                 type="checkbox"
-                id={`plusone-${event.event_id}`}
+                id={`plusone-${idScope}${event.event_id}`}
                 checked={!!value.plus_one_attending}
                 onChange={e => onChange({ ...value, plus_one_attending: e.target.checked })}
                 style={{ width: 16, height: 16, accentColor: theme.accent }}
               />
-              <label htmlFor={`plusone-${event.event_id}`} style={{ fontSize: 13, color: theme.lightText, cursor: 'pointer', ...F }}>
+              <label htmlFor={`plusone-${idScope}${event.event_id}`} style={{ fontSize: 13, color: theme.lightText, cursor: 'pointer', ...F }}>
                 I'm bringing a plus-one to this event
               </label>
             </div>
@@ -346,6 +353,17 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
     });
   };
 
+  // ── EVERYONE ON ONE INVITATION ──────────────────────────────────────────
+  //
+  // The household's rows as the lookup returned them, and one form per member.
+  // Both stay empty for every link that is not a lead's, and empty is exactly
+  // today's page: see src/lib/householdRsvp.js.
+  const [household, setHousehold] = useState([]);
+  // { [guestId]: { [eventId]: { status, meal_choice, ... } } } for the members
+  // who are not the holder. The holder's own answers stay in eventForm, so the
+  // single-guest path is byte-for-byte unchanged.
+  const [memberForms, setMemberForms] = useState({});
+
   const [phase, setPhase] = useState('ask');
   const [primarySaving, setPrimarySaving] = useState(false);
   const [primaryError, setPrimaryError] = useState('');
@@ -422,9 +440,15 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
       try {
         const res = await fetch(`/api/rsvp-lookup?token=${encodeURIComponent(token)}`);
         if (!res.ok) { setNotFound(true); setLoading(false); return; }
-        const { guest: g, wedding: wd } = await res.json();
+        const { guest: g, wedding: wd, household: hh } = await res.json();
         setGuest(g);
         setWedding(wd);
+        // ABSENT UNTIL THE HELD READ SHIPS, and absent is the single-guest
+        // form. api/rsvp-lookup.js returns only the holder's own row today.
+        const hhRows = Array.isArray(hh) ? hh.filter(Boolean) : [];
+        setHousehold(hhRows);
+        const hhForm = householdForm({ holder: g, household: hhRows });
+        setMemberForms(hhForm.active ? seedMemberForms(hhForm.members, wd) : {});
         // Pre-populate any previous poll votes
         setGuestVotes(g.poll_votes || {});
         setSongRequest(g.song_request || '');
@@ -505,6 +529,20 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
   const allEventsAnswered = invitedEvents.length > 0 &&
     invitedEvents.every(ev => eventForm[ev.event_id]?.status);
 
+  // THE FORM IS THE LEAD'S, AND ONLY THE LEAD'S. A member who followed their
+  // own link answers for themselves alone, which householdForm decides.
+  const hh = useMemo(() => householdForm({ holder: guest, household }), [guest, household]);
+  const otherMembers = hh.active ? hh.members.filter(m => !m.isHolder) : [];
+  const householdComplete = !hh.active
+    || everyMemberAnswered({ members: hh.members, forms: memberForms, wedding });
+  const stillToAnswer = hh.active
+    ? membersStillToAnswer({ members: hh.members, forms: memberForms, wedding })
+    : [];
+
+  const updateMemberEvent = (guestId, eventId, value) => {
+    setMemberForms(prev => ({ ...prev, [guestId]: { ...(prev[guestId] || {}), [eventId]: value } }));
+  };
+
   /**
    * Write a set of event responses. Shared by the primary tap and the details
    * submit so the two cannot drift: same endpoint, same shape, same merge.
@@ -577,7 +615,7 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!allEventsAnswered) return;
+    if (!allEventsAnswered || !householdComplete) return;
     setSubmitting(true);
     try {
       const now = new Date().toISOString();
@@ -606,6 +644,14 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
         body: JSON.stringify({
           token,
           event_responses: submittedResponses,
+          // ONE PAYLOAD, THE EXISTING ONE PLUS A members ARRAY. The holder's
+          // own answers stay where they have always been, so a single guest's
+          // submission is unchanged down to the key order; `members` is absent
+          // unless this is a lead replying for a household. Each member's
+          // entries are limited to the events that member is invited to and
+          // carry no plus-one, both enforced in householdRsvp.js rather than by
+          // the controls this page happens to draw.
+          ...(hh.active ? { members: memberSubmissions({ members: hh.members, forms: memberForms, wedding, now }) } : {}),
           song_request: songRequest,
           rsvp_note: rsvpNote,
           // THE PILLS ARE THE ANSWER, and an empty selection is an empty
@@ -1084,6 +1130,14 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
         {phase === 'details' && (
         <form onSubmit={handleSubmit}>
 
+          {/* WHOSE ANSWERS THESE ARE, said only when there is someone else's
+              below. A single guest's form is about them and needs no label. */}
+          {hh.active && (
+            <p style={{ fontSize: 12, fontWeight: 700, color: theme.lightText, margin: '0 0 10px', ...F }}>
+              Your reply
+            </p>
+          )}
+
           {invitedEvents.length === 0 ? (
             <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', marginBottom: 28 }}>
               No events found for this invitation yet — please check back soon or contact the couple.
@@ -1103,6 +1157,64 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
                 typography={typography}
               />
             ))
+          )}
+
+          {/* ── EVERYONE ELSE ON THIS INVITATION ──────────────────────────────
+              One block per member, each with their own events, their own status
+              and their own meal choice, because a seat and a meal have always
+              been per person.
+
+              NO PLUS-ONE CONTROL HERE: that is the lead's, and householdRsvp.js
+              strips one out of a member's submission as well as this page
+              declining to draw it.
+
+              "Child" AND NEVER AN AGE. child_age is the couple's own note; a
+              guest sees the word. This page does not read that field at all. */}
+          {otherMembers.map(m => (
+            <div key={m.id} style={{ marginTop: 28 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: theme.lightText, margin: 0, ...F }}>
+                  {m.name}
+                </p>
+                {m.isChild && (
+                  <span style={{
+                    fontSize: 11, fontWeight: 600, color: theme.lightText, opacity: 0.7,
+                    border: `1px solid ${S.border}`, borderRadius: 999, padding: '1px 8px', ...F,
+                  }}>
+                    Child
+                  </span>
+                )}
+              </div>
+              {memberEvents(m, wedding).length === 0 ? (
+                <p style={{ fontSize: 14, color: theme.lightText, opacity: 0.7, ...F }}>
+                  Nothing to answer for {m.name} yet.
+                </p>
+              ) : (
+                memberEvents(m, wedding).map(ev => (
+                  <EventCard
+                    key={`${m.id}-${ev.event_id}`}
+                    event={ev}
+                    idScope={`${m.id}-`}
+                    value={(memberForms[m.id] || {})[ev.event_id] || { status: '', meal_choice: '', plus_one_attending: false, plus_one_name: '' }}
+                    onChange={(value) => updateMemberEvent(m.id, ev.event_id, value)}
+                    hasPlusOne={false}
+                    mealChoices={mealChoices}
+                    hasMealOptions={hasMealOptions}
+                    wedding={wedding}
+                    theme={theme}
+                    typography={typography}
+                  />
+                ))
+              )}
+            </div>
+          ))}
+
+          {/* WHO IS STILL TO ANSWER, BY NAME. A disabled button with no reason
+              beside it is the same as a broken one. */}
+          {hh.active && stillToAnswer.length > 0 && (
+            <p style={{ fontSize: 13, color: theme.lightText, opacity: 0.8, margin: '20px 0 0', ...F }}>
+              Still to answer: {stillToAnswer.join(', ')}.
+            </p>
           )}
 
           {/* Wedding-level fields — render once, not per event */}
@@ -1196,11 +1308,11 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
           {/* Submit */}
           <button
             type="submit"
-            disabled={!allEventsAnswered || submitting}
+            disabled={!allEventsAnswered || !householdComplete || submitting}
             style={{
               width: '100%', padding: '14px 24px', background: theme.accent, color: '#FFFFFF',
               border: 'none', borderRadius: 999, fontSize: 15, fontWeight: 700, cursor: 'pointer',
-              opacity: (!allEventsAnswered || submitting) ? 0.5 : 1, transition: 'opacity 0.15s ease', ...F,
+              opacity: (!allEventsAnswered || !householdComplete || submitting) ? 0.5 : 1, transition: 'opacity 0.15s ease', ...F,
             }}
           >
             {submitting ? 'Sending…' : 'Submit RSVP'}
