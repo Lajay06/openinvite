@@ -12,6 +12,7 @@ import { hasPlusOne, plusOneRsvpStatus, plusOneDisplayName } from '@/lib/plusOne
 import { naturalCompare, sortRows, nextSortState } from '@/lib/tableSort';
 import DataTable from '@/components/shared/DataTable';
 import { PILL_BASE, pillLabel } from '@/lib/tablePills';
+import { formatDashboardDate } from '@/lib/dashboardDate';
 import { tagColor } from '@/lib/tagColors';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -300,7 +301,10 @@ function GuestStatusCell({ guest, weddingEvents, onToggleEvent, readOnly, filter
 /* ── Last sent — invite_sent_at + invite_channel ─────────────────────────── */
 function fmtDate(iso) {
   if (!iso) return null;
-  return new Date(iso).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+  // Numeric, in the account's format (src/lib/dashboardDate.js). A
+  // module-level helper cannot call useAuth, which is why the formatter reads
+  // the cache AuthContext writes.
+  return formatDashboardDate(iso);
 }
 
 const CHANNEL_LABELS = { email: 'Email', whatsapp: 'WhatsApp', 'email+whatsapp': 'Email + WhatsApp', 'whatsapp+email': 'Email + WhatsApp' };
@@ -631,7 +635,10 @@ function formatTableAssignment(value) {
 
 function fmtRespondedAt(iso) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+  // Numeric, in the account's format (src/lib/dashboardDate.js). A
+  // module-level helper cannot call useAuth, which is why the formatter reads
+  // the cache AuthContext writes.
+  return formatDashboardDate(iso);
 }
 
 const STATUS_LABELS = { yes: 'Attending', no: 'Declined', pending: 'Pending' };

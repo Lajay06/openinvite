@@ -43,6 +43,7 @@ import {
   DRESS_CODE_NOTES_PLACEHOLDER, resolveDressCode, togglePill, addCustomPill,
 } from '@/lib/dressCode';
 import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
+import { formatDashboardDate } from '@/lib/dashboardDate';
 const TABS = [
   { key: 'details', label: 'Details' },
   { key: 'events',  label: 'Events' },
@@ -137,7 +138,10 @@ function fmtTime(t) {
 }
 function fmtDate(d) {
   if (!d) return '';
-  try { return new Date(d + 'T00:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }); }
+  // Numeric, in the account's format: src/lib/dashboardDate.js, item 5 of
+  // goals/2026-10-08-site-fixes-batch-1.md. The local-midnight handling this
+  // line did by hand moved into the formatter.
+  try { return formatDashboardDate(d); }
   catch { return d; }
 }
 
