@@ -99,8 +99,10 @@ export async function runRsvpOnlyInvitedEvents() {
       /const attendingCount = invitedResponses\.filter[\s\S]{0,400}?const responseSummary/],
     ["the guest's own receipt reads the kept rows too",
       /const attending = invitedResponses\.some\(r => r\.status === 'yes'\);/],
+    // KEYS, NOT A LINE: same reason as rsvp-confirmation-email.mjs's own
+    // version of this check. The response object is multi-line now.
     ['the drop is counted in the response',
-      /\{ ok: true, confirmation, dropped: droppedEventIds\.length \}/],
+      /dropped: droppedEventIds\.length/],
     ['and logged, so a pattern of them is visible',
       /console\.warn\(`\[rsvp-submit\] dropped \$\{droppedEventIds\.length\}/],
     ['nothing writes a row straight from the sanitized set any more',

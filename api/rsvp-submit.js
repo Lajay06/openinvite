@@ -21,6 +21,12 @@
  * Body: {
  *   token: string,
  *   event_responses: Array<{ event_id, status, meal_choice?, plus_ones?, plus_one_names?, responded_at? }>,
+ *   members?: Array<{ ref: string, event_responses: Array<same shape> }>,
+ *     // item 5 of goals/2026-10-07-households-and-children.md: a LEAD replying
+ *     // for the rest of their household. `ref` is the opaque per-member handle
+ *     // api/rsvp-lookup.js supplies (hashId of the row's id, the same value
+ *     // RsvpResponse keys on) — never a guest id, which this endpoint has
+ *     // never accepted from a client and still does not. See memberWrites.
  *   song_request?: string, rsvp_note?: string, dietary_restrictions?: string, email?: string,
  * }
  *
@@ -59,7 +65,8 @@
 import { Resend } from 'resend';
 import { applyCors, checkRateLimit, getClientIp, sanitizeString, isValidEmail } from './_lib/security.js';
 import { renderRsvpConfirmationEmail } from '../src/lib/emailTemplate.js';
-import { resolveGuestByToken } from './_lib/rsvpAuth.js';
+import { resolveGuestByToken, resolveHousehold } from './_lib/rsvpAuth.js';
+import { leadOf, salutation } from '../src/lib/household.js';
 import { notify } from './_lib/notify.js';
 // THE COUPLE'S ADDRESS, FOR Reply-To. WeddingDetails carries no email — the
 // couple's address lives on the User entity — so this is the only way to make
@@ -198,6 +205,71 @@ export function keepOnlyInvitedEvents(eventResponses = [], { wedding, guest } = 
   return { kept, droppedEventIds };
 }
 
+/**
+ * ── A LEAD REPLYING FOR THE REST OF THEIR HOUSEHOLD ────────────────────────
+ *
+ * Item 5 of goals/2026-10-07-households-and-children.md, under that goal's
+ * named exception for this file. Three gates, each of which is the whole
+ * answer to a different question:
+ *
+ *   1. IS THIS A LEAD'S LINK AT ALL. The household is read server-side from
+ *      the holder's own row (api/_lib/rsvpAuth.js's resolveHousehold, scoped
+ *      to their household_id and their owner), and if the holder is not its
+ *      lead, every member answer is rejected. That is the goal's rule that "a
+ *      member who has their own link still answers for themselves alone",
+ *      enforced where it cannot be bypassed rather than in the form.
+ *
+ *   2. IS THIS REF SOMEBODY ON THAT INVITATION. A ref is matched against the
+ *      rows read here, never trusted. So a forged ref resolves to nobody, a
+ *      stale one from a household that has since changed resolves to nobody,
+ *      and a ref belonging to another wedding's guest cannot appear in the set
+ *      at all. The holder's own ref is rejected too: their answers travel in
+ *      event_responses, and accepting both would write the same reply twice.
+ *
+ *   3. WAS THIS MEMBER INVITED TO THIS EVENT. keepOnlyInvitedEvents, above,
+ *      applied PER MEMBER rather than per guest — #891's rule, which the form
+ *      cannot be the check for now that one person answers for several.
+ *
+ * AND PLUS-ONES ARE STRIPPED HERE AS WELL AS IN THE FORM. A plus-one belongs
+ * to the lead; a member's write carries plus_ones: 0 whatever arrived.
+ *
+ * REJECTED, NOT REFUSED, for the reason the sanitizer already gives: a lead
+ * who answered for three people and sent one ref that no longer resolves has
+ * still answered for two. The counts go back in the response and are logged.
+ *
+ * EXPORTED so a guard can drive the decision without a network call, as
+ * confirmationRecipient and keepOnlyInvitedEvents are, and `refOf` is
+ * injectable for the same reason: hashId needs the admin key.
+ */
+export function memberWrites({ submitted = [], household = [], holder, wedding, refOf = hashId } = {}) {
+  const rejected = [];
+  const list = Array.isArray(submitted) ? submitted.filter(Boolean) : [];
+  if (list.length === 0) return { writes: [], rejected };
+  const rows = (Array.isArray(household) ? household : []).filter(Boolean);
+  const isHolder = (g) => g === holder || (!!g?.id && g.id === holder?.id);
+  const lead = leadOf(rows);
+  if (rows.length < 2 || !lead || !isHolder(lead)) {
+    for (const m of list) rejected.push({ ref: typeof m?.ref === 'string' ? m.ref : '', reason: 'not_the_lead' });
+    return { writes: [], rejected };
+  }
+  const byRef = new Map(rows.map((g) => [refOf(g.id), g]));
+  const writes = [];
+  const seen = new Set();
+  for (const m of list) {
+    const ref = typeof m?.ref === 'string' ? m.ref : '';
+    const row = ref ? byRef.get(ref) : null;
+    if (!row) { rejected.push({ ref, reason: 'unknown_member' }); continue; }
+    if (isHolder(row)) { rejected.push({ ref, reason: 'holder_answers_in_event_responses' }); continue; }
+    if (seen.has(ref)) { rejected.push({ ref, reason: 'duplicate_ref' }); continue; }
+    seen.add(ref);
+    const { kept } = keepOnlyInvitedEvents(sanitizeEventResponses(m?.event_responses), { wedding, guest: row });
+    const stripped = kept.map((r) => ({ ...r, plus_ones: 0, plus_one_names: [] }));
+    if (stripped.length === 0) { rejected.push({ ref, reason: 'nothing_allowed' }); continue; }
+    writes.push({ ref, guest: row, eventResponses: stripped });
+  }
+  return { writes, rejected };
+}
+
 export default async function handler(req, res) {
   if (applyCors(req, res)) return;
 
@@ -277,6 +349,39 @@ export default async function handler(req, res) {
       }),
     ]);
 
+    // ── AND THE REST OF THE HOUSEHOLD, IF THIS IS A LEAD'S LINK ───────────
+    //
+    // After the holder's own rows, and in its own await: a member write that
+    // failed must not take the holder's reply down with it, which is the same
+    // reasoning the notification and the receipt below are ordered by.
+    //
+    // A PLUS-ONE NEVER WRITES FOR A HOUSEHOLD. Their token speaks for a
+    // different person on the same row; they are not the lead of anything.
+    let householdRows = [];
+    let memberResult = { writes: [], rejected: [] };
+    const submittedMembers = !isPlusOne && Array.isArray(req.body?.members)
+      ? req.body.members.slice(0, 12) : [];
+    if (submittedMembers.length > 0) {
+      householdRows = await resolveHousehold(guest).catch((err) => {
+        console.error('[rsvp-submit] household read failed:', err.message);
+        return [];
+      });
+      memberResult = memberWrites({ submitted: submittedMembers, household: householdRows, holder: guest, wedding });
+      if (memberResult.rejected.length > 0) {
+        console.warn(`[rsvp-submit] rejected ${memberResult.rejected.length} member answer(s): ${memberResult.rejected.map((r) => r.reason).join(', ')}`);
+      }
+      await Promise.all(memberResult.writes.flatMap((w) => w.eventResponses.map((r) => createRsvpResponse({
+        wedding_id: wedding.id,
+        guest_id_hash: w.ref,
+        is_plus_one: false,
+        event_id: r.event_id,
+        status: r.status,
+        meal_choice: r.meal_choice,
+        plus_ones: r.plus_ones,
+        plus_one_names: r.plus_one_names,
+      }))));
+    }
+
     console.log('[rsvp-submit] RSVP recorded for token', token.slice(0, 8) + '…');
 
     // Awaited (not fire-and-forget) — a Vercel serverless function can
@@ -284,6 +389,18 @@ export default async function handler(req, res) {
     // guaranteed to finish. notify() already swallows and logs its own
     // errors internally, so this can never turn a successful RSVP into a
     // failed response even if the notification/email step has trouble.
+    // EVERYONE THIS REPLY COVERED, holder first. Empty for a single guest, and
+    // then every line below is the one that shipped before this.
+    const people = memberResult.writes.length > 0
+      ? [
+        { name: guest.name, attending: invitedResponses.some((r) => r.status === 'yes') },
+        ...memberResult.writes.map((w) => ({
+          name: w.guest.name,
+          attending: w.eventResponses.some((r) => r.status === 'yes'),
+        })),
+      ]
+      : [];
+
     const attendingCount = invitedResponses.filter(r => r.status === 'yes').length;
     const declinedCount = invitedResponses.filter(r => r.status === 'no').length;
     const responseSummary = attendingCount > 0
@@ -295,7 +412,13 @@ export default async function handler(req, res) {
       title: isPlusOne
         ? `${guest.plus_one_name || `${guest.name}'s plus-one`} responded`
         : `New RSVP from ${guest.name}`,
-      body: responseSummary,
+      // ONE INVITATION, SEVERAL REPLIES, said out loud: the couple is reading
+      // one notification about an answer for more than one person, and the
+      // count is the difference between "Priya replied" and "Priya replied for
+      // three people".
+      body: people.length > 1
+        ? `${responseSummary} · replied for ${people.length} people on one invitation`
+        : responseSummary,
       link: '/Guests',
       emailCta: 'View guest list',
     });
@@ -341,8 +464,15 @@ export default async function handler(req, res) {
         const { subject, html, text } = renderRsvpConfirmationEmail({
           universeId: wedding.activeUniverse,
           coupleNames: coupleName,
-          guestName: isPlusOne ? (guest.plus_one_name || guest.name) : guest.name,
+          // THE RECEIPT IS ADDRESSED THE WAY THE INVITATION WAS. A household
+          // reply is the lead's, and salutation() is the same first-names rule
+          // the card used, so "Hi Priya and Dev," matches what arrived.
+          guestName: isPlusOne ? (guest.plus_one_name || guest.name)
+            : (people.length > 1 ? (salutation(householdRows) || guest.name) : guest.name),
           attending,
+          // Named, because the others never see this email: one person answered
+          // for them and this is the only record they get a chance to correct.
+          people,
           eventName: firstEvent?.event_id === 'main-ceremony' ? 'Ceremony'
             : firstEvent?.event_id === 'reception' ? 'Reception' : '',
           date: wedding.weddingDate || '',
@@ -368,7 +498,15 @@ export default async function handler(req, res) {
 
     // `dropped` is always present, so a client reads a number rather than
     // inferring one from a missing key.
-    return res.status(200).json({ ok: true, confirmation, dropped: droppedEventIds.length });
+    return res.status(200).json({
+      ok: true,
+      confirmation,
+      dropped: droppedEventIds.length,
+      // Always present, like `dropped`, so a client reads numbers rather than
+      // inferring them from missing keys.
+      members_written: memberResult.writes.length,
+      members_rejected: memberResult.rejected.length,
+    });
   } catch (err) {
     console.error('[rsvp-submit] Error:', err.message);
     return res.status(500).json({ error: 'Something went wrong — please try again.' });

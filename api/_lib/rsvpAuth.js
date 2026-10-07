@@ -123,3 +123,59 @@ export async function resolveGuestByToken(token) {
 
   return { guest, wedding, role };
 }
+
+/**
+ * ── EVERYONE ON ONE INVITATION, READ BY THE TOKEN HOLDER'S OWN HOUSEHOLD ───
+ *
+ * Item 5 of goals/2026-10-07-households-and-children.md, under that goal's
+ * named exception for a household-scoped guest read.
+ *
+ * WHAT THIS WIDENS, STATED PLAINLY. Until now a token resolved to exactly one
+ * Guest row, and that was the whole of what a link could read. This reads the
+ * rows that SHARE the holder's household_id, so a lead's link can see the
+ * names of the people on their own invitation. That is the feature: one card
+ * said "Priya and Dev", so Priya's link has to be able to answer for Dev.
+ *
+ * WHAT IT DOES NOT WIDEN. Two scopes, both required:
+ *
+ *   household_id  — the holder's own, trimmed; a guest with none reads nothing
+ *                   but themselves, which is every guest who existed before
+ *                   this shipped.
+ *   created_by_id — the holder's own owner. household_id is a free string, and
+ *                   a value that collided across two weddings would otherwise
+ *                   join two couples' guests into one invitation.
+ *
+ * An empty or whitespace-only household_id is NOT a household (household.js's
+ * rule, and the reason it is normalized there): without this, every row with a
+ * blank cell would group into one enormous invitation, and a single link would
+ * read all of them.
+ *
+ * CALLERS ASK FOR THIS, it is not folded into resolveGuestByToken. Three
+ * endpoints resolve tokens and only two need a household; adding a Base44 call
+ * to every poll vote would be a cost paid for nothing.
+ *
+ * PII IS RESTORED HERE, through the same mergeGuestPii boundary the single
+ * resolve uses. A member's name lives encrypted, so without it a household
+ * form would list "—" twice and the confirmation email would too.
+ *
+ * @param {object} guest  the holder, as resolveGuestByToken returned them
+ * @returns {Promise<Array>} the household's rows including the holder's own,
+ *   or [] when this guest is their own invitation. Unsorted: the lead rule
+ *   lives in src/lib/household.js and the callers apply it.
+ */
+export async function resolveHousehold(guest) {
+  const raw = typeof guest?.household_id === 'string' ? guest.household_id.trim() : '';
+  if (!raw || !guest?.created_by_id) return [];
+  const q = encodeURIComponent(JSON.stringify({
+    household_id: guest.household_id,
+    created_by_id: guest.created_by_id,
+  }));
+  const rows = unwrapList(await base44Fetch('GET', `/apps/${BASE44_APP_ID}/entities/Guest?q=${q}`));
+  // THE QUERY IS NOT THE CHECK. A filter the server side of Base44 mis-applies
+  // would hand back rows from another household; the same two scopes are
+  // re-asserted here against the rows themselves, so a wrong row cannot reach
+  // a guest's browser even then.
+  return rows
+    .filter((g) => g && String(g.household_id || '').trim() === raw && g.created_by_id === guest.created_by_id)
+    .map((g) => mergeGuestPii(g));
+}

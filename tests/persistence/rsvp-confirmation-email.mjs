@@ -82,8 +82,12 @@ export async function runRsvpConfirmationEmail() {
   // this check is for, that the response COUNTS what happened rather than
   // answering a bare ok, is the reason the new key exists, so the assertion
   // names the two keys it is about and allows the shape to grow.
+  // KEYS, NOT A LINE. This read the one-line literal `{ ok: true, confirmation`
+  // and broke when the object gained members_written/members_rejected, with
+  // the property it is about untouched. A response shape is a set of keys.
   check('the result shape counts what happened',
-    /return res\.status\(200\)\.json\(\{ ok: true, confirmation[,}]/.test(EP), 'ok + confirmation');
+    /return res\.status\(200\)\.json\(\{[\s\S]{0,400}?ok: true,[\s\S]{0,400}?confirmation[,\s}]/.test(EP),
+    'ok + confirmation');
   check('  including a skip, which the ruling asked for',
     /confirmation = 'skipped'/.test(EP) && /confirmation = 'skipped-test'/.test(EP), 'skipped / skipped-test');
   check('a test guest gets nothing — never on the couple’s own preview',

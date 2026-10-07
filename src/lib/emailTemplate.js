@@ -609,6 +609,9 @@ ${markCellHtml}
  * @param {object} opts
  * @param {boolean} opts.attending  did they say yes to anything
  * @param {string} [opts.eventName] / [opts.date] / [opts.venueName]
+ * @param {Array<{name: string, attending: boolean}>} [opts.people]  everyone
+ *   this reply covered, when one invitation answered for a household. Omitted
+ *   for a single guest, and then nothing about this email changes.
  * @returns {{ subject: string, html: string, text: string }}
  */
 export function renderRsvpConfirmationEmail({
@@ -620,6 +623,7 @@ export function renderRsvpConfirmationEmail({
   date,
   venueName,
   design,
+  people = [],
 }) {
   const style = getUniverseEmailStyle(universeId);
   const pal = emailPalette(style, normalizeVariant(design?.paletteVariant));
@@ -627,7 +631,10 @@ export function renderRsvpConfirmationEmail({
   const { fontDisplay, fontBody, divider } = style;
 
   const names = coupleNames || 'the couple';
-  const firstName = guestName ? guestName.split(' ')[0] : 'there';
+  // ONE NAME OR SEVERAL, the same rule the invitation greets by: a household
+  // reply is addressed to "Priya and Dev" and the first word is not the
+  // greeting. See src/lib/guestGreeting.js.
+  const greetName = invitationGreetingName(guestName);
   const subject = `Your reply to ${names} is in`;
 
   const verdict = attending
@@ -640,9 +647,23 @@ export function renderRsvpConfirmationEmail({
     ? [eventName, formatEventDate(date), venueName].filter(Boolean).join(' · ')
     : '';
 
+  // ── WHO THIS REPLY WAS FOR ──────────────────────────────────────────────
+  //
+  // A receipt for a household has to name the people it covered, because the
+  // whole point of one invitation for three people is that one person answered
+  // for the others and the others never see this email. Two lines rather than
+  // one list: "coming" and "not coming" are the only two facts, and a reader
+  // checking whether they got it right should not have to parse a sentence.
+  //
+  // ABSENT FOR A SINGLE GUEST. `people` is empty, both lines drop out through
+  // the filter below, and the email is the one that shipped before this.
+  const coming = people.filter((p2) => p2 && p2.attending).map((p2) => p2.name).filter(Boolean);
+  const notComing = people.filter((p2) => p2 && !p2.attending).map((p2) => p2.name).filter(Boolean);
   const lines = [
-    `Hi ${firstName},`,
+    `Hi ${greetName},`,
     verdict,
+    coming.length > 0 ? `Coming: ${coming.join(', ')}.` : '',
+    notComing.length > 0 ? `Not coming: ${notComing.join(', ')}.` : '',
     eventLine,
     'Need to change anything? Use the same link you came from.',
     `Replying to this email goes straight to ${names}.`,
