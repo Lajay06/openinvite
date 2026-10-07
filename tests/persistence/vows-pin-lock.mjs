@@ -9,8 +9,20 @@
  * WHAT IS ACTUALLY BEING CHECKED, in order of how badly it would matter:
  *
  *   1. THE STORED VALUE IS NEVER THE PIN. Every write is inspected: the value
- *      must be `scrypt$<salt>$<digest>` and must not contain the digits the
- *      couple typed. This is the whole reason the package stopped.
+ *      must be `scrypt$<salt>$<digest>`, must not BE the PIN, and must verify
+ *      only for the PIN that made it. This is the whole reason the package
+ *      stopped.
+ *
+ *      STATED THAT WAY BECAUSE THE LOOSE VERSION WAS BOTH WRONG AND FLAKY.
+ *      It asserted that the four digits "4821" appear nowhere in the stored
+ *      value. That value is 160 random hex characters, so the substring turns
+ *      up by chance at about 157 positions times 16^-4, roughly one run in
+ *      four hundred, and two checks then go red on a perfectly good hash. Met
+ *      once on 2026-10-08 during an unrelated item.
+ *
+ *      And it was never the property: a hash of a four-digit PIN may contain
+ *      those digits and still be a hash. What matters is that the value is
+ *      not the PIN, has the right shape, and opens only for the right PIN.
  *   2. TWO ITEMS WITH THE SAME PIN DO NOT SHARE A DIGEST. Per-value salt, so
  *      the store never reveals which items share a PIN.
  *   3. A WRONG PIN OPENS NOTHING, and a right one does.
@@ -86,9 +98,24 @@ export async function runVowsPinLock() {
       writes.length ? Object.keys(writes[0]).join(', ') : '(none)');
     const v = writes[0]?.pin_hash || '';
     check('  the stored value is a scrypt hash', /^scrypt\$[0-9a-f]{32}\$[0-9a-f]{128}$/.test(v), v.slice(0, 24) + '…');
-    // THE CHECK THE WHOLE PACKAGE STOPPED FOR.
-    check('  and the PIN itself appears nowhere in it', !v.includes(PIN), 'no plaintext PIN in the stored value');
-    check('  nor anywhere else in the write', !JSON.stringify(writes).includes(PIN));
+    // THE CHECKS THE WHOLE PACKAGE STOPPED FOR, stated as properties of a
+    // hash rather than as a substring search. See the header for why the
+    // substring version was wrong as well as flaky.
+    check('  the stored value is not the PIN', v !== PIN && v.trim() !== PIN, 'not stored in clear');
+    check('  and no field of the write is',
+      Object.values(writes[0] || {}).every((x) => String(x) !== PIN), 'no field equals the PIN');
+    check('  salt and digest are both hex and both full length',
+      (() => {
+        const parts = v.split('$');
+        return parts.length === 3 && parts[0] === 'scrypt'
+          && /^[0-9a-f]{32}$/.test(parts[1]) && /^[0-9a-f]{128}$/.test(parts[2]);
+      })(), 'scrypt, 32, 128');
+    // IRREVERSIBILITY, PROVED THE ONLY WAY A TEST CAN: the right PIN opens
+    // it and a neighbouring one does not, so the stored value is a verifier
+    // and not a copy. 4822 rather than a random string, because a near miss
+    // failing is a stronger statement than nonsense failing.
+    check('  it verifies for the PIN that made it', await verifyPin(v, PIN), 'right PIN opens it');
+    check('  and not for a neighbouring PIN', !(await verifyPin(v, '4822')), 'wrong PIN does not');
   }
 
   // ── 2. SAME PIN, DIFFERENT DIGEST ───────────────────────────────────────
