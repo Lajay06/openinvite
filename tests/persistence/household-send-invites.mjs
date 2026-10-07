@@ -16,19 +16,19 @@
  * stripped first: a sentence about a rule has satisfied a check about code
  * three times in this goal already.
  *
- * ── THE PART THAT IS NOT HERE YET, AND WHY THE GUARD SAYS SO ───────────────
+ * ── THE LINE A GUEST ACTUALLY READS ────────────────────────────────────────
  *
- * The greeting a guest actually reads comes from the composed BODY, not from
- * the template's default message: the modal always sends one, prefilled with
- * "Hi [Guest name],", and the tag is resolved per recipient inside
- * api/send-invites.js. That file is held under the goal's named exception, so
- * until the held change lands the body still greets the lead alone while the
- * review list and the recipient name are the household's.
+ * It is not the template's default message. The modal always sends a composed
+ * body, prefilled with "Hi [Guest name],", and the tag is resolved per
+ * recipient inside api/send-invites.js's replaceMergeTags. So that is where
+ * the greeting is driven from here: the real handler, with its Resend seam
+ * stubbed, and the assertion reads the html that would have been sent.
  *
- * So the invariant pinned here is the one that must hold at EVERY point, now
- * and after: THE TWO COPIES OF replaceMergeTags AGREE. The preview pane is
- * documented as byte-for-byte what gets sent, and a preview that greets two
- * people where the email greets one would be worse than the gap itself.
+ * TWO COPIES OF replaceMergeTags EXIST, and the invariant is that they AGREE.
+ * The preview pane is documented as byte-for-byte what gets sent, so a preview
+ * that greets two people where the email greets one would be worse than no
+ * preview. They are compared as source, with the fallback literal normalized:
+ * the modal shows the couple their own tag back, the server floors to a word.
  */
 
 import fs from 'fs';
@@ -162,14 +162,74 @@ export async function runHouseholdSendInvites() {
   ok('nothing still counts guests with an email',
      !/selectedWithEmail|selectedNoEmail/.test(modal), 'removed');
 
+  // ── THE GREETING IN THE BODY THAT IS ACTUALLY SENT ──────────────────────
+  //
+  // Driven through the real handler. Everything except Resend is stubbed, the
+  // same seams tests/persistence/send-invites-result-shape.mjs uses, and the
+  // batch it would have sent is captured and read.
+
+  // `new Resend(process.env.RESEND_API_KEY)` runs at module scope and throws
+  // without one, so the key is placeheld for the import exactly as
+  // rsvp-confirmation-email.mjs does it. The suite runner sets one too; this is
+  // what lets the guard also be run on its own while writing it.
+  const priorResendKey = process.env.RESEND_API_KEY;
+  if (!priorResendKey) process.env.RESEND_API_KEY = 're_household_guard_placeholder';
+  const { default: handler } = await import('../../api/send-invites.js');
+  if (priorResendKey === undefined) delete process.env.RESEND_API_KEY;
+  const sendOne = async (name) => {
+    let batch = null;
+    const res = {
+      statusCode: null, payload: null,
+      setHeader() {}, status(c) { this.statusCode = c; return this; },
+      json(p2) { this.payload = p2; return this; },
+    };
+    const req = {
+      method: 'POST',
+      headers: { authorization: 'Bearer not-a-real-token', origin: 'https://openinvite.com.au' },
+      socket: { remoteAddress: `10.0.1.${Math.floor(Math.random() * 250) + 1}` },
+      body: {
+        type: 'invite',
+        guests: [{ name, email: 'priya@example.com', rsvpUrl: 'https://openinvite.com.au/rsvp/t', rsvpToken: 't' }],
+        wedding: { coupleName: 'Alex and Sam', weddingDate: '2027-05-01', venue: 'A hall', slug: 'alex-and-sam', websiteEnabled: true },
+        customSubject: 'A note for [Guest name]',
+        customBody: 'Hi [Guest name],\n\nWe would love to see you.',
+        universeId: 'london',
+      },
+    };
+    await handler(req, res, {
+      sendBatch: async (b) => { batch = b; return { data: { data: [{ id: 'e-1' }] }, error: null }; },
+      verifyUser: async () => ({ id: 'caller-1', email: 'couple@example.com' }),
+      fetchOwned: async () => new Set(['priya@example.com']),
+      adminKey: 'not-a-real-admin-key',
+    });
+    return { status: res.statusCode, message: batch?.[0] || null };
+  };
+
+  const toHousehold = await sendOne('Priya and Dev');
+  ok('the send went through with its seams stubbed',
+     toHousehold.status === 200 && !!toHousehold.message, `HTTP ${toHousehold.status}`);
+  ok('the body a household reads greets the household',
+     (toHousehold.message?.html || '').includes('Hi Priya and Dev,'), 'composed body');
+  ok('  and so does the subject line',
+     (toHousehold.message?.subject || '') === 'A note for Priya and Dev', toHousehold.message?.subject);
+  ok('  and the text part says the same thing',
+     (toHousehold.message?.text || '').includes('Hi Priya and Dev,'), 'both parts');
+
+  const toOne = await sendOne('Nora Kelly');
+  ok('a single guest is still greeted by first name',
+     (toOne.message?.html || '').includes('Hi Nora,')
+     && !/Hi Nora Kelly,/.test(toOne.message?.html || ''), 'unchanged');
+
   // ── THE PREVIEW AND THE SEND AGREE ──────────────────────────────────────
   //
-  // The held api/send-invites.js change moves both of these together. Until
-  // then they are both the first-word rule, which is a gap; what would be a
-  // defect is the two disagreeing, and that is what this pins.
+  // Both copies now read the same resolver. What this pins is not which rule
+  // they use but that it is ONE rule: the next person to change a greeting has
+  // to change it in both places or fail here.
   const derivation = (src) => {
     const fn = src.slice(src.indexOf('function replaceMergeTags'));
-    const line = (fn.split('\n').slice(0, 4).find((l) => /const (firstName|greetName)/.test(l)) || '');
+    // The window is the function head, not four lines: both copies carry a
+    // comment above the declaration now.
+    const line = (fn.split('\n').slice(0, 16).find((l) => /const (firstName|greetName)/.test(l)) || '');
     // The fallback differs on purpose: the modal shows the tag back to the
     // couple, the server floors to a word.
     return line.replace(/'(\[Guest name\]|Guest|there)'/g, "'<fallback>'").trim();

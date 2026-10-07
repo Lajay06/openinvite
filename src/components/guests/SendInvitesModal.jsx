@@ -16,6 +16,7 @@ import { interactiveDivProps } from '@/lib/a11y';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { fetchGuestLinks } from '@/lib/guestLinks';
 import { invitationsFor } from '@/lib/household';
+import { invitationGreetingName } from '@/lib/guestGreeting';
 import { buildGuestCtaUrl } from '@/lib/emailTemplate';
 
 // Guarded on the pattern already used by src/lib/app-params.js: read the
@@ -64,9 +65,12 @@ function buildWhatsAppUrl(guest, coupleName, weddingDate, token, siteUrl) {
 }
 
 function replaceMergeTags(str, guestName, coupleName, dateStr) {
-  const firstName = guestName ? guestName.split(' ')[0] : '[Guest name]';
+  // IN STEP WITH api/send-invites.js's copy, because the preview pane is
+  // documented as byte-for-byte what gets sent: a preview that greets two
+  // people where the email greets one would be worse than no preview.
+  const greetName = guestName ? invitationGreetingName(guestName) : '[Guest name]';
   return str
-    .replace(/\[Guest name\]/gi, firstName)
+    .replace(/\[Guest name\]/gi, greetName)
     .replace(/\[Wedding date\]/gi, dateStr || '[Wedding date]')
     // A TAG THE COUPLE TYPED THEMSELVES IS NOT A TEMPLATE DEFAULT — they asked
     // for that value by name, so rendering it as nothing is the one case where

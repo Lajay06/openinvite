@@ -35,6 +35,7 @@ import {
   sanitizeString,
 } from './_lib/security.js';
 import { renderInvitationEmail, getEmailTypeConfig, getBannerImageUrl } from '../src/lib/emailTemplate.js';
+import { invitationGreetingName } from '../src/lib/guestGreeting.js';
 import { verifyBase44User, fetchOwnedGuestEmails, filterGuestsByOwnership } from './_lib/auth.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -42,9 +43,16 @@ const SUPPORT_ADDRESS = 'hello@openinvite.com.au';
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY; // server-side only, no VITE_ prefix
 
 function replaceMergeTags(str, guestName, coupleName, dateStr, rsvpUrl) {
-  const firstName = guestName ? guestName.split(' ')[0] : 'Guest';
+  // ONE NAME OR SEVERAL. `guestName` is a person for a single guest and a
+  // household salutation ("Priya and Dev") for an invitation that covers
+  // several, so the first word is not always the greeting. This is the line a
+  // guest actually reads: the modal always sends a composed body, prefilled
+  // with "Hi [Guest name],", so the template's own default message is not the
+  // path a real send takes. See src/lib/guestGreeting.js, and SendInvitesModal
+  // whose copy of this function must stay in step with it.
+  const greetName = guestName ? invitationGreetingName(guestName) : 'Guest';
   return str
-    .replace(/\[Guest name\]/gi, firstName)
+    .replace(/\[Guest name\]/gi, greetName)
     .replace(/\[Wedding date\]/gi, dateStr || '')
     // Not '' — see SendInvitesModal's copy of this function. A merge tag the
     // couple typed is a request for a value, and an empty substitution deletes
