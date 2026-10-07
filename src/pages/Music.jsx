@@ -47,9 +47,18 @@ const pillStyle = {
   fontFamily: PJS, color: '#0A0A0A', border: '1px solid rgba(10,10,10,0.15)',
 };
 
+// THE VENDOR TAB IS FIRST, item 7 of goals/2026-10-08-site-fixes-batch-1.md.
+//
+// THE DEFAULT STAYS ON PLAYLIST, DELIBERATELY. A collaborator never sees the
+// vendor tab (the strip filters it out below, and its body is gated on
+// !isCollaborating), so opening on it would land them on a blank page. The
+// flag is derived from a query that resolves after this state initialises, so
+// a conditional default would either guess or make the page jump once it
+// arrived. The item asked for the ORDER; this is the one section where the
+// first tab is not the one the page opens on, and that is why.
 const TABS = [
-  { key: 'playlist',       label: 'Playlist' },
   { key: 'vendor',         label: 'Vendor' },
+  { key: 'playlist',       label: 'Playlist' },
   { key: 'notes',          label: 'Notes' },
   { key: 'considerations', label: 'Considerations' },
 ];

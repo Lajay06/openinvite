@@ -54,10 +54,13 @@ function StarRating({ value, onChange }) {
   );
 }
 
+// THE VENDOR TAB IS FIRST, item 7 of goals/2026-10-08-site-fixes-batch-1.md:
+// the people you booked come before the plan you made with them. Beauty team
+// was third.
 const TABS = [
+  { key: 'beauty-team',   label: 'Beauty team' },
   { key: 'hair-makeup',   label: 'Hair & makeup' },
   { key: 'skincare',      label: 'Skincare timeline' },
-  { key: 'beauty-team',   label: 'Beauty team' },
   { key: 'trials',        label: 'Trial planning' },
   { key: 'considerations',label: 'Considerations' },
 ];
@@ -68,7 +71,7 @@ export default function BeautyPage() {
   const [recordId, setRecordId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('idle');
-  const [activeTab, setActiveTab] = useState('hair-makeup');
+  const [activeTab, setActiveTab] = useState('beauty-team');
   const [showTrialForm, setShowTrialForm] = useState(false);
   const [avaOpen, setAvaOpen] = useState(false);
 
