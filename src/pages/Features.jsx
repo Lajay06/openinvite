@@ -37,21 +37,41 @@ function useScrollReveal(threshold = 0.2) {
 }
 
 const ACCORDION_BORDERS = ["#E03553", "#803D81", "#6B2CAE", "#DDF762", "#C2E5F3", "#0A1930"];
+// WHAT THE ACCORDION COVERS, AND WHEN IT WAS LAST RULED.
+//
 // Owner 2026-09-17, M2: the accordion used to restate the three deep dives
-// below it word for word, plus a playlist item. It now covers the rest of the
-// product, and nothing the cards above or below already say. Copy approved
-// by the owner 2026-09-19 with three edits: no personalized-greeting claim
-// (post-launch), the calendar-subscribe bullet restored once the owner
+// below it word for word, plus a playlist item. It was rewritten to cover the
+// rest of the product, and nothing the cards above or below already say. Copy
+// approved by the owner 2026-09-19 with three edits: no personalized-greeting
+// claim (post-launch), the calendar-subscribe bullet restored once the owner
 // confirmed CALENDAR_FEED_SECRET is set in production, and the second-answer
 // bullet kept because api/rsvp-submit.js appends and rsvpAggregation.js
 // resolves latest-wins.
+//
+// REPLACED WHOLESALE, owner walkthrough 2026-10-08, item 1 of
+// goals/2026-10-08-site-fixes-batch-1.md. Eight rows, in this order, copy
+// dictated verbatim. The guest-suite row and the universes row are gone: the
+// first because the product no longer leads with it, the second because
+// universes have their own page.
+//
+// CONSEQUENCE WORTH NAMING: "universe" now appears nowhere on this page. It
+// was only ever in the row that went. /universes is where that story lives.
+//
+// ONE PARAGRAPH PER ROW, NOT BULLETS, which is why each `bullets` array holds
+// a single string. AccordionSection renders a list with no marker and a
+// hairline only BETWEEN items, so one item renders as a plain paragraph and
+// the existing structure and styling are untouched, exactly as the item asks.
+// There is no illustration slot in this accordion, so there is nothing to
+// reuse and no new asset.
 const ALL_FEATURES = [
-{ title: "Ava, on every page", bullets: ["A short briefing each morning: what is coming up, what needs a decision", "A checklist built for your date, venue and style, not a template", "Vow drafts in the tone you choose, refined until they sound like you", "Ask Ava from any page, about the page you are on", "Answers drawn from your own wedding, never generic advice"] },
-{ title: "A guest suite, written for you", bullets: ["Ava drafts your welcome, story and FAQ from a few answers", "Stay, transport and experience pages for out-of-town guests", "Good-to-know details, dress code and policies in one place", "Polls for the questions you want guests to weigh in on", "Add your own pages for anything the template did not think of"] },
-{ title: "Twenty universes", bullets: ["One aesthetic carries from the invitation to the guest suite to the RSVP", "Typography, palette, imagery and motion, chosen as a set", "Swap universes at any point without rebuilding a page", "A studio to preview every page in the universe before it goes live"] },
-{ title: "Invitations and RSVP", bullets: ["Save the dates and invitations from the same guest list", "Every guest gets their own link, so replying takes seconds", "Send by email or share by WhatsApp", "Meal choices and dietary needs collected with the answer", "A guest who changes their mind can answer again, and the latest reply counts"] },
-{ title: "Registry and cash funds", bullets: ["Products and cash funds side by side on one registry page", "Guests give toward a honeymoon or a specific gift", "Contributions land in your registry, not in a spreadsheet"] },
-{ title: "Vendors, seating and your calendar", bullets: ["Find and contact real vendors in the marketplace", "Keep quotes, contracts and contacts with each vendor", "Lay out the venue and assign guests to tables by drag and drop", "Subscribe to your schedule in Google Calendar, so an edit here reaches your phone on its own"] }];
+{ title: "Vendors and the marketplace", bullets: ["Every vendor in one place, with contact, quote, deposit and what is still owed. Browse the marketplace for the ones you have not booked yet and send an enquiry without leaving the studio."] },
+{ title: "Seating chart and the visualizer", bullets: ["Drag guests onto tables, see who is still unseated, and walk the room before anyone else does. The visualizer shows the layout the way your guests will see it."] },
+{ title: "Calendar", bullets: ["One calendar for the whole engagement: deadlines, vendor payments, fittings, and every event on your run sheet. Subscribe from your phone so nothing lives only in the studio."] },
+{ title: "Ava on every page", bullets: ["Ava has read your wedding. Ask what is unpaid, who has not replied, or what still needs a decision, on any page, at any hour."] },
+{ title: "Mood board", bullets: ["Pin the looks you keep coming back to, colors, florals, dresses, tables, and keep them next to the plan instead of across six apps."] },
+{ title: "Toasts and speeches", bullets: ["Who is speaking, in what order, for how long. Speakers get a short brief and a deadline so nobody writes theirs in the car."] },
+{ title: "On the day details", bullets: ["Getting there, where to stay, who to call, what to wear. Written once, shown to guests where they need it."] },
+{ title: "Registry and cash funds", bullets: ["Link the registry you already have, or set up a cash fund with a note that does not feel awkward. Guests see it only when you say so."] }];
 
 
 const DOTS = ["#E03553", "#803D81", "#DDF762", "#6B2CAE", "#C2E5F3", "#0A1930"];
@@ -217,10 +237,14 @@ function AccordionSection({ features, borders, dots, openFeature, setOpenFeature
               <button
               className="w-full flex items-center justify-between py-6 text-left"
               onClick={() => setOpenFeature(openFeature === i ? null : i)}
-              style={{ borderLeft: openFeature === i ? `3px solid ${borders[i]}` : "3px solid transparent", paddingLeft: 16, transition: "border-color 0.2s ease" }}>
+              // EIGHT ROWS, SIX COLORS. borders[6] and borders[7] were
+              // undefined the moment the list grew, which is an invalid
+              // border-left and an uncolored glyph on the last two rows. The
+              // palette cycles rather than growing, so no color is invented.
+              style={{ borderLeft: openFeature === i ? `3px solid ${borders[i % borders.length]}` : "3px solid transparent", paddingLeft: 16, transition: "border-color 0.2s ease" }}>
               
                 <span style={{ color: "#0A0A0A", fontWeight: 600, fontSize: 15, letterSpacing: "-0.01em" }}>{f.title}</span>
-                <span style={{ fontSize: 20, fontWeight: 300, marginLeft: 16, color: openFeature === i ? borders[i] : "rgba(10,10,10,0.6)" }}>{openFeature === i ? "−" : "+"}</span>
+                <span style={{ fontSize: 20, fontWeight: 300, marginLeft: 16, color: openFeature === i ? borders[i % borders.length] : "rgba(10,10,10,0.6)" }}>{openFeature === i ? "−" : "+"}</span>
               </button>
               {openFeature === i &&
             <div style={{ paddingBottom: 32, paddingLeft: 20 }}>
