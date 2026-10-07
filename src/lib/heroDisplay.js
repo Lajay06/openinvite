@@ -25,25 +25,52 @@
 /** The couple's names on the hero. Absent means on. */
 export const heroShowsNames = (details) => details?.homeContent?.showNames !== false;
 
+/**
+ * THE UNIVERSE'S MOTIF IN THE INTRO. Absent means on.
+ *
+ * Item 11 of goals/2026-10-08-site-fixes-batch-1.md: "Add a third toggle,
+ * 'Show motif', default on, that hides the universe's motif for a plain
+ * intro."
+ *
+ * WHICH MOTIF, SINCE THE WORD IS USED FOR SEVERAL THINGS HERE. Not the
+ * couple's monogram, which is the MARK and has had its own switch all along.
+ * This is the hairline the entrance moment draws under its kicker, in the
+ * beat before the names arrive, and it is the only decorative element in the
+ * intro that a couple cannot already turn off.
+ *
+ * VISIBLE WHERE IT IS SET, which is why this is the right surface for the
+ * control: StudioWebsite remounts EntranceMoment inside the preview on
+ * purpose, so a couple watching the entrance in the studio sees the switch
+ * take effect rather than having to publish to find out.
+ *
+ * Stored in homeContent beside the other two, as the item asks.
+ */
+export const heroShowsMotif = (details) => details?.homeContent?.showMotif !== false;
+
 /** The wedding date on the hero. Absent means on. */
 export const heroShowsDate = (details) => details?.homeContent?.showDate !== false;
 
 /**
- * THE WELCOME LINE, AND THE MARK THAT KEEPS IT COMPANY. Absent means on.
+ * THE WELCOME LINE, AND ONLY THE WELCOME LINE. Absent means on.
  *
  * "Show names" already lets a couple take their names off the hero. It leaves
- * the kicker — "Join us as we celebrate…" — and the monogram behind, so the
- * photograph still has furniture on it and there is no way to get to a bare
- * image. This is the switch for that: off hides the welcome line AND the
- * motif, so with both switches off the hero is the photograph or video and
- * nothing else.
+ * the kicker — "Join us as we celebrate…" — behind, and this is the switch for
+ * that.
  *
- * ONE SWITCH FOR TWO THINGS, deliberately. They are not two decisions a couple
- * makes separately — the mark exists to sit with the words, and a monogram
- * floating alone over a photo with no text is not a state anyone asked for.
- * The overlay keeps its own `enabled` flag as well, so a couple who has
- * switched the mark off individually stays switched off when the welcome line
- * comes back.
+ * ── IT USED TO HIDE THE MARK AS WELL, AND THE OWNER REVERSED THAT ──────────
+ *
+ * This file argued the coupling: "one switch for two things, deliberately...
+ * a monogram floating alone over a photo with no text is not a state anyone
+ * asked for". Item 11 of goals/2026-10-08-site-fixes-batch-1.md rules the
+ * other way, in those words: "Show welcome text must hide only the welcome
+ * text; today it also hides the mark."
+ *
+ * The argument was not wrong about taste, it was wrong about whose call it is.
+ * A couple who switches off the words and keeps the monogram now gets exactly
+ * that, and "Show mark" is the switch for the monogram, which is what its
+ * label always said. The old reasoning is left here rather than deleted so the
+ * reversal is legible: nobody has to wonder whether the coupling was an
+ * accident.
  */
 export const heroShowsWelcome = (details) => details?.homeContent?.showWelcome !== false;
 
@@ -60,13 +87,14 @@ export const heroKickerOf = (details, copy) => (heroShowsWelcome(details) ? (cop
  * turning it off must NOT delete their upload, which is why this is a flag on
  * the object rather than a removal of it.
  *
- * It is also null when the welcome line is off: see heroShowsWelcome. The
- * upload survives either way.
+ * The upload survives either way, and it is NOT null when the welcome line is
+ * off any more: see heroShowsWelcome for the reversal.
  */
 export function heroOverlayOf(details) {
   const overlay = details?.homeContent?.overlay;
   if (!overlay?.url) return null;
-  if (!heroShowsWelcome(details)) return null;
+  // NO LONGER GATED ON THE WELCOME LINE. See heroShowsWelcome: the two were
+  // one switch and the owner separated them in item 11.
   return overlay.enabled === false ? null : overlay;
 }
 

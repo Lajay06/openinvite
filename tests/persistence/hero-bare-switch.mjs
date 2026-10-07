@@ -8,12 +8,21 @@
  * no combination of switches that produced a bare image. A couple with a
  * portrait they had chosen carefully could not get our furniture off it.
  *
- * ── ONE SWITCH FOR TWO THINGS, AND WHY ─────────────────────────────────────
+ * ── IT USED TO BE ONE SWITCH FOR TWO THINGS. IT IS NOT ANY MORE ────────────
  *
- * The welcome line and the mark are not two decisions made separately: the
- * mark exists to sit with the words, and a monogram floating alone over a
- * photograph with no text is not a state anyone asked for. So "Show welcome
- * text" governs both.
+ * This guard was written when "Show welcome text" governed the welcome line
+ * AND the mark, on the argument that a monogram floating alone over a
+ * photograph with no text is not a state anyone asked for. Item 11 of
+ * goals/2026-10-08-site-fixes-batch-1.md reversed that: "Show welcome text
+ * must hide only the welcome text; today it also hides the mark."
+ *
+ * THE CONSEQUENCE THE ITEM DID NOT NAME, and the reason this file changed
+ * rather than lost a check: the BARE HERO used to be two switches and is now
+ * three. Names off and welcome off used to leave the photograph alone; they
+ * now leave the monogram on it, so reaching a bare image also needs "Show
+ * mark" off. The promise this file was written to defend — a couple can have
+ * their photograph by itself — still holds, by a longer route, and that route
+ * is what section 3 below asserts.
  *
  * ── ABSENT MEANS ON, AND THAT IS THE WHOLE CONTRACT ────────────────────────
  *
@@ -50,18 +59,25 @@ export async function runHeroBareSwitch() {
   check('  and still shows its mark', !!heroOverlayOf(withOverlay({})), 'the overlay survives an absent flag');
   check('  and the kicker is the universe\'s own', heroKickerOf({}, COPY) === COPY.heroKicker, COPY.heroKicker);
 
-  // ── 2. off hides BOTH ─────────────────────────────────────────────────────
+  // ── 2. off hides THE WELCOME LINE, and only it ────────────────────────────
   const off = withOverlay({ showWelcome: false });
   check('switching it off drops the welcome line', heroKickerOf(off, COPY) === '', 'no kicker');
-  check('  and the monogram with it', heroOverlayOf(off) === null, 'one switch, two things');
-  check('  and back on restores both', heroKickerOf(withOverlay({ showWelcome: true }), COPY) === COPY.heroKicker
-    && !!heroOverlayOf(withOverlay({ showWelcome: true })), 'reversible');
+  check('  and leaves the monogram alone', !!heroOverlayOf(off), 'two switches, two things');
+  check('  and back on restores the line', heroKickerOf(withOverlay({ showWelcome: true }), COPY) === COPY.heroKicker,
+    'reversible');
 
-  // ── 3. THE BARE HERO: both switches off leaves nothing on the image ───────
-  const bare = withOverlay({ showWelcome: false, showNames: false });
-  check('with both off the hero prints no welcome text', heroKickerOf(bare, COPY) === '', 'no kicker');
-  check('  and carries no overlay element', heroOverlayOf(bare) === null, 'no mark');
-  check('  and the names are off too', heroShowsNames(bare) === false, 'the photograph, by itself');
+  // ── 3. THE BARE HERO, NOW A THREE-SWITCH ROUTE ────────────────────────────
+  //
+  // Names off, welcome off, mark off. The first two no longer take the
+  // monogram with them, so the third is part of the route since item 11.
+  const twoOff = withOverlay({ showWelcome: false, showNames: false });
+  check('names and welcome off still print no text', heroKickerOf(twoOff, COPY) === '', 'no kicker');
+  check('  but the monogram is still there, which is the new behaviour',
+    !!heroOverlayOf(twoOff), 'the mark has its own switch');
+  const bare = { homeContent: { overlay: { url: 'https://example.com/m.png', enabled: false }, showWelcome: false, showNames: false } };
+  check('  and with the mark off as well the photograph is by itself',
+    heroKickerOf(bare, COPY) === '' && heroOverlayOf(bare) === null && heroShowsNames(bare) === false,
+    'three switches, bare image');
 
   // ── 4. the couple's upload is kept, not deleted ──────────────────────────
   check('switching off does not remove the uploaded mark',

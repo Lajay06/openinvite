@@ -35,7 +35,7 @@ import {
   designOf, publicIdOf,
 } from '@/lib/emailTemplateStore';
 import PillSwitch from './PillSwitch';
-import { heroShowsNames, heroShowsDate, universeHeroRendersDate, OVERLAY_BLOCK_TYPES, heroShowsWelcome } from '@/lib/heroDisplay';
+import { heroShowsNames, heroShowsDate, universeHeroRendersDate, OVERLAY_BLOCK_TYPES, heroShowsWelcome, heroShowsMotif } from '@/lib/heroDisplay';
 import { formatWeddingDate } from '@/lib/guestDate';
 import { resolveUniverseConfig } from '@/lib/universeStyling';
 
@@ -950,15 +950,14 @@ function ContentTab({ details, onChange, currentPage = 'home' }) {
         enabled={heroShowsNames(details)}
         onToggle={() => updateNested('homeContent', 'showNames', !heroShowsNames(details))}
       />
-      {/* The way to a bare hero. "Show names" alone leaves the kicker and the
-          monogram on the photograph, so there was no combination of switches
-          that gave a couple the image by itself. Off hides the welcome line
-          AND the mark — one switch for two things, because a monogram floating
-          alone over a photo with no text is not a state anyone asked for. The
-          couple's uploaded mark is kept either way. */}
+      {/* THE WELCOME LINE, AND ONLY IT, since item 11 of
+          goals/2026-10-08-site-fixes-batch-1.md. This switch used to hide the
+          monogram too, which the hint said out loud; the owner separated them,
+          and "Show mark" below is the monogram's switch, which is what its
+          label always said. */}
       <SwitchRow
         label="Show welcome text"
-        hint="The welcome line and your monogram"
+        hint="The welcome line over your hero"
         enabled={heroShowsWelcome(details)}
         onToggle={() => updateNested('homeContent', 'showWelcome', !heroShowsWelcome(details))}
       />
@@ -986,6 +985,17 @@ function ContentTab({ details, onChange, currentPage = 'home' }) {
           ...(details?.homeContent?.overlay || {}),
           enabled: details?.homeContent?.overlay?.enabled === false,
         })}
+      />
+      {/* THE THIRD SWITCH, item 11. The motif is the hairline the entrance
+          moment draws under its kicker, not the couple's monogram, which is
+          "Show mark" above. Off gives a plain intro. The studio preview
+          remounts the entrance on purpose, so the switch is visible where it
+          is set. */}
+      <SwitchRow
+        label="Show motif"
+        hint="The universe's hairline in your intro"
+        enabled={heroShowsMotif(details)}
+        onToggle={() => updateNested('homeContent', 'showMotif', !heroShowsMotif(details))}
       />
       <MediaPicker
         label="Hero photo"
