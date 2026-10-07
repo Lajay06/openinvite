@@ -40,6 +40,12 @@
         "weekly_digest": { "type": "boolean", "default": true },
         "in_app_only": { "type": "boolean", "default": false }
       }
+    },
+    "dateFormat": {
+      "type": "string",
+      "enum": ["dmy", "mdy"],
+      "default": "dmy",
+      "description": "Which numeric date format the DASHBOARD renders dates in: dmy is 18/05/2026, mdy is 05/18/2026. Guest-facing pages and every email keep their written dates (\"18 May 2026\") and never read this. Added live by the owner 2026-10-08 for item 5 of goals/2026-10-08-site-fixes-batch-1.md; the default means every existing account keeps the behaviour it had with no backfill."
     }
   },
   "required": []
