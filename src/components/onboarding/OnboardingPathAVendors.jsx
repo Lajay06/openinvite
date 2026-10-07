@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2, Star, Check, Search } from 'lucide-react';
+import { Loader2, Star, Check, Search, MapPin } from 'lucide-react';
 import { CATEGORY_QUERIES, saveVendorFromPlaces } from '@/lib/vendorPlaces';
+import { useNearMe, NEAR_ME_LABELS } from '@/lib/useNearMe';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -32,6 +33,13 @@ export default function OnboardingPathAVendors({ onNext, data }) {
   const [savedIds, setSavedIds] = useState(new Set());
   const [savingIds, setSavingIds] = useState(new Set());
 
+  // NEAR ME, item 8 of goals/2026-10-08-site-fixes-batch-1.md, through a ref
+  // for the same reason as the other two searches: runSearch reads
+  // nearMe.bias() and onReady has to re-run runSearch, so either declaration
+  // order is use-before-define, which this repo bars.
+  const runSearchRef = useRef(null);
+  const nearMe = useNearMe({ onReady: () => runSearchRef.current?.() });
+
   const runSearch = async (categoryLabel) => {
     const nextCategory = categoryLabel !== undefined ? categoryLabel : activeCategory;
     setActiveCategory(nextCategory);
@@ -41,6 +49,8 @@ export default function OnboardingPathAVendors({ onNext, data }) {
       const categoryQuery = (!rawSearch && nextCategory) ? (CATEGORY_QUERIES[nextCategory] || 'wedding vendor') : null;
       const body = { q: rawSearch || categoryQuery || 'wedding vendor' };
       if (data.location) body.location = data.location;
+      // NO COORDINATES MEANS THE BODY IT SENT BEFORE, unchanged.
+      Object.assign(body, nearMe.bias());
       const res = await fetch('/api/places-search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -64,6 +74,9 @@ export default function OnboardingPathAVendors({ onNext, data }) {
       setResults(null);
     }
   };
+
+  // ASSIGNED ONCE runSearch EXISTS, which is what lets the hook above call it.
+  runSearchRef.current = () => runSearch();
 
   const handleSave = async (vendor) => {
     if (savedIds.has(vendor.id)) return;
@@ -119,6 +132,28 @@ export default function OnboardingPathAVendors({ onNext, data }) {
             onFocus={e => e.target.style.borderBottomColor = '#E03553'}
             onBlur={e => e.target.style.borderBottomColor = 'rgba(10,10,10,0.18)'}
           />
+        </div>
+        {/* NEAR ME, below the field and outside the relatively positioned
+            wrapper, so nothing absolutely positioned against the input lands
+            on this row. */}
+        <div style={{ marginTop: 6 }}>
+          <button
+            type="button"
+            data-near-me={nearMe.state}
+            aria-pressed={nearMe.state === 'active'}
+            onClick={() => (nearMe.state === 'active' ? nearMe.clear() : nearMe.request())}
+            disabled={nearMe.state === 'loading'}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: 'none', border: 'none', padding: 0,
+              fontFamily: PJS, fontSize: 11, fontWeight: 600,
+              color: nearMe.state === 'active' ? '#E03553' : 'rgba(10,10,10,0.6)',
+              cursor: nearMe.state === 'loading' ? 'progress' : 'pointer',
+            }}
+          >
+            <MapPin size={12} />
+            {NEAR_ME_LABELS[nearMe.state]}
+          </button>
         </div>
       </motion.div>
 

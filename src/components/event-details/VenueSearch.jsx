@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, ExternalLink, Phone, Loader2, Clock, Star, Car } from 'lucide-react';
 import { InvokeLLM } from '@/integrations/Core';
+import { useNearMe, NEAR_ME_LABELS } from '@/lib/useNearMe';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -85,6 +86,14 @@ export default function VenueSearch({
     return () => clearTimeout(debounceRef.current);
   }, [searchTerm]);
 
+  // NEAR ME. Declared before runSearch and calling it through a ref, because
+  // runSearch reads nearMe.bias() and onReady has to re-run runSearch: either
+  // order is use-before-define, which this repo bars.
+  const runSearchRef = useRef(null);
+  const nearMe = useNearMe({
+    onReady: () => { if (searchTerm.trim().length >= 2) runSearchRef.current?.(searchTerm); },
+  });
+
   // ── LLM search (primary, always reliable) ────────────────────────────────
   // Returns the results array so callers can chain.
   const runLLMSearch = async (query) => {
@@ -128,13 +137,16 @@ export default function VenueSearch({
     }
   };
 
+  runSearchRef.current = (q) => runSearch(q);
+
   // ── Places search via the server-side proxy (enhancement, LLM is the fallback) ──
   const runPlacesSearch = async (query) => {
     try {
       const res = await fetch('/api/places-search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: query }),
+        // No coordinates means a body byte-identical to the old one.
+        body: JSON.stringify({ q: query, ...nearMe.bias() }),
       });
       if (!res.ok) {
         console.warn('[VenueSearch] places-search failed:', res.status);
@@ -393,6 +405,28 @@ export default function VenueSearch({
             }}
           />
         )}
+      </div>
+      {/* NEAR ME, item 8 of goals/2026-10-08-site-fixes-batch-1.md. Below the
+          field, outside any relatively positioned wrapper, so nothing that is
+          absolutely positioned against the input lands on this row. */}
+      <div style={{ marginTop: 6 }}>
+        <button
+          type="button"
+          data-near-me={nearMe.state}
+          aria-pressed={nearMe.state === 'active'}
+          onClick={() => (nearMe.state === 'active' ? nearMe.clear() : nearMe.request())}
+          disabled={nearMe.state === 'loading'}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            background: 'none', border: 'none', padding: 0,
+            fontFamily: PJS, fontSize: 11, fontWeight: 600,
+            color: nearMe.state === 'active' ? '#E03553' : 'rgba(10,10,10,0.6)',
+            cursor: nearMe.state === 'loading' ? 'progress' : 'pointer',
+          }}
+        >
+          <MapPin size={12} />
+          {NEAR_ME_LABELS[nearMe.state]}
+        </button>
       </div>
 
       {/* Dropdown — results or error/empty state */}
