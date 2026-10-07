@@ -44,6 +44,8 @@ import {
 } from '../../scripts/lib/renderHarness.mjs';
 import { getWeddingEvents, getGuestEventResponse, RECEPTION_EVENT_ID, MAIN_CEREMONY_EVENT_ID }
   from '../../src/lib/weddingEvents.js';
+import { leadOf, salutation, counts as householdCounts } from '../../src/lib/household.js';
+import { householdCountLine } from '../../src/lib/eventTallies.js';
 
 const WELCOME = 'welcome-drinks';
 
@@ -92,8 +94,12 @@ export async function runPerEventFixtures() {
         ['g1', 'g2'].map((id) => invitedTo(byId(SEED.Guest, id), seedEvents).length), [3, 3]);
 
   const counts = seedEvents.map((ev) => SEED.Guest.filter((g) => getGuestEventResponse(g, ev).invited).length);
+  // 8/7/3 since item 8 of goals/2026-10-07-households-and-children.md seeded a
+  // household of three and a child of her own. Before: 4/3/3. The welcome
+  // drinks did not move, because all four new rows carry a stored false for it
+  // and the event was already removed by g3.
   check('the per-event counts differ, which is what makes a breakdown worth rendering',
-        counts, [4, 3, 3]);
+        counts, [8, 7, 3]);
 
   // ── THE PUBLISHED FIXTURE, AND ITS INVARIANT ────────────────────────────
 
@@ -164,7 +170,8 @@ export async function runPerEventFixtures() {
      invitedTo(RSVP_GUEST, pubEvents).length === 2, 'ceremony + reception');
 
   ok('every seeded guest is still invited to the ceremony, so no page loses its whole list',
-     SEED.Guest.every((g) => getGuestEventResponse(g, seedEvents[0]).invited), '4 of 4');
+     SEED.Guest.every((g) => getGuestEventResponse(g, seedEvents[0]).invited),
+     `${SEED.Guest.length} of ${SEED.Guest.length}`);
 
   ok("the reception is still public, so the legacy dress-code string still renders",
      PUBLISHED_WEDDING.publicEventIds.includes(RECEPTION_EVENT_ID)
@@ -174,6 +181,36 @@ export async function runPerEventFixtures() {
   ok('the seated, attending guests are both still invited to the reception',
      ['g1', 'g2'].every((id) => getGuestEventResponse(byId(SEED.Guest, id), { event_id: RECEPTION_EVENT_ID, isMain: true }).invited),
      "Seating's pool is unchanged");
+
+  // ── THE HOUSEHOLD FIXTURE, AND THE CHILD WITHOUT AN AGE ─────────────────
+  //
+  // Item 8 of goals/2026-10-07-households-and-children.md. The same reasoning
+  // as every check above: a fixture is only worth having if something holds it
+  // to the thing it claims to be.
+
+  const house = SEED.Guest.filter((g) => g.household_id === 'hh1');
+  check('one household of three is seeded', house.map((g) => g.name),
+        ['Priya Patel', 'Dev Patel', 'Mina Patel']);
+  check('  and its lead is the member with an email, who is NOT its earliest row',
+        [leadOf(house).name, house.slice().sort((a, b) => (a.created_date < b.created_date ? -1 : 1))[0].name],
+        ['Priya Patel', 'Dev Patel']);
+  check('  so the salutation is the two adults', salutation(house), 'Priya and Dev');
+  check('  the child has an age, which only the couple ever sees',
+        house.filter((g) => g.is_child).map((g) => g.child_age), [6]);
+  ok('  and one more child is seeded with no age at all, which the goal asks for by name',
+     SEED.Guest.some((g) => g.is_child && !g.household_id && g.child_age === undefined),
+     'Theo Vale');
+  check('the four numbers the goal is about', householdCounts(SEED.Guest),
+        { people: 8, adults: 6, children: 2, invitations: 6 });
+  check('  which is the sentence Ava is given',
+        householdCountLine(SEED.Guest),
+        '8 people across 6 invitations, of whom 6 adults and 2 children');
+  // NOBODY NEW IS REMOVED FROM A MAIN EVENT, which is what keeps the reception
+  // public and the dress-code and guest-site guards green.
+  ok('no seeded guest carries a removal from a main event other than the one that always did',
+     SEED.Guest.filter((g) => g.event_responses.some((r) => r.invited === false
+       && (r.event_id === MAIN_CEREMONY_EVENT_ID || r.event_id === RECEPTION_EVENT_ID)))
+       .map((g) => g.id).join(', ') === 'g4', 'g4 only');
 
   return results;
 }

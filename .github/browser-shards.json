@@ -7,6 +7,7 @@
     "`note` is the comment that sat above the guard's step in ci.yml before the split. The steps are gone; the reasons they record are not, so they moved here rather than being deleted with the YAML that carried them.",
     "2026-09-30: test:dashboard-no-overflow (28s) and test:guest-essentials-reachable (134s) moved out of `unassigned` and into the lane, after both were run against a preview of main and both passed. They had been registered in package.json and never run by CI, on main or before it. They went one to each shard rather than both to the lighter one: 162 seconds into a pair two seconds apart would have left them 160s apart and needed the balance budget widened to hold it, and the budget is the thing keeping this file honest.",
     "2026-10-01: re-measured and rebalanced from main's run 36829293979. The numbers come from each shard's timings.json artifact rather than from the run log, which GitHub truncates for a long job; that is what #884 was for and this is its first use. Before: A 970s / B 1071s, 101s apart. After: see measuredSeconds.",
+    "2026-10-07: one guard added, not a rebalance. test:household-rsvp-390 (24s) to B, measured locally against a preview of this branch. B 944 -> 968, so A 974 / B 968 and the delta falls from 30s to 6s against a 120s budget. It went to B because B was the lighter shard, which is the same rule the 2026-10-06 entry below applied in the other direction.",
     "2026-10-06: two guards added, not a rebalance. test:per-event-dashboard (59s) to A and test:per-event-guest-site (25s) to B, measured locally against a preview of this branch. A 915 -> 974, B 919 -> 944, delta 30s against a 120s budget. Neither shard moved by more than 60s, which is the threshold goals/2026-10-06-per-event-follow-up.md sets for redistributing guards, so nothing moved between shards; only the two new entries and the sums they change are written here. The bigger guard went to A because A was the lighter shard."
   ],
   "measuredFrom": {
@@ -163,7 +164,7 @@
     "B": {
       "job": "Browser guards B",
       "port": 4224,
-      "measuredSeconds": 944,
+      "measuredSeconds": 968,
       "guards": [
         {
           "name": "The studio tour, as a couple meets it, at 390 and 1440",
@@ -300,12 +301,18 @@
           "seconds": 25,
           "script": "test:per-event-guest-site",
           "reason": "Item 6's guest-site guard, held back from #893 until #889 was on main. The celebration page joins to the resolver through its own _eventId, so a rename on either side leaves every property check green and publishes the event anyway."
+        },
+        {
+          "name": "One link, three people, on a phone",
+          "seconds": 24,
+          "script": "test:household-rsvp-390",
+          "reason": "Item 8 of goals/2026-10-07-households-and-children.md asks for the three-member RSVP form measured at 390. The property checks cannot see whether the page draws a block per member, whether the child is marked without an age, or whether the submit a guest can press is the one the rule says. It found the holder's own name missing from the form on its first run."
         }
       ]
     }
   },
   "balance": {
-    "deltaSeconds": 30,
+    "deltaSeconds": 6,
     "budgetSeconds": 120
   },
   "unassigned": []

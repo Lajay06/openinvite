@@ -1131,11 +1131,27 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
         <form onSubmit={handleSubmit}>
 
           {/* WHOSE ANSWERS THESE ARE, said only when there is someone else's
-              below. A single guest's form is about them and needs no label. */}
+              below. A single guest's form is about them and needs no label.
+
+              BY NAME, LIKE EVERY OTHER BLOCK. This read "Your reply", and a
+              390px measurement of a three-member form found the holder's own
+              name nowhere on it: two blocks named a person and one named a
+              relationship. The goal asks for every member listed, and a form
+              where the shapes do not match is also a form where "is Priya on
+              this?" has no answer. The pill carries the "yours" part, in the
+              same place the child marker sits. */}
           {hh.active && (
-            <p style={{ fontSize: 12, fontWeight: 700, color: theme.lightText, margin: '0 0 10px', ...F }}>
-              Your reply
-            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: theme.lightText, margin: 0, ...F }}>
+                {hh.members.find(m => m.isHolder)?.name || guest?.name}
+              </p>
+              <span style={{
+                fontSize: 11, fontWeight: 600, color: theme.lightText, opacity: 0.7,
+                border: `1px solid ${S.border}`, borderRadius: 999, padding: '1px 8px', ...F,
+              }}>
+                You
+              </span>
+            </div>
           )}
 
           {invitedEvents.length === 0 ? (
