@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyGuestsWithRsvp, getMyRecords } from "@/lib/resolveMyWedding";
@@ -32,6 +32,8 @@ import { fetchGuestLinks } from '@/lib/guestLinks';
 import { copyFromPromise } from '@/lib/copyToClipboard';
 import CopyFallbackModal from '@/components/shared/CopyFallbackModal';
 import { createGuest, updateGuest, deleteGuest } from '@/lib/guestWrites';
+import { findDuplicate } from '@/lib/guestDuplicate';
+import { createPendingDeletes, UNDO_WINDOW_MS } from '@/lib/pendingDelete';
 import TableToolbar from '@/components/shared/TableToolbar';
 
 // Guarded on the pattern already used by src/lib/app-params.js: read the
@@ -108,6 +110,29 @@ export default function Guests() {
   useAvaFocus();
 
   const [guests, setGuests] = useState([]);
+  // C12: the guest a pending add looks like, or null. Held here rather than in
+  // the form because the detection needs the whole list.
+  const [duplicateOf, setDuplicateOf] = useState(null);
+  // The form data that tripped the warning, so "Add anyway" resends exactly
+  // what the couple typed rather than reading it back out of the form.
+  const [pendingAdd, setPendingAdd] = useState(null);
+  // C5: deletes that have happened on screen and not yet on the server. A ref,
+  // not state: nothing renders from it, and a re-render must not restart a
+  // clock that is already running.
+  const pendingDeletes = useRef(null);
+  if (!pendingDeletes.current) {
+    pendingDeletes.current = createPendingDeletes({ commit: deleteGuest });
+  }
+  // LEAVING THE PAGE COMMITS, rather than cancelling: a row the couple deleted
+  // and walked away from is deleted, and the undo was offered and declined by
+  // inaction. Best-effort by nature, and src/lib/pendingDelete.js says why: a
+  // browser may kill an in-flight request on pagehide, and the failure mode is
+  // the kind one wants, which is that the guest is still there.
+  useEffect(() => {
+    const flush = () => { void pendingDeletes.current.flush(); };
+    window.addEventListener('pagehide', flush);
+    return () => { window.removeEventListener('pagehide', flush); flush(); };
+  }, []);
   const [tables, setTables] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingGuest, setEditingGuest] = useState(null);
@@ -259,7 +284,10 @@ export default function Guests() {
     const tid = toast.loading(editingGuest ? 'Updating guest…' : 'Adding guest…');
     // table_assignment goes through the shared write path below, once the
     // guest id is known — never as a plain field on the Guest record itself.
-    const { table_assignment: tableAssignmentInput, ...restGuestData } = guestData;
+    // __allowDuplicate is form state, not guest data, and is stripped here with
+    // table_assignment for the same reason: an undeclared key is dropped
+    // silently by Base44, so it must never be offered to a write at all.
+    const { table_assignment: tableAssignmentInput, __allowDuplicate: _allowDup, ...restGuestData } = guestData;
     try {
       let guestId;
       if (editingGuest) {
@@ -267,6 +295,22 @@ export default function Guests() {
         guestId = editingGuest.id;
         toast.success('Guest updated', { id: tid });
       } else {
+        // ── ALREADY ON THE LIST? ──────────────────────────────────────────
+        //
+        // C12. A warning, never a refusal: two real guests can share a name,
+        // so "Add anyway" is the other half of this and not a concession. The
+        // check is skipped once the couple has said to go ahead, which is what
+        // `allowDuplicate` carries.
+        if (!guestData.__allowDuplicate) {
+          const dup = findDuplicate(restGuestData, guests);
+          if (dup) {
+            setPendingAdd(guestData);
+            setDuplicateOf(dup);
+            toast.dismiss(tid);
+            setSaving(false);
+            return;
+          }
+        }
         // New guests default to invited for main events (ceremony + reception) —
         // per SMART_RSVP_MODEL.md, custom events are opt-in via the couple's
         // per-guest event checkboxes.
@@ -301,17 +345,54 @@ export default function Guests() {
 
   const handleEdit = (guest) => { setEditingGuest(guest); setShowForm(true); };
 
-  const handleDelete = async (guestId) => {
-    if (!window.confirm("Delete this guest?")) return;
-    const tid = toast.loading('Deleting…');
-    try {
-      await deleteGuest(guestId);
-      toast.success('Guest deleted', { id: tid });
-      setSelectedIds(prev => { const next = new Set(prev); next.delete(guestId); return next; });
-      loadGuests();
-    } catch (e) {
-      toast.error(e?.message || 'Failed to delete guest', { id: tid });
-    }
+  // ── DELETE NOW, SEND LATER, UNDO IN BETWEEN ─────────────────────────────
+  //
+  // C5. This went through window.confirm("Delete this guest?") and then
+  // straight to the server, so the only protection was a modal dismissed by
+  // reflex and the only recovery was retyping the person: name, email, table,
+  // dietary notes, every per-event chip.
+  //
+  // The row leaves the list at once so the page tells the truth, and the WRITE
+  // waits thirty seconds. Nothing is written by an undo, which is the whole
+  // reason for waiting: the row never left the database, so restoring it cannot
+  // fail halfway and the guest keeps their id, and with it every
+  // Table.assigned_guests entry and every RsvpResponse keyed to them.
+  //
+  // The timing lives in src/lib/pendingDelete.js so a guard can drive the clock.
+  const handleDelete = (guestId) => {
+    const guest = guests.find((g) => g.id === guestId);
+    if (!guest) return;
+    setGuests((prev) => prev.filter((g) => g.id !== guestId));
+    setSelectedIds((prev) => { const next = new Set(prev); next.delete(guestId); return next; });
+    pendingDeletes.current.schedule(guest, (_id, err) => {
+      if (!err) return;
+      // A FAILED COMMIT PUTS THE ROW BACK. The alternative is a list that says
+      // the guest is gone and a database that says otherwise, discovered on the
+      // next reload.
+      setGuests((prev) => (prev.some((g) => g.id === guestId) ? prev : [...prev, guest]));
+      toast.error(err?.message || 'Could not delete that guest. They are still on your list.');
+    });
+    toast(
+      (t) => (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 12 }}>
+          Deleted.
+          <button
+            type="button"
+            onClick={() => {
+              const back = pendingDeletes.current.undo(guestId);
+              if (back) setGuests((prev) => (prev.some((g) => g.id === back.id) ? prev : [...prev, back]));
+              toast.dismiss(t.id);
+            }}
+            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                     fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, fontWeight: 700, color: '#0A0A0A',
+                     textDecoration: 'underline' }}
+          >
+            Undo
+          </button>
+        </span>
+      ),
+      { duration: UNDO_WINDOW_MS, id: `undo-${guestId}` },
+    );
   };
 
   // Both entry points from EventDetails. `inviteAll` now runs the same bulk
@@ -1047,12 +1128,45 @@ export default function Guests() {
                 {/* weddingEvents: the editor's status control writes per-event
                     answers now, so it needs the event list to know which ones
                     this guest is invited to. See src/lib/statusWrite.js. */}
+                {/* C12: the inline warning lives here, above the form, because
+                    the detection needs the whole guest list and the form does
+                    not have it. "Add anyway" re-submits the same data with the
+                    check waived; Cancel just clears the warning so the couple
+                    can edit the name instead. */}
+                {duplicateOf && (
+                  <div
+                    data-duplicate-warning
+                    style={{
+                      border: '1px solid rgba(10,10,10,0.12)', padding: '12px 16px',
+                      margin: '0 24px 4px', display: 'flex', alignItems: 'center',
+                      gap: 12, flexWrap: 'wrap',
+                      fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13,
+                    }}
+                  >
+                    <span style={{ color: '#0A0A0A' }}>
+                      Already on your list: {duplicateOf.guest.name}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const again = { ...pendingAdd, __allowDuplicate: true };
+                        setDuplicateOf(null);
+                        handleSubmit(again);
+                      }}
+                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                               fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13,
+                               fontWeight: 700, color: '#0A0A0A', textDecoration: 'underline' }}
+                    >
+                      Add anyway
+                    </button>
+                  </div>
+                )}
                 <GuestForm
                   guest={editingGuest}
                   mealOptions={mealOptions}
                   weddingEvents={weddingEvents}
                   onSubmit={handleSubmit}
-                  onCancel={() => { setShowForm(false); setEditingGuest(null); }}
+                  onCancel={() => { setShowForm(false); setEditingGuest(null); setDuplicateOf(null); }}
                   saving={saving}
                 />
               </DialogContent>
