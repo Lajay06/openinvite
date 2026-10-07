@@ -1016,6 +1016,7 @@ export const ENTITY_FIELDS = {
   "User": {
     "fields": [
       "currency",
+      "dateFormat",
       "deletionRequestedAt",
       "language",
       "notification_prefs",
@@ -1028,6 +1029,10 @@ export const ENTITY_FIELDS = {
       "tempUnit": [
         "C",
         "F"
+      ],
+      "dateFormat": [
+        "dmy",
+        "mdy"
       ]
     }
   },
