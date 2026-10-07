@@ -91,6 +91,21 @@ export async function runHouseholdResolver() {
   ok('  and is not duplicated when they ARE in the list',
      membersOf(LATE, [...HOUSE, LATE]).length === 4, '4 members, not 5');
 
+  // A ROW WITH NO id YET, WHICH IS NOT HYPOTHETICAL. The CSV import groups
+  // rows BEFORE they are created, so every row in that list has no id and an
+  // id-only identity check duplicated each of them. Found by item 6's
+  // round-trip guard, which asked for the members of an imported household and
+  // got four names for three people.
+  {
+    const a = { name: 'Priya', household_id: 'h9' };
+    const b = { name: 'Dev', household_id: 'h9' };
+    const c = { name: 'Mina', household_id: 'h9' };
+    check('a household of rows with no ids yet is not duplicated',
+          membersOf(a, [a, b, c]).map((x) => x.name).sort(), ['Dev', 'Mina', 'Priya']);
+    check('  and one genuinely absent from the list is still added once',
+          membersOf({ name: 'Rohan', household_id: 'h9' }, [a, b, c]).length, 4);
+  }
+
   // ── THE LEAD RULE, CLAUSE BY CLAUSE ─────────────────────────────────────
 
   check('the member with an email leads', leadOf(HOUSE).name, 'Priya Patel');

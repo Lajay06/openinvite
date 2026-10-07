@@ -26,6 +26,11 @@ const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 const ORIGINAL = ['Name','Email','Phone','Category','RSVP Status','Meal Choice','Table Assignment',
                   'Plus One','Plus One Name','Dietary Restrictions','Plus One RSVP','Plus One Meal','Plus One Dietary'];
 const ADDED = ['Mailing Address','Notes','Special Requests','Plus One Email'];
+// APPENDED AGAIN, 2026-10-07, households and children item 6. Kept as its own
+// list rather than folded into ADDED, because the point of this guard is that
+// each wave of columns went on the END: a reader should be able to see the
+// order the waves arrived in. The next wave adds a third list.
+const ADDED_2026_10_07 = ['Household','Child','Child age'];
 
 export async function runGuestCsvExport() {
   const results = [];
@@ -42,7 +47,12 @@ export async function runGuestCsvExport() {
     JSON.stringify(cols.slice(0, 13)) === JSON.stringify(ORIGINAL),
     cols.slice(0, 13).join('|'));
   check('  the new columns are APPENDED, not interleaved',
-    JSON.stringify(cols.slice(13)) === JSON.stringify(ADDED), cols.slice(13).join('|'));
+    JSON.stringify(cols.slice(13, 17)) === JSON.stringify(ADDED), cols.slice(13, 17).join('|'));
+  for (const c of ADDED_2026_10_07) {
+    check(`  exports "${c}"`, cols.includes(c), cols.includes(c) ? `col ${cols.indexOf(c)}` : 'MISSING');
+  }
+  check('  and the 2026-10-07 columns are appended after those',
+    JSON.stringify(cols.slice(17)) === JSON.stringify(ADDED_2026_10_07), cols.slice(17).join('|'));
 
   // Header and row mapper must stay the same width or every value shifts one
   // column left. Counted by TOP-LEVEL commas, not by lines: several cells are

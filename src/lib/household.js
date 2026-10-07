@@ -100,7 +100,14 @@ export function membersOf(guest, guests = []) {
   const list = (Array.isArray(guests) ? guests : []).filter((g) => householdIdOf(g) === key);
   // The guest themselves may not be in the list given (a fresh row, a filtered
   // view), and leaving them out would be a worse answer than including them.
-  if (guest && !list.some((g) => g?.id && g.id === guest.id)) list.push(guest);
+  //
+  // IDENTITY FIRST, THEN id. An id comparison alone duplicated any guest who
+  // has no id yet, and that is not a hypothetical row: the CSV import groups
+  // rows BEFORE they are created, so every row in that list has no id at all
+  // and each one appeared twice. Found by the item 6 round-trip guard, which
+  // asked for the members of an imported household and got four names for
+  // three people.
+  if (guest && !list.some((g) => g === guest || (g?.id && g.id === guest.id))) list.push(guest);
   return list.slice().sort(byLeadRule);
 }
 
