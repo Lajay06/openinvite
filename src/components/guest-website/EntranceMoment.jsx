@@ -31,6 +31,7 @@ import { interactiveDivProps } from '@/lib/a11y';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 import { coupleDisplayName } from '@/lib/coupleNames';
+import { heroShowsMotif } from '@/lib/heroDisplay';
 const SKIP_REVEAL_MS = 300;
 // What `oi_entrance_<slug>` records. A legacy '1' reads as SEEN_UNGREETED.
 export const SEEN_UNGREETED = 'seen-ungreeted';
@@ -63,6 +64,10 @@ function nameVariants(nameMotion, ease) {
 const ACTIVE_PHASES = new Set(['scrim', 'kicker', 'names', 'holding']);
 
 export default function EntranceMoment({ weddingSlug, weddingDetails, theme, typography, universeConfig, forcePlay = false, onDone, guestFirstName = null }) {
+  // THE MOTIF SWITCH, read from the details this component already receives:
+  // no new prop, and the same homeContent store the welcome and mark switches
+  // use. Absent means on, so every existing site keeps its hairline.
+  const showMotif = heroShowsMotif(weddingDetails);
   const prefersReducedOS = useReducedMotion();
   const universeKey = normalizeUniverseKey(weddingDetails?.activeUniverse) || 'london';
   const config = getEntranceConfig(universeKey);
@@ -328,7 +333,10 @@ export default function EntranceMoment({ weddingSlug, weddingDetails, theme, typ
           <p style={{ margin: 0, fontFamily: typography?.bodyFont, fontSize: 12, letterSpacing: '0.22em', textTransform: 'uppercase', color: theme?.lightBg || '#FFFFFF', opacity: 0.75 }}>
             {kicker}
           </p>
-          <HairlineRule color={theme?.lightBg || '#FFFFFF'} opacity={0.3} width={40} />
+          {/* THE MOTIF, which a couple can now switch off for a plain intro
+              (item 11 of goals/2026-10-08-site-fixes-batch-1.md). The kicker
+              above it stays: that is the welcome line's own switch. */}
+          {showMotif && <HairlineRule color={theme?.lightBg || '#FFFFFF'} opacity={0.3} width={40} />}
         </motion.div>
 
         {/* Beat 3 — the couple's names, on-character per universe */}
