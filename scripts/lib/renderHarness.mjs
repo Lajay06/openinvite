@@ -207,6 +207,66 @@ export const SEED = {
         { event_id:'reception',      invited:false, status:'pending' },
         { event_id:'welcome-drinks', invited:true,  status:'no' },
       ] },
+    // ── ONE INVITATION, THREE PEOPLE, AND A CHILD ON HER OWN ──────────────
+    //
+    // Item 8 of goals/2026-10-07-households-and-children.md: the household the
+    // whole goal is written about, so every surface that learned to group,
+    // count, address and reply for one has something to be measured against.
+    //
+    //   g5 Priya   the lead, and the only member with an email
+    //   g6 Dev     no email, so he is not a "missing email" problem
+    //   g7 Mina    a child with an age
+    //   g8 Theo    a child WITHOUT an age, and no household at all
+    //
+    // WHY THE LEAD IS THE ONE WITH THE EMAIL: that is household.js's rule
+    // (an addressable email first, then the earliest created, then id), and a
+    // fixture whose lead is also its earliest row would let a reversed rule
+    // pass. Priya is created LAST of the three.
+    //
+    // ALL FOUR CARRY A FULL RESOLVED SET, like every row above, because that
+    // is what the product writes and per-event-fixtures.mjs holds the seed to
+    // it. The welcome-drinks false is safe: g3 already removed that event from
+    // the public page, so PUBLISHED_WEDDING.publicEventIds does not move, and
+    // these rows are not in PUBLISHED_GUESTS at all.
+    //
+    // NOBODY IS REMOVED FROM A MAIN EVENT. An explicit false on the reception
+    // would unpublish it (the 2026-10-06 rule) and take the dress-code and
+    // guest-site guards red for a reason that has nothing to do with
+    // households.
+    //
+    // THE COUNTS THIS MOVES are pinned in two places and updated with it:
+    // tests/persistence/per-event-fixtures.mjs (4/3/3 -> 8/7/3) and
+    // scripts/test-per-event-dashboard.mjs (the same three numbers, painted).
+    { id:'g5', name:'Priya Patel', email:'priya@example.com', rsvp_status:'pending', category:'family', created_by:'fixture@example.com',
+      household_id:'hh1', created_date: iso(-30),
+      event_responses:[
+        { event_id:'main-ceremony',  invited:true,  status:'pending' },
+        { event_id:'reception',      invited:true,  status:'pending' },
+        { event_id:'welcome-drinks', invited:false, status:'pending' },
+      ] },
+    { id:'g6', name:'Dev Patel', rsvp_status:'pending', category:'family', created_by:'fixture@example.com',
+      household_id:'hh1', created_date: iso(-32),
+      event_responses:[
+        { event_id:'main-ceremony',  invited:true,  status:'pending' },
+        { event_id:'reception',      invited:true,  status:'pending' },
+        { event_id:'welcome-drinks', invited:false, status:'pending' },
+      ] },
+    { id:'g7', name:'Mina Patel', rsvp_status:'pending', category:'family', created_by:'fixture@example.com',
+      household_id:'hh1', is_child:true, child_age:6, created_date: iso(-31),
+      event_responses:[
+        { event_id:'main-ceremony',  invited:true,  status:'pending' },
+        { event_id:'reception',      invited:true,  status:'pending' },
+        { event_id:'welcome-drinks', invited:false, status:'pending' },
+      ] },
+    // A CHILD WITH NO AGE, which the goal asks for by name: the age is
+    // optional and a surface that assumes it would print "Child, undefined".
+    { id:'g8', name:'Theo Vale', rsvp_status:'pending', category:'friends', created_by:'fixture@example.com',
+      is_child:true, created_date: iso(-29),
+      event_responses:[
+        { event_id:'main-ceremony',  invited:true,  status:'pending' },
+        { event_id:'reception',      invited:true,  status:'pending' },
+        { event_id:'welcome-drinks', invited:false, status:'pending' },
+      ] },
   ],
   Table: [
     { id:'t1', name:'Table 1', capacity:8,  shape:'round', x:200, y:200, assigned_guests:[{ seat_index:0, guest_id:'g1' }, { seat_index:1, guest_id:'g2' }], created_by:'fixture@example.com' },
@@ -595,6 +655,61 @@ export const RSVP_TOKEN = 'harness-token-not-a-real-token';
  */
 export const PER_EVENT_TOKEN = 'harness-token-per-event-guest';
 
+/**
+ * ── THE LEAD'S LINK, AND THE HOUSEHOLD IT OPENS ───────────────────────────
+ *
+ * Item 5 of goals/2026-10-07-households-and-children.md ships in two halves:
+ * the form (#907) and the read that fills it (#908, held). This fixture is the
+ * read's contract, written out in the shape api/rsvp-lookup.js returns, so the
+ * form can be MEASURED at 390 before the server half merges. When it does, the
+ * same rows arrive from Base44 instead of from here.
+ *
+ * THE CONTRACT: { ref, name, is_child, is_lead, is_you, event_responses }, lead
+ * first. No ids, no emails, no ages, because a browser is given none of those:
+ * see src/lib/householdRsvp.js for why is_lead and is_you have to be stated.
+ *
+ * MINA IS NOT AT THE RECEPTION, so the form must draw her one card where the
+ * adults get two. That is #891's rule per member, and it is the only case the
+ * single-guest fixtures cannot carry.
+ *
+ * A THIRD TOKEN, never a change to the first two. RSVP_TOKEN's guest and
+ * PER_EVENT_GUEST are load-bearing for every existing /rsvp pass.
+ */
+export const HOUSEHOLD_TOKEN = 'harness-token-household-lead';
+
+export const HOUSEHOLD_LEAD_GUEST = {
+  id: 'hg1', name: 'Priya Patel', first_name: 'Priya', last_name: 'Patel',
+  email: 'priya@example.com', rsvp_status: 'pending', invited: true,
+  household_id: 'hh1',
+  // A PLUS-ONE ON THE LEAD, so "plus-one controls only on the lead" is a thing
+  // a browser can be asked about: her cards carry the checkbox and the
+  // members cards must not.
+  plus_one: true,
+  event_responses: [
+    { event_id: 'main-ceremony', invited: true,  status: 'pending' },
+    { event_id: 'reception',     invited: true,  status: 'pending' },
+    { event_id: 'welcome-drinks', invited: false, status: 'pending' },
+  ],
+  poll_votes: {}, plus_ones: [],
+};
+
+export const HOUSEHOLD_ROWS = [
+  { ref: 'hh-ref-1', name: 'Priya Patel', is_child: false, is_lead: true, is_you: true,
+    event_responses: HOUSEHOLD_LEAD_GUEST.event_responses },
+  { ref: 'hh-ref-2', name: 'Dev Patel', is_child: false, is_lead: false, is_you: false,
+    event_responses: [
+      { event_id: 'main-ceremony', invited: true,  status: 'pending' },
+      { event_id: 'reception',     invited: true,  status: 'pending' },
+      { event_id: 'welcome-drinks', invited: false, status: 'pending' },
+    ] },
+  { ref: 'hh-ref-3', name: 'Mina Patel', is_child: true, is_lead: false, is_you: false,
+    event_responses: [
+      { event_id: 'main-ceremony', invited: true,  status: 'pending' },
+      { event_id: 'reception',     invited: false, status: 'pending' },
+      { event_id: 'welcome-drinks', invited: false, status: 'pending' },
+    ] },
+];
+
 export const FIXTURE_USER = {
   id: 'u1', email: 'fixture@example.com', full_name: 'Render Fixture',
   plan: 'ultra', onboardingCompleted: true, plan_step_completed: true,
@@ -812,6 +927,16 @@ function resolveStub(url, seed, user, json, onEntity, fail = () => json(null), r
     if (/\/api\/rsvp-lookup/.test(url)) {
       let tok = null;
       try { tok = new URL(url).searchParams.get('token'); } catch { /* non-URL */ }
+      // A THIRD TOKEN, AND THE ONLY ONE THAT CARRIES A household KEY. The page
+      // feature-detects it, so the other two render exactly the form they did
+      // before households existed.
+      if (tok === HOUSEHOLD_TOKEN) {
+        return json({
+          guest: HOUSEHOLD_LEAD_GUEST,
+          wedding: PUBLISHED_WEDDING,
+          household: HOUSEHOLD_ROWS,
+        });
+      }
       return json({
         guest: tok === PER_EVENT_TOKEN ? PER_EVENT_GUEST : RSVP_GUEST,
         wedding: PUBLISHED_WEDDING,
