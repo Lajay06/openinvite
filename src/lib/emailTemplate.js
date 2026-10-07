@@ -26,6 +26,7 @@
 import { getUniverseEmailStyle } from './universeEmailStyles.js';
 import { EMAIL_LOGO_MARK_URL } from './emailBrand.js';
 import { emailPalette, normalizeVariant, normalizeButtonStyle } from './emailPalette.js';
+import { invitationGreetingName } from './guestGreeting.js';
 
 const SANS_FALLBACK = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
@@ -349,8 +350,12 @@ export function renderInvitationEmail({
   const bgTint = pageBg;
   const textColor = ink;
 
-  const firstName = guestName ? guestName.split(' ')[0] : 'there';
-  const message = personalMessage || cfg.defaultMessage(firstName, coupleNames);
+  // ONE NAME OR SEVERAL. `guestName` is a person for a single guest and a
+  // household salutation ("Priya and Dev") for an invitation that covers
+  // several, so the first word is not always the greeting. See
+  // src/lib/guestGreeting.js.
+  const greetName = invitationGreetingName(guestName);
+  const message = personalMessage || cfg.defaultMessage(greetName, coupleNames);
 
   const preheader = `${cfg.kicker}${coupleNames ? `: ${coupleNames}` : ''}.`;
 

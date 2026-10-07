@@ -275,3 +275,61 @@ export function entriesForNewMember(lead) {
       responded_at: null,
     }));
 }
+
+/**
+ * ── ONE ENTRY PER INVITATION, FOR A SEND ───────────────────────────────────
+ *
+ * Item 4 of the households goal: one email per household, to the lead, with
+ * the salutation as its greeting. This is the grouping that send surfaces read
+ * instead of the guest list.
+ *
+ * IT GROUPS THE LIST IT IS GIVEN, NOT THE WEDDING, and that is the decision
+ * worth naming. The send modal's list is a SELECTION: the couple picked who
+ * this email is for, filtered by event and by invitation state. Grouping
+ * against the whole wedding would address a card to "Priya and Dev" when the
+ * couple had deliberately selected only Priya, and would count an invitation
+ * for a household nobody in it was selected from. So a household split across
+ * a filter sends to the members who are in the list, and the salutation names
+ * exactly those people.
+ *
+ * ORDER IS FIRST APPEARANCE, so the review list reads in the order the couple
+ * already sees on the Guests page, and lead-first inside each entry.
+ *
+ * `email` IS THE ONE WE COULD SEND TO, through the same hasEmail rule the lead
+ * is chosen by: a malformed address is no address, so a household whose lead
+ * typed "priya@" is surfaced as "No email yet" rather than handed to Resend to
+ * drop silently.
+ *
+ * @param {Array} guests
+ * @returns {Array<{householdId: string|null, members: Array, lead: object|null,
+ *                  name: string, email: string}>}
+ */
+export function invitationsFor(guests = []) {
+  const list = (Array.isArray(guests) ? guests : []).filter(Boolean);
+  const byKey = new Map();
+  const groups = [];
+  for (const g of list) {
+    const key = householdIdOf(g);
+    if (!key) { groups.push({ householdId: null, members: [g] }); continue; }
+    const existing = byKey.get(key);
+    if (existing) { existing.members.push(g); continue; }
+    const entry = { householdId: key, members: [g] };
+    byKey.set(key, entry);
+    groups.push(entry);
+  }
+  return groups.map((entry) => {
+    const members = entry.members.slice().sort(byLeadRule);
+    const lead = members[0] || null;
+    // A household of one is addressed by that person's own name: a salutation
+    // is first names, and dropping someone's surname off their own invitation
+    // buys nothing when there is nobody to join them to.
+    const name = (members.length > 1 ? salutation(members) : null) || lead?.name || '';
+    return {
+      householdId: entry.householdId,
+      members,
+      lead,
+      name,
+      email: hasEmail(lead) ? String(lead.email).trim() : '',
+    };
+  });
+}

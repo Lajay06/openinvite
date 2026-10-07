@@ -54,3 +54,33 @@ export function greetableFirstName(name) {
   const first = trimmed.split(/\s+/)[0];
   return first || null;
 }
+
+/**
+ * How an INVITATION greets its recipient, where the recipient may be more than
+ * one person.
+ *
+ * One person is greeted by their first name, which is what every email has
+ * always done. A name that is NOT one person is already the address: the
+ * salutation household.js builds is made of first names ("Priya and Dev"), and
+ * a couple who typed "The Smith Family" into one row typed the address too.
+ * Both travel whole.
+ *
+ * So this fixes the household case and an older one in the same line: the
+ * first-word rule greeted "The Smith Family" as "Dear The," and greeted
+ * "Nora & Sam" as "Dear Nora," with Sam standing beside her.
+ *
+ * THERE IS A FALLBACK HERE AND NONE IN greetableFirstName, deliberately. A
+ * guest-site heading can render nothing at all; an email body has a sentence
+ * that has to start somewhere, and 'there' is the word the templates already
+ * used when a guest had no name.
+ *
+ * @param {unknown} name the Guest's `name`, or a household salutation
+ * @returns {string} a name to greet, never empty
+ */
+export function invitationGreetingName(name) {
+  const trimmed = typeof name === 'string' ? name.trim() : '';
+  if (!trimmed) return 'there';
+  // 'Guest', the API's placeholder, has no first name by the rule above and so
+  // comes back whole — exactly what it rendered as before this existed.
+  return greetableFirstName(trimmed) || trimmed;
+}
