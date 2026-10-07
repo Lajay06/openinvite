@@ -79,7 +79,8 @@
 
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
 import { pickGuestSafeFields } from './_lib/guestSafeWedding.js';
-import { resolveGuestByToken } from './_lib/rsvpAuth.js';
+import { resolveGuestByToken, resolveHousehold } from './_lib/rsvpAuth.js';
+import { membersOf, leadOf } from '../src/lib/household.js';
 import { latestEventResponses, latestGuestLevel, toEventResponsesShape, mergePlusOneEventResponses } from '../src/lib/rsvpAggregation.js';
 import { hashId, decryptPayload } from './_lib/questionnaireCrypto.js';
 
@@ -154,6 +155,96 @@ function pickGuestSafeGuestFields(guest, rsvpRows, role) {
   };
 }
 
+/**
+ * ── THE HOUSEHOLD, AS A GUEST-FACING ROW SET ───────────────────────────────
+ *
+ * Item 5 of goals/2026-10-07-households-and-children.md. The lead's link
+ * answers for everyone on the invitation, so the form needs to know who they
+ * are. This decides what it is told.
+ *
+ * ONLY A LEAD'S LINK GETS ONE, and that is the server half of the goal's rule
+ * that "a member who has their own link still answers for themselves alone".
+ * Returning null is the whole enforcement: a member's browser never receives a
+ * household, so there is nothing for it to render or submit.
+ *
+ * WHAT EACH ROW CARRIES, and nothing else:
+ *
+ *   ref               an HMAC of the row's id (the same hashId RsvpResponse
+ *                     keys on). The submit names a member by this.
+ *   name              restored from the encrypted blob by resolveHousehold.
+ *   is_child          the flag, never the age: child_age is the couple's own
+ *                     note and no guest surface shows it.
+ *   is_lead / is_you  the two facts a browser cannot work out for itself,
+ *                     because the lead rule needs emails, created dates and
+ *                     ids that this endpoint withholds on purpose.
+ *   event_responses   that member's own, overlaid from their own RsvpResponse
+ *                     rows exactly as the holder's are.
+ *
+ * NO ID, NO EMAIL, NO PHONE, NO DIETARY, NO GUEST-LEVEL BLOB. A lead needs to
+ * answer for Dev, not to read Dev's record: the per-event rows are the answer
+ * and the encrypted guest-level fields (song request, note, dietary, email)
+ * are each person's own. This is the same minimal-fields rule
+ * pickGuestSafeGuestFields above is written to, applied to someone else's row.
+ *
+ * EXPORTED so a guard can drive the decision without a network call, exactly
+ * as api/rsvp-submit.js exports keepOnlyInvitedEvents and for the same reason.
+ * `refOf` is injectable for the same purpose: hashId needs the admin key.
+ *
+ * @returns {Array|null} the rows, lead first, or null when there is no
+ *   household form to open.
+ */
+export function pickHouseholdRows({ members = [], holder, rowsByRef = {}, refOf = hashId } = {}) {
+  const list = (Array.isArray(members) ? members : []).filter(Boolean);
+  if (!holder || list.length < 2) return null;
+  const sameAsHolder = (g) => g === holder || (!!g.id && g.id === holder.id);
+  const lead = leadOf(list);
+  if (!lead || !sameAsHolder(lead)) return null;
+  return membersOf(holder, list).map((g) => {
+    const ref = refOf(g.id);
+    const eventRows = latestEventResponses(rowsByRef[ref] || []);
+    return {
+      ref,
+      name: g.name,
+      is_child: g.is_child === true,
+      is_lead: g === lead || (!!g.id && g.id === lead.id),
+      is_you: sameAsHolder(g),
+      event_responses: eventRows.length > 0 ? toEventResponsesShape(eventRows) : (g.event_responses || []),
+    };
+  });
+}
+
+/**
+ * A member's own RsvpResponse rows, one query each.
+ *
+ * ONE QUERY PER MEMBER RATHER THAN ONE FOR THE WEDDING: a wedding-wide read
+ * would hand this endpoint every guest's rows to filter in memory, which is
+ * the couple's whole reply dataset flowing through a public route to answer a
+ * question about three people.
+ *
+ * CAPPED. A household is a card in the post; twelve is already generous, and a
+ * malformed household_id shared by two hundred rows must not turn one lookup
+ * into two hundred requests.
+ */
+const MAX_HOUSEHOLD_READS = 12;
+
+async function fetchRowsByRef(members, weddingId) {
+  const byRef = {};
+  if (!weddingId) return byRef;
+  const take = members.slice(0, MAX_HOUSEHOLD_READS);
+  if (members.length > MAX_HOUSEHOLD_READS) {
+    console.warn(`[rsvp-lookup] household of ${members.length} capped at ${MAX_HOUSEHOLD_READS} reads`);
+  }
+  await Promise.all(take.map(async (g) => {
+    const ref = hashId(g.id);
+    const q = encodeURIComponent(JSON.stringify({ wedding_id: weddingId, guest_id_hash: ref }));
+    const r = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/RsvpResponse?q=${q}`, {
+      headers: { Authorization: `Bearer ${BASE44_ADMIN_KEY}` },
+    }).catch(() => null);
+    if (r?.ok) byRef[ref] = unwrapList(await r.json()).filter((row) => !row.is_test);
+  }));
+  return byRef;
+}
+
 export default async function handler(req, res) {
   if (applyCors(req, res)) return;
 
@@ -197,9 +288,31 @@ export default async function handler(req, res) {
       }
     }
 
+    // ── EVERYONE ON THIS INVITATION, FOR A LEAD'S LINK ONLY ───────────────
+    //
+    // A plus-one's token is not a lead's link: it resolves to the same Guest
+    // row and speaks for a different person, so there is no household to
+    // answer for. Skipped before the read rather than filtered after it.
+    let household = null;
+    if (role === 'primary') {
+      const members = await resolveHousehold(guest).catch((err) => {
+        // NOT FATAL. A household that cannot be read is the single-guest form,
+        // which is a smaller failure than a link that will not open.
+        console.error('[rsvp-lookup] household read failed:', err.message);
+        return [];
+      });
+      if (members.length > 1) {
+        const rowsByRef = await fetchRowsByRef(members, wedding?.id);
+        household = pickHouseholdRows({ members, holder: guest, rowsByRef });
+      }
+    }
+
     return res.status(200).json({
       guest: pickGuestSafeGuestFields(guest, rsvpRows, role),
       wedding: wedding ? pickGuestSafeFields(wedding) : null,
+      // ABSENT RATHER THAN EMPTY when there is no household form to open: the
+      // page feature-detects the key and renders today's single-guest form.
+      ...(household ? { household } : {}),
     });
   } catch (err) {
     console.error('[rsvp-lookup] Error:', err.message);
