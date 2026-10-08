@@ -93,7 +93,7 @@ import {
   getClientIp,
   sanitizeString,
 } from './_lib/security.js';
-import { pickGuestSafeFields, verifyWeddingPassword, websiteGateIsOn } from './_lib/guestSafeWedding.js';
+import { pickGuestSafeFields, verifyWeddingPassword, websiteGateIsOn, resolveOwnerCurrency } from './_lib/guestSafeWedding.js';
 import { pickGuestSafeCustomGift, pickGuestSafeRegistryProduct } from './_lib/guestSafeRegistry.js';
 import { verifyBase44User } from './_lib/auth.js';
 import { resolveWeddingBySlug } from './_lib/resolveWeddingBySlug.js';
@@ -418,16 +418,22 @@ export default async function handler(req, res) {
 
     // Both reads are owner-scoped and independent, so they go together: the
     // event set costs one more request on a path that already makes three.
-    const [registry, publicIds] = await Promise.all([
+    // The owner's currency joins these because it is the same shape of read:
+    // owner scoped, independent, and on a path that already makes several. It
+    // is the one field from the User record that reaches a guest, and it is
+    // here because the registry page prints money and had no way to know
+    // which currency it was in.
+    const [registry, publicIds, currency] = await Promise.all([
       fetchGuestSafeRegistry(wedding.created_by_id),
       fetchPublicEventIds(wedding),
+      resolveOwnerCurrency(wedding, BASE44_ADMIN_KEY),
     ]);
 
     // OMITTED, NOT NULLED, when the guest list could not be read. The client
     // distinguishes "no events are public" from "we do not know", and only an
     // absent key means the second one.
     return res.status(200).json({
-      ...pickGuestSafeFields(wedding),
+      ...pickGuestSafeFields(wedding, { currency }),
       ...registry,
       ...(publicIds ? { publicEventIds: publicIds } : {}),
     });

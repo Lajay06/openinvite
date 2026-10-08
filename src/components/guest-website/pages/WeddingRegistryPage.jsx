@@ -6,6 +6,14 @@ import { pageAnchorFor } from '../layouts/sectionMarks';
 import { isMotionEnabled } from '@/lib/universeStyling';
 
 import { coupleDisplayName } from '@/lib/coupleNames';
+// THE COUPLE'S CURRENCY, NOT A DOLLAR SIGN. This page printed a hardcoded $
+// for cash-fund goals and product prices, so a couple planning in euros told
+// their guests a number in dollars. /api/wedding-by-slug now carries the
+// owner's currency code (api/_lib/guestSafeWedding.js resolves it), and the
+// same formatter the dashboard uses turns it into a figure. When the field is
+// absent the formatter falls back to $, which is exactly what this rendered
+// before, so an older cached payload changes nothing.
+import { formatMoney } from '@/lib/money';
 // Cash fund + registry public-site wiring (Option A — couples link their
 // own external payment page; no money moves through Openinvite). customGifts
 // and registryProducts come from /api/wedding-by-slug, already scoped to
@@ -13,7 +21,7 @@ import { coupleDisplayName } from '@/lib/coupleNames';
 // api/_lib/guestSafeRegistry.js) — payment_link_url is present only when
 // it passed an https:// check, so "does this key exist" is the only check
 // this page needs to decide whether to render a Contribute button.
-function CashFundCard({ fund, theme, typography, coupleNames }) {
+function CashFundCard({ fund, theme, typography, coupleNames, currency }) {
   return (
     <div style={{ backgroundColor: theme.darkBg, color: theme.darkText, padding: 24, borderRadius: '4px', display: 'flex', flexDirection: 'column', gap: 10 }}>
       {fund.image_url && (
@@ -29,7 +37,7 @@ function CashFundCard({ fund, theme, typography, coupleNames }) {
       )}
       {fund.requested_amount != null && (
         <p style={{ fontFamily: typography.bodyFont, fontSize: '0.95rem', fontWeight: 600, margin: 0 }}>
-          Goal: ${fund.requested_amount.toLocaleString()}
+          Goal: {formatMoney(fund.requested_amount, currency)}
         </p>
       )}
       {fund.payment_link_url && (
@@ -57,7 +65,7 @@ function CashFundCard({ fund, theme, typography, coupleNames }) {
   );
 }
 
-function WishlistCard({ product, theme, typography }) {
+function WishlistCard({ product, theme, typography, currency }) {
   const hasClaimCount = product.quantity_requested != null && product.quantity_purchased != null;
   return (
     <div style={{ backgroundColor: theme.darkBg, color: theme.darkText, padding: 24, borderRadius: '4px', display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -74,7 +82,7 @@ function WishlistCard({ product, theme, typography }) {
       )}
       {product.price != null && (
         <p style={{ fontFamily: typography.bodyFont, fontSize: '0.95rem', fontWeight: 600, margin: 0 }}>
-          ${product.price.toLocaleString()}
+          {formatMoney(product.price, currency)}
         </p>
       )}
       {hasClaimCount && (
@@ -118,6 +126,7 @@ export default function WeddingRegistryPage({ weddingDetails, theme, typography,
   const customGifts = weddingDetails.customGifts || [];
   const registryProducts = weddingDetails.registryProducts || [];
   const motionDisabled = !isMotionEnabled(weddingDetails);
+  const currency = weddingDetails.currency;
 
   const hasAnyContent = content.noGiftsPlease
     || !!content.registryMessage
@@ -175,7 +184,7 @@ export default function WeddingRegistryPage({ weddingDetails, theme, typography,
                 <div style={cardGridStyle}>
                   {customGifts.map(fund => (
                     <SectionReveal key={fund.id} universeConfig={universeConfig} disabled={motionDisabled}>
-                      <CashFundCard fund={fund} theme={theme} typography={typography} coupleNames={coupleDisplayName(weddingDetails)} />
+                      <CashFundCard fund={fund} theme={theme} typography={typography} coupleNames={coupleDisplayName(weddingDetails)} currency={currency} />
                     </SectionReveal>
                   ))}
                 </div>
@@ -190,7 +199,7 @@ export default function WeddingRegistryPage({ weddingDetails, theme, typography,
                 <div style={cardGridStyle}>
                   {registryProducts.map(product => (
                     <SectionReveal key={product.id} universeConfig={universeConfig} disabled={motionDisabled}>
-                      <WishlistCard product={product} theme={theme} typography={typography} />
+                      <WishlistCard product={product} theme={theme} typography={typography} currency={currency} />
                     </SectionReveal>
                   ))}
                 </div>

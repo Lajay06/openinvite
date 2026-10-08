@@ -44,6 +44,43 @@ The Budget page, the Vendors page and every money figure on the dashboard. Email
 
 Each item adds or extends one guard that fails on main before the change and passes after. Item 4 is the goal's main guard.
 
+## State
+
+Written on the item 5 branch so the plan survives a context compaction. It reaches
+main with item 5's held PR, not before.
+
+Branch: feat/budget-units-guest-registry, local commit c4908dcd23c849af7f398821ea5b74131046e885.
+
+Items 2, 3 and 4 are PR #932 (head 759c30805356755fb4d0c41638eb80881eee607f, base main).
+Item 5 imports src/lib/money.js, which only exists in #932, so item 5 cannot build until
+#932 lands. That is why it is committed locally and unpushed rather than stacked: a PR based
+on another PR's branch is closed, not retargeted, when the parent squash-merges.
+
+Plan, in order, once #932 is on main:
+1. Merge main into feat/budget-units-guest-registry. A merge, not a rebase, and the PR's
+   base must be main.
+2. Re-run the build and both diff guards locally.
+3. Push and open the PR as HELD, for the owner's line. It touches
+   api/_lib/guestSafeWedding.js, which is on the held list.
+4. Print the five-marks block and list every changed file against the held list in the body.
+
+Files in item 5: api/_lib/guestSafeWedding.js (resolveOwnerCurrency, one new guest-safe
+field), api/wedding-by-slug.js (resolve it alongside the existing Promise.all) and
+src/components/guest-website/pages/WeddingRegistryPage.jsx (format the cash fund and
+wishlist figures with the shared helper).
+
+## Lessons
+
+A hand-written check must be planted against with a replacer function, never a string
+replacement: String.prototype.replace reads "$$" as an escape for one "$", so a plant meant
+to insert a hardcoded dollar sign inserts a plain interpolation instead, and the guard goes
+green having tested nothing. The first hardcoded-dollar check in this goal was also written
+as a list of the shapes its author had thought of, and it missed three real ones. Rewritten
+to work by elimination, it found all three immediately.
+
 ## Close
 
 Last line: "Closed <date> at main <full SHA>, PRs <list>".
+
+The lessons section above was not pushed as a separate docs commit, on the owner's
+instruction. It reaches main with item 5's held PR, as part of the state write-up.
