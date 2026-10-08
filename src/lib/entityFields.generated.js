@@ -1019,8 +1019,10 @@ export const ENTITY_FIELDS = {
       "dateFormat",
       "deletionRequestedAt",
       "language",
+      "lifecycleEmails",
       "notification_prefs",
       "onboarding_completed",
+      "retentionEmails",
       "tempUnit",
       "trialStartedAt"
     ],
