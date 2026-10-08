@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -55,6 +56,9 @@ const BadgePill = ({ style, children }) => (
 );
 
 export default function BudgetList({ items, onEdit, onDelete, readOnly = false, loading = false, scrollToItemId, highlightedItemId }) {
+  // THE ACCOUNT'S SYMBOL, NOT A DOLLAR SIGN. Owner decision 2026-10-09:
+  // every figure on the dashboard is in the currency the couple picked.
+  const { symbol } = useCurrency();
   const rowRefs = useRef(new Map());
   const scrolledForId = useRef(null);
 
@@ -133,7 +137,7 @@ export default function BudgetList({ items, onEdit, onDelete, readOnly = false, 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <span style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                          ${(item.actual_amount || 0).toLocaleString()} / ${(item.budgeted_amount || 0).toLocaleString()}
+                          {symbol}{(item.actual_amount || 0).toLocaleString()} / {symbol}{(item.budgeted_amount || 0).toLocaleString()}
                         </span>
                         {over && <AlertTriangle size={13} style={{ color: '#E03553', flexShrink: 0 }} />}
                       </div>

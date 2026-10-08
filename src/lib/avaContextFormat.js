@@ -11,6 +11,7 @@
  * own computation. See tests/persistence/ava-reads-the-wedding.mjs.
  */
 import { tallyAttendees, guestCounts } from './guestRsvpTally.js';
+import { formatMoney } from './money.js';
 import { resolveAttendees, MEAL_CHOSEN } from './attendees.js';
 import { mealOptionLabel, getWeddingEvents, getGuestEventResponse } from './weddingEvents.js';
 import { tallyEventsForGuests, householdCountLine } from './eventTallies.js';
@@ -237,7 +238,11 @@ to. A guest line with no events note is invited to all of them.`
   // say whether one was booked or still being researched, and could not answer
   // a deposit question at all. She reasoned about deposits from the $0 budget
   // instead, which is how a wrong number becomes a wrong argument.
-  const money = (n) => `$${Number(n || 0).toLocaleString()}`;
+  // THE COUPLE'S OWN CURRENCY, NOT DOLLARS. Owner decision 2026-10-09.
+  // Ava quotes these figures back in answers, so a hardcoded dollar sign made
+  // her tell a couple on AUD that their deposit was in US dollars. The symbol
+  // comes from the User record this function already receives.
+  const money = (n) => formatMoney(n, user?.currency);
   const vendorLines = vendors.map((v) => {
     const bits = [v.status || 'no status'];
     if (v.deposit_amount) bits.push(`deposit ${money(v.deposit_amount)} ${v.deposit_paid ? 'PAID' : 'NOT paid'}`);

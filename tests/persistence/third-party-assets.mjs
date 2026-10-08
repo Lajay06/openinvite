@@ -29,6 +29,10 @@ const root = (p) => resolve(__dir, '../../', p);
 const strip = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 
 const CLIENT = strip(readFileSync(root('src/contexts/CurrencyContext.jsx'), 'utf8'));
+// The currency table moved to src/lib/money.js with the budget-units goal
+// (2026-10-09), because the published guest site shows money and has no React
+// context to read. The allowlist check below follows it there.
+const TABLE = strip(readFileSync(root('src/lib/money.js'), 'utf8'));
 const SERVER = strip(readFileSync(root('api/rates.js'), 'utf8'));
 
 const WIX_LOGO_ID = 'ed803ca7c6de491a90af0df6d06a8e54';
@@ -41,12 +45,27 @@ export async function runThirdPartyAssets() {
   // --- 1. exchange rates -------------------------------------------------
   check('client code names no er-api host',
     !/er-api\.com/.test(CLIENT), 'CurrencyContext is clean');
-  check('the rate fetch goes to our origin',
-    /fetch\('\/api\/rates\?base=USD'\)/.test(CLIENT), '/api/rates');
+  // ── THE STRONGEST VERSION OF THIS RULE: NO CALL AT ALL ─────────────────
+  //
+  // This used to assert that the rate fetch went to our own origin rather
+  // than to open.er-api.com, because CurrencyProvider wraps the entire Router
+  // and the direct call fired for every visitor, guests on /w/ links
+  // included.
+  //
+  // The budget-units goal (owner decision 2026-10-09) removed the conversion
+  // those rates fed: a figure is shown in the currency it was typed in, so
+  // there is no rate to apply. The client therefore fetches NOTHING, which
+  // satisfies the original concern outright. You cannot disclose an IP with a
+  // request you do not make.
+  //
+  // api/rates.js still exists and its own safety properties are still pinned
+  // below, because the endpoint is still deployed and reachable.
+  check('the client fetches no rate table at all',
+    !/\/api\/rates/.test(CLIENT) && !/er-api/.test(CLIENT), 'no request, nothing to leak');
+  check('  and keeps no rate cache',
+    !/localStorage/.test(CLIENT) && !/oi_exchange_rates/.test(CLIENT), 'no client cache');
   check('caching stayed CLIENT-side (the proxy adds no cache of its own)',
     !/localStorage/.test(SERVER), 'server holds no cache');
-  check('  the 1h client TTL survived the rewire',
-    /const TTL = 60 \* 60 \* 1000/.test(CLIENT), 'TTL intact');
 
   // Not an open proxy.
   check('server never fetches a caller-supplied URL',
@@ -57,7 +76,7 @@ export async function runThirdPartyAssets() {
     /SUPPORTED\.has\(base\)/.test(SERVER) && /Unsupported currency/.test(SERVER), 'rejected, not guessed');
   check('  the allowlist matches what the UI actually offers',
     (() => {
-      const ui = [...CLIENT.matchAll(/code: '([A-Z]{3})'/g)].map(m => m[1]).sort();
+      const ui = [...TABLE.matchAll(/code: '([A-Z]{3})'/g)].map(m => m[1]).sort();
       const srv = [...SERVER.matchAll(/'([A-Z]{3})'/g)].map(m => m[1]).sort();
       return ui.length === 18 && ui.every(c => srv.includes(c));
     })(), '18 currencies, no drift');
