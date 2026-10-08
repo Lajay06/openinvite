@@ -1,4 +1,5 @@
 import React from 'react';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import {
   PieChart, Pie, Cell, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, Tooltip, Legend,
@@ -24,13 +25,16 @@ const sectionTitleStyle = {
 };
 
 const CustomTooltip = ({ active, payload, label }) => {
+  // ITS OWN READ OF THE SYMBOL. A tooltip is a sibling component, not part of
+  // the chart's function body, so it cannot see the chart's own hook.
+  const { symbol } = useCurrency();
   if (!active || !payload?.length) return null;
   return (
     <div style={{ background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.1)', padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       {label && <p style={{ fontSize: 12, fontWeight: 700, color: '#0A0A0A', margin: '0 0 6px' }}>{label}</p>}
       {payload.map((entry, i) => (
         <p key={i} style={{ fontSize: 12, color: entry.color || '#0A0A0A', margin: '2px 0', fontWeight: 600 }}>
-          {entry.name === 'budgeted' ? 'Budgeted' : entry.name === 'spent' ? 'Spent' : entry.name}: ${Number(entry.value).toLocaleString()}
+          {entry.name === 'budgeted' ? 'Budgeted' : entry.name === 'spent' ? 'Spent' : entry.name}: {symbol}{Number(entry.value).toLocaleString()}
         </p>
       ))}
     </div>
@@ -38,18 +42,22 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 const PieTooltip = ({ active, payload }) => {
+  const { symbol } = useCurrency();
   if (!active || !payload?.length) return null;
   return (
     <div style={{ background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.1)', padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       <p style={{ fontSize: 12, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px' }}>{payload[0].name}</p>
       <p style={{ fontSize: 12, fontWeight: 600, color: payload[0].payload.color, margin: 0 }}>
-        Spent: ${Number(payload[0].value).toLocaleString()}
+        Spent: {symbol}{Number(payload[0].value).toLocaleString()}
       </p>
     </div>
   );
 };
 
 export default function BudgetChart({ budgetItems }) {
+  // THE ACCOUNT'S SYMBOL, NOT A DOLLAR SIGN. Owner decision 2026-10-09:
+  // every figure on the dashboard is in the currency the couple picked.
+  const { symbol } = useCurrency();
   const categoryData = React.useMemo(() => {
     const cats = {};
     budgetItems.forEach(item => {
@@ -124,7 +132,7 @@ export default function BudgetChart({ budgetItems }) {
               {/* Centre label */}
               <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none' }}>
                 <p style={{ fontSize: 'clamp(16px,2vw,20px)', fontWeight: 700, color: '#0A0A0A', margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1 }}>
-                  ${totalSpent.toLocaleString()}
+                  {symbol}{totalSpent.toLocaleString()}
                 </p>
                 <p style={{ ...labelStyle, marginTop: 4 }}>spent</p>
               </div>
@@ -170,7 +178,7 @@ export default function BudgetChart({ budgetItems }) {
               />
               <YAxis
                 tick={{ fontSize: 10, fill: 'rgba(10,10,10,0.45)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                tickFormatter={v => `$${(v / 1000).toFixed(0)}k`}
+                tickFormatter={v => `${symbol}${(v / 1000).toFixed(0)}k`}
                 tickLine={false}
                 axisLine={false}
                 width={44}

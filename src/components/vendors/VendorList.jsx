@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import DataTable from '@/components/shared/DataTable';
 import { Edit2, Trash2, Briefcase, Phone, Mail, Star, DollarSign, ExternalLink, FolderOpen } from "lucide-react";
 
@@ -171,7 +172,9 @@ function FavouriteStar({ vendor, onToggle }) {
  * them, which is the same rule every empty surface in this product follows.
  */
 function VendorDetail({ vendor, onEdit, onManage }) {
-  const money = (v) => `$${Number(v).toLocaleString()}`;
+  // THE ACCOUNT'S SYMBOL, NOT A DOLLAR SIGN. Owner decision 2026-10-09.
+  const { symbol } = useCurrency();
+  const money = (v) => `${symbol}${Number(v).toLocaleString()}`;
   const fields = [
     ['Address', vendor.address],
     ['Booking date', vendor.booking_date],

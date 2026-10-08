@@ -1,4 +1,5 @@
 import React from 'react';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -11,6 +12,9 @@ const valueStyle = {
   fontFamily: "'Plus Jakarta Sans', sans-serif", };
 
 export default function BudgetSummary({ budget, stats }) {
+  // THE ACCOUNT'S SYMBOL, NOT A DOLLAR SIGN. Owner decision 2026-10-09:
+  // every figure on the dashboard is in the currency the couple picked.
+  const { symbol } = useCurrency();
   const categoryTotals = React.useMemo(() => {
     const totals = {};
     budget.forEach(item => {
@@ -28,13 +32,13 @@ export default function BudgetSummary({ budget, stats }) {
     <div style={{ border: '1px solid rgba(10,10,10,0.12)', background: '#fff' }}>
       <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <p style={labelStyle}>Budget overview</p>
-        <p style={{ ...valueStyle, marginTop: 4 }}>${stats.totalBudget.toLocaleString()}</p>
+        <p style={{ ...valueStyle, marginTop: 4 }}>{symbol}{stats.totalBudget.toLocaleString()}</p>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         {[
-          { label: 'Total', val: `$${stats.totalBudget.toLocaleString()}` },
-          { label: 'Spent', val: `$${stats.totalSpent.toLocaleString()}` },
-          { label: 'Remaining', val: `$${Math.abs(stats.remainingBudget).toLocaleString()}` },
+          { label: 'Total', val: `${symbol}${stats.totalBudget.toLocaleString()}` },
+          { label: 'Spent', val: `${symbol}${stats.totalSpent.toLocaleString()}` },
+          { label: 'Remaining', val: `${symbol}${Math.abs(stats.remainingBudget).toLocaleString()}` },
         ].map((s, i) => (
           <div key={s.label} style={{ padding: '16px 24px', borderRight: i < 2 ? '1px solid rgba(10,10,10,0.12)' : 'none' }}>
             <p style={labelStyle}>{s.label}</p>
@@ -47,7 +51,7 @@ export default function BudgetSummary({ budget, stats }) {
           <div key={cat}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
               <p style={labelStyle}>{cat}</p>
-              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>${spent.toLocaleString()} / ${budgeted.toLocaleString()}</p>
+              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{symbol}{spent.toLocaleString()} / {symbol}{budgeted.toLocaleString()}</p>
             </div>
             <div style={{ height: 3, background: 'rgba(10,10,10,0.06)', width: '100%' }}>
               <div style={{ height: '100%', width: `${Math.min(pct, 100)}%`, background: pct > 100 ? '#E03553' : 'linear-gradient(90deg,#E03553,#803D81)', transition: 'width 0.6s ease' }} />

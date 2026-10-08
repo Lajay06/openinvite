@@ -1,66 +1,45 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
+import { CURRENCIES, currencyInfo, formatMoney, DEFAULT_CURRENCY } from '@/lib/money';
 
-export const CURRENCIES = [
-  { code: 'USD', symbol: '$',    name: 'US Dollar' },
-  { code: 'EUR', symbol: '€',    name: 'Euro' },
-  { code: 'GBP', symbol: '£',    name: 'British Pound' },
-  { code: 'AUD', symbol: 'A$',   name: 'Australian Dollar' },
-  { code: 'CAD', symbol: 'C$',   name: 'Canadian Dollar' },
-  { code: 'JPY', symbol: '¥',    name: 'Japanese Yen' },
-  { code: 'NZD', symbol: 'NZ$',  name: 'New Zealand Dollar' },
-  { code: 'SGD', symbol: 'S$',   name: 'Singapore Dollar' },
-  { code: 'AED', symbol: 'AED',  name: 'UAE Dirham' },
-  { code: 'CHF', symbol: 'CHF',  name: 'Swiss Franc' },
-  { code: 'ZAR', symbol: 'R',    name: 'South African Rand' },
-  { code: 'INR', symbol: '₹',    name: 'Indian Rupee' },
-  { code: 'MXN', symbol: 'MX$',  name: 'Mexican Peso' },
-  { code: 'BRL', symbol: 'R$',   name: 'Brazilian Real' },
-  { code: 'HKD', symbol: 'HK$',  name: 'Hong Kong Dollar' },
-  { code: 'SEK', symbol: 'kr',   name: 'Swedish Krona' },
-  { code: 'NOK', symbol: 'kr',   name: 'Norwegian Krone' },
-  { code: 'DKK', symbol: 'kr',   name: 'Danish Krone' },
-];
+// THE TABLE AND THE FORMATTER LIVE IN src/lib/money.js NOW, because the
+// published guest site shows money on its registry page and has no React
+// context to read. Re-exported here so every existing importer of CURRENCIES
+// from this file keeps working.
+export { CURRENCIES };
 
 const CurrencyContext = createContext(null);
 
 export function CurrencyProvider({ children }) {
-  const [currencyCode, setCurrencyCode] = useState('USD');
-  const [rates, setRates] = useState({ USD: 1 });
+  const [currencyCode, setCurrencyCode] = useState(DEFAULT_CURRENCY);
 
+  // THE ACCOUNT'S OWN CHOICE, which is the whole point of the feature. This
+  // sits beside the rates fetch that was removed with the conversion, and is
+  // not part of it: without this the provider would hold DEFAULT_CURRENCY
+  // forever and every couple would see dollars whatever they picked.
   useEffect(() => {
     base44.auth.me().then(user => {
       if (user?.currency) setCurrencyCode(user.currency);
     }).catch(() => {});
   }, []);
 
-  useEffect(() => {
-    const CACHE_KEY = 'oi_exchange_rates';
-    const TTL = 60 * 60 * 1000;
-    try {
-      const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
-      if (cached && Date.now() - cached.ts < TTL) { setRates(cached.rates); return; }
-    } catch {}
-    // Server-proxied (L3): see api/rates.js. Called direct from the browser
-    // this leaked every visitor's IP to a third party, guests included.
-    fetch('/api/rates?base=USD')
-      .then(r => r.json())
-      .then(data => {
-        if (data.result === 'success') {
-          setRates(data.rates);
-          localStorage.setItem(CACHE_KEY, JSON.stringify({ rates: data.rates, ts: Date.now() }));
-        }
-      })
-      .catch(() => {});
-  }, []);
+  const info = currencyInfo(currencyCode);
 
-  const info = CURRENCIES.find(c => c.code === currencyCode) || CURRENCIES[0];
-  const rate = rates[currencyCode] ?? 1;
-
-  const formatCurrency = useCallback((amountUSD) => {
-    const converted = Math.round(amountUSD * rate);
-    return `${info.symbol}${converted.toLocaleString()}`;
-  }, [rate, info.symbol]);
+  // ── NO CONVERSION. IT FORMATS. ──────────────────────────────────────────
+  //
+  // This took a parameter named amountUSD and multiplied it by a live
+  // exchange rate. Nothing ever converted on the way IN: an amount a couple
+  // typed was stored exactly as typed. So a couple on AUD typed 50000, the
+  // record held 50000, and this showed them A$76,000. The figure moved when
+  // the rate moved, which is the clearest sign it was never a conversion
+  // anyone asked for. Owner decision 2026-10-09: the amount is already in the
+  // account's currency, so it is formatted and not touched.
+  //
+  // The /api/rates fetch and its localStorage cache went with the rate. That
+  // endpoint now has no caller in the app; it is left in place rather than
+  // deleted, and flagged, because removing a route is a bigger call than this
+  // goal's territory.
+  const formatCurrency = useCallback((amount) => formatMoney(amount, currencyCode), [currencyCode]);
 
   const updateCurrency = useCallback(async (code) => {
     setCurrencyCode(code);
@@ -68,7 +47,7 @@ export function CurrencyProvider({ children }) {
   }, []);
 
   return (
-    <CurrencyContext.Provider value={{ currencyCode, symbol: info.symbol, rate, rates, formatCurrency, updateCurrency, currencies: CURRENCIES }}>
+    <CurrencyContext.Provider value={{ currencyCode, symbol: info.symbol, formatCurrency, updateCurrency, currencies: CURRENCIES }}>
       {children}
     </CurrencyContext.Provider>
   );

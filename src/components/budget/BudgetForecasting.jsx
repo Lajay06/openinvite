@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine, Legend,
@@ -22,7 +23,7 @@ const BENCHMARKS = {
   miscellaneous:  { pct: 0.02, label: 'Miscellaneous' },
 };
 
-const fmt = n => `$${Math.round(n).toLocaleString()}`;
+
 
 const bodyFont = { fontFamily: "'Plus Jakarta Sans', sans-serif" };
 
@@ -31,6 +32,11 @@ const labelStyle = {
 };
 
 const ChartTooltip = ({ active, payload, label }) => {
+  // ITS OWN READ OF THE SYMBOL. fmt used to be a module-level const built on
+  // a hardcoded dollar sign, which is why this component could reach it. The
+  // symbol comes from a hook now, so the component that prints it asks for it.
+  const { symbol } = useCurrency();
+  const fmt = n => `${symbol}${Math.round(n).toLocaleString()}`;
   if (!active || !payload?.length) return null;
   return (
     <div style={{ background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.1)', padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', ...bodyFont }}>
@@ -45,6 +51,10 @@ const ChartTooltip = ({ active, payload, label }) => {
 };
 
 export default function BudgetForecasting({ budgetItems, stats }) {
+  // THE ACCOUNT'S SYMBOL, NOT A DOLLAR SIGN. Owner decision 2026-10-09:
+  // every figure on the dashboard is in the currency the couple picked.
+  const { symbol } = useCurrency();
+  const fmt = n => `${symbol}${Math.round(n).toLocaleString()}`;
   const [aiInsights, setAiInsights] = useState(null);
   const [loadingAI, setLoadingAI] = useState(false);
   const [showAllFlags, setShowAllFlags] = useState(false);
@@ -143,7 +153,7 @@ export default function BudgetForecasting({ budgetItems, stats }) {
     const result = await base44.integrations.Core.InvokeLLM({
       prompt: `You are an expert wedding budget consultant. Analyze this couple's wedding budget data and provide actionable insights.
 
-Budget summary: Total budgeted $${stats.totalBudgeted}, Total spent $${stats.totalSpent}, Remaining $${stats.remaining}.
+Budget summary: Total budgeted ${symbol}${stats.totalBudgeted}, Total spent ${symbol}${stats.totalSpent}, Remaining ${symbol}${stats.remaining}.
 
 Category breakdown: ${JSON.stringify(summary)}
 
@@ -291,7 +301,7 @@ Be concise, specific, and use dollar figures.`,
                 axisLine={false}
               />
               <YAxis
-                tickFormatter={v => `$${(v / 1000).toFixed(0)}k`}
+                tickFormatter={v => `${symbol}${(v / 1000).toFixed(0)}k`}
                 tick={{ fontSize: 9, fill: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                 tickLine={false}
                 axisLine={false}
