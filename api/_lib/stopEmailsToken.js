@@ -37,7 +37,23 @@
 
 import crypto from 'crypto';
 
-const SECRET = process.env.BASE44_ADMIN_KEY || '';
+/**
+ * READ AT CALL TIME, NOT AT MODULE LOAD.
+ *
+ * This was `const SECRET = process.env.BASE44_ADMIN_KEY || ''`, evaluated once
+ * when the module was first imported. Item 2 made the cron import this file,
+ * and that exposed the problem: whichever guard imported the cron first fixed
+ * the secret for every later importer in the same process, so a guard that set
+ * the key and then exercised the endpoint got a module instance holding an
+ * empty secret and every token failed to verify.
+ *
+ * A test artefact is the cheap version of the real hazard. A module-scope env
+ * read also means a serverless instance that starts before its environment is
+ * populated keeps the wrong value for its whole life, and the symptom is every
+ * stop link silently 404ing. Reading per call costs nothing and cannot go
+ * stale.
+ */
+const secret = () => process.env.BASE44_ADMIN_KEY || '';
 
 /**
  * @param {string} userId the Base44 User id this link belongs to
@@ -47,7 +63,7 @@ export function signStopToken(userId) {
   const id = String(userId || '');
   if (!id) throw new Error('Refusing to sign a stop token with no user id.');
   const body = Buffer.from(id, 'utf8').toString('base64url');
-  const sig = crypto.createHmac('sha256', SECRET).update(body).digest('base64url');
+  const sig = crypto.createHmac('sha256', secret()).update(body).digest('base64url');
   return `${body}.${sig}`;
 }
 
@@ -61,14 +77,15 @@ export function verifyStopToken(token) {
   // NO SECRET, NO VERIFICATION. With SECRET as '' the HMAC is still
   // computable, so every token would verify against an empty key and the
   // signature would mean nothing. Refuse instead.
-  if (!SECRET) return null;
+  const key = secret();
+  if (!key) return null;
 
   const parts = String(token || '').split('.');
   if (parts.length !== 2) return null;
   const [body, sig] = parts;
   if (!body || !sig) return null;
 
-  const expected = crypto.createHmac('sha256', SECRET).update(body).digest('base64url');
+  const expected = crypto.createHmac('sha256', key).update(body).digest('base64url');
   const a = Buffer.from(sig);
   const b = Buffer.from(expected);
   // LENGTH FIRST, because timingSafeEqual throws on a length mismatch rather

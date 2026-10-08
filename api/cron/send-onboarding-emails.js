@@ -86,6 +86,17 @@ import { Resend } from 'resend';
 import { getBase44User } from '../_lib/base44Admin.js';
 import { onboardingDay3Email } from '../emails/onboarding-day3.js';
 import { onboardingDay7Email } from '../emails/onboarding-day7.js';
+import { isExcludedAccount } from '../_lib/excludedAccounts.js';
+import { dueRetentionEmail, mergeRetentionFlag, suppressesDay3, RETENTION_SHIP_DATE } from '../_lib/retentionTriggers.js';
+import { setupNudgeEmail, guestsNudgeEmail, RETENTION_REPLY_TO } from '../_lib/retentionEmails.js';
+import { stopEmailsUrl } from '../_lib/stopEmailsToken.js';
+// THE GUEST COUNT LIVES IN ITS OWN FILE, and the reason is a guard rather
+// than tidiness: tests/persistence/guest-plaintext-readers.mjs requires any
+// api/ file that reads Guest rows AND dereferences a nulled PII column to
+// resolve the blob through mergeGuestPii. This cron reads user.email, so
+// adding a Guest read here made it match both halves of that rule and the
+// guard flagged it, correctly. See api/_lib/guestCount.js.
+import { countRealGuests } from '../_lib/guestCount.js';
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
@@ -102,6 +113,14 @@ export const DAY3_MIN_H = 72;  // 3 days
 export const DAY3_MAX_H = 96;  // 4 days
 export const DAY7_MIN_H = 168; // 7 days
 export const DAY7_MAX_H = 192; // 8 days
+
+// Retention emails (item 2 of goals/2026-10-08-retention-emails.md) are NOT
+// windowed like the two above. They are a threshold plus a sent-flag, because
+// each is offered again at a later age and a window would silently drop an
+// account the cron missed for a day. The thresholds and the flags live in
+// api/_lib/retentionTriggers.js; RETENTION_SHIP_DATE is re-exported here so a
+// reader of the cron can see the no-backfill cutoff without opening that file.
+export { RETENTION_SHIP_DATE };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -175,6 +194,61 @@ async function sendEmail(to, name, subject, htmlFn) {
   }
 }
 
+/**
+ * Send one retention email, recording that it was sent BEFORE sending it.
+ *
+ * THE ORDER IS THE POINT, and it is the owner's ruling: "Record the timestamp
+ * before sending so a crash cannot double-send." A crash between the write and
+ * the send therefore loses one email rather than sending it twice on the next
+ * run, and a failed send is never retried. That is the right trade for mail a
+ * couple did not ask for, and it is why the failure is logged loudly: nobody
+ * should have to infer it from a missing email.
+ *
+ * @returns {{ ok: boolean, skipped?: string, error?: string }}
+ */
+async function sendRetention({ user, flag, email, sentAt }) {
+  // THE FLAG IS MERGED, NOT REPLACED. A PUT of { [flag]: at } alone would
+  // erase the other three and the account would walk the sequence again.
+  const retentionEmails = mergeRetentionFlag(user.retentionEmails, flag, sentAt);
+  const write = await fetch(
+    `${BASE44_API}/apps/${BASE44_APP_ID}/entities/User/${encodeURIComponent(user.id)}?api_key=${BASE44_ADMIN_KEY}`,
+    { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ retentionEmails }) },
+  );
+  if (!write.ok) {
+    const body = await write.text().catch(() => '');
+    // NOTHING IS SENT IF THE RECORD DID NOT MOVE. Sending now would mean no
+    // record of it, and the same email again tomorrow, and the day after.
+    console.error(`[cron] retention ${flag} NOT sent — could not record it (${write.status}): ${body.slice(0, 160)}`);
+    return { ok: false, error: `record failed (${write.status})` };
+  }
+
+  const build = email === 'setup' ? setupNudgeEmail : guestsNudgeEmail;
+  let rendered;
+  try {
+    rendered = build({ name: user.full_name, createdDate: user.created_date, stopUrl: stopEmailsUrl(user.id) });
+  } catch (err) {
+    console.error(`[cron] retention ${flag} could not be rendered: ${err.message}`);
+    return { ok: false, error: err.message };
+  }
+
+  try {
+    await resend.emails.send({
+      from: FROM,
+      to: user.email,
+      replyTo: RETENTION_REPLY_TO,
+      subject: rendered.subject,
+      html: rendered.html,
+      text: rendered.text,
+      headers: rendered.headers,
+    });
+    return { ok: true };
+  } catch (err) {
+    // ALREADY RECORDED, DELIBERATELY NOT RETRIED. See the note above.
+    console.error(`[cron] retention ${flag} recorded but the send failed: ${err.message}`);
+    return { ok: false, error: err.message };
+  }
+}
+
 // ─── Handler ─────────────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
@@ -227,9 +301,15 @@ export default async function handler(req, res) {
 
   // ── Per-run counters ───────────────────────────────────────────────────────
   const tally = {
-    day3: { sent: 0, skipped_paid: 0, failed: 0, no_email: 0 },
+    day3: { sent: 0, skipped_paid: 0, failed: 0, no_email: 0, skipped_no_slug: 0 },
     day7: { sent: 0, skipped_paid: 0, failed: 0, no_email: 0 },
+    retention: { sent: 0, failed: 0, setup24h: 0, setupDay4: 0, guests24h: 0, guestsDay5: 0 },
+    excluded: 0,
   };
+
+  // One timestamp for the whole run, so every retentionEmails flag written by
+  // this run reads as the same send.
+  const sentAt = new Date().toISOString();
 
   // ── Process each owner ──────────────────────────────────────────────────────
   for (const ownerId of ownerWeddings.keys()) {
@@ -251,8 +331,67 @@ export default async function handler(req, res) {
       continue;
     }
 
+    // ── THE OWNER'S OWN ACCOUNTS, AND THE SMOKE ALIASES ────────────────────
+    //
+    // Owner ruling, item 0 of goals/2026-10-08-retention-emails.md: one list
+    // in api/_lib, used by EVERY cron. This cron had no such exclusion before,
+    // so every run has been mailing the owner alongside real couples. It
+    // guards the two trial emails as well as the retention ones, which is what
+    // "every cron" means.
+    if (isExcludedAccount(email)) {
+      tally.excluded++;
+      continue;
+    }
+
+    const wedding = ownerWeddings.get(ownerId);
+
+    // ── RETENTION, FIRST BUT LOWEST PRIORITY ──────────────────────────────
+    //
+    // "Never two emails to one account on the same run" (owner ruling), so
+    // whichever of the three is sent, the others are skipped.
+    //
+    // PRECEDENCE: THE TRIAL EMAILS WIN. Day 3 and day 7 are 24-hour windows
+    // that occur exactly once; miss one and it is never sent. A retention
+    // email is a threshold plus a flag, so one skipped today is offered again
+    // tomorrow. Suppressing the recoverable mail to protect the
+    // unrecoverable mail is the only ordering that loses nothing.
+    const inDay3 = isInWindow(user.created_date, DAY3_MIN_H, DAY3_MAX_H) && !suppressesDay3({ wedding });
+    const inDay7 = isInWindow(user.created_date, DAY7_MIN_H, DAY7_MAX_H);
+
+    if (!inDay3 && !inDay7) {
+      let guestCount = 0;
+      try {
+        guestCount = await countRealGuests({ ownerId, appId: BASE44_APP_ID, adminKey: BASE44_ADMIN_KEY });
+      } catch (err) {
+        // A FAILED COUNT IS NOT AN EMPTY GUEST LIST. Treating it as zero would
+        // mail a couple who has a hundred guests, so the account is skipped
+        // for this run and tried again tomorrow.
+        console.error(`[cron] retention skipped — could not count guests for one owner: ${err.message}`);
+        guestCount = -1;
+      }
+      if (guestCount >= 0) {
+        const due = dueRetentionEmail({ user, wedding, guestCount });
+        if (due) {
+          const r = await sendRetention({ user, flag: due.flag, email: due.email, sentAt });
+          if (r.ok) {
+            console.log(`[cron] retention ${due.flag} sent → ${email}`);
+            tally.retention.sent++;
+            tally.retention[due.flag]++;
+          } else {
+            tally.retention.failed++;
+          }
+        }
+      }
+    }
+
     // ── Day-3 email ──────────────────────────────────────────────────────────
-    if (isInWindow(user.created_date, DAY3_MIN_H, DAY3_MAX_H)) {
+    //
+    // SUPPRESSED FOR AN ACCOUNT THAT NEVER FINISHED SETUP (owner ruling): it
+    // invites the couple to try Ava, and Ava has nothing to read yet.
+    if (isInWindow(user.created_date, DAY3_MIN_H, DAY3_MAX_H) && suppressesDay3({ wedding })) {
+      tally.day3.skipped_no_slug++;
+    }
+    if (inDay3) {
       if (isPaid(user)) {
         console.log(`[cron] day3 skip (paid plan: ${user.plan}): ${email}`);
         tally.day3.skipped_paid++;
@@ -273,7 +412,9 @@ export default async function handler(req, res) {
     }
 
     // ── Day-7 email ──────────────────────────────────────────────────────────
-    if (isInWindow(user.created_date, DAY7_MIN_H, DAY7_MAX_H)) {
+    // NOT suppressed by a missing slug: day 7 is about the trial clock, which
+    // runs whether or not setup finished (owner ruling: "then day 7 as today").
+    if (inDay7) {
       if (isPaid(user)) {
         console.log(`[cron] day7 skip (paid plan: ${user.plan}): ${email}`);
         tally.day7.skipped_paid++;
@@ -295,7 +436,7 @@ export default async function handler(req, res) {
   }
 
   // ── Summary ────────────────────────────────────────────────────────────────
-  const ok = tally.day3.failed === 0 && tally.day7.failed === 0;
+  const ok = tally.day3.failed === 0 && tally.day7.failed === 0 && tally.retention.failed === 0;
   console.log(`[cron/send-onboarding-emails] ${ok ? 'SUCCESS' : 'COMPLETED WITH FAILURES'} —`, JSON.stringify({ runAt, owners: ownerWeddings.size, tally }));
 
   return res.status(200).json({

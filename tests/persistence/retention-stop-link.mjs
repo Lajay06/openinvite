@@ -181,9 +181,21 @@ export async function runRetentionStopLink() {
   const envNames = [...tokenSrc.matchAll(/process\.env\.([A-Z0-9_]+)/g)].map(m => m[1]);
   ok('the token uses an existing server secret and introduces none',
      envNames.every(n => ['BASE44_ADMIN_KEY', 'VITE_APP_URL'].includes(n)), envNames.join(', '));
+  // THE CONSTRUCTION, NOT THE SPELLING OF A VARIABLE.
+  //
+  // This matched /createHmac\('sha256', SECRET\)/ and went red when item 2
+  // moved the secret from a module-scope `SECRET` constant to a `secret()`
+  // call, which was a fix rather than a regression: a module-scope env read
+  // is fixed at first import, and the cron importing this file exposed that.
+  // A guard that names a local identifier fails on a rename and says nothing
+  // about whether the thing it cares about is still true.
   ok('  with the same HMAC construction as the collaborator invite token',
-     /createHmac\('sha256', SECRET\)/.test(tokenSrc) && /timingSafeEqual/.test(tokenSrc),
-     'sha256 + timingSafeEqual');
+     /createHmac\('sha256',/.test(tokenSrc) && /timingSafeEqual/.test(tokenSrc)
+     && /digest\('base64url'\)/.test(tokenSrc),
+     'sha256, base64url, timingSafeEqual');
+  ok('  and the key is read per call, so it cannot be fixed at import',
+     /const secret = \(\) => process\.env\.BASE44_ADMIN_KEY/.test(tokenSrc)
+     && !/const SECRET = process\.env/.test(tokenSrc), 'read at call time');
 
   // ── THE ENDPOINT CANNOT BE TALKED INTO WRITING ANYTHING ELSE ────────────
   const apiSrc = stripComments(read('api/stop-emails.js'));
