@@ -32,7 +32,7 @@ One lane with a dev server or browser at a time. No local CI shards unless the h
    Here is the thing: the part you left is the short part. The date, the place, roughly how many people. Three answers, and the studio builds itself around them: a wedding site in your colors, a guest list that knows who is coming, and Ava, who has read all of it and will answer questions at 11pm so you do not have to.
    Nothing is lost. Everything you typed is still there.
    Button: Pick up where you left off (login, returning to onboarding)
-   After the button: If something got in the way, a question, a worry, a thing that did not work, reply to this email. A real person reads it (hello, that is me, La).
+   After the button: If something got in the way, a question, a worry, a thing that did not work, reply to this email. A real person reads it (hello, that is me, Jay).
    Footer: You are getting this because you created an Openinvite account on {date} and have not finished setting up. Not planning a wedding anymore, or just want quiet? Stop these emails. Openinvite, Australia. hello@openinvite.com.au
 
    Trigger 2 copy.
@@ -45,7 +45,7 @@ One lane with a dev server or browser at a time. No local CI shards unless the h
    Ten names is all it takes to make the rest of the studio come alive. Add the people you could not get married without, and watch the seating chart, the RSVP page and the invitations wake up around them.
    Nothing is lost. Your wedding is exactly where you left it.
    Button: Add your first ten guests (the Guests page)
-   After the button: Stuck on who makes the list? Ava is good at that conversation. Stuck on something else? Reply here and a real person answers (hello, that is me, La).
+   After the button: Stuck on who makes the list? Ava is good at that conversation. Stuck on something else? Reply here and a real person answers (hello, that is me, Jay).
    Footer: You are getting this because you created an Openinvite account on {date} and your guest list is empty. Not planning a wedding anymore, or just want quiet? Stop these emails. Openinvite, Australia. hello@openinvite.com.au
 
    The second nudge of each trigger reuses the same email unchanged.

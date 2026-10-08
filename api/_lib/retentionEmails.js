@@ -64,14 +64,48 @@ export const RETENTION_BODY_TEXT = 'rgba(10,10,10,0.72)';
 const LOGO_URL = 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1785659181/email-assets/openinvite-icon-mark.png';
 
 /** The two photos, named by the goal, with the alt text it specifies. */
+/**
+ * The two photos, replaced by the owner on 2026-10-08.
+ *
+ * image/upload, not video/upload: the first pair were video assets read at
+ * frame zero with so_0. These are stills, so the delivery type changes with
+ * them and so_0 goes.
+ *
+ * ── THE HEIGHTS ARE NOT THE SAME, AND THAT IS WHY THEY ARE PER PHOTO ───────
+ *
+ * The instruction asked for width="600" height="338" on both, which is 16:9.
+ * Only one of these is 16:9. At w_1200 Cloudinary delivers:
+ *
+ *   setup   1200x682   about 16:9   ->  600x341
+ *   guests  1200x900   4:3          ->  600x450
+ *
+ * A height attribute exists so a client that has not loaded the image yet, or
+ * has blocked it, reserves the right box. Putting 338 on the 4:3 photo would
+ * reserve a box 112px too short and the email would jump when it loaded, which
+ * is the thing the attribute is there to prevent. So each photo carries its
+ * own true height. If a uniform 16:9 band is wanted instead, the fix is on the
+ * URL rather than here: add c_fill,ar_16:9 and both become 600x338.
+ *
+ * ── THE ALT TEXT DESCRIBES THESE PHOTOS ────────────────────────────────────
+ *
+ * The instruction proposed "A couple on the beach at golden hour" and "A
+ * couple walking the shoreline", and said to adjust to what the photos
+ * actually show. Neither is a beach: one is a street, one is a desert. No
+ * place is named in either line, because the location is a guess from the
+ * image and a guess does not belong in alt text.
+ */
 export const RETENTION_PHOTOS = {
   setup: {
-    url: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_0,f_auto,q_auto,w_1200/amalfi_16x9.jpg',
-    alt: 'A wedding table set by the sea at golden hour',
+    url: 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_1200/hf_20260906_081156_b6b89167-b256-4926-9576-cf2a6f72acb4_birugr',
+    alt: 'A couple laughing on a sunlit street of painted houses',
+    width: 600,
+    height: 341,
   },
   guests: {
-    url: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_0,f_auto,q_auto,w_1200/tulum_16x9.jpg',
-    alt: 'A lantern-lit garden ready for a party',
+    url: 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_1200/DTS_BANDITS_PALI_MENDEZ_Photos_ID14261_wcy4l1',
+    alt: 'A couple laughing in a red rock desert',
+    width: 600,
+    height: 450,
   },
 };
 
@@ -180,7 +214,13 @@ function shell({ title, preheader, photo, bodyRowsHtml, footerHtml }) {
           </tr>
           <tr>
             <td style="padding:0;">
-              <img src="${photo.url}" width="600" alt="${escapeHtml(photo.alt)}" style="display:block;width:100%;max-width:600px;height:auto;border:0;" />
+              <!-- THE BACKGROUND IS WHAT A BLOCKED IMAGE SHOWS. Outlook and
+                   Gmail both start with remote images off, and without a
+                   background the reserved box is a white rectangle on a white
+                   card: invisible, so the email looks like it begins with a
+                   gap. A tone off the card's own palette makes the box read as
+                   a deliberate placeholder rather than a rendering fault. -->
+              <img src="${photo.url}" width="${photo.width}" height="${photo.height}" alt="${escapeHtml(photo.alt)}" style="display:block;width:100%;max-width:${photo.width}px;height:auto;border:0;background:${RETENTION_HAIRLINE};" />
             </td>
           </tr>
 ${bodyRowsHtml}
@@ -221,7 +261,7 @@ const SETUP = {
     'Nothing is lost. Everything you typed is still there.',
   ],
   button: { label: 'Pick up where you left off', path: `/login?next=${encodeURIComponent('/Onboarding')}` },
-  afterButton: 'If something got in the way, a question, a worry, a thing that did not work, reply to this email. A real person reads it (hello, that is me, La).',
+  afterButton: 'If something got in the way, a question, a worry, a thing that did not work, reply to this email. A real person reads it (hello, that is me, Jay).',
   footerReason: 'and have not finished setting up',
 };
 
@@ -236,7 +276,7 @@ const GUESTS = {
     'Nothing is lost. Your wedding is exactly where you left it.',
   ],
   button: { label: 'Add your first ten guests', path: '/Guests' },
-  afterButton: 'Stuck on who makes the list? Ava is good at that conversation. Stuck on something else? Reply here and a real person answers (hello, that is me, La).',
+  afterButton: 'Stuck on who makes the list? Ava is good at that conversation. Stuck on something else? Reply here and a real person answers (hello, that is me, Jay).',
   footerReason: 'and your guest list is empty',
 };
 
