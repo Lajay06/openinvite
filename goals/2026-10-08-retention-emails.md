@@ -71,3 +71,15 @@ Templates: both render with the copy above, plain-text part present, no banned c
 ## Close
 
 Last line: "Closed <date> at main <full SHA>, PRs <list>".
+
+## Recorded facts
+
+Three things about the running feature, written here because a goal file outlives a PR body and all three are the kind of detail someone will need at a moment when reading the code is slow.
+
+The no-backfill cutoff is a hardcoded constant, RETENTION_SHIP_DATE in api/_lib/retentionTriggers.js, set to 2026-10-08T00:00:00.000Z, with BACKFILL_GRACE_DAYS of 30. An account created before 2026-09-08 never receives either email, ever. This constant is load-bearing: User.lifecycleEmails defaults to true, so every account that already existed reads as eligible with no migration, and without this cutoff the first run would have mailed the entire back catalogue. It is deliberately not relative to the current time, because a relative cutoff slowly becomes "older than 30 days" forever, which is a different rule that never stops excluding people.
+
+The exclusion list is api/_lib/excludedAccounts.js and it holds two addresses: la.jay06@gmail.com and lajay@openinvite.com.au. Every alias of the first is covered, so +smoke01 and +notiftest01 need no naming. The match splits the local part at the first plus and requires the base to be exactly equal on exactly that domain, with dots ignored only on Gmail, because "contains a plus" would have excluded any real couple using plus-addressing. It guards every send in the onboarding cron, including the two trial emails, which had no exclusion before this goal.
+
+The first real run is the next 09:00 UTC cron, which is the schedule in vercel.json for /api/cron/send-onboarding-emails. Nothing is sent before then: the merge deploys the code, the cron decides. Accounts created on or after 2026-09-08 that have not finished setup, or that finished and have no guests, become eligible at 24 hours old.
+
+Closed 2026-10-08 at main 112d45d52d982bb14dfa5092bd697d94e0ab3162, PRs #926 #927 #928 #929 #930 #931
