@@ -192,6 +192,8 @@ export async function runRetentionTriggers() {
   }
 
   // THE SPACING IS 72 HOURS, AND BOTH CONDITIONS MUST HOLD.
+  ok('the spacing is the 72 hours the owner ruled',
+     RETENTION_SPACING_HOURS === 72, String(RETENTION_SPACING_HOURS));
   ok('the second nudge waits 72 hours after the first, not 48',
      due({ user: account({ created_date: signedUp(200), retentionEmails: { setup24h: signedUp(48) } }),
            wedding: noSlugWedding, guestCount: 0 }) === null, '48h is not enough');

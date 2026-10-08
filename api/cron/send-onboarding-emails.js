@@ -90,6 +90,13 @@ import { isExcludedAccount } from '../_lib/excludedAccounts.js';
 import { dueRetentionEmail, mergeRetentionFlag, suppressesDay3, RETENTION_SHIP_DATE } from '../_lib/retentionTriggers.js';
 import { setupNudgeEmail, guestsNudgeEmail, RETENTION_REPLY_TO } from '../_lib/retentionEmails.js';
 import { stopEmailsUrl } from '../_lib/stopEmailsToken.js';
+// THE GUEST COUNT LIVES IN ITS OWN FILE, and the reason is a guard rather
+// than tidiness: tests/persistence/guest-plaintext-readers.mjs requires any
+// api/ file that reads Guest rows AND dereferences a nulled PII column to
+// resolve the blob through mergeGuestPii. This cron reads user.email, so
+// adding a Guest read here made it match both halves of that rule and the
+// guard flagged it, correctly. See api/_lib/guestCount.js.
+import { countRealGuests } from '../_lib/guestCount.js';
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
@@ -242,13 +249,6 @@ async function sendRetention({ user, flag, email, sentAt }) {
   }
 }
 
-/** Real (non-test) guests this account owns. */
-async function countGuests(ownerId) {
-  const q = encodeURIComponent(JSON.stringify({ created_by_id: ownerId }));
-  const rows = await adminFetch(`/apps/${BASE44_APP_ID}/entities/Guest?q=${q}`);
-  return rows.filter(g => g && !g.is_test).length;
-}
-
 // ─── Handler ─────────────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
@@ -361,7 +361,7 @@ export default async function handler(req, res) {
     if (!inDay3 && !inDay7) {
       let guestCount = 0;
       try {
-        guestCount = await countGuests(ownerId);
+        guestCount = await countRealGuests({ ownerId, appId: BASE44_APP_ID, adminKey: BASE44_ADMIN_KEY });
       } catch (err) {
         // A FAILED COUNT IS NOT AN EMPTY GUEST LIST. Treating it as zero would
         // mail a couple who has a hundred guests, so the account is skipped
