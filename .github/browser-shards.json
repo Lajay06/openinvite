@@ -7,6 +7,7 @@
     "`note` is the comment that sat above the guard's step in ci.yml before the split. The steps are gone; the reasons they record are not, so they moved here rather than being deleted with the YAML that carried them.",
     "2026-09-30: test:dashboard-no-overflow (28s) and test:guest-essentials-reachable (134s) moved out of `unassigned` and into the lane, after both were run against a preview of main and both passed. They had been registered in package.json and never run by CI, on main or before it. They went one to each shard rather than both to the lighter one: 162 seconds into a pair two seconds apart would have left them 160s apart and needed the balance budget widened to hold it, and the budget is the thing keeping this file honest.",
     "2026-10-01: re-measured and rebalanced from main's run 36829293979. The numbers come from each shard's timings.json artifact rather than from the run log, which GitHub truncates for a long job; that is what #884 was for and this is its first use. Before: A 970s / B 1071s, 101s apart. After: see measuredSeconds.",
+    "2026-10-08: one guard added, not a rebalance. test:budget-separators (1.6s measured, booked at 3) to B, against a preview of this branch. B 990 -> 993 against A 996, so the delta falls from 6s to 3s on a 120s budget. THE NUMBER IS SMALL AND IT IS REAL: the same preview, the same machine and the same minute gave test:tag-colors 19.1s against its booked 22 and test:invited-to-row 21.3s against its booked 22, so local time is what this column holds and no correction is owed. This guard is a tenth of theirs because it loads two pages and types into four fields, where they sweep many rows at several widths; it waits for no animation and reads no universe. Booked at 3 rather than 2 so a cold first navigation does not make the column a lie. It went to B because B was the lighter shard, which is the rule the entries below applied.",
     "2026-10-08 (the union of the two above, resolved when the second merged): items 4 and 6 each registered a guard from the same anchor in this file and in package.json, so they merged clean alone and conflicted cumulatively, which is the case the rule after #903 exists for. Both entries are kept, both sums apply, and the totals are now A 996 (974 + 22) and B 990 (968 + 22), a 6s delta on a 120s budget. Nothing moved between shards.",
     "2026-10-08: one guard added, not a rebalance. test:invited-to-row (22s) to A, measured locally against a preview of this branch. A 974 -> 996, so A 996 / B 968 and the delta moves from 6s to 28s against a 120s budget. It went to A because the guard reads the Guests page, which A already serves for test:per-event-dashboard, so the two share a warm route rather than paying for it twice.",
     "2026-10-08: one guard added, not a rebalance. test:tag-colors (21s, booked at 22) to B, measured locally against a preview of this branch. B 968 -> 990 against A 974, a 16s delta on a 120s budget. NOTE FOR WHOEVER MERGES SECOND: feat/invited-to-one-row (item 4) adds test:invited-to-row 22s to shard A from the same anchor in this file and in package.json, so the two conflict cumulatively even though each merges clean alone. After both, A is 996 and B is 990, a 6s delta, and the sums here must say so.",
@@ -173,7 +174,7 @@
     "B": {
       "job": "Browser guards B",
       "port": 4224,
-      "measuredSeconds": 990,
+      "measuredSeconds": 993,
       "guards": [
         {
           "name": "The studio tour, as a couple meets it, at 390 and 1440",
@@ -316,6 +317,12 @@
           "seconds": 22,
           "script": "test:tag-colors",
           "reason": "Item 6 of goals/2026-10-08-site-fixes-batch-1.md. The contrast could be computed from the palette's own literals, and that would not be what a couple sees: a pill's final color is an inline style, a hover rule and whatever index.css says about the cell. Ratios are computed from getComputedStyle on the rendered pill, against the background actually behind it."
+        },
+        {
+          "name": "The planner's amounts group, and still store a plain number",
+          "seconds": 3,
+          "script": "test:budget-separators",
+          "reason": "Item 10 of goals/2026-10-08-site-fixes-batch-1.md and the ruling on it. Two of its three clauses exist only in a browser: an <input type=\"number\"> DISCARDS a typed comma silently, so only a real input can show that the separator survived, and \"stores exactly the number it stores today\" is a round trip through React state, read here off the allocation summary that parseFloats the stored total. A source read can confirm the prop is passed and nothing more. Eight of its twenty checks are red on main."
         },
         {
           "name": "One link, three people, on a phone",

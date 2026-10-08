@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { cleanAmountText, formatAmountWithSeparators, keepTypedAmountChars } from '@/lib/amountText';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -21,12 +22,68 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
  * The symbol comes from the couple's own currency (CurrencyContext), not a
  * hardcoded dollar: a wedding priced in euros should not be labelled in
  * dollars anywhere, and this is the only place that decision needs to live.
+ *
+ * ── `separated`: ONE OPT-IN VARIANT, FOR THE BUDGET PLANNER ─────────────────
+ *
+ * Owner walkthrough 2026-10-08, item 10: the planner's amounts needed
+ * thousands separators, and an `<input type="number">` cannot hold a comma.
+ * The browser rejects the character outright, so the only route to a grouped
+ * figure in a field a couple types into is a text input that parses.
+ *
+ * It is a PROP, not a rewrite, because the paragraph above is still the rule
+ * for every other money field in the product. `type="number"` gives the vendor
+ * and expense forms a numeric keypad, a step, a min and browser validation for
+ * free, and nothing about them was wrong. Default off means a field has to ask
+ * for the parsing before it gets it: nine call sites exist today, two of them
+ * are the planner's, and the other seven are untouched by this change and keep
+ * every attribute they had.
+ *
+ * WHAT THE VARIANT ACTUALLY DOES. It shows the value grouped while nobody is
+ * typing in it, and while the couple IS typing it shows exactly the characters
+ * they typed, separators and all, so a comma does not vanish from under the
+ * cursor. Either way `onChange` is handed the plain number: a parsed value,
+ * never the display string. Everything downstream, including the save path's
+ * parseFloat, sees what it saw before.
+ *
+ * ONE CONTRACT DIFFERENCE, stated here because a surprise is worse than a
+ * restriction: in `separated` mode the object passed to `onChange` is a plain
+ * `{ target: { value, id } }`, not the DOM event, because the value being
+ * reported is not the value in the field. Every caller reads `e.target.value`
+ * and nothing more; a caller that needs `preventDefault` needs the numeric
+ * mode, which still hands over the real event untouched.
  */
 export default function AmountInput({
   value, onChange, placeholder = '0.00', id, required, min = '0', step = '0.01',
-  style, inputStyle, symbolStyle, disabled, ariaLabel,
+  style, inputStyle, symbolStyle, disabled, ariaLabel, separated = false,
 }) {
   const { symbol } = useCurrency();
+  // The characters currently under the cursor, or null when the field is not
+  // focused. NULL, not '', is what distinguishes "being typed into, currently
+  // empty" from "not being typed into" — an empty string in both states would
+  // make a cleared field re-render its old grouped value on the next keystroke.
+  const [typing, setTyping] = useState(null);
+
+  const onSeparatedChange = (e) => {
+    const kept = keepTypedAmountChars(e.target.value);
+    setTyping(kept);
+    onChange?.({ target: { value: cleanAmountText(kept), id } });
+  };
+
+  const separatedProps = separated ? {
+    type: 'text',
+    autoComplete: 'off',
+    value: typing !== null ? typing : formatAmountWithSeparators(value),
+    onChange: onSeparatedChange,
+    onFocus: () => setTyping(value === null || value === undefined ? '' : String(value)),
+    onBlur: () => setTyping(null),
+  } : {
+    type: 'number',
+    step,
+    min,
+    value,
+    onChange,
+  };
+
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 6,
@@ -52,16 +109,12 @@ export default function AmountInput({
       </span>
       <input
         id={id}
-        type="number"
         inputMode="decimal"
-        step={step}
-        min={min}
         required={required}
         disabled={disabled}
         aria-label={ariaLabel ? `${ariaLabel} in ${symbol}` : undefined}
-        value={value}
-        onChange={onChange}
         placeholder={placeholder}
+        {...separatedProps}
         style={{
           border: 'none', background: 'transparent', outline: 'none',
           fontFamily: PJS, width: '100%', padding: '6px 0',

@@ -154,7 +154,14 @@ function BudgetPlanner({ symbol = '$', savedBudget, defaultTotal, defaultCategor
   };
   const allocated = BUDGET_CATEGORIES.reduce((s, c) => s + planCategoryValue(c.key), 0);
   const unallocated = total - allocated;
-  const money = (n) => `${n < 0 ? '-' : ''}${symbol}${Math.abs(n).toLocaleString()}`;
+  // 'en-US' IS NOT DECORATION. A bare toLocaleString() groups by the RUNTIME's
+  // locale, so this same plan reads "50,000" in CI and "50.000" on a German
+  // machine while the fields above it, which group with an explicit comma,
+  // read "50,000" on both. Two formatters disagreeing inside one bordered box
+  // is the kind of thing nobody can reproduce. The rounding is left as it was:
+  // toLocaleString's default three fraction digits is what keeps a float sum
+  // like 3000.3000000000002 from reaching the screen.
+  const money = (n) => `${n < 0 ? '-' : ''}${symbol}${Math.abs(n).toLocaleString('en-US')}`;
 
   const inputStyle = {
     background: 'transparent', border: 'none',
@@ -180,10 +187,17 @@ function BudgetPlanner({ symbol = '$', savedBudget, defaultTotal, defaultCategor
         <label style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', display: 'block', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Total wedding budget
         </label>
+        {/* SEPARATED, AND ONLY HERE AND IN THE CATEGORY GRID BELOW. Owner
+            walkthrough 2026-10-08 item 10: the plan read as a wall of digits,
+            where "50000" and "500000" differ by one character and by an order
+            of magnitude. The field is now text that parses — see the
+            `separated` section of AmountInput's own comment for why that is a
+            prop and not a rewrite. The value handed to setTotal is still the
+            plain number, so `save` below parseFloats exactly what it did. */}
         <AmountInput
           ariaLabel="Total wedding budget"
-          placeholder="50000"
-          step="1"
+          placeholder="50,000"
+          separated
           value={plan.total}
           onChange={e => setTotal(e.target.value)}
           // WEIGHT, NOT SIZE. This was 22px — off the scale entirely (owner
@@ -205,7 +219,7 @@ function BudgetPlanner({ symbol = '$', savedBudget, defaultTotal, defaultCategor
             <AmountInput
               ariaLabel={cat.label}
               placeholder="0"
-              step="1"
+              separated
               value={plan.categories[cat.key] || ''}
               onChange={e => setCat(cat.key, e.target.value)}
             />
