@@ -85,8 +85,26 @@ export default function ChangeAddressDialog({ weddingId, currentSlug, onClose, o
           <span style={{ color: '#0A0A0A', fontWeight: 600 }}>openinvite.com.au/w/{currentSlug}</span>{' '}
           will keep working.
         </p>
+        {/* THIS LINE USED TO BE FALSE, and in the direction that matters.
+            It read "Invitation links you have already sent are unaffected
+            either way, they do not use this address". They do use it:
+            src/lib/emailTemplate.js's buildGuestCtaUrl returns
+            `/w/<slug>?rsvp=<token>` whenever the couple has an address, and
+            api/send-invites.js builds that siteUrl from the slug for every
+            send. So every invitation already in a guest's inbox carries the
+            old address.
+            What saves them is the alias, not their shape: api/change-address.js
+            pushes the old slug onto previousSlugs, and api/wedding-by-slug.js
+            and api/guest-page.js both resolve a request by it. The guarantee
+            is real; the reason given for it was not.
+            Item 12a's ruling offered a line to add IF this dialog did not warn
+            about already-sent links: "Changing the address breaks every
+            invitation link already sent. Guests will need a new email." It is
+            not added, because it is false in the other direction. The alias
+            keeps them working, and telling a couple to re-email everyone would
+            send real guests a second copy for no reason. */}
         <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, lineHeight: 1.6, margin: '0 0 18px' }}>
-          Invitation links you have already sent are unaffected either way — they do not use this address.
+          Invitation links you have already sent do contain the old address. They keep working, because the old address redirects to the new one.
         </p>
 
         <label style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, display: 'block', marginBottom: 6 }}>

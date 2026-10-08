@@ -3,7 +3,16 @@
  *
  * Owner ruling, Run 4 S8b: the address NEVER changes silently. A change is a
  * deliberate action, the old slug is kept as an alias, and /w/<old> 301s to
- * /w/<new>. RSVP token links are unaffected — they resolve by token.
+ * /w/<new>.
+ *
+ * A LINE THAT USED TO SIT HERE SAID "RSVP token links are unaffected, they
+ * resolve by token". That is true of a bare /rsvp/<token> link and false of
+ * what a guest is actually emailed: buildGuestCtaUrl returns
+ * /w/<slug>?rsvp=<token> whenever the couple has an address, so the token is
+ * a query parameter on an address-bearing URL. Every already-sent invitation
+ * carries the old slug and depends on the alias above, exactly like a link
+ * someone typed off a printed card. Corrected with item 12a, 2026-10-08,
+ * along with the dialog copy that said the same thing to couples.
  *
  * ── WHAT THIS CAN AND CANNOT CHECK ─────────────────────────────────────────
  *
@@ -110,8 +119,28 @@ export async function runSlugAliasRedirect() {
       /canonicalSlug\(confirm\) === cleaned/.test(dlg), 'type-to-confirm');
     check('  and the warning names the address that will keep working',
       /openinvite\.com\.au\/w\/\{currentSlug\}/.test(dlg), 'the old address, by name');
-    check('  and says invitation links are unaffected',
-      /Invitation links you have already sent are unaffected/.test(dlg), 'they resolve by token, not by slug');
+    // THIS PINNED A FALSE SENTENCE, and 12a corrected it.
+    //
+    // The dialog used to say "Invitation links you have already sent are
+    // unaffected either way, they do not use this address", and this check
+    // held it there with the rationale "they resolve by token, not by slug".
+    // That is true of a `/rsvp/<token>` link and NOT of what a guest actually
+    // receives: src/lib/emailTemplate.js's buildGuestCtaUrl returns
+    // `${siteUrl}?rsvp=${token}` whenever there is a siteUrl and a token, and
+    // api/send-invites.js derives that siteUrl from the slug on every send.
+    // The token is a query parameter on an address-bearing URL. A couple with
+    // an address, which is every couple who can reach a rename at all, has
+    // emailed links that carry the old slug.
+    //
+    // The guarantee survives; its reason changes. The old address keeps
+    // working because api/change-address.js pushes it onto previousSlugs and
+    // both api/wedding-by-slug.js and api/guest-page.js resolve by it. So the
+    // sentence now says the links contain the address AND keep working, and
+    // these two checks pin both halves rather than the comfortable half.
+    check('  and says sent invitation links contain the old address',
+      /do contain the old address/.test(dlg), 'they carry the slug, which is true');
+    check('  and that they keep working, by redirect',
+      /redirects to the new one/.test(dlg), 'the alias is the reason, not their shape');
   }
 
   return results;

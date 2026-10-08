@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Globe, Link2, Mail, QrCode, MessageCircle, Smartphone, Facebook } from 'lucide-react';
+import React, { useState } from 'react';
+import { Globe, Mail } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { fetchGuestLinks } from '@/lib/guestLinks';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -26,7 +26,6 @@ function ToggleSwitch({ value, onChange, label }) {
 
 export default function PublishModal({ onClose, details, onUpdate }) {
   const [tab, setTab] = useState(details?.initialTab || 'website');
-  const [copied, setCopied] = useState(false);
 
   const hasRealSlug = !!details?.slug;
   // window.location.host, not a hardcoded literal — so the link shown
@@ -35,39 +34,19 @@ export default function PublishModal({ onClose, details, onUpdate }) {
   const siteHost = typeof window !== 'undefined' ? window.location.host : 'openinvite.com.au';
   const siteUrl = hasRealSlug ? `${siteHost}/w/${details.slug}` : null;
 
-  // ── THE QR IS DRAWN HERE, NOT FETCHED ──────────────────────────────────
+  // THE QR IS GONE, with the rest of the link sharing.
   //
-  // It came from api.qrserver.com, in two places: an <img> for the 180px
-  // preview and a download link for the 500px PNG. Both put THE COUPLE'S
-  // PRIVATE ADDRESS in a query string to a third party we have no agreement
-  // with — every time the tab was opened, and again on every download. A
-  // guest-suite URL is the one thing a couple hands out deliberately and to
-  // people they chose; sending it to a stranger's logs is not ours to do.
-  // #726 moved the builder panel's QR to a local encoder for exactly this
-  // reason and this modal was missed.
+  // Item 12 of goals/2026-10-08-site-fixes-batch-1.md, 12a: this modal loses
+  // Copy, Copy Link, WhatsApp and QR and any URL display, and email becomes
+  // the only way guests receive the site. A QR is a link in another encoding.
   //
-  // `qrcode` is imported lazily, as it is there: the encoder stays out of the
-  // entry bundle for the three tabs that never draw one. SVG for the preview
-  // so it stays sharp at any size, and a PNG data URI for the download,
-  // because "print this on your invitation" wants a raster file.
+  // #726 and the commit after it moved both QRs in this file off
+  // api.qrserver.com, because an <img> pointed at a third party put the
+  // couple's private address in a query string to a service we have no
+  // agreement with, on every open and every download. That reasoning is kept
+  // here rather than deleted with the code it justified: a QR on this modal
+  // is drawn locally or it is not drawn.
   const [refusal, setRefusal] = useState('');
-  const [qrSvg, setQrSvg] = useState('');
-  const [qrPng, setQrPng] = useState('');
-  useEffect(() => {
-    let live = true;
-    if (!siteUrl) { setQrSvg(''); setQrPng(''); return undefined; }
-    const url = `https://${siteUrl}`;
-    import('qrcode')
-      .then(async (qr) => {
-        const svg = await qr.toString(url, { type: 'svg', margin: 1, width: 180, color: { dark: '#0A0A0A', light: '#FFFFFF' } });
-        const png = await qr.toDataURL(url, { margin: 1, width: 500, color: { dark: '#0A0A0A', light: '#FFFFFF' } });
-        if (live) { setQrSvg(svg); setQrPng(png); }
-      })
-      // A QR that cannot be drawn leaves its space empty rather than throwing
-      // the modal away. The address is on the page above it either way.
-      .catch(() => { if (live) { setQrSvg(''); setQrPng(''); } });
-    return () => { live = false; };
-  }, [siteUrl]);
 
   const togglePublish = async () => {
     const next = { websiteEnabled: !details?.websiteEnabled };
@@ -143,13 +122,6 @@ export default function PublishModal({ onClose, details, onUpdate }) {
     });
   });
 
-  const copyLink = () => {
-    if (!siteUrl) return;
-    navigator.clipboard.writeText(`https://${siteUrl}`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   const [couple1, couple2] = coupleNameParts(details, 'John', 'Sarah');
 
   const [emailSubject, setEmailSubject] = useState(`${couple1} & ${couple2}'s Wedding — Save the Date`);
@@ -162,13 +134,20 @@ export default function PublishModal({ onClose, details, onUpdate }) {
   // platform emoji fonts, at whatever size and colour the OS decided, sitting
   // inside type we control to the pixel. lucide draws them in currentColor at
   // a size we choose, which is the whole reason the rest of the product uses
-  // it. "QR Code" was also the only Title Case tab of the four.
+  // it.
+  //
+  // TWO TABS NOW, not four. 12a removed Share (copy, WhatsApp, SMS, Facebook)
+  // and QR code, so what is left is the site's own settings and the one
+  // channel the ruling keeps. "QR Code" had also been the only Title Case tab
+  // of the four, which is why that note was here.
   const TABS = [
     { id: 'website', label: 'Website', Icon: Globe },
-    { id: 'share', label: 'Share', Icon: Link2 },
     { id: 'email', label: 'Email', Icon: Mail },
-    { id: 'qr', label: 'QR code', Icon: QrCode },
   ];
+  // A CALLER CAN STILL ASK FOR A TAB THAT NO LONGER EXISTS. details.initialTab
+  // arrives from StudioWebsite, and a stale 'share' or 'qr' would draw the tab
+  // strip over an empty body. Fall back to the first tab rather than to blank.
+  const activeTab = TABS.some(t => t.id === tab) ? tab : TABS[0].id;
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -189,8 +168,8 @@ export default function PublishModal({ onClose, details, onUpdate }) {
               style={{
                 flex: 1, padding: '12px 8px', border: 'none', background: 'none',
                 fontSize: 12, fontWeight: 600,
-                color: tab === t.id ? '#0A0A0A' : 'rgba(10,10,10,0.6)',
-                borderBottom: tab === t.id ? '2px solid #E03553' : '2px solid transparent',
+                color: activeTab === t.id ? '#0A0A0A' : 'rgba(10,10,10,0.6)',
+                borderBottom: activeTab === t.id ? '2px solid #E03553' : '2px solid transparent',
                 cursor: 'pointer', fontFamily: 'inherit',
               }}
             >
@@ -205,7 +184,7 @@ export default function PublishModal({ onClose, details, onUpdate }) {
         {/* Tab content */}
         <div style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
 
-          {tab === 'website' && (
+          {activeTab === 'website' && (
             <div>
               {/* Status */}
               <div style={{ padding: 16, background: '#F8F8F8', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -214,7 +193,12 @@ export default function PublishModal({ onClose, details, onUpdate }) {
                   <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>
                     {!hasRealSlug ? 'Add your names in Event details to get your address' : details?.websiteEnabled ? 'Your website is live' : 'Your website is not published yet'}
                   </p>
-                  <p style={{ margin: 0, fontSize: 12, color: 'rgba(10,10,10,0.6)' }}>{siteUrl || 'No URL set yet'}</p>
+                  {/* THE ADDRESS WAS PRINTED HERE. 12a removes every URL
+                      display from this modal, so the status says only what
+                      the status is. */}
+                  <p style={{ margin: 0, fontSize: 12, color: 'rgba(10,10,10,0.6)' }}>
+                    {details?.websiteEnabled ? 'Guests receive it by email.' : 'Nobody can reach it yet.'}
+                  </p>
                 </div>
                 <button
                   onClick={togglePublish}
@@ -244,17 +228,10 @@ export default function PublishModal({ onClose, details, onUpdate }) {
                 </div>
               )}
 
-              {/* URL */}
-              <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>YOUR URL</p>
-              {/* NOT AN INPUT. Built from the couple's names — nobody types
-                  this. See src/lib/weddingAddress.js. */}
-              <div style={{ display: 'flex', alignItems: 'stretch', marginBottom: 8, borderBottom: '1px solid #DDD', background: '#F5F5F5' }}>
-                <span style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', padding: '10px 12px', whiteSpace: 'nowrap' }}>openinvite.com.au/w/</span>
-                <span style={{ flex: 1, padding: '10px 8px', fontSize: 13, color: '#0A0A0A', overflowWrap: 'anywhere' }}>{details?.slug || '\u2026'}</span>
-              </div>
-              <p style={{ fontSize: 11, lineHeight: 1.5, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px' }}>
-                Built from your names. Change a name and this follows &mdash; until your first invitation goes out, after which it stays put so links keep working.
-              </p>
+              {/* "YOUR URL" WAS HERE, printing the address and the slug. Both
+                  are gone under 12a. The address is changed from the guest
+                  suite's share tab, which is where the ruling put the one
+                  control that touches it. */}
 
               {/* Password */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -287,47 +264,14 @@ export default function PublishModal({ onClose, details, onUpdate }) {
             </div>
           )}
 
-          {tab === 'share' && (
+          {activeTab === 'email' && (
             <div>
+              {/* THE EMPTY STATE USED TO SAY "set your website's URL on the
+                  Website tab first", and after 12a the Website tab shows no
+                  URL to set. The address comes from the couple's names, so
+                  that is what it points at now. */}
               {!hasRealSlug ? (
-                <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', marginBottom: 0 }}>Set your website's URL on the <strong>Website</strong> tab first — sharing needs a real link to send.</p>
-              ) : (
-                <>
-                  <p style={{ fontSize: 14, color: '#555', marginBottom: 20 }}>Share your guest suite with family and friends.</p>
-
-                  {/* Copy link */}
-                  <div style={{ display: 'flex', marginBottom: 24 }}>
-                    <div style={{ flex: 1, padding: '12px 16px', background: '#F8F8F8', fontSize: 13, color: '#444', fontFamily: 'monospace', borderBottom: '1px solid #DDD', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {siteUrl}
-                    </div>
-                    <button onClick={copyLink} style={{ padding: '12px 20px', background: '#0A0A0A', color: '#FFF', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
-                      {copied ? '✓ Copied' : 'Copy'}
-                    </button>
-                  </div>
-
-                  <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>SHARE VIA</p>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                    {[
-                      { label: 'WhatsApp', Icon: MessageCircle, action: () => window.open(`https://wa.me/?text=${encodeURIComponent(`You're invited! https://${siteUrl}`)}`) },
-                      { label: 'Email', Icon: Mail, action: () => setTab('email') },
-                      { label: 'SMS', Icon: Smartphone, action: () => window.open(`sms:?body=${encodeURIComponent(`You're invited! https://${siteUrl}`)}`) },
-                      { label: 'Facebook', Icon: Facebook, action: () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://${siteUrl}`)}`) },
-                    ].map(opt => (
-                      <button key={opt.label} onClick={opt.action} style={{ padding: '14px', border: '1px solid #EEE', background: '#FFF', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 14, fontWeight: 600, fontFamily: 'inherit' }}>
-                        <opt.Icon size={16} strokeWidth={1.8} aria-hidden="true" style={{ color: 'rgba(10,10,10,0.6)' }} />
-                        <span>{opt.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-
-          {tab === 'email' && (
-            <div>
-              {!hasRealSlug ? (
-                <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', marginBottom: 0 }}>Set your website's URL on the <strong>Website</strong> tab first — the invitation needs a real link to send.</p>
+                <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', marginBottom: 0 }}>Add your names in <a href="/EventDetails" style={{ color: '#E03553', fontWeight: 600 }}>Event details</a> first. The email needs an address to send.</p>
               ) : (
                 <>
                   <p style={{ fontSize: 14, color: '#555', marginBottom: 20 }}>Send your guest suite link directly to guests by email.</p>
@@ -358,46 +302,6 @@ export default function PublishModal({ onClose, details, onUpdate }) {
             </div>
           )}
 
-          {tab === 'qr' && (
-            <div style={{ textAlign: 'center' }}>
-              {!hasRealSlug ? (
-                <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)' }}>Set your website's URL on the <strong>Website</strong> tab first — the QR code needs a real link to encode.</p>
-              ) : (
-                <>
-              <p style={{ fontSize: 14, color: '#555', marginBottom: 24 }}>Guests can scan this QR code to instantly open your guest suite.</p>
-
-              <div
-                role="img"
-                aria-label={`QR code for ${siteUrl}`}
-                style={{ width: 200, height: 200, margin: '0 auto 24px', border: '1px solid #EEE', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFF' }}
-                dangerouslySetInnerHTML={{ __html: qrSvg }}
-              />
-
-              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', marginBottom: 24, fontFamily: 'monospace' }}>{siteUrl}</p>
-
-              <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-                <a
-                  href={qrPng || undefined}
-                  download="wedding-qr-code.png"
-                  style={{ padding: '10px 24px', background: '#0A0A0A', color: '#FFF', textDecoration: 'none', fontSize: 13, fontWeight: 600, fontFamily: 'inherit' }}
-                >
-                  Download PNG
-                </a>
-              </div>
-
-              <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', marginTop: 24, lineHeight: 1.6, maxWidth: 400, margin: '24px auto 0' }}>
-                {/* IT NAMED THREE THINGS THAT DO NOT EXIST. Save the Dates,
-                    Menu Cards and Welcome Signage were removed in Wave 2 —
-                    the same overpromise R5 took out of Help and Quick tips,
-                    sitting two lines under the emoji this commit is here to
-                    remove. The product makes an invitation, a guest suite and
-                    an RSVP; a QR belongs on the first of those. */}
-                Print it on your invitation, or anything else you are sending, so guests can open the site without typing an address.
-              </p>
-                </>
-              )}
-            </div>
-          )}
         </div>
       </DialogContent>
     </Dialog>

@@ -60,19 +60,76 @@ await page.waitForTimeout(1500);
 
 // PRESENCE BEFORE PROPERTIES: every assertion below is about controls on this
 // panel, and a panel that never opened has none of them.
+//
+// IT USED TO BE IDENTIFIED BY TWO STRINGS 12a DELETED. The probe read
+// "Your site URL" and "Share on WhatsApp", which is how this guard went red
+// the moment the item removed them, with one failure and nothing else run.
+// That is the same defect test:beauty-collapsed had under item 7: a guard that
+// recognises a surface by a label the work is allowed to change cannot tell
+// "the panel is gone" from "the panel moved on".
+//
+// It anchors on the two controls the panel exists FOR instead. Both are the
+// subject of the contrast measurement below, both are named by aria-label
+// rather than by visible copy, and neither is something a copy pass can move.
 const onPanel = await page.evaluate(() =>
-  (document.body.innerText || '').includes('Your site URL') && (document.body.innerText || '').includes('Share on WhatsApp'));
+  !!document.querySelector('button[aria-label^="Toggle Website is"]')
+  && !!document.querySelector('button[aria-label^="Toggle Require password"]'));
 check('the Settings tab opens', onPanel, onPanel ? 'the panel is on screen' : 'no Settings panel');
 
 if (onPanel) {
-  // ── the address, which is deliberately not editable ───────────────────────
-  const url = await page.evaluate(() => {
-    const t = document.body.innerText || '';
-    return { shown: /openinvite\.com\.au\/w\//.test(t), editable: !!document.querySelector('input[value*="ada-and-alan"]') };
-  });
-  check('the site URL is shown', url.shown, 'openinvite.com.au/w/<slug>');
-  check('  and is not an input — it follows the names, it is not typed',
-    !url.editable, url.editable ? 'an input holds the slug' : 'read-only');
+  // ── NO ADDRESS ON THE PANEL, which is the 12a inversion ───────────────────
+  //
+  // This block asserted the opposite until 2026-10-08: "the site URL is shown"
+  // and "is not an input". Item 12a removed every URL display from this panel,
+  // so what has to be true now is that the address is nowhere ON IT, and the
+  // editability question went with the thing being edited.
+  //
+  // THE PANEL, NOT THE PAGE, and the difference is a real finding rather than
+  // a convenience. Read against document.body this went red on two things 12a
+  // does not touch and was not asked to: the canvas address bar, which is the
+  // device preview's own chrome telling the couple which page they are looking
+  // at (it reads "Email · 600px" over an invitation), and the header "Share"
+  // button, which navigates to the guest suite's email page and sends nothing.
+  // Both are reported with 12a and left alone. A guard scoped to the whole
+  // page would have made this item answer for them.
+  // THE MARKER IS A CONVENIENCE; THE FALLBACK IS WHAT MAKES A RED HONEST.
+  //
+  // Scoping every check to `[data-wb-settings-panel]` alone made this guard
+  // useless as evidence: run against main, where the marker does not exist,
+  // the selector returned nothing, the panel text read as the empty string,
+  // and "shows no site URL" PASSED on a panel that prints the URL. The guard
+  // still went red overall, on the missing marker, which is the shape of a
+  // guard that looks like it bites and does not.
+  //
+  // So the panel is resolved by its marker when there is one and by walking up
+  // from the Status toggle when there is not. Either way the checks below read
+  // a real element, and on main they fail on the address and the controls that
+  // are actually there.
+  const PANEL = `(() => {
+    const marked = document.querySelector('[data-wb-settings-panel]');
+    if (marked) return marked;
+    let n = document.querySelector('button[aria-label^="Toggle Website is"]');
+    while (n && n.parentElement && !(n.innerText || '').includes('Require password')) n = n.parentElement;
+    return n || null;
+  })()`;
+
+  const url = await page.evaluate(`(() => {
+    const panel = ${PANEL};
+    const t = (panel && panel.innerText) || '';
+    return {
+      found: !!panel,
+      marked: !!document.querySelector('[data-wb-settings-panel]'),
+      shown: /openinvite\\.com\\.au\\/w\\//.test(t),
+      slugAnywhere: /ada-and-alan/.test(t),
+      editable: !!(panel && panel.querySelector('input[value*="ada-and-alan"]')),
+    };
+  })()`);
+  check('the panel was read, by its marker or by its toggle', url.found,
+    url.marked ? 'data-wb-settings-panel' : 'found by walking up from the Status toggle');
+  check('  and it carries the marker a guard should scope to', url.marked, 'data-wb-settings-panel');
+  check('  and shows no site URL', !url.shown, url.shown ? 'openinvite.com.au/w/ is still printed' : 'no address');
+  check('  nor the slug under another label', !url.slugAnywhere, url.slugAnywhere ? 'the slug is on screen' : 'no slug');
+  check('  and holds no input carrying it either', !url.editable, 'no slug field');
 
   // ── the two toggles: they work, AND they can be read ──────────────────────
   for (const [aria, what] of [['Toggle Website is Live', 'the status toggle'], ['Toggle Require password', 'the password toggle']]) {
@@ -102,52 +159,79 @@ if (onPanel) {
   check('the status toggle flips, and its label says which way',
     before !== after && /Hidden|Live/.test(label || ''), `${before} → ${after}, "${label}"`);
 
-  // ── copy link ─────────────────────────────────────────────────────────────
-  await page.getByRole('button', { name: 'Copy link' }).first().click().catch(() => {});
-  await page.waitForTimeout(500);
-  const clip = await page.evaluate(() => navigator.clipboard.readText().catch(() => 'DENIED'));
-  check('Copy link puts the address on the clipboard', /\/w\/ada-and-alan$/.test(clip), clip);
+  // ── AND NOTHING HANDS A GUEST THE SITE BY LINK ────────────────────────────
+  //
+  // Copy link and Share on WhatsApp were exercised here and are now asserted
+  // absent. ABSENT BY NAME AND BY EFFECT, because either alone is weak: a
+  // button renamed "Share" would pass a name check, and a button that opens
+  // nothing in a harness would pass an effect check. So the panel is asked for
+  // every button it has, and separately nothing is allowed to have opened a
+  // wa.me or whatsapp window by the end of the run.
+  // ARIA LABELS COUNT, and that is what keeps this from being an empty read.
+  //
+  // The first version collected `innerText` only and reported "0 buttons, none
+  // of them sharing" — a pass. Both toggles on this panel ARE buttons, with an
+  // aria-label and a knob div and no text node at all, so filtering on text
+  // emptied the pool, and a check over an empty pool passes whatever the panel
+  // contains. Reading the accessible name as well gives it something real to
+  // be true about, and the count below is asserted, not just printed.
+  const buttons = await page.evaluate(`(() => {
+    const panel = ${PANEL};
+    if (!panel) return [];
+    return [...panel.querySelectorAll('button')]
+      .map((b) => ((b.getAttribute('aria-label') || '') + ' ' + (b.innerText || '')).replace(/\\s+/g, ' ').trim())
+      .filter(Boolean);
+  })()`);
+  check('the panel has controls to check', buttons.length >= 2, `${buttons.length} named buttons`);
+  // "SHARE ON", NOT "SHARE". A bare /share/ also matched the header's "Share"
+  // button, which navigates to the guest suite's email page: the destination
+  // 12a leaves in place, not a channel. The patterns name the four controls
+  // the ruling names, in the forms they were actually written in.
+  const sharey = buttons.filter((t) => /\bcopy\b|whatsapp|\bqr\b|share on|share via/i.test(t));
+  check('  and no copy, share or QR control among them', sharey.length === 0,
+    sharey.length ? sharey.join(', ') : `${buttons.length} checked, none of them sharing`);
+  // A CHECK THAT COULD ONLY PASS IS NOT A CHECK, so there isn't one here.
+  // "nothing opened a wa.me window" was written as corroboration and it is
+  // vacuous: the run no longer clicks a WhatsApp button, so the assertion is
+  // true on main, where the button is right there, and true here, where it is
+  // gone. The `opened` listener stays, because the contrast measurements below
+  // and above are the reason this file is a browser guard and a stray popup
+  // during them is worth seeing in the log.
 
-  // ── whatsapp ──────────────────────────────────────────────────────────────
-  await page.getByRole('button', { name: 'Share on WhatsApp' }).first().click().catch(() => {});
-  await page.waitForTimeout(1800);
-  const wa = opened.find((u) => /wa\.me|whatsapp\.com/.test(u));
-  check('Share on WhatsApp opens a share with the address in it',
-    !!wa && decodeURIComponent(wa).includes('/w/ada-and-alan'), wa ? wa.slice(0, 78) : 'nothing opened');
-}
-
-// ── THE QR IS DRAWN HERE, NOT FETCHED ───────────────────────────────────────
-//
-// It used to be an <img> pointing at api.qrserver.com with the couple's
-// wedding address in the query string: a private URL handed to a service we do
-// not run, on every render of this tab, failing silently when blocked. The
-// check is deliberately in two parts. An inline <svg> proves something is
-// drawn; NO EXTERNAL IMAGE HOST anywhere in the panel proves the old path is
-// gone rather than merely joined by a new one — a stray <img> beside the svg
-// would satisfy the first check on its own.
-if (onPanel) {
-  const qr = await page.evaluate(() => {
-    const panel = [...document.querySelectorAll('div')].find((d) => (d.innerText || '').includes('Your site URL') && (d.innerText || '').includes('Share on WhatsApp'));
+  // ── NO QR, AND STILL NO THIRD-PARTY REQUEST FOR THE ADDRESS ───────────────
+  //
+  // The QR used to be an <img> pointing at api.qrserver.com with the couple's
+  // wedding address in the query string: a private URL handed to a service we
+  // do not run, on every render, failing silently when blocked. #726 replaced
+  // it with a locally drawn svg; 12a removes it entirely.
+  //
+  // THE SECOND CHECK OUTLIVES THE FIRST ON PURPOSE. "No QR" would be satisfied
+  // by a panel that had gone back to fetching one from a remote host and
+  // failing to render it. "No remote image anywhere on the panel" is the rule
+  // that was actually made, and it holds whether or not a QR ever returns.
+  // A HANDLE, NOT AN INJECTED STRING. The two reads above pass PANEL into
+  // page.evaluate as source text, which works for them and broke here: a
+  // template literal eats the backslashes in `/^https?:|^\/\//`, leaving an
+  // unterminated regex and a SyntaxError thrown from inside the browser. The
+  // panel is resolved once to an element handle instead, and the function
+  // below is a real function with its regexes intact.
+  const panelHandle = await page.evaluateHandle(PANEL);
+  const qr = await page.evaluate((panel) => {
     if (!panel) return null;
     return {
-      // THE QR SPECIFICALLY, not "an svg somewhere": this panel has
-      // twenty-nine icons in it, so a count of all svgs would pass with the
-      // QR missing entirely. The QR is the 120x120 one.
-      qrSvgs: [...panel.querySelectorAll('svg')].filter((el) => {
+      squares: [...panel.querySelectorAll('svg')].filter((el) => {
         const r = el.getBoundingClientRect();
         return Math.round(r.width) === 120 && Math.round(r.height) === 120;
       }).length,
-      // Any remote source at all, not just qrserver: the rule is that this
-      // panel makes no third-party request for the couple's address.
       remote: [...panel.querySelectorAll('img, image')]
         .map((el) => el.getAttribute('src') || el.getAttribute('href') || '')
         .filter((u) => /^https?:|^\/\//.test(u)),
       html: panel.innerHTML,
     };
-  });
-  check('the QR is an inline svg, drawn at its own size', !!qr && qr.qrSvgs === 1,
-    qr ? `${qr.qrSvgs} svg(s) at 120x120` : 'no panel');
-  check('  and the panel loads no image from anywhere else',
+  }, panelHandle);
+  check('the panel draws no QR', !!qr && qr.squares === 0,
+    qr ? `${qr.squares} svg(s) at 120x120` : 'no panel');
+  check('  and loads no image from anywhere else',
     !!qr && qr.remote.length === 0, qr && qr.remote.length ? qr.remote.join(', ') : 'no remote image sources');
   check('  and qrserver is not referenced at all',
     !!qr && !/qrserver/i.test(qr.html), qr && /qrserver/i.test(qr.html) ? 'still there' : 'gone');
