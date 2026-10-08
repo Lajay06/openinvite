@@ -40,6 +40,7 @@ const MultiPageWeddingWebsite = lazyWithReload(() => import('./components/guest-
 const RSVPPage = lazyWithReload(() => import('./components/rsvp/RSVPPage'));
 const GamesPage = lazyWithReload(() => import('./components/games/GamesPage'));
 const CollaboratorAccept = lazyWithReload(() => import('./pages/CollaboratorAccept'));
+const StopEmails = lazyWithReload(() => import('./pages/StopEmails'));
 const CollaboratorGuests = lazyWithReload(() => import('./pages/CollaboratorGuests'));
 const GuestRSVPRetired = lazyWithReload(() => import('./pages/GuestRSVPRetired'));
 const UniverseStudio = lazyWithReload(() => import('./pages/UniverseStudio'));
@@ -127,7 +128,7 @@ const PUBLIC_PATH_SET = new Set([
   '/GuestRSVP',
 ]);
 const isPublicPath = (pathname) =>
-  PUBLIC_PATH_SET.has(pathname) || pathname.startsWith('/w/') || pathname.startsWith('/rsvp/') || pathname.startsWith('/games/') || pathname.startsWith('/collaborate/accept/');
+  PUBLIC_PATH_SET.has(pathname) || pathname.startsWith('/w/') || pathname.startsWith('/rsvp/') || pathname.startsWith('/games/') || pathname.startsWith('/collaborate/accept/') || pathname.startsWith('/stop-emails/');
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -240,6 +241,12 @@ const AuthenticatedApp = () => {
         <Route path="/rsvp/:token" element={<RSVPPage />} />
         <Route path="/games/:token/:questionnaireId" element={<GamesPage />} />
         <Route path="/collaborate/accept/:token" element={<CollaboratorAccept />} />
+        {/* NO LOGIN, BY DESIGN. Someone who has stopped caring about their
+            wedding account will not sign in to be left alone, so the stop
+            link resolves a signed token instead of a session. Added to the
+            public prefix list above for the same reason /rsvp/ and
+            /collaborate/accept/ are there. */}
+        <Route path="/stop-emails/:token" element={<StopEmails />} />
         <Route path="/GuestRSVP" element={<GuestRSVPRetired />} />
       </Routes>
     );
