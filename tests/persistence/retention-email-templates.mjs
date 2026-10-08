@@ -43,6 +43,18 @@ import {
   RETENTION_HAIRLINE,
 } from '../../api/_lib/retentionEmails.js';
 
+/**
+ * The shape each photo really is, as Cloudinary delivers it at w_1200.
+ *
+ *   setup   1200x682  about 16:9
+ *   guests  1200x900  4:3
+ *
+ * Written here rather than derived from the photo entry, because the point of
+ * the check is that the entry's own width and height agree with the asset. A
+ * ratio computed from the thing being tested would agree with itself.
+ */
+const EXPECTED_RATIO = { setup: 1200 / 682, guests: 1200 / 900 };
+
 const STOP_URL = 'https://openinvite.com.au/stop-emails/t0ken';
 const OPTS = { name: 'Ada Lovelace', createdDate: '2026-05-18T03:00:00Z', stopUrl: STOP_URL };
 
@@ -141,10 +153,31 @@ export async function runRetentionEmailTemplates() {
 
     // ── THE PHOTO, FULL WIDTH, WITH THE ALT TEXT THE GOAL SPECIFIES ─────
     const photo = RETENTION_PHOTOS[email.key];
-    ok(`${where}   carries its own photo`, email.html.includes(photo.url), email.key === 'setup' ? 'amalfi' : 'tulum');
-    ok(`${where}   with the goal's alt text`, email.html.includes(photo.alt), photo.alt);
+    ok(`${where}   carries its own photo`, email.html.includes(photo.url), photo.url.split('/').pop().slice(0, 28));
+    ok(`${where}   delivered as an image, not a video frame`,
+       photo.url.includes('/image/upload/') && !photo.url.includes('so_0'), 'image/upload');
+    ok(`${where}   with alt text that is one short line`,
+       email.html.includes(photo.alt) && photo.alt.length > 10 && photo.alt.length <= 60 && !photo.alt.includes('.'),
+       `${photo.alt.length} chars`);
     ok(`${where}   rendered full width`,
        new RegExp(`src="${photo.url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[^>]*width:100%`).test(email.html), '100%');
+    // ── THE RESERVED BOX ────────────────────────────────────────────────
+    //
+    // width and height exist so a client that has blocked the image, or has
+    // not loaded it yet, reserves the right space. A height that does not
+    // match the photo's real ratio reserves the WRONG space, which is worse
+    // than none: the email jumps when the image arrives. So the attribute is
+    // checked against the ratio rather than against a number written here.
+    ok(`${where}   declares its own width and height`,
+       new RegExp(`width="${photo.width}" height="${photo.height}"`).test(email.html),
+       `${photo.width}x${photo.height}`);
+    const declaredRatio = photo.width / photo.height;
+    ok(`${where}   and that height matches the photo's shape`,
+       Math.abs(declaredRatio - EXPECTED_RATIO[email.key]) < 0.02,
+       `${declaredRatio.toFixed(3)} vs ${EXPECTED_RATIO[email.key].toFixed(3)}`);
+    ok(`${where}   with a background so a blocked image is a visible box`,
+       new RegExp(`src="${photo.url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[^>]*background:#`).test(email.html),
+       'placeholder tone');
     // AND NOT THE OTHER ONE. Two emails, two photos; a copy-paste that leaves
     // both pointing at the same image passes every check above.
     const otherPhoto = RETENTION_PHOTOS[email.key === 'setup' ? 'guests' : 'setup'];
@@ -193,6 +226,46 @@ export async function runRetentionEmailTemplates() {
      && !JSON.stringify(both[0].headers).includes('One-Click'), 'header is the URL alone');
 
   ok('Reply-To is the support address', RETENTION_REPLY_TO === 'hello@openinvite.com.au', RETENTION_REPLY_TO);
+
+  // ── THE SIGN-OFF ────────────────────────────────────────────────────────
+  //
+  // The owner changed the name from "La" to "Jay" on 2026-10-08. Pinned
+  // because it is the one piece of copy in these emails that is a person
+  // rather than a product, and a later sweep over "La" elsewhere must not
+  // quietly take it back.
+  for (const email of both) {
+    ok(`${email.key}: signs off as Jay`,
+       email.html.includes('(hello, that is me, Jay)') && email.text.includes('(hello, that is me, Jay)'),
+       'both parts');
+    ok(`${email.key}:   and not as La`, !email.html.includes('that is me, La'), 'the old name is gone');
+  }
+
+  // ── THE PHOTOS ACTUALLY RESOLVE ─────────────────────────────────────────
+  //
+  // Asked for by name in the instruction, and it is the one thing no amount
+  // of reading the source can establish: a template can reference a public id
+  // that was renamed, deleted or never existed, and every other check in this
+  // file passes while the email arrives with two broken boxes.
+  //
+  // THIS MAKES THE GUARD NEED A NETWORK, which is a real cost: it can fail for
+  // a reason that is nothing to do with this repo. It is not made tolerant,
+  // because a check that passes when it cannot reach the thing it is checking
+  // is not a check. If Cloudinary being unreachable starts failing CI, the
+  // answer is to move this one assertion to the live lane, not to soften it.
+  for (const key of ['setup', 'guests']) {
+    const { url } = RETENTION_PHOTOS[key];
+    let status = 0;
+    let type = '';
+    try {
+      const res = await fetch(url, { method: 'GET', signal: AbortSignal.timeout(15000) });
+      status = res.status;
+      type = res.headers.get('content-type') || '';
+    } catch (err) {
+      type = `fetch failed: ${err.message}`;
+    }
+    ok(`the ${key} photo resolves`, status === 200, `HTTP ${status}`);
+    ok(`  and is served as an image`, /^image\//.test(type), type);
+  }
 
   // ── THIS FILE SENDS NOTHING ─────────────────────────────────────────────
   //
