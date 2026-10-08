@@ -64,6 +64,29 @@
       ],
       "default": "dmy",
       "description": "Which numeric date format the dashboard renders dates in. dmy = 18/05/2026, mdy = 05/18/2026. Guest-facing pages keep their written dates and never read this."
+    },
+    "lifecycleEmails": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the account receives the two retention emails (not finished setting up; guest list still empty). Set false by the Stop link in those emails or the switch on the Account page."
+    },
+    "retentionEmails": {
+      "type": "object",
+      "description": "Which retention emails this account has received, as ISO timestamps. Each is sent at most once.",
+      "properties": {
+        "setup24h": {
+          "type": "string"
+        },
+        "setupDay4": {
+          "type": "string"
+        },
+        "guests24h": {
+          "type": "string"
+        },
+        "guestsDay5": {
+          "type": "string"
+        }
+      }
     }
   },
   "required": []
