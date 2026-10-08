@@ -32,7 +32,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { pass, fail } from './_shared.mjs';
+import { pass, fail, stripComments } from './_shared.mjs';
 import { overlayStatusForGuest, hasNothingToOverlay } from '../../api/my-guests-rsvp.js';
 import { deriveRsvpStatus } from '../../src/lib/rsvpAggregation.js';
 
@@ -47,9 +47,13 @@ const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
  * check about code (see tests/persistence/per-event-copy.mjs), so the rule is
  * the same both ways: assert against what runs.
  */
-const stripComments = (s) =>
-  s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[^\n]*?\/\/.*$/gm, (l) => l.slice(0, l.indexOf('//')));
-const readCode = (p) => stripComments(read(p));
+// THE LOCAL WRAPPER IS GONE, not renamed. It was a hand-written block-comment
+// strip, which runs from any mid-line slash-star to the next star-slash
+// anywhere in the file and deletes the code in between; it destroys live code
+// in one or more of the files this guard reads. stripComments in ./_shared.mjs
+// is the one implementation, and `trailing` is what this file wanted: a
+// trailing // on a line of code is cut, the code before it is kept.
+const readCode = (p) => stripComments(read(p), { trailing: true });
 
 /** Grace as the ruling describes her: a flat status the couple typed, no rows. */
 const GRACE = { id: 'g1', name: 'Grace Hopper', rsvp_status: 'attending', event_responses: [] };

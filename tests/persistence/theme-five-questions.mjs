@@ -39,7 +39,7 @@
 import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { pass, fail } from './_shared.mjs';
+import { pass, fail, stripComments } from './_shared.mjs';
 // NAMESPACE IMPORT ON PURPOSE. A named import of an export the module does not
 // have yet is a module-resolution error, which aborts the run before a single
 // check prints — a red CI naming nothing. Read off the namespace and a missing
@@ -54,7 +54,12 @@ import { deriveSeason } from '../../src/lib/weddingSeason.js';
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = (p) => resolve(__dir, '../../', p);
 const read = (p) => readFileSync(root(p), 'utf8');
-const strip = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+// COMMENTS VIA THE SHARED HELPER. This was a hand-written
+// `replace(/\/\*[\s\S]*?\*\//g, '')`, which runs from any mid-line `/*` to the
+// next star-slash anywhere in the file and deletes the code in between. It
+// destroys live code in one or more of the files this guard reads. See
+// stripComments in ./_shared.mjs for the measurements and the line-start rule.
+const strip = (s) => stripComments(s);
 
 const THEME = strip(read('src/components/event-details/ThemeSection.jsx'));
 const STEP5 = strip(read('src/components/onboarding/OnboardingStep5WeddingType.jsx'));

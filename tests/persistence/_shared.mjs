@@ -38,6 +38,78 @@ export const BASE   = 'https://base44.app/api';
 
 export const SENTINEL = '__PERSISTENCE_TEST__';
 
+// ── COMMENTS OUT, AND ONLY COMMENTS ──────────────────────────────────────────
+
+/**
+ * Strip comments from source before a guard reads it, without eating code.
+ *
+ * Nearly every guard here reads product source and asserts on what it finds,
+ * and every one of them has to drop comments first, because a guard's own
+ * explanation of what it removed names the thing it removed. A hundred call
+ * sites wrote that by hand, all of them as some arrangement of
+ * `src.replace(/\/\*[\s\S]*?\*\//g, '')`, and that expression is wrong.
+ *
+ * ── WHAT IT GETS WRONG, AND WHAT IT COST ───────────────────────────────────
+ *
+ * `/*` is not only a comment opener. It appears mid-line in attribute values,
+ * in regular expressions and in strings, and an unanchored match runs from the
+ * first one to the next star-slash anywhere in the file, which is usually
+ * inside a real comment dozens of lines later. Everything between is deleted.
+ *
+ * Measured on this repo at the time this was written, the naive form destroys
+ * live code in EIGHT files of product source, the render harness and the
+ * motion capture, which are the places guards read:
+ *
+ *     src/pages/Onboarding.jsx                        440 lines
+ *     src/pages/Universes.jsx                         270 lines
+ *     scripts/lib/renderHarness.mjs                   252 lines
+ *     tests/motion/capture.mjs                        152 lines
+ *     src/components/website-builder/WBRightPanel.jsx  46 lines
+ *     src/lib/checkoutSession.js                       22 lines
+ *     src/pagePreload.js                               22 lines
+ *     scripts/lib/rewritePrerenderedAssets.mjs         10 lines
+ *
+ * tests/persistence/guard-comment-stripper.mjs recomputes that list on every
+ * run rather than trusting this one, and fails if any guard reads a file on it
+ * through the hand-written form.
+ *
+ * WBRightPanel is the one that was caught, in item 12a of
+ * goals/2026-10-08-site-fixes-batch-1.md, and only because a POSITIVE check
+ * failed: the guard asserted that password protection was still present and it
+ * was not present in what the guard could see. Every absence assertion around
+ * it had gone green against blanked-out text, which is the worst way for a
+ * guard to pass. Its cause there is one attribute, `accept="audio/*"` on the
+ * background-music file input.
+ *
+ * ── THE RULE ───────────────────────────────────────────────────────────────
+ *
+ * A comment must start its own line. Every real comment in this codebase does,
+ * and no attribute value, regex or string literal can, because something is
+ * always to its left. JSX brace-comments are taken first, since those open with
+ * a brace rather than at the margin.
+ *
+ * This is deliberately NOT a JavaScript parser. A guard reads source as text on
+ * purpose: it is checking what is written, including things a parser would
+ * discard, and a tokenizer here would be a second implementation of the
+ * language to keep correct. The line-start rule is a convention this repo
+ * already follows everywhere, so holding it costs nothing and the failure mode
+ * is visible rather than silent.
+ *
+ * `line` defaults to true and drops whole-line `//` comments too. Pass
+ * `{ line: false }` where a guard needs to read them, and
+ * `{ trailing: true }` to also cut a trailing `//` from the end of a code
+ * line, which is what the handful of guards using the `l.slice(0,
+ * l.indexOf('//'))` form were doing by hand.
+ */
+export function stripComments(src, { line = true, trailing = false } = {}) {
+  let out = String(src ?? '')
+    .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
+    .replace(/^[ \t]*\/\*[\s\S]*?\*\/[ \t]*$/gm, '');
+  if (trailing) out = out.replace(/^([^\n]*?)\/\/.*$/gm, (l, head) => (head.trim() ? head : ''));
+  else if (line) out = out.replace(/^[ \t]*\/\/.*$/gm, '');
+  return out;
+}
+
 // ── HTTP helper ───────────────────────────────────────────────────────────────
 
 export async function api(method, path, body, token) {

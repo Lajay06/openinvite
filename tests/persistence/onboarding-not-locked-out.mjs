@@ -21,7 +21,7 @@
  * Every row below is a state the product actually produces, named after the
  * couple it happens to.
  */
-import { pass, fail } from './_shared.mjs';
+import { pass, fail, stripComments } from './_shared.mjs';
 import { isOnboardingComplete } from '../../src/lib/onboardingComplete.js';
 import { isBackend, ONBOARDING_USER, ONBOARDING_SEED } from '../../scripts/lib/renderHarness.mjs';
 import { readFileSync } from 'node:fs';
@@ -44,9 +44,12 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
  * Stripping at all is the older lesson: a check that forbids a string in
  * source will otherwise forbid writing down why the string was removed.
  */
-const code = (p) => readFileSync(join(ROOT, p), 'utf8')
-  .replace(/^[^\n]*?\/\/.*$/gm, (line) => line.slice(0, line.indexOf('//')))
-  .replace(/\/\*[\s\S]*?\*\//g, '');
+// COMMENTS VIA THE SHARED HELPER. This was a hand-written
+// block-comment strip, which runs from any mid-line slash-star to the next
+// star-slash anywhere in the file and deletes the code in between. It destroys
+// live code in one or more of the files this guard reads. See stripComments in
+// ./_shared.mjs for the measurements and the line-start rule.
+const code = (p) => stripComments(readFileSync(join(ROOT, p), 'utf8'), { trailing: true });
 
 export async function runOnboardingNotLockedOut() {
   const results = [];
