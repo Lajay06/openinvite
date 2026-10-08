@@ -36,15 +36,19 @@
 
 import fs from 'fs';
 import path from 'path';
-import { pass, fail } from './_shared.mjs';
+import { pass, fail, stripComments } from './_shared.mjs';
 import {
   heroShowsMotif, heroShowsWelcome, heroShowsNames, heroShowsDate, heroOverlayOf,
 } from '../../src/lib/heroDisplay.js';
 
 const ROOT = path.resolve(new URL('../../', import.meta.url).pathname);
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
-const code = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
-  .replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
+// COMMENTS VIA THE SHARED HELPER. This was a hand-written
+// block-comment strip, which runs from any mid-line slash-star to the next
+// star-slash anywhere in the file and deletes the code in between. It destroys
+// live code in one or more of the files this guard reads. See stripComments in
+// ./_shared.mjs for the measurements and the line-start rule.
+const code = (src) => stripComments(src);
 
 const MARK = { url: 'https://example.com/monogram.png' };
 

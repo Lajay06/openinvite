@@ -21,7 +21,7 @@
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { resolve, dirname, join, relative } from 'path';
 import { fileURLToPath } from 'url';
-import { pass, fail } from './_shared.mjs';
+import { pass, fail, stripComments } from './_shared.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../');
 
@@ -52,7 +52,12 @@ function walk(dir, out = []) {
   return out;
 }
 
-const strip = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+// COMMENTS VIA THE SHARED HELPER. This was a hand-written
+// `replace(/\/\*[\s\S]*?\*\//g, '')`, which runs from any mid-line `/*` to the
+// next star-slash anywhere in the file and deletes the code in between. It
+// destroys live code in one or more of the files this guard reads. See
+// stripComments in ./_shared.mjs for the measurements and the line-start rule.
+const strip = (s) => stripComments(s);
 
 export async function runRouteInterceptionGuard() {
   const results = [];

@@ -37,12 +37,17 @@
 import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { pass, fail } from './_shared.mjs';
+import { pass, fail, stripComments } from './_shared.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = (p) => resolve(__dir, '../../', p);
 const read = (p) => { try { return readFileSync(root(p), 'utf8'); } catch { return ''; } };
-const strip = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+// COMMENTS VIA THE SHARED HELPER. This was a hand-written
+// `replace(/\/\*[\s\S]*?\*\//g, '')`, which runs from any mid-line `/*` to the
+// next star-slash anywhere in the file and deletes the code in between. It
+// destroys live code in one or more of the files this guard reads. See
+// stripComments in ./_shared.mjs for the measurements and the line-start rule.
+const strip = (s) => stripComments(s);
 
 const FORM = strip(read('src/components/guest-website/GuestNoteForm.jsx'));
 const GTK = strip(read('src/components/guest-website/pages/WeddingGoodToKnowPage.jsx'));

@@ -20,7 +20,7 @@
  * that plain Node cannot import, and the thing under test is which section
  * renders for which page — a structural fact about the file.
  */
-import { pass, fail } from './_shared.mjs';
+import { pass, fail, stripComments } from './_shared.mjs';
 import { readFileSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -28,7 +28,12 @@ import { WEDDING_PAGES } from '../../src/lib/websiteThemes.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const read = (p) => readFileSync(join(ROOT, p), 'utf8');
-const code = (p) => read(p).replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '').replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
+// COMMENTS VIA THE SHARED HELPER. This was a hand-written
+// `replace(/\/\*[\s\S]*?\*\//g, '')`, which runs from any mid-line `/*` to the
+// next star-slash anywhere in the file and deletes the code in between. It
+// destroys live code in one or more of the files this guard reads. See
+// stripComments in ./_shared.mjs for the measurements and the line-start rule.
+const code = (p) => stripComments(read(p));
 
 /**
  * THE SECTIONS a page renders — plural, and that plural is the point.

@@ -18,7 +18,7 @@
  * Scroll animation is the opposite case and stays — but `isMotionEnabled`
  * tests `!== 'none'`, so "Subtle" and "Dramatic" were the same site.
  */
-import { pass, fail } from './_shared.mjs';
+import { pass, fail, stripComments } from './_shared.mjs';
 import { readFileSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -26,9 +26,12 @@ import { UNIVERSE_CONFIGS } from '../../src/lib/websiteThemes.js';
 import { allPageSlugs, customPagesOf, pageLabel } from '../../src/lib/customPages.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const code = (p) => readFileSync(join(ROOT, p), 'utf8')
-  .replace(/^[^\n]*?\/\/.*$/gm, (line) => line.slice(0, line.indexOf('//')))
-  .replace(/\/\*[\s\S]*?\*\//g, '');
+// COMMENTS VIA THE SHARED HELPER. This was a hand-written
+// block-comment strip, which runs from any mid-line slash-star to the next
+// star-slash anywhere in the file and deletes the code in between. It destroys
+// live code in one or more of the files this guard reads. See stripComments in
+// ./_shared.mjs for the measurements and the line-start rule.
+const code = (p) => stripComments(readFileSync(join(ROOT, p), 'utf8'), { trailing: true });
 
 export async function runGuestSuiteEditor() {
   const results = [];
