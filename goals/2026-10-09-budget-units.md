@@ -82,5 +82,5 @@ to work by elimination, it found all three immediately.
 
 Last line: "Closed <date> at main <full SHA>, PRs <list>".
 
-The lessons section above is held for this close commit, on the owner's instruction, rather
-than pushed as a separate docs commit.
+The lessons section above was not pushed as a separate docs commit, on the owner's
+instruction. It reaches main with item 5's held PR, as part of the state write-up.
