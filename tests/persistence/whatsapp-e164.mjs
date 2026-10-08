@@ -59,8 +59,15 @@ export async function runWhatsappE164() {
     toWaMe('12345', 'AU') === null, 'null');
 
   // ── EVERY SITE GOES THROUGH IT ───────────────────────────────────────────
+  // TWO SITES NOW, NOT THREE. Item 12b removed the WhatsApp send channel from
+  // SendInvitesModal, so that file no longer builds a wa.me link and no longer
+  // imports the helper. The two that remain are the Messages page, which opens
+  // a chat with a guest who has already written in: a different thing from
+  // handing out the wedding site, and untouched by the ruling.
+  //
+  // The sweep below still covers the whole of src, so a hand-rolled number in
+  // SendInvitesModal would be caught there if one ever came back.
   const SITES = [
-    'src/components/guests/SendInvitesModal.jsx',
     'src/components/messages/WhatsAppCompose.jsx',
     'src/components/messages/WhatsAppQRCode.jsx',
   ];

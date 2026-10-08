@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { toWaMe } from '@/lib/phoneE164';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { coupleDisplayName } from '@/lib/coupleNames';
@@ -8,7 +7,7 @@ import { getWeddingEvents, getGuestEventResponse, getEventVenueAndDate } from '@
 import {
   renderInvitationEmail, EMAIL_TYPES, getTypeComposeDefaults, getBannerImageUrl, getDefaultBannerChoice,
 } from '@/lib/emailTemplate';
-import { X, Mail, MessageCircle, Check, Loader2, Search, ArrowLeft, ArrowRight, Send, AlertCircle, FlaskConical } from 'lucide-react';
+import { X, Mail, Check, Loader2, Search, ArrowLeft, ArrowRight, Send, AlertCircle, FlaskConical } from 'lucide-react';
 import toast from 'react-hot-toast';
 import GuestAvatar from '@/components/shared/GuestAvatar';
 import { isAttending, isDeclined, isAwaitingPrimary } from '@/lib/guestRsvpTally';
@@ -17,7 +16,6 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { fetchGuestLinks } from '@/lib/guestLinks';
 import { invitationsFor } from '@/lib/household';
 import { invitationGreetingName } from '@/lib/guestGreeting';
-import { buildGuestCtaUrl } from '@/lib/emailTemplate';
 
 // Guarded on the pattern already used by src/lib/app-params.js: read the
 // environment at module load only when there IS one. Browser behavior is
@@ -35,34 +33,33 @@ function buildRsvpUrl(token) {
   return RSVP_BASE + token;
 }
 
-function buildWhatsAppMessage(guest, coupleName, weddingDate, rsvpUrl) {
-  const name = guest?.name ? guest.name.split(' ')[0] : 'there';
-  const dateStr = weddingDate
-    ? new Date(weddingDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })
-    : '';
-  return `Hi ${name}! You're invited to ${coupleName ? `${coupleName}'s wedding` : 'our wedding'}${dateStr ? ` on ${dateStr}` : ''}. Please RSVP here: ${rsvpUrl}`;
-}
-
-function buildWhatsAppUrl(guest, coupleName, weddingDate, token, siteUrl) {
-  // THE SAME DOORWAY AS THE EMAIL (owner ruling, Run 6 U1). WhatsApp used to be
-  // the only channel that carried the guest's token — /rsvp/<token>, which
-  // resolves and then redirects into the site. Email now opens the site
-  // directly as that guest, and both channels should land in the same place:
-  // one destination to reason about, and the guest sees the couple's site
-  // rather than a redirect on the way to it.
-  const msg = buildWhatsAppMessage(guest, coupleName, weddingDate, buildGuestCtaUrl({ showDate: true, siteUrl, rsvpToken: token, rsvpUrl: buildRsvpUrl(token) }));
-  // ONE NORMALISER, AND A NUMBER IT CANNOT READ IS NOT A NUMBER.
-  //
-  // This stripped non-digits and sent whatever was left: "0412 345 678" went
-  // out as wa.me/0412345678, which is the owner's report — WhatsApp answers
-  // that the number is not on WhatsApp, and it is right to. An unreadable
-  // number now falls through to the no-recipient link, where the couple picks
-  // the contact themselves, rather than opening a conversation with nobody.
-  const phone = toWaMe(guest.phone);
-  return phone
-    ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
-    : `https://wa.me/?text=${encodeURIComponent(msg)}`;
-}
+// ── THE WHATSAPP CHANNEL IS GONE ────────────────────────────────────────────
+//
+// Item 12 of goals/2026-10-08-site-fixes-batch-1.md, part 12b: "Email from the
+// studio is the only way guests receive the site." Three things lived here and
+// all three are removed: buildWhatsAppMessage, buildWhatsAppUrl and the
+// WhatsAppPreview bubble, along with the channel step's WhatsApp and
+// "Email + WhatsApp" options and the branch of handleSend that opened a tab
+// per guest.
+//
+// TWO DECISIONS DIE WITH IT, and they are recorded rather than deleted,
+// because both were right about the problem they solved and whoever revisits
+// this channel will hit the same two problems again:
+//
+//   RUN 6 U1 — ONE DOORWAY. WhatsApp used to be the only channel carrying the
+//   guest's token as /rsvp/<token>, which resolves and then redirects into the
+//   site, while email opened the site directly as that guest. The ruling made
+//   both land in the same place: one destination to reason about, and the
+//   guest sees the couple's site rather than a redirect on the way to it.
+//   Email keeps that destination; it is built by buildGuestCtaUrl and nothing
+//   about it changes here.
+//
+//   A NUMBER NOBODY CAN READ IS NOT A NUMBER. The URL builder stripped
+//   non-digits and sent what was left, so "0412 345 678" went out as
+//   wa.me/0412345678 and WhatsApp answered that the number is not on WhatsApp,
+//   correctly. src/lib/phoneE164.js exists because of that report and is still
+//   used by the Messages page, which opens a chat with a guest who has already
+//   written in. This file no longer needs it.
 
 function replaceMergeTags(str, guestName, coupleName, dateStr) {
   // IN STEP WITH api/send-invites.js's copy, because the preview pane is
@@ -162,24 +159,6 @@ function StepIndicator({ current }) {
   );
 }
 
-// ── WhatsApp text preview bubble ─────────────────────────────────────────────
-function WhatsAppPreview({ guest, coupleName, weddingDate, rsvpUrl }) {
-  const message = buildWhatsAppMessage(guest, coupleName, weddingDate, rsvpUrl);
-  return (
-    <div style={{ padding: 20 }}>
-      <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', margin: '0 0 10px', ...F }}>
-        WHATSAPP MESSAGE {guest?.phone ? `— TO ${guest.phone}` : '(NO PHONE ON FILE)'}
-      </p>
-      <div style={{
-        background: '#DCF8C6', borderRadius: 10, padding: '12px 14px', maxWidth: 340,
-        fontSize: 14, color: '#0A0A0A', lineHeight: 1.5, whiteSpace: 'pre-wrap', ...F,
-      }}>
-        {message}
-      </div>
-    </div>
-  );
-}
-
 // ── Main component ────────────────────────────────────────────────────────────
 /**
  * The flow's frame: a full-width PAGE, or the side sheet it used to be.
@@ -262,7 +241,11 @@ export default function SendInvitesModal({
   const [bannerChoiceTouched, setBannerChoiceTouched] = useState(false);
 
   // Step 3
-  const [channel, setChannel] = useState('email');
+  // NO CHANNEL STATE. 12b leaves one channel, so there is nothing to hold:
+  // every place that used to branch on `channel` now reads as the email path,
+  // and the record is written with the literal 'email' below. A state variable
+  // that can only take one value is a decision waiting to be re-added by
+  // accident.
 
   // Step 4
   const [sending, setSending] = useState(false);
@@ -398,12 +381,13 @@ export default function SendInvitesModal({
   // problem is an invitation with nobody to send it to, and that is counted
   // and named below.
   //
-  // WhatsApp stays per person: it opens a chat with a phone number, and a
-  // household does not have one.
+  // THE OTHER HALF OF THIS NOTE WAS ABOUT WHATSAPP, which stayed per person
+  // because it opened a chat with a phone number and a household does not
+  // have one. With 12b there is one channel and it is addressed to an
+  // invitation, so the count on screen is invitations throughout.
   const selectedInvitations = useMemo(() => invitationsFor(selectedGuests), [selectedGuests]);
   const invitationsWithEmail = selectedInvitations.filter(i => i.email);
   const invitationsNoEmail = selectedInvitations.filter(i => !i.email);
-  const selectedNoPhone = selectedGuests.filter(g => !g.phone);
 
   const allFilteredSelected = filteredGuests.length > 0 && filteredGuests.every(g => selected.has(g.id));
 
@@ -529,71 +513,65 @@ export default function SendInvitesModal({
     try {
       const withTokens = await ensureTokens(selectedGuests);
       const sentAt = new Date().toISOString();
-      const sendEmail = channel === 'email' || channel === 'both';
-      const sendWhatsApp = channel === 'whatsapp' || channel === 'both';
-
-      if (sendEmail) {
-        // ONE EMAIL PER INVITATION, ADDRESSED TO THE LEAD. Grouped from
-        // withTokens rather than from selectedGuests so the lead carries the
-        // token that was just ensured, and `events` comes from the lead
-        // because every member's stored entries are copies of the lead's
-        // (household.js's entriesForNewMember).
-        const emailList = invitationsFor(withTokens).filter(i => i.email && i.lead?.rsvp_link_id);
-        // A plus-one with their own email gets their own invite too — same
-        // events as the primary guest (they're invited to whatever the
-        // primary is), their own rsvp_link (plus_one_rsvp_link_id, ensured
-        // above), independent of whether the primary guest has an email at
-        // all (feat/plus-one-identity).
-        const plusOneEmailList = withTokens.filter(g => g.plus_one_email && g.plus_one_rsvp_link_id);
-        const recipients = [
-          // rsvpToken travels beside rsvpUrl so the email's button can open the
-          // couple's SITE as this guest (?rsvp=<token>) rather than as a
-          // stranger. A plus-one has a token of their own; sending the primary
-          // guest's would put two people behind one identity.
-          // `name` is the salutation for a household ("Priya and Dev") and the
-          // guest's own name for everyone else; the email greets it whole
-          // through src/lib/guestGreeting.js's invitationGreetingName.
-          ...emailList.map(i => ({
-            email: i.email, name: i.name, rsvpUrl: buildRsvpUrl(i.lead.rsvp_link_id),
-            rsvpToken: i.lead.rsvp_link_id,
-            events: buildGuestEvents(i.lead),
-          })),
-          ...plusOneEmailList.map(g => ({
-            email: g.plus_one_email, name: g.plus_one_name || 'Guest', rsvpUrl: buildRsvpUrl(g.plus_one_rsvp_link_id),
-            rsvpToken: g.plus_one_rsvp_link_id,
-            events: buildGuestEvents(g),
-          })),
-        ];
-        if (recipients.length > 0) {
-          const payload = {
-            type,
-            universeId,
-            bannerChoice,
-            guests: recipients,
-            wedding: { coupleName, weddingDate, venue, siteUrl, slug: wedding?.slug, websiteEnabled: wedding?.websiteEnabled, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl },
-            customSubject: subject,
-            customBody: messageBody,
-          };
-          const res = await fetch('/api/send-invites', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${localStorage.getItem('base44_access_token')}`,
-            },
-            body: JSON.stringify(payload),
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'Send failed');
-        }
-      }
-
-      if (sendWhatsApp) {
-        withTokens.forEach(g => {
-          window.open(buildWhatsAppUrl(g, coupleName, weddingDate, g.rsvp_link_id, siteUrl), '_blank');
+      // ONE EMAIL PER INVITATION, ADDRESSED TO THE LEAD. Grouped from
+      // withTokens rather than from selectedGuests so the lead carries the
+      // token that was just ensured, and `events` comes from the lead
+      // because every member's stored entries are copies of the lead's
+      // (household.js's entriesForNewMember).
+      const emailList = invitationsFor(withTokens).filter(i => i.email && i.lead?.rsvp_link_id);
+      // A plus-one with their own email gets their own invite too — same
+      // events as the primary guest (they're invited to whatever the
+      // primary is), their own rsvp_link (plus_one_rsvp_link_id, ensured
+      // above), independent of whether the primary guest has an email at
+      // all (feat/plus-one-identity).
+      const plusOneEmailList = withTokens.filter(g => g.plus_one_email && g.plus_one_rsvp_link_id);
+      const recipients = [
+        // rsvpToken travels beside rsvpUrl so the email's button can open the
+        // couple's SITE as this guest (?rsvp=<token>) rather than as a
+        // stranger. A plus-one has a token of their own; sending the primary
+        // guest's would put two people behind one identity.
+        // `name` is the salutation for a household ("Priya and Dev") and the
+        // guest's own name for everyone else; the email greets it whole
+        // through src/lib/guestGreeting.js's invitationGreetingName.
+        ...emailList.map(i => ({
+          email: i.email, name: i.name, rsvpUrl: buildRsvpUrl(i.lead.rsvp_link_id),
+          rsvpToken: i.lead.rsvp_link_id,
+          events: buildGuestEvents(i.lead),
+        })),
+        ...plusOneEmailList.map(g => ({
+          email: g.plus_one_email, name: g.plus_one_name || 'Guest', rsvpUrl: buildRsvpUrl(g.plus_one_rsvp_link_id),
+          rsvpToken: g.plus_one_rsvp_link_id,
+          events: buildGuestEvents(g),
+        })),
+      ];
+      if (recipients.length > 0) {
+        const payload = {
+          type,
+          universeId,
+          bannerChoice,
+          guests: recipients,
+          wedding: { coupleName, weddingDate, venue, siteUrl, slug: wedding?.slug, websiteEnabled: wedding?.websiteEnabled, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl },
+          customSubject: subject,
+          customBody: messageBody,
+        };
+        const res = await fetch('/api/send-invites', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('base44_access_token')}`,
+          },
+          body: JSON.stringify(payload),
         });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Send failed');
       }
 
-      const channelStr = [sendEmail && 'email', sendWhatsApp && 'whatsapp'].filter(Boolean).join('+');
+      // 'email', NOT A COMPUTED STRING. invite_channel used to be the join of
+      // whichever channels ran; there is one, and a literal says so where a
+      // reader can see it. Existing records that read 'whatsapp' or
+      // 'email+whatsapp' are history and are left alone: they are a true
+      // statement about how that guest was invited at the time.
+      const channelStr = 'email';
       // Only invite/reminder have a dedicated tracking field on Guest — update,
       // save-the-date and thank-you types don't write anything back (no schema
       // field for "last update sent" / "save-the-date sent" / "thank-you sent",
@@ -622,10 +600,7 @@ export default function SendInvitesModal({
       const nEmails = invitationsWithEmail.length;
       const nPeople = selectedGuests.length;
       const plural = (n) => (n === 1 ? '' : 's');
-      let msg = '';
-      if (channel === 'both') msg = `Sent ${nEmails} email${plural(nEmails)}, WhatsApp opened for ${nPeople} guest${plural(nPeople)}`;
-      else if (channel === 'email') msg = `${TYPE_LABELS[type]} sent, ${nEmails} email${plural(nEmails)} covering ${nPeople} guest${plural(nPeople)}`;
-      else msg = `WhatsApp opened for ${nPeople} guest${plural(nPeople)}`;
+      const msg = `${TYPE_LABELS[type]} sent, ${nEmails} email${plural(nEmails)} covering ${nPeople} guest${plural(nPeople)}`;
 
       toast.success(msg, { id: tid });
       onSent?.();
@@ -679,24 +654,27 @@ export default function SendInvitesModal({
         <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', margin: '0 0 4px', ...F }}>
           Live preview
         </p>
-        {channel !== 'whatsapp' && (
-          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, ...F }}>
-            <strong style={{ color: '#0A0A0A' }}>Subject:</strong> {previewSubject || '—'}
-          </p>
-        )}
+        {/* THE SUBJECT IS ALWAYS SHOWN NOW. It was hidden on the WhatsApp
+            channel, which had no subject; there is one channel and it has
+            one. The preview below is likewise always the email, at full
+            height rather than the 380px it shrank to beside the WhatsApp
+            bubble. */}
+        <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, ...F }}>
+          {/* "No subject yet", not an em dash. The dash was here before and
+              would have stayed, except that unwrapping the WhatsApp
+              conditional rewrote this line, which makes it a new string under
+              the 2026-09-28 ruling. It also reads better: a lone dash beside
+              a label is a shrug. */}
+          <strong style={{ color: '#0A0A0A' }}>Subject:</strong> {previewSubject || 'No subject yet'}
+        </p>
       </div>
 
       <div style={{ flex: 1, overflow: 'auto' }}>
-        {channel !== 'whatsapp' && (
-          <iframe
-            title="Email preview"
-            srcDoc={previewEmailHtml}
-            style={{ width: '100%', height: channel === 'both' ? 380 : '100%', border: 'none', display: 'block', background: '#FFFFFF' }}
-          />
-        )}
-        {(channel === 'whatsapp' || channel === 'both') && (
-          <WhatsAppPreview guest={previewGuest} coupleName={coupleName} weddingDate={weddingDate} rsvpUrl={previewRsvpUrl} />
-        )}
+        <iframe
+          title="Email preview"
+          srcDoc={previewEmailHtml}
+          style={{ width: '100%', height: '100%', border: 'none', display: 'block', background: '#FFFFFF' }}
+        />
       </div>
 
       <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', padding: '0 20px', margin: '10px 0', ...F }}>
@@ -1012,86 +990,53 @@ export default function SendInvitesModal({
               </div>
             )}
 
-            {/* ── STEP 3: Choose channel ─────────────────────────────────── */}
+            {/* ── STEP 3: How it goes out ────────────────────────────────── */}
+            {/* THERE IS NOTHING TO CHOOSE, AND THE STEP STAYS.
+                12b leaves one channel, so the three cards (Email, WhatsApp,
+                "Email + WhatsApp", the last of them marked Recommended) are
+                one card and it is not a control. The ruling says the channel
+                step offers email only, and the step is still worth its place:
+                the counts on it are the answer to "how many of these people
+                can actually be reached", which is the question the couple has
+                at this point and the only place it gets answered. The heading
+                says what happens instead of asking a question with one
+                answer. */}
             {step === 4 && (
               <div>
                 <h3 style={{ fontSize: 14, fontWeight: 800, color: '#0A0A0A', margin: '0 0 4px' }}>
-                  How would you like to send?
+                  How this goes out
                 </h3>
                 <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', margin: '0 0 28px' }}>
-                  Choose one or more channels — the preview updates to match.
+                  By email, to one address per invitation.
                 </p>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
-                  {[
-                    {
-                      val: 'email', icon: Mail, label: 'Email',
-                      desc: 'Send directly to their inbox',
-                      countLabel: `${invitationsWithEmail.length} invitation${invitationsWithEmail.length !== 1 ? 's' : ''} with an email`,
-                      skip: invitationsNoEmail.length > 0 ? `${invitationsNoEmail.length} with no email yet` : null,
-                    },
-                    {
-                      val: 'whatsapp', icon: MessageCircle, label: 'WhatsApp',
-                      desc: 'Opens a pre-filled WhatsApp message',
-                      countLabel: `${selectedGuests.length} guest${selectedGuests.length !== 1 ? 's' : ''}`,
-                      skip: selectedNoPhone.length > 0 ? `${selectedNoPhone.length} without phone number` : null,
-                    },
-                    {
-                      val: 'both', icon: Send, label: 'Email + WhatsApp',
-                      desc: 'Send by email and open WhatsApp for all',
-                      countLabel: `Maximum reach`,
-                      skip: null,
-                      recommended: true,
-                    },
-                  ].map(opt => {
-                    const Icon = opt.icon;
-                    const active = channel === opt.val;
-                    return (
-                      <div
-                        key={opt.val}
-                        onClick={() => setChannel(opt.val)}
-                        {...interactiveDivProps(() => setChannel(opt.val))}
-                        style={{
-                          padding: '16px 20px', border: `2px solid ${active ? '#E03553' : 'rgba(10,10,10,0.1)'}`,
-                          background: active ? '#FFF8F9' : '#FFFFFF',
-                          cursor: 'pointer', borderRadius: 10, transition: 'all 0.15s ease',
-                          display: 'flex', alignItems: 'center', gap: 16,
-                        }}
-                      >
-                        <div style={{
-                          width: 44, height: 44, borderRadius: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          background: active ? '#E03553' : 'rgba(10,10,10,0.06)',
-                          transition: 'background 0.15s ease',
-                        }}>
-                          <Icon size={20} color={active ? '#FFFFFF' : '#0A0A0A'} strokeWidth={1.5} />
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                            <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: 0, ...F }}>{opt.label}</p>
-                            {opt.recommended && (
-                              <span style={{ fontSize: 10, fontWeight: 700, color: '#E03553', background: '#FFF0F3', padding: '2px 8px', borderRadius: 999 }}>Recommended</span>
-                            )}
-                          </div>
-                          <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 4px', ...F }}>{opt.desc}</p>
-                          <p style={{ fontSize: 12, fontWeight: 600, color: active ? '#E03553' : 'rgba(10,10,10,0.6)', margin: 0, ...F }}>{opt.countLabel}</p>
-                        </div>
-                        {opt.skip && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-                            <AlertCircle size={13} color="#F59E0B" />
-                            <span style={{ fontSize: 11, color: '#F59E0B', fontWeight: 600, ...F }}>{opt.skip}</span>
-                          </div>
-                        )}
-                        <div style={{
-                          width: 20, height: 20, borderRadius: '50%', border: `2px solid ${active ? '#E03553' : 'rgba(10,10,10,0.2)'}`,
-                          background: active ? '#E03553' : 'transparent', flexShrink: 0,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          transition: 'all 0.15s ease',
-                        }}>
-                          {active && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#FFFFFF' }} />}
-                        </div>
+                <div style={{ marginBottom: 28 }}>
+                  <div style={{
+                    padding: '16px 20px', border: '2px solid #E03553', background: '#FFF8F9',
+                    borderRadius: 10, display: 'flex', alignItems: 'center', gap: 16,
+                  }}>
+                    <div style={{
+                      width: 44, height: 44, borderRadius: 10, flexShrink: 0, display: 'flex',
+                      alignItems: 'center', justifyContent: 'center', background: '#E03553',
+                    }}>
+                      <Mail size={20} color="#FFFFFF" strokeWidth={1.5} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: '0 0 2px', ...F }}>Email</p>
+                      <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 4px', ...F }}>Send directly to their inbox</p>
+                      <p style={{ fontSize: 12, fontWeight: 600, color: '#E03553', margin: 0, ...F }}>
+                        {invitationsWithEmail.length} invitation{invitationsWithEmail.length !== 1 ? 's' : ''} with an email
+                      </p>
+                    </div>
+                    {invitationsNoEmail.length > 0 && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                        <AlertCircle size={13} color="#F59E0B" />
+                        <span style={{ fontSize: 11, color: '#F59E0B', fontWeight: 600, ...F }}>
+                          {invitationsNoEmail.length} with no email yet
+                        </span>
                       </div>
-                    );
-                  })}
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -1110,14 +1055,19 @@ export default function SendInvitesModal({
                 <div style={{ border: '1px solid rgba(10,10,10,0.1)', borderRadius: 10, overflow: 'hidden', marginBottom: 24 }}>
                   <div style={{ padding: '16px 20px', background: '#F7F7F7', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
                     {[
-                      // GUESTS OR INVITATIONS, DEPENDING ON WHAT IS BEING SENT. An
-                      // email goes to a household once; a WhatsApp message opens a
-                      // chat with one person, so the number that is about to happen
-                      // is a different number for each channel.
-                      channel === 'whatsapp'
-                        ? { label: 'Guests', value: `${selectedGuests.length}` }
-                        : { label: 'Invitations', value: `${selectedInvitations.length}` },
-                      { label: 'Channel', value: channel === 'both' ? 'Email + WhatsApp' : channel === 'email' ? 'Email' : 'WhatsApp' },
+                      // INVITATIONS AND THE PEOPLE THEY COVER, which are two
+                      // different numbers and both worth seeing before a send:
+                      // an email goes to a household once, so six people can be
+                      // four invitations.
+                      //
+                      // THE MIDDLE TILE USED TO SAY "CHANNEL". With one channel
+                      // it would read "Email" on every send forever, which is a
+                      // tile spent on a constant. The number it replaces is the
+                      // one the WhatsApp tile used to carry, and the comment
+                      // that used to sit here explained why the first tile
+                      // changed between channels; now nothing does.
+                      { label: 'Invitations', value: `${selectedInvitations.length}` },
+                      { label: 'People', value: `${selectedGuests.length}` },
                       { label: 'Type', value: TYPE_LABELS[type] },
                     ].map(s => (
                       <div key={s.label} style={{ textAlign: 'center' }}>
@@ -1130,37 +1080,28 @@ export default function SendInvitesModal({
                   {/* Guest list */}
                   <div style={{ padding: '12px 20px 16px', borderTop: '1px solid rgba(10,10,10,0.12)' }}>
                     <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', margin: '0 0 8px', ...F }}>Sending to</p>
-                    {/* WHATSAPP IS STILL A LIST OF PEOPLE. One chat opens per guest,
-                        so showing them grouped would be showing a list that does not
-                        match what the button is about to do. */}
+                    {/* ONE LIST, GROUPED THE WAY THE SEND IS. There were two:
+                        WhatsApp showed people with phone numbers, because one
+                        chat opened per guest, and email showed invitations.
+                        With one channel the list matches the button. */}
                     <div style={{ maxHeight: 220, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      {channel === 'whatsapp'
-                        ? selectedGuests.map(g => (
-                          <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <GuestAvatar name={g.name} email={g.email} profilePictureUrl={g.profile_picture_url} size={28} />
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: 0, ...F }}>{g.name}</p>
-                              <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: 0, ...F }}>{g.phone || 'No phone number'}</p>
-                            </div>
+                      {invitationsWithEmail.map(i => (
+                        <div key={i.householdId || i.lead?.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <GuestAvatar name={i.lead?.name} email={i.email} profilePictureUrl={i.lead?.profile_picture_url} size={28} />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: 0, ...F }}>{i.name}</p>
+                            <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: 0, ...F }}>
+                              {i.email}{i.members.length > 1 ? ` \u00b7 ${i.members.length} people, one email` : ''}
+                            </p>
                           </div>
-                        ))
-                        : invitationsWithEmail.map(i => (
-                          <div key={i.householdId || i.lead?.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <GuestAvatar name={i.lead?.name} email={i.email} profilePictureUrl={i.lead?.profile_picture_url} size={28} />
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: 0, ...F }}>{i.name}</p>
-                              <p style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', margin: 0, ...F }}>
-                                {i.email}{i.members.length > 1 ? ` \u00b7 ${i.members.length} people, one email` : ''}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
+                        </div>
+                      ))}
                     </div>
                     {/* ── AN INVITATION WITH NOBODY TO SEND IT TO ──────────────────
                         Named, not counted away. One line per household, so the
                         couple can see whose address to find rather than being told
                         that two of something are missing. */}
-                    {channel !== 'whatsapp' && invitationsNoEmail.length > 0 && (
+                    {invitationsNoEmail.length > 0 && (
                       <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
                         <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', margin: '0 0 8px', ...F }}>No email yet</p>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>

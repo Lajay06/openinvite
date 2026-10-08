@@ -150,14 +150,23 @@ export async function runHouseholdSendInvites() {
   ok('  and it is not branched on the send type',
      !/type === '(invite|reminder)'[\s\S]{0,200}const recipients/.test(modal), 'type-agnostic');
 
+  // THE COUNT MOVED FROM A TEMPLATE LITERAL INTO JSX, because item 12b turned
+  // the channel step's three cards into one and the count is now written in
+  // the markup rather than in a `countLabel` string. Same number, same unit,
+  // different expression, so the pattern follows it.
   ok('the email channel counts invitations',
-     /\$\{invitationsWithEmail\.length\} invitation/.test(modal), 'not guests');
+     /\{invitationsWithEmail\.length\} invitation/.test(modal), 'not guests');
   ok('  and names the ones with no email yet',
      /No email yet/.test(modal) && /invitationsNoEmail\.map/.test(modal), 'one line each');
-  ok('  while whatsapp stays a count of people',
-     /\$\{nPeople\} guest\$\{plural\(nPeople\)\}/.test(modal), 'per phone number');
-  ok('  and the review tile says which unit it is showing',
-     /label: 'Invitations', value: `\$\{selectedInvitations\.length\}`/.test(modal), 'invitations');
+  // WHATSAPP'S PER-PERSON COUNT IS GONE WITH THE CHANNEL. What remains is both
+  // numbers on the review card at once, which is the thing that per-channel
+  // switching made impossible: six people can be four invitations, and a
+  // couple about to send should see both.
+  ok('  and nothing counts people as if they were sends',
+     !/WhatsApp opened for/.test(modal), 'no per-person channel left');
+  ok('  while the review card shows invitations and the people they cover',
+     /label: 'Invitations', value: `\$\{selectedInvitations\.length\}`/.test(modal)
+       && /label: 'People', value: `\$\{selectedGuests\.length\}`/.test(modal), 'both units, named');
   // THE OLD PER-GUEST EMAIL COUNT IS GONE, not merely unused.
   ok('nothing still counts guests with an email',
      !/selectedWithEmail|selectedNoEmail/.test(modal), 'removed');
