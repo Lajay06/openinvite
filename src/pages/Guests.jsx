@@ -11,7 +11,7 @@ import { resolveAttendees } from "@/lib/attendees";
 const Guest = base44.entities.Guest;
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Send, Copy, CalendarCheck } from "lucide-react";
+import { Send, CalendarCheck } from "lucide-react";
 import toast from 'react-hot-toast';
 import { useAuth } from "@/lib/AuthContext";
 import { color } from "@/styles/tokens";
@@ -29,8 +29,6 @@ import PageConsiderations from '../components/shared/PageConsiderations';
 import { getWeddingEvents, defaultEventResponses, getGuestEventResponse, resolveAllEventResponses, effectiveMealChoice, mealOptionLabel } from '@/lib/weddingEvents';
 import CountUp from "@/components/shared/CountUp";
 import { fetchGuestLinks } from '@/lib/guestLinks';
-import { copyFromPromise } from '@/lib/copyToClipboard';
-import CopyFallbackModal from '@/components/shared/CopyFallbackModal';
 import { createGuest, updateGuest, deleteGuest } from '@/lib/guestWrites';
 import { findDuplicate } from '@/lib/guestDuplicate';
 import { createPendingDeletes, UNDO_WINDOW_MS } from '@/lib/pendingDelete';
@@ -892,7 +890,6 @@ export default function Guests() {
     });
   };
 
-  const [copyFallback, setCopyFallback] = useState(null);
   const selectedGuests = guests.filter(g => selectedIds.has(g.id));
 
   /* ── Send invites ─────────────────────────────────────────────────────── */
@@ -912,37 +909,23 @@ export default function Guests() {
       : { defaultFilter: 'not_invited' });
   };
 
-  /* ── Copy links (bulk) ───────────────────────────────────────────────── */
-  const handleCopyLinks = async () => {
-    if (isPro) { toast('Copy links is part of Ultra — upgrade to share invitations.'); return; }
-    if (selectedGuests.length === 0) { toast('Select a guest first.'); return; }
+  /* ── COPY LINKS IS GONE ────────────────────────────────────────────────
+     Item 12 of goals/2026-10-08-site-fixes-batch-1.md, part 12b: email from
+     the studio is the only way guests receive the site.
 
-    // THE PROMISE GOES TO THE CLIPBOARD, NOT THE RESULT.
-    //
-    // Minting and reading happen server-side (Track E), so the URLs arrive over
-    // the network. Awaiting that response before writing spends the click's
-    // transient activation, and Safari then denies the write -- which is how
-    // this button came to do nothing at all, with no error, on the owner's Mac.
-    // copyFromPromise hands the clipboard a promise synchronously instead.
-    let urls = [];
-    const textPromise = (async () => {
-      const linkMap = await fetchGuestLinks(selectedGuests.map(g => g.id));
-      urls = selectedGuests.map(g => linkMap[g.id]?.rsvpUrl).filter(Boolean);
-      return urls.join('\n');
-    })();
+     WHAT IT ACTUALLY COPIED, for the record, because it is not what the item
+     describes and the difference is worth keeping: these were RSVP links,
+     `/rsvp/<token>` from /api/my-guest-links, not the guest site address. A
+     couple used it to hand a specific guest their own RSVP page outside
+     email, which is the only route there was for a guest with no email on
+     file. Removing it closes that route; the item says to close it.
 
-    const { ok, text } = await copyFromPromise(textPromise);
-
-    if (!text) { toast.error('Could not generate RSVP links'); return; }
-    if (ok) {
-      toast.success(`${urls.length || text.split('\n').length} RSVP link${urls.length !== 1 ? 's' : ''} copied`);
-    } else {
-      // Never silence. The clipboard can be refused for reasons we cannot see;
-      // showing the links is a working path, not an apology.
-      setCopyFallback({ title: 'Your RSVP links', text });
-    }
-    loadGuests();
-  };
+     The Safari lesson it carried is kept here rather than deleted with it:
+     minting happens server-side, so awaiting the response before writing to
+     the clipboard spends the click's transient activation and Safari denies
+     the write, silently. src/lib/copyToClipboard.js's copyFromPromise exists
+     because of that and is still used elsewhere.
+     ──────────────────────────────────────────────────────────────────────── */
 
   /* ── Set events (bulk, from selection bar) ──────────────────────────── */
   const openSetEventsForSelection = () => {
@@ -1207,17 +1190,6 @@ export default function Guests() {
                   </button>
                   <span title={isPro ? upgradeTooltip : undefined} style={isPro ? { cursor: 'not-allowed', display: 'inline-flex' } : {}}>
                     <button
-                      onClick={handleCopyLinks}
-                      disabled={isPro}
-                      className="btn-editorial-secondary"
-                      style={{ display: 'flex', alignItems: 'center', gap: 6, ...(isPro ? { opacity: 0.4, pointerEvents: 'none' } : {}) }}
-                    >
-                      <Copy size={13} />
-                      Copy links
-                    </button>
-                  </span>
-                  <span title={isPro ? upgradeTooltip : undefined} style={isPro ? { cursor: 'not-allowed', display: 'inline-flex' } : {}}>
-                    <button
                       onClick={openSendForSelection}
                       disabled={isPro}
                       className="btn-primary"
@@ -1347,17 +1319,9 @@ export default function Guests() {
       )}
 
 
-      <CopyFallbackModal
-
-        open={!!copyFallback}
-
-        onClose={() => setCopyFallback(null)}
-
-        title={copyFallback?.title}
-
-        text={copyFallback?.text || ''}
-
-      />
+      {/* CopyFallbackModal had exactly one caller, the Copy links handler
+          above, and goes with it. The component itself is left in the tree
+          for the other pages that use it. */}
 
 
 

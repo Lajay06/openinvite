@@ -90,9 +90,14 @@ const EDITED_FILES = [
  * reason, which is exactly when the ruling says the dash goes. Until then a
  * sweep would be the violation.
  */
+// THE WHATSAPP PREVIEW LINE WAS THE SECOND ENTRY HERE, and item 12b deleted
+// the bubble it belonged to. Its presence was pinned so that a later dash
+// sweep could not strip a string that predates the dash ruling; with the
+// string gone for an unrelated reason, there is nothing left to protect. The
+// entry is removed rather than loosened, because a grandfather clause for copy
+// that no longer exists is a check that can only ever pass.
 const GRANDFATHERED = [
   ['src/components/guests/GuestList.jsx',        EM + ' none ' + EM, 'a select placeholder, em dashes both sides'],
-  ['src/components/guests/SendInvitesModal.jsx', EM + ' TO ',        'the WhatsApp preview line'],
   ['src/components/guests/BulkActionBar.jsx',    'Type a tag' + ELLIPSIS, 'a tag input placeholder, one ellipsis character'],
 ];
 

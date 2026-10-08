@@ -6,7 +6,6 @@ import { parsePlaylistLink } from '@/lib/musicLinkParser';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Share2, Settings, X } from 'lucide-react';
 import toast from 'react-hot-toast';
-import SharePlaylist from '../components/music/SharePlaylist';
 import VendorRosterSection from '../components/vendors/VendorRosterSection';
 import PageConsiderations from '../components/shared/PageConsiderations';
 import { Textarea } from '@/components/ui/textarea';
@@ -447,7 +446,11 @@ export default function MusicPage() {
   const requestsSummary = pendingCount
     ? [`${pendingCount} waiting on you`]
     : (allRequests.length ? [`${allRequests.length} ${allRequests.length === 1 ? 'request' : 'requests'}`] : []);
-  const shareSummary = details?.slug ? [`openinvite.com.au/w/${details.slug}`] : [];
+  // THE SUMMARY WAS THE ADDRESS, and 12b takes every address off this page
+  // with the link sharing it belonged to. The accordion's collapsed line now
+  // says whether the page is reachable at all, which is the thing a couple
+  // needs from a closed section.
+  const shareSummary = details?.slug ? ['On your guest site'] : ['Publish your site first'];
   const guestCount = (songRequests || []).length;
 
 
@@ -705,11 +708,25 @@ export default function MusicPage() {
 
             <OptionAccordionSection sectionKey="share" title="Share with guests" summary={shareSummary}>
             {/* ── 3. Share ─────────────────────────────────────────────── */}
+            {/* ── THE GUEST LINK AND ITS QR ARE GONE ─────────────────────────
+                Item 12 of goals/2026-10-08-site-fixes-batch-1.md, part 12b.
+                SharePlaylist was a URL display with a Copy button and a
+                printable QR, both pointing at /w/<slug>/music, which IS the
+                guest site. The ruling removes link sharing of the guest site,
+                and the whole component was link sharing, so it is deleted
+                rather than emptied.
+
+                WHAT IS LOST, said plainly because it is not nothing: the QR
+                was meant for the tables, so a seated guest could request a
+                song without being emailed anything. That route is closed.
+                Guests reach this page the way they reach every other page of
+                the site, through the invitation they were emailed. */}
             <section>
               <p style={helpTextStyle}>
-                Send guests here to request a song, or print the code for the day.
+                {details?.slug
+                  ? 'Guests reach this page from the invitation you email them. Song requests arrive here.'
+                  : 'Publish your wedding site first. The song-request page lives on it, so guests cannot reach it until then.'}
               </p>
-              <SharePlaylist slug={details?.slug} />
             </section>
             </OptionAccordionSection>
 

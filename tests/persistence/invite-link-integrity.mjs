@@ -103,15 +103,27 @@ export async function runInviteLinkIntegrity() {
         hrefs.includes(rsvpUrl), redact(hrefs.find((h) => h.includes('/rsvp/')) || 'no rsvp href'));
     }
 
-    // The helper both channels share, so email and WhatsApp cannot drift.
+    // ONE CHANNEL, SO NOTHING CAN DRIFT FROM IT. This note used to read "the
+    // helper both channels share, so email and WhatsApp cannot drift", which
+    // was the Run 6 U1 ruling's whole point. Item 12b removed the second
+    // channel, so the helper now has one caller that matters, and what is
+    // asserted below is its arithmetic rather than an agreement between two
+    // call sites.
     check('  the CTA helper is one function, and it is exported',
       typeof buildGuestCtaUrl === 'function'
       && buildGuestCtaUrl({ showDate: true, siteUrl, rsvpToken: token, rsvpUrl: 'x' }) === `${siteUrl}?rsvp=${token}`
       && buildGuestCtaUrl({ showDate: true, siteUrl: '', rsvpToken: token, rsvpUrl: 'x' }) === 'x',
       'slug -> ?rsvp=<redacted>, no slug -> the tokenized link');
+    // AND THE SECOND CALLER IS GONE, asserted rather than assumed. The modal
+    // no longer builds a destination at all: it hands the server the guest's
+    // token and api/send-invites.js renders the link through the same helper.
+    // Pinning its absence is what stops the WhatsApp builder reappearing with
+    // its own idea of where a guest should land, which is the state Run 6 U1
+    // was fixing.
     const wa = strip(read('src/components/guests/SendInvitesModal.jsx'));
-    check('  WhatsApp lands where the email lands', /buildWhatsAppUrl\([\s\S]{0,400}?buildGuestCtaUrl\(/.test(wa),
-      'the same helper builds both');
+    check('  and the send modal builds no destination of its own',
+      !/buildWhatsAppUrl\(/.test(wa) && !/wa\.me/.test(wa),
+      'the token goes to the server, which uses the helper');
   }
   console.log('\n  Invite links — a send aborts rather than mailing a dead link:\n');
 
@@ -166,13 +178,21 @@ export async function runInviteLinkIntegrity() {
 
   // The abort must happen BEFORE any recipient is constructed, or it aborts
   // nothing. Ordering, not presence.
+  // ONE URL IS BUILT IN THIS HANDLER NOW, not two. Item 12b removed the
+  // WhatsApp branch, so `buildWhatsAppUrl(` is gone and the ordering question
+  // is only about the recipient list. The check used to compare against both
+  // and would now read indexOf() === -1 for the missing one, which is LESS
+  // than iEnsure and passes by arithmetic rather than by ordering: exactly the
+  // kind of pass that means nothing. So the absent site is asserted absent
+  // instead of ordered.
   const send = modal.slice(modal.indexOf('const handleSend'));
   const iEnsure = send.indexOf('await ensureTokens(');
   const iRecipients = send.indexOf('const recipients');
-  const iWhatsApp = send.indexOf('buildWhatsAppUrl(');
-  check('the abort precedes every email and WhatsApp URL built',
-    iEnsure > -1 && iEnsure < iRecipients && iEnsure < iWhatsApp,
-    `ensureTokens@${iEnsure} < recipients@${iRecipients}, whatsapp@${iWhatsApp}`);
+  check('the abort precedes the recipient list being built',
+    iEnsure > -1 && iRecipients > -1 && iEnsure < iRecipients,
+    `ensureTokens@${iEnsure} < recipients@${iRecipients}`);
+  check('  and there is no second channel to order it against',
+    !/buildWhatsAppUrl\(/.test(modal), 'the WhatsApp branch is gone');
 
   // No render-time call may throw: buildRsvpUrl outside a handler must be
   // guarded, or a missing token blanks the modal instead of blocking a send.

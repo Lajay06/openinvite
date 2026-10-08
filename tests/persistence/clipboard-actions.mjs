@@ -52,7 +52,15 @@ export async function runClipboardActions() {
 
   // THE ORDERING PIN. The write must not sit behind an await on a network call:
   // that is the exact shape that spends the activation and dies in Safari.
-  const SITES = ['src/pages/Guests.jsx', 'src/components/games/GamesManager.jsx'];
+  // ONE SITE NOW. Item 12b removed the Guests page's bulk "Copy links", which
+  // was that file's only clipboard write, so there is no ordering left there
+  // to pin. The file is still swept below with the whole of src, which is what
+  // catches the broken shape if it ever regrows there.
+  //
+  // THE HELPER STAYS, and so does every check above about it: GamesManager
+  // copies through copyFromPromise for the same Safari reason, and the lesson
+  // belongs to the helper rather than to either caller.
+  const SITES = ['src/components/games/GamesManager.jsx'];
   for (const f of SITES) {
     const src = strip(read(f));
     const name = f.split('/').pop();
