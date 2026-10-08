@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { useNavigate } from 'react-router-dom';
 import {
   Users, Wallet, Store, Calendar, Image, ListTodo, MessageCircle,
@@ -85,6 +86,9 @@ function linkStateFor(category, recordId) {
 }
 
 export default function RecentActivity({ guests = [], budget = [], schedule = [], vendors = [], moodboardItems = [], tasks = [], notes = [], questionnaireResponses = [] }) {
+  // THE ACCOUNT'S SYMBOL, NOT A DOLLAR SIGN. Owner decision 2026-10-09:
+  // every figure on the dashboard is in the currency the couple picked.
+  const { symbol } = useCurrency();
   const navigate = useNavigate();
 
   const activities = useMemo(() => {
@@ -103,7 +107,7 @@ export default function RecentActivity({ guests = [], budget = [], schedule = []
       .filter(b => b.payment_date && b.item_name)
       .map(b => ({
         id: `budget-${b.id}`,
-        desc: `$${Math.round(b.actual_amount || b.budgeted_amount || 0).toLocaleString()} paid for ${b.item_name}`,
+        desc: `${symbol}${Math.round(b.actual_amount || b.budgeted_amount || 0).toLocaleString()} paid for ${b.item_name}`,
         date: b.payment_date,
         category: 'budget',
         type: 'payment',
