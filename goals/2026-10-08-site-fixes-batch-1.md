@@ -81,3 +81,15 @@ Each item adds or extends one guard that fails on main before the change and pas
 ## Close
 
 Last line: "Closed <date> at main <full SHA>, PRs <list>".
+
+## Recorded consequences
+
+Three things this goal leaves behind that are not defects and are not finished business either. They are consequences of rulings made during it, written here because a goal file outlives a PR body.
+
+A guest with no email address needs one added before they can RSVP online. Item 12b removed the Guests page bulk "Copy links", which copied RSVP links (/rsvp/<token>, never the site address) and was the only way to hand one specific guest their own RSVP page outside email. The couple now adds an address first, then sends. The remaining routes for such a guest are off-product: the couple records the RSVP themselves, which the Guests page already supports, or the guest replies on the day.
+
+The Features page guard pins that the word "universe" appears nowhere on that page. Item 1 removed the "Universe invitations and RSVP" row because /universes is where that story lives, and tests/persistence/features-accordion-rows.mjs now asserts the absence of the word itself rather than of that one row. Anyone adding a feature row that mentions universes will go red, and the guard is right to: the exclusion is deliberate, not a gap.
+
+The Budget page units question is open as its own decision. The saved plan stores whole currency units and the expense ledger stores minor units, and nothing reconciles them. Item 10 was ruled to a text-input variant of AmountInput precisely so that the planner did not have to answer it: pointing the planner at formatCurrency would multiply every plan figure by the couple's exchange rate. src/lib/amountText.js records the constraint at the point where someone would next trip over it. No migration has been written and none is implied.
+
+Closed 2026-10-08 at main 1e3a365219df1cfbc7667a1fe1fbaf0d52ac3c1b, PRs #910 #911 #912 #913 #914 #915 #916 #917 #918 #919 #920 #921 #922 #923 #924 #925
