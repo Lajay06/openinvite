@@ -46,6 +46,21 @@
       "enum": ["dmy", "mdy"],
       "default": "dmy",
       "description": "Which numeric date format the DASHBOARD renders dates in: dmy is 18/05/2026, mdy is 05/18/2026. Guest-facing pages and every email keep their written dates (\"18 May 2026\") and never read this. Added live by the owner 2026-10-08 for item 5 of goals/2026-10-08-site-fixes-batch-1.md; the default means every existing account keeps the behaviour it had with no backfill."
+    },
+    "lifecycleEmails": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the account receives the two retention emails (setup not finished; guest list still empty). Set false by the Stop link in those emails or by the switch on the Account page. Added live by the owner 2026-10-08 for goals/2026-10-08-retention-emails.md; the default true means every existing account is eligible with no backfill, which is why that goal also bars accounts older than 30 days at ship time from ever receiving one."
+    },
+    "retentionEmails": {
+      "type": "object",
+      "description": "Which retention emails this account has received, as ISO timestamps, one key per send. Each email is sent at most once. THE CRON MUST MERGE THIS OBJECT BEFORE WRITING IT: a PUT replaces the whole value, so writing setupDay4 alone would erase setup24h. The timestamp is recorded BEFORE the send, so a crash cannot double-send; the cost of that order is that a failed send is never retried, which is the right trade for mail a couple did not ask for. Added live by the owner 2026-10-08 for goals/2026-10-08-retention-emails.md.",
+      "properties": {
+        "setup24h": { "type": "string" },
+        "setupDay4": { "type": "string" },
+        "guests24h": { "type": "string" },
+        "guestsDay5": { "type": "string" }
+      }
     }
   },
   "required": []
