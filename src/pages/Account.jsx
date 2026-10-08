@@ -356,6 +356,13 @@ const NOTIFICATION_PREF_ROWS = [
 function NotificationsTab({ user, refreshUser }) {
   const [prefs, setPrefs] = useState(() => getNotificationPrefs(user));
   const [savingKey, setSavingKey] = useState(null);
+  // A TOP-LEVEL FIELD, NOT A FIFTH notification_prefs KEY, and the reason is
+  // the stop link rather than tidiness: api/stop-emails.js writes this field
+  // for a visitor with no session, and a nested object would make that an
+  // unauthenticated read-modify-write with a race in it. Default true, so an
+  // account that has never touched it is eligible.
+  const [lifecycleEmails, setLifecycleEmails] = useState(user?.lifecycleEmails !== false);
+  const [savingLifecycle, setSavingLifecycle] = useState(false);
 
   const handleToggle = async (key, value) => {
     const previous = prefs;
@@ -375,6 +382,28 @@ function NotificationsTab({ user, refreshUser }) {
       toast.error('Failed to save — please try again');
     }
     setSavingKey(null);
+  };
+
+  // THE SAME updateMe PATH AS dateFormat, which the goal asks for by name:
+  // the API write, then the oi_user mirror so a reload before refreshUser
+  // lands does not show the old value, then refreshUser.
+  const handleLifecycleToggle = async (value) => {
+    const previous = lifecycleEmails;
+    setLifecycleEmails(value);
+    setSavingLifecycle(true);
+    try {
+      await base44.auth.updateMe({ lifecycleEmails: value });
+      try {
+        const stored = JSON.parse(localStorage.getItem('oi_user') || '{}');
+        localStorage.setItem('oi_user', JSON.stringify({ ...stored, lifecycleEmails: value }));
+        // eslint-disable-next-line no-empty -- best-effort local cache mirror; the real save already succeeded via the API above
+      } catch {}
+      refreshUser?.();
+    } catch {
+      setLifecycleEmails(previous);
+      toast.error('Failed to save, please try again');
+    }
+    setSavingLifecycle(false);
   };
 
   return (
@@ -405,6 +434,27 @@ function NotificationsTab({ user, refreshUser }) {
           </div>
         );
       })}
+
+      {/* BESIDE THE PREFERENCES, NOT AMONG THEM. The four rows above are keys
+          of notification_prefs and are disabled together by in_app_only; this
+          is a separate top-level field with its own save path and is NOT
+          disabled by in_app_only, because these two emails are the one kind of
+          mail a couple can only stop here or from the link in them. */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '14px 0', borderTop: '1px solid rgba(10,10,10,0.06)', marginTop: 8,
+      }}>
+        <div>
+          <p style={{ fontSize: 13, fontWeight: 600, color: '#0A0A0A', margin: '0 0 2px', fontFamily: PJS }}>Emails when I have gone quiet</p>
+          <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS }}>A nudge if you stop partway through setting up, or your guest list stays empty</p>
+        </div>
+        <Switch
+          checked={lifecycleEmails}
+          disabled={savingLifecycle}
+          onCheckedChange={handleLifecycleToggle}
+          aria-label="Emails when I have gone quiet"
+        />
+      </div>
     </div>
   );
 }
