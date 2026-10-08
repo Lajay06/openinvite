@@ -127,9 +127,27 @@ export async function runSentenceCaseChrome() {
   // uppercase declaration is already in this count. One duplicate treatment
   // gone, none eroded.
   //
+  // 63 -> 61 IN SITE FIXES BATCH 1, ITEM 12a (2026-10-08). PublishModal lost
+  // two uppercase labels, "YOUR URL" and "SHARE VIA", because the controls
+  // they labelled are gone: the item removed every way of handing a guest the
+  // site by link, and email became the only channel.
+  //
+  // NEITHER WAS ARTWORK, and this is the folder-versus-surface case CLAUDE.md
+  // warns about in so many words. ARTWORK above matches
+  // `^components/website-builder/`, so it counts PublishModal and WBRightPanel
+  // whole; but the ruling is "does a guest see this as part of the wedding
+  // site the couple designed", and a publish modal in the studio is chrome by
+  // that test. The two labels were chrome labels on chrome controls. The
+  // exemption is not eroded, because nothing exempt was touched.
+  //
+  // The count is lowered rather than the pattern narrowed. Narrowing ARTWORK
+  // to exclude these two files is probably right and is a bigger change than
+  // this item: it would move 60-odd declarations into the chrome scope at once
+  // and have to answer for each. Reported with 12a, not done inside it.
+  //
   // A guard whose expected count is edited WITHOUT a reason is
   // indistinguishable from a guard being silenced. This is the reason.
-  check('artwork keeps its uppercase treatment', art.length >= 63, `${art.length} declarations preserved (baseline 63)`);
+  check('artwork keeps its uppercase treatment', art.length >= 61, `${art.length} declarations preserved (baseline 61)`);
 
   // Product names match the sidebar rather than drifting into Title Case.
   const gate = CHROME.find(([p]) => p === 'pages/UniverseStudio.jsx')?.[1] || '';

@@ -6,6 +6,7 @@ import { isPending, isAttending, isDeclined } from '@/lib/guestRsvpTally';
 import toast from 'react-hot-toast';
 import { interactiveDivProps } from '@/lib/a11y';
 import { useWebsitePasswordGate } from '@/lib/websitePasswordGate';
+import ChangeAddressDialog from '@/components/event-details/ChangeAddressDialog';
 
 import { coupleDisplayName } from '@/lib/coupleNames';
 const sans = "'Plus Jakarta Sans', sans-serif";
@@ -22,7 +23,7 @@ export default function StudioShareTab({ details: propDetails }) {
   const [details, setDetails] = useState(propDetails || null);
   const [detailsId, setDetailsId] = useState(propDetails?.id || null);
   const [guests, setGuests] = useState([]);
-  const [copied, setCopied] = useState(false);
+  const [addressOpen, setAddressOpen] = useState(false);
   const [selectedGuests, setSelectedGuests] = useState([]);
   const [guestSearch, setGuestSearch] = useState('');
   const [emailType, setEmailType] = useState('website-share');
@@ -65,27 +66,18 @@ export default function StudioShareTab({ details: propDetails }) {
     }));
   });
 
-  // The QR is drawn in the browser, lazily, so the encoder is not in this
-  // tab's bundle until there is an address to encode.
+  // THE QR IS GONE, AND SO IS THE ENCODER IT LAZY-LOADED.
   //
-  // FROM THE SLUG, NOT FROM `siteUrl`. #745 has since made siteUrl empty
-  // without an address, so the two now agree — but a QR is the last place a
-  // placeholder should ever reach, because it is scanned by a guest who has
-  // no idea it was ever a guess. Read from the slug directly, so this holds
-  // whatever siteUrl is doing. No slug, no code.
-  const [qrSvg, setQrSvg] = useState('');
-  useEffect(() => {
-    let live = true;
-    if (!details?.slug) { setQrSvg(''); return undefined; }
-    const url = `${window.location.origin}/w/${details.slug}`;
-    import('qrcode')
-      .then((qr) => qr.toString(url, { type: 'svg', margin: 1, width: 160, color: { dark: '#0A0A0A', light: '#FFFFFF' } }))
-      .then((svg) => { if (live) setQrSvg(svg); })
-      // A QR that cannot be drawn leaves its space empty rather than throwing
-      // the tab away. The address is printed above it either way.
-      .catch(() => { if (live) setQrSvg(''); });
-    return () => { live = false; };
-  }, [details?.slug]);
+  // Item 12 of goals/2026-10-08-site-fixes-batch-1.md, 12a: "StudioShareTab,
+  // PublishModal and WBRightPanel lose Copy, Copy Link, WhatsApp and QR and
+  // any URL display. Email from the studio is the only way guests receive the
+  // site." A QR is a link in another encoding, so it goes with the rest.
+  //
+  // The `qrcode` import went with it, which also takes a dynamic chunk out of
+  // this tab. Two earlier commits (#726, #743) moved this QR off
+  // api.qrserver.com to stop handing the couple's address to a service we do
+  // not run; that reasoning is kept here rather than deleted with the code,
+  // because the next person to want a QR on this tab should meet it.
 
   const togglePublish = async () => {
     const next = !details?.websiteEnabled;
@@ -100,29 +92,20 @@ export default function StudioShareTab({ details: propDetails }) {
     toast.success(next ? 'Website is now live!' : 'Website hidden');
   };
 
-  const copyLink = () => {
-    const url = `${window.location.origin}/w/${details?.slug}`;
-    navigator.clipboard.writeText(url).catch(() => {});
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-    toast.success('Link copied!');
-  };
-
-  // A THIRD api.qrserver.com CALL, found by the emoji guard's own scan rather
-  // than by looking: the 160px preview above was one, and this download was
-  // another. Same encoder, same reason — the address is not ours to send.
-  const downloadQR = async () => {
-    if (!details?.slug) return;
-    const qr = await import('qrcode');
-    const png = await qr.toDataURL(`${window.location.origin}/w/${details.slug}`, {
-      margin: 1, width: 400, color: { dark: '#0A0A0A', light: '#FFFFFF' },
-    }).catch(() => '');
-    if (!png) { toast.error('That QR could not be drawn.'); return; }
-    const a = document.createElement('a'); a.href = png; a.download = 'wedding-qr.png'; a.click();
-  };
-
   const toggleGuest = (id) => setSelectedGuests(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   const filteredGuests = guests.filter(g => { if (!guestSearch) return true; const q = guestSearch.toLowerCase(); return (g.name || '').toLowerCase().includes(q) || (g.email || '').toLowerCase().includes(q); });
+
+  // STILL NOT A PLACEHOLDER, and now it has exactly one reader.
+  //
+  // This was `details.slug || 'your-wedding'`, and it fed the WhatsApp, SMS
+  // and Facebook share actions and the QR, so a couple with no address could
+  // hand guests `openinvite.com.au/w/your-wedding` over four channels. #745
+  // made it empty instead. 12a removes all four of those readers; what is
+  // left is the link inside the email body below, which is the one channel
+  // the ruling keeps. It stays empty without an address for the same reason
+  // as before: an email is the worst place for a guess.
+  const siteUrl = details?.slug ? `${window.location.origin}/w/${details.slug}` : '';
+  const hasAddress = !!details?.slug;
 
   const handleSend = async () => {
     if (!selectedGuests.length) return;
@@ -134,7 +117,11 @@ export default function StudioShareTab({ details: propDetails }) {
       if (!guest.email) continue;
       const personalised = emailMessage.replace(/{guestName}/g, guest.name || 'Guest');
       try {
-        await base44.integrations.Core.SendEmail({ to: guest.email, subject: emailSubject, body: `${personalised}\n\n${window.location.origin}/w/${details?.slug}` });
+        // `siteUrl`, NOT A SECOND COPY OF THE SAME TEMPLATE STRING. This line
+        // used to build the address itself, so a couple with no slug emailed
+        // guests `/w/undefined`. siteUrl is empty without an address, which is
+        // an email with no link in it rather than an email with a broken one.
+        await base44.integrations.Core.SendEmail({ to: guest.email, subject: emailSubject, body: `${personalised}${siteUrl ? `\n\n${siteUrl}` : ''}` });
         successCount++;
       } catch (err) {
         console.error('[StudioShareTab] SendEmail failed for', guest.email, err);
@@ -154,15 +141,6 @@ export default function StudioShareTab({ details: propDetails }) {
 
   if (!details) return <div style={{ padding: 40, textAlign: 'center', color: 'rgba(10,10,10,0.6)', fontFamily: sans }}>Loading…</div>;
 
-  // NOT A PLACEHOLDER. This was `details.slug || 'your-wedding'`, and unlike
-  // the builder's address bar it is not display-only: siteUrl is what the
-  // WhatsApp, SMS and Facebook share actions send, and what the QR encodes.
-  // A couple with no address could hand guests
-  // `openinvite.com.au/w/your-wedding` over three channels. Empty now, and
-  // every surface below asks whether there is one.
-  const siteUrl = details.slug ? `${window.location.origin}/w/${details.slug}` : '';
-  const hasAddress = !!details.slug;
-
   return (
     <div style={{ fontFamily: sans }}>
       {/* STATUS BANNER */}
@@ -172,8 +150,14 @@ export default function StudioShareTab({ details: propDetails }) {
           <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: '#0A0A0A' }}>
             {!hasAddress ? 'No address yet' : details?.websiteEnabled ? 'Your website is live' : 'Your website is not published yet'}
           </p>
-          <p style={{ margin: 0, fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: hasAddress ? 'monospace' : sans }}>
-            {hasAddress ? siteUrl : <>Add your names in <a href="/EventDetails" style={{ color: '#E03553', fontWeight: 600 }}>Event details</a> and your address follows.</>}
+          {/* THE ADDRESS USED TO BE PRINTED HERE, in monospace, as the status
+              line. 12a removes every URL display from this tab, so the status
+              says what the status is and the couple reaches the site itself
+              through "View live site" beside it. */}
+          <p style={{ margin: 0, fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: sans }}>
+            {hasAddress
+              ? 'Guests receive it by email from this page.'
+              : <>Add your names in <a href="/EventDetails" style={{ color: '#E03553', fontWeight: 600 }}>Event details</a> and your address follows.</>}
           </p>
         </div>
         <button data-tour-target="guest-suite-publish" onClick={togglePublish} disabled={!hasAddress && !details?.websiteEnabled} style={{ padding: '10px 24px', background: details?.websiteEnabled ? 'transparent' : 'linear-gradient(135deg, #E03553, #803D81)', color: details?.websiteEnabled ? '#E03553' : '#FFF', border: details?.websiteEnabled ? '1px solid #E03553' : 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: sans }}>
@@ -187,64 +171,6 @@ export default function StudioShareTab({ details: propDetails }) {
       {/* THREE COLUMN BODY */}
       <div style={{ display: 'flex', gap: 0, padding: '32px 40px', alignItems: 'flex-start', maxWidth: 1400, margin: '0 auto', boxSizing: 'border-box' }}>
 
-        {/* LEFT */}
-        <div style={{ width: 300, flexShrink: 0, marginRight: 24 }}>
-          <div style={{ border: '1px solid #EEEEEE', padding: 20, marginBottom: 16 }}>
-            <div style={{ display: 'flex', marginBottom: 12 }}>
-              <div style={{ flex: 1, padding: '10px 12px', background: '#F8F8F8', fontSize: 12, color: '#444', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', borderBottom: '1px solid #DDD' }}>openinvite.com.au/w/{details?.slug || '\u2026'}</div>
-              <button onClick={copyLink} style={{ padding: '10px 16px', background: '#0A0A0A', color: '#FFF', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sans, whiteSpace: 'nowrap' }}>{copied ? '✓ Copied' : 'Copy'}</button>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              {[
-                // NO GLYPHS. A speech balloon, a lowercase f, a bare envelope
-                // and a chain link — four marks from four sources on four
-                // buttons that already say what they are. Each button keeps
-                // its brand colour, which is the part that identifies it.
-                { label: 'WhatsApp', bg: '#25D366', action: () => window.open(`https://wa.me/?text=${encodeURIComponent(`You're invited to our wedding! View our website: ${siteUrl}`)}`) },
-                { label: 'Facebook', bg: '#1877F2', action: () => window.open(`https://facebook.com/sharer/sharer.php?u=${encodeURIComponent(siteUrl)}`) },
-                { label: 'SMS', bg: '#0A84FF', action: () => window.open(`sms:?body=${encodeURIComponent(`You're invited! ${siteUrl}`)}`) },
-                { label: 'Copy Link', bg: '#0A0A0A', action: copyLink },
-              ].map(opt => (
-                <button key={opt.label} onClick={opt.action} style={{ padding: '10px', background: opt.bg, color: '#FFF', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center', fontFamily: sans }}>
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div style={{ border: '1px solid #EEEEEE', padding: 20 }}>
-            <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', margin: '0 0 6px' }}>Your URL</p>
-            {/* NOT AN INPUT. The address is built from the couple's names —
-                see src/lib/weddingAddress.js. Nobody types it, so there is
-                nothing here to type into. */}
-            <div style={{ display: 'flex', border: '1px solid #DDD', marginBottom: 8, background: '#F8F8F8' }}>
-              <span style={{ padding: '8px 10px', fontSize: 11, color: 'rgba(10,10,10,0.6)', flexShrink: 0, fontFamily: 'monospace' }}>openinvite.com.au/w/</span>
-              <span style={{ flex: 1, padding: '8px 10px', fontSize: 12, fontFamily: 'monospace', color: '#0A0A0A', minWidth: 0, overflowWrap: 'anywhere' }}>{details.slug || '\u2026'}</span>
-            </div>
-            <p style={{ margin: '0 0 12px', fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: sans, lineHeight: 1.5 }}>
-              Built from your names. Change a name and this follows &mdash; until your first invitation goes out, after which it stays put so links keep working.
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, paddingTop: 8, borderTop: '1px solid #F5F5F5' }}>
-              <div>
-                <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 600, color: '#0A0A0A' }}>Password Protection</p>
-                <p style={{ margin: 0, fontSize: 11, color: 'rgba(10,10,10,0.6)' }}>Guests must enter password</p>
-              </div>
-              <ToggleSwitch value={passwordGate.wantsProtection} onChange={passwordGate.toggle} label="Password protection" />
-            </div>
-            {passwordGate.wantsProtection && (
-              <>
-                <input type="password" value={passwordGate.password} onChange={e => passwordGate.setPassword(e.target.value)} onBlur={passwordGate.commitPassword} placeholder={passwordGate.hasStoredPassword ? 'Set a new password…' : 'Set password...'} style={{ width: '100%', borderBottom: '1px solid #DDD', border: 'none', padding: '8px 0', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: sans, marginBottom: 4 }} />
-                {passwordGate.hasStoredPassword ? (
-                  <p style={{ margin: '4px 0 0', fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: sans }}>
-                    A password is set. It can&rsquo;t be shown again — type a new one to replace it, or{' '}
-                    <button onClick={passwordGate.clearPassword} style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: '#E03553', cursor: 'pointer', textDecoration: 'underline' }}>remove it</button>.
-                  </p>
-                ) : passwordGate.incomplete && (
-                  <p style={{ margin: '4px 0 0', fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: sans }}>Enter a password to turn protection on. Until you do, your site stays public.</p>
-                )}
-              </>
-            )}
-          </div>
-        </div>
 
         {/* CENTER — EMAIL */}
         <div style={{ flex: 1, minWidth: 0, marginRight: 24 }}>
@@ -320,25 +246,8 @@ export default function StudioShareTab({ details: propDetails }) {
           </div>
         </div>
 
-        {/* RIGHT — QR */}
+        {/* RIGHT: THE SITE'S OWN SETTINGS */}
         <div style={{ width: 280, flexShrink: 0 }}>
-          <div style={{ border: '1px solid #EEEEEE', padding: 20, marginBottom: 16, textAlign: 'center' }}>
-            {/* DRAWN HERE, NOT FETCHED — the second instance of the same
-                standing prohibition #726 and #743 closed elsewhere. This sent
-                the couple's private address to api.qrserver.com every time
-                the tab rendered. Same lazy `qrcode` encoder as PublishModal. */}
-            <div
-              role="img"
-              aria-label={`QR code for ${siteUrl}`}
-              style={{ width: 160, height: 160, display: 'block', margin: '0 auto 12px' }}
-              dangerouslySetInnerHTML={{ __html: qrSvg }}
-            />
-            <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: '0 0 16px', fontFamily: 'monospace', wordBreak: 'break-all' }}>openinvite.com.au/w/{details?.slug || '\u2026'}</p>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={downloadQR} style={{ flex: 1, padding: '10px', background: '#0A0A0A', color: '#FFF', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sans }}>Download</button>
-              <button onClick={() => window.print()} style={{ flex: 1, padding: '10px', border: '1px solid #0A0A0A', background: 'transparent', color: '#0A0A0A', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: sans }}>Print</button>
-            </div>
-          </div>
           <div style={{ border: '1px solid #EEEEEE', padding: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <div>
@@ -367,9 +276,52 @@ export default function StudioShareTab({ details: propDetails }) {
               </div>
               <ToggleSwitch value={details?.hideFromSearch || false} onChange={v => updateField('hideFromSearch', v)} label="Hide from search" />
             </div>
+            {/* THE ADDRESS IS CHANGED FROM HERE NOW, and the address itself is
+                still not printed.
+                Item 3's ruling moved the capability off Event details and into
+                item 12: "a single Change site address button to Settings next
+                to Password protection that opens ChangeAddressDialog; the
+                Settings page itself must not display the URL, the slug or any
+                copyable link." So this is a button and nothing else. What the
+                address currently IS belongs inside the dialog, which prints it
+                as part of asking whether the couple really means it. */}
+            <div style={{ borderTop: '1px solid #F5F5F5', paddingTop: 16, marginTop: 16 }}>
+              <button
+                data-change-site-address
+                onClick={() => setAddressOpen(true)}
+                disabled={!hasAddress}
+                style={{
+                  width: '100%', padding: '10px 0', border: '1px solid rgba(10,10,10,0.18)',
+                  background: 'transparent', color: hasAddress ? '#0A0A0A' : 'rgba(10,10,10,0.3)',
+                  fontSize: 12, fontWeight: 600, fontFamily: sans,
+                  cursor: hasAddress ? 'pointer' : 'not-allowed',
+                }}
+              >
+                Change site address
+              </button>
+              {!hasAddress && (
+                <p style={{ margin: '6px 0 0', fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: sans }}>
+                  There is no address to change yet.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
+      {addressOpen && (
+        <ChangeAddressDialog
+          weddingId={detailsId}
+          currentSlug={details.slug}
+          onClose={() => setAddressOpen(false)}
+          onChanged={async ({ slug, previousSlugs }) => {
+            // THE CLIENT WRITES, as it did from Event details: the endpoint
+            // checks and reserves the address, and the record is updated with
+            // the couple's own token so it meets owner-scoped RLS.
+            setDetails(prev => ({ ...prev, slug, previousSlugs }));
+            if (detailsId) await base44.entities.WeddingDetails.update(detailsId, { slug, previousSlugs });
+          }}
+        />
+      )}
     </div>
   );
 }

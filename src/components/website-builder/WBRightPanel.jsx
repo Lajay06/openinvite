@@ -652,7 +652,6 @@ function EmailContentTab({ emailDraft, selectedEmail, onEmailChange, emailSave, 
 
 // ── SETTINGS TAB ──────────────────────────────────────────────
 function SettingsTab({ details, onChange }) {
-  const [copied, setCopied] = useState(false);
   const [musicUploading, setMusicUploading] = useState(false);
 
   // The gate hook persists through /api/my-wedding-details immediately — the
@@ -665,30 +664,16 @@ function SettingsTab({ details, onChange }) {
     if ('websitePasswordEnabled' in patch) onChange('websitePasswordEnabled', patch.websitePasswordEnabled);
     if ('websitePassword' in patch) onChange('websitePasswordIsSet', !!patch.websitePassword?.trim());
   });
-  const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  const siteUrl = details.slug ? `${origin}/w/${details.slug}` : '';
-
-  // The QR is drawn from the address, in the browser. `qrcode` is imported
-  // lazily so the encoder is not in the builder's entry bundle for the two
-  // tabs that never show one.
-  const [qrSvg, setQrSvg] = useState('');
-  useEffect(() => {
-    let live = true;
-    if (!siteUrl) { setQrSvg(''); return undefined; }
-    import('qrcode')
-      .then((qr) => qr.toString(siteUrl, { type: 'svg', margin: 1, width: 120, color: { dark: '#FFFFFF', light: '#00000000' } }))
-      .then((svg) => { if (live) setQrSvg(svg); })
-      // A QR that cannot be drawn leaves its space empty rather than throwing
-      // the panel away. Nothing else on this tab depends on it.
-      .catch(() => { if (live) setQrSvg(''); });
-    return () => { live = false; };
-  }, [siteUrl]);
-  const copyLink = () => {
-    if (!siteUrl) { toast.error('Set a URL slug first.'); return; }
-    navigator.clipboard.writeText(siteUrl).catch(() => {});
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  // THE QR AND THE COPY ARE GONE, and so is the lazy `qrcode` chunk.
+  //
+  // Item 12 of goals/2026-10-08-site-fixes-batch-1.md, 12a: this panel loses
+  // Copy, Copy link, Share on WhatsApp and the QR, along with every URL it
+  // printed. Email from the studio is the only way guests receive the site.
+  //
+  // #726 had moved this QR off api.qrserver.com, because an <img> pointed
+  // there handed the couple's private address to a service we do not run on
+  // every render of this tab. That reasoning is kept rather than deleted with
+  // the code: a QR here is drawn locally or it is not drawn.
 
   // Same guestExperienceSettings.backgroundMusic field GuestSuitePolicies.jsx
   // (Guest suite -> Policies -> Guest experience tab) reads/writes — one
@@ -720,27 +705,16 @@ function SettingsTab({ details, onChange }) {
 
 
   return (
-    <div>
-      <SLabel>Your site URL</SLabel>
-      {/* NOT AN INPUT. The address is built from the couple's names and follows
-          them until the first invitation exists — see src/lib/weddingAddress.js.
-          There was an editor here; the owner's question was "why do they HAVE to
-          be able to edit?" and the answer was that they don't, and nobody had
-          ever asked to. */}
-      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', padding: '8px 10px', gap: 4 }}>
-        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', flexShrink: 0 }}>openinvite.com.au/w/</span>
-        <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: '#FFFFFF', wordBreak: 'break-all' }}>{details.slug || '\u2026'}</span>
-      </div>
-      <p style={{ fontSize: 11, lineHeight: 1.5, margin: '6px 0 0', color: 'rgba(255,255,255,0.45)' }}>
-        Built from your names. Change a name and this follows &mdash; until your first invitation goes out, after which it stays put so links keep working.
-      </p>
-      {siteUrl && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.04)', padding: '6px 10px', marginBottom: 16 }}>
-          <span style={{ flex: 1, fontSize: 11, fontFamily: 'monospace', color: 'rgba(255,255,255,0.5)', wordBreak: 'break-all' }}>{siteUrl}</span>
-          <button onClick={copyLink} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: copied ? '#22C55E' : 'rgba(255,255,255,0.4)', fontWeight: 700, flexShrink: 0, fontFamily: 'inherit' }}>{copied ? 'Copied!' : 'Copy'}</button>
-        </div>
-      )}
-      <Divider />
+    // A MARKER, so a guard can scope a question to this panel.
+    // scripts/test-settings-tab.mjs asks "is there a URL or a share control
+    // here", and it used to find the panel by two strings that 12a deleted,
+    // then by walking up from a toggle. Both are ways of guessing at the
+    // boundary; this states it. Read nowhere else, styled nothing.
+    <div data-wb-settings-panel>
+      {/* "YOUR SITE URL" WAS HERE, twice over: the address bar and, under it,
+          the full link with a Copy button beside it. 12a removes both. The
+          address is read and changed from the guest suite's share tab, which
+          is the one place the ruling left it. */}
       <SLabel>Status</SLabel>
       <Toggle tone="dark" label={`Website is ${details.websiteEnabled ? 'Live' : 'Hidden'}`} value={details.websiteEnabled} onChange={v => onChange('websiteEnabled', v)} />
       <Divider />
@@ -786,29 +760,6 @@ function SettingsTab({ details, onChange }) {
           ) : passwordGate.incomplete && (
             <p style={{ margin: '-4px 0 8px', fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>Enter a password to turn protection on. Until you do, your site stays public.</p>
           )}
-        </>
-      )}
-      <Divider />
-      {siteUrl && (
-        <>
-          <button onClick={copyLink} style={{ width: '100%', padding: '10px 0', border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: 'rgba(255,255,255,0.8)', cursor: 'pointer', fontSize: 13, fontWeight: 600, borderRadius: 999, marginBottom: 8, fontFamily: 'inherit' }}>
-            {copied ? '✓ Copied!' : 'Copy link'}
-          </button>
-          <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent("You're invited! " + siteUrl)}`, '_blank')}
-            style={{ width: '100%', padding: '10px 0', border: 'none', background: '#25D366', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, borderRadius: 999, marginBottom: 12, fontFamily: 'inherit' }}>
-            Share on WhatsApp
-          </button>
-          {/* GENERATED HERE, NOT FETCHED. This was an <img> pointing at
-              api.qrserver.com with the couple's wedding address in the query
-              string — so every render of this tab handed a private URL to a
-              service we do not run, and the code silently rendered nothing
-              when that service was blocked or down. Same size, same place,
-              no request. */}
-          <div style={{ display: 'flex', justifyContent: 'center' }} aria-hidden="true">
-            {qrSvg
-              ? <div style={{ width: 120, height: 120 }} dangerouslySetInnerHTML={{ __html: qrSvg }} />
-              : <div style={{ width: 120, height: 120 }} />}
-          </div>
         </>
       )}
     </div>
