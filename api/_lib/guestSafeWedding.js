@@ -19,6 +19,7 @@
  */
 
 import { verifyWebsitePassword } from './websitePasswordHash.js';
+import { getBase44User } from './base44Admin.js';
 
 export const GUEST_SAFE_WEDDING_FIELDS = [
   'id',
@@ -179,7 +180,42 @@ function pickGuestSafeMusic(music) {
  * @param {object} wedding — a full WeddingDetails record from Base44
  * @returns {object}
  */
-export function pickGuestSafeFields(wedding) {
+/**
+ * THE OWNER'S CURRENCY, AND NOTHING ELSE FROM THEIR ACCOUNT.
+ *
+ * The guest site shows money on its registry page, cash-fund goals and
+ * product prices, and it printed a hardcoded dollar sign. A couple planning
+ * in euros was telling their guests a number in dollars.
+ *
+ * The currency lives on User.currency, and a guest has no session, so the
+ * server resolves it. getBase44User is the single-record admin path proven in
+ * api/_lib/base44Admin.js; bulk-listing User does not work at all, which is
+ * why this is one read per request rather than a join.
+ *
+ * ONE FIELD. The User record carries an email, a plan, a deletion timestamp
+ * and notification preferences, and none of that is a guest's business. This
+ * returns a three-letter code or nothing, so there is no object from which a
+ * later edit could widen the payload by accident.
+ *
+ * A FAILED READ IS NOT AN ERROR. The guest site must render whether or not
+ * this resolves, so a failure falls back to the default and the page shows
+ * what it showed before this change.
+ *
+ * @returns {Promise<string>} an ISO currency code, defaulting to USD
+ */
+export async function resolveOwnerCurrency(wedding, adminKey, fetchImpl = fetch) {
+  const ownerId = wedding?.created_by_id;
+  if (!ownerId || !adminKey) return 'USD';
+  try {
+    const user = await getBase44User(ownerId, adminKey, fetchImpl);
+    const code = typeof user?.currency === 'string' ? user.currency.trim().toUpperCase() : '';
+    return /^[A-Z]{3}$/.test(code) ? code : 'USD';
+  } catch {
+    return 'USD';
+  }
+}
+
+export function pickGuestSafeFields(wedding, { currency } = {}) {
   const out = {};
   for (const field of GUEST_SAFE_WEDDING_FIELDS) {
     if (NEVER_RETURN_FIELDS.includes(field)) continue; // defensive, should never trigger
@@ -195,6 +231,10 @@ export function pickGuestSafeFields(wedding) {
   // contract is total and no client has to infer it from a missing key.
   out.passwordProtected = websiteGateIsOn(wedding).on;
   out.locked = false;
+  // THE ONE FIELD FROM User, attached by the caller that resolved it. Omitted
+  // when it was not resolved, so a payload built without it renders exactly as
+  // it did before this change rather than claiming dollars.
+  if (typeof currency === 'string' && /^[A-Z]{3}$/.test(currency)) out.currency = currency;
   return out;
 }
 
