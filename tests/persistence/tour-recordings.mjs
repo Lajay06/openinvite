@@ -71,12 +71,13 @@ export function runTourRecordings() {
       const at = `${key} @ ${label}`;
       if (!side) { check(`${at} exists`, false, 'missing'); continue; }
 
+      // <width>, or <width>-<take> since takes stopped overwriting their path.
       const want = `studio-tour/${key}/${label}`;
       for (const [field, ext] of [['webm', '.webm'], ['mp4', '.mp4'], ['poster', '.jpg']]) {
         const url = side[field];
         const ok = typeof url === 'string'
           && url.startsWith('https://res.cloudinary.com/')
-          && url.includes(`/${want}${ext}`);
+          && new RegExp(`/${want}(-\\d{14})?\\${ext}$`).test(url);
         check(`${at} ${field} points at ${want}${ext}`, ok, ok ? 'ok' : String(url).slice(0, 90));
       }
 

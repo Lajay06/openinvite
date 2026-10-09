@@ -32,11 +32,22 @@ export function cloudinaryConfig() {
   return { key: m[1], secret: m[2], cloud: m[3] };
 }
 
-/** Upload one webm as studio-tour/<chapter>/<width>. */
+/**
+ * Upload one webm as studio-tour/<chapter>/<width>-<take>, a path of its own.
+ *
+ * A LIVE PATH IS NEVER OVERWRITTEN (owner ruling, 2026-10-09). Cloudinary
+ * serves an asset by its path and ignores the version in the URL, so
+ * uploading over studio-tour/publish/1440 changed what the live site played
+ * before any PR merged, and once put a phone take where the desktop one
+ * belonged. Each take now gets a new public_id stamped with the upload time,
+ * overwrite is off, and the site switches to it only when src/lib/studioTour.js
+ * does, in a reviewed PR.
+ */
 export async function uploadRecording({ file, chapterKey, widthLabel, config }) {
   const folder = `studio-tour/${chapterKey}`;
   const timestamp = Math.floor(Date.now() / 1000);
-  const params = { folder, overwrite: 'true', public_id: widthLabel, timestamp };
+  const take = new Date(timestamp * 1000).toISOString().replace(/[-:T]/g, '').slice(0, 14);
+  const params = { folder, overwrite: 'false', public_id: `${widthLabel}-${take}`, timestamp };
   const signature = createHash('sha1')
     .update(Object.keys(params).sort().map((k) => `${k}=${params[k]}`).join('&') + config.secret)
     .digest('hex');

@@ -22,6 +22,7 @@ export const MARKETING_ROUTES = [
   '/pricing',
   '/contact',
   '/about',
+  '/tour',
   '/privacy-policy',
   '/terms-of-service',
   '/login',
