@@ -792,32 +792,16 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
           </motion.div>
           )}
 
-          {weddingDetails.slug && (
-            <motion.div
-              initial={{ opacity: 0, y: prefersReduced ? 0 : 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: prefersReduced ? 0 : 0.45, duration: prefersReduced ? 0 : (universeConfig?.motion?.duration ?? 0.8) }}
-              style={{ marginTop: '28px' }}
-            >
-              <a
-                href={`/w/${weddingDetails.slug}/rsvp`}
-                style={{
-                  display: 'inline-block',
-                  padding: '10px 28px',
-                  border: `1px solid ${theme.lightBg}60`,
-                  borderRadius: 999,
-                  color: theme.lightBg,
-                  fontFamily: typography.bodyFont,
-                  fontSize: '0.8125rem',
-                  fontWeight: typography.bodyWeight,
-                  letterSpacing: '0.04em',
-                  textDecoration: 'none',
-                }}
-              >
-                RSVP
-              </a>
-            </motion.div>
-          )}
+          {/* THE RSVP PILL IS GONE FROM THIS HERO, and that is the P5 hero
+              restraint arriving in the one branch that had kept its button.
+              Nine other branches already carry the decision verbatim: "The
+              three-column strip, date / venue / RSVP, is gone... Logistics
+              leave the hero, they do not leave the site". This was the only
+              hero still holding an /rsvp href, so the restraint is now
+              uniform. The way to the reply form from this tab is the nav's
+              own rsvp link, untouched, and the one quiet line the wrapper
+              renders below the masthead. Item 3,
+              goals/2026-10-09-reply-lifecycle.md. */}
         </motion.div>
       </div>
 
@@ -848,10 +832,84 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
 // every isXxx branch above) keeps this purely additive: nothing above is
 // touched, and a wedding with no homeContent.blocks renders exactly as
 // before.
+/**
+ * ── "FIND MY INVITATION", ONCE, FOR EVERY UNIVERSE ────────────────────────
+ *
+ * Item 3 of goals/2026-10-09-reply-lifecycle.md. A visitor the site does not
+ * recognise has no way of knowing that the RSVP tab is where their own
+ * invitation lives, and the tab's email bridge is exactly the thing that would
+ * tell them. One quiet line says so.
+ *
+ * ── WHY IT IS HERE AND NOT IN A HERO ──────────────────────────────────────
+ *
+ * P5 HERO RESTRAINT STANDS. Nine of this file's branches carry that decision
+ * in their own words: "The three-column strip, date / venue / RSVP, is gone.
+ * The hero carries identity: the kicker, the couple's names, and their own
+ * mark if they place one. Logistics leave the hero, they do not leave the
+ * site." Adding a link inside a hero would reverse it.
+ *
+ * So this renders from the WRAPPER, below the masthead and outside every
+ * branch, which is also the only placement that reaches all twenty universes
+ * with one insertion. Nineteen of them had no path from the home tab's own
+ * content at all; the twentieth, tulum, is the only universe with no layout
+ * value and so the only one that reached the default branch's pill, which this
+ * replaces.
+ *
+ * ── A TEXT LINK, NOT A BUTTON ─────────────────────────────────────────────
+ *
+ * No border, no fill, no pill radius: the universe's own body face, underlined,
+ * at the body weight. A button here would compete with whatever the couple put
+ * in their hero, and the owner's word for this is "quiet".
+ *
+ * The padding is a touch target, not decoration: 44px of height for WCAG
+ * 2.5.5, with the underline still hugging the words, which is the same shape
+ * RecognisedRsvp's "Not you?" control uses and for the same reason.
+ *
+ * ── ONLY FOR SOMEONE THE SITE DOES NOT KNOW ───────────────────────────────
+ *
+ * A recognised guest already has their invitation; the RSVP tab opens straight
+ * onto their own form. Offering to find it would be the product forgetting who
+ * it just greeted, so the line is absent for them entirely rather than
+ * reworded.
+ */
+function FindMyInvitation({ weddingDetails, theme, typography, recognisedToken }) {
+  if (recognisedToken) return null;
+  const slug = weddingDetails?.slug;
+  if (!slug) return null;
+  return (
+    <div style={{ textAlign: 'center', padding: '8px 24px 32px' }}>
+      <a
+        data-find-my-invitation
+        href={`/w/${slug}/rsvp`}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          minHeight: 44,
+          padding: '13px 8px',
+          color: theme.darkText,
+          fontFamily: typography.bodyFont,
+          fontSize: '0.875rem',
+          fontWeight: typography.bodyWeight,
+          textDecoration: 'underline',
+          textUnderlineOffset: '3px',
+        }}
+      >
+        Find my invitation
+      </a>
+    </div>
+  );
+}
+
 export default function WeddingHomePage(props) {
   return (
     <>
       <WeddingHomePageContent {...props} />
+      <FindMyInvitation
+        weddingDetails={props.weddingDetails}
+        theme={props.theme}
+        typography={props.typography}
+        recognisedToken={props.recognisedToken}
+      />
       <UniverseBlocks
         blocks={props.weddingDetails?.homeContent?.blocks}
         weddingDetails={props.weddingDetails}
