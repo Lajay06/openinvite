@@ -503,3 +503,19 @@ export function resolveChapter(chapter, context = {}) {
   delete resolved.leadWithNumbers;
   return resolved;
 }
+
+/**
+ * PHONE STILLS FOR THE MARKETING SITE, at 390 by 844 (captured at 2x).
+ *
+ * The product from the rich fixture with no drawn cursor, captured by
+ * scripts/tour-recordings/record-stills.mjs and uploaded to
+ * studio-tour/stills/<key>/390-<take>; the URL resizes to 780 wide and picks
+ * the format. Used by the home page's app block, the Features page's app
+ * section and /app (goals/2026-10-10-app-on-the-marketing-site.md). Recording
+ * URLs only, like MEDIA.
+ */
+export const STILLS = {
+  'budget': 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto:good,w_780/v1791554481/studio-tour/stills/budget/390-20261009140119',
+  'daily-update': 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto:good,w_780/v1791554483/studio-tour/stills/daily-update/390-20261009140122',
+  'guests-reply': 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto:good,w_780/v1791554484/studio-tour/stills/guests-reply/390-20261009140124',
+};

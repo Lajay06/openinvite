@@ -6,7 +6,7 @@ import OpeninviteLogo from '@/components/public/OpeninviteLogo';
 export default function PublicFooter() {
   return (
     <>
-    <footer className="bg-white border-t border-[#E0E0DC]">
+    <footer data-public-footer className="bg-white border-t border-[#E0E0DC]">
       <div className="max-w-[1200px] mx-auto px-6 lg:px-12 py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
           {/* Logo col */}
@@ -24,6 +24,7 @@ export default function PublicFooter() {
               <li><Link to="/" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Home</Link></li>
               <li><Link to="/About" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">About</Link></li>
               <li><Link to="/universes" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Universes</Link></li>
+              <li><Link to="/app" data-footer-app className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">The app</Link></li>
               <li><Link to="/gifting" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Gifting</Link></li>
               <li><Link to="/faq" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">FAQ</Link></li>
             </ul>

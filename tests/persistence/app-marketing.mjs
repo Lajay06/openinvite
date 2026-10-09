@@ -18,7 +18,8 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MEDIA } from '../../src/lib/studioTour.js';
+import { STILLS } from '../../src/lib/studioTour.js';
+import { MARKETING_ROUTES } from '../../scripts/marketingRoutes.mjs';
 import { pass, fail } from './_shared.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -84,13 +85,68 @@ export function runAppMarketing() {
   check('home: the store line is not a link', !/<a\b[^>]*>[^<]*Coming to the App Store/.test(block));
   const imgs = [...block.matchAll(/<img\b[^>]*src="([^"]+)"/g)].map((m) => m[1].replace(/&amp;/g, '&'));
   check('home: one picture, and no video', imgs.length === 1 && !/<video\b/.test(block), `${imgs.length} img`);
-  check('home: the picture is the daily update at 390, from the recording',
-    imgs[0] === MEDIA.welcome?.phone?.poster, String(imgs[0]).slice(-60));
+  check('home: the picture is the daily update still at 390, with no cursor',
+    imgs[0] === STILLS['daily-update'], String(imgs[0]).slice(-60));
   const blockAt = home.indexOf('data-home-app');
   const pricingAt = home.indexOf('section-pricing');
   const cardsAt = home.indexOf('section-features');
   check('home: after the six cards and before pricing',
     cardsAt > -1 && blockAt > cardsAt && pricingAt > blockAt, `cards ${cardsAt}, app ${blockAt}, pricing ${pricingAt}`);
+
+  // ── items 2 and 4: the phones, the lines, /app and the footer ─────────
+  const LINES = [
+    'The morning page that tells you what today needs.',
+    'The guest list, with replies arriving as they happen.',
+    'The seating chart, wherever you are.',
+    'The budget, with every vendor payment and what is still owed.',
+    'Ava on every page, at any hour.',
+  ];
+  const DESKTOP = 'You design your guest suite on a desktop, where the space is; everything else is yours wherever you are.';
+  const PHONES = [STILLS['daily-update'], STILLS['guests-reply'], STILLS.budget];
+  const phonesBlock = (html, where) => {
+    const b = sectionWith(html, 'data-app-phones');
+    const bt = textOf(b);
+    check(`${where}: the app section is on the page`, !!b);
+    check(`${where}: heading "Everything, on your phone"`, bt.includes('Everything, on your phone'));
+    const lines = [...b.matchAll(/<li\b[^>]*data-app-line[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1]).trim());
+    check(`${where}: the five lines, verbatim and in order`, JSON.stringify(lines) === JSON.stringify(LINES), JSON.stringify(lines).slice(0, 120));
+    check(`${where}: the desktop sentence, verbatim`, bt.includes(DESKTOP));
+    const srcs = [...b.matchAll(/<img\b[^>]*src="([^"]+)"/g)].map((m) => m[1].replace(/&amp;/g, '&'));
+    check(`${where}: three phones: daily update, guest list, budget`, JSON.stringify(srcs) === JSON.stringify(PHONES), `${srcs.length} img`);
+    return b;
+  };
+  const features = existsSync(join(PRE, 'features/index.html')) ? readFileSync(join(PRE, 'features/index.html'), 'utf8') : '';
+  const fb = phonesBlock(features, 'features');
+  check('features: the store line, as text', textOf(fb).includes(STORE_LINE) && /data-app-store-line/.test(fb));
+  // The accordion's first row, as the anchor: the app section sits above it
+  // and is not one of its rows.
+  const accAt = features.indexOf('Vendors and the marketplace');
+  const appAt = features.indexOf('data-app-phones');
+  check('features: a section of its own, above the accordion', appAt > -1 && accAt > appAt, `app ${appAt}, accordion ${accAt}`);
+
+  const appHtml = existsSync(join(PRE, 'app/index.html')) ? readFileSync(join(PRE, 'app/index.html'), 'utf8') : '';
+  check('/app: prerendered', !!appHtml);
+  const ab = phonesBlock(appHtml, '/app');
+  check('/app: the heading is the page h1', /<h1\b[^>]*>\s*Everything, on your phone\s*<\/h1>/.test(ab));
+  const guests = textOf(sectionWith(appHtml, 'data-app-guests'));
+  check('/app: "Do my guests need it?" with its body, verbatim',
+    guests.includes('Do my guests need it?') && guests.includes('No. Your guests open a link and reply in a browser. Nobody has to make an account or install anything to come to your wedding.'));
+  check('/app: the store line, as text, after the guests block', guests.includes(STORE_LINE));
+  check('/app: in MARKETING_ROUTES', MARKETING_ROUTES.includes('/app'));
+  const sitemap = existsSync(join(PRE, 'sitemap.xml')) ? readFileSync(join(PRE, 'sitemap.xml'), 'utf8') : '';
+  check('/app: in sitemap.xml', /\/app<\/loc>/.test(sitemap));
+  check('/app: not noindexed', !!appHtml && !/<meta name="robots"[^>]*noindex/i.test(appHtml));
+  check('/app: its title', /<title>Openinvite \| The app<\/title>/.test(appHtml));
+  check('/app: its description', appHtml.includes('content="The Openinvite wedding planner on your phone: guests, replies, seating, budget, vendors, schedule and Ava. iPhone and Android, included with every plan. Guests never need it."'));
+  // EVERY PAGE THAT HAS THE MARKETING FOOTER. The auth pages (login, register,
+  // forgot password) render none, so there is nothing to add the link to
+  // there; the count pins how many pages do, so a footer that appears on a new
+  // page without the link still fails.
+  const withFooter = pages.filter((p) => /data-public-footer/.test(readFileSync(p, 'utf8')));
+  const noFooterLink = withFooter.filter((p) => !/<a\b[^>]*href="\/app"[^>]*>The app<\/a>/.test(readFileSync(p, 'utf8')));
+  check('the footer links to /app as "The app" on every page that has the marketing footer',
+    withFooter.length >= 13 && noFooterLink.length === 0,
+    noFooterLink.length ? noFooterLink.map((p) => p.slice(PRE.length + 1)).join(', ') : `${withFooter.length} of ${pages.length} pages carry the footer`);
 
   // ── item 3: the pricing line ──────────────────────────────────────────
   const pricing = existsSync(join(PRE, 'pricing/index.html')) ? readFileSync(join(PRE, 'pricing/index.html'), 'utf8') : '';

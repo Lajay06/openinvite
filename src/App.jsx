@@ -101,6 +101,7 @@ const Features = lazyWithReload(() => import('./pages/Features'));
 const Home = lazyWithReload(() => import('./pages/Home'));
 const FAQ = lazyWithReload(() => import('./pages/FAQ'));
 const Tour = lazyWithReload(() => import('./pages/Tour'));
+const AppPage = lazyWithReload(() => import('./pages/AppPage'));
 
 // ── Public paths — bypass auth check entirely ─────────────────────────────────
 const PUBLIC_PATH_SET = new Set([
@@ -111,9 +112,10 @@ const PUBLIC_PATH_SET = new Set([
   '/Features', '/features',
   '/ava',
   '/faq',
-  // Private preview until T3: reachable by direct URL, not linked from
-  // PublicNav, not prerendered, absent from sitemap.xml, noindex.
+  // Public since 2026-10-09: prerendered, in sitemap.xml, indexed.
   '/tour',
+  // The app's own page (app goal item 4), where the store badges will point.
+  '/app',
   '/scroll-morph',
   '/universes',
   '/gifting',
@@ -209,6 +211,7 @@ const AuthenticatedApp = () => {
         <Route path="/ava" element={<Ava />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/tour" element={<Tour />} />
+        <Route path="/app" element={<AppPage />} />
         <Route path="/scroll-morph" element={<ScrollMorph />} />
         <Route path="/universes" element={<Universes />} />
         <Route path="/gifting" element={<Gifting />} />

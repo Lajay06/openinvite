@@ -12,6 +12,7 @@ import FeatureSectionHeading, { featureBodyTextStyle } from "@/components/home/F
 import MarketingHero from "@/components/marketing/MarketingHero";
 import MarketingEndCap from "@/components/marketing/MarketingEndCap";
 import { responsivePhoto } from "@/lib/marketingImage";
+import AppPhones from "@/components/marketing/AppPhones";
 
 // Both are web exports (1280x853 and 1600x1078), so 0.34x and 0.42x of the
 // device pixels their boxes need at dpr 2 is the ceiling until larger masters
@@ -127,6 +128,11 @@ export default function Features() {
 
       {/* ── S3: DASHBOARD ────────────────────────────────── */}
       <DashboardSection />
+
+      {/* ── S5: THE APP ──────────────────────────────────────
+          Its own section above the accordion, not a ninth row (app goal,
+          item 2). The same block is /app's body. */}
+      <AppPhones />
 
       {/* ── S6: ACCORDION ────────────────────────────────── */}
       <AccordionSection features={ALL_FEATURES} borders={ACCORDION_BORDERS} dots={DOTS} openFeature={openFeature} setOpenFeature={setOpenFeature} />

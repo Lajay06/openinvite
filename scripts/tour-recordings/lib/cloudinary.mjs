@@ -84,3 +84,34 @@ export function deliveryUrls({ cloud, publicId, version, widthLabel }) {
     poster: `${base}/so_1.0,w_${posterWidth},q_auto:good/${v}/${publicId}.jpg`,
   };
 }
+
+/**
+ * Upload one still image as studio-tour/stills/<key>/<width>-<take>.
+ *
+ * Same rule as a recording: a path of its own per take, overwrite off. The
+ * delivery URL resizes and picks the format on the way out, so what we keep
+ * is the full-resolution PNG and what a visitor downloads is small.
+ */
+export async function uploadStill({ file, key, widthLabel, config }) {
+  const folder = `studio-tour/stills/${key}`;
+  const timestamp = Math.floor(Date.now() / 1000);
+  const take = new Date(timestamp * 1000).toISOString().replace(/[-:T]/g, '').slice(0, 14);
+  const params = { folder, overwrite: 'false', public_id: `${widthLabel}-${take}`, timestamp };
+  const signature = createHash('sha1')
+    .update(Object.keys(params).sort().map((k) => `${k}=${params[k]}`).join('&') + config.secret)
+    .digest('hex');
+  const fd = new FormData();
+  for (const [k, v] of Object.entries(params)) fd.append(k, String(v));
+  fd.append('api_key', config.key);
+  fd.append('signature', signature);
+  fd.append('file', new Blob([readFileSync(file)]), `${widthLabel}.png`);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${config.cloud}/image/upload`, { method: 'POST', body: fd });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(`Cloudinary ${res.status}: ${body.error?.message || 'upload failed'}`);
+  return body;
+}
+
+/** The delivery URL for a still: 780 wide (390 at 2x), format and quality chosen by Cloudinary. */
+export function stillUrl({ cloud, publicId, version }) {
+  return `https://res.cloudinary.com/${cloud}/image/upload/f_auto,q_auto:good,w_780/v${version}/${publicId}`;
+}

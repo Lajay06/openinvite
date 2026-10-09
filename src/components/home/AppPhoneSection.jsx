@@ -4,10 +4,12 @@
  * THE APP, ON THE HOME PAGE. Item 1 of goals/2026-10-10-app-on-the-marketing-site.md.
  *
  * A phone showing the daily update, and the owner's copy beside it. The
- * picture is a still from the studio tour's own 390 recording of the daily
- * update (MEDIA.welcome.phone.poster, the frame at 1.0s), from the rich
- * recording fixture, so it is the product and not a mockup. One still, not a
- * loop, so the block adds a single small image to the page.
+ * picture is the daily update at 390 from the rich recording fixture
+ * (STILLS["daily-update"]), so it is the product and not a mockup. It was a
+ * frame of the studio tour's 390 recording, which carried the recording's
+ * drawn cursor; the owner asked for it without one, so it is now a still
+ * captured with no cursor at all. One still, not a loop, so the block adds a
+ * single small image to the page.
  *
  * NO BADGE AND NO STORE LINK. The app is not in either store yet, so where a
  * badge would go there is the plain store line, with no link. The official
@@ -28,13 +30,13 @@
  * it, not the guard.
  */
 import ProductMediaFrame from "@/components/shared/ProductMediaFrame";
-import { MEDIA } from "@/lib/studioTour";
+import { STILLS } from "@/lib/studioTour";
+import { APP_STORE_LINE } from "@/components/marketing/AppPhones";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
-export const APP_STORE_LINE = "Coming to the App Store and Google Play at launch.";
 
 export default function AppPhoneSection() {
-  const still = MEDIA.welcome?.phone?.poster;
+  const still = STILLS["daily-update"];
   return (
     <section
       data-home-app
