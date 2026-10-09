@@ -31,3 +31,5 @@ Lesson, owner ruling 2026-10-09: a new recording is uploaded to a new path or ve
 ## Protocol
 
 Order 2, 3, 4, 5 (1 is written into 2's PR body). Held PRs, carry on
+
+Closed 2026-10-10 at main e5f4cd59b1377044b689e758332eab8617428f94, PRs #935 #940 #945 #946
