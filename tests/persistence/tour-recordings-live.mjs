@@ -38,6 +38,8 @@ import { pass, fail } from './_shared.mjs';
 
 /** The goal's ceiling, in bytes. */
 const MAX_BYTES = 1.5 * 1024 * 1024;
+/** The home page app block's one picture. */
+const HOME_APP_STILL_MAX = 150 * 1024;
 
 async function head(url) {
   try {
@@ -123,6 +125,21 @@ export async function runTourRecordingsLive() {
           console.log(`        ${at}: ${kb(res.bytes)}`);
         }
       }
+    }
+  }
+
+  // ── THE HOME PAGE'S APP STILL, AGAINST ITS BUDGET ────────────────────
+  // goals/2026-10-10-app-on-the-marketing-site.md item 1: the home block adds
+  // one picture, the 390 daily update still, and the page had no media budget
+  // of its own to stay inside. This is it: one image, at or under 150 KB as
+  // delivered, a fraction of any photograph already on the page.
+  {
+    const still = MEDIA.welcome?.phone?.poster;
+    const res = still ? await head(still) : { status: 0 };
+    check('home app still is served', res.status === 200, res.error || `HTTP ${res.status}`);
+    if (res.status === 200) {
+      check('home app still is an image', res.type.startsWith('image/'), res.type);
+      check('home app still is at or under 150 KB', res.bytes > 0 && res.bytes <= HOME_APP_STILL_MAX, kb(res.bytes));
     }
   }
 

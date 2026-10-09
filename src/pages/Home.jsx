@@ -9,6 +9,7 @@ import HorizontalScrollSection from "@/components/home/HorizontalScrollSection";
 import UniverseMiniHero from "@/components/home/UniverseMiniHero";
 import UniverseTeaserSection from "@/components/home/UniverseTeaserSection";
 import AvaSpotlightSection from "@/components/home/AvaSpotlightSection";
+import AppPhoneSection from "@/components/home/AppPhoneSection";
 import MarketingEndCap from "@/components/marketing/MarketingEndCap";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 import { useOrganizationStructuredData } from "@/hooks/useOrganizationStructuredData";
@@ -85,6 +86,11 @@ export default function Home() {
         </span>
       </div>
       <AvaSpotlightSection />
+
+      {/* 7. THE APP. The planner is on iPhone and Android too, and the site
+          said so nowhere. After the six cards (here, after Ava, whom the copy
+          names) and before pricing, per the app goal's item 1. */}
+      <AppPhoneSection />
 
       {/* 8. PRICING */}
       <div id="section-pricing">
