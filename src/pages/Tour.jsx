@@ -9,9 +9,9 @@
  * src/lib/studioTour.js. A scene whose footage is not recorded yet renders the
  * placeholder, which carries data-tour-placeholder so a guard can find it.
  *
- * Still a private preview for search engines: it sets noindex itself (see the
- * effect in Tour below) and is not in scripts/marketingRoutes.mjs, so it is
- * not prerendered or in sitemap.xml. Making it public is an owner decision.
+ * Public: /tour is in scripts/marketingRoutes.mjs, so it is prerendered, in
+ * sitemap.xml and under test:marketing-routes, and it takes its title and
+ * description from the shared marketing SEO hook.
  */
 import React, { useEffect, useRef, useState } from "react";
 import PublicNav from "@/components/public/PublicNav";
@@ -24,6 +24,7 @@ import ProductVideo from "@/components/shared/ProductVideo";
 import { MEDIA, TOUR_PAGE_MEDIA } from "@/lib/studioTour";
 import { responsivePhoto } from "@/lib/marketingImage";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -307,25 +308,11 @@ function Scene({ scene, isMobile }) {
 
 export default function Tour() {
   const isMobile = useIsMobile();
-  // Not useMarketingSeo(): that hook has no noindex support and would fall
-  // back to the home page's title for an unlisted path. While /tour is a
-  // private preview it sets its own tags; T3 can move it onto the shared
-  // hook once the page is public.
-  useEffect(() => {
-    document.title = "Openinvite | Tour";
-    let robots = document.querySelector('meta[name="robots"]');
-    if (!robots) {
-      robots = document.createElement("meta");
-      robots.setAttribute("name", "robots");
-      document.head.appendChild(robots);
-    }
-    robots.setAttribute("content", "noindex, nofollow");
-    return () => {
-      // Leaving the tag behind would silently deindex whatever page the
-      // visitor navigates to next.
-      if (robots && robots.parentNode) robots.parentNode.removeChild(robots);
-    };
-  }, []);
+  // Public since 2026-10-09 (owner decision): the shared hook sets the title,
+  // description and canonical from src/lib/marketingSeo.js, as on every other
+  // marketing page. The noindex this page set for itself while it was a
+  // private preview is gone with it.
+  useMarketingSeo();
 
 
   const reducedMotion = prefersReduced();

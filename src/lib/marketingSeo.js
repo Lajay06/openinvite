@@ -61,6 +61,10 @@ export const MARKETING_PAGE_SEO = {
     title: 'Openinvite | Contact',
     description: "Get in touch with Openinvite. We're here to help with questions about wedding planning, your guest suite or your account.",
   },
+  '/tour': {
+    title: 'Tour the studio',
+    description: 'Nine short recordings of the Openinvite studio: the daily update, guests, seating, budget, vendors, schedule, Ava, the wedding site and sending invitations. Nothing to sign up for.',
+  },
   '/about': {
     title: 'Openinvite | About',
     description: 'Openinvite is a wedding planning platform built for modern couples. Learn about our story and why we built a wedding planning platform that matches the occasion.',
