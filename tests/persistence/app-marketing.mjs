@@ -21,7 +21,7 @@ import { fileURLToPath } from 'node:url';
 import { STILLS } from '../../src/lib/studioTour.js';
 import { MARKETING_ROUTES } from '../../scripts/marketingRoutes.mjs';
 import { PRO_FEATURES, ULTRA_EXTRAS } from '../../src/lib/planFeatures.js';
-import { pass, fail } from './_shared.mjs';
+import { pass, fail, stripComments } from './_shared.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const PRE = resolve(ROOT, 'prerendered');
@@ -182,8 +182,9 @@ export function runAppMarketing() {
     'src/pages/Tour.jsx', 'src/pages/AppPage.jsx', 'src/lib/planFeatures.js',
     ...readdirSync(resolve(ROOT, 'src/components/home')).map((f) => `src/components/home/${f}`),
     ...readdirSync(resolve(ROOT, 'src/components/marketing')).map((f) => `src/components/marketing/${f}`)];
-  // Comments may name the word to say it is gone; copy may not.
-  const copyOf = (src) => src.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/^\s*\/\/.*$/gm, ' ').replace(/\{\/\*[\s\S]*?\*\/\}/g, ' ');
+  // Comments may name the word to say it is gone; copy may not. The shared
+  // stripper, not a hand-written one (the ratchet from #925).
+  const copyOf = (src) => stripComments(src);
   for (const [word, re] of [['WhatsApp', /whats\s?app/i], ['shareable', /shareable/i]]) {
     const onPages = pages.filter((p) => re.test(textOf(readFileSync(p, 'utf8'))));
     const inSources = MARKETING_SOURCES.filter((f) => re.test(copyOf(readFileSync(resolve(ROOT, f), 'utf8'))));
