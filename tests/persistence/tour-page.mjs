@@ -42,7 +42,7 @@ export function runTourPage() {
       for (const [field, ext] of [['webm', '.webm'], ['mp4', '.mp4'], ['poster', '.jpg']]) {
         const url = String(side[field] || '');
         check(`${at} ${field} is studio-tour/tour-page/${key}/${label}${ext}`,
-          url.startsWith(CLOUD) && url.endsWith(`/studio-tour/tour-page/${key}/${label}${ext}`), url.slice(-60));
+          url.startsWith(CLOUD) && new RegExp(`/studio-tour/tour-page/${key}/${label}(-\\d{14})?\\${ext}$`).test(url), url.slice(-60));
       }
       check(`${at} mp4 carries the bounded transcode`, side.mp4.includes('/vc_h264,q_auto:good,br_900k/'));
       check(`${at} poster is the frame at 1.0s`, side.poster.includes(`/so_1.0,w_${label === '390' ? 780 : 1280},q_auto:good/`));
