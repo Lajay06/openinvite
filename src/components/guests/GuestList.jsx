@@ -333,13 +333,31 @@ function fmtDate(iso) {
  */
 function LastSentCell({ guest }) {
   const history = sendHistoryFor(guest);
+  // ── ASKED NOT TO BE EMAILED ───────────────────────────────────────────
+  //
+  // Item 6 of goals/2026-10-09-reply-lifecycle.md. It belongs in this cell
+  // because this is where "has this guest been mailed" already lives, so
+  // "and never again" is the same question's answer.
+  //
+  // ABOVE THE HISTORY, NOT INSTEAD OF IT. What was sent before the guest
+  // opted out is still a true record, and a couple looking for why someone
+  // never replied needs both facts at once.
+  const optedOut = !!guest.email_opt_out;
+  const optedOutLine = optedOut ? (
+    <span data-opted-out style={{ fontSize: 12, color: '#991b1b', fontFamily: PJS }}>
+      Asked not to be emailed
+    </span>
+  ) : null;
   if (history.length === 0) {
-    return <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Not sent</span>;
+    return optedOut
+      ? <div data-send-history style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>{optedOutLine}</div>
+      : <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Not sent</span>;
   }
   const shown = history.slice(0, 3);
   const rest = history.length - shown.length;
   return (
     <div data-send-history style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      {optedOutLine}
       {shown.map((e, i) => (
         <span key={i} style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>
           {e.label}
