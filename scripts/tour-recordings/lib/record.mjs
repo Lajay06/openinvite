@@ -59,10 +59,12 @@ const recordingFixture = fixtureFor(RECORDING_FIXTURE);
 export const RECORDING_SEED = recordingFixture.seed;
 
 /** A context that renders the studio as a couple sees it, cursor included. */
-export async function recordingContext(browser, { width, height, seed = RECORDING_SEED }) {
+export async function recordingContext(browser, { width, height, seed = RECORDING_SEED, deviceScaleFactor = 1 }) {
   const ctx = await browser.newContext({
     viewport: { width, height },
-    deviceScaleFactor: 1,
+    // 1 for video, where every pixel is a frame to encode; a still asks for
+    // 2 so a phone frame stays sharp on a retina screen.
+    deviceScaleFactor,
     // The recordings are read as "this is your studio", so the dates in them
     // should not depend on where the machine recording them happens to be.
     timezoneId: 'Australia/Sydney',

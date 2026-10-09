@@ -23,6 +23,7 @@ export const MARKETING_ROUTES = [
   '/contact',
   '/about',
   '/tour',
+  '/app',
   '/privacy-policy',
   '/terms-of-service',
   '/login',
