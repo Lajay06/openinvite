@@ -6,7 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { MoreHorizontal, Edit2, Trash2, DollarSign, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { parseStoredDate } from '@/lib/guestDate';
-import { formatDashboardDate, EMPTY_DATE } from '@/lib/dashboardDate';
+import { formatDashboardDate } from '@/lib/dashboardDate';
 
 // A guarded date-fns format: date-fns THROWS RangeError on an invalid date, so
 // an unstamped or malformed value white-screens the page behind the error
@@ -162,7 +162,7 @@ export default function BudgetList({ items, onEdit, onDelete, readOnly = false, 
                   </TableCell>
                   <TableCell>
                     <span style={{ fontSize: 13, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                      {formatDashboardDate(item.payment_date) || EMPTY_DATE}
+                      {formatDashboardDate(item.payment_date) || '-'}
                     </span>
                   </TableCell>
                   <TableCell>

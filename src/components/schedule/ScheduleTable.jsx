@@ -6,7 +6,7 @@ import { OUTLINE_PILL, CELL_STRONG, CELL_MUTED, CELL_SECONDARY, CELL_NOWRAP } fr
 import { naturalCompare, sortRows, nextSortState } from '@/lib/tableSort';
 import { compareScheduleRows, minutesOfDay } from '@/lib/scheduleOrder';
 import { WHEN_LABEL, WHEN_RANK, ROW_HOME } from '@/lib/scheduleEvents';
-import { formatDashboardDate, EMPTY_DATE } from '@/lib/dashboardDate';
+import { formatDashboardDate } from '@/lib/dashboardDate';
 
 /**
  * SCHEDULE › LIST — the same table as the guest list, on the same shell (R37).
@@ -61,9 +61,9 @@ const COLUMN_SORTS = {
  */
 function dateLabel(key) {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(key || ''));
-  if (!m) return EMPTY_DATE;
+  if (!m) return '-';
   const [, y, mo, d] = m;
-  return formatDashboardDate(`${y}-${mo}-${d}`) || EMPTY_DATE;
+  return formatDashboardDate(`${y}-${mo}-${d}`) || '-';
 }
 
 /** "3:00 PM" from "15:00". */
