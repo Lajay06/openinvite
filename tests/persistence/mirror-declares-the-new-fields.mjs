@@ -160,11 +160,74 @@ export async function runMirrorDeclaresTheNewFields() {
   }
 
   // THE LIVE ORDER, which is what makes the next diff against an export cheap.
+  // These three stopped being last on 2026-10-09, when the reply-lifecycle
+  // fields were added after them, so the assertion is that they still sit
+  // TOGETHER AND IN ORDER rather than that they sit at the end. The next
+  // section pins what is last now.
   const guestKeys = Object.keys(guest.properties || {});
-  results.push(JSON.stringify(guestKeys.slice(-3)) === JSON.stringify(['household_id', 'is_child', 'child_age'])
-    ? pass('  and the three sit last, in the live order', guestKeys.slice(-3).join(', '))
-    : fail('  and the three sit last, in the live order', 'household_id, is_child, child_age',
-           guestKeys.slice(-3).join(', ')));
+  const oct07 = ['household_id', 'is_child', 'child_age'];
+  const at = guestKeys.indexOf('household_id');
+  results.push(at >= 0 && JSON.stringify(guestKeys.slice(at, at + 3)) === JSON.stringify(oct07)
+    ? pass('  and the three sit together, in the live order', guestKeys.slice(at, at + 3).join(', '))
+    : fail('  and the three sit together, in the live order', oct07.join(', '),
+           at >= 0 ? guestKeys.slice(at, at + 3).join(', ') : 'household_id MISSING'));
+
+  // ── 2026-10-09: THE REPLY-LIFECYCLE FIELDS ──────────────────────────────
+  //
+  // Same reason as the 2026-10-07 block above: an undeclared key is dropped
+  // silently, so the sync needs something asserting it. Item 0 of
+  // goals/2026-10-09-reply-lifecycle.md; the owner added all four changes in
+  // Base44 and this PR mirrors them with no behavior attached.
+  //
+  // to_hash, NOT to. Every other guest address in this entity is encrypted or
+  // hashed, and a new plaintext address column would have been the one place
+  // that regressed. Pinned here because the shape is the whole point of the
+  // field: a later send compares hashes to tell whether the address changed.
+  const replyLifecycle = {
+    email_opt_out:    { type: 'boolean', default: false },
+    email_opt_out_at: { type: 'string' },
+    send_history:     { type: 'array' },
+  };
+  for (const [name, want] of Object.entries(replyLifecycle)) {
+    const got = guest.properties?.[name];
+    results.push(got && got.type === want.type
+      ? pass(`Guest.${name} is declared, type ${want.type}`, JSON.stringify({ type: got.type }))
+      : fail(`Guest.${name} is declared, type ${want.type}`, want.type, got ? JSON.stringify(got.type) : 'MISSING'));
+    if ('default' in want) {
+      results.push(got?.default === want.default
+        ? pass(`  and defaults to ${want.default}`, String(got.default))
+        : fail(`  and defaults to ${want.default}`, String(want.default),
+               got && 'default' in got ? String(got.default) : 'no default'));
+    }
+  }
+  results.push(guest.properties?.email_opt_out_at?.format === 'date-time'
+    ? pass('  and email_opt_out_at is a date-time', 'date-time')
+    : fail('  and email_opt_out_at is a date-time', 'date-time',
+           guest.properties?.email_opt_out_at?.format || 'no format'));
+
+  const histProps = guest.properties?.send_history?.items?.properties || {};
+  results.push(JSON.stringify(Object.keys(histProps)) === JSON.stringify(['type', 'sent_at', 'to_hash'])
+    ? pass('  and a send_history entry is exactly type, sent_at, to_hash', Object.keys(histProps).join(', '))
+    : fail('  and a send_history entry is exactly type, sent_at, to_hash', 'type, sent_at, to_hash',
+           Object.keys(histProps).join(', ') || 'MISSING'));
+  results.push(!('to' in histProps)
+    ? pass('  and it carries no plaintext address key', 'no "to"')
+    : fail('  and it carries no plaintext address key', 'no "to"', 'to is declared'));
+
+  results.push(JSON.stringify(guest.properties?.event_responses?.items?.properties?.status?.enum)
+      === JSON.stringify(['pending', 'yes', 'no', 'maybe'])
+    ? pass('the per-event status enum carries maybe', 'pending, yes, no, maybe')
+    : fail('the per-event status enum carries maybe', 'pending, yes, no, maybe',
+           JSON.stringify(guest.properties?.event_responses?.items?.properties?.status?.enum)));
+  results.push(guest.properties?.event_responses?.items?.properties?.status?.default === 'pending'
+    ? pass('  and its default is still pending', 'pending')
+    : fail('  and its default is still pending', 'pending',
+           String(guest.properties?.event_responses?.items?.properties?.status?.default)));
+
+  const gen2 = readFileSync(root('src/lib/entityFields.generated.js'), 'utf8');
+  results.push(/"email_opt_out"/.test(gen2) && /"email_opt_out_at"/.test(gen2) && /"send_history"/.test(gen2)
+    ? pass('  and entityFields.generated.js was regenerated with all three', 'in the generated map')
+    : fail('  and entityFields.generated.js was regenerated with all three', 'all three', 'regenerate it'));
 
   // THE TWO GUEST SHAPES MOST AT RISK FROM A CHAT-DRIVEN EDIT, named in the
   // authorization for this sync. poll_votes is the bare object; the seven keys

@@ -175,7 +175,8 @@
             "enum": [
               "pending",
               "yes",
-              "no"
+              "no",
+              "maybe"
             ],
             "default": "pending",
             "description": "Attendance response for this event"
@@ -303,6 +304,43 @@
     "child_age": {
       "type": "number",
       "description": "Child's age in whole years (integer). Optional; no default. Only meaningful when is_child is true."
+    },
+    "email_opt_out": {
+      "type": "boolean",
+      "default": false,
+      "description": "The guest asked, from a link in an email we sent them, not to receive further emails about this wedding. Set by the guest, shown to the couple, respected by every send."
+    },
+    "email_opt_out_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the guest asked not to be emailed."
+    },
+    // APPENDED, NEVER REWRITTEN, and the hash is the point of the third key.
+    // invite_sent_at and reminder_sent_at hold one value each and are
+    // overwritten by every send, so "what has been sent to this guest" could
+    // not be answered from them. to_hash is a hash of the address rather than
+    // the address, because every other guest address in this entity is
+    // encrypted or hashed and a new plaintext column would be the one place
+    // that regressed. It still answers the question a later send asks, which
+    // is whether the address changed since last time.
+    "send_history": {
+      "type": "array",
+      "description": "What has been emailed to this guest: one entry per send, appended by the send path and never rewritten. to_hash is a hash of the address it went to, not the address.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "sent_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "to_hash": {
+            "type": "string"
+          }
+        }
+      }
     }
   },
   "required": [
