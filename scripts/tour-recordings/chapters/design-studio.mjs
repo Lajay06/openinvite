@@ -19,7 +19,10 @@ export default {
   key: 'design-studio',
   startPath: '/studio',
   async perform(page, cursor, { isPhone }) {
-    await cursor.hold(1100);
+    // 700 and 1100 below, down from 1100 and 1800: the rich fixture's studio
+    // takes longer to settle after Organic luxury, and the 1440 take ran to
+    // 21.3s against the brief's 20.
+    await cursor.hold(700);
     await cursor.click('[data-tour-target="studio-my-universe"]');
     await page.waitForTimeout(3200);
 
@@ -31,6 +34,6 @@ export default {
     await page.waitForTimeout(3400);
     await cursor.hold(1400);
     await wheelBy(page, 380, { steps: 12, pause: 80 });
-    await cursor.hold(1800);
+    await cursor.hold(1100);
   },
 };
