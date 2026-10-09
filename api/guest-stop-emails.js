@@ -50,7 +50,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
   if (!BASE44_ADMIN_KEY) {
-    console.error('[guest-stop-emails] FAILURE — BASE44_ADMIN_KEY is not set');
+    console.error('[guest-stop-emails] FAILURE: BASE44_ADMIN_KEY is not set');
     return res.status(500).json({ error: 'Server not configured' });
   }
 
