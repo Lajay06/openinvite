@@ -39,13 +39,17 @@ import { MARKETING_ROUTES as ROUTES } from './marketingRoutes.mjs';
 import { blockRemoteImages } from './lib/blockRemoteImages.mjs';
 
 const ERROR_BOUNDARY_TEXT = 'Something went wrong.';
-const VIEWPORT = { width: 1440, height: 900 };
+// BOTH WIDTHS. Overflow was measured at 1440 only, so a page could scroll
+// sideways on a phone and pass. The app goal (2026-10-10) asks for no
+// horizontal scroll at 390 on every page it touches; checking every route is
+// the same cost and catches the ones it does not touch too.
+const VIEWPORTS = [{ width: 1440, height: 900 }, { width: 390, height: 844 }];
 
-async function checkRoute(browser, path) {
+async function checkRoute(browser, path, viewport) {
   // Fourteen marketing routes, each at networkidle — which by definition waits
   // for every photograph. This loop was the largest single source of the
   // Cloudinary bill. See scripts/lib/blockRemoteImages.mjs.
-  const ctx = await browser.newContext({ viewport: VIEWPORT });
+  const ctx = await browser.newContext({ viewport });
   await blockRemoteImages(ctx);
   const page = await ctx.newPage();
   const pageErrors = [];
@@ -70,7 +74,7 @@ async function checkRoute(browser, path) {
       }));
       if (scrollWidth > clientWidth + 1) {
         ok = false;
-        reason = `horizontal overflow: scrollWidth ${scrollWidth}px > clientWidth ${clientWidth}px`;
+        reason = `horizontal overflow at ${viewport.width}: scrollWidth ${scrollWidth}px > clientWidth ${clientWidth}px`;
       }
     }
   } catch (err) {
@@ -78,7 +82,8 @@ async function checkRoute(browser, path) {
     reason = `navigation failed: ${err.message}`;
   }
   await page.close();
-  return { path, ok, reason };
+  await ctx.close();
+  return { path: `${path} @ ${viewport.width}`, ok, reason };
 }
 
 console.log(`Marketing-routes smoke test against ${BASE_URL}\n`);
@@ -86,9 +91,11 @@ console.log(`Marketing-routes smoke test against ${BASE_URL}\n`);
 const browser = await chromium.launch();
 const results = [];
 for (const path of ROUTES) {
-  const r = await checkRoute(browser, path);
-  results.push(r);
-  console.log(`${r.ok ? '✓' : '✗'} ${path}${r.ok ? '' : `  —  ${r.reason}`}`);
+  for (const viewport of VIEWPORTS) {
+    const r = await checkRoute(browser, path, viewport);
+    results.push(r);
+    console.log(`${r.ok ? '✓' : '✗'} ${r.path}${r.ok ? '' : `  —  ${r.reason}`}`);
+  }
 }
 await browser.close();
 
