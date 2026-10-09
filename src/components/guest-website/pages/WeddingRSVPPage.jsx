@@ -2,6 +2,13 @@ import React, { useState, useRef } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile';
 import SectionReveal from '../SectionReveal';
 import { isMotionEnabled } from '@/lib/universeStyling';
+// EVERY READER OF THE DEADLINE GOES THROUGH THE SHARED FORMATTER.
+// These nine lines did `new Date(value).toLocaleDateString()`, and a bare
+// YYYY-MM-DD parses as UTC midnight while toLocaleDateString renders in the
+// viewer's zone, so a 2027-05-01 deadline printed 4/30/2027 in Los Angeles:
+// the guest was told a day earlier than the couple typed. src/lib/rsvpDeadline.js
+// builds the date in local time so the calendar day survives.
+import { formatDeadline } from '@/lib/rsvpDeadline';
 import MinimalSectionMark from '../layouts/MinimalSectionMark';
 import { sectionMarkFor, pageAnchorFor } from '../layouts/sectionMarks';
 import HairlineRule from '../layouts/HairlineRule';
@@ -131,7 +138,7 @@ export default function WeddingRSVPPage({
 
           {content.rsvpDeadline && (
             <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontSize: '0.8125rem', letterSpacing: '0.04em', color: theme.accent, marginBottom: 32 }}>
-              Please respond by {new Date(content.rsvpDeadline).toLocaleDateString()}
+              Please respond by {formatDeadline(content.rsvpDeadline)}
             </SectionReveal>
           )}
 
@@ -236,7 +243,7 @@ export default function WeddingRSVPPage({
 
           {content.rsvpDeadline && (
             <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontSize: '0.875rem', fontWeight: 600, color: theme.accent, marginBottom: 28 }}>
-              Please respond by {new Date(content.rsvpDeadline).toLocaleDateString()}
+              Please respond by {formatDeadline(content.rsvpDeadline)}
             </SectionReveal>
           )}
 
@@ -340,7 +347,7 @@ export default function WeddingRSVPPage({
 
           {content.rsvpDeadline && (
             <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontSize: '0.8125rem', color: theme.accent, marginBottom: 32 }}>
-              Please respond by {new Date(content.rsvpDeadline).toLocaleDateString()}
+              Please respond by {formatDeadline(content.rsvpDeadline)}
             </SectionReveal>
           )}
 
@@ -444,7 +451,7 @@ export default function WeddingRSVPPage({
 
           {content.rsvpDeadline && (
             <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontSize: '0.875rem', color: theme.accent, marginBottom: 32 }}>
-              Please respond by {new Date(content.rsvpDeadline).toLocaleDateString()}
+              Please respond by {formatDeadline(content.rsvpDeadline)}
             </SectionReveal>
           )}
 
@@ -550,7 +557,7 @@ export default function WeddingRSVPPage({
 
           {content.rsvpDeadline && (
             <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontSize: '0.8125rem', color: theme.accent, marginBottom: 40 }}>
-              Please respond by {new Date(content.rsvpDeadline).toLocaleDateString()}
+              Please respond by {formatDeadline(content.rsvpDeadline)}
             </SectionReveal>
           )}
 
@@ -655,7 +662,7 @@ export default function WeddingRSVPPage({
 
           {content.rsvpDeadline && (
             <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontSize: '0.8125rem', fontWeight: 600, color: theme.accent, marginBottom: 32 }}>
-              Respond by {new Date(content.rsvpDeadline).toLocaleDateString()}
+              Respond by {formatDeadline(content.rsvpDeadline)}
             </SectionReveal>
           )}
 
@@ -760,7 +767,7 @@ export default function WeddingRSVPPage({
 
           {content.rsvpDeadline && (
             <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontSize: '0.875rem', color: theme.accent, marginBottom: 32 }}>
-              Please respond by {new Date(content.rsvpDeadline).toLocaleDateString()}
+              Please respond by {formatDeadline(content.rsvpDeadline)}
             </SectionReveal>
           )}
 
@@ -866,7 +873,7 @@ export default function WeddingRSVPPage({
 
           {content.rsvpDeadline && (
             <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontSize: '0.8125rem', letterSpacing: '0.04em', color: theme.accent, marginBottom: 40 }}>
-              Please respond by {new Date(content.rsvpDeadline).toLocaleDateString()}
+              Please respond by {formatDeadline(content.rsvpDeadline)}
             </SectionReveal>
           )}
 
@@ -1017,7 +1024,7 @@ export default function WeddingRSVPPage({
               marginBottom: '32px'
             }}
           >
-            Please respond by {new Date(content.rsvpDeadline).toLocaleDateString()}
+            Please respond by {formatDeadline(content.rsvpDeadline)}
           </SectionReveal>
         )}
 
