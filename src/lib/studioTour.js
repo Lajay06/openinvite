@@ -517,5 +517,5 @@ export function resolveChapter(chapter, context = {}) {
 export const STILLS = {
   'budget': 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto:good,w_780/v1791554481/studio-tour/stills/budget/390-20261009140119',
   'daily-update': 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto:good,w_780/v1791554483/studio-tour/stills/daily-update/390-20261009140122',
-  'guests-reply': 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto:good,w_780/v1791554484/studio-tour/stills/guests-reply/390-20261009140124',
+  'guests-reply': 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto:good,w_780/v1791586052/studio-tour/stills/guests-reply/390-20261009224731',
 };
