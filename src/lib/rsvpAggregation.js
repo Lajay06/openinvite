@@ -71,15 +71,34 @@ export function aggregateEventTallies(rows) {
 }
 
 /**
- * Mirrors RSVPPage.jsx's / rsvp-submit.js's overall-status derivation: a
- * guest is "attending" if they said yes to any invited event, "declined" if
- * they said no to every invited event, otherwise "pending".
+ * The overall-status derivation: a guest is "attending" if they said yes to any
+ * invited event, "declined" if they said no to every invited event, "maybe" if
+ * any invited event is a maybe and none is a yes, otherwise "pending".
+ *
+ * ── WHY YES WINS OVER MAYBE, AND WHY MAYBE BEATS PENDING ──────────────────
+ *
+ * Owner ruling 2026-10-09, item 1 of goals/2026-10-09-reply-lifecycle.md. A
+ * guest coming to one event and unsure about another is coming: the couple is
+ * counting heads, and a head they have is not provisional. A guest unsure
+ * about everything is not a head they have, but it is also not silence, and
+ * "pending" is what silence means everywhere else in this product. Maybe is
+ * something the couple RECORDS after a conversation, so collapsing it back
+ * into pending would discard the only thing that conversation produced.
+ *
+ * THIS IS NO LONGER A MIRROR OF api/rsvp-submit.js, deliberately. That
+ * endpoint's VALID_STATUSES stays pending, yes, no (owner ruling, same date),
+ * so a guest cannot submit a maybe and the server's own derivation can never
+ * meet one. The two agree on every input the server can actually see.
+ * RSVPPage.jsx holds the third copy and is likewise unreachable by a maybe:
+ * it seeds a stored maybe as unanswered, so the guest re-answers rather than
+ * round-tripping a value the server would coerce.
  */
 export function deriveRsvpStatus(eventResponses) {
   const invited = (eventResponses || []).filter(r => r.invited);
   const anyYes = invited.some(r => r.status === 'yes');
   const allNo = invited.length > 0 && invited.every(r => r.status === 'no');
-  return anyYes ? 'attending' : allNo ? 'declined' : 'pending';
+  const anyMaybe = invited.some(r => r.status === 'maybe');
+  return anyYes ? 'attending' : allNo ? 'declined' : anyMaybe ? 'maybe' : 'pending';
 }
 
 /**

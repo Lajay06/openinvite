@@ -98,7 +98,11 @@ export default function ImportGuestModal({ onClose, onImported, weddingEvents = 
     // read and then changed, and silence about that is the actual fault,
     // whatever the mapping.
     const maybeRows = toImport.filter((r) => r._maybeMapped).length;
-    const maybeLine = maybeRows > 0 ? 'Maybe is recorded as awaiting for now' : '';
+    // THE LINE IS GONE because the mapping it reported is gone: a spreadsheet
+    // saying "maybe" imports as a maybe since the owner widened the enum on
+    // 2026-10-09. Nothing is being changed on the couple's behalf any more, so
+    // there is nothing to disclose.
+    const maybeLine = '';
     // ── WHAT THE FILE TURNED INTO ───────────────────────────────────────────
     //
     // "{n} guests in {m} invitations, {c} children", the owner's words. Counted

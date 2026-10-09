@@ -334,7 +334,13 @@ export default function SeatingPage() {
   const eventPool = useMemo(() => {
     return guests
       .map(g => ({ guest: g, response: getGuestEventResponse(g, activeEvent) }))
-      .filter(({ response }) => response.invited && (response.status === 'yes' || response.status === 'pending'))
+      // MAYBE SITS WITH PENDING, NOT WITH YES. Owner ruling 2026-10-09:
+      // seating treats a maybe as not yet attending. It stays in the seatable
+      // list, because a couple planning tables for a guest they are talking to
+      // needs them on the chart, and it is excluded by the attending-only
+      // filter for the same reason a pending guest is.
+      .filter(({ response }) => response.invited
+        && (response.status === 'yes' || response.status === 'maybe' || response.status === 'pending'))
       .filter(({ response }) => !attendingOnly || response.status === 'yes');
   }, [guests, activeEvent, attendingOnly]);
 
