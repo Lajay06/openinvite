@@ -92,5 +92,13 @@ export function runAppMarketing() {
   check('home: after the six cards and before pricing',
     cardsAt > -1 && blockAt > cardsAt && pricingAt > blockAt, `cards ${cardsAt}, app ${blockAt}, pricing ${pricingAt}`);
 
+  // ── item 3: the pricing line ──────────────────────────────────────────
+  const pricing = existsSync(join(PRE, 'pricing/index.html')) ? readFileSync(join(PRE, 'pricing/index.html'), 'utf8') : '';
+  const planLines = [...pricing.matchAll(/<li\b[^>]*data-plan-app[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1]).trim());
+  check('pricing: each of the two plan cards says "Includes the app."',
+    planLines.length === 2 && planLines.every((t) => t === 'Includes the app.'), JSON.stringify(planLines));
+  check('pricing: the line appears nowhere else on the page',
+    (textOf(pricing).match(/Includes the app\./g) || []).length === 2);
+
   return r;
 }
