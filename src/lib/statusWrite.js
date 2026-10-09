@@ -77,11 +77,16 @@
 import { getGuestEventResponse } from './weddingEvents.js';
 
 /** The flat column's vocabulary, in the per-event column's vocabulary. */
+// MAYBE IS ITS OWN ROW NOW. It mapped to 'pending' from 2026-10-07, when the
+// offer was withdrawn from the editor because the per-event enum had no such
+// value and a Maybe therefore recorded nothing. The owner widened the enum on
+// 2026-10-09, so the mapping is one to one again and a recorded Maybe survives
+// as a Maybe. Item 1 of goals/2026-10-09-reply-lifecycle.md.
 const PER_EVENT_STATUS = {
   attending: 'yes',
   declined: 'no',
   pending: 'pending',
-  maybe: 'pending',
+  maybe: 'maybe',
 };
 
 /**

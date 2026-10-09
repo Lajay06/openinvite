@@ -38,15 +38,22 @@ import { counts as householdCounts } from './household.js';
 export function tallyEventsForGuests(wedding, guests = []) {
   const list = Array.isArray(guests) ? guests.filter(Boolean) : [];
   return getWeddingEvents(wedding).map((ev) => {
-    let invited = 0, yes = 0, no = 0;
+    // MAYBE IS A REPLY, and it is its own bucket rather than folded into
+    // either side. Replied means answered, which is already this file's rule
+    // for a no, and a maybe is an answer the couple recorded. It is counted
+    // separately because adding it to yes would inflate the head count the
+    // caterer reads.
+    let invited = 0, yes = 0, no = 0, maybe = 0;
     for (const g of list) {
       const r = getGuestEventResponse(g, ev);
       if (!r.invited) continue;
       invited += 1;
       if (r.status === 'yes') yes += 1;
       else if (r.status === 'no') no += 1;
+      else if (r.status === 'maybe') maybe += 1;
     }
-    return { event_id: ev.event_id, name: ev.name, isMain: ev.isMain, invited, replied: yes + no, yes, no };
+    return { event_id: ev.event_id, name: ev.name, isMain: ev.isMain, invited,
+             replied: yes + no + maybe, yes, no, maybe };
   });
 }
 

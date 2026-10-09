@@ -138,8 +138,13 @@ export function seedMemberForms(members = [], wedding) {
     const perEvent = {};
     for (const ev of memberEvents(m, wedding)) {
       const r = getGuestEventResponse(m.guest || m, ev);
+      // A STORED MAYBE SEEDS AS UNANSWERED, same reason as RSVPPage.jsx's own
+      // seed: this form's submit below filters on a truthy status, so an empty
+      // one is left out of the write entirely and the couple's recorded maybe
+      // survives. A seeded 'maybe' is truthy, would be submitted, and
+      // api/rsvp-submit.js would coerce it to pending. Owner ruling 2026-10-09.
       perEvent[ev.event_id] = {
-        status: r.status === 'pending' ? '' : r.status,
+        status: (r.status === 'pending' || r.status === 'maybe') ? '' : r.status,
         meal_choice: r.meal_choice || '',
         plus_one_attending: (r.plus_ones || 0) > 0,
         plus_one_name: (r.plus_one_names || [])[0] || '',

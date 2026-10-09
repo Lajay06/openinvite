@@ -63,6 +63,11 @@ export function EventChip({ event, response }) {
   if (response.status === 'no') {
     return <span style={{ ...CHIP_BASE, background: '#fee2e2', color: '#991b1b' }}>{event.name} · no</span>;
   }
+  // MAYBE READS AS MAYBE, not as awaiting. The fall-through below is for a
+  // guest who has not answered, and a recorded maybe is an answer.
+  if (response.status === 'maybe') {
+    return <span style={{ ...CHIP_BASE, background: '#ede9fe', color: '#5b21b6' }}>{event.name} · maybe</span>;
+  }
   return <span style={{ ...CHIP_BASE, background: '#fef9c3', color: '#854d0e' }}>{event.name} · awaiting</span>;
 }
 
@@ -548,7 +553,14 @@ const COLUMN_COUNT = 10;
    stays here is what is guests' own: WHICH columns sort, and how each reads
    off a row. Status sorts by the guest's overall derived state, not the raw
    per-event chip row. */
-const STATUS_SORT_RANK = { attending: 0, pending: 1, declined: 2 };
+// MAYBE SORTS BETWEEN ATTENDING AND PENDING, because the column sorts by how
+// settled the answer is: a maybe is more settled than silence and less than a
+// yes. Pending and declined shift down one rather than being reordered.
+const STATUS_SORT_RANK = { attending: 0, maybe: 1, pending: 2, declined: 3 };
+/** The rank an unrecognized status sorts at, which is pending's. Read off the
+ *  map rather than written as a number: it used to be a bare 1, and 1 stopped
+ *  meaning pending the moment maybe took that rank. */
+const UNKNOWN_STATUS_RANK = STATUS_SORT_RANK.pending;
 
 /**
  * THE COLUMN SORTS BY WHAT THE COLUMN SHOWS.
@@ -570,7 +582,7 @@ const STATUS_SORT_RANK = { attending: 0, pending: 1, declined: 2 };
  * couple sees is the order of the words they are reading.
  */
 function guestStatusSortKey(guest) {
-  return STATUS_SORT_RANK[deriveRsvpStatus(guest.event_responses || [])] ?? 1;
+  return STATUS_SORT_RANK[deriveRsvpStatus(guest.event_responses || [])] ?? UNKNOWN_STATUS_RANK;
 }
 
 const SORTABLE_COLUMNS = {
@@ -641,8 +653,8 @@ function fmtRespondedAt(iso) {
   return formatDashboardDate(iso);
 }
 
-const STATUS_LABELS = { yes: 'Attending', no: 'Declined', pending: 'Pending' };
-const STATUS_COLORS = { yes: '#166534', no: '#991b1b', pending: 'rgba(10,10,10,0.6)' };
+const STATUS_LABELS = { yes: 'Attending', no: 'Declined', maybe: 'Maybe', pending: 'Pending' };
+const STATUS_COLORS = { yes: '#166534', no: '#991b1b', maybe: '#5b21b6', pending: 'rgba(10,10,10,0.6)' };
 
 /* ── Dietary requirements — lives in the expanded detail row now, not its own
    table column (moved out to give the remaining columns more room; most rows

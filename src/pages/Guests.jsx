@@ -722,16 +722,20 @@ export default function Guests() {
   const activeEvent = eventFilter === 'all' ? null : weddingEvents.find(e => e.event_id === eventFilter) || null;
   const eventStats = React.useMemo(() => {
     if (!activeEvent) return null;
-    let invited = 0, yes = 0, no = 0, pending = 0;
+    // MAYBE IS ITS OWN NUMBER, not swept into pending by the else. Before the
+    // enum was widened a maybe could not reach here; now it can, and counting
+    // it as pending would tell the couple nobody had answered.
+    let invited = 0, yes = 0, no = 0, maybe = 0, pending = 0;
     for (const guest of guests) {
       const r = getGuestEventResponse(guest, activeEvent);
       if (!r.invited) continue;
       invited++;
       if (r.status === 'yes') yes++;
       else if (r.status === 'no') no++;
+      else if (r.status === 'maybe') maybe++;
       else pending++;
     }
-    return { invited, yes, no, pending };
+    return { invited, yes, no, maybe, pending };
   }, [guests, activeEvent]);
 
   // ── PER EVENT, WHEN THERE IS MORE THAN ONE ───────────────────────────────
@@ -759,7 +763,9 @@ export default function Guests() {
         const r = getGuestEventResponse(g, event);
         if (!r.invited) continue;
         invited++;
-        if (r.status === 'yes' || r.status === 'no') replied++;
+        // REPLIED MEANS ANSWERED, as the comment above says, so a maybe counts
+        // here exactly as a no does.
+        if (r.status === 'yes' || r.status === 'no' || r.status === 'maybe') replied++;
       }
       return { event, invited, replied };
     });

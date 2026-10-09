@@ -471,8 +471,20 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
         for (const ev of events) {
           const r = getGuestEventResponse(g, ev);
           if (!r.invited) continue;
+          // A STORED MAYBE SEEDS AS UNANSWERED, AND THIS PREVENTS DATA LOSS.
+          //
+          // The form submits EVERY invited event, not only the ones touched,
+          // and api/rsvp-submit.js coerces anything outside pending, yes, no
+          // to pending. So the moment the couple could record a maybe, a guest
+          // who opened their link and pressed submit would silently erase it.
+          // Seeding it empty leaves both buttons unselected, and
+          // allEventsAnswered then refuses the submit until the guest actually
+          // chooses, so what reaches the server is always a real answer.
+          //
+          // The guest is never OFFERED Maybe. This is only about not destroying
+          // the couple's own record of one. Owner ruling 2026-10-09.
           seeded[ev.event_id] = {
-            status: r.status === 'pending' ? '' : r.status,
+            status: (r.status === 'pending' || r.status === 'maybe') ? '' : r.status,
             meal_choice: r.meal_choice || '',
             plus_one_attending: (r.plus_ones || 0) > 0,
             plus_one_name: (r.plus_one_names || [])[0] || '',

@@ -50,19 +50,6 @@ export function rowToGuest(row, country = DEFAULT_COUNTRY, events = []) {
   // deliberately never read from any import — set afterwards via inline or
   // bulk edit, never guessed or defaulted.
   const rsvpRaw = String(row['RSVP'] ?? '').toLowerCase().trim();
-  // ── A SPREADSHEET SAYING "MAYBE" BECOMES AWAITING ───────────────────────
-  //
-  // Advisor ruling 2026-10-07, second pass: Maybe has left the editor because
-  // the per-event status enum is pending, yes, no, and widening it is a schema
-  // change. A file can still carry the word, so it is MAPPED here rather than
-  // stored: the flat column gets 'pending' too, not just the rows, because a
-  // stored 'maybe' nothing can display and nothing can edit is a value with no
-  // way out of the record.
-  //
-  // THE COUPLE IS TOLD. `_maybeMapped` is preview state, stripped before the
-  // guest is created along with every other underscore field, and
-  // ImportGuestModal turns it into a line in the summary. Mapping somebody's
-  // data without saying so is the part that would be wrong.
   // ── HOUSEHOLD, CHILD AND AGE ────────────────────────────────────────────
   //
   // THE LABEL IS NOT THE KEY. A couple types "Patel" or "Table 4 family" in
@@ -90,9 +77,12 @@ export function rowToGuest(row, country = DEFAULT_COUNTRY, events = []) {
   const childAge = isChildRow && ageNum !== null && Number.isFinite(ageNum)
     && ageNum >= 0 && ageNum <= 17 ? ageNum : undefined;
 
-  const maybeMapped = rsvpRaw === 'maybe';
-  const rsvpStatus = maybeMapped ? 'pending'
-    : (VALID_RSVP.includes(rsvpRaw) ? rsvpRaw : 'pending');
+  // A SPREADSHEET SAYING "MAYBE" NOW STORES MAYBE. It was mapped to pending
+  // from 2026-10-07 because the per-event enum had no maybe and the value
+  // would have had no way out of the record. The owner widened the enum on
+  // 2026-10-09, so the word imports as itself and there is nothing to tell the
+  // couple about: _maybeMapped and the summary line it fed are both gone.
+  const rsvpStatus = VALID_RSVP.includes(rsvpRaw) ? rsvpRaw : 'pending';
   // ── AN IMPORTED RSVP IS A PER-EVENT ANSWER NOW ──────────────────────────
   //
   // Advisor ruling 2026-10-07: nothing reads the flat column for display, so a
@@ -136,7 +126,6 @@ export function rowToGuest(row, country = DEFAULT_COUNTRY, events = []) {
     phone: phoneValue,
     rsvp_status: rsvpStatus,
     ...(eventResponses.length > 0 ? { event_responses: eventResponses } : {}),
-    ...(maybeMapped ? { _maybeMapped: true } : {}),
     // The LABEL travels as preview state; parseGuestFile turns it into a
     // household_id once it can see every row.
     ...(householdLabel ? { _householdLabel: householdLabel } : {}),

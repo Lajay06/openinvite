@@ -141,9 +141,13 @@ export async function runStatusWritesRows() {
         shape(write(answered, 'pending')),
         [['main-ceremony', true, 'pending', null], ['reception', true, 'pending', null]]);
 
-  check('  and maybe does the same, because there is no per-event maybe',
+  // MAYBE WRITES MAYBE ROWS NOW, and it keeps a timestamp, because the couple
+  // recorded it at a moment and that moment is what responded_at means. It
+  // used to clear both, like pending, since the per-event enum had no maybe;
+  // the owner widened the enum on 2026-10-09.
+  check('  while maybe writes maybe rows, with a timestamp',
         shape(write(answered, 'maybe')),
-        [['main-ceremony', true, 'pending', null], ['reception', true, 'pending', null]]);
+        [['main-ceremony', true, 'maybe', NOW], ['reception', true, 'maybe', NOW]]);
 
   check('declined writes no, with a timestamp',
         shape(write(answered, 'declined')),

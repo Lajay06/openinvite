@@ -377,22 +377,22 @@ export default function GuestForm({ guest, onSubmit, onCancel, saving = false, m
             <Select value={formData.rsvp_status} onValueChange={v => set('rsvp_status', v)}>
               <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
               <SelectContent>
-                {/* ── NO MAYBE, UNTIL THE PER-EVENT ENUM HAS ONE ──────────
-                    Advisor ruling 2026-10-07, second pass. The status is
-                    derived from event_responses now, and the per-event status
-                    enum is pending, yes, no (base44/entities/Guest.jsonc).
-                    Maybe mapped to pending, so choosing it showed exactly what
-                    Pending shows on every surface: a choice that looked like it
-                    recorded something and recorded nothing.
+                {/* ── MAYBE IS THE COUPLE'S TO RECORD, NEVER THE GUEST'S ───
+                    Back on 2026-10-09: the owner widened the per-event enum to
+                    pending, yes, no, maybe, so choosing Maybe here now records
+                    a real maybe row rather than a pending one wearing its name.
+                    It was withdrawn on 2026-10-07 for exactly that reason and
+                    the note is kept rather than deleted, because the reason it
+                    was withdrawn is the reason it can come back.
 
-                    The offer is withdrawn rather than the enum widened,
-                    because widening it is a schema change. An existing guest
-                    whose stored column says 'maybe' is NOT rewritten: nothing
-                    reads the flat column for display, so the value is inert
-                    where it sits, and a sweep would edit records nobody
-                    asked us to touch. */}
+                    THE GUEST IS NOT OFFERED THIS. Their reply form is a yes or
+                    a no with big buttons, and api/rsvp-submit.js refuses any
+                    other value, deliberately. Maybe is what the couple writes
+                    down after a conversation, so it belongs on this form and
+                    nowhere a guest can reach. Owner ruling, same date. */}
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="attending">Attending</SelectItem>
+                <SelectItem value="maybe">Maybe</SelectItem>
                 <SelectItem value="declined">Declined</SelectItem>
               </SelectContent>
             </Select>

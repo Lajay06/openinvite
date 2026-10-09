@@ -46,7 +46,12 @@ export function repliesForEvent(guests = [], eventId) {
   const names = [];
   for (const g of guests) {
     const entry = (g?.event_responses || []).find((r) => r?.event_id === eventId);
-    if (entry && (entry.status === 'yes' || entry.status === 'no')) names.push(g.name || 'A guest');
+    // A MAYBE COUNTS AS A REPLY HERE, which is the point of this warning: it
+    // names the people whose answer deleting the event would throw away, and a
+    // maybe the couple recorded after a conversation is exactly such an answer.
+    if (entry && (entry.status === 'yes' || entry.status === 'no' || entry.status === 'maybe')) {
+      names.push(g.name || 'A guest');
+    }
   }
   return { count: names.length, names };
 }
