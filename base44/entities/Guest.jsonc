@@ -175,7 +175,8 @@
             "enum": [
               "pending",
               "yes",
-              "no"
+              "no",
+              "maybe"
             ],
             "default": "pending",
             "description": "Attendance response for this event"
@@ -284,6 +285,16 @@
     "child_age": {
       "type": "number",
       "description": "Child's age in whole years (integer). Optional; no default. Only meaningful when is_child is true."
+    },
+    "email_opt_out": {
+      "type": "boolean",
+      "default": false,
+      "description": "The guest asked, from a link in an email we sent them, not to receive further emails about this wedding. Set by the guest, shown to the couple, respected by every send."
+    },
+    "email_opt_out_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the guest asked not to be emailed."
     }
   },
   "required": [
