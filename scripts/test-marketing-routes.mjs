@@ -39,51 +39,62 @@ import { MARKETING_ROUTES as ROUTES } from './marketingRoutes.mjs';
 import { blockRemoteImages } from './lib/blockRemoteImages.mjs';
 
 const ERROR_BOUNDARY_TEXT = 'Something went wrong.';
-// BOTH WIDTHS. Overflow was measured at 1440 only, so a page could scroll
-// sideways on a phone and pass. The app goal (2026-10-10) asks for no
-// horizontal scroll at 390 on every page it touches; checking every route is
-// the same cost and catches the ones it does not touch too.
-const VIEWPORTS = [{ width: 1440, height: 900 }, { width: 390, height: 844 }];
+// BOTH WIDTHS, ONE LOAD. Overflow was measured at 1440 only, so a page could
+// scroll sideways on a phone and pass; the app goal (2026-10-10) asks for no
+// horizontal scroll at 390 on every page it touches. The 390 check RESIZES the
+// page it already loaded instead of navigating again: a second networkidle
+// load per route doubled this guard's time and pushed Browser guards A past
+// its 25-minute limit. Layout reflows on resize (media queries and the
+// matchMedia listeners both fire), so the measurement is the same one.
+const WIDE = { width: 1440, height: 900 };
+const PHONE = { width: 390, height: 844 };
 
-async function checkRoute(browser, path, viewport) {
+async function overflow(page) {
+  const { scrollWidth, clientWidth } = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    clientWidth: document.documentElement.clientWidth,
+  }));
+  return scrollWidth > clientWidth + 1 ? `scrollWidth ${scrollWidth}px > clientWidth ${clientWidth}px` : null;
+}
+
+async function checkRoute(browser, path) {
   // Fourteen marketing routes, each at networkidle — which by definition waits
   // for every photograph. This loop was the largest single source of the
   // Cloudinary bill. See scripts/lib/blockRemoteImages.mjs.
-  const ctx = await browser.newContext({ viewport });
+  const ctx = await browser.newContext({ viewport: WIDE });
   await blockRemoteImages(ctx);
   const page = await ctx.newPage();
   const pageErrors = [];
   page.on('pageerror', (err) => pageErrors.push(err.message));
 
-  let ok = true;
-  let reason = '';
+  const wide = { path: `${path} @ 1440`, ok: true, reason: '' };
+  const phone = { path: `${path} @ 390`, ok: true, reason: '' };
   try {
     await page.goto(`${BASE_URL}${path}`, { waitUntil: 'networkidle', timeout: 30000 });
     await page.waitForTimeout(800); // let any render-time throw surface
     const bodyText = await page.evaluate(() => document.body.innerText);
     if (bodyText.includes(ERROR_BOUNDARY_TEXT)) {
-      ok = false;
-      reason = `error boundary fallback rendered ("${ERROR_BOUNDARY_TEXT}")`;
+      wide.ok = phone.ok = false;
+      wide.reason = phone.reason = `error boundary fallback rendered ("${ERROR_BOUNDARY_TEXT}")`;
     } else if (pageErrors.length > 0) {
-      ok = false;
-      reason = `uncaught exception: ${pageErrors[0]}`;
+      wide.ok = phone.ok = false;
+      wide.reason = phone.reason = `uncaught exception: ${pageErrors[0]}`;
     } else {
-      const { scrollWidth, clientWidth } = await page.evaluate(() => ({
-        scrollWidth: document.documentElement.scrollWidth,
-        clientWidth: document.documentElement.clientWidth,
-      }));
-      if (scrollWidth > clientWidth + 1) {
-        ok = false;
-        reason = `horizontal overflow at ${viewport.width}: scrollWidth ${scrollWidth}px > clientWidth ${clientWidth}px`;
-      }
+      const o1 = await overflow(page);
+      if (o1) { wide.ok = false; wide.reason = `horizontal overflow at 1440: ${o1}`; }
+      await page.setViewportSize(PHONE);
+      await page.waitForTimeout(600); // let the reflow and any resize listeners settle
+      const o2 = await overflow(page);
+      if (pageErrors.length > 0) { phone.ok = false; phone.reason = `uncaught exception at 390: ${pageErrors[0]}`; }
+      else if (o2) { phone.ok = false; phone.reason = `horizontal overflow at 390: ${o2}`; }
     }
   } catch (err) {
-    ok = false;
-    reason = `navigation failed: ${err.message}`;
+    wide.ok = phone.ok = false;
+    wide.reason = phone.reason = `navigation failed: ${err.message}`;
   }
   await page.close();
   await ctx.close();
-  return { path: `${path} @ ${viewport.width}`, ok, reason };
+  return [wide, phone];
 }
 
 console.log(`Marketing-routes smoke test against ${BASE_URL}\n`);
@@ -91,8 +102,7 @@ console.log(`Marketing-routes smoke test against ${BASE_URL}\n`);
 const browser = await chromium.launch();
 const results = [];
 for (const path of ROUTES) {
-  for (const viewport of VIEWPORTS) {
-    const r = await checkRoute(browser, path, viewport);
+  for (const r of await checkRoute(browser, path)) {
     results.push(r);
     console.log(`${r.ok ? '✓' : '✗'} ${r.path}${r.ok ? '' : `  —  ${r.reason}`}`);
   }
