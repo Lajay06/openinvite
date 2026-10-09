@@ -80,7 +80,30 @@ to work by elimination, it found all three immediately.
 
 ## Close
 
-Last line: "Closed <date> at main <full SHA>, PRs <list>".
-
 The lessons section above was not pushed as a separate docs commit, on the owner's
-instruction. It reaches main with item 5's held PR, as part of the state write-up.
+instruction. It reached main with item 5's held PR, as part of the state write-up.
+
+Three recorded facts.
+
+NOTHING STORED EVER MOVED, so there was no migration to do. formatCurrency was a
+display transform on four figures on one page, and no save path ever converted: an
+amount a couple typed was stored exactly as typed. The bug was that the dashboard
+multiplied it by a live rate on the way out, so a couple on AUD who typed 50000 saw
+A$76,000, and the figure moved when the rate moved. Every record was always right.
+
+THE BROWSER NOW FETCHES NO RATE TABLE AT ALL. api/rates.js is left deployed with no
+caller rather than deleted, and the 1 hour localStorage cache of oi_exchange_rates is
+gone. tests/persistence/third-party-assets.mjs was strengthened, not relaxed, to pin
+that absence: the guard it used to carry existed because calling open.er-api.com
+direct from the browser leaked every visitor's IP, guests included, and no request
+is a stronger property than a proxied one. Confirmed absent from the live production
+bundle.
+
+THE GUEST PAYLOAD GAINED EXACTLY ONE FIELD FROM User, the ISO code, resolved through
+the single-record admin path in api/_lib/base44Admin.js because bulk-listing User does
+not work on this platform. tests/persistence/guest-site-currency.mjs asserts that it
+stayed one key wide BY DIFFERENCE rather than by a list of forbidden keys, so it fails
+if a later edit spreads anything else out of the owner's account record into a
+response anyone with a slug can read.
+
+Closed 2026-10-09 at main e55a6b5c3269126fda1c5d4c9da0286a2cd6245e, PRs #932 #933
