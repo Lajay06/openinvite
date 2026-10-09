@@ -168,12 +168,23 @@ export default function StudioShareTab({ details: propDetails }) {
         )}
       </div>
 
-      {/* THREE COLUMN BODY */}
-      <div style={{ display: 'flex', gap: 0, padding: '32px 40px', alignItems: 'flex-start', maxWidth: 1400, margin: '0 auto', boxSizing: 'border-box' }}>
+      {/* THREE COLUMN BODY, WHICH STACKS ON A PHONE.
+          It was a bare flex row with no wrap and no breakpoint, so at 390 the
+          two columns shared the width with the fixed 280px sidebar and the
+          email column collapsed to almost nothing: the message box measured
+          26px and the send button 28px. Found by lane B's fixture audit at
+          390, which is the only way it could be found, since nothing in the
+          source says a width.
+
+          THE CLASS DOES THE WORK, NOT AN INLINE STYLE. A media query cannot
+          reach inline styles, and these columns are styled inline, so the
+          stacking rule lives in src/index.css next to the builder header's,
+          at the dashboard's existing 640px phone breakpoint. */}
+      <div className="oi-share-body" style={{ display: 'flex', gap: 0, padding: '32px 40px', alignItems: 'flex-start', maxWidth: 1400, margin: '0 auto', boxSizing: 'border-box' }}>
 
 
         {/* CENTER — EMAIL */}
-        <div style={{ flex: 1, minWidth: 0, marginRight: 24 }}>
+        <div className="oi-share-main" style={{ flex: 1, minWidth: 0, marginRight: 24 }}>
           <div style={{ border: '1px solid #EEEEEE', padding: 24 }}>
             <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px' }}>Email Your Guests</p>
             <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px' }}>Send your guest suite directly to your guest list.</p>
@@ -247,7 +258,7 @@ export default function StudioShareTab({ details: propDetails }) {
         </div>
 
         {/* RIGHT: THE SITE'S OWN SETTINGS */}
-        <div style={{ width: 280, flexShrink: 0 }}>
+        <div className="oi-share-aside" style={{ width: 280, flexShrink: 0 }}>
           <div style={{ border: '1px solid #EEEEEE', padding: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <div>
