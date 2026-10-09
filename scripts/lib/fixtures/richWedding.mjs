@@ -553,6 +553,11 @@ export function buildRichWedding({ now = Date.now() } = {}) {
     // fixture has to make it true.
     celebrant: 'Ruth Alder',
     activeUniverse: 'florence', websiteEnabled: true, enabledPages,
+    // A COVER PHOTO, because the home hero reads coverPhoto and nothing else:
+    // without one the published site opens on a flat field of color, which is
+    // not what a couple six weeks out has. Stock already in the account, the
+    // same pool as the moodboard.
+    coverPhoto: STOCK('DTS_Weirdly_Ever_After_Agust%C3%ADn_Far%C3%ADas_Photos_ID8960_nspx4l.jpg', 2400),
     qna, homeContent, rsvpContent: { rsvpDeadline: iso(W - 21) },
     budget: {
       total: 85000,
