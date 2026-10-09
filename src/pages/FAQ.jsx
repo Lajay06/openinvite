@@ -16,7 +16,11 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 const FAQS = [
   {
     q: "What is Openinvite?",
-    a: "Openinvite is a wedding planning app and guest suite builder for couples. It combines guest management, budget tracking, a guest suite your guests can visit, digital wedding invitations and an AI wedding assistant called Ava in one platform, for a single one-time payment instead of a subscription.",
+    a: "Openinvite is a wedding planner, on the web and on your phone and guest suite builder for couples. It combines guest management, budget tracking, a guest suite your guests can visit, digital wedding invitations and an AI wedding assistant called Ava in one platform, for a single one-time payment instead of a subscription.",
+  },
+  {
+    q: "Is there an app?",
+    a: "Yes, for iPhone and Android. It is coming to the App Store and Google Play at launch. You design your guest suite on a desktop, where the space is; the guest list, replies, budget and seating chart are yours on your phone.",
   },
   {
     q: "How much does it cost? Is it really one payment?",

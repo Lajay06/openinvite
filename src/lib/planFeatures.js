@@ -33,7 +33,7 @@ export const PRO_FEATURES = [
 export const ULTRA_EXTRAS = [
   "Guest suite builder",
   "Universes (20 guest suite styles)",
-  "Digital invitations via email & WhatsApp",
+  "Digital invitations by email",
   "Online RSVP pages for guests",
   "Guest suite: stay, getting here & experience guide",
   "Save the dates & thank you cards",

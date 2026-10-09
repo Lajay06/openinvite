@@ -205,7 +205,7 @@ const TABLE_ROWS = [
 { feature: "Vow writing", without: "Blank page anxiety", with: "Guided by Ava" },
 { feature: "Guest seating", without: "Stressful trial and error", with: "Smart conflict detection" },
 { feature: "Vendor coordination", without: "Emails everywhere", with: "Centralized with reminders" },
-{ feature: "Day-of schedule", without: "Printed on paper", with: "Dynamic, shareable timeline" }];
+{ feature: "Day-of schedule", without: "Printed on paper", with: "A live timeline you can export to any calendar" }];
 
 
 // ── Feature split section ─────────────────────────────────────
@@ -383,7 +383,7 @@ export default function AvaPage() {
       {/* ── FEATURE SPLITS ───────────────────────────────────── */}
       <FeatureSplit
         bgColor="#FFFFFF"
-        label="WEBSITE BUILDER"
+        label="GUEST SUITE"
         labelColor="#DDF762"
         headline="Your guest suite, written by Ava."
         body="Tell Ava about your love story, your venue, your vibe. Ava writes your welcome message, populates every page, and builds your whole guest suite, ready in under 60 seconds."

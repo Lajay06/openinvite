@@ -20,6 +20,7 @@ import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { STILLS } from '../../src/lib/studioTour.js';
 import { MARKETING_ROUTES } from '../../scripts/marketingRoutes.mjs';
+import { PRO_FEATURES, ULTRA_EXTRAS } from '../../src/lib/planFeatures.js';
 import { pass, fail } from './_shared.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -155,6 +156,40 @@ export function runAppMarketing() {
     planLines.length === 2 && planLines.every((t) => t === 'Includes the app.'), JSON.stringify(planLines));
   check('pricing: the line appears nowhere else on the page',
     (textOf(pricing).match(/Includes the app\./g) || []).length === 2);
+
+  // ── marketing copy fixes (owner rulings 2026-10-10) ──────────────────
+  // The FAQ answers and some lists only render when opened, so the questions
+  // are read from the prerendered page and the answers from the source.
+  const faqHtml = existsSync(join(PRE, 'faq/index.html')) ? readFileSync(join(PRE, 'faq/index.html'), 'utf8') : '';
+  const faqSrc = readFileSync(resolve(ROOT, 'src/pages/FAQ.jsx'), 'utf8');
+  check('faq: "Is there an app?" is asked, right after "What is Openinvite?"',
+    textOf(faqHtml).includes('Is there an app?')
+      && faqSrc.indexOf('q: "Is there an app?"') > faqSrc.indexOf('q: "What is Openinvite?"')
+      && !/q: "[^"]+",[\s\S]*?q: "Is there an app\?"/.test(faqSrc.slice(faqSrc.indexOf('q: "What is Openinvite?"') + 30, faqSrc.indexOf('q: "Is there an app?"') + 30)));
+  check('faq: its answer, verbatim', faqSrc.includes('a: "Yes, for iPhone and Android. It is coming to the App Store and Google Play at launch. You design your guest suite on a desktop, where the space is; the guest list, replies, budget and seating chart are yours on your phone."'));
+  check('faq: "What is Openinvite?" says a wedding planner, on the web and on your phone',
+    faqSrc.includes('Openinvite is a wedding planner, on the web and on your phone') && !faqSrc.includes('a wedding planning app'));
+  const pricingSrc = readFileSync(resolve(ROOT, 'src/pages/Pricing.jsx'), 'utf8');
+  check('pricing: "Is the app included?" is asked', textOf(pricing).includes('Is the app included?'));
+  check('pricing: its answer, verbatim', pricingSrc.includes('a: "Yes. Both plans include the app at no extra cost, and it is coming to the App Store and Google Play at launch."'));
+  check('pricing: the comparison table has one "Guest suite" row', (pricingSrc.match(/feature: "Guest suite"/g) || []).length === 1);
+  check('plan features: "Digital invitations by email", and no WhatsApp',
+    ULTRA_EXTRAS.includes('Digital invitations by email') && ![...PRO_FEATURES, ...ULTRA_EXTRAS].some((f) => /whats\s?app/i.test(f)));
+  // NEITHER WORD ON ANY MARKETING PAGE: the served pages, and the sources
+  // behind copy that only renders when opened.
+  const MARKETING_SOURCES = ['src/pages/Home.jsx', 'src/pages/Features.jsx', 'src/pages/Ava.jsx', 'src/pages/Pricing.jsx',
+    'src/pages/Universes.jsx', 'src/pages/About.jsx', 'src/pages/Contact.jsx', 'src/pages/FAQ.jsx', 'src/pages/Gifting.jsx',
+    'src/pages/Tour.jsx', 'src/pages/AppPage.jsx', 'src/lib/planFeatures.js',
+    ...readdirSync(resolve(ROOT, 'src/components/home')).map((f) => `src/components/home/${f}`),
+    ...readdirSync(resolve(ROOT, 'src/components/marketing')).map((f) => `src/components/marketing/${f}`)];
+  // Comments may name the word to say it is gone; copy may not.
+  const copyOf = (src) => src.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/^\s*\/\/.*$/gm, ' ').replace(/\{\/\*[\s\S]*?\*\/\}/g, ' ');
+  for (const [word, re] of [['WhatsApp', /whats\s?app/i], ['shareable', /shareable/i]]) {
+    const onPages = pages.filter((p) => re.test(textOf(readFileSync(p, 'utf8'))));
+    const inSources = MARKETING_SOURCES.filter((f) => re.test(copyOf(readFileSync(resolve(ROOT, f), 'utf8'))));
+    check(`"${word}" appears on no marketing page`, onPages.length === 0 && inSources.length === 0,
+      [...onPages.map((p) => p.slice(PRE.length + 1)), ...inSources].join(', ') || `${pages.length} pages, ${MARKETING_SOURCES.length} sources`);
+  }
 
   return r;
 }

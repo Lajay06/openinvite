@@ -16,7 +16,7 @@ const BULLETS = [
   "Vendor coordination made easy",
   "Assign tasks to your crew",
   "Track deadlines without drama",
-  "Share the schedule with key players",
+  "Put the schedule in everyone's calendar.",
   "Create your seamless day-of rundown",
 ];
 

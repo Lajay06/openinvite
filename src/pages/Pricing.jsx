@@ -52,6 +52,10 @@ const FAQS = [
     a: "Pro includes everything you need to plan your wedding: guests, budget, vendors, seating, timeline, and more. Ultra adds the guest suite, invitations, online RSVP, and all twenty universes.",
   },
   {
+    q: "Is the app included?",
+    a: "Yes. Both plans include the app at no extra cost, and it is coming to the App Store and Google Play at launch.",
+  },
+  {
     q: "Can I upgrade from Pro to Ultra later?",
     a: "Yes, you can upgrade at any time and pay only the difference ($50).",
   },
@@ -82,7 +86,6 @@ const TABLE_ROWS = [
   { feature: "Digital invitations",     trial: true,        pro: false,        ultra: true },
   { feature: "Online RSVP",            trial: true,        pro: false,        ultra: true },
   { feature: "Universes",               trial: true,        pro: false,        ultra: true },
-  { feature: "Guest suite",             trial: true,        pro: false,        ultra: true },
   { feature: "Support",                 trial: "Priority",  pro: "Priority",   ultra: "Priority" },
   { feature: "Price",                   trial: "Free",      pro: "US$49",        ultra: "US$99" },
 ];
