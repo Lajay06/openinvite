@@ -442,7 +442,7 @@ export function buildRichWedding({ now = Date.now() } = {}) {
     T('Order the dress', 'attire', 'high', true, -180, '6_months'),
     T('Book hair and makeup', 'attire', 'medium', true, -150, '6_months'),
     T('Book the florist', 'flowers', 'medium', true, -150, '6_months'),
-    T('Publish the wedding website', 'guests', 'medium', true, -120, '6_months'),
+    T('Publish the guest site', 'guests', 'medium', true, -120, '6_months'),
     T('Send invitations', 'guests', 'high', true, -100, '3_months'),
     T('Lodge the notice of intended marriage', 'legal', 'urgent', true, -90, '3_months'),
     T('Order the cake', 'catering', 'low', true, -60, '3_months'),
