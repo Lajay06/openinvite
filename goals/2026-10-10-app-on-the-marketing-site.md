@@ -44,4 +44,4 @@ Each item adds or extends one guard, red before and green after. Home, Features,
 
 Last line: "Closed <date> at main <full SHA>, PRs <list>".
 
-Closed 2026-10-10 at main 177c8b050431ffa621989974ed15f03ad4af6fa3, PRs #947 #948 #949
+Closed 2026-10-10 at main f20ceaddc2ba2c959fae43d8197710398ff8ec30, PRs #947 #948 #949 #950

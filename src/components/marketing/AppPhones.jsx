@@ -13,9 +13,10 @@
  *
  * The phones are real product from the rich recording fixture at 390
  * (STILLS in src/lib/studioTour.js), with no drawn cursor. The guest list
- * still shows a reply that came in today: the top household's reply details,
- * scrolled to the Responded column, because the product has no "new reply"
- * marker and that date is how it shows one.
+ * still shows a reply that came in today: the top household's reply details
+ * with the guest's name and today's Responded date, the table cropped to its
+ * Event and Responded columns (owner ruling 2026-10-10), because the product
+ * has no "new reply" marker and that date is how it shows one.
  *
  * NO BADGE AND NO STORE LINK until the owner supplies the links: the store
  * line is text.

@@ -11,6 +11,7 @@
  *
  *   CAPTURE_BASE_URL=http://localhost:4230 node scripts/tour-recordings/record-stills.mjs
  *   CAPTURE_BASE_URL=... node scripts/tour-recordings/record-stills.mjs --upload
+ *   CAPTURE_BASE_URL=... node scripts/tour-recordings/record-stills.mjs --only=guests-reply --upload
  *
  * A still is a module in ./stills/ with a key, a startPath and an optional
  * prepare(page) run before the picture. Uploads go to
@@ -26,10 +27,13 @@ import { cloudinaryConfig, uploadStill, stillUrl } from './lib/cloudinary.mjs';
 const BASE = process.env.CAPTURE_BASE_URL || 'http://localhost:4230';
 const OUT = process.env.RECORDING_OUT || '/tmp/openinvite-tour-recordings';
 const upload = process.argv.includes('--upload');
+const onlyArg = process.argv.find((a) => a.startsWith('--only='));
+const only = onlyArg ? onlyArg.slice('--only='.length).split(',').map((x) => x.trim()) : null;
 
 const stills = [];
 for (const f of readdirSync(new URL('./stills/', import.meta.url)).filter((x) => x.endsWith('.mjs')).sort()) {
-  stills.push((await import(new URL(`./stills/${f}`, import.meta.url))).default);
+  const still = (await import(new URL(`./stills/${f}`, import.meta.url))).default;
+  if (!only || only.includes(still.key)) stills.push(still);
 }
 
 mkdirSync(`${OUT}/stills`, { recursive: true });
