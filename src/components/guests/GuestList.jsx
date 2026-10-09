@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, ChevronDown, ChevronRight, Pencil, MessageCircle } from "lucide-react";
+import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, ChevronDown, ChevronRight, Pencil } from "lucide-react";
 import { getGuestEventResponse, effectiveMealChoice, mealOptionLabel } from "@/lib/weddingEvents";
 import { deriveRsvpStatus } from "@/lib/rsvpAggregation";
 import { groupByHousehold, isChild } from "@/lib/household";
@@ -13,6 +13,7 @@ import { naturalCompare, sortRows, nextSortState } from '@/lib/tableSort';
 import DataTable from '@/components/shared/DataTable';
 import { PILL_BASE, pillLabel } from '@/lib/tablePills';
 import { formatDashboardDate } from '@/lib/dashboardDate';
+import { sendHistoryFor } from '@/lib/sendHistory';
 import { tagColor } from '@/lib/tagColors';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -312,23 +313,44 @@ function fmtDate(iso) {
   return formatDashboardDate(iso);
 }
 
-const CHANNEL_LABELS = { email: 'Email', whatsapp: 'WhatsApp', 'email+whatsapp': 'Email + WhatsApp', 'whatsapp+email': 'Email + WhatsApp' };
-const CHANNEL_ICONS = { email: [Mail], whatsapp: [MessageCircle], 'email+whatsapp': [Mail, MessageCircle], 'whatsapp+email': [Mail, MessageCircle] };
 
+/**
+ * WHAT HAS BEEN SENT TO THIS GUEST, not just the last invitation.
+ *
+ * Item 5 of goals/2026-10-09-reply-lifecycle.md. This showed one date and one
+ * channel icon, so a couple could not tell whether a guest had been reminded,
+ * or when. src/lib/sendHistory.js answers it from Guest.send_history, and for
+ * every guest who predates that field, from the invite and reminder stamps the
+ * record already held.
+ *
+ * CHANNEL IS EMAIL NOW. The icon row is gone rather than kept for one value:
+ * #924 removed WhatsApp sending, so every send is email and an icon that can
+ * only ever say one thing is not information. Old records reading 'whatsapp'
+ * are left exactly as they are and display as email, per the owner's ruling.
+ *
+ * THREE LINES AT MOST. A guest chased several times would otherwise stretch
+ * the row; the count says what is not shown rather than hiding it silently.
+ */
 function LastSentCell({ guest }) {
-  if (!guest.invite_sent_at) {
+  const history = sendHistoryFor(guest);
+  if (history.length === 0) {
     return <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Not sent</span>;
   }
-  const icons = CHANNEL_ICONS[guest.invite_channel] || [];
-  const label = CHANNEL_LABELS[guest.invite_channel] || 'Sent';
+  const shown = history.slice(0, 3);
+  const rest = history.length - shown.length;
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <span style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>{fmtDate(guest.invite_sent_at)}</span>
-      <span style={{ display: 'flex', alignItems: 'center', gap: 3 }} title={label}>
-        {icons.length > 0
-          ? icons.map((Icon, i) => <Icon key={i} size={12} style={{ color: 'rgba(10,10,10,0.45)' }} />)
-          : <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Sent</span>}
-      </span>
+    <div data-send-history style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      {shown.map((e, i) => (
+        <span key={i} style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>
+          {e.label}
+          {e.sent_at ? ` ${fmtDate(e.sent_at)}` : ''}
+        </span>
+      ))}
+      {rest > 0 && (
+        <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
+          and {rest} more
+        </span>
+      )}
     </div>
   );
 }
@@ -859,7 +881,7 @@ function AddGuestRow({ onQuickAdd, columnCount }) {
 /* ─── Main component ─────────────────────────────────────────────────────── */
 export default function GuestList({
   guests, onEdit, onDelete, onUpdate, onQuickAdd, guestRoles = {}, loading, weddingEvents = [],
-  onAddToHousehold, onMoveOutOfHousehold,
+  onAddToHousehold, onMoveOutOfHousehold, onResend,
   selectedIds, onToggleSelect, onToggleSelectAll, onEditEvents, onToggleEvent, busyEventId, scrollToGuestId,
   highlightedGuestId,
   readOnly = false,
@@ -1256,6 +1278,19 @@ export default function GuestList({
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          {/* ── RESEND, FROM THE ROW ────────────────────────
+                              Item 5. It opens the existing send flow with this
+                              one guest selected and nothing else changed:
+                              SendInvitesModal already took initialSelectedIds,
+                              so no send path was touched to get here and there
+                              is still one answer to "who are we sending to".
+                              Absent when the page is read-only, like every
+                              other action in this menu. */}
+                          {onResend && (
+                            <DropdownMenuItem data-resend-invitation onClick={() => onResend(guest)}>
+                              Resend invitation
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem onClick={() => onEdit(guest)}>
                             <Edit2 size={13} style={{ marginRight: 8 }} />Edit
                           </DropdownMenuItem>
