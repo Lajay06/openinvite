@@ -245,15 +245,31 @@ export function buildRichWedding({ now = Date.now() } = {}) {
   // Invitations went out ten weeks ago, over a few evenings, and the people
   // still to reply had a reminder last week. Derived from position, not the
   // stream, so adding these fields moved no one's reply.
+  //
+  // EMAIL, AND ONLY EMAIL. The product's send channel is email since #923 and
+  // #924; a fixture that still said 'whatsapp' would film a channel the
+  // product no longer has.
+  //
+  // TAGS FROM POSITION TOO, for the same reason. A tag is the same color every
+  // time since #915, so a handful of real-looking groups is what lets a
+  // recording show that. Roughly a third of households carry one.
+  const TAGS_BY_CATEGORY = {
+    friends: [['Uni'], ['School'], ['Netball'], ['Uni', 'Netball']],
+    partners_friends: [['Surf club'], ['Uni'], ['Book club']],
+    family: [["Isla's cousins"], ['Interstate']],
+    partners_family: [["Kai's cousins"], ['Interstate']],
+    colleagues: [['Work']],
+  };
   households.forEach((h, hIdx) => {
     const sentDay = -70 - (hIdx % 5);
-    const lead = h.members[0];
-    const channel = lead.email && lead.phone ? 'email+whatsapp' : lead.phone ? 'whatsapp' : 'email';
+    const options = TAGS_BY_CATEGORY[h.category] || [];
+    const tags = hIdx % 3 === 0 && options.length ? options[(hIdx / 3) % options.length] : null;
     for (const g of h.members) {
       g.invitation_sent = true;
       g.invite_sent_at = iso(sentDay);
-      g.invite_channel = channel;
+      g.invite_channel = 'email';
       if (h.reply === 'pending') g.reminder_sent_at = iso(-7);
+      if (tags && !g.is_child) g.tags = [...tags];
     }
   });
 
@@ -576,9 +592,21 @@ export function buildRichWedding({ now = Date.now() } = {}) {
   delete published.budget;
   delete published.guidanceState;
 
-  return { seed, published, slug, events: EVENTS };
+  // THE ACCOUNT, because currency and date format live on it, not on the
+  // wedding. An Australian couple picks AUD and day-first dates; the product
+  // stores amounts as typed and prints them with that symbol (#932), and the
+  // dashboard reads dateFormat from the account cache (#917). Same id and
+  // email as the harness user, so every created_by on the rows still matches.
+  const user = {
+    id: 'u1', email: OWNER, full_name: 'Isla Moreno',
+    plan: 'ultra', onboardingCompleted: true, plan_step_completed: true,
+    currency: 'AUD', dateFormat: 'dmy', created_date: iso(-200),
+  };
+
+  return { seed, published, user, slug, events: EVENTS };
 }
 
 export const RICH = buildRichWedding();
 export const RICH_SEED = RICH.seed;
 export const RICH_PUBLISHED = RICH.published;
+export const RICH_USER = RICH.user;

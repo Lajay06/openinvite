@@ -89,7 +89,7 @@ import { pickGuestSafeFields } from '../../api/_lib/guestSafeWedding.js';
 // function, so the fixture cannot drift from the endpoint it imitates.
 import { overlayStatusForGuest } from '../../api/my-guests-rsvp.js';
 import { decorateGuestNote } from '../../api/_lib/guestNotePii.js';
-import { RICH_SEED, RICH_PUBLISHED } from './fixtures/richWedding.mjs';
+import { RICH_SEED, RICH_PUBLISHED, RICH_USER } from './fixtures/richWedding.mjs';
 const DAY = 86400000;
 const iso = (offsetDays) => new Date(Date.now() + offsetDays * DAY).toISOString();
 
@@ -533,28 +533,6 @@ export const PUBLISHED_WEDDING = {
 };
 
 /**
- * THE FIXTURES A CONTEXT CAN BE BUILT FROM, by name.
- *
- * `default` is SEED and PUBLISHED_WEDDING, which every render guard is pinned
- * to and nothing here changes. `rich` is a wedding six weeks out with 212
- * guests, built for the studio tour recordings and the /tour page
- * (./fixtures/richWedding.mjs). Pass `fixture: 'rich'` to seededContext or
- * stubBackend; an explicit `seed` or `published` still wins.
- */
-export const FIXTURES = Object.freeze({
-  default: Object.freeze({ seed: SEED, published: PUBLISHED_WEDDING }),
-  rich: Object.freeze({ seed: RICH_SEED, published: RICH_PUBLISHED }),
-});
-
-/** The named fixture, or the default for no name. An unknown name throws. */
-export function fixtureFor(name) {
-  if (name == null || name === '') return FIXTURES.default;
-  const f = FIXTURES[name];
-  if (!f) throw new Error(`renderHarness: no fixture named "${name}". Known: ${Object.keys(FIXTURES).join(', ')}`);
-  return f;
-}
-
-/**
  * The rendered contents of #root, from an HTML string.
  *
  * WHY THIS IS A FUNCTION AND NOT A REGEX AT THE CALL SITE. The obvious pattern
@@ -766,6 +744,28 @@ export const ONBOARDING_SEED = { ...SEED, WeddingDetails: [] };
 // of application/json"), and every page rendered zero characters. The
 // presence check caught it as 34/34 MISSING rather than reporting a clean
 // pass over blank pages.
+/**
+ * THE FIXTURES A CONTEXT CAN BE BUILT FROM, by name.
+ *
+ * `default` is SEED and PUBLISHED_WEDDING, which every render guard is pinned
+ * to and nothing here changes. `rich` is a wedding six weeks out with 212
+ * guests, built for the studio tour recordings and the /tour page
+ * (./fixtures/richWedding.mjs). Pass `fixture: 'rich'` to seededContext or
+ * stubBackend; an explicit `seed` or `published` still wins.
+ */
+export const FIXTURES = Object.freeze({
+  default: Object.freeze({ seed: SEED, published: PUBLISHED_WEDDING, user: FIXTURE_USER }),
+  rich: Object.freeze({ seed: RICH_SEED, published: RICH_PUBLISHED, user: RICH_USER }),
+});
+
+/** The named fixture, or the default for no name. An unknown name throws. */
+export function fixtureFor(name) {
+  if (name == null || name === '') return FIXTURES.default;
+  const f = FIXTURES[name];
+  if (!f) throw new Error(`renderHarness: no fixture named "${name}". Known: ${Object.keys(FIXTURES).join(', ')}`);
+  return f;
+}
+
 export const isBackend = (url) => {
   if (/:\/\/base44\.app\//.test(url)) return true;
   let pathname;
@@ -989,9 +989,10 @@ function resolveStub(url, seed, user, json, onEntity, fail = () => json(null), r
  * Stub every backend call a page makes. Returns seeded rows for known
  * entities, `[]` for unknown ones, and the fixture user for identity.
  */
-export async function stubBackend(ctx, { seed, user = FIXTURE_USER, onEntity, published, fixture } = {}) {
+export async function stubBackend(ctx, { seed, user, onEntity, published, fixture } = {}) {
   const chosen = fixtureFor(fixture);
   seed = seed || chosen.seed;
+  user = user || chosen.user;
   published = published || chosen.published;
   const handler = async (route) => {
     const url = route.request().url();
@@ -1048,6 +1049,7 @@ function assertSeedOnce(seed, published = PUBLISHED_WEDDING) {
 export async function seededContext(browser, { width, height, seed, user, onEntity, timezoneId, fixture, published } = {}) {
   const chosen = fixtureFor(fixture);
   seed = seed || chosen.seed;
+  user = user || chosen.user;
   published = published || chosen.published;
   // VALIDATE BEFORE RENDERING, not after measuring. Five times a seed field the
   // product never reads made a surface render its empty state while the pass
