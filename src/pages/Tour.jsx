@@ -1,15 +1,17 @@
 /**
- * Tour — the product tour at /tour.
+ * Tour, the product tour at /tour.
  *
- * PRIVATE PREVIEW. This route is deliberately not linked from PublicNav, not
- * in scripts/marketingRoutes.mjs (so it is neither prerendered nor in
- * sitemap.xml), and carries robots noindex. It ships this way until the real
- * dashboard captures land in T3, at which point adding it to
- * marketingRoutes.mjs and dropping the noindex is the whole reversal.
+ * Eight scenes, each a real recording of the product from the rich recording
+ * fixture (a couple six weeks out with 212 guests), in the order the studio
+ * tour walks a couple through it. A scene points at its footage by name:
+ * `chapter` reuses a studio tour chapter's recording from MEDIA, `clip` uses
+ * one of the /tour page's own clips from TOUR_PAGE_MEDIA, both in
+ * src/lib/studioTour.js. A scene whose footage is not recorded yet renders the
+ * placeholder, which carries data-tour-placeholder so a guard can find it.
  *
- * SCENES is the single place to edit. Swapping a placeholder for a real
- * capture at T3 is one line per scene: set imageSrc to the Cloudinary URL and
- * the placeholder stops rendering. Nothing else needs to change.
+ * Still a private preview for search engines: it sets noindex itself (see the
+ * effect in Tour below) and is not in scripts/marketingRoutes.mjs, so it is
+ * not prerendered or in sitemap.xml. Making it public is an owner decision.
  */
 import React, { useEffect, useRef, useState } from "react";
 import PublicNav from "@/components/public/PublicNav";
@@ -18,6 +20,8 @@ import MarketingEndCap from "@/components/marketing/MarketingEndCap";
 import MarketingHero from "@/components/marketing/MarketingHero";
 import MarketingPhotoPair from "@/components/marketing/MarketingPhotoPair";
 import ProductMediaFrame from "@/components/shared/ProductMediaFrame";
+import ProductVideo from "@/components/shared/ProductVideo";
+import { MEDIA, TOUR_PAGE_MEDIA } from "@/lib/studioTour";
 import { responsivePhoto } from "@/lib/marketingImage";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -47,18 +51,12 @@ const DARK = "#0A0A0A";
 const WHITE = "#FFFFFF";
 const OFFWHITE = "#F5F5F3";
 
-// How much larger than the frame the image renders, so there is something to
-// travel, and how far it travels.
-//
-// The translate is a percentage of the ELEMENT's height, not the frame's, so
-// the two interact: at 118% overscan the overhang is 9% of the frame per side
-// while the travel is 7% of a 118%-tall element — which measured out at only
-// ~2.7px of spare cover at 1440 and ~1.5px at 390. That is not a letterbox,
-// but it is close enough that a rounding difference or an unusual viewport
-// could open one. 124% keeps the same parallax strength with roughly 13px of
-// margin at desktop and 7px at mobile instead.
-const OVERSCAN = 124;
-const PARALLAX_PCT = 7;
+// THE PHONE TAKE'S SHAPE. Every chapter and clip is recorded at 1440 by 900
+// (exactly 16:10, so it fills FRAME_ASPECT with nothing cropped) and at 390 by
+// 844. Below the mobile breakpoint a scene shows the phone take in a frame of
+// its own shape, because a desktop recording shrunk to a phone's width is a
+// picture of text too small to read.
+const PHONE_ASPECT = "390/844";
 
 // `bg` is the scene's theme and is the ONLY thing that decides its ink. It is
 // declared per scene rather than derived from array position, which is what the
@@ -66,15 +64,30 @@ const PARALLAX_PCT = 7;
 // re-themed the back half when its index restarted at 0. Stating the theme on
 // the data makes that class of bug unrepresentable rather than merely fixed.
 const SCENES = [
-  { num: "01", label: "Daily update", copy: "Your wedding, today's priorities, and what's coming next, all waiting for you.",              imageSrc: null, align: "left",  bg: WHITE },
-  { num: "02", label: "Ava",          copy: "Like having a wedding planner in your pocket, only faster, smarter, and available 24/7.",      imageSrc: null, align: "right", bg: OFFWHITE },
-  { num: "03", label: "Guest list",   copy: "Track every RSVP, meal preference, and plus one without the spreadsheets.",       imageSrc: null, align: "left",  bg: DARK },
-  { num: "04", label: "Seating",      copy: "Design your floor plan visually, drag guests into place, and let every table come together effortlessly.",    imageSrc: null, align: "right", bg: WHITE },
-  { num: "05", label: "Budget",       copy: "What you planned. What you spent. No surprises in month nine.", imageSrc: null, align: "left",  bg: OFFWHITE },
-  { num: "06", label: "Schedule",     copy: "Build your entire wedding day with confidence, knowing every detail has its perfect place.",     imageSrc: null, align: "right", bg: DARK },
-  { num: "07", label: "Universes",    copy: "Choose your Universe and every touchpoint follows. One cohesive aesthetic from your first invitation to your final thank you.",                   imageSrc: null, align: "left",  bg: WHITE },
-  { num: "08", label: "Your site",    copy: "Guests see this. They will remember it.",                   imageSrc: null, align: "right", bg: OFFWHITE },
+  { num: "01", label: "Daily update", media: { chapter: "welcome" },       align: "left",  bg: WHITE,
+    copy: "Every morning, one page: what is due, who has replied, and how many days are left." },
+  { num: "02", label: "Schedule",     media: { chapter: "schedule" },      align: "right", bg: OFFWHITE,
+    copy: "The whole day in order, from hair and makeup to the last coach home." },
+  { num: "03", label: "Guest list",   media: { chapter: "guests" },        align: "left",  bg: DARK,
+    copy: "Every guest, every reply, every meal. A household shares one invitation." },
+  { num: "04", label: "Seating",      media: { clip: "seating" },          align: "right", bg: WHITE,
+    copy: "Tables on a floor plan, guests in their seats, and a short list of who is still to place." },
+  { num: "05", label: "Budget",       media: { clip: "budget" },           align: "left",  bg: OFFWHITE,
+    copy: "What you planned, what you have committed and what you have paid, in your own currency." },
+  { num: "06", label: "Universes",    media: { chapter: "design-studio" }, align: "right", bg: DARK,
+    copy: "Choose a universe, and your site and your invitations follow its look." },
+  { num: "07", label: "Ava",          media: { chapter: "ava" },           align: "left",  bg: WHITE,
+    copy: "Ask Ava about your wedding. She reads your plans before she answers." },
+  { num: "08", label: "Your site",    media: { clip: "site" },             align: "right", bg: OFFWHITE,
+    copy: "This is what your guests open. Their replies land on your list." },
 ];
+
+/** The recording a scene names, or null while it is not recorded yet. */
+function sceneMedia(scene) {
+  if (scene.media?.chapter) return MEDIA[scene.media.chapter] || null;
+  if (scene.media?.clip) return TOUR_PAGE_MEDIA[scene.media.clip] || null;
+  return null;
+}
 
 // ── PER-SECTION THEMES ────────────────────────────────────────────
 // Each scene owns a theme (WHITE / OFFWHITE / DARK, the pre-#382 rhythm) and
@@ -150,69 +163,12 @@ function useReveal(threshold = 0.2) {
   return [ref, visible];
 }
 
-/**
- * Scroll-linked parallax on the image inside its frame.
- *
- * Where the browser supports scroll-driven animations the whole thing is
- * declarative CSS (see the style block at the foot of the file): the
- * compositor drives it off the scroll timeline and no JS runs at all.
- *
- * The fallback path below only exists for browsers without that support. It
- * deliberately does NOT use the reveal observer above, because that one
- * disconnects after the first intersection and parallax needs updating for
- * as long as the scene is on screen. Instead a separate observer maintains a
- * live set of on-screen scenes, and a single shared rAF loop updates only
- * those — nothing is computed for off-screen scenes, and the loop stops
- * entirely when the set is empty.
- */
-const supportsScrollTimeline = () =>
-  typeof CSS !== "undefined" && CSS.supports && CSS.supports("animation-timeline: view()");
-
-function useParallaxFallback(frameRef, imageRef) {
-  useEffect(() => {
-    if (prefersReduced()) return;
-    if (supportsScrollTimeline()) return;   // CSS is handling it
-    const frame = frameRef.current;
-    const image = imageRef.current;
-    if (!frame || !image) return;
-
-    let onScreen = false;
-    let raf = 0;
-
-    const update = () => {
-      raf = 0;
-      if (!onScreen) return;
-      const r = frame.getBoundingClientRect();
-      const vh = window.innerHeight || 1;
-      // progress: 0 as the frame's top reaches the bottom of the viewport,
-      // 1 as its bottom leaves the top. Clamped so the image never travels
-      // further than the overscan can cover.
-      const p = Math.min(1, Math.max(0, (vh - r.top) / (vh + r.height)));
-      const offset = (p - 0.5) * 2 * PARALLAX_PCT;
-      image.style.transform = `translate3d(0, ${(-offset).toFixed(2)}%, 0)`;
-      schedule();
-    };
-    const schedule = () => { if (!raf && onScreen) raf = requestAnimationFrame(update); };
-
-    const obs = new IntersectionObserver(([e]) => {
-      onScreen = e.isIntersecting;
-      if (onScreen) schedule();
-      else if (raf) { cancelAnimationFrame(raf); raf = 0; }
-    }, { threshold: 0 });
-    obs.observe(frame);
-
-    return () => {
-      obs.disconnect();
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, [frameRef, imageRef]);
-}
-
 /** Grey placeholder. Fills the frame exactly as a real capture will. */
 function PlaceholderFill({ num, label, dark }) {
   const c = ink(dark);
   return (
     <div
+      data-tour-placeholder={label}
       style={{
         position: "absolute",
         inset: 0,
@@ -236,11 +192,12 @@ function PlaceholderFill({ num, label, dark }) {
   );
 }
 
-function Scene({ scene }) {
+function Scene({ scene, isMobile }) {
   const [ref, visible] = useReveal(0.2);
-  const frameRef = useRef(null);
-  const imageRef = useRef(null);
-  useParallaxFallback(frameRef, imageRef);
+  const media = sceneMedia(scene);
+  // The phone take below the breakpoint, when there is one.
+  const take = media && isMobile && media.phone ? media.phone : media;
+  const phoneShape = take && take !== media;
 
   const dark = scene.bg === DARK;
   const c = ink(scene.bg);
@@ -281,36 +238,30 @@ function Scene({ scene }) {
             transition: frameTransition,
           }}
         >
-          <ProductMediaFrame aspectRatio={FRAME_ASPECT} maxWidth="none" dark={dark} style={FRAME_RING}>
-            {/* The traveling layer. Taller than the frame by OVERSCAN so the
-                frame stays fully covered at both ends of the translate — no
-                letterboxing, no gap, no inner padding at any point. */}
-            <div
-              ref={frameRef}
-              style={{ position: "absolute", inset: 0, overflow: "hidden" }}
-            >
-              <div
-                ref={imageRef}
-                className={reduced ? undefined : "tour-parallax"}
-                style={{
-                  position: "absolute",
-                  left: 0,
-                  width: "100%",
-                  height: `${OVERSCAN}%`,
-                  top: `${-(OVERSCAN - 100) / 2}%`,
-                  willChange: "transform",
-                }}
-              >
-                {scene.imageSrc ? (
-                  <img
-                    src={scene.imageSrc}
-                    alt={`${scene.label} in the Openinvite dashboard`}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                  />
-                ) : (
-                  <PlaceholderFill num={scene.num} label={scene.label} dark={dark} />
-                )}
-              </div>
+          <ProductMediaFrame
+            aspectRatio={phoneShape ? PHONE_ASPECT : FRAME_ASPECT}
+            maxWidth={phoneShape ? 360 : "none"}
+            dark={dark}
+            style={FRAME_RING}
+          >
+            {/* The recording fills the frame exactly: every take is recorded
+                at the frame's own shape, so nothing is cropped. The parallax
+                this frame used to carry needed a layer 24% taller than the
+                frame, which on footage would cut off the dashboard's top bar
+                and sidebar, so it went when the placeholders did. */}
+            <div style={{ position: "absolute", inset: 0 }}>
+              {take ? (
+                <ProductVideo
+                  mp4={take.mp4}
+                  webm={take.webm}
+                  poster={take.poster}
+                  alt={scene.media?.clip === "site"
+                    ? "A couple's guest site made with Openinvite"
+                    : `${scene.label} in the Openinvite dashboard`}
+                />
+              ) : (
+                <PlaceholderFill num={scene.num} label={scene.label} dark={dark} />
+              )}
             </div>
           </ProductMediaFrame>
         </div>
@@ -459,7 +410,7 @@ export default function Tour() {
       {/* No index passed. Theme comes from `scene.bg`, so slicing the array
           cannot re-theme anything — see the SCENES comment. */}
       {SCENES.slice(0, 4).map((scene) => (
-        <Scene key={scene.num} scene={scene} />
+        <Scene key={scene.num} scene={scene} isMobile={isMobile} />
       ))}
 
       {/* Break between scenes 04 and 05. Alternation is data-driven off each
@@ -476,7 +427,7 @@ export default function Tour() {
           rather than kept: the theme now travels on the scene object, so the
           bug it patched can no longer be expressed. */}
       {SCENES.slice(4).map((scene) => (
-        <Scene key={scene.num} scene={scene} />
+        <Scene key={scene.num} scene={scene} isMobile={isMobile} />
       ))}
 
       <MarketingEndCap
@@ -544,38 +495,6 @@ export default function Tour() {
           .tour-scene-grid--flip .tour-scene-frame { order: 2; }
         }
 
-        /* Preferred parallax path: the compositor drives this off the scroll
-           timeline, so no JS runs while scrolling. The rAF fallback in
-           useParallaxFallback checks for this same support and stays idle
-           when it is present, so the two never both run. */
-        @keyframes tourParallax {
-          from { transform: translate3d(0, ${PARALLAX_PCT}%, 0); }
-          to   { transform: translate3d(0, -${PARALLAX_PCT}%, 0); }
-        }
-        @supports (animation-timeline: view()) {
-          /* The timeline is NAMED on the frame wrapper, not taken from
-             view() on the traveling layer itself. view() resolves against
-             the nearest scrollport, and the traveling layer's parent is the
-             overflow:hidden clip — which IS a scroll container. Anchored
-             there the layer never moves relative to its scrollport, so
-             progress pinned at ~50% and the parallax rendered a constant
-             0px offset while still reporting itself as a running animation.
-             The wrapper sits outside the clip, so its progress tracks the
-             page scroll as intended. */
-          .tour-scene-frame {
-            view-timeline-name: --tourFrame;
-            view-timeline-axis: block;
-          }
-          .tour-parallax {
-            animation: tourParallax linear both;
-            animation-timeline: --tourFrame;
-            animation-range: cover 0% cover 100%;
-          }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .tour-parallax { animation: none !important; transform: none !important; }
-        }
       `}</style>
     </div>
   );

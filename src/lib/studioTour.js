@@ -317,6 +317,44 @@ export const MEDIA = {
 };
 
 /**
+ * THE /tour PAGE'S OWN CLIPS, for the scenes no chapter films.
+ *
+ * Same shape as MEDIA, recorded by scripts/tour-recordings/record-tour-page.mjs
+ * from the rich fixture and uploaded to studio-tour/tour-page/<clip>/<width>.
+ * /tour reuses a chapter's recording wherever a chapter films the same page;
+ * these are the rest. `budget` is null until the Budget page's payment dates
+ * are numeric (lane A), because filming it now would put a date format the
+ * product has ruled out on the marketing site.
+ */
+export const TOUR_PAGE_MEDIA = {
+  budget: null,
+  seating: {
+    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1791537173/studio-tour/tour-page/seating/1440.jpg',
+    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791537173/studio-tour/tour-page/seating/1440.webm',
+    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791537173/studio-tour/tour-page/seating/1440.mp4',
+    seconds: 14.07,
+    phone: {
+      poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1791537168/studio-tour/tour-page/seating/390.jpg',
+      webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791537168/studio-tour/tour-page/seating/390.webm',
+      mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791537168/studio-tour/tour-page/seating/390.mp4',
+      seconds: 13.13,
+    },
+  },
+  site: {
+    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1791537193/studio-tour/tour-page/site/1440.jpg',
+    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791537193/studio-tour/tour-page/site/1440.webm',
+    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791537193/studio-tour/tour-page/site/1440.mp4',
+    seconds: 14.7,
+    phone: {
+      poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1791537181/studio-tour/tour-page/site/390.jpg',
+      webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791537181/studio-tour/tour-page/site/390.webm',
+      mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791537181/studio-tour/tour-page/site/390.mp4',
+      seconds: 9.73,
+    },
+  },
+};
+
+/**
  * What a chapter should show.
  *
  * Always returns a poster, so no caller has to decide what to draw when the
