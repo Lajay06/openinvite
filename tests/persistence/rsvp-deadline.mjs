@@ -146,8 +146,18 @@ export async function runRsvpDeadline() {
      /res\.status\(409\)/.test(submit), '409');
   // ORDER MATTERS MORE THAN THE REFUSAL ITSELF: a refusal after the first
   // write would leave a partial reply behind.
-  const refusalAt = submit.indexOf('deadlineHasPassed');
-  const firstWriteAt = submit.indexOf('createRsvpResponse(');
+  // THE CALL SITE, NOT THE IMPORT. This read indexOf('deadlineHasPassed'),
+  // which finds the import line at the top of the file and is therefore
+  // before every write no matter where the refusal actually sits: the check
+  // could not fail. Caught by planting the refusal later and watching it stay
+  // green. Anchored on the `if (` now, which only the call site has.
+  const refusalAt = submit.indexOf('if (deadlineHasPassed(');
+  // THE FIRST CALL, NOT THE DECLARATION. indexOf('createRsvpResponse(')
+  // matches `async function createRsvpResponse(` near the top of the file,
+  // which sits before the handler entirely, so that anchor made the check
+  // fail even when the order was right. Both ends of this comparison were
+  // wrong in their first form, and only planting against it showed that.
+  const firstWriteAt = submit.indexOf('invitedResponses.map(r => createRsvpResponse(');
   ok('  and it refuses before the first row is written',
      refusalAt > 0 && firstWriteAt > 0 && refusalAt < firstWriteAt,
      `refusal at ${refusalAt}, first write at ${firstWriteAt}`);
