@@ -1,7 +1,14 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { getMyWeddingDetails, getMyGuestsWithRsvp, getMyRecords } from "@/lib/resolveMyWedding";
+import { getMyWeddingDetails, getMyGuestsWithRsvp, getMyRecords, putMyWeddingDetails } from "@/lib/resolveMyWedding";
+import { normalizeDeadline } from "@/lib/rsvpDeadline";
+// DASHBOARD CHROME KEEPS NUMERIC DATES in the account's chosen format, which
+// is the opposite call from the guest site's written ones. The couple set this
+// date in this format; showing it back to them any other way would be the
+// product disagreeing with itself. src/lib/rsvpDeadline.js's formatDeadline is
+// the guest-facing written form and is deliberately NOT used here.
+import { formatDashboardDate } from "@/lib/dashboardDate";
 import { hasPlusOne, plusOneRsvpStatus } from "@/lib/plusOne";
 import { assignGuestToTableByName, unassignGuestFromTables, DEFAULT_TABLE_CAPACITY } from "@/lib/tableAssignment";
 import { useCollaboratorContext } from "@/lib/collaboratorContext";
@@ -153,6 +160,7 @@ export default function Guests() {
   const [weddingSlug, setWeddingSlug] = useState(null);
   // Menu Phase 1 (Ultra) — for mapping a stored meal_choice id back to a label
   const [mealOptions, setMealOptions] = useState([]);
+  const [rsvpContent, setRsvpContent] = useState(null);
   // fix/guest-rls-step1: collaborator guest viewing is parked (api/collaborator-guests.js
   // returns 503) — see that file's header comment for why and the rebuild path.
   const [collaboratorGuestsUnavailable, setCollaboratorGuestsUnavailable] = useState(false);
@@ -202,12 +210,45 @@ export default function Guests() {
       setWeddingId(wd.id || null);
       setWeddingSlug(wd.slug || null);
       setMealOptions(wd.mealOptions || []);
+      // THE WHOLE OBJECT, not just the date. rsvpContent holds the couple's
+      // other RSVP overrides, so saving the deadline has to merge into what is
+      // already there or it would wipe them.
+      setRsvpContent(wd.rsvpContent || {});
     }).catch(() => {});
   }, [isCollaborating]);
 
   // Contact Collector (PR B3) — pending submissions from the public
   // /w/:slug/collect form. Collaborators never see this (no WeddingDetails
   // of their own to scope it to, same reasoning as weddingEvents above).
+
+  // ── THE REPLY-BY DATE ───────────────────────────────────────────────────
+  //
+  // Item 2 of goals/2026-10-09-reply-lifecycle.md. The field already existed
+  // and the guest site already read it in nine places; nothing could set it,
+  // because no editor was ever built. This is that editor.
+  //
+  // STORED AS A CALENDAR DATE, YYYY-MM-DD, which is what <input type="date">
+  // gives and what src/lib/rsvpDeadline.js expects. No time, because a
+  // deadline is a day. See that module for why the format matters.
+  const [savingDeadline, setSavingDeadline] = useState(false);
+  const [deadlineError, setDeadlineError] = useState('');
+  const rsvpDeadline = normalizeDeadline(rsvpContent?.rsvpDeadline) || '';
+
+  const saveDeadline = async (next) => {
+    const value = normalizeDeadline(next) || null;
+    setSavingDeadline(true);
+    setDeadlineError('');
+    try {
+      const merged = { ...(rsvpContent || {}), rsvpDeadline: value };
+      await putMyWeddingDetails({ rsvpContent: merged });
+      setRsvpContent(merged);
+    } catch {
+      // SAID, NOT SWALLOWED. A date that looks saved and is not would send
+      // guests to a form the couple thinks is closing.
+      setDeadlineError('Could not save the date. Please try again.');
+    }
+    setSavingDeadline(false);
+  };
 
   const loadGuests = async () => {
     try {
@@ -1013,6 +1054,60 @@ export default function Guests() {
           </div>
         ))}
       </div>
+
+      {/* ── THE REPLY-BY DATE, NEAR THE TOP, WITH WHAT IS OUTSTANDING ──────
+          The couple's own question is "who have I not heard from", so the date
+          and that number belong on one line. Hidden for a collaborator, who
+          has no WeddingDetails of their own to write (the same reason the
+          events matrix is skipped for them above). */}
+      {!isCollaborating && !loading && (
+        <div
+          data-rsvp-deadline
+          style={{ borderBottom: '1px solid rgba(10,10,10,0.12)', padding: '12px 32px',
+                   fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13,
+                   color: 'rgba(10,10,10,0.6)', display: 'flex', gap: 12,
+                   alignItems: 'center', flexWrap: 'wrap' }}
+        >
+          <label htmlFor="rsvp-deadline" style={{ fontWeight: 700, color: '#0A0A0A' }}>
+            Reply by
+          </label>
+          <input
+            id="rsvp-deadline"
+            type="date"
+            value={rsvpDeadline}
+            disabled={savingDeadline}
+            onChange={(e) => saveDeadline(e.target.value)}
+            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13,
+                     padding: '7px 10px', minHeight: 36, border: '1px solid rgba(10,10,10,0.2)',
+                     background: '#fff', color: '#0A0A0A' }}
+          />
+          {rsvpDeadline && (
+            <>
+              <span>
+                Replies close at the end of {formatDashboardDate(rsvpDeadline)}.
+                {' '}
+                <strong style={{ color: '#0A0A0A', fontWeight: 700 }}>{stats.awaiting}</strong>
+                {stats.awaiting === 1 ? ' guest has' : ' guests have'} not replied.
+              </span>
+              {/* CLEARING REOPENS THE FORM, with nothing else to do. Spelled as
+                  its own control because a date input gives no obvious way to
+                  empty itself. */}
+              <button
+                type="button"
+                onClick={() => saveDeadline('')}
+                disabled={savingDeadline}
+                style={{ background: 'none', border: 'none', padding: '7px 4px', minHeight: 36,
+                         cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif",
+                         fontSize: 13, color: 'rgba(10,10,10,0.6)', textDecoration: 'underline' }}
+              >
+                Clear
+              </button>
+            </>
+          )}
+          {!rsvpDeadline && <span>Guests can reply until you set a date.</span>}
+          {deadlineError && <span style={{ color: '#E03553' }}>{deadlineError}</span>}
+        </div>
+      )}
 
       {/* PER EVENT, UNDER THE CARDS, when the wedding has more than one and the
           list is not already filtered to one. The cards answer "how many

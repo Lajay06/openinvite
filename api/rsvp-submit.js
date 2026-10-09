@@ -84,6 +84,12 @@ import { hashId, encryptPayload } from './_lib/questionnaireCrypto.js';
 // dressCode.js and nothing else, and none of the three touches React or the
 // DOM. Same arrangement api/guest-page.js uses for the sample-content chain.
 import { getWeddingEvents, getGuestEventResponse } from '../src/lib/weddingEvents.js';
+// THE SAME MODULE THE GUEST'S SCREEN USES, deliberately. A form that only
+// looks closed is not closed (goal ruling, item 2), and a refusal worded
+// differently from the screen that caused it reads like a bug to the guest.
+// One module decides open or closed and one function writes the sentence, so
+// the endpoint and the page cannot drift apart.
+import { deadlineHasPassed, closedBody } from '../src/lib/rsvpDeadline.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -308,6 +314,32 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'This link has expired or is invalid.' });
     }
     const { guest, wedding, role } = resolved;
+
+    // ── REPLIES HAVE CLOSED: REFUSED BEFORE ANYTHING IS WRITTEN ───────────
+    //
+    // The named exception in goals/2026-10-09-reply-lifecycle.md item 2. This
+    // is a backstop, not a path the product offers: the form stops showing the
+    // two buttons at the same moment, from the same function, so a guest who
+    // reaches this branch sent a request nothing in the product offered them.
+    //
+    // 409, NOT 400. Nothing about the submission is malformed. The state of
+    // the wedding is what refuses it, and the sentence returned is the same
+    // one the screen shows, including its promise that a note still reaches
+    // the couple. That promise holds: the note form posts to
+    // api/guest-note-submit.js, a different endpoint, which stays open.
+    //
+    // BEFORE THE FIRST WRITE and before keepOnlyInvitedEvents, so a refused
+    // submission leaves no RsvpResponse row and no partial state behind.
+    //
+    // Clearing or moving the date reopens this with nothing else to do: the
+    // decision is derived per request and nothing is cached anywhere.
+    if (deadlineHasPassed(wedding?.rsvpContent?.rsvpDeadline)) {
+      return res.status(409).json({
+        error: closedBody(coupleDisplayName(wedding), wedding?.rsvpContent?.rsvpDeadline),
+        repliesClosed: true,
+      });
+    }
+
     const isPlusOne = role === 'plus_one';
     const guestIdHash = hashId(guest.id);
 
