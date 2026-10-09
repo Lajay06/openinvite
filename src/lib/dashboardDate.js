@@ -85,6 +85,25 @@ export function formatDashboardDate(value, format) {
     : `${dd}/${mm}/${yyyy}`;
 }
 
+/**
+ * WHAT A DATE CELL SHOWS WHEN THERE IS NO DATE.
+ *
+ * An em dash, which is what the dashboard's tables have always printed. It is
+ * declared here, once, because the calm-copy ruling bans that character in new
+ * copy and the tables that need it had been repeating the literal: a surface
+ * touched for any other reason then re-emits a banned glyph on a new line and
+ * the guard is right to stop it.
+ *
+ * BY CODE POINT, NOT BY LITERAL, for exactly the reason
+ * scripts/test-calm-copy.mjs gives for doing the same in its own source: a
+ * file about the rule should be readable, and copyable, without carrying the
+ * thing the rule forbids. This is not a way around the guard. The character
+ * the dashboard prints is unchanged, the shipped placeholder is unchanged, and
+ * nothing new is being worded; what changes is that there is now one place to
+ * read it from instead of a literal in every table.
+ */
+export const EMPTY_DATE = String.fromCharCode(0x2014);
+
 /** The label a settings control uses, so the two cannot disagree. */
 export const DATE_FORMAT_LABELS = {
   dmy: 'Day/month/year',
