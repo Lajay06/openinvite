@@ -18,6 +18,11 @@
  */
 import { visible, wheelBy } from '../lib/steps.mjs';
 
+// THE OWNER'S LINE, verbatim (2026-10-09). The product leaves this box blank
+// for the couple to write, and a blank box was the end of the chapter. Not
+// edited here for any reason; if it has to change, the owner changes it.
+const MESSAGE = 'Everything you need is on the site. We would love your reply by 18 June.';
+
 export default {
   key: 'publish',
   startPath: '/studio/guest-suite/share',
@@ -26,21 +31,24 @@ export default {
     return { ...base, WeddingDetails: [{ ...wd, websiteEnabled: false }, ...rest] };
   },
   async perform(page, cursor, { isPhone }) {
-    await cursor.hold(1100);
+    await cursor.hold(600);
     await cursor.moveTo('[data-tour-target="guest-suite-publish"]');
-    await cursor.hold(1000);
+    await cursor.hold(700);
     await cursor.click('[data-tour-target="guest-suite-publish"]');
-    await page.waitForTimeout(2600);
-    await cursor.hold(1400);
+    await page.waitForTimeout(2000);
+    await cursor.hold(800);
 
     await cursor.click(visible(page.getByRole('button', { name: /^All Guests \(\d+\)$/ })));
-    await page.waitForTimeout(900);
-    await cursor.hold(900);
+    await page.waitForTimeout(600);
+    await cursor.hold(500);
 
     await cursor.moveToPoint(isPhone ? 190 : 560, isPhone ? 560 : 620);
     await wheelBy(page, isPhone ? 900 : 520, { steps: 14, pause: 60 });
-    await cursor.hold(600);
+    await cursor.hold(400);
+    await cursor.click(visible(page.locator('textarea')));
+    await page.keyboard.type(MESSAGE, { delay: 18 });
+    await cursor.hold(400);
     await cursor.moveTo(visible(page.getByRole('button', { name: /^Send to \d+ guests?$/ })));
-    await cursor.hold(2000);
+    await cursor.hold(1000);
   },
 };
