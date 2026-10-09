@@ -6,6 +6,7 @@
  * reading Attending with today's date (the rich fixture has that household
  * reply an hour before the still is taken). Owner ruling 2026-10-10.
  */
+/* global window, document, getComputedStyle */  // used inside page.evaluate(), which runs in the browser
 import { visible } from '../lib/steps.mjs';
 
 export default {

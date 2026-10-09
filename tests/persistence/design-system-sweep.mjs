@@ -40,7 +40,7 @@ const ARTWORK = /^components\/(guest-website|universe-studio|website-builder)\/|
  * they no longer matched the source. The scope was always "the dashboard";
  * this is that scope, stated accurately.
  */
-const MARKETING = /^components\/(public|home|marketing|motion)\/|^pages\/(Home|Features|Ava|Universes|Pricing|About|Contact|Tour|FAQ|Gifting|GiftPurchaseSuccess|ScrollMorph|MockUniverseA|MockUniverseB|MockUniverseC|Login|ForgotPassword|ResetPassword|PrivacyPolicy|TermsOfService|CookiePolicy|DataDeletion|RefundPolicy|ChoosePlan|CollaboratorAccept)\.jsx$/;
+const MARKETING = /^components\/(public|home|marketing|motion)\/|^pages\/(Home|Features|Ava|Universes|Pricing|About|Contact|Tour|AppPage|FAQ|Gifting|GiftPurchaseSuccess|ScrollMorph|MockUniverseA|MockUniverseB|MockUniverseC|Login|ForgotPassword|ResetPassword|PrivacyPolicy|TermsOfService|CookiePolicy|DataDeletion|RefundPolicy|ChoosePlan|CollaboratorAccept)\.jsx$/;
 
 function walk(dir, out = []) {
   for (const e of readdirSync(dir)) {

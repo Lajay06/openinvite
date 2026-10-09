@@ -17,6 +17,7 @@
  * studio-tour/stills/<key>/390-<take>, a new path every time, overwrite off.
  * WITHOUT --upload NOTHING LEAVES THE MACHINE.
  */
+/* global window, document, getComputedStyle */  // used inside page.evaluate(), which runs in the browser
 import { readdirSync, mkdirSync } from 'node:fs';
 import { chromium } from 'playwright';
 import { recordingContext } from './lib/record.mjs';
