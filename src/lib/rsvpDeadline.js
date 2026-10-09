@@ -56,6 +56,8 @@
  * guest is stuck behind this.
  */
 
+import { parseWeddingDate } from './guestDate.js';
+
 /** Accepts a bare calendar date or a full ISO timestamp. @returns {string|null} YYYY-MM-DD */
 export function normalizeDeadline(value) {
   if (typeof value !== 'string') return null;
@@ -73,23 +75,44 @@ export function normalizeDeadline(value) {
 /**
  * The deadline as a Date at LOCAL midnight, so formatting it cannot move the
  * calendar day. Never use this for comparisons; use deadlineHasPassed.
+ *
+ * parseWeddingDate does exactly this pinning and already carries the reasoning
+ * (src/lib/guestDate.js), so it is reused rather than reimplemented. It is fed
+ * the NORMALIZED value, so an old full-timestamp record arrives here as a bare
+ * calendar date and takes the same local-midnight path.
+ *
  * @returns {Date|null}
  */
 export function deadlineDate(value) {
-  const iso = normalizeDeadline(value);
-  if (!iso) return null;
-  const [y, m, d] = iso.split('-').map(Number);
-  return new Date(y, m - 1, d);
+  return parseWeddingDate(normalizeDeadline(value));
 }
 
 /**
- * The date as the guest reads it, in their own locale, on the day the couple
- * actually picked. Returns '' when there is no deadline, so a caller can
- * render it unguarded.
+ * ── A WRITTEN DATE, AND NO LOCALE PARAMETER ───────────────────────────────
+ *
+ * "1 May 2027". Owner ruling 2026-10-09, following the batch 1 ruling that
+ * guest-facing pages carry written dates: a numeric one cannot be read safely
+ * across regions, because 5/1/2027 is this day to an American reader and a
+ * different day in May to most of the rest of the world, and a deadline is the
+ * worst possible place for that ambiguity.
+ *
+ * THE LOCALE IS PINNED, NOT TAKEN FROM THE READER, and that is the point
+ * rather than an oversight: this same string goes into the sentence the page
+ * shows AND the sentence api/rsvp-submit.js returns when it refuses a write.
+ * A viewer-dependent format would make those two differ, which is the drift
+ * the shared module exists to prevent. 'en-AU' with month: 'long' is the
+ * convention already used for guest-facing dates in emailTemplate.js and
+ * three guest-site pages.
+ *
+ * Dashboard dates are NOT this. They stay numeric in the account's chosen
+ * format, through src/lib/dashboardDate.js, which is what the Guests page
+ * editor uses.
+ *
+ * Returns '' when there is no deadline, so a caller can render it unguarded.
  */
-export function formatDeadline(value, locale = undefined) {
+export function formatDeadline(value) {
   const d = deadlineDate(value);
-  return d ? d.toLocaleDateString(locale) : '';
+  return d ? d.toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
 }
 
 /**
@@ -111,13 +134,15 @@ export const CLOSED_HEADING = 'Replies have closed.';
  * a status write. Verbatim from the goal file. One function so the two cannot
  * say different things.
  *
+ * ONE STRING, EVERYWHERE. No locale parameter, because the page and the 409
+ * have to produce the identical sentence; see formatDeadline for why.
+ *
  * @param {string} coupleNames how the couple is named on their own site
  * @param {string} value       the stored deadline
- * @param {string} [locale]    the reader's locale, for the date
  */
-export function closedBody(coupleNames, value, locale = undefined) {
+export function closedBody(coupleNames, value) {
   const names = (coupleNames || '').trim() || 'The couple';
-  return `${names} needed final numbers by ${formatDeadline(value, locale)}, `
+  return `${names} needed final numbers by ${formatDeadline(value)}, `
     + 'so this form is now closed. If your plans have changed, or you did not '
     + 'get the chance to reply, send them a note below and they will see it '
     + 'straight away.';

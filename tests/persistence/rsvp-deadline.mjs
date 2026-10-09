@@ -61,10 +61,31 @@ export async function runRsvpDeadline() {
   const la = deadlineDate('2027-05-01');
   eq('a 2027-05-01 deadline is 1 May 2027, not 30 April',
      [la.getFullYear(), la.getMonth() + 1, la.getDate()], [2027, 5, 1]);
-  ok('  and it renders as 5/1/2027 in en-US', formatDeadline('2027-05-01', 'en-US') === '5/1/2027',
-     formatDeadline('2027-05-01', 'en-US'));
-  ok('  and as 1/05/2027 in en-AU', formatDeadline('2027-05-01', 'en-AU') === '01/05/2027',
-     formatDeadline('2027-05-01', 'en-AU'));
+
+  // ── A WRITTEN DATE, IDENTICAL EVERYWHERE ────────────────────────────────
+  //
+  // Owner ruling 2026-10-09: guest-facing dates are written, so a deadline can
+  // never be misread across regions. The locale is pinned inside the module,
+  // not taken from the reader, because this exact string goes into both the
+  // sentence on screen and the sentence the 409 returns.
+  //
+  // THE NEGATIVE HALF MATTERS AS MUCH AS THE POSITIVE ONE. 5/1/2027 and
+  // 01/05/2027 are the two numeric forms this used to produce, and they are
+  // the same day written two ways that a reader would resolve differently.
+  // Asserted absent, so a later "just use toLocaleDateString" cannot slip back.
+  ok('the deadline renders as a written date', formatDeadline('2027-05-01') === '1 May 2027',
+     formatDeadline('2027-05-01'));
+  ok('  and the old full-timestamp shape renders the same way',
+     formatDeadline('2027-05-01T00:00:00.000Z') === '1 May 2027',
+     formatDeadline('2027-05-01T00:00:00.000Z'));
+  const sentence = closedBody('Alex & Sam', '2027-05-01');
+  ok('  the closed sentence carries 1 May 2027', sentence.includes('1 May 2027'), 'written');
+  ok('  and never a numeric date in either regional order',
+     !sentence.includes('5/1/2027') && !sentence.includes('01/05/2027') && !/\d+\/\d+\/\d+/.test(sentence),
+     'no numeric date');
+  ok('  formatDeadline takes no locale argument, so it cannot vary by caller',
+     formatDeadline('2027-05-01') === formatDeadline('2027-05-01', 'en-US'),
+     'a second argument is ignored');
 
   // THE OLD WAY STILL FAILS, which is what makes the fix above meaningful
   // rather than decorative. Asserted so nobody can "simplify" the parser back.
@@ -120,15 +141,15 @@ export async function runRsvpDeadline() {
      deadlineHasPassed('not a date', new Date('2099-01-01')) === false, 'open');
 
   // ── 5. ONE SENTENCE, SHARED BY THE SCREEN AND THE SERVER ────────────────
-  const body = closedBody('Alex & Sam', '2027-05-01', 'en-US');
+  const body = closedBody('Alex & Sam', '2027-05-01');
   ok('the heading is the owner\'s words', CLOSED_HEADING === 'Replies have closed.', CLOSED_HEADING);
   ok('  and the body is too, verbatim',
-     body === 'Alex & Sam needed final numbers by 5/1/2027, so this form is now closed. '
+     body === 'Alex & Sam needed final numbers by 1 May 2027, so this form is now closed. '
        + 'If your plans have changed, or you did not get the chance to reply, send them '
        + 'a note below and they will see it straight away.',
      body);
   ok('  with a fallback when the couple is unnamed',
-     closedBody('', '2027-05-01', 'en-US').startsWith('The couple needed final numbers'), 'The couple');
+     closedBody('', '2027-05-01').startsWith('The couple needed final numbers'), 'The couple');
 
   // ── 6. THE SERVER REFUSES, FROM THE SAME MODULE ─────────────────────────
   //
@@ -188,6 +209,9 @@ export async function runRsvpDeadline() {
      /type="date"/.test(guests) && /normalizeDeadline\(next\)/.test(guests), 'YYYY-MM-DD');
   ok('  merging into rsvpContent rather than replacing it',
      /\.\.\.\(rsvpContent \|\| \{\}\), rsvpDeadline: value/.test(guests), 'merged');
+  ok('  showing the date in the dashboard format, not the guest-facing written one',
+     /formatDashboardDate\(rsvpDeadline\)/.test(guests) && !/formatDeadline\(/.test(guests),
+     'dashboard chrome stays numeric');
   ok('  showing how many have not replied beside it',
      /\{stats\.awaiting\}/.test(guests) && /not replied/.test(guests), 'awaiting count');
   ok('  and offering a way to clear it, which reopens the form',

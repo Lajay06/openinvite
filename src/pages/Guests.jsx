@@ -2,7 +2,13 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyGuestsWithRsvp, getMyRecords, putMyWeddingDetails } from "@/lib/resolveMyWedding";
-import { normalizeDeadline, formatDeadline } from "@/lib/rsvpDeadline";
+import { normalizeDeadline } from "@/lib/rsvpDeadline";
+// DASHBOARD CHROME KEEPS NUMERIC DATES in the account's chosen format, which
+// is the opposite call from the guest site's written ones. The couple set this
+// date in this format; showing it back to them any other way would be the
+// product disagreeing with itself. src/lib/rsvpDeadline.js's formatDeadline is
+// the guest-facing written form and is deliberately NOT used here.
+import { formatDashboardDate } from "@/lib/dashboardDate";
 import { hasPlusOne, plusOneRsvpStatus } from "@/lib/plusOne";
 import { assignGuestToTableByName, unassignGuestFromTables, DEFAULT_TABLE_CAPACITY } from "@/lib/tableAssignment";
 import { useCollaboratorContext } from "@/lib/collaboratorContext";
@@ -1078,7 +1084,7 @@ export default function Guests() {
           {rsvpDeadline && (
             <>
               <span>
-                Replies close at the end of {formatDeadline(rsvpDeadline)}.
+                Replies close at the end of {formatDashboardDate(rsvpDeadline)}.
                 {' '}
                 <strong style={{ color: '#0A0A0A', fontWeight: 700 }}>{stats.awaiting}</strong>
                 {stats.awaiting === 1 ? ' guest has' : ' guests have'} not replied.
