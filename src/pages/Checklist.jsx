@@ -60,7 +60,7 @@ function PlanningOverview() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let cancelled = false;
+    let canceled = false;
     (async () => {
       try {
         const [wedding, guests, budgets, vendors, schedules, notes] = await Promise.all([
@@ -71,14 +71,14 @@ function PlanningOverview() {
           getMyRecords('Schedule').catch(() => []),
           getMyRecords('Note').catch(() => []),
         ]);
-        if (!cancelled) setStatus(evaluateStatus({ wedding, guests, budgets, vendors, schedules, notes }));
+        if (!canceled) setStatus(evaluateStatus({ wedding, guests, budgets, vendors, schedules, notes }));
       } catch {
-        if (!cancelled) setStatus({});
+        if (!canceled) setStatus({});
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!canceled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => { canceled = true; };
   }, []);
 
   if (loading) {
