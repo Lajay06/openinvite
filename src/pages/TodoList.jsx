@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { Plus, Trash2, CheckSquare, Square, Edit3, Calendar, ChevronUp, ChevronDown } from 'lucide-react';
 import DashboardPageHeader from '../components/layout/DashboardPageHeader';
 import { PRIORITY, SETTABLE_PRIORITIES, SORT_KEYS, DEFAULT_SORT, normalizePriority, nextSort, sortTasks } from '@/lib/todoSort';
+import { formatDashboardDate } from '@/lib/dashboardDate';
 
 const Note = base44.entities.Note;
 
@@ -35,7 +36,9 @@ function formatDueDate(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr + 'T00:00:00');
   if (isNaN(d.getTime())) return '';
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  // THE YEAR COMES BACK WITH THE FORMAT. It was "Oct 9", which is also the
+  // only one of these that dropped the year; the account's format carries it.
+  return formatDashboardDate(d);
 }
 
 function isOverdue(task) {

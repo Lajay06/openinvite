@@ -16,6 +16,7 @@ import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import CountUp from "@/components/shared/CountUp";
 import { parseStoredDate } from '@/lib/guestDate';
+import { formatDashboardDate } from '@/lib/dashboardDate';
 
 // A guarded date-fns format: date-fns THROWS RangeError on an invalid date, so
 // an unstamped or malformed value white-screens the page behind the error
@@ -320,7 +321,7 @@ export default function MessagesPage() {
                       </span>
                     )}
                     <span style={{ ...labelStyle, color: '#444444' }}>
-                      {formatStored(message.created_date, 'MMM d, yyyy h:mm a')}
+                      {`${formatDashboardDate(message.created_date)} ${formatStored(message.created_date, 'h:mm a')}`}
                     </span>
                   </div>
                 </div>
@@ -376,7 +377,7 @@ export default function MessagesPage() {
                   <span style={{ ...labelStyle, color: '#E03553' }}>Your reply</span>
                   {message.reply_sent_at && (
                     <span style={{ fontSize: 11, color: 'rgba(10,10,10,0.45)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                      · emailed {formatStored(message.reply_sent_at, 'MMM d, h:mm a')}
+                      · emailed {`${formatDashboardDate(message.reply_sent_at)} ${formatStored(message.reply_sent_at, 'h:mm a')}`}
                     </span>
                   )}
                 </div>
