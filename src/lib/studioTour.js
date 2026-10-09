@@ -291,10 +291,10 @@ export const MEDIA = {
     },
   },
   publish: {
-    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1791530186/studio-tour/publish/1440.jpg',
-    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791530186/studio-tour/publish/1440.webm',
-    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791530186/studio-tour/publish/1440.mp4',
-    seconds: 18.1,
+    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1791535114/studio-tour/publish/1440.jpg',
+    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791535114/studio-tour/publish/1440.webm',
+    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791535114/studio-tour/publish/1440.mp4',
+    seconds: 17.2,
     phone: {
       poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1791530185/studio-tour/publish/390.jpg',
       webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791530185/studio-tour/publish/390.webm',
