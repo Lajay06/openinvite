@@ -11,6 +11,7 @@ import ItineraryPlanner from "../components/guest-experience/ItineraryPlanner";
 import LocalTips from "../components/guest-experience/LocalTips";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { getMyWeddingDetails, getMyInvitation } from '@/lib/resolveMyWedding';
+import { formatDashboardDate } from '@/lib/dashboardDate';
 
 const TABS = [
   { id: 'hotels', label: 'Hotels', icon: Hotel },
@@ -117,7 +118,7 @@ export default function GuestExperiencePage() {
     const d = new Date(weddingDate);
     const pre = new Date(d); pre.setDate(pre.getDate() - 1);
     const post = new Date(d); post.setDate(post.getDate() + 1);
-    const fmt = (dt) => dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const fmt = (dt) => formatDashboardDate(dt);
     return `${fmt(pre)} – ${fmt(post)}`;
   })() : null;
 

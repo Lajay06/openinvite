@@ -6,6 +6,7 @@ import { getMyInvitation, getMyRecords } from '@/lib/resolveMyWedding';
 import { buildScheduleEvents } from '@/lib/scheduleEvents';
 import { useCollaboratorContext } from '@/lib/collaboratorContext';
 import CountUp from "@/components/shared/CountUp";
+import { formatDashboardDate } from '@/lib/dashboardDate';
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -376,7 +377,7 @@ export default function CalendarPage({ embedded = false, hideChrome = false }) {
           <div style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '16px 20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                {selectedDate.date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                {formatDashboardDate(selectedDate.date)}
               </span>
               <button onClick={() => setSelectedDate(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={14} /></button>
             </div>
