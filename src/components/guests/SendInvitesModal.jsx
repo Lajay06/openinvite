@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { coupleDisplayName } from '@/lib/coupleNames';
+import { newSendEntry } from '@/lib/sendHistory';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { getWeddingEvents, getGuestEventResponse, getEventVenueAndDate } from '@/lib/weddingEvents';
 import {
@@ -598,13 +599,50 @@ export default function SendInvitesModal({
       // field. Marking a guest invited for an announcement that says "the full
       // invitation will follow" would hide them from the send that follows it —
       // the couple would post save-the-dates and silently never invite anyone.
+      // ── AND THE HISTORY, APPENDED ───────────────────────────────────────
+      //
+      // Item 5 of goals/2026-10-09-reply-lifecycle.md. The two stamps above
+      // hold ONE value each and are overwritten by every send, so they could
+      // never answer "what has been sent to this guest". Guest.send_history
+      // can, and its contract is that entries are appended and never
+      // rewritten, so the guest's existing array is spread and the new entry
+      // goes on the end.
+      //
+      // EVERY TYPE IS RECORDED, not just the two with a stamp. An update or a
+      // save-the-date is a send the couple made and will want to see; the
+      // reason those had no field was that none existed, not that they did not
+      // count.
+      //
+      // to_hash, NOT the address: src/lib/sendHistory.js explains why, and an
+      // address that cannot be hashed yields '' rather than the address
+      // itself, so a missing hash is a missing answer and never a leak.
+      const historyEntries = await Promise.all(
+        withTokens.map(async (g) => [g.id, await newSendEntry(type, g.email, new Date(sentAt))]),
+      );
+      const historyById = new Map(historyEntries);
+
       if (type === 'invite' || type === 'reminder') {
         await Promise.all(
           withTokens.map(g =>
-            base44.entities.Guest.update(g.id, isReminder
-              ? { reminder_sent_at: sentAt }
-              : { invite_sent_at: sentAt, invite_channel: channelStr }
-            )
+            base44.entities.Guest.update(g.id, {
+              ...(isReminder
+                ? { reminder_sent_at: sentAt }
+                : { invite_sent_at: sentAt, invite_channel: channelStr }),
+              send_history: [...(Array.isArray(g.send_history) ? g.send_history : []), historyById.get(g.id)],
+            })
+          )
+        );
+      } else {
+        // THE TYPES THAT HAD NOWHERE TO GO. update, save-the-date and
+        // thank-you wrote nothing back at all, which the comment above
+        // recorded as deliberate because inventing untracked data is worse
+        // than tracking nothing. send_history is that field arriving, so they
+        // are recorded now, and only here: no stamp is invented for them.
+        await Promise.all(
+          withTokens.map(g =>
+            base44.entities.Guest.update(g.id, {
+              send_history: [...(Array.isArray(g.send_history) ? g.send_history : []), historyById.get(g.id)],
+            })
           )
         );
       }

@@ -28,7 +28,7 @@
 import { chromium } from 'playwright';
 import { mkdirSync, statSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { SEED, stubBackend, FIXTURE_USER } from '../../lib/renderHarness.mjs';
+import { stubBackend, fixtureFor } from '../../lib/renderHarness.mjs';
 import { countRemoteImages } from '../../lib/blockRemoteImages.mjs';
 import { installCursor, cursorFor } from './cursor.mjs';
 import { routeAvaFixture } from './avaFixture.mjs';
@@ -43,15 +43,23 @@ export const WIDTHS = [
 /**
  * The fixture couple, with the tour already behind them.
  *
- * SEED already carries guidanceState.tourSeenAt set, and that matters more
- * here than anywhere: an unseeded fixture opens the first-run takeover over
- * the dashboard, and every recording would be a recording of the tour talking
+ * THE RICH FIXTURE, BY DEFAULT. The first recordings were made against the
+ * harness SEED, four guests and two tables, and every chapter read as an empty
+ * studio. Isla and Kai are six weeks out with 212 guests
+ * (scripts/lib/fixtures/richWedding.mjs). RECORDING_FIXTURE=default brings the
+ * old couple back for comparison.
+ *
+ * Both fixtures carry guidanceState.tourSeenAt, and that matters more here
+ * than anywhere: an unseeded fixture opens the first-run takeover over the
+ * dashboard, and every recording would be a recording of the tour talking
  * about itself.
  */
-export const RECORDING_SEED = SEED;
+export const RECORDING_FIXTURE = process.env.RECORDING_FIXTURE || 'rich';
+const recordingFixture = fixtureFor(RECORDING_FIXTURE);
+export const RECORDING_SEED = recordingFixture.seed;
 
 /** A context that renders the studio as a couple sees it, cursor included. */
-export async function recordingContext(browser, { width, height }) {
+export async function recordingContext(browser, { width, height, seed = RECORDING_SEED }) {
   const ctx = await browser.newContext({
     viewport: { width, height },
     deviceScaleFactor: 1,
@@ -65,7 +73,7 @@ export async function recordingContext(browser, { width, height }) {
     localStorage.setItem('base44_access_token', 'recording-harness-not-a-real-token');
     localStorage.setItem('oi_auth', '1');
   });
-  await stubBackend(ctx, { seed: RECORDING_SEED, user: FIXTURE_USER });
+  await stubBackend(ctx, { seed, user: recordingFixture.user, published: recordingFixture.published });
   // AFTER stubBackend, DELIBERATELY. Playwright matches routes in reverse
   // order of registration, so the last one registered wins: this is what makes
   // the Ava fixture answer the call the general stub would otherwise swallow.
@@ -139,7 +147,10 @@ export async function startCapture(page, { outputFile, width, height, fps = FPS,
  */
 export async function recordChapter(chapter, { width, height, label, base, outDir, holdMs = 1000 }) {
   const browser = await chromium.launch();
-  const ctx = await recordingContext(browser, { width, height });
+  // A CHAPTER MAY SET THE STAGE. publish has to start on an unpublished site
+  // to press Publish at all, while the rest of the tour shows the site live.
+  const seed = chapter.seed ? chapter.seed(RECORDING_SEED) : RECORDING_SEED;
+  const ctx = await recordingContext(browser, { width, height, seed });
   const page = await ctx.newPage();
   const outputFile = `${outDir}/${chapter.key}-${label}.webm`;
   let capture = null;

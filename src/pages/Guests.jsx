@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyGuestsWithRsvp, getMyRecords, putMyWeddingDetails } from "@/lib/resolveMyWedding";
 import { normalizeDeadline } from "@/lib/rsvpDeadline";
+import { updatedLabel, refreshFailedLine } from "@/lib/lastUpdated";
 // DASHBOARD CHROME KEEPS NUMERIC DATES in the account's chosen format, which
 // is the opposite call from the guest site's written ones. The couple set this
 // date in this format; showing it back to them any other way would be the
@@ -161,6 +162,22 @@ export default function Guests() {
   // Menu Phase 1 (Ultra) — for mapping a stored meal_choice id back to a label
   const [mealOptions, setMealOptions] = useState([]);
   const [rsvpContent, setRsvpContent] = useState(null);
+  // ── HOW OLD THE LIST IS, AND WHETHER THE LAST TRY FAILED ────────────────
+  //
+  // Item 4 of goals/2026-10-09-reply-lifecycle.md. The page fetched once on
+  // mount and again after every write, and never said when. Both of these are
+  // set only by loadGuests, so nothing else can claim the list is fresh.
+  const [lastLoadedAt, setLastLoadedAt] = useState(null);
+  const [refreshFailed, setRefreshFailed] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  // A TICK TO RE-RENDER, NOT A COUNTER. The label is a function of
+  // lastLoadedAt and now, so this only forces the recomputation; it carries no
+  // state of its own and a failed refresh cannot make it say anything fresher.
+  const [, setNowTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setNowTick((t) => t + 1), 30000);
+    return () => clearInterval(id);
+  }, []);
   // fix/guest-rls-step1: collaborator guest viewing is parked (api/collaborator-guests.js
   // returns 503) — see that file's header comment for why and the rebuild path.
   const [collaboratorGuestsUnavailable, setCollaboratorGuestsUnavailable] = useState(false);
@@ -281,10 +298,28 @@ export default function Guests() {
         setTables(tableData.map(t => ({ ...t, assigned_guests: t.assigned_guests || [] })));
         backfillMissingTokens(guestData);
       }
+      // ONLY HERE, AND ONLY AFTER THE WRITES LANDED. This is the one place
+      // that may claim the list is current.
+      setLastLoadedAt(new Date());
+      setRefreshFailed(false);
     } catch {
+      // THE LIST IS LEFT EXACTLY AS IT WAS, and lastLoadedAt is not moved. A
+      // refresh that failed and then emptied the table would read as "every
+      // guest is gone", which is worse than showing nothing new. The toast is
+      // kept because it is what a couple notices; the line below the toolbar
+      // is what is still there once the toast has gone.
+      setRefreshFailed(true);
       toast.error("Failed to load guests");
     }
     setLoading(false);
+  };
+
+  /** The Refresh control's own handler, so the button can show its state. */
+  const refreshNow = async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    await loadGuests();
+    setRefreshing(false);
   };
 
   /* ── Table assignment — routes through the shared Table.assigned_guests
@@ -946,6 +981,18 @@ export default function Guests() {
   // "everyone not yet invited", which is the same default the panel had.
   const goToSend = (config) => navigate('/SendInvites', { state: config });
 
+  /**
+   * ONE GUEST, THE SAME FLOW. Item 5 of
+   * goals/2026-10-09-reply-lifecycle.md: the row's menu opens the existing
+   * send page with this guest selected and nothing else changed.
+   *
+   * No api/send-*.js change was needed, which the goal set as a stop
+   * condition: SendInvitesModal already accepted initialSelectedIds and
+   * SendInvites.jsx already passed router state straight through, so this is
+   * the plumbing that was there being used rather than a second send path.
+   */
+  const handleResend = (guest) => goToSend({ initialSelectedIds: [guest.id], type: 'invite' });
+
   const openSendForSelection = () => {
     // A gate that returns silently is the same defect as an unhandled
     // rejection: the user acts, nothing happens, nothing explains. Say what it
@@ -1186,6 +1233,24 @@ export default function Guests() {
         {!isCollaborating && <AvaButton label="Ask Ava to help manage your guest list" onClick={() => setAvaOpen(true)} />}
         {isCollaborating && <div />}
         <div className="flex flex-wrap items-center gap-[10px]">
+          {/* ── HOW OLD THIS LIST IS, BESIDE THE WAY TO FIX IT ─────────────
+              The age and the Refresh control belong together: a line saying
+              the list is an hour old is only useful next to the thing that
+              makes it current. Both read from the last SUCCESSFUL load. */}
+          <span
+            data-guests-updated
+            style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+          >
+            {refreshFailed ? refreshFailedLine(lastLoadedAt) : updatedLabel(lastLoadedAt)}
+          </span>
+          <button
+            data-guests-refresh
+            onClick={refreshNow}
+            disabled={refreshing || loading}
+            className="btn-editorial-secondary"
+          >
+            {refreshing ? 'Refreshing…' : 'Refresh'}
+          </button>
           {!isCollaborating && (
             <button
               onClick={() => setShowImport(true)}
@@ -1380,6 +1445,7 @@ export default function Guests() {
               onToggleSelect={readOnly ? undefined : toggleSelect}
               onToggleSelectAll={readOnly ? undefined : toggleSelectAll}
               onEditEvents={readOnly ? undefined : handleEditEvents}
+              onResend={readOnly ? undefined : handleResend}
               onAddToHousehold={readOnly ? undefined : handleAddToHousehold}
               onMoveOutOfHousehold={readOnly ? undefined : handleMoveOutOfHousehold}
               onToggleEvent={readOnly ? undefined : handleToggleEvent}
