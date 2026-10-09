@@ -386,7 +386,19 @@ export default function SendInvitesModal({
   // have one. With 12b there is one channel and it is addressed to an
   // invitation, so the count on screen is invitations throughout.
   const selectedInvitations = useMemo(() => invitationsFor(selectedGuests), [selectedGuests]);
-  const invitationsWithEmail = selectedInvitations.filter(i => i.email);
+  // ── GUESTS WHO ASKED NOT TO BE EMAILED ────────────────────────────────
+  //
+  // Item 6 of goals/2026-10-09-reply-lifecycle.md. Filtered out of the send
+  // and counted, so the couple sees the number BEFORE they press send rather
+  // than reading it in a result they cannot undo.
+  //
+  // THIS IS THE COURTESY, NOT THE RULE. api/send-invites.js reads the flag
+  // from the database and skips independently, because a client-side filter
+  // is editable by whoever is running the client. Both exist on purpose: the
+  // server one is the guarantee, this one is the sentence.
+  const optedOutSelected = selectedGuests.filter(g => g.email_opt_out);
+  const sendableGuests = selectedGuests.filter(g => !g.email_opt_out);
+  const invitationsWithEmail = invitationsFor(sendableGuests).filter(i => i.email);
   const invitationsNoEmail = selectedInvitations.filter(i => !i.email);
 
   const allFilteredSelected = filteredGuests.length > 0 && filteredGuests.every(g => selected.has(g.id));
@@ -511,7 +523,10 @@ export default function SendInvitesModal({
     setSending(true);
     const tid = toast.loading(`Sending ${TYPE_LABELS[type].toLowerCase()}s…`);
     try {
-      const withTokens = await ensureTokens(selectedGuests);
+      // SENDABLE ONLY. An opted-out guest is not minted a token and not sent
+      // to; the server would refuse them anyway, and asking it to is how a
+      // token gets issued for someone who asked to be left alone.
+      const withTokens = await ensureTokens(sendableGuests);
       const sentAt = new Date().toISOString();
       // ONE EMAIL PER INVITATION, ADDRESSED TO THE LEAD. Grouped from
       // withTokens rather than from selectedGuests so the lead carries the
@@ -598,9 +613,15 @@ export default function SendInvitesModal({
       // sentence says which is which rather than leaving the couple to work out
       // why two numbers on one line disagree.
       const nEmails = invitationsWithEmail.length;
-      const nPeople = selectedGuests.length;
+      const nPeople = sendableGuests.length;
       const plural = (n) => (n === 1 ? '' : 's');
-      const msg = `${TYPE_LABELS[type]} sent, ${nEmails} email${plural(nEmails)} covering ${nPeople} guest${plural(nPeople)}`;
+      // THE SKIPPED COUNT IS PART OF THE SENTENCE, not a footnote. A couple
+      // who selected forty and reached thirty-eight needs to know why, and
+      // "asked not to be emailed" is the only answer that stops them
+      // re-sending to chase the gap.
+      const nSkipped = optedOutSelected.length;
+      const msg = `${TYPE_LABELS[type]} sent, ${nEmails} email${plural(nEmails)} covering ${nPeople} guest${plural(nPeople)}`
+        + (nSkipped > 0 ? `, ${nSkipped} skipped who asked not to be emailed` : '');
 
       toast.success(msg, { id: tid });
       onSent?.();

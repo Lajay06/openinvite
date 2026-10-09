@@ -41,6 +41,7 @@ const RSVPPage = lazyWithReload(() => import('./components/rsvp/RSVPPage'));
 const GamesPage = lazyWithReload(() => import('./components/games/GamesPage'));
 const CollaboratorAccept = lazyWithReload(() => import('./pages/CollaboratorAccept'));
 const StopEmails = lazyWithReload(() => import('./pages/StopEmails'));
+const GuestStopEmails = lazyWithReload(() => import('./pages/GuestStopEmails'));
 const CollaboratorGuests = lazyWithReload(() => import('./pages/CollaboratorGuests'));
 const GuestRSVPRetired = lazyWithReload(() => import('./pages/GuestRSVPRetired'));
 const UniverseStudio = lazyWithReload(() => import('./pages/UniverseStudio'));
@@ -128,7 +129,7 @@ const PUBLIC_PATH_SET = new Set([
   '/GuestRSVP',
 ]);
 const isPublicPath = (pathname) =>
-  PUBLIC_PATH_SET.has(pathname) || pathname.startsWith('/w/') || pathname.startsWith('/rsvp/') || pathname.startsWith('/games/') || pathname.startsWith('/collaborate/accept/') || pathname.startsWith('/stop-emails/');
+  PUBLIC_PATH_SET.has(pathname) || pathname.startsWith('/w/') || pathname.startsWith('/rsvp/') || pathname.startsWith('/games/') || pathname.startsWith('/collaborate/accept/') || pathname.startsWith('/stop-emails/') || pathname.startsWith('/guest-stop-emails/');
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -247,6 +248,9 @@ const AuthenticatedApp = () => {
             public prefix list above for the same reason /rsvp/ and
             /collaborate/accept/ are there. */}
         <Route path="/stop-emails/:token" element={<StopEmails />} />
+        {/* Item 6: a guest's own way out, separate from the couple's account
+            one above. Different id space, different entity, different flag. */}
+        <Route path="/guest-stop-emails/:token" element={<GuestStopEmails />} />
         <Route path="/GuestRSVP" element={<GuestRSVPRetired />} />
       </Routes>
     );

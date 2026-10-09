@@ -329,6 +329,20 @@ export function renderInvitationEmail({
   weddingDate,
   bannerImageUrl,
   design,
+  // ── THE GUEST'S WAY OUT, PASSED IN RATHER THAN BUILT HERE ──────────────
+  //
+  // Item 6 of goals/2026-10-09-reply-lifecycle.md. The link is signed with
+  // BASE44_ADMIN_KEY, and this module runs in the BROWSER as well: the
+  // SendInvitesModal preview pane calls this same function. So the URL is
+  // resolved by the caller that has the secret (api/send-invites.js) and
+  // handed in. Building it here would have meant either shipping the signing
+  // key to every visitor or a preview that could not render.
+  //
+  // ABSENT IS A VALID STATE, and it is what the preview passes: the footer
+  // line is simply not rendered. A preview that showed a dead link, or worse
+  // a live one for whichever guest happened to be first in the list, would be
+  // misdescribing the email.
+  stopEmailsUrl,
 }) {
   const cfg = getEmailTypeConfig(type);
   const style = getUniverseEmailStyle(universeId);
@@ -530,7 +544,10 @@ ${ctaHtml}
               <p style="margin:0 0 14px;font-size:12px;line-height:1.6;color:${inkFaint};font-family:${fontBody};">
                 You received this ${cfg.footerNoun} because someone added you to their guest list on openinvite.com.au.<br />
                 If you think this was sent in error, you can ignore this email.
-              </p>
+              </p>${stopEmailsUrl ? `
+              <p style="margin:0 0 14px;font-size:12px;line-height:1.6;color:${inkFaint};font-family:${fontBody};">
+                Do not want emails about this wedding? <a href="${stopEmailsUrl}" style="color:${inkFaint};">Stop these emails.</a>
+              </p>` : ''}
               <table cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
 ${markCellHtml}
@@ -566,6 +583,7 @@ ${markCellHtml}
     ...((cfg.showRsvp && ctaUrl) ? [`${cfg.ctaLabel}: ${ctaUrl}`, ''] : []),
     `You received this ${cfg.footerNoun} because someone added you to their guest list on openinvite.com.au.`,
     'If you think this was sent in error, you can ignore this email.',
+    ...(stopEmailsUrl ? [`Do not want emails about this wedding? Stop these emails: ${stopEmailsUrl}`] : []),
   ];
 
   const text = textLines.join('\n');
