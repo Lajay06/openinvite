@@ -50,6 +50,36 @@ const DASHBOARD = [
   'src/components/guests/GuestList.jsx',
   'src/pages/Admin.jsx',
   'src/components/shared/DatePicker.jsx',
+  // 2026-10-09, found by lane B's camera: seven more surfaces #917 missed,
+  // each still writing its own date. The first two were reported by name; the
+  // rest came from sweeping the dashboard for any written-date formatter.
+  'src/components/schedule/ScheduleTable.jsx',
+  'src/components/budget/BudgetList.jsx',
+  'src/Layout.jsx',
+  'src/pages/Calendar.jsx',
+  'src/pages/TodoList.jsx',
+  'src/pages/Account.jsx',
+  'src/pages/GuestExperience.jsx',
+  'src/pages/Messages.jsx',
+];
+
+/**
+ * EVERY WRITTEN-DATE SHAPE, NOT THE ONE #917 HAPPENED TO SEE.
+ *
+ * The old check looked for exactly `toLocaleDateString('en-AU', { day` and
+ * nothing else, so it was blind to the two shapes lane B found: a locale of
+ * `undefined` with a weekday, and a date-fns format string carrying MMM. A
+ * check written as a list of the shapes its author had met is the mistake this
+ * programme keeps paying for, so this is the whole family.
+ *
+ * MMM IS MATCHED ONLY INSIDE A FORMAT STRING, because a bare "MMM" could
+ * appear in prose, and a TIME-ONLY format string is allowed: a message
+ * timestamp still needs its "h:mm a", and the date beside it comes from the
+ * one formatter.
+ */
+const WRITTEN_DATE_SHAPES = [
+  [/toLocaleDateString\([^)]*month:\s*'(long|short)'/, "toLocaleDateString with a month name"],
+  [/format(Stored)?\([^)]*'[^']*MMM[^']*(d|y)[^']*'/, "a date-fns format string with MMM and a day or year"],
 ];
 
 // MUST NOT BE. Each one is a date a guest reads, or a preview of one.
@@ -115,9 +145,32 @@ export async function runDashboardDateFormat() {
     const src = code(read(f));
     ok(`${f.split('/').pop()} formats through the one formatter`,
        /formatDashboardDate\(/.test(src), 'routed');
-    ok(`  and no longer writes its own written date`,
-       !/toLocaleDateString\('en-AU', \{ day/.test(src), 'no local call left');
+    const offenders = WRITTEN_DATE_SHAPES.filter(([re]) => re.test(src)).map(([, label]) => label);
+    ok(`  and no longer writes its own written date, in any shape`,
+       offenders.length === 0, offenders.join(' · ') || 'none of the known shapes');
   }
+
+  // ── THE TWO LANE B NAMED, PINNED POSITIVELY ─────────────────────────────
+  //
+  // Absence checks alone would pass on a surface that stopped rendering a date
+  // at all, so each of these says what it now calls.
+  const sched = code(read('src/components/schedule/ScheduleTable.jsx'));
+  ok('the schedule table formats every row through the one formatter',
+     /formatDashboardDate\(/.test(sched), 'routed');
+  ok('  and no longer prints a weekday in front of it',
+     !/weekday:/.test(sched), 'weekday gone');
+  const budget = code(read('src/components/budget/BudgetList.jsx'));
+  ok('the budget expenses tab formats payment dates through it too',
+     /formatDashboardDate\(item\.payment_date\)/.test(budget), 'payment_date routed');
+  ok('  and no longer calls formatStored for a date',
+     !/formatStored\(item\.payment_date/.test(budget), 'no formatStored date');
+  // A MESSAGE KEEPS ITS TIME. The date is the only part that moves, so the
+  // time format has to survive, and it is asserted rather than assumed.
+  const msgs = code(read('src/pages/Messages.jsx'));
+  ok('a message timestamp keeps its time beside the account-format date',
+     /formatDashboardDate\(message\.created_date\)/.test(msgs)
+       && /formatStored\(message\.created_date, 'h:mm a'\)/.test(msgs),
+     'date + time');
 
   // ── AND THE PLACES IT MUST NOT REACH ────────────────────────────────────
 

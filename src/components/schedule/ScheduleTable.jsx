@@ -6,6 +6,7 @@ import { OUTLINE_PILL, CELL_STRONG, CELL_MUTED, CELL_SECONDARY, CELL_NOWRAP } fr
 import { naturalCompare, sortRows, nextSortState } from '@/lib/tableSort';
 import { compareScheduleRows, minutesOfDay } from '@/lib/scheduleOrder';
 import { WHEN_LABEL, WHEN_RANK, ROW_HOME } from '@/lib/scheduleEvents';
+import { formatDashboardDate } from '@/lib/dashboardDate';
 
 /**
  * SCHEDULE › LIST — the same table as the guest list, on the same shell (R37).
@@ -43,13 +44,26 @@ const COLUMN_SORTS = {
   notes:    { getValue: (e) => e.notes || e.description || '', compare: naturalCompare },
 };
 
-/** "Sat 3 Jul 2027" from a plain date string, read as a LOCAL day. */
+/**
+ * The day, in the account's chosen format, read as a LOCAL day.
+ *
+ * It was "Sat 3 Jul 2027", a written date with a weekday, which #917 missed
+ * when it routed the dashboard through one formatter. Found by lane B's
+ * camera. THE WEEKDAY GOES TOO, per the owner's ruling: the account's format
+ * is a date, not a sentence, and a weekday in front of a numeric date reads
+ * as two different conventions at once.
+ *
+ * The regex stays because the stored key is a date-only string and building
+ * the Date from its parts is what keeps it on the right calendar day; passing
+ * the string through would be read as UTC. formatDashboardDate does the same
+ * pinning for a YYYY-MM-DD string, so the parts are rejoined for it rather
+ * than handed over as a Date.
+ */
 function dateLabel(key) {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(key || ''));
   if (!m) return '—';
   const [, y, mo, d] = m;
-  return new Date(Number(y), Number(mo) - 1, Number(d))
-    .toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  return formatDashboardDate(`${y}-${mo}-${d}`) || '—';
 }
 
 /** "3:00 PM" from "15:00". */
