@@ -836,7 +836,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
  * ── "FIND MY INVITATION", ONCE, FOR EVERY UNIVERSE ────────────────────────
  *
  * Item 3 of goals/2026-10-09-reply-lifecycle.md. A visitor the site does not
- * recognise has no way of knowing that the RSVP tab is where their own
+ * recognize has no way of knowing that the RSVP tab is where their own
  * invitation lives, and the tab's email bridge is exactly the thing that would
  * tell them. One quiet line says so.
  *
@@ -867,7 +867,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
  *
  * ── ONLY FOR SOMEONE THE SITE DOES NOT KNOW ───────────────────────────────
  *
- * A recognised guest already has their invitation; the RSVP tab opens straight
+ * A guest the site recognizes already has their invitation; the RSVP tab opens
  * onto their own form. Offering to find it would be the product forgetting who
  * it just greeted, so the line is absent for them entirely rather than
  * reworded.
