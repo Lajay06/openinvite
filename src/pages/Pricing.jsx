@@ -232,6 +232,13 @@ export default function Pricing() {
                   {f}
                 </li>
               ))}
+              {/* The app, in both plans (goals/2026-10-10-app-on-the-marketing-site.md
+                  item 3). Here and not in planFeatures.js, which the dashboard's
+                  ChoosePlan page reads too, so no dashboard surface changes. */}
+              <li data-plan-app style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "#0A0A0A", fontFamily: PJS }}>
+                <CheckIcon color="#E03553" style={{ margin: 0 }} />
+                Includes the app.
+              </li>
             </ul>
             <button
               onClick={goPro}
@@ -288,6 +295,13 @@ export default function Pricing() {
                   {f}
                 </li>
               ))}
+              {/* The app, in both plans (goals/2026-10-10-app-on-the-marketing-site.md
+                  item 3). Here and not in planFeatures.js, which the dashboard's
+                  ChoosePlan page reads too, so no dashboard surface changes. */}
+              <li data-plan-app style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, color: "#0A0A0A", fontFamily: PJS }}>
+                <CheckIcon color="#E03553" style={{ margin: 0 }} />
+                Includes the app.
+              </li>
             </ul>
             <button
               onClick={goUltra}
