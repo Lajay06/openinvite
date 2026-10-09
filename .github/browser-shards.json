@@ -1,5 +1,6 @@
 {
   "_comment": [
+    "2026-10-09: one guard added, not a rebalance. test:share-tab-390 (11s measured locally against a vite preview of this branch, booked at 13 so a cold first navigation does not make the column a lie, the same allowance the 2026-10-08 budget-separators entry explains) to B. B 993 -> 1006 against A 996, so the delta moves from 3s to 10s on a 120s budget. It went to B because B was the lighter shard, which is the rule every entry below applies. MEASURED RED FIRST: removing the stacking rule reproduces lane B's exact numbers, a 26px message box and a 28px send button, and turns four of the 390 checks red while all four 1440 checks stay green.",
     "Which browser guard runs in which CI shard, and how long it took when it was last measured.",
     "The shards are balanced by MEASURED DURATION, never by name or by count: A carries fewer",
     "guards because it carries the one that takes 459 seconds. Rebalancing is an edit to this",
@@ -48,7 +49,7 @@
             "test:guest-no-invalid-date",
             "test:guest-export-address"
           ],
-          "note": "Serves this PR's own build (not production \u2014 CAPTURE_BASE_URL defaults to https://openinvite.com.au otherwise, which would test whatever's already live instead of the change under review) and points the marketing-routes smoke test at it."
+          "note": "Serves this PR's own build (not production — CAPTURE_BASE_URL defaults to https://openinvite.com.au otherwise, which would test whatever's already live instead of the change under review) and points the marketing-routes smoke test at it."
         },
         {
           "name": "Every text block on a guest page follows its universe's mark",
@@ -66,7 +67,7 @@
           "name": "The onboarding universe picker advances on Select",
           "seconds": 44,
           "script": "test:onboarding-universe-select",
-          "note": "Select is the answer, so Select advances \u2014 and keeps the answer."
+          "note": "Select is the answer, so Select advances — and keeps the answer."
         },
         {
           "name": "The onboarding universe tiles are the universes' own heroes",
@@ -174,7 +175,7 @@
     "B": {
       "job": "Browser guards B",
       "port": 4224,
-      "measuredSeconds": 993,
+      "measuredSeconds": 1006,
       "guards": [
         {
           "name": "The studio tour, as a couple meets it, at 390 and 1440",
@@ -204,7 +205,7 @@
           "name": "The country picker offers the world",
           "seconds": 60,
           "script": "test:country-picker",
-          "note": "The full ISO list, searchable, with SVG flags \u2014 and no emoji in it."
+          "note": "The full ISO list, searchable, with SVG flags — and no emoji in it."
         },
         {
           "name": "The couple's reply reaches the guest's real address",
@@ -250,7 +251,7 @@
           "name": "Custom pages keep their order, and the builder shows its controls",
           "seconds": 21,
           "script": "test:builder-custom-pages",
-          "note": "MOVED HERE FROM BEFORE THE BUILD STEPS, 2026-09-08, because it now needs a browser and this is the first point in the job that has one.  #709 gave this guard a fallback: when a diff cannot answer the question \u2014 an empty range, or any run on main \u2014 it renders all fourteen marketing routes and compares bodies. That fallback fired on main immediately after #709 merged and crashed on `browserType.launch: Executable doesn't exist`, because it sat at line 87, one hundred and seventy lines before `npx playwright install`.  The guard was right and its placement was wrong. It stays a required step; it simply runs after Chromium exists. The diff path costs the same wherever it sits, and the fallback cannot run anywhere earlier. Needs the same preview server and browser as the guards above. The resume path it checks was written long ago and inert until c832e9e declared onboardingDraft \u2014 so this is the first CI run it has ever had. The breadcrumb's WORDS and its painted-ness, on two universe routes. Each hides the other's failure: right words behind an overlay reads correct in the DOM; wrong words on screen reads correct in a screenshot."
+          "note": "MOVED HERE FROM BEFORE THE BUILD STEPS, 2026-09-08, because it now needs a browser and this is the first point in the job that has one.  #709 gave this guard a fallback: when a diff cannot answer the question — an empty range, or any run on main — it renders all fourteen marketing routes and compares bodies. That fallback fired on main immediately after #709 merged and crashed on `browserType.launch: Executable doesn't exist`, because it sat at line 87, one hundred and seventy lines before `npx playwright install`.  The guard was right and its placement was wrong. It stays a required step; it simply runs after Chromium exists. The diff path costs the same wherever it sits, and the fallback cannot run anywhere earlier. Needs the same preview server and browser as the guards above. The resume path it checks was written long ago and inert until c832e9e declared onboardingDraft — so this is the first CI run it has ever had. The breadcrumb's WORDS and its painted-ness, on two universe routes. Each hides the other's failure: right words behind an overlay reads correct in the DOM; wrong words on screen reads correct in a screenshot."
         },
         {
           "name": "The full-page preview offers the devices the canvas does",
@@ -268,19 +269,19 @@
           "name": "The sidebar groups open shut and remember what you open",
           "seconds": 15,
           "script": "test:sidebar-groups",
-          "note": "Collapsed by default, remembered per device, and a chevron rather than a text caret. All three are claims about the rendered DOM after a mount \u2014 and the memory is checked by RELOADING, since reading state back without one proves only that it is in memory."
+          "note": "Collapsed by default, remembered per device, and a chevron rather than a text caret. All three are claims about the rendered DOM after a mount — and the memory is checked by RELOADING, since reading state back without one proves only that it is in memory."
         },
         {
           "name": "The seating grid reaches the edge of the frame at every zoom",
           "seconds": 14,
           "script": "test:seating-canvas",
-          "note": "The corners, at minimum and maximum zoom. The middle of the frame was never the broken part \u2014 a guard that sampled it would have passed on every build this fixes."
+          "note": "The corners, at minimum and maximum zoom. The middle of the frame was never the broken part — a guard that sampled it would have passed on every build this fixes."
         },
         {
           "name": "The unread count is visible on both sidebars",
           "seconds": 14,
           "script": "test:messages-badge",
-          "note": "The unread count was computed and rendered nowhere. The desktop sidebar is hidden lg:flex, so it stays in the DOM at phone width \u2014 this measures visibility, not presence, or it would pass on the hidden one."
+          "note": "The unread count was computed and rendered nowhere. The desktop sidebar is hidden lg:flex, so it stays in the DOM at phone width — this measures visibility, not presence, or it would pass on the hidden one."
         },
         {
           "name": "The builder Settings tab works and can be read",
@@ -329,12 +330,18 @@
           "seconds": 24,
           "script": "test:household-rsvp-390",
           "reason": "Item 8 of goals/2026-10-07-households-and-children.md asks for the three-member RSVP form measured at 390. The property checks cannot see whether the page draws a block per member, whether the child is marked without an age, or whether the submit a guest can press is the one the rule says. It found the holder's own name missing from the form on its first run."
+        },
+        {
+          "name": "The share tab is usable on a phone",
+          "seconds": 13,
+          "script": "test:share-tab-390",
+          "note": "Lane B measured the message box at 26px and the send button at 28px at 390: a bare flex row, an email column at flex:1 beside a fixed 280px sidebar, no wrap and no breakpoint. Nothing in the source states a width, so only measuring finds it. Asserts both are at least 280px and that the send label is fully visible, and pins 1440 so a phone fix cannot restyle the desktop."
         }
       ]
     }
   },
   "balance": {
-    "deltaSeconds": 6,
+    "deltaSeconds": 10,
     "budgetSeconds": 120
   },
   "unassigned": []
