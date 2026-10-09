@@ -109,6 +109,7 @@
     "test:guest-nav-container": "node scripts/test-guest-nav-container.mjs",
     "test:builder-header-390": "node scripts/test-builder-header-390.mjs",
     "test:share-tab-390": "node scripts/test-share-tab-390.mjs",
+    "test:find-my-invitation": "node scripts/test-find-my-invitation.mjs",
     "test:experiences-plain": "node scripts/test-experiences-plain.mjs",
     "test:design-tab-contrast": "node scripts/test-design-tab-contrast.mjs",
     "test:messages-badge": "node scripts/test-messages-badge.mjs",
