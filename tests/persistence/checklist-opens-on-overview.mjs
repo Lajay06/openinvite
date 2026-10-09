@@ -33,7 +33,7 @@
 import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { pass, fail } from './_shared.mjs';
+import { pass, fail, stripComments } from './_shared.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = (p) => resolve(__dir, '../../', p);
@@ -84,6 +84,62 @@ export async function runChecklistOpensOnOverview() {
     /<AvaButton label="Ask Ava to review your checklist"/.test(CODE) && /<AvaModal/.test(CODE), 'button and modal');
   check('  and her prompt is US English',
     /prioritize/.test(CODE) && !/prioritise/.test(CODE), 'prioritize');
+
+  // ── "WEDDING DATE SET" READS THE RECORD, NOT THE BROWSER ────────────────
+  //
+  // Lane B's fixture audit, 2026-10-09. The item was
+  // !!localStorage.getItem('oi_wedding_date'), so a couple whose date is
+  // saved saw it as not done on any browser that had not cached the key: a
+  // new device, a private window, cleared site data, or a session that never
+  // passed through the screen which writes it.
+  //
+  // THIS RUNS UNDER NODE, WHERE THERE IS NO localStorage AT ALL, which is the
+  // fresh-browser-profile case exactly. The old implementation would not have
+  // returned false here, it would have THROWN on an undefined global, so this
+  // is also why evaluateStatus had to be exported to be testable.
+  const { evaluateStatus } = await import('../../src/lib/checklistStatus.js');
+  {
+    const empty = { guests: [], budgets: [], vendors: [], schedules: [], notes: [] };
+    const withDate = evaluateStatus({ wedding: { weddingDate: '2027-05-01' }, ...empty });
+    results.push(withDate.wedding_date === true
+      ? pass('a fixture wedding with a date shows "Wedding date set" as done', 'done')
+      : fail('a fixture wedding with a date shows "Wedding date set" as done', true, withDate.wedding_date));
+    const noDate = evaluateStatus({ wedding: { weddingDate: null }, ...empty });
+    results.push(noDate.wedding_date === false
+      ? pass('  and a wedding with no date still shows it as not done', 'not done')
+      : fail('  and a wedding with no date still shows it as not done', false, noDate.wedding_date));
+    const noWedding = evaluateStatus({ wedding: null, ...empty });
+    results.push(noWedding.wedding_date === false
+      ? pass('  and no wedding record at all does not throw', 'not done')
+      : fail('  and no wedding record at all does not throw', false, noWedding.wedding_date));
+
+    // ── "WEDDING LOCATION SET" READS THE RECORD TOO ───────────────────────
+    //
+    // Same bug, same fix, ruled 2026-10-09: the ceremony's venue, or the
+    // reception's when the ceremony has none. Written as a table because the
+    // fallback has an order and the order is the part worth pinning.
+    const LOCATION = [
+      [{ mainCeremony: { venueName: 'St Mary' } }, true, 'a ceremony venue name'],
+      [{ mainCeremony: { address: '12 Flinders Lane' } }, true, 'a ceremony address alone'],
+      [{ mainCeremony: {}, reception: { venueName: 'The Grounds' } }, true, 'the reception when the ceremony is empty'],
+      [{ reception: { address: '5 Smith St' } }, true, 'a reception address alone'],
+      [{ mainCeremony: {}, reception: {} }, false, 'both present but empty'],
+      [{}, false, 'no events at all'],
+      [{ mainCeremony: { venueName: '' } }, false, 'an empty string is not a place'],
+    ];
+    for (const [wedding, want, why] of LOCATION) {
+      const got = evaluateStatus({ wedding, ...empty }).wedding_city;
+      results.push(got === want
+        ? pass(`location: ${why} reads ${want ? 'done' : 'not done'}`, String(got))
+        : fail(`location: ${why} reads ${want ? 'done' : 'not done'}`, want, got));
+    }
+  }
+  check('the item no longer reads oi_wedding_date anywhere',
+    !/oi_wedding_date/.test(stripComments(CODE))
+      && !/oi_wedding_date/.test(stripComments(readFileSync(root('src/lib/checklistStatus.js'), 'utf8')))
+      && !/oi_wedding_city/.test(stripComments(readFileSync(root('src/lib/checklistStatus.js'), 'utf8')))
+      && !/localStorage/.test(stripComments(readFileSync(root('src/lib/checklistStatus.js'), 'utf8'))),
+    'reads the record');
 
   return results;
 }

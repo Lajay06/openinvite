@@ -167,5 +167,27 @@ export async function runBudgetUnits() {
   ok('  and the vendor price bands survive',
      /value: "\$"/.test(read('src/components/vendors/VendorForm.jsx')), 'the band labels');
 
+  // ── AN ICON IS NOT A CURRENCY SYMBOL ────────────────────────────────────
+  //
+  // Lane B's fixture audit, 2026-10-09. The vendor table's Price column drew
+  // a DollarSign icon beside the figure, so an AUD account read "$ 18,500".
+  // It escaped the sweep in #932 because that one looked for hardcoded "$"
+  // CHARACTERS, and this was a React component: no dollar sign appears in the
+  // source at all, and no amount of formatting could ever reach it.
+  //
+  // The check is on the icon's absence rather than on the symbol's presence,
+  // because the next person to want a money glyph here will reach for the
+  // icon set again.
+  const vendorList = code('src/components/vendors/VendorList.jsx');
+  ok('the vendor Price column draws no DollarSign icon',
+     !/<DollarSign/.test(vendorList), 'no icon');
+  ok('  and it does not import one either',
+     !/\bDollarSign\b/.test(vendorList), 'not imported');
+  ok('  it prints the account symbol beside the figure instead',
+     /\{currencySymbol\}\{Number\(vendor\.quoted_price\)\.toLocaleString\(\)\}/.test(vendorList),
+     'currencySymbol + figure');
+  ok('  from the shared context, not a literal',
+     /useCurrency\(\)/.test(vendorList) && /symbol: currencySymbol/.test(vendorList), 'useCurrency');
+
   return results;
 }

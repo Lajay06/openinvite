@@ -4,7 +4,11 @@ import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import { useNavigate } from 'react-router-dom';
-import { getMyRecords, getMyGuestsWithRsvp } from '@/lib/resolveMyWedding';
+import { getMyRecords, getMyGuestsWithRsvp, getMyWeddingDetails } from '@/lib/resolveMyWedding';
+// EXTRACTED so a guard can assert it: this page is auth-gated and is JSX, so
+// nothing could exercise the logic in place. See src/lib/checklistStatus.js
+// for the localStorage bug the extraction was done to fix.
+import { evaluateStatus } from '@/lib/checklistStatus';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -49,25 +53,6 @@ const OVERVIEW_GROUPS = [
   },
 ];
 
-function evaluateStatus({ guests, budgets, vendors, schedules, notes }) {
-  return {
-    wedding_date:         !!localStorage.getItem('oi_wedding_date'),
-    guests_started:       guests.length > 0,
-    budget_setup:         budgets.length > 0,
-    venue_sourced:        vendors.some(v => v.category === 'venue'),
-    photographer_sourced: vendors.some(v => v.category === 'photography'),
-    caterer_sourced:      vendors.some(v => v.category === 'catering'),
-    rsvps_tracked:        guests.some(g => g.rsvp_status && g.rsvp_status !== 'pending'),
-    schedule_created:     schedules.length > 0,
-    music_sourced:        vendors.some(v => v.category === 'music'),
-    florist_sourced:      vendors.some(v => v.category === 'flowers'),
-    notes_added:          notes.length > 0,
-    videographer_sourced: vendors.some(v => v.category === 'videography'),
-    transport_arranged:   vendors.some(v => v.category === 'transportation'),
-    beauty_sourced:       vendors.some(v => v.category === 'beauty'),
-    wedding_city:         !!localStorage.getItem('oi_wedding_city'),
-  };
-}
 
 function PlanningOverview() {
   const navigate = useNavigate();
@@ -75,24 +60,25 @@ function PlanningOverview() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let cancelled = false;
+    let canceled = false;
     (async () => {
       try {
-        const [guests, budgets, vendors, schedules, notes] = await Promise.all([
+        const [wedding, guests, budgets, vendors, schedules, notes] = await Promise.all([
+          getMyWeddingDetails().catch(() => null),
           getMyGuestsWithRsvp().catch(() => []),
           getMyRecords('Budget').catch(() => []),
           getMyRecords('Vendor').catch(() => []),
           getMyRecords('Schedule').catch(() => []),
           getMyRecords('Note').catch(() => []),
         ]);
-        if (!cancelled) setStatus(evaluateStatus({ guests, budgets, vendors, schedules, notes }));
+        if (!canceled) setStatus(evaluateStatus({ wedding, guests, budgets, vendors, schedules, notes }));
       } catch {
-        if (!cancelled) setStatus({});
+        if (!canceled) setStatus({});
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!canceled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => { canceled = true; };
   }, []);
 
   if (loading) {
