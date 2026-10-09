@@ -274,7 +274,15 @@ export function buildRichWedding({ now = Date.now() } = {}) {
   });
 
   for (const h of households) {
-    const replyDay = -Math.floor(2 + rnd() * 40);
+    // THE TOP HOUSEHOLD REPLIED TODAY. The Guests page lists the first
+    // household first, and the app goal's "guest list showing a fresh reply"
+    // is that row's reply details carrying today's date. The draw is still
+    // taken, so every other household's reply day is unchanged.
+    const drawn = -Math.floor(2 + rnd() * 40);
+    const replyDay = h === households[0] && h.reply !== 'pending' ? 0 : drawn;
+    // An hour ago, not midday: "today" has to be today where the recording
+    // is made (Australia/Sydney), and a UTC midday can be yesterday there.
+    const repliedAt = replyDay === 0 ? new Date(now - 3600000).toISOString() : iso(replyDay);
     h.members.forEach((g, idx) => {
       const declinedAlone = h.splitDecline && idx === 1;
       const main = h.reply === 'pending' ? 'pending' : (h.reply === 'no' || declinedAlone ? 'no' : 'yes');
@@ -293,10 +301,10 @@ export function buildRichWedding({ now = Date.now() } = {}) {
         { event_id: 'rehearsal-dinner', invited: !!h.rehearsal, status: custom(!!h.rehearsal) },
         { event_id: 'recovery-brunch', invited: !!h.brunch, status: custom(!!h.brunch) },
       ];
-      if (responded) for (const row of rows) if (row.invited) row.responded_at = iso(replyDay);
+      if (responded) for (const row of rows) if (row.invited) row.responded_at = repliedAt;
       g.event_responses = rows;
       g.rsvp_status = main === 'yes' ? 'attending' : main === 'no' ? 'declined' : 'pending';
-      if (responded) g.rsvp_date = iso(replyDay);
+      if (responded) g.rsvp_date = repliedAt;
       if (meal) g.meal_choice = meal;
       if (main === 'yes' && !g.is_child && chance(0.14)) g.dietary_restrictions = pick(DIETARY);
       if (main === 'yes' && g.is_child && chance(0.15)) g.dietary_restrictions = 'No nuts, please';
@@ -553,6 +561,11 @@ export function buildRichWedding({ now = Date.now() } = {}) {
     // fixture has to make it true.
     celebrant: 'Ruth Alder',
     activeUniverse: 'florence', websiteEnabled: true, enabledPages,
+    // A COVER PHOTO, because the home hero reads coverPhoto and nothing else:
+    // without one the published site opens on a flat field of color, which is
+    // not what a couple six weeks out has. Stock already in the account, the
+    // same pool as the moodboard.
+    coverPhoto: STOCK('DTS_NU_NUPTIALS_Shauna_Summers_Photos_ID10310_o5dcie.jpg', 2400),
     qna, homeContent, rsvpContent: { rsvpDeadline: iso(W - 21) },
     budget: {
       total: 85000,

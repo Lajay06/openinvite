@@ -26,6 +26,10 @@ Dashboard: nothing; the fixture is harness-only. Mobile: /tour at 390 measured. 
 
 As CLAUDE.md, plus: no file outside the territory above; no live account used for anything; Cloudinary credentials from env only, never printed; no real names or addresses in the fixture; if a chapter cannot be recorded without a code change outside the territory, STOP and report which.
 
+Lesson, owner ruling 2026-10-09: a new recording is uploaded to a new path or version and the code switches to it; a live Cloudinary path is never overwritten. Cloudinary serves an asset by its path and ignores the version in the URL, so an overwrite changes the live site before any PR merges.
+
 ## Protocol
 
 Order 2, 3, 4, 5 (1 is written into 2's PR body). Held PRs, carry on
+
+Closed 2026-10-10 at main e5f4cd59b1377044b689e758332eab8617428f94, PRs #935 #940 #945 #946

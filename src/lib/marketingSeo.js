@@ -61,6 +61,14 @@ export const MARKETING_PAGE_SEO = {
     title: 'Openinvite | Contact',
     description: "Get in touch with Openinvite. We're here to help with questions about wedding planning, your guest suite or your account.",
   },
+  '/tour': {
+    title: 'Openinvite | Tour the studio',
+    description: 'Eight short recordings of the Openinvite studio: Daily update, Schedule, Guest list, Seating, Budget, Universes, Ava and Your site. Nothing to sign up for.',
+  },
+  '/app': {
+    title: 'Openinvite | The app',
+    description: 'The Openinvite wedding planner on your phone: guests, replies, seating, budget, vendors, schedule and Ava. iPhone and Android, included with every plan. Guests never need it.',
+  },
   '/about': {
     title: 'Openinvite | About',
     description: 'Openinvite is a wedding planning platform built for modern couples. Learn about our story and why we built a wedding planning platform that matches the occasion.',

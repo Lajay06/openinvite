@@ -243,15 +243,15 @@ export const MEDIA = {
     },
   },
   guests: {
-    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1791530173/studio-tour/guests/1440.jpg',
-    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791530173/studio-tour/guests/1440.webm',
-    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791530173/studio-tour/guests/1440.mp4',
-    seconds: 19.1,
+    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1791544961/studio-tour/guests/1440-20261009112240.jpg',
+    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791544961/studio-tour/guests/1440-20261009112240.webm',
+    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791544961/studio-tour/guests/1440-20261009112240.mp4',
+    seconds: 18.73,
     phone: {
-      poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1791530171/studio-tour/guests/390.jpg',
-      webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791530171/studio-tour/guests/390.webm',
-      mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791530171/studio-tour/guests/390.mp4',
-      seconds: 17.9,
+      poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1791544959/studio-tour/guests/390-20261009112237.jpg',
+      webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791544959/studio-tour/guests/390-20261009112237.webm',
+      mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791544959/studio-tour/guests/390-20261009112237.mp4',
+      seconds: 17.2,
     },
   },
   style: {
@@ -303,15 +303,62 @@ export const MEDIA = {
     },
   },
   help: {
-    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1791530189/studio-tour/help/1440.jpg',
-    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791530189/studio-tour/help/1440.webm',
-    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791530189/studio-tour/help/1440.mp4',
-    seconds: 12.07,
+    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1791544963/studio-tour/help/1440-20261009112242.jpg',
+    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791544963/studio-tour/help/1440-20261009112242.webm',
+    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791544963/studio-tour/help/1440-20261009112242.mp4',
+    seconds: 12.03,
     phone: {
-      poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1791530188/studio-tour/help/390.jpg',
-      webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791530188/studio-tour/help/390.webm',
-      mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791530188/studio-tour/help/390.mp4',
-      seconds: 11.43,
+      poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1791544962/studio-tour/help/390-20261009112241.jpg',
+      webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791544962/studio-tour/help/390-20261009112241.webm',
+      mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791544962/studio-tour/help/390-20261009112241.mp4',
+      seconds: 11.4,
+    },
+  },
+};
+
+/**
+ * THE /tour PAGE'S OWN CLIPS, for the scenes no chapter films.
+ *
+ * Same shape as MEDIA, recorded by scripts/tour-recordings/record-tour-page.mjs
+ * from the rich fixture and uploaded to studio-tour/tour-page/<clip>/<width>.
+ * /tour reuses a chapter's recording wherever a chapter films the same page;
+ * these are the rest.
+ */
+export const TOUR_PAGE_MEDIA = {
+  budget: {
+    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1791540792/studio-tour/tour-page/budget/1440.jpg',
+    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791540792/studio-tour/tour-page/budget/1440.webm',
+    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791540792/studio-tour/tour-page/budget/1440.mp4',
+    seconds: 12.73,
+    phone: {
+      poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1791540791/studio-tour/tour-page/budget/390.jpg',
+      webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791540791/studio-tour/tour-page/budget/390.webm',
+      mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791540791/studio-tour/tour-page/budget/390.mp4',
+      seconds: 11,
+    },
+  },
+  seating: {
+    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1791537173/studio-tour/tour-page/seating/1440.jpg',
+    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791537173/studio-tour/tour-page/seating/1440.webm',
+    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791537173/studio-tour/tour-page/seating/1440.mp4',
+    seconds: 14.07,
+    phone: {
+      poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1791537168/studio-tour/tour-page/seating/390.jpg',
+      webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791537168/studio-tour/tour-page/seating/390.webm',
+      mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791537168/studio-tour/tour-page/seating/390.mp4',
+      seconds: 13.13,
+    },
+  },
+  site: {
+    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1791542205/studio-tour/tour-page/site/1440-20261009103644.jpg',
+    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791542205/studio-tour/tour-page/site/1440-20261009103644.webm',
+    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791542205/studio-tour/tour-page/site/1440-20261009103644.mp4',
+    seconds: 15.13,
+    phone: {
+      poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1791542203/studio-tour/tour-page/site/390-20261009103641.jpg',
+      webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791542203/studio-tour/tour-page/site/390-20261009103641.webm',
+      mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791542203/studio-tour/tour-page/site/390-20261009103641.mp4',
+      seconds: 9.83,
     },
   },
 };
@@ -456,3 +503,19 @@ export function resolveChapter(chapter, context = {}) {
   delete resolved.leadWithNumbers;
   return resolved;
 }
+
+/**
+ * PHONE STILLS FOR THE MARKETING SITE, at 390 by 844 (captured at 2x).
+ *
+ * The product from the rich fixture with no drawn cursor, captured by
+ * scripts/tour-recordings/record-stills.mjs and uploaded to
+ * studio-tour/stills/<key>/390-<take>; the URL resizes to 780 wide and picks
+ * the format. Used by the home page's app block, the Features page's app
+ * section and /app (goals/2026-10-10-app-on-the-marketing-site.md). Recording
+ * URLs only, like MEDIA.
+ */
+export const STILLS = {
+  'budget': 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto:good,w_780/v1791554481/studio-tour/stills/budget/390-20261009140119',
+  'daily-update': 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto:good,w_780/v1791554483/studio-tour/stills/daily-update/390-20261009140122',
+  'guests-reply': 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto:good,w_780/v1791554484/studio-tour/stills/guests-reply/390-20261009140124',
+};

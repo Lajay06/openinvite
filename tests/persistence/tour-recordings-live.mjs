@@ -32,11 +32,14 @@
  * The first request for a derivative is what builds it, so a cold run is slower
  * than a warm one and that is not a failure.
  */
-import { CHAPTERS, MEDIA } from '../../src/lib/studioTour.js';
+import { readFileSync, existsSync } from 'node:fs';
+import { CHAPTERS, MEDIA, TOUR_PAGE_MEDIA } from '../../src/lib/studioTour.js';
 import { pass, fail } from './_shared.mjs';
 
 /** The goal's ceiling, in bytes. */
 const MAX_BYTES = 1.5 * 1024 * 1024;
+/** The home page app block's one picture. */
+const HOME_APP_STILL_MAX = 150 * 1024;
 
 async function head(url) {
   try {
@@ -89,7 +92,12 @@ export async function runTourRecordingsLive() {
 
   console.log('\n  Tour recordings, as Cloudinary actually serves them:\n');
 
-  const recorded = CHAPTERS.map((c) => c.key).filter((k) => MEDIA[k]);
+  // THE /tour CLIPS RIDE THE SAME LOOP. They are the same kind of asset under
+  // the same ceiling, keyed tour-page/<clip> so a failure names which map.
+  const maps = { ...MEDIA };
+  for (const [k, v] of Object.entries(TOUR_PAGE_MEDIA)) if (v) maps[`tour-page/${k}`] = v;
+  const recorded = [...CHAPTERS.map((c) => c.key).filter((k) => MEDIA[k]),
+    ...Object.keys(maps).filter((k) => k.startsWith('tour-page/'))];
   if (!recorded.length) {
     console.log('  no chapter has footage yet, nothing to deliver');
     return r;
@@ -98,7 +106,7 @@ export async function runTourRecordingsLive() {
   const kb = (n) => `${(n / 1024).toFixed(0)} KB`;
 
   for (const key of recorded) {
-    for (const [label, side] of [['1440', MEDIA[key]], ['390', MEDIA[key].phone]]) {
+    for (const [label, side] of [['1440', maps[key]], ['390', maps[key].phone]]) {
       if (!side) continue;
       for (const [field, wantType, capped] of [
         ['webm', 'video/webm', true],
@@ -118,6 +126,46 @@ export async function runTourRecordingsLive() {
         }
       }
     }
+  }
+
+  // ── THE HOME PAGE'S APP STILL, AGAINST ITS BUDGET ────────────────────
+  // goals/2026-10-10-app-on-the-marketing-site.md item 1: the home block adds
+  // one picture, the 390 daily update still, and the page had no media budget
+  // of its own to stay inside. This is it: one image, at or under 150 KB as
+  // delivered, a fraction of any photograph already on the page.
+  {
+    const still = MEDIA.welcome?.phone?.poster;
+    const res = still ? await head(still) : { status: 0 };
+    check('home app still is served', res.status === 200, res.error || `HTTP ${res.status}`);
+    if (res.status === 200) {
+      check('home app still is an image', res.type.startsWith('image/'), res.type);
+      check('home app still is at or under 150 KB', res.bytes > 0 && res.bytes <= HOME_APP_STILL_MAX, kb(res.bytes));
+    }
+  }
+
+  // ── AND EVERY RECORDING THE PRERENDERED /tour PAGE NAMES ──────────────
+  // A URL on the page that is in neither map would never be HEADed above, so
+  // the page is read for its own: every Cloudinary video URL in the served
+  // HTML, checked the same way. Posters are what the HTML carries before the
+  // video mounts.
+  const page = 'prerendered/tour/index.html';
+  if (existsSync(page)) {
+    const html = readFileSync(page, 'utf8');
+    const urls = [...new Set([...html.matchAll(/https:\/\/res\.cloudinary\.com\/[^"' )]+\/video\/upload\/[^"' )]+\.(?:jpg|mp4|webm)/g)].map((m) => m[0]))];
+    check('/tour names at least one recording', urls.length > 0, `${urls.length} URL(s)`);
+    for (const url of urls) {
+      const res = await head(url);
+      const want = url.endsWith('.jpg') ? 'image/' : url.endsWith('.mp4') ? 'video/mp4' : 'video/webm';
+      const at = `/tour ${url.split('/').slice(-3).join('/')}`;
+      check(`${at} is served`, res.status === 200, res.error || `HTTP ${res.status}`);
+      if (res.status !== 200) continue;
+      check(`${at} is ${want}`, res.type.startsWith(want), res.type || 'no content type');
+      if (!url.endsWith('.jpg')) {
+        check(`${at} is at or under 1.5 MB`, res.bytes > 0 && res.bytes <= MAX_BYTES, res.bytes ? kb(res.bytes) : 'no size');
+      }
+    }
+  } else {
+    check('/tour is prerendered', false, `${page} missing`);
   }
 
   return r;
