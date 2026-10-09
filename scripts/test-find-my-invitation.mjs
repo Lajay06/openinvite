@@ -1,4 +1,4 @@
-/* global document */
+/* global document, window */
 /**
  * "FIND MY INVITATION" IS THERE FOR A STRANGER AND GONE FOR A GUEST.
  *
