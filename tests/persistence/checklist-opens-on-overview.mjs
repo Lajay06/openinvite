@@ -112,10 +112,33 @@ export async function runChecklistOpensOnOverview() {
     results.push(noWedding.wedding_date === false
       ? pass('  and no wedding record at all does not throw', 'not done')
       : fail('  and no wedding record at all does not throw', false, noWedding.wedding_date));
+
+    // ── "WEDDING LOCATION SET" READS THE RECORD TOO ───────────────────────
+    //
+    // Same bug, same fix, ruled 2026-10-09: the ceremony's venue, or the
+    // reception's when the ceremony has none. Written as a table because the
+    // fallback has an order and the order is the part worth pinning.
+    const LOCATION = [
+      [{ mainCeremony: { venueName: 'St Mary' } }, true, 'a ceremony venue name'],
+      [{ mainCeremony: { address: '12 Flinders Lane' } }, true, 'a ceremony address alone'],
+      [{ mainCeremony: {}, reception: { venueName: 'The Grounds' } }, true, 'the reception when the ceremony is empty'],
+      [{ reception: { address: '5 Smith St' } }, true, 'a reception address alone'],
+      [{ mainCeremony: {}, reception: {} }, false, 'both present but empty'],
+      [{}, false, 'no events at all'],
+      [{ mainCeremony: { venueName: '' } }, false, 'an empty string is not a place'],
+    ];
+    for (const [wedding, want, why] of LOCATION) {
+      const got = evaluateStatus({ wedding, ...empty }).wedding_city;
+      results.push(got === want
+        ? pass(`location: ${why} reads ${want ? 'done' : 'not done'}`, String(got))
+        : fail(`location: ${why} reads ${want ? 'done' : 'not done'}`, want, got));
+    }
   }
   check('the item no longer reads oi_wedding_date anywhere',
     !/oi_wedding_date/.test(stripComments(CODE))
-      && !/oi_wedding_date/.test(stripComments(readFileSync(root('src/lib/checklistStatus.js'), 'utf8'))),
+      && !/oi_wedding_date/.test(stripComments(readFileSync(root('src/lib/checklistStatus.js'), 'utf8')))
+      && !/oi_wedding_city/.test(stripComments(readFileSync(root('src/lib/checklistStatus.js'), 'utf8')))
+      && !/localStorage/.test(stripComments(readFileSync(root('src/lib/checklistStatus.js'), 'utf8'))),
     'reads the record');
 
   return results;

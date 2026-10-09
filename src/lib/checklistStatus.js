@@ -22,29 +22,33 @@
  *
  * Found by lane B's fixture audit, 2026-10-09.
  *
- * ── WHAT IS STILL WRONG HERE, STATED RATHER THAN QUIETLY FIXED ────────────
+ * ── AND "WEDDING LOCATION SET", THE SAME BUG ONE LINE BELOW ───────────────
  *
- * `wedding_city` has exactly the same bug one line below, reading
- * `oi_wedding_city`. It is left alone because the owner's instruction named
- * the date, and because the right record field is not obvious: WeddingDetails
- * has no top-level city, only a nested `location` on an event. Fixing it is a
- * decision about which field means "the wedding's location", not a typo.
- * The localStorage read is made SAFE rather than correct, so this module
- * imports under Node without throwing.
+ * It read `oi_wedding_city`, another cache, and fails the same way. The owner
+ * ruled on 2026-10-09 which record answers it: the main ceremony's venue, and
+ * the reception's if the ceremony has none. Either one with a value means the
+ * couple has set their location.
+ *
+ * VENUE NAME OR ADDRESS, not the name alone. A couple who typed only the full
+ * address has set their location as surely as one who typed a venue name, and
+ * telling them otherwise would be the very bug being fixed here. Both fields
+ * exist on both objects (base44/entities/WeddingDetails.jsonc), and
+ * InteractiveMap.jsx already reads them as a pair.
+ *
+ * NO localStorage IS READ ANY MORE, by either item.
  */
 
+/** Whether an event object carries somewhere a guest could be sent. */
+const hasPlace = (ev) => !!(ev?.venueName || ev?.address);
+
 /**
- * localStorage is absent under Node and can throw in a private window or with
- * site data blocked, so every read goes through here and a failure reads as
- * "not set" rather than taking the whole checklist down.
+ * Where the wedding is, as the checklist asks the question: the ceremony's
+ * venue, or the reception's when the ceremony has none. Owner ruling
+ * 2026-10-09. Returns a boolean rather than a place, because the only caller
+ * asks "has this been set".
  */
-function cached(key) {
-  try {
-    if (typeof localStorage === 'undefined') return null;
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
+export function hasWeddingLocation(wedding) {
+  return hasPlace(wedding?.mainCeremony) || hasPlace(wedding?.reception);
 }
 
 /**
@@ -73,6 +77,6 @@ export function evaluateStatus({ wedding, guests = [], budgets = [], vendors = [
     videographer_sourced: vendors.some(v => v.category === 'videography'),
     transport_arranged:   vendors.some(v => v.category === 'transportation'),
     beauty_sourced:       vendors.some(v => v.category === 'beauty'),
-    wedding_city:         !!cached('oi_wedding_city'),
+    wedding_city:         hasWeddingLocation(wedding),
   };
 }
