@@ -133,8 +133,12 @@ check('exactly one /rsvp href in the home page', hrefs.length === 1, `${hrefs.le
 check('  and it is the wrapper\'s, not a hero\'s',
   hrefs.length === 1 && wrapperAt > -1 && hrefs[0] > wrapperAt,
   hrefs.length === 1 ? `href at ${hrefs[0]}, wrapper at ${wrapperAt}` : 'see above');
+const pillBack = /borderRadius: 999,[\s\S]{0,200}RSVP\s*<\/a>/.test(home);
+// THE DETAIL REPORTS THE STATE, NOT THE HOPE. This read 'pill gone'
+// unconditionally, so a plant that put the pill back printed a FAIL whose
+// detail still said it was gone.
 check('  the default branch no longer renders an RSVP pill',
-  !/borderRadius: 999,[\s\S]{0,200}RSVP\s*<\/a>/.test(home), 'pill gone');
+  !pillBack, pillBack ? 'a pill is back in a hero' : 'pill gone');
 
 const passed = results.filter(Boolean).length;
 console.log(`\n  ${passed}/${results.length} ${passed === results.length ? 'ALL PASS' : 'FAILURES PRESENT'}\n`);
