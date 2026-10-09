@@ -62,8 +62,8 @@ export const MARKETING_PAGE_SEO = {
     description: "Get in touch with Openinvite. We're here to help with questions about wedding planning, your guest suite or your account.",
   },
   '/tour': {
-    title: 'Tour the studio',
-    description: 'Nine short recordings of the Openinvite studio: the daily update, guests, seating, budget, vendors, schedule, Ava, the wedding site and sending invitations. Nothing to sign up for.',
+    title: 'Openinvite | Tour the studio',
+    description: 'Eight short recordings of the Openinvite studio: Daily update, Schedule, Guest list, Seating, Budget, Universes, Ava and Your site. Nothing to sign up for.',
   },
   '/about': {
     title: 'Openinvite | About',

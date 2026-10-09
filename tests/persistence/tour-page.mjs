@@ -71,7 +71,7 @@ export function runTourPage() {
   const sitemap = existsSync(resolve(ROOT, 'prerendered/sitemap.xml')) ? readFileSync(resolve(ROOT, 'prerendered/sitemap.xml'), 'utf8') : '';
   check('/tour is in sitemap.xml', /\/tour<\/loc>/.test(sitemap));
   check('/tour is not noindexed', !/<meta name="robots"[^>]*noindex/i.test(html));
-  check('/tour has its own title', /<title>Tour the studio<\/title>/.test(html));
+  check('/tour has its own title', /<title>Openinvite \| Tour the studio<\/title>/.test(html));
 
   return r;
 }
