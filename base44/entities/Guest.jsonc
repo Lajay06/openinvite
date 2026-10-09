@@ -295,6 +295,25 @@
       "type": "string",
       "format": "date-time",
       "description": "When the guest asked not to be emailed."
+    },
+    "send_history": {
+      "type": "array",
+      "description": "What has been emailed to this guest: one entry per send, appended by the send path and never rewritten. to_hash is a hash of the address it went to, not the address.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "sent_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "to_hash": {
+            "type": "string"
+          }
+        }
+      }
     }
   },
   "required": [
