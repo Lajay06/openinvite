@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import DataTable from '@/components/shared/DataTable';
-import { Edit2, Trash2, Briefcase, Phone, Mail, Star, DollarSign, ExternalLink, FolderOpen } from "lucide-react";
+import { Edit2, Trash2, Briefcase, Phone, Mail, Star, ExternalLink, FolderOpen } from "lucide-react";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -227,6 +227,13 @@ function VendorDetail({ vendor, onEdit, onManage }) {
 }
 
 export default function VendorList({ vendors, onEdit, onDelete, onManage, onToggleFavourite, scrollToVendorId, highlightedVendorId }) {
+  // THE PRICE COLUMN SHOWED A DOLLAR GLYPH TO EVERY ACCOUNT. The figure was
+  // right and the symbol was drawn as a DollarSign icon, so a couple on AUD
+  // read "$ 18,500" for a quote they had typed in Australian dollars. An icon
+  // is not a currency: it cannot be A$ or EUR, and no amount of formatting
+  // reaches it. Same bug class as the hardcoded dollar signs fixed in #932,
+  // and the same fix, through the same helper.
+  const { symbol: currencySymbol } = useCurrency();
   const wrapRef = useRef(null);
   const scrolledForId = useRef(null);
   const [sortState, setSortState] = useState({ field: null, direction: 'asc' });
@@ -341,9 +348,8 @@ export default function VendorList({ vendors, onEdit, onDelete, onManage, onTogg
       key: 'cost', label: 'Price', sortable: true,
       render: (vendor) => (vendor.quoted_price ? (
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
-          <DollarSign size={11} style={{ color: 'rgba(10,10,10,0.45)' }} />
           <span style={{ fontSize: 13, fontWeight: 500, color: '#0A0A0A', fontFamily: PJS, whiteSpace: 'nowrap' }}>
-            {Number(vendor.quoted_price).toLocaleString()}
+            {currencySymbol}{Number(vendor.quoted_price).toLocaleString()}
           </span>
         </div>
       ) : dash(13)),
