@@ -8,6 +8,7 @@ import { formSurfaces } from '@/lib/surfaceTint';
 import { loadFontFamilies, familiesFromGoogleSpec } from '@/lib/selfHostedFonts';
 import SectionReveal from '@/components/guest-website/SectionReveal';
 import GuestNoteForm from '@/components/guest-website/GuestNoteForm';
+import { deadlineHasPassed, formatDeadline, CLOSED_HEADING, closedBody } from '@/lib/rsvpDeadline';
 import { buildIcs, buildGoogleCalendarUrl } from '@/lib/calendarLinks';
 import { formatWeddingDate } from '@/lib/guestDate';
 import { greetableFirstName } from '@/lib/guestGreeting';
@@ -741,6 +742,14 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
   const c1 = wedding?.couple1Name || '';
   const c2 = wedding?.couple2Name || '';
   const coupleName = c1 && c2 ? `${c1} & ${c2}` : c1 || c2 || '';
+
+  // ── REPLIES HAVE CLOSED, OR THEY HAVE NOT ───────────────────────────────
+  //
+  // One boolean, from the shared module api/rsvp-submit.js also imports, so
+  // the screen and the endpoint cannot disagree about whether this form is
+  // open. Clearing or moving the date reopens it, with no other action needed:
+  // this is derived on every render and nothing is cached.
+  const repliesClosed = deadlineHasPassed(wedding?.rsvpContent?.rsvpDeadline);
   const weddingDate = wedding?.weddingDate || '';
   const venue = wedding?.mainCeremony?.venueName || '';
 
@@ -912,12 +921,25 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
               </div>
             )}
 
-            <button
-              onClick={() => setStep('rsvp')}
-              style={{ marginTop: 24, background: 'none', border: 'none', fontSize: 13, color: 'rgba(10,10,10,0.6)', cursor: 'pointer', ...F, textDecoration: 'underline' }}
-            >
-              Change my response
-            </button>
+            {/* READ-ONLY AFTER THE DEADLINE. The reply itself stays on screen,
+                which is the point: the guest can see what they said. What goes
+                is the way back into the form, because the server would refuse
+                the write and an edit that silently fails is worse than no
+                edit offered. The note form below is untouched, so a guest
+                whose plans changed still has a way to say so. */}
+            {!repliesClosed && (
+              <button
+                onClick={() => setStep('rsvp')}
+                style={{ marginTop: 24, background: 'none', border: 'none', fontSize: 13, color: 'rgba(10,10,10,0.6)', cursor: 'pointer', ...F, textDecoration: 'underline' }}
+              >
+                Change my response
+              </button>
+            )}
+            {repliesClosed && (
+              <p style={{ marginTop: 24, fontSize: 13, color: 'rgba(10,10,10,0.6)', ...F, margin: '24px 0 0' }}>
+                Replies closed on {formatDeadline(wedding?.rsvpContent?.rsvpDeadline)}.
+              </p>
+            )}
           </div>
         </SectionReveal>
 
@@ -1005,6 +1027,45 @@ export default function RSVPPage({ token: tokenProp, embedded = false }) {
           onExpire={() => { tsTokenRef.current = ''; }}
           options={{ appearance: 'execute', execution: 'render' }}
         />
+      </PageShell>
+    );
+  }
+
+  // ── CLOSED: THE TWO BUTTONS ARE NOT OFFERED ─────────────────────────────
+  //
+  // A guest who has already replied never reaches this branch; they land on
+  // 'done' and see their own answer. This is the guest who did not reply in
+  // time, and the copy is the owner's, verbatim, from the shared module that
+  // also words the server's refusal.
+  //
+  // THE NOTE FORM IS THE WHOLE POINT OF THE SCREEN. A closed form with no way
+  // to reach the couple would turn a late guest into a dead end, which is the
+  // failure this replaces: they would have pressed the buttons and had the
+  // write refused with nothing to do next.
+  if (repliesClosed) {
+    return (
+      <PageShell embedded={embedded} coupleName={coupleName} dateStr={dateStr} venue={venue} theme={theme} typography={typography} universeConfig={universeConfig} wedding={wedding}>
+        <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(wedding)}>
+          <div style={{ textAlign: 'center' }}>
+            <h2 data-oi-anchor="heading" style={{ fontSize: 26, fontWeight: typography.headingWeight, color: theme.lightText, marginBottom: 14, fontFamily: typography.headingFont }}>
+              {CLOSED_HEADING}
+            </h2>
+            <p style={{ fontSize: 15, lineHeight: 1.75, color: theme.lightText, opacity: 0.85, margin: '0 auto', maxWidth: 460, ...F }}>
+              {closedBody(coupleName, wedding?.rsvpContent?.rsvpDeadline)}
+            </p>
+          </div>
+        </SectionReveal>
+
+        <div style={{ marginTop: 48, paddingTop: 36, borderTop: `1px solid ${theme.accent}22` }}>
+          <GuestNoteForm
+            weddingDetails={wedding}
+            theme={theme}
+            typography={typography}
+            universeConfig={universeConfig}
+            prefillName={guest?.name || ''}
+            prefillEmail={guest?.email || ''}
+          />
+        </div>
       </PageShell>
     );
   }

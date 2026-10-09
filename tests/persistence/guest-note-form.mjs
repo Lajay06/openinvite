@@ -141,7 +141,25 @@ export async function runGuestNoteForm() {
   check('  and only after a reply is in, never on the form itself',
     doneAt > -1 && formAt > doneAt && pollsAt > formAt,
     `done@${doneAt} form@${formAt} polls@${pollsAt}`);
-  check('  exactly once on that page', (RSVP.match(/<GuestNoteForm/g) || []).length === 1, 'one form');
+  // NOT A COUNT, A POSITION. This asserted "exactly once" until item 2 of
+  // goals/2026-10-09-reply-lifecycle.md added a second one to the
+  // replies-have-closed state, which is not the form and asks the guest
+  // nothing: it REPLACES the two buttons rather than sitting beside them, so
+  // the rule this check exists for is untouched. The rule is the position, so
+  // the position is what is checked now: no note form may appear from the
+  // 'rsvp' step onwards, which is the branch that does ask the one question.
+  // A CODE MARKER, NOT A COMMENT ONE: RSVP here is stripped source, so a
+  // comment banner cannot be found in it. wb-guest-root is the rsvp step's
+  // own wrapper and appears exactly once in the file.
+  const rsvpStepAt = RSVP.indexOf('className="wb-guest-root"');
+  const afterRsvpStep = rsvpStepAt > -1 ? RSVP.slice(rsvpStepAt) : '';
+  check('  and never beside the two buttons on the form itself',
+    rsvpStepAt > -1 && !/<GuestNoteForm/.test(afterRsvpStep),
+    rsvpStepAt > -1 ? 'none in the rsvp step' : "rsvp-step marker missing");
+  const closedAt = RSVP.indexOf('if (repliesClosed) {');
+  check('  the only two are the after-reply one and the closed-state one',
+    (RSVP.match(/<GuestNoteForm/g) || []).length === 2 && closedAt > doneAt && closedAt < rsvpStepAt,
+    `done@${doneAt} closed@${closedAt} rsvpStep@${rsvpStepAt}`);
 
   // ── the no-token RSVP gate ────────────────────────────────────────────────
   //

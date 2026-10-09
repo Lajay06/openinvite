@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { getNotificationPrefs } from '@/lib/notificationPrefs';
 import { startCheckout, resolveCheckoutPriceId, PLAN_PRICES } from '@/lib/checkoutSession';
 import toast from 'react-hot-toast';
-import { DATE_FORMATS, DATE_FORMAT_LABELS, dateFormatExample, normalizeDateFormat } from '@/lib/dashboardDate';
+import { DATE_FORMATS, DATE_FORMAT_LABELS, dateFormatExample, normalizeDateFormat, formatDashboardDate } from '@/lib/dashboardDate';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -465,9 +465,7 @@ function BillingTab({ user }) {
 
   const plan = user?.plan || 'free';
   const planLabel = PLAN_LABELS[plan] || 'Free trial';
-  const planActivatedAt = user?.planActivatedAt
-    ? new Date(user.planActivatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
-    : null;
+  const planActivatedAt = formatDashboardDate(user?.planActivatedAt) || null;
 
   const handlePortal = async () => {
     setPortalLoading(true);

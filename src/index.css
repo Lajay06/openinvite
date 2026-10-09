@@ -1600,3 +1600,30 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .oi-tour-spotlight { animation: none; }
 }
+
+/* THE SHARE TAB STACKS ON A PHONE.
+   It was a bare flex row: an email column at `flex: 1` beside a sidebar at a
+   fixed 280px, with no wrap and no breakpoint. At 390 the sidebar took its
+   280 and the email column was left with what remained, so the message box
+   painted 26px wide and the send button 28px. Nothing in the source says a
+   width, which is why this was found by measuring at 390 and not by reading.
+
+   640px is the dashboard's existing phone breakpoint, the same one the
+   builder header above uses, rather than a new number.
+
+   !important, because the columns carry inline styles and a media query
+   cannot otherwise reach them. Same reason .wb-builder-header's rules do. */
+@media (max-width: 640px) {
+  .oi-share-body {
+    flex-direction: column !important;
+    padding: 20px 16px !important;
+  }
+  .oi-share-main {
+    margin-right: 0 !important;
+    width: 100%;
+  }
+  .oi-share-aside {
+    width: 100% !important;
+    margin-top: 24px;
+  }
+}

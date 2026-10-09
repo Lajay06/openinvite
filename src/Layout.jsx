@@ -45,6 +45,7 @@ const TOAST_MARK = {
 import { CollaboratorProvider, useCollaboratorContext, permissionKeyForPageName, hasPagePermission } from '@/lib/collaboratorContext';
 import { getTrialStatus } from '@/lib/trialStatus';
 import TopBarSearch from './components/layout/TopBarSearch';
+import { formatDashboardDate } from '@/lib/dashboardDate';
 
 const SIDEBAR_WIDTH = 200;
 // Two top bars, two heights: the desktop bar is 48, the `flex lg:hidden`
@@ -136,9 +137,10 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
   // the morning and 0 in the evening. One shared, midnight-normalised count
   // now — see src/lib/weddingCountdown.js.
   const daysToGo = daysUntilWedding(dateStr);
-  const formattedDate = dateStr
-    ? new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-    : '';
+  // THE ACCOUNT'S FORMAT, not a written en-GB date. #917 routed the dashboard
+  // through one formatter and this shell was missed, so the chrome disagreed
+  // with every page inside it.
+  const formattedDate = formatDashboardDate(dateStr);
 
   // User info
   const storedUser = getStoredUser();
