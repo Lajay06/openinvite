@@ -174,9 +174,13 @@ export async function runStatusWritesRows() {
   }
   check('every key this write puts on an entry is declared in the Guest mirror',
         [...written].filter((k) => !declared.has(k)), []);
+  // maybe joined the enum on 2026-10-09. What this check is for is unchanged:
+  // every status this write can produce has to be a value the schema accepts.
+  // statusWrite still maps a flat maybe to a per-event pending until item 1 of
+  // goals/2026-10-09-reply-lifecycle.md changes it, so no row says maybe yet.
   ok('  and the per-event status stays inside its enum',
-     guestSchema.properties.event_responses.items.properties.status.enum.join(',') === 'pending,yes,no',
-     'pending, yes, no');
+     guestSchema.properties.event_responses.items.properties.status.enum.join(',') === 'pending,yes,no,maybe',
+     'pending, yes, no, maybe');
 
   // ── THE IMPORT PATH ─────────────────────────────────────────────────────
 

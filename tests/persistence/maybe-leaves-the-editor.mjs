@@ -71,8 +71,15 @@ export async function runMaybeLeavesTheEditor() {
   const guestSchema = JSON.parse(read('base44/entities/Guest.jsonc').replace(/^\s*\/\/.*$/gm, ''));
   check('the flat column keeps maybe in its enum, because this is not a schema change',
         guestSchema.properties.rsvp_status.enum, ['pending', 'attending', 'declined', 'maybe']);
-  check('  and the per-event enum is untouched',
-        guestSchema.properties.event_responses.items.properties.status.enum, ['pending', 'yes', 'no']);
+  // THE ENUM WAS WIDENED ON 2026-10-09, and this line records the change
+  // rather than being deleted with the ruling it used to hold. The editor half
+  // of this guard is still true and still asserted above: the owner widened the
+  // schema first, and item 1 of goals/2026-10-09-reply-lifecycle.md is what
+  // puts Maybe back in front of the couple. Until that lands, the offer stays
+  // withdrawn while the enum can carry the value.
+  check('  and the per-event enum now carries maybe, widened by the owner 2026-10-09',
+        guestSchema.properties.event_responses.items.properties.status.enum,
+        ['pending', 'yes', 'no', 'maybe']);
 
   // A stored 'maybe' is still something the write can be handed, and it still
   // maps to pending rather than throwing or being ignored. That is what makes
