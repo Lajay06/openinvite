@@ -946,6 +946,18 @@ export default function Guests() {
   // "everyone not yet invited", which is the same default the panel had.
   const goToSend = (config) => navigate('/SendInvites', { state: config });
 
+  /**
+   * ONE GUEST, THE SAME FLOW. Item 5 of
+   * goals/2026-10-09-reply-lifecycle.md: the row's menu opens the existing
+   * send page with this guest selected and nothing else changed.
+   *
+   * No api/send-*.js change was needed, which the goal set as a stop
+   * condition: SendInvitesModal already accepted initialSelectedIds and
+   * SendInvites.jsx already passed router state straight through, so this is
+   * the plumbing that was there being used rather than a second send path.
+   */
+  const handleResend = (guest) => goToSend({ initialSelectedIds: [guest.id], type: 'invite' });
+
   const openSendForSelection = () => {
     // A gate that returns silently is the same defect as an unhandled
     // rejection: the user acts, nothing happens, nothing explains. Say what it
@@ -1380,6 +1392,7 @@ export default function Guests() {
               onToggleSelect={readOnly ? undefined : toggleSelect}
               onToggleSelectAll={readOnly ? undefined : toggleSelectAll}
               onEditEvents={readOnly ? undefined : handleEditEvents}
+              onResend={readOnly ? undefined : handleResend}
               onAddToHousehold={readOnly ? undefined : handleAddToHousehold}
               onMoveOutOfHousehold={readOnly ? undefined : handleMoveOutOfHousehold}
               onToggleEvent={readOnly ? undefined : handleToggleEvent}
