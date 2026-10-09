@@ -546,6 +546,12 @@ export function buildRichWedding({ now = Date.now() } = {}) {
     weddingDate: iso(W), slug, guestCount: String(guests.length), created_by: OWNER,
     guidanceState: { tourSeenAt: iso(-90), dismissed: [] },
     mainCeremony, reception, preWeddingEvents, postWeddingEvents,
+    // THE CELEBRANT IS BOOKED, and the readings, the processional music and
+    // the ring bearer are left blank on purpose. The Ava chapter's reply is
+    // the owner's text (scripts/tour-recordings/lib/avaFixture.mjs) and says
+    // exactly that: who is marrying them is set, those three are open. The
+    // fixture has to make it true.
+    celebrant: 'Ruth Alder',
     activeUniverse: 'florence', websiteEnabled: true, enabledPages,
     qna, homeContent, rsvpContent: { rsvpDeadline: iso(W - 21) },
     budget: {
