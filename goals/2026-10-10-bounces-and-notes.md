@@ -6,7 +6,7 @@ Legal review: yes, at close. New Guest field, a new inbound webhook from Resend,
 
 ## Territory
 
-api/ (new api/webhooks/resend.js, held; api/webhooks/stripe.js is frozen and not touched), api/send-invites.js only under the named exception in item 2, api/_lib, src/pages/Guests, src/components/guests, src/pages/Messages.jsx and its components, tests/persistence. No schema changes by the terminal: the field is added by the owner in Base44 chat and mirrored in a held PR. Payments path frozen. No marketing pages, no prerendered/.
+api/ (new api/resend-webhook.js at the api/ root, held; api/webhooks/ is the payments webhook directory, frozen as a directory, and nothing in it is touched), api/send-invites.js only under the named exception in item 2, api/_lib, src/pages/Guests, src/components/guests, src/pages/Messages.jsx and its components, tests/persistence. No schema changes by the terminal: the field is added by the owner in Base44 chat and mirrored in a held PR. Payments path frozen. No marketing pages, no prerendered/.
 
 ## Browser rules
 
@@ -18,7 +18,7 @@ Only permanent bounces stamp a guest; transient bounces and complaints are logge
 
 ## Scout rulings
 
-Adopted from item 0's scout, 2026-10-10. api/webhooks/resend.js exports config with bodyParser false and reads the raw bytes: Vercel parses the body by default and api/webhooks/stripe.js falls back to re-stringifying it, which can never satisfy a signature over exact bytes. Verification uses resend.webhooks.verify from the installed SDK, so no new dependency and no hand-rolled HMAC. Deliveries older than five minutes are rejected. Tags are read as an OBJECT on the webhook side and sent as an ARRAY: the send API takes tags as an array of name and value pairs, and the webhook returns them as a record keyed by name, so the two sides do not share a shape. The classification is matched as bounce.type === 'Permanent' exactly and everything else is logged as not stamping, which covers the wording difference between this goal's "transient" and Resend's documented "Temporary". The webhook is idempotent on email_id: a second delivery for the same email_id is a 200 no-op, because delivery is at-least-once. guest_id and owner_id are validated against Resend's tag character rules, ASCII letters, numbers, underscores and dashes with a limit of 256 characters, before they go on an email; if either fails the tags are dropped with a log line and the send still happens, because a tag is for matching a bounce later and is not worth failing a couple's invitation over.
+Adopted from item 0's scout, 2026-10-10. api/resend-webhook.js exports config with bodyParser false and reads the raw bytes: Vercel parses the body by default and api/webhooks/stripe.js falls back to re-stringifying it, which can never satisfy a signature over exact bytes. Verification uses resend.webhooks.verify from the installed SDK, so no new dependency and no hand-rolled HMAC. Deliveries older than five minutes are rejected. Tags are read as an OBJECT on the webhook side and sent as an ARRAY: the send API takes tags as an array of name and value pairs, and the webhook returns them as a record keyed by name, so the two sides do not share a shape. The classification is matched as bounce.type === 'Permanent' exactly and everything else is logged as not stamping, which covers the wording difference between this goal's "transient" and Resend's documented "Temporary". The webhook is idempotent on email_id: a second delivery for the same email_id is a 200 no-op, because delivery is at-least-once. guest_id and owner_id are validated against Resend's tag character rules, ASCII letters, numbers, underscores and dashes with a limit of 256 characters, before they go on an email; if either fails the tags are dropped with a log line and the send still happens, because a tag is for matching a bounce later and is not worth failing a couple's invitation over.
 
 
 ## State
@@ -40,7 +40,7 @@ address field exists in the shape. Proved red by pointing it at the pre-edit
 mirror (5 red) and by widening the enum (1 red). Nothing else is open.
 
 WHAT IS NEXT. Item 1, the webhook, HELD, once #955 is on main: new
-api/webhooks/resend.js with bodyParser false and raw bytes,
+api/resend-webhook.js with bodyParser false and raw bytes,
 resend.webhooks.verify from the installed SDK, 401 with no body logged, a
 five-minute replay window, tags read as an object, bounce.type === 'Permanent'
 matched exactly, idempotent on email_id, every other event type a counted 200.
@@ -48,7 +48,7 @@ Guard with a signed fixture, an unsigned one, and a plant that drops the
 signature check. Log lines use "[resend-webhook] FAILURE: ..." with a colon.
 
 AFTER ITEM 1 MERGES, STOP: the owner registers
-https://www.openinvite.com.au/api/webhooks/resend in the Resend dashboard for
+https://www.openinvite.com.au/api/resend-webhook in the Resend dashboard for
 email.bounced and sets RESEND_WEBHOOK_SECRET in Vercel. The terminal never
 sees, prints or writes that secret. Resume at item 2 when the owner says done.
 
@@ -71,7 +71,7 @@ takes an array of name and value pairs.
    Proposed field on Guest:
    email_bounce, object, optional, sub-properties: at (string, date-time), kind (string, enum permanent), detail (string, a short sanitized reason with no address in it). Description: Set when an invitation or reminder to this guest bounced permanently. Cleared when the couple changes the email address.
 
-1. Webhook, HELD. New api/webhooks/resend.js: POST only; verifies the Svix signature against RESEND_WEBHOOK_SECRET read at call time; 401 on failure with no body logged; handles email.bounced with a permanent classification by reading the guest id and owner id from the event's tags, loading that one guest through the admin path scoped to that owner, and writing email_bounce; every other event type returns 200 and is counted in one log line. Guard with a signed fixture and an unsigned one, and a plant that drops the signature check. Log lines use the "[resend-webhook] FAILURE: ..." shape with a colon. After merge, STOP and tell the owner to register https://www.openinvite.com.au/api/webhooks/resend in the Resend dashboard for the email.bounced event and set the secret in Vercel; resume when the owner says done.
+1. Webhook, HELD. New api/resend-webhook.js: POST only; verifies the Svix signature against RESEND_WEBHOOK_SECRET read at call time; 401 on failure with no body logged; handles email.bounced with a permanent classification by reading the guest id and owner id from the event's tags, loading that one guest through the admin path scoped to that owner, and writing email_bounce; every other event type returns 200 and is counted in one log line. Guard with a signed fixture and an unsigned one, and a plant that drops the signature check. Log lines use the "[resend-webhook] FAILURE: ..." shape with a colon. After merge, STOP and tell the owner to register https://www.openinvite.com.au/api/resend-webhook in the Resend dashboard for the email.bounced event and set the secret in Vercel; resume when the owner says done.
 
 2. Tags at send time, HELD, named exception for api/send-invites.js: each email carries tags guest_id and owner_id. Bounced guests are skipped like opted-out guests, with skippedBounced in the 200 response and the error "Every guest you selected has a bounced email address. Fix the addresses and try again." when all are skipped. No other change in that file.
 
@@ -84,6 +84,10 @@ takes an array of name and value pairs.
 ## Stop conditions
 
 As CLAUDE.md. Any held-list or do-not-touch file outside the named exceptions: stop and report. Never read or write a non-owner record. Never print a secret or a webhook signature. Items 1, 2 and 4 are held; print the five-marks block for each and wait for the line.
+
+## Lessons
+
+api/webhooks/ is frozen as a directory; a non-payments webhook lives at the api/ root.
 
 ## Close
 
