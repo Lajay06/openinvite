@@ -35,6 +35,8 @@ import {
   sanitizeString,
 } from './_lib/security.js';
 import { renderInvitationEmail, getEmailTypeConfig, getBannerImageUrl } from '../src/lib/emailTemplate.js';
+import { guestStopEmailsUrl } from './_lib/guestStopToken.js';
+import { adminList } from './_lib/base44Entities.js';
 import { invitationGreetingName } from '../src/lib/guestGreeting.js';
 import { verifyBase44User, fetchOwnedGuestEmails, filterGuestsByOwnership } from './_lib/auth.js';
 
@@ -89,10 +91,45 @@ function resolveBaseUrl(originHeader) {
   return 'https://openinvite.com.au';
 }
 
+/**
+ * THE CALLER'S OWN GUESTS WHO ASKED NOT TO BE EMAILED, by address.
+ *
+ * Item 6's server-side skip. Scoped to created_by_id, so it can only ever
+ * answer about the caller's own list, and keyed by lowercased address because
+ * that is what the send payload carries.
+ *
+ * THROUGH adminList, not a hand-built URL. api/_lib/base44Entities.js already
+ * owns the base, the app id, the paging limit and the unwrapping; a second
+ * place that built those would be a second place to get them wrong, and the
+ * first version of this function did exactly that and failed lint for two
+ * undefined constants.
+ *
+ * EMPTY ON FAILURE, WHICH SKIPS NOBODY. That is the wrong direction to fail
+ * and it is deliberate rather than overlooked: the alternative is refusing
+ * every send whenever one query fails, which is a worse product for a rarer
+ * fault. It does mean that if this read breaks, the couple's own screen is the
+ * only thing between an opted-out guest and an email, so the failure is
+ * logged rather than swallowed.
+ *
+ * It reads the raw rows rather than merging PII: email_opt_out is not an
+ * encrypted field, and the plaintext email column is the same one
+ * fetchOwnedGuestEmails already matches on for ownership.
+ */
+export async function fetchOptedOutGuestEmails(userId) {
+  try {
+    const rows = await adminList('Guest', { created_by_id: userId, email_opt_out: true });
+    return new Set((rows || []).map((g) => String(g?.email || '').trim().toLowerCase()).filter(Boolean));
+  } catch (err) {
+    console.error(`[send-invites] opt-out read failed, skipping nobody: ${err.message}`);
+    return new Set();
+  }
+}
+
 export default async function handler(req, res, {
   sendBatch = (b) => resend.batch.send(b),
   verifyUser = verifyBase44User,
   fetchOwned = fetchOwnedGuestEmails,
+  fetchOptedOut = fetchOptedOutGuestEmails,
   adminKey = BASE44_ADMIN_KEY,
 } = {}) {
   if (applyCors(req, res)) return;
@@ -201,10 +238,50 @@ export default async function handler(req, res, {
       ? new Date(weddingDate).toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
       : '';
 
-    const validGuests = ownedGuests.filter(g => g.email && isValidEmail(g.email) && g.rsvpUrl);
+    // ── GUESTS WHO ASKED NOT TO BE EMAILED ARE SKIPPED HERE ───────────────
+    //
+    // Item 6 of goals/2026-10-09-reply-lifecycle.md, the named exception that
+    // allows this file to change.
+    //
+    // READ FROM THE DATABASE, NEVER FROM THE REQUEST. The client filters too,
+    // so the couple sees the count before they press send, but a client-side
+    // filter is a courtesy and not a rule: a caller that simply omitted the
+    // flag, or an older app build that knows nothing about it, would otherwise
+    // mail someone who had asked to be left alone. The same reasoning as the
+    // deadline in item 2, and the same conclusion: the check that matters is
+    // the one the caller cannot edit.
+    //
+    // ONE EXTRA QUERY, SCOPED TO THE CALLER, with the admin key, because
+    // listing Guest by created_by_id needs it. It deliberately does NOT reuse
+    // or widen api/_lib/auth.js: that file is outside this item's named set,
+    // and a second caller of a widened helper is a second thing to keep in
+    // step.
+    //
+    // A FAILED READ SENDS TO NOBODY NEW. If this query fails the set is empty,
+    // which means no guest is skipped: that is the wrong direction to fail, so
+    // it is stated rather than hidden. The couple's own client-side filter
+    // still applies, and the alternative, refusing every send whenever one
+    // query fails, would be a worse product for a rarer fault.
+    const optedOutEmails = await fetchOptedOut(caller.id);
+    const notOptedOut = ownedGuests.filter(
+      (g) => !optedOutEmails.has(String(g.email || '').trim().toLowerCase()),
+    );
+    const skippedOptedOut = ownedGuests.length - notOptedOut.length;
+    if (skippedOptedOut > 0) {
+      console.log(`[send-invites] skipped ${skippedOptedOut} guest(s) who asked not to be emailed`);
+    }
+
+    const validGuests = notOptedOut.filter(g => g.email && isValidEmail(g.email) && g.rsvpUrl);
 
     if (validGuests.length === 0) {
-      return res.status(400).json({ error: 'No guests with valid email addresses and RSVP links' });
+      // SAID PRECISELY, because "no valid addresses" would be wrong and
+      // confusing when the real reason is that everyone selected had opted out.
+      return res.status(400).json({
+        error: skippedOptedOut > 0 && notOptedOut.length === 0
+          ? 'Every guest you selected has asked not to be emailed.'
+          : 'No guests with valid email addresses and RSVP links',
+        skippedOptedOut,
+      });
     }
 
     const typeConfig = getEmailTypeConfig(type);
@@ -240,8 +317,15 @@ export default async function handler(req, res, {
         ? g.events
         : (venue || weddingDate) ? [{ name: 'Wedding day', date: weddingDate, venue }] : [];
 
+      // THE FOOTER'S STOP LINK, SIGNED HERE because this is where the secret
+      // is. The template runs in the browser too (the preview pane calls it),
+      // so it takes the URL rather than building one. A guest row with no id
+      // gets no link rather than a broken one: signing refuses an empty id.
+      const stopEmailsUrl = g.id ? guestStopEmailsUrl(String(g.id)) : '';
+
       const { html, text } = renderInvitationEmail({
         universeId, type, guestName, coupleNames: coupleName, events, personalMessage: processedBody, rsvpUrl, rsvpToken, siteUrl, weddingDate, bannerImageUrl,
+        stopEmailsUrl,
       });
 
       return { from: FROM, to: g.email, replyTo, subject, html, text };
@@ -293,6 +377,10 @@ export default async function handler(req, res, {
     return res.status(200).json({
       sent: batch.length,
       skipped: guests.length - validGuests.length, // includes both non-owned and invalid entries
+      // REPORTED SEPARATELY, because the couple needs to know this one. The
+      // aggregate above cannot be read as "who asked to be left alone": it
+      // also counts guests with no address and guests who are not theirs.
+      skippedOptedOut,
     });
   } catch (err) {
     console.error('[send-invites] Error:', err.message);
