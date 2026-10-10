@@ -1,7 +1,23 @@
 /**
- * api/webhooks/resend.js
+ * api/resend-webhook.js
  *
  * WHEN AN INVITATION BOUNCES, THE COUPLE GETS TOLD.
+ *
+ * ── WHY THIS IS NOT IN api/webhooks/ ───────────────────────────────────────
+ *
+ * It looks like it belongs there, and it does not. api/webhooks/ is the
+ * PAYMENTS webhook directory: scripts/check-payments-freeze.mjs freezes the
+ * whole directory on the premise that a new file in it is a new payment
+ * webhook, which is what makes a careless edit near the money impossible
+ * rather than merely discouraged. This endpoint takes no money and writes one
+ * field on one guest row, so it would have had to be excused by a passphrase
+ * that says "I am deliberately changing payments" and, in CI, by a
+ * Payments-Change trailer that would sit in this repository's log forever
+ * saying something untrue.
+ *
+ * Owner ruling, 2026-10-10: the premise stands, and a non-payments webhook
+ * lives at the api/ root. The directory stays payments-only and the freeze was
+ * not touched.
  *
  * Item 1 of goals/2026-10-10-bounces-and-notes.md. Resend posts here for
  * every subscribed event; this endpoint stamps Guest.email_bounce when an
@@ -48,7 +64,7 @@
  * retried, and the retry cannot double-stamp.
  */
 import { Resend } from 'resend';
-import { adminGetOne, adminUpdate, hasAdminKey } from '../_lib/base44Entities.js';
+import { adminGetOne, adminUpdate, hasAdminKey } from './_lib/base44Entities.js';
 
 export const config = { api: { bodyParser: false } };
 
