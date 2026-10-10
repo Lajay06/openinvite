@@ -67,6 +67,91 @@ Guest schema (owner adds one enum value and two or three fields). api/rsvp-submi
 
 Each item adds or extends one guard that fails on main before the change and passes after; new guards registered with estimated seconds in the shard tables. Item 1: a maybe row counts in the Maybe bucket and nowhere else; CSV "maybe" round-trips. Item 2: a fixture wedding with a deadline yesterday shows the closed state and the server refuses a status write with the sentence above; with the deadline tomorrow both work as today; clearing the date reopens. Item 3: the link renders for an unrecognised visitor and not for a recognised guest. Item 4: a failed refresh keeps the list and shows the fallback line. Item 5: the resend flow opens with exactly one guest selected. Item 6: a tampered token changes nothing; a valid token sets the flag once; a send to a list containing an opted-out guest skips them and reports the count; the footer line is present in every guest-facing template.
 
+
+## Lessons
+
+Every lesson from items 0 to 6, including the ones about the instruments
+rather than the code, because those cost the most time.
+
+FOUR INSTRUMENT FAILURES, each found by planting against a check and watching
+it stay green. A check that cannot fail is worse than no check: it reports
+safety.
+
+  1. AN ASSERTION THAT MATCHED THE IMPORT LINE. Item 2's "the server refuses
+     before the first row is written" used indexOf('deadlineHasPassed'), which
+     finds the import at the top of the file and therefore precedes every
+     write however the refusal moves. Fixing that exposed a second fault in
+     the same line: indexOf('createRsvpResponse(') matched the function
+     DECLARATION, which precedes the handler entirely, so the repaired check
+     then failed on correct code. Both ends are anchored on call sites now.
+
+  2. A BOOLEAN FILTER ON THE PLANT RUNNER. pass() and fail() return booleans,
+     and my runner filtered failures with x.ok === false, which never matches
+     one. It printed "FAILED: 0" for a plant whose text I had already
+     confirmed was in the file. The guard was fine; the thing checking the
+     guard was not.
+
+  3. A HIT TEST BELOW THE FOLD. The share tab's send button sits at y=994 on a
+     900px viewport, and elementFromPoint returns null outside the viewport,
+     which no hit test can tell apart from being covered. The guard called a
+     966px button's label clipped. scrollIntoView did not help either: the
+     document is not the scroll container there, so docScrollTop stayed 0.
+     Geometry answers clipping at any position; a hit test only adds "covered",
+     which is meaningless for a point nobody is looking at.
+
+  4. THE BACKTICK TRAP, seven times in one goal. A backtick in prose inside a
+     template literal closes the literal. Twice it produced a silent partial
+     write (one took a const declaration with it and lint caught the undefined
+     reference); once the script failed to parse and wrote nothing, which is
+     the good failure. Snippets go in a file now, never escaped inline. Its
+     cousin is the $$ replacement trap recorded in #932: String.prototype
+     .replace reads $$ as an escape for one $, so a plant meant to insert a
+     dollar sign inserts a plain interpolation. Plant with a replacer function.
+
+THE MERGE-REF RULING. Re-running a workflow does not rebuild
+refs/pull/N/merge: #937's ref read 07e6668b before and after its run
+completed, eighteen minutes apart, so a re-run would have re-tested the stale
+base and proved nothing. Where a re-run cannot cover current main, the
+disjoint-set route carries the verdict instead, on evidence: nothing but
+disjoint commits merged since the run, checked by filename AND by whether
+either side's guards read across the boundary, plus a fresh scratch merge of
+current main.
+
+THE MERGE-TIME RE-READ EARNS ITS KEEP. Twice in this goal a stated mark had
+gone stale between the authorization and the merge: #943's base had moved
+under lane B's #940, and #951's base moved twice while its run finished. The
+re-read caught both, and the rule that a verdict belongs to the SHA it was
+computed against is what made each safe to proceed on.
+
+THE DISJOINT-SET ROUTE NOW INCLUDES A PRERENDER-IDENTITY CHECK whenever
+main's intervening commits touched prerendered/. PRERENDER IDENTITY MEANS
+RENDERED OUTPUT WITH HASHED ASSET NAMES NORMALIZED, NOT COMMITTED BYTES
+(owner ruling 2026-10-10). Item 6 changed src/App.jsx, which is the router
+root compiled into the entry chunk, so every one of the 16 pages differed in
+its entry and chunk hashes while 0 of 16 differed in rendered output. On the
+byte reading no PR touching a bundled file could ever pass.
+
+A CHECK WRITTEN AS A LIST OF THE SHAPES ITS AUTHOR HAS MET only catches those
+shapes, and this goal paid for it twice. The hardcoded-dollar check missed
+three real bugs until it was rewritten to work by elimination. The dashboard
+date guard looked for exactly one toLocaleDateString spelling and was blind to
+both shapes lane B's camera found.
+
+AND SOME THINGS ONLY MEASURING FINDS. The share tab's message box painted 26px
+at 390 with nothing in the source stating a width. A bare YYYY-MM-DD deadline
+printed 4/30/2027 in Los Angeles, because it parses as UTC midnight and renders
+in the viewer's zone. new Date(null) is the epoch, not an invalid date, so a
+no-load-yet case rendered a 1970 timestamp as when the list was loaded. None of
+the three is visible by reading.
+
+CLIENT CHECKS ARE COURTESIES; SERVER CHECKS ARE RULES. The deadline and the
+email opt-out are both enforced twice on purpose: the screen so the couple
+sees it before acting, the endpoint because the client is editable by whoever
+runs it. Where a server read fails open, the direction is stated and logged
+rather than hidden.
+
 ## Close
 
 Last line: "Closed <date> at main <full SHA>, PRs <list>".
+
+Closed 2026-10-10 at main f4929077c2188b4e6b8dc31fd3d1091df5f4c4c6, PRs #934 #936 #938 #942 #943 #944 #951
