@@ -122,6 +122,38 @@ export const DAY7_MAX_H = 192; // 8 days
 // reader of the cron can see the no-backfill cutoff without opening that file.
 export { RETENTION_SHIP_DATE };
 
+/**
+ * WHY dueRetentionEmail DECLINED, for the two reasons an operator asks about.
+ *
+ * It returns a bare null for every reason, so the cron could report 75 scanned
+ * and 2 sent and say nothing about the other 73.
+ *
+ * EXPORTED, AND THE ONLY COPY. This was four lines inline at the call site,
+ * which made it untestable and gave the counting a second place to drift from
+ * the decision. The cron calls this and so does its guard, so the order below
+ * is the order both see.
+ *
+ * THE ORDER IS THE HELPER'S OWN: lifecycleEmails before the ship date, so an
+ * account that is both switched off AND older than the feature is reported as
+ * switched off, which is the reason dueRetentionEmail acted on.
+ *
+ * retentionEligibleFrom is the same exported function the helper uses, never a
+ * second copy of the date arithmetic.
+ *
+ * @returns {'lifecycle_off'|'before_ship'|null} null when neither applies,
+ *   which includes every eligible account and every other reason the helper
+ *   may decline for. It is a reason to COUNT, not a decision to send.
+ */
+export function retentionSkipReason(user) {
+  if (!user) return null;
+  if (user.lifecycleEmails === false) return 'lifecycle_off';
+  const created = user.created_date ? new Date(user.created_date) : null;
+  if (created && !Number.isNaN(created.getTime()) && created < retentionEligibleFrom()) {
+    return 'before_ship';
+  }
+  return null;
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 /**
@@ -381,25 +413,12 @@ export default async function handler(req, res) {
         guestCount = -1;
       }
       if (guestCount >= 0) {
-        // ── COUNTED IN THE HELPER'S OWN ORDER ─────────────────────────────
-        //
-        // dueRetentionEmail checks lifecycleEmails BEFORE the ship date, so
-        // these are counted in that order too: an account that is both
-        // switched off and older than the feature is reported as switched
-        // off, which is the reason the helper acted on.
-        //
-        // retentionEligibleFrom is the SAME exported function the helper
-        // uses, not a second copy of the date arithmetic. The lifecycle test
-        // is a one-field compare rather than logic, so there is nothing to
-        // drift. If this file ever needs a third reason, the honest fix is to
-        // have the helper return one rather than to grow this block.
-        const createdAt = user.created_date ? new Date(user.created_date) : null;
-        if (user.lifecycleEmails === false) {
-          tally.retention.skipped_lifecycle_off++;
-        } else if (createdAt && !Number.isNaN(createdAt.getTime())
-                   && createdAt < retentionEligibleFrom()) {
-          tally.retention.skipped_before_ship++;
-        }
+        // COUNTED THROUGH THE ONE HELPER, so the tally and the guard cannot
+        // disagree about what a skip is. retentionSkipReason above carries the
+        // ordering and the reasoning.
+        const skipReason = retentionSkipReason(user);
+        if (skipReason === 'lifecycle_off') tally.retention.skipped_lifecycle_off++;
+        else if (skipReason === 'before_ship') tally.retention.skipped_before_ship++;
 
         const due = dueRetentionEmail({ user, wedding, guestCount });
         if (due) {
