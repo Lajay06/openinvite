@@ -125,11 +125,86 @@ export async function fetchOptedOutGuestEmails(userId) {
   }
 }
 
+/**
+ * Resend's rule for a tag name and a tag value alike: ASCII letters, numbers,
+ * underscores and dashes, up to 256 characters.
+ */
+const TAG_VALUE = /^[A-Za-z0-9_-]{1,256}$/;
+
+/**
+ * The tags that let a bounce find its way back to one guest.
+ *
+ * WHY TAGS AND NOT THE ADDRESS. api/resend-webhook.js matches a bounced email
+ * to a guest through these and never by searching for the address: searching
+ * would mean reading guest rows by email, and two accounts can hold the same
+ * address. The owner id travels beside the guest id so that webhook can scope
+ * its read to one account instead of trusting a guest id on its own.
+ *
+ * AN ARRAY HERE, AN OBJECT THERE. The send API takes tags as a list of name
+ * and value pairs; the webhook receives them as a record keyed by name. The
+ * two sides genuinely do not share a shape, so neither is written as though
+ * it were the other.
+ *
+ * NULL RATHER THAN A THROW, and the caller sends anyway. A tag exists to help
+ * with a bounce that may never happen, and an invitation is the one moment a
+ * couple gets with a guest. Refusing to send because an id would not pass a
+ * character rule would trade the thing that matters for the thing that might.
+ */
+export function sendTags(guestId, ownerId) {
+  const guest = String(guestId ?? '');
+  const owner = String(ownerId ?? '');
+  if (!TAG_VALUE.test(guest) || !TAG_VALUE.test(owner)) return null;
+  return [{ name: 'guest_id', value: guest }, { name: 'owner_id', value: owner }];
+}
+
+/**
+ * Every address on this account that bounced permanently.
+ *
+ * ── WHY THIS READS THE ROWS AND FILTERS IN JAVASCRIPT ──────────────────────
+ *
+ * email_bounce is an OBJECT, so there is no scalar to put in a query the way
+ * email_opt_out: true goes into the one above. A filter on a nested path is
+ * not a shape this platform is known to support, and a filter Base44 does not
+ * understand is one it may ignore: that returns every row, which would read
+ * as "nobody bounced" or "everybody did" depending only on which way the
+ * surrounding code happened to lean. So the query carries the one key that is
+ * certainly supported and the classification is checked here.
+ *
+ * ONLY kind === 'permanent' COUNTS, which is also the only kind the webhook
+ * writes. Checked rather than assumed, so a row stamped by some later version
+ * of that endpoint cannot start skipping sends on a value this function has
+ * never seen.
+ *
+ * EMPTY ON FAILURE, WHICH SKIPS NOBODY, for the same reason and at the same
+ * cost as the opt-out read above. It is the wrong direction to fail and it is
+ * chosen rather than overlooked: refusing every send whenever one query fails
+ * is a worse product for a rarer fault. Logged, not swallowed.
+ *
+ * THE LIST CALL IS A PARAMETER so a guard can exercise the filter above.
+ * Without it the only way to check that nothing but a permanent stamp skips
+ * a send is to re-implement the filter in the guard and compare it with
+ * itself, which proves nothing at all. Same seam as resolveOwnerCurrency's
+ * fetchImpl in api/_lib/guestSafeWedding.js. Production passes nothing.
+ */
+export async function fetchBouncedGuestEmails(userId, list = adminList) {
+  try {
+    const rows = await list('Guest', { created_by_id: userId });
+    return new Set((rows || [])
+      .filter((g) => g?.email_bounce?.kind === 'permanent')
+      .map((g) => String(g?.email || '').trim().toLowerCase())
+      .filter(Boolean));
+  } catch (err) {
+    console.error(`[send-invites] bounce read failed, skipping nobody: ${err.message}`);
+    return new Set();
+  }
+}
+
 export default async function handler(req, res, {
   sendBatch = (b) => resend.batch.send(b),
   verifyUser = verifyBase44User,
   fetchOwned = fetchOwnedGuestEmails,
   fetchOptedOut = fetchOptedOutGuestEmails,
+  fetchBounced = fetchBouncedGuestEmails,
   adminKey = BASE44_ADMIN_KEY,
 } = {}) {
   if (applyCors(req, res)) return;
@@ -263,24 +338,50 @@ export default async function handler(req, res, {
     // still applies, and the alternative, refusing every send whenever one
     // query fails, would be a worse product for a rarer fault.
     const optedOutEmails = await fetchOptedOut(caller.id);
-    const notOptedOut = ownedGuests.filter(
-      (g) => !optedOutEmails.has(String(g.email || '').trim().toLowerCase()),
+    const bouncedEmails = await fetchBounced(caller.id);
+    const addressOf = (g) => String(g.email || '').trim().toLowerCase();
+
+    // ── COUNTED INDEPENDENTLY, NOT ONE AFTER THE OTHER ───────────────────
+    //
+    // A guest can be both opted out and bounced, and the two numbers answer
+    // two different questions a couple may ask. Filtering by one set and then
+    // counting the other against what survived would report such a guest once
+    // and silently choose which reason the couple heard about. Each count is
+    // measured against the whole owned set instead, so the pair can add up to
+    // more than the number of guests actually skipped. That is the intended
+    // reading: these are two conditions, not two halves of a partition.
+    const skippedOptedOut = ownedGuests.filter((g) => optedOutEmails.has(addressOf(g))).length;
+    const skippedBounced = ownedGuests.filter((g) => bouncedEmails.has(addressOf(g))).length;
+    const sendable = ownedGuests.filter(
+      (g) => !optedOutEmails.has(addressOf(g)) && !bouncedEmails.has(addressOf(g)),
     );
-    const skippedOptedOut = ownedGuests.length - notOptedOut.length;
     if (skippedOptedOut > 0) {
       console.log(`[send-invites] skipped ${skippedOptedOut} guest(s) who asked not to be emailed`);
     }
+    if (skippedBounced > 0) {
+      console.log(`[send-invites] skipped ${skippedBounced} guest(s) whose address bounced`);
+    }
 
-    const validGuests = notOptedOut.filter(g => g.email && isValidEmail(g.email) && g.rsvpUrl);
+    const validGuests = sendable.filter(g => g.email && isValidEmail(g.email) && g.rsvpUrl);
 
     if (validGuests.length === 0) {
       // SAID PRECISELY, because "no valid addresses" would be wrong and
       // confusing when the real reason is that everyone selected had opted out.
+      const allOptedOut = ownedGuests.every((g) => optedOutEmails.has(addressOf(g)));
+      const allBounced = ownedGuests.every((g) => bouncedEmails.has(addressOf(g)));
       return res.status(400).json({
-        error: skippedOptedOut > 0 && notOptedOut.length === 0
+        // OPT-OUT FIRST, so a guest who is both keeps the sentence this
+        // endpoint already gave them. A mixed batch, some opted out and some
+        // bounced with nothing left to send, falls through to the general
+        // line: neither of the two precise sentences would be true of it, and
+        // this goal's copy is used verbatim rather than invented.
+        error: allOptedOut
           ? 'Every guest you selected has asked not to be emailed.'
-          : 'No guests with valid email addresses and RSVP links',
+          : allBounced
+            ? 'Every guest you selected has a bounced email address. Fix the addresses and try again.'
+            : 'No guests with valid email addresses and RSVP links',
         skippedOptedOut,
+        skippedBounced,
       });
     }
 
@@ -291,6 +392,7 @@ export default async function handler(req, res, {
       bannerChoice,
     );
 
+    let droppedTags = 0;
     const batch = validGuests.map(g => {
       const guestName = sanitizeString(g.name) || '';
       const rsvpUrl = g.rsvpUrl;
@@ -328,8 +430,20 @@ export default async function handler(req, res, {
         stopEmailsUrl,
       });
 
-      return { from: FROM, to: g.email, replyTo, subject, html, text };
+      // THE TAGS, AT THE ONE SITE THAT BUILDS A MESSAGE. A bounce can only be
+      // matched back to a guest if the email carried these, so they go on here
+      // and nowhere else. A pair that would not pass Resend's character rule
+      // is dropped and the send still happens; the count is reported in one
+      // line below rather than once per email.
+      const tags = sendTags(g.id, caller.id);
+      if (!tags) droppedTags += 1;
+
+      return { from: FROM, to: g.email, replyTo, subject, html, text, ...(tags ? { tags } : {}) };
     });
+
+    if (droppedTags > 0) {
+      console.log(`[send-invites] sent ${droppedTags} email(s) without tags: a guest id or the owner id is not a valid Resend tag value`);
+    }
 
     const result = await sendBatch(batch);
 
@@ -381,6 +495,10 @@ export default async function handler(req, res, {
       // aggregate above cannot be read as "who asked to be left alone": it
       // also counts guests with no address and guests who are not theirs.
       skippedOptedOut,
+      // AND BOUNCED SEPARATELY TOO, for the Guests page to show as its own
+      // line. A bounced address is a different thing to tell a couple than a
+      // guest who asked to be left alone: one of the two they can fix.
+      skippedBounced,
     });
   } catch (err) {
     console.error('[send-invites] Error:', err.message);
