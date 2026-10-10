@@ -372,6 +372,16 @@ export async function runResendBounceWebhook() {
      readTagIds({ guest_id: 'has a space', owner_id: OWNER_ID }) === null
        && readTagIds({ guest_id: `g${'x'.repeat(256)}`, owner_id: OWNER_ID }) === null,
      'null');
+  // A TAG THAT IS NOT A STRING. Nothing stops a provider, or a later edit to
+  // the send side, from putting a number there, and String(12345) matches the
+  // character rule perfectly well. The type check is what refuses it, and
+  // without this the only plant that could reach it was one that changed
+  // nothing.
+  ok('  and a tag that is not a string is refused',
+     readTagIds({ guest_id: 12345, owner_id: OWNER_ID }) === null
+       && readTagIds({ guest_id: GUEST_ID, owner_id: { id: OWNER_ID } }) === null
+       && readTagIds({ guest_id: GUEST_ID, owner_id: true }) === null,
+     'null');
   ok('  and a well formed pair is read',
      readTagIds({ guest_id: GUEST_ID, owner_id: OWNER_ID })?.guestId === GUEST_ID,
      GUEST_ID);
