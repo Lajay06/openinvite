@@ -87,7 +87,7 @@ import { getBase44User } from '../_lib/base44Admin.js';
 import { onboardingDay3Email } from '../emails/onboarding-day3.js';
 import { onboardingDay7Email } from '../emails/onboarding-day7.js';
 import { isExcludedAccount } from '../_lib/excludedAccounts.js';
-import { dueRetentionEmail, mergeRetentionFlag, suppressesDay3, RETENTION_SHIP_DATE } from '../_lib/retentionTriggers.js';
+import { dueRetentionEmail, mergeRetentionFlag, suppressesDay3, RETENTION_SHIP_DATE, retentionEligibleFrom } from '../_lib/retentionTriggers.js';
 import { setupNudgeEmail, guestsNudgeEmail, RETENTION_REPLY_TO } from '../_lib/retentionEmails.js';
 import { stopEmailsUrl } from '../_lib/stopEmailsToken.js';
 // THE GUEST COUNT LIVES IN ITS OWN FILE, and the reason is a guard rather
@@ -121,6 +121,38 @@ export const DAY7_MAX_H = 192; // 8 days
 // api/_lib/retentionTriggers.js; RETENTION_SHIP_DATE is re-exported here so a
 // reader of the cron can see the no-backfill cutoff without opening that file.
 export { RETENTION_SHIP_DATE };
+
+/**
+ * WHY dueRetentionEmail DECLINED, for the two reasons an operator asks about.
+ *
+ * It returns a bare null for every reason, so the cron could report 75 scanned
+ * and 2 sent and say nothing about the other 73.
+ *
+ * EXPORTED, AND THE ONLY COPY. This was four lines inline at the call site,
+ * which made it untestable and gave the counting a second place to drift from
+ * the decision. The cron calls this and so does its guard, so the order below
+ * is the order both see.
+ *
+ * THE ORDER IS THE HELPER'S OWN: lifecycleEmails before the ship date, so an
+ * account that is both switched off AND older than the feature is reported as
+ * switched off, which is the reason dueRetentionEmail acted on.
+ *
+ * retentionEligibleFrom is the same exported function the helper uses, never a
+ * second copy of the date arithmetic.
+ *
+ * @returns {'lifecycle_off'|'before_ship'|null} null when neither applies,
+ *   which includes every eligible account and every other reason the helper
+ *   may decline for. It is a reason to COUNT, not a decision to send.
+ */
+export function retentionSkipReason(user) {
+  if (!user) return null;
+  if (user.lifecycleEmails === false) return 'lifecycle_off';
+  const created = user.created_date ? new Date(user.created_date) : null;
+  if (created && !Number.isNaN(created.getTime()) && created < retentionEligibleFrom()) {
+    return 'before_ship';
+  }
+  return null;
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -303,7 +335,18 @@ export default async function handler(req, res) {
   const tally = {
     day3: { sent: 0, skipped_paid: 0, failed: 0, no_email: 0, skipped_no_slug: 0 },
     day7: { sent: 0, skipped_paid: 0, failed: 0, no_email: 0 },
-    retention: { sent: 0, failed: 0, setup24h: 0, setupDay4: 0, guests24h: 0, guestsDay5: 0 },
+    // ── TWO SKIPS THAT WERE INVISIBLE ───────────────────────────────────
+    //
+    // dueRetentionEmail returns a bare null for every reason it declines, so
+    // the first real run could report 75 scanned and 2 sent and say nothing
+    // about the other 73. These two name the reasons an operator actually
+    // asks about: a couple who switched the emails off, and an account that
+    // predates the feature.
+    //
+    // COUNTERS ONLY. Nothing here decides who is emailed; the decision stays
+    // in dueRetentionEmail and is read, not re-made.
+    retention: { sent: 0, failed: 0, setup24h: 0, setupDay4: 0, guests24h: 0, guestsDay5: 0,
+                 skipped_lifecycle_off: 0, skipped_before_ship: 0 },
     excluded: 0,
   };
 
@@ -370,6 +413,13 @@ export default async function handler(req, res) {
         guestCount = -1;
       }
       if (guestCount >= 0) {
+        // COUNTED THROUGH THE ONE HELPER, so the tally and the guard cannot
+        // disagree about what a skip is. retentionSkipReason above carries the
+        // ordering and the reasoning.
+        const skipReason = retentionSkipReason(user);
+        if (skipReason === 'lifecycle_off') tally.retention.skipped_lifecycle_off++;
+        else if (skipReason === 'before_ship') tally.retention.skipped_before_ship++;
+
         const due = dueRetentionEmail({ user, wedding, guestCount });
         if (due) {
           const r = await sendRetention({ user, flag: due.flag, email: due.email, sentAt });
