@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The launch background: flat ink with the logo small and centred, the
+     same as the iOS launch storyboard. Used by AppTheme.NoActionBarLaunch and
+     by the splash-screen plugin until the web layer hides it. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/launchBackground" />
+    <item android:gravity="center">
+        <bitmap android:src="@drawable/launch_logo" android:gravity="center" />
+    </item>
+</layer-list>

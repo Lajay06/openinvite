@@ -100,6 +100,15 @@ const MockUniverseB = lazyWithReload(() => import('./pages/MockUniverseB'));
 const MockUniverseC = lazyWithReload(() => import('./pages/MockUniverseC'));
 const Features = lazyWithReload(() => import('./pages/Features'));
 const Home = lazyWithReload(() => import('./pages/Home'));
+// The mobile app shell (/m/*) and its dev-only fixture preview (/m/preview/*).
+// See MOBILE_APP.md. Both are their own chunks; neither is linked from the
+// desktop dashboard yet. Re-applied by hand from mobile/app-shell (e488030c)
+// for the mobile pass (goals/2026-10-10-mobile-pass.md).
+const MobileApp = lazyWithReload(() => import('./mobile/MobileApp'));
+import { isNative as isNativeShell } from './mobile/native';
+import { isDemoBuild } from './mobile/demo';
+const MobilePreviewApp = lazyWithReload(() => import('./mobile/MobilePreviewApp'));
+const MobileFirstRun = lazyWithReload(() => import('./mobile/MobileFirstRun'));
 const FAQ = lazyWithReload(() => import('./pages/FAQ'));
 const Tour = lazyWithReload(() => import('./pages/Tour'));
 const AppPage = lazyWithReload(() => import('./pages/AppPage'));
@@ -196,6 +205,14 @@ const AuthenticatedApp = () => {
     return <Navigate to="/DailyUpdate" replace />;
   }
 
+  // INSIDE THE NATIVE SHELL THE APP STARTS AT /m. Capacitor loads
+  // index.html at "/", and the post-login landing is /DailyUpdate; both are
+  // desktop surfaces, so on a phone in the shell they go to the mobile app
+  // instead. On the web nothing changes. See MOBILE_APP.md.
+  if (isNativeShell() && (location.pathname === '/' || location.pathname === '/DailyUpdate')) {
+    return <Navigate to={isDemoBuild ? '/m/preview' : '/m'} replace />;
+  }
+
   // ── Public pages — no auth check, render immediately ─────────────────────────
   if (isPublicPath(location.pathname)) {
     return (
@@ -264,6 +281,23 @@ const AuthenticatedApp = () => {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      {/* Dev-only: the mobile screens rendered from fixtures, no sign-in
+          needed. MobilePreviewApp itself redirects to /m outside DEV, and
+          the route is not registered at all in a production build. The one
+          exception is the demo build (VITE_MOBILE_DEMO=1, src/mobile/demo.ts),
+          which ships these routes and makes no network calls. */}
+      {(import.meta.env.DEV || isDemoBuild) && <Route path="/m/preview/*" element={<MobilePreviewApp />} />}
+      {/* First run for the mobile app: reachable signed out. The web login page is untouched. */}
+      <Route path="/m/welcome" element={<MobileFirstRun screen="welcome" />} />
+      <Route path="/m/login" element={<MobileFirstRun screen="login" />} />
+      {/* The mobile app, behind the same ProtectedRoute as the dashboard but
+          with its own unauthenticated element, so a signed-out visitor comes
+          back to /m after signing in (Login honors ?next=). It sits beside
+          the dashboard's guard rather than inside it, because a nested guard
+          would never be reached: the outer one redirects first. */}
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to={isNativeShell() ? '/m/welcome' : '/login?next=%2Fm'} replace />} />}>
+        <Route path="/m/*" element={<MobileApp />} />
+      </Route>
       <Route path="/signup" element={<Navigate to="/register" replace />} />
       {/* PlanSelection.jsx (superseded by ChoosePlan.jsx, the account-state-
           gated plan step every auth path routes through) had zero inbound
