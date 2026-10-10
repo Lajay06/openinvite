@@ -314,6 +314,28 @@
           }
         }
       }
+    },
+    "email_bounce": {
+      "type": "object",
+      "description": "Set when an invitation or reminder to this guest bounced permanently. detail is a short sanitized reason with no email address in it; email_id is the provider's message id. Cleared when the couple changes the email address.",
+      "properties": {
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "permanent"
+          ]
+        },
+        "detail": {
+          "type": "string"
+        },
+        "email_id": {
+          "type": "string"
+        }
+      }
     }
   },
   "required": [
