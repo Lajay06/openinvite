@@ -16,6 +16,54 @@ One lane with a dev server or browser at a time; lane B holds the browser for ba
 
 Only permanent bounces stamp a guest; transient bounces and complaints are logged and ignored this goal. A bounced guest is skipped on send the way an opted-out guest is, with its own count, until the address is changed; changing the address clears the stamp. Emails are matched to guests by Resend tags set at send time, never by searching addresses; an event without the tags is logged and dropped. The webhook verifies the Svix signature with RESEND_WEBHOOK_SECRET, which the owner generates in the Resend dashboard and sets in Vercel; the terminal never sees it, prints it, or writes it anywhere. A request that fails verification gets 401 and no log of its body. The note notification goes to the couple's account address, one email per note, no digest, no new switch. Deleting a note is a calm confirm in place, not a modal.
 
+## Scout rulings
+
+Adopted from item 0's scout, 2026-10-10. api/webhooks/resend.js exports config with bodyParser false and reads the raw bytes: Vercel parses the body by default and api/webhooks/stripe.js falls back to re-stringifying it, which can never satisfy a signature over exact bytes. Verification uses resend.webhooks.verify from the installed SDK, so no new dependency and no hand-rolled HMAC. Deliveries older than five minutes are rejected. Tags are read as an OBJECT on the webhook side and sent as an ARRAY: the send API takes tags as an array of name and value pairs, and the webhook returns them as a record keyed by name, so the two sides do not share a shape. The classification is matched as bounce.type === 'Permanent' exactly and everything else is logged as not stamping, which covers the wording difference between this goal's "transient" and Resend's documented "Temporary". The webhook is idempotent on email_id: a second delivery for the same email_id is a 200 no-op, because delivery is at-least-once. guest_id and owner_id are validated against Resend's tag character rules, ASCII letters, numbers, underscores and dashes with a limit of 256 characters, before they go on an email; if either fails the tags are dropped with a log line and the send still happens, because a tag is for matching a bounce later and is not worth failing a couple's invitation over.
+
+
+## State
+
+Written so an auto-compact loses nothing. Updated as the goal moves.
+
+As of 2026-10-10, item 0 is done and item 1 has not started.
+
+WHERE WE ARE. The owner added Guest.email_bounce in Base44 with the scout's
+amendment: at (date-time), kind (enum permanent), detail, email_id. Item 0's
+scout is reported and its nine rulings are in the Scout rulings section above.
+
+WHAT IS OPEN. PR #955, HELD, on branch feat/mirror-email-bounce. It carries
+base44/entities/Guest.jsonc, src/lib/entityFields.generated.js, this goal file
+(Scout rulings and this State section) and the 2026-10-10 section of
+tests/persistence/mirror-declares-the-new-fields.mjs, which asserts the field,
+its four sub-properties in the live order, the one-value enum, and that no
+address field exists in the shape. Proved red by pointing it at the pre-edit
+mirror (5 red) and by widening the enum (1 red). Nothing else is open.
+
+WHAT IS NEXT. Item 1, the webhook, HELD, once #955 is on main: new
+api/webhooks/resend.js with bodyParser false and raw bytes,
+resend.webhooks.verify from the installed SDK, 401 with no body logged, a
+five-minute replay window, tags read as an object, bounce.type === 'Permanent'
+matched exactly, idempotent on email_id, every other event type a counted 200.
+Guard with a signed fixture, an unsigned one, and a plant that drops the
+signature check. Log lines use "[resend-webhook] FAILURE: ..." with a colon.
+
+AFTER ITEM 1 MERGES, STOP: the owner registers
+https://www.openinvite.com.au/api/webhooks/resend in the Resend dashboard for
+email.bounced and sets RESEND_WEBHOOK_SECRET in Vercel. The terminal never
+sees, prints or writes that secret. Resume at item 2 when the owner says done.
+
+THE FACTS ITEM 1 AND 2 WILL NEED, from the scout, so they are not re-derived:
+api/send-invites.js builds its per-email object in exactly one place and passes
+no tags today; g.id and caller.id are both already in scope there; invitations
+and reminders are the same endpoint, selected by type, so there is no
+api/send-reminders.js; api/webhooks/stripe.js has no bodyParser config and
+falls back to re-stringifying the body, which cannot satisfy a signature over
+exact bytes; svix is not installed and does not need to be; Resend's tag values
+allow only ASCII letters, numbers, underscores and dashes, up to 256
+characters; data.tags arrives as an object keyed by name while the send API
+takes an array of name and value pairs.
+
+
 ## Items
 
 0. Scout and stop. Read api/send-invites.js and report how it calls Resend for invitations and reminders and whether tags are already passed; read api/webhooks/stripe.js for the shape a webhook takes in this repo; read Resend's docs for the email.bounced event shape, the bounce classification field, and the Svix headers; read Messages.jsx and the note read and update paths from the guest notes goal (#862 to #868). Confirm or amend the proposed field below and STOP so the owner can add it. Resume at item 1 once the mirror PR is on main.
