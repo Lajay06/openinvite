@@ -231,7 +231,7 @@ export function runAppMarketing() {
   check('phone frame: every screen size is an exact fraction of 1320 by 2868, with an even bezel',
     screens.length === 3 && screens.every(([w, h]) => 1320 % w === 0 && 1320 / w === 2868 / h),
     screens.map(([w, h, b]) => `${w}x${h} (1/${1320 / w}) bezel ${b}`).join(', '));
-  check('phone frame: drawn in the repo, no raster frame file', !/\.(png|jpe?g|webp|psd)['"]/i.test(momentSrc.replace(/\/\*[\s\S]*?\*\//g, '')));
+  check('phone frame: drawn in the repo, no raster frame file', !/\.(png|jpe?g|webp|psd)['"]/i.test(stripComments(momentSrc)));
   // NOTHING FROM APPLE'S DESIGN RESOURCES PACK, referenced or committed: the
   // licence (2A and 2B) excludes this use, so the files never enter the repo.
   const tracked = execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' }).split('\n');
