@@ -87,7 +87,7 @@ import { getBase44User } from '../_lib/base44Admin.js';
 import { onboardingDay3Email } from '../emails/onboarding-day3.js';
 import { onboardingDay7Email } from '../emails/onboarding-day7.js';
 import { isExcludedAccount } from '../_lib/excludedAccounts.js';
-import { dueRetentionEmail, mergeRetentionFlag, suppressesDay3, RETENTION_SHIP_DATE } from '../_lib/retentionTriggers.js';
+import { dueRetentionEmail, mergeRetentionFlag, suppressesDay3, RETENTION_SHIP_DATE, retentionEligibleFrom } from '../_lib/retentionTriggers.js';
 import { setupNudgeEmail, guestsNudgeEmail, RETENTION_REPLY_TO } from '../_lib/retentionEmails.js';
 import { stopEmailsUrl } from '../_lib/stopEmailsToken.js';
 // THE GUEST COUNT LIVES IN ITS OWN FILE, and the reason is a guard rather
@@ -303,7 +303,18 @@ export default async function handler(req, res) {
   const tally = {
     day3: { sent: 0, skipped_paid: 0, failed: 0, no_email: 0, skipped_no_slug: 0 },
     day7: { sent: 0, skipped_paid: 0, failed: 0, no_email: 0 },
-    retention: { sent: 0, failed: 0, setup24h: 0, setupDay4: 0, guests24h: 0, guestsDay5: 0 },
+    // ── TWO SKIPS THAT WERE INVISIBLE ───────────────────────────────────
+    //
+    // dueRetentionEmail returns a bare null for every reason it declines, so
+    // the first real run could report 75 scanned and 2 sent and say nothing
+    // about the other 73. These two name the reasons an operator actually
+    // asks about: a couple who switched the emails off, and an account that
+    // predates the feature.
+    //
+    // COUNTERS ONLY. Nothing here decides who is emailed; the decision stays
+    // in dueRetentionEmail and is read, not re-made.
+    retention: { sent: 0, failed: 0, setup24h: 0, setupDay4: 0, guests24h: 0, guestsDay5: 0,
+                 skipped_lifecycle_off: 0, skipped_before_ship: 0 },
     excluded: 0,
   };
 
@@ -370,6 +381,26 @@ export default async function handler(req, res) {
         guestCount = -1;
       }
       if (guestCount >= 0) {
+        // ── COUNTED IN THE HELPER'S OWN ORDER ─────────────────────────────
+        //
+        // dueRetentionEmail checks lifecycleEmails BEFORE the ship date, so
+        // these are counted in that order too: an account that is both
+        // switched off and older than the feature is reported as switched
+        // off, which is the reason the helper acted on.
+        //
+        // retentionEligibleFrom is the SAME exported function the helper
+        // uses, not a second copy of the date arithmetic. The lifecycle test
+        // is a one-field compare rather than logic, so there is nothing to
+        // drift. If this file ever needs a third reason, the honest fix is to
+        // have the helper return one rather than to grow this block.
+        const createdAt = user.created_date ? new Date(user.created_date) : null;
+        if (user.lifecycleEmails === false) {
+          tally.retention.skipped_lifecycle_off++;
+        } else if (createdAt && !Number.isNaN(createdAt.getTime())
+                   && createdAt < retentionEligibleFrom()) {
+          tally.retention.skipped_before_ship++;
+        }
+
         const due = dueRetentionEmail({ user, wedding, guestCount });
         if (due) {
           const r = await sendRetention({ user, flag: due.flag, email: due.email, sentAt });
