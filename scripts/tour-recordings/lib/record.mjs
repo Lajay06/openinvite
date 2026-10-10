@@ -136,7 +136,7 @@ export async function startCapture(page, { outputFile, width, height, fps = FPS,
       const { errors } = await encoder.finish();
       if (errors) throw new Error(`ffmpeg: ${errors}`);
       const bytes = statSync(outputFile).size;
-      return { file: outputFile, frames: written, seconds: +(written / fps).toFixed(2), bytes };
+      return { file: outputFile, frames: written, seconds: +(written / fps).toFixed(2), bytes, width, height };
     },
   };
 }
@@ -175,6 +175,49 @@ export async function recordChapter(chapter, { width, height, label, base, outDi
     return { ...result, cloudinary: ctx.__cloudinary.requested };
   } finally {
     if (capture) await capture.stop().catch(() => {});
+    await ctx.close().catch(() => {});
+    await browser.close().catch(() => {});
+  }
+}
+
+/**
+ * Record one clip FRAME BY FRAME at device pixels, for a phone screen.
+ *
+ * WHY NOT THE SCREENCAST. Chromium's headless screencast hands back frames at
+ * the layout size, 440 by 956, whatever the device scale factor, so a 3x take
+ * through startCapture is a small picture padded out to 1320 by 2868 (measured
+ * 2026-10-10). Here every frame is a real 3x screenshot instead. The motion is
+ * a scroll timeline, `chapter.scrollAt(seconds)` giving the scroll position for
+ * each frame, so the video is smooth and exactly as long as the timeline no
+ * matter how long each screenshot takes.
+ */
+export async function recordStepped(chapter, { width, height, label, base, outDir, deviceScaleFactor = 3 }) {
+  const browser = await chromium.launch();
+  const seed = chapter.seed ? chapter.seed(RECORDING_SEED) : RECORDING_SEED;
+  const ctx = await recordingContext(browser, { width, height, seed, deviceScaleFactor });
+  const page = await ctx.newPage();
+  const outputFile = `${outDir}/${chapter.key}-${label}.webm`;
+  const W = width * deviceScaleFactor, H = height * deviceScaleFactor;
+  mkdirSync(dirname(outputFile), { recursive: true });
+  try {
+    await page.goto(`${base}${chapter.startPath}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.waitForTimeout(6500);
+    await page.evaluate(() => {
+      if (window.__oiCursor) window.__oiCursor.mount = () => {};
+      document.getElementById('oi-recording-cursor')?.remove();
+      document.documentElement.style.scrollBehavior = 'auto';
+    });
+    const encoder = startEncoder({ outputFile, width: W, height: H, fps: FPS, bitrate: chapter.bitrate });
+    const frames = Math.round(chapter.seconds * FPS);
+    for (let i = 0; i < frames; i += 1) {
+      const y = Math.round(chapter.scrollAt(i / FPS));
+      await page.evaluate((top) => new Promise((r) => { window.scrollTo(0, top); requestAnimationFrame(() => requestAnimationFrame(r)); }), y);
+      encoder.write(await page.screenshot({ type: 'jpeg', quality: 92 }));
+    }
+    const { errors } = await encoder.finish();
+    if (errors) throw new Error(`ffmpeg: ${errors}`);
+    return { file: outputFile, frames, seconds: +(frames / FPS).toFixed(2), bytes: statSync(outputFile).size, width: W, height: H, cloudinary: ctx.__cloudinary.requested };
+  } finally {
     await ctx.close().catch(() => {});
     await browser.close().catch(() => {});
   }

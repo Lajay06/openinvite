@@ -27,7 +27,7 @@ export default function AppPage() {
     // (PrivacyPolicy offsets by 120).
     <div className="min-h-screen bg-[#0A0A0A] font-sans" style={{ paddingTop: 96 }}>
       <PublicNav />
-      <AppPhones headingLevel="h1" showStoreLine={false} />
+      <AppPhones headingLevel="h1" showStoreLine={false} size="lg" />
       <section data-app-guests style={{ background: "#0A0A0A", padding: "0 clamp(24px, 6vw, 80px) 120px" }}>
         <div style={{ maxWidth: 640, margin: "0 auto", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 48 }}>
           <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: "44px", color: "#FFFFFF", margin: "0 0 16px", fontFamily: PJS }}>

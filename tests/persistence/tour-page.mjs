@@ -36,6 +36,19 @@ export function runTourPage() {
   for (const [key, entry] of Object.entries(TOUR_PAGE_MEDIA)) {
     check(`tour clip ${key} is recorded`, !!entry, entry ? 'footage' : 'null: not recorded yet');
     if (!entry) continue;
+    // A PHONE-SCREEN TAKE (the app section's phone, batch 2): one 440 by 956
+    // take at 3x, 1320 by 2868, poster at native size. app-marketing.mjs holds
+    // it to its size and its never-resized URLs; here, its place in the map.
+    if (entry.width === 1320 && entry.height === 2868 && !entry.phone) {
+      for (const [field, ext] of [['webm', '.webm'], ['mp4', '.mp4'], ['poster', '.jpg']]) {
+        check(`tour clip ${key} @ 440 ${field} is studio-tour/tour-page/${key}/440-<take>${ext}`,
+          String(entry[field]).startsWith(CLOUD) && new RegExp(`/studio-tour/tour-page/${key}/440-\\d{14}\\${ext}$`).test(entry[field]), String(entry[field]).slice(-60));
+      }
+      check(`tour clip ${key} @ 440 mp4 carries the bounded transcode`, entry.mp4.includes('/vc_h264,q_auto:good,br_900k/'));
+      check(`tour clip ${key} @ 440 poster is the frame at 1.0s, at native size`, entry.poster.includes('/so_1.0,q_auto:good/'));
+      check(`tour clip ${key} @ 440 is inside the brief's ${MIN_SECONDS} to ${MAX_SECONDS} seconds`, entry.seconds >= MIN_SECONDS && entry.seconds <= MAX_SECONDS, `${entry.seconds}s`);
+      continue;
+    }
     for (const [label, side] of [['1440', entry], ['390', entry.phone]]) {
       const at = `tour clip ${key} @ ${label}`;
       if (!side) { check(`${at} exists`, false, 'missing'); continue; }
