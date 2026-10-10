@@ -21,7 +21,11 @@ export default function AppPage() {
   useMarketingSeo();
   // Apple Smart App Banner meta tag goes here once the App Store link exists.
   return (
-    <div className="min-h-screen bg-[#0A0A0A] font-sans">
+    // 96px OF TOP OFFSET: the banner is this page's first block, and the
+    // fixed nav (a 65px bar at the top, a floating pill once scrolled) would
+    // sit over its first line without it. Other hero-less pages do the same
+    // (PrivacyPolicy offsets by 120).
+    <div className="min-h-screen bg-[#0A0A0A] font-sans" style={{ paddingTop: 96 }}>
       <PublicNav />
       <AppPhones headingLevel="h1" showStoreLine={false} />
       <section data-app-guests style={{ background: "#0A0A0A", padding: "0 clamp(24px, 6vw, 80px) 120px" }}>

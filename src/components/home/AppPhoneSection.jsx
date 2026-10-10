@@ -30,6 +30,7 @@
  * it, not the guard.
  */
 import ProductMediaFrame from "@/components/shared/ProductMediaFrame";
+import TitleBanner from "@/components/marketing/TitleBanner";
 import { STILLS } from "@/lib/studioTour";
 import { APP_STORE_LINE } from "@/components/marketing/AppPhones";
 
@@ -38,11 +39,13 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 export default function AppPhoneSection() {
   const still = STILLS["daily-update"];
   return (
+    <>
+    {/* THE BANNER CARRIES THE HEADING (batch 2, item 2), as the Ava section's
+        banner carries its line, so the section below opens on the phone. */}
+    <TitleBanner>The whole planner, in your pocket.</TitleBanner>
     <section
       data-home-app
-      // Top padding 0: the Ava spotlight above ends on its own divider and
-      // 120px of padding, so this block starts where its rows would.
-      style={{ background: "#0A0A0A", padding: "0 clamp(24px, 6vw, 80px) 120px" }}
+      style={{ background: "#0A0A0A", padding: "120px clamp(24px, 6vw, 80px)" }}
     >
       <div className="home-app-grid" style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gap: 56, alignItems: "center" }}>
         <div className="home-app-phone">
@@ -60,12 +63,6 @@ export default function AppPhoneSection() {
           </ProductMediaFrame>
         </div>
         <div>
-          <h2 style={{
-            fontSize: "clamp(32px, 3.33vw, 48px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.125,
-            color: "#FFFFFF", margin: "0 0 24px", fontFamily: PJS,
-          }}>
-            The whole planner, in your pocket.
-          </h2>
           <p style={{ fontSize: 18, lineHeight: "30px", color: "rgba(255,255,255,0.72)", margin: "0 0 24px", fontFamily: PJS, maxWidth: 560 }}>
             Plan on the train, on the couch, in the queue for coffee. The guest list, the budget, the seating chart and Ava are all on your phone, and a reply from a guest reaches you the moment it lands. Your guests never need the app; they open a link.
           </p>
@@ -82,5 +79,6 @@ export default function AppPhoneSection() {
         }
       `}</style>
     </section>
+    </>
   );
 }

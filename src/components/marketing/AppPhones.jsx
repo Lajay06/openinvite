@@ -23,6 +23,7 @@
  */
 import ProductMediaFrame from "@/components/shared/ProductMediaFrame";
 import { STILLS } from "@/lib/studioTour";
+import TitleBanner from "@/components/marketing/TitleBanner";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -49,17 +50,14 @@ const PHONES = [
  *   many. /app places the store line itself, after "Do my guests need it?".
  */
 export default function AppPhones({ headingLevel = "h2", showStoreLine = true }) {
-  const Heading = headingLevel;
   return (
+    <>
+    {/* The heading is the banner (batch 2, item 2): the Ava section's
+        structure, a gradient band with one line, then the section. */}
+    <TitleBanner as={headingLevel}>{APP_HEADING}</TitleBanner>
     <section data-app-phones style={{ background: "#0A0A0A", padding: "120px clamp(24px, 6vw, 80px)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <Heading style={{
-          fontSize: "clamp(32px, 3.33vw, 48px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.125,
-          color: "#FFFFFF", margin: "0 0 64px", fontFamily: PJS, textAlign: "center",
-        }}>
-          {APP_HEADING}
-        </Heading>
-        <div className="app-phones-row">
+        <div className="app-phones-row" style={{ marginTop: 0 }}>
           {PHONES.map((p) => (
             <div key={p.key} className="app-phones-phone">
               {/* 240 by 520: the 390:844 shape held to whole pixels, so the
@@ -104,5 +102,6 @@ export default function AppPhones({ headingLevel = "h2", showStoreLine = true })
         }
       `}</style>
     </section>
+    </>
   );
 }
