@@ -25,19 +25,33 @@ Adopted from item 0's scout, 2026-10-10. api/resend-webhook.js exports config wi
 
 Written so an auto-compact loses nothing. Updated as the goal moves.
 
-As of 2026-10-10, item 0 is done and item 1 has not started.
+As of 2026-10-11, items 0, 1 and 2 are done and item 3 is open as PR #964.
 
 WHERE WE ARE. The owner added Guest.email_bounce in Base44 with the scout's
 amendment: at (date-time), kind (enum permanent), detail, email_id. Item 0's
 scout is reported and its nine rulings are in the Scout rulings section above.
+The mirror merged as #955. The webhook merged as #957 at api/resend-webhook.js,
+after the ruling recorded in Lessons. The owner has registered it in the Resend
+dashboard, set RESEND_WEBHOOK_SECRET in Vercel, redeployed and sent one test
+event; whether that delivery was accepted is being settled with the owner
+outside this file, and the terminal's attempt to read it is recorded below.
+Item 2, the tags and the bounce skip, merged as #959.
 
-WHAT IS OPEN. PR #955, HELD, on branch feat/mirror-email-bounce. It carries
-base44/entities/Guest.jsonc, src/lib/entityFields.generated.js, this goal file
-(Scout rulings and this State section) and the 2026-10-10 section of
-tests/persistence/mirror-declares-the-new-fields.mjs, which asserts the field,
-its four sub-properties in the live order, the one-value enum, and that no
-address field exists in the shape. Proved red by pointing it at the pre-edit
-mirror (5 red) and by widening the enum (1 red). Nothing else is open.
+WHAT IS OPEN. PR #964, item 3, not held. It carries
+src/components/guests/emailBounce.js (new, the shared predicate and the clear
+rule), src/components/guests/GuestList.jsx, src/pages/Guests.jsx,
+src/components/guests/SendInvitesModal.jsx, this goal file, and two guards:
+tests/persistence/guests-bounce-label.mjs (new, 40 checks, 31 plants all
+caught) and two repaired checks in tests/persistence/guest-stop-emails.mjs.
+
+WHAT IS NEXT. Item 4, the note notification, HELD because it sends email. Then
+item 5, deleting a note.
+
+ONE TOOL FAILURE WORTH NOT REPEATING. The Vercel runtime log query returned
+"No logs found" for a 50-minute window across four query shapes, with no
+filter at all, so the webhook test delivery's status could not be read from
+here. That is the tool failing, not a verdict, and it was reported as such
+rather than inferred.
 
 WHAT IS NEXT. Item 1, the webhook, HELD, once #955 is on main: new
 api/resend-webhook.js with bodyParser false and raw bytes,
@@ -88,6 +102,15 @@ As CLAUDE.md. Any held-list or do-not-touch file outside the named exceptions: s
 ## Lessons
 
 api/webhooks/ is frozen as a directory; a non-payments webhook lives at the api/ root.
+
+Item 3's premise was wrong. It places the Bounced filter "beside the existing
+opt-out filter", and there is no opt-out filter on the Guests page: goal 3
+(the reply lifecycle) added the row label and no pill at all. Owner ruling,
+2026-10-11: the Bounced pill as built is permanent in that form, last in the
+status row and shown only when at least one guest is bounced, and no opt-out
+pill is added this goal. The lesson is the general one: an item that says
+"beside the existing X" is naming a thing the terminal must find before it
+builds against it, because the item was written from memory of the surface.
 
 ## Close
 
