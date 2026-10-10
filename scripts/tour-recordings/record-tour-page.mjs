@@ -16,7 +16,7 @@
  * WITHOUT --upload NOTHING LEAVES THE MACHINE.
  */
 import { readdirSync } from 'node:fs';
-import { recordChapter, WIDTHS } from './lib/record.mjs';
+import { recordChapter, recordStepped, WIDTHS } from './lib/record.mjs';
 import { cloudinaryConfig, uploadRecording, deliveryUrls } from './lib/cloudinary.mjs';
 
 const BASE = process.env.CAPTURE_BASE_URL || 'http://localhost:4230';
@@ -35,10 +35,14 @@ const results = {};
 const failures = [];
 for (const clip of clips) {
   results[clip.key] = {};
-  for (const w of WIDTHS) {
+  // A clip may name its own viewports (the app phone is one 440 by 956 take
+  // at 3x); the rest are recorded at the standard two widths.
+  for (const w of clip.viewports || WIDTHS) {
     process.stdout.write(`  ${clip.key} @ ${w.label} ... `);
     try {
-      const r = await recordChapter(clip, { ...w, base: BASE, outDir: `${OUT}/tour-page` });
+      const r = clip.scrollAt
+        ? await recordStepped(clip, { ...w, base: BASE, outDir: `${OUT}/tour-page` })
+        : await recordChapter(clip, { ...w, base: BASE, outDir: `${OUT}/tour-page` });
       console.log(`${r.seconds}s, ${(r.bytes / 1024).toFixed(0)} KB, ${r.frames} frames`);
       results[clip.key][w.label] = r;
     } catch (e) {
@@ -66,6 +70,11 @@ if (failures.length) {
 }
 console.log('\n  Entries for TOUR_PAGE_MEDIA in src/lib/studioTour.js:\n');
 for (const [key, r] of Object.entries(results)) {
+  if (r['440']?.urls) {
+    const q = r['440'];
+    console.log(`  ${key}: {\n    poster: '${q.urls.poster}',\n    webm: '${q.urls.webm}',\n    mp4: '${q.urls.mp4}',\n    seconds: ${q.seconds},\n    width: ${q.width}, height: ${q.height},\n  },`);
+    continue;
+  }
   const d = r['1440'], p = r['390'];
   if (!d?.urls) { console.log(`  ${key}: null,`); continue; }
   console.log(`  ${key}: {`);

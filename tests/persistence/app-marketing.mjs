@@ -18,7 +18,8 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { STILLS } from '../../src/lib/studioTour.js';
+import { TOUR_PAGE_MEDIA } from '../../src/lib/studioTour.js';
+import { execFileSync } from 'node:child_process';
 import { MARKETING_ROUTES } from '../../scripts/marketingRoutes.mjs';
 import { PRO_FEATURES, ULTRA_EXTRAS } from '../../src/lib/planFeatures.js';
 import { pass, fail, stripComments } from './_shared.mjs';
@@ -68,6 +69,28 @@ function bannerAbove(html, attr) {
   const between = html.slice(end, html.lastIndexOf('<', at)).replace(/<!--[\s\S]*?-->/g, '').trim();
   return between === '' ? banner : '';
 }
+// ── THE PHONE MOMENT (site fixes batch 2, item 1) ────────────────────────
+// The site's own phone, drawn in CSS, playing the real 1320 by 2868 daily
+// update over POOL_PARTY. The only pictures in the section are that photo and
+// the recording's poster: anything else would be a raster frame or a still
+// from somewhere else.
+const PHONE = TOUR_PAGE_MEDIA['app-phone'];
+const POOL = 'DTS_POOL_PARTY_JELLY_LUISE_Photos_ID15749_om64j0';
+const momentChecks = (check, block, where) => {
+  check(`${where}: the phone moment is the section`, /data-app-moment/.test(block));
+  // The poster arrives as an <img> before the video mounts, or as the
+  // <video>'s poster attribute where the phone is already in view (/app).
+  const imgs = [...block.matchAll(/<img\b[^>]*src="([^"]+)"/g), ...block.matchAll(/<video\b[^>]*poster="([^"]+)"/g)]
+    .map((m) => m[1].replace(/&amp;/g, '&'));
+  const others = imgs.filter((u) => !u.includes(POOL) && u !== PHONE?.poster);
+  check(`${where}: the only pictures are POOL_PARTY and the recording's poster`,
+    imgs.some((u) => u.includes(POOL)) && imgs.includes(PHONE?.poster) && others.length === 0, others.join(', ').slice(0, 90) || `${imgs.length} img`);
+  const frame = sectionWith(block, 'data-app-phone-frame');
+  const frameOnly = frame.replace(sectionWith(frame, 'data-app-phone-screen'), '');
+  check(`${where}: the phone frame is CSS, with no picture of its own`,
+    !!frame && !/<img\b|background-image|url\(/i.test(frameOnly), 'no raster bezel');
+};
+
 const AVA_GRADIENT = 'linear-gradient(to right, #DDF762, #F0A050, #D4896A, #C99BBF, #9B59CC)';
 const bannerChecks = (check, banner, where, text, level) => {
   check(`${where}: a title banner opens the app section`, !!banner);
@@ -109,10 +132,7 @@ export function runAppMarketing() {
   check('home: the body, verbatim', t.includes('Plan on the train, on the couch, in the queue for coffee. The guest list, the budget, the seating chart and Ava are all on your phone, and a reply from a guest reaches you the moment it lands. Your guests never need the app; they open a link.'));
   check('home: the store line, as text', t.includes(STORE_LINE) && /data-app-store-line/.test(block));
   check('home: the store line is not a link', !/<a\b[^>]*>[^<]*Coming to the App Store/.test(block));
-  const imgs = [...block.matchAll(/<img\b[^>]*src="([^"]+)"/g)].map((m) => m[1].replace(/&amp;/g, '&'));
-  check('home: one picture, and no video', imgs.length === 1 && !/<video\b/.test(block), `${imgs.length} img`);
-  check('home: the picture is the daily update still at 390, with no cursor',
-    imgs[0] === STILLS['daily-update'], String(imgs[0]).slice(-60));
+  momentChecks(check, block, 'home');
   const blockAt = home.indexOf('data-home-app');
   const pricingAt = home.indexOf('section-pricing');
   const cardsAt = home.indexOf('section-features');
@@ -128,7 +148,6 @@ export function runAppMarketing() {
     'Ava on every page, at any hour.',
   ];
   const DESKTOP = 'You design your guest suite on a desktop, where the space is; everything else is yours wherever you are.';
-  const PHONES = [STILLS['daily-update'], STILLS['guests-reply'], STILLS.budget];
   const phonesBlock = (html, where) => {
     const b = sectionWith(html, 'data-app-phones');
     const bt = textOf(b);
@@ -137,8 +156,7 @@ export function runAppMarketing() {
     const lines = [...b.matchAll(/<li\b[^>]*data-app-line[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1]).trim());
     check(`${where}: the five lines, verbatim and in order`, JSON.stringify(lines) === JSON.stringify(LINES), JSON.stringify(lines).slice(0, 120));
     check(`${where}: the desktop sentence, verbatim`, bt.includes(DESKTOP));
-    const srcs = [...b.matchAll(/<img\b[^>]*src="([^"]+)"/g)].map((m) => m[1].replace(/&amp;/g, '&'));
-    check(`${where}: three phones: daily update, guest list, budget`, JSON.stringify(srcs) === JSON.stringify(PHONES), `${srcs.length} img`);
+    momentChecks(check, b, where);
     return b;
   };
   const features = existsSync(join(PRE, 'features/index.html')) ? readFileSync(join(PRE, 'features/index.html'), 'utf8') : '';
@@ -200,6 +218,29 @@ export function runAppMarketing() {
   check('pricing: the comparison table has one "Guest suite" row', (pricingSrc.match(/feature: "Guest suite"/g) || []).length === 1);
   check('plan features: "Digital invitations by email", and no WhatsApp',
     ULTRA_EXTRAS.includes('Digital invitations by email') && ![...PRO_FEATURES, ...ULTRA_EXTRAS].some((f) => /whats\s?app/i.test(f)));
+  // ── the phone's screen asset and frame (site fixes batch 2, item 1) ────
+  check('phone recording: 1320 by 2868', PHONE?.width === 1320 && PHONE?.height === 2868, `${PHONE?.width}x${PHONE?.height}`);
+  check('phone recording: never resized (no width, height or crop on any URL)',
+    !!PHONE && [PHONE.webm, PHONE.mp4, PHONE.poster].every((u) => !/\/(?:[^/]*,)?(?:w|h|c)_[^/,]+/.test(u.split('/upload/')[1])));
+  check('phone recording: a new path per take',
+    !!PHONE && [PHONE.webm, PHONE.mp4, PHONE.poster].every((u) => /\/studio-tour\/tour-page\/app-phone\/440-\d{14}\.(webm|mp4|jpg)$/.test(u)));
+  const cloudSrc = readFileSync(resolve(ROOT, 'scripts/tour-recordings/lib/cloudinary.mjs'), 'utf8');
+  check('phone recording: uploads go up with overwrite off', /overwrite: 'false'/.test(cloudSrc) && !/overwrite: 'true'/.test(cloudSrc));
+  const momentSrc = readFileSync(resolve(ROOT, 'src/components/marketing/AppPhoneMoment.jsx'), 'utf8');
+  const screens = [...momentSrc.matchAll(/\{ width: (\d+), height: (\d+), bezel: (\d+) \}/g)].map((m) => [+m[1], +m[2], +m[3]]);
+  check('phone frame: every screen size is an exact fraction of 1320 by 2868, with an even bezel',
+    screens.length === 3 && screens.every(([w, h]) => 1320 % w === 0 && 1320 / w === 2868 / h),
+    screens.map(([w, h, b]) => `${w}x${h} (1/${1320 / w}) bezel ${b}`).join(', '));
+  check('phone frame: drawn in the repo, no raster frame file', !/\.(png|jpe?g|webp|psd)['"]/i.test(momentSrc.replace(/\/\*[\s\S]*?\*\//g, '')));
+  // NOTHING FROM APPLE'S DESIGN RESOURCES PACK, referenced or committed: the
+  // licence (2A and 2B) excludes this use, so the files never enter the repo.
+  const tracked = execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' }).split('\n');
+  const packFiles = tracked.filter((f) => /bezel|iphone[ -]?1[0-9]|design[ -]resources/i.test(f) && !f.startsWith('goals/'));
+  const packRefs = tracked.filter((f) => /^(src|scripts|public|prerendered)\//.test(f) && /\.(jsx?|mjs|html|css|json)$/.test(f))
+    .filter((f) => { try { return /Bezel-iPhone|iPhone 1[0-9] Pro( Max)? - |devimages-cdn\.apple\.com/.test(readFileSync(resolve(ROOT, f), 'utf8')); } catch { return false; } });
+  check('no file from the Apple Design Resources pack is committed or referenced', packFiles.length === 0 && packRefs.length === 0,
+    [...packFiles, ...packRefs].join(', ') || `${tracked.length} tracked files`);
+
   // ── the features accordion (site fixes batch 2) ───────────────────────
   // Four bullets per row, 32 in all, the full text pinned in
   // features-accordion-rows.mjs; here the count, the vendors line the owner

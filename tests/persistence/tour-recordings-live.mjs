@@ -128,6 +128,30 @@ export async function runTourRecordingsLive() {
     }
   }
 
+  // ── THE APP PHONE'S SCREEN ASSET IS 1320 BY 2868 AS DELIVERED ─────────
+  // Site fixes batch 2, item 1. Read off the poster Cloudinary serves (the
+  // first 64 KB is enough for the JPEG header), so a resize on the way out
+  // would show here even if the map still said 1320 by 2868.
+  {
+    const phone = TOUR_PAGE_MEDIA['app-phone'];
+    if (phone) {
+      try {
+        const res = await fetch(phone.poster, { headers: { Range: 'bytes=0-65535' } });
+        const buf = Buffer.from(await res.arrayBuffer());
+        let w = 0, h = 0;
+        for (let i = 2; i < buf.length - 9;) {
+          if (buf[i] !== 0xFF) { i += 1; continue; }
+          const m = buf[i + 1];
+          if (m >= 0xC0 && m <= 0xC3) { h = buf.readUInt16BE(i + 5); w = buf.readUInt16BE(i + 7); break; }
+          i += 2 + buf.readUInt16BE(i + 2);
+        }
+        check('app phone poster is 1320 by 2868 as delivered', w === 1320 && h === 2868, `${w}x${h}`);
+      } catch (e) {
+        check('app phone poster is 1320 by 2868 as delivered', false, String(e.message).slice(0, 80));
+      }
+    }
+  }
+
   // ── THE HOME PAGE'S APP STILL, AGAINST ITS BUDGET ────────────────────
   // goals/2026-10-10-app-on-the-marketing-site.md item 1: the home block adds
   // one picture, the 390 daily update still, and the page had no media budget

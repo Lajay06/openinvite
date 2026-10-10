@@ -77,11 +77,14 @@ export async function uploadRecording({ file, chapterKey, widthLabel, config }) 
 export function deliveryUrls({ cloud, publicId, version, widthLabel }) {
   const base = `https://res.cloudinary.com/${cloud}/video/upload`;
   const v = `v${version}`;
+  // A phone-screen take (440 at 3x, 1320 by 2868) keeps its poster at native
+  // size: the still before load must be the same picture as the video.
+  const native = widthLabel === '440';
   const posterWidth = widthLabel === '390' ? 780 : 1280;
   return {
     webm: `${base}/${v}/${publicId}.webm`,
     mp4: `${base}/vc_h264,q_auto:good,br_900k/${v}/${publicId}.mp4`,
-    poster: `${base}/so_1.0,w_${posterWidth},q_auto:good/${v}/${publicId}.jpg`,
+    poster: native ? `${base}/so_1.0,q_auto:good/${v}/${publicId}.jpg` : `${base}/so_1.0,w_${posterWidth},q_auto:good/${v}/${publicId}.jpg`,
   };
 }
 

@@ -325,6 +325,15 @@ export const MEDIA = {
  * these are the rest.
  */
 export const TOUR_PAGE_MEDIA = {
+  // The app section's phone (batch 2, item 1): 440 by 956 at 3x, so 1320 by
+  // 2868, shown at exact fractions of that size, never resized.
+  'app-phone': {
+    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,q_auto:good/v1791606577/studio-tour/tour-page/app-phone/440-20261010042934.jpg',
+    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791606577/studio-tour/tour-page/app-phone/440-20261010042934.webm',
+    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791606577/studio-tour/tour-page/app-phone/440-20261010042934.mp4',
+    seconds: 12,
+    width: 1320, height: 2868,
+  },
   budget: {
     poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1791540792/studio-tour/tour-page/budget/1440.jpg',
     webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791540792/studio-tour/tour-page/budget/1440.webm',
