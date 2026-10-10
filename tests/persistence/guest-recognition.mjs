@@ -26,12 +26,12 @@
 import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { pass, fail } from './_shared.mjs';
+import { pass, fail, stripComments } from './_shared.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = (p) => resolve(__dir, '../../', p);
 const read = (p) => readFileSync(root(p), 'utf8');
-const strip = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+const strip = (s) => stripComments(s);
 
 export async function runGuestRecognition() {
   const results = [];

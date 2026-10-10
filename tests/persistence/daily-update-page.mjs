@@ -14,7 +14,7 @@
  * assert they agree rather than hoping they do — the module has no React in it
  * and plain Node can run the same call both pages make.
  */
-import { pass, fail } from './_shared.mjs';
+import { pass, fail, stripComments } from './_shared.mjs';
 import { resolveDayState, rowDate, STATE_BADGE, todosFrom } from '../../src/lib/dayState.js';
 import { countdownLabel } from '../../src/lib/weddingCountdown.js';
 import { ACTION_MIRROR } from '../../src/lib/avaRequest.js';
@@ -26,11 +26,7 @@ import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-// Line comments first — a stray "/*" inside a "//" line otherwise opens a
-// block comment that runs to the next "*/" and swallows the file.
-const code = (p) => readFileSync(join(ROOT, p), 'utf8')
-  .replace(/^[^\n]*?\/\/.*$/gm, (line) => line.slice(0, line.indexOf('//')))
-  .replace(/\/\*[\s\S]*?\*\//g, '');
+const code = (p) => stripComments(readFileSync(join(ROOT, p), 'utf8'), { trailing: true });
 
 const TODAY = new Date(2026, 8, 6);
 const on = (o) => resolveDayState({ now: TODAY, ...o });
@@ -44,8 +40,13 @@ export async function runDailyUpdatePage() {
   // ── PLANT: /DailyUpdate RENDERS, IT DOES NOT REDIRECT ───────────────────
   {
     const app = code('src/App.jsx');
+    // INSIDE THE NATIVE SHELL ONLY, /DailyUpdate goes to the mobile app
+    // (goals/2026-10-10-mobile-pass.md, owner ruling 2026-10-10). Every
+    // mention of the path in a redirect test must sit behind isNativeShell(),
+    // so the web route still reaches the page.
+    const redirects = app.split('\n').filter((l) => /pathname === '\/DailyUpdate'/.test(l));
     check('PLANT: /DailyUpdate is no longer redirected away',
-      !/pathname === '\/DailyUpdate'/.test(app), 'the route reaches the page');
+      redirects.every((l) => /isNativeShell\(\) &&/.test(l)), 'the route reaches the page');
     // OVERALL IS GONE, so /Dashboard no longer has a page to normalise TO.
     // Owner ruling 2026-09-07. Both spellings now land on the daily update,
     // which is the landing page — the property is unchanged (a hand-typed or

@@ -14,15 +14,13 @@
  * Every check here is a PLANT: each one was run against the old shape and
  * reported red before the change that makes it green.
  */
-import { pass, fail } from './_shared.mjs';
+import { pass, fail, stripComments } from './_shared.mjs';
 import { readFileSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const code = (p) => readFileSync(join(ROOT, p), 'utf8')
-  .replace(/^[^\n]*?\/\/.*$/gm, (line) => line.slice(0, line.indexOf('//')))
-  .replace(/\/\*[\s\S]*?\*\//g, '');
+const code = (p) => stripComments(readFileSync(join(ROOT, p), 'utf8'), { trailing: true });
 
 /**
  * THE GROUPS, IN ORDER — the ones that were there before #697 recut them.

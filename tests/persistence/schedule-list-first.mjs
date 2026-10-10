@@ -23,7 +23,7 @@
  * screenshots before anything is removed. The check below pins UNREACHABLE,
  * not ABSENT, so it will stay honest either side of that decision.
  */
-import { pass, fail } from './_shared.mjs';
+import { pass, fail, stripComments } from './_shared.mjs';
 import { buildScheduleEvents, groupEventsByDay, whenRelativeTo, WHEN_RANK, WHEN_LABEL } from '../../src/lib/scheduleEvents.js';
 import { naturalCompare, sortRows } from '../../src/lib/tableSort.js';
 import { readFileSync } from 'node:fs';
@@ -31,11 +31,7 @@ import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-// Line comments first: a stray "/*" inside a "//" line otherwise opens a block
-// comment that runs to the next "*/" and swallows the rest of the file.
-const code = (p) => readFileSync(join(ROOT, p), 'utf8')
-  .replace(/^[^\n]*?\/\/.*$/gm, (line) => line.slice(0, line.indexOf('//')))
-  .replace(/\/\*[\s\S]*?\*\//g, '');
+const code = (p) => stripComments(readFileSync(join(ROOT, p), 'utf8'), { trailing: true });
 
 /** A wedding with something from every source the page reads. */
 const FIXTURE = {

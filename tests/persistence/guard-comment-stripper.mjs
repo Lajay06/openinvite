@@ -75,9 +75,11 @@ const NAIVE = /\.replace\(\s*\/\\\/\\\*\[\\s\\S\]\*\?\\\*\\\/\/g/g;
  * they are green and why converting them is optional rather than urgent. A
  * ceiling that can only fall stops the form spreading to new guards without
  * demanding ninety unreviewed edits today. Lower this number when guards are
- * converted; never raise it.
+ * converted; never raise it. 94 -> 89 on 2026-10-10: the mobile pass put
+ * "/m/*" route paths in App.jsx, which the naive form damages, so the four
+ * guards reading App.jsx through it moved to stripComments.
  */
-const CEILING = 94;
+const CEILING = 89;
 
 /** Every .mjs under tests/ and scripts/, which is where guards live. */
 function guardFiles() {
