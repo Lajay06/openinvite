@@ -37,7 +37,6 @@ function useScrollReveal(threshold = 0.2) {
   return [ref, visible];
 }
 
-const ACCORDION_BORDERS = ["#E03553", "#803D81", "#6B2CAE", "#DDF762", "#C2E5F3", "#0A1930"];
 // WHAT THE ACCORDION COVERS, AND WHEN IT WAS LAST RULED.
 //
 // Owner 2026-09-17, M2: the accordion used to restate the three deep dives
@@ -58,21 +57,20 @@ const ACCORDION_BORDERS = ["#E03553", "#803D81", "#6B2CAE", "#DDF762", "#C2E5F3"
 // CONSEQUENCE WORTH NAMING: "universe" now appears nowhere on this page. It
 // was only ever in the row that went. /universes is where that story lives.
 //
-// ONE PARAGRAPH PER ROW, NOT BULLETS, which is why each `bullets` array holds
-// a single string. AccordionSection renders a list with no marker and a
-// hairline only BETWEEN items, so one item renders as a plain paragraph and
-// the existing structure and styling are untouched, exactly as the item asks.
-// There is no illustration slot in this accordion, so there is nothing to
-// reuse and no new asset.
+// FOUR BULLETS PER ROW (owner ruling 2026-10-10, site fixes batch 2), after
+// batch 1 had cut each row to one sentence and the accordion lost its weight.
+// The rows and their order stay as batch 1 set them. Every bullet was checked
+// against the product before it shipped; the vendors row names Google Places
+// because the marketplace searches it.
 const ALL_FEATURES = [
-{ title: "Vendors and the marketplace", bullets: ["Every vendor in one place, with contact, quote, deposit and what is still owed. Browse the marketplace for the ones you have not booked yet and send an enquiry without leaving the studio."] },
-{ title: "Seating chart and the visualizer", bullets: ["Drag guests onto tables, see who is still unseated, and walk the room before anyone else does. The visualizer shows the layout the way your guests will see it."] },
-{ title: "Calendar", bullets: ["One calendar for the whole engagement: deadlines, vendor payments, fittings, and every event on your run sheet. Subscribe from your phone so nothing lives only in the studio."] },
-{ title: "Ava on every page", bullets: ["Ava has read your wedding. Ask what is unpaid, who has not replied, or what still needs a decision, on any page, at any hour."] },
-{ title: "Mood board", bullets: ["Pin the looks you keep coming back to, colors, florals, dresses, tables, and keep them next to the plan instead of across six apps."] },
-{ title: "Toasts and speeches", bullets: ["Who is speaking, in what order, for how long. Speakers get a short brief and a deadline so nobody writes theirs in the car."] },
-{ title: "On the day details", bullets: ["Getting there, where to stay, who to call, what to wear. Written once, shown to guests where they need it."] },
-{ title: "Registry and cash funds", bullets: ["Link the registry you already have, or set up a cash fund with a note that does not feel awkward. Guests see it only when you say so."] }];
+{ title: "Vendors and the marketplace", bullets: ["Every vendor in one place, with contact, quote, deposit and what is still owed", "A marketplace connected to Google Places, with vendors worldwide", "Send an enquiry without leaving the studio", "Keep quotes, contracts and contacts with each vendor"] },
+{ title: "Seating chart and the visualizer", bullets: ["Lay out the venue and drag guests onto tables", "See who is still unseated at a glance", "Walk the room in the visualizer, the way guests will see it", "A seating plan for each event, from the reception to the brunch"] },
+{ title: "Calendar", bullets: ["One calendar for the whole engagement", "Deadlines, vendor payments and fittings beside every event on your run sheet", "Subscribe from your phone's calendar, so an edit here reaches it on its own.", "Export the run sheet for your vendors"] },
+{ title: "Ava on every page", bullets: ["A short briefing each morning: what is coming up, what needs a decision", "Ask Ava from any page, about the page you are on", "Answers drawn from your own wedding, never generic advice", "Ask what is unpaid, who has not replied, or what still needs a decision"] },
+{ title: "Mood board", bullets: ["Pin the looks you keep coming back to: colors, florals, dresses, tables", "Boards for the venue, the dress, the palette, or anything you name", "A note on every pin", "Inspiration next to the plan, not across six apps"] },
+{ title: "Toasts and speeches", bullets: ["Who is speaking, in what order, for how long", "A short brief and a deadline for every speaker, so nobody writes theirs in the car", "Vow drafts in the tone you choose, refined until they sound like you", "Your vows locked behind a PIN"] },
+{ title: "On the day details", bullets: ["Getting there, where to stay, who to call, what to wear", "Stay and Getting here pages for out-of-town guests", "Dress code and policies in one place", "Written once, shown to guests on your guest suite where they need it"] },
+{ title: "Registry and cash funds", bullets: ["Link the registry you already have", "Products and cash funds side by side on one registry page", "Guests give toward a honeymoon or a specific gift", "Shown to guests only when you say so"] }];
 
 
 const DOTS = ["#E03553", "#803D81", "#DDF762", "#6B2CAE", "#C2E5F3", "#0A1930"];
@@ -135,7 +133,7 @@ export default function Features() {
       <AppPhones />
 
       {/* ── S6: ACCORDION ────────────────────────────────── */}
-      <AccordionSection features={ALL_FEATURES} borders={ACCORDION_BORDERS} dots={DOTS} openFeature={openFeature} setOpenFeature={setOpenFeature} />
+      <AccordionSection features={ALL_FEATURES} dots={DOTS} openFeature={openFeature} setOpenFeature={setOpenFeature} />
 
       {/* ── S7: FEATURE DEEP DIVES ───────────────────────── */}
       <div style={{ background: "#FFFFFF" }}>
@@ -223,7 +221,7 @@ function DashboardSection() {
 
 // Shared grid for the seating/budget video showcases — the video column
 
-function AccordionSection({ features, borders, dots, openFeature, setOpenFeature }) {
+function AccordionSection({ features, dots, openFeature, setOpenFeature }) {
   const [ref, visible] = useScrollReveal(0.1);
   return (
     <section ref={ref} style={{ background: "#F5F5F3", padding: "120px 0" }}>
@@ -243,14 +241,14 @@ function AccordionSection({ features, borders, dots, openFeature, setOpenFeature
               <button
               className="w-full flex items-center justify-between py-6 text-left"
               onClick={() => setOpenFeature(openFeature === i ? null : i)}
-              // EIGHT ROWS, SIX COLORS. borders[6] and borders[7] were
-              // undefined the moment the list grew, which is an invalid
-              // border-left and an uncolored glyph on the last two rows. The
-              // palette cycles rather than growing, so no color is invented.
-              style={{ borderLeft: openFeature === i ? `3px solid ${borders[i % borders.length]}` : "3px solid transparent", paddingLeft: 16, transition: "border-color 0.2s ease" }}>
+              // NO COLORED BAR (owner ruling 2026-10-10, site fixes batch 2):
+              // the open row once carried a 3px left border in one of six
+              // colors, and its glyph took the same color. Both are gone; the
+              // row keeps its indent and the glyph is the page's text color.
+              style={{ paddingLeft: 16 }}>
               
                 <span style={{ color: "#0A0A0A", fontWeight: 600, fontSize: 15, letterSpacing: "-0.01em" }}>{f.title}</span>
-                <span style={{ fontSize: 20, fontWeight: 300, marginLeft: 16, color: openFeature === i ? borders[i % borders.length] : "rgba(10,10,10,0.6)" }}>{openFeature === i ? "−" : "+"}</span>
+                <span style={{ fontSize: 20, fontWeight: 300, marginLeft: 16, color: "#0A0A0A" }}>{openFeature === i ? "−" : "+"}</span>
               </button>
               {openFeature === i &&
             <div style={{ paddingBottom: 32, paddingLeft: 20 }}>
