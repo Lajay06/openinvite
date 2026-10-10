@@ -252,7 +252,7 @@ Every icon-only button carries an `aria-label` (header actions, the bell, item-c
 3. Command line: `xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath ios/DerivedData build`, then `xcrun simctl install booted <DerivedData>/Build/Products/Debug-iphonesimulator/App.app` and `xcrun simctl launch --console-pty booted au.com.openinvite.app` (the console shows the Capacitor bridge and `console.error` from the web app). Screenshots: `xcrun simctl io booted screenshot out.png`.
    - **Xcode 27**: `Simulator.app` was renamed `DeviceHub.app` and moved to `Xcode.app/Contents/Applications/`. `npx cap run ios` builds fine and then fails at "Deploying" with "Simulator.app does not exist"; that is a Capacitor CLI path bug, not a build failure. The simctl steps above do not need the window at all. To get the window: `open -a /Applications/Xcode.app/Contents/Applications/DeviceHub.app`.
    - `xcrun simctl openurl booted "openinvite://..."` puts up an "Open in Openinvite?" alert on iOS 27 that has to be tapped in the window.
-   - Local builds have no `.env`, so `VITE_BASE44_APP_ID` is unset and the SDK warns at build time. Vercel supplies it in CI. Sign-in still works locally: `base44Client.js` falls back to a committed app id when the variable is absent. Do **not** `vercel env pull` to silence the warning — goal 9 records why that breaks sign-in instead of fixing it.
+   - Local builds have no `.env`, so `VITE_BASE44_APP_ID` is unset and the SDK warns at build time. Vercel supplies it in CI. Sign-in still works locally: `base44Client.js` falls back to a committed app id when the variable is absent. Do **not** `vercel env pull` to silence the warning, goal 9 records why that breaks sign-in instead of fixing it.
 4. A real iPhone: sign in with an Apple ID under Xcode > Settings > Accounts, set the team on the App target under Signing & Capabilities, plug the phone in, trust the computer, select it as the destination and Run. For a personal team the app expires after seven days; the Apple Developer Program lifts that and is needed for TestFlight and push. Face ID is not gated: `NSFaceIDUsageDescription` in `Info.plist` is all the biometric prompt needs, and a personal team signs it.
 5. Deep links on the simulator: `xcrun simctl openurl booted "openinvite://m/plan/budget"`.
 
@@ -412,7 +412,7 @@ A fresh subagent given only `MOBILE_PARITY.md`, the desktop source and the mobil
 - **WhatsApp QR pairing** is desktop-only; the mobile Messages screen takes the number and composes messages natively instead.
 - **Exports** (`jszip` bundles, CSV, ICS) go through the native Share sheet as text or a file; the desktop's direct downloads have no equivalent in a webview.
 - **The Plan hub's good-to-know stat** counted `enabled`, which the desktop never writes; it now counts `display`.
-- **Collaborator sessions** are desktop-only: the app signs in as the couple and never reads `/api/collaborator-data`. Supporting a collaborator on the phone means the read-only overlay on every screen. *Settled in goal 9 (2026-09-22): deferred by the owner, and written up as a future goal — idea 15 in `MOBILE_IDEAS.md` — with the entry point, the endpoints and the effort.*
+- **Collaborator sessions** are desktop-only: the app signs in as the couple and never reads `/api/collaborator-data`. Supporting a collaborator on the phone means the read-only overlay on every screen. *Settled in goal 9 (2026-09-22): deferred by the owner, and written up as a future goal, idea 15 in `MOBILE_IDEAS.md`, with the entry point, the endpoints and the effort.*
 - **Ava's quick actions** seed the question into the pod's box (the pod is shared with the desktop's Layout and is not edited); on desktop the modal sends the quick action at once. One tap more on the phone.
 
 ## Goal 6: launch experience, guest suite naming, polish (2026-09-22)
@@ -547,12 +547,12 @@ npm run mobile:real
 npm run mobile:ios
 ```
 
-**Do not run `vercel env pull` for this.** It was the instruction here until goal 9 and it is wrong: it breaks the build it claims to fix. See "The env file that broke sign-in" under goal 9. The base44 vite plugin still prints `Warning: VITE_BASE44_APP_ID is not set` on a build with no env file — that warning reads the environment, not the fallback, and is expected. What matters is that the id reaches the bundle, which is checkable without printing it:
+**Do not run `vercel env pull` for this.** It was the instruction here until goal 9 and it is wrong: it breaks the build it claims to fix. See "The env file that broke sign-in" under goal 9. The base44 vite plugin still prints `Warning: VITE_BASE44_APP_ID is not set` on a build with no env file, that warning reads the environment, not the fallback, and is expected. What matters is that the id reaches the bundle, which is checkable without printing it:
 
 ```
 FALLBACK=$(grep -o "VITE_BASE44_APP_ID || '[^']*'" src/api/base44Client.js | sed "s/.*|| '//;s/'//")
 grep -rqF "$FALLBACK" ios/App/App/public/assets/ && echo "app id is in the bundle Xcode will build"
-grep -rqF '[SENSITIVE]' ios/App/App/public/ && echo "PLACEHOLDER LEAKED — delete .env.local"
+grep -rqF '[SENSITIVE]' ios/App/App/public/ && echo "PLACEHOLDER LEAKED, delete .env.local"
 ```
 
 If a local build ever does need a real secret (none of the mobile builds do today), `.env.local` is ignored by git (`.gitignore` lists `.env`, `.env.*` and `.env*.local`; confirmed 2026-09-22) and nothing in this document or the commits prints a value. The Stripe, Turnstile and Spotify keys are public client ids by design; the server keys never reach a `VITE_` name.
@@ -659,7 +659,7 @@ schedule and vendors there. `HomeScreen` renders the error alone when nothing
 came back at all, rather than drawing heroes over a failed load.
 
 **The greeting.** It fell back to `user.full_name`, which Base44 fills with the
-email's local part when an account is created without a name — which is where
+email's local part when an account is created without a name, which is where
 "jaygalaxy23" came from. Names now come from `coupleDisplayName` /
 `coupleNameParts`, the one owner of the couple's names on the desktop, legacy
 `coupleNames` fallback included. The account's own name is used only when it is
@@ -682,14 +682,13 @@ again and put the couple back on the screen they had just answered. The gate
 now owns the state it gates on: it returns `{ show, record }`, and
 `record(choice)` moves the state and stores the value together, so the
 redirect is closed by the same render that navigates away. "Turn on" asks the
-system permission AFTER recording, not before — a refused prompt is still an
+system permission AFTER recording, not before, a refused prompt is still an
 answer, and the screen has no business asking twice. Both buttons disable
 while the choice is in flight, and a device that cannot store the choice still
 gets past the screen rather than being held on it.
 
 **Why it appeared over a Replies count of 0.** The feed's ten sources each fell
-back to an empty list on failure without saying so. The `Notification` rows —
-read through the SDK, which the shell can reach — carried real, older
+back to an empty list on failure without saying so. The `Notification` rows, read through the SDK, which the shell can reach, carried real, older
 `rsvp_received` rows, while the guest list those replies would be counted
 against comes from `/api/my-guests`, which it cannot. One source answered,
 nine did not, and the gate could not tell the difference. Every source is now
@@ -702,7 +701,7 @@ blank on a failed load, instead of "Nothing yet".
 
 All three showed couples who looked alike, and on two of them nobody was
 looking at the camera: screen 2 was a couple photographed from behind, screen
-3 a single guest laughing with her eyes shut — not a couple at all.
+3 a single guest laughing with her eyes shut, not a couple at all.
 
 Screens 2 and 3 now carry a couple walking hand in hand down a market lane
 (`marrakech-hero_sbciuz`) and a couple dressed up on a bridge at night
@@ -710,7 +709,7 @@ Screens 2 and 3 now carry a couple walking hand in hand down a market lane
 eyes open, and neither resembles the other or screen 1.
 
 Every one of the sixteen photos in `app/` that no slot held was viewed at the
-welcome crop first, and not one passes the test — the pool is backs turned,
+welcome crop first, and not one passes the test, the pool is backs turned,
 closed eyes, motion blur, a bouquet and a martini, as goal 8 found when it
 re-cast the daily set. So the two photos came from slots that held
 face-to-camera couples, and those slots took the two the welcome screens were
@@ -727,8 +726,7 @@ its crop is pinned to the faces (`gravity: 'faces'`) rather than left to
 
 `installNativeApiBase`'s docblock in `native.ts` had two lines of another
 comment and an `import './demo';` spliced into the middle of a sentence. The
-import was INSIDE the block comment, so it was dead text, not a second import
-— the demo guard is installed by `demo.ts` itself at module load, evaluated by
+import was INSIDE the block comment, so it was dead text, not a second import, the demo guard is installed by `demo.ts` itself at module load, evaluated by
 App.jsx's `import { isDemoBuild } from './mobile/demo'` on the line after this
 module's. Checked while repairing it: App.jsx imports `native` first, so the
 demo guard wraps the API rewrite and sees the relative path, which
@@ -753,8 +751,8 @@ sensitive is sensitive in every environment.
 
 **Why that is worse than having no value at all.** `base44Client.js` line 6 is
 `import.meta.env.VITE_BASE44_APP_ID || '<committed fallback>'`. With no env
-file the variable is undefined, the `||` fires, and the fallback — a real app
-id — is what ships. With the pulled file the variable is the truthy string
+file the variable is undefined, the `||` fires, and the fallback, a real app
+id, is what ships. With the pulled file the variable is the truthy string
 `"[SENSITIVE]"`, which wins the `||` and is sent to Base44 as the app id.
 Hence "App not found". **A placeholder shadows a fallback; an absent variable
 does not.** Two keys in the repo have `||` fallbacks that a placeholder can
@@ -765,8 +763,8 @@ shadow this way: `VITE_BASE44_APP_ID` (`src/api/base44Client.js`) and
 `npm run mobile:real` is run with none. Confirmed by hashing rather than
 printing: the id in `ios/App/App/public/assets/` matches the fallback in
 `base44Client.js` (sha1 equal), and the string `[SENSITIVE]` appears nowhere
-in `dist/` or the iOS bundle. The instruction that caused this — "`vercel env
-pull .env.local` before a real build", written in goal 8 — is removed from the
+in `dist/` or the iOS bundle. The instruction that caused this, "`vercel env
+pull .env.local` before a real build", written in goal 8, is removed from the
 three places it appeared.
 
 **How it was diagnosed without reading a secret.** The pulled value was
@@ -799,7 +797,7 @@ bundle.
 
 A new or changed couple-facing planning feature on the desktop must get a matching entry in `MOBILE_PARITY.md` and a matching mobile screen, sheet or field, in the same change or the next one on this lane.
 
-**The "Mobile impact" line rule lives in one place: `MOBILE_PARITY.md`, "The Mobile impact line — how a desktop change reaches the phone".** Who writes it, why "Mobile impact: none" is a real answer and the commonest one, what to do when a carried item is a rename, and what PRs #822 and #831 each taught. It was stated in short here as well, and two statements of one rule is how a rule drifts; this is the pointer, that is the rule. This file does not edit `CLAUDE.md`; the rule lives with the product lane.
+**The "Mobile impact" line rule lives in one place: `MOBILE_PARITY.md`, "The Mobile impact line, how a desktop change reaches the phone".** Who writes it, why "Mobile impact: none" is a real answer and the commonest one, what to do when a carried item is a rename, and what PRs #822 and #831 each taught. It was stated in short here as well, and two statements of one rule is how a rule drifts; this is the pointer, that is the rule. This file does not edit `CLAUDE.md`; the rule lives with the product lane.
 
 ## How to run
 
@@ -915,7 +913,7 @@ Stated plainly, in order of weight.
 - **Purchases in the app.** Every upgrade / checkout / billing-portal call to action is hidden when `isNative()`. Stripe Checkout inside an App Store binary is a review risk (guideline 3.1.1) and the current `window.location.href` to `checkout.stripe.com` would strand the couple on the live website anyway. Options: sell only on the web and say so in the app (what v0 does), StoreKit / Play Billing, or Stripe in the system browser with a deep-link return. The trial banner, `ChoosePlan`, `Pricing` and `Account` are desktop pages and untouched.
 - **Should mobile web visitors be sent to `/m`?** Nothing redirects today. The dashboard's own phone treatment is what `MOBILE_AUDIT.md` describes. If yes, the place is `Layout.jsx` or `App.jsx` behind a `(max-width: 1023px)` + `pointer: coarse` check, with a way back to the desktop view.
 - **Two edits to `App.jsx` beyond registering routes**, both small and both in the router file: the native start-path redirect (`/` and `/DailyUpdate` to `/m` when `isNative()`) and the static import of `native.ts` that makes the API rewrite install before `AuthProvider`. Written up here because the brief allows router edits "to register `/m/*` routes" and these are adjacent to that.
-- **The committed app-id fallback in `src/api/base44Client.js`** (line 6) is now load-bearing for this lane: goal 9's ruling is that a mobile build takes no env file, which works *because* that fallback is there. It is a public client identifier, not a secret, so it is not a leak — but it does mean a local build silently talks to production whenever the variable is absent, which is what made the "App not found" failure confusing in both directions. If the product lane ever removes or changes it, `npm run mobile:real` stops signing in and the instructions under goal 8 need rewriting. A `VITE_` name is the wrong place for a value the build must not do without; naming it in `.env.example` with a comment would be the smaller fix. Not this branch's call.
+- **The committed app-id fallback in `src/api/base44Client.js`** (line 6) is now load-bearing for this lane: goal 9's ruling is that a mobile build takes no env file, which works *because* that fallback is there. It is a public client identifier, not a secret, so it is not a leak, but it does mean a local build silently talks to production whenever the variable is absent, which is what made the "App not found" failure confusing in both directions. If the product lane ever removes or changes it, `npm run mobile:real` stops signing in and the instructions under goal 8 need rewriting. A `VITE_` name is the wrong place for a value the build must not do without; naming it in `.env.example` with a comment would be the smaller fix. Not this branch's call.
 - **`eslint.config.js`**: add `src/mobile/**/*.{js,jsx,ts}` to the linted set so the React and hooks rules apply.
 - **`DashboardPageHeader`**: CLAUDE.md requires it on every dashboard page. The mobile screens are not `Layout` pages and use `ScreenHeader` instead; this is the mobile exception the brief anticipates and should be written into `DESIGN_SPEC.md` if the shell ships.
 - **Ava's action cards navigate to desktop routes** (`/Guests`, `/Budget`) because `AvaChatPod` calls `navigate()` with those paths. In the shell that opens the desktop dashboard inside the webview. Either the pod learns a base path (an edit to `AvaChatPod.jsx`), or the shell intercepts those navigations.

@@ -34,7 +34,7 @@ itself stays on desktop and is noted.
 **Mobile.** The daily update card on every open (goal 7: the desktop's own greeting and day-state sentence, a bundled photo, Let's go, Not again today, swipe to close), then Home: hero carousel (days to go first, two rotating cards from RSVPs, from Ava, budget, next payment, next task, song requests or guestbook, the guest suite share card last, every card labelled), stat pair, Next up (payments due and open tasks, tap to complete), keep planning, from Ava, latest three notifications, pull to refresh. Ava opens the same pod in a sheet. Global search (goal 7) covers the desktop top bar's pages, guests, vendors and to-dos plus events, budget, registry and messages, each result opening its own screen or sheet.
 **Gaps.** None on content. Owner fix 1: the Next up cards are unequal heights.
 **Status.** Done. Owner fix 1: every Next up card is 156px, titles clamp to two lines, meta and body to one, content aligned to the top with the action at the foot.
-**Goal 9 (error copy, 2026-09-23).** A failed load said "Check your connection and try again" on a phone with four bars. The connection is now named only when the device is genuinely offline (`useOnline()`, which already drives the offline banner); online, the screen says what failed and names it — Home and the Plan hub say "your wedding", the guest list says "your guest list" — and the retry stays in every state. No desktop counterpart: the dashboard shows a toast per failed store, and the phone's full-screen error state is its own surface.
+**Goal 9 (error copy, 2026-09-23).** A failed load said "Check your connection and try again" on a phone with four bars. The connection is now named only when the device is genuinely offline (`useOnline()`, which already drives the offline banner); online, the screen says what failed and names it, Home and the Plan hub say "your wedding", the guest list says "your guest list", and the retry stays in every state. No desktop counterpart: the dashboard shows a toast per failed store, and the phone's full-screen error state is its own surface.
 
 **Goal 9.** The greeting is the couple's own name, resolved exactly as the desktop resolves it (`coupleDisplayName` / `coupleNameParts` in `api/_lib/coupleNames.js`, legacy `coupleNames` fallback included). It used to fall back to `user.full_name`, which Base44 fills with the email's local part when an account is created without a name, so a real couple was greeted "Hi jaygalaxy23"; the account's name is now used only when it is not the email in disguise (`src/mobile/lib/greeting.js`), and otherwise the screen says plain "Hi". The Guest suite and Account cards take the same helper. The desktop's masthead has always used `coupleDisplayName`, so this is the mobile screen catching up, not a new rule.
 
@@ -216,7 +216,7 @@ itself stays on desktop and is noted.
 
 ### Getting here, formerly Transport (`/transport`) → `/m/plan/transport`
 
-**Naming (PR #822, owner ruling 2026-09-21).** The desktop calls this section "Getting here" everywhere now, as the live guest suite does; the mobile tile, screen title and Site tab row say "Getting here" too. Keys, routes and the `transportation` category value are unchanged. *Completed 2026-09-23: the category LABEL was the part left behind. #822 settled it at "Transport" — the word `budgetCategories.js`, `Vendors.jsx` and `scheduleEvents.js` already used for the stored `transportation` key — and corrected the four web forms that had drifted to "Transportation". `vendorFields.js`, `ScheduleScreen.jsx` and `BudgetForecast.jsx` carried the same drift and now match.*
+**Naming (PR #822, owner ruling 2026-09-21).** The desktop calls this section "Getting here" everywhere now, as the live guest suite does; the mobile tile, screen title and Site tab row say "Getting here" too. Keys, routes and the `transportation` category value are unchanged. *Completed 2026-09-23: the category LABEL was the part left behind. #822 settled it at "Transport", the word `budgetCategories.js`, `Vendors.jsx` and `scheduleEvents.js` already used for the stored `transportation` key, and corrected the four web forms that had drifted to "Transportation". `vendorFields.js`, `ScheduleScreen.jsx` and `BudgetForecast.jsx` carried the same drift and now match.*
 
 **Desktop.** Tabs Overview, Shuttles, Parking, Public transport, Rideshare, Notes. `transport`: `recommendedMode` (rideshare, drive, public, shuttle, walk, hire), `coupleNote`; `shuttles[]` (`name`, `type` coach / shuttle / minibus / transfer / limo, `pickupLocation`, `pickupTime`, `returnTime`, `dropoffLocation`, `capacity`, `contact`, `notes`); `parking` (`venueParking`, `venueParkingNotes`, `nearbyCarParks[]` with `name`, `address`, `distance`, `cost`, `streetParking`, `accessibilityNotes`); `publicTransport` (`generalNotes`, `routes[]` with `type` train / bus / tram / metro / ferry, `notes`, `totalTime`); `rideshare` (`pickupLocation`, `dropoffLocation`, `lateNightNote`); `freeTextNotes`. Ava.
 **Mobile (found).** Recommended mode as free text; parking with `nearbyCarParks` as a textarea (wrong shape); shuttles list with type as text.
@@ -287,7 +287,7 @@ Mirror of Registry. **Status.** Parity through the registry screen.
 
 ### Stay, formerly Accommodation (`/GuestSuiteAccommodation`) → `/m/plan/suite-accommodation`
 
-**Naming (PR #822, owner ruling 2026-09-21).** The desktop calls this section "Stay" everywhere now, as the live guest suite does; the mobile tile, screen title and Site tab row say "Stay" too. Keys, routes and the `guestSuiteAccommodation` category value are unchanged. *Completed 2026-09-23: the first pass took the tiles, titles and rows and left the strings #822 changed elsewhere. Read off `origin/main` and matched exactly — the Stay page's notes field ("Additional notes on where to stay", with Accommodation.jsx's placeholder), Ava's Stay page (system prompt and two quick actions, verbatim from its `AvaModal`), and the guest-suite recommendation prompt ("Recommend 4 places to stay", as `GuestSuiteAccommodation.jsx` now asks; the preview fixture matches that prompt by phrase and follows it).*
+**Naming (PR #822, owner ruling 2026-09-21).** The desktop calls this section "Stay" everywhere now, as the live guest suite does; the mobile tile, screen title and Site tab row say "Stay" too. Keys, routes and the `guestSuiteAccommodation` category value are unchanged. *Completed 2026-09-23: the first pass took the tiles, titles and rows and left the strings #822 changed elsewhere. Read off `origin/main` and matched exactly, the Stay page's notes field ("Additional notes on where to stay", with Accommodation.jsx's placeholder), Ava's Stay page (system prompt and two quick actions, verbatim from its `AvaModal`), and the guest-suite recommendation prompt ("Recommend 4 places to stay", as `GuestSuiteAccommodation.jsx` now asks; the preview fixture matches that prompt by phrase and follows it).*
 
 **Desktop.** Google Places search (with Use my location), select a result, `note`, `badge` (Closest to venue, Best value, Where most guests are staying, Luxury pick, Budget friendly), Add (fetches `website` from place details; stores `place_id, name, address, rating, price_level, photo_url, maps_url, website_url, note, badge`); Add manually (`name`, `address`, `url`, `badge`, `note`); cards with photo, badge, remove. Ava recommends four places (`InvokeLLM`, each resolved through Places search, add one by one). Saved on `guestSuiteAccommodation.places`.
 **Mobile (found).** Places by hand (name, address, note, website); no search, no photo, no badge.
@@ -296,7 +296,7 @@ Mirror of Registry. **Status.** Parity through the registry screen.
 
 ### Getting here, formerly Transport (`/GuestSuiteTransport`) → `/m/plan/suite-transport`
 
-**Naming (PR #822, owner ruling 2026-09-21).** The desktop calls this section "Getting here" everywhere now, as the live guest suite does; the mobile tile, screen title and Site tab row say "Getting here" too. Keys, routes and the `guestSuiteTransport` category value are unchanged. *Completed 2026-09-23: #822 also settled the spend, vendor and schedule CATEGORY label at "Transport" — the stored key `transportation` stays, and a spend category is not a page a guest reads. `vendorFields.js`, `ScheduleScreen.jsx` and `BudgetForecast.jsx` carried the same "Transportation" drift the web corrected in VendorForm, ScheduleForm, VendorSearch and BudgetForecasting, and now match. The `bus_station` and `car_rental` type labels are place types, not the section, and are unchanged.*
+**Naming (PR #822, owner ruling 2026-09-21).** The desktop calls this section "Getting here" everywhere now, as the live guest suite does; the mobile tile, screen title and Site tab row say "Getting here" too. Keys, routes and the `guestSuiteTransport` category value are unchanged. *Completed 2026-09-23: #822 also settled the spend, vendor and schedule CATEGORY label at "Transport", the stored key `transportation` stays, and a spend category is not a page a guest reads. `vendorFields.js`, `ScheduleScreen.jsx` and `BudgetForecast.jsx` carried the same "Transportation" drift the web corrected in VendorForm, ScheduleForm, VendorSearch and BudgetForecasting, and now match. The `bus_station` and `car_rental` type labels are place types, not the section, and are unchanged.*
 
 **Desktop.** As accommodation, with `type` (airport, train_station, bus_station, car_rental, ferry, other) instead of a badge; plus `notes[]` (`title`, `text`) add, edit, remove; Ava recommends places and notes. Saved on `guestSuiteTransport.{places, notes}`.
 **Mobile (found).** Places by hand; no notes.
@@ -316,7 +316,7 @@ Mirror of Registry. **Status.** Parity through the registry screen.
 **Mobile (found).** A switch and a note per key under the wrong keys (`enabled`, `message` for every policy).
 **Gaps.** The real shape and every field; styling quiz mode; guest experience.
 **Status.** Done. Every policy on the desktop shape (own fields plus display), the styling quiz mode, background music by upload, show attending and the circle; weddingPolicies and guestExperienceSettings save together.
-**Mirrored: PR #831 (2026-09-22), the unplugged rule.** The couple's photo note now REPLACES the platform's "We are having an unplugged ceremony…" sentence rather than stacking under it, so the guest site says the ask once. The mobile row used to report the toggle — "Unplugged ceremony" whenever it was on, whatever the note said, and never the couple's own words. It now reports the line itself, through the same `linesFor('photography', …)` the guest site and both web editors call; no copy of the rule lives in `src/mobile/`. The Photography sheet gained the same "On the site" block the dashboard's `GuestSuitePolicies.jsx` and the studio's `PoliciesTab.jsx` carry, in the same words, so a couple whose note is not about phones can see the unplugged sentence go. Display only; nothing is saved.
+**Mirrored: PR #831 (2026-09-22), the unplugged rule.** The couple's photo note now REPLACES the platform's "We are having an unplugged ceremony…" sentence rather than stacking under it, so the guest site says the ask once. The mobile row used to report the toggle, "Unplugged ceremony" whenever it was on, whatever the note said, and never the couple's own words. It now reports the line itself, through the same `linesFor('photography', …)` the guest site and both web editors call; no copy of the rule lives in `src/mobile/`. The Photography sheet gained the same "On the site" block the dashboard's `GuestSuitePolicies.jsx` and the studio's `PoliciesTab.jsx` carry, in the same words, so a couple whose note is not about phones can see the unplugged sentence go. Display only; nothing is saved.
 
 ### Guest polls (`/GuestSuitePolls`)
 
@@ -390,7 +390,7 @@ A fresh subagent that had not seen this session was given only this file, the de
 
 **Noted and kept:** date formatting stays `en-AU` in the mobile helpers (a product decision from goal 2: the audience reads "20 March 2027"); the US-English rule is about spelling and idiom. The desktop's `PageConsiderations` and Ava prompts are reused verbatim, including their punctuation.
 
-## The Mobile impact line — how a desktop change reaches the phone
+## The Mobile impact line, how a desktop change reaches the phone
 
 The rule, as the owner set it and as PRs #822 and #831 exercised it. It exists
 because the two surfaces edit the same fields through the same helpers: a
@@ -399,19 +399,19 @@ on the phone, and neither lane can see the other's screens while it works.
 
 **Every PR that adds or changes a couple-facing planning feature carries a
 "Mobile impact" line in its description.** One line, in the PR body, written
-by the SHIPPING lane — the people who just made the change and know what it
+by the SHIPPING lane, the people who just made the change and know what it
 touched. It names what the app must do about it, or says none.
 
 **"Mobile impact: none" is a real answer and the commonest one.** Sample
 content, guest-site copy, the marketing pages, the studio canvases, anything
 behind a desktop-only surface: the app draws none of it, so there is nothing
-to carry. Saying so is the point — an absent line reads as "not considered",
+to carry. Saying so is the point, an absent line reads as "not considered",
 and the next lane cannot tell the two apart.
 
 **This lane carries the item across**, in the same change or the next one on
 `mobile/app-shell`, and records it in the matching entry above with the PR
 number. A carried item names what the desktop changed, what the mobile screen
-does now, and anything deliberately left — the way the two entries dated
+does now, and anything deliberately left, the way the two entries dated
 2026-09-23 do.
 
 **What the two exercises taught.**
@@ -423,13 +423,12 @@ toggle is on") and the reason the rest would follow by itself (the shared
 is the line working.
 
 *#822 owed its line retroactively, and the cost showed up twice.* The first
-mobile pass (55e1d20f) went off the PR title and took the two section names —
-the tiles, the titles, the Site tab rows. The PR body had also settled a
+mobile pass (55e1d20f) went off the PR title and took the two section names, the tiles, the titles, the Site tab rows. The PR body had also settled a
 CATEGORY label and reworded a notes field, an Ava prompt and a recommendation
 prompt, and none of that was carried until 2026-09-23. **A rename is never
 just the names.** When a carried item is a rename, read the shipping PR's
 diff, not its title, and diff the strings against `origin/main` rather than
-the working tree — this branch runs behind main, so the tree is the wrong
+the working tree, this branch runs behind main, so the tree is the wrong
 reference and will quietly agree with the stale version.
 
 ### The one failure in that guard that is not a failure
@@ -460,8 +459,8 @@ region. Renaming the route would break every link and deep link that names it.
 
 So the count to expect on this branch is **1, at that line**. A merge or a CI
 run that reports exactly that is green for this lane's purposes; anything more
-is a real hit and should be read. The fix belongs in the guard — a NOT_COPY
-entry, or a JSX-text match anchored to an element's children — and the guard
+is a real hit and should be read. The fix belongs in the guard, a NOT_COPY
+entry, or a JSX-text match anchored to an element's children, and the guard
 is the product lane's file. Raised there 2026-09-23, not worked around here.
 
 **The instrument.** `tests/persistence/stay-getting-here.mjs` on main scans
@@ -478,8 +477,7 @@ signed in on a phone.
 The Notation at the top says every desktop page has "loading, an empty state
 per list, a toast on error". On the phone there is a fourth state the desktop
 mostly does not need, and it is the one that was missing: **the read failed**.
-The three ownership-scoped helpers the whole app reads through —
-`getMyWeddingDetails`, `getMyRecords`, `getMyGuestsWithRsvp` — fail SOFT by
+The three ownership-scoped helpers the whole app reads through, `getMyWeddingDetails`, `getMyRecords`, `getMyGuestsWithRsvp`, fail SOFT by
 design, answering `null` or `[]` when the request itself fails. That is right
 on the desktop, where a tab rendering "no guests yet" beats one that throws
 and the couple can see the rest of the page working. It is wrong in the app,
@@ -489,7 +487,7 @@ wedding, with no way to tell it from a couple who had entered nothing.
 
 **The rule.** Every mobile read goes through the seam with `strict: true`
 (`src/mobile/data/realApi.js`). `null` from `wedding.get()` still means "this
-couple has no wedding record yet" — a real empty state, and the screens that
+couple has no wedding record yet", a real empty state, and the screens that
 invite the couple to start are correct. A throw means "we could not find out",
 and the screen shows its error state with a retry. A new screen inherits this
 from `useLoad` and the api seam without doing anything; a new screen that
@@ -498,12 +496,12 @@ review.
 
 **Where a failure is the whole load's, not one card's.** The wedding record
 carries the names, the date, the site and the events. A screen built on a
-failed read of it does not show less, it states falsehoods — "Add your date in
+failed read of it does not show less, it states falsehoods, "Add your date in
 Event details" to a couple who set one months ago. So `usePlanData`,
 `useDailyUpdate` and `useBudget` no longer catch that read: Home and the Plan
 hub show the error state, the daily takeover does not appear at all, and the
 guest list counts it as its own failure. Every other store stays soft and
-**named**, so the "some numbers are incomplete" panel can say which — the same
+**named**, so the "some numbers are incomplete" panel can say which, the same
 banner `DailyUpdate.jsx` shows on the desktop, and now with real names in it
 (guests, to-dos, budget, schedule, vendors, messages, song requests).
 

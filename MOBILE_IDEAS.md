@@ -154,12 +154,12 @@ Flag: every checkout call to action is hidden natively by decision (App Store ru
 
 **Added 2026-09-22 (goal 9), by owner decision to defer.** Found while comparing how the desktop and the app each pick the current wedding: for an owner they are identical (both resolve through `/api/my-wedding-details`, newest non-test record wins, and there is no "selected wedding" concept anywhere). The one divergence is a collaborator.
 
-What: let someone the couple has invited — a parent, a maid of honour, a planner — sign in to the app and see the couple's wedding with their granted permissions, as they can on the desktop today.
+What: let someone the couple has invited, a parent, a maid of honour, a planner, sign in to the app and see the couple's wedding with their granted permissions, as they can on the desktop today.
 Who: The Knot and Zola both let a partner and a planner into the same wedding; it is table stakes once two people plan together, and the couple's own partner is the commonest case.
 Why: the desktop already has the whole feature (`CollaborateModal`, `CollaboratorGrant`, per-page view and edit permissions) and the invite email already goes out. A collaborator who opens that invite on their phone today lands on the desktop dashboard in a browser, which is exactly the experience the app exists to replace.
 How the desktop does it: a session is identified by a `?collabOwner=<ownerUserId>` query param, read once in `src/lib/collaboratorContext.jsx` and resolved by `GET /api/collaborator-context`; every read then goes to an owner-scoped endpoint (`api/collaborator-data.js`, `collaborator-guests.js`, `collaborator-budget.js`) instead of the caller's own, because the caller owns nothing. `Layout.jsx` hides the pages the grant does not cover and shows the "Collaborating on X's wedding" banner; the real enforcement is server-side in `api/_lib/collaboratorAuth.js`.
 Effort: medium. `/m` has no entry point for the param at all, so: carry `collabOwner` through the deep-link handler and the login redirect, hold it in the mobile shell the way `collaboratorContext` holds it, re-route every read in `createRealApi` to the collaborator endpoints when it is set, gate the Plan hub tiles and the tab bar on the permission map (`COLLABORATOR_PAGE_MAP` already names every page), show the banner, and make every write refuse where the grant says view-only. The api seam is the reason this is medium and not large: there is one file to re-point, not forty screens.
-Needs: no backend change — every endpoint exists. It does need the CORS change (`CORS_PROPOSAL.md`), like everything else the shell reads, and the collaborator invite email would want a link the app can catch.
+Needs: no backend change, every endpoint exists. It does need the CORS change (`CORS_PROPOSAL.md`), like everything else the shell reads, and the collaborator invite email would want a link the app can catch.
 Flag: `MOBILE_PARITY.md` states at the top that collaborator read-only "is not a mobile concern (the app signs in as the couple)", and phase 4 lists it as a decision rather than a gap. Building this reverses that, on purpose; both places should be updated in the same change.
 Recommendation: after the native extension work (1 to 3) and after CORS lands. It is the largest single audience the app does not serve, but it serves nobody at all until the shell can read the API.
 
@@ -180,7 +180,7 @@ Recommendation: after the native extension work (1 to 3) and after CORS lands. I
 
 Not recommended, by owner decision or stage: room blocks (13), in-app purchase (14), a guest app (11), vendor messaging (12).
 
-Deferred rather than refused: collaborator sessions (15). It is not in the top ten because it is gated on the CORS change and on the native extension work being done first, not because it is worth less than what is — once the shell can read the API it is the strongest candidate for the goal after.
+Deferred rather than refused: collaborator sessions (15). It is not in the top ten because it is gated on the CORS change and on the native extension work being done first, not because it is worth less than what is, once the shell can read the API it is the strongest candidate for the goal after.
 
 ## What to do first
 
