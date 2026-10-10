@@ -1,5 +1,6 @@
 {
   "_comment": [
+    "2026-10-10: A REBALANCE, not an addition. test:find-my-invitation (32s) moved A -> B. Before: A 1028 / B 1006, a 22s delta. After: A 996 / B 1038, a 42s delta on a 120s budget. MEASURED WALL-CLOCK FIRST, from main run 38003589277: A 18m35s (1115s) and B 17m40s (1060s) against the 25-minute job limit, so A sat 385s under it rather than close to it. Lane B reported A as near the limit; this records what the run actually shows, and the move still goes the right way because A was the heavier side. The booked column is guard time and runs about 87s under wall-clock, which is the setup and build this file has never counted; after the move both shards project to roughly 18m.",
     "2026-10-09: one guard added, not a rebalance. test:find-my-invitation (29s measured locally against a vite preview of this branch, booked at 32 for a cold first navigation) to A, which was the lighter shard. A 1028 / B 1006, a 22s delta on a 120s budget. It loads six pages, three universes in two recognition states each, which is why it is dearer than the other 390-width guards; the three routes are not interchangeable and the fonts in its output prove it exercised all three. MEASURED RED FIRST on three plants: removing the recognised gate (3 red), putting the pill back in a hero (3 red), and giving the link button styling (3 red).",
     "2026-10-09: one guard added, not a rebalance. test:share-tab-390 (11s measured locally against a vite preview of this branch, booked at 13 so a cold first navigation does not make the column a lie, the same allowance the 2026-10-08 budget-separators entry explains) to B. B 993 -> 1006 against A 996, so the delta moves from 3s to 10s on a 120s budget. It went to B because B was the lighter shard, which is the rule every entry below applies. MEASURED RED FIRST: removing the stacking rule reproduces lane B's exact numbers, a 26px message box and a 28px send button, and turns four of the 390 checks red while all four 1440 checks stay green.",
     "Which browser guard runs in which CI shard, and how long it took when it was last measured.",
@@ -29,7 +30,7 @@
     "A": {
       "job": "Browser guards A",
       "port": 4223,
-      "measuredSeconds": 1028,
+      "measuredSeconds": 996,
       "guards": [
         {
           "name": "Marketing-routes + guest-font-effect + no-invalid-date (against this build)",
@@ -170,19 +171,13 @@
           "seconds": 59,
           "script": "test:per-event-dashboard",
           "reason": "Three of item 6's guards, held back from #893 until #886, #887 and #892 were on main. Reads the Guests page at 390 and 1440 and walks the send modal twice, once per event choice, because \"the list narrows\" needs a control."
-        },
-        {
-          "name": "Find my invitation is there for a stranger and gone for a guest",
-          "seconds": 32,
-          "script": "test:find-my-invitation",
-          "note": "Counted in three universes because WeddingHomePage reaches its twenty by three different routes: london is a bespoke branch, amalfi delegates to GenericMastheadHero, and tulum is the only universe with no layout value and so the only one that reached the default branch, which was also the only hero still holding an /rsvp href. One universe would have proved nothing about the other nineteen. The hero restraint is pinned on the source as well as the counts, because a link that MOVED into a hero would keep the count at one."
         }
       ]
     },
     "B": {
       "job": "Browser guards B",
       "port": 4224,
-      "measuredSeconds": 1006,
+      "measuredSeconds": 1038,
       "guards": [
         {
           "name": "The studio tour, as a couple meets it, at 390 and 1440",
@@ -343,12 +338,18 @@
           "seconds": 13,
           "script": "test:share-tab-390",
           "note": "Lane B measured the message box at 26px and the send button at 28px at 390: a bare flex row, an email column at flex:1 beside a fixed 280px sidebar, no wrap and no breakpoint. Nothing in the source states a width, so only measuring finds it. Asserts both are at least 280px and that the send label is fully visible, and pins 1440 so a phone fix cannot restyle the desktop."
+        },
+        {
+          "name": "Find my invitation is there for a stranger and gone for a guest",
+          "seconds": 32,
+          "script": "test:find-my-invitation",
+          "note": "Counted in three universes because WeddingHomePage reaches its twenty by three different routes: london is a bespoke branch, amalfi delegates to GenericMastheadHero, and tulum is the only universe with no layout value and so the only one that reached the default branch, which was also the only hero still holding an /rsvp href. One universe would have proved nothing about the other nineteen. The hero restraint is pinned on the source as well as the counts, because a link that MOVED into a hero would keep the count at one."
         }
       ]
     }
   },
   "balance": {
-    "deltaSeconds": 22,
+    "deltaSeconds": 42,
     "budgetSeconds": 120
   },
   "unassigned": []
