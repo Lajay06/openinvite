@@ -69,12 +69,35 @@ export async function getCollaborationFor(userId, ownerUserId, adminKey) {
   // Defense in depth: re-check both hashes match exactly, don't just trust the query filter.
   const relevant = rows.filter(r => r.owner_user_id_hash === ownerHash && r.collaborator_user_id_hash === collabHash);
 
-  const latest = relevant.reduce((best, r) => (
-    !best || new Date(r.created_date) > new Date(best.created_date) ? r : best
-  ), null);
+  const latest = latestEvent(relevant);
 
   if (!latest || latest.event_type !== 'grant') return null;
   return { permissions: latest.permissions || {} };
+}
+
+/**
+ * The event that decides access, out of one owner and collaborator pair's
+ * rows. Latest created_date wins; two events with the same created_date
+ * resolve to the revoke, so a removal can never lose a tie to a grant.
+ */
+export function latestEvent(rows) {
+  return rows.reduce((best, r) => {
+    if (!best) return r;
+    const a = new Date(r.created_date).getTime();
+    const b = new Date(best.created_date).getTime();
+    if (a > b) return r;
+    if (a === b && r.event_type === 'revoke') return r;
+    return best;
+  }, null);
+}
+
+/** Every CollaboratorGrant row under one owner, re-checked against the hash rather than trusting the query filter. */
+export async function listGrantsForOwner(ownerUserId, adminKey) {
+  const ownerHash = hashId(ownerUserId);
+  if (!ownerHash) return [];
+  const query = encodeURIComponent(JSON.stringify({ owner_user_id_hash: ownerHash }));
+  const rows = unwrapList(await adminFetch('GET', `/apps/${BASE44_APP_ID}/entities/CollaboratorGrant?q=${query}`, adminKey));
+  return rows.filter(r => r.owner_user_id_hash === ownerHash);
 }
 
 /** True if `permissions` grants at least `level` ('view' or 'edit') on `page`. */
