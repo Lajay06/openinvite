@@ -273,5 +273,62 @@ export async function runMirrorDeclaresTheNewFields() {
     ? pass('  and entityFields.generated.js was regenerated with all three', 'in the generated map')
     : fail('  and entityFields.generated.js was regenerated with all three', 'all three', `missing ${missing.join(', ')}`));
 
+  // ── 2026-10-10: THE BOUNCE STAMP ────────────────────────────────────────
+  //
+  // Same reason as the two blocks above: an undeclared key is dropped
+  // silently, so the sync needs something asserting it. Item 0 of
+  // goals/2026-10-10-bounces-and-notes.md.
+  //
+  // ONE OBJECT, FOUR SUB-PROPERTIES, because the four facts are only ever
+  // written and cleared together. A stamp with no date, or a date with no
+  // reason, is not a state the product has, so the shape is pinned whole
+  // rather than field by field.
+  //
+  // email_id IS LOAD-BEARING, not decoration. Resend delivers at-least-once,
+  // so the webhook is idempotent on it: a second delivery for the same
+  // email_id is a 200 no-op rather than a second stamp. Drop the key and the
+  // idempotency has nothing to key on.
+  //
+  // THE ENUM HAS ONE VALUE ON PURPOSE. Temporary bounces and complaints are
+  // logged and dropped this goal, so a second value would imply a state
+  // nothing writes. Asserted as exactly ["permanent"] rather than as
+  // containing it, because a widened enum is a product decision and should
+  // fail here until someone makes it.
+  const bounce = guest.properties?.email_bounce;
+  results.push(bounce && bounce.type === 'object'
+    ? pass('Guest.email_bounce is declared, type object', JSON.stringify({ type: bounce.type }))
+    : fail('Guest.email_bounce is declared, type object', 'object', bounce ? JSON.stringify(bounce.type) : 'MISSING'));
+
+  const bounceProps = bounce?.properties || {};
+  results.push(JSON.stringify(Object.keys(bounceProps)) === JSON.stringify(['at', 'kind', 'detail', 'email_id'])
+    ? pass('  with exactly at, kind, detail and email_id, in the live order', Object.keys(bounceProps).join(', '))
+    : fail('  with exactly at, kind, detail and email_id, in the live order', 'at, kind, detail, email_id',
+           Object.keys(bounceProps).join(', ') || 'MISSING'));
+
+  results.push(bounceProps.at?.format === 'date-time'
+    ? pass('  at is a date-time', 'date-time')
+    : fail('  at is a date-time', 'date-time', bounceProps.at?.format || 'no format'));
+
+  results.push(JSON.stringify(bounceProps.kind?.enum) === JSON.stringify(['permanent'])
+    ? pass('  kind is an enum of exactly one value', JSON.stringify(bounceProps.kind.enum))
+    : fail('  kind is an enum of exactly one value', '["permanent"]', JSON.stringify(bounceProps.kind?.enum)));
+
+  results.push(bounceProps.detail?.type === 'string' && bounceProps.email_id?.type === 'string'
+    ? pass('  detail and email_id are strings', 'both string')
+    : fail('  detail and email_id are strings', 'both string',
+           `detail ${bounceProps.detail?.type}, email_id ${bounceProps.email_id?.type}`));
+
+  // NO ADDRESS ANYWHERE IN THE SHAPE. The provider's bounce message usually
+  // quotes the recipient, and this object is read by the couple's dashboard,
+  // so there is deliberately no field for an address to be written into.
+  results.push(!('to' in bounceProps) && !('email' in bounceProps) && !('address' in bounceProps)
+    ? pass('  and it carries no address field', 'no to, email or address')
+    : fail('  and it carries no address field', 'none of to/email/address', Object.keys(bounceProps).join(', ')));
+
+  const genBounce = readFileSync(root('src/lib/entityFields.generated.js'), 'utf8');
+  results.push(/"email_bounce"/.test(genBounce)
+    ? pass('  and entityFields.generated.js was regenerated with it', 'in the generated map')
+    : fail('  and entityFields.generated.js was regenerated with it', 'email_bounce', 'regenerate it'));
+
   return results;
 }
