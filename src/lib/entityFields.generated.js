@@ -160,6 +160,7 @@ export const ENTITY_FIELDS = {
       "child_age",
       "dietary_restrictions",
       "email",
+      "email_bounce",
       "email_opt_out",
       "email_opt_out_at",
       "encrypted_guest_pii",

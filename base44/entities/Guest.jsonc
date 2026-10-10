@@ -341,6 +341,46 @@
           }
         }
       }
+    },
+    // ONE OBJECT, NOT FOUR COLUMNS, because the four facts are only ever
+    // written and cleared together: a stamp with no date, or a date with no
+    // reason, is not a state the product has.
+    //
+    // email_id IS WHAT MAKES THE WEBHOOK IDEMPOTENT. Resend delivers
+    // at-least-once, so a second delivery for the same email_id is a 200
+    // no-op rather than a second stamp. It also answers "which send bounced"
+    // later without keeping the address.
+    //
+    // kind IS AN ENUM OF ONE ON PURPOSE. Temporary bounces and complaints are
+    // logged and dropped this goal, so a second value would imply a state
+    // nothing writes. Resend's own field says "Temporary" where the goal says
+    // transient; the webhook matches "Permanent" exactly, so either wording
+    // is covered.
+    //
+    // detail CARRIES NO ADDRESS. The provider's message often quotes the
+    // recipient, and this field is read by the couple's own dashboard, so it
+    // is sanitized before it is written.
+    "email_bounce": {
+      "type": "object",
+      "description": "Set when an invitation or reminder to this guest bounced permanently. detail is a short sanitized reason with no email address in it; email_id is the provider's message id. Cleared when the couple changes the email address.",
+      "properties": {
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "permanent"
+          ]
+        },
+        "detail": {
+          "type": "string"
+        },
+        "email_id": {
+          "type": "string"
+        }
+      }
     }
   },
   "required": [
