@@ -151,7 +151,24 @@ export async function runGuestStopEmails() {
   ok('the send path reads the opt-out flag from the database',
      /adminList\('Guest', \{ created_by_id: userId, email_opt_out: true \}\)/.test(send), 'adminList');
   ok('  never from the request body', !/guests\.filter\([^)]*email_opt_out/.test(send), 'not from the caller');
-  ok('  and filters the owned list before validity', /const notOptedOut = ownedGuests\.filter\(/.test(send), 'filtered');
+  // THE ORDER, BY POSITION, not by a variable's name. This read
+  // `const notOptedOut = ownedGuests.filter(` until item 2 of
+  // goals/2026-10-10-bounces-and-notes.md added the bounce skip beside the
+  // opt-out one and the combined filter became `sendable`. The property has
+  // not changed: the opt-out set is applied to the OWNED list, and the
+  // validity filter runs on what survives, so a guest who asked not to be
+  // emailed is dropped whether or not their address would have passed. The
+  // name is still in the pattern because a guard has to read the source
+  // somehow, but the assertion that matters is now the ordering.
+  const optOutFilter = 'const sendable = ownedGuests.filter(';
+  const validityFilter = 'const validGuests = sendable.filter(';
+  ok('  and filters the owned list before validity',
+     send.includes(optOutFilter) && send.includes(validityFilter)
+       && send.indexOf(optOutFilter) < send.indexOf(validityFilter),
+     'filtered, and before validity');
+  ok('  on the opt-out set and the bounce set together',
+     /!optedOutEmails\.has\(addressOf\(g\)\) && !bouncedEmails\.has\(addressOf\(g\)\)/.test(send),
+     'both sets');
   ok('  reporting the count separately from the aggregate',
      /skippedOptedOut,/.test(send) && /skipped: guests\.length - validGuests\.length/.test(send), 'both');
   ok('  with its own sentence when everyone selected had opted out',
