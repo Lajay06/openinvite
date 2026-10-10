@@ -25,3 +25,5 @@ The marketing copy guard pins the accordion's 32 bullets and that the bar's rule
 ## Close
 
 Last line: "Closed <date> at main <full SHA>, PRs <list>".
+
+Closed 2026-10-10 at main 08d0eb06cd87fd3264109864acf28d2512af950c, PRs #954 #956 #958
