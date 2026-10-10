@@ -175,6 +175,18 @@ export function runAppMarketing() {
   check('pricing: the comparison table has one "Guest suite" row', (pricingSrc.match(/feature: "Guest suite"/g) || []).length === 1);
   check('plan features: "Digital invitations by email", and no WhatsApp',
     ULTRA_EXTRAS.includes('Digital invitations by email') && ![...PRO_FEATURES, ...ULTRA_EXTRAS].some((f) => /whats\s?app/i.test(f)));
+  // ── the features accordion (site fixes batch 2) ───────────────────────
+  // Four bullets per row, 32 in all, the full text pinned in
+  // features-accordion-rows.mjs; here the count, the vendors line the owner
+  // wrote exactly, and that the colored bar's rule is gone.
+  const featSrc = stripComments(readFileSync(resolve(ROOT, 'src/pages/Features.jsx'), 'utf8'));
+  const featBlock = featSrc.slice(featSrc.indexOf('const ALL_FEATURES = ['), featSrc.indexOf('}];', featSrc.indexOf('const ALL_FEATURES = [')) + 3);
+  const allBullets = [...featBlock.matchAll(/bullets: \[(.*?)\] \}/g)].flatMap((m) => [...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1]));
+  check('features accordion: 32 bullets, four per row', allBullets.length === 32, `${allBullets.length}`);
+  check('features accordion: "A marketplace connected to Google Places, with vendors worldwide"', allBullets.includes('A marketplace connected to Google Places, with vendors worldwide'));
+  const accSrc = featSrc.slice(featSrc.indexOf('function AccordionSection'), featSrc.indexOf('function AccordionSection') + 4000);
+  check('features accordion: the colored left bar rule is gone', !/borderLeft|border-left/i.test(accSrc) && !/ACCORDION_BORDERS/.test(featSrc));
+
   // NEITHER WORD ON ANY MARKETING PAGE: the served pages, and the sources
   // behind copy that only renders when opened.
   const MARKETING_SOURCES = ['src/pages/Home.jsx', 'src/pages/Features.jsx', 'src/pages/Ava.jsx', 'src/pages/Pricing.jsx',

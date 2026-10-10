@@ -3,6 +3,9 @@
  *
  * THE EIGHT ROWS THE FEATURES ACCORDION CARRIES, AND NOTHING ELSE.
  *
+ * Batch 2 (2026-10-10) gave each row four bullets again; the rows, their
+ * order and the absences below are batch 1's and unchanged.
+ *
  * Item 1 of goals/2026-10-08-site-fixes-batch-1.md. The owner dictated eight
  * rows, in order, copy verbatim, and named two rows to drop. Every existing row
  * was either dropped or replaced, so the end state is exactly these eight.
@@ -36,22 +39,54 @@ const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const code = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 
 const ROWS = [
-  ['Vendors and the marketplace',
-    'Every vendor in one place, with contact, quote, deposit and what is still owed. Browse the marketplace for the ones you have not booked yet and send an enquiry without leaving the studio.'],
-  ['Seating chart and the visualizer',
-    'Drag guests onto tables, see who is still unseated, and walk the room before anyone else does. The visualizer shows the layout the way your guests will see it.'],
-  ['Calendar',
-    'One calendar for the whole engagement: deadlines, vendor payments, fittings, and every event on your run sheet. Subscribe from your phone so nothing lives only in the studio.'],
-  ['Ava on every page',
-    'Ava has read your wedding. Ask what is unpaid, who has not replied, or what still needs a decision, on any page, at any hour.'],
-  ['Mood board',
-    'Pin the looks you keep coming back to, colors, florals, dresses, tables, and keep them next to the plan instead of across six apps.'],
-  ['Toasts and speeches',
-    'Who is speaking, in what order, for how long. Speakers get a short brief and a deadline so nobody writes theirs in the car.'],
-  ['On the day details',
-    'Getting there, where to stay, who to call, what to wear. Written once, shown to guests where they need it.'],
-  ['Registry and cash funds',
-    'Link the registry you already have, or set up a cash fund with a note that does not feel awkward. Guests see it only when you say so.'],
+  ["Vendors and the marketplace", [
+    "Every vendor in one place, with contact, quote, deposit and what is still owed",
+    "A marketplace connected to Google Places, with vendors worldwide",
+    "Send an enquiry without leaving the studio",
+    "Keep quotes, contracts and contacts with each vendor",
+  ]],
+  ["Seating chart and the visualizer", [
+    "Lay out the venue and drag guests onto tables",
+    "See who is still unseated at a glance",
+    "Walk the room in the visualizer, the way guests will see it",
+    "A seating plan for each event, from the reception to the brunch",
+  ]],
+  ["Calendar", [
+    "One calendar for the whole engagement",
+    "Deadlines, vendor payments and fittings beside every event on your run sheet",
+    "Subscribe from your phone's calendar, so an edit here reaches it on its own.",
+    "Export the run sheet for your vendors",
+  ]],
+  ["Ava on every page", [
+    "A short briefing each morning: what is coming up, what needs a decision",
+    "Ask Ava from any page, about the page you are on",
+    "Answers drawn from your own wedding, never generic advice",
+    "Ask what is unpaid, who has not replied, or what still needs a decision",
+  ]],
+  ["Mood board", [
+    "Pin the looks you keep coming back to: colors, florals, dresses, tables",
+    "Boards for the venue, the dress, the palette, or anything you name",
+    "A note on every pin",
+    "Inspiration next to the plan, not across six apps",
+  ]],
+  ["Toasts and speeches", [
+    "Who is speaking, in what order, for how long",
+    "A short brief and a deadline for every speaker, so nobody writes theirs in the car",
+    "Vow drafts in the tone you choose, refined until they sound like you",
+    "Your vows locked behind a PIN",
+  ]],
+  ["On the day details", [
+    "Getting there, where to stay, who to call, what to wear",
+    "Stay and Getting here pages for out-of-town guests",
+    "Dress code and policies in one place",
+    "Written once, shown to guests on your guest suite where they need it",
+  ]],
+  ["Registry and cash funds", [
+    "Link the registry you already have",
+    "Products and cash funds side by side on one registry page",
+    "Guests give toward a honeymoon or a specific gift",
+    "Shown to guests only when you say so",
+  ]],
 ];
 
 const GONE = ['A guest suite, written for you', 'Twenty universes', 'Invitations and RSVP',
@@ -79,12 +114,15 @@ export async function runFeaturesAccordionRows() {
   const titles = [...block.matchAll(/\{ title: "([^"]+)"/g)].map((m) => m[1]);
   check('eight rows, in the order the owner dictated', titles, ROWS.map((r) => r[0]));
 
-  // ── AND EACH BODY, WHOLE ────────────────────────────────────────────────
-  const bodies = [...block.matchAll(/bullets: \["([^"]+)"\] \}/g)].map((m) => m[1]);
-  check('one paragraph per row, not a bullet list', bodies.length, 8);
-  for (const [title, body] of ROWS) {
+  // ── AND EACH ROW'S FOUR BULLETS, WHOLE ─────────────────────────────────
+  // Owner ruling 2026-10-10 (site fixes batch 2): four bullets per row again,
+  // after batch 1's one sentence per row. Each bullet is compared whole.
+  const bullets = [...block.matchAll(/bullets: \[(.*?)\] \}/g)]
+    .map((m) => [...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1]));
+  check('four bullets per row, 32 in all', bullets.map((b) => b.length), ROWS.map(() => 4));
+  for (const [title, want] of ROWS) {
     const i = titles.indexOf(title);
-    check(`  ${title}`, bodies[i], body);
+    check(`  ${title}`, bullets[i], want);
   }
 
   // ── THE ROWS THAT WENT ──────────────────────────────────────────────────
@@ -101,16 +139,16 @@ export async function runFeaturesAccordionRows() {
   ok('the word universe is rendered nowhere on the Features page',
      !/universe/i.test(src), '/universes carries it');
 
-  // ── EIGHT ROWS AGAINST SIX COLORS ───────────────────────────────────────
+  // ── NO COLORED BAR ──────────────────────────────────────────────────────
   //
-  // borders[6] and borders[7] were undefined the moment the list grew: an
-  // invalid border-left and an uncolored glyph on the last two rows.
+  // Owner ruling 2026-10-10 (site fixes batch 2): the open row's 3px colored
+  // left border and the matching glyph color are gone, so the six-color
+  // palette that fed them is gone too.
   const comp = code(read('src/pages/Features.jsx'));
-  ok('the border color cycles rather than running off the end of the palette',
-     /borders\[i % borders\.length\]/.test(comp) && !/borders\[i\]/.test(comp), 'modulo');
-  const palette = (comp.match(/const ACCORDION_BORDERS = \[([^\]]+)\]/) || [])[1] || '';
-  ok('  and the palette is unchanged, so no color is invented',
-     (palette.match(/#/g) || []).length === 6, `${(palette.match(/#/g) || []).length} colors`);
+  const acc = comp.slice(comp.indexOf('function AccordionSection'), comp.indexOf('function AccordionSection') + 4000);
+  ok('the accordion draws no colored left bar', !/borderLeft/.test(acc) && !/border-left/i.test(acc), 'no border-left in AccordionSection');
+  ok('  and its glyph is the page text color', /marginLeft: 16, color: "#0A0A0A"/.test(acc) && !/borders\[/.test(comp), '#0A0A0A');
+  ok('  and the bar palette is gone', !/ACCORDION_BORDERS/.test(comp), 'ACCORDION_BORDERS removed');
 
   // ── THE SNAPSHOT SHIPS WITH THE PAGE ────────────────────────────────────
   //
