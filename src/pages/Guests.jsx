@@ -42,6 +42,7 @@ import { findDuplicate } from '@/lib/guestDuplicate';
 import { createPendingDeletes, UNDO_WINDOW_MS } from '@/lib/pendingDelete';
 import { counts as householdCounts, membersOf, leadOf, entriesForNewMember, householdIdOf, isChild } from '@/lib/household';
 import TableToolbar from '@/components/shared/TableToolbar';
+import { isBounced, withBounceCleared } from '@/components/guests/emailBounce';
 
 // Guarded on the pattern already used by src/lib/app-params.js: read the
 // environment at module load only when there IS one. Browser behavior is
@@ -366,7 +367,11 @@ export default function Guests() {
     try {
       let guestId;
       if (editingGuest) {
-        await updateGuest(editingGuest.id, restGuestData);
+        // The form can change the address, so the clear rides this save too
+        // (item 3). The inline cell edit in GuestList.jsx goes through the
+        // same helper; both paths, or a couple fixing a typo in the one this
+        // misses keeps a stamp that is no longer about their address.
+        await updateGuest(editingGuest.id, withBounceCleared(restGuestData, editingGuest));
         guestId = editingGuest.id;
         toast.success('Guest updated', { id: tid });
       } else {
@@ -782,6 +787,7 @@ export default function Guests() {
     awaiting: guests.filter(isAwaitingPrimary).length,
     attending: guests.filter(isAttending).length,
     declined: guests.filter(isDeclined).length,
+    bounced: guests.filter(isBounced).length,
   }), [guests]);
 
   const FILTERS = [
@@ -790,6 +796,20 @@ export default function Guests() {
     { val: 'awaiting',    label: `Awaiting reply (${filterCounts.awaiting})` },
     { val: 'attending',   label: `Attending (${filterCounts.attending})` },
     { val: 'declined',    label: `Declined (${filterCounts.declined})` },
+    // ── BOUNCED ───────────────────────────────────────────────────────────
+    //
+    // Item 3 of goals/2026-10-10-bounces-and-notes.md. The goal places this
+    // "beside the existing opt-out filter"; there is no opt-out filter on
+    // this page (goal 3 added the row label and no pill), so it goes last in
+    // the status row and the owner has been told.
+    //
+    // ONLY WHEN THERE IS ONE. The four pills above are states every wedding
+    // passes through. A dead address is not: "Bounced (0)" on every account
+    // forever would teach a couple that bouncing is a normal stage of
+    // inviting people, and there is nothing behind the pill to look at.
+    ...(filterCounts.bounced > 0
+      ? [{ val: 'bounced', label: `Bounced (${filterCounts.bounced})` }]
+      : []),
   ];
 
   // Round 8 ask #14: per-event counts, computed from the same
@@ -869,6 +889,7 @@ export default function Guests() {
     if (activeFilter === 'awaiting') return isAwaitingPrimary(guest);
     if (activeFilter === 'attending') return isAttending(guest);
     if (activeFilter === 'declined') return isDeclined(guest);
+    if (activeFilter === 'bounced') return isBounced(guest);
     return true;
   });
 
