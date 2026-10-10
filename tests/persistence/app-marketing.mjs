@@ -53,6 +53,30 @@ function sectionWith(html, attr) {
   return '';
 }
 
+/**
+ * The title banner directly above an app section (site fixes batch 2, item 2):
+ * the last data-title-banner before `attr`, with nothing but its own markup
+ * between them. Returns its outer HTML, or '' if the section has no banner.
+ */
+function bannerAbove(html, attr) {
+  const at = html.indexOf(attr);
+  if (at < 0) return '';
+  const b = html.lastIndexOf('data-title-banner', at);
+  if (b < 0) return '';
+  const banner = sectionWith(html.slice(b - 200), 'data-title-banner');
+  const end = html.indexOf(banner) + banner.length;
+  const between = html.slice(end, html.lastIndexOf('<', at)).replace(/<!--[\s\S]*?-->/g, '').trim();
+  return between === '' ? banner : '';
+}
+const AVA_GRADIENT = 'linear-gradient(to right, #DDF762, #F0A050, #D4896A, #C99BBF, #9B59CC)';
+const bannerChecks = (check, banner, where, text, level) => {
+  check(`${where}: a title banner opens the app section`, !!banner);
+  check(`${where}: the banner is the Ava section's, gradient and heights`,
+    banner.includes('rgb(221, 247, 98)') || banner.includes('#DDF762') || banner.includes(AVA_GRADIENT), 'gradient');
+  check(`${where}: the banner carries "${text}" as its ${level}`,
+    new RegExp(`<${level}\\b[^>]*>\\s*${text.replace(/[.,]/g, (c) => '\\' + c)}\\s*</${level}>`).test(banner));
+};
+
 function htmlFiles(dir) {
   const out = [];
   for (const f of readdirSync(dir)) {
@@ -80,7 +104,8 @@ export function runAppMarketing() {
   const block = sectionWith(home, 'data-home-app');
   check('home: the app block is on the page', !!block);
   const t = textOf(block);
-  check('home: the heading, verbatim', t.includes('The whole planner, in your pocket.'));
+  bannerChecks(check, bannerAbove(home, 'data-home-app'), 'home', 'The whole planner, in your pocket.', 'h2');
+  check('home: the heading is in the banner, not repeated in the section', !t.includes('The whole planner, in your pocket.'));
   check('home: the body, verbatim', t.includes('Plan on the train, on the couch, in the queue for coffee. The guest list, the budget, the seating chart and Ava are all on your phone, and a reply from a guest reaches you the moment it lands. Your guests never need the app; they open a link.'));
   check('home: the store line, as text', t.includes(STORE_LINE) && /data-app-store-line/.test(block));
   check('home: the store line is not a link', !/<a\b[^>]*>[^<]*Coming to the App Store/.test(block));
@@ -108,7 +133,7 @@ export function runAppMarketing() {
     const b = sectionWith(html, 'data-app-phones');
     const bt = textOf(b);
     check(`${where}: the app section is on the page`, !!b);
-    check(`${where}: heading "Everything, on your phone"`, bt.includes('Everything, on your phone'));
+    bannerChecks(check, bannerAbove(html, 'data-app-phones'), where, 'Everything, on your phone', where === '/app' ? 'h1' : 'h2');
     const lines = [...b.matchAll(/<li\b[^>]*data-app-line[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1]).trim());
     check(`${where}: the five lines, verbatim and in order`, JSON.stringify(lines) === JSON.stringify(LINES), JSON.stringify(lines).slice(0, 120));
     check(`${where}: the desktop sentence, verbatim`, bt.includes(DESKTOP));
@@ -128,7 +153,7 @@ export function runAppMarketing() {
   const appHtml = existsSync(join(PRE, 'app/index.html')) ? readFileSync(join(PRE, 'app/index.html'), 'utf8') : '';
   check('/app: prerendered', !!appHtml);
   const ab = phonesBlock(appHtml, '/app');
-  check('/app: the heading is the page h1', /<h1\b[^>]*>\s*Everything, on your phone\s*<\/h1>/.test(ab));
+  check('/app: one h1 on the page', (appHtml.match(/<h1\b/g) || []).length === 1);
   const guests = textOf(sectionWith(appHtml, 'data-app-guests'));
   check('/app: "Do my guests need it?" with its body, verbatim',
     guests.includes('Do my guests need it?') && guests.includes('No. Your guests open a link and reply in a browser. Nobody has to make an account or install anything to come to your wedding.'));
