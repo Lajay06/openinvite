@@ -139,13 +139,13 @@ export async function runSendTagsAndBounceSkip() {
   // The shape is the send side's, not the webhook's. These are different and
   // getting them the wrong way round sends tags Resend will refuse.
   ok('the tags are an array of name and value pairs, the send API shape',
-     Array.isArray(many.batch[0].tags)
+     Array.isArray(many.batch[0]?.tags)
        && many.batch[0].tags.every((t) => typeof t.name === 'string' && typeof t.value === 'string'
             && Object.keys(t).sort().join(',') === 'name,value'),
-     JSON.stringify(many.batch[0].tags));
+     JSON.stringify(many.batch[0]?.tags));
   ok('  and exactly the two the webhook reads, with no third',
-     many.batch[0].tags.map((t) => t.name).sort().join(',') === 'guest_id,owner_id',
-     many.batch[0].tags.map((t) => t.name).join(','));
+     (many.batch[0]?.tags || []).map((t) => t.name).sort().join(',') === 'guest_id,owner_id',
+     (many.batch[0]?.tags || []).map((t) => t.name).join(',') || '(no tags)');
 
   // ── 2. AN ID THAT WOULD NOT PASS RESEND'S RULE DROPS THE TAGS AND SENDS ──
   //
