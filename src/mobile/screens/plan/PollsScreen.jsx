@@ -46,7 +46,7 @@ export default function PollsScreen({ polls = [], votes = [], comments = [], gam
   const [segment, setSegment] = useSegment(SEGMENTS);
   const [sheet, setSheet] = useState(null); // { poll } | { template } | { custom: true } | { pick: true }
   const [gameSheet, setGameSheet] = useState(null); // { game } | { create: true }
-  const [confirm, confirmEl] = useConfirm();
+  const [askToConfirm, confirmEl] = useConfirm();
   // Polls.jsx: real votes only, grouped by poll before aggregateVotes (its
   // dedupe is per guest), and the live count replaces the stored snapshot.
   const countsByPoll = useMemo(() => {
@@ -57,7 +57,7 @@ export default function PollsScreen({ polls = [], votes = [], comments = [], gam
   const countFor = (poll, o) => (countsByPoll.get(poll.id) || {})[o.id] || 0;
   const live = polls.filter((p) => p.isActive !== false);
   const ended = polls.filter((p) => p.isActive === false);
-  const remove = async (p) => { if (!(await confirm({ title: 'Delete this poll', body: `${p.title} and its votes come off your guest suite.`, action: 'Delete' }))) return; await onDelete(p); setSheet(null); };
+  const remove = async (p) => { if (!(await askToConfirm({ title: 'Delete this poll', body: `${p.title} and its votes come off your guest suite.`, action: 'Delete' }))) return; await onDelete(p); setSheet(null); };
   const actions = segment === 'polls' ? [{ icon: Plus, label: 'New poll', onClick: () => setSheet({ pick: true }) }] : [{ icon: Plus, label: 'New game', onClick: () => setGameSheet({ create: true }) }];
   const subtitle = loading ? '' : segment === 'polls' ? `${live.length} live` : `${games.filter((g) => g.is_active !== false).length} open`;
 
@@ -105,7 +105,7 @@ export default function PollsScreen({ polls = [], votes = [], comments = [], gam
         />
       )}
       {gameSheet?.create && <GameEditorSheet guests={guests} onClose={() => setGameSheet(null)} onSave={async (data) => { await onCreateGame(data); setGameSheet(null); }} />}
-      {gameSheet?.game && <GameResultsSheet guests={guests} game={games.find((g) => g.id === gameSheet.game.id) || gameSheet.game} responses={responses.filter((r) => r.questionnaire_id === gameSheet.game.id)} onClose={() => setGameSheet(null)} onToggle={() => onToggleGame(gameSheet.game)} onCopyLinks={() => onCopyGameLinks(gameSheet.game)} onDelete={async () => { if (!(await confirm({ title: 'Delete this game', body: 'Its answers are removed too.', action: 'Delete' }))) return; await onDeleteGame(gameSheet.game); setGameSheet(null); }} />}
+      {gameSheet?.game && <GameResultsSheet guests={guests} game={games.find((g) => g.id === gameSheet.game.id) || gameSheet.game} responses={responses.filter((r) => r.questionnaire_id === gameSheet.game.id)} onClose={() => setGameSheet(null)} onToggle={() => onToggleGame(gameSheet.game)} onCopyLinks={() => onCopyGameLinks(gameSheet.game)} onDelete={async () => { if (!(await askToConfirm({ title: 'Delete this game', body: 'Its answers are removed too.', action: 'Delete' }))) return; await onDeleteGame(gameSheet.game); setGameSheet(null); }} />}
       {confirmEl}
     </Screen>
   );

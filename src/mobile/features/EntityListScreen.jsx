@@ -20,7 +20,7 @@ export default function EntityListScreen({ schema, items = [], onCreate, onUpdat
   const [sheet, setSheet] = useState({ open: false, item: null });
   const [view, setView] = useListView(schema.entity, 'cards');
   const [q, setQ] = useState('');
-  const [confirm, confirmEl] = useConfirm();
+  const [askToConfirm, confirmEl] = useConfirm();
   const pattern = schema.pattern || 'rows';
   const visible = useMemo(() => {
     const f = schema.filters?.find((x) => x.key === filter);
@@ -43,7 +43,7 @@ export default function EntityListScreen({ schema, items = [], onCreate, onUpdat
   };
   const remove = async () => {
     if (!sheet.item) return;
-    if (!(await confirm({ title: `Remove this ${schema.itemLabel}`, body: schema.row(sheet.item).title, action: 'Remove' }))) return;
+    if (!(await askToConfirm({ title: `Remove this ${schema.itemLabel}`, body: schema.row(sheet.item).title, action: 'Remove' }))) return;
     await onDelete(sheet.item.id);
     setSheet({ open: false, item: null });
   };

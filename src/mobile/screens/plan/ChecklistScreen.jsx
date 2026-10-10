@@ -55,7 +55,7 @@ export default function ChecklistScreen({ tasks = [], onToggle, onAdd, onUpdate,
   const [openDone, setOpenDone] = useState({});
   const [settling, setSettling] = useState({}); // id -> true while a just-completed task holds its place
   const timers = useRef({});
-  const [confirm, confirmEl] = useConfirm();
+  const [askToConfirm, confirmEl] = useConfirm();
   useEffect(() => () => Object.values(timers.current).forEach(clearTimeout), []);
   useEffect(() => { try { localStorage.setItem(SORT_PREF_KEY, JSON.stringify(sort)); } catch { /* fine */ } }, [sort]);
 
@@ -86,7 +86,7 @@ export default function ChecklistScreen({ tasks = [], onToggle, onAdd, onUpdate,
   };
 
   const removeTask = async (t) => {
-    if (!(await confirm({ title: 'Remove this task', body: t.title, action: 'Remove' }))) return;
+    if (!(await askToConfirm({ title: 'Remove this task', body: t.title, action: 'Remove' }))) return;
     await onRemove?.(t);
     setSheet(null);
   };

@@ -31,12 +31,12 @@ export default function VowsScreen({ items = [], revealed = new Set(), onCreate,
   const [sheet, setSheet] = useState(null); // { item } | { item: null, draft }
   const [lock, setLock] = useState(null); // { mode: 'set'|'unlock', item }
   const [ava, setAva] = useState(null); // { type }
-  const [confirm, confirmEl] = useConfirm();
+  const [askToConfirm, confirmEl] = useConfirm();
   const schema = ENTITIES.vows;
   const type = segment === 'vows' ? 'vow' : 'speech';
   const list = items.filter((i) => (i.type || 'vow') === type);
   const current = reader ? items.find((i) => i.id === reader.id) || reader : null;
-  const remove = async (it) => { if (!(await confirm({ title: 'Delete this draft', body: it.title, action: 'Delete' }))) return; await onDelete(it.id); setSheet(null); setReader(null); };
+  const remove = async (it) => { if (!(await askToConfirm({ title: 'Delete this draft', body: it.title, action: 'Delete' }))) return; await onDelete(it.id); setSheet(null); setReader(null); };
   const share = async (it) => { const r = await exportText(`${it.title || 'Vows'}.txt`, 'text/plain', `${it.title}\nBy ${it.author || ''}\n\n${it.content || ''}`); if (r === 'failed') toast.error('Could not share.'); };
   const words = (it) => (it.content ? it.content.trim().split(/\s+/).filter(Boolean).length : 0);
 

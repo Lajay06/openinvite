@@ -35,11 +35,11 @@ export default function SuitePlacesScreen({ kind, places = [], notes = [], desti
   const [adding, setAdding] = useState(false);
   const [noteSheet, setNoteSheet] = useState(null); // { note } | { note: null }
   const [ava, setAva] = useState(null); // { busy } | { suggestions }
-  const [confirm, confirmEl] = useConfirm();
+  const [askToConfirm, confirmEl] = useConfirm();
   // PR #822 (owner ruling 2026-09-21): Stay and Getting here everywhere, as the live guest suite names them.
   const title = isStay ? 'Stay' : 'Getting here';
 
-  const remove = async (p) => { if (!(await confirm({ title: `Remove ${p.name}`, body: 'It comes off your guest suite.', action: 'Remove' }))) return; await onSave(places.filter((x) => (x.id || x.place_id) !== (p.id || p.place_id)), notes); };
+  const remove = async (p) => { if (!(await askToConfirm({ title: `Remove ${p.name}`, body: 'It comes off your guest suite.', action: 'Remove' }))) return; await onSave(places.filter((x) => (x.id || x.place_id) !== (p.id || p.place_id)), notes); };
   const addPlace = async (place, extra) => {
     // The website comes from place details at add time, as the desktop pages fetch it.
     let website_url = null;

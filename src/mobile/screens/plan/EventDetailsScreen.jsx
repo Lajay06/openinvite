@@ -178,7 +178,7 @@ function venueOfCustom(ev) {
 
 function EventsSegment({ d, onSave, onInvitePrompt }) {
   const [sheet, setSheet] = useState(null); // { fixed: 'ceremony'|'reception' } | { custom: ev, post } | { custom: null }
-  const [confirm, confirmEl] = useConfirm();
+  const [askToConfirm, confirmEl] = useConfirm();
   const mc = d.mainCeremony || {};
   const rc = d.reception || {};
   const bias = mc.address || '';
@@ -212,7 +212,7 @@ function EventsSegment({ d, onSave, onInvitePrompt }) {
     }
   };
   const removeCustom = async (ev) => {
-    if (!(await confirm({ title: 'Remove this event', body: `${ev.name || 'This event'} comes off your guest suite and every guest's invitation list.`, action: 'Remove' }))) return;
+    if (!(await askToConfirm({ title: 'Remove this event', body: `${ev.name || 'This event'} comes off your guest suite and every guest's invitation list.`, action: 'Remove' }))) return;
     const key = ev._kind === 'post' ? 'postWeddingEvents' : 'preWeddingEvents';
     await onSave(key, (d[key] || []).filter((e) => e.id !== ev.id));
     setSheet(null);

@@ -29,7 +29,7 @@ export default function SeatingScreen({ notice, tables = [], guests = [], weddin
   const [attendingOnly, setAttendingOnly] = useState(false);
   const [q, setQ] = useState('');
   const [ava, setAva] = useState(null); // { plan } | { busy }
-  const [confirm, confirmEl] = useConfirm();
+  const [askToConfirm, confirmEl] = useConfirm();
 
   const reception = weddingEvents.find((e) => e.event_id === RECEPTION_EVENT_ID) || { event_id: RECEPTION_EVENT_ID, name: 'Reception', isMain: true };
   const withLayout = useMemo(() => new Set(tables.map(resolveEventId)), [tables]);
@@ -63,7 +63,7 @@ export default function SeatingScreen({ notice, tables = [], guests = [], weddin
   const seatedCount = attendees.filter((a) => seatedIds.has(a.id)).length;
 
   const removeTable = async (t) => {
-    if (!(await confirm({ title: `Delete ${t.name}`, body: (t.assigned_guests || []).length ? `${(t.assigned_guests || []).length} people lose their seat.` : 'This table has no one at it.', action: 'Delete' }))) return;
+    if (!(await askToConfirm({ title: `Delete ${t.name}`, body: (t.assigned_guests || []).length ? `${(t.assigned_guests || []).length} people lose their seat.` : 'This table has no one at it.', action: 'Delete' }))) return;
     await onDeleteTable(t); setTableSheet(null);
   };
   const seatAt = async (attendee, table, seatIndex) => {

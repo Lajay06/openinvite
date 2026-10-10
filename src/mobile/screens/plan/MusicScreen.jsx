@@ -12,6 +12,7 @@ import { ENTITIES } from '../../features/schemas';
 import { openExternal, shareLink } from '../../native';
 import { parsePlaylistLink } from '@/lib/musicLinkParser';
 import { DEFAULT_MUSIC_REQUEST_MESSAGE } from '@/lib/musicCopy';
+import { copyText } from '@/lib/copyToClipboard';
 
 const SEGMENTS = [{ key: 'requests', label: 'Requests' }, { key: 'playlist', label: 'Playlist' }, { key: 'notes', label: 'Notes' }, { key: 'vendor', label: 'Vendor' }];
 const STATUS = { pending: ['warn', 'Pending'], approved: ['ok', 'Approved'], added: ['ok', 'On the playlist'], declined: ['no', 'Declined'] };
@@ -39,7 +40,7 @@ export default function MusicScreen({ tracks = [], requests = [], settings = {},
   const [link, setLink] = useState(playlistUrl || '');
   const [notes, setNotes] = useState(settings.notes || '');
   const notesTimer = React.useRef(null);
-  const [confirm, confirmEl] = useConfirm();
+  const [askToConfirm, confirmEl] = useConfirm();
   useEffect(() => { setLink(playlistUrl || ''); }, [playlistUrl]);
   useEffect(() => { setNotes(settings.notes || ''); }, [settings.notes]);
   useEffect(() => () => clearTimeout(notesTimer.current), []);
@@ -131,7 +132,7 @@ export default function MusicScreen({ tracks = [], requests = [], settings = {},
           <PanelCard tone="neutral" label="Music vendors" title="Your DJ, band and musicians" body="Everyone in the music category of My vendors, with their status and contact." action="Open My vendors" onClick={() => onOpenVendors('music')}><Store size={18} style={{ opacity: 0.6 }} /></PanelCard>
         )}
       </div>
-      <FormSheet open={sheet.open} title={sheet.item ? 'Edit track' : 'Add track'} fields={schema.fields} initial={sheet.item} required={schema.required} onClose={() => setSheet((s) => ({ ...s, open: false }))} onSave={async (v) => { if (sheet.item) await onUpdate(sheet.item.id, v); else await onCreate({ ...schema.defaults, ...v }); }} onDelete={sheet.item ? async () => { if (await confirm({ title: 'Remove this track', body: sheet.item.song_title, action: 'Remove' })) { await onDelete(sheet.item.id); setSheet({ open: false, item: null }); } } : undefined} saveLabel={sheet.item ? 'Save changes' : 'Add track'} />
+      <FormSheet open={sheet.open} title={sheet.item ? 'Edit track' : 'Add track'} fields={schema.fields} initial={sheet.item} required={schema.required} onClose={() => setSheet((s) => ({ ...s, open: false }))} onSave={async (v) => { if (sheet.item) await onUpdate(sheet.item.id, v); else await onCreate({ ...schema.defaults, ...v }); }} onDelete={sheet.item ? async () => { if (await askToConfirm({ title: 'Remove this track', body: sheet.item.song_title, action: 'Remove' })) { await onDelete(sheet.item.id); setSheet({ open: false, item: null }); } } : undefined} saveLabel={sheet.item ? 'Save changes' : 'Add track'} />
       <SettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} settings={settings} onSave={onSettings} />
       <ShareSheet open={shareOpen} onClose={() => setShareOpen(false)} url={shareUrl} />
       {confirmEl}
@@ -172,7 +173,7 @@ function ShareSheet({ open, onClose, url }) {
           <p className="oi-m-meta">Guests open this page to see the playlist and suggest songs.</p>
           <div className="oi-m-meta" style={{ overflowWrap: 'anywhere' }}>{url.replace(/^https?:\/\//, '')}</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <PillButton variant="secondary" icon={Copy} onClick={async () => { try { await navigator.clipboard.writeText(url); toast.success('Link copied'); } catch { toast.error('Could not copy'); } }}>Copy link</PillButton>
+            <PillButton variant="secondary" icon={Copy} onClick={async () => { const { ok } = await copyText(url); if (ok) toast.success('Link copied'); else toast.error('Could not copy'); }}>Copy link</PillButton>
             <PillButton variant="primary" icon={Share2} style={{ flex: 1 }} onClick={async () => { const r = await shareLink({ title: 'Our wedding playlist', text: 'Suggest a song for the dance floor.', url }); if (r === 'copied') toast.success('Link copied'); }}>Share link</PillButton>
           </div>
         </div>

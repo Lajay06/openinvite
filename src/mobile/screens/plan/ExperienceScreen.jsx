@@ -35,7 +35,7 @@ function buildSchedule(numDays, existing) {
 export default function ExperienceScreen({ guide = {}, destination = '', onSave, loading, error, onRetry, back }) {
   const api = useApi();
   const [segment, setSegment] = useSegment(SEGMENTS);
-  const [confirm, confirmEl] = useConfirm();
+  const [askToConfirm, confirmEl] = useConfirm();
   const categories = guide.categories || {};
   const allSaved = useMemo(() => CATEGORIES.flatMap(([key, label]) => (categories[key]?.places || []).map((p) => ({ ...p, categoryKey: key, categoryLabel: label }))), [categories]);
   const photoOf = (p) => (p.photo_url ? p.photo_url : p.photo_ref ? api.places.photo(p.photo_ref, 800) : '');
@@ -66,7 +66,7 @@ export default function ExperienceScreen({ guide = {}, destination = '', onSave,
     toast.success(`Added to ${labelOf(catKey)}`);
   };
   const removePlace = async (catKey, p) => {
-    if (!(await confirm({ title: `Remove ${p.name}`, body: 'It comes off the guide.', action: 'Remove' }))) return;
+    if (!(await askToConfirm({ title: `Remove ${p.name}`, body: 'It comes off the guide.', action: 'Remove' }))) return;
     const cats = { ...categories, [catKey]: { ...(categories[catKey] || {}), places: (categories[catKey]?.places || []).filter((x) => x.place_id !== p.place_id) } };
     await onSave({ ...guide, categories: cats, couplePicks: (guide.couplePicks || []).filter((x) => x.place_id !== p.place_id) });
   };

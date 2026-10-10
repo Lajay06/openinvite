@@ -107,7 +107,7 @@ export function VendorDetailScreen({ notice, vendor, logs = [], tasks = [], symb
   const [tab, setTab] = useSegment(TABS);
   const [logSheet, setLogSheet] = useState(null); // 'log' | 'doc'
   const [taskSheet, setTaskSheet] = useState(false);
-  const [confirm, confirmEl] = useConfirm();
+  const [askToConfirm, confirmEl] = useConfirm();
   if (loading) return <Screen title="Vendor" back={back}><div className="oi-m-stack"><SkeletonRows count={5} /></div></Screen>;
   if (error) return <Screen title="Vendor" back={back}><div className="oi-m-stack"><ErrorState onRetry={onRetry} /></div></Screen>;
   if (!vendor) return <Screen title="Vendor" back={back}><div className="oi-m-stack"><p className="oi-m-body">This vendor is not on your list any more.</p></div></Screen>;
@@ -161,13 +161,13 @@ export function VendorDetailScreen({ notice, vendor, logs = [], tasks = [], symb
               {!vendor.contact_person && !vendor.quoted_price && !vendor.notes && !vendor.deposit_amount && !vendor.contract_signed && <div className="oi-m-kv"><div className="oi-m-kv__v" style={{ color: 'var(--m-text-2)' }}>Nothing else recorded for {vendor.name} yet. Edit to add dates, a deposit, or your notes.</div></div>}
             </div>
             <PillButton variant="secondary" block icon={Pencil} onClick={onEdit}>Edit vendor</PillButton>
-            <button type="button" className="oi-m-pill oi-m-pill--ghost oi-m-pill--block" style={{ color: 'var(--m-primary)' }} onClick={async () => { if (await confirm({ title: `Delete ${vendor.name}`, body: 'Their communications, documents and tasks go too.', action: 'Delete' })) onDelete(); }}>Delete this vendor</button>
+            <button type="button" className="oi-m-pill oi-m-pill--ghost oi-m-pill--block" style={{ color: 'var(--m-primary)' }} onClick={async () => { if (await askToConfirm({ title: `Delete ${vendor.name}`, body: 'Their communications, documents and tasks go too.', action: 'Delete' })) onDelete(); }}>Delete this vendor</button>
           </>
         )}
         {tab === 'comms' && (
           <>
             {comms.length === 0 ? <EmptyState icon={MessageSquare} text="No communications logged yet. Keep every call, email and meeting here." actionLabel="Log one" onAction={() => setLogSheet('log')} /> : (
-              <RowGroup>{comms.map((l) => { const Icon = LOG_ICON[l.type] || MessageSquare; return <Row key={l.id} icon={Icon} tile="neutral" label={l.subject || LOG_TYPES.find((t) => t.value === l.type)?.label || 'Note'} sub={[l.logged_at ? dateShort(l.logged_at) : '', l.body].filter(Boolean).join(', ')} wrap trailing={<button type="button" className="oi-m-iconbtn oi-m-iconbtn--ghost" aria-label="Delete this entry" onClick={async () => { if (await confirm({ title: 'Delete this entry', action: 'Delete' })) onDeleteLog(l); }}><Trash2 size={18} strokeWidth={1.75} /></button>} chevron={false} />; })}</RowGroup>
+              <RowGroup>{comms.map((l) => { const Icon = LOG_ICON[l.type] || MessageSquare; return <Row key={l.id} icon={Icon} tile="neutral" label={l.subject || LOG_TYPES.find((t) => t.value === l.type)?.label || 'Note'} sub={[l.logged_at ? dateShort(l.logged_at) : '', l.body].filter(Boolean).join(', ')} wrap trailing={<button type="button" className="oi-m-iconbtn oi-m-iconbtn--ghost" aria-label="Delete this entry" onClick={async () => { if (await askToConfirm({ title: 'Delete this entry', action: 'Delete' })) onDeleteLog(l); }}><Trash2 size={18} strokeWidth={1.75} /></button>} chevron={false} />; })}</RowGroup>
             )}
             <PillButton variant="primary" block icon={Plus} onClick={() => setLogSheet('log')}>Log a communication</PillButton>
           </>
@@ -182,7 +182,7 @@ export function VendorDetailScreen({ notice, vendor, logs = [], tasks = [], symb
                     <div className="oi-m-row__label oi-m-row__label--wrap">{l.subject || l.document_name || 'Document'}</div>
                     <div className="oi-m-row__sub">{[DOC_TYPES.find((t) => t.value === l.document_type)?.label, l.document_name, l.logged_at ? dateShort(l.logged_at) : ''].filter(Boolean).join(', ')}</div>
                   </button>
-                  <button type="button" className="oi-m-iconbtn oi-m-iconbtn--ghost" aria-label="Delete this document" onClick={async () => { if (await confirm({ title: 'Delete this document', action: 'Delete' })) onDeleteLog(l); }}><Trash2 size={18} strokeWidth={1.75} /></button>
+                  <button type="button" className="oi-m-iconbtn oi-m-iconbtn--ghost" aria-label="Delete this document" onClick={async () => { if (await askToConfirm({ title: 'Delete this document', action: 'Delete' })) onDeleteLog(l); }}><Trash2 size={18} strokeWidth={1.75} /></button>
                 </div>
               ))}</RowGroup>
             )}
@@ -197,7 +197,7 @@ export function VendorDetailScreen({ notice, vendor, logs = [], tasks = [], symb
                   <div key={t.id} className="oi-m-row">
                     <Checkbox checked={!!t.completed} onChange={() => onToggleTask(t)} label={t.title} />
                     <div className="oi-m-row__body"><div className={`oi-m-row__label oi-m-row__label--wrap${t.completed ? ' oi-m-task__title--done' : ''}`}>{t.title}</div><div className="oi-m-row__sub">{[t.due_date ? `Due ${dateShort(t.due_date)}` : '', t.priority && t.priority !== 'medium' ? `${t.priority} priority` : ''].filter(Boolean).join(', ')}</div></div>
-                    <button type="button" className="oi-m-iconbtn oi-m-iconbtn--ghost" aria-label={`Delete ${t.title}`} onClick={async () => { if (await confirm({ title: 'Delete this task', body: t.title, action: 'Delete' })) onDeleteTask(t); }}><Trash2 size={18} strokeWidth={1.75} /></button>
+                    <button type="button" className="oi-m-iconbtn oi-m-iconbtn--ghost" aria-label={`Delete ${t.title}`} onClick={async () => { if (await askToConfirm({ title: 'Delete this task', body: t.title, action: 'Delete' })) onDeleteTask(t); }}><Trash2 size={18} strokeWidth={1.75} /></button>
                   </div>
                 ))}
               </RowGroup>

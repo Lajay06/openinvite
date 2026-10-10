@@ -330,12 +330,12 @@ function BudgetContainer({ back }) {
   const symbol = useSymbol();
   const budget = useBudget();
   const budgetWrites = useBudgetWrites();
-  const [confirm, confirmEl] = useConfirm();
+  const [askToConfirm, confirmEl] = useConfirm();
   const save = async (fields, existing) => {
     if (existing) { await budgetWrites.update(existing.id, fields); toast.success('Expense updated'); } else { await budgetWrites.create(fields); toast.success('Expense added'); }
     budget.reload();
   };
-  const remove = async (i) => { if (!(await confirm({ title: 'Delete this expense', body: i.item_name, action: 'Delete' }))) return; await budgetWrites.remove(i.id); toast.success('Expense deleted'); budget.reload(); };
+  const remove = async (i) => { if (!(await askToConfirm({ title: 'Delete this expense', body: i.item_name, action: 'Delete' }))) return; await budgetWrites.remove(i.id); toast.success('Expense deleted'); budget.reload(); };
   const markPaid = async (i) => {
     try {
       await budget.optimistic((d) => ({ ...d, items: (d?.items || []).map((x) => (x.id === i.id ? { ...x, paid: true } : x)) }), () => budgetWrites.update(i.id, { paid: true }), () => toast.error('Could not save that. Put back the way it was.'));
@@ -355,12 +355,12 @@ function BudgetCategoryContainer({ category, back }) {
   const symbol = useSymbol();
   const budget = useBudget();
   const budgetWrites = useBudgetWrites();
-  const [confirm, confirmEl] = useConfirm();
+  const [askToConfirm, confirmEl] = useConfirm();
   const save = async (fields, existing) => {
     if (existing) { await budgetWrites.update(existing.id, fields); toast.success('Expense updated'); } else { await budgetWrites.create(fields); toast.success('Expense added'); }
     budget.reload();
   };
-  const remove = async (i) => { if (!(await confirm({ title: 'Delete this expense', body: i.item_name, action: 'Delete' }))) return; await budgetWrites.remove(i.id); toast.success('Expense deleted'); budget.reload(); };
+  const remove = async (i) => { if (!(await askToConfirm({ title: 'Delete this expense', body: i.item_name, action: 'Delete' }))) return; await budgetWrites.remove(i.id); toast.success('Expense deleted'); budget.reload(); };
   return <><BudgetCategoryScreen category={category} items={budget.data?.items || []} plan={budget.data?.plan || null} symbol={symbol} onSave={save} onDelete={remove} back={back} />{confirmEl}</>;
 }
 

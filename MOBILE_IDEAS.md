@@ -10,7 +10,7 @@ Owner decisions that bound this list (from `MOBILE_PARITY.md`): no QR codes, no 
 
 **Zola.** Countdown and checklist widgets, a guest list with RSVP tracking and text-message reminders, a registry that guests use from the same app, a wedding-day "your day" view, and a heavy push program (task nudges, RSVP arrivals, registry purchases). Zola's Home Screen widgets (countdown, next task) are the most copied feature in the category.
 
-**The Knot.** Checklist, budget, guest list, a vendor marketplace with in-app messaging to vendors, a countdown widget, and a "wedding website" share flow. Its checklist notifications are frequent and the guest list syncs with the contacts app (import guests from Contacts).
+**The Knot.** Checklist, budget, guest list, a vendor marketplace with in-app messaging to vendors, a countdown widget, and a share flow for the couple's site. Its checklist notifications are frequent and the guest list syncs with the contacts app (import guests from Contacts).
 
 **WithJoy.** Best-in-class guest site and RSVP, a "Joy app" for guests as well as couples, a photo-sharing feed on the day, offline-friendly guest-facing pages, and a clear "share your site" flow through the system share sheet.
 

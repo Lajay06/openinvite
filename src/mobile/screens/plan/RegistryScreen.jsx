@@ -9,6 +9,7 @@ import { ENTITIES } from '../../features/schemas';
 import { imageUrl } from '../../images';
 import { openExternal, shareLink } from '../../native';
 import { money } from '../../lib/format';
+import { copyText } from '@/lib/copyToClipboard';
 
 const SEGMENTS = [{ key: 'overview', label: 'Overview' }, { key: 'links', label: 'Platforms' }, { key: 'products', label: 'Products' }, { key: 'funds', label: 'Cash funds' }, { key: 'received', label: 'Received' }];
 
@@ -153,7 +154,7 @@ function ShareSheet({ open, onClose, url, links, products }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div className="oi-m-meta" style={{ overflowWrap: 'anywhere' }}>{url.replace(/^https?:\/\//, '')}</div>
           <RowGroup>
-            <Row icon={Copy} tile="neutral" label="Copy the link" onClick={async () => { try { await navigator.clipboard.writeText(url); toast.success('Link copied'); } catch { toast.error('Could not copy'); } }} chevron={false} />
+            <Row icon={Copy} tile="neutral" label="Copy the link" onClick={async () => { const { ok } = await copyText(url); if (ok) toast.success('Link copied'); else toast.error('Could not copy'); }} chevron={false} />
             <Row icon={Share2} tile="neutral" label="Share link" sub="The share sheet" onClick={async () => { const r = await shareLink({ title: 'Our wedding registry', text: message, url }); if (r === 'copied') toast.success('Link copied'); }} chevron={false} />
           </RowGroup>
         </div>

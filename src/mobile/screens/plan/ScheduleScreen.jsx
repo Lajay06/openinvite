@@ -13,6 +13,7 @@ import { sortScheduleItems } from '@/lib/scheduleOrder';
 import { buildIcsCalendar, slugifyForFilename } from '@/lib/ics';
 import { exportText } from '../../native';
 import { useConsiderations } from '../../features/ConsiderationsSheet';
+import { copyText } from '@/lib/copyToClipboard';
 
 
 const SEGMENTS = [{ key: 'timeline', label: 'Timeline' }, { key: 'events', label: 'My events' }, { key: 'runsheet', label: 'Run sheet' }, { key: 'share', label: 'Calendar' }];
@@ -63,7 +64,7 @@ export default function ScheduleScreen({ notice, items = [], sources = {}, feedU
   const [sheet, setSheet] = useState(openAdd ? { item: null } : null);
   // Reached from global search with an event id: its details open once the list is in.
   useOpenById(items, openEvent, useCallback((it) => setSheet({ item: it }), []));
-  const [confirm, confirmEl] = useConfirm();
+  const [askToConfirm, confirmEl] = useConfirm();
   const considerations = useConsiderations('schedule');
   const [type, setType] = useState('all');
   const [search, setSearch] = useState('');
@@ -83,7 +84,7 @@ export default function ScheduleScreen({ notice, items = [], sources = {}, feedU
   // ScheduleHub.jsx's four stat tiles.
   const stats = useMemo(() => { const by = (t) => events.filter((e) => e.when === t).length; return { total: events.length, onTheDay: by('wedding-day'), around: by('planning') + by('after'), todo: by('todo'), vendor: by('vendor'), deadline: by('deadline') }; }, [events]);
   const remove = async (it) => {
-    if (!(await confirm({ title: 'Delete this event', body: `${it.event_name} comes off your schedule and your guests' schedule.`, action: 'Delete' }))) return;
+    if (!(await askToConfirm({ title: 'Delete this event', body: `${it.event_name} comes off your schedule and your guests' schedule.`, action: 'Delete' }))) return;
     await onDelete(it.id);
     setSheet(null);
   };
@@ -158,7 +159,7 @@ export default function ScheduleScreen({ notice, items = [], sources = {}, feedU
                       <PanelCard tone="ink" label="Google Calendar" title="Subscribe to your schedule" body="Your schedule events, kept up to date. To-dos and deadlines stay here. Google refreshes every few hours." action="Open Google Calendar" onClick={() => onOpenHome?.('google-calendar', feedUrl)} />
                       <RowGroup>
                         <Row icon={CalendarPlus} tile="neutral" label="Add to the phone's calendar" sub="Opens the subscribe link" onClick={() => onOpenHome?.('webcal', feedUrl)} />
-                        <Row icon={Copy} tile="neutral" label="Copy subscribe link" onClick={async () => { try { await navigator.clipboard.writeText(feedUrl); toast.success('Subscribe link copied'); } catch { toast.error('Could not copy the link'); } }} chevron={false} />
+                        <Row icon={Copy} tile="neutral" label="Copy subscribe link" onClick={async () => { const { ok } = await copyText(feedUrl); if (ok) toast.success('Subscribe link copied'); else toast.error('Could not copy the link'); }} chevron={false} />
                       </RowGroup>
                     </div>
                   )}

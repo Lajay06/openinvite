@@ -22,11 +22,11 @@ export function SetEventsSheet({ open, guests = [], weddingEvents = [], onUpdate
   const [on, setOn] = useState({});
   const [saving, setSaving] = useState(false);
   useEffect(() => { if (open) setOn(Object.fromEntries(weddingEvents.map((ev) => [ev.event_id, guests.length > 0 && guests.every((g) => initial.get(g.id)?.has(ev.event_id))]))); }, [open, guests, weddingEvents, initial]);
-  const [confirm, confirmEl] = useConfirm();
+  const [askToConfirm, confirmEl] = useConfirm();
   const toggle = async (ev) => {
     const turningOff = on[ev.event_id];
     if (turningOff && guests.some((g) => initial.get(g.id)?.has(ev.event_id))) {
-      const ok = await confirm({ title: `Uninvite from ${ev.name}?`, body: `${guests.length === 1 ? (guests[0].name || 'This guest') : `${guests.length} guests`} will no longer see this event. Any reply is kept.`, action: 'Uninvite' });
+      const ok = await askToConfirm({ title: `Uninvite from ${ev.name}?`, body: `${guests.length === 1 ? (guests[0].name || 'This guest') : `${guests.length} guests`} will no longer see this event. Any reply is kept.`, action: 'Uninvite' });
       if (!ok) return;
     }
     setOn((s) => ({ ...s, [ev.event_id]: !s[ev.event_id] }));

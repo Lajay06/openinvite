@@ -55,7 +55,7 @@ export default function GuestsContainer() {
   const [templatesOpen, setTemplatesOpen] = useState(false); // shown when the clipboard refuses, as Guests.jsx does
   const [events, setEvents] = useState(null); // { guests, autoSend } for the set-events sheet
   const [bulkInvite, setBulkInvite] = useState(null); // { event, targets }
-  const [confirm, confirmEl] = useConfirm();
+  const [askToConfirm, confirmEl] = useConfirm();
 
   const d = wedding.data || null;
   const weddingEvents = useMemo(() => getWeddingEvents(d), [d]);
@@ -144,7 +144,7 @@ export default function GuestsContainer() {
   };
   const removeGuest = async (g, { goBack = false } = {}) => {
     if (!g) return;
-    if (!(await confirm({ title: `Remove ${g.name || 'this guest'}`, body: 'They come off your list, your seating and your sends.', action: 'Remove' }))) return;
+    if (!(await askToConfirm({ title: `Remove ${g.name || 'this guest'}`, body: 'They come off your list, your seating and your sends.', action: 'Remove' }))) return;
     try { await guestWrites.remove(g.id); toast.success('Guest removed'); reload(); if (goBack) navigate(`${base}/guests`, { replace: true }); } catch (e) { toast.error(e?.message || 'Could not remove this guest. Try again.'); }
   };
   const updateGuest = async (gid, updates) => { await guestWrites.update(gid, updates); };
@@ -181,7 +181,7 @@ export default function GuestsContainer() {
     addTag: async (tag) => { const t = selectedGuests.filter((g) => !(g.tags || []).includes(tag)); try { await Promise.all(t.map((g) => guestWrites.update(g.id, { tags: [...(g.tags || []), tag] }))); toast.success(`Tagged ${t.length} guest${t.length === 1 ? '' : 's'} ${tag}`); reload(); } catch { toast.error('Could not tag some guests'); } },
     removeTag: async (tag) => { const t = selectedGuests.filter((g) => (g.tags || []).includes(tag)); try { await Promise.all(t.map((g) => guestWrites.update(g.id, { tags: (g.tags || []).filter((x) => x !== tag) }))); toast.success(`Removed ${tag} from ${t.length}`); reload(); } catch { toast.error('Could not update some guests'); } },
     remove: async () => {
-      if (!(await confirm({ title: `Remove ${selectedGuests.length} guest${selectedGuests.length === 1 ? '' : 's'}`, body: 'They come off your list, your seating and your sends.', action: 'Remove' }))) return;
+      if (!(await askToConfirm({ title: `Remove ${selectedGuests.length} guest${selectedGuests.length === 1 ? '' : 's'}`, body: 'They come off your list, your seating and your sends.', action: 'Remove' }))) return;
       try { await Promise.all(selectedGuests.map((g) => guestWrites.remove(g.id))); toast.success(`Removed ${selectedGuests.length}`); setSelected(null); reload(); } catch { toast.error('Could not remove some guests'); }
     },
   };

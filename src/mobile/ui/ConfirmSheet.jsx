@@ -4,7 +4,7 @@ import PillButton from './PillButton';
 
 /**
  * A sheet-based confirm for destructive actions, in place of window.confirm.
- * `useConfirm()` returns [confirm, element]: `await confirm({ title, body, action })`
+ * `useConfirm()` returns [confirm, element]: `await askToConfirm({ title, body, action })`
  * resolves true when the couple taps the action.
  */
 export function useConfirm() {

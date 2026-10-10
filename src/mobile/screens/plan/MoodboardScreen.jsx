@@ -61,13 +61,13 @@ export default function MoodboardScreen({ items = [], coverPhoto, galleryPhotos 
   const [searchOpen, setSearchOpen] = useState(false);
   const [q, setQ] = useState('');
   const [mode, setMode] = useListView('MoodboardItem', 'grid');
-  const [confirm, confirmEl] = useConfirm();
+  const [askToConfirm, confirmEl] = useConfirm();
   const allBoards = useMemo(() => [...new Set([...boards, ...items.map((i) => i.board_name).filter(Boolean)])], [boards, items]);
   const onBoard = useMemo(() => items.filter((i) => (i.board_name || 'Main board') === board), [items, board]);
   const visible = useMemo(() => onBoard.filter((i) => category === 'all' || i.category === category), [onBoard, category]);
   const results = useMemo(() => { const s = q.trim().toLowerCase(); return s ? items.filter((i) => i.title?.toLowerCase().includes(s) || (i.tags || []).some((t) => t.toLowerCase().includes(s))) : []; }, [items, q]);
   const cats = useMemo(() => ['all', ...MOODBOARD_CATEGORIES.filter((c) => onBoard.some((i) => i.category === c))], [onBoard]);
-  const remove = async (it) => { if (!(await confirm({ title: 'Remove this pin', body: it.title, action: 'Remove' }))) return; await onDelete(it.id); setSheet(null); setView(null); };
+  const remove = async (it) => { if (!(await askToConfirm({ title: 'Remove this pin', body: it.title, action: 'Remove' }))) return; await onDelete(it.id); setSheet(null); setView(null); };
   const exportBoard = async () => {
     // Moodboard.jsx exports the union: moodboard pins, the Photo gallery and the cover.
     const list = collectPhotoItems({ photos: galleryPhotos, moodboard: items, coverPhoto });
