@@ -3,7 +3,7 @@
  *
  * THE BOUNCE WEBHOOK ACCEPTS WHAT RESEND SIGNED, AND NOTHING ELSE.
  *
- * Item 1 of goals/2026-10-10-bounces-and-notes.md. api/webhooks/resend.js is a
+ * Item 1 of goals/2026-10-10-bounces-and-notes.md. api/resend-webhook.js is a
  * PUBLIC endpoint that writes to a guest record, so the signature is the only
  * thing standing between a stranger and a stamp on someone's guest list. That
  * is what most of this file is about.
@@ -46,10 +46,10 @@ import handler, {
   sanitizeDetail,
   isPermanentBounce,
   bounceStamp,
-} from '../../api/webhooks/resend.js';
+} from '../../api/resend-webhook.js';
 
 const ROOT = path.resolve(new URL('../../', import.meta.url).pathname);
-const SOURCE = 'api/webhooks/resend.js';
+const SOURCE = 'api/resend-webhook.js';
 
 /** A signing secret in Resend's own format. Fixture only, and never sent. */
 const SECRET = `whsec_${Buffer.from('resend-bounce-guard-fixture-secret').toString('base64')}`;
