@@ -138,5 +138,28 @@ export async function runEmailOnlyChannel() {
   ok('  and the QR a guest scans to message the couple is still there',
      exists('src/components/messages/WhatsAppQRCode.jsx'), 'that QR points at the couple, not the site');
 
+  // ── THE MOBILE SHELL: THE SAME ONE CHANNEL ──────────────────────────────
+  // Parity PR 1 of goals/2026-10-10-mobile-pass.md. The shell's send flow
+  // still opened wa.me, a chat sent from the couple's own account, which the
+  // server's stop-emails check (#951) never sees: a guest who opted out could
+  // still be sent the site. Same ruling, same pairing of each absence with
+  // something that must still be there.
+  const mSend = code(read('src/mobile/screens/guests/SendInvitesScreen.jsx'));
+  ok('the mobile send flow opens no WhatsApp',
+     !/wa\.me|buildWhatsApp|toWaMe|waQueue/.test(mSend), 'no link, no message, no queue');
+  ok('  and holds no channel to switch on',
+     !/setChannel|channel === '/.test(mSend), 'no channel state, no branches');
+  ok('  and records the channel as a literal',
+     /const channelStr = 'email';/.test(mSend), "invite_channel: 'email'");
+  ok('  while the email send itself is intact',
+     /const recipients = \[/.test(mSend) && /api\.json\('\/api\/send-invites'/.test(mSend), 'recipients built, endpoint called');
+  ok('  and a guest with no email is still named as skipped',
+     /why: g\.email \? '' : 'No email'/.test(mSend), 'one row each');
+  ok('  and the Invitations screen promises email only',
+     !/WhatsApp/.test(code(read('src/mobile/screens/plan/InvitationsScreen.jsx'))), 'no second channel in the copy');
+  // The shell's Messages screen keeps its per-guest WhatsApp reply, as the web's does.
+  ok('  while the mobile Messages screen keeps its WhatsApp reply',
+     /WhatsAppComposeSheet/.test(code(read('src/mobile/screens/plan/MessagesScreen.jsx'))), 'a guest who wrote in can be answered');
+
   return results;
 }
