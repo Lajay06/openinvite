@@ -117,11 +117,16 @@ export async function runRetentionSkipCounters() {
   const cron = code(CRON);
   ok('both counters are initialised in the retention tally',
      /skipped_lifecycle_off: 0/.test(cron) && /skipped_before_ship: 0/.test(cron), 'both at zero');
+  // THE DETAIL NAMES WHAT IS MISSING. It read 'incremented' unconditionally,
+  // so a plant that dropped an increment printed a FAIL whose detail still
+  // claimed both were there.
+  const missing = [
+    [/retentionSkipReason\(user\)/, 'the classifier is not called'],
+    [/tally\.retention\.skipped_lifecycle_off\+\+/, 'skipped_lifecycle_off is never incremented'],
+    [/tally\.retention\.skipped_before_ship\+\+/, 'skipped_before_ship is never incremented'],
+  ].filter(([re]) => !re.test(cron)).map(([, why]) => why);
   ok('  both are incremented from the one classifier',
-     /retentionSkipReason\(user\)/.test(cron)
-       && /tally\.retention\.skipped_lifecycle_off\+\+/.test(cron)
-       && /tally\.retention\.skipped_before_ship\+\+/.test(cron),
-     'incremented');
+     missing.length === 0, missing.join(' · ') || 'both incremented');
   // THE TALLY IS WHAT THE LOG PRINTS. The success line serializes `tally`, so
   // membership of that object is what makes a counter visible.
   ok('  and the tally itself is what the success line prints',
