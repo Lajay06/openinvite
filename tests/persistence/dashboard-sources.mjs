@@ -112,6 +112,10 @@ export async function runDashboardSources() {
   const STRICT_BY_DECISION = [
     'pages/DailyUpdate.jsx', 'pages/Dashboard.jsx',
     'lib/createMyWeddingDetails.js', 'pages/Onboarding.jsx',
+    // The mobile app's data seam and its notification feed: every mobile
+    // screen has its own error state, so a failed load must say so rather
+    // than read as empty (src/mobile/data/realApi.js). Mobile pass, 2026-10-10.
+    'mobile/data/realApi.js', 'mobile/notifications/useNotifications.js',
   ].sort();
   check('only the two count-rendering pages opt into strict loaders; the soft default is untouched elsewhere',
     JSON.stringify([...strictCallers].sort()) === JSON.stringify(STRICT_BY_DECISION),

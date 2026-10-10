@@ -1,0 +1,1060 @@
+/* src/mobile/styles/mobile.css
+ *
+ * Everything here is scoped under .oi-mobile-root. Nothing leaks into the
+ * desktop dashboard or the guest site. See src/mobile/DESIGN_MOBILE.md for
+ * the tokens and the reasoning; this file is their implementation.
+ *
+ * MOBILE EXCEPTION. Rounded cards and one soft elevation are deliberate here
+ * and only here. Do not carry them outside src/mobile/, and do not square
+ * them off inside it.
+ *
+ * Global rules in src/index.css still reach in (the `*` font-family with
+ * !important, Tailwind's preflight). Where one of them fights a mobile rule,
+ * the mobile rule is written with the same or higher specificity here rather
+ * than by editing index.css, which is out of bounds for this branch.
+ */
+
+.oi-mobile-root {
+  /* color. Every value here is from DESIGN_SPEC.md: the brand red, the
+     black, white, the spec's greys and one alpha tint of the red (the
+     dashboard uses that tint in over a hundred places). No brown, cream,
+     beige, wine or warm grey: those were removed on 2026-09-21 and the tone
+     names (wine, sand, blush) went with them so they cannot come back. */
+  --m-bg: #F7F7F7;
+  --m-card: #FFFFFF;
+  --m-block: #FFFFFF;
+  --m-line: rgba(10, 10, 10, 0.08);
+  --m-text: #0A0A0A;
+  --m-text-2: #444444;
+  --m-primary: #E03553;
+  --m-primary-soft: rgba(224, 53, 83, 0.1);
+  --m-press: rgba(10, 10, 10, 0.08);
+  --m-ink: #0A0A0A;
+  --m-neutral: #F7F7F7;
+  --m-tint: var(--m-primary-soft);
+  --m-on-dark: #FFFFFF;
+  --m-on-dark-2: rgba(255, 255, 255, 0.72);
+  /* Status pairs: the same values the dashboard's guest list uses for
+     attending, awaiting and declined. Semantic, not palette. */
+  --m-ok: #166534;
+  --m-ok-bg: #DCFCE7;
+  --m-warn: #854D0E;
+  --m-warn-bg: #FEF9C3;
+  --m-no: #991B1B;
+  --m-no-bg: #FEE2E2;
+  --m-scrim: linear-gradient(to top, rgba(10, 10, 10, 0.82) 0%, rgba(10, 10, 10, 0.35) 45%, rgba(10, 10, 10, 0) 100%);
+
+  /* radius */
+  --m-r-card: 20px;
+  --m-r-image: 16px;
+  --m-r-input: 14px;
+  --m-r-sheet: 28px;
+  --m-r-pill: 999px;
+
+  /* the one elevation */
+  --m-elev: 0 8px 24px rgba(0, 0, 0, 0.08);
+
+  /* layout */
+  --m-gutter: 20px;
+  --m-tab-h: 64px;
+  --m-tab-inset: 12px;
+  --m-safe-top: env(safe-area-inset-top, 0px);
+  --m-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --m-compact-h: 52px;
+  --m-bottom-reserve: calc(var(--m-tab-h) + var(--m-tab-inset) + var(--m-safe-bottom));
+
+  /* motion */
+  --m-ease: cubic-bezier(0.2, 0, 0, 1);
+  --m-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --m-fast: 120ms;
+  --m-move: 240ms;
+
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--m-bg);
+  color: var(--m-text);
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+.oi-mobile-root *,
+.oi-mobile-root *::before,
+.oi-mobile-root *::after {
+  box-sizing: border-box;
+}
+
+/* Resets are wrapped in :where() so they carry zero specificity and never
+   outrank a component class. */
+:where(.oi-mobile-root) :where(h1, h2, h3) {
+  margin: 0;
+  font-weight: 600;
+  color: var(--m-text);
+  letter-spacing: 0;
+}
+:where(.oi-mobile-root) :where(p) {
+  margin: 0;
+}
+:where(.oi-mobile-root) :where(button) {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+:where(.oi-mobile-root) :where(a) {
+  color: inherit;
+  text-decoration: none;
+}
+:where(.oi-mobile-root) :where(img) {
+  display: block;
+  max-width: 100%;
+}
+/* Class specificity on purpose: the preflight's input { font-size: 100% }
+   must not win now that the root is 15px; inputs stay 16px so iOS does not
+   zoom. */
+.oi-mobile-root :where(input, textarea, select) {
+  font: inherit;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--m-text);
+}
+
+/* ── Type ───────────────────────────────────────────────────────────── */
+.oi-m-title { font-size: 28px; line-height: 34px; font-weight: 600; }
+/* Figures are the font's default proportional set. Never tabular-nums or
+   font-feature-settings "tnum" here: Plus Jakarta Sans swaps in a footed 1
+   and a condensed 0 for its tabular figures, which read as another font. */
+.oi-m-hero-num { font-size: 44px; line-height: 48px; font-weight: 600; overflow-wrap: anywhere; }
+/* Long money strings step down rather than clip. */
+.oi-m-hero-num--long { font-size: 34px; line-height: 38px; }
+.oi-m-section { font-size: 17px; line-height: 22px; font-weight: 600; }
+.oi-m-body { font-size: 15px; line-height: 22px; }
+.oi-m-meta { font-size: 13px; line-height: 18px; color: var(--m-text-2); }
+.oi-m-strong { font-weight: 600; }
+.oi-m-num { font-size: 28px; line-height: 34px; font-weight: 600; }
+.oi-m-on-dark { color: var(--m-on-dark); }
+.oi-m-on-dark-2 { color: var(--m-on-dark-2); }
+
+/* ── Press state, shared by every tappable card and button ──────────── */
+.oi-m-press {
+  transition: transform var(--m-fast) var(--m-ease), opacity var(--m-fast) var(--m-ease), background-color var(--m-fast) var(--m-ease);
+}
+.oi-m-press:active { transform: scale(0.98); }
+
+/* ── Screen scaffold ────────────────────────────────────────────────── */
+.oi-m-screen {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding-top: calc(var(--m-safe-top) + var(--m-compact-h));
+  /* tab bar + Ava button (56 + 16 air) so a list can end above both */
+  padding-bottom: calc(var(--m-bottom-reserve) + 88px);
+}
+
+/* The compact bar sits above the scroller and blurs in once the large title
+   has scrolled past. transform+opacity only. */
+.oi-m-compact {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: calc(var(--m-safe-top) + var(--m-compact-h));
+  padding: var(--m-safe-top) var(--m-gutter) 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  z-index: 5;
+  pointer-events: none;
+}
+.oi-m-compact::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* The same frosted treatment as the tab bar (goal 6). */
+  background: rgba(255, 255, 255, 0.7);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: var(--m-elev);
+  opacity: 0;
+  transition: opacity var(--m-move) var(--m-ease);
+}
+.oi-m-compact--on::before { opacity: 1; }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .oi-m-compact::before { background: rgba(255, 255, 255, 0.98); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .oi-m-compact::before { background: rgba(255, 255, 255, 0.98); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+.oi-m-compact__title {
+  position: relative;
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity var(--m-move) var(--m-ease), transform var(--m-move) var(--m-ease);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.oi-m-compact--on .oi-m-compact__title { opacity: 1; transform: translateY(0); }
+.oi-m-compact__actions,
+.oi-m-compact__back { position: relative; pointer-events: auto; display: flex; gap: 8px; }
+
+.oi-m-header { padding: 8px var(--m-gutter) 20px; }
+.oi-m-header__title { min-width: 0; overflow-wrap: anywhere; }
+
+/* ── Circular icon button: 44px, white, no shadow ───────────────────── */
+.oi-m-iconbtn {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--m-card);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--m-text);
+  flex-shrink: 0;
+  transition: transform var(--m-fast) var(--m-ease), background-color var(--m-fast) var(--m-ease);
+}
+.oi-m-iconbtn:active { transform: scale(0.94); background: var(--m-press); }
+.oi-m-iconbtn--ghost { background: transparent; }
+.oi-m-iconbtn--dark { background: rgba(10, 10, 10, 0.45); color: #FFFFFF; }
+/* The brand mark on a tab root (goal 8): 28px, no wordmark, inside a 44px tap target. */
+.oi-m-mark { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; margin-left: -8px; flex-shrink: 0; border-radius: 50%; }
+.oi-m-mark img { width: 28px; height: 28px; display: block; }
+.oi-m-mark--btn { background: none; border: 0; padding: 0; transition: transform var(--m-fast) var(--m-ease); }
+.oi-m-mark--btn:active { transform: scale(0.94); }
+/* The messages button's unread count: a small primary pill, the same place the dot sits. */
+.oi-m-badge { position: absolute; top: 6px; right: 4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--m-r-pill); background: var(--m-primary); color: #FFFFFF; font-size: 11px; line-height: 18px; font-weight: 600; text-align: center; border: 2px solid var(--m-bg); box-sizing: content-box; }
+.oi-m-dot {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--m-primary);
+  border: 2px solid var(--m-card);
+}
+
+/* ── Stacks, cards, sections ────────────────────────────────────────── */
+.oi-m-stack { display: flex; flex-direction: column; gap: 12px; padding: 0 var(--m-gutter); }
+/* Section spacing: 40px between sections, 12px between a heading and its content. */
+.oi-m-stack--24 { gap: 40px; }
+.oi-m-stagger > * { animation: oiMobileEnter var(--m-move) var(--m-ease) both; }
+.oi-m-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.oi-m-stagger > *:nth-child(2) { animation-delay: 40ms; }
+.oi-m-stagger > *:nth-child(3) { animation-delay: 80ms; }
+.oi-m-stagger > *:nth-child(4) { animation-delay: 120ms; }
+.oi-m-stagger > *:nth-child(5) { animation-delay: 160ms; }
+.oi-m-stagger > *:nth-child(6) { animation-delay: 200ms; }
+.oi-m-stagger > *:nth-child(7) { animation-delay: 240ms; }
+.oi-m-stagger > *:nth-child(n + 8) { animation-delay: 280ms; }
+
+.oi-m-card,
+.oi-m-block { background: var(--m-card); border-radius: var(--m-r-card); padding: 16px; }
+.oi-m-card--flush,
+.oi-m-block--flush { padding: 0; overflow: hidden; }
+.oi-m-block__head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.oi-m-block__link {
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--m-primary);
+  min-height: 44px;
+  min-width: 44px;
+  justify-content: flex-end;
+  display: inline-flex;
+  align-items: center;
+  margin: -12px 0;
+  white-space: nowrap;
+}
+.oi-m-section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 0 0 12px; }
+
+/* ── Rows inside a rounded card ─────────────────────────────────────── */
+.oi-m-row {
+  width: 100%;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--m-card);
+  transition: background-color var(--m-fast) var(--m-ease);
+}
+.oi-m-row + .oi-m-row { border-top: 1px solid var(--m-line); }
+.oi-m-row--pressable:active { background: var(--m-press); }
+.oi-m-row__tile {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--m-bg);
+  color: var(--m-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+.oi-m-row__tile--primary { background: var(--m-primary-soft); color: var(--m-primary); }
+.oi-m-row__tile--ink { background: var(--m-ink); color: var(--m-on-dark); }
+.oi-m-row__tile--neutral { background: var(--m-neutral); }
+.oi-m-row__tile--tint { background: var(--m-tint); color: var(--m-primary); }
+.oi-m-row__tile--ok { background: var(--m-ok-bg); color: var(--m-ok); }
+.oi-m-row__tile--warn { background: var(--m-warn-bg); color: var(--m-warn); }
+.oi-m-row__body { flex: 1; min-width: 0; }
+.oi-m-row__label { font-size: 15px; line-height: 22px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oi-m-row__label--wrap { white-space: normal; }
+.oi-m-row__sub { font-size: 13px; line-height: 18px; color: var(--m-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oi-m-row__value { font-size: 13px; line-height: 18px; color: var(--m-text-2); flex-shrink: 0; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oi-m-row__chevron { flex-shrink: 0; color: var(--m-text-2); }
+
+/* ── Pills and buttons ──────────────────────────────────────────────── */
+.oi-m-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: var(--m-r-pill);
+  font-size: 15px;
+  line-height: 24px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: transform var(--m-fast) var(--m-ease), opacity var(--m-fast) var(--m-ease), background-color var(--m-fast) var(--m-ease);
+}
+.oi-m-pill--sm { min-height: 44px; padding: 0 18px; font-size: 15px; }
+.oi-m-pill--primary { background: var(--m-primary); color: #FFFFFF; }
+.oi-m-pill--secondary { background: var(--m-card); color: var(--m-text); border: 1px solid var(--m-line); }
+.oi-m-pill--ghost { background: var(--m-bg); color: var(--m-text); }
+.oi-m-pill--light { background: #FFFFFF; color: var(--m-text); }
+.oi-m-pill--block { width: 100%; }
+.oi-m-pill:active { transform: scale(0.98); opacity: 0.85; }
+.oi-m-pill:disabled { opacity: 0.45; cursor: default; }
+
+.oi-m-filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 0 var(--m-gutter) 4px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.oi-m-filters::-webkit-scrollbar { display: none; }
+.oi-m-filter {
+  flex-shrink: 0;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 16px;
+  border-radius: var(--m-r-pill);
+  border: 1px solid transparent;
+  background: var(--m-card);
+  color: var(--m-text);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color var(--m-fast) var(--m-ease), color var(--m-fast) var(--m-ease), transform var(--m-fast) var(--m-ease);
+}
+.oi-m-filter--on { background: var(--m-text); color: #FFFFFF; }
+.oi-m-filter:active { transform: scale(0.96); }
+.oi-m-segments { display: flex; gap: 8px; overflow-x: auto; padding: 0 var(--m-gutter) 20px; scrollbar-width: none; }
+.oi-m-segments::-webkit-scrollbar { display: none; }
+
+.oi-m-status {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--m-r-pill);
+  padding: 2px 10px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.oi-m-status--ok { background: var(--m-ok-bg); color: var(--m-ok); }
+.oi-m-status--warn { background: var(--m-warn-bg); color: var(--m-warn); }
+.oi-m-status--no { background: var(--m-no-bg); color: var(--m-no); }
+.oi-m-status--neutral { background: var(--m-bg); color: var(--m-text-2); }
+.oi-m-status--light { background: rgba(255, 255, 255, 0.92); color: var(--m-text); }
+
+/* ── Progress ───────────────────────────────────────────────────────── */
+.oi-m-progress { height: 6px; width: 100%; background: var(--m-line); border-radius: var(--m-r-pill); overflow: hidden; }
+.oi-m-progress--on-dark { background: rgba(255, 255, 255, 0.22); }
+.oi-m-progress__fill { height: 100%; background: var(--m-primary); border-radius: var(--m-r-pill); transition: width 600ms var(--m-ease); }
+.oi-m-progress--on-dark .oi-m-progress__fill { background: #FFFFFF; }
+
+/* ── Image and hero ─────────────────────────────────────────────────── */
+.oi-m-img { position: relative; overflow: hidden; background: var(--m-neutral); border-radius: var(--m-r-image); }
+.oi-m-img__el { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity var(--m-move) var(--m-ease); }
+.oi-m-img--loaded .oi-m-img__el { opacity: 1; }
+.oi-m-img--square { border-radius: 0; }
+
+.oi-m-hero {
+  position: relative;
+  border-radius: var(--m-r-card);
+  overflow: hidden;
+  background: var(--m-ink);
+  color: var(--m-on-dark);
+  aspect-ratio: 4 / 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px;
+  isolation: isolate;
+  width: 100%;
+  text-align: left;
+}
+.oi-m-hero--short { aspect-ratio: 4 / 3; }
+.oi-m-hero .oi-m-img { position: absolute; inset: 0; border-radius: 0; z-index: 0; }
+.oi-m-hero__scrim { position: absolute; inset: 0; background: var(--m-scrim); z-index: 1; }
+.oi-m-hero__body { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 8px; }
+.oi-m-hero__label { font-size: 13px; line-height: 18px; color: var(--m-on-dark-2); }
+.oi-m-hero__title { font-size: 28px; line-height: 34px; font-weight: 600; color: var(--m-on-dark); overflow-wrap: anywhere; }
+.oi-m-hero .oi-m-pill { align-self: flex-start; margin-top: 8px; }
+.oi-m-hero__top { position: absolute; top: 16px; right: 16px; z-index: 2; }
+
+/* ── Carousels ──────────────────────────────────────────────────────── */
+.oi-m-peek {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: var(--m-gutter);
+  padding: 0 var(--m-gutter);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.oi-m-peek::-webkit-scrollbar { display: none; }
+.oi-m-peek__item { flex: 0 0 78%; scroll-snap-align: start; }
+.oi-m-peek--wide .oi-m-peek__item { flex: 0 0 calc(100% - 44px); }
+.oi-m-peek--narrow .oi-m-peek__item { flex: 0 0 62%; }
+/* Full: one card fills the view and the next sits a whole gutter pair away,
+   so nothing peeks; snap-stop makes a swipe move exactly one card. */
+.oi-m-peek--full { gap: calc(var(--m-gutter) * 2); }
+.oi-m-peek--full .oi-m-peek__item { flex: 0 0 100%; scroll-snap-stop: always; }
+.oi-m-peek__item:last-child { margin-right: var(--m-gutter); }
+.oi-m-dots { display: flex; justify-content: center; gap: 6px; padding-top: 12px; }
+.oi-m-dots__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--m-line); transition: background-color var(--m-fast) var(--m-ease), width var(--m-move) var(--m-spring); }
+.oi-m-dots__dot--on { background: var(--m-text); width: 18px; border-radius: var(--m-r-pill); }
+
+/* ── Grids and tiles ────────────────────────────────────────────────── */
+.oi-m-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.oi-m-grid2 > * { min-width: 0; }
+.oi-m-tile {
+  position: relative;
+  background: var(--m-card);
+  border-radius: var(--m-r-card);
+  padding: 16px;
+  min-height: 124px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  overflow: hidden;
+  isolation: isolate;
+  text-align: left;
+}
+.oi-m-tile--photo { color: var(--m-on-dark); background: var(--m-ink); min-height: 148px; }
+.oi-m-tile--photo .oi-m-img { position: absolute; inset: 0; border-radius: 0; z-index: 0; }
+.oi-m-tile--photo .oi-m-hero__scrim { z-index: 1; }
+.oi-m-tile--neutral { background: var(--m-card); border: 1px solid var(--m-line); }
+.oi-m-tile--tint { background: var(--m-tint); }
+.oi-m-tile__top, .oi-m-tile__bottom { position: relative; z-index: 2; }
+.oi-m-tile__icon { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--m-bg); color: var(--m-text); }
+.oi-m-tile--neutral .oi-m-tile__icon { background: var(--m-neutral); }
+.oi-m-tile--tint .oi-m-tile__icon { background: rgba(255, 255, 255, 0.7); }
+.oi-m-tile--photo .oi-m-tile__icon { background: rgba(255, 255, 255, 0.18); color: #FFFFFF; }
+.oi-m-tile__name { font-size: 15px; line-height: 20px; font-weight: 600; overflow-wrap: anywhere; hyphens: auto; }
+.oi-m-tile__stat { font-size: 13px; line-height: 18px; color: var(--m-text-2); }
+.oi-m-tile--photo .oi-m-tile__stat { color: var(--m-on-dark-2); }
+
+/* A slim info note under a screen title (goal 8, the Guest suite tab): white card, hairline, icon, one sentence, a close button. */
+.oi-m-note { display: flex; align-items: flex-start; gap: 12px; padding: 12px 8px 12px 16px; background: var(--m-card); border: 1px solid var(--m-line); border-radius: var(--m-r-card); }
+.oi-m-note__icon { flex-shrink: 0; margin-top: 2px; color: var(--m-text-2); }
+.oi-m-note__text { flex: 1; margin: 0; font-size: 13px; line-height: 18px; color: var(--m-text-2); padding-top: 2px; }
+.oi-m-note__close { flex-shrink: 0; width: 44px; height: 44px; margin: -12px -4px -12px 0; border-radius: 50%; background: none; border: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--m-text-2); }
+.oi-m-note__close:active { background: var(--m-press); }
+/* The guest suite and invitation previews (goal 8): the desktop renderers at phone width, scaled into a tile or scrolling in a sheet. */
+.oi-m-sitepreview { position: relative; display: block; overflow: hidden; border-radius: var(--m-r-image); background: var(--m-neutral); border: 0; padding: 0; margin: 0; text-align: left; }
+.oi-m-sitepreview__scale { position: absolute; top: 0; left: 0; transform-origin: top left; overflow: hidden; pointer-events: none; background: #FFFFFF; }
+.oi-m-sitepreview__hint { position: absolute; right: 12px; bottom: 12px; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: var(--m-r-pill); background: rgba(10, 10, 10, 0.72); color: #FFFFFF; font-size: 13px; line-height: 18px; font-weight: 600; }
+.oi-m-sitepreview-sheet { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.oi-m-sitepreview-sheet__pages { flex-shrink: 0; padding: 4px 0 12px; }
+/* The frame scrolls its own content and contains the guest nav's fixed menu (translateZ, as FullScreenPreview.jsx's phone frame). */
+.oi-m-sitepreview-sheet__frame { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; background: #FFFFFF; transform: translateZ(0); scrollbar-width: none; }
+/* Budget forecasting (goal 8): the health panel and the projection graph, on the tokens. */
+.oi-m-health { display: flex; flex-direction: column; min-height: 0; }
+.oi-m-health__label { margin-bottom: 6px; }
+.oi-m-health__score { display: flex; align-items: baseline; margin-top: 4px; }
+.oi-m-health__of { opacity: 0.8; }
+.oi-m-health__why { margin-top: 8px; opacity: 0.88; }
+.oi-m-health__line { margin-top: 8px; }
+.oi-m-health__fail { margin-top: 8px; color: #FFFFFF; }
+.oi-m-chart svg { display: block; overflow: visible; }
+.oi-m-chart__grid { stroke: var(--m-line); stroke-width: 1; }
+.oi-m-chart__tick { font-size: 10px; fill: var(--m-text-2); font-family: inherit; }
+.oi-m-chart__area--planned { fill: rgba(10, 10, 10, 0.06); }
+.oi-m-chart__area--actual { fill: var(--m-primary-soft); }
+.oi-m-chart__line { fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.oi-m-chart__line--planned { stroke: var(--m-text-2); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.oi-m-chart__line--actual { stroke: var(--m-primary); stroke-width: 2; }
+.oi-m-chart__dot { fill: var(--m-primary); }
+.oi-m-chart__legend { display: flex; align-items: center; gap: 16px; margin-top: 10px; font-size: 13px; line-height: 18px; color: var(--m-text-2); }
+.oi-m-chart__legend span { display: inline-flex; align-items: center; gap: 6px; }
+.oi-m-chart__swatch { display: inline-block; width: 12px; height: 3px; border-radius: var(--m-r-pill); }
+.oi-m-chart__swatch--planned { background: var(--m-text-2); }
+.oi-m-chart__swatch--actual { background: var(--m-primary); }
+/* A one-line notice under a screen title (goal 8): the offline day's "showing what loaded last". */
+.oi-m-notice { margin: -8px var(--m-gutter) 16px; padding: 10px 14px; background: var(--m-card); border: 1px solid var(--m-line); border-radius: var(--m-r-input); font-size: 13px; line-height: 18px; color: var(--m-text-2); }
+/* The guest list's four numbers (goal 8): a 2 by 2 grid of tappable stats inside the card. Active: number and label in primary. */
+.oi-m-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; margin-bottom: 12px; }
+.oi-m-stat-btn { display: flex; flex-direction: column; align-items: flex-start; text-align: left; min-height: 56px; padding: 4px 0; margin: 0; background: none; border: 0; border-radius: var(--m-r-input); color: var(--m-text); font: inherit; transition: transform var(--m-fast) var(--m-ease); }
+.oi-m-stat-btn:active { transform: scale(0.98); }
+.oi-m-stat-btn--on .oi-m-num, .oi-m-stat-btn--on .oi-m-stat-btn__label { color: var(--m-primary); }
+.oi-m-stat-btn__sub { display: block; font-size: 12px; line-height: 16px; }
+.oi-m-stat { background: var(--m-card); border-radius: var(--m-r-card); padding: 16px; display: flex; flex-direction: column; gap: 12px; min-height: 132px; text-align: left; width: 100%; }
+.oi-m-stat--ink { background: var(--m-ink); color: var(--m-on-dark); }
+.oi-m-stat--ink .oi-m-meta { color: var(--m-on-dark-2); }
+.oi-m-stat__icon { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--m-primary-soft); color: var(--m-primary); }
+.oi-m-stat--ink .oi-m-stat__icon { background: rgba(255, 255, 255, 0.14); color: #FFFFFF; }
+.oi-m-stat__num { font-size: 28px; line-height: 34px; font-weight: 600; overflow-wrap: anywhere; }
+.oi-m-stat__num--long { font-size: 22px; line-height: 28px; }
+
+.oi-m-panel { border-radius: var(--m-r-card); padding: 20px; display: flex; flex-direction: column; gap: 8px; min-height: 120px; width: 100%; text-align: left; }
+.oi-m-panel--ink { background: var(--m-ink); color: var(--m-on-dark); }
+.oi-m-panel--tint { background: var(--m-tint); color: var(--m-text); }
+.oi-m-panel--neutral { background: var(--m-card); color: var(--m-text); border: 1px solid var(--m-line); }
+.oi-m-panel--ink .oi-m-meta { color: var(--m-on-dark-2); }
+.oi-m-panel__mark { font-size: 22px; line-height: 1; }
+
+.oi-m-imgcard {
+  position: relative;
+  background: var(--m-card);
+  border-radius: var(--m-r-card);
+  padding: 8px 8px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+}
+.oi-m-imgcard__body { padding: 0 8px; display: flex; flex-direction: column; gap: 2px; }
+.oi-m-imgcard__title { font-size: 15px; line-height: 20px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oi-m-imgcard__badge { position: absolute; top: 18px; left: 18px; z-index: 2; }
+
+/* ── Empty, error, skeleton ─────────────────────────────────────────── */
+.oi-m-empty { background: var(--m-card); border-radius: var(--m-r-card); padding: 32px 20px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; overflow: hidden; }
+.oi-m-empty__icon { width: 56px; height: 56px; border-radius: 50%; background: var(--m-neutral); color: var(--m-text); display: inline-flex; align-items: center; justify-content: center; }
+.oi-m-skel { background: var(--m-line); border-radius: var(--m-r-image); width: 100%; }
+.oi-m-skel--text { height: 16px; border-radius: 8px; }
+.oi-m-skel--title { height: 28px; width: 60%; border-radius: 8px; }
+.oi-m-skel--row { height: 60px; }
+.oi-m-skel--block { height: 120px; border-radius: var(--m-r-card); }
+.oi-m-skel--hero { aspect-ratio: 4 / 5; border-radius: var(--m-r-card); }
+.oi-m-skel--circle { border-radius: 50%; }
+
+/* ── Forms ──────────────────────────────────────────────────────────── */
+.oi-m-field { display: flex; flex-direction: column; gap: 6px; }
+.oi-m-field__label { font-size: 13px; line-height: 18px; font-weight: 600; color: var(--m-text-2); padding-left: 4px; }
+.oi-m-input {
+  width: 100%;
+  min-height: 52px;
+  padding: 14px 16px;
+  background: var(--m-bg);
+  border: 1.5px solid transparent;
+  border-radius: var(--m-r-input);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: border-color var(--m-fast) var(--m-ease), background-color var(--m-fast) var(--m-ease);
+}
+.oi-m-input:focus { border-color: var(--m-text); background: var(--m-card); }
+.oi-m-input--error { border-color: var(--m-primary); }
+.oi-m-input::placeholder { color: var(--m-text-2); opacity: 1; }
+textarea.oi-m-input { min-height: 104px; resize: vertical; }
+select.oi-m-input { background-image: none; padding-right: 44px; }
+.oi-m-field__error { font-size: 13px; line-height: 18px; color: var(--m-primary); padding-left: 4px; }
+.oi-m-select-wrap { position: relative; }
+.oi-m-select-wrap svg { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--m-text-2); }
+.oi-m-check { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: -10px; }
+.oi-m-check__box {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--m-text-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  transition: background-color var(--m-fast) var(--m-ease), border-color var(--m-fast) var(--m-ease), transform var(--m-fast) var(--m-spring);
+}
+.oi-m-check__box--on { background: var(--m-primary); border-color: var(--m-primary); transform: scale(1.06); }
+.oi-m-switch { width: 60px; height: 44px; position: relative; flex-shrink: 0; background: transparent; }
+/* The visible 52x32 track sits inside a 44px-tall hit area. */
+.oi-m-switch::before { content: ''; position: absolute; left: 4px; top: 6px; width: 52px; height: 32px; border-radius: var(--m-r-pill); background: var(--m-line); transition: background-color var(--m-move) var(--m-ease); }
+.oi-m-switch::after { content: ''; position: absolute; top: 9px; left: 7px; width: 26px; height: 26px; border-radius: 50%; background: #FFFFFF; transition: transform var(--m-move) var(--m-spring); }
+.oi-m-switch--on::before { background: var(--m-primary); }
+.oi-m-switch--on::after { transform: translateX(20px); }
+
+/* ── Tab bar: a floating pill ───────────────────────────────────────── */
+.oi-m-tabbar {
+  position: absolute;
+  left: var(--m-tab-inset);
+  right: var(--m-tab-inset);
+  bottom: calc(var(--m-tab-inset) + var(--m-safe-bottom));
+  height: var(--m-tab-h);
+  border-radius: var(--m-r-pill);
+  /* Frosted glass (goal 6): a white tint over the blur, a hairline white inner border, the one elevation token. Content scrolls visibly underneath. */
+  background: rgba(255, 255, 255, 0.7);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4), var(--m-elev);
+  display: flex;
+  padding: 0 6px;
+  z-index: 10;
+}
+/* No backdrop-filter, or Reduce Transparency on: a solid bar, the same hairline. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .oi-m-tabbar { background: rgba(255, 255, 255, 0.98); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .oi-m-tabbar { background: rgba(255, 255, 255, 0.98); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+.oi-m-tab {
+  flex: 1;
+  min-width: 0;
+  height: var(--m-tab-h);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: var(--m-text-2);
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 500;
+  transition: color var(--m-fast) var(--m-ease);
+}
+.oi-m-tab__icon { display: inline-flex; transition: transform var(--m-move) var(--m-spring); }
+.oi-m-tab--on { color: var(--m-primary); font-weight: 600; }
+.oi-m-tab--on .oi-m-tab__icon { transform: translateY(-2px) scale(1.08); }
+.oi-m-tab:active .oi-m-tab__icon { transform: scale(0.9); }
+
+/* ── Ava button and sheets ──────────────────────────────────────────── */
+.oi-m-ava {
+  position: absolute;
+  right: 16px;
+  bottom: calc(var(--m-bottom-reserve) + 16px);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--m-primary);
+  color: #FFFFFF;
+  box-shadow: var(--m-elev);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  line-height: 1;
+  z-index: 11;
+  transition: transform var(--m-fast) var(--m-spring), opacity var(--m-fast) var(--m-ease);
+}
+.oi-m-ava:active { transform: scale(0.92); }
+
+.oi-m-sheet-root { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; justify-content: flex-end; }
+.oi-m-sheet-scrim { position: absolute; inset: 0; background: rgba(10, 10, 10, 0.42); opacity: 0; transition: opacity var(--m-move) var(--m-ease); }
+.oi-m-sheet {
+  position: relative;
+  background: var(--m-card);
+  border-radius: var(--m-r-sheet) var(--m-r-sheet) 0 0;
+  box-shadow: var(--m-elev);
+  max-height: calc(100% - var(--m-safe-top) - 24px);
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 320ms var(--m-spring);
+  padding-bottom: var(--m-safe-bottom);
+}
+.oi-m-sheet--full { height: calc(100% - var(--m-safe-top) - 8px); max-height: none; }
+.oi-m-sheet-root--open .oi-m-sheet-scrim { opacity: 1; }
+.oi-m-sheet-root--open .oi-m-sheet { transform: translateY(0); }
+.oi-m-sheet-root--closing .oi-m-sheet { transition-timing-function: var(--m-ease); transition-duration: 220ms; }
+.oi-m-sheet__handle { width: 40px; height: 5px; border-radius: var(--m-r-pill); background: var(--m-line); margin: 10px auto 0; flex-shrink: 0; }
+.oi-m-sheet__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 56px; padding: 4px 12px 8px 20px; flex-shrink: 0; }
+.oi-m-sheet__body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 4px 20px 20px; }
+.oi-m-sheet__body--flush { padding: 0; display: flex; flex-direction: column; }
+.oi-m-sheet__foot { padding: 12px 20px 16px; border-top: 1px solid var(--m-line); flex-shrink: 0; display: flex; gap: 8px; }
+
+/* The desktop Ava pod is 380x520 with 16px corners by inline style. Inside
+   the sheet it fills the sheet, without touching the pod. */
+.oi-mobile-root .oi-m-ava-host [data-ava-pod] {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  animation: none !important;
+}
+/* The pod's composer is 13px by inline style, which makes iOS zoom the page
+   on focus. Lifted to 16px here, inside the sheet only. */
+.oi-mobile-root .oi-m-ava-host [data-ava-pod] textarea { font-size: 16px !important; }
+.oi-m-ava-host { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.oi-m-ava-host > * { flex: 1; min-height: 0; }
+
+/* ── Search screen ──────────────────────────────────────────────────── */
+.oi-m-search { position: absolute; inset: 0; z-index: 15; background: var(--m-bg); display: flex; flex-direction: column; padding-top: var(--m-safe-top); }
+.oi-m-search__bar { display: flex; align-items: center; gap: 8px; padding: 8px var(--m-gutter); }
+.oi-m-search__field { flex: 1; min-height: 48px; display: flex; align-items: center; gap: 10px; background: var(--m-card); border-radius: var(--m-r-pill); padding: 0 8px 0 16px; }
+.oi-m-search__input { flex: 1; min-width: 0; min-height: 44px; background: transparent; border: 0; outline: none; border-radius: 0; -webkit-appearance: none; appearance: none; }
+.oi-m-search__input::-webkit-search-cancel-button, .oi-m-search__input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
+.oi-m-search__results { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 0 24px; }
+
+/* ── In-app notification banner ─────────────────────────────────────── */
+.oi-m-banner {
+  position: absolute;
+  top: calc(var(--m-safe-top) + 8px);
+  left: 12px;
+  right: 12px;
+  z-index: 30;
+  background: var(--m-card);
+  border-radius: var(--m-r-card);
+  box-shadow: var(--m-elev);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  transform: translateY(-120%);
+  opacity: 0;
+  transition: transform 320ms var(--m-spring), opacity var(--m-move) var(--m-ease);
+  touch-action: pan-x;
+  text-align: left;
+  width: auto;
+}
+.oi-m-banner--in { transform: translateY(0); opacity: 1; }
+.oi-m-banner--out { transition-timing-function: var(--m-ease); transform: translateY(-120%); opacity: 0; }
+.oi-m-banner__title { font-size: 15px; line-height: 20px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oi-m-banner__body { font-size: 13px; line-height: 18px; color: var(--m-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── Notification center ────────────────────────────────────────────── */
+.oi-m-notif__unread { width: 8px; height: 8px; border-radius: 50%; background: var(--m-primary); flex-shrink: 0; }
+
+/* ── Messages ───────────────────────────────────────────────────────── */
+.oi-m-thread { display: flex; flex-direction: column; gap: 10px; padding: 8px var(--m-gutter) 16px; }
+.oi-m-bubble { max-width: 82%; padding: 12px 16px; border-radius: 20px; font-size: 15px; line-height: 22px; overflow-wrap: anywhere; }
+.oi-m-bubble--in { align-self: flex-start; background: var(--m-card); border-bottom-left-radius: 6px; }
+.oi-m-bubble--out { align-self: flex-end; background: var(--m-primary); color: #FFFFFF; border-bottom-right-radius: 6px; }
+.oi-m-bubble__meta { font-size: 12px; line-height: 16px; margin-top: 4px; opacity: 0.7; }
+.oi-m-footer { position: absolute; left: 0; right: 0; bottom: var(--m-bottom-reserve); z-index: 6; }
+.oi-m-composer { display: flex; align-items: flex-end; gap: 8px; padding: 8px var(--m-gutter) 12px; background: var(--m-bg); }
+.oi-m-composer textarea { flex: 1; min-height: 48px; max-height: 140px; padding: 12px 16px; border-radius: 24px; background: var(--m-card); border: 1.5px solid transparent; outline: none; resize: none; }
+.oi-m-composer textarea:focus { border-color: var(--m-text); }
+
+/* ── Reduced motion ─────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .oi-mobile-root *, .oi-mobile-root *::before, .oi-mobile-root *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+  .oi-m-stagger > * { animation: oiMobileFade var(--m-move) var(--m-ease) both; }
+  .oi-m-press:active, .oi-m-pill:active, .oi-m-iconbtn:active, .oi-m-filter:active { transform: none; }
+}
+
+/* ── Enter animations ───────────────────────────────────────────────── */
+.oi-m-enter { animation: oiMobileEnter var(--m-move) var(--m-ease) both; }
+@keyframes oiMobileEnter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes oiMobileFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── Lists: item cards and grouped rows (DESIGN_MOBILE.md, "Lists") ──── */
+.oi-m-items { display: flex; flex-direction: column; gap: 12px; }
+.oi-m-item {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+  width: 100%;
+  background: var(--m-card);
+  border-radius: var(--m-r-card);
+  padding: 12px;
+  text-align: left;
+  min-height: 96px;
+}
+.oi-m-item__hit { position: absolute; inset: 0; border-radius: var(--m-r-card); z-index: 1; }
+.oi-m-item__action { position: relative; z-index: 2; }
+.oi-m-item__thumb { width: 72px; height: 72px; flex-shrink: 0; border-radius: var(--m-r-image); align-self: center; }
+.oi-m-item__thumb--tile { display: inline-flex; align-items: center; justify-content: center; background: var(--m-neutral); color: var(--m-text); }
+.oi-m-item__initials { font-size: 17px; font-weight: 600; }
+.oi-m-item__body { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 2px 0; }
+.oi-m-item__title { font-size: 15px; line-height: 20px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oi-m-item__meta { font-size: 13px; line-height: 18px; color: var(--m-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oi-m-item__foot { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.oi-m-item__value { font-size: 15px; line-height: 20px; font-weight: 600; }
+.oi-m-item__action {
+  width: 44px; height: 44px; border-radius: 50%; align-self: center; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--m-bg); color: var(--m-text);
+  transition: transform var(--m-fast) var(--m-ease), background-color var(--m-fast) var(--m-ease);
+}
+.oi-m-item__action--primary { background: var(--m-primary); color: #FFFFFF; }
+.oi-m-item__action:active { transform: scale(0.92); }
+
+.oi-m-grouped { display: flex; flex-direction: column; gap: 40px; }
+.oi-m-grouped__title {
+  position: sticky;
+  top: calc(var(--m-safe-top) + var(--m-compact-h));
+  z-index: 3;
+  margin: 0 calc(-1 * var(--m-gutter)) 12px;
+  padding: 8px var(--m-gutter);
+  background: rgba(247, 247, 247, 0.92);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+.oi-m-swipe { position: relative; overflow: hidden; background: var(--m-card); }
+.oi-m-swipe + .oi-m-swipe { border-top: 1px solid var(--m-line); }
+.oi-m-swipe .oi-m-row + .oi-m-row { border-top: 0; }
+.oi-m-swipe__actions { position: absolute; top: 0; right: 0; bottom: 0; display: flex; }
+.oi-m-swipe__action { width: 72px; display: inline-flex; align-items: center; justify-content: center; color: #FFFFFF; }
+.oi-m-swipe__action--ok { background: var(--m-ok); }
+.oi-m-swipe__action--primary { background: var(--m-primary); }
+.oi-m-swipe__action--no { background: var(--m-no); }
+.oi-m-swipe__content { position: relative; background: var(--m-card); will-change: transform; }
+
+/* Two-column image grid, the alternate view for vendors and the registry. */
+.oi-m-imggrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.oi-m-imggrid > * { min-width: 0; }
+
+/* ── Webview tells, removed ─────────────────────────────────────────── */
+.oi-mobile-root {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: pan-x pan-y;
+}
+.oi-mobile-root input,
+.oi-mobile-root textarea,
+.oi-mobile-root [contenteditable],
+.oi-mobile-root .oi-m-bubble,
+.oi-mobile-root .oi-m-selectable {
+  -webkit-user-select: text;
+  user-select: text;
+}
+.oi-mobile-root img { -webkit-touch-callout: none; pointer-events: none; }
+
+/* ── App lock ───────────────────────────────────────────────────────── */
+.oi-m-lock { position: absolute; inset: 0; z-index: 60; background: var(--m-ink); color: #FFFFFF; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; }
+.oi-m-lock .oi-m-img { border-radius: 0; }
+.oi-m-lock__body { position: relative; z-index: 2; margin: 0 var(--m-gutter) calc(var(--m-safe-bottom) + 40px); display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.oi-m-lock__body .oi-m-pill { margin-top: 8px; }
+.oi-m-lock__mark { width: 56px; height: 56px; border-radius: 50%; background: var(--m-primary); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+.oi-m-lock__mark > span { width: 28px; height: 28px; border-radius: 50%; background: var(--m-ink); }
+
+/* ── Offline banner: slim, under the compact bar ────────────────────── */
+.oi-m-offline {
+  position: absolute;
+  top: calc(var(--m-safe-top) + var(--m-compact-h));
+  left: var(--m-gutter);
+  right: var(--m-gutter);
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--m-r-pill);
+  background: var(--m-ink);
+  color: #FFFFFF;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  animation: oiMobileEnter var(--m-move) var(--m-ease) both;
+}
+
+/* ── First run ──────────────────────────────────────────────────────── */
+.oi-m-welcome { position: absolute; inset: 0; background: var(--m-ink); color: #FFFFFF; display: flex; flex-direction: column; z-index: 40; }
+.oi-m-welcome__slides { flex: 1; min-height: 0; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.oi-m-welcome__slides::-webkit-scrollbar { display: none; }
+.oi-m-welcome__slide { position: relative; flex: 0 0 100%; scroll-snap-align: start; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; }
+.oi-m-welcome__slide .oi-m-img { border-radius: 0; }
+.oi-m-welcome__text { position: relative; z-index: 2; padding: 0 24px 24px; display: flex; flex-direction: column; gap: 8px; }
+.oi-m-welcome__foot { position: relative; z-index: 2; padding: 0 16px calc(var(--m-safe-bottom) + 24px); display: flex; flex-direction: column; gap: 10px; background: var(--m-ink); }
+.oi-m-welcome__foot .oi-m-dots { padding: 12px 0 8px; }
+
+.oi-m-login { position: absolute; inset: 0; background: var(--m-bg); display: flex; flex-direction: column; overflow-y: auto; z-index: 40; }
+.oi-m-login__top { position: relative; height: 260px; flex-shrink: 0; background: var(--m-ink); overflow: hidden; }
+.oi-m-login__top .oi-m-img { border-radius: 0; }
+.oi-m-login__title { position: absolute; left: 20px; right: 20px; bottom: 20px; z-index: 2; display: flex; flex-direction: column; gap: 4px; }
+.oi-m-login__form { display: flex; flex-direction: column; gap: 16px; padding: 24px 16px calc(var(--m-safe-bottom) + 24px); }
+
+@keyframes oi-m-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── The daily update (goal 8): a full-screen takeover, edge to edge ──
+   Nothing of the dashboard shows behind it: the photo fills the top 45
+   percent and runs under the status bar, the red panel the bottom 55,
+   meeting the photo with a 28px rounded top edge. It fades in on open and
+   fades out on close (the dashboard shows through the fade); a swipe down
+   drags it along and lets go into the same fade. The status bar turns to
+   light content while it is up (DailyUpdate.jsx). ── */
+.oi-m-daily-root { position: absolute; inset: 0; z-index: 70; opacity: 0; transition: opacity 320ms var(--m-ease); }
+.oi-m-daily-root--open { opacity: 1; }
+.oi-m-daily-root--closing { opacity: 0; transition: opacity 240ms var(--m-ease); }
+.oi-m-daily { position: absolute; inset: 0; overflow: hidden; background: var(--m-primary); display: flex; flex-direction: column; transform: scale(1.02); transition: transform 320ms var(--m-ease); }
+.oi-m-daily-root--open .oi-m-daily { transform: none; }
+.oi-m-daily__photo { position: relative; flex: 0 0 45%; min-height: 0; background: var(--m-ink); }
+.oi-m-daily__photo img, .oi-m-daily__blank { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+/* A light wash under the status bar so the time and battery stay readable on any photo; nothing else is tinted. */
+.oi-m-daily__top-scrim { position: absolute; left: 0; right: 0; top: 0; height: calc(var(--m-safe-top) + 56px); background: linear-gradient(to bottom, rgba(10, 10, 10, 0.4) 0%, rgba(10, 10, 10, 0) 100%); pointer-events: none; }
+.oi-m-daily__handle { position: absolute; top: calc(var(--m-safe-top) + 10px); left: 50%; width: 40px; height: 5px; margin-left: -20px; border-radius: var(--m-r-pill); background: rgba(255, 255, 255, 0.7); }
+/* The panel: flat brand red under an 8 percent ink wash (white text 5:1, AA), its top corners rounded 28px over the photo. */
+.oi-m-daily__panel { position: relative; flex: 1 1 55%; min-height: 0; margin-top: -28px; border-radius: 28px 28px 0 0; background: color-mix(in srgb, var(--m-primary) 92%, var(--m-ink)); color: #FFFFFF; display: flex; flex-direction: column; padding: 24px var(--m-gutter) calc(var(--m-safe-bottom) + 12px); }
+@supports not (background: color-mix(in srgb, red 92%, black)) { .oi-m-daily__panel { background: #CF324D; } }
+.oi-m-daily__inner { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; }
+.oi-m-daily__date { font-size: 13px; line-height: 18px; font-weight: 600; margin: 0 0 10px; color: #FFFFFF; }
+.oi-m-daily__greeting { font-size: 40px; line-height: 46px; font-weight: 600; margin: 0 0 14px; color: #FFFFFF; overflow-wrap: anywhere; }
+.oi-m-daily__line { font-size: 20px; line-height: 28px; font-weight: 500; margin: 0; color: #FFFFFF; overflow-wrap: anywhere; }
+.oi-m-daily__line + .oi-m-daily__line { margin-top: 16px; }
+.oi-m-daily__go { margin-top: 16px; background: #FFFFFF; color: var(--m-primary); min-height: 52px; flex-shrink: 0; }
+.oi-m-daily__skip { flex-shrink: 0; align-self: center; min-height: 44px; margin-top: 4px; padding: 0 16px; background: none; border: 0; font: inherit; font-size: 15px; line-height: 20px; font-weight: 600; color: #FFFFFF; border-radius: var(--m-r-pill); }
+.oi-m-daily__skip:active { background: rgba(255, 255, 255, 0.12); }
+@media (prefers-reduced-motion: reduce) {
+  .oi-m-daily { transform: none; transition: none; }
+}
+
+/* ── Activity rows: Home's "Latest" and the notification center ────── */
+.oi-m-act { width: 100%; min-height: 64px; display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: none; border: 0; text-align: left; font: inherit; color: inherit; position: relative; }
+.oi-m-act + .oi-m-act::before { content: ''; position: absolute; left: 64px; right: 0; top: 0; height: 1px; background: var(--m-line); }
+.oi-m-act:active { background: var(--m-press); }
+.oi-m-act__tile { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; background: var(--m-neutral); color: var(--m-text); }
+.oi-m-act__tile--person { background: var(--m-tint); color: var(--m-primary); }
+.oi-m-act__tile--primary { background: var(--m-tint); color: var(--m-primary); }
+.oi-m-act__tile--tint { background: var(--m-tint); color: var(--m-primary); }
+.oi-m-act__tile--ink { background: var(--m-neutral); color: var(--m-text); }
+.oi-m-act__tile--neutral { background: var(--m-neutral); color: var(--m-text); }
+.oi-m-act__tile--ok { background: var(--m-ok-bg); color: var(--m-ok); }
+.oi-m-act__tile--warn { background: var(--m-warn-bg); color: var(--m-warn); }
+.oi-m-act__tile--no { background: var(--m-no-bg); color: var(--m-no); }
+.oi-m-act__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.oi-m-act__title { font-size: 15px; line-height: 20px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oi-m-act__detail { font-size: 13px; line-height: 18px; color: var(--m-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oi-m-act__side { flex-shrink: 0; display: flex; align-items: center; gap: 8px; align-self: flex-start; padding-top: 1px; }
+.oi-m-act__time { font-size: 13px; line-height: 18px; color: var(--m-text-2); white-space: nowrap; }
+.oi-m-act__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--m-primary); }
+.oi-m-act-group { font-size: 13px; line-height: 18px; font-weight: 600; color: var(--m-text-2); margin: 0 0 12px; padding: 0 4px; }
+
+/* ── Goal 5: parity primitives ─────────────────────────────────────────── */
+
+/* A chosen place: photo on top, name, address, Open in Maps. */
+.oi-m-place { background: var(--m-card); border: 1px solid var(--m-line); border-radius: var(--m-r-card); overflow: hidden; }
+.oi-m-place .oi-m-img { border-radius: 0; }
+.oi-m-place__body { padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 2px; }
+
+/* Choice pills wrap inside a form, unlike the scrolling filter row. */
+.oi-m-choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.oi-m-choices .oi-m-filter { border-color: var(--m-line); display: inline-flex; align-items: center; max-width: 100%; white-space: normal; text-align: left; padding: 11px 16px; }
+
+.oi-m-spin { animation: oi-m-spin 0.8s linear infinite; }
+@keyframes oi-m-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .oi-m-spin { animation: none; } }
+
+/* Owner fix 3: a sticky date group header sits at the top with a solid page
+   background and rows scroll underneath it; nothing shows through. */
+.oi-m-grouped__title { background: var(--m-bg); -webkit-backdrop-filter: none; backdrop-filter: none; }
+
+/* A key and value pair inside a card (the guest profile, vendor detail). */
+.oi-m-kv { display: flex; flex-direction: column; gap: 2px; padding: 12px 16px; }
+.oi-m-kv + .oi-m-kv { border-top: 1px solid var(--m-line); }
+.oi-m-kv__k { font-size: 13px; line-height: 18px; color: var(--m-text-2); }
+.oi-m-kv__v { font-size: 15px; line-height: 22px; overflow-wrap: anywhere; white-space: pre-wrap; }
+
+/* A per-event reply row: event name, status pill, one line of detail. */
+.oi-m-reply { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; }
+.oi-m-reply + .oi-m-reply { border-top: 1px solid var(--m-line); }
+.oi-m-reply__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+
+/* Step indicator for the send-invites flow. */
+.oi-m-steps { display: flex; gap: 6px; padding: 0 var(--m-gutter) 16px; }
+.oi-m-steps__dot { flex: 1; height: 4px; border-radius: 999px; background: var(--m-line); }
+.oi-m-steps__dot--on { background: var(--m-primary); }
+
+/* Owner fix 1: every Next up card is the same height as the first. */
+.oi-m-nextup .oi-m-panel { min-height: 156px; height: 156px; justify-content: flex-start; }
+.oi-m-nextup .oi-m-panel .oi-m-section { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.oi-m-nextup .oi-m-panel .oi-m-meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.oi-m-nextup .oi-m-panel .oi-m-body { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.oi-m-nextup .oi-m-panel > .oi-m-pill, .oi-m-nextup .oi-m-panel > svg { margin-top: auto; }
+
+/* Owner fix 4: the completion animation, the Completed section. */
+.oi-m-check__box { transition: background-color 180ms var(--m-ease), border-color 180ms var(--m-ease), transform 180ms var(--m-spring); }
+.oi-m-check__box--on { animation: oi-m-tick 260ms var(--m-spring); }
+@keyframes oi-m-tick { 0% { transform: scale(0.8); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
+.oi-m-task--leaving { opacity: 0; transform: translateX(12px); transition: opacity 240ms var(--m-ease), transform 240ms var(--m-ease); }
+.oi-m-task__title { transition: color 180ms var(--m-ease); }
+.oi-m-task__title--done { text-decoration: line-through; color: var(--m-text-2); }
+@media (prefers-reduced-motion: reduce) { .oi-m-check__box--on { animation: none; } .oi-m-task--leaving { transform: none; } }
+
+/* Owner fix 6: the Plan hub accordion. */
+.oi-m-acc__head { width: 100%; display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 4px 0; text-align: left; }
+.oi-m-acc__title { flex: 1; font-size: 17px; line-height: 22px; font-weight: 600; }
+.oi-m-acc__count { font-size: 13px; line-height: 18px; color: var(--m-text-2); }
+.oi-m-acc__chevron { transition: transform 200ms var(--m-ease); color: var(--m-text-2); }
+.oi-m-acc__chevron--open { transform: rotate(180deg); }
+.oi-m-acc__body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 240ms var(--m-ease); }
+.oi-m-acc__body--open { grid-template-rows: 1fr; }
+.oi-m-acc__inner { overflow: hidden; visibility: hidden; transition: visibility 0s linear 240ms; }
+.oi-m-acc__body--open .oi-m-acc__inner { visibility: visible; transition-delay: 0s; }
+.oi-m-acc__body--open .oi-m-acc__inner { padding-top: 8px; }
+@media (prefers-reduced-motion: reduce) { .oi-m-acc__body, .oi-m-acc__chevron { transition: none; } }
+
+/* The page-scoped Ava's quick questions, a scrolling row above the pod. */
+.oi-m-ava-quick { display: flex; gap: 8px; padding: 12px var(--m-gutter); overflow-x: auto; scrollbar-width: none; flex-shrink: 0; }
+.oi-m-ava-quick::-webkit-scrollbar { display: none; }
+.oi-m-ava-quick .oi-m-filter { border: 1px solid var(--m-line); background: var(--m-card); }
+
+/* The desktop's PageConsiderations inside a sheet: its inline sizes are brought onto the app's scale. */
+.oi-m-considerations > div { max-width: none !important; padding: 0 !important; }
+.oi-m-considerations button { min-height: 44px; }
+.oi-m-considerations button > span:first-child { font-size: 15px !important; line-height: 20px !important; font-weight: 600 !important; }
+.oi-m-considerations p { font-size: 15px !important; line-height: 22px !important; color: var(--m-text) !important; font-style: normal !important; }
+.oi-m-considerations li { font-size: 15px !important; line-height: 22px !important; color: var(--m-text) !important; }
+.oi-m-considerations span[style] { font-size: 12px !important; line-height: 16px !important; }
+.oi-m-considerations > div > div:first-child p, .oi-m-considerations h3 { font-size: 17px !important; line-height: 22px !important; }
+
+/* One control bar (goal 6): search, sort and filter as the same 44px pill, 15/20, a chevron on the ones that open a sheet. */
+.oi-m-ctrl { display: flex; gap: 8px; padding: 0 var(--m-gutter); }
+.oi-m-ctrl__pill { flex: 1 1 0; min-width: 0; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 12px; border-radius: var(--m-r-pill); border: 1px solid var(--m-line); background: var(--m-card); color: var(--m-text); font-size: 15px; line-height: 20px; font-weight: 600; }
+.oi-m-ctrl__pill--on { background: var(--m-ink); color: var(--m-on-dark); border-color: var(--m-ink); }
+.oi-m-ctrl__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oi-m-ctrl__pill svg { flex-shrink: 0; }
+.oi-m-ctrl__pill--fit { flex: 0 0 auto; }
+
+/* Undo toast: a pill with a text action. */
+.oi-m-toast-action { background: none; border: 0; color: #FFFFFF; font-weight: 600; text-decoration: underline; margin-left: 12px; min-height: 32px; }
+
+/* A rating row: five stars, the chosen ones filled. */
+.oi-m-stars { display: inline-flex; gap: 4px; }
+.oi-m-stars button { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; color: var(--m-text-2); }
+.oi-m-stars button[aria-checked="true"] { color: var(--m-primary); }
