@@ -7,6 +7,7 @@ import FormSheet from '../../features/FormSheet';
 import { timeLabel, dateShort, initials } from '../../lib/format';
 import { openExternal } from '../../native';
 import { CATEGORY_LABEL } from '@/lib/scheduleEvents';
+import { sortScheduleItems } from '@/lib/scheduleOrder';
 
 /* ── Q&A: WeddingDetails.qna, [{ question, answer }] ─────────────────── */
 const QNA_FIELDS = [{ name: 'question', label: 'Question', type: 'text' }, { name: 'answer', label: 'Answer', type: 'textarea' }];
@@ -98,7 +99,7 @@ export function SuiteScheduleScreen({ items = [], loading, error, onRetry, back,
             <section key={d || 'none'}>
               <h2 className="oi-m-section" style={{ marginBottom: 12 }}>{d ? dateShort(d) : 'No date'}</h2>
               <ItemList>
-                {items.filter((it) => dayOf(it) === d).sort((a, b) => (a.start_time || '').localeCompare(b.start_time || '')).map((it) => (
+                {sortScheduleItems(items.filter((it) => dayOf(it) === d)).map((it) => (
                   <ItemCard key={it.id} icon={Clock} tile="neutral" title={it.event_name} meta={[it.description, it.location].filter(Boolean).join(', ')} value={timeLabel(it.start_time)} badge={CATEGORY_LABEL[it.category] || it.category || undefined} badgeTone="neutral" />
                 ))}
               </ItemList>
