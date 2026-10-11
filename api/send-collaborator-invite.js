@@ -113,8 +113,12 @@ export default async function handler(req, res) {
     // accept page (and collaborator-accept.js) verify it and read the
     // owner id/permissions straight out of it, with zero Collaborator reads.
     const iat = Date.now();
+    // The nonce makes every send's link unique even when two sends share a
+    // millisecond and a payload; without it the "new" link could equal the
+    // old one, and the resend would not kill anything.
     const signedInvite = signInvite({
       ownerUserId: caller.id, email: cleanEmail, name: cleanName, permissions: permissions || {}, iat,
+      nonce: crypto.randomUUID(),
     });
     // Recorded BEFORE the email goes out: this row is what makes this link
     // the live one and every earlier link for this person dead. If it cannot

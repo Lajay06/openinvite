@@ -125,7 +125,7 @@ export async function runCollaboratorInviteExpiry() {
   // CollaboratorInvite row so its expires_at matches the link exactly.
   ok('send-collaborator-invite signs every invite with iat: Date.now()',
      /signInvite\(\{[\s\S]*?iat: Date\.now\(\)/.test(sendSrc)
-     || (/const iat = Date\.now\(\);\s*const signedInvite = signInvite\(\{[\s\S]*?\biat,?\s*\}\)/.test(sendSrc)),
+     || (/const iat = Date\.now\(\);[\s\S]*?const signedInvite = signInvite\(\{[\s\S]*?\biat,[\s\S]*?\}\)/.test(sendSrc)),
      'iat stamped at send');
 
     // ── THE ACCEPT PAGE SAYS SO ─────────────────────────────────────────────
