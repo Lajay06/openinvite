@@ -48,7 +48,7 @@
  * fails when any of them drifts.
  */
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.48';
+import { createClientFromRequest } from 'npm:@base44/sdk@^0.8.48';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
 /** Permission key to the owner-scoped entities its page reads. Open entities stay with the admin-key read. */
