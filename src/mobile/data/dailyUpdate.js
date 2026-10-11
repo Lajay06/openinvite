@@ -4,10 +4,11 @@ import useLoad from './useLoad';
 import { todosFrom, resolveDayState, avaSentence, greetingFor } from '@/lib/dayState';
 import { coupleDisplayName } from '@/lib/coupleNames';
 import { daysUntilWedding } from '@/lib/weddingCountdown';
+import { formatDashboardDate } from '@/lib/dashboardDate';
 
-/** "Monday 7 September", as Briefing.jsx's eyebrow prints it: weekday, day, month, no year. */
+/** Today, numeric in the account's format (mobile parity 6). Briefing.jsx still writes "Monday 7 September"; that is recorded for lane A in the goal file. */
 export function todayLabel(now = new Date()) {
-  return `${now.toLocaleDateString(undefined, { weekday: 'long' })} ${now.getDate()} ${now.toLocaleDateString(undefined, { month: 'long' })}`;
+  return formatDashboardDate(now);
 }
 
 /** Local calendar day, for "shown once a day". */

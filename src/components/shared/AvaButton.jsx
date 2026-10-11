@@ -1,10 +1,15 @@
 import React from 'react';
 import { Sparkles } from 'lucide-react';
 import { openAva } from '@/lib/avaOpen';
+import { useCollaboratorContext } from '@/lib/collaboratorContext';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 export default function AvaButton({ label, onClick, seedQuestion, pageContext }) {
+  // No Ava in a collaborator session: she works on the signed-in person's own
+  // wedding, not the one they are helping with (collaborators goal, item 3).
+  const { ownerUserId } = useCollaboratorContext();
+  if (ownerUserId) return null;
   return (
     <button
       // The no-onClick path dispatched a CustomEvent NOTHING LISTENED FOR, so

@@ -142,10 +142,38 @@ export function pass(field, note = '') {
   return true;
 }
 
+/**
+ * ── EVERY FAILURE IS RECORDED, NOT ONLY PRINTED ────────────────────────────
+ *
+ * The live lane prints each failure where it happens and then a count:
+ * "1109/1165 fields persisted correctly". On a run of that size the 56 lines
+ * that matter are thousands of lines up, so the count was the only part anyone
+ * could act on, and it names nothing.
+ *
+ * Owner ruling, 2026-10-11, after a run showed 56 failures and no list: the
+ * runner prints the failing fields by entity and field name with the value
+ * sent and the value read back, AND NOTHING ELSE ABOUT THE ROW. So the record
+ * holds exactly those four things. A guest's address or a couple's copy is not
+ * a diagnostic.
+ */
+const FAILURES = [];
+let failureContext = '';
+
+/** Names the guard currently running, so a failure can say where it came from. */
+export function setFailureContext(name) {
+  failureContext = String(name || '');
+}
+
+/** Every failure recorded so far: context, field, written, readBack. */
+export function recordedFailures() {
+  return FAILURES.map((f) => ({ ...f }));
+}
+
 export function fail(field, written, readBack) {
   console.log(`  ❌ FAIL  ${field}`);
   console.log(`           wrote:    ${JSON.stringify(written)}`);
   console.log(`           read back: ${JSON.stringify(readBack)}`);
+  FAILURES.push({ context: failureContext, field: String(field), written, readBack });
   return false;
 }
 

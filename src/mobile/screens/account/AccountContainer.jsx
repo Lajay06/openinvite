@@ -13,7 +13,7 @@ import { useAppLockSetting } from '../../shell/AppLock';
 import { openDesktop } from '../../lib/links';
 import { useWedding } from '../../data/wedding';
 import { heroImageFor } from '../../lib/images';
-import { dateLong } from '../../lib/format';
+import { dateShort } from '../../lib/format';
 import { ShellContext } from '../../shell/MobileShell';
 import { coupleDisplayName } from '@/lib/coupleNames';
 
@@ -57,7 +57,7 @@ export default function AccountContainer() {
   const planNote = trial.isPaid
     ? null
     : trial.trialExpired
-      ? 'Your free trial has ended. Your work is safe and yours. Upgrade on the website to keep planning.'
+      ? 'Your free trial has ended. Your work is safe and yours. Upgrade at openinvite.com.au to keep planning.'
       : `${trial.daysLeft} day${trial.daysLeft === 1 ? '' : 's'} left on your free trial.`;
 
   return (
@@ -67,7 +67,7 @@ export default function AccountContainer() {
         name={user?.full_name}
         email={user?.email}
         coupleName={coupleName}
-        weddingDate={d?.weddingDate ? dateLong(d.weddingDate) : ''}
+        weddingDate={d?.weddingDate ? dateShort(d.weddingDate) : ''}
         photo={heroImageFor(d)}
         planLabel={planLabel}
         planNote={planNote}

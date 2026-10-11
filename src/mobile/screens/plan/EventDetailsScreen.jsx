@@ -9,7 +9,7 @@ import Segments, { useSegment } from '../../ui/Segments';
 import { useConfirm } from '../../ui/ConfirmSheet';
 import FormSheet from '../../features/FormSheet';
 import { openExternal } from '../../native';
-import { dateLong, timeLabel } from '../../lib/format';
+import { dateShort, timeLabel } from '../../lib/format';
 import { canonicalSlug } from '@/lib/weddingAddress';
 import { FAITH_OPTIONS, FAITH_FOR_INTERFAITH, CULTURE_REGIONS, CULTURE_CROSS_CUTTING } from '@/lib/weddingThemeOptions';
 
@@ -276,7 +276,7 @@ function EventsSegment({ d, onSave, onInvitePrompt }) {
 }
 
 function EventCard({ title, ev, venue, date, badge, onEdit, onRemove }) {
-  const when = [date ? dateLong(date) : '', ev?.startTime ? `${timeLabel(ev.startTime)}${ev.endTime ? ` to ${timeLabel(ev.endTime)}` : ''}` : ''].filter(Boolean).join(', ');
+  const when = [date ? dateShort(date) : '', ev?.startTime ? `${timeLabel(ev.startTime)}${ev.endTime ? ` to ${timeLabel(ev.endTime)}` : ''}` : ''].filter(Boolean).join(', ');
   return (
     <div className="oi-m-place">
       {venue?.photoUrl && <SmartImage src={venue.photoUrl} alt={venue.name} width={358} ratio="16/9" />}

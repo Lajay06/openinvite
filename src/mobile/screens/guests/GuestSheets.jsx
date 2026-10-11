@@ -98,7 +98,7 @@ export function ImportGuestsSheet({ open, onClose, weddingEvents = [], existingG
     const toImport = []; const dupes = [];
     for (const r of valid) { const e = r.email?.trim().toLowerCase(); if (e && emails.has(e)) dupes.push(r._rowIndex); else { toImport.push(r); if (e) emails.add(e); } }
     const failed = [];
-    await Promise.all(toImport.map(async (r) => { const { _rowIndex, _error, _phoneWarning, ...data } = r; try { await onCreate({ event_responses: [], ...data }); } catch { failed.push(_rowIndex); } }));
+    await Promise.all(toImport.map(async (r) => { const { _rowIndex, _error, _phoneWarning, _householdLabel, ...data } = r; try { await onCreate({ event_responses: [], ...data }); } catch { failed.push(_rowIndex); } }));
     setBusy(false);
     const n = toImport.length - failed.length;
     const parts = [n > 0 ? `${n} imported` : '', dupes.length ? `${dupes.length} skipped (already on your list)` : '', failed.length ? `${failed.length} failed` : ''].filter(Boolean);

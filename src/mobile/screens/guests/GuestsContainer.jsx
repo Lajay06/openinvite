@@ -190,6 +190,8 @@ export default function GuestsContainer() {
       {id ? (
         <GuestDetailScreen
           guest={current}
+          guests={list}
+          onOpenGuest={(g) => navigate(`${base}/guests/${g.id}`)}
           role={guestRoles[current?.id]}
           weddingEvents={weddingEvents}
           mealOptions={mealOptions}

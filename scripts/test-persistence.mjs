@@ -21,7 +21,16 @@
  *   5. Exits 0 if all pass, 1 if any fail
  */
 
-import { pass, fail } from '../tests/persistence/_shared.mjs';
+// FIRST, AND THE ORDER IS THE WHOLE POINT. Seventeen modules under api/ build
+// an SDK client at module scope and new Resend(undefined) throws, so importing
+// any guard that reaches one killed this lane during its import phase, before
+// it could say which credentials were missing. ES imports evaluate in
+// declaration order, so this one has already run by the time the rest are.
+// Owner ruling 2026-10-11: one hoist here, not five guard fixes.
+import {
+  SET_BY_US, restorePlaceholders, placeholdersStillSet, providerAttempts, fakedSends,
+} from './lib/envPlaceholders.mjs';
+import { pass, fail, setFailureContext, recordedFailures } from '../tests/persistence/_shared.mjs';
 import { guardFiles, guardFilesFor, LIVE_CREDENTIAL_GUARDS, STANDALONE_GUARDS, LANE_SKIPS_GUARDS } from '../tests/persistence/_registry.mjs';
 import { liveLaneFindingsForRepo } from './lib/liveLaneRegistry.mjs';
 import { EMAIL, PASS, login, cleanupWeddingDetails } from '../tests/persistence/_shared.mjs';
@@ -98,6 +107,10 @@ import { runNotifications } from '../tests/persistence/notifications.mjs';
 import { runOnboardingCronWindow } from '../tests/persistence/onboarding-cron-window.mjs';
 import { runGuidancePersistence } from '../tests/persistence/guidance-persistence.mjs';
 
+// THE IMPORT PHASE IS OVER. Restored here and again in the finally below, so
+// an exit on the next line cannot leave a placeholder behind either.
+restorePlaceholders();
+
 if (!EMAIL || !PASS) {
   console.error('✗ BASE44_TEST_EMAIL and BASE44_TEST_PASSWORD must be set in .env.local');
   process.exit(1);
@@ -137,6 +150,10 @@ async function run() {
   const crashed = [];
 
   async function runModule(name, fn) {
+    // A failure recorded here can then say which guard produced it, which the
+    // field label alone does not: guards label a check `is_test`, not
+    // `WeddingDetails.is_test`.
+    setFailureContext(name.replace(/^run/, ''));
     try {
       results.push(...await fn());
     } catch (err) {
@@ -273,12 +290,76 @@ async function run() {
     console.log('  ⚠️  Some fields failed — check that they are registered in');
     console.log('  the WeddingDetails / Guest entity schemas on Base44.');
   }
+
+  // ── THE FAILING FIELDS, NAMED ───────────────────────────────────────────
+  //
+  // Owner ruling, 2026-10-11, after a run reported "1109/1165" and named
+  // nothing: on a run this size the lines that matter are thousands of lines
+  // up, so the count was the only actionable part and it points at nothing.
+  //
+  // FOUR THINGS PER ROW AND NOTHING ELSE: the guard it came from, the field,
+  // the value sent, the value read back. Not the record id, not the account,
+  // not the rest of the row. A guest's address is not a diagnostic.
+  //
+  // TRUNCATED PER VALUE, not per list: every failure is named, and a long
+  // value is cut so one array does not bury the next twenty names.
+  const failures = recordedFailures();
+  if (failures.length) {
+    const short = (v) => {
+      const t = JSON.stringify(v);
+      if (t === undefined) return 'undefined';
+      return t.length > 120 ? `${t.slice(0, 120)}…(${t.length} chars)` : t;
+    };
+    console.log(`\n  FAILING FIELDS (${failures.length}), by guard and field:\n`);
+    const byContext = new Map();
+    for (const f of failures) {
+      if (!byContext.has(f.context)) byContext.set(f.context, []);
+      byContext.get(f.context).push(f);
+    }
+    for (const [context, rows] of byContext) {
+      console.log(`  ${context || '(no guard recorded)'}  —  ${rows.length} field(s)`);
+      for (const r of rows) {
+        console.log(`      ${r.field}`);
+        console.log(`          sent:      ${short(r.written)}`);
+        console.log(`          read back: ${short(r.readBack)}`);
+      }
+      console.log('');
+    }
+    console.log('  Paste this list; it is the whole diagnostic and it carries no row data.');
+  }
+
+  // ── THE PLACEHOLDERS LEFT NOTHING BEHIND, AND NOTHING WAS SENT ──────────
+  //
+  // Both are the owner's conditions on the hoist, asserted rather than
+  // asserted-by-comment. The provider counter sees every call made outside a
+  // guard's own fetch fake.
+  const stillSet = placeholdersStillSet();
+  const sent = providerAttempts();
+  const intercepted = fakedSends();
+  console.log(`${'─'.repeat(55)}`);
+  console.log(SET_BY_US.length
+    ? `  placeholder key(s) held for the import phase: ${SET_BY_US.join(', ')}`
+    : '  no placeholder was needed: the real provider keys were already set');
+  const hoistOk = stillSet.length === 0 && sent.length === 0;
+  console.log(stillSet.length === 0
+    ? '  ✅ none of them is still set'
+    : `  ❌ STILL SET: ${stillSet.join(', ')}`);
+  console.log(intercepted.length === 0
+    ? '  ✅ the Resend fake answered nothing: no guard tried to send'
+    : `  ✅ the Resend fake answered ${intercepted.length} send(s): none left the process`);
+  console.log(sent.length === 0
+    ? '  ✅ nothing slipped past it to a provider'
+    : `  ❌ PROVIDER CALL REACHED THE NETWORK: ${sent.join(', ')}`);
   console.log(`${'─'.repeat(55)}\n`);
 
-  process.exit(allOk ? 0 : 1);
+  process.exit(allOk && hoistOk ? 0 : 1);
 }
 
-run().catch(err => {
-  console.error('\n✗ Unexpected error:', err.message);
-  process.exit(1);
-});
+run()
+  .catch((err) => {
+    console.error('\n✗ Unexpected error:', err.message);
+    process.exit(1);
+  })
+  // IN A finally, as the ruling says: a lane that dies halfway must not leave a
+  // placeholder provider key in the environment of whatever runs next.
+  .finally(() => { restorePlaceholders(); });

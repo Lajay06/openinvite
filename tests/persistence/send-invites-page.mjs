@@ -50,7 +50,9 @@ export async function runSendInvitesPage() {
     /"SendInvites": SendInvites/.test(cfg) && /import\('\.\/pages\/SendInvites'\)/.test(cfg),
     'in the Pages map, lazy like the rest');
   check('  the guest list navigates to it rather than opening a panel',
-    /navigate\('\/SendInvites', \{ state: config \}\)/.test(guests) && !/<SendInvitesModal/.test(guests),
+    // withCollab (collaborators goal, item 2) may wrap the target; it is the
+    // same navigation, keeping a collaborator session if there is one.
+    /navigate\((?:withCollab\()?'\/SendInvites'(?:, collab\.ownerUserId\))?, \{ state: config \}\)/.test(guests) && !/<SendInvitesModal/.test(guests),
     'the sheet is gone from Guests.jsx');
   check('  and the selection travels with it',
     /goToSend\(selectedIds\.size > 0/.test(guests) && /location\.state \|\| \{\}/.test(page),

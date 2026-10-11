@@ -130,9 +130,15 @@ As of 2026-10-11:
 
 - 1a merged as #963 (revoke, permission edits, reconcile on open).
 - 1b merged in three PRs: #967 (7-day expiry), #981 (CollaboratorInvite mirror) and #982 (a resend or a removal kills the old link). The live round trip, tests/persistence/collaborator-invite-live.mjs, is run only by the owner, with the smoke account.
-- Next: 1c.
+- 1c merged as #986: the accept link is always on the app host, and every send carries a nonce, so no two links are ever equal.
+- 2 merged as #991: withCollab keeps the session on every navigation. Help and Account open as the person's own pages (owner ruling 2026-10-11).
+- 3 merged as #999: no Ava in a collaborator session.
+- Next: 6.
 
 ## Lessons
+
+- A shared test helper changing on main is a crossing for every open PR whose guard imports it (owner ruling 2026-10-11, at #999, when #998 changed tests/persistence/_shared.mjs). The test is to run that guard against main's copy on the scratch merge. A pass is the verdict.
+- Two sends in the same millisecond with the same payload signed the same token, so a resend could fail to kill the old link. Found as a flake in a stubbed guard, fixed with a nonce per send in #986. A guard that freezes the clock makes that case run every time.
 
 ## Close
 

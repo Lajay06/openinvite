@@ -14,7 +14,7 @@ import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import { base44 } from "@/api/base44Client";
 import { getMyRecords } from "@/lib/resolveMyWedding";
-import { useCollaboratorContext } from "@/lib/collaboratorContext";
+import { useCollaboratorContext, withCollab } from "@/lib/collaboratorContext";
 import CountUp from "@/components/shared/CountUp";
 import EmptyState from "@/components/shared/EmptyState";
 import { useAvaFocus } from "@/hooks/useAvaFocus";
@@ -81,7 +81,7 @@ export default function VendorsPage() {
     if (!id) return;
     setScrollToVendorId(id);
     setHighlightedVendorId(id);
-    navigate(location.pathname, { replace: true, state: {} });
+    navigate(withCollab(`${location.pathname}${location.search}`, collab.ownerUserId), { replace: true, state: {} });
     const t = setTimeout(() => setHighlightedVendorId(null), 2000);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps

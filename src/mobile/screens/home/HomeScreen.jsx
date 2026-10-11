@@ -2,7 +2,7 @@ import React from 'react';
 import { Users, Wallet, CheckCircle2, Receipt } from 'lucide-react';
 import Screen from '../../shell/Screen';
 import { HeroCard, PeekCarousel, StatCard, PanelCard, ImageCard, Row, RowGroup, PillButton, Skeleton, ErrorState, ProgressBar, StatusPill } from '../../ui';
-import { dateLong, dueLabel, dateShort } from '../../lib/format';
+import { dueLabel, dateShort } from '../../lib/format';
 import { formatMoney } from '@/lib/money';
 import ActivityRow from '../../notifications/ActivityRow';
 import { imageUrl } from '../../images';
@@ -31,7 +31,7 @@ export default function HomeScreen({
   let first = null; let last = null; const middle = [];
   if (!loading) {
     const dayLabel = countdown && daysToGo > 1 ? 'Days to go' : 'Your wedding';
-    first = { key: 'days', label: dayLabel, number: countdown && daysToGo > 1 ? countdown : undefined, title: countdown && daysToGo > 1 ? (coupleName || 'until the day') : countdown || coupleName, sub: weddingDate ? dateLong(weddingDate) : 'Add your date in Event details', action: siteUrl ? 'View guest suite' : 'Event details', onAction: siteUrl ? () => onOpenFeature?.('site') : () => onOpenFeature?.('event-details') };
+    first = { key: 'days', label: dayLabel, number: countdown && daysToGo > 1 ? countdown : undefined, title: countdown && daysToGo > 1 ? (coupleName || 'until the day') : countdown || coupleName, sub: weddingDate ? dateShort(weddingDate) : 'Add your date in Event details', action: siteUrl ? 'View guest suite' : 'Event details', onAction: siteUrl ? () => onOpenFeature?.('site') : () => onOpenFeature?.('event-details') };
     if (rsvp && rsvp.invited > 0) middle.push({ key: 'rsvp', label: 'RSVPs', number: rsvp.attending, title: 'attending so far', sub: rsvpSentence(rsvp), action: 'See who is yet to reply', onAction: onOpenGuests, progress: { value: rsvp.attending + rsvp.declined, max: rsvp.invited } });
     const lead = Array.isArray(briefing) ? (briefing[0]?.lead || briefing[0]?.body) : briefing;
     if (lead) middle.push({ key: 'ava', label: 'From Ava', title: lead, action: 'Ask Ava', onAction: onOpenAva });

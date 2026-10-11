@@ -38,7 +38,7 @@ export function AccountDetailsSheet({ open, user, currencyCode, onClose, onSave,
         <TextField label="Email" value={user?.email || ''} readOnly />
         <SelectField label="Currency" value={f.currency} onChange={(e) => setF((s) => ({ ...s, currency: e.target.value }))} options={CURRENCY_OPTIONS} />
         <PillChoice label="Temperature" options={UNITS} value={f.tempUnit} onChange={(v) => v && setF((s) => ({ ...s, tempUnit: v }))} hint="For the weather on your guest suite and in the app" />
-        <RowGroup><Row icon={KeyRound} tile="neutral" label="Password and account" sub="Change your password or delete your account on the website" onClick={onDesktop} /></RowGroup>
+        <RowGroup><Row icon={KeyRound} tile="neutral" label="Password and account" sub="Change your password or delete your account at openinvite.com.au" onClick={onDesktop} /></RowGroup>
       </div>
     </BottomSheet>
   );

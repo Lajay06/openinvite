@@ -158,7 +158,7 @@ function ProfileSheet({ vendor, isSaved, onClose, onSave }) {
           </div>
         )}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {details?.website && <PillButton variant="secondary" size="sm" icon={Globe} onClick={() => openExternal(details.website)}>Website</PillButton>}
+          {details?.website && <PillButton variant="secondary" size="sm" icon={Globe} onClick={() => openExternal(details.website)}>Visit</PillButton>}
           {details?.phone && <PillButton variant="secondary" size="sm" icon={Phone} onClick={() => openExternal(`tel:${details.phone}`)}>{details.phone}</PillButton>}
           {(details?.maps_url || vendor.mapsUrl) && <PillButton variant="secondary" size="sm" icon={MapPin} onClick={() => openExternal(details?.maps_url || vendor.mapsUrl)}>Open in Maps</PillButton>}
         </div>

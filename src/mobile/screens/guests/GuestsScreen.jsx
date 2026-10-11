@@ -5,11 +5,12 @@ import { FilterPills, SearchScreen, SkeletonRows, ErrorState, EmptyState, Status
 import { imageUrl } from '../../images';
 import { isPending } from '@/lib/guestRsvpTally';
 import { countGuests, guestMatchesStat, GUEST_STAT_LABELS } from './guestCounts';
+import { counts as householdCounts } from '@/lib/household';
 import { prefGet, prefSet } from '../../native';
 import { useConsiderations } from '../../features/ConsiderationsSheet';
 
 import { getGuestEventResponse } from '@/lib/weddingEvents';
-import { initials, RSVP_LABEL, RSVP_TONE, GUEST_CATEGORY_LABEL } from '../../lib/format';
+import { initials, RSVP_LABEL, RSVP_TONE, GUEST_CATEGORY_LABEL, OPTED_OUT_LABEL } from '../../lib/format';
 
 /** One label set everywhere (goal 8): the four stats, then "Not yet invited" as a list filter only. */
 export const GUEST_FILTERS = [
@@ -64,6 +65,8 @@ export function GuestRow({ guest, onClick, event, selectable, selected, onSelect
         <div className="oi-m-row__body">
           <div className="oi-m-row__label">{guest.name || 'Unnamed guest'}</div>
           {sub && <div className="oi-m-row__sub">{sub}</div>}
+          {/* GuestList.jsx's line, word for word (#951, mobile parity 8): what was sent before is still true, and this says never again. */}
+          {guest.email_opt_out && <div className="oi-m-row__sub" data-opted-out style={{ color: 'var(--m-no)' }}>{OPTED_OUT_LABEL}</div>}
         </div>
         {pill}
       </button>
@@ -121,6 +124,8 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
   // The four numbers, one label set, for the event on the filter or for all events (guestCounts.js, the desktop's logic).
   const counts = useMemo(() => countGuests(guests, event), [guests, event]);
   const plusOnes = !event && counts.plusOnes ? counts.plusOnes.invited : 0;
+  // DailyUpdate.jsx's "By household" lines, from src/lib/household.js (mobile parity 4).
+  const hh = useMemo(() => householdCounts(guests), [guests]);
   const statFilter = GUEST_STAT_LABELS.some((s) => s.key === filter) ? filter : null;
 
   const actions = selecting
@@ -148,6 +153,12 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
             <div className="oi-m-card">
               {/* One line at 390px, never wrapped: the count, the word, the plus-ones (goal 6); per event, the event's name. */}
               <div className="oi-m-section" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: 12 }}>{event ? event.name : `${guests.length} guest${guests.length === 1 ? '' : 's'}${plusOnes ? ` \u00b7 ${plusOnes} plus-one${plusOnes === 1 ? '' : 's'}` : ''}`}</div>
+              {!event && (
+                <div className="oi-m-meta" data-household-counts style={{ marginTop: -8, marginBottom: 12 }}>
+                  <div>{hh.people} guests across {hh.invitations} invitations</div>
+                  {hh.children > 0 && <div>{hh.adults} adults, {hh.children} children</div>}
+                </div>
+              )}
               {/* The four stats, same labels for every event filter; tap one to filter the list to it, tap again to clear (goal 8). */}
               <div className="oi-m-stats" role="group" aria-label="Guest numbers">
                 {GUEST_STAT_LABELS.filter((st) => !st.whenAny || counts[st.key] > 0).map((st) => (

@@ -60,7 +60,7 @@ export function QnaScreen({ qna = [], onSave, onSuggest, loading, error, onRetry
 }
 
 /* ── Places lists: guestSuiteAccommodation.places, guestSuiteTransport.places, experienceGuide.couplePicks ── */
-const PLACE_FIELDS = [{ name: 'name', label: 'Name', type: 'text' }, { name: 'address', label: 'Address', type: 'text' }, { name: 'note', label: 'A note for guests', type: 'textarea' }, { name: 'url', label: 'Website', type: 'url' }];
+const PLACE_FIELDS = [{ name: 'name', label: 'Name', type: 'text' }, { name: 'address', label: 'Address', type: 'text' }, { name: 'note', label: 'A note for guests', type: 'textarea' }, { name: 'url', label: 'Web address', type: 'url' }];
 
 export function PlacesScreen({ title, icon: Icon = MapPin, places = [], onSave, loading, error, onRetry, back, intro, onDesktop }) {
   const [sheet, setSheet] = useState(null);

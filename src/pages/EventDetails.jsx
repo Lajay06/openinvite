@@ -20,7 +20,7 @@ import DatePicker from "@/components/shared/DatePicker";
 import ThemeSection from "@/components/event-details/ThemeSection";
 import VenueSearchPanel from "@/components/shared/VenueSearchPanel";
 import toast from 'react-hot-toast';
-import { useCollaboratorContext } from '@/lib/collaboratorContext';
+import { useCollaboratorContext, withCollab } from '@/lib/collaboratorContext';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -1249,13 +1249,13 @@ export default function EventDetailsPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <button
                   className="btn-primary"
-                  onClick={() => navigate(`${createPageUrl('Guests')}?inviteAll=${encodeURIComponent(invitePrompt.event_id)}&eventName=${encodeURIComponent(invitePrompt.name)}`)}
+                  onClick={() => navigate(withCollab(`${createPageUrl('Guests')}?inviteAll=${encodeURIComponent(invitePrompt.event_id)}&eventName=${encodeURIComponent(invitePrompt.name)}`, collab.ownerUserId))}
                 >
                   Everyone on the guest list
                 </button>
                 <button
                   className="btn-editorial-secondary"
-                  onClick={() => navigate(`${createPageUrl('Guests')}?setEvents=${encodeURIComponent(invitePrompt.event_id)}`)}
+                  onClick={() => navigate(withCollab(`${createPageUrl('Guests')}?setEvents=${encodeURIComponent(invitePrompt.event_id)}`, collab.ownerUserId))}
                 >
                   Choose guests
                 </button>
