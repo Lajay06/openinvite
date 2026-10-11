@@ -74,7 +74,7 @@ export async function runMobileHouseholds() {
 
   const list = code('src/mobile/screens/guests/GuestsScreen.jsx');
   ok('the guest list counts households through household.js',
-     /import \{ counts as householdCounts \} from '@\/lib\/household';/.test(list)
+     /import \{ counts as householdCounts(?:, groupByHousehold)? \} from '@\/lib\/household';/.test(list)
        && /const hh = useMemo\(\(\) => householdCounts\(guests\), \[guests\]\);/.test(list), 'counts(guests)');
   ok('  and prints people across invitations',
      /\{hh\.people\} guests across \{hh\.invitations\} invitations/.test(list), 'line one');
