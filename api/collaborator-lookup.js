@@ -17,12 +17,13 @@
  *
  * Response: 200 { collaboratorName, coupleNames, permissions, email }
  *        or 404 { error: 'This invite has expired or is invalid.' }
+ *        or 410 { error, expired: true } for a genuine invite more than 7 days old
  *
  * Required env var: BASE44_ADMIN_KEY.
  */
 
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
-import { verifyInvite } from './_lib/collaboratorInviteToken.js';
+import { verifyInvite, isInviteExpired, INVITE_EXPIRED_MESSAGE } from './_lib/collaboratorInviteToken.js';
 
 import { coupleDisplayName } from './_lib/coupleNames.js';
 const BASE44_API = 'https://base44.app/api';
@@ -62,6 +63,9 @@ export default async function handler(req, res) {
   const payload = verifyInvite(token);
   if (!payload || !payload.ownerUserId || !payload.email) {
     return res.status(404).json({ error: 'This invite has expired or is invalid.' });
+  }
+  if (isInviteExpired(payload)) {
+    return res.status(410).json({ error: INVITE_EXPIRED_MESSAGE, expired: true });
   }
 
   try {
