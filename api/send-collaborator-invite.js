@@ -16,8 +16,10 @@
  * Body: {
  *   collaboratorId?: string,   // omit to create a new collaborator
  *   name: string, email: string, permissions: object,
- *   origin: string,            // window.location.origin, to build the accept link
  * }
+ * The accept link's host is the app's own (VITE_APP_URL), never anything the
+ * request supplies: a client-chosen host would let a link in a real invite
+ * email point anywhere.
  * Response: 200 { collaborator: {...} }
  */
 
@@ -61,15 +63,12 @@ export default async function handler(req, res) {
   }
 
   const callerToken = (req.headers.authorization || '').slice(7);
-  const { collaboratorId, name, email, permissions, origin } = req.body || {};
+  const { collaboratorId, name, email, permissions } = req.body || {};
 
   const cleanName = sanitizeString(name || '').slice(0, 200);
   const cleanEmail = sanitizeString(email || '').trim();
   if (!cleanName || !cleanEmail || !isValidEmail(cleanEmail)) {
     return res.status(400).json({ error: 'A valid name and email are required.' });
-  }
-  if (!origin || typeof origin !== 'string') {
-    return res.status(400).json({ error: 'origin is required.' });
   }
 
   try {
@@ -123,7 +122,8 @@ export default async function handler(req, res) {
     await recordInviteSend({
       ownerUserId: caller.id, email: cleanEmail, weddingId: wedding?.id, signedInvite, iat, ownerToken: callerToken,
     });
-    const acceptUrl = `${origin}/collaborate/accept/${signedInvite}`;
+    const appUrl = (process.env.VITE_APP_URL || 'https://openinvite.com.au').replace(/\/+$/, '');
+    const acceptUrl = `${appUrl}/collaborate/accept/${signedInvite}`;
     const { subject, html } = renderCollaboratorInviteEmail({
       collaboratorName: cleanName, coupleNames, acceptUrl, permissions: permissions || {},
     });
