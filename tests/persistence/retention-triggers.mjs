@@ -220,7 +220,7 @@ export async function runRetentionTriggers() {
   // NO STAMP IS EVER WRITTEN FOR AN EMAIL THAT WAS NOT SENT. The cron writes
   // only inside sendRetention, which is only called for a due send.
   ok('the only writer of a retention stamp is the sender',
-     (stripComments(read('api/cron/send-onboarding-emails.js')).match(/retentionEmails \}\)/g) || []).length === 1,
+     (stripComments(read('api/cron/send-onboarding-emails.js')).match(/body: \{ retentionEmails \}/g) || []).length === 1,
      'one write, inside sendRetention');
 
   // ── THE MERGE, WHICH IS THE WHOLE REASON retentionEmails IS AN OBJECT ───

@@ -83,7 +83,9 @@
  */
 
 import { Resend } from 'resend';
-import { getBase44User } from '../_lib/base44Admin.js';
+// The shared helper is aliased: this module has its own local adminFetch (a
+// list-unwrapping GET helper) and two bindings cannot share one name.
+import { getBase44User, adminFetch as adminWrite } from '../_lib/base44Admin.js';
 import { onboardingDay3Email } from '../emails/onboarding-day3.js';
 import { onboardingDay7Email } from '../emails/onboarding-day7.js';
 import { isExcludedAccount } from '../_lib/excludedAccounts.js';
@@ -242,9 +244,9 @@ async function sendRetention({ user, flag, email, sentAt }) {
   // THE FLAG IS MERGED, NOT REPLACED. A PUT of { [flag]: at } alone would
   // erase the other three and the account would walk the sequence again.
   const retentionEmails = mergeRetentionFlag(user.retentionEmails, flag, sentAt);
-  const write = await fetch(
-    `${BASE44_API}/apps/${BASE44_APP_ID}/entities/User/${encodeURIComponent(user.id)}?api_key=${BASE44_ADMIN_KEY}`,
-    { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ retentionEmails }) },
+  const write = await adminWrite(
+    `/apps/${BASE44_APP_ID}/entities/User/${encodeURIComponent(user.id)}`,
+    { method: 'PUT', body: { retentionEmails }, adminKey: BASE44_ADMIN_KEY },
   );
   if (!write.ok) {
     const body = await write.text().catch(() => '');

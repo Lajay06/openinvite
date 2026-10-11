@@ -200,7 +200,7 @@ export async function runRetentionStopLink() {
   // ── THE ENDPOINT CANNOT BE TALKED INTO WRITING ANYTHING ELSE ────────────
   const apiSrc = stripComments(read('api/stop-emails.js'));
   ok('the written field and value are literals, not taken from the request',
-     /JSON\.stringify\(\{ lifecycleEmails: false \}\)/.test(apiSrc), 'one field, one value');
+     /body: \{ lifecycleEmails: false \}/.test(apiSrc), 'one field, one value');
   ok('  and the flag is never set back to true here',
      !/lifecycleEmails: true/.test(apiSrc), 're-enabling is signed-in only');
 

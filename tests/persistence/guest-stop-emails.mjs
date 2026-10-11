@@ -82,7 +82,7 @@ export async function runGuestStopEmails() {
   // ── 2. THE TWO SCOPES ARE SEPARATE AT THE ENDPOINT ──────────────────────
   const endpoint = code('api/guest-stop-emails.js');
   const userEndpoint = code('api/stop-emails.js');
-  ok('the guest endpoint looks its id up in Guest', /entityUrl\('Guest', guestId\)/.test(endpoint), 'Guest');
+  ok('the guest endpoint looks its id up in Guest', /entityPath\('Guest', guestId\)/.test(endpoint), 'Guest');
   ok('  and writes only email_opt_out and its timestamp',
      /email_opt_out: true, email_opt_out_at:/.test(endpoint), 'two literals');
   ok('  never User.lifecycleEmails', !/lifecycleEmails/.test(endpoint), 'no account field');

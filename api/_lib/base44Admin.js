@@ -17,8 +17,64 @@
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 
-function userUrl(userId, adminKey) {
-  return `${BASE44_API}/apps/${BASE44_APP_ID}/entities/User/${userId}?api_key=${adminKey}`;
+function userPath(userId) {
+  return `/apps/${BASE44_APP_ID}/entities/User/${encodeURIComponent(userId)}`;
+}
+
+/**
+ * THE ONE ADMIN REQUEST. BEARER FIRST, `?api_key=` ONLY AS A FALLBACK.
+ *
+ * ── WHY THIS EXISTS, 2026-10-11 ───────────────────────────────────────────
+ *
+ * The admin key was rotated to a Base44 PERSONAL ACCESS TOKEN, and a personal
+ * access token is BEARER ONLY: it answers 401 to the `?api_key=` query form on
+ * every entity, built-in and custom alike. Measured four ways against the live
+ * app that day, including the raw unencoded interpolation this file used to
+ * build, so it is the token type and not an encoding artifact.
+ *
+ * That took out every User-entity admin call in production for roughly an hour:
+ * plan activation after a purchase, both email opt-out writes, the retention
+ * stamps, the owner notification on an RSVP. None of them threw. getBase44User
+ * returns null on any failure by design, so a 401 read as "current state
+ * unknown" and the fault was silent.
+ *
+ * The fallback is not decoration. The previous app-level key could not be
+ * restored (Vercel's history lists edits, not values, and the old value was
+ * marked Sensitive), but other clones, preview environments and any key issued
+ * before that day may still be app-level, and for those `?api_key=` is the form
+ * that works. Bearer first, fall back on 401 or 403, so BOTH kinds authenticate
+ * and neither needs a redeploy to switch.
+ *
+ * WHAT THIS DOES NOT DO: it does not make `GET /entities/User` (the LIST)
+ * work. That still answers `200 []` whichever form carries the key. See the
+ * note on listBase44Users below, which is still true and still the reason every
+ * "for every user" cron reads WeddingDetails first.
+ *
+ * @param {string} path  everything after the API root, e.g. /apps/x/entities/User/y
+ * @returns {Promise<Response>} the response, unread, for the caller to handle
+ */
+export async function adminFetch(path, {
+  method = 'GET', body, adminKey = process.env.BASE44_ADMIN_KEY, fetchImpl = fetch,
+} = {}) {
+  const url = `${BASE44_API}${path}`;
+  const headers = { Authorization: `Bearer ${adminKey}` };
+  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  const init = { method, headers };
+  if (body !== undefined) init.body = typeof body === 'string' ? body : JSON.stringify(body);
+
+  const res = await fetchImpl(url, init);
+  if (res.status !== 401 && res.status !== 403) return res;
+
+  // RELEASE THE REJECTED BODY before asking again, so the socket is not held.
+  try { await res.body?.cancel?.(); } catch { /* a stub, or already drained */ }
+
+  const legacyInit = { method };
+  if (body !== undefined) {
+    legacyInit.headers = { 'Content-Type': 'application/json' };
+    legacyInit.body = init.body;
+  }
+  const sep = path.includes('?') ? '&' : '?';
+  return fetchImpl(`${url}${sep}api_key=${encodeURIComponent(adminKey)}`, legacyInit);
 }
 
 /**
@@ -40,7 +96,7 @@ function userUrl(userId, adminKey) {
  */
 export async function getBase44User(userId, adminKey, fetchImpl = fetch) {
   try {
-    const res = await fetchImpl(userUrl(userId, adminKey));
+    const res = await adminFetch(userPath(userId), { adminKey, fetchImpl });
     if (!res.ok) return null;
     return await res.json();
   } catch {
@@ -53,10 +109,11 @@ export async function getBase44User(userId, adminKey, fetchImpl = fetch) {
  */
 export async function writeBase44UserPlan({ userId, plan, planActivatedAt, adminKey, fetchImpl = fetch }) {
   try {
-    const res = await fetchImpl(userUrl(userId, adminKey), {
+    const res = await adminFetch(userPath(userId), {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plan, planActivatedAt }),
+      body: { plan, planActivatedAt },
+      adminKey,
+      fetchImpl,
     });
     if (res.ok) return { ok: true, status: res.status };
     const body = await res.text().catch(() => '');

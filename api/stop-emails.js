@@ -32,8 +32,8 @@
  */
 
 import { verifyStopToken } from './_lib/stopEmailsToken.js';
+import { adminFetch } from './_lib/base44Admin.js';
 
-const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY;
 
@@ -59,12 +59,10 @@ export default async function handler(req, res) {
     // ONE FIELD, ONE VALUE, NOTHING FROM THE REQUEST BODY. The field name and
     // the value are literals here on purpose: a shape that forwarded a patch
     // from the caller would be an unauthenticated write to any User field.
-    const url = `${BASE44_API}/apps/${BASE44_APP_ID}/entities/User/${encodeURIComponent(userId)}?api_key=${BASE44_ADMIN_KEY}`;
-    const write = await fetch(url, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lifecycleEmails: false }),
-    });
+    const write = await adminFetch(
+      `/apps/${BASE44_APP_ID}/entities/User/${encodeURIComponent(userId)}`,
+      { method: 'PUT', body: { lifecycleEmails: false }, adminKey: BASE44_ADMIN_KEY },
+    );
     if (!write.ok) {
       const body = await write.text().catch(() => '');
       console.error(`[stop-emails] Base44 write failed (${write.status}): ${body.slice(0, 200)}`);
