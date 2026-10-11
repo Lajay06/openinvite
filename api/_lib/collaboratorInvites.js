@@ -15,7 +15,7 @@
  * Rows with is_test set are never read here.
  *
  * Every hash is hashId from collaboratorAuth.js: HMAC-SHA256 under
- * BASE44_ADMIN_KEY, hex, the same construction as CollaboratorGrant.
+ * COLLAB_HASH_KEY, hex, the same construction as CollaboratorGrant.
  */
 
 import { hashId } from './collaboratorAuth.js';

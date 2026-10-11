@@ -7,8 +7,9 @@
  * 403 — the admin key has no session identity to satisfy {{user.id}}).
  * Rather than touch Collaborator's own RLS (audited, untouched, per the
  * approved design), the invite carries everything the accept page needs
- * IN the link itself: a signed, tamper-evident payload verified with
- * BASE44_ADMIN_KEY as the HMAC key. No database read is needed to resolve
+ * IN the link itself: a signed, tamper-evident payload. The HMAC key is
+ * derived from COLLAB_HASH_KEY (collaboratorAuth.js), with its own label, so
+ * a signature can never equal an id hash made with the same secret. No database read is needed to resolve
  * an invite — only to act on one (see collaboratorAuth.js's CollaboratorGrant).
  *
  * Format: base64url(JSON payload) + "." + HMAC-SHA256 of that string,
@@ -16,12 +17,16 @@
  */
 
 import crypto from 'crypto';
+import { collabHashKey } from './collaboratorAuth.js';
 
-const SECRET = process.env.BASE44_ADMIN_KEY || '';
+/** Throws when COLLAB_HASH_KEY is missing, so nothing is ever signed under an empty key. */
+function signingKey() {
+  return crypto.createHmac('sha256', collabHashKey()).update('collaborator-invite-link').digest();
+}
 
 export function signInvite(payload) {
   const body = Buffer.from(JSON.stringify(payload), 'utf8').toString('base64url');
-  const sig = crypto.createHmac('sha256', SECRET).update(body).digest('base64url');
+  const sig = crypto.createHmac('sha256', signingKey()).update(body).digest('base64url');
   return `${body}.${sig}`;
 }
 
@@ -36,7 +41,10 @@ export function verifyInvite(token) {
   const [body, sig] = parts;
   if (!body || !sig) return null;
 
-  const expected = crypto.createHmac('sha256', SECRET).update(body).digest('base64url');
+  // A missing key verifies nothing: the same null as a forged link.
+  let key;
+  try { key = signingKey(); } catch { return null; }
+  const expected = crypto.createHmac('sha256', key).update(body).digest('base64url');
   const a = Buffer.from(sig);
   const b = Buffer.from(expected);
   if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;

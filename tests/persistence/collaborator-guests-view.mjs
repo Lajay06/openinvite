@@ -30,6 +30,9 @@ export async function runCollaboratorGuestsView() {
 
   const priorKey = process.env.BASE44_ADMIN_KEY;
   process.env.BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY || 'test-admin-key-not-a-real-credential';
+  // Collaborator hashes and invite links use COLLAB_HASH_KEY, never the admin key.
+  const priorHashKey = process.env.COLLAB_HASH_KEY;
+  process.env.COLLAB_HASH_KEY = '0123456789abcdef'.repeat(4);
   const { hashId } = await import('../../api/_lib/collaboratorAuth.js');
   const { buildGuestPiiBlob } = await import('../../api/_lib/guestPii.js');
   const { TOKEN_FIELDS } = await import('../../api/_lib/rsvpTokenCrypto.js');
@@ -127,6 +130,7 @@ export async function runCollaboratorGuestsView() {
   } finally {
     globalThis.fetch = realFetch;
     if (priorKey === undefined) delete process.env.BASE44_ADMIN_KEY; else process.env.BASE44_ADMIN_KEY = priorKey;
+    if (priorHashKey === undefined) delete process.env.COLLAB_HASH_KEY; else process.env.COLLAB_HASH_KEY = priorHashKey;
   }
 
   return results;

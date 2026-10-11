@@ -87,6 +87,9 @@ export async function runCollaboratorRevoke() {
 
   const priorKey = process.env.BASE44_ADMIN_KEY;
   process.env.BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY || 'test-admin-key-not-a-real-credential';
+  // Collaborator hashes and invite links use COLLAB_HASH_KEY, never the admin key.
+  const priorHashKey = process.env.COLLAB_HASH_KEY;
+  process.env.COLLAB_HASH_KEY = '0123456789abcdef'.repeat(4);
 
   const { hashId, getCollaborationFor } = await import('../../api/_lib/collaboratorAuth.js');
   const revokeHandler = (await import('../../api/collaborator-revoke.js')).default;
@@ -231,6 +234,7 @@ export async function runCollaboratorRevoke() {
     fake.restore();
     if (priorKey === undefined) delete process.env.BASE44_ADMIN_KEY;
     else process.env.BASE44_ADMIN_KEY = priorKey;
+    if (priorHashKey === undefined) delete process.env.COLLAB_HASH_KEY; else process.env.COLLAB_HASH_KEY = priorHashKey;
   }
 
   // ── THE MODAL REVOKES BEFORE IT DELETES ─────────────────────────────────
