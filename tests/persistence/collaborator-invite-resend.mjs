@@ -111,6 +111,13 @@ export async function runCollaboratorInviteResend() {
   const revokeHandler = (await import('../../api/collaborator-revoke.js')).default;
 
   const fake = installFake();
+  // Time stands still for the whole run, so every send shares one iat. That
+  // is the case that once made a resend's link equal to the old one (CI flake,
+  // 2026-10-11): two sends in one millisecond with one payload. With the clock
+  // frozen it happens every run, so only the nonce can keep the links apart.
+  const realNow = Date.now;
+  const frozen = realNow();
+  Date.now = () => frozen;
   let ipn = 70;
   const call = async (handler, opts) => { const { req, res } = mockReqRes({ ip: `203.0.113.${ipn++}`, ...opts }); await handler(req, res); return res; };
   const send = (email) => call(sendHandler, { token: 'tok-owner', body: { name: 'Friend', email, permissions: { Schedule: { view: true } }, origin: 'https://openinvite.com.au' } });
@@ -165,8 +172,12 @@ export async function runCollaboratorInviteResend() {
     const s3 = await send('friend@example.com');
     fake.fault.invitePut = false;
     const link3 = linkOf(s3);
+    ok('every send mints a different link, even with the same payload',
+       new Set([link1, link2, link3]).size === 3, 'three sends, three links');
     ok('a resend whose supersede write fails still sends', s3._status === 200 && fake.invites[1].status === 'sent', `row 2 still ${fake.invites[1].status}`);
-    ok('  and the link before it is refused all the same', (await lookup(link2))._status === 404, 'newest row decides');
+    const prev = await lookup(link2);
+    ok('  and the link before it is refused all the same', prev._status === 404,
+       `status ${prev._status}, rows ${fake.invites.map(r => `${r.id}:${r.status}:${r.created_date}`).join(' ')}`);
     ok('  while the newest works', (await lookup(link3))._status === 200, 'lookup 200');
 
     // ── NO ROW, NO EMAIL ────────────────────────────────────────────────────
@@ -197,6 +208,7 @@ export async function runCollaboratorInviteResend() {
     });
     ok('an is_test row is never read, so it cannot kill a real link', (await lookup(link3))._status === 200, 'test row ignored');
   } finally {
+    Date.now = realNow;
     fake.restore();
     if (prior.admin === undefined) delete process.env.BASE44_ADMIN_KEY; else process.env.BASE44_ADMIN_KEY = prior.admin;
     if (prior.resend === undefined) delete process.env.RESEND_API_KEY; else process.env.RESEND_API_KEY = prior.resend;

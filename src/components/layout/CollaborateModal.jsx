@@ -25,7 +25,7 @@ async function sendInvite({ collaboratorId, name, email, permissions }) {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${localStorage.getItem('base44_access_token')}`,
     },
-    body: JSON.stringify({ collaboratorId, name, email, permissions, origin: window.location.origin }),
+    body: JSON.stringify({ collaboratorId, name, email, permissions }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Failed to send invite');
