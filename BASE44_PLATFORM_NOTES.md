@@ -6,6 +6,73 @@ Read this before touching RLS, the admin key, or any new admin-key-backed
 endpoint — every item below was confirmed by direct testing against the
 live app, not inferred from documentation.
 
+## A personal access token is BEARER ONLY: `?api_key=` returns 401 for it
+
+Established 2026-10-11, during a rotation of `BASE44_ADMIN_KEY`, and it cost
+production about an hour of dead User-entity calls.
+
+The replacement credential was a Base44 **personal access token**. A personal
+access token authenticates in the `Authorization: Bearer <key>` form and is
+rejected, 401, in the `?api_key=<key>` query form. Measured both forms against
+both entity kinds on the live app:
+
+| Call | `Authorization: Bearer` | `?api_key=` |
+|---|---|---|
+| `GET /entities/User/:id` | **200** | **401** |
+| `GET /entities/WeddingDetails?q=...` | **200** | **401** |
+
+Also measured with the key interpolated raw and with `encodeURIComponent`, and
+with the token confirmed clean (69 characters, URL safe charset, no quoting, no
+whitespace). Both forms of that check 401, so this is the token type and not an
+encoding artifact.
+
+**This is the exact opposite of what an app-level key does**, which is why the
+rest of this document said to use `?api_key=` for `User`. Both facts are true,
+of different credentials:
+
+| Credential | `User` single record | Notes |
+|---|---|---|
+| app-level API key (pre 2026-10-11) | `?api_key=` works, bearer works | bearer 401s on the `User` LIST, see the bulk-listing section |
+| personal access token | bearer only | `?api_key=` 401s on every entity |
+
+### Why it was silent, which is the part worth remembering
+
+`getBase44User` returns `null` on any failure by design, and its own contract
+tells callers to treat `null` as "current state unknown", not as an error. So a
+401 on every call read as an absent record. Nothing threw, no alert fired, and
+the fault was found only because a rotation check happened to compare the two
+auth forms side by side.
+
+What was broken for that hour, all of it through one helper:
+
+* plan activation after a purchase (`writeBase44UserPlan`, called by the Stripe
+  webhook)
+* both email opt-out writes, the couple's `lifecycleEmails` and the guest's
+  `email_opt_out`, each of which answered the person a 502
+* the retention and onboarding stamps, so the cron could not record a send
+* the owner notification on an RSVP, and the weekly digest's per owner read
+
+### The fix, and why it keeps the old form
+
+`adminFetch` in `api/_lib/base44Admin.js` is now the single admin request for
+every raw URL that used to carry the key in a query string. It sends a bearer
+header, and retries once in the `?api_key=` form only on a 401 or 403. A 200 is
+never retried, so the fallback cannot double a write.
+
+The fallback is not politeness. The previous key could not be restored:
+**Vercel's environment variable history lists edits, not values, and the old
+value was marked Sensitive**, so rotating away from an app-level key is a one
+way door. Any other clone, preview environment or key issued before that day may
+still be app-level, and for those the query form is the one that works. Bearer
+first with a fallback means one deployment authenticates either kind.
+
+### What this does NOT change
+
+`GET /entities/User` (the LIST, no id) still answers `200 []` whichever form
+carries the key. That is a separate limitation with its own section below, and
+it is still why every "for every user" cron reads `WeddingDetails` first and
+then fetches each owner by id.
+
 ## The admin key is not a superuser bypass
 
 `BASE44_ADMIN_KEY` is a normal API credential, evaluated against each
