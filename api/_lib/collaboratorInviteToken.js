@@ -47,3 +47,22 @@ export function verifyInvite(token) {
     return null;
   }
 }
+
+/** An invite link works for 7 days from when it was signed. */
+export const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const CLOCK_SKEW_MS = 5 * 60 * 1000;
+
+export const INVITE_EXPIRED_MESSAGE = 'This invite has expired. Ask them to send a new one.';
+
+/**
+ * True when a VERIFIED payload is past its 7 days. Checked only after the
+ * signature verifies, so saying "expired" rather than "invalid" tells a
+ * prober nothing about forging one. A payload with no usable iat, or one
+ * signed in the future, counts as expired: neither can be honored safely.
+ */
+export function isInviteExpired(payload, now = Date.now()) {
+  const iat = Number(payload?.iat);
+  if (!Number.isFinite(iat) || iat <= 0) return true;
+  if (iat > now + CLOCK_SKEW_MS) return true;
+  return now - iat > INVITE_TTL_MS;
+}
