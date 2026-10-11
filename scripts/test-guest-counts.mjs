@@ -4,7 +4,7 @@
  * The guest numbers on the phone add up (mobile goal 8, item 3). For every
  * wedding event in the demo fixtures, and for all events together:
  *
- *   invited === attending + declined + awaiting
+ *   invited === attending + declined + maybe + awaiting
  *
  * and the list filter behind each stat selects exactly the rows the stat
  * counts (per event, where rows are what is counted). It also pins the
@@ -54,7 +54,7 @@ const say = (s) => { checks++; console.log(`  ok  ${s}`); };
   assert.ok(holdsInvariant(c), `all events: ${c.invited} invited, ${c.attending} + ${c.declined} + ${c.awaiting}`);
   say(`all events: ${c.invited} invited = ${c.attending} attending + ${c.declined} declined + ${c.awaiting} awaiting reply`);
   assert.ok(holdsInvariant(c.plusOnes) && holdsInvariant(c.guests), 'the plus-one and guest breakdowns add up on their own');
-  for (const k of ['invited', 'attending', 'declined', 'awaiting']) assert.equal(c.guests[k] + c.plusOnes[k], c[k], `${k}: guests + plus-ones = total`);
+  for (const k of ['invited', 'attending', 'declined', 'maybe', 'awaiting']) assert.equal(c.guests[k] + c.plusOnes[k], c[k], `${k}: guests + plus-ones = total`);
   say(`all events: ${c.guests.invited} guests and ${c.plusOnes.invited} plus-ones make the ${c.invited}`);
   // The rows a stat filter selects are the primaries the stat counts.
   for (const { key } of GUEST_STAT_LABELS) {
@@ -69,10 +69,10 @@ const say = (s) => { checks++; console.log(`  ok  ${s}`); };
 for (const ev of events) {
   const c = countGuests(FIXTURE_GUESTS, ev);
   assert.ok(holdsInvariant(c), `${ev.name}: ${c.invited} invited, ${c.attending} + ${c.declined} + ${c.awaiting}`);
-  // Guests.jsx's eventStats, recomputed the way that page does it.
-  let invited = 0, yes = 0, no = 0, pending = 0;
-  for (const g of FIXTURE_GUESTS) { const r = getGuestEventResponse(g, ev); if (!r.invited) continue; invited++; if (r.status === 'yes') yes++; else if (r.status === 'no') no++; else pending++; }
-  assert.deepEqual({ invited: c.invited, attending: c.attending, declined: c.declined, awaiting: c.awaiting }, { invited, attending: yes, declined: no, awaiting: pending }, `${ev.name}: matches the desktop's per-event counts`);
+  // Guests.jsx's eventStats, recomputed the way that page does it: since #936 a maybe is its own bucket.
+  let invited = 0, yes = 0, no = 0, maybe = 0, pending = 0;
+  for (const g of FIXTURE_GUESTS) { const r = getGuestEventResponse(g, ev); if (!r.invited) continue; invited++; if (r.status === 'yes') yes++; else if (r.status === 'no') no++; else if (r.status === 'maybe') maybe++; else pending++; }
+  assert.deepEqual({ invited: c.invited, attending: c.attending, declined: c.declined, maybe: c.maybe, awaiting: c.awaiting }, { invited, attending: yes, declined: no, maybe, awaiting: pending }, `${ev.name}: matches the desktop's per-event counts`);
   for (const { key } of GUEST_STAT_LABELS) {
     const rows = FIXTURE_GUESTS.filter((g) => guestMatchesStat(g, key, ev)).length;
     assert.equal(rows, c[key], `${ev.name}, ${key}: the filter lists ${rows} rows, the stat says ${c[key]}`);
@@ -85,7 +85,7 @@ for (const ev of events) {
   const mk = (id, extra) => ({ id, name: `G ${id}`, ...extra });
   const edge = [
     mk('a', { rsvp_status: 'attending' }),                                   // answered, no invitation on record
-    mk('b', { rsvp_status: 'maybe', invite_sent_at: '2026-01-01' }),          // a maybe is still awaiting
+    mk('b', { rsvp_status: 'maybe', invite_sent_at: '2026-01-01' }),          // a maybe is a reply (#936), not awaiting
     mk('c', { invite_sent_at: '2026-01-01' }),                                // no status at all
     mk('d', { rsvp_status: 'declined', invite_sent_at: '2026-01-01', plus_one: true, plus_one_name: 'Pat', plus_one_rsvp: 'attending' }),
     mk('e', { rsvp_status: 'pending' }),                                      // never invited, never answered: not counted
@@ -93,13 +93,13 @@ for (const ev of events) {
   ];
   const c = countGuests(edge, null);
   assert.ok(holdsInvariant(c), 'edge cases add up');
-  assert.deepEqual({ invited: c.invited, attending: c.attending, declined: c.declined, awaiting: c.awaiting }, { invited: 5, attending: 2, declined: 1, awaiting: 2 });
+  assert.deepEqual({ invited: c.invited, attending: c.attending, declined: c.declined, maybe: c.maybe, awaiting: c.awaiting }, { invited: 5, attending: 2, declined: 1, maybe: 1, awaiting: 1 });
   assert.equal(c.plusOnes.attending, 1, 'the named plus-one counts as a head');
   say('edge cases: an answer without an invitation, a maybe, a blank status, a named plus-one, the uninvited and the bare permission all add up');
   const ev = { event_id: 'x', name: 'X', isMain: true };
   const ce = countGuests([mk('a', { event_responses: [{ event_id: 'x', invited: true, status: 'yes' }] }), mk('b', { event_responses: [{ event_id: 'x', invited: true, status: 'maybe' }] }), mk('c', { event_responses: [{ event_id: 'x', invited: false }] }), mk('d', {})], ev);
-  assert.deepEqual({ invited: ce.invited, attending: ce.attending, declined: ce.declined, awaiting: ce.awaiting }, { invited: 3, attending: 1, declined: 0, awaiting: 2 }, 'per event: a main event invites a guest with no responses, a maybe awaits');
-  say('edge cases, per event: the main-event default and a maybe both land in a column');
+  assert.deepEqual({ invited: ce.invited, attending: ce.attending, declined: ce.declined, maybe: ce.maybe, awaiting: ce.awaiting }, { invited: 3, attending: 1, declined: 0, maybe: 1, awaiting: 1 }, 'per event: a main event invites a guest with no responses, a maybe is its own answer');
+  say('edge cases, per event: the main-event default and a maybe each land in their own column');
 }
 
 console.log(`\n  ${checks} checks passed.\n`);

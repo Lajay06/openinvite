@@ -15,6 +15,7 @@ import { BottomSheet, PillButton } from '../../ui';
 import { hapticLight, exportText, shareLink } from '../../native';
 import { getWeddingEvents, toggleEventInvite, getGuestEventResponse, mealOptionLabel, effectiveMealChoice } from '@/lib/weddingEvents';
 import { hasPlusOne, plusOneRsvpStatus } from '@/lib/plusOne';
+import { applyStatusToEventResponses } from '@/lib/statusWrite';
 import { countryFromWedding } from '@/lib/countryFromVenue';
 import { DEFAULT_COUNTRY } from '@/lib/phoneE164';
 
@@ -127,7 +128,15 @@ export default function GuestsContainer() {
     } catch (e) { toast.error(e?.message || 'Could not update the table'); }
   };
   const save = async (fields) => {
-    const { table_assignment, ...rest } = fields;
+    const { table_assignment, ...fieldsOut } = fields;
+    // THE STATUS BECOMES PER-EVENT ANSWERS, as GuestForm.jsx does on the way
+    // out (#897): a guest's status is derived from event_responses everywhere,
+    // so a flat rsvp_status alone records nothing the list will show. Narrow,
+    // through statusWrite.js, never the full set, for the reason it gives.
+    const rest = {
+      ...fieldsOut,
+      event_responses: applyStatusToEventResponses({ events: weddingEvents, guest: sheet.guest || {}, status: fieldsOut.rsvp_status }),
+    };
     if (sheet.guest) {
       await guestWrites.update(sheet.guest.id, rest);
       await applyTable(sheet.guest.id, table_assignment, sheet.guest.table_assignment);
@@ -229,7 +238,7 @@ export default function GuestsContainer() {
       <GuestFormSheet open={sheet.open} guest={sheet.guest} mealOptions={mealOptions} country={country} onClose={() => setSheet((s) => ({ ...s, open: false }))} onSave={save} />
       <SetEventsSheet open={!!events} guests={events?.guests || []} weddingEvents={weddingEvents} onUpdate={updateGuest} onClose={() => setEvents(null)} onSaved={(newly) => { reload(); if (events?.autoSend && events?.guests?.length === 1) { goSend([events.guests[0].id]); return; } if (newly?.length && events?.guests?.length === 1) toast((t) => <span>Invited to {newly.length} new event{newly.length === 1 ? '' : 's'}<button type="button" className="oi-m-toast-action" onClick={() => { toast.dismiss(t.id); goSend([events.guests[0].id], newly); }}>Send invite</button></span>, { duration: 6000 }); }} />
       <EmailTemplatesSheet open={templatesOpen} onClose={() => setTemplatesOpen(false)} onUse={(type) => { setTemplatesOpen(false); navigate(`${base}/plan/send-invites?type=${type}`); }} />
-      <ImportGuestsSheet open={importOpen} onClose={() => setImportOpen(false)} existingGuests={list} country={country} onCreate={(data) => guestWrites.create(data, d)} onImported={reload} />
+      <ImportGuestsSheet open={importOpen} onClose={() => setImportOpen(false)} weddingEvents={weddingEvents} existingGuests={list} country={country} onCreate={(data) => guestWrites.create(data, d)} onImported={reload} />
       <ContactsImportSheet open={contactsOpen} onClose={() => setContactsOpen(false)} api={api} existingGuests={list} country={country} onCreate={(data) => guestWrites.create(data, d)} onImported={reload} onInvite={(created) => navigate(`${base}/plan/send-invites?ids=${created.map((g) => g.id).filter(Boolean).join(',')}`)} />
       <BulkActionsSheet open={bulkOpen} onClose={() => setBulkOpen(false)} guests={selectedGuests} onSetCategory={bulk.setCategory} onSetDietary={bulk.setDietary} onAddTag={bulk.addTag} onRemoveTag={bulk.removeTag} onSetEvents={() => setEvents({ guests: selectedGuests, autoSend: false })} onSend={() => goSend(selectedGuests.map((g) => g.id))} onDelete={bulk.remove} />
       <BottomSheet open={!!bulkInvite} onClose={() => setBulkInvite(null)} title={bulkInvite ? `Invite everyone to ${bulkInvite.event.name}?` : ''} footer={bulkInvite ? (

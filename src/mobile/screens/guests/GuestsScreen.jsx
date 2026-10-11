@@ -21,7 +21,7 @@ export const GUEST_FILTERS = [
 /** The list under a filter. With an event on, the four statuses read that event's reply (guestCounts.js). */
 export function applyGuestFilter(list, key, event = null) {
   switch (key) {
-    case 'invited': case 'attending': case 'declined': case 'awaiting': return list.filter((g) => guestMatchesStat(g, key, event));
+    case 'invited': case 'attending': case 'declined': case 'maybe': case 'awaiting': return list.filter((g) => guestMatchesStat(g, key, event));
     case 'not_invited': return list.filter((g) => !g.invite_sent_at); // Guests.jsx: never sent, whatever they replied
     default: return list;
   }
@@ -44,7 +44,7 @@ export function suggestTitleCase(name) {
 }
 const CASE_DISMISS_KEY = 'name_case_dismissed';
 
-const EVENT_STATUS = { yes: ['ok', 'Attending'], no: ['no', 'Declined'], pending: ['warn', 'Awaiting reply'] };
+const EVENT_STATUS = { yes: ['ok', 'Attending'], no: ['no', 'Declined'], maybe: ['neutral', 'Maybe'], pending: ['warn', 'Awaiting reply'] };
 
 /** One guest row: initials tile, name, sub line, status pill (per event when an event filter is on). */
 export function GuestRow({ guest, onClick, event, selectable, selected, onSelect, role, caseSuggestion, onRename, onDismissCase }) {
@@ -100,8 +100,9 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
   const event = eventFilter !== 'all' ? weddingEvents.find((e) => e.event_id === eventFilter) : null;
   const filters = useMemo(() => {
     const inEvent = event ? guests.filter((g) => getGuestEventResponse(g, event).invited) : guests;
-    return [...GUEST_FILTERS.map((f) => ({ ...f, count: f.key === 'all' ? inEvent.length : applyGuestFilter(inEvent, f.key, event).length })), ...groupings];
-  }, [guests, groupings, event]);
+    const withCounts = GUEST_FILTERS.map((f) => ({ ...f, count: f.key === 'all' ? inEvent.length : applyGuestFilter(inEvent, f.key, event).length }));
+    return [...withCounts.filter((f) => !f.whenAny || f.count > 0 || f.key === filter), ...groupings];
+  }, [guests, groupings, event, filter]);
 
   const visible = useMemo(() => {
     const grouping = groupings.find((g) => g.key === filter);
@@ -149,11 +150,11 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
               <div className="oi-m-section" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: 12 }}>{event ? event.name : `${guests.length} guest${guests.length === 1 ? '' : 's'}${plusOnes ? ` \u00b7 ${plusOnes} plus-one${plusOnes === 1 ? '' : 's'}` : ''}`}</div>
               {/* The four stats, same labels for every event filter; tap one to filter the list to it, tap again to clear (goal 8). */}
               <div className="oi-m-stats" role="group" aria-label="Guest numbers">
-                {GUEST_STAT_LABELS.map((st) => (
+                {GUEST_STAT_LABELS.filter((st) => !st.whenAny || counts[st.key] > 0).map((st) => (
                   <Stat key={st.key} n={counts[st.key]} label={st.label} sub={plusOnes && counts.plusOnes[st.key] ? `${counts.guests[st.key]} guest${counts.guests[st.key] === 1 ? '' : 's'}, ${counts.plusOnes[st.key]} plus-one${counts.plusOnes[st.key] === 1 ? '' : 's'}` : ''} active={statFilter === st.key} onClick={() => onFilter(statFilter === st.key ? 'all' : st.key)} />
                 ))}
               </div>
-              <ProgressBar value={counts.attending + counts.declined} max={counts.invited} note={summary(counts, event)} />
+              <ProgressBar value={counts.invited - counts.awaiting} max={counts.invited} note={summary(counts, event)} />
               {/* The tab root keeps the bell top right, so the list's actions live here, not in the header. */}
               <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                 <PillButton variant="primary" size="sm" icon={Plus} onClick={onAdd} style={{ flex: 1 }}>Add a guest</PillButton>

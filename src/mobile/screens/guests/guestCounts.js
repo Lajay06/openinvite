@@ -4,12 +4,12 @@
  * THE ONE COUNTING FUNCTION for the guest numbers on the phone (goal 8,
  * item 3). One label set for every event filter, all events included:
  *
- *   Invited, Attending, Declined, Awaiting reply
+ *   Invited, Attending, Declined, Maybe, Awaiting reply
  *
  * and one invariant, per event and for all events alike, that the unit test
  * (scripts/test-guest-counts.mjs) proves on the demo fixtures:
  *
- *   invited === attending + declined + awaiting
+ *   invited === attending + declined + maybe + awaiting
  *
  * WHERE THE LOGIC COMES FROM. The desktop has no exported function for
  * these numbers; they are computed inline in src/pages/Guests.jsx (`stats`
@@ -35,25 +35,41 @@
  *       attendee who has answered without an invitation on record (a guest
  *       marked attending by hand) is invited by that answer, so the answer
  *       is never orphaned outside the total.
- *     - A "maybe" is awaiting a reply: it is not a final answer, and the
- *       desktop's isPending() would leave it in no column at all.
+ *     - MAYBE IS ITS OWN NUMBER AND IT IS A REPLY, as the desktop counts it
+ *       since #936: the couple recorded it, so it is an answer and it is not
+ *       awaiting anything. Guests.jsx's eventStats gives it its own bucket,
+ *       and guestRsvpTally's isPending() leaves it out of awaiting. Before
+ *       mobile parity 5 the phone counted it as awaiting, which told the
+ *       couple a guest they had spoken to had not replied.
  *
  * Deliberately relative imports, as src/lib/guestRsvpTally.js explains, so
  * plain Node can bundle and run this under the test.
  */
 import { resolveAttendees } from '../../../lib/attendees.js';
-import { isAttending, isDeclined } from '../../../lib/guestRsvpTally.js';
+import { isAttending, isDeclined, isMaybe } from '../../../lib/guestRsvpTally.js';
 import { getGuestEventResponse } from '../../../lib/weddingEvents.js';
 
-/** The four stats in their fixed order, keyed to the list filter each one opens. */
+/**
+ * The stats in their fixed order, keyed to the list filter each one opens.
+ * Maybe is `whenAny`: the screen shows it only when someone is a maybe, so a
+ * wedding with none keeps the four it always had, and one with some still
+ * sees numbers that add up to Invited.
+ */
 export const GUEST_STAT_LABELS = [
   { key: 'invited', label: 'Invited' },
   { key: 'attending', label: 'Attending' },
   { key: 'declined', label: 'Declined' },
+  { key: 'maybe', label: 'Maybe', whenAny: true },
   { key: 'awaiting', label: 'Awaiting reply' },
 ];
 
-const empty = () => ({ invited: 0, attending: 0, declined: 0, awaiting: 0 });
+const empty = () => ({ invited: 0, attending: 0, declined: 0, maybe: 0, awaiting: 0 });
+
+/** The per-event reply in the stat's vocabulary: yes, no and maybe are answers. */
+const eventCol = (status) => (status === 'yes' ? 'attending' : status === 'no' ? 'declined' : status === 'maybe' ? 'maybe' : 'awaiting');
+
+/** A guest's overall reply, as the desktop's predicates read it. */
+const guestCol = (g) => (isAttending(g) ? 'attending' : isDeclined(g) ? 'declined' : isMaybe(g) ? 'maybe' : 'awaiting');
 
 /**
  * Count the guest list for one wedding event, or for all events when
@@ -70,9 +86,7 @@ export function countGuests(guests = [], event = null) {
       const r = getGuestEventResponse(g, event);
       if (!r.invited) continue;
       out.invited++;
-      if (r.status === 'yes') out.attending++;
-      else if (r.status === 'no') out.declined++;
-      else out.awaiting++;
+      out[eventCol(r.status)]++;
     }
     return out;
   }
@@ -82,10 +96,9 @@ export function countGuests(guests = [], event = null) {
   const primaries = empty();
   for (const a of resolveAttendees(list)) {
     const host = byId.get(a.isPlusOne ? a.hostGuestId : a.id);
-    const answered = isAttending(a) || isDeclined(a);
-    if (!host?.invite_sent_at && !answered) continue;
+    const col = guestCol(a);
+    if (!host?.invite_sent_at && col === 'awaiting') continue;
     const bucket = a.isPlusOne ? plusOnes : primaries;
-    const col = isAttending(a) ? 'attending' : isDeclined(a) ? 'declined' : 'awaiting';
     out.invited++; out[col]++;
     bucket.invited++; bucket[col]++;
   }
@@ -94,7 +107,7 @@ export function countGuests(guests = [], event = null) {
 
 /** True when the four numbers add up; the test and the screen both ask. */
 export function holdsInvariant(c) {
-  return !!c && c.invited === c.attending + c.declined + c.awaiting;
+  return !!c && c.invited === c.attending + c.declined + (c.maybe || 0) + c.awaiting;
 }
 
 /**
@@ -108,16 +121,11 @@ export function guestMatchesStat(guest, key, event = null) {
     const r = getGuestEventResponse(guest, event);
     if (!r.invited) return false;
     if (key === 'invited') return true;
-    if (key === 'attending') return r.status === 'yes';
-    if (key === 'declined') return r.status === 'no';
-    if (key === 'awaiting') return r.status !== 'yes' && r.status !== 'no';
-    return true;
+    return eventCol(r.status) === key;
   }
-  const answered = isAttending(guest) || isDeclined(guest);
-  const invited = !!guest.invite_sent_at || answered;
+  const col = guestCol(guest);
+  const invited = !!guest.invite_sent_at || col !== 'awaiting';
   if (key === 'invited') return invited;
-  if (key === 'attending') return isAttending(guest);
-  if (key === 'declined') return isDeclined(guest);
-  if (key === 'awaiting') return invited && !answered;
-  return true;
+  if (key === 'awaiting') return invited && col === 'awaiting';
+  return col === key;
 }

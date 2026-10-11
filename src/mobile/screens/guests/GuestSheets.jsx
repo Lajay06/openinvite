@@ -71,7 +71,7 @@ export function SetEventsSheet({ open, guests = [], weddingEvents = [], onUpdate
  * same parseGuestFile, a preview with the rows that will not import and
  * why, then createGuest per row, skipping emails already on the list.
  */
-export function ImportGuestsSheet({ open, onClose, existingGuests = [], country = 'AU', onCreate, onImported }) {
+export function ImportGuestsSheet({ open, onClose, weddingEvents = [], existingGuests = [], country = 'AU', onCreate, onImported }) {
   const [rows, setRows] = useState(null);
   const [busy, setBusy] = useState(false);
   // ImportGuestModal.jsx: the country the file's phone numbers are read in, the venue's until changed.
@@ -84,9 +84,11 @@ export function ImportGuestsSheet({ open, onClose, existingGuests = [], country 
     const ext = file.name.split('.').pop().toLowerCase();
     if (!['csv', 'xlsx', 'xls'].includes(ext)) { toast.error('Choose a CSV or Excel file'); return; }
     setLastFile(file);
-    try { setRows(await parseGuestFile(file, importCountry)); } catch (e) { toast.error(e.message); }
+    // The wedding's events go in, as ImportGuestModal.jsx passes them, so an
+    // RSVP column becomes per-event answers through statusWrite.js (#897).
+    try { setRows(await parseGuestFile(file, importCountry, weddingEvents)); } catch (e) { toast.error(e.message); }
   };
-  const changeCountry = async (iso) => { setImportCountry(iso); if (lastFile) { try { setRows(await parseGuestFile(lastFile, iso)); } catch (e) { toast.error(e.message); } } };
+  const changeCountry = async (iso) => { setImportCountry(iso); if (lastFile) { try { setRows(await parseGuestFile(lastFile, iso, weddingEvents)); } catch (e) { toast.error(e.message); } } };
   const run = async () => {
     const valid = (rows || []).filter((r) => !r._error);
     if (!valid.length) { toast.error('No rows to import'); return; }
@@ -96,7 +98,7 @@ export function ImportGuestsSheet({ open, onClose, existingGuests = [], country 
     const toImport = []; const dupes = [];
     for (const r of valid) { const e = r.email?.trim().toLowerCase(); if (e && emails.has(e)) dupes.push(r._rowIndex); else { toImport.push(r); if (e) emails.add(e); } }
     const failed = [];
-    await Promise.all(toImport.map(async (r) => { const { _rowIndex, _error, _phoneWarning, ...data } = r; try { await onCreate({ ...data, event_responses: [] }); } catch { failed.push(_rowIndex); } }));
+    await Promise.all(toImport.map(async (r) => { const { _rowIndex, _error, _phoneWarning, ...data } = r; try { await onCreate({ event_responses: [], ...data }); } catch { failed.push(_rowIndex); } }));
     setBusy(false);
     const n = toImport.length - failed.length;
     const parts = [n > 0 ? `${n} imported` : '', dupes.length ? `${dupes.length} skipped (already on your list)` : '', failed.length ? `${failed.length} failed` : ''].filter(Boolean);
