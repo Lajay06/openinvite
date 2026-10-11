@@ -102,11 +102,12 @@ export function runAppMarketing() {
   check('home: the app block is on the page', !!block);
   check('home: no phone frame, no twin, no banner', !/data-app-phone-frame|data-app-twin/.test(block) && !bannerAbove(home, 'data-home-app') && !/data-title-banner/.test(block));
   check('home: the heading, verbatim, as its h2', /<h2\b[^>]*data-app-heading[^>]*>\s*The whole planner, in your pocket\.\s*<\/h2>/.test(block));
-  const WANDER = 'DTS_WANDER_Jessica_MADAVO_Photos_ID12134_okhlfz';
+  // The 4K upload of the same frame (2026-10-12); the 1280 wide original stays in Cloudinary.
+  const WANDER = 'DTS_WANDER_Jessica_MADAVO_Photos_ID12134-2_ck50st';
   const himg = /<img\b[^>]*data-home-app-photo[^>]*>/.exec(block)?.[0] || '';
   const hset = (/srcset="([^"]+)"/i.exec(himg)?.[1] || '').replace(/&amp;/g, '&');
-  check('home: the WANDER photograph, at f_auto and q_auto, 1600, 1200 and 800 wide',
-    [1600, 1200, 800].every((w) => hset.includes(`/f_auto,q_auto,w_${w},c_limit/${WANDER}.jpg ${w}w`)) && !/\bg_|c_fill|c_crop/.test(hset), hset.slice(0, 90));
+  check('home: the WANDER photograph, at f_auto and q_auto, 2400, 1600, 1200 and 800 wide',
+    [2400, 1600, 1200, 800].every((w) => hset.includes(`/f_auto,q_auto,w_${w},c_limit/${WANDER}.jpg ${w}w`)) && !/\bg_|c_fill|c_crop/.test(hset), hset.slice(0, 90));
   check('home: its alt text, verbatim', himg.includes('alt="A woman in a white outfit sits outside a vintage shop, reading her phone."'));
   check('home: the only picture is that photograph', (block.match(/<img\b/g) || []).length === 1 && !/<video\b/.test(block));
   const homeSrc = readFileSync(resolve(ROOT, 'src/components/home/AppPhoneSection.jsx'), 'utf8');
