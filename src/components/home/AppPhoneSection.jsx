@@ -9,7 +9,12 @@
  *
  * THE PHOTOGRAPH is Death to Stock's WANDER set (ID 12134), licensed to the
  * owner and in the Openinvite Cloudinary account, served like the other
- * marketing photographs: f_auto and q_auto at 800, 1200 and 1600 wide. The
+ * marketing photographs: f_auto and q_auto at 800, 1200, 1600 and 2400 wide.
+ * The 4K upload (ID12134-2, 4985 by 3729) replaced the 1280 wide original on
+ * 2026-10-12: the same frame, compared pixel for pixel at w_400 (mean
+ * difference 1.15 of 255, best alignment at no offset), so the crop and the
+ * object-position below are unchanged, and the 1600 entry no longer stops at
+ * the old file's 1280. The old id stays in Cloudinary. The
  * phone crop keeps her in frame with object-position, not a Cloudinary
  * gravity crop, so one file serves both widths.
  *
@@ -29,9 +34,9 @@
  */
 const PJS = "'Plus Jakarta Sans', sans-serif";
 const CLOUD = "https://res.cloudinary.com/dsr84xknv/image/upload";
-export const HOME_APP_PHOTO_ID = "DTS_WANDER_Jessica_MADAVO_Photos_ID12134_okhlfz";
+export const HOME_APP_PHOTO_ID = "DTS_WANDER_Jessica_MADAVO_Photos_ID12134-2_ck50st";
 const photoUrl = (w) => `${CLOUD}/f_auto,q_auto,w_${w},c_limit/${HOME_APP_PHOTO_ID}.jpg`;
-export const HOME_APP_SRCSET = [1600, 1200, 800].map((w) => `${photoUrl(w)} ${w}w`).join(", ");
+export const HOME_APP_SRCSET = [2400, 1600, 1200, 800].map((w) => `${photoUrl(w)} ${w}w`).join(", ");
 
 export const HOME_APP_HEADING = "The whole planner, in your pocket.";
 export const HOME_APP_BODY = "Plan on the train, on the couch, in the queue for coffee. Your guest list, budget and seating chart on your phone and your computer, always the same wedding.";
