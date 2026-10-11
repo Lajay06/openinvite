@@ -5,7 +5,7 @@ import { FilterPills, SearchScreen, SkeletonRows, ErrorState, EmptyState, Status
 import { imageUrl } from '../../images';
 import { isPending } from '@/lib/guestRsvpTally';
 import { countGuests, guestMatchesStat, GUEST_STAT_LABELS } from './guestCounts';
-import { counts as householdCounts } from '@/lib/household';
+import { counts as householdCounts, groupByHousehold } from '@/lib/household';
 import { prefGet, prefSet } from '../../native';
 import { useConsiderations } from '../../features/ConsiderationsSheet';
 
@@ -49,7 +49,7 @@ const CASE_DISMISS_KEY = 'name_case_dismissed';
 const EVENT_STATUS = { yes: ['ok', 'Attending'], no: ['no', 'Declined'], maybe: ['neutral', 'Maybe'], pending: ['warn', 'Awaiting reply'] };
 
 /** One guest row: initials tile, name, sub line, status pill (per event when an event filter is on). */
-export function GuestRow({ guest, onClick, event, selectable, selected, onSelect, role, caseSuggestion, onRename, onDismissCase }) {
+export function GuestRow({ guest, onClick, event, selectable, selected, onSelect, role, caseSuggestion, onRename, onDismissCase, member = false }) {
   const status = guest.invite_sent_at || !isPending(guest) ? (guest.rsvp_status || 'pending') : null;
   const sub = [role, GUEST_CATEGORY_LABEL[guest.category], guest.plus_one ? 'Plus one' : '', guest.email].filter(Boolean).join(', ');
   let pill = status ? <StatusPill tone={RSVP_TONE[status] || 'neutral'}>{RSVP_LABEL[status] || status}</StatusPill> : <StatusPill tone="neutral">Not invited</StatusPill>;
@@ -60,6 +60,8 @@ export function GuestRow({ guest, onClick, event, selectable, selected, onSelect
   }
   return (
     <div className="oi-m-row">
+      {/* A member of a household sits under its lead, as GuestList.jsx draws it: the indent is the only thing on the row that says so. */}
+      {member && <span data-household-member aria-hidden="true" style={{ width: 18, flexShrink: 0, alignSelf: 'stretch', borderLeft: '1px solid var(--m-line)', marginLeft: 2 }} />}
       {selectable && <Checkbox checked={!!selected} onChange={() => onSelect?.(guest)} label={`Select ${guest.name}`} />}
       <button type="button" className="oi-m-row oi-m-row--pressable" style={{ padding: 0, minHeight: 44, flex: 1, background: 'transparent' }} onClick={selectable ? () => onSelect?.(guest) : onClick}>
         {!selectable && <span className="oi-m-row__tile" style={{ fontSize: 13, fontWeight: 600 }}>{initials(guest.name)}</span>}
@@ -115,6 +117,10 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
     if (event) list = list.filter((g) => getGuestEventResponse(g, event).invited);
     return sortGuests(list, sort);
   }, [guests, filter, groupings, event, sort]);
+  // HOUSEHOLDS STAY TOGETHER, whatever the sort or filter, as on the web:
+  // src/lib/household.js decides where a block sits and the order inside it
+  // (the lead first); this screen only draws it.
+  const rows = useMemo(() => groupByHousehold(visible), [visible]);
 
   // Guests.jsx: the search runs over the active status and event filter, not the whole list.
   const results = useMemo(() => {
@@ -199,12 +205,12 @@ export default function GuestsScreen({ guests = [], filter = 'all', onFilter, ev
             <EmptyState icon={Users} text="No guests match this filter." />
           ) : (
             <RowGroup>
-              {visible.map((g) => (
+              {rows.map(({ guest: g, isLead }) => (
                 onRemove && !selecting ? (
                   <SwipeRow key={g.id} actions={[{ key: 'remove', icon: SWIPE_ICONS.remove, label: `Remove ${g.name}`, tone: 'no', onAction: () => onRemove(g) }]}>
-                    <GuestRow guest={g} event={event} onClick={() => onOpenGuest(g)} role={guestRoles[g.id]} caseSuggestion={!dismissedCase.has(g.id) ? suggestTitleCase(g.name) : null} onRename={onRename} onDismissCase={dismissCase} />
+                    <GuestRow guest={g} member={!isLead} event={event} onClick={() => onOpenGuest(g)} role={guestRoles[g.id]} caseSuggestion={!dismissedCase.has(g.id) ? suggestTitleCase(g.name) : null} onRename={onRename} onDismissCase={dismissCase} />
                   </SwipeRow>
-                ) : <GuestRow key={g.id} guest={g} event={event} onClick={() => onOpenGuest(g)} selectable={selecting} selected={selected?.has(g.id)} onSelect={onToggleSelect} role={guestRoles[g.id]} />
+                ) : <GuestRow key={g.id} guest={g} member={!isLead} event={event} onClick={() => onOpenGuest(g)} selectable={selecting} selected={selected?.has(g.id)} onSelect={onToggleSelect} role={guestRoles[g.id]} />
               ))}
             </RowGroup>
           )}

@@ -81,14 +81,17 @@ parity 6 as #995; parity 7 as #996. Parity 1 and 2 were lane B's, #962 and #966.
 Each parity PR carries its own guard under tests/persistence/mobile-*.mjs, planted red
 before it merged.
 
-On 2026-10-12, lane D's findings 1 to 3 (Send invites: refused while unpublished, one
+On 2026-10-12, as #1003, lane D's findings 1 to 3 (Send invites: refused while unpublished, one
 email per invitation, bounced addresses skipped) in one PR, with its guard
 tests/persistence/mobile-send-path.mjs. The same PR found that the phone's request had
 never carried slug or websiteEnabled, so api/send-invites.js had refused every send the
 phone made; it carries both now.
 
-WHAT IS NEXT. Household grouping under the lead (finding 4), then "Guest Suite" with
-capitals throughout the shell (finding 5). The Google sign-in device check waits for the
+Then lane D's finding 4: the guest list draws its rows through household.js's
+groupByHousehold, so a household sits together under its lead whatever the sort or filter,
+with the web's indent on a member's row. Guard: tests/persistence/mobile-household-grouping.mjs.
+
+WHAT IS NEXT. "Guest Suite" with capitals throughout the shell (finding 5). The Google sign-in device check waits for the
 owner's "ready for the sign-in check"; it needs the owner and the machine's one browser
 slot (the device run counts as it).
 
