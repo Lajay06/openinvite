@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
 import VendorFormModal from './VendorFormModal';
 import VendorList from './VendorList';
+import { vendorsInCategory, ADD_VENDOR_LABEL } from './vendorPicks';
 
 const Vendor = base44.entities.Vendor;
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -29,7 +30,7 @@ export default function VendorRosterSection({ category, categoryLabel, readOnly 
   const load = useCallback(async () => {
     try {
       const all = await getMyRecords('Vendor');
-      setVendors(all.filter(v => v.category === category));
+      setVendors(vendorsInCategory(all, category));
     } catch {
       toast.error('Failed to load vendors');
     }
@@ -81,13 +82,13 @@ export default function VendorRosterSection({ category, categoryLabel, readOnly 
             className="btn-primary"
             style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}
           >
-            <Plus size={13} />Add {label} vendor
+            <Plus size={13} />{ADD_VENDOR_LABEL}
           </button>
         </div>
       )}
       {vendors.length === 0 ? (
         <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, textAlign: 'center', padding: '40px 0' }}>
-          No {label} vendors added yet.{!readOnly && ` Click "Add ${label} vendor" to get started.`}
+          No {label} vendors added yet.{!readOnly && ` Click "${ADD_VENDOR_LABEL}" to get started.`}
         </p>
       ) : (
         <VendorList vendors={vendors} onEdit={readOnly ? undefined : handleEdit} onDelete={readOnly ? undefined : handleDelete} />

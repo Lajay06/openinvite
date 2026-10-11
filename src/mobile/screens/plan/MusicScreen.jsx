@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Music2, Check, X, Plus, Share2, Settings2, ExternalLink, Store, Copy } from 'lucide-react';
+import { Music2, Check, X, Plus, Settings2, ExternalLink, Store } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Screen from '../../shell/Screen';
 import { useConsiderations } from '../../features/ConsiderationsSheet';
@@ -9,10 +9,9 @@ import Segments, { useSegment } from '../../ui/Segments';
 import { useConfirm } from '../../ui/ConfirmSheet';
 import FormSheet from '../../features/FormSheet';
 import { ENTITIES } from '../../features/schemas';
-import { openExternal, shareLink } from '../../native';
+import { openExternal } from '../../native';
 import { parsePlaylistLink } from '@/lib/musicLinkParser';
 import { DEFAULT_MUSIC_REQUEST_MESSAGE } from '@/lib/musicCopy';
-import { copyText } from '@/lib/copyToClipboard';
 
 const SEGMENTS = [{ key: 'requests', label: 'Requests' }, { key: 'playlist', label: 'Playlist' }, { key: 'notes', label: 'Notes' }, { key: 'vendor', label: 'Vendor' }];
 const STATUS = { pending: ['warn', 'Pending'], approved: ['ok', 'Approved'], added: ['ok', 'On the playlist'], declined: ['no', 'Declined'] };
@@ -29,13 +28,12 @@ const STATUS_LABELS = { all: 'All', pending: 'Pending', approved: 'Approved', de
  * guest suite's music page), Notes, and the vendor roster. The Music
  * entity tracks (add, edit, delete) stay as the phone's own playlist editor.
  */
-export default function MusicScreen({ tracks = [], requests = [], settings = {}, playlistUrl = '', shareUrl = '', onPlaylistUrl, onSettings, onCreate, onUpdate, onDelete, onReview, onOpenVendors, loading, error, onRetry, back, onRefresh }) {
+export default function MusicScreen({ tracks = [], requests = [], settings = {}, playlistUrl = '', onPlaylistUrl, onSettings, onCreate, onUpdate, onDelete, onReview, onOpenVendors, loading, error, onRetry, back, onRefresh }) {
   const [segment, setSegment] = useSegment(SEGMENTS);
   const [sheet, setSheet] = useState({ open: false, item: null });
   const [busy, setBusy] = useState(null);
   const [filter, setFilter] = useState('all');
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [shareOpen, setShareOpen] = useState(false);
   const considerations = useConsiderations('music');
   const [link, setLink] = useState(playlistUrl || '');
   const [notes, setNotes] = useState(settings.notes || '');
@@ -52,7 +50,7 @@ export default function MusicScreen({ tracks = [], requests = [], settings = {},
   const source = link ? parsePlaylistLink(link)?.sourceLabel || null : null;
   const saveLink = async () => { const next = link.trim(); if (next === (playlistUrl || '')) return; await onPlaylistUrl(next); };
   const queueNotes = (v) => { setNotes(v); clearTimeout(notesTimer.current); notesTimer.current = setTimeout(() => onSettings({ notes: v }, { quiet: true }), 900); };
-  const actions = [{ icon: Share2, label: 'Share the playlist', onClick: () => setShareOpen(true) }, { icon: Settings2, label: 'Song request settings', onClick: () => setSettingsOpen(true) }];
+  const actions = [{ icon: Settings2, label: 'Song request settings', onClick: () => setSettingsOpen(true) }];
   const subtitle = loading ? '' : pending ? `${pending} request${pending === 1 ? '' : 's'} to review` : `${requests.length} request${requests.length === 1 ? '' : 's'}, ${tracks.length} track${tracks.length === 1 ? '' : 's'}`;
 
   return (
@@ -62,7 +60,7 @@ export default function MusicScreen({ tracks = [], requests = [], settings = {},
       <div className="oi-m-stack oi-m-stack--24" style={{ paddingTop: segment === 'requests' ? 16 : 0 }}>
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : segment === 'requests' ? (
           requests.length === 0 ? (
-            <EmptyState icon={Music2} text={!settings.guestRequestsEnabled ? 'Song requests are switched off. Turn them on under settings and guests can suggest songs from your guest suite.' : 'No requests yet. Guests can suggest songs from your guest suite.'} />
+            <EmptyState icon={Music2} text={!settings.guestRequestsEnabled ? 'Song requests are switched off. Turn them on under settings and guests can suggest songs from your guest suite.' : 'No requests yet. Guests reach the song page from the invitation you email them. Song requests arrive here.'} />
           ) : visible.length === 0 ? <EmptyState icon={Music2} text="Nothing here for this filter." /> : (
             <RowGroup>
               {visible.map((r) => {
@@ -134,7 +132,6 @@ export default function MusicScreen({ tracks = [], requests = [], settings = {},
       </div>
       <FormSheet open={sheet.open} title={sheet.item ? 'Edit track' : 'Add track'} fields={schema.fields} initial={sheet.item} required={schema.required} onClose={() => setSheet((s) => ({ ...s, open: false }))} onSave={async (v) => { if (sheet.item) await onUpdate(sheet.item.id, v); else await onCreate({ ...schema.defaults, ...v }); }} onDelete={sheet.item ? async () => { if (await askToConfirm({ title: 'Remove this track', body: sheet.item.song_title, action: 'Remove' })) { await onDelete(sheet.item.id); setSheet({ open: false, item: null }); } } : undefined} saveLabel={sheet.item ? 'Save changes' : 'Add track'} />
       <SettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} settings={settings} onSave={onSettings} />
-      <ShareSheet open={shareOpen} onClose={() => setShareOpen(false)} url={shareUrl} />
       {confirmEl}
       {considerations.sheet}
     </Screen>
@@ -160,24 +157,6 @@ function SettingsSheet({ open, onClose, settings, onSave }) {
         </RowGroup>
         <TextAreaField label="What guests see above the song search" value={v.requestMessage || ''} onChange={(e) => setV((s) => ({ ...s, requestMessage: e.target.value }))} rows={3} />
       </div>
-    </BottomSheet>
-  );
-}
-
-/** SharePlaylist.jsx's link: the guest suite's music page, through the native share sheet (owner decision, goal 6: no QR codes in the app). */
-function ShareSheet({ open, onClose, url }) {
-  return (
-    <BottomSheet open={open} onClose={onClose} title="Share with guests">
-      {!url ? <p className="oi-m-body">Your guest suite has no address yet, so there is no link to share until then.</p> : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <p className="oi-m-meta">Guests open this page to see the playlist and suggest songs.</p>
-          <div className="oi-m-meta" style={{ overflowWrap: 'anywhere' }}>{url.replace(/^https?:\/\//, '')}</div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <PillButton variant="secondary" icon={Copy} onClick={async () => { const { ok } = await copyText(url); if (ok) toast.success('Link copied'); else toast.error('Could not copy'); }}>Copy link</PillButton>
-            <PillButton variant="primary" icon={Share2} style={{ flex: 1 }} onClick={async () => { const r = await shareLink({ title: 'Our wedding playlist', text: 'Suggest a song for the dance floor.', url }); if (r === 'copied') toast.success('Link copied'); }}>Share link</PillButton>
-          </div>
-        </div>
-      )}
     </BottomSheet>
   );
 }

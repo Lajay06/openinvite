@@ -258,8 +258,16 @@ export default function ThemeSection({ theme, onSave, readOnly = false }) {
               Select the two faiths — {interfaithPicks.length}/2 selected
             </span>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {/* ALL FAITH PILLS ARE ONE SIZE. Item 2 of
+                  goals/2026-10-11-dashboard-fixes-batch-1.md. This row passed
+                  size="compact" (5px/12px at 11px) while the main list used the
+                  default (8px/16px at 12px), so the same question was asked at
+                  two sizes a few pixels apart. The compact variant stays for the
+                  CULTURE sub-picks above, which is where its rule still holds:
+                  compact ones qualify an answer already given, and a second
+                  faith is an answer in its own right. */}
               {FAITH_FOR_INTERFAITH.map(opt => (
-                <OptionPill key={opt} label={opt} size="compact"
+                <OptionPill key={opt} label={opt}
                   selected={interfaithPicks.includes(opt)}
                   onClick={() => toggleInterfaithPick(opt)}
                   disabled={readOnly} />

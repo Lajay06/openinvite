@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
 import VendorFormModal from './VendorFormModal';
+import { vendorsInCategory } from './vendorPicks';
 
 const Vendor = base44.entities.Vendor;
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -57,7 +58,7 @@ export default function VendorContactSection({ category, vendorId, onVendorIdCha
   };
 
   const selectedVendor = vendors.find(v => v.id === vendorId) || null;
-  const categoryVendors = vendors.filter(v => v.category === category && v.id !== vendorId);
+  const categoryVendors = vendorsInCategory(vendors, category).filter(v => v.id !== vendorId);
 
   const handleFormSubmit = async (data) => {
     const tid = toast.loading(formModal?.id ? 'Updating vendor…' : 'Adding vendor…');
