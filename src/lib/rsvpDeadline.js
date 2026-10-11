@@ -147,3 +147,26 @@ export function closedBody(coupleNames, value) {
     + 'get the chance to reply, send them a note below and they will see it '
     + 'straight away.';
 }
+
+/**
+ * The rsvpContent to write when the deadline changes.
+ *
+ * THE WHOLE OBJECT, NOT JUST THE DATE. rsvpContent holds the couple's RSVP
+ * page copy as well as this field, and putMyWeddingDetails replaces the key it
+ * is given. A merge that dropped the rest would wipe their wording the first
+ * time they set a date. That warning used to live as a comment beside the one
+ * call site on the Guests page; item 3 of
+ * goals/2026-10-11-dashboard-fixes-batch-1.md moves the editor to the Send
+ * invites flow, so the rule moves here where a guard can drive it and both
+ * surfaces share it.
+ *
+ * An empty or unreadable date stores null rather than '', because null is what
+ * "no deadline" means to every reader of this field.
+ *
+ * @param {object} rsvpContent the couple's current rsvpContent, possibly null
+ * @param {string} next the value from the date input
+ * @returns {object} the object to write, never mutating the input
+ */
+export function mergedRsvpContent(rsvpContent, next) {
+  return { ...(rsvpContent || {}), rsvpDeadline: normalizeDeadline(next) || null };
+}
