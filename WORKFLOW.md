@@ -97,6 +97,16 @@ may merge; `pr-checks-green.mjs` decides what this repository's own tooling will
 call green. Both have to name the three CI checks, and only one of them is
 changed by editing a file.
 
+**Held files by ruling.** Some files are held because of what they decide, not
+because of their folder. A PR that touches one is HELD: it is opened with HELD
+in its title, and it merges only on a five-marks line naming it. Added by the
+owner on 2026-10-11:
+
+- `api/_lib/collaboratorAuth.js`: the authorization check for every
+  collaborator endpoint.
+- `api/_lib/collaboratorInvites.js`: which collaborator invite link is the
+  live one.
+
 ---
 
 ## Vercel preview deployments
