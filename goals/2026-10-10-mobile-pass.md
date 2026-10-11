@@ -39,6 +39,15 @@ Rulings received with that order:
 2. Guest suite wording: "Website builder" and "The website builder" become "Guest Suite". The guest-facing product is the Guest Suite, described as the guest experience; "website" never appears in anything a couple reads in the app.
 3. The invitation email's date line stays written out; every other dashboard date goes through dashboardDate.js.
 
+Rulings and order received 2026-10-12:
+
+4. The invitation starter design's date stays written out too: two written-out dates, both guest-facing.
+5. "openinvite.com.au" for the web app, and "Web address" with "Visit" for vendor and hotel links, accepted.
+6. "Guest Suite", with capitals, everywhere it names the product. The lower-case uses in the shell are made consistent in one PR.
+7. Vendor price tiers as one named constant, every tier shown as words, accepted.
+8. Lane D's findings 1 to 3 (Send invites) are three real bugs, fixed in one PR by consuming the web's send path rules, not reimplementing them. Finding 4 (household grouping) is the PR after that. Finding 6 (App Store 3.1.1) is a launch-list item, no change yet.
+9. The Google sign-in device check waits for the owner to say "ready for the sign-in check".
+
 ## Findings for other lanes
 
 Recorded by lane D. Lane D does not edit these files.
@@ -49,9 +58,12 @@ Recorded by lane D. Lane D does not edit these files.
 4. Lane A, open. Five dashboard dates on the web are still written out with a weekday, after #917 and #941 made dashboard dates numeric: src/components/dashboard/Briefing.jsx:29 (the eyebrow, "Monday 7 September"), src/pages/DailyUpdate.jsx:230 (the masthead), src/components/schedule/ScheduleDayList.jsx:15 (used by src/pages/ScheduleHub.jsx), src/pages/GuestSuiteSchedule.jsx:42 (en-GB, with an all-caps "NO DATE SET" beside it) and src/pages/UniverseStudio.jsx:52 (en-GB). The phone is numeric everywhere since mobile parity 6, so on these five the two surfaces now disagree.
 5. Lane A, for a ruling. src/pages/OurStory.jsx:418 offers Ava the starter "Write a short version for the website". The Guest Suite ruling of 2026-10-11 was given for the app, where the copied starter now says "for the Guest Suite"; whether it reaches the web is the advisor's call.
 
-## Lane D's own findings, not yet ordered
+6. Lane A, open. src/components/guests/SendInvitesModal.jsx:636 stamps invite_sent_at (and :652 appends send history) on every guest it minted a link for, including a guest alone on an invitation with no email, who was not sent anything. The modal says "with no email yet" for them before the send and "Invited" after it. The phone does the same through the same withTokens list, so a fix belongs on the web first and the shell follows it.
+7. Lane A, for a choice. The publish rule a send obeys (a slug, and websiteEnabled === true) is written inline twice, in SendInvitesModal.jsx:526 and :530 and in api/send-invites.js:275, and the shell now holds a third copy because there is no module to import. A small predicate in src/lib would let all three consume one rule; tests/persistence/mobile-send-path.mjs checks that the three still agree until then.
 
-Found while doing the parity items, inside lane D's territory, and left for the advisor to order or decline.
+## Lane D's own findings
+
+Found while doing the parity items, inside lane D's territory. Findings 1 to 3 were fixed together as ordered on 2026-10-12; finding 4 is next; finding 5 is ordered; finding 6 moved to LAUNCH_CHECKLIST.md.
 
 1. The phone's Send invites screen (src/mobile/screens/guests/SendInvitesScreen.jsx) does not refuse to send while the site is unpublished. SendInvitesModal.jsx does, with "Your website is not published yet, so these links would not work."
 2. The same screen sends one email per guest. The web sends one per invitation, addressed to the household's lead (invitationsFor in SendInvitesModal.jsx). A household of four gets four emails from the phone and one from the web.
@@ -59,6 +71,7 @@ Found while doing the parity items, inside lane D's territory, and left for the 
 4. The guest list does not group a household under its lead, as GuestList.jsx does through groupByHousehold. Parity 4 took the counts and the detail, as ordered.
 5. "guest suite" appears in lower case 77 times in the shell's copy. Parity 7 wrote "Guest Suite" in the two strings it replaced, as ruled. One case or the other throughout is a sweep, not done without an order.
 6. For store submission, not now: four strings tell the couple to upgrade at openinvite.com.au (Account, Send invites, the Ultra gates in DetailsScreen.jsx and schemas.js). They said "on the website" before parity 7; the wording changed, the direction to buy outside the app did not. App Store review rule 3.1.1 is about exactly this.
+7. Not ordered. The phone's send does not append Guest.send_history (src/lib/sendHistory.js's newSendEntry), which the web writes for every type it sends. A send made from the phone is missing from the guest's history on both surfaces.
 
 ## State (lane D)
 
@@ -68,9 +81,16 @@ parity 6 as #995; parity 7 as #996. Parity 1 and 2 were lane B's, #962 and #966.
 Each parity PR carries its own guard under tests/persistence/mobile-*.mjs, planted red
 before it merged.
 
-WHAT IS NEXT. The last item of the order: Google sign-in through the openinvite://
-return path, on the owner's iPhone, reported and not fixed. It needs the owner and the
-machine's one browser slot (the device run counts as it), so it waits for both.
+On 2026-10-12, lane D's findings 1 to 3 (Send invites: refused while unpublished, one
+email per invitation, bounced addresses skipped) in one PR, with its guard
+tests/persistence/mobile-send-path.mjs. The same PR found that the phone's request had
+never carried slug or websiteEnabled, so api/send-invites.js had refused every send the
+phone made; it carries both now.
+
+WHAT IS NEXT. Household grouping under the lead (finding 4), then "Guest Suite" with
+capitals throughout the shell (finding 5). The Google sign-in device check waits for the
+owner's "ready for the sign-in check"; it needs the owner and the machine's one browser
+slot (the device run counts as it).
 
 Decisions taken during the pass, written down so they are not reopened:
 
@@ -79,7 +99,7 @@ Decisions taken during the pass, written down so they are not reopened:
    the money guard's only exemption.
 2. Parity 6: besides the invitation email's date, the invitation starter design's date
    (PlanContainer.jsx, copied from InvitationBuilder.jsx) stays written, because guests
-   read it on the invitation. Awaiting the advisor's confirmation.
+   read it on the invitation. Confirmed by the advisor on 2026-10-12.
 3. Parity 7: the web app is named as openinvite.com.au; a vendor's, hotel's or place's own
    link is a "Web address" with a "Visit" button.
 

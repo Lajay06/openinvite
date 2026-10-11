@@ -5,6 +5,7 @@ import { Row, RowGroup, StatusPill, PillButton, ErrorState, Skeleton } from '../
 import { openExternal } from '../../native';
 import { initials, RSVP_LABEL, RSVP_TONE, GUEST_CATEGORY_LABEL, dateShort, childLabel, OPTED_OUT_LABEL } from '../../lib/format';
 import { membersOf, salutation } from '@/lib/household';
+import { isBounced, BOUNCE_FIX_SENTENCE } from '@/components/guests/emailBounce';
 import { formatMoney } from '@/lib/money';
 import { getGuestEventResponse, mealOptionLabel, effectiveMealChoice } from '@/lib/weddingEvents';
 import { hasPlusOne, plusOneRsvpStatus, plusOneDisplayName } from '@/lib/plusOne';
@@ -95,7 +96,7 @@ export default function GuestDetailScreen({ guest, guests = [], onOpenGuest, rol
           {guest.email || guest.phone ? (
             <RowGroup>
               {/* Contact details are shown, not dialed into email or WhatsApp: guests are reached through Send invites (owner decision, goal 6). A call stays. */}
-              {guest.email && <Row icon={Mail} tile="neutral" label={guest.email} sub={guest.email_opt_out ? OPTED_OUT_LABEL : 'Email'} chevron={false} />}
+              {guest.email && <Row icon={Mail} tile="neutral" label={guest.email} sub={guest.email_opt_out ? OPTED_OUT_LABEL : isBounced(guest) ? BOUNCE_FIX_SENTENCE : 'Email'} chevron={false} />}
               {guest.phone && <Row icon={Phone} tile="neutral" label={guest.phone} sub="Call" onClick={() => openExternal(`tel:${guest.phone}`)} chevron={false} />}
             </RowGroup>
           ) : <div className="oi-m-card"><p className="oi-m-meta">No email or phone yet. Add one to send an invitation.</p></div>}

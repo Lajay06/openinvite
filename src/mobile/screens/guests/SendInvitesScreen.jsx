@@ -11,6 +11,8 @@ import { coupleDisplayName } from '@/lib/coupleNames';
 import { getWeddingEvents, getGuestEventResponse, getEventVenueAndDate } from '@/lib/weddingEvents';
 import { renderInvitationEmail, getTypeComposeDefaults, getBannerImageUrl, getDefaultBannerChoice, buildGuestCtaUrl } from '@/lib/emailTemplate';
 import { siteOrigin } from '../../lib/links';
+import { invitationsFor } from '@/lib/household';
+import { isBounced, bouncedSkippedSentence, BOUNCE_ROW_LABEL } from '@/components/guests/emailBounce';
 import { InvitationPreviewSheet } from '../plan/InvitationPreview';
 
 /* SendInvitesModal.jsx's types, default filters and filter tabs, verbatim. */
@@ -46,7 +48,7 @@ function replaceMergeTags(str, guestName, coupleName, dateStr) {
  * Goal 8 (item 6), beyond the desktop: groups (a category or a tag chooses
  * everyone in it at once), the invitation preview beside the email preview,
  * a confirmation sheet before anything sends (the exact count, the channel,
- * the first names, "Send to 42 guests"), and a result screen with each
+ * the invitations by name, "Send 30 emails"), and a result screen with each
  * recipient's status (sent, skipped, failed) and Send again for the failed.
  * Nothing sends on a single tap. Scheduling a send is not on the desktop
  * and needs a server job, so it is not offered (MOBILE_PARITY.md).
@@ -106,8 +108,33 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
   useEffect(() => { if (skipAuto.current) { skipAuto.current = false; return; } setSelected(new Set(filtered.map((g) => g.id))); }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
   const changeType = (t) => { setType(t); setFilter(TYPE_DEFAULT_FILTER[t] || 'all'); };
   const selectedGuests = useMemo(() => guests.filter((g) => selected.has(g.id)), [guests, selected]);
-  const withEmail = selectedGuests.filter((g) => g.email);
-  const noEmail = selectedGuests.filter((g) => !g.email);
+  // ONE EMAIL PER INVITATION, ADDRESSED TO THE LEAD, from src/lib/household.js
+  // as SendInvitesModal.jsx counts it: a household of four is one email, so
+  // every email count on this screen is a count of invitations. A guest who
+  // asked not to be emailed, or whose address bounced, is filtered out first
+  // (src/components/guests/emailBounce.js holds the server's predicate);
+  // api/send-invites.js skips both from the database, which is the guarantee.
+  const optedOutSelected = selectedGuests.filter((g) => g.email_opt_out);
+  const bouncedSelected = selectedGuests.filter((g) => !g.email_opt_out && isBounced(g));
+  const sendableGuests = selectedGuests.filter((g) => !g.email_opt_out && !isBounced(g));
+  const sendableInvitations = useMemo(() => invitationsFor(sendableGuests), [sendableGuests]);
+  const invitationsWithEmail = sendableInvitations.filter((i) => i.email);
+  const invitationsNoEmail = sendableInvitations.filter((i) => !i.email);
+  const nEmails = invitationsWithEmail.length;
+  const plural = (n) => (n === 1 ? '' : 's');
+  const emailsCovering = `${nEmails} email${plural(nEmails)} covering ${sendableGuests.length} guest${plural(sendableGuests.length)}`;
+  // THE PUBLISH RULE, the one SendInvitesModal.handleSend and api/send-invites.js
+  // both hold: an address, and the site switched on. Every link in these
+  // emails opens the couple's Guest Suite, and an unpublished one answers each
+  // guest with "this invitation does not work", so the send is refused, not
+  // warned. The two conditions are written inline on the web too; there is no
+  // shared module to import. The words are the shell's, because the web's say
+  // "website" (mobile parity 7).
+  const unpublished = !wedding?.slug
+    ? 'Your Guest Suite does not have an address yet, so these links would not work. Choose one in the studio on desktop, then send.'
+    : wedding?.websiteEnabled !== true
+      ? 'Your Guest Suite is not live yet, so these links would not work. Make it live on the Guest Suite tab, then send.'
+      : '';
   // Groups: every category in use and every tag in use, each choosing its guests at once.
   const groups = useMemo(() => {
     const cats = GROUP_CATEGORIES.filter((c) => guests.some((g) => g.category === c)).map((c) => ({ key: `cat:${c}`, label: GUEST_CATEGORY_LABEL[c] || c, test: (g) => g.category === c }));
@@ -136,55 +163,76 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
     if (missing > 0) { const names = [...missingPrimary, ...missingPlusOne].slice(0, 3).map((g) => g.name || 'a guest').join(', '); throw new Error(`${missing} invitation link${missing === 1 ? '' : 's'} could not be created (${names}${missing > 3 ? ', and more' : ''}). Nothing was sent.`); }
     return withTokens;
   };
-  const weddingPayload = { coupleName, weddingDate, venue, siteUrl, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl };
+  // slug and websiteEnabled travel as on the web: the server derives the site
+  // link from the slug and refuses the send when websiteEnabled is not true.
+  const weddingPayload = { coupleName, weddingDate, venue, siteUrl, slug: wedding?.slug, websiteEnabled: wedding?.websiteEnabled, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl };
 
   // SENDABLE ONLY, as SendInvitesModal.jsx (#951, mobile parity 8). A guest who
   // asked not to be emailed is not minted a token, not sent to and not stamped
   // as invited; api/send-invites.js skips them from the database anyway, which
   // is the guarantee. This is the sentence, and the true result row.
   const send = async (list = selectedGuests) => {
-    const optedOut = list.filter((g) => g.email_opt_out);
-    const sendable = list.filter((g) => !g.email_opt_out);
     setConfirming(false);
+    if (unpublished) { toast.error(unpublished); return; }
+    const optedOut = list.filter((g) => g.email_opt_out);
+    const bounced = list.filter((g) => !g.email_opt_out && isBounced(g));
+    const sendable = list.filter((g) => !g.email_opt_out && !isBounced(g));
+    const notSent = [
+      ...optedOut.map((g) => ({ guest: g, status: 'skipped', why: OPTED_OUT_LABEL })),
+      ...bounced.map((g) => ({ guest: g, status: 'skipped', why: BOUNCE_ROW_LABEL })),
+    ];
     setSending(true);
     const tid = toast.loading(`Sending ${TYPE_LABELS[type].toLowerCase()}s`);
     // 'email', a literal, as on the web: there is one channel.
     const channelStr = 'email';
     try {
       const withTokens = await ensureTokens(sendable);
+      // Grouped from withTokens, as on the web, so the lead carries the link
+      // just ensured; the events are the lead's (household.js's entriesForNewMember).
+      const invitations = invitationsFor(withTokens);
       {
-        const emailList = withTokens.filter((g) => g.email);
+        const emailList = invitations.filter((i) => i.email && i.lead?.rsvp_link_id);
         const plusOneList = withTokens.filter((g) => g.plus_one_email && g.plus_one_rsvp_link_id);
         const recipients = [
-          ...emailList.map((g) => ({ email: g.email, name: g.name, rsvpUrl: buildRsvpUrl(g.rsvp_link_id), rsvpToken: g.rsvp_link_id, events: buildGuestEvents(g) })),
+          ...emailList.map((i) => ({ email: i.email, name: i.name, rsvpUrl: buildRsvpUrl(i.lead.rsvp_link_id), rsvpToken: i.lead.rsvp_link_id, events: buildGuestEvents(i.lead) })),
           ...plusOneList.map((g) => ({ email: g.plus_one_email, name: g.plus_one_name || 'Guest', rsvpUrl: buildRsvpUrl(g.plus_one_rsvp_link_id), rsvpToken: g.plus_one_rsvp_link_id, events: buildGuestEvents(g) })),
         ];
         if (recipients.length) await api.json('/api/send-invites', { method: 'POST', body: JSON.stringify({ type, universeId, bannerChoice, guests: recipients, wedding: weddingPayload, customSubject: subject, customBody: body }) });
       }
       // Only invite and reminder have a tracking field on Guest; save the date must not write invite_sent_at (SendInvitesModal.jsx).
       const track = (g) => (type === 'invite' || type === 'reminder' ? api.update('Guest', g.id, type === 'reminder' ? { reminder_sent_at: new Date().toISOString() } : { invite_sent_at: new Date().toISOString(), invite_channel: channelStr }) : Promise.resolve());
-      // Each recipient's status: the email went (the endpoint took the batch), or there was no email to send to.
+      // Each guest's status: on an invitation that went (the endpoint took the
+      // batch), or on one with no email to send to. A member is named as
+      // reached through the lead's email, which is how the web counts them.
       const rows = [
-        ...withTokens.map((g) => ({ guest: g, status: g.email ? 'sent' : 'skipped', why: g.email ? '' : 'No email' })),
-        ...optedOut.map((g) => ({ guest: g, status: 'skipped', why: OPTED_OUT_LABEL })),
+        ...invitations.flatMap((i) => i.members.map((g) => {
+          const went = !!(i.email && i.lead?.rsvp_link_id);
+          return { guest: g, status: went ? 'sent' : 'skipped', why: !went ? 'No email' : g === i.lead ? '' : `In the email to ${i.lead.name || i.email}` };
+        })),
+        ...notSent,
       ];
       await Promise.all(withTokens.map(track));
-      const sentCount = rows.filter((r) => r.status === 'sent').length;
-      toast.success(`${TYPE_LABELS[type]} sent to ${sentCount} guest${sentCount === 1 ? '' : 's'}`
-        + (optedOut.length > 0 ? `, ${optedOut.length} skipped who asked not to be emailed` : ''), { id: tid });
+      // SendInvitesModal.jsx's sentence, word for word: emails are invitations,
+      // the guests they cover are people, and the skipped say why.
+      const sent = invitations.filter((i) => i.email && i.lead?.rsvp_link_id).length;
+      toast.success(`${TYPE_LABELS[type]} sent, ${sent} email${plural(sent)} covering ${sendable.length} guest${plural(sendable.length)}`
+        + (optedOut.length > 0 ? `, ${optedOut.length} skipped who asked not to be emailed` : '')
+        + (bounced.length > 0 ? `, ${bouncedSkippedSentence(bounced.length)}` : ''), { id: tid });
       setSending(false);
       setResult({ rows, channelStr });
     } catch (e) {
       toast.error(e?.message || 'Failed to send', { id: tid });
       setSending(false);
       // Nothing went out (the endpoint refuses a batch whole, and a missing link aborts before it): every recipient failed, and can be sent again.
-      setResult({ rows: [...sendable.map((g) => ({ guest: g, status: 'failed', why: e?.message || 'Failed to send' })), ...optedOut.map((g) => ({ guest: g, status: 'skipped', why: OPTED_OUT_LABEL }))], channelStr });
+      setResult({ rows: [...sendable.map((g) => ({ guest: g, status: 'failed', why: e?.message || 'Failed to send' })), ...notSent], channelStr });
     }
   };
   const failed = result ? result.rows.filter((r) => r.status === 'failed').map((r) => r.guest) : [];
   const resend = () => { if (!failed.length) return; setResult(null); send(failed); };
   const sendTest = async () => {
     if (!user?.email) { toast.error('No email on your account to send a test to.'); return; }
+    // The server refuses a test from an unpublished Guest Suite too; say why here, in the shell's words.
+    if (unpublished) { toast.error(unpublished); return; }
     setSendingTest(true);
     const tid = toast.loading('Sending a test to you');
     try {
@@ -207,7 +255,7 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
     <div style={{ display: 'flex', gap: 8, padding: '12px var(--m-gutter)', background: 'var(--m-card)', borderTop: '1px solid var(--m-line)' }}>
       {step > 1 && <PillButton variant="secondary" onClick={() => setStep(step - 1)} disabled={sending}>Back</PillButton>}
       {step < 4 && <PillButton variant="primary" style={{ flex: 1 }} disabled={(step === 1 && selected.size === 0) || (step === 2 && !subject.trim())} onClick={() => setStep(step + 1)}>Next</PillButton>}
-      {step === 4 && <PillButton variant="primary" style={{ flex: 1 }} icon={Send} disabled={sending || selectedGuests.length === 0} onClick={() => setConfirming(true)}>{sending ? 'Sending' : `Send ${TYPE_LABELS[type].toLowerCase()}${selectedGuests.length === 1 ? '' : 's'}`}</PillButton>}
+      {step === 4 && <PillButton variant="primary" style={{ flex: 1 }} icon={Send} disabled={sending || !!unpublished || nEmails === 0} onClick={() => setConfirming(true)}>{sending ? 'Sending' : `Send ${TYPE_LABELS[type].toLowerCase()}${nEmails === 1 ? '' : 's'}`}</PillButton>}
     </div>
   );
   const resultFooter = result && (
@@ -306,11 +354,11 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
 
             {step === 3 && (
               <>
-                <p className="oi-m-body">By email, to each chosen guest with an address.</p>
+                <p className="oi-m-body">By email, one to each invitation, addressed to its lead. A household is one email.</p>
                 <RowGroup>
                   <div className="oi-m-row">
                     <span className="oi-m-row__tile oi-m-row__tile--primary"><Mail size={19} strokeWidth={1.75} /></span>
-                    <div className="oi-m-row__body"><div className="oi-m-row__label">Email</div><div className="oi-m-row__sub">{withEmail.length} of {selectedGuests.length} have an email</div></div>
+                    <div className="oi-m-row__body"><div className="oi-m-row__label">Email</div><div className="oi-m-row__sub">{emailsCovering}</div></div>
                   </div>
                 </RowGroup>
               </>
@@ -318,14 +366,16 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
 
             {step === 4 && (
               <>
+                {unpublished && <div className="oi-m-card" data-unpublished><p className="oi-m-body">{unpublished}</p></div>}
                 <div className="oi-m-card oi-m-card--flush">
-                  {[['Sending', TYPE_LABELS[type]], ['To', `${selectedGuests.length} guest${selectedGuests.length === 1 ? '' : 's'}`], ['By', 'Email'], ['Subject', subject], ['Banner', bannerChoice === 'none' ? 'None' : bannerChoice === 'wedding' ? 'Your wedding photo' : 'The venue']].map(([k, v]) => <div key={k} className="oi-m-kv"><div className="oi-m-kv__k">{k}</div><div className="oi-m-kv__v">{v}</div></div>)}
+                  {[['Sending', TYPE_LABELS[type]], ['To', emailsCovering], ['By', 'Email'], ['Subject', subject], ['Banner', bannerChoice === 'none' ? 'None' : bannerChoice === 'wedding' ? 'Your wedding photo' : 'The venue']].map(([k, v]) => <div key={k} className="oi-m-kv"><div className="oi-m-kv__k">{k}</div><div className="oi-m-kv__v">{v}</div></div>)}
                 </div>
-                {noEmail.length > 0 && <div className="oi-m-card"><p className="oi-m-body">{noEmail.length} of the chosen guests {noEmail.length === 1 ? 'has' : 'have'} no email and will not get the email: {noEmail.slice(0, 4).map((g) => g.name).join(', ')}{noEmail.length > 4 ? ', and more' : ''}.</p></div>}
+                {invitationsNoEmail.length > 0 && <div className="oi-m-card"><p className="oi-m-body">{invitationsNoEmail.length} invitation{plural(invitationsNoEmail.length)} {invitationsNoEmail.length === 1 ? 'has' : 'have'} no email and will not be sent: {invitationsNoEmail.slice(0, 4).map((i) => i.name).join(', ')}{invitationsNoEmail.length > 4 ? ', and more' : ''}.</p></div>}
+                {(optedOutSelected.length > 0 || bouncedSelected.length > 0) && <div className="oi-m-card"><p className="oi-m-body">{[optedOutSelected.length > 0 ? `${optedOutSelected.length} skipped who asked not to be emailed.` : '', bouncedSelected.length > 0 ? bouncedSkippedSentence(bouncedSelected.length) : ''].filter(Boolean).join(' ')}</p></div>}
                 <section>
                   <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Recipients</h2>
                   <RowGroup>
-                    {selectedGuests.map((g) => <Row key={g.id} initials={initials(g.name)} label={g.name} sub={g.email || 'No email'} chevron={false} />)}
+                    {invitationsWithEmail.map((i) => <Row key={i.lead?.id || i.email} initials={initials(i.name)} label={i.name} sub={i.members.length > 1 ? `${i.email}, ${i.members.length} guests` : i.email} chevron={false} />)}
                   </RowGroup>
                 </section>
                 {type === 'invite' && <p className="oi-m-meta">Each guest is marked as invited once this sends. Save the dates never mark anyone invited.</p>}
@@ -339,15 +389,15 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
       <BottomSheet open={confirming} onClose={() => setConfirming(false)} title="Ready to send?" footer={(
         <>
           <PillButton variant="secondary" onClick={() => setConfirming(false)}>Not yet</PillButton>
-          <PillButton variant="primary" style={{ flex: 1 }} icon={Send} onClick={() => send()} disabled={sending}>Send to {selectedGuests.length} guest{selectedGuests.length === 1 ? '' : 's'}</PillButton>
+          <PillButton variant="primary" style={{ flex: 1 }} icon={Send} onClick={() => send()} disabled={sending || !!unpublished}>Send {nEmails} email{plural(nEmails)}</PillButton>
         </>
       )}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div className="oi-m-card oi-m-card--flush">
-            {[['Sending', TYPE_LABELS[type]], ['To', `${selectedGuests.length} guest${selectedGuests.length === 1 ? '' : 's'}`], ['By', 'Email']].map(([k, v]) => <div key={k} className="oi-m-kv"><div className="oi-m-kv__k">{k}</div><div className="oi-m-kv__v">{v}</div></div>)}
+            {[['Sending', TYPE_LABELS[type]], ['To', emailsCovering], ['By', 'Email']].map(([k, v]) => <div key={k} className="oi-m-kv"><div className="oi-m-kv__k">{k}</div><div className="oi-m-kv__v">{v}</div></div>)}
           </div>
-          <p className="oi-m-body">{selectedGuests.slice(0, 4).map((g) => g.name?.split(' ')[0] || 'a guest').join(', ')}{selectedGuests.length > 4 ? ` and ${selectedGuests.length - 4} more` : ''}.</p>
-          {noEmail.length > 0 && <p className="oi-m-meta">{noEmail.length} without an email will be skipped.</p>}
+          <p className="oi-m-body">{invitationsWithEmail.slice(0, 4).map((i) => i.name || 'a guest').join(', ')}{nEmails > 4 ? ` and ${nEmails - 4} more` : ''}.</p>
+          {invitationsNoEmail.length > 0 && <p className="oi-m-meta">{invitationsNoEmail.length} without an email will be skipped.</p>}
         </div>
       </BottomSheet>
       <InvitationPreviewSheet invitation={invitation} details={wedding} open={invPreview} onClose={() => setInvPreview(false)} />

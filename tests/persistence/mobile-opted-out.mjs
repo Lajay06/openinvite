@@ -52,19 +52,20 @@ export async function runMobileOptedOut() {
      && /--m-no: #991B1B;/i.test(read('src/mobile/styles/mobile.css')) && /color: '#991b1b'/i.test(webList), '#991B1B on both');
   const detail = code('src/mobile/screens/guests/GuestDetailScreen.jsx');
   ok('the guest detail says so on the email row',
-     /sub=\{guest\.email_opt_out \? OPTED_OUT_LABEL : 'Email'\}/.test(detail), 'Contact, Email');
+     /sub=\{guest\.email_opt_out \? OPTED_OUT_LABEL : /.test(detail), 'Contact, Email');
 
   // ── THE SEND: SENDABLE ONLY ──────────────────────────────────────────────
   const sendSrc = code('src/mobile/screens/guests/SendInvitesScreen.jsx');
   const send = span(sendSrc, 'const send = async', 'const failed = result');
   ok('the send splits off the guests who opted out',
      /const optedOut = list\.filter\(\(g\) => g\.email_opt_out\);/.test(send)
-       && /const sendable = list\.filter\(\(g\) => !g\.email_opt_out\);/.test(send), 'optedOut, sendable');
+       && /const sendable = list\.filter\(\(g\) => !g\.email_opt_out[ &)]/.test(send), 'optedOut, sendable');
   ok('  mints links for the sendable guests only', /await ensureTokens\(sendable\)/.test(send) && !/ensureTokens\(list\)/.test(send), 'ensureTokens(sendable)');
   ok('  stamps only the guests it sent to',
      /await Promise\.all\(withTokens\.map\(track\)\)/.test(send) && !/list\.map\(track\)/.test(send), 'track over withTokens');
   ok('  lists an opted-out guest as skipped, with the reason',
-     (send.match(/optedOut\.map\(\(g\) => \(\{ guest: g, status: 'skipped', why: OPTED_OUT_LABEL \}\)\)/g) || []).length === 2,
+     /optedOut\.map\(\(g\) => \(\{ guest: g, status: 'skipped', why: OPTED_OUT_LABEL \}\)\)/.test(send)
+       && (send.match(/\.\.\.notSent/g) || []).length === 2,
      'on success and on failure');
   ok('  so a failed send never offers to resend to them',
      /sendable\.map\(\(g\) => \(\{ guest: g, status: 'failed'/.test(send) && !/list\.map\(\(g\) => \(\{ guest: g, status: 'failed'/.test(send), 'failed rows are sendable only');

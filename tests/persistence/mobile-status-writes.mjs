@@ -116,7 +116,7 @@ export async function runMobileStatusWrites() {
      /events:\s*weddingEvents/.test(save) && /guest:\s*sheet\.guest \|\| \{\}/.test(save) && /status:\s*fieldsOut\.rsvp_status/.test(save),
      'events, guest, status');
   ok('  and both the update and the create send that object',
-     /guestWrites\.update\(sheet\.guest\.id, rest\)/.test(save) && /guestWrites\.create\(rest, d\)/.test(save), 'rest carries it');
+     /guestWrites\.update\(sheet\.guest\.id, (?:withBounceCleared\()?rest[,)]/.test(save) && /guestWrites\.create\(rest, d\)/.test(save), 'rest carries it');
 
   const sheets = code('src/mobile/screens/guests/GuestSheets.jsx');
   const importSheet = span(sheets, 'export function ImportGuestsSheet', '\nexport function ');
