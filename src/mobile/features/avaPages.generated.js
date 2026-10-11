@@ -164,7 +164,7 @@ export const AVA_PAGES = {
       "Help us write how we met",
       "What milestones should our timeline include?",
       "Make this sound like us, not a greeting card",
-      "Write a short version for the website"
+      "Write a short version for the Guest Suite"
     ]
   },
   "Photography": {

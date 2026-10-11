@@ -360,6 +360,10 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
   );
 }
 
+// Pages that are the signed-in person's own, open in a collaborator session
+// regardless of the grant.
+const SELF_PAGES = new Set(['Help', 'Account']);
+
 // ── Persistent collaboration context banner ──────────────────────────────────
 function CollaboratorBanner({ coupleNames, collaboratorEmail, topOffset }) {
   return (
@@ -441,17 +445,28 @@ function LayoutShell({ children, currentPageName }) {
   // dismissed card stays dismissed when the pod is reopened.
   const [avaDismissed, setAvaDismissed] = React.useState(() => new Set());
 
+  const collab = useCollaboratorContext();
+  const isCollaborating = !!collab.ownerUserId;
+  // NO AVA IN A COLLABORATOR SESSION (collaborators goal, item 3). Ava reads
+  // and proposes changes to the signed-in person's OWN wedding, so in someone
+  // else's session she would answer about the wrong one. The listeners read
+  // the session through a ref, because they are registered once.
+  const collaboratingRef = React.useRef(isCollaborating);
+  collaboratingRef.current = isCollaborating;
+
   React.useEffect(() => {
-    const onOpen = (e) => { setAvaOpenDetail(e.detail || {}); setChatOpen(true); };
+    const onOpen = (e) => {
+      if (collaboratingRef.current) return;
+      setAvaOpenDetail(e.detail || {});
+      setChatOpen(true);
+    };
     window.addEventListener(AVA_OPEN_EVENT, onOpen);
     return () => window.removeEventListener(AVA_OPEN_EVENT, onOpen);
   }, []);
-  const collab = useCollaboratorContext();
-  const isCollaborating = !!collab.ownerUserId;
   const queryClient = useQueryClient();
 
   React.useEffect(() => {
-    const handler = () => setChatOpen(true);
+    const handler = () => { if (!collaboratingRef.current) setChatOpen(true); };
     window.addEventListener('openAva', handler);
     return () => window.removeEventListener('openAva', handler);
   }, []);
@@ -621,7 +636,10 @@ function LayoutShell({ children, currentPageName }) {
   const contentTopOffset = TOP_BAR_H + trialBannerH + bannerH;
   const contentTopOffsetMobile = MOBILE_TOP_BAR_H + trialBannerH;
   const currentPermissionKey = permissionKeyForPageName(currentPageName);
-  const canViewCurrentPage = !isCollaborating || (
+  // Help and Account belong to the signed-in person, not the wedding, so a
+  // collaborator opens their OWN copies without leaving the session (owner
+  // ruling 2026-10-11). Every other page needs a granted permission key.
+  const canViewCurrentPage = !isCollaborating || SELF_PAGES.has(currentPageName) || (
     !!currentPermissionKey &&
     hasPagePermission(collaboratorPermissions, currentPermissionKey, 'view')
   );
@@ -829,6 +847,7 @@ function LayoutShell({ children, currentPageName }) {
       />
 
       {/* ── Floating Ava button ──────────────────────────── */}
+      {!isCollaborating && (
       <div style={{ position: 'fixed', bottom: 32, right: 32, zIndex: 8000, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12 }}>
         {chatOpen && (
           <AvaChatPod
@@ -866,6 +885,7 @@ function LayoutShell({ children, currentPageName }) {
           {chatOpen ? <X size={16} /> : <Sparkles size={18} />}
         </button>
       </div>
+      )}
 
       {/* ── Main content ─────────────────────────────────── */}
       {/*

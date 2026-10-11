@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import Screen from '../../shell/Screen';
 import { PanelCard, RowGroup, Row, TextField, PillButton, SkeletonRows, ErrorState } from '../../ui';
 import { shareLink } from '../../native';
-import { dateLong } from '../../lib/format';
+import { dateShort } from '../../lib/format';
 import { InvitationPreviewFrame, InvitationPreviewSheet } from './InvitationPreview';
 
 /**
@@ -36,7 +36,7 @@ export default function InvitationsScreen({ invitation, details, invitationUrl, 
               <div style={{ padding: '12px 12px 0' }}><InvitationPreviewFrame invitation={invitation} details={details} width={342} onOpen={() => setPreviewOpen(true)} /></div>
               <div style={{ padding: 16 }}>
                 <div className="oi-m-row__label">{invitation.couple_names || 'Your invitation'}</div>
-                <div className="oi-m-row__sub">{saved ? `Saved ${dateLong(saved)}. ` : ''}The design is drawn in the builder on desktop. Share the link, or send it to guests from here.</div>
+                <div className="oi-m-row__sub">{saved ? `Saved ${dateShort(saved)}. ` : ''}The design is drawn in the builder on desktop. Share the link, or send it to guests from here.</div>
               </div>
             </div>
             <RowGroup>

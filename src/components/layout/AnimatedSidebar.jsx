@@ -3,7 +3,7 @@ import PlanBadge from "@/components/shared/PlanBadge";
 import { useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useAuth } from "@/lib/AuthContext";
-import { hasPagePermission } from "@/lib/collaboratorContext";
+import { hasPagePermission, useCollaboratorContext, withCollab } from "@/lib/collaboratorContext";
 import { COLLABORATOR_PAGE_MAP, COLLABORATOR_PERMISSION_KEYS } from "@/lib/collaboratorPageMap";
 import { canAccessUltra as canAccessUltraFor } from "@/lib/trialStatus";
 import { preloadPageChunk } from "@/pagePreload";
@@ -400,7 +400,12 @@ function NavItem({ icon: Icon, label, url, onClick, isActive, showBadge, count =
 // ── Desktop sidebar ───────────────────────────────────────────────────────────
 
 export function AnimatedSidebar({ weddingName, onOpenTour, onCollaborate, topOffset = 48, collaboratorPermissions = null, unreadMessagesCount = 0 }) {
-  const navigate = useNavigate();
+  const navigateRaw = useNavigate();
+  // Every navigation from here keeps a collaborator session (withCollab).
+  // Exit collaboration is the one deliberate exception, and it does not use
+  // navigate at all.
+  const { ownerUserId: collabOwnerId } = useCollaboratorContext();
+  const navigate = (url) => navigateRaw(withCollab(url, collabOwnerId));
   const location = useLocation();
   const { user } = useAuth();
   // Ultra access follows the TRIAL, not the plan string. `plan === 'free'`
@@ -611,7 +616,9 @@ export function AnimatedSidebar({ weddingName, onOpenTour, onCollaborate, topOff
 // ── Mobile sidebar content (used inside Sheet) ────────────────────────────────
 
 export function MobileSidebarContent({ weddingName, onClose, onCollaborate, onOpenTour, collaboratorPermissions = null, unreadMessagesCount = 0 }) {
-  const navigate = useNavigate();
+  const navigateRaw = useNavigate();
+  const { ownerUserId: collabOwnerId } = useCollaboratorContext();
+  const navigate = (url) => navigateRaw(withCollab(url, collabOwnerId));
   const location = useLocation();
   const { user } = useAuth();
   // Same rule as the desktop nav above -- one shared source so the two can

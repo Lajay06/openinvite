@@ -92,7 +92,7 @@ export default function PlanFeatureContainer() {
     case 'suite-schedule': return <SuiteScheduleContainer back={back} />;
     case 'wedding-party': return <WeddingPartyContainer back={back} />;
     case 'marketplace': return <MarketplaceContainer back={back} />;
-    case 'studio': return <DesktopFeatureScreen title="Design studio" body="The website builder and Ava studio need a bigger screen." back={back} onDesktop={() => navigate(`${base}/site`)} />;
+    case 'studio': return <DesktopFeatureScreen title="Design studio" body="The Guest Suite and Ava studio need a bigger screen." back={back} onDesktop={() => navigate(`${base}/site`)} />;
     default: return <DesktopFeatureScreen title={f.label} body="Best on desktop for now." back={back} onDesktop={() => openDesktop(navigate, f.desktop)} />;
   }
 }

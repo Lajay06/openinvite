@@ -36,7 +36,7 @@ export function vendorFields() {
     t('contact_person', 'Contact', { placeholder: 'Primary contact name' }),
     t('phone', 'Phone', { type: 'tel' }),
     t('email', 'Email', { type: 'email' }),
-    t('website', 'Website', { placeholder: 'A link, or just the name', autoCapitalize: 'off' }),
+    t('website', 'Web address', { placeholder: 'A link, or just the name', autoCapitalize: 'off' }),
     t('address', 'Address', { placeholder: 'Street address or city' }),
     t('price_range', 'Price range', { type: 'select', options: PRICE_RANGES }),
     t('rating', 'Rating', { type: 'number', placeholder: '4.8' }),

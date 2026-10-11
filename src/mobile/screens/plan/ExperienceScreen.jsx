@@ -148,7 +148,7 @@ export default function ExperienceScreen({ guide = {}, destination = '', onSave,
                     <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
                       <PillButton variant={p.is_couple_pick ? 'primary' : 'secondary'} size="sm" icon={Heart} onClick={() => togglePick(cat, p)}>{p.is_couple_pick ? 'Our pick' : 'Make it our pick'}</PillButton>
                       {p.maps_url && <PillButton variant="secondary" size="sm" icon={MapPin} onClick={() => openExternal(p.maps_url)}>Maps</PillButton>}
-                      {p.website_url && <PillButton variant="secondary" size="sm" icon={Globe} onClick={() => openExternal(p.website_url)}>Website</PillButton>}
+                      {p.website_url && <PillButton variant="secondary" size="sm" icon={Globe} onClick={() => openExternal(p.website_url)}>Visit</PillButton>}
                       <PillButton variant="ghost" size="sm" icon={Trash2} onClick={() => removePlace(cat, p)}>Remove</PillButton>
                     </div>
                   </div>
@@ -232,7 +232,7 @@ function AddPlaceSheet({ cat, destination, onClose, onAdd }) {
     )}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <SelectField label="Category" value={catKey} onChange={(e) => setCatKey(e.target.value)} options={CATEGORIES.map(([value, label]) => ({ value, label }))} />
-        <PlaceField label="Place" value={place} onChange={setPlace} locationBias={destination} placeholder="Rooftop bar, ramen, a walk" manualFields={<TextField label="Website" type="url" inputMode="url" autoCapitalize="off" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://" />} />
+        <PlaceField label="Place" value={place} onChange={setPlace} locationBias={destination} placeholder="Rooftop bar, ramen, a walk" manualFields={<TextField label="Web address" type="url" inputMode="url" autoCapitalize="off" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://" />} />
         <TextField label="Your tip for guests" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Go early, order the ramen" />
         <div className="oi-m-row" style={{ padding: '8px 4px', background: 'transparent' }}><div className="oi-m-row__body"><div className="oi-m-row__label">Our pick</div><div className="oi-m-row__sub">Shown first, with your name on it</div></div><Switch on={pick} onChange={setPick} label="Our pick" /></div>
       </div>

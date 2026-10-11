@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { getMyWeddingDetails, getMyGuestsWithRsvp, getMyRecords } from "@/lib/resolveMyWedding";
 import { hasPlusOne, plusOneRsvpStatus } from "@/lib/plusOne";
 import { assignGuestToTableByName, unassignGuestFromTables, DEFAULT_TABLE_CAPACITY } from "@/lib/tableAssignment";
-import { useCollaboratorContext } from "@/lib/collaboratorContext";
+import { useCollaboratorContext, withCollab } from "@/lib/collaboratorContext";
 import { useAvaFocus } from "@/hooks/useAvaFocus";
 import { tallyAttendees, isAttending, isDeclined, isPending, isAwaitingPrimary } from "@/lib/guestRsvpTally";
 import { resolveAttendees } from "@/lib/attendees";
@@ -193,7 +193,7 @@ export default function Guests() {
     if (!id) return;
     setScrollToGuestId(id);
     setHighlightedGuestId(id);
-    navigate(location.pathname, { replace: true, state: {} });
+    navigate(withCollab(`${location.pathname}${location.search}`, collab.ownerUserId), { replace: true, state: {} });
     const t = setTimeout(() => setHighlightedGuestId(null), 2000);
     return () => clearTimeout(t);
      
@@ -927,7 +927,7 @@ export default function Guests() {
   // The selection travels as router state, so the flow starts on exactly the
   // guests that were ticked — and /SendInvites opened directly is simply
   // "everyone not yet invited", which is the same default the panel had.
-  const goToSend = (config) => navigate('/SendInvites', { state: config });
+  const goToSend = (config) => navigate(withCollab('/SendInvites', collab.ownerUserId), { state: config });
 
   /**
    * ONE GUEST, THE SAME FLOW. Item 5 of

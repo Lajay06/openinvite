@@ -103,7 +103,7 @@ export default function SuitePlacesScreen({ kind, places = [], notes = [], desti
                       {p.note && <p className="oi-m-body" style={{ marginTop: 4 }}>{p.note}</p>}
                       <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
                         {p.maps_url && <PillButton variant="secondary" size="sm" icon={MapPin} onClick={() => openExternal(p.maps_url)}>Open in Maps</PillButton>}
-                        {p.website_url && <PillButton variant="secondary" size="sm" icon={Globe} onClick={() => openExternal(p.website_url)}>Website</PillButton>}
+                        {p.website_url && <PillButton variant="secondary" size="sm" icon={Globe} onClick={() => openExternal(p.website_url)}>Visit</PillButton>}
                         <PillButton variant="ghost" size="sm" icon={Trash2} onClick={() => remove(p)}>Remove</PillButton>
                       </div>
                     </div>
@@ -158,7 +158,7 @@ function AddPlaceSheet({ isStay, destination, onClose, onAdd }) {
       </>
     )}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <PlaceField label={isStay ? 'Hotel or stay' : 'Airport, station, car hire'} value={place} onChange={setPlace} locationBias={destination} queryPrefix={isStay ? 'hotel ' : ''} placeholder={isStay ? 'Hilton Sydney, boutique hotels' : 'The airport, the train station'} manualFields={<TextField label="Website" type="url" inputMode="url" autoCapitalize="off" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://" />} />
+        <PlaceField label={isStay ? 'Hotel or stay' : 'Airport, station, car hire'} value={place} onChange={setPlace} locationBias={destination} queryPrefix={isStay ? 'hotel ' : ''} placeholder={isStay ? 'Hilton Sydney, boutique hotels' : 'The airport, the train station'} manualFields={<TextField label="Web address" type="url" inputMode="url" autoCapitalize="off" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://" />} />
         {!isStay && <SelectField label="Type" value={type} onChange={(e) => setType(e.target.value)} options={TRANSPORT_TYPES.map(([value, label]) => ({ value, label }))} />}
         <TextField label="Note for guests" value={note} onChange={(e) => setNote(e.target.value)} placeholder={isStay ? 'Use code WEDDING for 15 percent off' : 'About 30 minutes from the venue'} />
         {isStay && <SelectField label="Highlight badge" value={badge} onChange={(e) => setBadge(e.target.value)} options={BADGE_OPTIONS.map((b) => ({ value: b, label: b }))} placeholder="No badge" />}
