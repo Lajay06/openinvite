@@ -27,6 +27,9 @@ export async function runCollaboratorInviteHost() {
 
   const prior = { admin: process.env.BASE44_ADMIN_KEY, resend: process.env.RESEND_API_KEY, app: process.env.VITE_APP_URL };
   process.env.BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY || 'test-admin-key-not-a-real-credential';
+  // Invite links are signed with COLLAB_HASH_KEY, never the admin key.
+  const priorHashKey = process.env.COLLAB_HASH_KEY;
+  process.env.COLLAB_HASH_KEY = '0123456789abcdef'.repeat(4);
   // send-collaborator-invite.js builds a Resend client at module scope; a
   // module that throws on first evaluation stays failed for the process.
   if (!process.env.RESEND_API_KEY) process.env.RESEND_API_KEY = 're_persistence_suite_placeholder';
@@ -84,6 +87,7 @@ export async function runCollaboratorInviteHost() {
     for (const [k, env] of [['admin', 'BASE44_ADMIN_KEY'], ['resend', 'RESEND_API_KEY'], ['app', 'VITE_APP_URL']]) {
       if (prior[k] === undefined) delete process.env[env]; else process.env[env] = prior[k];
     }
+    if (priorHashKey === undefined) delete process.env.COLLAB_HASH_KEY; else process.env.COLLAB_HASH_KEY = priorHashKey;
   }
 
   const sendSrc = stripComments(read('api/send-collaborator-invite.js'), { trailing: true });

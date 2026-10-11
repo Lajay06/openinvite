@@ -29,9 +29,9 @@
  * a name or a user id.
  *
  *   Dry run, writes nothing:
- *     cat scripts/collab-grants-rebuild.ts | npx base44@0.1.32 exec --privileged --app-id 68731d183f075e406eda2236
+ *     cat scripts/collab-grants-rebuild.ts | npx base44 exec --privileged --app-id 68731d183f075e406eda2236
  *   Write:
- *     cat scripts/collab-grants-rebuild.ts | REBUILD_APPLY=1 npx base44@0.1.32 exec --privileged --app-id 68731d183f075e406eda2236
+ *     cat scripts/collab-grants-rebuild.ts | REBUILD_APPLY=1 npx base44 exec --privileged --app-id 68731d183f075e406eda2236
  *
  * COLLAB_SECRETS_FILE overrides where the key is read from; the default is
  * ~/collab-secrets.env, the file the owner steps write.
