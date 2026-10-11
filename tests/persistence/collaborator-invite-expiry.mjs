@@ -121,7 +121,12 @@ export async function runCollaboratorInviteExpiry() {
 
     // ── EVERY SIGNED INVITE CARRIES AN iat ──────────────────────────────────
     const sendSrc = stripComments(read('api/send-collaborator-invite.js'), { trailing: true });
-    ok('send-collaborator-invite signs every invite with iat: Date.now()', /signInvite\(\{[\s\S]*?iat: Date\.now\(\)/.test(sendSrc), 'iat stamped at send');
+    // Either form stamps the send time: inline, or one `iat` shared with the
+  // CollaboratorInvite row so its expires_at matches the link exactly.
+  ok('send-collaborator-invite signs every invite with iat: Date.now()',
+     /signInvite\(\{[\s\S]*?iat: Date\.now\(\)/.test(sendSrc)
+     || (/const iat = Date\.now\(\);\s*const signedInvite = signInvite\(\{[\s\S]*?\biat,?\s*\}\)/.test(sendSrc)),
+     'iat stamped at send');
 
     // ── THE ACCEPT PAGE SAYS SO ─────────────────────────────────────────────
     const page = stripComments(read('src/pages/CollaboratorAccept.jsx'), { trailing: true });

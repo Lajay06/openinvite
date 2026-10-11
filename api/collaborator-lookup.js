@@ -24,6 +24,7 @@
 
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
 import { verifyInvite, isInviteExpired, INVITE_EXPIRED_MESSAGE } from './_lib/collaboratorInviteToken.js';
+import { inviteStanding } from './_lib/collaboratorInvites.js';
 
 import { coupleDisplayName } from './_lib/coupleNames.js';
 const BASE44_API = 'https://base44.app/api';
@@ -69,6 +70,11 @@ export default async function handler(req, res) {
   }
 
   try {
+    // A link a resend replaced, or one the owner removed, gets the same 404
+    // as an invalid one.
+    if (await inviteStanding(payload, token, BASE44_ADMIN_KEY) === 'stale') {
+      return res.status(404).json({ error: 'This invite has expired or is invalid.' });
+    }
     const weddingQuery = encodeURIComponent(JSON.stringify({ created_by_id: payload.ownerUserId }));
     const weddingRes = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/WeddingDetails?q=${weddingQuery}`, {
       headers: { Authorization: `Bearer ${BASE44_ADMIN_KEY}` },

@@ -68,6 +68,7 @@ import { runConsolidateOverview } from '../tests/persistence/consolidate-overvie
 import { runTableGuestSync } from '../tests/persistence/table-guest-sync.mjs';
 import { runPlusOneIdentity } from '../tests/persistence/plus-one-identity.mjs';
 import { runCollaboratorInvite } from '../tests/persistence/collaborator-invite.mjs';
+import { runCollaboratorInviteLive } from '../tests/persistence/collaborator-invite-live.mjs';
 import { runCollaboratorPageMap } from '../tests/persistence/collaborator-page-map.mjs';
 import { runCheckoutErrorHandling } from '../tests/persistence/checkout-error-handling.mjs';
 import { runGuestRsvpTally } from '../tests/persistence/guest-rsvp-tally.mjs';
@@ -182,6 +183,7 @@ async function run() {
     await runModule('runTableGuestSync', () => runTableGuestSync(token));
     await runModule('runPlusOneIdentity', () => runPlusOneIdentity(token));
     await runModule('runCollaboratorInvite', () => runCollaboratorInvite(token));
+    await runModule('runCollaboratorInviteLive', () => runCollaboratorInviteLive(token));
     await runModule('runCollaboratorPageMap', () => runCollaboratorPageMap());
     await runModule('runCheckoutErrorHandling', () => runCheckoutErrorHandling());
     await runModule('runGuestRsvpTally', () => runGuestRsvpTally());
