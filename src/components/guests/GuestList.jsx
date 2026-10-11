@@ -15,6 +15,7 @@ import { PILL_BASE, pillLabel } from '@/lib/tablePills';
 import { formatDashboardDate } from '@/lib/dashboardDate';
 import { sendHistoryFor } from '@/lib/sendHistory';
 import { tagColor } from '@/lib/tagColors';
+import { isBounced, withBounceCleared, BOUNCE_ROW_LABEL, BOUNCE_FIX_SENTENCE } from '@/components/guests/emailBounce';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -348,15 +349,31 @@ function LastSentCell({ guest }) {
       Asked not to be emailed
     </span>
   ) : null;
+  // ── THE ADDRESS ITSELF FAILED ─────────────────────────────────────────
+  //
+  // Item 3 of goals/2026-10-10-bounces-and-notes.md, in this cell for the
+  // same reason as the line above it: a couple reading "sent 3 days ago" and
+  // wondering why nobody replied is owed the fact that it never arrived.
+  //
+  // BOTH LINES CAN SHOW AT ONCE. A guest may have asked not to be emailed
+  // AND hold a dead address; they are different facts with different fixes,
+  // and the server counts them separately for exactly that reason.
+  const bounced = isBounced(guest);
+  const bouncedLine = bounced ? (
+    <span data-email-bounced style={{ fontSize: 12, color: '#991b1b', fontFamily: PJS }}>
+      {BOUNCE_ROW_LABEL}
+    </span>
+  ) : null;
   if (history.length === 0) {
-    return optedOut
-      ? <div data-send-history style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>{optedOutLine}</div>
+    return (optedOut || bounced)
+      ? <div data-send-history style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>{bouncedLine}{optedOutLine}</div>
       : <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Not sent</span>;
   }
   const shown = history.slice(0, 3);
   const rest = history.length - shown.length;
   return (
     <div data-send-history style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      {bouncedLine}
       {optedOutLine}
       {shown.map((e, i) => (
         <span key={i} style={{ fontSize: 12, color: '#444444', fontFamily: PJS }}>
@@ -975,7 +992,10 @@ export default function GuestList({
     if (guest && onUpdate) {
       const prev = guest[field] != null ? String(guest[field]) : '';
       const next = editValue.trim();
-      if (next !== prev) onUpdate(id, { [field]: next || null });
+      // withBounceCleared adds email_bounce: null when, and only when, this
+      // edit changes the address of a guest that carries a stamp. Item 3's
+      // ruling is that the clear rides the same save: see emailBounce.js.
+      if (next !== prev) onUpdate(id, withBounceCleared({ [field]: next || null }, guest));
     }
     setEditCell(null);
   };
@@ -1231,6 +1251,17 @@ export default function GuestList({
                         ) : (
                           <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.25)', fontFamily: PJS }}>Add email…</span>
                         )
+                      )}
+                      {/* ── THE FIX IS THE ADDRESS, SO THE SENTENCE SITS ON IT ──────
+                          Item 3. Outside textCell deliberately: that wrapper is the
+                          click-to-edit target, and the sentence is what the couple
+                          reads before they click it, not part of what they edit.
+                          Resend invitation in the row menu is the other half, and
+                          needs no change: it was already the fix path. */}
+                      {isBounced(guest) && (
+                        <span data-bounce-fix style={{ fontSize: 11, color: '#991b1b', fontFamily: PJS }}>
+                          {BOUNCE_FIX_SENTENCE}
+                        </span>
                       )}
                       {textCell(guest, 'phone',
                         guest.phone ? (
