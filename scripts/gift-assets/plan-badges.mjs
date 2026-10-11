@@ -1,3 +1,4 @@
+/* global document */  // used inside page.evaluate(), which runs in the browser
 /**
  * scripts/gift-assets/plan-badges.mjs
  *
