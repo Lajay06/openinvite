@@ -216,7 +216,6 @@ function DashboardSection() {
               </li>
             )}
           </ul>
-          <FeatureStill still={FEATURE_STILLS.morning} />
         </div>
       </div>
       <div className="w-full lg:w-1/2 order-1 lg:order-2" style={{ position: "relative", minHeight: 320, overflow: "hidden", flexShrink: 0 }}>

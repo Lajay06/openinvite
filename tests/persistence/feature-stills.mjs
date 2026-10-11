@@ -5,7 +5,7 @@
  * rulings 2026-10-11): one real still per feature section, from the rich
  * fixture, cut to 3:2, placed in space the section already had.
  *
- * The four stills in the deep dives and the dashboard row are read off
+ * The three stills in the deep dives are read off
  * prerendered/features, which is what a visitor is served before any script
  * runs. The two accordion rows' media only mount when a row is opened, so they
  * are read from the source that renders them.
@@ -57,8 +57,8 @@ export function runFeatureStills() {
   const pre = join(ROOT, 'prerendered/features/index.html');
   const html = existsSync(pre) ? readFileSync(pre, 'utf8').replace(/&amp;/g, '&') : '';
   const figures = html.match(/<figure\b[^>]*data-feature-still="still"[\s\S]*?<\/figure>/g) || [];
-  check('prerendered /features carries the four inline stills', figures.length === 4, `${figures.length} figures`);
-  for (const k of ['morning', 'replies', 'budget', 'suite']) {
+  check('prerendered /features carries the three inline stills', figures.length === 3, `${figures.length} figures`);
+  for (const k of ['replies', 'budget', 'suite']) {
     const s = FEATURE_STILLS[k];
     const fig = figures.find((f) => f.includes(idOf(s.src))) || '';
     check(`${k}: on the page, 552 and 1104 wide, with its caption`,
@@ -71,7 +71,9 @@ export function runFeatureStills() {
     const ul = src.lastIndexOf('</ul>', src.indexOf(name));
     return src.indexOf(name) > 0 && ul > 0 && !/<(section|div)\b/.test(src.slice(ul, src.indexOf(name)));
   };
-  check('morning page: under the Customizable Dashboard bullets', under('src/pages/Features.jsx', 'still={FEATURE_STILLS.morning}'));
+  // HELD (see src/lib/featureStills.js): the dashboard row is one screen, the
+  // app section's twin, and the morning still would make it 1116px.
+  check('morning page: held out of the one-screen dashboard row', !/FEATURE_STILLS\.morning/.test(stripComments(read('src/pages/Features.jsx'))));
   check('replies: under the guest management bullets', under('src/components/home/FeatureGuests.jsx', 'still={FEATURE_STILLS.replies}'));
   check('budget: under the budget bullets, on the dark ground', under('src/components/home/FeatureBudget.jsx', 'still={FEATURE_STILLS.budget} dark'));
   check('suite: under the timeline bullets', under('src/components/home/FeatureTimeline.jsx', 'still={FEATURE_STILLS.suite}'));

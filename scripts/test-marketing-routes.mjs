@@ -76,7 +76,9 @@ async function featureRowLayout(page, path, wide) {
   const rows = await page.evaluate(() => [...document.querySelectorAll('section.lg\\:flex-row')].map((s) => {
     const r = s.getBoundingClientRect();
     const kids = [...s.children].filter((k) => k.getBoundingClientRect().height > 0);
-    const pic = kids.find((k) => k.querySelector('img')), txt = kids.find((k) => k !== pic);
+    // The row's picture, not a product still under the text's bullets
+    // (FeatureStill, batch 3 item 4), which is an img in the text column.
+    const pic = kids.find((k) => [...k.querySelectorAll('img')].some((i) => !i.closest('[data-feature-still]'))), txt = kids.find((k) => k !== pic);
     const pr = pic.getBoundingClientRect(), tr = txt.getBoundingClientRect();
     return { app: s.hasAttribute('data-app-phones'), h: Math.round(r.height), vh: window.innerHeight,
       pad: getComputedStyle(txt).padding, side: Math.round(pr.top) < Math.round(tr.top) ? 'top' : pr.left < tr.left ? 'left' : 'right' };

@@ -12,6 +12,11 @@
  * a new Cloudinary path with overwrite off. A reshoot is a new id here, never
  * a replaced file.
  *
+ * HELD: the morning still. Under the Customizable Dashboard bullets it made
+ * that row 1116px at 1440, and that row is held to one screen because the app
+ * section after it is its twin (test:marketing-routes, featureRowLayout). It
+ * stays here, uploaded, for the owner's ruling on where it goes instead.
+ *
  * Captions are the item 4 proposal's, accepted with the ruling, except two
  * that claimed what their stills cannot show: the guest list has no reply
  * time ("and when" is gone) and the vendors table no owed column ("where
