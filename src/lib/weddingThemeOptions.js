@@ -34,8 +34,63 @@ export const SETTING_OPTIONS    = ['Indoor', 'Mix of both', 'Outdoor'];
 /** The five, in the order both surfaces ask them. */
 export const THEME_QUESTION_ORDER = ['aesthetic', 'atmosphere', 'setting', 'culture', 'faith'];
 
-export const FAITH_OPTIONS = ['Buddhist', 'Catholic', 'Christian', 'Hindu', 'Interfaith', 'Jewish', 'Muslim', 'Non-religious', 'Sikh'];
-export const FAITH_FOR_INTERFAITH = ['Buddhist', 'Catholic', 'Christian', 'Hindu', 'Jewish', 'Muslim', 'Sikh'];
+/**
+ * ── FAITH, TWENTY-TWO OPTIONS ───────────────────────────────────────────────
+ *
+ * Item 2 of goals/2026-10-11-dashboard-fixes-batch-1.md. Non-religious is
+ * PINNED FIRST and excluded from the alphabetical run, because it is the
+ * answer with no tradition to sort among the others and burying it at N would
+ * make a couple hunt for the one option that says "none of these". Other is
+ * last for the mirror reason: it is the escape hatch, not a choice.
+ *
+ * PLAIN 'Christian' IS KEPT, and it is the only one of the previous nine that
+ * the owner's new list does not contain. theme.faith is a FREE STRING on
+ * WeddingDetails, so dropping it would not have deleted anything, it would
+ * have left live records holding a value no pill could show: the couple opens
+ * the Theme tab, sees nothing selected, and their answer is gone from the
+ * surface that collected it. It sorts before 'Christian (non-denominational)'
+ * because it is the shorter string, which is also the order a reader expects.
+ *
+ * THE COUNT. The ruling names twenty-one; the list it enumerates is twenty-one
+ * including Non-religious and Other, so keeping Christian makes twenty-two.
+ * Built as enumerated, and reported rather than silently reconciled.
+ *
+ * _STYLE_TO_FAITH in src/pages/EventDetails.jsx maps old onboarding answers
+ * onto nine of these values, and every one of the nine is still here. That is
+ * asserted, not assumed: see tests/persistence/faith-options.mjs.
+ */
+export const FAITH_OPTIONS = [
+  'Non-religious',
+  'Anglican',
+  "Baha'i",
+  'Baptist',
+  'Buddhist',
+  'Catholic',
+  'Christian',
+  'Christian (non-denominational)',
+  'Eastern Orthodox',
+  'Hindu',
+  'Interfaith',
+  'Jain',
+  'Jewish',
+  'Lutheran',
+  'Methodist',
+  'Muslim',
+  'Pentecostal',
+  'Presbyterian',
+  'Sikh',
+  'Spiritual',
+  'Taoist',
+  'Other',
+];
+
+/**
+ * The Interfaith sub-pick: the same list, minus Interfaith itself, with
+ * Non-religious still pinned first. A couple marrying across a faith and no
+ * faith is one of the commonest interfaith weddings there is, which is why it
+ * stays rather than being filtered out as a non-answer.
+ */
+export const FAITH_FOR_INTERFAITH = FAITH_OPTIONS.filter((f) => f !== 'Interfaith');
 
 // Organised by region — see ThemeSection.jsx's own history for why (Round 7
 // ask #11: every option list ordered alphabetically within its group).
