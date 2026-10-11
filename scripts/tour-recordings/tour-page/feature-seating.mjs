@@ -14,8 +14,9 @@
  * assign makes (Table.update, then Guest.update; src/lib/tableAssignment.js)
  * into that copy before the stub answers, so the reload shows the seat filled.
  *
- * Recorded at 1440 by 1100 and cropped to 3:2 at delivery (studioTour.js), so
- * the frame is the floor plan and the table panel, with no sidebar or header.
+ * Recorded at 1440 by 1100 and cut to 3:2 at delivery (src/lib/featureStills.js):
+ * /features takes 810 by 540 around Wattle and the panel, /tour the whole
+ * floor plan and panel at 975 by 650. No sidebar, no header.
  */
 let live = null;
 
@@ -43,6 +44,9 @@ export default {
     return live;
   },
   async perform(page, cursor) {
+    // NO FLOATING AVA BUTTON. It sits over the table panel's corner in the
+    // /tour crop; like the cursor in a still, it is app chrome, not seating.
+    await page.addStyleTag({ content: 'button[aria-label="Chat with Ava"]{display:none !important}' });
     await page.route(/\/entities\/(Table|Guest)\/[^/?]+/, async (route) => {
       const req = route.request();
       if (req.method() === 'PUT' || req.method() === 'PATCH') {

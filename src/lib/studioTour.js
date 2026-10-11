@@ -359,15 +359,15 @@ export const TOUR_PAGE_MEDIA = {
     },
   },
   site: {
-    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1791542205/studio-tour/tour-page/site/1440-20261009103644.jpg',
-    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791542205/studio-tour/tour-page/site/1440-20261009103644.webm',
-    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791542205/studio-tour/tour-page/site/1440-20261009103644.mp4',
-    seconds: 15.13,
+    poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_1280,q_auto:good/v1791730283/studio-tour/tour-page/site/1440-20261011145121.jpg',
+    webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791730283/studio-tour/tour-page/site/1440-20261011145121.webm',
+    mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791730283/studio-tour/tour-page/site/1440-20261011145121.mp4',
+    seconds: 14.9,
     phone: {
-      poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1791542203/studio-tour/tour-page/site/390-20261009103641.jpg',
-      webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791542203/studio-tour/tour-page/site/390-20261009103641.webm',
-      mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791542203/studio-tour/tour-page/site/390-20261009103641.mp4',
-      seconds: 9.83,
+      poster: 'https://res.cloudinary.com/dsr84xknv/video/upload/so_1.0,w_780,q_auto:good/v1791730280/studio-tour/tour-page/site/390-20261011145118.jpg',
+      webm: 'https://res.cloudinary.com/dsr84xknv/video/upload/v1791730280/studio-tour/tour-page/site/390-20261011145118.webm',
+      mp4: 'https://res.cloudinary.com/dsr84xknv/video/upload/vc_h264,q_auto:good,br_900k/v1791730280/studio-tour/tour-page/site/390-20261011145118.mp4',
+      seconds: 9.73,
     },
   },
 };
