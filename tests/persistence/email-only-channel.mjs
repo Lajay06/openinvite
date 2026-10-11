@@ -173,8 +173,8 @@ export async function runEmailOnlyChannel() {
      !/siteUrl\.replace|\{siteUrl\}/.test(mSite), 'no URL on screen');
   ok('  and offers no share or copy',
      !/shareLink|clipboard|copyText|Share link|onShare/.test(mSite + mSiteC), 'no share sheet, no clipboard');
-  ok('  while View guest suite and password protection are still there',
-     /View guest suite/.test(mSite) && /Password protection/.test(mSite) && /onTogglePublish/.test(mSite), 'view, privacy, publish');
+  ok('  while View Guest Suite and password protection are still there',
+     /View Guest Suite/.test(mSite) && /Password protection/.test(mSite) && /onTogglePublish/.test(mSite), 'view, privacy, publish');
   const mHome = code(read('src/mobile/screens/home/HomeScreen.jsx')) + code(read('src/mobile/screens/home/HomeContainer.jsx'));
   ok('mobile Home shares no link', !/shareLink|onShare/.test(mHome), 'no share card');
   ok("  and its guest suite card sends invites instead", /onOpenFeature\?\.\('send-invites'\)/.test(mHome), 'the email path');

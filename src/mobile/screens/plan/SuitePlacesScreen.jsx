@@ -17,7 +17,7 @@ export const TRANSPORT_TYPES = [['airport', 'Airport'], ['train_station', 'Train
 const typeLabel = (t) => TRANSPORT_TYPES.find(([k]) => k === t)?.[1] || 'Transport';
 
 /**
- * The guest suite's Stay and Getting here editors, as the desktop
+ * The Guest Suite's Stay and Getting here editors, as the desktop
  * pages: Google Places search (through PlaceField, with Use my location
  * and add by hand), a note for guests, a badge (Stay) or a type
  * (transport), the website from place details at add time, cards with
@@ -38,10 +38,10 @@ export default function SuitePlacesScreen({ kind, places = [], notes = [], desti
   const [noteSheet, setNoteSheet] = useState(null); // { note } | { note: null }
   const [ava, setAva] = useState(null); // { busy } | { suggestions }
   const [askToConfirm, confirmEl] = useConfirm();
-  // PR #822 (owner ruling 2026-09-21): Stay and Getting here everywhere, as the live guest suite names them.
+  // PR #822 (owner ruling 2026-09-21): Stay and Getting here everywhere, as the live Guest Suite names them.
   const title = isStay ? 'Stay' : 'Getting here';
 
-  const remove = async (p) => { if (!(await askToConfirm({ title: `Remove ${p.name}`, body: 'It comes off your guest suite.', action: 'Remove' }))) return; await onSave(places.filter((x) => (x.id || x.place_id) !== (p.id || p.place_id)), notes); };
+  const remove = async (p) => { if (!(await askToConfirm({ title: `Remove ${p.name}`, body: 'It comes off your Guest Suite.', action: 'Remove' }))) return; await onSave(places.filter((x) => (x.id || x.place_id) !== (p.id || p.place_id)), notes); };
   const addPlace = async (place, extra) => {
     // The website comes from place details at add time, as the desktop pages fetch it.
     let website_url = null;
@@ -78,7 +78,7 @@ export default function SuitePlacesScreen({ kind, places = [], notes = [], desti
   const addSuggestionNote = async (s) => { await onSave(places, [...notes, { id: uid(), title: s.name, text: s.description }]); setAva((a) => (a?.suggestions ? { suggestions: a.suggestions.filter((x) => x._avaId !== s._avaId) } : a)); toast.success(`${s.name} added to notes`); };
 
   return (
-    <Screen title={title} subtitle={loading ? '' : isStay ? `${places.length} place${places.length === 1 ? '' : 's'} to stay on your guest suite` : `${places.length} place${places.length === 1 ? '' : 's'}, ${notes.length} note${notes.length === 1 ? '' : 's'} on your guest suite`} back={back} actions={[{ icon: Sparkles, label: 'Ask Ava to recommend', onClick: recommend }, { icon: Plus, label: segment === 'notes' ? 'Add a note' : 'Add a place', onClick: () => (segment === 'notes' ? setNoteSheet({ note: null }) : setAdding(true)) }]}>
+    <Screen title={title} subtitle={loading ? '' : isStay ? `${places.length} place${places.length === 1 ? '' : 's'} to stay on your Guest Suite` : `${places.length} place${places.length === 1 ? '' : 's'}, ${notes.length} note${notes.length === 1 ? '' : 's'} on your Guest Suite`} back={back} actions={[{ icon: Sparkles, label: 'Ask Ava to recommend', onClick: recommend }, { icon: Plus, label: segment === 'notes' ? 'Add a note' : 'Add a place', onClick: () => (segment === 'notes' ? setNoteSheet({ note: null }) : setAdding(true)) }]}>
       {segments && <Segments options={segments} value={segment} onChange={setSegment} />}
       <div className="oi-m-stack oi-m-stack--24">
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={4} /> : segment === 'notes' ? (
@@ -87,7 +87,7 @@ export default function SuitePlacesScreen({ kind, places = [], notes = [], desti
           )
         ) : (
           <>
-            <p className="oi-m-meta">{isStay ? 'Places guests can stay, shown on your guest suite.' : 'How guests get there and around, shown on your guest suite.'}</p>
+            <p className="oi-m-meta">{isStay ? 'Places guests can stay, shown on your Guest Suite.' : 'How guests get there and around, shown on your Guest Suite.'}</p>
             {places.length === 0 ? <EmptyState icon={isStay ? Hotel : Car} text={isStay ? 'No places yet. Search for the hotels near your venue, or ask Ava.' : 'No places yet. The airport, the station, a car hire, or ask Ava.'} actionLabel="Add a place" onAction={() => setAdding(true)} /> : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {places.map((p) => (
@@ -122,7 +122,7 @@ export default function SuitePlacesScreen({ kind, places = [], notes = [], desti
         <BottomSheet open onClose={() => setAva(null)} title="Ava suggests" full>
           {ava.busy ? <p className="oi-m-body" style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Sparkles size={16} /> Ava is looking around {destination}.</p> : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {ava.suggestions.length === 0 && <p className="oi-m-meta">Everything Ava suggested is on your guest suite.</p>}
+              {ava.suggestions.length === 0 && <p className="oi-m-meta">Everything Ava suggested is on your Guest Suite.</p>}
               {ava.suggestions.map((s) => (
                 <div key={s._avaId} className="oi-m-card" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}><span className="oi-m-body oi-m-strong">{s.name}</span>{(s.badge || s.type) && <StatusPill tone="light">{s.badge || typeLabel(s.type) || s.type}</StatusPill>}</div>

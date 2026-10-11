@@ -54,7 +54,7 @@ export default function useNotifications({ base = '/m', currency } = {}) {
       ]);
       const days = details?.weddingDate ? daysUntilWedding(details.weddingDate) : null;
       const open = (tasks || []).filter((t) => t.view_type === 'todo' && !t.completed).length;
-      const briefing = { days, sentence: open ? `${open} open task${open === 1 ? '' : 's'} and ${(guests || []).filter((g) => g.invite_sent_at && (!g.rsvp_status || g.rsvp_status === 'pending')).length} guests still to reply.` : 'Nothing overdue. A good day to look at your guest suite.' };
+      const briefing = { days, sentence: open ? `${open} open task${open === 1 ? '' : 's'} and ${(guests || []).filter((g) => g.invite_sent_at && (!g.rsvp_status || g.rsvp_status === 'pending')).length} guests still to reply.` : 'Nothing overdue. A good day to look at your Guest Suite.' };
       if (alive.current) { setRaw({ entity: entity.filter((n) => !n.is_test), guests, messages, songRequests: songReqRes, pollVotes, polls: details?.polls || [], gifts, tasks: (tasks || []).filter((t) => t.view_type === 'todo'), budget, guestbook, briefing, failed }); setError(null); }
     } catch (e) {
       if (alive.current) setError(e);

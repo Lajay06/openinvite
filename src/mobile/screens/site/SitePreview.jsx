@@ -7,7 +7,7 @@ import { loadFontFamilies, familiesFromGoogleSpec } from '@/lib/selfHostedFonts'
 import { BottomSheet, FilterPills } from '../../ui';
 
 /**
- * The guest suite preview on the phone (goal 8, item 5): the desktop
+ * The Guest Suite preview on the phone (goal 8, item 5): the desktop
  * editor's own renderer, RealWebsitePreview, imported directly. It is the
  * one implementation of "what a guest sees" outside the published site's
  * wrapper (the builder canvas and the full-screen preview both use it), so
@@ -16,7 +16,7 @@ import { BottomSheet, FilterPills } from '../../ui';
  * passed, so no builder control renders.
  *
  * Two surfaces share it:
- *   SitePreviewFrame  the 4:5 tile on the Guest suite tab: the home page
+ *   SitePreviewFrame  the 4:5 tile on the Guest Suite tab: the home page
  *                     laid out at 390px and scaled into the tile, inert,
  *                     tapping it opens the sheet;
  *   SitePreviewSheet  a full-height sheet with the desktop's page picker as
@@ -45,7 +45,7 @@ export function sitePages(details) {
   ];
 }
 
-export function SitePreviewFrame({ details, width = 342, onOpen, label = 'Open the guest suite preview' }) {
+export function SitePreviewFrame({ details, width = 342, onOpen, label = 'Open the Guest Suite preview' }) {
   useSiteFonts(details);
   const scale = width / PHONE_W;
   const height = Math.round(width * 1.25);
@@ -66,7 +66,7 @@ export function SitePreviewSheet({ details, open, onClose, initialPage = 'home' 
   useEffect(() => { if (open) setPage(initialPage); }, [open, initialPage]);
   const pages = useMemo(() => sitePages(details), [details]);
   return (
-    <BottomSheet open={open} onClose={onClose} title="Guest suite preview" full flush>
+    <BottomSheet open={open} onClose={onClose} title="Guest Suite preview" full flush>
       {open && details && (
         <div className="oi-m-sitepreview-sheet">
           {pages.length > 1 && (

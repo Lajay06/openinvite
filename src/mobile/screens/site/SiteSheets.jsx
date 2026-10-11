@@ -42,7 +42,7 @@ export function PasswordSheet({ open, onClose, enabled, hasStored, onSave }) {
           <>
             <TextField label={hasStored ? 'New password' : 'Password'} type="password" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={hasStored ? 'Type a new one to replace it' : 'Choose a password'} autoCapitalize="off" autoCorrect="off" />
             {hasStored ? <p className="oi-m-meta">A password is set. It cannot be shown again: type a new one to replace it, or <button type="button" className="oi-m-block__link" style={{ display: 'inline', minHeight: 0, padding: 0 }} onClick={clear}>clear it</button>.</p>
-              : incomplete && <p className="oi-m-meta">Enter a password to turn protection on. Until you do, your guest suite stays public.</p>}
+              : incomplete && <p className="oi-m-meta">Enter a password to turn protection on. Until you do, your Guest Suite stays public.</p>}
           </>
         )}
       </div>

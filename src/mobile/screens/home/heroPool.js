@@ -2,7 +2,7 @@ import { prefGet, prefSet } from '../../native';
 
 /**
  * The hero carousel's rotation (goals 6 and 7): "Days to go" is always
- * first and the guest suite share card always last; between them two cards
+ * first and the Guest Suite share card always last; between them two cards
  * from the pool real data backs (RSVPs, from Ava, budget, next payment, next
  * task, song requests or the guestbook), starting from a point that moves
  * on every app open, so the owner does not see the same pair each time.

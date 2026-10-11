@@ -36,7 +36,7 @@ export const GROUPS = [
   { key: 'vendors', label: 'Vendors' },
   { key: 'day', label: 'On the day' },
   { key: 'finances', label: 'Finances' },
-  { key: 'suite', label: 'Guest suite' },
+  { key: 'suite', label: 'Guest Suite' },
   { key: 'extras', label: 'Extras' },
 ];
 
@@ -97,11 +97,11 @@ export const FEATURES = [
     stat: (d, currency) => { const spent = (d.budget || []).reduce((s, i) => s + (i.actual_amount || 0), 0); const total = d.details?.budget?.total ? Number(d.details.budget.total) : (d.budget || []).reduce((s, i) => s + (i.budgeted_amount || 0), 0); return total ? `${formatMoney(total - spent, currency)} left` : 'Set a total'; } },
   { key: 'registry', group: 'finances', label: 'Registry', icon: Gift, desktop: '/Registry', path: 'registry', image: imageUrl('tileRegistry'), kind: 'custom', depth: 'full',
     stat: (d) => { const g = n(d.gifts); return g ? `${g} received` : `${n(d.registryItems) + n(d.registryProducts) + n(d.customGifts)} listed`; } },
-  // Guest suite
-  { key: 'studio', group: 'suite', label: 'Design studio', icon: Sparkles, desktop: '/studio', path: '../site', image: imageUrl('tileStudio'), kind: 'custom', depth: 'view', stat: (d) => (d.details?.websiteEnabled ? 'Guest suite is live' : 'Guest suite is a draft') },
+  // Guest Suite
+  { key: 'studio', group: 'suite', label: 'Design studio', icon: Sparkles, desktop: '/studio', path: '../site', image: imageUrl('tileStudio'), kind: 'custom', depth: 'view', stat: (d) => (d.details?.websiteEnabled ? 'Guest Suite is live' : 'Guest Suite is a draft') },
   { key: 'suite-schedule', group: 'suite', label: 'Schedule', icon: Clock, desktop: '/GuestSuiteSchedule', path: 'suite-schedule', image: imageUrl('tileSuiteSchedule'), kind: 'custom', depth: 'view', stat: (d) => count(d.schedule, 'event') },
   { key: 'qna', group: 'suite', label: 'Q&A', icon: HelpCircle, desktop: '/QandA', path: 'qna', image: imageUrl('tileQna'), kind: 'custom', depth: 'full', stat: (d) => count(d.details?.qna, 'question') },
-  { key: 'suite-registry', group: 'suite', label: 'Registry', icon: Gift, desktop: '/GuestSuiteRegistry', path: 'registry', image: imageUrl('tileSuiteRegistry'), kind: 'custom', depth: 'full', stat: (d) => `${n(d.registryItems) + n(d.registryProducts) + n(d.customGifts)} on the guest suite` },
+  { key: 'suite-registry', group: 'suite', label: 'Registry', icon: Gift, desktop: '/GuestSuiteRegistry', path: 'registry', image: imageUrl('tileSuiteRegistry'), kind: 'custom', depth: 'full', stat: (d) => `${n(d.registryItems) + n(d.registryProducts) + n(d.customGifts)} on the Guest Suite` },
   { key: 'suite-accommodation', group: 'suite', label: 'Stay', icon: Hotel, desktop: '/GuestSuiteAccommodation', path: 'suite-accommodation', image: imageUrl('tileSuiteAccommodation'), kind: 'custom', depth: 'light', stat: (d) => count(d.details?.guestSuiteAccommodation?.places, 'place') },
   { key: 'suite-transport', group: 'suite', label: 'Getting here', icon: Car, desktop: '/GuestSuiteTransport', path: 'suite-transport', image: imageUrl('tileSuiteTransport'), kind: 'custom', depth: 'light', stat: (d) => count(d.details?.guestSuiteTransport?.places, 'place') },
   { key: 'experience', group: 'suite', label: 'Experience guide', icon: MapPin, desktop: '/GuestSuiteExperience', path: 'experience', image: imageUrl('tileExperience'), kind: 'custom', depth: 'light', stat: (d) => count(d.details?.experienceGuide?.places, 'place') },
