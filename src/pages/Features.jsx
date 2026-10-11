@@ -13,6 +13,8 @@ import MarketingHero from "@/components/marketing/MarketingHero";
 import MarketingEndCap from "@/components/marketing/MarketingEndCap";
 import { responsivePhoto } from "@/lib/marketingImage";
 import FeaturesAppSection from "@/components/marketing/FeaturesAppSection";
+import FeatureStill from "@/components/marketing/FeatureStill";
+import { FEATURE_STILLS, FEATURE_SEATING_CLIP } from "@/lib/featureStills";
 
 // Both are web exports (1280x853 and 1600x1078), so 0.34x and 0.42x of the
 // device pixels their boxes need at dpr 2 is the ceiling until larger masters
@@ -62,9 +64,13 @@ function useScrollReveal(threshold = 0.2) {
 // The rows and their order stay as batch 1 set them. Every bullet was checked
 // against the product before it shipped; the vendors row names Google Places
 // because the marketplace searches it.
+//
+// TWO ROWS CARRY THE PRODUCT (site fixes batch 3, item 4): vendors a still of
+// the couple's own list, seating a short clip. Both sit in the open panel
+// under the bullets, so the collapsed accordion is unchanged.
 const ALL_FEATURES = [
-{ title: "Vendors and the marketplace", bullets: ["Every vendor in one place, with contact, quote, deposit and what is still owed", "A marketplace connected to Google Places, with vendors worldwide", "Send an enquiry without leaving the studio", "Keep quotes, contracts and contacts with each vendor"] },
-{ title: "Seating chart and the visualizer", bullets: ["Lay out the venue and drag guests onto tables", "See who is still unseated at a glance", "Walk the room in the visualizer, the way guests will see it", "A seating plan for each event, from the reception to the brunch"] },
+{ title: "Vendors and the marketplace", still: FEATURE_STILLS.vendors, bullets: ["Every vendor in one place, with contact, quote, deposit and what is still owed", "A marketplace connected to Google Places, with vendors worldwide", "Send an enquiry without leaving the studio", "Keep quotes, contracts and contacts with each vendor"] },
+{ title: "Seating chart and the visualizer", clip: FEATURE_SEATING_CLIP, bullets: ["Lay out the venue and drag guests onto tables", "See who is still unseated at a glance", "Walk the room in the visualizer, the way guests will see it", "A seating plan for each event, from the reception to the brunch"] },
 { title: "Calendar", bullets: ["One calendar for the whole engagement", "Deadlines, vendor payments and fittings beside every event on your run sheet", "Subscribe from your phone's calendar, so an edit here reaches it on its own.", "Export the run sheet for your vendors"] },
 { title: "Ava on every page", bullets: ["A short briefing each morning: what is coming up, what needs a decision", "Ask Ava from any page, about the page you are on", "Answers drawn from your own wedding, never generic advice", "Ask what is unpaid, who has not replied, or what still needs a decision"] },
 { title: "Mood board", bullets: ["Pin the looks you keep coming back to: colors, florals, dresses, tables", "Boards for the venue, the dress, the palette, or anything you name", "A note on every pin", "Inspiration next to the plan, not across six apps"] },
@@ -210,6 +216,7 @@ function DashboardSection() {
               </li>
             )}
           </ul>
+          <FeatureStill still={FEATURE_STILLS.morning} />
         </div>
       </div>
       <div className="w-full lg:w-1/2 order-1 lg:order-2" style={{ position: "relative", minHeight: 320, overflow: "hidden", flexShrink: 0 }}>
@@ -260,6 +267,11 @@ function AccordionSection({ features, dots, openFeature, setOpenFeature }) {
                       </li>
                 )}
                   </ul>
+                  {(f.still || f.clip) &&
+              <div style={{ maxWidth: 480 }}>
+                      <FeatureStill still={f.still} clip={f.clip} sizes="(min-width: 768px) 480px, 100vw" />
+                    </div>
+              }
                 </div>
             }
             </div>

@@ -54,7 +54,9 @@ const browser = await chromium.launch();
 const shots = [];
 for (const still of stills) {
   const height = still.viewportHeight || 1100;
-  const ctx = await recordingContext(browser, { width: 1440, height, deviceScaleFactor: 2 });
+  // USD, like the rest of the marketing site (owner ruling 2026-10-11): the
+  // fixture's account is Australian, and the stills are read on a US site.
+  const ctx = await recordingContext(browser, { width: 1440, height, deviceScaleFactor: 2, user: { currency: 'USD' } });
   const page = await ctx.newPage();
   try {
     await page.goto(`${BASE}${still.startPath}`, { waitUntil: 'domcontentloaded', timeout: 60000 });

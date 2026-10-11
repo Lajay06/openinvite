@@ -58,8 +58,12 @@ export const RECORDING_FIXTURE = process.env.RECORDING_FIXTURE || 'rich';
 const recordingFixture = fixtureFor(RECORDING_FIXTURE);
 export const RECORDING_SEED = recordingFixture.seed;
 
-/** A context that renders the studio as a couple sees it, cursor included. */
-export async function recordingContext(browser, { width, height, seed = RECORDING_SEED, deviceScaleFactor = 1 }) {
+/**
+ * A context that renders the studio as a couple sees it, cursor included.
+ * `user` overrides fields on the fixture's account (the /features stills pass
+ * { currency: 'USD' }, owner ruling 2026-10-11); without it nothing changes.
+ */
+export async function recordingContext(browser, { width, height, seed = RECORDING_SEED, deviceScaleFactor = 1, user = null }) {
   const ctx = await browser.newContext({
     viewport: { width, height },
     // 1 for video, where every pixel is a frame to encode; a still asks for
@@ -75,7 +79,7 @@ export async function recordingContext(browser, { width, height, seed = RECORDIN
     localStorage.setItem('base44_access_token', 'recording-harness-not-a-real-token');
     localStorage.setItem('oi_auth', '1');
   });
-  await stubBackend(ctx, { seed, user: recordingFixture.user, published: recordingFixture.published });
+  await stubBackend(ctx, { seed, user: user ? { ...recordingFixture.user, ...user } : recordingFixture.user, published: recordingFixture.published });
   // AFTER stubBackend, DELIBERATELY. Playwright matches routes in reverse
   // order of registration, so the last one registered wins: this is what makes
   // the Ava fixture answer the call the general stub would otherwise swallow.
