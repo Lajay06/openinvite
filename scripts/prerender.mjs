@@ -46,7 +46,7 @@ import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MARKETING_ROUTES } from './marketingRoutes.mjs';
+import { MARKETING_ROUTES, UNLISTED_ROUTES } from './marketingRoutes.mjs';
 import { blockRemoteImages } from './lib/blockRemoteImages.mjs';
 
 const SITE_URL = 'https://www.openinvite.com.au';
@@ -61,13 +61,14 @@ const BASE = `http://localhost:${PORT}`;
 /** Generated from the same MARKETING_ROUTES list the prerender pass itself
  *  uses — one list, no separate hand-maintained copy to drift out of sync. */
 function writeSitemap() {
-  const urls = MARKETING_ROUTES.map(route => {
+  const listed = MARKETING_ROUTES.filter(route => !UNLISTED_ROUTES.includes(route));
+  const urls = listed.map(route => {
     const loc = route === '/' ? SITE_URL : `${SITE_URL}${route}`;
     return `  <url><loc>${loc}</loc></url>`;
   }).join('\n');
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
   writeFileSync(resolve(PRERENDERED, 'sitemap.xml'), xml);
-  console.log(`[prerender] ✓ sitemap.xml written (${MARKETING_ROUTES.length} URLs)`);
+  console.log(`[prerender] ✓ sitemap.xml written (${listed.length} URLs)`);
 }
 
 if (!existsSync(resolve(DIST, 'index.html'))) {
