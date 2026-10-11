@@ -50,6 +50,7 @@ export default function ValuePropSection() {
   return (
     <section
       ref={sectionRef}
+      data-value-prop
       style={{ position: "relative", width: "100%", height: "100vh", overflow: "hidden" }}>
       
       {/* Was width:100% / height:auto, so the section height was the image's

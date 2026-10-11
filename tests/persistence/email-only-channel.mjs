@@ -161,5 +161,31 @@ export async function runEmailOnlyChannel() {
   ok('  while the mobile Messages screen keeps its WhatsApp reply',
      /WhatsAppComposeSheet/.test(code(read('src/mobile/screens/plan/MessagesScreen.jsx'))), 'a guest who wrote in can be answered');
 
+  // ── THE MOBILE SHELL: NO ADDRESS, NO SHARE, NO COPY ────────────────────
+  // Parity PR 2 of the mobile pass: the shell's Site screen as the web share
+  // tab (#923), and the three other places the shell still handed the site
+  // out by hand: Home's share card, Music's playlist link (the web's deleted
+  // SharePlaylist) and Guests' Copy RSVP links (the web Guests page's, gone
+  // in #924, missed by parity PR 1).
+  const mSite = code(read('src/mobile/screens/site/SiteScreen.jsx'));
+  const mSiteC = code(read('src/mobile/screens/site/SiteContainer.jsx'));
+  ok('the mobile Site screen prints no address',
+     !/siteUrl\.replace|\{siteUrl\}/.test(mSite), 'no URL on screen');
+  ok('  and offers no share or copy',
+     !/shareLink|clipboard|copyText|Share link|onShare/.test(mSite + mSiteC), 'no share sheet, no clipboard');
+  ok('  while View guest suite and password protection are still there',
+     /View guest suite/.test(mSite) && /Password protection/.test(mSite) && /onTogglePublish/.test(mSite), 'view, privacy, publish');
+  const mHome = code(read('src/mobile/screens/home/HomeScreen.jsx')) + code(read('src/mobile/screens/home/HomeContainer.jsx'));
+  ok('mobile Home shares no link', !/shareLink|onShare/.test(mHome), 'no share card');
+  ok("  and its guest suite card sends invites instead", /onOpenFeature\?\.\('send-invites'\)/.test(mHome), 'the email path');
+  const mMusic = code(read('src/mobile/screens/plan/MusicScreen.jsx'));
+  ok('mobile Music shares no playlist link',
+     !/shareLink|copyText|ShareSheet|shareUrl/.test(mMusic) && !/\/w\/\$\{[^}]*\}\/music/.test(code(read('src/mobile/screens/plan/PlanContainer.jsx'))), 'no link, no URL built');
+  ok('  while it still says how guests reach the song page', /from the invitation you email them/.test(mMusic), 'answered');
+  const mGuests = ['GuestsContainer.jsx', 'GuestDetailScreen.jsx', 'GuestSheets.jsx'].map((f) => code(read(`src/mobile/screens/guests/${f}`))).join('\n');
+  ok('mobile Guests copies no RSVP links',
+     !/copyFromPromise|copyLinks|onCopyLink|Copy RSVP link/.test(mGuests), 'no bulk or single copy');
+  ok('  while sending invites is still reachable from it', /onSend/.test(mGuests) && /goSend/.test(mGuests), 'email is the remaining action');
+
   return results;
 }

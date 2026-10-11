@@ -287,9 +287,22 @@ const AuthenticatedApp = () => {
           exception is the demo build (VITE_MOBILE_DEMO=1, src/mobile/demo.ts),
           which ships these routes and makes no network calls. */}
       {(import.meta.env.DEV || isDemoBuild) && <Route path="/m/preview/*" element={<MobilePreviewApp />} />}
-      {/* First run for the mobile app: reachable signed out. The web login page is untouched. */}
-      <Route path="/m/welcome" element={<MobileFirstRun screen="welcome" />} />
-      <Route path="/m/login" element={<MobileFirstRun screen="login" />} />
+      {/* First run for the mobile app: reachable signed out INSIDE THE NATIVE
+          SHELL ONLY (and in local dev). On the web a signed-out visitor who
+          types /m/welcome or /m/login gets the web login, like every other
+          /m path, so no shell screen is served to them (mobile pass, owner
+          check 2026-10-11). The web login page is untouched. */}
+      {(isNativeShell() || import.meta.env.DEV) ? (
+        <>
+          <Route path="/m/welcome" element={<MobileFirstRun screen="welcome" />} />
+          <Route path="/m/login" element={<MobileFirstRun screen="login" />} />
+        </>
+      ) : (
+        <>
+          <Route path="/m/welcome" element={<Navigate to="/login?next=%2Fm" replace />} />
+          <Route path="/m/login" element={<Navigate to="/login?next=%2Fm" replace />} />
+        </>
+      )}
       {/* The mobile app, behind the same ProtectedRoute as the dashboard but
           with its own unauthenticated element, so a signed-out visitor comes
           back to /m after signing in (Login honors ?next=). It sits beside

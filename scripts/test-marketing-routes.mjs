@@ -57,6 +57,25 @@ async function overflow(page) {
   return scrollWidth > clientWidth + 1 ? `scrollWidth ${scrollWidth}px > clientWidth ${clientWidth}px` : null;
 }
 
+// ONE SCREEN, THE RED SECTION'S RULE (site fixes batch 3). The home red
+// section ([data-value-prop]) is height 100vh with overflow hidden, and every
+// app section built as its twin ([data-app-twin]) follows the same rule: at
+// 1440 and at 390 each is exactly the viewport's height, and nothing inside
+// it is cut off. Measured on the page already loaded, at both widths.
+const TWIN_ROUTES = { '/': 1, '/features': 1 };
+async function oneScreen(page, path) {
+  const m = await page.evaluate(() => [...document.querySelectorAll('[data-app-twin], [data-value-prop]')].map((e) => ({
+    twin: e.hasAttribute('data-app-twin'), h: e.getBoundingClientRect().height, sh: e.scrollHeight, ch: e.clientHeight,
+    clipped: [...e.querySelectorAll('[data-app-twin-heading], [data-app-body], [data-app-store-line], [data-app-line], [data-app-phone-frame]')]
+      .some((c) => { const r = c.getBoundingClientRect(), b = e.getBoundingClientRect(); return r.top < b.top - 1 || r.bottom > b.bottom + 1; }),
+  })).concat([{ vh: window.innerHeight }]));
+  const vh = m.pop().vh;
+  const twins = m.filter((x) => x.twin).length;
+  if ((TWIN_ROUTES[path] || 0) !== twins) return `expected ${TWIN_ROUTES[path] || 0} app section(s) on the red section's rule, found ${twins}`;
+  const bad = m.find((x) => Math.abs(x.h - vh) > 1 || x.sh > x.ch + 1 || x.clipped);
+  return bad ? `${bad.twin ? 'app section' : 'red section'} is ${bad.h}px against a ${vh}px screen${bad.clipped ? ', with content cut off' : ''}` : null;
+}
+
 async function checkRoute(browser, path) {
   // Fourteen marketing routes, each at networkidle — which by definition waits
   // for every photograph. This loop was the largest single source of the
@@ -82,11 +101,14 @@ async function checkRoute(browser, path) {
     } else {
       const o1 = await overflow(page);
       if (o1) { wide.ok = false; wide.reason = `horizontal overflow at 1440: ${o1}`; }
+      const s1 = await oneScreen(page, path);
+      if (s1 && wide.ok) { wide.ok = false; wide.reason = `one screen at 1440: ${s1}`; }
       await page.setViewportSize(PHONE);
       await page.waitForTimeout(600); // let the reflow and any resize listeners settle
       const o2 = await overflow(page);
       if (pageErrors.length > 0) { phone.ok = false; phone.reason = `uncaught exception at 390: ${pageErrors[0]}`; }
       else if (o2) { phone.ok = false; phone.reason = `horizontal overflow at 390: ${o2}`; }
+      else { const s2 = await oneScreen(page, path); if (s2) { phone.ok = false; phone.reason = `one screen at 390: ${s2}`; } }
     }
   } catch (err) {
     wide.ok = phone.ok = false;

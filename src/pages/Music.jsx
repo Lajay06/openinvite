@@ -56,7 +56,10 @@ const pillStyle = {
 // arrived. The item asked for the ORDER; this is the one section where the
 // first tab is not the one the page opens on, and that is why.
 const TABS = [
-  { key: 'vendor',         label: 'Vendor' },
+  // LABEL ONLY. Item 1 of goals/2026-10-11-dashboard-fixes-batch-1.md renames
+  // what the couple reads; the key stays 'vendor' because the collaborator gate
+  // below and the default tab both test it, and the default tab is unchanged.
+  { key: 'vendor',         label: 'Musicians' },
   { key: 'playlist',       label: 'Playlist' },
   { key: 'notes',          label: 'Notes' },
   { key: 'considerations', label: 'Considerations' },
