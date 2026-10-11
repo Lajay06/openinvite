@@ -13,7 +13,7 @@ import HomeScreen from './HomeScreen';
 import { ShellContext } from '../../shell/MobileShell';
 import { usePlanData } from '../../data/plan';
 import { useTaskWrites } from '../../data/wedding';
-import { useApi, useSymbol } from '../../data/api';
+import { useApi, useCurrencyCode } from '../../data/api';
 import { hapticLight } from '../../native';
 import { siteUrlFor } from '../../lib/links';
 import { homeHeroImages, imageUrl } from '../../lib/images';
@@ -27,7 +27,7 @@ import { greetingName } from '../../lib/greeting';
 export default function HomeContainer() {
   const api = useApi();
   const { user } = api;
-  const symbol = useSymbol();
+  const currency = useCurrencyCode();
   const taskWrites = useTaskWrites();
   const navigate = useNavigate();
   const { base, notifications, openAva } = useContext(ShellContext);
@@ -65,7 +65,7 @@ export default function HomeContainer() {
   }, [d.guests]);
   const budgetSum = useMemo(() => summariseBudget(d.budget || [], details?.budget || null), [d.budget, details?.budget]);
   const openTasks = (d.tasks || []).filter((t) => !t.completed).sort((a, b) => (a.due_date || '9999').localeCompare(b.due_date || '9999'));
-  const keepPlanning = useMemo(() => leastTouched(d, 6).map((f) => ({ key: f.key, label: f.label, line: f.stat(d, symbol) })), [d, symbol]);
+  const keepPlanning = useMemo(() => leastTouched(d, 6).map((f) => ({ key: f.key, label: f.label, line: f.stat(d, currency) })), [d, currency]);
   // DailyUpdate.jsx's day state: the This week lines and the badge, from the same stores.
   const failed = d.failed || [];
   const day = useMemo(() => (plan.loading ? null : resolveDayState({ tasks: d.tasks || [], schedule: d.schedule || [], guests: d.guests || [], budget: d.budget || [], vendors: d.vendors || [], unseen: failed, daysOut: daysToGo })), [plan.loading, d, failed, daysToGo]);
@@ -128,7 +128,7 @@ export default function HomeContainer() {
       images={images}
       siteUrl={siteUrl}
       rsvp={rsvp}
-      budget={{ spent: budgetSum.spent, total: budgetSum.total, symbol }}
+      budget={{ spent: budgetSum.spent, total: budgetSum.total, currency }}
       tasks={openTasks}
       payments={budgetSum.duePayments}
       keepPlanning={keepPlanning}

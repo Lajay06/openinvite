@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { notificationCopy } from './copy';
+import { formatMoney } from '@/lib/money';
+import { DEMO_CURRENCY } from '../fixtures/previewApi';
 import { deliver } from '../lib/images';
 import { imageUrl } from '../images';
 import '../styles/mobile.css';
@@ -15,10 +17,10 @@ import '../styles/mobile.css';
  */
 const SAMPLE = [
   ['rsvp_attending', { names: ['Sarah', 'Tom'], count: 2, replied: 46, invited: 80 }, '9:41'],
-  ['payment_due', { item: 'Florist deposit', vendor: 'Wildflower Studio', amount: '$450', due: 'Friday' }, '9:12'],
+  ['payment_due', { item: 'Florist deposit', vendor: 'Wildflower Studio', amount: formatMoney(450, DEMO_CURRENCY), due: 'Friday' }, '9:12'],
   ['message', { name: 'Amelia Nguyen', preview: 'Is there parking at The Fig Tree or should we book a cab?' }, '8:30'],
   ['song_request', { name: 'Jack Smith', song: 'Dancing in the Moonlight', artist: 'Toploader' }, '7:55'],
-  ['gift', { name: 'The Walkers', item: 'Le Creuset casserole', amount: '$420' }, 'Yesterday'],
+  ['gift', { name: 'The Walkers', item: 'Le Creuset casserole', amount: formatMoney(420, DEMO_CURRENCY) }, 'Yesterday'],
   ['briefing', { days: 180, sentence: '7 open tasks and 21 guests still to reply.' }, 'Yesterday'],
 ];
 

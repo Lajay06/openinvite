@@ -36,8 +36,8 @@ export default function MobileApp() {
 function MobileAppInner() {
   const [messages, setMessages] = useState([]);
   const [dismissed, setDismissed] = useState(() => new Set());
-  const { symbol } = useCurrency();
-  const notifications = useNotifications({ base: MOBILE_BASE, symbol });
+  const { currencyCode: currency } = useCurrency();
+  const notifications = useNotifications({ base: MOBILE_BASE, currency });
   const wedding = useWedding();
   const navigate = useNavigate();
   const priming = usePrimingGate(notifications);

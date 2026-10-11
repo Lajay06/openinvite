@@ -47,9 +47,14 @@ export function authHeaders(extra = {}) {
   return { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...extra };
 }
 
-/** The currency symbol: the preview names its own, the real app reads CurrencyContext. */
-export function useSymbol() {
+/**
+ * The account's currency code, for src/lib/money.js: the preview names its
+ * own, the real app reads CurrencyContext, which falls back to the default
+ * there. Every amount on the phone is formatted from this code (mobile
+ * parity 3), never from a symbol the shell picked.
+ */
+export function useCurrencyCode() {
   const api = useApi();
-  const { symbol } = useCurrency();
-  return api.symbol || symbol || '$';
+  const { currencyCode } = useCurrency();
+  return api.currency || currencyCode;
 }

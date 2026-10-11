@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Store, ListChecks, Calendar, Receipt, Gift, MessageCircle, History } from 'lucide-react';
 import { SearchScreen, RowGroup, Row } from '../../ui';
 import { FEATURES } from '../../features/registry';
-import { initials, money, dateShort } from '../../lib/format';
+import { initials, dateShort } from '../../lib/format';
+import { formatMoney } from '@/lib/money';
 import { budgetCategoryLabel } from '@/lib/budgetCategories';
 import { prefGet, prefSet } from '../../native';
 
@@ -21,7 +22,7 @@ const RECENT_MAX = 5;
  * Presentational over lists: the container passes real data, the preview
  * passes fixtures.
  */
-export default function SearchScreenPage({ guests = [], tasks = [], vendors = [], schedule = [], budget = [], registry = [], messages = [], symbol = '$', base = '/m', onClose }) {
+export default function SearchScreenPage({ guests = [], tasks = [], vendors = [], schedule = [], budget = [], registry = [], messages = [], currency, base = '/m', onClose }) {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const q = params.get('q') || '';
@@ -50,12 +51,12 @@ export default function SearchScreenPage({ guests = [], tasks = [], vendors = []
       { key: 'tasks', title: 'Tasks', items: tasks.filter((t) => hit(t.title)).slice(0, 6).map((t) => ({ id: t.id, icon: ListChecks, tile: t.completed ? 'ok' : 'warn', label: t.title, sub: t.completed ? 'Done' : t.due_date ? `Due ${dateShort(t.due_date)}` : 'Open', to: `${base}/plan/checklist?task=${encodeURIComponent(t.id)}` })) },
       { key: 'events', title: 'Events', items: schedule.filter((e) => hit(e.event_name) || hit(e.location)).slice(0, 6).map((e) => ({ id: e.id, icon: Calendar, tile: 'neutral', label: e.event_name, sub: [e.event_date ? dateShort(e.event_date) : '', e.location].filter(Boolean).join(', '), to: `${base}/plan/schedule?event=${encodeURIComponent(e.id)}` })) },
       { key: 'vendors', title: 'Vendors', items: vendors.filter((v) => hit(v.name) || hit(v.category)).slice(0, 6).map((v) => ({ id: v.id, icon: Store, tile: 'ink', label: v.name, sub: v.category, to: `${base}/plan/vendors/${v.id}` })) },
-      { key: 'budget', title: 'Budget', items: budget.filter((b) => hit(b.item_name) || hit(b.vendor) || hit(budgetCategoryLabel(b.category))).slice(0, 6).map((b) => ({ id: b.id, icon: Receipt, tile: b.paid ? 'ok' : 'warn', label: b.item_name, sub: [budgetCategoryLabel(b.category), b.vendor].filter(Boolean).join(', '), value: money(b.actual_amount || b.budgeted_amount, symbol), to: `${base}/plan/budget?expense=${encodeURIComponent(b.id)}` })) },
-      { key: 'registry', title: 'Registry', items: registry.filter((r) => hit(r.name) || hit(r.store_name) || hit(r.title) || hit(r.registry_platform)).slice(0, 6).map((r) => ({ id: r.id, icon: Gift, tile: 'tint', label: r.name || r.store_name || r.title, sub: r.kind === 'product' ? [r.registry_platform, r.price ? money(r.price, symbol) : ''].filter(Boolean).join(', ') : r.kind === 'fund' ? 'Cash fund' : 'Registry platform', to: `${base}/plan/registry?segment=${registryKind[r.kind] || 'products'}&item=${encodeURIComponent(r.id)}` })) },
+      { key: 'budget', title: 'Budget', items: budget.filter((b) => hit(b.item_name) || hit(b.vendor) || hit(budgetCategoryLabel(b.category))).slice(0, 6).map((b) => ({ id: b.id, icon: Receipt, tile: b.paid ? 'ok' : 'warn', label: b.item_name, sub: [budgetCategoryLabel(b.category), b.vendor].filter(Boolean).join(', '), value: formatMoney(b.actual_amount || b.budgeted_amount, currency), to: `${base}/plan/budget?expense=${encodeURIComponent(b.id)}` })) },
+      { key: 'registry', title: 'Registry', items: registry.filter((r) => hit(r.name) || hit(r.store_name) || hit(r.title) || hit(r.registry_platform)).slice(0, 6).map((r) => ({ id: r.id, icon: Gift, tile: 'tint', label: r.name || r.store_name || r.title, sub: r.kind === 'product' ? [r.registry_platform, r.price ? formatMoney(r.price, currency) : ''].filter(Boolean).join(', ') : r.kind === 'fund' ? 'Cash fund' : 'Registry platform', to: `${base}/plan/registry?segment=${registryKind[r.kind] || 'products'}&item=${encodeURIComponent(r.id)}` })) },
       { key: 'messages', title: 'Messages', items: messages.filter((m) => hit(m.guest_name) || hit(m.message) || hit(m.subject)).slice(0, 6).map((m) => ({ id: m.id, icon: MessageCircle, tile: m.read ? 'neutral' : 'primary', label: m.guest_name || 'A guest', sub: (m.subject || m.message || '').slice(0, 80), to: `${base}/plan/messages/${m.id}` })) },
     ];
     return out.filter((g) => g.items.length);
-  }, [s, hit, guests, tasks, vendors, schedule, budget, registry, messages, symbol, base]);
+  }, [s, hit, guests, tasks, vendors, schedule, budget, registry, messages, currency, base]);
 
   // Open a result: remember the query, go. Back returns here with ?q= intact.
   const go = (r) => { remember(q); navigate(r.to); };

@@ -36,7 +36,7 @@ function useOpenGroups() {
  * section per desktop sidebar group (owner fix 6), each a two-column grid
  * of FeatureTiles. `data` is the usePlanData payload (or fixtures).
  */
-export default function PlanHubScreen({ data, symbol = '$', progress, onOpen, onSearch, loading, error, onRetry }) {
+export default function PlanHubScreen({ data, currency, progress, onOpen, onSearch, loading, error, onRetry }) {
   const [openGroups, toggleGroup] = useOpenGroups();
   return (
     <Screen title="Plan" root>

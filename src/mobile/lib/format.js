@@ -1,9 +1,7 @@
 /** Small formatters shared by the mobile screens. */
 
-export function money(n, symbol = '$') {
-  const v = Number(n) || 0;
-  return `${symbol}${Math.round(v).toLocaleString('en-US')}`;
-}
+// MONEY IS NOT FORMATTED HERE. It goes through src/lib/money.js formatMoney
+// with the account currency code (mobile parity 3), as the desktop formats it.
 
 /** "Saturday 20 March 2027" */
 export function dateLong(iso) {

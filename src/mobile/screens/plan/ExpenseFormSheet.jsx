@@ -6,7 +6,7 @@ const CATEGORY_OPTIONS = BUDGET_CATEGORIES.map((c) => ({ value: c.key, label: c.
 const EMPTY = { category: '', item_name: '', budgeted_amount: '', actual_amount: '', vendor: '', paid: false, payment_date: '', notes: '' };
 
 /** Add or edit a Budget record, the same fields BudgetForm.jsx writes. */
-export default function ExpenseFormSheet({ open, item, onClose, onSave, onDelete, symbol = '$', defaultCategory = '' }) {
+export default function ExpenseFormSheet({ open, item, onClose, onSave, onDelete, currency, defaultCategory = '' }) {
   const [f, setF] = useState(EMPTY);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
@@ -63,8 +63,8 @@ export default function ExpenseFormSheet({ open, item, onClose, onSave, onDelete
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <SelectField label="Category" value={f.category} onChange={(e) => set('category', e.target.value)} options={CATEGORY_OPTIONS} placeholder="Choose a category" error={errors.category} />
         <TextField label="What it is" value={f.item_name} onChange={(e) => set('item_name', e.target.value)} error={errors.item_name} placeholder="Venue deposit, florist, suit hire" />
-        <TextField label={`Budgeted (${symbol})`} type="number" inputMode="decimal" value={f.budgeted_amount} onChange={(e) => set('budgeted_amount', e.target.value)} error={errors.budgeted_amount} placeholder="0" />
-        <TextField label={`Actual (${symbol})`} type="number" inputMode="decimal" value={f.actual_amount} onChange={(e) => set('actual_amount', e.target.value)} error={errors.actual_amount} placeholder="0" />
+        <TextField label={`Budgeted (${currencySymbol(currency)})`} type="number" inputMode="decimal" value={f.budgeted_amount} onChange={(e) => set('budgeted_amount', e.target.value)} error={errors.budgeted_amount} placeholder="0" />
+        <TextField label={`Actual (${currencySymbol(currency)})`} type="number" inputMode="decimal" value={f.actual_amount} onChange={(e) => set('actual_amount', e.target.value)} error={errors.actual_amount} placeholder="0" />
         <TextField label="Vendor" value={f.vendor} onChange={(e) => set('vendor', e.target.value)} placeholder="Optional" />
         <TextField label="Payment due" type="date" value={f.payment_date || ''} onChange={(e) => set('payment_date', e.target.value)} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>

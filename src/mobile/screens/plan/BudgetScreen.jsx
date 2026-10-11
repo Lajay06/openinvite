@@ -8,7 +8,8 @@ import { useConsiderations } from '../../features/ConsiderationsSheet';
 import { Row, RowGroup, ProgressBar, StatCard, EmptyState, ErrorState, SkeletonRows, PanelCard, ItemCard, ItemList, BottomSheet, PillButton, TextField, StatusPill, SearchScreen, FilterPills } from '../../ui';
 import Segments, { useSegment } from '../../ui/Segments';
 import { BUDGET_CATEGORIES, budgetCategoryLabel } from '@/lib/budgetCategories';
-import { money, dateShort } from '../../lib/format';
+import { dateShort } from '../../lib/format';
+import { formatMoney, currencySymbol } from '@/lib/money';
 import { exportText } from '../../native';
 import ExpenseFormSheet from './ExpenseFormSheet';
 import BudgetForecast from './BudgetForecast';
@@ -36,7 +37,7 @@ export function summariseBudget(items = [], plan = null) {
  * (the desktop's flags, saving suggestions and Ava's insights), Expenses
  * (search, every expense with edit and delete). Both exports.
  */
-export default function BudgetScreen({ items = [], plan = null, symbol = '$', onOpenCategory, onAdd, onDelete, onMarkPaid, onSavePlan, onAsk, loading, error, onRetry, back, openAdd = false, openExpense = null, onRefresh }) {
+export default function BudgetScreen({ items = [], plan = null, currency, onOpenCategory, onAdd, onDelete, onMarkPaid, onSavePlan, onAsk, loading, error, onRetry, back, openAdd = false, openExpense = null, onRefresh }) {
   const [segment, setSegment] = useSegment(SEGMENTS);
   const [sheet, setSheet] = useState({ open: openAdd, item: null });
   // Reached from global search with an expense id: its sheet opens once the list is in.
@@ -62,12 +63,12 @@ export default function BudgetScreen({ items = [], plan = null, symbol = '$', on
     const csv = [['Plan item', 'Planned amount'].join(','), ['Total wedding budget', total].map((f) => `"${f}"`).join(','), ...BUDGET_CATEGORIES.map((c) => [c.label, value(c.key)].map((f) => `"${f}"`).join(',')), ['Allocated to categories', allocated].map((f) => `"${f}"`).join(','), ['Unallocated', total - allocated].map((f) => `"${f}"`).join(',')].join('\n');
     const r = await exportText('wedding-budget-plan.csv', 'text/csv', csv); if (r !== 'failed') toast.success('Plan exported');
   };
-  const expenseRow = (i) => <Row key={i.id} label={i.item_name} sub={[budgetCategoryLabel(i.category), i.vendor].filter(Boolean).join(', ')} value={money(i.actual_amount || i.budgeted_amount, symbol)} trailing={<StatusPill tone={i.paid ? 'ok' : 'warn'}>{i.paid ? 'Paid' : 'Unpaid'}</StatusPill>} onClick={() => setSheet({ open: true, item: i })} />;
+  const expenseRow = (i) => <Row key={i.id} label={i.item_name} sub={[budgetCategoryLabel(i.category), i.vendor].filter(Boolean).join(', ')} value={formatMoney(i.actual_amount || i.budgeted_amount, currency)} trailing={<StatusPill tone={i.paid ? 'ok' : 'warn'}>{i.paid ? 'Paid' : 'Unpaid'}</StatusPill>} onClick={() => setSheet({ open: true, item: i })} />;
   const actions = segment === 'expenses' ? [{ icon: Search, label: 'Search expenses', onClick: () => setSearchOpen(true) }, { icon: Plus, label: 'Add an expense', onClick: () => setSheet({ open: true, item: null }) }] : [{ icon: Plus, label: 'Add an expense', onClick: () => setSheet({ open: true, item: null }) }];
 
   return (
     <>
-      <Screen title="Budget" subtitle={loading ? '' : items.length ? (s.remaining < 0 ? `${money(Math.abs(s.remaining), symbol)} over budget` : `${money(s.remaining, symbol)} left to spend`) : ''} back={back} actions={actions} onRefresh={onRefresh}>
+      <Screen title="Budget" subtitle={loading ? '' : items.length ? (s.remaining < 0 ? `${formatMoney(Math.abs(s.remaining), currency)} over budget` : `${formatMoney(s.remaining, currency)} left to spend`) : ''} back={back} actions={actions} onRefresh={onRefresh}>
         <Segments options={SEGMENTS} value={segment} onChange={setSegment} />
         <div className="oi-m-stack oi-m-stack--24">
           {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : segment === 'overview' ? (
@@ -80,30 +81,30 @@ export default function BudgetScreen({ items = [], plan = null, symbol = '$', on
               <>
                 <div className="oi-m-card">
                   <p className="oi-m-meta">Spent so far</p>
-                  <p className={`oi-m-hero-num${money(s.spent, symbol).length > 8 ? ' oi-m-hero-num--long' : ''}`} style={{ margin: '4px 0 16px' }}>{money(s.spent, symbol)}</p>
-                  <ProgressBar value={s.spent} max={s.total} note={s.total > 0 ? `${money(s.committed, symbol)} committed, ${s.remaining < 0 ? `${money(Math.abs(s.remaining), symbol)} over` : `${money(s.remaining, symbol)} left to spend`}.${plan?.total ? ` ${money(s.planLeft, symbol)} of the ${money(s.total, symbol)} plan unspent.` : ''}` : 'No total yet.'} />
+                  <p className={`oi-m-hero-num${formatMoney(s.spent, currency).length > 8 ? ' oi-m-hero-num--long' : ''}`} style={{ margin: '4px 0 16px' }}>{formatMoney(s.spent, currency)}</p>
+                  <ProgressBar value={s.spent} max={s.total} note={s.total > 0 ? `${formatMoney(s.committed, currency)} committed, ${s.remaining < 0 ? `${formatMoney(Math.abs(s.remaining), currency)} over` : `${formatMoney(s.remaining, currency)} left to spend`}.${plan?.total ? ` ${formatMoney(s.planLeft, currency)} of the ${formatMoney(s.total, currency)} plan unspent.` : ''}` : 'No total yet.'} />
                   <PillButton variant="secondary" size="sm" icon={Pencil} onClick={() => setPlanner(true)} style={{ marginTop: 12 }}>{plan?.total ? 'Edit the plan' : 'Set a total budget'}</PillButton>
                 </div>
                 <div className="oi-m-grid2">
-                  <StatCard icon={CreditCard} label="Paid" number={money(s.paid, symbol)} />
-                  <StatCard icon={Receipt} label="Still to pay" number={money(Math.max(0, s.spent - s.paid), symbol)} ink />
+                  <StatCard icon={CreditCard} label="Paid" number={formatMoney(s.paid, currency)} />
+                  <StatCard icon={Receipt} label="Still to pay" number={formatMoney(Math.max(0, s.spent - s.paid), currency)} ink />
                 </div>
-                {next && <PanelCard tone="ink" label="Next payment" title={`${money(next.actual_amount || next.budgeted_amount, symbol)} to ${next.vendor || next.item_name}`} body={`Due ${dateShort(next.payment_date)}. ${s.duePayments.length > 1 ? `${s.duePayments.length - 1} more after that.` : ''}`} action="See the payment" onClick={() => setSheet({ open: true, item: next })} />}
+                {next && <PanelCard tone="ink" label="Next payment" title={`${formatMoney(next.actual_amount || next.budgeted_amount, currency)} to ${next.vendor || next.item_name}`} body={`Due ${dateShort(next.payment_date)}. ${s.duePayments.length > 1 ? `${s.duePayments.length - 1} more after that.` : ''}`} action="See the payment" onClick={() => setSheet({ open: true, item: next })} />}
                 <section>
                   <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Categories</h2>
-                  <RowGroup>{s.cats.map((c) => <Row key={c.key} label={c.label} sub={`${money(c.spent, symbol)} of ${money(c.planned, symbol)}`} value={c.count ? `${c.count} item${c.count === 1 ? '' : 's'}` : ''} onClick={() => onOpenCategory?.(c.key)} />)}</RowGroup>
+                  <RowGroup>{s.cats.map((c) => <Row key={c.key} label={c.label} sub={`${formatMoney(c.spent, currency)} of ${formatMoney(c.planned, currency)}`} value={c.count ? `${c.count} item${c.count === 1 ? '' : 's'}` : ''} onClick={() => onOpenCategory?.(c.key)} />)}</RowGroup>
                 </section>
                 {s.duePayments.length > 0 && (
                   <section>
                     <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Payments due</h2>
-                    <ItemList>{s.duePayments.map((i) => <ItemCard key={i.id} icon={Receipt} tile="warn" title={i.item_name} meta={[i.vendor, `Due ${dateShort(i.payment_date)}`].filter(Boolean).join(', ')} value={money(i.actual_amount || i.budgeted_amount, symbol)} onClick={() => setSheet({ open: true, item: i })} action={onMarkPaid ? { icon: CreditCard, label: `Mark ${i.item_name} paid`, tone: 'primary', onClick: () => onMarkPaid(i) } : undefined} />)}</ItemList>
+                    <ItemList>{s.duePayments.map((i) => <ItemCard key={i.id} icon={Receipt} tile="warn" title={i.item_name} meta={[i.vendor, `Due ${dateShort(i.payment_date)}`].filter(Boolean).join(', ')} value={formatMoney(i.actual_amount || i.budgeted_amount, currency)} onClick={() => setSheet({ open: true, item: i })} action={onMarkPaid ? { icon: CreditCard, label: `Mark ${i.item_name} paid`, tone: 'primary', onClick: () => onMarkPaid(i) } : undefined} />)}</ItemList>
                   </section>
                 )}
                 <RowGroup><Row icon={Download} tile="neutral" label="Export the plan" sub="Your total and each category's allocation" onClick={exportPlan} chevron={false} /></RowGroup>
               </>
             )
           ) : segment === 'forecast' ? (
-            <BudgetForecast items={items} stats={stats} symbol={symbol} onAsk={onAsk} />
+            <BudgetForecast items={items} stats={stats} currency={currency} onAsk={onAsk} />
           ) : (
             <>
               {items.length > 0 && <FilterPills options={[{ key: 'all', label: 'All' }, ...BUDGET_CATEGORIES.filter((c) => items.some((i) => i.category === c.key)).map((c) => ({ key: c.key, label: c.label, count: items.filter((i) => i.category === c.key).length }))]} value={catFilter} onChange={setCatFilter} />}
@@ -114,18 +115,18 @@ export default function BudgetScreen({ items = [], plan = null, symbol = '$', on
           {!loading && !error && considerations.row}
         </div>
         {considerations.sheet}
-        <ExpenseFormSheet open={sheet.open} item={sheet.item} symbol={symbol} onClose={() => setSheet((x) => ({ ...x, open: false }))} onSave={(v) => onAdd(v, sheet.item)} onDelete={sheet.item && onDelete ? async () => { await onDelete(sheet.item); setSheet({ open: false, item: null }); } : undefined} />
-        <PlannerSheet open={planner} onClose={() => setPlanner(false)} plan={plan} items={items} symbol={symbol} committed={s.committed} onSave={onSavePlan} />
+        <ExpenseFormSheet open={sheet.open} item={sheet.item} currency={currency} onClose={() => setSheet((x) => ({ ...x, open: false }))} onSave={(v) => onAdd(v, sheet.item)} onDelete={sheet.item && onDelete ? async () => { await onDelete(sheet.item); setSheet({ open: false, item: null }); } : undefined} />
+        <PlannerSheet open={planner} onClose={() => setPlanner(false)} plan={plan} items={items} currency={currency} committed={s.committed} onSave={onSavePlan} />
       </Screen>
       <SearchScreen open={searchOpen} onClose={() => { setSearchOpen(false); setQ(''); }} value={q} onChange={setQ} placeholder="Search by item, vendor or category">
-        {q.trim() === '' ? <p className="oi-m-meta" style={{ padding: 16 }}>Start typing to search your expenses.</p> : results.length === 0 ? <p className="oi-m-meta" style={{ padding: 16 }}>Nothing matches that.</p> : <div className="oi-m-stack"><RowGroup>{results.map((i) => <Row key={i.id} label={i.item_name} sub={[budgetCategoryLabel(i.category), i.vendor].filter(Boolean).join(', ')} value={money(i.actual_amount || i.budgeted_amount, symbol)} onClick={() => { setSearchOpen(false); setQ(''); setSheet({ open: true, item: i }); }} />)}</RowGroup></div>}
+        {q.trim() === '' ? <p className="oi-m-meta" style={{ padding: 16 }}>Start typing to search your expenses.</p> : results.length === 0 ? <p className="oi-m-meta" style={{ padding: 16 }}>Nothing matches that.</p> : <div className="oi-m-stack"><RowGroup>{results.map((i) => <Row key={i.id} label={i.item_name} sub={[budgetCategoryLabel(i.category), i.vendor].filter(Boolean).join(', ')} value={formatMoney(i.actual_amount || i.budgeted_amount, currency)} onClick={() => { setSearchOpen(false); setQ(''); setSheet({ open: true, item: i }); }} />)}</RowGroup></div>}
       </SearchScreen>
     </>
   );
 }
 
 /** Budget.jsx's BudgetPlanner: the total and one amount per category, saved through the encrypted PUT. */
-function PlannerSheet({ open, onClose, plan, items, symbol, committed, onSave }) {
+function PlannerSheet({ open, onClose, plan, items, currency, committed, onSave }) {
   const [total, setTotal] = useState('');
   const [cats, setCats] = useState({});
   const [saving, setSaving] = useState(false);
@@ -149,8 +150,8 @@ function PlannerSheet({ open, onClose, plan, items, symbol, committed, onSave })
       </>
     )}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <TextField label={`Total wedding budget (${symbol})`} type="number" inputMode="decimal" value={total} onChange={(e) => setTotal(e.target.value)} placeholder="50000" />
-        {t > 0 && <p className="oi-m-meta">{money(allocated, symbol)} allocated, {money(t - allocated, symbol)} {t - allocated >= 0 ? 'unallocated' : 'over'}.{committed > 0 && Math.round(committed) !== Math.round(t) ? ` Committed in expenses: ${money(committed, symbol)}.` : ''}</p>}
+        <TextField label={`Total wedding budget (${currencySymbol(currency)})`} type="number" inputMode="decimal" value={total} onChange={(e) => setTotal(e.target.value)} placeholder="50000" />
+        {t > 0 && <p className="oi-m-meta">{formatMoney(allocated, currency)} allocated, {formatMoney(t - allocated, currency)} {t - allocated >= 0 ? 'unallocated' : 'over'}.{committed > 0 && Math.round(committed) !== Math.round(t) ? ` Committed in expenses: ${formatMoney(committed, currency)}.` : ''}</p>}
         <h3 className="oi-m-section">By category</h3>
         {BUDGET_CATEGORIES.map((c) => <TextField key={c.key} label={c.label} type="number" inputMode="decimal" value={cats[c.key] ?? ''} onChange={(e) => setCats((s) => ({ ...s, [c.key]: e.target.value }))} placeholder="0" />)}
       </div>
@@ -159,7 +160,7 @@ function PlannerSheet({ open, onClose, plan, items, symbol, committed, onSave })
 }
 
 /** One budget category: planned vs spent, then its expenses. */
-export function BudgetCategoryScreen({ category, items = [], plan = null, symbol = '$', onSave, onDelete, back }) {
+export function BudgetCategoryScreen({ category, items = [], plan = null, currency, onSave, onDelete, back }) {
   const [sheet, setSheet] = useState({ open: false, item: null });
   const label = budgetCategoryLabel(category);
   const rows = items.filter((i) => i.category === category);
@@ -169,18 +170,18 @@ export function BudgetCategoryScreen({ category, items = [], plan = null, symbol
     <Screen title={label} back={back} actions={[{ icon: Plus, label: 'Add an expense', onClick: () => setSheet({ open: true, item: null }) }]}>
       <div className="oi-m-stack oi-m-stack--24">
         <div className="oi-m-card">
-          <p className={`oi-m-hero-num${money(spent, symbol).length > 8 ? ' oi-m-hero-num--long' : ''}`} style={{ marginBottom: 16 }}>{money(spent, symbol)}</p>
-          <ProgressBar value={spent} max={planned} note={planned > 0 ? `${money(planned - spent, symbol)} of ${money(planned, symbol)} left in ${label.toLowerCase()}.` : 'Nothing planned for this category yet.'} />
+          <p className={`oi-m-hero-num${formatMoney(spent, currency).length > 8 ? ' oi-m-hero-num--long' : ''}`} style={{ marginBottom: 16 }}>{formatMoney(spent, currency)}</p>
+          <ProgressBar value={spent} max={planned} note={planned > 0 ? `${formatMoney(planned - spent, currency)} of ${formatMoney(planned, currency)} left in ${label.toLowerCase()}.` : 'Nothing planned for this category yet.'} />
         </div>
         {rows.length === 0 ? (
           <EmptyState icon={Wallet} text={`No expenses in ${label.toLowerCase()} yet.`} actionLabel="Add an expense" onAction={() => setSheet({ open: true, item: null })} />
         ) : (
           <RowGroup>
-            {rows.map((i) => <Row key={i.id} label={i.item_name} sub={[i.vendor, i.paid ? 'Paid' : 'Not paid yet'].filter(Boolean).join(', ')} value={money(i.actual_amount || i.budgeted_amount, symbol)} onClick={() => setSheet({ open: true, item: i })} />)}
+            {rows.map((i) => <Row key={i.id} label={i.item_name} sub={[i.vendor, i.paid ? 'Paid' : 'Not paid yet'].filter(Boolean).join(', ')} value={formatMoney(i.actual_amount || i.budgeted_amount, currency)} onClick={() => setSheet({ open: true, item: i })} />)}
           </RowGroup>
         )}
       </div>
-      <ExpenseFormSheet open={sheet.open} item={sheet.item} defaultCategory={category} symbol={symbol} onClose={() => setSheet((x) => ({ ...x, open: false }))} onSave={(v) => onSave(v, sheet.item)} onDelete={sheet.item && onDelete ? async () => { await onDelete(sheet.item); setSheet({ open: false, item: null }); } : undefined} />
+      <ExpenseFormSheet open={sheet.open} item={sheet.item} defaultCategory={category} currency={currency} onClose={() => setSheet((x) => ({ ...x, open: false }))} onSave={(v) => onSave(v, sheet.item)} onDelete={sheet.item && onDelete ? async () => { await onDelete(sheet.item); setSheet({ open: false, item: null }); } : undefined} />
     </Screen>
   );
 }

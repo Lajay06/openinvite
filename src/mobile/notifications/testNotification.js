@@ -1,4 +1,5 @@
 import { notificationCopy } from './copy';
+import { formatMoney } from '@/lib/money';
 import { scheduleLocalNotifications } from '../native';
 
 /**
@@ -11,15 +12,15 @@ import { scheduleLocalNotifications } from '../native';
  */
 const SAMPLE = {
   rsvp_attending: () => notificationCopy('rsvp_attending', { names: ['Amelia Nguyen'], count: 2, replied: 41, invited: 120 }),
-  payment_due: () => notificationCopy('payment_due', { item: 'Catering balance', vendor: 'The Fig Tree', amount: 'A$12,300', due: 'Friday' }),
+  payment_due: (currency) => notificationCopy('payment_due', { item: 'Catering balance', vendor: 'The Fig Tree', amount: formatMoney(12300, currency), due: 'Friday' }),
   briefing: () => notificationCopy('briefing', { days: 179, sentence: '7 open tasks and 30 guests still to reply. The florist deposit is due Friday.' }),
 };
 
-export function buildTestNotices(base = '/m', items = [], now = Date.now()) {
+export function buildTestNotices(base = '/m', items = [], now = Date.now(), currency) {
   const pick = (types, fallbackType, fallbackLink) => {
     const it = items.find((i) => types.includes(i.type));
     if (it) return { type: it.type, title: it.title, body: it.body, link: it.link || fallbackLink };
-    return { type: fallbackType, ...SAMPLE[fallbackType](), link: fallbackLink };
+    return { type: fallbackType, ...SAMPLE[fallbackType](currency), link: fallbackLink };
   };
   const plan = [
     [pick(['rsvp_attending', 'rsvp_declined', 'rsvp_maybe'], 'rsvp_attending', `${base}/guests`), 10],
@@ -30,6 +31,6 @@ export function buildTestNotices(base = '/m', items = [], now = Date.now()) {
 }
 
 /** Schedules the three. Resolves false when the plugin is not there (the web). */
-export async function sendTestNotifications(base, items) {
-  return scheduleLocalNotifications(buildTestNotices(base, items));
+export async function sendTestNotifications(base, items, currency) {
+  return scheduleLocalNotifications(buildTestNotices(base, items, Date.now(), currency));
 }

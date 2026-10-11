@@ -8,10 +8,11 @@ import { FilterPills, EmptyState, ErrorState, SkeletonRows, ItemCard, ItemList, 
 import Segments, { useSegment } from '../../ui/Segments';
 import { useConfirm } from '../../ui/ConfirmSheet';
 import FormSheet from '../../features/FormSheet';
-import { vendorFields, vendorPayload, vendorInitial, VENDOR_CATEGORIES, VENDOR_STATUSES } from '../../features/vendorFields';
+import { vendorFields, vendorPayload, vendorInitial, VENDOR_CATEGORIES, VENDOR_STATUSES, priceRangeLabel } from '../../features/vendorFields';
 import { imageUrl } from '../../images';
 import { openExternal } from '../../native';
-import { VENDOR_STATUS_LABEL, VENDOR_STATUS_TONE, money, dateShort } from '../../lib/format';
+import { VENDOR_STATUS_LABEL, VENDOR_STATUS_TONE, dateShort } from '../../lib/format';
+import { formatMoney } from '@/lib/money';
 
 /* Vendors.jsx's filter lists, verbatim (its category labels differ from the form's on purpose there too). */
 const STATUS_FILTERS = [['all', 'All statuses'], ['favorites', 'Favorites'], ['booked', 'Booked'], ['contacted', 'Contacted'], ['meeting_scheduled', 'Meeting scheduled'], ['quoted', 'Quoted'], ['rejected', 'Rejected'], ['researching', 'Researching']];
@@ -35,7 +36,7 @@ const STATUS_LABEL = Object.fromEntries(VENDOR_STATUSES.map((s) => [s.value, s.l
  * VendorForm (the photo and video fields for those two categories), and
  * a vendor screen with communications, documents and tasks.
  */
-export default function VendorsScreen({ notice, items = [], symbol = '$', initialCategory = 'all', onCreate, onUpdate, onDelete, onOpen, onToggleFavorite, loading, error, onRetry, back, onRefresh, openAdd = false }) {
+export default function VendorsScreen({ notice, items = [], currency, initialCategory = 'all', onCreate, onUpdate, onDelete, onOpen, onToggleFavorite, loading, error, onRetry, back, onRefresh, openAdd = false }) {
   const [sort, setSort] = useState({ key: 'added', dir: 'asc' });
   const [status, setStatus] = useState('all');
   const [category, setCategory] = useState(initialCategory);
@@ -49,7 +50,7 @@ export default function VendorsScreen({ notice, items = [], symbol = '$', initia
   const booked = items.filter((v) => v.status === 'booked').length;
   const quoted = items.filter((v) => v.status === 'quoted').length; // Vendors.jsx counts quotes, it does not sum them
   const researching = items.filter((v) => v.status === 'researching').length;
-  const card = (v) => <ItemCard key={v.id} icon={Store} tile={v.is_favourite ? 'tint' : 'neutral'} action={onToggleFavorite ? { icon: Star, label: v.is_favourite ? `Remove ${v.name} from favorites` : `Add ${v.name} to favorites`, tone: v.is_favourite ? 'primary' : 'neutral', onClick: () => onToggleFavorite(v) } : undefined} title={v.name} meta={[CATEGORY_LABEL[v.category] || v.category, v.contact_person].filter(Boolean).join(', ')} value={v.quoted_price ? money(v.quoted_price, symbol) : ''} badge={VENDOR_STATUS_LABEL[v.status] || STATUS_LABEL[v.status] || v.status} badgeTone={VENDOR_STATUS_TONE[v.status] || 'neutral'} onClick={() => onOpen(v)} action={v.phone ? { icon: Phone, label: `Call ${v.name}`, onClick: () => openExternal(`tel:${v.phone}`) } : undefined} />;
+  const card = (v) => <ItemCard key={v.id} icon={Store} tile={v.is_favourite ? 'tint' : 'neutral'} action={onToggleFavorite ? { icon: Star, label: v.is_favourite ? `Remove ${v.name} from favorites` : `Add ${v.name} to favorites`, tone: v.is_favourite ? 'primary' : 'neutral', onClick: () => onToggleFavorite(v) } : undefined} title={v.name} meta={[CATEGORY_LABEL[v.category] || v.category, v.contact_person].filter(Boolean).join(', ')} value={v.quoted_price ? formatMoney(v.quoted_price, currency) : ''} badge={VENDOR_STATUS_LABEL[v.status] || STATUS_LABEL[v.status] || v.status} badgeTone={VENDOR_STATUS_TONE[v.status] || 'neutral'} onClick={() => onOpen(v)} action={v.phone ? { icon: Phone, label: `Call ${v.name}`, onClick: () => openExternal(`tel:${v.phone}`) } : undefined} />;
   return (
     <>
       <Screen notice={notice} title="My vendors" subtitle={loading ? '' : `${items.length} vendor${items.length === 1 ? '' : 's'}: ${booked} booked, ${quoted} quoted, ${researching} researching`} back={back} onRefresh={onRefresh} actions={[{ icon: Search, label: 'Search vendors', onClick: () => setSearchOpen(true) }, { icon: Plus, label: 'Add vendor', onClick: () => setSheet({ item: null }) }]}>
@@ -103,7 +104,7 @@ const LOG_TYPES = [['email', 'Email'], ['call', 'Call'], ['meeting', 'Meeting'],
 const DOC_TYPES = ['contract', 'invoice', 'quote', 'receipt', 'other'].map((t) => ({ value: t, label: t.charAt(0).toUpperCase() + t.slice(1) }));
 const LOG_ICON = { email: Mail, call: PhoneCall, meeting: Users, note: MessageSquare, document: FileText };
 
-export function VendorDetailScreen({ notice, vendor, logs = [], tasks = [], symbol = '$', onEdit, onDelete, onToggleFavourite, onAddLog, onDeleteLog, onUpload, onAddTask, onToggleTask, onDeleteTask, loading, error, onRetry, back }) {
+export function VendorDetailScreen({ notice, vendor, logs = [], tasks = [], currency, onEdit, onDelete, onToggleFavourite, onAddLog, onDeleteLog, onUpload, onAddTask, onToggleTask, onDeleteTask, loading, error, onRetry, back }) {
   const [tab, setTab] = useSegment(TABS);
   const [logSheet, setLogSheet] = useState(null); // 'log' | 'doc'
   const [taskSheet, setTaskSheet] = useState(false);
@@ -133,10 +134,10 @@ export function VendorDetailScreen({ notice, vendor, logs = [], tasks = [], symb
               {kv('Contact', vendor.contact_person)}
               {kv('Meeting', vendor.meeting_date ? new Date(vendor.meeting_date).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : '')}
               {kv('Status', VENDOR_STATUS_LABEL[vendor.status] || vendor.status)}
-              {kv('Quote', vendor.quoted_price ? money(vendor.quoted_price, symbol) : '')}
-              {kv('Deposit', vendor.deposit_amount ? `${money(vendor.deposit_amount, symbol)}${vendor.deposit_paid ? ', paid' : ', not paid'}` : vendor.deposit_paid ? 'Paid' : '')}
+              {kv('Quote', vendor.quoted_price ? formatMoney(vendor.quoted_price, currency) : '')}
+              {kv('Deposit', vendor.deposit_amount ? `${formatMoney(vendor.deposit_amount, currency)}${vendor.deposit_paid ? ', paid' : ', not paid'}` : vendor.deposit_paid ? 'Paid' : '')}
               {kv('Contract', vendor.contract_signed ? `Signed${vendor.contract_date ? ` ${dateShort(vendor.contract_date)}` : ''}` : vendor.contract_date ? dateShort(vendor.contract_date) : '')}
-              {kv('Price range', vendor.price_range)}
+              {kv('Price range', priceRangeLabel(vendor.price_range))}
               {kv('Rating', vendor.rating ? `${vendor.rating} of 5` : '')}
               {kv('Payment schedule', vendor.payment_schedule)}
               {kv('Google rating', vendor.google_rating ? `${vendor.google_rating} (${vendor.google_reviews_count || 0} reviews)` : '')}
@@ -153,7 +154,7 @@ export function VendorDetailScreen({ notice, vendor, logs = [], tasks = [], symb
               {isPhoto && kv('Images', vendor.image_count)}
               {isPhoto && kv('Video', vendor.video_length)}
               {isPhoto && kv('Editing', vendor.editing_style)}
-              {isPhoto && kv('Travel fee', vendor.travel_fee ? money(vendor.travel_fee, symbol) : '')}
+              {isPhoto && kv('Travel fee', vendor.travel_fee ? formatMoney(vendor.travel_fee, currency) : '')}
               {isPhoto && kv('Second shooter', vendor.second_shooter)}
               {isPhoto && kv('Backup equipment', vendor.backup_equipment)}
               {isPhoto && kv('Cancellation policy', vendor.cancellation_policy)}

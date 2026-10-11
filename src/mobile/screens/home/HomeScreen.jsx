@@ -2,7 +2,8 @@ import React from 'react';
 import { Users, Wallet, CheckCircle2, Receipt } from 'lucide-react';
 import Screen from '../../shell/Screen';
 import { HeroCard, PeekCarousel, StatCard, PanelCard, ImageCard, Row, RowGroup, PillButton, Skeleton, ErrorState, ProgressBar, StatusPill } from '../../ui';
-import { money, dateLong, dueLabel, dateShort } from '../../lib/format';
+import { dateLong, dueLabel, dateShort } from '../../lib/format';
+import { formatMoney } from '@/lib/money';
 import ActivityRow from '../../notifications/ActivityRow';
 import { imageUrl } from '../../images';
 import { pickHeroes } from './heroPool';
@@ -34,8 +35,8 @@ export default function HomeScreen({
     if (rsvp && rsvp.invited > 0) middle.push({ key: 'rsvp', label: 'RSVPs', number: rsvp.attending, title: 'attending so far', sub: rsvpSentence(rsvp), action: 'See who is yet to reply', onAction: onOpenGuests, progress: { value: rsvp.attending + rsvp.declined, max: rsvp.invited } });
     const lead = Array.isArray(briefing) ? (briefing[0]?.lead || briefing[0]?.body) : briefing;
     if (lead) middle.push({ key: 'ava', label: 'From Ava', title: lead, action: 'Ask Ava', onAction: onOpenAva });
-    if (budget && budget.total > 0) middle.push({ key: 'budget', label: 'Budget', number: money(Math.max(0, budget.total - budget.spent), budget.symbol), title: `left of ${money(budget.total, budget.symbol)}`, sub: `${money(budget.spent, budget.symbol)} spent so far`, action: 'Open budget', onAction: onOpenBudget, progress: { value: Math.min(budget.spent, budget.total), max: budget.total } });
-    if (payments[0]) middle.push({ key: 'payment', label: 'Next payment', number: money(payments[0].actual_amount || payments[0].budgeted_amount, budget?.symbol), title: `${payments[0].item_name}${payments[0].vendor ? ` to ${payments[0].vendor}` : ''}`, sub: `Due ${dateShort(payments[0].payment_date)}`, action: 'Open budget', onAction: onOpenBudget });
+    if (budget && budget.total > 0) middle.push({ key: 'budget', label: 'Budget', number: formatMoney(Math.max(0, budget.total - budget.spent), budget.currency), title: `left of ${formatMoney(budget.total, budget.currency)}`, sub: `${formatMoney(budget.spent, budget.currency)} spent so far`, action: 'Open budget', onAction: onOpenBudget, progress: { value: Math.min(budget.spent, budget.total), max: budget.total } });
+    if (payments[0]) middle.push({ key: 'payment', label: 'Next payment', number: formatMoney(payments[0].actual_amount || payments[0].budgeted_amount, budget?.currency), title: `${payments[0].item_name}${payments[0].vendor ? ` to ${payments[0].vendor}` : ''}`, sub: `Due ${dateShort(payments[0].payment_date)}`, action: 'Open budget', onAction: onOpenBudget });
     if (tasks[0]) middle.push({ key: 'task', label: 'Next up', title: tasks[0].title, sub: [dueLabel(tasks[0].due_date), tasks.length > 1 ? `${tasks.length - 1} more open` : ''].filter(Boolean).join(', '), action: 'Open to do', onAction: onOpenTasks });
     if (songRequests > 0) middle.push({ key: 'songs', label: 'Song requests', number: songRequests, title: songRequests === 1 ? 'song to review' : 'songs to review', action: 'Review requests', onAction: () => onOpenFeature?.('music') });
     else if (guestbook[0]) middle.push({ key: 'guestbook', label: 'Guestbook', title: guestbook[0].message ? `"${String(guestbook[0].message).slice(0, 90)}${String(guestbook[0].message).length > 90 ? '...' : ''}"` : 'A new entry', sub: guestbook[0].name || guestbook[0].guest_name || '', action: 'Open guest suite', onAction: () => onOpenFeature?.('site') });
@@ -78,7 +79,7 @@ export default function HomeScreen({
         {!loading && rsvp && budget && (
           <div className="oi-m-grid2">
             <StatCard icon={Users} label="Replies in" numeric={rsvp.attending + rsvp.declined} suffix={rsvp.invited ? ` of ${rsvp.invited}` : ''} onClick={onOpenGuests} />
-            <StatCard icon={Wallet} label="Budget left" number={budget.total > 0 ? money(budget.total - budget.spent, budget.symbol) : 'Set a total'} ink onClick={onOpenBudget} />
+            <StatCard icon={Wallet} label="Budget left" number={budget.total > 0 ? formatMoney(budget.total - budget.spent, budget.currency) : 'Set a total'} ink onClick={onOpenBudget} />
           </div>
         )}
 
@@ -91,7 +92,7 @@ export default function HomeScreen({
             <div className="oi-m-nextup" style={{ margin: '0 calc(-1 * var(--m-gutter))' }}>
               <PeekCarousel>
                 {payments.slice(0, 2).map((p) => (
-                  <PanelCard key={`p${p.id}`} tone="ink" label={`Due ${dateShort(p.payment_date)}`} title={money(p.actual_amount || p.budgeted_amount, budget?.symbol)} body={`${p.item_name}${p.vendor ? ` to ${p.vendor}` : ''}`} onClick={onOpenBudget}>
+                  <PanelCard key={`p${p.id}`} tone="ink" label={`Due ${dateShort(p.payment_date)}`} title={formatMoney(p.actual_amount || p.budgeted_amount, budget?.currency)} body={`${p.item_name}${p.vendor ? ` to ${p.vendor}` : ''}`} onClick={onOpenBudget}>
                     <Receipt size={18} style={{ opacity: 0.7 }} />
                   </PanelCard>
                 ))}

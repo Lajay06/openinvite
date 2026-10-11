@@ -8,7 +8,7 @@ import EntityListScreen from '../../features/EntityListScreen';
 import { ENTITIES } from '../../features/schemas';
 import { imageUrl } from '../../images';
 import { openExternal, shareLink } from '../../native';
-import { money } from '../../lib/format';
+import { formatMoney } from '@/lib/money';
 import { copyText } from '@/lib/copyToClipboard';
 
 const SEGMENTS = [{ key: 'overview', label: 'Overview' }, { key: 'links', label: 'Platforms' }, { key: 'products', label: 'Products' }, { key: 'funds', label: 'Cash funds' }, { key: 'received', label: 'Received' }];
@@ -20,7 +20,7 @@ const SEGMENTS = [{ key: 'overview', label: 'Overview' }, { key: 'links', label:
  * (ReceivedGift with the giver from the guest list, search, thanked, and
  * Ava's thank-you note). The GuestSuiteRegistry mirror is this screen too.
  */
-export default function RegistryScreen({ lists, symbol = '$', registryUrl = '', onAsk, back, openId = null }) {
+export default function RegistryScreen({ lists, currency, registryUrl = '', onAsk, back, openId = null }) {
   const [segment, setSegment] = useSegment(SEGMENTS);
   const [share, setShare] = useState(false);
   const [purchase, setPurchase] = useState(null); // product
@@ -62,7 +62,7 @@ export default function RegistryScreen({ lists, symbol = '$', registryUrl = '', 
                 <StatCard icon={Gift} label="Platforms" numeric={links.length} />
                 <StatCard icon={ShoppingBag} label="Products" numeric={products.length} ink />
               </div>
-              {products.length > 0 && <div className="oi-m-grid2"><StatCard icon={Gift} label="Cash funds" numeric={funds.length} /><StatCard icon={ShoppingBag} label="Total value" number={money(Math.round(products.reduce((t, p) => t + (Number(p.price) || 0) * (p.quantity_requested || 1), 0)), symbol)} ink /></div>}
+              {products.length > 0 && <div className="oi-m-grid2"><StatCard icon={Gift} label="Cash funds" numeric={funds.length} /><StatCard icon={ShoppingBag} label="Total value" number={formatMoney(Math.round(products.reduce((t, p) => t + (Number(p.price) || 0) * (p.quantity_requested || 1), 0)), currency)} ink /></div>}
               <div className="oi-m-card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}><span className="oi-m-section">Bought so far</span><span className="oi-m-num" style={{ fontSize: 28, lineHeight: '34px' }}>{completion}%</span></div>
                 <ProgressBar value={totalPurchased} max={totalRequested || 1} note={totalRequested ? `${totalPurchased} of ${totalRequested} products bought.` : 'Add products to track what gets bought.'} />
@@ -72,11 +72,11 @@ export default function RegistryScreen({ lists, symbol = '$', registryUrl = '', 
               ) : (
                 <>
                   {links.length > 0 && <section><h2 className="oi-m-section" style={{ marginBottom: 12 }}>Registry platforms</h2><RowGroup>{links.map((l) => <Row key={l.id} icon={Gift} tile="neutral" label={l.store_name} sub={l.description || (l.url || '').replace(/^https?:\/\//, '')} onClick={l.url ? () => openExternal(l.url) : undefined} chevron={false} />)}</RowGroup></section>}
-                  {products.length > 0 && <section><h2 className="oi-m-section" style={{ marginBottom: 12 }}>Featured products</h2><ItemList>{products.slice(0, 4).map((p) => <ItemCard key={p.id} image={p.image_url} alt={p.name} icon={ShoppingBag} title={p.name} meta={[p.registry_platform, `${p.quantity_purchased || 0} of ${p.quantity_requested || 1} bought`].filter(Boolean).join(', ')} value={p.price ? money(p.price, symbol) : ''} onClick={() => setSegment('products')} />)}</ItemList></section>}
-                  {funds.length > 0 && <section><h2 className="oi-m-section" style={{ marginBottom: 12 }}>Cash funds</h2><RowGroup>{funds.map((f) => <Row key={f.id} icon={Gift} tile="tint" label={f.title} sub={f.description} value={f.requested_amount ? `Goal ${money(f.requested_amount, symbol)}` : ''} onClick={() => setSegment('funds')} />)}</RowGroup></section>}
+                  {products.length > 0 && <section><h2 className="oi-m-section" style={{ marginBottom: 12 }}>Featured products</h2><ItemList>{products.slice(0, 4).map((p) => <ItemCard key={p.id} image={p.image_url} alt={p.name} icon={ShoppingBag} title={p.name} meta={[p.registry_platform, `${p.quantity_purchased || 0} of ${p.quantity_requested || 1} bought`].filter(Boolean).join(', ')} value={p.price ? formatMoney(p.price, currency) : ''} onClick={() => setSegment('products')} />)}</ItemList></section>}
+                  {funds.length > 0 && <section><h2 className="oi-m-section" style={{ marginBottom: 12 }}>Cash funds</h2><RowGroup>{funds.map((f) => <Row key={f.id} icon={Gift} tile="tint" label={f.title} sub={f.description} value={f.requested_amount ? `Goal ${formatMoney(f.requested_amount, currency)}` : ''} onClick={() => setSegment('funds')} />)}</RowGroup></section>}
                 </>
               )}
-              {received.length > 0 && <PanelCard tone="ink" label="Received" title={`${received.length} gift${received.length === 1 ? '' : 's'}, about ${money(value, symbol)}`} body={`${received.filter((g) => !g.thank_you_sent).length} thank you${received.filter((g) => !g.thank_you_sent).length === 1 ? '' : 's'} still to send.`} action="See the gifts" onClick={() => setSegment('received')} />}
+              {received.length > 0 && <PanelCard tone="ink" label="Received" title={`${received.length} gift${received.length === 1 ? '' : 's'}, about ${formatMoney(value, currency)}`} body={`${received.filter((g) => !g.thank_you_sent).length} thank you${received.filter((g) => !g.thank_you_sent).length === 1 ? '' : 's'} still to send.`} action="See the gifts" onClick={() => setSegment('received')} />}
             </>
           )}
         </div>
@@ -95,7 +95,7 @@ export default function RegistryScreen({ lists, symbol = '$', registryUrl = '', 
             <StatCard icon={Gift} label="Gifts received" numeric={received.length} />
             <StatCard icon={Gift} label="Thank yous to send" numeric={received.filter((g) => !g.thank_you_sent).length} ink />
           </div>
-          <p className="oi-m-meta">About {money(value, symbol)} in gifts so far.</p>
+          <p className="oi-m-meta">About {formatMoney(value, currency)} in gifts so far.</p>
         </div>
       )}
     </>

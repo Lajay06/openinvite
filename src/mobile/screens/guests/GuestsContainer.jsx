@@ -8,7 +8,7 @@ import { SetEventsSheet, ImportGuestsSheet, BulkActionsSheet, EmailTemplatesShee
 import ContactsImportSheet from './ContactsImportSheet';
 import { ShellContext } from '../../shell/MobileShell';
 import { useGuests, useWedding, useGuestWrites } from '../../data/wedding';
-import { useApi, useSymbol } from '../../data/api';
+import { useApi, useCurrencyCode } from '../../data/api';
 import useLoad from '../../data/useLoad';
 import { useConfirm } from '../../ui/ConfirmSheet';
 import { BottomSheet, PillButton } from '../../ui';
@@ -38,7 +38,7 @@ export default function GuestsContainer() {
   const [params, setParams] = useSearchParams();
   const { base } = useContext(ShellContext);
   const api = useApi();
-  const symbol = useSymbol();
+  const currency = useCurrencyCode();
   const guests = useGuests();
   const wedding = useWedding();
   const gifts = useLoad(() => api.list('ReceivedGift', '-created_date').catch(() => []), []);
@@ -194,7 +194,7 @@ export default function GuestsContainer() {
           weddingEvents={weddingEvents}
           mealOptions={mealOptions}
           gifts={gifts.data || []}
-          symbol={symbol}
+          currency={currency}
           back={`${base}/guests`}
           onEdit={() => setSheet({ open: true, guest: current })}
           onEditEvents={() => setEvents({ guests: [current], autoSend: false })}
