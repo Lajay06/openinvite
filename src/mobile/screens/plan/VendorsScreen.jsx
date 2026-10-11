@@ -126,9 +126,9 @@ export function VendorDetailScreen({ notice, vendor, logs = [], tasks = [], curr
             <RowGroup>
               {vendor.phone && <Row icon={Phone} tile="neutral" label={vendor.phone} sub="Call" onClick={() => openExternal(`tel:${vendor.phone}`)} chevron={false} />}
               {vendor.email && <Row icon={Mail} tile="neutral" label={vendor.email} sub="Email" onClick={() => openExternal(`mailto:${vendor.email}`)} chevron={false} />}
-              {vendor.website && <Row icon={Globe} tile="neutral" label={vendor.website.replace(/^https?:\/\//, '')} sub="Website" onClick={() => openExternal(vendor.website)} chevron={false} />}
+              {vendor.website && <Row icon={Globe} tile="neutral" label={vendor.website.replace(/^https?:\/\//, '')} sub="Web address" onClick={() => openExternal(vendor.website)} chevron={false} />}
               {vendor.address && <Row icon={MapPin} tile="neutral" label={vendor.address} sub="Open in Maps" onClick={() => openExternal(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(vendor.address)}`)} chevron={false} />}
-              {!vendor.phone && !vendor.email && !vendor.website && !vendor.address && <Row icon={Store} tile="neutral" label="No contact details yet" sub="Edit to add a phone, email or website" onClick={onEdit} />}
+              {!vendor.phone && !vendor.email && !vendor.website && !vendor.address && <Row icon={Store} tile="neutral" label="No contact details yet" sub="Edit to add a phone, email or web address" onClick={onEdit} />}
             </RowGroup>
             <div className="oi-m-card oi-m-card--flush">
               {kv('Contact', vendor.contact_person)}

@@ -57,7 +57,7 @@ export default function AccountContainer() {
   const planNote = trial.isPaid
     ? null
     : trial.trialExpired
-      ? 'Your free trial has ended. Your work is safe and yours. Upgrade on the website to keep planning.'
+      ? 'Your free trial has ended. Your work is safe and yours. Upgrade at openinvite.com.au to keep planning.'
       : `${trial.daysLeft} day${trial.daysLeft === 1 ? '' : 's'} left on your free trial.`;
 
   return (

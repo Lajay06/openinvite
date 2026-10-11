@@ -118,7 +118,7 @@ export default function DetailsScreen({ schema, details, onSave, loading, error,
               <h2 className="oi-m-section" style={{ marginBottom: 12 }}>{section.title}</h2>
               {section.intro && <p className="oi-m-meta" style={{ marginBottom: 12 }}>{section.intro}</p>}
               {section.ultra && !ultra ? (
-                <PanelCard tone="ink" label="Ultra" title={section.gateTitle || 'This is an Ultra feature'} body={section.gateBody || 'Upgrade on the website to switch it on.'}><Lock size={18} style={{ opacity: 0.7 }} /></PanelCard>
+                <PanelCard tone="ink" label="Ultra" title={section.gateTitle || 'This is an Ultra feature'} body={section.gateBody || 'Upgrade at openinvite.com.au to switch it on.'}><Lock size={18} style={{ opacity: 0.7 }} /></PanelCard>
               ) : section.roster ? (
                 <RosterSection category={section.roster} onOpen={onOpenVendors} />
               ) : section.list ? (

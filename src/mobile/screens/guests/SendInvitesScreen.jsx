@@ -197,7 +197,7 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
     return (
       <Screen title="Send invites" back={back}>
         <div className="oi-m-stack oi-m-stack--24">
-          <PanelCard tone="ink" label="Ultra" title="Sending invitations is part of Ultra" body="Upgrade on the website to email your guests from here. Your list, events and RSVP links are all ready." />
+          <PanelCard tone="ink" label="Ultra" title="Sending invitations is part of Ultra" body="Upgrade at openinvite.com.au to email your guests from here. Your list, events and RSVP links are all ready." />
         </div>
       </Screen>
     );

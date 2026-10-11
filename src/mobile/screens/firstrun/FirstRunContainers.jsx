@@ -74,8 +74,8 @@ export function LoginContainer() {
       />
       <BottomSheet open={signup} onClose={() => setSignup(false)} title="Create an account">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <p className="oi-m-body">Accounts are created on the Openinvite website, where you also choose a plan. It takes a minute, and then you sign in here.</p>
-          <PillButton variant="primary" block onClick={() => (isNative() ? openExternal(`${PROD_ORIGIN}/register`) : navigate('/register'))}>Open the website</PillButton>
+          <p className="oi-m-body">Accounts are created at openinvite.com.au, where you also choose a plan. It takes a minute, and then you sign in here.</p>
+          <PillButton variant="primary" block onClick={() => (isNative() ? openExternal(`${PROD_ORIGIN}/register`) : navigate('/register'))}>Open openinvite.com.au</PillButton>
           <PillButton variant="ghost" block onClick={() => setSignup(false)}>Not now</PillButton>
         </div>
       </BottomSheet>
