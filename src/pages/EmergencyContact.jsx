@@ -5,7 +5,8 @@ import { Loader2, X, FileText, Check, Plus, Phone, Users, Building2 } from "luci
 import DetailsSection from "../components/event-details/DetailsSection";
 import SectionInput from "../components/event-details/SectionInput";
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
-import { getMyWeddingDetails, putMyWeddingDetails } from "@/lib/resolveMyWedding";
+import { getMyWeddingDetails, putMyWeddingDetails, getMyRecords } from "@/lib/resolveMyWedding";
+import { contactFromVendor, blankContact, ADD_VENDOR_LABEL, ADD_CONTACT_LABEL } from '@/components/vendors/vendorPicks';
 import AvaButton from '@/components/shared/AvaButton';
 
 
@@ -38,6 +39,15 @@ export default function EmergencyContactPage() {
   const [saveStatus, setSaveStatus] = useState('idle');
   const [showAva, setShowAva] = useState(false);
   const [activeTab, setActiveTab] = useState('contacts');
+  // ── THE VENDOR LIST, FOR PICKING ──────────────────────────────────────
+  //
+  // Item 1 of goals/2026-10-11-dashboard-fixes-batch-1.md. This page keeps
+  // its own free array (dayVendorContacts) because the people a couple needs
+  // on the day are not all vendors, which is the owner's ruling. What it
+  // gains is the ability to pick one of the vendors it already knows about
+  // instead of retyping a number that is already in the system.
+  const [vendorChoices, setVendorChoices] = useState([]);
+  const [picking, setPicking] = useState(false);
   const autoSaveRef = useRef(null);
   const latestRef = useRef(null);
 
@@ -50,6 +60,9 @@ export default function EmergencyContactPage() {
       setVendorContacts(r.dayVendorContacts || []);
       setRecordId(r.id || null);
       latestRef.current = r;
+      // Best effort: an empty list only means there is nobody to pick yet,
+      // and the free-text action does not depend on it.
+      getMyRecords('Vendor').then(setVendorChoices).catch(() => {});
     } catch (e) { console.error(e); toast.error('Failed to load — please refresh and try again.'); }
     setLoading(false);
   };
@@ -93,9 +106,24 @@ export default function EmergencyContactPage() {
     update({ [key]: { ...(data[key] || {}), ...patch } });
   };
 
-  const addVendor = () => {
-    const updated = [...vendorContacts, { name: '', phone: '', role: '' }];
+  /** The free-text action: one blank row to fill in. */
+  const addContact = () => {
+    const updated = [...vendorContacts, blankContact()];
     setVendorContacts(updated);
+    persist(null, updated);
+  };
+
+  /**
+   * The pick action: name and phone copied in from a Vendor row, role
+   * prefilled from its category, every field still editable afterwards.
+   * contactFromVendor is the one place that decides what travels.
+   */
+  const addFromVendor = (vendorId) => {
+    const vendor = vendorChoices.find(v => v.id === vendorId);
+    if (!vendor) return;
+    const updated = [...vendorContacts, contactFromVendor(vendor)];
+    setVendorContacts(updated);
+    setPicking(false);
     persist(null, updated);
   };
 
@@ -200,10 +228,35 @@ export default function EmergencyContactPage() {
                   </button>
                 </div>
               ))}
-              <button onClick={addVendor}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#E03553', fontWeight: 700, background: 'none', border: '1px dashed rgba(224,53,83,0.4)', borderRadius: 999, padding: '7px 14px', cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif", width: 'fit-content', marginTop: 4 }}>
-                <Plus size={12} />Add vendor contact
-              </button>
+              {/* ── TWO ACTIONS, AND "Add vendor" LEADS ───────────────────────
+                  Item 1's one-for-one promise: every add control on every
+                  surface leads with "Add vendor". Here that action picks from
+                  the vendors the couple already has, and "Add contact" is the
+                  free-text row for the aunt with the spare veil. */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
+                <button data-add-vendor onClick={() => setPicking(p => !p)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#E03553', fontWeight: 700, background: 'none', border: '1px dashed rgba(224,53,83,0.4)', borderRadius: 999, padding: '7px 14px', cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif", width: 'fit-content' }}>
+                  <Plus size={12} />{ADD_VENDOR_LABEL}
+                </button>
+                <button data-add-contact onClick={addContact}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'rgba(10,10,10,0.6)', fontWeight: 700, background: 'none', border: '1px dashed rgba(10,10,10,0.2)', borderRadius: 999, padding: '7px 14px', cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif", width: 'fit-content' }}>
+                  <Plus size={12} />{ADD_CONTACT_LABEL}
+                </button>
+              </div>
+              {picking && (
+                <div data-vendor-pick style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+                  {vendorChoices.length === 0 ? (
+                    <p style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>
+                      No vendors saved yet. Add them on the Vendors page, or use Add contact.
+                    </p>
+                  ) : vendorChoices.map(v => (
+                    <button key={v.id} onClick={() => addFromVendor(v.id)}
+                      style={{ textAlign: 'left', background: 'none', border: '1px solid rgba(10,10,10,0.12)', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 12, color: '#0A0A0A' }}>
+                      {v.name}{v.category ? ` · ${v.category}` : ''}{v.phone ? ` · ${v.phone}` : ' · no number saved'}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </DetailsSection>
           )}
