@@ -22,16 +22,16 @@
  * text (noteImageUrl below).
  */
 import { EMAIL_FONT, EMAIL_ACCENT, EMAIL_BLACK, EMAIL_LOGO_MARK_URL, escapeHtml, emailShell, emailFooterRow } from './emailBrand.js';
-import { REVEAL, fill, headlineText, giftPhotoUrl, photoLabel, DEFAULT_PHOTO_ID } from './giftingV2.js';
-import { PLAN_BADGE_BACKGROUND, PLAN_BADGE_LABEL } from './planBadge.js';
+import { REVEAL, CONFIRM, fill, headlineText, giftPhotoUrl, photoLabel, DEFAULT_PHOTO_ID } from './giftingV2.js';
+import { PLAN_BADGE_LABEL, PLAN_BADGE_EMAIL_IMAGE } from './planBadge.js';
 
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 const NOTE_INK = '1C1916';
 const NOTE_GROUND = 'F6F2EC';
 const NOTE_FONTS = { serif: 'Cormorant%20Garamond_56_italic', hand: 'Caveat_56' };
-// A base for the text layer. Item 2 replaces this with a dedicated 1 by 1
-// asset at a new path; until then the default photo is shrunk to one pixel
-// and colorized to the card's ground, and the text layer grows the canvas.
+// A base for the text layer: the default photo, shrunk to one pixel and
+// colorized to the card's ground, so the text layer grows the canvas around
+// it. Cloudinary caches each derived note, so the base costs one fetch.
 const NOTE_BASE = DEFAULT_PHOTO_ID;
 
 /**
@@ -47,17 +47,51 @@ export function noteImageUrl(note, style, { ground = NOTE_GROUND } = {}) {
 }
 
 /**
- * THE PLAN BADGE, IN HTML (owner ruling 2026-10-11: wherever Pro or Ultra is
- * named, the dashboard's badge). The same colors as PlanBadge.jsx, from
- * src/lib/planBadge.js; a solid color first, because Outlook and some Gmail
- * views drop a gradient background.
+ * THE PLAN BADGE, AS AN IMAGE (owner ruling 2026-10-11: wherever Pro or Ultra
+ * is named, the dashboard's badge; in an email, as a picture of itself). The
+ * picture is PlanBadge's own values rendered at 3x (scripts/gift-assets/
+ * plan-badges.mjs), so no client has to draw a gradient or load a font, and
+ * the alt text is the plan's name for anyone with images off.
  */
-const BADGE_SOLID = { ultra: '#F59E0B', pro: '#E03553' };
 export function planBadgeHtml(plan) {
-  return `<span style="display:inline-block;font-size:12px;line-height:1.4;font-weight:800;color:#FFFFFF;background-color:${BADGE_SOLID[plan]};background:${PLAN_BADGE_BACKGROUND[plan]};padding:1px 6px;border-radius:3px;font-family:${EMAIL_FONT};vertical-align:baseline;">${PLAN_BADGE_LABEL[plan]}</span>`;
+  const img = PLAN_BADGE_EMAIL_IMAGE[plan] || PLAN_BADGE_EMAIL_IMAGE.ultra;
+  return `<img src="${img.url}" alt="${PLAN_BADGE_LABEL[plan] || 'Ultra'}" width="${img.width}" height="${img.height}" style="display:inline-block;width:${img.width}px;height:${img.height}px;vertical-align:-4px;border:0;" />`;
 }
 /** Escape a line, then set each plan name in it as its badge. */
 const withBadges = (text) => escapeHtml(text).replace(/\b(Ultra|Pro)\b/g, (m) => planBadgeHtml(m.toLowerCase()));
+
+/** The white header with the mark and the dark wordmark, shared by both emails. */
+function headerRow() {
+  return `
+          <tr>
+            <td style="padding:28px 40px;background:#FFFFFF;">
+              <table cellpadding="0" cellspacing="0" role="presentation"><tr>
+                <td style="vertical-align:middle;padding-right:8px;"><img src="${EMAIL_LOGO_MARK_URL}" width="24" height="24" alt="" style="display:block;width:24px;height:24px;" /></td>
+                <td style="vertical-align:middle;font-size:18px;font-weight:700;color:${EMAIL_BLACK};font-family:${EMAIL_FONT};">Openinvite</td>
+              </tr></table>
+            </td>
+          </tr>`;
+}
+const preheaderRow = (text) => `
+          <tr>
+            <td style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#FFFFFF;">${escapeHtml(text)}</td>
+          </tr>`;
+
+/** The note card, shared by both emails: warm white, 8px radius, a red opening quote, the giver in small caps. */
+function noteCardRow(note, noteStyle, giver) {
+  return `
+          <tr>
+            <td style="padding:28px 40px 0;">
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#${NOTE_GROUND};border-radius:8px;">
+                <tr><td style="padding:24px 28px 26px;">
+                  <p style="margin:0 0 6px;font-size:56px;line-height:0.8;font-weight:700;color:${EMAIL_ACCENT};font-family:Georgia,serif;">&ldquo;</p>
+                  ${noteBody(note, noteStyle)}
+                  <p style="margin:16px 0 0;font-size:13px;font-variant:small-caps;color:rgba(28,25,22,0.75);font-family:${EMAIL_FONT};">${escapeHtml(giver)}</p>
+                </td></tr>
+              </table>
+            </td>
+          </tr>`;
+}
 
 function noteBody(note, style) {
   if (style === 'serif' || style === 'hand') {
@@ -77,18 +111,7 @@ export function renderGiftReveal({ plan = 'ultra', giver = '', names = '', note 
   const vars = { giver, names, plan };
   const photo = photoId || DEFAULT_PHOTO_ID;
   const subject = fill(REVEAL.subject, vars);
-  const rows = `
-          <tr>
-            <td style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#FFFFFF;">${escapeHtml(REVEAL.preheader)}</td>
-          </tr>
-          <tr>
-            <td style="padding:28px 40px;background:#FFFFFF;">
-              <table cellpadding="0" cellspacing="0" role="presentation"><tr>
-                <td style="vertical-align:middle;padding-right:8px;"><img src="${EMAIL_LOGO_MARK_URL}" width="24" height="24" alt="" style="display:block;width:24px;height:24px;" /></td>
-                <td style="vertical-align:middle;font-size:18px;font-weight:700;color:${EMAIL_BLACK};font-family:${EMAIL_FONT};">Openinvite</td>
-              </tr></table>
-            </td>
-          </tr>
+  const rows = `${preheaderRow(REVEAL.preheader)}${headerRow()}
           <tr>
             <td style="padding:0;">
               <img src="${giftPhotoUrl(photo)}" alt="${escapeHtml(photoLabel(photo))}" width="600" style="display:block;width:100%;max-width:600px;height:auto;border:0;" />
@@ -100,17 +123,7 @@ export function renderGiftReveal({ plan = 'ultra', giver = '', names = '', note 
               <p style="margin:16px 0 0;font-size:16px;line-height:1.6;color:rgba(10,10,10,0.75);font-family:${EMAIL_FONT};">${withBadges(fill(REVEAL.body[plan] || REVEAL.body.ultra, vars))}</p>
             </td>
           </tr>
-          <tr>
-            <td style="padding:28px 40px 0;">
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#${NOTE_GROUND};border-radius:8px;">
-                <tr><td style="padding:24px 28px 26px;">
-                  <p style="margin:0 0 6px;font-size:56px;line-height:0.8;font-weight:700;color:${EMAIL_ACCENT};font-family:Georgia,serif;">&ldquo;</p>
-                  ${noteBody(note, noteStyle)}
-                  <p style="margin:16px 0 0;font-size:13px;font-variant:small-caps;color:rgba(28,25,22,0.75);font-family:${EMAIL_FONT};">${escapeHtml(giver)}</p>
-                </td></tr>
-              </table>
-            </td>
-          </tr>
+${noteCardRow(note, noteStyle, giver)}
           <tr>
             <td style="padding:32px 40px 0;">
               <a href="${escapeHtml(claimUrl)}" style="display:inline-block;padding:14px 32px;border-radius:999px;background:${EMAIL_ACCENT};color:#FFFFFF;font-size:15px;font-weight:700;text-decoration:none;font-family:${EMAIL_FONT};">${escapeHtml(REVEAL.button)}</a>
@@ -125,4 +138,59 @@ export function renderGiftReveal({ plan = 'ultra', giver = '', names = '', note 
           </tr>
 ${emailFooterRow(escapeHtml(fill(REVEAL.footer, vars)))}`;
   return { subject, preheader: REVEAL.preheader, html: emailShell({ title: subject, bodyRowsHtml: rows, showHeader: false, width: 600 }) };
+}
+
+/**
+ * THE GIVER'S EMAIL (THE CONFIRMATION). The same header, note card and footer
+ * shape as the reveal; the chosen photo at 2:1; the claim link in a box of its
+ * own so the giver can hand it over themselves; an outlined button to the edit
+ * page, which works until the gift is claimed. When the reveal is scheduled
+ * (sendDate set), the body says when it will go instead.
+ *
+ * @param {{ plan: 'pro'|'ultra', giver: string, names: string, email: string,
+ *   note: string, noteStyle: 'plain'|'serif'|'hand', photoId: string,
+ *   claimUrl: string, editUrl: string, sendDate?: string }} gift
+ * @returns {{ subject: string, preheader: string, html: string }}
+ */
+export function renderGiftConfirmation({ plan = 'ultra', giver = '', names = '', email = '', note = '', noteStyle = 'plain', photoId, claimUrl = '#', editUrl = '#', sendDate = '' }) {
+  const vars = { giver, names, email, plan };
+  const photo = photoId || DEFAULT_PHOTO_ID;
+  const subject = fill(CONFIRM.subject, vars);
+  const bodyLine = sendDate ? fill(CONFIRM.scheduled, vars).replace('{date}', sendDate) : fill(CONFIRM.body, vars);
+  const rows = `${preheaderRow(CONFIRM.preheader)}${headerRow()}
+          <tr>
+            <td style="padding:0;">
+              <img src="${giftPhotoUrl(photo, { ratio: '2:1' })}" alt="${escapeHtml(photoLabel(photo))}" width="600" style="display:block;width:100%;max-width:600px;height:auto;border:0;" />
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:36px 40px 0;">
+              <h1 style="margin:0;font-size:28px;line-height:1.2;font-weight:700;color:${EMAIL_BLACK};font-family:${EMAIL_FONT};">${escapeHtml(CONFIRM.heading)}</h1>
+              <p style="margin:16px 0 0;font-size:16px;line-height:1.6;color:rgba(10,10,10,0.75);font-family:${EMAIL_FONT};">${withBadges(bodyLine)}</p>
+            </td>
+          </tr>
+${noteCardRow(note, noteStyle, giver)}
+          <tr>
+            <td style="padding:28px 40px 0;">
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border:1px solid rgba(10,10,10,0.18);">
+                <tr><td style="padding:18px 20px;">
+                  <p style="margin:0 0 8px;font-size:13px;font-weight:700;color:${EMAIL_BLACK};font-family:${EMAIL_FONT};">${escapeHtml(CONFIRM.linkBox)}</p>
+                  <a href="${escapeHtml(claimUrl)}" style="font-size:14px;line-height:1.5;color:${EMAIL_ACCENT};word-break:break-all;font-family:${EMAIL_FONT};">${escapeHtml(claimUrl)}</a>
+                </td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 40px 0;">
+              <p style="margin:0;font-size:14px;line-height:1.6;color:rgba(10,10,10,0.6);font-family:${EMAIL_FONT};">${escapeHtml(CONFIRM.forward)}</p>
+              <p style="margin:8px 0 0;font-size:14px;line-height:1.6;color:rgba(10,10,10,0.6);font-family:${EMAIL_FONT};">${escapeHtml(CONFIRM.receipt)}</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:28px 40px 36px;">
+              <a href="${escapeHtml(editUrl)}" style="display:inline-block;padding:12px 28px;border-radius:999px;border:1.5px solid ${EMAIL_BLACK};color:${EMAIL_BLACK};font-size:14px;font-weight:700;text-decoration:none;font-family:${EMAIL_FONT};">${escapeHtml(CONFIRM.button)}</a>
+            </td>
+          </tr>
+${emailFooterRow(escapeHtml(CONFIRM.footer))}`;
+  return { subject, preheader: CONFIRM.preheader, html: emailShell({ title: subject, bodyRowsHtml: rows, showHeader: false, width: 600 }) };
 }
