@@ -154,6 +154,30 @@ The findings that changed the items are recorded under each one.
    still prevents a stale document being reused after a deploy; no-store would
    lose the 304 for no gain. Flagged for the owner rather than changed.
 
+   AS BUILT, 2026-10-11. Two guards, because the question has two halves.
+   tests/persistence/chunk-selfheal.mjs (23 checks) DRIVES the real
+   reloadOnceForChunkError with a stubbed sessionStorage, a counted reload and
+   a movable clock: one reload, a second failure inside the window held, the
+   window crossed so a tab can heal again later, and both storage failures
+   holding rather than reloading unguarded. It also pins the static facts: 49
+   wrapped routes and no bare lazy(, the preloadError side-channel reaching the
+   same guard without preventing default, the hold bounded by the hang guard,
+   no service worker, and the asset rule with no immutable document rule beside
+   it.
+
+   scripts/test-chunk-reload.mjs (15 checks, shard A, booked 38s) plants a 404
+   on one route's chunk, which is a stale index.html in one request, and COUNTS
+   LOADS. The healthy sequence is load, fail, reload, fail again, hold, so
+   exactly two; the plant is deliberately left in place, because lifting it
+   after the first failure would not test the loop guard at all. It also reads
+   the served document's Cache-Control, because the document's rule is the
+   platform default and appears in no file in this repo.
+
+   16 plants, all 16 caught by the persistence half. The browser half was then
+   proved red on its own three ways, because a CI guard nobody has watched fail
+   is an assumption: with the reload removed it reports 1 load, with the loop
+   guard removed 87, and with the stamp never written 121.
+
 5. HELD BY THE OWNER, pending the localStorage keys. If the Google picture URL
    is available, show it in the top-right avatar with the initials as fallback.
 
