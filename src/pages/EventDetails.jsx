@@ -36,6 +36,7 @@ function namesSentence(names = []) {
 }
 
 import SectionHeading, { CONTENT_WIDTH, sectionDivider, FIELD_GAP } from '../components/event-details/SectionHeading';
+import RsvpDeadlineField from '@/components/shared/RsvpDeadlineField';
 
 import { syncWeddingAddress } from '@/lib/weddingAddress';
 import {
@@ -1114,6 +1115,16 @@ export default function EventDetailsPage() {
           <SectionHeading>The date</SectionHeading>
           <span style={sLabel}>Wedding date</span>
           <DatePicker value={r.weddingDate} onChange={v => update({ weddingDate: v })} placeholder="Select your wedding date" disabled={readOnly} />
+          {/* ── AND WHEN REPLIES CLOSE ─────────────────────────────────────
+              Item 3 of goals/2026-10-11-dashboard-fixes-batch-1.md. Shown
+              here, beside the wedding date, because that is the other date
+              the couple holds in their head; it is EDITED on the Send invites
+              review step, where they are deciding what the invitation says.
+              Read only on purpose: two editors for one field is how two
+              surfaces end up disagreeing about what was saved. */}
+          <div style={{ marginTop: 10 }}>
+            <RsvpDeadlineField rsvpContent={r.rsvpContent} readOnly />
+          </div>
 
           <div style={divider} />
           <SectionHeading>Guest count</SectionHeading>
