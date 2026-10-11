@@ -12,6 +12,14 @@
  * by test:persistence; this list is the public-facing surface anyone
  * (including Google, including a first-time visitor) can hit unauthenticated.
  */
+/**
+ * Prerendered and routed, but out of sitemap.xml and noindexed (vercel.json
+ * sends X-Robots-Tag on them). /tour, site fixes batch 3, item 5: the page
+ * stays live at its URL while it is rebuilt, and comes back to the sitemap
+ * and the nav when it reads like the rest of the site.
+ */
+export const UNLISTED_ROUTES = ['/tour'];
+
 export const MARKETING_ROUTES = [
   '/',
   '/features',
