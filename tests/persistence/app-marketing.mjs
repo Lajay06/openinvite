@@ -91,6 +91,28 @@ const momentChecks = (check, block, where) => {
     !!frame && !/<img\b|background-image|url\(/i.test(frameOnly), 'no raster bezel');
 };
 
+// ── THE TWIN OF THE RED SECTION (site fixes batch 3) ─────────────────────
+// No title banner; the heading inside the section; POOL_PARTY and the
+// recording's poster as its only pictures; the CSS phone. Its one-screen
+// height at 1440 and 390 is measured in a browser by test:marketing-routes.
+const twinChecks = (check, html, attr, where, heading, level) => {
+  const block = sectionWith(html, attr);
+  check(`${where}: the app section is the red section's twin`, /data-app-twin/.test(block));
+  check(`${where}: no title banner above it or inside it`, !bannerAbove(html, attr) && !/data-title-banner/.test(block));
+  check(`${where}: its heading, verbatim, as the ${level} inside it`,
+    new RegExp(`<${level}\\b[^>]*data-app-twin-heading[^>]*>\\s*${heading.replace(/[.,]/g, (c) => '\\' + c)}\\s*</${level}>`).test(block));
+  const imgs = [...block.matchAll(/<img\b[^>]*src="([^"]+)"/g), ...block.matchAll(/<video\b[^>]*poster="([^"]+)"/g)]
+    .map((m) => m[1].replace(/&amp;/g, '&'));
+  const others = imgs.filter((u) => !u.includes(POOL) && u !== PHONE?.poster);
+  check(`${where}: the only pictures are POOL_PARTY and the recording's poster`,
+    imgs.some((u) => u.includes(POOL)) && imgs.includes(PHONE?.poster) && others.length === 0, others.join(', ').slice(0, 90) || `${imgs.length} img`);
+  const frame = sectionWith(block, 'data-app-phone-frame');
+  const frameOnly = frame.replace(sectionWith(frame, 'data-app-phone-screen'), '');
+  check(`${where}: the phone frame is CSS, with no picture of its own`,
+    !!frame && !/<img\b|background-image|url\(/i.test(frameOnly), 'no raster bezel');
+  return block;
+};
+
 const AVA_GRADIENT = 'linear-gradient(to right, #DDF762, #F0A050, #D4896A, #C99BBF, #9B59CC)';
 const bannerChecks = (check, banner, where, text, level) => {
   check(`${where}: a title banner opens the app section`, !!banner);
@@ -124,15 +146,12 @@ export function runAppMarketing() {
 
   // ── item 1: the home block ─────────────────────────────────────────────
   const home = existsSync(join(PRE, 'index.html')) ? readFileSync(join(PRE, 'index.html'), 'utf8') : '';
-  const block = sectionWith(home, 'data-home-app');
+  const block = twinChecks(check, home, 'data-home-app', 'home', 'The whole planner, in your pocket.', 'h2');
   check('home: the app block is on the page', !!block);
   const t = textOf(block);
-  bannerChecks(check, bannerAbove(home, 'data-home-app'), 'home', 'The whole planner, in your pocket.', 'h2');
-  check('home: the heading is in the banner, not repeated in the section', !t.includes('The whole planner, in your pocket.'));
-  check('home: the body, verbatim', t.includes('Plan on the train, on the couch, in the queue for coffee. The guest list, the budget, the seating chart and Ava are all on your phone, and a reply from a guest reaches you the moment it lands. Your guests never need the app; they open a link.'));
-  check('home: the store line, as text', t.includes(STORE_LINE) && /data-app-store-line/.test(block));
-  check('home: the store line is not a link', !/<a\b[^>]*>[^<]*Coming to the App Store/.test(block));
-  momentChecks(check, block, 'home');
+  check('home: the body, verbatim', t.includes('Plan on the train, on the couch, in the queue for coffee. Your guest list, budget and seating chart on your phone and your computer, always the same wedding.'));
+  check('home: the small line, as text', t.includes('iPhone and Android. Coming at launch.') && /data-app-store-line/.test(block));
+  check('home: the small line is not a link', !/<a\b[^>]*>[^<]*Coming at launch/.test(block));
   const blockAt = home.indexOf('data-home-app');
   const pricingAt = home.indexOf('section-pricing');
   const cardsAt = home.indexOf('section-features');
@@ -232,6 +251,15 @@ export function runAppMarketing() {
     screens.length === 3 && screens.every(([w, h]) => 1320 % w === 0 && 1320 / w === 2868 / h),
     screens.map(([w, h, b]) => `${w}x${h} (1/${1320 / w}) bezel ${b}`).join(', '));
   check('phone frame: drawn in the repo, no raster frame file', !/\.(png|jpe?g|webp|psd)['"]/i.test(stripComments(momentSrc)));
+  // THE TWIN'S PHONE IS REDUCED TO FIT, NEVER RESIZED OUT OF ASPECT: its
+  // screen takes its width from the recording's own shape.
+  const twinSrc = readFileSync(resolve(ROOT, 'src/components/marketing/AppTwinSection.jsx'), 'utf8');
+  check("twin: the screen keeps the recording's 1320 by 2868 aspect",
+    /export const PHONE_ASPECT = "1320 \/ 2868";/.test(twinSrc) && /\.app-twin__screen \{[^}]*aspect-ratio: \$\{PHONE_ASPECT\}/.test(twinSrc)
+      && !/\.app-twin__screen \{[^}]*\bwidth:/.test(twinSrc), 'height from the section, width from the aspect');
+  check("twin: the red section's height rule, 100vh with overflow hidden",
+    /\.app-twin \{[^}]*height: 100vh;[^}]*overflow: hidden;/.test(twinSrc), 'one screen');
+  check('twin: drawn in the repo, no raster frame file', !/\.(png|jpe?g|webp|psd)['"]/i.test(stripComments(twinSrc)));
   // NOTHING FROM APPLE'S DESIGN RESOURCES PACK, referenced or committed: the
   // licence (2A and 2B) excludes this use, so the files never enter the repo.
   const tracked = execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' }).split('\n');
