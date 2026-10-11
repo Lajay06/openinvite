@@ -126,14 +126,23 @@ As CLAUDE.md. Any held-list or do-not-touch file outside the named exceptions: s
 
 ## State
 
-As of 2026-10-11:
+As of 2026-10-12:
 
 - 1a merged as #963 (revoke, permission edits, reconcile on open).
 - 1b merged in three PRs: #967 (7-day expiry), #981 (CollaboratorInvite mirror) and #982 (a resend or a removal kills the old link). The live round trip, tests/persistence/collaborator-invite-live.mjs, is run only by the owner, with the smoke account.
 - 1c merged as #986: the accept link is always on the app host, and every send carries a nonce, so no two links are ever equal.
 - 2 merged as #991: withCollab keeps the session on every navigation. Help and Account open as the person's own pages (owner ruling 2026-10-11).
 - 3 merged as #999: no Ava in a collaborator session.
-- Next: 6.
+- 6 merged as #1002: a collaborator with view on Guests reads the owner's list, derived fields stripped; PUT and DELETE are 403 with the ruled words. Live: no token is a 401 where it was a 503.
+- The LiveStream isolation scout found no leak (owner ruling 2026-10-11). #1000 makes tests/persistence/ownership.mjs prove isolation on an owner-scoped entity with a second real account (BASE44_TEST_EMAIL_2), never a fabricated id in q.
+- 7 scouted, and ruled 2026-10-12: a Base44 hosted function reads the nine owner-scoped entities for collaborators, checking the grant itself on every call; then writes for Schedule and Moodboard only, each held. Budget, Vendor and Invitation stay view only.
+- 7 setup merged as #1011: collaborator hashes and invite links use COLLAB_HASH_KEY, never BASE44_ADMIN_KEY (owner ruling 2026-10-12). The key was rotated before the merge. Every grant and invite link made before it stopped matching. The rebuild script, scripts/collab-grants-rebuild.ts, is not being run: both known collaborators are test accounts and are re-invited from the smoke account's dashboard when next needed (owner, 2026-10-12).
+- Next: 7, PR 1 (the hosted function, held), then PR 2 (the Vercel caller), then 5 and 4.
+
+## Findings
+
+- For the weekly digest's eventual restore (found 2026-10-11, in the LiveStream isolation scout). api/cron/send-weekly-digest.js is not scheduled in vercel.json. It reads Table, Note and VendorTask with the admin key, and all three have owner-scoped read, so the admin key gets empty lists (BASE44_PLATFORM_NOTES.md, "The admin key is not a superuser bypass"). The unassigned tables, tasks due this week and vendor tasks due lines can never fire. The fix, when the cron is restored, is the same per-entity read path item 7's phase 2 scout covers. Its other reads (Guest, RsvpResponse, WeddingDetails, Questionnaire, QuestionnaireResponse, PollVote, PollComment) are open-read and work.
+- The 26 entities with owner-scoped read, as of 2026-10-11, go with that fix: Budget, Collaborator, CustomEventPage, Hotel, Invitation, LiveStream, MoodboardItem, Music, Note, Photo, QuoteRequest, ReceivedGift, RegistryItem, RlsExperimentThrowaway, Schedule, StoryMilestone, StreamChat, Table, Task, UserPayment, Vendor, VendorBooking, VendorLog, VendorTask, VenueAsset, VowSpeech. Notification is scoped on data.recipient_user_id instead.
 
 ## Lessons
 
