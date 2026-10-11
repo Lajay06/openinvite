@@ -62,7 +62,7 @@ async function overflow(page) {
 // app section built as its twin ([data-app-twin]) follows the same rule: at
 // 1440 and at 390 each is exactly the viewport's height, and nothing inside
 // it is cut off. Measured on the page already loaded, at both widths.
-const TWIN_ROUTES = { '/': 1, '/features': 1 };
+const TWIN_ROUTES = { '/': 1, '/features': 1, '/app': 1 };
 async function oneScreen(page, path) {
   const m = await page.evaluate(() => [...document.querySelectorAll('[data-app-twin], [data-value-prop]')].map((e) => ({
     twin: e.hasAttribute('data-app-twin'), h: e.getBoundingClientRect().height, sh: e.scrollHeight, ch: e.clientHeight,

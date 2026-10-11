@@ -15,8 +15,9 @@
  * NO BADGE AND NO STORE LINK: the store line is text.
  */
 import AppTwinSection from "@/components/marketing/AppTwinSection";
-import { APP_DESKTOP_LINE, APP_STORE_LINE } from "@/components/marketing/AppPhones";
 
+export const APP_STORE_LINE = "Coming to the App Store and Google Play at launch.";
+export const APP_DESKTOP_LINE = "You design your guest suite on a desktop, where the space is; everything else is yours wherever you are.";
 export const FEATURES_APP_HEADING = "Everything, on your phone";
 export const FEATURES_APP_LINES = [
   "Add a guest from the car park; it is on your computer before you are back inside.",
@@ -24,16 +25,21 @@ export const FEATURES_APP_LINES = [
   "The seating chart in your hand at the venue walk-through.",
 ];
 
-export default function FeaturesAppSection() {
+/**
+ * @param {{ headingLevel?: 'h1' | 'h2', large?: boolean, showStoreLine?: boolean }}
+ *   props  /app renders this as its hero (batch 3, item 3): an h1, larger,
+ *   with the store line placed by the page after "Do my guests need it?".
+ */
+export default function FeaturesAppSection({ headingLevel = "h2", large = false, showStoreLine = true }) {
   return (
-    <AppTwinSection heading={FEATURES_APP_HEADING} marker="data-app-phones" variant="box">
+    <AppTwinSection heading={FEATURES_APP_HEADING} headingLevel={headingLevel} large={large} marker="data-app-phones" variant="box">
       <ul className="app-twin__lines">
         {FEATURES_APP_LINES.map((line) => (
           <li key={line} data-app-line className="app-twin__line">{line}</li>
         ))}
       </ul>
       <p data-app-desktop-line className="app-twin__copy app-twin__desktop">{APP_DESKTOP_LINE}</p>
-      <p data-app-store-line className="app-twin__small">{APP_STORE_LINE}</p>
+      {showStoreLine && <p data-app-store-line className="app-twin__small">{APP_STORE_LINE}</p>}
     </AppTwinSection>
   );
 }

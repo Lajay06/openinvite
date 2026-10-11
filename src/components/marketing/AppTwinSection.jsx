@@ -24,9 +24,14 @@
  * from the section and its width from `aspect-ratio: 1320 / 2868`, the shape
  * of the recording (TOUR_PAGE_MEDIA['app-phone']), so the picture is reduced
  * to fit and never cropped or stretched; the delivery URLs carry no resize.
- * The frame is the generic CSS phone of batch 2 (AppPhoneMoment.jsx explains
- * why no manufacturer's frame is used): an even thin matte near-black bezel,
- * corners rounded to match, nothing else.
+ * The frame is the generic CSS phone of batch 2: an even thin matte
+ * near-black bezel, corners rounded to match, and nothing else. No notch, no
+ * island, no buttons, no camera, no logo, and no maker's proportions: no
+ * manufacturer's frame is used, because Apple's Design Resources licence (2A
+ * and 2B) excludes website use and software that is not Apple-only, and
+ * Samsung's developer terms are personal and non-commercial. When the app
+ * runs on a phone, the owner's own photograph of a real iPhone running it,
+ * per Apple's marketing guidelines, replaces this frame.
  *
  * THE BOX VARIANT (Features, item 2) keeps the dark box the section had: on
  * desktop the photograph runs full bleed, as the red section's does, and the
@@ -71,14 +76,16 @@ function Phone() {
 
 /**
  * @param {{ heading: string, headingLevel?: 'h1' | 'h2', marker: string,
- *   variant?: 'plain' | 'box', children: React.ReactNode }} props  `marker`
+ *   variant?: 'plain' | 'box', large?: boolean, children: React.ReactNode }}
+ *   props  `large` on /app, where the section is the page's hero and the
+ *   phone may run taller and wider; `marker`
  *   is the data attribute the page's guard finds the section by; the children
  *   are the copy under the heading.
  */
-export default function AppTwinSection({ heading, headingLevel = "h2", marker, variant = "plain", children }) {
+export default function AppTwinSection({ heading, headingLevel = "h2", marker, variant = "plain", large = false, children }) {
   const H = headingLevel;
   return (
-    <section data-app-twin {...{ [marker]: "" }} className={`app-twin app-twin--${variant}`}>
+    <section data-app-twin {...{ [marker]: "" }} className={`app-twin app-twin--${variant}${large ? " app-twin--large" : ""}`}>
       <div className="app-twin__text">
         <H data-app-twin-heading className="app-twin__heading">{heading}</H>
         {children}
@@ -140,6 +147,9 @@ export default function AppTwinSection({ heading, headingLevel = "h2", marker, v
           .app-twin--box .app-twin__picture { left: 0; width: 100%; }
           .app-twin--box .app-twin__phone { left: auto; width: 42vw; }
           .app-twin__line { font-size: clamp(15px, 1.25vw, 22px); line-height: 1.5; padding: 12px 0; }
+          /* /app: the hero, so the phone runs taller and the picture wider. */
+          .app-twin--large .app-twin__phone { top: 96px; bottom: 32px; }
+          .app-twin--large.app-twin--box .app-twin__phone { width: 46vw; }
           .app-twin--box .app-twin__text { background: #0A0A0A; padding: 48px; box-sizing: border-box; width: 48.6vw; gap: 16px; }
         }
       `}</style>
