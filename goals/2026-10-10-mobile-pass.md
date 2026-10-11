@@ -27,6 +27,25 @@ The archived mobile app shell lives on origin as mobile/app-shell at e488030c (1
 
 As CLAUDE.md. Any held-list or do-not-touch file: stop and report before editing. No simulator or device run without the owner. No store submission.
 
+## Lane D (from 2026-10-11)
+
+Lane D took this goal over from lane B after parity PRs 1 and 2 (#962, #966). Territory: ios/, android/, capacitor.config.*, src/mobile/, and components that exist only for the shell. Lane D never edits src/pages, src/components, src/lib or api/.
+
+Order from the advisor, 2026-10-11: item 10 (the Package.swift pin), then parity 5, 3, 4, 8, 6, 7, one PR each, each with a guard planted red first. Then verify Google sign-in through the openinvite:// return path on a device, report only.
+
+Rulings received with that order:
+
+1. Money: no hardcoded dollar sign left anywhere in src/mobile, guarded by elimination rather than by a list of files.
+2. Guest suite wording: "Website builder" and "The website builder" become "Guest Suite". The guest-facing product is the Guest Suite, described as the guest experience; "website" never appears in anything a couple reads in the app.
+3. The invitation email's date line stays written out; every other dashboard date goes through dashboardDate.js.
+
+## Findings for other lanes
+
+Recorded by lane D. Lane D does not edit these files.
+
+1. Lane A, closed by ruling, no action. The per-guest WhatsApp compose sheet stays on both surfaces, because it opens the guest's own WhatsApp from the couple's device and nothing is sent from us. Web: src/pages/Messages.jsx:12 (the import) and :509 (the sheet). Shell: src/mobile/screens/plan/MessagesScreen.jsx:95, wired at src/mobile/screens/plan/PlanContainer.jsx:450. tests/persistence/email-only-channel.mjs already asserts that the web Messages page keeps it.
+2. Lane A, open. Inside the native shell, src/App.jsx:212 redirects only "/" and "/DailyUpdate" to /m. Every other public web path (/tour and /app at src/App.jsx:126 and :128, /Pricing, /features and the rest of PUBLIC_PATH_SET) would render the marketing page, pricing and checkout calls to action included, inside the app if anything navigated the webview there. Today nothing in the shell links to them, and src/mobile/native.ts:389 rewrites every deep link under /m, so the gap is latent. It becomes live with universal links. The suggestion is a native guard that sends any non-/m path to /m, in App.jsx, which is lane A's file.
+
 ## Close
 
 Last line: "Closed <date> at main <full SHA>, PRs <list>".
