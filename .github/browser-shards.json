@@ -1,5 +1,6 @@
 {
   "_comment": [
+    "2026-10-11: one guard added, not a rebalance. test:chip-height (28s, measured locally at two widths against a vite preview of feat/chip-height) to A, which was the lighter shard at 996 against B's 1038. After: A 1024 / B 1038, a 14s delta on a 120s budget, narrower than the 42s it replaces. The booked column is guard time and runs about 87s under wall-clock, as this file's 2026-10-10 note records.",
     "2026-10-10: A REBALANCE, not an addition. test:find-my-invitation (32s) moved A -> B. Before: A 1028 / B 1006, a 22s delta. After: A 996 / B 1038, a 42s delta on a 120s budget. MEASURED WALL-CLOCK FIRST, from main run 38003589277: A 18m35s (1115s) and B 17m40s (1060s) against the 25-minute job limit, so A sat 385s under it rather than close to it. Lane B reported A as near the limit; this records what the run actually shows, and the move still goes the right way because A was the heavier side. The booked column is guard time and runs about 87s under wall-clock, which is the setup and build this file has never counted; after the move both shards project to roughly 18m.",
     "2026-10-09: one guard added, not a rebalance. test:find-my-invitation (29s measured locally against a vite preview of this branch, booked at 32 for a cold first navigation) to A, which was the lighter shard. A 1028 / B 1006, a 22s delta on a 120s budget. It loads six pages, three universes in two recognition states each, which is why it is dearer than the other 390-width guards; the three routes are not interchangeable and the fonts in its output prove it exercised all three. MEASURED RED FIRST on three plants: removing the recognised gate (3 red), putting the pill back in a hero (3 red), and giving the link button styling (3 red).",
     "2026-10-09: one guard added, not a rebalance. test:share-tab-390 (11s measured locally against a vite preview of this branch, booked at 13 so a cold first navigation does not make the column a lie, the same allowance the 2026-10-08 budget-separators entry explains) to B. B 993 -> 1006 against A 996, so the delta moves from 3s to 10s on a 120s budget. It went to B because B was the lighter shard, which is the rule every entry below applies. MEASURED RED FIRST: removing the stacking rule reproduces lane B's exact numbers, a 26px message box and a 28px send button, and turns four of the 390 checks red while all four 1440 checks stay green.",
@@ -30,7 +31,7 @@
     "A": {
       "job": "Browser guards A",
       "port": 4223,
-      "measuredSeconds": 996,
+      "measuredSeconds": 1024,
       "guards": [
         {
           "name": "Marketing-routes + guest-font-effect + no-invalid-date (against this build)",
@@ -51,7 +52,7 @@
             "test:guest-no-invalid-date",
             "test:guest-export-address"
           ],
-          "note": "Serves this PR's own build (not production — CAPTURE_BASE_URL defaults to https://openinvite.com.au otherwise, which would test whatever's already live instead of the change under review) and points the marketing-routes smoke test at it."
+          "note": "Serves this PR's own build (not production \u2014 CAPTURE_BASE_URL defaults to https://openinvite.com.au otherwise, which would test whatever's already live instead of the change under review) and points the marketing-routes smoke test at it."
         },
         {
           "name": "Every text block on a guest page follows its universe's mark",
@@ -69,7 +70,7 @@
           "name": "The onboarding universe picker advances on Select",
           "seconds": 44,
           "script": "test:onboarding-universe-select",
-          "note": "Select is the answer, so Select advances — and keeps the answer."
+          "note": "Select is the answer, so Select advances \u2014 and keeps the answer."
         },
         {
           "name": "The onboarding universe tiles are the universes' own heroes",
@@ -171,6 +172,12 @@
           "seconds": 59,
           "script": "test:per-event-dashboard",
           "reason": "Three of item 6's guards, held back from #893 until #886, #887 and #892 were on main. Reads the Guests page at 390 and 1440 and walks the send modal twice, once per event choice, because \"the list narrows\" needs a control."
+        },
+        {
+          "name": "The Invited-to chips are pills in every row, at 1440 and 390",
+          "seconds": 28,
+          "script": "test:chip-height",
+          "reason": "Item 4 of goals/2026-10-11-dashboard-fixes-batch-1.md. Every chip painted FOUR PIXELS tall before the fix: 2px of padding around a zero line box, because the button set lineHeight: 0 and CHIP_BASE inherited it, so 10px glyphs painted outside the box they sat in. A source read cannot see that: the declaration that broke the pill was on a different element and looked deliberate. Its own fixture carries the two row shapes the owner compared, one guest with an email and a phone and one with neither, because the shared fixture's three guests all have an email."
         }
       ]
     },
@@ -207,7 +214,7 @@
           "name": "The country picker offers the world",
           "seconds": 60,
           "script": "test:country-picker",
-          "note": "The full ISO list, searchable, with SVG flags — and no emoji in it."
+          "note": "The full ISO list, searchable, with SVG flags \u2014 and no emoji in it."
         },
         {
           "name": "The couple's reply reaches the guest's real address",
@@ -253,7 +260,7 @@
           "name": "Custom pages keep their order, and the builder shows its controls",
           "seconds": 21,
           "script": "test:builder-custom-pages",
-          "note": "MOVED HERE FROM BEFORE THE BUILD STEPS, 2026-09-08, because it now needs a browser and this is the first point in the job that has one.  #709 gave this guard a fallback: when a diff cannot answer the question — an empty range, or any run on main — it renders all fourteen marketing routes and compares bodies. That fallback fired on main immediately after #709 merged and crashed on `browserType.launch: Executable doesn't exist`, because it sat at line 87, one hundred and seventy lines before `npx playwright install`.  The guard was right and its placement was wrong. It stays a required step; it simply runs after Chromium exists. The diff path costs the same wherever it sits, and the fallback cannot run anywhere earlier. Needs the same preview server and browser as the guards above. The resume path it checks was written long ago and inert until c832e9e declared onboardingDraft — so this is the first CI run it has ever had. The breadcrumb's WORDS and its painted-ness, on two universe routes. Each hides the other's failure: right words behind an overlay reads correct in the DOM; wrong words on screen reads correct in a screenshot."
+          "note": "MOVED HERE FROM BEFORE THE BUILD STEPS, 2026-09-08, because it now needs a browser and this is the first point in the job that has one.  #709 gave this guard a fallback: when a diff cannot answer the question \u2014 an empty range, or any run on main \u2014 it renders all fourteen marketing routes and compares bodies. That fallback fired on main immediately after #709 merged and crashed on `browserType.launch: Executable doesn't exist`, because it sat at line 87, one hundred and seventy lines before `npx playwright install`.  The guard was right and its placement was wrong. It stays a required step; it simply runs after Chromium exists. The diff path costs the same wherever it sits, and the fallback cannot run anywhere earlier. Needs the same preview server and browser as the guards above. The resume path it checks was written long ago and inert until c832e9e declared onboardingDraft \u2014 so this is the first CI run it has ever had. The breadcrumb's WORDS and its painted-ness, on two universe routes. Each hides the other's failure: right words behind an overlay reads correct in the DOM; wrong words on screen reads correct in a screenshot."
         },
         {
           "name": "The full-page preview offers the devices the canvas does",
@@ -271,19 +278,19 @@
           "name": "The sidebar groups open shut and remember what you open",
           "seconds": 15,
           "script": "test:sidebar-groups",
-          "note": "Collapsed by default, remembered per device, and a chevron rather than a text caret. All three are claims about the rendered DOM after a mount — and the memory is checked by RELOADING, since reading state back without one proves only that it is in memory."
+          "note": "Collapsed by default, remembered per device, and a chevron rather than a text caret. All three are claims about the rendered DOM after a mount \u2014 and the memory is checked by RELOADING, since reading state back without one proves only that it is in memory."
         },
         {
           "name": "The seating grid reaches the edge of the frame at every zoom",
           "seconds": 14,
           "script": "test:seating-canvas",
-          "note": "The corners, at minimum and maximum zoom. The middle of the frame was never the broken part — a guard that sampled it would have passed on every build this fixes."
+          "note": "The corners, at minimum and maximum zoom. The middle of the frame was never the broken part \u2014 a guard that sampled it would have passed on every build this fixes."
         },
         {
           "name": "The unread count is visible on both sidebars",
           "seconds": 14,
           "script": "test:messages-badge",
-          "note": "The unread count was computed and rendered nowhere. The desktop sidebar is hidden lg:flex, so it stays in the DOM at phone width — this measures visibility, not presence, or it would pass on the hidden one."
+          "note": "The unread count was computed and rendered nowhere. The desktop sidebar is hidden lg:flex, so it stays in the DOM at phone width \u2014 this measures visibility, not presence, or it would pass on the hidden one."
         },
         {
           "name": "The builder Settings tab works and can be read",
