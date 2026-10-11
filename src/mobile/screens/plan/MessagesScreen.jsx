@@ -73,7 +73,7 @@ function WhatsAppNumberSheet({ open, onClose, phone, country, onSave }) {
       </>
     )}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <p className="oi-m-meta">Shown to guests on your guest suite so they can message you. Kept on this device, as the website keeps it in the browser.</p>
+        <p className="oi-m-meta">Shown to guests on your guest suite so they can message you. Kept on this device, as openinvite.com.au keeps it in the browser.</p>
         <SelectField label="Country" value={iso} onChange={(e) => setIso(e.target.value)} options={COUNTRY_OPTIONS} />
         <TextField label="Number" type="tel" inputMode="tel" value={v} onChange={(e) => setV(e.target.value)} placeholder="+61 4..." error={bad ? 'That does not look like a phone number. Include the country code.' : ''} />
         {phone && toWaMe(phone) && <p className="oi-m-meta">Guests reach you at wa.me/{toWaMe(phone)}</p>}

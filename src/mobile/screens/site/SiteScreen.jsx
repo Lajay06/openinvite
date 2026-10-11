@@ -84,7 +84,7 @@ export default function SiteScreen({ details, universeName, isLive, siteUrl, cou
           <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Design</h2>
           <RowGroup>
             <Row icon={Palette} tile="tint" label="Choose a universe" sub="The look of your whole suite" onClick={() => onOpenDesktop('/studio/universe')} />
-            <Row icon={LayoutTemplate} tile="tint" label="Website builder" sub="Best on desktop" onClick={() => onOpenDesktop('/studio/website')} />
+            <Row icon={LayoutTemplate} tile="tint" label="Guest Suite" sub="Best on desktop" onClick={() => onOpenDesktop('/studio/website')} />
             <Row icon={Sparkles} tile="tint" label="Ava studio" sub="Best on desktop" onClick={() => onOpenDesktop('/studio/ava')} />
           </RowGroup>
         </section>
