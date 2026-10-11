@@ -61,6 +61,31 @@ THE LIVE ROUND TRIP IS OWNER-RUN. It is written and registered, and item 1's PR
 opens without waiting on it; the merge is held until the owner reports it
 green. This checkout has no BASE44_TEST_EMAIL or BASE44_TEST_PASSWORD.
 
+## Lessons
+
+DOCS COMMITS RIDE IN THE LANE'S NEXT PR. Standing rule, owner 2026-10-11, from
+this goal's own file failing to land twice: with four lanes merging, a
+direct-to-main docs push is a coin toss against the other three, and this one
+lost it twice in a row inside ten minutes. A docs commit that is not urgent
+goes in the lane's next PR instead. Direct pushes to main are for GOAL CLOSE
+COMMITS only, where the SHA in the close line has to be the SHA the push
+creates and nothing else can carry it.
+
+AND BRANCH FROM origin/main, NEVER FROM A LOCAL main THAT IS AHEAD. This goal's
+item 1 branch was cut from a local main holding the unpushed goal file, so
+#985's diff carried that file as a NEW FILE, and a later docs push would have
+added the same path twice: an add/add conflict, which is the same trap as
+stacking a PR on another PR's branch. Taking the file out of the race resolved
+it, and the rule is the general one.
+
+RUN THE DIFF-RANGE GUARDS AFTER THE COMMIT, NEVER BEFORE IT. test:calm-copy and
+test:us-english-spelling read added lines in origin/main...HEAD, which is
+committed history and not the working tree. Run before committing, they read a
+range containing none of the change and report a PASS. That is how "licence"
+reached CI in item 1 after five local gates came back green; the same shape had
+printed "0 file(s)" an hour earlier on another goal's item, where it was
+noticed. A pass from a guard that looked at nothing is the thing to watch for.
+
 ## Handed forward
 
 A third, final-day reminder if couples ask. Per-event reply-by dates.
