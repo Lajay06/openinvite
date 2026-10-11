@@ -31,7 +31,7 @@ import {
  *
  * ONE PLACE TO TURN IT ON. The first version made the switch operable in both
  * modes, reading the item's guard ("the same state after a change on either")
- * as licence to throw it from either page. The owner ruled that wrong on
+ * as license to throw it from either page. The owner ruled that wrong on
  * 2026-10-11: Event details shows a date you cannot edit, so a switch you can
  * throw beside it is an asymmetry with no reason. Event details now shows the
  * switch's STATE and its line, with one sentence saying where to change it,
