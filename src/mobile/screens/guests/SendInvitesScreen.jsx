@@ -1,14 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Search, Mail, MessageCircle, Eye, FlaskConical, Send, Check, RotateCcw, Image as ImageIcon } from 'lucide-react';
+import { Search, Mail, Eye, FlaskConical, Send, Check, RotateCcw, Image as ImageIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Screen from '../../shell/Screen';
 import { FilterPills, RowGroup, Row, Checkbox, PillButton, TextField, TextAreaField, BottomSheet, SkeletonRows, ErrorState, EmptyState, PanelCard, StatusPill } from '../../ui';
 import PillChoice from '../../ui/PillChoice';
 import { initials, GUEST_CATEGORY_LABEL } from '../../lib/format';
-import { openExternal } from '../../native';
 import { useApi } from '../../data/api';
 import { isAttending, isDeclined, isAwaitingPrimary } from '@/lib/guestRsvpTally';
-import { toWaMe } from '@/lib/phoneE164';
 import { coupleDisplayName } from '@/lib/coupleNames';
 import { getWeddingEvents, getGuestEventResponse, getEventVenueAndDate } from '@/lib/weddingEvents';
 import { renderInvitationEmail, getTypeComposeDefaults, getBannerImageUrl, getDefaultBannerChoice, buildGuestCtaUrl } from '@/lib/emailTemplate';
@@ -26,16 +24,12 @@ const GROUP_CATEGORIES = ['family', 'friends', 'colleagues', 'partners_family', 
 const RSVP_BASE = `${siteOrigin()}/rsvp/`;
 
 const buildRsvpUrl = (token) => { if (!token) throw new Error('Refusing to build an RSVP link from an empty token.'); return RSVP_BASE + token; };
-function buildWhatsAppMessage(guest, coupleName, weddingDate, rsvpUrl) {
-  const name = guest?.name ? guest.name.split(' ')[0] : 'there';
-  const dateStr = weddingDate ? new Date(weddingDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
-  return `Hi ${name}! You're invited to ${coupleName ? `${coupleName}'s wedding` : 'our wedding'}${dateStr ? ` on ${dateStr}` : ''}. Please RSVP here: ${rsvpUrl}`;
-}
-function buildWhatsAppUrl(guest, coupleName, weddingDate, token, siteUrl) {
-  const msg = buildWhatsAppMessage(guest, coupleName, weddingDate, buildGuestCtaUrl({ showDate: true, siteUrl, rsvpToken: token, rsvpUrl: buildRsvpUrl(token) }));
-  const phone = toWaMe(guest.phone);
-  return phone ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}` : `https://wa.me/?text=${encodeURIComponent(msg)}`;
-}
+// THE WHATSAPP CHANNEL IS GONE, as on the web since #924
+// (SendInvitesModal.jsx). A wa.me chat is sent from the couple's own account,
+// so it bypassed the server's stop-emails check (#951): a guest who opted out
+// could still be messaged. Email through /api/send-invites is the only way
+// guests receive the site. The Messages screen keeps its per-guest WhatsApp
+// reply, as the web's Messages page does, for a guest who has written in.
 function replaceMergeTags(str, guestName, coupleName, dateStr) {
   const firstName = guestName ? guestName.split(' ')[0] : '[Guest name]';
   return String(str || '').replace(/\[Guest name\]/gi, firstName).replace(/\[Wedding date\]/gi, dateStr || '[Wedding date]').replace(/\[Couple names\]/gi, coupleName || 'the couple').replace(/\[RSVP link\]/gi, '[RSVP link]');
@@ -45,8 +39,8 @@ function replaceMergeTags(str, guestName, coupleName, dateStr) {
  * Send invites: the desktop's four steps on one full-screen flow. The same
  * types, filters, compose defaults, merge tags, banner choice, rendered
  * preview (the exact renderInvitationEmail the server uses), test send,
- * channel, review, send through /api/send-invites, WhatsApp through wa.me,
- * and the same tracking writes (invite_sent_at and invite_channel for
+ * channel (email only), review, send through /api/send-invites, and the same
+ * tracking writes (invite_sent_at and invite_channel for
  * invitations, reminder_sent_at for reminders). Ultra only, as on desktop.
  *
  * Goal 8 (item 6), beyond the desktop: groups (a category or a tag chooses
@@ -79,15 +73,12 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
   const [bodyEdited, setBodyEdited] = useState(false);
   const [bannerChoice, setBannerChoice] = useState('none');
   const [bannerTouched, setBannerTouched] = useState(false);
-  const [channel, setChannel] = useState('email');
   const [preview, setPreview] = useState(false);
   const [invPreview, setInvPreview] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [result, setResult] = useState(null); // { rows: [{ guest, status: 'sent'|'skipped'|'failed', why }], channelStr }
   const [sending, setSending] = useState(false);
   const [sendingTest, setSendingTest] = useState(false);
-  // WhatsApp opens one chat at a time on a phone, so the guests queue here and each is marked sent as their chat opens.
-  const [waQueue, setWaQueue] = useState(null); // { guests, index, channelStr }
 
   const coupleName = coupleDisplayName(wedding);
   const weddingDate = wedding?.weddingDate || '';
@@ -117,7 +108,6 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
   const selectedGuests = useMemo(() => guests.filter((g) => selected.has(g.id)), [guests, selected]);
   const withEmail = selectedGuests.filter((g) => g.email);
   const noEmail = selectedGuests.filter((g) => !g.email);
-  const withPhone = selectedGuests.filter((g) => toWaMe(g.phone));
   // Groups: every category in use and every tag in use, each choosing its guests at once.
   const groups = useMemo(() => {
     const cats = GROUP_CATEGORIES.filter((c) => guests.some((g) => g.category === c)).map((c) => ({ key: `cat:${c}`, label: GUEST_CATEGORY_LABEL[c] || c, test: (g) => g.category === c }));
@@ -148,17 +138,15 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
   };
   const weddingPayload = { coupleName, weddingDate, venue, siteUrl, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl };
 
-  const channelLabel = channel === 'both' ? 'Email and WhatsApp' : channel === 'email' ? 'Email' : 'WhatsApp';
   const send = async (list = selectedGuests) => {
     setConfirming(false);
     setSending(true);
     const tid = toast.loading(`Sending ${TYPE_LABELS[type].toLowerCase()}s`);
-    const sendEmail = channel === 'email' || channel === 'both';
-    const sendWhatsApp = channel === 'whatsapp' || channel === 'both';
-    const channelStr = [sendEmail && 'email', sendWhatsApp && 'whatsapp'].filter(Boolean).join('+');
+    // 'email', a literal, as on the web: there is one channel.
+    const channelStr = 'email';
     try {
       const withTokens = await ensureTokens(list);
-      if (sendEmail) {
+      {
         const emailList = withTokens.filter((g) => g.email);
         const plusOneList = withTokens.filter((g) => g.plus_one_email && g.plus_one_rsvp_link_id);
         const recipients = [
@@ -170,17 +158,7 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
       // Only invite and reminder have a tracking field on Guest; save the date must not write invite_sent_at (SendInvitesModal.jsx).
       const track = (g) => (type === 'invite' || type === 'reminder' ? api.update('Guest', g.id, type === 'reminder' ? { reminder_sent_at: new Date().toISOString() } : { invite_sent_at: new Date().toISOString(), invite_channel: channelStr }) : Promise.resolve());
       // Each recipient's status: the email went (the endpoint took the batch), or there was no email to send to.
-      const rows = withTokens.map((g) => ({ guest: g, status: sendEmail && g.email ? 'sent' : sendWhatsApp && toWaMe(g.phone) ? 'pending' : 'skipped', why: sendEmail && !g.email ? 'No email' : !sendEmail && !toWaMe(g.phone) ? 'No phone number' : '' }));
-      if (sendWhatsApp) {
-        // Email recipients are tracked now; WhatsApp guests are tracked one by one as each chat opens.
-        if (sendEmail) await Promise.all(withTokens.filter((g) => g.email && !toWaMe(g.phone)).map(track));
-        const queue = withTokens.filter((g) => toWaMe(g.phone));
-        toast.success(sendEmail ? `Sent to ${withTokens.filter((g) => g.email).length} by email. Now WhatsApp, one guest at a time.` : 'WhatsApp, one guest at a time.', { id: tid });
-        setSending(false);
-        if (!queue.length) { toast('None of the chosen guests has a phone number WhatsApp can read.'); setResult({ rows, channelStr }); return; }
-        setWaQueue({ guests: queue, index: 0, track, rows, channelStr });
-        return;
-      }
+      const rows = withTokens.map((g) => ({ guest: g, status: g.email ? 'sent' : 'skipped', why: g.email ? '' : 'No email' }));
       await Promise.all(withTokens.map(track));
       const sentCount = rows.filter((r) => r.status === 'sent').length;
       toast.success(`${TYPE_LABELS[type]} sent to ${sentCount} guest${sentCount === 1 ? '' : 's'}`, { id: tid });
@@ -193,16 +171,6 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
       setResult({ rows: list.map((g) => ({ guest: g, status: 'failed', why: e?.message || 'Failed to send' })), channelStr });
     }
   };
-  const openNextWhatsApp = async () => {
-    if (!waQueue) return;
-    const g = waQueue.guests[waQueue.index];
-    openExternal(buildWhatsAppUrl(g, coupleName, weddingDate, g.rsvp_link_id, siteUrl));
-    try { await waQueue.track(g); } catch { /* the chat opened; tracking is best effort */ }
-    const rows = waQueue.rows.map((r) => (r.guest.id === g.id ? { ...r, status: 'sent' } : r));
-    if (waQueue.index + 1 >= waQueue.guests.length) { setWaQueue(null); toast.success(`WhatsApp opened for ${waQueue.guests.length} guest${waQueue.guests.length === 1 ? '' : 's'}`); setResult({ rows, channelStr: waQueue.channelStr }); }
-    else setWaQueue((q) => ({ ...q, index: q.index + 1, rows }));
-  };
-  const closeWaQueue = () => { if (!waQueue) return; setResult({ rows: waQueue.rows.map((r) => (r.status === 'pending' ? { ...r, status: 'skipped', why: 'Chat not opened' } : r)), channelStr: waQueue.channelStr }); setWaQueue(null); };
   const failed = result ? result.rows.filter((r) => r.status === 'failed').map((r) => r.guest) : [];
   const resend = () => { if (!failed.length) return; setResult(null); send(failed); };
   const sendTest = async () => {
@@ -219,7 +187,7 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
     return (
       <Screen title="Send invites" back={back}>
         <div className="oi-m-stack oi-m-stack--24">
-          <PanelCard tone="ink" label="Ultra" title="Sending invitations is part of Ultra" body="Upgrade on the website to email and message your guests from here. Your list, events and RSVP links are all ready." />
+          <PanelCard tone="ink" label="Ultra" title="Sending invitations is part of Ultra" body="Upgrade on the website to email your guests from here. Your list, events and RSVP links are all ready." />
         </div>
       </Screen>
     );
@@ -244,14 +212,14 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
     const sentRows = result.rows.filter((r) => r.status === 'sent');
     const STATUS = { sent: ['ok', 'Sent'], skipped: ['neutral', 'Skipped'], failed: ['no', 'Failed'], pending: ['warn', 'Waiting'] };
     return (
-      <Screen title={failed.length && !sentRows.length ? 'Not sent' : 'Sent'} subtitle={`${TYPE_LABELS[type]} by ${result.channelStr.replace('+', ' and ').replace('whatsapp', 'WhatsApp')}`} back={() => onSent?.()} footer={resultFooter}>
+      <Screen title={failed.length && !sentRows.length ? 'Not sent' : 'Sent'} subtitle={`${TYPE_LABELS[type]} by email`} back={() => onSent?.()} footer={resultFooter}>
         <div className="oi-m-stack oi-m-stack--24">
           <div className="oi-m-stats" style={{ margin: 0 }}>
             {[['sent', 'Sent'], ['skipped', 'Skipped'], ['failed', 'Failed']].map(([k, label]) => { const n = result.rows.filter((r) => r.status === k).length; return n || k === 'sent' ? <div key={k} className="oi-m-stat-btn" style={{ minHeight: 0 }}><span className="oi-m-num" style={{ fontSize: 28, lineHeight: '34px' }}>{n}</span><span className="oi-m-meta">{label}</span></div> : null; })}
           </div>
           {failed.length > 0 && <div className="oi-m-card"><p className="oi-m-body">{result.rows.find((r) => r.status === 'failed')?.why}</p></div>}
           <RowGroup>
-            {result.rows.map(({ guest: g, status, why }) => { const [tone, label] = STATUS[status] || STATUS.skipped; return <Row key={g.id} initials={initials(g.name)} label={g.name} sub={why || (result.channelStr.includes('email') && g.email ? g.email : g.phone || '')} trailing={<StatusPill tone={tone}>{label}</StatusPill>} chevron={false} />; })}
+            {result.rows.map(({ guest: g, status, why }) => { const [tone, label] = STATUS[status] || STATUS.skipped; return <Row key={g.id} initials={initials(g.name)} label={g.name} sub={why || g.email || ''} trailing={<StatusPill tone={tone}>{label}</StatusPill>} chevron={false} />; })}
           </RowGroup>
           {type === 'invite' && sentRows.length > 0 && <p className="oi-m-meta">Each guest sent to is now marked as invited.</p>}
         </div>
@@ -327,34 +295,27 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
             )}
 
             {step === 3 && (
-              <RowGroup>
-                {[['email', 'Email', `${withEmail.length} of ${selectedGuests.length} have an email`, Mail], ['whatsapp', 'WhatsApp', `${withPhone.length} have a phone number; a message opens for each`, MessageCircle], ['both', 'Email and WhatsApp', 'Both, for everyone it reaches', Send]].map(([k, label, sub, Icon]) => (
-                  <button key={k} type="button" className="oi-m-row oi-m-row--pressable" onClick={() => setChannel(k)} aria-pressed={channel === k}>
-                    <span className={`oi-m-row__tile${channel === k ? ' oi-m-row__tile--primary' : ''}`}><Icon size={19} strokeWidth={1.75} /></span>
-                    <div className="oi-m-row__body"><div className="oi-m-row__label">{label}</div><div className="oi-m-row__sub">{sub}</div></div>
-                    {channel === k && <span className="oi-m-status oi-m-status--ok">Chosen</span>}
-                  </button>
-                ))}
-              </RowGroup>
+              <>
+                <p className="oi-m-body">By email, to each chosen guest with an address.</p>
+                <RowGroup>
+                  <div className="oi-m-row">
+                    <span className="oi-m-row__tile oi-m-row__tile--primary"><Mail size={19} strokeWidth={1.75} /></span>
+                    <div className="oi-m-row__body"><div className="oi-m-row__label">Email</div><div className="oi-m-row__sub">{withEmail.length} of {selectedGuests.length} have an email</div></div>
+                  </div>
+                </RowGroup>
+              </>
             )}
 
             {step === 4 && (
               <>
                 <div className="oi-m-card oi-m-card--flush">
-                  {[['Sending', TYPE_LABELS[type]], ['To', `${selectedGuests.length} guest${selectedGuests.length === 1 ? '' : 's'}`], ['By', channel === 'both' ? 'Email and WhatsApp' : channel === 'email' ? 'Email' : 'WhatsApp'], ['Subject', subject], ['Banner', bannerChoice === 'none' ? 'None' : bannerChoice === 'wedding' ? 'Your wedding photo' : 'The venue']].map(([k, v]) => <div key={k} className="oi-m-kv"><div className="oi-m-kv__k">{k}</div><div className="oi-m-kv__v">{v}</div></div>)}
+                  {[['Sending', TYPE_LABELS[type]], ['To', `${selectedGuests.length} guest${selectedGuests.length === 1 ? '' : 's'}`], ['By', 'Email'], ['Subject', subject], ['Banner', bannerChoice === 'none' ? 'None' : bannerChoice === 'wedding' ? 'Your wedding photo' : 'The venue']].map(([k, v]) => <div key={k} className="oi-m-kv"><div className="oi-m-kv__k">{k}</div><div className="oi-m-kv__v">{v}</div></div>)}
                 </div>
-                {(channel === 'email' || channel === 'both') && noEmail.length > 0 && <div className="oi-m-card"><p className="oi-m-body">{noEmail.length} of the chosen guests {noEmail.length === 1 ? 'has' : 'have'} no email and will not get the email: {noEmail.slice(0, 4).map((g) => g.name).join(', ')}{noEmail.length > 4 ? ', and more' : ''}.</p></div>}
-                {(channel === 'whatsapp' || channel === 'both') && <div className="oi-m-card"><p className="oi-m-body">WhatsApp opens one message at a time, with the guest's RSVP link filled in. {selectedGuests.length - withPhone.length > 0 ? `${selectedGuests.length - withPhone.length} have no phone number and open a blank recipient.` : ''}</p></div>}
-                {(channel === 'whatsapp' || channel === 'both') && selectedGuests[0] && (
-                  <div className="oi-m-card">
-                    <div className="oi-m-meta" style={{ marginBottom: 8 }}>WhatsApp message{selectedGuests[0].phone ? `, to ${selectedGuests[0].phone}` : ' (no phone on file)'}</div>
-                    <div className="oi-m-bubble oi-m-bubble--in" style={{ whiteSpace: 'pre-wrap', maxWidth: '100%', background: 'var(--m-neutral)' }}>{buildWhatsAppMessage(selectedGuests[0], coupleName, weddingDate, buildGuestCtaUrl({ showDate: true, siteUrl, rsvpToken: selectedGuests[0].rsvp_link_id || 'preview-token', rsvpUrl: `${RSVP_BASE}${selectedGuests[0].rsvp_link_id || 'preview-token'}` }))}</div>
-                  </div>
-                )}
+                {noEmail.length > 0 && <div className="oi-m-card"><p className="oi-m-body">{noEmail.length} of the chosen guests {noEmail.length === 1 ? 'has' : 'have'} no email and will not get the email: {noEmail.slice(0, 4).map((g) => g.name).join(', ')}{noEmail.length > 4 ? ', and more' : ''}.</p></div>}
                 <section>
                   <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Recipients</h2>
                   <RowGroup>
-                    {selectedGuests.map((g) => <Row key={g.id} initials={initials(g.name)} label={g.name} sub={[g.email || 'No email', g.phone].filter(Boolean).join(', ')} chevron={false} />)}
+                    {selectedGuests.map((g) => <Row key={g.id} initials={initials(g.name)} label={g.name} sub={g.email || 'No email'} chevron={false} />)}
                   </RowGroup>
                 </section>
                 {type === 'invite' && <p className="oi-m-meta">Each guest is marked as invited once this sends. Save the dates never mark anyone invited.</p>}
@@ -364,14 +325,6 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
           </>
         )}
       </div>
-      <BottomSheet open={!!waQueue} onClose={closeWaQueue} title="Open in WhatsApp" footer={waQueue ? <PillButton variant="primary" block icon={MessageCircle} onClick={openNextWhatsApp}>Open chat with {waQueue.guests[waQueue.index]?.name}</PillButton> : undefined}>
-        {waQueue && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <p className="oi-m-body">{waQueue.index + 1} of {waQueue.guests.length}. WhatsApp opens with the message and {waQueue.guests[waQueue.index]?.name.split(' ')[0]}'s RSVP link filled in; come back here for the next guest.</p>
-            <RowGroup>{waQueue.guests.map((g, i) => <Row key={g.id} initials={initials(g.name)} label={g.name} sub={g.phone} trailing={i < waQueue.index ? <StatusPill tone="ok">Sent</StatusPill> : i === waQueue.index ? <StatusPill tone="warn">Next</StatusPill> : null} chevron={false} />)}</RowGroup>
-          </div>
-        )}
-      </BottomSheet>
       {/* The confirmation before anything sends: the exact number, the channel, the first names. */}
       <BottomSheet open={confirming} onClose={() => setConfirming(false)} title="Ready to send?" footer={(
         <>
@@ -381,10 +334,10 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
       )}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div className="oi-m-card oi-m-card--flush">
-            {[['Sending', TYPE_LABELS[type]], ['To', `${selectedGuests.length} guest${selectedGuests.length === 1 ? '' : 's'}`], ['By', channelLabel]].map(([k, v]) => <div key={k} className="oi-m-kv"><div className="oi-m-kv__k">{k}</div><div className="oi-m-kv__v">{v}</div></div>)}
+            {[['Sending', TYPE_LABELS[type]], ['To', `${selectedGuests.length} guest${selectedGuests.length === 1 ? '' : 's'}`], ['By', 'Email']].map(([k, v]) => <div key={k} className="oi-m-kv"><div className="oi-m-kv__k">{k}</div><div className="oi-m-kv__v">{v}</div></div>)}
           </div>
           <p className="oi-m-body">{selectedGuests.slice(0, 4).map((g) => g.name?.split(' ')[0] || 'a guest').join(', ')}{selectedGuests.length > 4 ? ` and ${selectedGuests.length - 4} more` : ''}.</p>
-          {(channel === 'email' || channel === 'both') && noEmail.length > 0 && <p className="oi-m-meta">{noEmail.length} without an email will be skipped.</p>}
+          {noEmail.length > 0 && <p className="oi-m-meta">{noEmail.length} without an email will be skipped.</p>}
         </div>
       </BottomSheet>
       <InvitationPreviewSheet invitation={invitation} details={wedding} open={invPreview} onClose={() => setInvPreview(false)} />

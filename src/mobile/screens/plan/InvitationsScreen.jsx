@@ -41,7 +41,7 @@ export default function InvitationsScreen({ invitation, details, invitationUrl, 
             </div>
             <RowGroup>
               <Row icon={Link2} tile="neutral" label="Copy invitation link" sub={invitationUrl.replace(/^https?:\/\//, '')} onClick={copy} chevron={false} />
-              <Row icon={Send} tile="neutral" label="Send invites" sub="Email or WhatsApp, with each guest's RSVP link" onClick={onSend} />
+              <Row icon={Send} tile="neutral" label="Send invites" sub="By email, with each guest's RSVP link" onClick={onSend} />
               <Row icon={Monitor} tile="neutral" label="Open the builder on desktop" sub="Layout, colors, type and imagery" onClick={onDesktop} />
             </RowGroup>
           </>

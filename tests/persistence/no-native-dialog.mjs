@@ -64,13 +64,19 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
  * was wrong is the occasion they dismissed it by reflex. The row leaves the
  * list at once and the write waits thirty seconds. C5,
  * goals/2026-10-07-households-and-children.md item 3.
+ *
+ * CollaborateModal.jsx 2 -> 1 on 2026-10-11: removing a collaborator lost its
+ * window.confirm for an inline "Remove {name}? They lose access straight
+ * away." with Remove and Keep, because removal now revokes access on the
+ * server and the question deserves the product's own words.
+ * goals/2026-10-10-collaborators-safe-and-truthful.md item 1a.
  */
 const BASELINE = {
   'src/components/games/GamesManager.jsx': 1,
   'src/components/guest-experience/HotelRecommendations.jsx': 1,
   'src/components/guests/SetEventsModal.jsx': 1,
   'src/components/invitations/InvitationBuilder.jsx': 2,
-  'src/components/layout/CollaborateModal.jsx': 2,
+  'src/components/layout/CollaborateModal.jsx': 1,
   'src/components/registry/ReceivedGifts.jsx': 1,
   'src/components/registry/RegistryProductList.jsx': 1,
   'src/components/rsvp/RSVPPage.jsx': 1,
