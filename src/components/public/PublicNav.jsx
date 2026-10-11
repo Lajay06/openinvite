@@ -13,11 +13,10 @@ const NAV_LINKS = [
   { label: "Features", to: "/features" },
   { label: "Ava", to: "/ava" },
   { label: "Universes", to: "/universes" },
-  // Sits before Pricing so Pricing stays the last item, which is where the
-  // rest of the nav convention puts it. Lowercase "/tour" matches the route
-  // in App.jsx exactly — isActive() is a case-sensitive pathname equality
-  // check, so "/Tour" would render but never highlight.
-  { label: "Tour", to: "/tour" },
+  // NO TOUR LINK (site fixes batch 3, item 5): /tour stays live at its URL,
+  // noindexed, and the link returns when the page reads like the rest of
+  // the site. When it does, it sits before Pricing, lowercase "/tour", since
+  // isActive() is a case-sensitive pathname check.
   { label: "Pricing", to: "/pricing" },
 ];
 

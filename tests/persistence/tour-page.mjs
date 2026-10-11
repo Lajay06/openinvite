@@ -19,8 +19,8 @@ import { readFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MEDIA, TOUR_PAGE_MEDIA, PLACEHOLDER_POSTER } from '../../src/lib/studioTour.js';
-import { MARKETING_ROUTES } from '../../scripts/marketingRoutes.mjs';
-import { pass, fail } from './_shared.mjs';
+import { MARKETING_ROUTES, UNLISTED_ROUTES } from '../../scripts/marketingRoutes.mjs';
+import { pass, fail, stripComments } from './_shared.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const MIN_SECONDS = 8;
@@ -79,11 +79,22 @@ export function runTourPage() {
   check('every scene poster on the page is one the media maps hold',
     posters.length >= 8 && posters.every((p) => known.has(p)), `${posters.length} posters, ${posters.filter((p) => !known.has(p)).length} unknown`);
 
-  // ── 3. public ─────────────────────────────────────────────────────────
-  check('/tour is in MARKETING_ROUTES', MARKETING_ROUTES.includes('/tour'));
+  // ── 3. live, but unlisted (site fixes batch 3, item 5) ──────────────────
+  // The page stays live at its URL and keeps its title while it is rebuilt
+  // as four moments; it is out of the nav and the sitemap, and noindexed by
+  // header, until it reads like the rest of the site.
+  check('/tour is still prerendered and routed', MARKETING_ROUTES.includes('/tour')
+    && /<Route path="\/tour" element=\{<Tour \/>\} \/>/.test(readFileSync(resolve(ROOT, 'src/App.jsx'), 'utf8')), 'the URL works');
+  check('/tour is unlisted', UNLISTED_ROUTES.includes('/tour'));
   const sitemap = existsSync(resolve(ROOT, 'prerendered/sitemap.xml')) ? readFileSync(resolve(ROOT, 'prerendered/sitemap.xml'), 'utf8') : '';
-  check('/tour is in sitemap.xml', /\/tour<\/loc>/.test(sitemap));
-  check('/tour is not noindexed', !/<meta name="robots"[^>]*noindex/i.test(html));
+  check('/tour is not in sitemap.xml, which still lists the rest', !/\/tour<\/loc>/.test(sitemap) && /\/features<\/loc>/.test(sitemap));
+  const rule = (JSON.parse(readFileSync(resolve(ROOT, 'vercel.json'), 'utf8')).headers || []).find((h) => h.source === '/tour');
+  const robots = (rule?.headers?.find((h) => h.key.toLowerCase() === 'x-robots-tag')?.value || '').toLowerCase();
+  check('/tour is noindex, nofollow and noarchive by header', ['noindex', 'nofollow', 'noarchive'].every((d) => robots.includes(d)), robots || 'MISSING');
+  const nav = readFileSync(resolve(ROOT, 'src/components/public/PublicNav.jsx'), 'utf8');
+  const footer = readFileSync(resolve(ROOT, 'src/components/public/PublicFooter.jsx'), 'utf8');
+  check('/tour is in neither the nav nor the footer',
+    !/to: "\/tour"|href="\/tour"|to="\/tour"/.test(stripComments(nav)) && !/\/tour\b/.test(stripComments(footer)), 'no link');
   check('/tour has its own title', /<title>Openinvite \| Tour the studio<\/title>/.test(html));
 
   return r;
