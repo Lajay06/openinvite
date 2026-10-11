@@ -1,87 +1,43 @@
 /**
  * tests/persistence/guests-refresh.mjs
  *
- * THE LIST SAYS HOW OLD IT IS, AND A FAILED REFRESH DOES NOT LIE ABOUT IT.
+ * THE REFRESH CONTROL AND THE AGE LINE ARE GONE, AND STAY GONE.
  *
- * Item 4 of goals/2026-10-09-reply-lifecycle.md. The Guests page fetched once
- * on mount and again after every write, and never told the couple when. On a
- * page whose whole job is "who have I not heard from", a list of unknown age
- * is a list you cannot act on.
+ * This guard used to prove the other thing. Item 4 of
+ * goals/2026-10-09-reply-lifecycle.md gave the Guests page a line saying how
+ * old the list was and a Refresh control beside it, and the interesting half
+ * was the failure path: a refresh that failed had to keep the rows and must
+ * not move the timestamp, or the page would claim to be fresh while showing
+ * stale data.
  *
- * ── THE ONE THAT MATTERS IS THE FAILURE PATH ──────────────────────────────
+ * The owner's walkthrough took both controls off the page (item 3 of
+ * goals/2026-10-11-dashboard-fixes-batch-1.md), and item 7 of that goal then
+ * removed src/lib/lastUpdated.js, which they were the only consumer of. Two
+ * sections of this file went with the module: they drove updatedLabel,
+ * refreshFailedLine and clockTime directly, and a guard for a module that no
+ * longer exists is not a guard.
  *
- * The owner's guard for this item is that a failed refresh KEEPS THE LIST and
- * shows the fallback line. Both halves are failure modes with teeth:
- *
- *   · a refresh that failed and then emptied the table reads as "every guest
- *     is gone", which is worse than showing nothing new;
- *   · a timestamp moved by a failed attempt makes the page claim to be fresh
- *     while showing stale rows, which is the lie the whole item replaces.
- *
- * So the label is a pure function of two instants and nothing accumulates,
- * which is also why src/lib/lastUpdated.js takes `now` as an argument: a
- * guard that cannot fix the clock cannot test a boundary.
+ * WHAT IS LEFT IS WORTH KEEPING, which is why this file is not deleted with
+ * them. A removal nobody guards is a removal a later refactor can read as an
+ * accident and undo. So this asserts the absence: the controls, the state
+ * behind them, and the re-render tick, with the one thing the removal must
+ * NOT have taken, which is the page still loading itself.
  */
 
 import fs from 'fs';
 import path from 'path';
 import { pass, fail, stripComments } from './_shared.mjs';
-import { updatedLabel, refreshFailedLine, clockTime } from '../../src/lib/lastUpdated.js';
 
 const ROOT = path.resolve(new URL('../../', import.meta.url).pathname);
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const code = (p) => stripComments(read(p));
 
-const LOADED = new Date('2026-10-09T14:05:00');
-const at = (ms) => new Date(LOADED.getTime() + ms);
-const MIN = 60 * 1000;
 
 export async function runGuestsRefresh() {
   const results = [];
   const ok = (label, cond, detail) => results.push(cond ? pass(label, detail) : fail(label, 'see name', detail));
 
-  // ── 1. THE OWNER'S TWO SHAPES, AND THE BOUNDARY BETWEEN THEM ────────────
-  const LABELS = [
-    [0, 'Updated just now', 'the instant it loaded'],
-    [59 * 1000, 'Updated just now', 'one second before a minute'],
-    [60 * 1000, 'Updated 1 minute ago', 'exactly a minute, and singular'],
-    [2 * MIN, 'Updated 2 minutes ago', 'plural from two'],
-    [59 * MIN, 'Updated 59 minutes ago', 'the last minute before an hour'],
-    [60 * MIN, 'Updated 1 hour ago', 'an hour, singular'],
-    [90 * MIN, 'Updated 1 hour ago', 'rounded down, never up'],
-    [25 * 60 * MIN, 'Updated 1 day ago', 'a day'],
-  ];
-  for (const [ms, want, why] of LABELS) {
-    const got = updatedLabel(LOADED, at(ms));
-    results.push(got === want
-      ? pass(`label: ${why}`, got)
-      : fail(`label: ${why}`, want, got));
-  }
-
-  // NOTHING LOADED YET IS NOT "just now". An empty string lets the caller
-  // render it unguarded and show nothing before the first load lands.
-  ok('before the first load the label is empty', updatedLabel(null, LOADED) === '', 'empty');
-  ok('  and an unreadable timestamp is empty too, not NaN',
-     updatedLabel('not a date', LOADED) === '', 'empty');
-  // A CLOCK THAT WENT BACKWARDS. Daylight saving and a corrected system clock
-  // both do this, and "Updated -3 minutes ago" is what a person screenshots.
-  ok('a clock that went backwards reads as just now, never negative',
-     updatedLabel(LOADED, at(-5000)) === 'Updated just now', updatedLabel(LOADED, at(-5000)));
-
-  // ── 2. THE FALLBACK LINE, WORD FOR WORD ─────────────────────────────────
-  ok('the failed-refresh line is the owner\'s sentence',
-     refreshFailedLine(LOADED) === 'Could not refresh. Showing the list from 2:05 pm.',
-     refreshFailedLine(LOADED));
-  ok('  and it names the last SUCCESSFUL load, not now',
-     refreshFailedLine(LOADED).includes(clockTime(LOADED)), clockTime(LOADED));
-  ok('  with a usable sentence when nothing had loaded yet',
-     refreshFailedLine(null) === 'Could not refresh. Please try again.', refreshFailedLine(null));
-  // BUILT FROM PARTS, so no locale can turn 2:05 pm into something else and
-  // no guard has to pin a locale to read it.
-  ok('the time is built from parts, so a locale cannot vary it',
-     !/toLocaleTimeString|toLocaleString/.test(code('src/lib/lastUpdated.js')), 'no locale call');
-
-  // ── 3. THE PAGE NO LONGER CARRIES EITHER CONTROL ────────────────────────
+  // ── THE PAGE NO LONGER CARRIES EITHER CONTROL ───────────────────────────
   //
   // REMOVED BY OWNER RULING, 2026-10-11, item 3 of
   // goals/2026-10-11-dashboard-fixes-batch-1.md: the Refresh button and the
@@ -91,10 +47,8 @@ export async function runGuestsRefresh() {
   // refactor that read the removal as an accident.
   //
   // So it inverts: the controls must stay gone, and the page must not carry
-  // the state they needed. The sections above are untouched, because
-  // src/lib/lastUpdated.js still behaves correctly and is still worth
-  // guarding. It now has NO CONSUMERS: the Guests page was its only one, and
-  // that is reported rather than resolved by deleting a working module.
+  // the state they needed. src/lib/lastUpdated.js is gone too, by item 7,
+  // because this page was its only consumer.
   const g = code('src/pages/Guests.jsx');
 
   ok('the Refresh control is gone from the Guests page',
@@ -103,8 +57,15 @@ export async function runGuestsRefresh() {
      !/data-guests-updated/.test(g), 'removed');
   ok('  neither label is computed anywhere on the page',
      !/updatedLabel\(/.test(g) && !/refreshFailedLine\(/.test(g), 'no caller');
-  ok('  and the page no longer imports them',
-     !/lib\/lastUpdated/.test(g), 'no import');
+  // THE MODULE ITSELF IS GONE, which is the other half of item 7: a dead
+  // module left in the tree is a thing someone imports again by accident.
+  // Asserted across the product source rather than on this page alone.
+  ok('  and the module they came from is gone from the repo',
+     !fs.existsSync(path.join(ROOT, 'src/lib/lastUpdated.js')), 'deleted');
+  ok('  with nothing left importing it',
+     !/lib\/lastUpdated/.test(g)
+       && !fs.readdirSync(path.join(ROOT, 'src/lib')).includes('lastUpdated.js'),
+     'no import, no file');
 
   ok('the freshness state is gone too, not just the controls',
      !/setLastLoadedAt\(/.test(g) && !/lastLoadedAt/.test(g)

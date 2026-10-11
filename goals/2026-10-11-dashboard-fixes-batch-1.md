@@ -178,17 +178,22 @@ The findings that changed the items are recorded under each one.
    is an assumption: with the reload removed it reports 1 load, with the loop
    guard removed 87, and with the stamp never written 121.
 
-5. HELD BY THE OWNER, pending the localStorage keys. If the Google picture URL
-   is available, show it in the top-right avatar with the initials as fallback.
+5. CLOSED WITHOUT A CHANGE, 2026-10-11. The owner pasted his
+   localStorage.oi_user keys: role, onboardingCompleted, onboarding_completed,
+   onboardingPath, plan, planActivatedAt, created_date, updated_date, disabled,
+   disabled_reason, is_verified, force_password_reset, app_id, is_service,
+   _app_role, tempUnit, deletionRequestedAt, currency,
+   __persistence_probe_undeclared_field__, notification_prefs,
+   plan_step_completed, tipsModalShown, id, email, full_name,
+   collaborator_role. There is NO picture or avatar field, so the auth provider
+   does not expose one and this item's own instruction applies: report and
+   stop. The top-right avatar is unchanged and still builds initials from
+   full_name or email.
 
-   SCOUT FINDING. src/lib/AuthContext.jsx stores the ENTIRE base44.auth.me()
-   payload verbatim into localStorage.oi_user, so any field the provider
-   returns is already in hand with no schema change. The declared User mirror
-   has no picture field, but that proves little: BASE44_PLATFORM_NOTES.md
-   records that the built-in User entity is a different subsystem whose live
-   schema declares almost nothing. The sidebar avatar builds initials from
-   full_name or email and never looks for an image. Unknown rather than
-   unavailable, which is a different answer from the one item 5 asks for.
+   THE SCOUT'S FINDING STANDS, and the keys confirm it rather than overturn it.
+   src/lib/AuthContext.jsx stores the ENTIRE base44.auth.me() payload verbatim
+   into localStorage.oi_user, so any field the provider returned would already
+   be in hand with no schema change and no new read. It returned none.
 
 7. Housekeeping, LAST, after item 5. Remove src/lib/lastUpdated.js and its
    guard. Item 3 took its only consumer off the Guests page, so it is dead
@@ -196,13 +201,51 @@ The findings that changed the items are recorded under each one.
    rather than inside item 3, so that PR stays a removals-and-move PR with no
    module deletion in it.
 
+   AS BUILT, 2026-10-11, taken ahead of item 5 on the owner's word because
+   item 5 is parked. The module is deleted and so are the two sections of
+   tests/persistence/guests-refresh.mjs that drove updatedLabel,
+   refreshFailedLine and clockTime: a guard for a module that no longer exists
+   is not a guard. The file itself STAYS, holding item 3's inverted checks,
+   because a removal nobody guards is one a later refactor can read as an
+   accident and undo. Two checks are added, not just deleted: the module's file
+   is gone from the repo, and nothing imports it.
+
 ## Stop conditions
 
 As CLAUDE.md. No held file is expected: if one appears, stop and report. Never
-read or write a non-owner record. Item 5 is held by the owner and is not started;
-items 4 and 6 were released by the rulings of 2026-10-11.
+read or write a non-owner record. Items 4 and 6 were released by the rulings of
+2026-10-11; item 5 closed on the owner's console keys without a change.
 
 ## Lessons
+
+## Handed forward
+
+Not this batch's work, recorded here so it is not lost.
+
+A PHOTO IS THE OTHER WAY TO GET AN AVATAR. Account page photo upload for the
+sidebar avatar, initials as fallback, Goal 5. Item 5 closed because the auth
+provider exposes no picture, which answers "can we use the one Google has" and
+leaves "can the couple upload one" untouched.
+
+A STRAY KEY ON THE OWNER'S OWN USER RECORD. localStorage.oi_user carries
+__persistence_probe_undeclared_field__, and the answer to "which test wrote
+it" is that NO TEST DID. It was written by hand in 2026-07 during schema-drift
+triage, through PUT /apps/:id/entities/User/me, to settle whether the built-in
+User entity persists undeclared fields. It does, which is why the key is still
+there and why that finding is recorded in BASE44_PLATFORM_NOTES.md.
+
+Checked 2026-10-11: the string appears in exactly two files in this repo, both
+as prose, that note and the comment in scripts/lib/schemaDropScan.mjs which
+cites the finding. Every reference to entities/User/me under tests/ is a GET or
+a stubbed fetch, and nothing writes an arbitrary field to a User record. So
+there is no recurring writer and nothing to make clean up after itself: the
+premise of the question does not hold, which is reported rather than answered
+by nominating a culprit.
+
+Removing that one key from the owner's User record is listed as an
+OWNER-APPROVED ADMIN WRITE for the batch close, and was NOT performed here. It
+is a write to a production User record, which this terminal does not make on
+its own initiative even when the key is junk.
 
 ## Close
 
