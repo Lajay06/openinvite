@@ -23,7 +23,7 @@ import {
   Gift, Clock, HelpCircle, MapPin, ScrollText, Plane, Lightbulb, Mail, Send, CalendarDays,
 } from 'lucide-react';
 import { imageUrl } from '../images';
-import { money } from '../lib/format';
+import { formatMoney, DEFAULT_CURRENCY } from '@/lib/money';
 
 const n = (v) => (Array.isArray(v) ? v.length : 0);
 const count = (arr, label) => `${n(arr)} ${n(arr) === 1 ? label : `${label}s`}`;
@@ -93,7 +93,7 @@ export const FEATURES = [
     stat: (d) => (d.details?.emergencyContacts?.primary?.name ? d.details.emergencyContacts.primary.name : 'Add a contact') },
   // Finances
   { key: 'budget', group: 'finances', label: 'Budget', icon: Wallet, desktop: '/Budget', path: 'budget', image: imageUrl('tileBudget'), kind: 'custom', depth: 'full',
-    stat: (d, symbol) => { const spent = (d.budget || []).reduce((s, i) => s + (i.actual_amount || 0), 0); const total = d.details?.budget?.total ? Number(d.details.budget.total) : (d.budget || []).reduce((s, i) => s + (i.budgeted_amount || 0), 0); return total ? `${money(total - spent, symbol)} left` : 'Set a total'; } },
+    stat: (d, currency) => { const spent = (d.budget || []).reduce((s, i) => s + (i.actual_amount || 0), 0); const total = d.details?.budget?.total ? Number(d.details.budget.total) : (d.budget || []).reduce((s, i) => s + (i.budgeted_amount || 0), 0); return total ? `${formatMoney(total - spent, currency)} left` : 'Set a total'; } },
   { key: 'registry', group: 'finances', label: 'Registry', icon: Gift, desktop: '/Registry', path: 'registry', image: imageUrl('tileRegistry'), kind: 'custom', depth: 'full',
     stat: (d) => { const g = n(d.gifts); return g ? `${g} received` : `${n(d.registryItems) + n(d.registryProducts) + n(d.customGifts)} listed`; } },
   // Guest suite
@@ -118,7 +118,7 @@ export const featuresIn = (group) => FEATURES.filter((f) => f.group === group);
 /** The features a couple has touched least, for "keep planning". */
 export function leastTouched(d, limit = 5) {
   const score = (f) => {
-    const s = f.stat(d, '$');
+    const s = f.stat(d, DEFAULT_CURRENCY);
     return /^(0 |Add |Plan |Start |Not |Find |Dream |Nothing|Set a|Design|Read|Search)/.test(s) ? 0 : 1;
   };
   return FEATURES.filter((f) => f.kind !== 'desktop' && f.key !== 'guest-list' && f.key !== 'checklist').sort((a, b) => score(a) - score(b)).slice(0, limit);

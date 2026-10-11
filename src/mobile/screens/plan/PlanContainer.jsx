@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { ShellContext } from '../../shell/MobileShell';
 import { usePlanData, useEntity, useWeddingDetails } from '../../data/plan';
 import { useTasks, useBudget, useGuests, useTaskWrites, useBudgetWrites } from '../../data/wedding';
-import { useApi, useSymbol } from '../../data/api';
+import { useApi, useCurrencyCode } from '../../data/api';
 import useLoad from '../../data/useLoad';
 import { useOfflineGuard, offlineNotice } from '../../data/offlineDay';
 import { hapticLight, shareLink, openExternal, prefGet, prefSet } from '../../native';
@@ -48,13 +48,13 @@ const genId = () => `${Date.now().toString(36)}${Math.random().toString(36).slic
 export function PlanHubContainer() {
   const navigate = useNavigate();
   const { base } = useContext(ShellContext);
-  const symbol = useSymbol();
+  const currency = useCurrencyCode();
   const data = usePlanData();
   const open = (f) => {
     if (f.path.startsWith('../')) return navigate(`${base}/${f.path.slice(3)}`);
     return navigate(`${base}/plan/${f.path}`);
   };
-  return <PlanHubScreen data={data.data} symbol={symbol} progress={planProgress(data.data)} onOpen={open} onSearch={() => navigate(`${base}/search`)} loading={data.loading} error={data.error} onRetry={data.reload} />;
+  return <PlanHubScreen data={data.data} currency={currency} progress={planProgress(data.data)} onOpen={open} onSearch={() => navigate(`${base}/search`)} loading={data.loading} error={data.error} onRetry={data.reload} />;
 }
 
 /** /m/plan/:feature and deeper. */
@@ -222,18 +222,18 @@ function VendorsContainer({ back }) {
   const navigate = useNavigate();
   const { base } = useContext(ShellContext);
   const [params] = useSearchParams();
-  const symbol = useSymbol();
+  const currency = useCurrencyCode();
   // Vendor contacts are kept on the device for the offline day (goal 8).
   const { guard } = useOfflineGuard();
   const e = useEntity('Vendor', '-created_date', { cache: true });
   const wrap = (fn, ok) => async (...a) => { const r = await fn(...a); toast.success(ok); return r; };
-  return <VendorsScreen notice={offlineNotice(e)} items={e.data || []} symbol={symbol} initialCategory={params.get('category') || 'all'} onCreate={wrap(e.create, 'Vendor added')} onUpdate={wrap(e.update, 'Saved')} onDelete={wrap((v) => e.remove(v.id), 'Vendor deleted')} onToggleFavorite={async (v) => { await e.update(v.id, { is_favourite: !v.is_favourite }); hapticLight(); }} onOpen={(v) => navigate(`${base}/plan/vendors/${v.id}`)} loading={e.loading} error={e.error} onRetry={e.reload} back={back} onRefresh={e.reload} openAdd={params.get('add') === '1'} />;
+  return <VendorsScreen notice={offlineNotice(e)} items={e.data || []} currency={currency} initialCategory={params.get('category') || 'all'} onCreate={wrap(e.create, 'Vendor added')} onUpdate={wrap(e.update, 'Saved')} onDelete={wrap((v) => e.remove(v.id), 'Vendor deleted')} onToggleFavorite={async (v) => { await e.update(v.id, { is_favourite: !v.is_favourite }); hapticLight(); }} onOpen={(v) => navigate(`${base}/plan/vendors/${v.id}`)} loading={e.loading} error={e.error} onRetry={e.reload} back={back} onRefresh={e.reload} openAdd={params.get('add') === '1'} />;
 }
 
 function VendorDetailContainer({ id, back }) {
   const api = useApi();
   const navigate = useNavigate();
-  const symbol = useSymbol();
+  const currency = useCurrencyCode();
   const vendors = useEntity('Vendor', '-created_date', { cache: true });
   const logs = useFiltered('VendorLog', { vendor_id: id }, '-created_date');
   const tasks = useFiltered('VendorTask', { vendor_id: id }, 'due_date');
@@ -242,7 +242,7 @@ function VendorDetailContainer({ id, back }) {
   const vendor = (vendors.data || []).find((v) => v.id === id);
   return (
     <>
-      <VendorDetailScreen notice={offlineNotice(vendors)} vendor={vendor} logs={logs.data || []} tasks={tasks.data || []} symbol={symbol} back={back} loading={vendors.loading && !vendor} error={vendors.error} onRetry={vendors.reload}
+      <VendorDetailScreen notice={offlineNotice(vendors)} vendor={vendor} logs={logs.data || []} tasks={tasks.data || []} currency={currency} back={back} loading={vendors.loading && !vendor} error={vendors.error} onRetry={vendors.reload}
         onEdit={guard(() => setEdit(true))}
         onDelete={guard(async () => { await vendors.remove(id); toast.success('Vendor deleted'); navigate(back, { replace: true }); })}
         onToggleFavourite={guard(async () => { await vendors.update(id, { is_favourite: !vendor?.is_favourite }); hapticLight(); })}
@@ -327,7 +327,7 @@ function BudgetContainer({ back }) {
   const navigate = useNavigate();
   const api = useApi();
   const { base } = useContext(ShellContext);
-  const symbol = useSymbol();
+  const currency = useCurrencyCode();
   const budget = useBudget();
   const budgetWrites = useBudgetWrites();
   const [askToConfirm, confirmEl] = useConfirm();
@@ -345,14 +345,14 @@ function BudgetContainer({ back }) {
   const savePlan = async (plan) => { await budgetWrites.savePlan(plan); toast.success('Plan saved'); budget.reload(); };
   return (
     <>
-      <BudgetScreen items={budget.data?.items || []} plan={budget.data?.plan || null} symbol={symbol} onOpenCategory={(c) => navigate(`${base}/plan/budget/${c}`)} onAdd={save} onDelete={remove} onMarkPaid={markPaid} onSavePlan={savePlan} onAsk={(prompt, opts) => api.llm(prompt, opts)} loading={budget.loading} error={budget.error} onRetry={budget.reload} back={back} openAdd={params.get('add') === '1'} openExpense={params.get('expense')} onRefresh={budget.reload} />
+      <BudgetScreen items={budget.data?.items || []} plan={budget.data?.plan || null} currency={currency} onOpenCategory={(c) => navigate(`${base}/plan/budget/${c}`)} onAdd={save} onDelete={remove} onMarkPaid={markPaid} onSavePlan={savePlan} onAsk={(prompt, opts) => api.llm(prompt, opts)} loading={budget.loading} error={budget.error} onRetry={budget.reload} back={back} openAdd={params.get('add') === '1'} openExpense={params.get('expense')} onRefresh={budget.reload} />
       {confirmEl}
     </>
   );
 }
 
 function BudgetCategoryContainer({ category, back }) {
-  const symbol = useSymbol();
+  const currency = useCurrencyCode();
   const budget = useBudget();
   const budgetWrites = useBudgetWrites();
   const [askToConfirm, confirmEl] = useConfirm();
@@ -361,7 +361,7 @@ function BudgetCategoryContainer({ category, back }) {
     budget.reload();
   };
   const remove = async (i) => { if (!(await askToConfirm({ title: 'Delete this expense', body: i.item_name, action: 'Delete' }))) return; await budgetWrites.remove(i.id); toast.success('Expense deleted'); budget.reload(); };
-  return <><BudgetCategoryScreen category={category} items={budget.data?.items || []} plan={budget.data?.plan || null} symbol={symbol} onSave={save} onDelete={remove} back={back} />{confirmEl}</>;
+  return <><BudgetCategoryScreen category={category} items={budget.data?.items || []} plan={budget.data?.plan || null} currency={currency} onSave={save} onDelete={remove} back={back} />{confirmEl}</>;
 }
 
 /* ── Messages ────────────────────────────────────────────────────────── */
@@ -602,7 +602,7 @@ function MusicContainer({ back }) {
 function RegistryContainer({ back }) {
   const [params] = useSearchParams();
   const api = useApi();
-  const symbol = useSymbol();
+  const currency = useCurrencyCode();
   const wd = useWeddingDetails();
   const links = useEntity('RegistryItem');
   const products = useEntity('RegistryProduct');
@@ -610,7 +610,7 @@ function RegistryContainer({ back }) {
   const received = useEntity('ReceivedGift');
   const wrap = (e) => ({ items: e.data || [], loading: e.loading, error: e.error, reload: e.reload, create: async (v) => { await e.create(v); toast.success('Added'); }, update: async (id, v) => { await e.update(id, v); toast.success('Saved'); }, remove: async (id) => { await e.remove(id); toast.success('Removed'); } });
   const registryUrl = wd.details?.slug ? `${siteOrigin()}/w/${wd.details.slug}/registry` : '';
-  return <RegistryScreen lists={{ links: wrap(links), products: wrap(products), funds: wrap(funds), received: wrap(received) }} symbol={symbol} registryUrl={registryUrl} onAsk={(prompt) => api.llm(prompt)} back={back} openId={params.get('item')} />;
+  return <RegistryScreen lists={{ links: wrap(links), products: wrap(products), funds: wrap(funds), received: wrap(received) }} currency={currency} registryUrl={registryUrl} onAsk={(prompt) => api.llm(prompt)} back={back} openId={params.get('item')} />;
 }
 
 /* ── Guest suite editors on WeddingDetails ───────────────────────────── */

@@ -11,7 +11,19 @@ const opt = (arr) => arr.map(([value, label]) => ({ value, label }));
 
 export const VENDOR_CATEGORIES = opt([['venue', 'Venue'], ['catering', 'Catering'], ['photography', 'Photography'], ['videography', 'Videography'], ['flowers', 'Flowers & florist'], ['music', 'Music & DJ'], ['bakery', 'Bakery & cake'], ['transportation', 'Transport'], ['beauty', 'Beauty & hair'], ['attire', 'Attire & fashion'], ['planning', 'Wedding planning'], ['decorations', 'Decorations'], ['entertainment', 'Entertainment'], ['other', 'Other']]);
 export const VENDOR_STATUSES = opt([['researching', 'Researching'], ['contacted', 'Contacted'], ['meeting_scheduled', 'Meeting scheduled'], ['quoted', 'Quoted'], ['booked', 'Booked'], ['rejected', 'Rejected']]);
-export const PRICE_RANGES = opt([['$', '$ Budget friendly'], ['$$', '$$ Moderate'], ['$$$', '$$$ Premium'], ['$$$$', '$$$$ Luxury']]);
+/**
+ * THE STORED PRICE TIERS ARE DATA, NOT MONEY. Vendor.price_range holds one of
+ * these four strings because the desktop VendorForm writes them
+ * (src/components/vendors/VendorForm.jsx), so they cannot change here without
+ * a migration. They are never shown: every label is words, so no dollar sign
+ * reaches a couple whose account is in another currency (mobile parity 3).
+ * tests/persistence/mobile-money.mjs names this one declaration as its only
+ * exemption.
+ */
+export const PRICE_TIER_KEYS = ['$', '$$', '$$$', '$$$$'];
+export const PRICE_RANGES = opt(PRICE_TIER_KEYS.map((k, i) => [k, ['Budget friendly', 'Moderate', 'Premium', 'Luxury'][i]]));
+/** The words for a stored tier, or the stored value itself when it is not one of the four. */
+export const priceRangeLabel = (v) => PRICE_RANGES.find((o) => o.value === v)?.label || v || '';
 export const PHOTO_STYLES = opt([['candid', 'Candid'], ['traditional', 'Traditional'], ['artistic', 'Artistic'], ['documentary', 'Documentary'], ['cinematic', 'Cinematic'], ['vintage', 'Vintage'], ['modern', 'Modern'], ['natural', 'Natural']]);
 
 const isPhotoOrVideo = (v) => v.category === 'photography' || v.category === 'videography';

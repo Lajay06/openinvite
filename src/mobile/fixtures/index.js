@@ -7,6 +7,7 @@
  */
 
 import { imageUrl } from '../images';
+import { PRICE_TIER_KEYS } from '../features/vendorFields';
 
 const FIRST = ['Amelia', 'Oliver', 'Charlotte', 'Jack', 'Isla', 'Noah', 'Mia', 'William', 'Grace', 'Leo', 'Ava', 'Henry', 'Chloe', 'Thomas', 'Zoe', 'Lucas', 'Ruby', 'Ethan', 'Sophie', 'Harrison', 'Evie', 'Oscar', 'Matilda', 'Hunter', 'Ivy', 'Levi', 'Willow', 'Archie', 'Harper', 'Cooper', 'Ella', 'Max', 'Lily', 'Finn', 'Sienna', 'Elijah', 'Layla', 'Mason', 'Hannah', 'Xavier'];
 const LAST = ['Nguyen', 'Smith', 'Williams', 'Chen', 'Brown', 'Taylor', 'Jones', 'Singh', 'Wilson', 'Lee', 'Martin', 'Kelly', 'Thompson', 'Ryan', 'Walker', 'Kaur', 'Robinson', 'Scott', 'Anderson', 'White'];
@@ -119,8 +120,8 @@ export const FIXTURE_SCHEDULE = [
 ];
 
 export const FIXTURE_VENDORS = [
-  { id: 'v1', name: 'The Fig Tree', category: 'venue', status: 'booked', quoted_price: 18000, contact_person: 'Sam Reid', phone: '+61 2 6685 0000', email: 'events@example.com', website: 'https://example.com/fig-tree', address: '4 Beach Rd, Byron Bay NSW 2481', price_range: '$$$', rating: 4.8, contract_date: '2026-07-14', contract_signed: true, deposit_paid: true, deposit_amount: 5000, payment_schedule: 'Deposit paid, balance two weeks out', is_favourite: true, notes: 'Wet weather plan is the Barn.' },
-  { id: 'v2', name: 'Bloom & Vine', category: 'flowers', status: 'booked', quoted_price: 2400, contact_person: 'Ines', phone: '+61 400 555 010', email: 'hello@example.com', price_range: '$$', deposit_paid: true, deposit_amount: 600 },
+  { id: 'v1', name: 'The Fig Tree', category: 'venue', status: 'booked', quoted_price: 18000, contact_person: 'Sam Reid', phone: '+61 2 6685 0000', email: 'events@example.com', website: 'https://example.com/fig-tree', address: '4 Beach Rd, Byron Bay NSW 2481', price_range: PRICE_TIER_KEYS[2], rating: 4.8, contract_date: '2026-07-14', contract_signed: true, deposit_paid: true, deposit_amount: 5000, payment_schedule: 'Deposit paid, balance two weeks out', is_favourite: true, notes: 'Wet weather plan is the Barn.' },
+  { id: 'v2', name: 'Bloom & Vine', category: 'flowers', status: 'booked', quoted_price: 2400, contact_person: 'Ines', phone: '+61 400 555 010', email: 'hello@example.com', price_range: PRICE_TIER_KEYS[1], deposit_paid: true, deposit_amount: 600 },
   { id: 'v3', name: 'Ilford Studio', category: 'photography', status: 'quoted', quoted_price: 5200, contact_person: 'Dane', phone: '+61 400 555 020', email: 'dane@example.com', website: 'https://example.com/ilford', instagram: '@ilfordstudio', reviews_count: 64, starting_price: 4200, package_selected: 'Full day', hours_booked: 10, style: ['candid', 'documentary'], portfolio_url: 'https://example.com/ilford/work', delivery_timeline: '6 to 8 weeks', image_count: 600, second_shooter: true, backup_equipment: true, travel_fee: 0 },
   { id: 'v4', name: 'Sable Beauty', category: 'beauty', status: 'booked', quoted_price: 900, contact_person: 'Ruby', phone: '+61 400 555 030' },
   { id: 'v5', name: 'Kestrel Films', category: 'videography', status: 'researching', website: 'https://example.com/kestrel', video_length: '4 minute highlight film', editing_style: 'Warm, filmic' },
@@ -220,8 +221,8 @@ export const FIXTURE_DETAILS_EXTRA = {
   ceremonyType: 'Civil, outdoors', ceremonyMusic: 'Golden Hour on the walk in', ceremonyReadings: 'Union by Robert Fulghum', vowsNotes: 'Two minutes each, no jokes about parking',
   attire: {
     outfits: [
-      { id: 'of1', role: 'Bride', name: 'Priya', description: 'Ivory silk slip, low back', source: 'Grace Loves Lace', status: 'In alterations', measurements: 'AU 10', cost: '$2,400', photoUrl: '' },
-      { id: 'of2', role: 'Groom', name: 'Tom', description: 'Sand linen suit, no tie', source: 'MJ Bale', status: 'Ordered', measurements: '40R', cost: '$900', photoUrl: '' },
+      { id: 'of1', role: 'Bride', name: 'Priya', description: 'Ivory silk slip, low back', source: 'Grace Loves Lace', status: 'In alterations', measurements: 'AU 10', cost: '2,400', photoUrl: '' },
+      { id: 'of2', role: 'Groom', name: 'Tom', description: 'Sand linen suit, no tie', source: 'MJ Bale', status: 'Ordered', measurements: '40R', cost: '900', photoUrl: '' },
       { id: 'of3', role: 'Bridesmaid', name: 'Maya', description: 'Sage, any style she likes', source: 'Her choice', status: 'Researching', measurements: '', cost: '', photoUrl: '' },
     ],
     tailorVendorId: '',

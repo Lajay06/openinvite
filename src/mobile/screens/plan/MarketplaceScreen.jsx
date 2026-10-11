@@ -6,9 +6,11 @@ import { FilterPills, EmptyState, ErrorState, SkeletonRows, ItemCard, ItemList, 
 import { useApi } from '../../data/api';
 import { openExternal } from '../../native';
 import { CATEGORIES, CATEGORY_QUERIES } from '@/lib/vendorPlaces';
+import { PRICE_RANGES } from '../../features/vendorFields';
 
 /* VendorMarketplace.jsx's maps, verbatim. */
-const PRICE_MAP = { 0: '$', 1: '$', 2: '$$', 3: '$$$', 4: '$$$$' };
+/** Google's price_level, 0 to 4, in the vendor tiers' words: no symbol, whatever the account's currency (mobile parity 3). */
+const priceWords = (level) => PRICE_RANGES[Math.min(3, Math.max(0, level - 1))]?.label || '';
 const TRUSTED_TYPE_CATEGORY = [['florist', 'Florals'], ['jewelry_store', 'Jewellery'], ['bakery', 'Cake'], ['hair_care', 'Hair & makeup'], ['beauty_salon', 'Hair & makeup'], ['spa', 'Hair & makeup'], ['car_rental', 'Transport'], ['taxi_stand', 'Transport'], ['lodging', 'Venues'], ['restaurant', 'Catering'], ['cafe', 'Catering'], ['bar', 'Catering'], ['meal_delivery', 'Catering'], ['meal_takeaway', 'Catering']];
 const REMOTE_PLAUSIBLE = ['Celebrant', 'Styling', 'Stationery', 'Entertainment'];
 function categoryFromTypes(types) { if (!Array.isArray(types) || !types.length) return null; const set = new Set(types); for (const [t, l] of TRUSTED_TYPE_CATEGORY) if (set.has(t)) return l; return null; }
@@ -52,7 +54,7 @@ export default function MarketplaceScreen({ eventLocation = '', savedIds = new S
     if (onlineActive) { /* the location bias is dropped on purpose */ } else if (c) { body.lat = c.lat; body.lng = c.lng; } else if (loc) body.location = loc;
     try {
       const places = await api.places.search(body);
-      setVendors((places || []).map((p) => ({ id: p.place_id, placeId: p.place_id, name: p.name, category: categoryFromTypes(p.types), searchCategory: activeCategory !== 'All' ? activeCategory : null, rating: p.rating, reviewCount: p.user_ratings_total || 0, location: p.address || '', priceRange: p.price_level != null ? (PRICE_MAP[p.price_level] || '') : '', photoReference: p.photo_reference || null, mapsUrl: p.maps_url || null, website: null, phone: null })));
+      setVendors((places || []).map((p) => ({ id: p.place_id, placeId: p.place_id, name: p.name, category: categoryFromTypes(p.types), searchCategory: activeCategory !== 'All' ? activeCategory : null, rating: p.rating, reviewCount: p.user_ratings_total || 0, location: p.address || '', priceRange: p.price_level != null ? priceWords(p.price_level) : '', photoReference: p.photo_reference || null, mapsUrl: p.maps_url || null, website: null, phone: null })));
       setStatus('done');
     } catch { setStatus('error'); setVendors(null); }
   };

@@ -5,6 +5,7 @@ import Screen from '../shell/Screen';
 import { FilterPills, EmptyState, ErrorState, SkeletonRows, ItemCard, ItemList, GroupedList, Row, SmartImage, StatusPill, useListView } from '../ui';
 import FormSheet from './FormSheet';
 import { useConfirm } from '../ui/ConfirmSheet';
+import { useCurrencyCode } from '../data/api';
 
 /**
  * A list of records with add / edit / delete, from an ENTITIES schema.
@@ -16,6 +17,8 @@ import { useConfirm } from '../ui/ConfirmSheet';
  * two-column image grid, remembered locally.
  */
 export default function EntityListScreen({ schema, items = [], onCreate, onUpdate, onDelete, loading, error, onRetry, back, subtitle, extraActions = [], header = null, onRefresh, openId = null }) {
+  // A row that prints money formats it in the account's currency (mobile parity 3).
+  const currency = useCurrencyCode();
   const [filter, setFilter] = useState('all');
   const [sheet, setSheet] = useState({ open: false, item: null });
   const [view, setView] = useListView(schema.entity, 'cards');
@@ -59,7 +62,7 @@ export default function EntityListScreen({ schema, items = [], onCreate, onUpdat
   const renderCards = (list) => (
     <ItemList>
       {list.map((it) => {
-        const r = schema.row(it);
+        const r = schema.row(it, { currency });
         return <ItemCard key={it.id} image={r.image} alt={r.title} icon={r.icon} initials={r.image || r.icon ? undefined : (r.title || '?').slice(0, 1).toUpperCase()} title={r.title} meta={r.sub} value={r.value} badge={r.badge} badgeTone={r.badgeTone} action={r.action} onClick={() => openItem(it)} />;
       })}
     </ItemList>
@@ -67,7 +70,7 @@ export default function EntityListScreen({ schema, items = [], onCreate, onUpdat
   const renderGrid = (list) => (
     <div className="oi-m-imggrid">
       {list.map((it) => {
-        const r = schema.row(it);
+        const r = schema.row(it, { currency });
         return (
           <button key={it.id} type="button" className="oi-m-imgcard oi-m-press" onClick={() => openItem(it)}>
             {r.badge && <span className="oi-m-imgcard__badge"><StatusPill tone={r.badgeTone === 'ok' ? 'ok' : 'light'}>{r.badge}</StatusPill></span>}
@@ -86,7 +89,7 @@ export default function EntityListScreen({ schema, items = [], onCreate, onUpdat
       key: g.key,
       title: g.title,
       rows: g.items.map((it) => {
-        const r = schema.row(it);
+        const r = schema.row(it, { currency });
         return <Row key={it.id} label={r.title} sub={r.sub} value={r.badge ? undefined : r.value} initials={r.image ? undefined : (r.title || '?').slice(0, 1).toUpperCase()} onClick={() => openItem(it)} trailing={r.badge ? <StatusPill tone={r.badgeTone || 'neutral'}>{r.badge}</StatusPill> : undefined} />;
       }),
     }))} />

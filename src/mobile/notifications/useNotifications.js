@@ -24,7 +24,7 @@ const POLL_MS = 60000;
  *
  * A real notifications table later only replaces `load()`.
  */
-export default function useNotifications({ base = '/m', symbol = '$' } = {}) {
+export default function useNotifications({ base = '/m', currency } = {}) {
   const { user } = useAuth();
   const [raw, setRaw] = useState(null);
   const [error, setError] = useState(null);
@@ -72,10 +72,10 @@ export default function useNotifications({ base = '/m', symbol = '$' } = {}) {
   const items = useMemo(() => {
     if (!raw) return [];
     const enabled = new Set(NOTIFICATION_GROUPS.filter((g) => state.settings.groups?.[g.key] !== false).flatMap((g) => g.types));
-    return buildFeed({ ...raw, symbol, base })
+    return buildFeed({ ...raw, currency, base })
       .filter((it) => enabled.has(it.type))
       .map((it) => ({ ...it, unread: it.readOnServer != null ? !it.readOnServer && it.ts > state.seenAt : it.ts > state.seenAt && !state.dismissed.includes(it.id) }));
-  }, [raw, state, symbol, base]);
+  }, [raw, state, currency, base]);
 
   const unread = items.filter((i) => i.unread).length;
   // The messages button's own count (goal 8): guest messages not yet read, by the record's own flag, whatever the notification settings say.
@@ -113,7 +113,7 @@ export default function useNotifications({ base = '/m', symbol = '$' } = {}) {
   // is the one bit anything deciding on the feed's behalf should read.
   const failed = raw?.failed || [];
   const complete = raw != null && failed.length === 0;
-  return { items, unread, unreadMessages, loading: raw == null && !error, error, failed, complete, reload: load, markAllRead, markRead, settings: state.settings, setSettings, latestUnseen, bannerShown };
+  return { currency, items, unread, unreadMessages, loading: raw == null && !error, error, failed, complete, reload: load, markAllRead, markRead, settings: state.settings, setSettings, latestUnseen, bannerShown };
 }
 
 /** Throws on a failed read, like every other source, so `failed` can name it. */

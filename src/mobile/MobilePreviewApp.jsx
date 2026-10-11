@@ -26,9 +26,10 @@ import {
   FIXTURE_WEDDING, FIXTURE_GUESTS, FIXTURE_TASKS, FIXTURE_BUDGET, FIXTURE_AVA_MESSAGES,
   FIXTURE_MESSAGES, FIXTURE_SONG_REQUESTS, FIXTURE_POLLS, FIXTURE_POLL_VOTES, FIXTURE_GIFTS, FIXTURE_NOTIFICATION_ENTITY,
 } from './fixtures';
+import { DEMO_CURRENCY } from './fixtures/previewApi';
 
 export const PREVIEW_BASE = '/m/preview';
-const SYMBOL = 'A$';
+
 const NOW = new Date('2026-09-21T09:00:00+10:00').getTime();
 
 /**
@@ -95,7 +96,7 @@ function usePreviewNotifications(banner) {
   const [settings, setSettings] = useState(defaultSettings());
   const [bannerSeen, setBannerSeen] = useState([]);
   return useMemo(() => {
-    const items = buildFeed({ entity: FIXTURE_NOTIFICATION_ENTITY, guests: FIXTURE_GUESTS, messages: FIXTURE_MESSAGES, songRequests: FIXTURE_SONG_REQUESTS, pollVotes: FIXTURE_POLL_VOTES, polls: FIXTURE_POLLS, gifts: FIXTURE_GIFTS, tasks: FIXTURE_TASKS, budget: FIXTURE_BUDGET, briefing: { days: daysUntilWedding(FIXTURE_WEDDING.weddingDate, new Date(NOW)), sentence: '7 open tasks and 21 guests still to reply. The florist deposit is due Friday.' }, now: NOW, symbol: SYMBOL, base: PREVIEW_BASE })
+    const items = buildFeed({ entity: FIXTURE_NOTIFICATION_ENTITY, guests: FIXTURE_GUESTS, messages: FIXTURE_MESSAGES, songRequests: FIXTURE_SONG_REQUESTS, pollVotes: FIXTURE_POLL_VOTES, polls: FIXTURE_POLLS, gifts: FIXTURE_GIFTS, tasks: FIXTURE_TASKS, budget: FIXTURE_BUDGET, briefing: { days: daysUntilWedding(FIXTURE_WEDDING.weddingDate, new Date(NOW)), sentence: '7 open tasks and 21 guests still to reply. The florist deposit is due Friday.' }, now: NOW, currency: DEMO_CURRENCY, base: PREVIEW_BASE })
       .map((it) => ({ ...it, unread: it.readOnServer != null ? !it.readOnServer && it.ts > seenAt : it.ts > seenAt && !dismissed.includes(it.id) }));
     const latestUnseen = banner ? items.find((i) => i.unread && !bannerSeen.includes(i.id)) || null : null;
     return {

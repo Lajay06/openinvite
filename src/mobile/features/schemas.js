@@ -15,6 +15,7 @@
  * toggle, list (an array of objects with `fields` of its own).
  */
 import { BUDGET_CATEGORIES } from '@/lib/budgetCategories';
+import { formatMoney } from '@/lib/money';
 import { VENDOR_STATUS_LABEL } from '../lib/format';
 import { Calendar, Store, FileText, Gift, Music2, Phone } from 'lucide-react';
 import { openExternal } from '../native';
@@ -41,7 +42,7 @@ export const DETAILS = {
         t('source', 'Where from', { placeholder: 'Jenny Yoo, ASOS, hired' }),
         sel('status', 'Status', ['Not started', 'Researching', 'Ordered', 'In alterations', 'Ready', 'Collected'].map((r) => [r, r])),
         t('measurements', 'Measurements', { placeholder: 'Size 10, hip 38, chest 42' }),
-        t('cost', 'Cost', { placeholder: '$1,200' }),
+        t('cost', 'Cost', { placeholder: '1,200' }),
         t('photoUrl', 'Photo', { type: 'image' }),
       ] } },
       { title: 'Tailor and fittings', segment: 'attire', key: 'attire', fields: [{ name: 'tailorVendorId', label: 'Tailor', type: 'vendor', category: 'attire' }] },
@@ -104,8 +105,8 @@ export const DETAILS = {
     title: 'Guest gifts',
     segments: [{ key: 'overview', label: 'Overview' }, { key: 'items', label: 'Items' }, { key: 'packaging', label: 'Packaging' }, { key: 'notes', label: 'Notes' }],
     sections: [
-      { title: 'The gift', segment: 'overview', key: 'weddingFavours', fields: [t('concept', 'What you are giving', { type: 'search', placeholder: 'Local honey, a candle, a seedling' }), t('supplierName', 'Supplier or maker', { type: 'search' }), t('totalBudget', 'Total budget', { placeholder: '$3.50 a head, $400 all up' }), sel('orderedStatus', 'Status', [['not_started', 'Not started'], ['researching', 'Researching'], ['ordered', 'Ordered'], ['received', 'Received'], ['assembled', 'Assembled and ready']])] },
-      { title: 'Favour items', segment: 'items', key: null, list: { name: 'favourItems', label: 'Item', row: (i) => ({ title: i.name || 'Item', sub: [i.quantity ? `${i.quantity} of them` : '', i.notes].filter(Boolean).join(', '), value: i.costPerUnit ? `${i.costPerUnit} each` : '' }), fields: [t('name', 'Item'), t('quantity', 'Quantity', { placeholder: '120' }), t('costPerUnit', 'Cost per unit', { placeholder: '$3.50' }), ta('notes', 'Notes')] } },
+      { title: 'The gift', segment: 'overview', key: 'weddingFavours', fields: [t('concept', 'What you are giving', { type: 'search', placeholder: 'Local honey, a candle, a seedling' }), t('supplierName', 'Supplier or maker', { type: 'search' }), t('totalBudget', 'Total budget', { placeholder: '3.50 a head, 400 all up' }), sel('orderedStatus', 'Status', [['not_started', 'Not started'], ['researching', 'Researching'], ['ordered', 'Ordered'], ['received', 'Received'], ['assembled', 'Assembled and ready']])] },
+      { title: 'Favour items', segment: 'items', key: null, list: { name: 'favourItems', label: 'Item', row: (i) => ({ title: i.name || 'Item', sub: [i.quantity ? `${i.quantity} of them` : '', i.notes].filter(Boolean).join(', '), value: i.costPerUnit ? `${i.costPerUnit} each` : '' }), fields: [t('name', 'Item'), t('quantity', 'Quantity', { placeholder: '120' }), t('costPerUnit', 'Cost per unit', { placeholder: '3.50' }), ta('notes', 'Notes')] } },
       { title: 'Packaging and display', segment: 'packaging', key: 'weddingFavours', fields: [t('packagingType', 'Packaging type'), t('packagingSupplier', 'Packaging supplier', { type: 'search' }), t('personalised', 'Personalized', { type: 'toggle' }), ta('personalisationDetails', 'Personalization details', { showIf: (v) => !!v.personalised }), ta('tagsNotes', 'Tags and labels'), ta('displayNotes', 'Display and placement notes')] },
       { title: 'Notes', segment: 'notes', key: 'weddingFavours', fields: [ta('additionalNotes', 'Additional notes')] },
     ],
@@ -197,7 +198,7 @@ export const ENTITIES = {
     itemLabel: 'product',
     pattern: 'cards',
     gridToggle: true,
-    row: (r) => ({ title: r.name, sub: [r.registry_platform, r.quantity_purchased ? `${r.quantity_purchased} of ${r.quantity_requested || 1} bought` : ''].filter(Boolean).join(' · '), value: r.price ? `$${Number(r.price).toLocaleString('en-US')}` : '', image: r.image_url, icon: Gift, badge: r.quantity_purchased >= (r.quantity_requested || 1) ? 'Bought' : undefined, badgeTone: 'ok' }),
+    row: (r, { currency } = {}) => ({ title: r.name, sub: [r.registry_platform, r.quantity_purchased ? `${r.quantity_purchased} of ${r.quantity_requested || 1} bought` : ''].filter(Boolean).join(' · '), value: r.price ? formatMoney(r.price, currency) : '', image: r.image_url, icon: Gift, badge: r.quantity_purchased >= (r.quantity_requested || 1) ? 'Bought' : undefined, badgeTone: 'ok' }),
     fields: [t('name', 'Product name', { placeholder: 'KitchenAid stand mixer' }), t('price', 'Price', { type: 'number', placeholder: '299.99' }), sel('category', 'Category', [['kitchen', 'Kitchen'], ['home_decor', 'Home decor'], ['bedding', 'Bedding'], ['bathroom', 'Bathroom'], ['outdoor', 'Outdoor'], ['electronics', 'Electronics'], ['other', 'Other']]), sel('registry_platform', 'Platform', ['Zola', 'MyRegistry', 'The Knot', 'Amazon', 'Target', 'Williams Sonoma', 'Crate & Barrel', 'Other'].map((p) => [p, p])), t('quantity_requested', 'Quantity needed', { type: 'number' }), sel('priority', 'Priority', [['high', 'High'], ['medium', 'Medium'], ['low', 'Low']]), t('product_url', 'Product link', { type: 'url' }), t('image_url', 'Product photo', { type: 'image' }), ta('description', 'Description', { placeholder: 'Product details' }), ta('notes', 'Private notes', { placeholder: 'Not visible to guests' })],
     required: ['name', 'price'],
     defaults: { quantity_requested: 1, priority: 'medium', quantity_purchased: 0, purchased_by: [] },
@@ -210,7 +211,7 @@ export const ENTITIES = {
     itemLabel: 'fund',
     pattern: 'cards',
     gridToggle: true,
-    row: (r) => ({ title: r.title, sub: r.description, value: r.requested_amount ? `Goal $${Number(r.requested_amount).toLocaleString('en-US')}` : '', image: r.image_url, icon: Gift }),
+    row: (r, { currency } = {}) => ({ title: r.title, sub: r.description, value: r.requested_amount ? `Goal ${formatMoney(r.requested_amount, currency)}` : '', image: r.image_url, icon: Gift }),
     fields: [t('title', 'Fund name', { placeholder: 'Honeymoon airfare' }), sel('category', 'Category', [['honeymoon', 'Honeymoon'], ['home_fund', 'Home fund'], ['charity', 'Charity'], ['experience', 'Experience'], ['custom', 'Custom']]), t('requested_amount', 'Goal amount', { type: 'number', placeholder: '500' }), t('image_url', 'Photo', { type: 'image' }), t('payment_link_url', 'Payment link', { type: 'url', placeholder: 'https://paypal.me/yourname', validate: (v) => (v && !/^https:\/\//i.test(String(v).trim()) ? 'Payment links must start with https:// so guests can use them.' : '') }), ta('description', 'Description', { placeholder: 'Tell guests about this fund' })],
     required: ['title', 'requested_amount'],
     defaults: { category: 'honeymoon' },
@@ -223,7 +224,7 @@ export const ENTITIES = {
     itemLabel: 'gift',
     pattern: 'cards',
     filters: [{ key: 'all', label: 'All' }, { key: 'received', label: 'Received', test: (g) => g.delivery_status === 'received' }, { key: 'expected', label: 'Expected', test: (g) => g.delivery_status === 'expected' }, { key: 'not_received', label: 'Not received', test: (g) => g.delivery_status === 'not_received' }, { key: 'to_thank', label: 'Thank you to send', test: (g) => !g.thank_you_sent }, { key: 'thanked', label: 'Thanked', test: (g) => !!g.thank_you_sent }],
-    row: (r) => ({ title: r.item_name || 'Gift', sub: [r.giver_name ? `From ${r.giver_name}` : '', { expected: 'Expected', received: 'Received', not_received: 'Not received' }[r.delivery_status] || ''].filter(Boolean).join(', '), value: r.estimated_value ? `$${Number(r.estimated_value).toLocaleString('en-US')}` : '', badge: r.thank_you_sent ? 'Thanked' : 'Thank you to send', badgeTone: r.thank_you_sent ? 'ok' : 'warn', icon: Gift }),
+    row: (r, { currency } = {}) => ({ title: r.item_name || 'Gift', sub: [r.giver_name ? `From ${r.giver_name}` : '', { expected: 'Expected', received: 'Received', not_received: 'Not received' }[r.delivery_status] || ''].filter(Boolean).join(', '), value: r.estimated_value ? formatMoney(r.estimated_value, currency) : '', badge: r.thank_you_sent ? 'Thanked' : 'Thank you to send', badgeTone: r.thank_you_sent ? 'ok' : 'warn', icon: Gift }),
     fields: [t('item_name', 'Gift', { placeholder: 'KitchenAid stand mixer' }), { name: 'giver', label: 'From', type: 'guest', placeholder: 'Search your guest list' }, t('giver_email', 'Their email', { type: 'email', placeholder: 'giver@email.com' }), sel('delivery_status', 'Delivery', [['expected', 'Expected'], ['received', 'Received'], ['not_received', 'Not received']]), t('received_date', 'Received on', { type: 'date' }), sel('category', 'Category', [['physical', 'Physical'], ['cash', 'Cash'], ['experience', 'Experience'], ['digital', 'Digital'], ['other', 'Other']]), t('estimated_value', 'Estimated value', { type: 'number' }), t('thank_you_sent', 'Thank you sent', { type: 'toggle' }), t('thank_you_date', 'Thanked on', { type: 'date', showIf: (v) => !!v.thank_you_sent }), ta('thank_you_note', 'Thank you note', { placeholder: 'Write one, or ask Ava below' }), t('notes', 'Notes')],
     required: ['item_name'],
     defaults: { delivery_status: 'expected', category: 'physical' },

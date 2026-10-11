@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Wallet, AlertTriangle, Sparkles, RotateCcw } from 'lucide-react';
 import { Row, RowGroup, StatCard, EmptyState, PillButton, StatusPill } from '../../ui';
-import { money } from '../../lib/format';
+import { formatMoney, currencySymbol } from '@/lib/money';
 
 /**
  * Budget forecasting on the phone (goal 8, item 7): BudgetForecasting.jsx
@@ -30,9 +30,10 @@ const ORDER = ['venue', 'photography', 'catering', 'flowers', 'music', 'attire',
 const SHORT = { venue: 'Venue', photography: 'Photo', catering: 'Catering', flowers: 'Flowers', music: 'Music', attire: 'Attire', beauty: 'Beauty', decorations: 'Decor', transportation: 'Transport', stationery: 'Stationery', rings: 'Rings', honeymoon: 'Honeymoon', miscellaneous: 'Other' };
 
 /** BudgetForecasting.jsx's prompt and schema, verbatim, so the phone asks exactly what the desktop asks. */
-export function budgetAnalysisRequest(categoryData, stats) {
+export function budgetAnalysisRequest(categoryData, stats, currency) {
+  const sym = currencySymbol(currency);
   const summary = Object.entries(categoryData).map(([category, d]) => ({ category, budgeted: d.budgeted, spent: d.spent, variance: d.spent - d.budgeted }));
-  const prompt = `You are an expert wedding budget consultant. Analyze this couple's wedding budget data and provide actionable insights.\n\nBudget summary: Total budgeted $${stats.totalBudgeted}, Total spent $${stats.totalSpent}, Remaining $${stats.remaining}.\n\nCategory breakdown: ${JSON.stringify(summary)}\n\nIndustry benchmarks: Venue ~31%, Catering ~29%, Photography ~10%, Flowers ~8%, Music ~5%, Attire ~7%.\n\nProvide:\n1. Top 3 most urgent financial risks with specific dollar amounts\n2. Top 3 highest-ROI cost saving actions with estimated savings\n3. A brief overall financial health score (1-10) with one sentence rationale\n\nBe concise, specific, and use dollar figures.`;
+  const prompt = `You are an expert wedding budget consultant. Analyze this couple's wedding budget data and provide actionable insights.\n\nBudget summary: Total budgeted ${sym}${stats.totalBudgeted}, Total spent ${sym}${stats.totalSpent}, Remaining ${sym}${stats.remaining}.\n\nCategory breakdown: ${JSON.stringify(summary)}\n\nIndustry benchmarks: Venue ~31%, Catering ~29%, Photography ~10%, Flowers ~8%, Music ~5%, Attire ~7%.\n\nProvide:\n1. Top 3 most urgent financial risks with specific dollar amounts\n2. Top 3 highest-ROI cost saving actions with estimated savings\n3. A brief overall financial health score (1-10) with one sentence rationale\n\nBe concise, specific, and use dollar figures.`;
   const response_json_schema = { type: 'object', properties: { health_score: { type: 'number' }, health_rationale: { type: 'string' }, risks: { type: 'array', items: { type: 'object', properties: { title: { type: 'string' }, detail: { type: 'string' }, urgency: { type: 'string' } } } }, savings_actions: { type: 'array', items: { type: 'object', properties: { action: { type: 'string' }, estimated_saving: { type: 'string' } } } } } };
   return { prompt, opts: { response_json_schema } };
 }
@@ -72,7 +73,7 @@ function useRun(running) {
   return { pct, line: RUN_LINES[line] };
 }
 
-function ProjectionChart({ points, symbol, over }) {
+function ProjectionChart({ points, currency, over }) {
   const W = 342; const H = 180; const padL = 8; const padR = 8; const padT = 12; const padB = 28;
   const max = Math.max(1, ...points.map((p) => Math.max(p.actual, p.planned)));
   const x = (i) => padL + (i * (W - padL - padR)) / Math.max(1, points.length - 1);
@@ -80,7 +81,8 @@ function ProjectionChart({ points, symbol, over }) {
   const line = (k) => points.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p[k]).toFixed(1)}`).join(' ');
   const area = (k) => `${line(k)} L${x(points.length - 1).toFixed(1)},${(H - padB).toFixed(1)} L${padL},${(H - padB).toFixed(1)} Z`;
   const ticks = [0, 0.5, 1].map((f) => ({ v: max * f, y: y(max * f) }));
-  const short = (v) => (v >= 1000 ? `${symbol}${Math.round(v / 1000)}k` : `${symbol}${Math.round(v)}`);
+  const sym = currencySymbol(currency);
+  const short = (v) => (v >= 1000 ? `${sym}${Math.round(v / 1000)}k` : `${sym}${Math.round(v)}`);
   // At most five labels along the bottom, so none overlap at 342px.
   const every = Math.max(1, Math.ceil((points.length - 1) / 4));
   return (
@@ -100,13 +102,13 @@ function ProjectionChart({ points, symbol, over }) {
   );
 }
 
-export default function BudgetForecast({ items, stats, symbol, onAsk }) {
+export default function BudgetForecast({ items, stats, currency, onAsk }) {
   const [ai, setAi] = useState(null);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState('');
   const [showAll, setShowAll] = useState(false);
   const run = useRun(busy);
-  const fmt = (n) => money(n, symbol);
+  const fmt = (n) => formatMoney(n, currency);
   const categoryData = useMemo(() => { const m = {}; items.forEach((i) => { const c = i.category || 'miscellaneous'; if (!m[c]) m[c] = { budgeted: 0, spent: 0, count: 0 }; m[c].budgeted += i.budgeted_amount || 0; m[c].spent += i.actual_amount || 0; m[c].count++; }); return m; }, [items]);
   const flags = useMemo(() => Object.entries(categoryData).flatMap(([cat, d]) => {
     const b = BENCHMARKS[cat]; if (!b || stats.totalBudgeted === 0) return [];
@@ -123,7 +125,7 @@ export default function BudgetForecast({ items, stats, symbol, onAsk }) {
     if (busy) return;
     setBusy(true); setFailed('');
     try {
-      const { prompt, opts } = budgetAnalysisRequest(categoryData, stats);
+      const { prompt, opts } = budgetAnalysisRequest(categoryData, stats, currency);
       const r = await onAsk(prompt, opts);
       if (!r || typeof r !== 'object' || r.health_score == null) throw new Error('Ava did not return a score.');
       setAi(r);
@@ -178,7 +180,7 @@ export default function BudgetForecast({ items, stats, symbol, onAsk }) {
       <section>
         <h2 className="oi-m-section" style={{ marginBottom: 4 }}>Remaining balance projection</h2>
         <p className="oi-m-meta" style={{ marginBottom: 12 }}>How your budget depletes as each category is locked in.</p>
-        <div className="oi-m-card"><ProjectionChart points={points} symbol={symbol} over={stats.remaining < 0} /></div>
+        <div className="oi-m-card"><ProjectionChart points={points} currency={currency} over={stats.remaining < 0} /></div>
       </section>
 
       <div className="oi-m-grid2">

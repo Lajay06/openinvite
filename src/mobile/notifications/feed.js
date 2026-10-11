@@ -7,12 +7,13 @@
  * item: { id, type, ts (ms), title, body, link, group, data }
  */
 import { notificationCopy } from './copy';
+import { formatMoney } from '@/lib/money';
 import { isAttending, isDeclined, isMaybe, isAwaitingPrimary } from '@/lib/guestRsvpTally';
 import { budgetCategoryLabel } from '@/lib/budgetCategories';
 
 const DAY = 86400000;
 
-export function buildFeed({ entity = [], guests = [], messages = [], songRequests = [], pollVotes = [], polls = [], gifts = [], tasks = [], budget = [], guestbook = [], briefing = null, now = Date.now(), symbol = '$', base = '/m' } = {}) {
+export function buildFeed({ entity = [], guests = [], messages = [], songRequests = [], pollVotes = [], polls = [], gifts = [], tasks = [], budget = [], guestbook = [], briefing = null, now = Date.now(), currency, base = '/m' } = {}) {
   const items = [];
   const push = (it) => { if (it && it.ts) items.push(it); };
   const t = (s) => { const d = s ? new Date(s).getTime() : NaN; return Number.isNaN(d) ? 0 : d; };
@@ -73,7 +74,7 @@ export function buildFeed({ entity = [], guests = [], messages = [], songRequest
   }
 
   for (const g of gifts) {
-    const { title, body } = notificationCopy('gift', { name: g.giver_name, item: g.item_name, amount: g.estimated_value ? `${symbol}${Number(g.estimated_value).toLocaleString('en-US')}` : '' });
+    const { title, body } = notificationCopy('gift', { name: g.giver_name, item: g.item_name, amount: g.estimated_value ? formatMoney(g.estimated_value, currency) : '' });
     push({ id: `gift:${g.id}`, type: 'gift', ts: t(g.received_date || g.created_date), title, body, link: `${base}/plan/registry?segment=received`, group: 'gifts', data: g });
   }
 
@@ -97,7 +98,7 @@ export function buildFeed({ entity = [], guests = [], messages = [], songRequest
     const due = t(`${String(b.payment_date).slice(0, 10)}T00:00:00`);
     const days = Math.round((due - today) / DAY);
     if (days < -30 || days > 7) continue;
-    const { title, body } = notificationCopy('payment_due', { item: b.item_name, vendor: b.vendor, amount: `${symbol}${Number(b.actual_amount || b.budgeted_amount || 0).toLocaleString('en-US')}`, due: days < 0 ? 'now' : days === 0 ? 'today' : days === 1 ? 'tomorrow' : new Date(due).toLocaleDateString('en-AU', { weekday: 'long' }) });
+    const { title, body } = notificationCopy('payment_due', { item: b.item_name, vendor: b.vendor, amount: formatMoney(b.actual_amount || b.budgeted_amount || 0, currency), due: days < 0 ? 'now' : days === 0 ? 'today' : days === 1 ? 'tomorrow' : new Date(due).toLocaleDateString('en-AU', { weekday: 'long' }) });
     push({ id: `pay:${b.id}`, type: 'payment_due', ts: now - Math.max(0, days) * 60000 - 1, title, body, link: `${base}/plan/budget/${b.category}`, group: 'tasks', data: { ...b, categoryLabel: budgetCategoryLabel(b.category) } });
   }
 

@@ -6,7 +6,8 @@ import { EmptyState, ErrorState, SkeletonRows, BottomSheet, PillButton, TextFiel
 import PlaceField from '../../ui/PlaceField';
 import Segments, { useSegment } from '../../ui/Segments';
 import { useConfirm } from '../../ui/ConfirmSheet';
-import { useApi } from '../../data/api';
+import { useApi, useCurrencyCode } from '../../data/api';
+import { currencySymbol } from '@/lib/money';
 import { openExternal } from '../../native';
 
 const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -29,6 +30,7 @@ const typeLabel = (t) => TRANSPORT_TYPES.find(([k]) => k === t)?.[1] || 'Transpo
  */
 export default function SuitePlacesScreen({ kind, places = [], notes = [], destination = '', onSave, loading, error, onRetry, back }) {
   const api = useApi();
+  const currency = useCurrencyCode();
   const isStay = kind === 'accommodation';
   const segments = isStay ? null : [{ key: 'places', label: 'Places' }, { key: 'notes', label: 'Notes' }];
   const [segment, setSegment] = useSegment(segments || [{ key: 'places', label: 'Places' }]);
@@ -55,7 +57,7 @@ export default function SuitePlacesScreen({ kind, places = [], notes = [], desti
     setAva({ busy: true });
     try {
       const prompt = isStay
-        ? `Recommend 4 places to stay for wedding guests staying near ${destination}. Include one luxury hotel, one mid-range hotel, one budget hotel, and one boutique/unique stay. For each suggest a REAL property that likely exists near this location.\n\nReturn ONLY valid JSON, no markdown:\n{"suggestions":[\n  {"name":"Exact hotel name","area":"neighborhood or distance from venue","priceRange":"$200-300/night","description":"2 sentences: why it's great for wedding guests, any standout feature","badge":"Luxury pick"},\n  ...\n]}\n\nBadge options: "Luxury pick", "Best value", "Closest to venue", "Budget friendly", "Boutique pick"`
+        ? `Recommend 4 places to stay for wedding guests staying near ${destination}. Include one luxury hotel, one mid-range hotel, one budget hotel, and one boutique/unique stay. For each suggest a REAL property that likely exists near this location.\n\nReturn ONLY valid JSON, no markdown:\n{"suggestions":[\n  {"name":"Exact hotel name","area":"neighborhood or distance from venue","priceRange":"${currencySymbol(currency)}200-300/night","description":"2 sentences: why it's great for wedding guests, any standout feature","badge":"Luxury pick"},\n  ...\n]}\n\nBadge options: "Luxury pick", "Best value", "Closest to venue", "Budget friendly", "Boutique pick"`
         : `Give transport advice for wedding guests getting to and around ${destination}. Cover: nearest airport(s), how to get from airport to venue area, public transport, rideshare/taxi tips, parking, and any wedding-day transport note.\n\nReturn ONLY valid JSON, no markdown:\n{"suggestions":[\n  {"type":"airport","name":"Exact airport name","description":"1-2 sentences: distance, transport options to venue area","isPlace":true},\n  {"type":"rideshare","name":"Rideshare & taxi","description":"Rideshare availability, estimated fare, pickup tips","isPlace":false},\n  {"type":"public_transport","name":"Public transport","description":"Best public transport routes to the venue area","isPlace":false},\n  {"type":"parking","name":"Parking","description":"Venue parking availability and nearby options","isPlace":false},\n  {"type":"tip","name":"Wedding day shuttle","description":"Recommend couples arrange a shuttle if venue is remote","isPlace":false}\n]}\n\nType options: "airport", "train_station", "rideshare", "public_transport", "parking", "tip"\nisPlace: true only for actual places (airports, stations) that can be found on Google Maps`;
       const response = await api.llm(prompt);
       const text = typeof response === 'string' ? response : JSON.stringify(response);

@@ -145,7 +145,7 @@ export function PrimingContainer({ onDone, onChoice }) {
     }
     if (permission === 'denied') toast.error('Notifications are off for Openinvite in Settings.');
     else if (permission === 'unavailable') toast('Test notifications need the phone app.');
-    else if (await sendTestNotifications(base, notifications?.items || [])) toast.success('Three are on their way. Lock your phone.');
+    else if (await sendTestNotifications(base, notifications?.items || [], notifications?.currency)) toast.success('Three are on their way. Lock your phone.');
     else toast.error('Could not schedule them.');
     navigate(`${base}/account`, { replace: true });
   };
