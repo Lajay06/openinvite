@@ -55,6 +55,7 @@ const EXEMPT = {
   'src/pages/Account.jsx': 'plan copy, ring-fenced and awaiting its own ruling',
   'tests/persistence/guest-suite-vocabulary.mjs': 'states the rule',
   'tests/persistence/help-and-tips-truthful.mjs': 'states the rule',
+  'goals/2026-10-11-gifting-v2.md': 'states the rule',
 };
 
 const EXT = /\.(jsx?|mjs|md|html)$/;
