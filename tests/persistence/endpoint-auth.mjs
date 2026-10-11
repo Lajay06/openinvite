@@ -9,14 +9,76 @@
  *
  * Imports _shared.mjs FIRST so its .env.local side-effect (populating
  * process.env) runs before any api/*.js module-level env reads.
+ *
+ * ── THE THREE HANDLERS ARE LOADED LAZILY, AND WHY THAT MATTERS ─────────────
+ *
+ * They were static imports, and all three build an SDK client at MODULE
+ * SCOPE: api/send-invites.js and api/send-email.js call
+ * new Resend(process.env.RESEND_API_KEY), and api/create-portal-session.js
+ * calls new Stripe(process.env.STRIPE_SECRET_KEY). new Resend(undefined)
+ * THROWS.
+ *
+ * scripts/test-persistence.mjs imports this guard statically, so the whole
+ * live lane died during its import phase with "Missing API key" and a stack
+ * trace, before reaching the line that says BASE44_TEST_EMAIL is unset. Both
+ * halves of that reached main in e9a89842 on 2026-10-08, so the lane has not
+ * been runnable from an environment without a Resend key since. The owner hit
+ * it on 2026-10-11.
+ *
+ * tests/persistence/_registry.mjs solves this for the CI lane by hoisting
+ * placeholders around its dynamic imports. This guard does the same thing for
+ * itself, scoped to the one await: the placeholder exists for the duration of
+ * the import and is removed immediately afterwards.
+ *
+ * OWNER RULING, 2026-10-11: the fix belongs here and not in api/send-invites.js,
+ * which is held and whose module-load client is fine in production; and
+ * RESEND_API_KEY is never added to a lane's .env.local. A placeholder is not a
+ * credential: it is a string shaped like a key that no provider accepts, so a
+ * send attempted with it fails at the provider instead of reaching a guest.
  */
 
 import { pass, fail } from './_shared.mjs';
 import { verifyBase44User, filterGuestsByOwnership } from '../../api/_lib/auth.js';
 import { verifyTurnstileToken } from '../../api/_lib/security.js';
-import sendInvitesHandler from '../../api/send-invites.js';
-import sendEmailHandler from '../../api/send-email.js';
-import createPortalSessionHandler from '../../api/create-portal-session.js';
+
+const IMPORT_PLACEHOLDERS = {
+  RESEND_API_KEY: 're_endpoint_auth_import_only',
+  STRIPE_SECRET_KEY: 'sk_test_endpoint_auth_import_only',
+};
+
+/**
+ * The three handlers, imported with a placeholder key in place for exactly as
+ * long as the import takes.
+ *
+ * RESTORED IN A finally, so a failed import cannot leave a fake key behind for
+ * the guards that run after this one.
+ */
+async function loadHandlers() {
+  const prior = {};
+  const set = [];
+  for (const [k, v] of Object.entries(IMPORT_PLACEHOLDERS)) {
+    prior[k] = process.env[k];
+    if (!process.env[k]) { process.env[k] = v; set.push(k); }
+  }
+  try {
+    const [si, se, cp] = await Promise.all([
+      import('../../api/send-invites.js'),
+      import('../../api/send-email.js'),
+      import('../../api/create-portal-session.js'),
+    ]);
+    return {
+      sendInvitesHandler: si.default,
+      sendEmailHandler: se.default,
+      createPortalSessionHandler: cp.default,
+      placeheld: set,
+    };
+  } finally {
+    for (const k of set) {
+      if (prior[k] === undefined) delete process.env[k];
+      else process.env[k] = prior[k];
+    }
+  }
+}
 
 const EMAIL = process.env.BASE44_TEST_EMAIL;
 const PASS_ENV = process.env.BASE44_TEST_PASSWORD;
@@ -50,6 +112,19 @@ async function loginRealToken() {
 
 export async function runEndpointAuth() {
   const results = [];
+  const { sendInvitesHandler, sendEmailHandler, createPortalSessionHandler, placeheld } = await loadHandlers();
+  results.push(typeof sendInvitesHandler === 'function'
+    && typeof sendEmailHandler === 'function'
+    && typeof createPortalSessionHandler === 'function'
+    ? pass('the three handlers loaded without a real provider key',
+           placeheld.length ? `placeholder for ${placeheld.join(', ')}, removed after the import` : 'real keys were already set')
+    : fail('the three handlers loaded without a real provider key', 'three functions',
+           `${typeof sendInvitesHandler} / ${typeof sendEmailHandler} / ${typeof createPortalSessionHandler}`));
+  for (const k of placeheld) {
+    results.push(process.env[k] === undefined
+      ? pass(`  and ${k} is not left set afterwards`, 'removed')
+      : fail(`  and ${k} is not left set afterwards`, 'removed', String(process.env[k])));
+  }
 
   // ── Handler-level rejections: no Authorization header → 401 ────────────────
   console.log('\n  Endpoint-auth rejections — no session token:\n');
