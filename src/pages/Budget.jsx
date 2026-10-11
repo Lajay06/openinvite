@@ -18,7 +18,7 @@ import { base44 } from "@/api/base44Client";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import AmountInput from "@/components/shared/AmountInput";
 import { getMyRecords, getMyWeddingDetails } from "@/lib/resolveMyWedding";
-import { useCollaboratorContext } from "@/lib/collaboratorContext";
+import { useCollaboratorContext, withCollab } from "@/lib/collaboratorContext";
 import { useAvaFocus } from "@/hooks/useAvaFocus";
 import CountUp from "@/components/shared/CountUp";
 import { BUDGET_CATEGORIES } from '@/lib/budgetCategories';
@@ -288,7 +288,7 @@ export default function BudgetPage() {
     if (location.state?.activityTab) setActiveTab(location.state.activityTab);
     setScrollToItemId(id);
     setHighlightedItemId(id);
-    navigate(location.pathname, { replace: true, state: {} });
+    navigate(withCollab(`${location.pathname}${location.search}`, collab.ownerUserId), { replace: true, state: {} });
     const t = setTimeout(() => setHighlightedItemId(null), 2000);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps

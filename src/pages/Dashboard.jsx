@@ -20,7 +20,7 @@ import { getMyRecords, getMyGuestsWithRsvp, getMyWeddingDetails } from "@/lib/re
 import { loadDashboardSources, formatSourceList } from "@/lib/dashboardSources";
 import { tallyAttendees, guestCounts } from "@/lib/guestRsvpTally";
 import { resolveAttendees } from "@/lib/attendees";
-import { useCollaboratorContext, hasPagePermission } from "@/lib/collaboratorContext";
+import { useCollaboratorContext, hasPagePermission, withCollab } from "@/lib/collaboratorContext";
 import CountUp from "@/components/shared/CountUp";
 
 const QUICK_LINKS = [
@@ -33,11 +33,11 @@ const QUICK_LINKS = [
 ];
 
 
-function QuickLink({ label, url, isLast, collabSuffix }) {
+function QuickLink({ label, url, isLast, collabOwnerId }) {
   const [hovered, setHovered] = useState(false);
   return (
     <Link
-      to={createPageUrl(url) + collabSuffix}
+      to={withCollab(createPageUrl(url), collabOwnerId)}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -120,10 +120,10 @@ export default function Dashboard() {
 
   const collab = useCollaboratorContext();
   const isCollaborating = !!collab.ownerUserId;
-  // Links to append ?collabOwner=... so navigating from here never drops
-  // the collaboration context (a bare createPageUrl() link would silently
-  // land the collaborator back on their OWN, unrelated dashboard page).
-  const collabSuffix = isCollaborating ? `?collabOwner=${encodeURIComponent(collab.ownerUserId)}` : '';
+  // Links go through withCollab so navigating from here never drops the
+  // collaboration context (a bare createPageUrl() link would silently land
+  // the collaborator back on their OWN, unrelated dashboard page).
+  const collabOwnerId = isCollaborating ? collab.ownerUserId : null;
 
   useEffect(() => { init(); }, [isCollaborating]);
 
@@ -321,7 +321,7 @@ export default function Dashboard() {
             value={s.value}
             suffix={s.suffix}
             url={s.url}
-            collabSuffix={collabSuffix}
+            collabOwnerId={collabOwnerId}
             isLast={i === STAT_CARDS.length - 1}
             loading={loading}
           />
@@ -342,7 +342,7 @@ export default function Dashboard() {
           marginBottom: 24,
         }}>
           {visibleQuickLinks.map((l, i) => (
-            <QuickLink key={l.label} label={l.label} url={l.url} collabSuffix={collabSuffix} isLast={i === visibleQuickLinks.length - 1} />
+            <QuickLink key={l.label} label={l.label} url={l.url} collabOwnerId={collabOwnerId} isLast={i === visibleQuickLinks.length - 1} />
           ))}
         </div>
         {/* Divider at 0.12 — advisor ruling 2026-08-20: dividers are ONE value
@@ -381,11 +381,11 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({ label, value, suffix, url, collabSuffix = '', isLast, loading }) {
+function StatCard({ label, value, suffix, url, collabOwnerId = null, isLast, loading }) {
   const [hovered, setHovered] = useState(false);
   return (
     <Link
-      to={createPageUrl(url) + collabSuffix}
+      to={withCollab(createPageUrl(url), collabOwnerId)}
       className="grow shrink basis-1/2 min-w-0 lg:flex-1 block"
       style={{
         padding: '24px 32px',
