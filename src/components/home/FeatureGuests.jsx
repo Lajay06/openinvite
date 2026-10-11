@@ -5,6 +5,8 @@
 import React, { useRef, useEffect, useState } from "react";
 import { useAppleReveal } from "@/hooks/useAppleReveal";
 import FeatureSectionHeading, { featureBodyTextStyle } from "@/components/home/FeatureSectionHeading";
+import FeatureStill from "@/components/marketing/FeatureStill";
+import { FEATURE_STILLS } from "@/lib/featureStills";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
@@ -110,6 +112,7 @@ export default function FeatureGuests({ children }) {
               </li>
             )}
           </ul>
+          <FeatureStill still={FEATURE_STILLS.replies} />
         </div>
       </div>
 

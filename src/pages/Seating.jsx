@@ -1271,7 +1271,7 @@ export default function SeatingPage() {
                     </button>
                   </div>
                   <p style={{ fontSize: 11, color: '#444444', fontFamily: PJS, margin: 0 }}>
-                    {(selectedTable.assigned_guests || []).length}/{selectedTable.capacity} seats used — {activeEvent.name}
+                    {(selectedTable.assigned_guests || []).length}/{selectedTable.capacity} seats used, {activeEvent.name}
                   </p>
                   {/* Capacity bar */}
                   <div style={{ height: 3, background: 'rgba(10,10,10,0.08)', marginTop: 8 }}>
@@ -1424,7 +1424,7 @@ export default function SeatingPage() {
                 {/* Hint */}
                 <div style={{ padding: '6px 16px', background: '#F5F5F5', borderBottom: '1px solid rgba(10,10,10,0.06)', flexShrink: 0 }}>
                   <p style={{ fontSize: 10, color: '#444444', fontFamily: PJS, margin: 0 }}>
-                    Click a table on the canvas to assign guests — showing {activeEvent.name}'s guests
+                    Click a table on the canvas to assign guests. Showing {activeEvent.name}'s guests
                   </p>
                 </div>
 
