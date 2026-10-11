@@ -63,11 +63,10 @@ export function giftPhotoUrl(id, { width = 1200, ratio = '6:5' } = {}) {
 export const photoLabel = (id) => GIFT_PHOTOS.find((p) => p.id === id)?.label || '';
 
 /**
- * The step 1 and done-screen photos, onboarding's own, reused as is.
- * DONE is onboarding's completion image. STEP_ONE is PROVISIONAL: the goal
- * names onboarding's plan-step image, and onboarding has no plan step (the
- * plan choice is ChoosePlan.jsx, outside the shell, with no photo), so this is
- * onboarding's welcome image until the owner names another.
+ * The step 1 and done-screen photos, onboarding's own, reused as is, no new
+ * asset. DONE is onboarding's completion image. STEP_ONE is onboarding's
+ * welcome image, the owner's choice of 2026-10-11: onboarding has no plan step
+ * (the plan choice is ChoosePlan.jsx, outside the shell, with no photo).
  */
 export const ONBOARDING_IMAGES = {
   STEP_ONE: `${CLOUD}/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14263_su2ltz.jpg`,

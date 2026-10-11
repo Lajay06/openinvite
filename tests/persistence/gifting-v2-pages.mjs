@@ -78,6 +78,14 @@ export async function runGiftingV2Pages() {
       && tpl.noteImageUrl('a, b', 'hand').includes('a%252C%20b') && /w_1040,c_fit/.test(tpl.noteImageUrl('a', 'serif')) && tpl.noteImageUrl('a', 'plain') === '');
   check('  and carry the full note as alt text', /alt="A note\."/.test(tpl.renderGiftReveal({ note: 'A note.', noteStyle: 'serif' }).html));
 
+  // ── the preview on a phone (owner ruling 2026-10-11) ────────────────────
+  check('on a phone, steps 2 to 6 offer the email preview under the form, collapsed until asked for',
+    /\{s >= 2 && s <= 6 && <PhonePreview draft=\{draft\} \/>\}/.test(page) && /className="md:hidden" data-gift-phone-preview/.test(page)
+      && /See what they will get/.test(page) && /aria-expanded=\{open\}/.test(page) && /useState\(false\)/.test(page));
+  check('  and it is the same template preview, sized to the email', /<EmailPreview draft=\{draft\} fit \/>/.test(page));
+  check('step 1 uses onboarding\'s welcome image, the owner\'s choice, and the done screen its completion image',
+    lib.ONBOARDING_IMAGES.STEP_ONE.endsWith('/DTS_BANDITS_PALI_MENDEZ_Photos_ID14263_su2ltz.jpg') && lib.ONBOARDING_IMAGES.DONE.includes('ID6374_iumjqj'));
+
   // ── consumed, not forked: additive props with unchanged defaults ────────
   check('AuthLayout takes aside, rendered only when given', /image, aside, bare = false/.test(read('src/components/AuthLayout.jsx')) && /\{aside \? aside : image \?/.test(read('src/components/AuthLayout.jsx')));
   check('OnboardingShell passes aside through', /aside={aside}/.test(read('src/components/onboarding/OnboardingShell.jsx')));

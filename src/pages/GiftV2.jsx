@@ -68,7 +68,7 @@ const field = { width: '100%', background: 'transparent', border: 'none', border
 const primary = 'px-8 py-3 rounded-full text-white text-sm font-medium bg-[#E03553] hover:bg-black active:bg-neutral-900 transition-colors duration-150 border-none cursor-pointer disabled:opacity-40 disabled:cursor-default';
 
 /** The live email preview on the photo side: the template's own HTML, nothing redrawn. */
-function EmailPreview({ draft }) {
+function EmailPreview({ draft, fit = false }) {
   // The rendered styles fetch an image from Cloudinary for every change, so
   // they settle for 300 ms; plain text follows every keystroke.
   const [shown, setShown] = useState(draft);
@@ -82,9 +82,36 @@ function EmailPreview({ draft }) {
     note: shown.note || 'Your note goes here, exactly as you write it.', noteStyle: shown.noteStyle,
     headlineKey: shown.headlineKey, photoId: shown.photoId,
   }), [shown]);
+  // On a phone the frame takes the email's own height, so the page scrolls
+  // rather than a box inside it. allow-same-origin (no scripts) lets the
+  // frame be measured; nothing in the email runs.
+  const [height, setHeight] = useState(1400);
+  const measure = (e) => { try { setHeight(e.currentTarget.contentDocument.documentElement.scrollHeight); } catch { /* keep the default */ } };
   return (
-    <div data-gift-preview style={{ height: '100%', background: '#F7F7F7' }}>
-      <iframe title="Their email, as they will see it" srcDoc={html} sandbox="" style={{ width: '100%', height: '100%', border: 0, display: 'block' }} />
+    <div data-gift-preview={fit ? 'phone' : 'side'} style={{ height: fit ? 'auto' : '100%', background: '#F7F7F7' }}>
+      <iframe title="Their email, as they will see it" srcDoc={html} sandbox={fit ? 'allow-same-origin' : ''} onLoad={fit ? measure : undefined}
+        style={{ width: '100%', height: fit ? height : '100%', border: 0, display: 'block' }} />
+    </div>
+  );
+}
+
+/**
+ * THE PREVIEW ON A PHONE (owner ruling 2026-10-11): below 768px the photo
+ * side is hidden, as in onboarding, and a giver must still see what they are
+ * buying. Onboarding has no phone pattern for its photo side, so this is a
+ * plain full-width panel under the form on steps 2 to 6, collapsed until
+ * asked for, in the page's own styling.
+ */
+function PhonePreview({ draft }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="md:hidden" data-gift-phone-preview style={{ marginTop: 40, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
+      <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)}
+        style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 0', minHeight: 44, background: 'none', border: 'none', borderBottom: open ? 'none' : '1px solid rgba(10,10,10,0.12)', color: INK, fontSize: 16, fontWeight: 600, fontFamily: PJS, cursor: 'pointer' }}>
+        See what they will get
+        <span aria-hidden="true" style={{ fontSize: 20, lineHeight: 1 }}>{open ? '\u2212' : '+'}</span>
+      </button>
+      {open && <div style={{ margin: '0 -16px' }}><EmailPreview draft={draft} fit /></div>}
     </div>
   );
 }
@@ -247,6 +274,8 @@ export default function GiftV2() {
             </button>
           </>
         )}
+
+        {s >= 2 && s <= 6 && <PhonePreview draft={draft} />}
 
         {s === 7 && (
           <OnboardingCompletion onDone={() => {}} data={{}} heading={fill(COPY.done.heading, vars)} body={fill(COPY.done.body, vars)}>
