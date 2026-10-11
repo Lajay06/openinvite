@@ -167,15 +167,29 @@ export async function runGuestNoteEndpoints() {
   lacks('guest-notes never scopes by created_by_id on GuestMessage', NOTES, "'GuestMessage', { created_by_id");
 
   // ── 5. the update verifies ownership before it writes ────────────────────
-  has('guest-note-update requires a caller', UPDATE, 'verifyBase44User(req)');
-  has('guest-note-update fetches the target row', UPDATE, "adminGetOne('GuestMessage', noteId)");
+  // THE CALL, NOT THE SPELLING. Item 5 of
+  // goals/2026-10-10-bounces-and-notes.md gave this endpoint a deps seam so a
+  // guard could prove that one account cannot delete another's note, which
+  // renamed these two call sites to the injectable locals. What this item owns
+  // is that the caller is verified and the row is fetched, and both are still
+  // asserted: the defaults are checked too, so a seam that defaulted to
+  // nothing is red.
+  has('guest-note-update requires a caller', UPDATE, 'await verify(req)');
+  has('  through verifyBase44User, by default', UPDATE, 'deps.verify || verifyBase44User');
+  has('guest-note-update fetches the target row', UPDATE, "await getOne('GuestMessage', noteId)");
+  has('  through adminGetOne, by default', UPDATE, 'deps.getOne || adminGetOne');
   has('guest-note-update refuses another wedding\'s note', UPDATE, 'note.wedding_id !== wedding.id');
   has('a foreign note reads as missing, not forbidden', UPDATE, "res.status(404).json({ error: 'Note not found' })");
   has('guest-note-update writes reply_sent_at', UPDATE, 'reply_sent_at: new Date().toISOString()');
   // ORDER, ASSERTED STRUCTURALLY: the ownership check must appear before any
   // update call, or the check is decoration.
+  // EVERY WRITE, which since item 5 includes the delete. The first write of
+  // any kind must come after the check, so this takes the earliest of them
+  // rather than naming one.
   const ownIdx = UPDATE.indexOf('note.wedding_id !== wedding.id');
-  const firstWrite = UPDATE.indexOf('adminUpdate(');
+  const writeIdxs = ['await update(', 'await remove(']
+    .map((call) => UPDATE.indexOf(call)).filter((i) => i > -1);
+  const firstWrite = writeIdxs.length ? Math.min(...writeIdxs) : -1;
   r.push(ownIdx > -1 && firstWrite > ownIdx
     ? pass('the ownership check precedes every write')
     : fail('the ownership check precedes every write', 'check < write', `check@${ownIdx} write@${firstWrite}`));

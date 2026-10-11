@@ -6,7 +6,7 @@ import { getMyRecords, getMyInvitation } from '@/lib/resolveMyWedding';
 import { toE164 } from '@/lib/phoneE164';
 import { LAYOUT_QUERY_KEY } from '@/Layout';
 import { Textarea } from '@/components/ui/textarea';
-import { MessageCircle, Reply, Search, CheckCheck, Send, Heart, Mail, User, EyeOff, Eye, MessageSquare, Loader2 } from 'lucide-react';
+import { MessageCircle, Reply, Search, CheckCheck, Send, Heart, Mail, User, EyeOff, Eye, MessageSquare, Loader2, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import WhatsAppConnect from "../components/messages/WhatsAppConnect";
 import WhatsAppCompose from "../components/messages/WhatsAppCompose";
@@ -47,7 +47,12 @@ const authHeaders = () => ({
   Authorization: `Bearer ${localStorage.getItem('base44_access_token')}`,
 });
 
-/** One note write — mark read/unread, or record a reply. Throws on a refusal. */
+/** The confirm sentence, the owner's words. P5 of the essentials sweep: a
+    delete is confirmed, and this one is confirmed in place rather than behind a
+    modal, because a modal for one line of text is the opposite of calm. */
+const DELETE_CONFIRM = 'Delete this note? It goes for good.';
+
+/** One note write — mark read/unread, record a reply, or delete. Throws on a refusal. */
 async function updateNote(noteId, body) {
   const res = await fetch('/api/guest-note-update', {
     method: 'POST',
@@ -88,6 +93,8 @@ export default function MessagesPage() {
   const [composingGuest, setComposingGuest] = useState(null);
   const [coupleNames, setCoupleNames] = useState('');
   const [sendingReply, setSendingReply] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   // THE NUMBER COMES FROM THE GUEST, NOT FROM THE MESSAGE.
   //
@@ -194,6 +201,28 @@ export default function MessagesPage() {
       toast.error(error.message || 'Failed to send reply', { id: tid });
     }
     setSendingReply(false);
+  };
+
+  const handleDelete = async (messageId) => {
+    setDeleting(true);
+    const tid = toast.loading('Deleting\u2026');
+    try {
+      await updateNote(messageId, { action: 'delete' });
+      setConfirmingDelete(null);
+      // The row goes at once rather than after the round trip, so the list
+      // does not sit there still showing a note that is gone.
+      setMessages(prev => prev.filter(m => m.id !== messageId));
+      toast.success('Note deleted', { id: tid });
+      // AND THE BADGE RECOUNTS. loadMessages is the one place that
+      // invalidates the top bar's cached count, so deleting an unread note
+      // has to go through it or the bell keeps counting a note that no longer
+      // exists.
+      loadMessages();
+    } catch (error) {
+      console.error('Error deleting note:', error);
+      toast.error(error.message || 'Could not delete that note', { id: tid });
+    }
+    setDeleting(false);
   };
 
   const toggleRead = async (messageId) => {
@@ -359,6 +388,18 @@ export default function MessagesPage() {
                   onMouseLeave={e => e.currentTarget.style.color = replyingTo === message.id ? '#E03553' : 'rgba(10,10,10,0.6)'}>
                   <Reply size={14} />
                 </button>
+                {/* QUIET, AND LAST. Same weight as its neighbours: a delete
+                    that shouts is a delete someone presses by accident, and
+                    the confirm below is where the weight belongs. Opening it
+                    closes the reply form, so one note is never asking two
+                    questions at once. */}
+                <button data-delete-note onClick={() => { setConfirmingDelete(confirmingDelete === message.id ? null : message.id); setReplyingTo(null); }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: confirmingDelete === message.id ? '#E03553' : 'rgba(10,10,10,0.6)', display: 'flex', padding: 6 }}
+                  title="Delete"
+                  onMouseEnter={e => e.currentTarget.style.color = '#E03553'}
+                  onMouseLeave={e => e.currentTarget.style.color = confirmingDelete === message.id ? '#E03553' : 'rgba(10,10,10,0.6)'}>
+                  <Trash2 size={14} />
+                </button>
               </div>
             </div>
 
@@ -384,6 +425,29 @@ export default function MessagesPage() {
                 <p style={{ fontSize: 13, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, lineHeight: 1.6 }}>
                   {message.reply}
                 </p>
+              </div>
+            )}
+
+            {/* ── THE CONFIRM, IN PLACE ────────────────────────────────────
+                P5 of goals/2026-10-01-essentials-sweep.md asks for a confirm
+                before any delete; item 5 of the bounces and notes goal asks
+                for it inline and calm. "Keep" first, because the quieter
+                answer should be the easier one to reach. */}
+            {confirmingDelete === message.id && (
+              <div data-delete-confirm style={{ marginLeft: 42, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                <p style={{ fontSize: 13, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>
+                  {DELETE_CONFIRM}
+                </p>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={() => setConfirmingDelete(null)} disabled={deleting}
+                    style={{ background: 'none', border: '1px solid rgba(10,10,10,0.12)', borderRadius: 999, padding: '6px 14px', cursor: deleting ? 'default' : 'pointer', fontSize: 12, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    Keep
+                  </button>
+                  <button data-delete-confirmed onClick={() => handleDelete(message.id)} disabled={deleting}
+                    style={{ background: '#E03553', border: 'none', borderRadius: 999, padding: '6px 14px', cursor: deleting ? 'default' : 'pointer', fontSize: 12, fontWeight: 700, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif", opacity: deleting ? 0.6 : 1 }}>
+                    Delete
+                  </button>
+                </div>
               </div>
             )}
 
