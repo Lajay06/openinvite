@@ -31,9 +31,12 @@ const onlyArg = process.argv.find((a) => a.startsWith('--only='));
 const only = onlyArg ? onlyArg.slice('--only='.length).split(',').map((x) => x.trim()) : null;
 const RATIO = 3 / 2;
 
+// --set=tour-moments shoots /tour's wide frames from ./tour-moments/ instead.
+const setArg = process.argv.find((a) => a.startsWith('--set='));
+const SET = setArg ? setArg.slice('--set='.length) : 'feature-stills';
 const stills = [];
-for (const f of readdirSync(new URL('./feature-stills/', import.meta.url)).filter((x) => x.endsWith('.mjs')).sort()) {
-  const still = (await import(new URL(`./feature-stills/${f}`, import.meta.url))).default;
+for (const f of readdirSync(new URL(`./${SET}/`, import.meta.url)).filter((x) => x.endsWith('.mjs')).sort()) {
+  const still = (await import(new URL(`./${SET}/${f}`, import.meta.url))).default;
   if (!only || only.includes(still.key)) stills.push(still);
 }
 
@@ -49,7 +52,7 @@ export function cropTo32(box) {
   return { x: Math.round(x), y: Math.round(y), width: Math.round(w), height: Math.round(w / RATIO) };
 }
 
-mkdirSync(`${OUT}/feature-stills`, { recursive: true });
+mkdirSync(`${OUT}/${SET}`, { recursive: true });
 const browser = await chromium.launch();
 const shots = [];
 for (const still of stills) {
@@ -72,7 +75,7 @@ for (const still of stills) {
     if (still.prepare) await still.prepare(page);
     const box = await still.frame(page);
     const clip = cropTo32(box);
-    const file = `${OUT}/feature-stills/${still.key}-${width}.png`;
+    const file = `${OUT}/${SET}/${still.key}-${width}.png`;
     await page.screenshot({ path: file, clip });
     shots.push({ key: still.key, file, width });
     console.log(`  ${still.key} @ ${width} ... ${file}  (${clip.width} by ${clip.height} CSS px at 2x)`);

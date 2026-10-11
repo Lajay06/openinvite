@@ -18,7 +18,8 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MEDIA, TOUR_PAGE_MEDIA, PLACEHOLDER_POSTER } from '../../src/lib/studioTour.js';
+import { TOUR_PAGE_MEDIA, PLACEHOLDER_POSTER } from '../../src/lib/studioTour.js';
+import { TOUR_MOMENTS } from '../../src/lib/tourMoments.js';
 import { MARKETING_ROUTES, UNLISTED_ROUTES } from '../../scripts/marketingRoutes.mjs';
 import { pass, fail, stripComments } from './_shared.mjs';
 
@@ -73,15 +74,34 @@ export function runTourPage() {
   const markers = (html.match(/data-tour-placeholder="([^"]*)"/g) || []).map((m) => m.slice(23, -1));
   check('no scene carries a placeholder marker', markers.length === 0, markers.length ? markers.join(', ') : 'none');
   check('no "Dashboard capture 16:10" text', !html.includes('Dashboard capture 16:10'));
-  const posters = [...html.matchAll(/https:\/\/res\.cloudinary\.com\/dsr84xknv\/video\/upload\/[^"' )]+\.jpg/g)].map((m) => m[0]);
-  const known = new Set([...Object.values(MEDIA), ...Object.values(TOUR_PAGE_MEDIA)].filter(Boolean)
-    .flatMap((m) => [m.poster, m.phone?.poster]).filter(Boolean));
-  check('every scene poster on the page is one the media maps hold',
-    posters.length >= 8 && posters.every((p) => known.has(p)), `${posters.length} posters, ${posters.filter((p) => !known.has(p)).length} unknown`);
+
+  // FOUR MOMENTS, EACH ONE LINE AND NOTHING ELSE (site fixes batch 3, item 5,
+  // owner walkthrough 2026-10-11): the morning page, replies, the seating
+  // chart, the guest suite, in that order, each full width.
+  const sections = [...html.matchAll(/<section\b[^>]*data-tour-moment="([a-z]+)"[^>]*>([\s\S]*?)<\/section>/g)];
+  check('four moments, in order: morning, replies, seating, suite',
+    sections.map((m) => m[1]).join(',') === 'morning,replies,seating,suite' && TOUR_MOMENTS.length === 4, sections.map((m) => m[1]).join(','));
+  for (const [, key, body] of sections) {
+    const moment = TOUR_MOMENTS.find((x) => x.key === key);
+    const text = body.replace(/<[^>]+>/g, ' ').replace(/&#x27;|&#39;/g, "'").replace(/\s+/g, ' ').trim();
+    check(`${key}: its one line, as its h2, and no other text`, !!moment && text === moment.line && (body.match(/<h2\b/g) || []).length === 1, text);
+    check(`${key}: no em or en dash in its line`, !!moment && !/[\u2013\u2014]/.test(moment.line));
+  }
+  // Every image on the moments is one the moments map holds (a still's src,
+  // or a clip's poster before it mounts), so nothing on the page is a stray.
+  const known = new Set(TOUR_MOMENTS.flatMap((m) => [m.still?.src, m.clip?.poster, m.phone?.still?.src, m.phone?.clip?.poster]).filter(Boolean));
+  const shown = sections.flatMap(([, , body]) => [...body.matchAll(/<img\b[^>]*src="([^"]+)"/g)].map((m) => m[1].replace(/&amp;/g, '&')));
+  check('every moment shows one image, and each is one the moments map holds',
+    shown.length === 4 && shown.every((u) => known.has(u)), `${shown.length} images, ${shown.filter((u) => !known.has(u)).length} unknown`);
+  const wideIds = TOUR_MOMENTS.flatMap((m) => [m.still?.src, m.clip?.webm]).filter(Boolean);
+  // A cut clip is exactly 3:2; the guest site is shown whole, at 16:10.
+  check('every moment is a versioned upload; a cut clip is exactly 3:2, the guest site whole at 16:10',
+    wideIds.every((u) => /\/v[1-9]\d{5,}\/studio-tour\//.test(u))
+      && TOUR_MOMENTS.filter((m) => m.clip).every((m) => { const c = /c_crop,x_\d+,y_\d+,w_(\d+),h_(\d+)/.exec(m.clip.webm); return c ? c[1] * 2 === c[2] * 3 : m.clip.aspect === '16 / 10' && m.key === 'suite'; }));
 
   // ── 3. live, but unlisted (site fixes batch 3, item 5) ──────────────────
   // The page stays live at its URL and keeps its title while it is rebuilt
-  // as four moments; it is out of the nav and the sitemap, and noindexed by
+  // as four moments, and after; it is out of the nav and the sitemap, and noindexed by
   // header, until it reads like the rest of the site.
   check('/tour is still prerendered and routed', MARKETING_ROUTES.includes('/tour')
     && /<Route path="\/tour" element=\{<Tour \/>\} \/>/.test(readFileSync(resolve(ROOT, 'src/App.jsx'), 'utf8')), 'the URL works');
