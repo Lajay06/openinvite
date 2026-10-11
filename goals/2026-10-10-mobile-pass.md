@@ -45,6 +45,43 @@ Recorded by lane D. Lane D does not edit these files.
 
 1. Lane A, closed by ruling, no action. The per-guest WhatsApp compose sheet stays on both surfaces, because it opens the guest's own WhatsApp from the couple's device and nothing is sent from us. Web: src/pages/Messages.jsx:12 (the import) and :509 (the sheet). Shell: src/mobile/screens/plan/MessagesScreen.jsx:95, wired at src/mobile/screens/plan/PlanContainer.jsx:450. tests/persistence/email-only-channel.mjs already asserts that the web Messages page keeps it.
 2. Lane A, open. Inside the native shell, src/App.jsx:212 redirects only "/" and "/DailyUpdate" to /m. Every other public web path (/tour and /app at src/App.jsx:126 and :128, /Pricing, /features and the rest of PUBLIC_PATH_SET) would render the marketing page, pricing and checkout calls to action included, inside the app if anything navigated the webview there. Today nothing in the shell links to them, and src/mobile/native.ts:389 rewrites every deep link under /m, so the gap is latent. It becomes live with universal links. The suggestion is a native guard that sends any non-/m path to /m, in App.jsx, which is lane A's file.
+3. Lane A, open. src/pages/GuestSuiteAccommodation.jsx:502 hardcodes `"priceRange":"$200-300/night"` in the example JSON of Ava's stay prompt, so the model is shown dollars whatever the account currency. The shell's copy of the prompt takes the account symbol from src/lib/money.js since mobile parity 3.
+4. Lane A, open. Five dashboard dates on the web are still written out with a weekday, after #917 and #941 made dashboard dates numeric: src/components/dashboard/Briefing.jsx:29 (the eyebrow, "Monday 7 September"), src/pages/DailyUpdate.jsx:230 (the masthead), src/components/schedule/ScheduleDayList.jsx:15 (used by src/pages/ScheduleHub.jsx), src/pages/GuestSuiteSchedule.jsx:42 (en-GB, with an all-caps "NO DATE SET" beside it) and src/pages/UniverseStudio.jsx:52 (en-GB). The phone is numeric everywhere since mobile parity 6, so on these five the two surfaces now disagree.
+5. Lane A, for a ruling. src/pages/OurStory.jsx:418 offers Ava the starter "Write a short version for the website". The Guest Suite ruling of 2026-10-11 was given for the app, where the copied starter now says "for the Guest Suite"; whether it reaches the web is the advisor's call.
+
+## Lane D's own findings, not yet ordered
+
+Found while doing the parity items, inside lane D's territory, and left for the advisor to order or decline.
+
+1. The phone's Send invites screen (src/mobile/screens/guests/SendInvitesScreen.jsx) does not refuse to send while the site is unpublished. SendInvitesModal.jsx does, with "Your website is not published yet, so these links would not work."
+2. The same screen sends one email per guest. The web sends one per invitation, addressed to the household's lead (invitationsFor in SendInvitesModal.jsx). A household of four gets four emails from the phone and one from the web.
+3. The same screen does not skip a guest whose address bounced, and the guest list does not show "Email bounced". The web does both (src/components/guests/emailBounce.js). Parity 8 took opted-out guests only, as ordered; the bounce is the same shape and the same few lines.
+4. The guest list does not group a household under its lead, as GuestList.jsx does through groupByHousehold. Parity 4 took the counts and the detail, as ordered.
+5. "guest suite" appears in lower case 77 times in the shell's copy. Parity 7 wrote "Guest Suite" in the two strings it replaced, as ruled. One case or the other throughout is a sweep, not done without an order.
+6. For store submission, not now: four strings tell the couple to upgrade at openinvite.com.au (Account, Send invites, the Ultra gates in DetailsScreen.jsx and schemas.js). They said "on the website" before parity 7; the wording changed, the direction to buy outside the app did not. App Store review rule 3.1.1 is about exactly this.
+
+## State (lane D)
+
+As of 2026-10-11, the advisor's order is done through parity 7. Merged, in order:
+item 10 as #984; parity 5 as #987; parity 3 as #990; parity 4 as #992; parity 8 as #993;
+parity 6 as #995; parity 7 as #996. Parity 1 and 2 were lane B's, #962 and #966.
+Each parity PR carries its own guard under tests/persistence/mobile-*.mjs, planted red
+before it merged.
+
+WHAT IS NEXT. The last item of the order: Google sign-in through the openinvite://
+return path, on the owner's iPhone, reported and not fixed. It needs the owner and the
+machine's one browser slot (the device run counts as it), so it waits for both.
+
+Decisions taken during the pass, written down so they are not reopened:
+
+1. Parity 3: the stored vendor price tiers ($ to $$$$) are the desktop VendorForm's enum
+   and stay as data in one named constant, PRICE_TIER_KEYS; every display is words. It is
+   the money guard's only exemption.
+2. Parity 6: besides the invitation email's date, the invitation starter design's date
+   (PlanContainer.jsx, copied from InvitationBuilder.jsx) stays written, because guests
+   read it on the invitation. Awaiting the advisor's confirmation.
+3. Parity 7: the web app is named as openinvite.com.au; a vendor's, hotel's or place's own
+   link is a "Web address" with a "Visit" button.
 
 ## Close
 
