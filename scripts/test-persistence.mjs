@@ -21,9 +21,9 @@
  *   5. Exits 0 if all pass, 1 if any fail
  */
 
-import { readFileSync } from 'node:fs';
 import { pass, fail } from '../tests/persistence/_shared.mjs';
-import { guardFiles, guardFilesFor, LIVE_CREDENTIAL_GUARDS, STANDALONE_GUARDS } from '../tests/persistence/_registry.mjs';
+import { guardFiles, guardFilesFor, LIVE_CREDENTIAL_GUARDS, STANDALONE_GUARDS, LANE_SKIPS_GUARDS } from '../tests/persistence/_registry.mjs';
+import { liveLaneFindingsForRepo } from './lib/liveLaneRegistry.mjs';
 import { EMAIL, PASS, login, cleanupWeddingDetails } from '../tests/persistence/_shared.mjs';
 import { runWeddingDetails } from '../tests/persistence/wedding-details.mjs';
 import { runGuest } from '../tests/persistence/guest.mjs';
@@ -235,14 +235,22 @@ async function run() {
   // guard file that no runner referenced at all; this makes that state
   // impossible in either lane rather than only in CI.
   {
-    const src = readFileSync(new URL(import.meta.url), 'utf8');
-    const unregistered = [...LIVE_CREDENTIAL_GUARDS].filter((f) => {
-      const runner = f.replace(/\.mjs$/, '').split('-').map((w, i) => (i === 0 ? w : w[0].toUpperCase() + w.slice(1))).join('');
-      return !src.includes(`run${runner[0].toUpperCase()}${runner.slice(1)}(`);
+    // ── THE REGISTRY IS IN STEP, ASKED BY A MODULE CI CAN ALSO ASK ────────
+    //
+    // These clauses used to live here in full, which meant the only check for
+    // "a live guard has fallen out of the lane" could only be answered by a
+    // runner that refuses to start without credentials. One clause was red for
+    // months because of it. They are in scripts/lib/liveLaneRegistry.mjs now,
+    // driven here AND by tests/persistence/live-lane-registry.mjs in CI.
+    const findings = liveLaneFindingsForRepo({
+      live: LIVE_CREDENTIAL_GUARDS,
+      skips: LANE_SKIPS_GUARDS,
+      rootUrl: new URL('../', import.meta.url),
     });
-    results.push(unregistered.length === 0
-      ? pass(`every live-credential guard is invoked here (${LIVE_CREDENTIAL_GUARDS.size})`, 'none missing')
-      : fail('every live-credential guard is invoked here', 'none missing', unregistered.join(', ')));
+    results.push(findings.length === 0
+      ? pass(`the live-credential registry is in step (${LIVE_CREDENTIAL_GUARDS.size} guards, ${LANE_SKIPS_GUARDS.size} run on their own)`, 'no findings')
+      : fail('the live-credential registry is in step', 'no findings',
+             findings.map((f) => `${f.kind}: ${f.detail}`).join(' | ')));
 
     const unclassified = guardFiles().filter((f) => !LIVE_CREDENTIAL_GUARDS.has(f) && !STANDALONE_GUARDS.has(f) && !guardFilesFor('ci').includes(f));
     results.push(unclassified.length === 0
