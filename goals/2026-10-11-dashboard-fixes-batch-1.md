@@ -92,6 +92,32 @@ The findings that changed the items are recorded under each one.
    including the "+2" overflow chip. Guard: measure chip height in a populated
    fixture row and assert it equals the chip height in a sparse row.
 
+   AS BUILT, 2026-10-11, and the cause was not the contact column. MEASURED
+   FIRST: every chip painted FOUR PIXELS tall, in every row, at 390 and at
+   1440. Two pixels of padding around a ZERO line box, because the chip button
+   set lineHeight: 0 to kill the inline-baseline gap and CHIP_BASE never set a
+   line-height of its own, so it inherited the zero; the 10px glyphs painted
+   outside the 4px box they were meant to sit in. The contact column was the
+   CONTRAST, not the cause: a taller row centers a 4px pill in more empty
+   space, which is why it was obvious where an email and a phone were present
+   and easy to miss where they were not.
+
+   scripts/test-invited-to-row.mjs had already recorded this, as a note
+   explaining why it could not assert height: "a pill's BOX is its 2px of
+   padding while its glyphs paint outside that box". It described the defect
+   and shipped it as a constraint. That note is now corrected.
+
+   A SECOND DEFECT THE SCREENSHOT DID NOT NAME, found by the new guard on its
+   first run: bordered pills were 20px and filled ones 18px, two pill heights
+   in one row. CHIP_BASE now reserves a transparent 1px border so a variant can
+   turn its border visible without changing the geometry.
+
+   WHAT "THE ROW HEIGHT" MEANS HERE. The guard asserts the CHIP ROW is equal
+   with and without a contact, not the table row. A table row carrying an email
+   and a phone is legitimately taller than one carrying neither, and the cell
+   only controls the chip row. Reported to the owner as a reading of the
+   ruling rather than assumed.
+
    SCOUT FINDING, which the screenshot corrects. Nothing is struck through:
    every state renders through EventChip and every branch returns a pill on
    CHIP_BASE with borderRadius 999, the not-invited state being an outline
@@ -139,6 +165,12 @@ The findings that changed the items are recorded under each one.
    schema declares almost nothing. The sidebar avatar builds initials from
    full_name or email and never looks for an image. Unknown rather than
    unavailable, which is a different answer from the one item 5 asks for.
+
+7. Housekeeping, LAST, after item 5. Remove src/lib/lastUpdated.js and its
+   guard. Item 3 took its only consumer off the Guests page, so it is dead
+   code; the owner's ruling of 2026-10-11 is that it leaves in its own small PR
+   rather than inside item 3, so that PR stays a removals-and-move PR with no
+   module deletion in it.
 
 ## Stop conditions
 

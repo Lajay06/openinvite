@@ -45,12 +45,27 @@ function readCell() {
   const cells = [...document.querySelectorAll('[data-invited-to]')]
     .map((el) => el.closest('div'))
     .filter(Boolean);
-  // The cell is the flex container that holds the inline chips.
+  // ── THE CELL IS NOT SIMPLY THE FIRST FLEX ANCESTOR ─────────────────────
+  //
+  // It was read that way until 2026-10-11, and item 4 of
+  // goals/2026-10-11-dashboard-fixes-batch-1.md broke it: giving the chip
+  // button display: inline-flex made the BUTTON compute as display: flex,
+  // because CSS blockifies an inline-flex flex item. The walk then stopped on
+  // the chip itself, so `row` held one chip, there was no pill inside it and
+  // no panel, and eighteen of this guard's thirty checks went red against a
+  // page that was working. The product was right and the locator was wrong.
+  //
+  // The cell is the ancestor that holds EVERY chip of this row, which is true
+  // whatever display any chip computes to.
   const first = [...document.querySelectorAll('[data-invited-to]')][0];
-  let box = first;
-  for (let i = 0; i < 4 && box; i += 1) {
+  const rowChipCount = first
+    ? [...(first.closest('tr') || document).querySelectorAll('[data-invited-to]')].length
+    : 0;
+  let box = first ? first.parentElement : null;
+  for (let i = 0; i < 6 && box; i += 1) {
     const cs = window.getComputedStyle(box);
-    if (cs.display === 'flex') break;
+    const holds = box.querySelectorAll('[data-invited-to]').length;
+    if (holds >= rowChipCount && cs.display === 'flex') break;
     box = box.parentElement;
   }
   const inPanel = (el) => !!el.closest('[data-invited-overflow-panel]');
@@ -73,13 +88,15 @@ function readCell() {
     // half of "one row": chips that fit on a line but spill past the column
     // would pass a tops check and still be wrong.
     //
-    // HEIGHT IS NOT USED ANYWHERE HERE, and that is deliberate. The chip
-    // button carries lineHeight: 0 (a pre-existing choice that kills the
-    // inline gap), so a pill's BOX is its 2px of padding while its glyphs
-    // paint outside that box: the cell reads as 6px tall with 9px of ink on
-    // one single line. Any height or overflow assertion measures that gap
-    // rather than wrapping. One row is proven by equal tops and a known
-    // inline count instead.
+    // HEIGHT IS NOT USED HERE, and it is no longer because it cannot be. This
+    // note used to read: "a pill's BOX is its 2px of padding while its glyphs
+    // paint outside that box", and treated that as a constraint on what could
+    // be measured. It was a four-pixel pill, and item 4 of
+    // goals/2026-10-11-dashboard-fixes-batch-1.md fixed it after the owner
+    // photographed it. Height is measured now, by
+    // scripts/test-chip-height.mjs, which owns that question. This guard still
+    // proves ONE ROW by equal tops and a known inline count, which is its own
+    // question and does not need height.
     spillRight: laidOut.length && box
       ? Math.round(Math.max(...laidOut.map((el) => pillBox(el).right))
                    - box.getBoundingClientRect().right)

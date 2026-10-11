@@ -14,6 +14,7 @@ export default function CollaboratorAccept() {
 
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [expired, setExpired] = useState(false);
   const [invite, setInvite] = useState(null); // { collaboratorName, coupleNames, permissions, status }
   const [accepting, setAccepting] = useState(false);
   const [acceptError, setAcceptError] = useState('');
@@ -22,6 +23,7 @@ export default function CollaboratorAccept() {
     const load = async () => {
       try {
         const res = await fetch(`/api/collaborator-lookup?token=${encodeURIComponent(token)}`);
+        if (res.status === 410) { setExpired(true); setLoading(false); return; }
         if (!res.ok) { setNotFound(true); setLoading(false); return; }
         setInvite(await res.json());
       } catch {
@@ -62,6 +64,17 @@ export default function CollaboratorAccept() {
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAFAFA' }}>
         <Loader2 size={22} style={{ color: '#E03553', animation: 'spin 0.8s linear infinite' }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  if (expired) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAFAFA', padding: 24 }}>
+        <div style={{ textAlign: 'center', maxWidth: 400 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', marginBottom: 12, letterSpacing: '-0.02em', fontFamily: PJS }}>This invite has expired.</h1>
+          <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, fontFamily: PJS }}>Ask them to send a new one.</p>
+        </div>
       </div>
     );
   }

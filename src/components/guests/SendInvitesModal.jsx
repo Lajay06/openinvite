@@ -18,6 +18,7 @@ import { fetchGuestLinks } from '@/lib/guestLinks';
 import { invitationsFor } from '@/lib/household';
 import { invitationGreetingName } from '@/lib/guestGreeting';
 import { isBounced, bouncedSkippedSentence } from '@/components/guests/emailBounce';
+import RsvpDeadlineField from '@/components/shared/RsvpDeadlineField';
 
 // Guarded on the pattern already used by src/lib/app-params.js: read the
 // environment at module load only when there IS one. Browser behavior is
@@ -1202,6 +1203,25 @@ export default function SendInvitesModal({
                       </div>
                     )}
                   </div>
+                </div>
+
+                {/* ── WHEN REPLIES CLOSE, EDITABLE HERE ──────────────────────────
+                    Item 3 of goals/2026-10-11-dashboard-fixes-batch-1.md. The
+                    editor was a row on the Guests page and the owner's
+                    walkthrough took it off there. This is the review step: the
+                    couple is one press from telling guests to reply, which is
+                    the moment the deadline is actually a decision.
+
+                    THE COUNT CLAUSE DID NOT COME WITH IT. The old sentence
+                    ended "N guests have not replied", which that page could
+                    say because it held the whole list. This modal holds a
+                    SELECTION, so the same words here would count a different
+                    population. Dropped rather than quietly re-pointed. */}
+                <div style={{ marginBottom: 20, paddingTop: 16, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
+                  <RsvpDeadlineField
+                    rsvpContent={wedding?.rsvpContent}
+                    onSaved={(merged) => setWedding(w => ({ ...(w || {}), rsvpContent: merged }))}
+                  />
                 </div>
 
                 {/* What happens next */}

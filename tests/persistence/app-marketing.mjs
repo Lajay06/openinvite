@@ -140,13 +140,27 @@ export function runAppMarketing() {
     'Check the budget in the queue, not at the desk.',
     'The seating chart in your hand at the venue walk-through.',
   ];
-  const fb = twinChecks(check, features, 'data-app-phones', 'features', 'Everything, on your phone', 'h2');
+  // Batch 3 amendment B: one row of the feature rows, a photograph and a
+  // text panel, no phone and no twin. Its layout against its neighbours is
+  // measured in a browser by test:marketing-routes.
+  const fb = sectionWith(features, 'data-app-phones');
+  const ft = textOf(fb);
+  check('features: the app section is one of the feature rows', /data-feature-row="picture-left"/.test(fb) && !/data-app-twin/.test(fb));
+  check('features: no phone frame and no banner', !/data-app-phone-frame|data-app-phone-screen/.test(fb) && !bannerAbove(features, 'data-app-phones') && !/data-title-banner/.test(fb));
+  check('features: the heading, verbatim, as its h2', /<h2\b[^>]*>\s*Everything, on your phone\s*<\/h2>/.test(fb));
   const flines = [...fb.matchAll(/<li\b[^>]*data-app-line[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1]).trim());
   check('features: the lines, verbatim and in order', JSON.stringify(flines) === JSON.stringify(FEATURE_LINES), JSON.stringify(flines).slice(0, 120));
-  check('features: no line promises a reply landing as guests tap', !/as guests tap them/.test(textOf(fb)), 'held until push');
-  check('features: the desktop sentence, verbatim', textOf(fb).includes(DESKTOP));
-  check('features: the dark box is kept', /app-twin--box/.test(fb));
-  check('features: the store line, as text', textOf(fb).includes(STORE_LINE) && /data-app-store-line/.test(fb));
+  check('features: no line promises a reply landing as guests tap', !/as guests tap them/.test(ft), 'held until push');
+  check('features: the desktop sentence, verbatim', ft.includes(DESKTOP));
+  const STAY = 'DTS_STAYCATION_Mathew_Addington_Photos_ID3369_l8e9dm';
+  const fimg = /<img\b[^>]*data-features-app-photo[^>]*>/.exec(fb)?.[0] || '';
+  const fset = (/srcset="([^"]+)"/i.exec(fimg)?.[1] || '').replace(/&amp;/g, '&');
+  check('features: the STAYCATION photograph, at f_auto and q_auto, 1600, 1200 and 800 wide',
+    [1600, 1200, 800].every((w) => fset.includes(`/f_auto,q_auto,w_${w},c_limit/${STAY}.jpg ${w}w`)) && !/\bg_|c_fill|c_crop/.test(fset), fset.slice(0, 90));
+  check('features: framed with object-position 55% 40%, cover, no radius',
+    /object-fit:\s*cover/.test(fimg) && /object-position:\s*55% 40%/.test(fimg) && !/border-radius/.test(fimg));
+  check('features: its alt text, verbatim', fimg.includes('alt="A woman lies on her bed, phone in both hands, reading."'));
+  check('features: the text panel is #F6F2EC with #1C1916 ink', /background:\s*rgb\(246, 242, 236\)|#F6F2EC/i.test(fb) && /color:\s*rgb\(28, 25, 22\)|#1C1916/i.test(fb));
   // The accordion's first row, as the anchor: the app section sits above it
   // and is not one of its rows.
   const accAt = features.indexOf('Vendors and the marketplace');

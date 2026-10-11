@@ -1,15 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { getMyWeddingDetails, getMyGuestsWithRsvp, getMyRecords, putMyWeddingDetails } from "@/lib/resolveMyWedding";
-import { normalizeDeadline } from "@/lib/rsvpDeadline";
-import { updatedLabel, refreshFailedLine } from "@/lib/lastUpdated";
-// DASHBOARD CHROME KEEPS NUMERIC DATES in the account's chosen format, which
-// is the opposite call from the guest site's written ones. The couple set this
-// date in this format; showing it back to them any other way would be the
-// product disagreeing with itself. src/lib/rsvpDeadline.js's formatDeadline is
-// the guest-facing written form and is deliberately NOT used here.
-import { formatDashboardDate } from "@/lib/dashboardDate";
+import { getMyWeddingDetails, getMyGuestsWithRsvp, getMyRecords } from "@/lib/resolveMyWedding";
 import { hasPlusOne, plusOneRsvpStatus } from "@/lib/plusOne";
 import { assignGuestToTableByName, unassignGuestFromTables, DEFAULT_TABLE_CAPACITY } from "@/lib/tableAssignment";
 import { useCollaboratorContext } from "@/lib/collaboratorContext";
@@ -40,7 +32,7 @@ import { fetchGuestLinks } from '@/lib/guestLinks';
 import { createGuest, updateGuest, deleteGuest } from '@/lib/guestWrites';
 import { findDuplicate } from '@/lib/guestDuplicate';
 import { createPendingDeletes, UNDO_WINDOW_MS } from '@/lib/pendingDelete';
-import { counts as householdCounts, membersOf, leadOf, entriesForNewMember, householdIdOf, isChild } from '@/lib/household';
+import { membersOf, leadOf, entriesForNewMember, householdIdOf, isChild } from '@/lib/household';
 import TableToolbar from '@/components/shared/TableToolbar';
 import { isBounced, withBounceCleared } from '@/components/guests/emailBounce';
 
@@ -162,23 +154,17 @@ export default function Guests() {
   const [weddingSlug, setWeddingSlug] = useState(null);
   // Menu Phase 1 (Ultra) — for mapping a stored meal_choice id back to a label
   const [mealOptions, setMealOptions] = useState([]);
-  const [rsvpContent, setRsvpContent] = useState(null);
-  // ── HOW OLD THE LIST IS, AND WHETHER THE LAST TRY FAILED ────────────────
+  // ── THE AGE LINE AND THE REFRESH BUTTON ARE GONE ────────────────────────
   //
-  // Item 4 of goals/2026-10-09-reply-lifecycle.md. The page fetched once on
-  // mount and again after every write, and never said when. Both of these are
-  // set only by loadGuests, so nothing else can claim the list is fresh.
-  const [lastLoadedAt, setLastLoadedAt] = useState(null);
-  const [refreshFailed, setRefreshFailed] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  // A TICK TO RE-RENDER, NOT A COUNTER. The label is a function of
-  // lastLoadedAt and now, so this only forces the recomputation; it carries no
-  // state of its own and a failed refresh cannot make it say anything fresher.
-  const [, setNowTick] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setNowTick((t) => t + 1), 30000);
-    return () => clearInterval(id);
-  }, []);
+  // Item 3 of goals/2026-10-11-dashboard-fixes-batch-1.md, from the owner's
+  // walkthrough. They shipped together in #943 and they go together: a line
+  // saying the list is an hour old was only useful next to the thing that made
+  // it current. The list still reloads on mount and after every write, which is
+  // what it did before either control existed, so nothing about freshness
+  // changed except that the page no longer narrates it.
+  //
+  // The thirty-second re-render tick went with them: it existed only to keep
+  // that label counting up.
   // fix/guest-rls-step1: collaborator guest viewing is parked (api/collaborator-guests.js
   // returns 503) — see that file's header comment for why and the rebuild path.
   const [collaboratorGuestsUnavailable, setCollaboratorGuestsUnavailable] = useState(false);
@@ -228,10 +214,6 @@ export default function Guests() {
       setWeddingId(wd.id || null);
       setWeddingSlug(wd.slug || null);
       setMealOptions(wd.mealOptions || []);
-      // THE WHOLE OBJECT, not just the date. rsvpContent holds the couple's
-      // other RSVP overrides, so saving the deadline has to merge into what is
-      // already there or it would wipe them.
-      setRsvpContent(wd.rsvpContent || {});
     }).catch(() => {});
   }, [isCollaborating]);
 
@@ -239,34 +221,14 @@ export default function Guests() {
   // /w/:slug/collect form. Collaborators never see this (no WeddingDetails
   // of their own to scope it to, same reasoning as weddingEvents above).
 
-  // ── THE REPLY-BY DATE ───────────────────────────────────────────────────
+  // ── THE REPLY-BY DATE LIVES ELSEWHERE NOW ───────────────────────────────
   //
-  // Item 2 of goals/2026-10-09-reply-lifecycle.md. The field already existed
-  // and the guest site already read it in nine places; nothing could set it,
-  // because no editor was ever built. This is that editor.
-  //
-  // STORED AS A CALENDAR DATE, YYYY-MM-DD, which is what <input type="date">
-  // gives and what src/lib/rsvpDeadline.js expects. No time, because a
-  // deadline is a day. See that module for why the format matters.
-  const [savingDeadline, setSavingDeadline] = useState(false);
-  const [deadlineError, setDeadlineError] = useState('');
-  const rsvpDeadline = normalizeDeadline(rsvpContent?.rsvpDeadline) || '';
-
-  const saveDeadline = async (next) => {
-    const value = normalizeDeadline(next) || null;
-    setSavingDeadline(true);
-    setDeadlineError('');
-    try {
-      const merged = { ...(rsvpContent || {}), rsvpDeadline: value };
-      await putMyWeddingDetails({ rsvpContent: merged });
-      setRsvpContent(merged);
-    } catch {
-      // SAID, NOT SWALLOWED. A date that looks saved and is not would send
-      // guests to a form the couple thinks is closing.
-      setDeadlineError('Could not save the date. Please try again.');
-    }
-    setSavingDeadline(false);
-  };
+  // Item 2 of goals/2026-10-09-reply-lifecycle.md built the editor here,
+  // because the field had nine readers on the guest site and nothing that
+  // could set it. Item 3 of goals/2026-10-11-dashboard-fixes-batch-1.md moves
+  // it off this page: it is editable on the Send invites review step and shown
+  // on Event details, through src/components/shared/RsvpDeadlineField.jsx.
+  // Nothing server-side changed, so those nine readers are untouched.
 
   const loadGuests = async () => {
     try {
@@ -299,29 +261,15 @@ export default function Guests() {
         setTables(tableData.map(t => ({ ...t, assigned_guests: t.assigned_guests || [] })));
         backfillMissingTokens(guestData);
       }
-      // ONLY HERE, AND ONLY AFTER THE WRITES LANDED. This is the one place
-      // that may claim the list is current.
-      setLastLoadedAt(new Date());
-      setRefreshFailed(false);
     } catch {
-      // THE LIST IS LEFT EXACTLY AS IT WAS, and lastLoadedAt is not moved. A
-      // refresh that failed and then emptied the table would read as "every
-      // guest is gone", which is worse than showing nothing new. The toast is
-      // kept because it is what a couple notices; the line below the toolbar
-      // is what is still there once the toast has gone.
-      setRefreshFailed(true);
+      // THE LIST IS LEFT EXACTLY AS IT WAS. A refresh that failed and then
+      // emptied the table would read as "every guest is gone", which is worse
+      // than showing nothing new.
       toast.error("Failed to load guests");
     }
     setLoading(false);
   };
 
-  /** The Refresh control's own handler, so the button can show its state. */
-  const refreshNow = async () => {
-    if (refreshing) return;
-    setRefreshing(true);
-    await loadGuests();
-    setRefreshing(false);
-  };
 
   /* ── Table assignment — routes through the shared Table.assigned_guests
      write path (src/lib/tableAssignment.js) instead of writing
@@ -845,27 +793,6 @@ export default function Guests() {
   // invited and replied because that is what a couple chases.
   // ── THE FOUR NUMBERS, FROM THE ONE RESOLVER ─────────────────────────────
   //
-  // People and invitations are different questions, which is the same ruling
-  // guestRsvpTally.js already carries about replies and attendance: one is per
-  // person, the other per card in the post. src/lib/household.js answers both
-  // so no surface in this goal can word it differently.
-  const hhCounts = React.useMemo(() => householdCounts(guests), [guests]);
-
-  const perEventCounts = React.useMemo(() => {
-    if (weddingEvents.length < 2) return [];
-    return weddingEvents.map((event) => {
-      let invited = 0, replied = 0;
-      for (const g of guests) {
-        const r = getGuestEventResponse(g, event);
-        if (!r.invited) continue;
-        invited++;
-        // REPLIED MEANS ANSWERED, as the comment above says, so a maybe counts
-        // here exactly as a no does.
-        if (r.status === 'yes' || r.status === 'no' || r.status === 'maybe') replied++;
-      }
-      return { event, invited, replied };
-    });
-  }, [guests, weddingEvents]);
 
   const STAT_CARDS = activeEvent ? [
     { label: `Invited to ${activeEvent.name}`, value: eventStats.invited },
@@ -1123,104 +1050,6 @@ export default function Guests() {
         ))}
       </div>
 
-      {/* ── THE REPLY-BY DATE, NEAR THE TOP, WITH WHAT IS OUTSTANDING ──────
-          The couple's own question is "who have I not heard from", so the date
-          and that number belong on one line. Hidden for a collaborator, who
-          has no WeddingDetails of their own to write (the same reason the
-          events matrix is skipped for them above). */}
-      {!isCollaborating && !loading && (
-        <div
-          data-rsvp-deadline
-          style={{ borderBottom: '1px solid rgba(10,10,10,0.12)', padding: '12px 32px',
-                   fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13,
-                   color: 'rgba(10,10,10,0.6)', display: 'flex', gap: 12,
-                   alignItems: 'center', flexWrap: 'wrap' }}
-        >
-          <label htmlFor="rsvp-deadline" style={{ fontWeight: 700, color: '#0A0A0A' }}>
-            Reply by
-          </label>
-          <input
-            id="rsvp-deadline"
-            type="date"
-            value={rsvpDeadline}
-            disabled={savingDeadline}
-            onChange={(e) => saveDeadline(e.target.value)}
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13,
-                     padding: '7px 10px', minHeight: 36, border: '1px solid rgba(10,10,10,0.2)',
-                     background: '#fff', color: '#0A0A0A' }}
-          />
-          {rsvpDeadline && (
-            <>
-              <span>
-                Replies close at the end of {formatDashboardDate(rsvpDeadline)}.
-                {' '}
-                <strong style={{ color: '#0A0A0A', fontWeight: 700 }}>{stats.awaiting}</strong>
-                {stats.awaiting === 1 ? ' guest has' : ' guests have'} not replied.
-              </span>
-              {/* CLEARING REOPENS THE FORM, with nothing else to do. Spelled as
-                  its own control because a date input gives no obvious way to
-                  empty itself. */}
-              <button
-                type="button"
-                onClick={() => saveDeadline('')}
-                disabled={savingDeadline}
-                style={{ background: 'none', border: 'none', padding: '7px 4px', minHeight: 36,
-                         cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif",
-                         fontSize: 13, color: 'rgba(10,10,10,0.6)', textDecoration: 'underline' }}
-              >
-                Clear
-              </button>
-            </>
-          )}
-          {!rsvpDeadline && <span>Guests can reply until you set a date.</span>}
-          {deadlineError && <span style={{ color: '#E03553' }}>{deadlineError}</span>}
-        </div>
-      )}
-
-      {/* PER EVENT, UNDER THE CARDS, when the wedding has more than one and the
-          list is not already filtered to one. The cards answer "how many
-          people"; this answers "how many for each thing", which is the
-          question a wedding with different guest lists per event is actually
-          asking. */}
-      {/* ── C6 and C7: PEOPLE AND INVITATIONS ARE DIFFERENT QUESTIONS ──────
-          One is per person, the other per card in the post, and the same
-          ruling already governs replies and attendance in guestRsvpTally.js:
-          report both, never mix them. The adults and children line appears
-          only when there are children, because "41 adults, 0 children" is a
-          sentence about nothing. */}
-      {!loading && guests.length > 0 && (
-        <div
-          data-household-counts
-          style={{ borderBottom: '1px solid rgba(10,10,10,0.12)', padding: '12px 32px',
-                   fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13,
-                   color: 'rgba(10,10,10,0.6)', display: 'flex', gap: 16, flexWrap: 'wrap' }}
-        >
-          <span>
-            <strong style={{ color: '#0A0A0A', fontWeight: 700 }}>{hhCounts.people}</strong>
-            {' '}guests across{' '}
-            <strong style={{ color: '#0A0A0A', fontWeight: 700 }}>{hhCounts.invitations}</strong>
-            {' '}invitations
-          </span>
-          {hhCounts.children > 0 && (
-            <span>{hhCounts.adults} adults, {hhCounts.children} children</span>
-          )}
-        </div>
-      )}
-
-      {!activeEvent && perEventCounts.length > 0 && !loading && (
-        <div
-          data-per-event-counts
-          className="flex flex-wrap w-full"
-          style={{ borderBottom: '1px solid rgba(10,10,10,0.12)', padding: '12px 32px', gap: 24 }}
-        >
-          {perEventCounts.map(({ event, invited, replied }) => (
-            <div key={event.event_id} style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 12 }}>
-              <span style={{ fontWeight: 700, color: '#0A0A0A' }}>{event.name}</span>
-              <span style={{ color: 'rgba(10,10,10,0.6)' }}>{`  ${invited} invited, ${replied} replied`}</span>
-            </div>
-          ))}
-        </div>
-      )}
 
       {pendingBulkEvent && (
         <Dialog open onOpenChange={(o) => { if (!o && !bulkEventBusy) setPendingBulkEvent(null); }}>
@@ -1254,24 +1083,6 @@ export default function Guests() {
         {!isCollaborating && <AvaButton label="Ask Ava to help manage your guest list" onClick={() => setAvaOpen(true)} />}
         {isCollaborating && <div />}
         <div className="flex flex-wrap items-center gap-[10px]">
-          {/* ── HOW OLD THIS LIST IS, BESIDE THE WAY TO FIX IT ─────────────
-              The age and the Refresh control belong together: a line saying
-              the list is an hour old is only useful next to the thing that
-              makes it current. Both read from the last SUCCESSFUL load. */}
-          <span
-            data-guests-updated
-            style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-          >
-            {refreshFailed ? refreshFailedLine(lastLoadedAt) : updatedLabel(lastLoadedAt)}
-          </span>
-          <button
-            data-guests-refresh
-            onClick={refreshNow}
-            disabled={refreshing || loading}
-            className="btn-editorial-secondary"
-          >
-            {refreshing ? 'Refreshing…' : 'Refresh'}
-          </button>
           {!isCollaborating && (
             <button
               onClick={() => setShowImport(true)}

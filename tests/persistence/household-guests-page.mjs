@@ -149,15 +149,30 @@ export async function runHouseholdGuestsPage() {
   ok('isChild drives the child label and nothing else does',
      isChild(MINA) && !isChild(PRIYA), 'strict true');
 
+  // ── THE COUNT LINE LEFT THE GUESTS PAGE ─────────────────────────────────
+  //
+  // REMOVED BY OWNER RULING, 2026-10-11, item 3 of
+  // goals/2026-10-11-dashboard-fixes-batch-1.md. The five checks here used to
+  // assert the line's copy, its conditional and its resolver on
+  // src/pages/Guests.jsx. They are inverted rather than deleted, so a later
+  // refactor cannot quietly put it back.
+  //
+  // THE COPY ITSELF IS STILL GUARDED, on the page that still carries it: the
+  // Daily update renders the same words from the same resolver, and
+  // tests/persistence/household-tally-and-ava.mjs asserts them there. The
+  // resolver's own behavior is asserted above, from counts() directly, so
+  // nothing about households stopped being covered by this removal.
   const page = read('src/pages/Guests.jsx');
-  ok('the count line is the owner\'s words', page.includes('guests across'), '"{people} guests across {invitations} invitations"');
-  ok('  invitations, not people, in the second half', /\{hhCounts\.invitations\}/.test(page), 'invitations');
-  ok('  the adults and children line appears only when there are children',
-     /hhCounts\.children > 0 && \(/.test(page), 'conditional');
-  ok('  and it reads "adults, children"', /\{hhCounts\.adults\} adults, \{hhCounts\.children\} children/.test(page),
-     "the owner's words");
-  ok('  the numbers come from the one resolver',
-     /householdCounts\(guests\)/.test(readCode('src/pages/Guests.jsx')), 'household.js');
+  ok('the count line is gone from the Guests page',
+     !page.includes('guests across'), 'removed');
+  ok('  and the adults and children line with it',
+     !/adults, \{hhCounts\.children\} children/.test(page) && !/hhCounts/.test(page), 'removed');
+  ok('  the page no longer computes household counts at all',
+     !/householdCounts\(guests\)/.test(readCode('src/pages/Guests.jsx')), 'no caller');
+  ok('  nor imports the resolver it no longer needs',
+     !/counts as householdCounts/.test(readCode('src/pages/Guests.jsx')), 'no import');
+  ok('the same copy is still guarded where it still renders',
+     read('src/pages/DailyUpdate.jsx').includes('guests across'), 'Daily update');
 
   // ── THE WIRING ──────────────────────────────────────────────────────────
 
