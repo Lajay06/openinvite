@@ -65,6 +65,8 @@ export const LIVE_CREDENTIAL_GUARDS = new Set([
   // Signs up a real account and sends a real email. The owner runs it.
   'run-launch-smoke.mjs',
   'collaborator-invite.mjs',
+  // Writes one is_test CollaboratorInvite row and deletes it in a finally.
+  'collaborator-invite-live.mjs',
   'endpoint-auth.mjs',
   'guest.mjs',
   // Writes a real WeddingDetails record to prove guidanceState persists. The

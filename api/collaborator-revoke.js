@@ -24,8 +24,10 @@
  *                                             just loaded), which catches collaborators
  *                                             removed before this endpoint existed
  *
- * No grant rows for an email means the invite is still pending: nothing is
+ * No grant rows for an email means the invite is still pending: no grant is
  * written and the response says pending, so the modal resends the invite.
+ * A revoke also marks that email's CollaboratorInvite rows revoked
+ * (api/_lib/collaboratorInvites.js), so a pending link dies with the removal.
  *
  * Response: 200 { ok: true, written, pending } or 200 { ok: true, revoked }
  *        or 400/401/405/429/500 { error }
@@ -35,6 +37,7 @@ import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
 import { hashId, latestEvent, listGrantsForOwner } from './_lib/collaboratorAuth.js';
 import { COLLABORATOR_PERMISSION_KEYS } from '../src/lib/collaboratorPageMap.js';
+import { revokeInvitesForPair } from './_lib/collaboratorInvites.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -157,6 +160,12 @@ export default async function handler(req, res) {
         event_type: action === 'revoke' ? 'revoke' : 'grant',
         ...(permissions ? { permissions } : {}),
       });
+    }
+    // Removal also kills any invite link still out there, so someone removed
+    // before they accepted cannot accept afterward. A permission edit does
+    // not: on a pending invite the modal resends, and the resend supersedes.
+    if (action === 'revoke') {
+      await revokeInvitesForPair(caller.id, email, ownerToken);
     }
     return res.status(200).json({ ok: true, written: grantees.length, pending: grantees.length === 0 });
   } catch (err) {

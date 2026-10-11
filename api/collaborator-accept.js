@@ -29,6 +29,7 @@
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
 import { verifyInvite, isInviteExpired, INVITE_EXPIRED_MESSAGE } from './_lib/collaboratorInviteToken.js';
+import { inviteStanding } from './_lib/collaboratorInvites.js';
 import { hashId } from './_lib/collaboratorAuth.js';
 import { notify } from './_lib/notify.js';
 
@@ -77,6 +78,14 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Only the newest link for this owner and email works. A resend, or the
+    // owner removing a pending invite, leaves this one stale: same 404 as an
+    // invalid link, and no grant. CollaboratorInvite read is null, so the
+    // invitee's own token can read it.
+    if (await inviteStanding(invite, token, callerToken) === 'stale') {
+      return res.status(404).json({ error: 'This invite has expired or is invalid.' });
+    }
+
     const createRes = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/CollaboratorGrant`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${callerToken}` },
