@@ -106,6 +106,14 @@ export const LIVE_CREDENTIAL_GUARDS = new Set([
   'onboarding.mjs',
   'ownership.mjs',
   'plus-one-identity.mjs',
+  // Writes all three reminder keys to a real WeddingDetails record to prove
+  // they persist inside the undeclared rsvpContent object. The decisions are
+  // guarded credential-free in reply-by-reminder-switch.mjs; only the round
+  // trip needs a live record, because a dropped field returns 200, and
+  // remindersSent is an array of objects inside an object the mirror declares
+  // as bare. Owner's condition on item 1 of
+  // goals/2026-10-11-reply-by-reminders.md.
+  'reply-by-reminders-persistence.mjs',
   'rsvp.mjs',
   'seating-polish.mjs',
   'table-guest-sync.mjs',

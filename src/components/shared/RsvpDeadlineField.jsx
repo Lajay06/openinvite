@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { putMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { normalizeDeadline, mergedRsvpContent } from '@/lib/rsvpDeadline';
 import { formatDashboardDate } from '@/lib/dashboardDate';
+import { Switch } from '@/components/ui/switch';
+import {
+  LABEL as REMINDERS_LABEL, reminderLine, switchAvailability, withRemindersSwitch,
+} from '@/lib/rsvpReminders';
 
 /**
  * src/components/shared/RsvpDeadlineField.jsx
@@ -18,6 +22,19 @@ import { formatDashboardDate } from '@/lib/dashboardDate';
  * NOTHING SERVER-SIDE CHANGES, by the owner's ruling. Same field, same
  * normalization through src/lib/rsvpDeadline.js, same write through
  * putMyWeddingDetails, same nine readers on the guest site.
+ *
+ * ── AND THE REMINDER SWITCH SITS BESIDE IT ─────────────────────────────────
+ *
+ * Item 1 of goals/2026-10-11-reply-by-reminders.md. The switch belongs next to
+ * the date because it is about that date: "email anyone still to reply" has no
+ * meaning without one, which is also why it is disabled until the date exists.
+ *
+ * OPERABLE IN BOTH MODES, WHICH IS NOT WHAT readOnly DOES TO THE DATE. The
+ * item's own guard is "both surfaces show the same state after a change on
+ * either", so the switch can be thrown from Event details as well as from the
+ * Send invites step, while the DATE stays read-only there as #974 left it.
+ * That asymmetry is deliberate and reported: one control is a decision the
+ * couple can take from either page, the other is an edit with one home.
  *
  * THE COUNT CLAUSE DID NOT COME WITH IT. The Guests page's sentence ended with
  * "N guests have not replied", which it could say because it held the whole
@@ -61,16 +78,60 @@ export default function RsvpDeadlineField({ rsvpContent, onSaved, readOnly = fal
     setSaving(false);
   };
 
+  // ONE WRITE, THE WHOLE OBJECT. The switch merges into the same rsvpContent
+  // the date lives in, through the same put, so the two can never half-save.
+  const saveSwitch = async (on) => {
+    setSaving(true);
+    setError('');
+    try {
+      const merged = withRemindersSwitch(rsvpContent, on);
+      await putMyWeddingDetails({ rsvpContent: merged });
+      onSaved?.(merged);
+    } catch {
+      setError(DEADLINE_SAVE_ERROR);
+    }
+    setSaving(false);
+  };
+
+  const availability = switchAvailability(deadline);
+  const remindersOn = !!rsvpContent?.remindersOn;
+  // DISABLED WHEN IT CANNOT BE TURNED ON, and never when it is already on:
+  // the couple must always be able to switch it back off.
+  const switchDisabled = saving || (!remindersOn && !availability.ok);
+
+  const reminders = (
+    <div data-rsvp-reminders style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: switchDisabled ? 'default' : 'pointer' }}>
+        <Switch
+          data-rsvp-reminders-switch
+          checked={remindersOn}
+          disabled={switchDisabled}
+          onCheckedChange={saveSwitch}
+          aria-label={REMINDERS_LABEL}
+        />
+        <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          {REMINDERS_LABEL}
+        </span>
+      </label>
+      <span data-rsvp-reminders-line style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        {reminderLine(rsvpContent)}
+      </span>
+    </div>
+  );
+
   const line = deadline
     ? <span>{deadlineClosesLine(deadline)}</span>
     : <span>{NO_DEADLINE_LINE}</span>;
 
   if (readOnly) {
     return (
-      <div data-rsvp-deadline-shown style={{ display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap',
-        fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, color: 'rgba(10,10,10,0.6)' }}>
-        <span style={{ fontWeight: 700, color: '#0A0A0A' }}>{DEADLINE_LABEL}</span>
-        {line}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div data-rsvp-deadline-shown style={{ display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap',
+          fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, color: 'rgba(10,10,10,0.6)' }}>
+          <span style={{ fontWeight: 700, color: '#0A0A0A' }}>{DEADLINE_LABEL}</span>
+          {line}
+        </div>
+        {reminders}
       </div>
     );
   }
@@ -107,6 +168,7 @@ export default function RsvpDeadlineField({ rsvpContent, onSaved, readOnly = fal
         </button>
       )}
       {error && <span style={{ color: '#E03553' }}>{error}</span>}
+      <div style={{ flexBasis: '100%' }}>{reminders}</div>
     </div>
   );
 }
