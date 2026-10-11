@@ -118,9 +118,10 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Unknown action' });
   }
 
-  const ownerHash = hashId(caller.id);
-
   try {
+    // Inside the try: hashId throws when COLLAB_HASH_KEY is missing, and that
+    // must be the same "did not save" as any other failure, not a crash.
+    const ownerHash = hashId(caller.id);
     if (action === 'reconcile') {
       const raw = Array.isArray(req.body?.emails) ? req.body.emails : null;
       if (!raw || raw.length > MAX_RECONCILE_EMAILS) {

@@ -44,6 +44,9 @@ export async function runCollaboratorInviteExpiry() {
 
   const priorKey = process.env.BASE44_ADMIN_KEY;
   process.env.BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY || 'test-admin-key-not-a-real-credential';
+  // Collaborator hashes and invite links use COLLAB_HASH_KEY, never the admin key.
+  const priorHashKey = process.env.COLLAB_HASH_KEY;
+  process.env.COLLAB_HASH_KEY = '0123456789abcdef'.repeat(4);
 
   // collaborator-accept imports notify.js, which builds a Resend client at
   // module scope and throws with no key. A module that throws on first
@@ -137,6 +140,7 @@ export async function runCollaboratorInviteExpiry() {
     globalThis.fetch = realFetch;
     if (priorKey === undefined) delete process.env.BASE44_ADMIN_KEY;
     else process.env.BASE44_ADMIN_KEY = priorKey;
+    if (priorHashKey === undefined) delete process.env.COLLAB_HASH_KEY; else process.env.COLLAB_HASH_KEY = priorHashKey;
   }
 
   return results;

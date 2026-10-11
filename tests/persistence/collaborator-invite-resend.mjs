@@ -99,6 +99,9 @@ export async function runCollaboratorInviteResend() {
 
   const prior = { admin: process.env.BASE44_ADMIN_KEY, resend: process.env.RESEND_API_KEY };
   process.env.BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY || 'test-admin-key-not-a-real-credential';
+  // Collaborator hashes and invite links use COLLAB_HASH_KEY, never the admin key.
+  const priorHashKey = process.env.COLLAB_HASH_KEY;
+  process.env.COLLAB_HASH_KEY = '0123456789abcdef'.repeat(4);
   // notify.js and send-collaborator-invite.js build a Resend client at module
   // scope; a module that throws on first evaluation stays failed for the whole
   // process. Placeheld around the imports, as rsvp-confirmation-email.mjs does.
@@ -211,6 +214,7 @@ export async function runCollaboratorInviteResend() {
     Date.now = realNow;
     fake.restore();
     if (prior.admin === undefined) delete process.env.BASE44_ADMIN_KEY; else process.env.BASE44_ADMIN_KEY = prior.admin;
+    if (priorHashKey === undefined) delete process.env.COLLAB_HASH_KEY; else process.env.COLLAB_HASH_KEY = priorHashKey;
     if (prior.resend === undefined) delete process.env.RESEND_API_KEY; else process.env.RESEND_API_KEY = prior.resend;
   }
 
