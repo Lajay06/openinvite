@@ -67,6 +67,9 @@ export const GUEST_CATEGORY_LABEL = {
   partners_friends: "Partner's friends",
 };
 
+/** A guest who used the stop-emails link (#951), as GuestList.jsx says it. */
+export const OPTED_OUT_LABEL = 'Asked not to be emailed';
+
 export const RSVP_LABEL = { pending: 'Awaiting reply', attending: 'Attending', declined: 'Declined', maybe: 'Maybe' };
 export const RSVP_TONE = { pending: 'warn', attending: 'ok', declined: 'no', maybe: 'neutral' };
 

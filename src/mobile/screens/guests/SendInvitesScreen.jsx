@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import Screen from '../../shell/Screen';
 import { FilterPills, RowGroup, Row, Checkbox, PillButton, TextField, TextAreaField, BottomSheet, SkeletonRows, ErrorState, EmptyState, PanelCard, StatusPill } from '../../ui';
 import PillChoice from '../../ui/PillChoice';
-import { initials, GUEST_CATEGORY_LABEL } from '../../lib/format';
+import { initials, GUEST_CATEGORY_LABEL, OPTED_OUT_LABEL } from '../../lib/format';
 import { useApi } from '../../data/api';
 import { isAttending, isDeclined, isAwaitingPrimary } from '@/lib/guestRsvpTally';
 import { coupleDisplayName } from '@/lib/coupleNames';
@@ -138,14 +138,20 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
   };
   const weddingPayload = { coupleName, weddingDate, venue, siteUrl, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl };
 
+  // SENDABLE ONLY, as SendInvitesModal.jsx (#951, mobile parity 8). A guest who
+  // asked not to be emailed is not minted a token, not sent to and not stamped
+  // as invited; api/send-invites.js skips them from the database anyway, which
+  // is the guarantee. This is the sentence, and the true result row.
   const send = async (list = selectedGuests) => {
+    const optedOut = list.filter((g) => g.email_opt_out);
+    const sendable = list.filter((g) => !g.email_opt_out);
     setConfirming(false);
     setSending(true);
     const tid = toast.loading(`Sending ${TYPE_LABELS[type].toLowerCase()}s`);
     // 'email', a literal, as on the web: there is one channel.
     const channelStr = 'email';
     try {
-      const withTokens = await ensureTokens(list);
+      const withTokens = await ensureTokens(sendable);
       {
         const emailList = withTokens.filter((g) => g.email);
         const plusOneList = withTokens.filter((g) => g.plus_one_email && g.plus_one_rsvp_link_id);
@@ -158,17 +164,21 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
       // Only invite and reminder have a tracking field on Guest; save the date must not write invite_sent_at (SendInvitesModal.jsx).
       const track = (g) => (type === 'invite' || type === 'reminder' ? api.update('Guest', g.id, type === 'reminder' ? { reminder_sent_at: new Date().toISOString() } : { invite_sent_at: new Date().toISOString(), invite_channel: channelStr }) : Promise.resolve());
       // Each recipient's status: the email went (the endpoint took the batch), or there was no email to send to.
-      const rows = withTokens.map((g) => ({ guest: g, status: g.email ? 'sent' : 'skipped', why: g.email ? '' : 'No email' }));
+      const rows = [
+        ...withTokens.map((g) => ({ guest: g, status: g.email ? 'sent' : 'skipped', why: g.email ? '' : 'No email' })),
+        ...optedOut.map((g) => ({ guest: g, status: 'skipped', why: OPTED_OUT_LABEL })),
+      ];
       await Promise.all(withTokens.map(track));
       const sentCount = rows.filter((r) => r.status === 'sent').length;
-      toast.success(`${TYPE_LABELS[type]} sent to ${sentCount} guest${sentCount === 1 ? '' : 's'}`, { id: tid });
+      toast.success(`${TYPE_LABELS[type]} sent to ${sentCount} guest${sentCount === 1 ? '' : 's'}`
+        + (optedOut.length > 0 ? `, ${optedOut.length} skipped who asked not to be emailed` : ''), { id: tid });
       setSending(false);
       setResult({ rows, channelStr });
     } catch (e) {
       toast.error(e?.message || 'Failed to send', { id: tid });
       setSending(false);
       // Nothing went out (the endpoint refuses a batch whole, and a missing link aborts before it): every recipient failed, and can be sent again.
-      setResult({ rows: list.map((g) => ({ guest: g, status: 'failed', why: e?.message || 'Failed to send' })), channelStr });
+      setResult({ rows: [...sendable.map((g) => ({ guest: g, status: 'failed', why: e?.message || 'Failed to send' })), ...optedOut.map((g) => ({ guest: g, status: 'skipped', why: OPTED_OUT_LABEL }))], channelStr });
     }
   };
   const failed = result ? result.rows.filter((r) => r.status === 'failed').map((r) => r.guest) : [];
