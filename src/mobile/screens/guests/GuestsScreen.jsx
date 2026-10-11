@@ -10,7 +10,7 @@ import { prefGet, prefSet } from '../../native';
 import { useConsiderations } from '../../features/ConsiderationsSheet';
 
 import { getGuestEventResponse } from '@/lib/weddingEvents';
-import { initials, RSVP_LABEL, RSVP_TONE, GUEST_CATEGORY_LABEL } from '../../lib/format';
+import { initials, RSVP_LABEL, RSVP_TONE, GUEST_CATEGORY_LABEL, OPTED_OUT_LABEL } from '../../lib/format';
 
 /** One label set everywhere (goal 8): the four stats, then "Not yet invited" as a list filter only. */
 export const GUEST_FILTERS = [
@@ -65,6 +65,8 @@ export function GuestRow({ guest, onClick, event, selectable, selected, onSelect
         <div className="oi-m-row__body">
           <div className="oi-m-row__label">{guest.name || 'Unnamed guest'}</div>
           {sub && <div className="oi-m-row__sub">{sub}</div>}
+          {/* GuestList.jsx's line, word for word (#951, mobile parity 8): what was sent before is still true, and this says never again. */}
+          {guest.email_opt_out && <div className="oi-m-row__sub" data-opted-out style={{ color: 'var(--m-no)' }}>{OPTED_OUT_LABEL}</div>}
         </div>
         {pill}
       </button>

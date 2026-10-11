@@ -3,7 +3,7 @@ import { Mail, Phone, Pencil, Send, CalendarCheck, Gift } from 'lucide-react';
 import Screen from '../../shell/Screen';
 import { Row, RowGroup, StatusPill, PillButton, ErrorState, Skeleton } from '../../ui';
 import { openExternal } from '../../native';
-import { initials, RSVP_LABEL, RSVP_TONE, GUEST_CATEGORY_LABEL, dateShort, childLabel } from '../../lib/format';
+import { initials, RSVP_LABEL, RSVP_TONE, GUEST_CATEGORY_LABEL, dateShort, childLabel, OPTED_OUT_LABEL } from '../../lib/format';
 import { membersOf, salutation } from '@/lib/household';
 import { formatMoney } from '@/lib/money';
 import { getGuestEventResponse, mealOptionLabel, effectiveMealChoice } from '@/lib/weddingEvents';
@@ -95,7 +95,7 @@ export default function GuestDetailScreen({ guest, guests = [], onOpenGuest, rol
           {guest.email || guest.phone ? (
             <RowGroup>
               {/* Contact details are shown, not dialed into email or WhatsApp: guests are reached through Send invites (owner decision, goal 6). A call stays. */}
-              {guest.email && <Row icon={Mail} tile="neutral" label={guest.email} sub="Email" chevron={false} />}
+              {guest.email && <Row icon={Mail} tile="neutral" label={guest.email} sub={guest.email_opt_out ? OPTED_OUT_LABEL : 'Email'} chevron={false} />}
               {guest.phone && <Row icon={Phone} tile="neutral" label={guest.phone} sub="Call" onClick={() => openExternal(`tel:${guest.phone}`)} chevron={false} />}
             </RowGroup>
           ) : <div className="oi-m-card"><p className="oi-m-meta">No email or phone yet. Add one to send an invitation.</p></div>}
