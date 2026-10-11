@@ -16,6 +16,7 @@ import { hapticLight, exportText, shareLink } from '../../native';
 import { getWeddingEvents, toggleEventInvite, getGuestEventResponse, mealOptionLabel, effectiveMealChoice } from '@/lib/weddingEvents';
 import { hasPlusOne, plusOneRsvpStatus } from '@/lib/plusOne';
 import { applyStatusToEventResponses } from '@/lib/statusWrite';
+import { withBounceCleared } from '@/components/guests/emailBounce';
 import { countryFromWedding } from '@/lib/countryFromVenue';
 import { DEFAULT_COUNTRY } from '@/lib/phoneE164';
 
@@ -138,7 +139,9 @@ export default function GuestsContainer() {
       event_responses: applyStatusToEventResponses({ events: weddingEvents, guest: sheet.guest || {}, status: fieldsOut.rsvp_status }),
     };
     if (sheet.guest) {
-      await guestWrites.update(sheet.guest.id, rest);
+      // A CHANGED ADDRESS CLEARS ITS BOUNCE IN THE SAME SAVE, as Guests.jsx
+      // saves it: otherwise a fixed typo stays skipped by every send.
+      await guestWrites.update(sheet.guest.id, withBounceCleared(rest, sheet.guest));
       await applyTable(sheet.guest.id, table_assignment, sheet.guest.table_assignment);
       toast.success('Guest updated');
     } else {

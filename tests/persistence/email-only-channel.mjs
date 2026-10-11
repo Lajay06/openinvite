@@ -154,7 +154,7 @@ export async function runEmailOnlyChannel() {
   ok('  while the email send itself is intact',
      /const recipients = \[/.test(mSend) && /api\.json\('\/api\/send-invites'/.test(mSend), 'recipients built, endpoint called');
   ok('  and a guest with no email is still named as skipped',
-     /why: g\.email \? '' : 'No email'/.test(mSend), 'one row each');
+     /why: !went \? 'No email'/.test(mSend), 'one row each, by invitation');
   ok('  and the Invitations screen promises email only',
      !/WhatsApp/.test(code(read('src/mobile/screens/plan/InvitationsScreen.jsx'))), 'no second channel in the copy');
   // The shell's Messages screen keeps its per-guest WhatsApp reply, as the web's does.

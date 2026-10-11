@@ -11,6 +11,7 @@ import { useConsiderations } from '../../features/ConsiderationsSheet';
 
 import { getGuestEventResponse } from '@/lib/weddingEvents';
 import { initials, RSVP_LABEL, RSVP_TONE, GUEST_CATEGORY_LABEL, OPTED_OUT_LABEL } from '../../lib/format';
+import { isBounced, BOUNCE_ROW_LABEL } from '@/components/guests/emailBounce';
 
 /** One label set everywhere (goal 8): the four stats, then "Not yet invited" as a list filter only. */
 export const GUEST_FILTERS = [
@@ -67,6 +68,7 @@ export function GuestRow({ guest, onClick, event, selectable, selected, onSelect
           {sub && <div className="oi-m-row__sub">{sub}</div>}
           {/* GuestList.jsx's line, word for word (#951, mobile parity 8): what was sent before is still true, and this says never again. */}
           {guest.email_opt_out && <div className="oi-m-row__sub" data-opted-out style={{ color: 'var(--m-no)' }}>{OPTED_OUT_LABEL}</div>}
+          {!guest.email_opt_out && isBounced(guest) && <div className="oi-m-row__sub" data-bounced style={{ color: 'var(--m-no)' }}>{BOUNCE_ROW_LABEL}</div>}
         </div>
         {pill}
       </button>
