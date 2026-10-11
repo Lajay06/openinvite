@@ -83,7 +83,7 @@ const primary = 'px-8 py-3 rounded-full text-white text-sm font-medium bg-[#E035
 
 /**
  * ONBOARDING'S NAMES-STEP INPUT, REUSED AS ITS PATTERN (onboarding has no
- * input component): the placeholder is the label, grey until typed, no box,
+ * input component): the placeholder is the label, gray until typed, no box,
  * an underline that turns pink once there is a value or focus. The one
  * difference is the width: the names step caps a name at 300px, and an email
  * address does not fit in 300px at this size, so these run the column's width.
