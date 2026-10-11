@@ -62,7 +62,7 @@ export function srcSetFor(url, { width, height } = {}) {
 }
 
 /**
- * The couple's own imagery, in order: cover photo, guest suite photo blocks, Our
+ * The couple's own imagery, in order: cover photo, Guest Suite photo blocks, Our
  * Story photos. Falls back to the sample content of their universe. Each
  * entry is a full delivery URL the caller passes through `deliver()`.
  */
@@ -80,7 +80,7 @@ export function coupleImages(details) {
   return [];
 }
 
-/** The couple's own imagery only: cover photo, guest suite photo blocks, Our Story photos. */
+/** The couple's own imagery only: cover photo, Guest Suite photo blocks, Our Story photos. */
 export function ownImages(d) { return imagesFrom(d); }
 
 function imagesFrom(d) {
@@ -102,9 +102,9 @@ export function heroImageFor(details) {
 }
 
 /**
- * The Home heroes: the cover and the Our Story photos, not the guest suite's own
- * photo blocks, which belong to the Guest suite tab preview (`siteImageFor`). So
- * a guest suite block photo is never drawn on Home and on the Guest suite tab both.
+ * The Home heroes: the cover and the Our Story photos, not the Guest Suite's own
+ * photo blocks, which belong to the Guest Suite tab preview (`siteImageFor`). So
+ * a Guest Suite block photo is never drawn on Home and on the Guest Suite tab both.
  */
 export function homeHeroImages(d) {
   if (!d) return [];
@@ -115,7 +115,7 @@ export function homeHeroImages(d) {
   return out;
 }
 
-/** The Guest suite tab preview: its first photo block, else the cover, else the universe sample. */
+/** The Guest Suite tab preview: its first photo block, else the cover, else the universe sample. */
 export function siteImageFor(d) {
   for (const b of d?.homeContent?.blocks || []) {
     if ((b?.type === 'photo' || b?.type === 'full-width-image') && b.content?.url) return b.content.url;

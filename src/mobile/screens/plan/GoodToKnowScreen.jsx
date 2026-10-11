@@ -38,7 +38,7 @@ const STYLING_MODES = [
 
 /**
  * Good to know, as GuestSuitePolicies.jsx: every policy with its own
- * fields and a Show in guest suite switch, the styling quiz mode, and the
+ * fields and a Show in Guest Suite switch, the styling quiz mode, and the
  * guest experience settings (show who is attending, the circle; background
  * music is hidden on desktop by owner decision and so here). Saves `weddingPolicies` and
  * `guestExperienceSettings` as the desktop's Save does, 900ms after the
@@ -109,11 +109,11 @@ export default function GoodToKnowScreen({ policies = {}, guestExperience = {}, 
                       <div className="oi-m-row__label">{s.label}</div>
                       <div className="oi-m-row__sub">{summaryOf(s.key)}</div>
                     </button>
-                    <Switch on={!!p[s.key]?.display} onChange={(on) => set(s.key, 'display', on)} label={`Show ${s.label.toLowerCase()} in the guest suite`} />
+                    <Switch on={!!p[s.key]?.display} onChange={(on) => set(s.key, 'display', on)} label={`Show ${s.label.toLowerCase()} in the Guest Suite`} />
                   </div>
                 ))}
               </RowGroup>
-              <p className="oi-m-meta" style={{ marginTop: 8 }}>The switch shows a section on your guest suite. Tap a row to write it.</p>
+              <p className="oi-m-meta" style={{ marginTop: 8 }}>The switch shows a section on your Guest Suite. Tap a row to write it.</p>
             </section>
             <section>
               <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Styling quiz</h2>
@@ -137,7 +137,7 @@ export default function GoodToKnowScreen({ policies = {}, guestExperience = {}, 
                 </div>
                 <div className="oi-m-row" style={{ minHeight: 68 }}>
                   <span className="oi-m-row__tile oi-m-row__tile--neutral"><Users size={19} strokeWidth={1.75} /></span>
-                  <div className="oi-m-row__body"><div className="oi-m-row__label">The circle</div><div className="oi-m-row__sub" style={{ whiteSpace: 'normal' }}>Show guests the wedding party on your guest suite</div></div>
+                  <div className="oi-m-row__body"><div className="oi-m-row__label">The circle</div><div className="oi-m-row__sub" style={{ whiteSpace: 'normal' }}>Show guests the wedding party on your Guest Suite</div></div>
                   <Switch on={!!ge.showCircle} onChange={(on) => setGE('showCircle', on)} label="Show the circle" />
                 </div>
               </RowGroup>
@@ -191,7 +191,7 @@ function PolicySheet({ section, value: v, eventDressCode, onChange, onClose }) {
         {section.key === 'dressCode' && <><TextField label="From event details" value={eventDressCode} readOnly placeholder="Set in Event details" />{area('guidance', 'Expanded guidance', { placeholder: 'Formal attire, cocktail dresses, the ceremony is on grass' })}{text('weatherNote', 'Weather note', { placeholder: 'Outdoor ceremony, flat heels recommended' })}</>}
         {section.key === 'lateArrival' && area('policy', 'Policy', { placeholder: 'If you are running late, wait at the back until the vows are done.' })}
         {section.key === 'other' && area('text', 'Anything else', { rows: 5 })}
-        {toggle('display', 'Show in the guest suite')}
+        {toggle('display', 'Show in the Guest Suite')}
       </div>
     </BottomSheet>
   );

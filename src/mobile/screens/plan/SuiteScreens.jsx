@@ -22,7 +22,7 @@ export function QnaScreen({ qna = [], onSave, onSuggest, loading, error, onRetry
   };
   const addIdea = async (idea) => { await onSave([...qna, { id: Date.now(), question: idea.question, answer: idea.answer || '' }]); setIdeas((l) => (Array.isArray(l) ? l.filter((x) => x !== idea) : l)); };
   return (
-    <Screen title="Q&A" subtitle={loading ? '' : `${qna.length} question${qna.length === 1 ? '' : 's'} on your guest suite`} back={back} actions={[{ icon: Plus, label: 'Add question', onClick: () => setSheet(-1) }]}>
+    <Screen title="Q&A" subtitle={loading ? '' : `${qna.length} question${qna.length === 1 ? '' : 's'} on your Guest Suite`} back={back} actions={[{ icon: Plus, label: 'Add question', onClick: () => setSheet(-1) }]}>
       <div className="oi-m-stack">
         {!loading && !error && onSuggest && (
           <PanelCard tone="ink" label="Ava" body="What will your guests ask that you have not answered yet?">
@@ -65,7 +65,7 @@ const PLACE_FIELDS = [{ name: 'name', label: 'Name', type: 'text' }, { name: 'ad
 export function PlacesScreen({ title, icon: Icon = MapPin, places = [], onSave, loading, error, onRetry, back, intro, onDesktop }) {
   const [sheet, setSheet] = useState(null);
   return (
-    <Screen title={title} subtitle={loading ? '' : `${places.length} place${places.length === 1 ? '' : 's'} on your guest suite`} back={back} actions={[{ icon: Plus, label: 'Add place', onClick: () => setSheet(-1) }]}>
+    <Screen title={title} subtitle={loading ? '' : `${places.length} place${places.length === 1 ? '' : 's'} on your Guest Suite`} back={back} actions={[{ icon: Plus, label: 'Add place', onClick: () => setSheet(-1) }]}>
       <div className="oi-m-stack oi-m-stack--24">
         {intro && <PanelCard tone="neutral" body={intro} action={onDesktop ? 'Search nearby on desktop' : undefined} onClick={onDesktop} />}
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={4} /> : places.length === 0 ? (
@@ -85,12 +85,12 @@ export function PlacesScreen({ title, icon: Icon = MapPin, places = [], onSave, 
   );
 }
 
-/* ── Guest suite schedule: the same Schedule records, as guests see them ── */
+/* ── Guest Suite schedule: the same Schedule records, as guests see them ── */
 export function SuiteScheduleScreen({ items = [], loading, error, onRetry, back, onEdit }) {
   const dayOf = (it) => String(it.event_date || '').slice(0, 10);
   const days = [...new Set(items.map(dayOf))].sort();
   return (
-    <Screen title="Schedule" subtitle="As guests see it on your guest suite" back={back}>
+    <Screen title="Schedule" subtitle="As guests see it on your Guest Suite" back={back}>
       <div className="oi-m-stack oi-m-stack--24">
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={5} /> : items.length === 0 ? (
           <EmptyState icon={Clock} text="Nothing on the schedule yet." actionLabel="Add events" onAction={onEdit} />

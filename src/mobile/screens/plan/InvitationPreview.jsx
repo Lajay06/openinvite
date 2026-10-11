@@ -10,7 +10,7 @@ import { BottomSheet } from '../../ui';
  * backgrounds are the desktop's to the pixel. View only: `onElementSelect`
  * is not passed, so tapping a block selects nothing.
  *
- * The same two surfaces as the guest suite (SitePreview.jsx): a 4:5 tile
+ * The same two surfaces as the Guest Suite (SitePreview.jsx): a 4:5 tile
  * laid out at 390px and scaled, inert, and a full-height sheet where the
  * invitation scrolls inside a frame that contains its fixed menu.
  */

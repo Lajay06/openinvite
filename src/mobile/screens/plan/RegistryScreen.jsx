@@ -53,7 +53,7 @@ export default function RegistryScreen({ lists, currency, registryUrl = '', onAs
 
   if (segment === 'overview') {
     return (
-      <Screen title="Registry" subtitle={loading ? '' : `${links.length + products.length + funds.length} on your guest suite`} back={back} actions={[{ icon: Share2, label: 'Share the registry', onClick: () => setShare(true) }]}>
+      <Screen title="Registry" subtitle={loading ? '' : `${links.length + products.length + funds.length} on your Guest Suite`} back={back} actions={[{ icon: Share2, label: 'Share the registry', onClick: () => setShare(true) }]}>
         <Segments options={SEGMENTS} value={segment} onChange={setSegment} />
         <div className="oi-m-stack oi-m-stack--24">
           {loading ? <SkeletonRows count={4} /> : lists.links?.error ? <ErrorState onRetry={lists.links.reload} /> : (
@@ -68,7 +68,7 @@ export default function RegistryScreen({ lists, currency, registryUrl = '', onAs
                 <ProgressBar value={totalPurchased} max={totalRequested || 1} note={totalRequested ? `${totalPurchased} of ${totalRequested} products bought.` : 'Add products to track what gets bought.'} />
               </div>
               {links.length + products.length + funds.length === 0 ? (
-                <PanelCard tone="neutral" label="Nothing listed yet" title="Start your registry" body="Link a store, list the products you want, or set up a cash fund. Guests see it on your guest suite." action="Add a platform" onClick={() => setSegment('links')} />
+                <PanelCard tone="neutral" label="Nothing listed yet" title="Start your registry" body="Link a store, list the products you want, or set up a cash fund. Guests see it on your Guest Suite." action="Add a platform" onClick={() => setSegment('links')} />
               ) : (
                 <>
                   {links.length > 0 && <section><h2 className="oi-m-section" style={{ marginBottom: 12 }}>Registry platforms</h2><RowGroup>{links.map((l) => <Row key={l.id} icon={Gift} tile="neutral" label={l.store_name} sub={l.description || (l.url || '').replace(/^https?:\/\//, '')} onClick={l.url ? () => openExternal(l.url) : undefined} chevron={false} />)}</RowGroup></section>}
@@ -150,7 +150,7 @@ function ShareSheet({ open, onClose, url, links, products }) {
   const message = `Check out our wedding registry. We have registered at ${links} store${links === 1 ? '' : 's'} and have ${products} item${products === 1 ? '' : 's'} on our list. ${url}`;
   return (
     <BottomSheet open={open} onClose={onClose} title="Share your registry">
-      {!url ? <p className="oi-m-body">Your guest suite has no address yet, so there is no registry link to share until then.</p> : (
+      {!url ? <p className="oi-m-body">Your Guest Suite has no address yet, so there is no registry link to share until then.</p> : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div className="oi-m-meta" style={{ overflowWrap: 'anywhere' }}>{url.replace(/^https?:\/\//, '')}</div>
           <RowGroup>

@@ -17,7 +17,7 @@ All scoped under `.oi-mobile-root` as CSS custom properties in `src/mobile/style
 | Token | Value | Used for |
 |---|---|---|
 | `--m-r-card` | 20px | cards, panels, row groups, the notification banner |
-| `--m-r-image` | 16px | images, tiles, the guest suite preview frame |
+| `--m-r-image` | 16px | images, tiles, the Guest Suite preview frame |
 | `--m-r-input` | 14px | inputs, selects, textareas |
 | `--m-r-sheet` | 28px | bottom sheets, top corners only |
 | `--m-r-pill` | 999px | pills, buttons, filter chips, status badges |
@@ -122,10 +122,10 @@ Transform and opacity only. `prefers-reduced-motion` removes movement and keeps 
 
 ## Imagery
 
-Order of preference: the couple's own imagery (cover photo, guest suite photo blocks, Our Story photos, moodboard pins, the guest suite gallery), then the standard `app/` photos, then a color panel. A slot never shows a broken or empty box. The Home hero carousel and the daily update wear the couple's own photos (goal 6); everything below the hero keeps the `app/` photos chosen for it. In the preview the demo couple's photos are the fixture stand-ins in `images.ts`, used nowhere else.
+Order of preference: the couple's own imagery (cover photo, Guest Suite photo blocks, Our Story photos, moodboard pins, the Guest Suite gallery), then the standard `app/` photos, then a color panel. A slot never shows a broken or empty box. The Home hero carousel and the daily update wear the couple's own photos (goal 6); everything below the hero keeps the `app/` photos chosen for it. In the preview the demo couple's photos are the fixture stand-ins in `images.ts`, used nowhere else.
 
 Stills only, on every photo (goal 6): no zoom, no parallax, no scale, no crossfade within a photo. Nothing derives motion from an image whose public id starts with `DTS_`.
 
-Where images belong: the daily update (seven bundled photos, one per weekday; goal 7 removed the in-app splash and its pool, the native launch screen is the mark on ink and nothing else), Home hero carousel, Home "keep planning" carousel, Plan hub tiles, Guest suite tab preview, vendor and registry cards where the data has photos, empty states where a photo helps, the Account profile card. Where they do not: forms, dense lists, budget tables.
+Where images belong: the daily update (seven bundled photos, one per weekday; goal 7 removed the in-app splash and its pool, the native launch screen is the mark on ink and nothing else), Home hero carousel, Home "keep planning" carousel, Plan hub tiles, Guest Suite tab preview, vendor and registry cards where the data has photos, empty states where a photo helps, the Account profile card. Where they do not: forms, dense lists, budget tables.
 
 Every decorative slot is named once, in `src/mobile/images.ts`, with its public id, alt text, where it is drawn, the size to supply and a `todo` marker while it waits for a photo. `/m/preview/images` renders that file as a gallery. No decorative Cloudinary id lives anywhere else in `src/mobile/`.

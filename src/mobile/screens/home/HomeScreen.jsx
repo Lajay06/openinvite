@@ -24,14 +24,14 @@ export default function HomeScreen({
 }) {
   const img = (i) => images[i] || '';
   const countdown = daysToGo == null ? null : daysToGo > 1 ? `${daysToGo}` : daysToGo === 1 ? 'Tomorrow' : daysToGo === 0 ? 'Today' : null;
-  // The hero cards (goal 7): days to go first, the guest suite share card
+  // The hero cards (goal 7): days to go first, the Guest Suite share card
   // last, two rotating between them from the pool real data backs. Every
   // card carries a small label saying what it is, so a line like "Three
   // course dinner, 82 guests" is never ambiguous.
   let first = null; let last = null; const middle = [];
   if (!loading) {
     const dayLabel = countdown && daysToGo > 1 ? 'Days to go' : 'Your wedding';
-    first = { key: 'days', label: dayLabel, number: countdown && daysToGo > 1 ? countdown : undefined, title: countdown && daysToGo > 1 ? (coupleName || 'until the day') : countdown || coupleName, sub: weddingDate ? dateShort(weddingDate) : 'Add your date in Event details', action: siteUrl ? 'View guest suite' : 'Event details', onAction: siteUrl ? () => onOpenFeature?.('site') : () => onOpenFeature?.('event-details') };
+    first = { key: 'days', label: dayLabel, number: countdown && daysToGo > 1 ? countdown : undefined, title: countdown && daysToGo > 1 ? (coupleName || 'until the day') : countdown || coupleName, sub: weddingDate ? dateShort(weddingDate) : 'Add your date in Event details', action: siteUrl ? 'View Guest Suite' : 'Event details', onAction: siteUrl ? () => onOpenFeature?.('site') : () => onOpenFeature?.('event-details') };
     if (rsvp && rsvp.invited > 0) middle.push({ key: 'rsvp', label: 'RSVPs', number: rsvp.attending, title: 'attending so far', sub: rsvpSentence(rsvp), action: 'See who is yet to reply', onAction: onOpenGuests, progress: { value: rsvp.attending + rsvp.declined, max: rsvp.invited } });
     const lead = Array.isArray(briefing) ? (briefing[0]?.lead || briefing[0]?.body) : briefing;
     if (lead) middle.push({ key: 'ava', label: 'From Ava', title: lead, action: 'Ask Ava', onAction: onOpenAva });
@@ -39,10 +39,10 @@ export default function HomeScreen({
     if (payments[0]) middle.push({ key: 'payment', label: 'Next payment', number: formatMoney(payments[0].actual_amount || payments[0].budgeted_amount, budget?.currency), title: `${payments[0].item_name}${payments[0].vendor ? ` to ${payments[0].vendor}` : ''}`, sub: `Due ${dateShort(payments[0].payment_date)}`, action: 'Open budget', onAction: onOpenBudget });
     if (tasks[0]) middle.push({ key: 'task', label: 'Next up', title: tasks[0].title, sub: [dueLabel(tasks[0].due_date), tasks.length > 1 ? `${tasks.length - 1} more open` : ''].filter(Boolean).join(', '), action: 'Open to do', onAction: onOpenTasks });
     if (songRequests > 0) middle.push({ key: 'songs', label: 'Song requests', number: songRequests, title: songRequests === 1 ? 'song to review' : 'songs to review', action: 'Review requests', onAction: () => onOpenFeature?.('music') });
-    else if (guestbook[0]) middle.push({ key: 'guestbook', label: 'Guestbook', title: guestbook[0].message ? `"${String(guestbook[0].message).slice(0, 90)}${String(guestbook[0].message).length > 90 ? '...' : ''}"` : 'A new entry', sub: guestbook[0].name || guestbook[0].guest_name || '', action: 'Open guest suite', onAction: () => onOpenFeature?.('site') });
+    else if (guestbook[0]) middle.push({ key: 'guestbook', label: 'Guestbook', title: guestbook[0].message ? `"${String(guestbook[0].message).slice(0, 90)}${String(guestbook[0].message).length > 90 ? '...' : ''}"` : 'A new entry', sub: guestbook[0].name || guestbook[0].guest_name || '', action: 'Open Guest Suite', onAction: () => onOpenFeature?.('site') });
     if (unreadMessages > 0) middle.push({ key: 'messages', label: 'Messages', number: unreadMessages, title: unreadMessages === 1 ? 'unread message' : 'unread messages', action: 'Read them', onAction: () => onOpenFeature?.('messages') });
     // Guests receive the site by email and nothing else (#923, #924), so this card sends invites rather than a link.
-    if (siteUrl) last = { key: 'send', label: 'Guest suite', title: 'Send it to your guests', sub: 'By email, with each guest\'s RSVP link', action: 'Send invites', onAction: () => onOpenFeature?.('send-invites') };
+    if (siteUrl) last = { key: 'send', label: 'Guest Suite', title: 'Send it to your guests', sub: 'By email, with each guest\'s RSVP link', action: 'Send invites', onAction: () => onOpenFeature?.('send-invites') };
   }
   const heroes = pickHeroes({ first, middle, last }, heroSeed).map((h, i) => ({ ...h, image: img(i) }));
   // Nothing came back at all: the error is the whole screen. Drawing the

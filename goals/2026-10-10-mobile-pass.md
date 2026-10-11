@@ -61,6 +61,8 @@ Recorded by lane D. Lane D does not edit these files.
 6. Lane A, open. src/components/guests/SendInvitesModal.jsx:636 stamps invite_sent_at (and :652 appends send history) on every guest it minted a link for, including a guest alone on an invitation with no email, who was not sent anything. The modal says "with no email yet" for them before the send and "Invited" after it. The phone does the same through the same withTokens list, so a fix belongs on the web first and the shell follows it.
 7. Lane A, for a choice. The publish rule a send obeys (a slug, and websiteEnabled === true) is written inline twice, in SendInvitesModal.jsx:526 and :530 and in api/send-invites.js:275, and the shell now holds a third copy because there is no module to import. A small predicate in src/lib would let all three consume one rule; tests/persistence/mobile-send-path.mjs checks that the three still agree until then.
 
+8. Lane A, for the ruling's reach. The web names the product in lower case 105 times across 43 files in src/pages, src/components and src/lib ("Guest suite" in chrome, "guest suite" in sentences). The 2026-10-12 ruling reads "everywhere it names the product"; lane D applied it to the shell only. One of the web's uses, src/pages/UniverseStudio.jsx's Ava starter "What should go on my guest suite?", reaches the phone through src/mobile/features/avaPages.generated.js, which is regenerated rather than edited, so it changes on the phone when it changes on the web.
+
 ## Lane D's own findings
 
 Found while doing the parity items, inside lane D's territory. Findings 1 to 3 were fixed together as ordered on 2026-10-12; finding 4 is next; finding 5 is ordered; finding 6 moved to LAUNCH_CHECKLIST.md.
@@ -91,7 +93,12 @@ Then lane D's finding 4: the guest list draws its rows through household.js's
 groupByHousehold, so a household sits together under its lead whatever the sort or filter,
 with the web's indent on a member's row. Guard: tests/persistence/mobile-household-grouping.mjs.
 
-WHAT IS NEXT. "Guest Suite" with capitals throughout the shell (finding 5). The Google sign-in device check waits for the
+Household grouping merged as #1007. Then finding 5, as ruled: every name of the product in
+src/mobile is "Guest Suite", 105 uses across 29 files (copy, comments and the mobile design
+doc), guarded by elimination in tests/persistence/mobile-guest-suite-case.mjs. The one
+exemption is the generated Ava starter copied from the web (lane A finding 8).
+
+WHAT IS NEXT. Nothing ordered beyond the device check. The Google sign-in device check waits for the
 owner's "ready for the sign-in check"; it needs the owner and the machine's one browser
 slot (the device run counts as it).
 

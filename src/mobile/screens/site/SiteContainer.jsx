@@ -27,10 +27,10 @@ export default function SiteContainer() {
 
   // StudioShareTab.jsx's publish toggle: no address, no going live.
   const togglePublish = async (on) => {
-    if (on && !d?.slug) { toast.error('Add your names first so your guest suite has an address.'); return; }
+    if (on && !d?.slug) { toast.error('Add your names first so your Guest Suite has an address.'); return; }
     try {
       await wedding.optimistic((w) => ({ ...(w || {}), websiteEnabled: on }), () => api.wedding.save('websiteEnabled', on, false));
-      toast.success(on ? 'Your guest suite is live' : 'Guest suite hidden');
+      toast.success(on ? 'Your Guest Suite is live' : 'Guest Suite hidden');
     } catch { toast.error('Could not change that. Try again.'); }
   };
 

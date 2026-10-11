@@ -25,7 +25,7 @@ const STATUS_LABELS = { all: 'All', pending: 'Pending', approved: 'Approved', de
  * /api/song-request-review), the playlist link (Spotify, Apple Music or
  * YouTube, parsed for its source), the Settings sheet (guest requests on
  * or off, approval, one per guest, the message guests see), Share (the
- * guest suite's music page), Notes, and the vendor roster. The Music
+ * Guest Suite's music page), Notes, and the vendor roster. The Music
  * entity tracks (add, edit, delete) stay as the phone's own playlist editor.
  */
 export default function MusicScreen({ tracks = [], requests = [], settings = {}, playlistUrl = '', onPlaylistUrl, onSettings, onCreate, onUpdate, onDelete, onReview, onOpenVendors, loading, error, onRetry, back, onRefresh }) {
@@ -60,7 +60,7 @@ export default function MusicScreen({ tracks = [], requests = [], settings = {},
       <div className="oi-m-stack oi-m-stack--24" style={{ paddingTop: segment === 'requests' ? 16 : 0 }}>
         {error && !loading ? <ErrorState onRetry={onRetry} /> : loading ? <SkeletonRows count={6} /> : segment === 'requests' ? (
           requests.length === 0 ? (
-            <EmptyState icon={Music2} text={!settings.guestRequestsEnabled ? 'Song requests are switched off. Turn them on under settings and guests can suggest songs from your guest suite.' : 'No requests yet. Guests reach the song page from the invitation you email them. Song requests arrive here.'} />
+            <EmptyState icon={Music2} text={!settings.guestRequestsEnabled ? 'Song requests are switched off. Turn them on under settings and guests can suggest songs from your Guest Suite.' : 'No requests yet. Guests reach the song page from the invitation you email them. Song requests arrive here.'} />
           ) : visible.length === 0 ? <EmptyState icon={Music2} text="Nothing here for this filter." /> : (
             <RowGroup>
               {visible.map((r) => {
@@ -92,7 +92,7 @@ export default function MusicScreen({ tracks = [], requests = [], settings = {},
             <section>
               <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Your playlist</h2>
               <div className="oi-m-card" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <p className="oi-m-meta">Paste a link to your playlist on Spotify, Apple Music or YouTube. Guests see it on your guest suite.</p>
+                <p className="oi-m-meta">Paste a link to your playlist on Spotify, Apple Music or YouTube. Guests see it on your Guest Suite.</p>
                 <TextField label="Playlist link" type="url" inputMode="url" autoCapitalize="off" value={link} onChange={(e) => setLink(e.target.value)} onBlur={saveLink} placeholder="https://open.spotify.com/playlist/..." error={link && !source ? 'That does not look like a Spotify, Apple Music or YouTube link.' : ''} />
                 {link && source && <PillButton variant="secondary" size="sm" icon={ExternalLink} onClick={() => openExternal(link)} style={{ alignSelf: 'flex-start' }}>Open on {source}</PillButton>}
               </div>

@@ -9,8 +9,8 @@ import { prefGet, prefSet } from '../../native';
 const NOTE_PREF = 'suite_desktop_note_closed';
 
 /**
- * Guest suite: a large preview of it in a rounded frame, the universe
- * and live status and a way to view it, then rows into the guest-suite editors
+ * Guest Suite: a large preview of it in a rounded frame, the universe
+ * and live status and a way to view it, then rows into the Guest Suite editors
  * (in the app) and the design tools (desktop). A slim note under the title
  * says the builder and Ava's Studio happen on a laptop; it closes once and
  * stays closed, and a small row at the bottom keeps the reminder.
@@ -18,7 +18,7 @@ const NOTE_PREF = 'suite_desktop_note_closed';
  * NO ADDRESS AND NO SHARE, as the web's share tab since #923: email from the
  * studio is the only way guests receive the site, so the screen neither
  * prints the address nor hands it to a share sheet or the clipboard.
- * View guest suite opens it for the couple themselves.
+ * View Guest Suite opens it for the couple themselves.
  */
 export default function SiteScreen({ details, universeName, isLive, siteUrl, coupleName, onView, onOpen, onOpenDesktop, onTogglePublish, passwordOn = false, onPassword, loading, error, onRetry }) {
   const [noteClosed, setNoteClosed] = useState(true);
@@ -26,12 +26,12 @@ export default function SiteScreen({ details, universeName, isLive, siteUrl, cou
   useEffect(() => { let live = true; prefGet(NOTE_PREF).then((v) => { if (live) setNoteClosed(v === '1'); }).catch(() => { if (live) setNoteClosed(false); }); return () => { live = false; }; }, []);
   const closeNote = () => { setNoteClosed(true); prefSet(NOTE_PREF, '1').catch(() => {}); };
   return (
-    <Screen title="Guest suite" root>
+    <Screen title="Guest Suite" root>
       <div className="oi-m-stack oi-m-stack--24">
         {!noteClosed && (
           <div className="oi-m-note" role="note">
             <Monitor size={18} strokeWidth={1.75} className="oi-m-note__icon" aria-hidden="true" />
-            <p className="oi-m-note__text">Editing your guest suite and Ava's Studio happens on a laptop. Changes you make there show up here.</p>
+            <p className="oi-m-note__text">Editing your Guest Suite and Ava's Studio happens on a laptop. Changes you make there show up here.</p>
             <button type="button" className="oi-m-note__close" onClick={closeNote} aria-label="Close this note"><X size={18} strokeWidth={1.75} /></button>
           </div>
         )}
@@ -47,12 +47,12 @@ export default function SiteScreen({ details, universeName, isLive, siteUrl, cou
                 <div className="oi-m-row__label">{coupleName || 'Your wedding'}</div>
                 <div className="oi-m-row__sub">{universeName ? `${universeName} universe` : 'Choose a universe'}</div>
               </div>
-              {!siteUrl && <p className="oi-m-meta">Your guest suite does not have an address yet. Choose one in the studio on desktop.</p>}
+              {!siteUrl && <p className="oi-m-meta">Your Guest Suite does not have an address yet. Choose one in the studio on desktop.</p>}
               <div className="oi-m-row" style={{ padding: 0, minHeight: 44, background: 'transparent' }}>
-                <div className="oi-m-row__body"><div className="oi-m-row__label">{isLive ? 'Guest suite is live' : 'Guest suite is hidden'}</div><div className="oi-m-row__sub">{isLive ? 'Guests receive it by email when you send invites' : siteUrl ? 'Only you can see it until you go live' : 'Choose an address first'}</div></div>
-                <Switch on={isLive} onChange={onTogglePublish} label="Guest suite is live" />
+                <div className="oi-m-row__body"><div className="oi-m-row__label">{isLive ? 'Guest Suite is live' : 'Guest Suite is hidden'}</div><div className="oi-m-row__sub">{isLive ? 'Guests receive it by email when you send invites' : siteUrl ? 'Only you can see it until you go live' : 'Choose an address first'}</div></div>
+                <Switch on={isLive} onChange={onTogglePublish} label="Guest Suite is live" />
               </div>
-              <PillButton variant="primary" icon={ExternalLink} onClick={onView} disabled={!siteUrl} block>View guest suite</PillButton>
+              <PillButton variant="primary" icon={ExternalLink} onClick={onView} disabled={!siteUrl} block>View Guest Suite</PillButton>
             </div>
           </div>
         )}
@@ -61,13 +61,13 @@ export default function SiteScreen({ details, universeName, isLive, siteUrl, cou
           <section>
             <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Privacy</h2>
             <RowGroup>
-              <Row icon={Lock} tile="neutral" label="Password protection" sub={passwordOn ? 'On. Guests enter a password to open the guest suite' : 'Off. Guests open it from their invitation with no password'} onClick={onPassword} />
+              <Row icon={Lock} tile="neutral" label="Password protection" sub={passwordOn ? 'On. Guests enter a password to open the Guest Suite' : 'Off. Guests open it from their invitation with no password'} onClick={onPassword} />
             </RowGroup>
           </section>
         )}
 
         <section>
-          <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Guest suite</h2>
+          <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Guest Suite</h2>
           <RowGroup>
             <Row icon={Clock} tile="neutral" label="Schedule" sub="What guests see on the day" onClick={() => onOpen('suite-schedule')} />
             <Row icon={HelpCircle} tile="neutral" label="Q&A" sub="Dress code, parking, the small questions" onClick={() => onOpen('qna')} />

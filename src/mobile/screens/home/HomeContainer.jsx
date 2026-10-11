@@ -42,14 +42,14 @@ export default function HomeContainer() {
   const firstName = greetingName(details, user);
   const coupleName = coupleDisplayName(details || {});
   const daysToGo = details?.weddingDate ? daysUntilWedding(details.weddingDate) : null;
-  // The couple's own photos take priority here and on the Guest suite preview; with
+  // The couple's own photos take priority here and on the Guest Suite preview; with
   // none, the hero draws from the app/ folder (goal 4, phase 1), never from
   // the universe's sample content.
   // Hero i draws the couple's own photo i (cover, then Our Story), and the
   // decorative slot for that position when they have fewer: a photo is never
   // repeated across the four heroes to fill a gap.
   // The couple's own photos (goal 6): the cover and Our Story, then their
-  // moodboard pins and the guest suite gallery; the standard app photos
+  // moodboard pins and the Guest Suite gallery; the standard app photos
   // stand in for each position they have not filled.
   const images = useMemo(() => {
     const own = [...homeHeroImages(details), ...(d.moodboard || []).map((m) => m.image_url), ...(d.photos || []).map((p) => p.url || p.image_url)].filter((u, i, arr) => u && arr.indexOf(u) === i);
