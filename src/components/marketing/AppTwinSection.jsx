@@ -28,6 +28,11 @@
  * why no manufacturer's frame is used): an even thin matte near-black bezel,
  * corners rounded to match, nothing else.
  *
+ * THE BOX VARIANT (Features, item 2) keeps the dark box the section had: on
+ * desktop the photograph runs full bleed, as the red section's does, and the
+ * heading and lines sit in the near-black box on the left, over it; at 768
+ * and below it stacks like the plain variant.
+ *
  * NO TITLE BANNER. The Ava section keeps its own; this section opens on its
  * heading, as the red section does.
  */
@@ -66,14 +71,14 @@ function Phone() {
 
 /**
  * @param {{ heading: string, headingLevel?: 'h1' | 'h2', marker: string,
- *   children: React.ReactNode }} props  `marker` is the data attribute the
- *   page's guard finds the section by; the children are the copy under the
- *   heading.
+ *   variant?: 'plain' | 'box', children: React.ReactNode }} props  `marker`
+ *   is the data attribute the page's guard finds the section by; the children
+ *   are the copy under the heading.
  */
-export default function AppTwinSection({ heading, headingLevel = "h2", marker, children }) {
+export default function AppTwinSection({ heading, headingLevel = "h2", marker, variant = "plain", children }) {
   const H = headingLevel;
   return (
-    <section data-app-twin {...{ [marker]: "" }} className="app-twin">
+    <section data-app-twin {...{ [marker]: "" }} className={`app-twin app-twin--${variant}`}>
       <div className="app-twin__text">
         <H data-app-twin-heading className="app-twin__heading">{heading}</H>
         {children}
@@ -103,6 +108,8 @@ export default function AppTwinSection({ heading, headingLevel = "h2", marker, c
         .app-twin__heading { margin: 0; color: #FFFFFF; font-weight: 700; letter-spacing: -0.02em; }
         .app-twin__copy { margin: 0; color: rgba(255,255,255,0.86); }
         .app-twin__small { margin: 0; color: rgba(255,255,255,0.6); }
+        .app-twin__lines { list-style: none; padding: 0; margin: 0; }
+        .app-twin__line { color: #FFFFFF; border-top: 1px solid rgba(255,255,255,0.08); font-size: 15px; line-height: 22px; padding: 10px 0; }
 
         /* 768 and below, the red section's own breakpoint: the text on top,
            the picture with the phone filling the rest of the one screen. */
@@ -128,6 +135,12 @@ export default function AppTwinSection({ heading, headingLevel = "h2", marker, c
           .app-twin__phone { top: 112px; bottom: 48px; left: 0; right: 0; }
           .app-twin__frame { padding: 12px; border-radius: 56px; }
           .app-twin__screen { border-radius: 44px; }
+          /* The box variant: the photograph full bleed, the phone on the right
+             of it, the heading and lines in the dark box on the left. */
+          .app-twin--box .app-twin__picture { left: 0; width: 100%; }
+          .app-twin--box .app-twin__phone { left: auto; width: 42vw; }
+          .app-twin__line { font-size: clamp(15px, 1.25vw, 22px); line-height: 1.5; padding: 12px 0; }
+          .app-twin--box .app-twin__text { background: #0A0A0A; padding: 48px; box-sizing: border-box; width: 48.6vw; gap: 16px; }
         }
       `}</style>
     </section>
