@@ -33,6 +33,11 @@ export async function runCollaboratorGuestsView() {
   // Collaborator hashes and invite links use COLLAB_HASH_KEY, never the admin key.
   const priorHashKey = process.env.COLLAB_HASH_KEY;
   process.env.COLLAB_HASH_KEY = '0123456789abcdef'.repeat(4);
+  // THE APP'S OWN KEYS, not the credential: since 2026-10-11 every HMAC and
+  // cipher reads APP_HASH_KEY and APP_ENC_KEY (api/_lib/appKeys.js), and both
+  // fail closed when unset, so a guard must supply them. Never real values.
+  process.env.APP_HASH_KEY = process.env.APP_HASH_KEY || 'guard-only-hash-key';
+  process.env.APP_ENC_KEY = process.env.APP_ENC_KEY || 'guard-only-enc-key';
   const { hashId } = await import('../../api/_lib/collaboratorAuth.js');
   const { buildGuestPiiBlob } = await import('../../api/_lib/guestPii.js');
   const { TOKEN_FIELDS } = await import('../../api/_lib/rsvpTokenCrypto.js');

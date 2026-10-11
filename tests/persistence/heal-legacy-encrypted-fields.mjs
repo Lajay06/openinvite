@@ -27,6 +27,10 @@ import { pass, fail } from './_shared.mjs';
 // The handler refuses with 500 "Server not configured" before doing anything
 // if this is unset, which would make every check below pass by not running.
 process.env.BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY || 'test-placeholder-not-a-real-key';
+// The cipher reads APP_ENC_KEY since 2026-10-11, and it fails closed when
+// unset. See api/_lib/appKeys.js. Never a real value.
+process.env.APP_HASH_KEY = process.env.APP_HASH_KEY || 'test-placeholder-hash-key';
+process.env.APP_ENC_KEY = process.env.APP_ENC_KEY || 'test-placeholder-enc-key';
 
 const { encryptPayload, decryptPayload } = await import('../../api/_lib/questionnaireCrypto.js');
 

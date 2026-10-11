@@ -70,6 +70,12 @@ const HELPER = strip(read('api/_lib/base44Entities.js'));
 const PII = strip(read('api/_lib/guestNotePii.js'));
 
 export async function runGuestNoteEndpoints() {
+  // THE APP'S OWN KEYS, not the credential: since 2026-10-11 every HMAC and
+  // cipher reads APP_HASH_KEY and APP_ENC_KEY (api/_lib/appKeys.js), and both
+  // fail closed when unset, so a guard must supply them. Never real values.
+  process.env.APP_HASH_KEY = process.env.APP_HASH_KEY || 'guard-only-hash-key';
+  process.env.APP_ENC_KEY = process.env.APP_ENC_KEY || 'guard-only-enc-key';
+
   const r = [];
   const has = (label, src, needle) => r.push(
     src.includes(needle) ? pass(label) : fail(label, `source contains ${JSON.stringify(needle)}`, 'absent'));

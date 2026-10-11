@@ -36,6 +36,7 @@
  */
 
 import crypto from 'crypto';
+import { hmacB64Url } from './appKeys.js';
 
 /**
  * READ AT CALL TIME, NOT AT MODULE LOAD.
@@ -53,7 +54,10 @@ import crypto from 'crypto';
  * stop link silently 404ing. Reading per call costs nothing and cannot go
  * stale.
  */
-const secret = () => process.env.BASE44_ADMIN_KEY || '';
+// APP_HASH_KEY, NOT THE ADMIN CREDENTIAL. Rotating a credential used to
+// invalidate every stop link already in someone's inbox; see
+// api/_lib/appKeys.js. Still read per call, for the reason above.
+const secret = () => process.env.APP_HASH_KEY || '';
 
 /**
  * @param {string} userId the Base44 User id this link belongs to
@@ -63,7 +67,10 @@ export function signStopToken(userId) {
   const id = String(userId || '');
   if (!id) throw new Error('Refusing to sign a stop token with no user id.');
   const body = Buffer.from(id, 'utf8').toString('base64url');
-  const sig = crypto.createHmac('sha256', secret()).update(body).digest('base64url');
+  // FAIL CLOSED. Signing under an empty key succeeds and mints a token that
+  // nothing can ever verify, so every link in every email would 404 and only a
+  // reader of the logs would know. hmacB64Url throws instead.
+  const sig = hmacB64Url(body);
   return `${body}.${sig}`;
 }
 

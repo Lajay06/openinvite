@@ -15,20 +15,19 @@
  * `.list()` against this entity (by anyone with any API token) yields only
  * ciphertext and HMAC digests, never plaintext answers or reversible ids.
  *
- * Key is derived from BASE44_ADMIN_KEY (server-only env var, never bundled
- * to the browser) via SHA-256 to get a fixed 32-byte AES-256-GCM key —
- * same secret-sourcing precedent as api/_lib/pollAuth.js's hashGuestIdentifier.
+ * Keys come from api/_lib/appKeys.js: APP_HASH_KEY for the digests and
+ * APP_ENC_KEY for the cipher, read per call and separate from each other. They
+ * used to be one value derived from BASE44_ADMIN_KEY, which meant the 2026-10-11
+ * credential rotation orphaned every digest here and made every payload
+ * unreadable. See that module's header.
  */
 
 import crypto from 'crypto';
-
-const ADMIN_KEY = process.env.BASE44_ADMIN_KEY || '';
-const ENC_KEY = crypto.createHash('sha256').update(ADMIN_KEY).digest();
+import { hmacHex, encKey } from './appKeys.js';
 
 /** One-way HMAC-SHA256 digest, same construction as pollAuth.js's hashGuestIdentifier. */
 export function hashId(rawValue) {
-  if (!rawValue) return null;
-  return crypto.createHmac('sha256', ADMIN_KEY).update(String(rawValue)).digest('hex');
+  return hmacHex(rawValue);
 }
 
 /**
@@ -38,7 +37,7 @@ export function hashId(rawValue) {
  */
 export function encryptPayload(payload) {
   const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv('aes-256-gcm', ENC_KEY, iv);
+  const cipher = crypto.createCipheriv('aes-256-gcm', encKey(), iv);
   const ciphertext = Buffer.concat([cipher.update(JSON.stringify(payload), 'utf8'), cipher.final()]);
   const authTag = cipher.getAuthTag();
   return Buffer.concat([iv, authTag, ciphertext]).toString('base64');
@@ -54,7 +53,7 @@ export function decryptPayload(blob) {
   const iv = buf.subarray(0, 12);
   const authTag = buf.subarray(12, 28);
   const ciphertext = buf.subarray(28);
-  const decipher = crypto.createDecipheriv('aes-256-gcm', ENC_KEY, iv);
+  const decipher = crypto.createDecipheriv('aes-256-gcm', encKey(), iv);
   decipher.setAuthTag(authTag);
   const plaintext = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
   return JSON.parse(plaintext.toString('utf8'));

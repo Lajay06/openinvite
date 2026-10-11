@@ -75,6 +75,12 @@ const guest = (n, over = {}) => ({
 });
 
 export async function runSendTagsAndBounceSkip() {
+  // THE APP'S OWN KEYS, not the credential: since 2026-10-11 every HMAC and
+  // cipher reads APP_HASH_KEY and APP_ENC_KEY (api/_lib/appKeys.js), and both
+  // fail closed when unset, so a guard must supply them. Never real values.
+  process.env.APP_HASH_KEY = process.env.APP_HASH_KEY || 'guard-only-hash-key';
+  process.env.APP_ENC_KEY = process.env.APP_ENC_KEY || 'guard-only-enc-key';
+
   const results = [];
   const ok = (label, cond, detail) => results.push(cond ? pass(label, detail) : fail(label, 'see name', detail));
 
