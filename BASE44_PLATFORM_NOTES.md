@@ -89,6 +89,48 @@ During the window one checkout session was created, at 12:59:07Z, and
 no activation was lost. That path would have survived regardless: the webhook
 answers 502 on a failed plan write, so Stripe retries for up to three days.
 
+### The guest PII blobs, and why Track D is parked rather than endangered
+
+The rotation also killed the Guest PII blobs, which the first report missed
+because `api/_lib/guestPii.js` and `api/_lib/guestNotePii.js` consume
+`questionnaireCrypto`'s cipher rather than deriving a key of their own.
+
+Measured 2026-10-11, counts only:
+
+| Store | Rows under the dead cipher |
+|---|---|
+| `Guest.encrypted_guest_pii` | 375 of 382 (207 the owner's, 168 other accounts') |
+| `WeddingDetails` encrypted fields | 19 of 81 |
+| `Note` PII blob | 0 of 0 |
+
+**Nothing is lost.** The plaintext columns are still present, by the deliberate
+two-script split: `scripts/migrate-guest-pii.mjs` writes blobs and nulls
+nothing, and `scripts/null-guest-pii.mjs` (Track D) is the separate destructive
+step. A dead blob falls back to plaintext, which is what the thirteen
+`[guestPii] blob failed to decrypt` log lines were.
+
+**Track D cannot destroy anything, and that is a mechanism rather than a
+promise.** It verifies every target row before writing a single column
+(`null-guest-pii.mjs:174-194`): a row whose blob does not decrypt goes on an
+`unsafe` list, and one entry on that list aborts the entire run with nothing
+written. Run today it would refuse on all 375. An earlier note in this incident
+called that a data-loss hazard, which was wrong: the correct statement is that
+Track D is BLOCKED until the blobs are rebuilt, not that it is dangerous.
+
+**Two routes back, and only one is a script.** Of the 375, the 207 owned by the
+smoke account can be rewritten by a tool, because `migrate-guest-pii.mjs`
+authenticates as the test user and `Guest.update` is owner-scoped. The other 168
+cannot be reached by any script for the same reason, and heal on their own
+couple's next guest edit: `api/my-guests.js:269,294` rebuilds the blob through
+`buildGuestWriteFields`, and `mergeGuestPii` falls back to plaintext when the old
+blob will not open.
+
+`migrate-guest-pii.mjs` as written repairs none of them: line 125 targets rows
+with NO blob, so all 375 are classified `already` and skipped. A held follow-up
+adds a `--reencrypt` mode that rebuilds from plaintext for exactly the rows whose
+blob fails to decrypt under the current key, prints counts, and is run once by
+the owner. Track D stays parked until that has run.
+
 ### What this does NOT change
 
 `GET /entities/User` (the LIST, no id) still answers `200 []` whichever form
