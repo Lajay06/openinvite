@@ -105,16 +105,32 @@ for (const [w, h] of [[390, 844], [1440, 950]]) {
 
   // ── THE PER-EVENT COUNTS ────────────────────────────────────────────────
 
-  const strip = await page.evaluate(() => {
+  // ── THE PER-EVENT COUNTS STRIP LEFT THIS PAGE ───────────────────────────
+  //
+  // REMOVED BY OWNER RULING, 2026-10-11, item 3 of
+  // goals/2026-10-11-dashboard-fixes-batch-1.md. The strip and its per-event
+  // "N invited" readings are gone from the Guests page, so the five checks
+  // that read them are inverted rather than deleted: the strip must stay gone.
+  //
+  // THE DATA IS STILL COVERED. The counts themselves come from
+  // src/lib/eventTallies.js, which tests/persistence/event-dimension-in-context
+  // .mjs drives directly, and the chips above still prove who is invited to
+  // what on this very page. What left is one rendered summary line.
+  const { strip, bodyText } = await page.evaluate(() => {
     const el = document.querySelector('[data-per-event-counts]');
-    return el ? (el.innerText || '').replace(/\s+/g, ' ') : null;
+    return {
+      strip: el ? (el.innerText || '').replace(/\s+/g, ' ') : null,
+      // THE WHOLE PAGE, not just the strip: a reading that moved into another
+      // element would satisfy "the strip is gone" and still be on screen.
+      bodyText: (document.body.innerText || '').replace(/\s+/g, ' '),
+    };
   });
-  check('  the per-event counts strip is on the page', !!strip, strip ? strip.slice(0, 80) : 'MISSING');
-  for (const [name, n] of COUNTS) {
-    check(`  ${name} reads "${n} invited"`,
-      !!strip && new RegExp(`${name}\\s*${n} invited`).test(strip), strip ? 'matched' : 'no strip');
-  }
-  check('  and the counts differ, which is why the breakdown is shown',
+  check('  the per-event counts strip is gone from the page', strip === null,
+    strip === null ? 'removed' : strip.slice(0, 80));
+  check('  and no per-event invited reading is painted anywhere on it',
+    !COUNTS.some(([name, n]) => new RegExp(`${name}\\s*${n} invited`).test(bodyText)),
+    'none on the page');
+  check('  the counts still differ, which is why the breakdown existed',
     new Set(COUNTS.map(([, n]) => n)).size > 1, COUNTS.map(([, n]) => n).join(' / '));
 
   // ── ONE INVITATION, THREE PEOPLE, ON THE COUPLE'S OWN LIST ──────────────
@@ -152,10 +168,13 @@ for (const [w, h] of [[390, 844], [1440, 950]]) {
   // can see it. test:household-rsvp-390 asserts the other half.
   check('  with her age, which only the couple ever sees', household.age,
     household.age ? 'Child, 6' : 'MISSING');
-  check('  the two count lines read as the goal words them', household.countLine,
-    household.countLine ? 'people across invitations' : 'MISSING');
-  check('  including adults and children, because there are children',
-    household.adultsChildren, household.adultsChildren ? 'present' : 'MISSING');
+  // The same ruling took both summary lines off this page. Inverted for the
+  // same reason: the household GROUPING above is what this guard is for, and
+  // it is untouched; the two lines that counted it are not.
+  check('  the two count lines are gone from the page', !household.countLine,
+    household.countLine ? 'still there' : 'removed');
+  check('  and the adults and children line with them',
+    !household.adultsChildren, household.adultsChildren ? 'still there' : 'removed');
   check('  and the grouped list does not overflow the width',
     household.overflow <= 1, household.overflow > 1 ? `+${household.overflow}px` : 'none');
 
