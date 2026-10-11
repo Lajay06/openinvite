@@ -1,5 +1,18 @@
 /** Small formatters shared by the mobile screens. */
 
+import { isChild } from '@/lib/household';
+
+/**
+ * GuestList.jsx's child label, word for word: "Child, 6" when an age is
+ * recorded, "Child" when it is not, nothing for an adult. Shown to the couple
+ * only (mobile parity 4).
+ */
+export function childLabel(guest) {
+  if (!isChild(guest)) return '';
+  const a = guest.child_age;
+  return a !== null && a !== undefined && String(a) !== '' && Number.isFinite(Number(a)) ? `Child, ${Number(a)}` : 'Child';
+}
+
 // MONEY IS NOT FORMATTED HERE. It goes through src/lib/money.js formatMoney
 // with the account currency code (mobile parity 3), as the desktop formats it.
 

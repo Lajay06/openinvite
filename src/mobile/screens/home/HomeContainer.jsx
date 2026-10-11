@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { daysUntilWedding } from '@/lib/weddingCountdown';
 import { isAttending, isDeclined, isAwaitingPrimary, guestCounts } from '@/lib/guestRsvpTally';
+import { counts as householdCounts } from '@/lib/household';
 import { resolveDayState } from '@/lib/dayState';
 import { buildAvaPrompt, unwrapLlmReply } from '@/lib/avaRequest';
 import { buildWeddingContext } from '@/lib/avaContext';
@@ -73,10 +74,14 @@ export default function HomeContainer() {
   // DailyUpdate.jsx's six numbers: replies per invitation, attendance per person (guestCounts).
   const numbers = useMemo(() => {
     const c = guestCounts(d.guests || []);
+    const hh = householdCounts(d.guests || []);
     const totalBudget = (d.budget || []).reduce((n, b) => n + (b.budgeted_amount || 0), 0);
     const spent = (d.budget || []).reduce((n, b) => n + (b.actual_amount || 0), 0);
     return [
       ['Guests coming', String(c.people.attending)], ['People invited', String(c.people.total)], ['Invitations pending', String(c.invitations.pending)],
+      // DailyUpdate.jsx's "By household" block, as two rows (mobile parity 4).
+      ['By household', `${hh.people} guests across ${hh.invitations} invitations`],
+      ...(hh.children > 0 ? [['Adults and children', `${hh.adults} adults, ${hh.children} children`]] : []),
       ['Budget used', `${totalBudget ? Math.round((spent / totalBudget) * 100) : 0}%`], ['Events planned', String((d.schedule || []).length)], ['Vendors booked', `${(d.vendors || []).filter((v) => v.status === 'booked').length}/${(d.vendors || []).length}`],
     ];
   }, [d]);

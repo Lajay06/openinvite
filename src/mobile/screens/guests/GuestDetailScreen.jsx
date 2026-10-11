@@ -3,7 +3,8 @@ import { Mail, Phone, Pencil, Send, CalendarCheck, Gift } from 'lucide-react';
 import Screen from '../../shell/Screen';
 import { Row, RowGroup, StatusPill, PillButton, ErrorState, Skeleton } from '../../ui';
 import { openExternal } from '../../native';
-import { initials, RSVP_LABEL, RSVP_TONE, GUEST_CATEGORY_LABEL, dateShort } from '../../lib/format';
+import { initials, RSVP_LABEL, RSVP_TONE, GUEST_CATEGORY_LABEL, dateShort, childLabel } from '../../lib/format';
+import { membersOf, salutation } from '@/lib/household';
 import { formatMoney } from '@/lib/money';
 import { getGuestEventResponse, mealOptionLabel, effectiveMealChoice } from '@/lib/weddingEvents';
 import { hasPlusOne, plusOneRsvpStatus, plusOneDisplayName } from '@/lib/plusOne';
@@ -22,7 +23,7 @@ const fmtWhen = (iso) => { if (!iso) return ''; const d = new Date(iso); return 
  * reminder), the RSVP note and song request, and gifts from this guest.
  * Edit opens the full sheet; Edit events the per-event invite sheet.
  */
-export default function GuestDetailScreen({ guest, role = '', weddingEvents = [], mealOptions = [], gifts = [], currency, back, onEdit, onEditEvents, onDelete, onSendInvite, loading, error, onRetry }) {
+export default function GuestDetailScreen({ guest, guests = [], onOpenGuest, role = '', weddingEvents = [], mealOptions = [], gifts = [], currency, back, onEdit, onEditEvents, onDelete, onSendInvite, loading, error, onRetry }) {
   if (loading) return <Screen title="Guest" back={back}><div className="oi-m-stack oi-m-stack--24"><Skeleton kind="block" /><Skeleton kind="block" /></div></Screen>;
   if (error) return <Screen title="Guest" back={back}><div className="oi-m-stack"><ErrorState what="this guest" onRetry={onRetry} /></div></Screen>;
   if (!guest) return <Screen title="Guest" back={back}><div className="oi-m-stack"><p className="oi-m-body">This guest is not on your list any more.</p></div></Screen>;
@@ -32,6 +33,10 @@ export default function GuestDetailScreen({ guest, role = '', weddingEvents = []
   const poStatus = po ? plusOneRsvpStatus(guest) : null;
   const mealLabel = (id) => (id ? mealOptionLabel(id, mealOptions) || id : '');
   const myGifts = gifts.filter((g) => g.giver_guest_id === guest.id || (g.giver_name && guest.name && g.giver_name.trim().toLowerCase() === guest.name.trim().toLowerCase()));
+  // THE INVITATION THIS GUEST IS ON, from src/lib/household.js (mobile parity 4).
+  const household = membersOf(guest, guests);
+  const others = household.filter((m) => m !== guest && m.id !== guest.id);
+  const addressedTo = household.length > 1 ? salutation(household) : null;
   const kv = (k, v) => (v ? <div className="oi-m-kv" key={k}><div className="oi-m-kv__k">{k}</div><div className="oi-m-kv__v">{v}</div></div> : null);
 
   return (
@@ -41,10 +46,20 @@ export default function GuestDetailScreen({ guest, role = '', weddingEvents = []
           <span className="oi-m-row__tile" style={{ width: 56, height: 56, fontSize: 17, fontWeight: 600, flexShrink: 0 }}>{initials(guest.name)}</span>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div className="oi-m-item__title" style={{ whiteSpace: 'normal' }}>{guest.name}</div>
-            <div className="oi-m-meta">{[role, invited ? `Invited ${fmtWhen(guest.invite_sent_at)}` : 'Not invited yet', guest.category ? (GUEST_CATEGORY_LABEL[guest.category] || guest.category) : ''].filter(Boolean).join(', ')}</div>
+            <div className="oi-m-meta">{[childLabel(guest), role, invited ? `Invited ${fmtWhen(guest.invite_sent_at)}` : 'Not invited yet', guest.category ? (GUEST_CATEGORY_LABEL[guest.category] || guest.category) : ''].filter(Boolean).join(', ')}</div>
           </div>
           <StatusPill tone={invited || status !== 'pending' ? RSVP_TONE[status] || 'neutral' : 'neutral'}>{invited || status !== 'pending' ? RSVP_LABEL[status] || status : 'Not invited'}</StatusPill>
         </div>
+
+        {others.length > 0 && (
+          <section data-household>
+            <div className="oi-m-section-head"><h2 className="oi-m-section">This invitation</h2></div>
+            {addressedTo && <p className="oi-m-meta" style={{ marginBottom: 8 }}>Addressed to {addressedTo}</p>}
+            <RowGroup>
+              {others.map((m) => <Row key={m.id || m.name} label={m.name} sub={childLabel(m)} onClick={onOpenGuest && m.id ? () => onOpenGuest(m) : undefined} chevron={!!(onOpenGuest && m.id)} />)}
+            </RowGroup>
+          </section>
+        )}
 
         <section>
           <div className="oi-m-section-head">
