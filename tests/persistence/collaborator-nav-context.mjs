@@ -101,5 +101,14 @@ export async function runCollaboratorNavContext() {
   const dash = stripComments(read('src/pages/Dashboard.jsx'), { trailing: true });
   ok('Dashboard no longer builds its own collabOwner suffix', !/collabSuffix|\?collabOwner=/.test(dash), 'withCollab only');
 
+  // ── Help and Account are the person's own (owner ruling 2026-10-11) ─────
+  const layout = stripComments(read('src/Layout.jsx'), { trailing: true });
+  ok('in a collaborator session, Layout opens Help and Account without a grant',
+     /const SELF_PAGES = new Set\(\['Help', 'Account'\]\);/.test(layout)
+     && /const canViewCurrentPage = !isCollaborating \|\| SELF_PAGES\.has\(currentPageName\) \|\|/.test(layout),
+     'SELF_PAGES');
+  ok('  and the set is exactly those two', (layout.match(/new Set\(\[[^\]]*\]\)/g) || []).some(m => m === "new Set(['Help', 'Account'])"), "['Help', 'Account']");
+  ok('  while the sidebar still sends them with the session kept', /navigate\("\/help"\)/.test(sidebar) && /navigate\("\/account"\)/.test(sidebar), 'through the wrapper');
+
   return results;
 }

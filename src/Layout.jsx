@@ -360,6 +360,10 @@ function TopBar({ weddingDetails, user, overrideCoupleName }) {
   );
 }
 
+// Pages that are the signed-in person's own, open in a collaborator session
+// regardless of the grant.
+const SELF_PAGES = new Set(['Help', 'Account']);
+
 // ── Persistent collaboration context banner ──────────────────────────────────
 function CollaboratorBanner({ coupleNames, collaboratorEmail, topOffset }) {
   return (
@@ -621,7 +625,10 @@ function LayoutShell({ children, currentPageName }) {
   const contentTopOffset = TOP_BAR_H + trialBannerH + bannerH;
   const contentTopOffsetMobile = MOBILE_TOP_BAR_H + trialBannerH;
   const currentPermissionKey = permissionKeyForPageName(currentPageName);
-  const canViewCurrentPage = !isCollaborating || (
+  // Help and Account belong to the signed-in person, not the wedding, so a
+  // collaborator opens their OWN copies without leaving the session (owner
+  // ruling 2026-10-11). Every other page needs a granted permission key.
+  const canViewCurrentPage = !isCollaborating || SELF_PAGES.has(currentPageName) || (
     !!currentPermissionKey &&
     hasPagePermission(collaboratorPermissions, currentPermissionKey, 'view')
   );
