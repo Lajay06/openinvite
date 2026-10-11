@@ -125,3 +125,24 @@ Any change that alters a published site belonging to someone other than the
 owner is **named in the report before it happens** — whose site, what changes,
 what a guest of theirs would notice. That rule started mid-Wave-2 and is not
 optional afterwards.
+
+---
+
+## Before any App Store submission: no direction to buy outside the app
+
+Trigger: an App Store (or Play Store) submission of the native shell. Recorded
+by lane D on 2026-10-12 as a launch-list item, with no change yet, on the
+advisor's ruling.
+
+App Store review rule 3.1.1 restricts an app from pointing users to a purchase
+outside it. Four strings in the shell tell the couple to upgrade at
+openinvite.com.au: the trial-ended line in
+src/mobile/screens/account/AccountContainer.jsx, the Send invites Ultra gate in
+src/mobile/screens/guests/SendInvitesScreen.jsx, and the Ultra gates in
+src/mobile/features/DetailsScreen.jsx and src/mobile/features/schemas.js.
+They said "on the website" before mobile parity 7; the wording changed, the
+direction did not.
+
+Before submitting, decide what each gate says in the store build, then run
+`grep -rn "openinvite.com.au" src/mobile` and read every hit that names an
+upgrade, a plan or a price.

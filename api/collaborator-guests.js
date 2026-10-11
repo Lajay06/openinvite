@@ -1,84 +1,51 @@
 /**
- * /api/collaborator-guests — GET / PUT / DELETE
+ * /api/collaborator-guests: GET (view), PUT and DELETE (refused)
  *
- * CORRECTION, 2026-08-18 (Track E2): the premise in the next paragraph is
- * STALE. Guest.read is `null` (open) in the LIVE schema — verified directly by
- * listing 206 Guest rows from an unrelated authenticated account. Whether the
- * owner-scoped read below was reverted or never applied, the stated reason for
- * parking no longer holds. The PUT/DELETE paths remain genuinely broken for
- * the OTHER reason given (admin key cannot satisfy owner-scoped update), and
- * the 503 short-circuit stays until the hosted-functions rebuild — but the
- * read half of this rationale should not be trusted as written. Same class of
- * stale comment as api/my-guests-rsvp.js's header.
+ * An accepted collaborator with view on 'Guests' reads that owner's guest
+ * list. Item 6 of goals/2026-10-10-collaborators-safe-and-truthful.md.
  *
- * PARKED, fix/guest-rls-step1: Guest.read is now owner-scoped
- * ({created_by_id: "{{user.id}}"}), which the admin key can never satisfy
- * (see BASE44_PLATFORM_NOTES.md). VIEW below was the only part of this
- * endpoint that actually worked (see the KNOWN LIMITATION comments still
- * left in place below, for the edit/delete/create paths that were already
- * broken before this change, for the identical reason) — with Guest.read
- * tightened, even VIEW now 403s. Rather than ship a silently-broken
- * feature, the handler below short-circuits with a clear 503 and the rest
- * of the file is left intact, unreachable, as the shape to build against.
+ * WHY GET WORKS NOW. This endpoint returned 503 to everything, parked when
+ * Guest.read was briefly owner-scoped (fix/guest-rls-step1), which the admin
+ * key cannot satisfy. Guest.read is open (null) in the live schema, verified
+ * again on 2026-10-10, so the admin-key read below works. Every request is
+ * still checked here: the caller's own bearer token, their current grant for
+ * ownerUserId through CollaboratorGrant (never a client-claimed permission;
+ * see api/_lib/collaboratorAuth.js), then view on 'Guests'.
  *
- * Rebuild path (post-launch fast-follow, not before): a Base44-hosted
- * function using base44.asServiceRole (see BASE44_PLATFORM_NOTES.md's
- * "Hosted functions" section) — asServiceRole is the only real RLS bypass
- * Base44 offers, but only from inside a hosted function
- * (base44/functions/<name>/entry.ts, deployed via `base44 functions
- * deploy`), never from an external Vercel function like this one. This
- * endpoint fits the per-request invocation shape (not the scheduled-
- * automation one) — call the hosted function from here, or replace this
- * Vercel endpoint with a direct call to it, once that infrastructure
- * exists in this repo.
+ * WHAT A COLLABORATOR RECEIVES is what the owner's own read returns
+ * (api/my-guests.js) and nothing more: that owner's rows only, is_test rows
+ * excluded, PII resolved through mergeGuestPii exactly as the owner's read
+ * resolves it, and every derived field removed. That means the six RSVP token
+ * columns and the encrypted blob are gone, with has_rsvp_token kept as the
+ * owner's read keeps it. A collaborator never holds a live RSVP capability.
  *
- * ── Original design notes, kept for the rebuild ──────────────────────────
- * Real, server-enforced Guest access for an accepted collaborator — not
- * menu-hiding. Every request is checked here regardless of what the client
- * UI would have allowed: verify the caller's own bearer token, resolve
- * their current grant for the given ownerUserId via CollaboratorGrant
- * (never trusting a client-claimed permission — see
- * api/_lib/collaboratorAuth.js), then check the specific view/edit
- * permission for the 'Guests' page before touching any data.
+ * WHY PUT AND DELETE ARE REFUSED. Guest update and delete are owner-scoped,
+ * so the admin key gets a flat 403 from Base44, and an admin-key create would
+ * stamp created_by_id as 'anonymous', invisible to the owner and undeletable.
+ * A collaborator write path needs a Base44 hosted function using
+ * asServiceRole (BASE44_PLATFORM_NOTES.md, "Hosted functions"). That is
+ * phase 2 (item 7). Until then both methods answer 403 with the ruled copy,
+ * and the old unreachable write code is gone rather than kept as a shape that
+ * could never run.
  *
- * KNOWN LIMITATION — edit/delete do NOT actually work, even when a
- * collaborator has been granted 'edit': confirmed empirically that the
- * admin key gets a flat 403 attempting to UPDATE or DELETE an existing
- * Guest record (Guest's update/delete RLS is owner-scoped
- * {created_by_id: {{user.id}}}, same as every other owner-scoped entity —
- * the admin key has no session identity to satisfy it). This is a
- * DIFFERENT, deeper limitation than the create-side one below; the
- * permission check below is correctly enforced, but even a collaborator
- * who legitimately holds 'edit' would still get a 403 from Base44 itself
- * on the PUT/DELETE call. Left in place (not stripped) so the shape is
- * ready if Base44 ever exposes a real admin-bypass write path, but this is
- * NOT currently a working feature — flagged explicitly rather than implied
- * to work.
- *
- * KNOWN LIMITATION — no create here either, same root cause: Guest.create
- * is unrestricted (null), but the admin key always stamps a freshly-
- * created record's created_by_id as 'anonymous', never a chosen value — a
- * collaborator-created Guest would be invisible on the owner's own
- * dashboard (which filters strictly by created_by_id === owner's own id)
- * and permanently undeletable (nothing can ever satisfy 'anonymous' ===
- * {{user.id}}).
- *
- * Query/body always include ownerUserId — the wedding owner's Base44
- * User.id — since a collaborator may work with more than one couple.
+ * Query: ownerUserId (the wedding owner's Base44 User.id), since a
+ * collaborator may help more than one couple.
+ * Response: 200 { guests, coupleNames, canEdit: false }
+ *        or 401, 403, 400, 405, 429, 500 { error }
  */
 
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
-import { stripProtectedFields } from './_lib/guestProtectedFields.js';
 import { getCollaborationFor, hasPagePermission } from './_lib/collaboratorAuth.js';
 import { excludeTestRecords } from './_lib/productData.js';
-
+import { mergeGuestPii } from './_lib/guestPii.js';
+import { DERIVED_FIELDS } from './_lib/guestProtectedFields.js';
 import { coupleDisplayName } from './_lib/coupleNames.js';
+
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
-
-const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY;
 const PAGE = 'Guests';
+export const READ_ONLY_MESSAGE = 'Collaborators can view the guest list but not change it.';
 
 function unwrapList(payload) {
   if (Array.isArray(payload)) return payload;
@@ -87,18 +54,22 @@ function unwrapList(payload) {
   return [];
 }
 
-async function adminFetch(method, path, body) {
+async function adminGet(path, adminKey) {
   const res = await fetch(`${BASE44_API}${path}`, {
-    method,
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${BASE44_ADMIN_KEY}` },
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+    headers: { Authorization: `Bearer ${adminKey}` },
   });
   if (!res.ok) {
     const text = await res.text().catch(() => '');
-    throw new Error(`Base44 ${method} ${path} failed (${res.status}): ${text.slice(0, 200)}`);
+    throw new Error(`Base44 GET ${path} failed (${res.status}): ${text.slice(0, 200)}`);
   }
-  if (res.status === 204) return null;
   return res.json();
+}
+
+/** The owner's read, minus every derived field: tokens and the blob never leave the server. */
+function forCollaborator(guest) {
+  const out = { ...mergeGuestPii(guest), has_rsvp_token: !!guest.rsvp_link_id_enc };
+  for (const f of DERIVED_FIELDS) delete out[f];
+  return out;
 }
 
 export default async function handler(req, res) {
@@ -112,104 +83,52 @@ export default async function handler(req, res) {
   res.setHeader('X-RateLimit-Limit', '60');
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
-    return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
+    return res.status(429).json({ error: 'Too many requests. Please wait a moment.' });
   }
 
-  // PARKED, fix/guest-rls-step1 — see file header. Guest.read is now
-  // owner-scoped; the admin key below can no longer satisfy it, so this
-  // would otherwise silently return an empty guest list instead of a real
-  // error. Short-circuit with a clear, honest response instead.
-  return res.status(503).json({ error: 'Collaborator guest access is temporarily unavailable — check back after launch.' });
-
-  // eslint-disable-next-line no-unreachable
   const caller = await verifyBase44User(req);
   if (!caller) {
     return res.status(401).json({ error: 'Authentication required.' });
   }
-  if (!BASE44_ADMIN_KEY) {
+
+  // Phase 1 is view only, whatever the grant says. See the header.
+  if (req.method !== 'GET') {
+    return res.status(403).json({ error: READ_ONLY_MESSAGE });
+  }
+
+  const adminKey = process.env.BASE44_ADMIN_KEY;
+  if (!adminKey) {
     console.error('[collaborator-guests] BASE44_ADMIN_KEY env var is not set');
     return res.status(500).json({ error: 'Server not configured' });
   }
 
-  const ownerUserId = sanitizeString(req.method === 'GET' ? (req.query?.ownerUserId || '') : (req.body?.ownerUserId || ''));
+  const ownerUserId = sanitizeString(req.query?.ownerUserId || '');
   if (!ownerUserId) {
     return res.status(400).json({ error: 'ownerUserId is required' });
   }
 
   try {
-    const collaboration = await getCollaborationFor(caller.id, ownerUserId, BASE44_ADMIN_KEY);
+    const collaboration = await getCollaborationFor(caller.id, ownerUserId, adminKey);
     if (!collaboration) {
       return res.status(403).json({ error: 'You are not an accepted collaborator on this wedding.' });
     }
-
-    if (req.method === 'GET') {
-      if (!hasPagePermission(collaboration.permissions, PAGE, 'view')) {
-        return res.status(403).json({ error: 'You do not have permission to view guests for this wedding.' });
-      }
-      const query = encodeURIComponent(JSON.stringify({ created_by_id: ownerUserId }));
-      const rows = unwrapList(await adminFetch('GET', `/apps/${BASE44_APP_ID}/entities/Guest?q=${query}`));
-
-      const weddingQuery = encodeURIComponent(JSON.stringify({ created_by_id: ownerUserId }));
-      const weddings = excludeTestRecords(unwrapList(await adminFetch('GET', `/apps/${BASE44_APP_ID}/entities/WeddingDetails?q=${weddingQuery}`)));
-      const wedding = weddings.length > 0 ? weddings.slice().sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0] : null;
-      const coupleNames = coupleDisplayName(wedding);
-
-      return res.status(200).json({
-        guests: excludeTestRecords(rows),
-        coupleNames,
-        canEdit: hasPagePermission(collaboration.permissions, PAGE, 'edit'),
-      });
+    if (!hasPagePermission(collaboration.permissions, PAGE, 'view')) {
+      return res.status(403).json({ error: 'You do not have permission to view guests for this wedding.' });
     }
 
-    // PUT / DELETE both require edit permission
-    if (!hasPagePermission(collaboration.permissions, PAGE, 'edit')) {
-      return res.status(403).json({ error: 'You do not have permission to edit guests for this wedding.' });
-    }
+    const query = encodeURIComponent(JSON.stringify({ created_by_id: ownerUserId }));
+    const [rows, weddings] = await Promise.all([
+      adminGet(`/apps/${BASE44_APP_ID}/entities/Guest?q=${query}`, adminKey).then(unwrapList),
+      adminGet(`/apps/${BASE44_APP_ID}/entities/WeddingDetails?q=${query}`, adminKey).then(unwrapList).then(excludeTestRecords),
+    ]);
+    const wedding = weddings.length > 0 ? weddings.slice().sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0] : null;
 
-    const guestId = sanitizeString(req.method === 'PUT' ? (req.body?.guestId || '') : (req.query?.guestId || ''));
-    if (!guestId) {
-      return res.status(400).json({ error: 'guestId is required' });
-    }
+    // Ownership re-checked on every row, never trusted to the query filter.
+    const guests = excludeTestRecords(rows.filter(g => g.created_by_id === ownerUserId)).map(forCollaborator);
 
-    // Confirm the guest actually belongs to this owner before touching it —
-    // never trust a client-supplied guestId in isolation.
-    const existing = await adminFetch('GET', `/apps/${BASE44_APP_ID}/entities/Guest/${guestId}`);
-    if (!existing || existing.created_by_id !== ownerUserId) {
-      return res.status(404).json({ error: 'Guest not found for this wedding.' });
-    }
-
-    if (req.method === 'PUT') {
-      const raw = req.body?.updates && typeof req.body.updates === 'object' ? req.body.updates : {};
-      // Protected fields are NOT writable through this passthrough.
-      //
-      // This handler forwards caller-supplied fields verbatim, so without this
-      // guard a collaborator could set rsvp_link_id directly — storing a
-      // plaintext token with no matching hash or ciphertext. That row would
-      // still resolve through the legacy fallback, look completely healthy,
-      // and then die silently the moment E3 nulls the plaintext column.
-      //
-      // Widened from token fields to PROTECTED_FIELDS for the Guest PII
-      // family: once the ten PII fields live in encrypted_guest_pii, a
-      // forwarded {name: "..."} writes plaintext beside a stale ciphertext,
-      // the discriminator still reads "migrated", and every read returns the
-      // stale name. See api/_lib/guestProtectedFields.js for the full
-      // reasoning and for why this is a denylist rather than an allowlist.
-      const { updates, stripped } = stripProtectedFields(raw);
-      if (stripped.length > 0) {
-        // Silent to the caller, never silent to us — a forwarded protected
-        // field is a stale client or a probe, and both are worth knowing about.
-        console.warn(`[collaborator-guests] refused protected field(s) on guest ${guestId}: ${stripped.join(', ')}`);
-      }
-
-      const updated = await adminFetch('PUT', `/apps/${BASE44_APP_ID}/entities/Guest/${guestId}`, updates);
-      return res.status(200).json({ guest: updated });
-    }
-
-    // DELETE
-    await adminFetch('DELETE', `/apps/${BASE44_APP_ID}/entities/Guest/${guestId}`);
-    return res.status(200).json({ ok: true });
+    return res.status(200).json({ guests, coupleNames: coupleDisplayName(wedding), canEdit: false });
   } catch (err) {
     console.error('[collaborator-guests] Error:', err.message);
-    return res.status(500).json({ error: 'Something went wrong — please try again.' });
+    return res.status(500).json({ error: 'Something went wrong. Please try again.' });
   }
 }
