@@ -1,5 +1,6 @@
 {
   "_comment": [
+    "2026-10-11: one guard added, not a rebalance. test:home-app-photo (5.5s measured locally against a vite preview of this branch, booked at 8 for a cold first navigation and the real photograph loading) to B, the lighter shard. A 1062 / B 1046, a 16s delta on a 120s budget. MEASURED RED FIRST: with the scrim removed the body reads at 1.93:1 and the heading at 2.53:1 at 1440, and both checks go red.",
     "2026-10-11: one guard added, not a rebalance. test:chunk-reload (35s measured locally against a vite preview of feat/chunk-selfheal-guard, booked at 38 for a cold first navigation) to A, which was the lighter shard at 1024 against B's 1038. After: A 1062 / B 1038, a 24s delta on a 120s budget, and A becomes the heavier side by less than B was before. Its two sixteen-second waits are not padding: the wrapper's own hang guard is ten seconds, so a shorter wait would read a page still spinning as a page settled.",
     "2026-10-11: one guard added, not a rebalance. test:chip-height (28s, measured locally at two widths against a vite preview of feat/chip-height) to A, which was the lighter shard at 996 against B's 1038. After: A 1024 / B 1038, a 14s delta on a 120s budget, narrower than the 42s it replaces. The booked column is guard time and runs about 87s under wall-clock, as this file's 2026-10-10 note records.",
     "2026-10-10: A REBALANCE, not an addition. test:find-my-invitation (32s) moved A -> B. Before: A 1028 / B 1006, a 22s delta. After: A 996 / B 1038, a 42s delta on a 120s budget. MEASURED WALL-CLOCK FIRST, from main run 38003589277: A 18m35s (1115s) and B 17m40s (1060s) against the 25-minute job limit, so A sat 385s under it rather than close to it. Lane B reported A as near the limit; this records what the run actually shows, and the move still goes the right way because A was the heavier side. The booked column is guard time and runs about 87s under wall-clock, which is the setup and build this file has never counted; after the move both shards project to roughly 18m.",
@@ -191,7 +192,7 @@
     "B": {
       "job": "Browser guards B",
       "port": 4224,
-      "measuredSeconds": 1038,
+      "measuredSeconds": 1046,
       "guards": [
         {
           "name": "The studio tour, as a couple meets it, at 390 and 1440",
@@ -358,12 +359,18 @@
           "seconds": 32,
           "script": "test:find-my-invitation",
           "note": "Counted in three universes because WeddingHomePage reaches its twenty by three different routes: london is a bespoke branch, amalfi delegates to GenericMastheadHero, and tulum is the only universe with no layout value and so the only one that reached the default branch, which was also the only hero still holding an /rsvp href. One universe would have proved nothing about the other nineteen. The hero restraint is pinned on the source as well as the counts, because a link that MOVED into a hero would keep the count at one."
+        },
+        {
+          "name": "The home app section's copy sits in the scrim and can be read",
+          "seconds": 8,
+          "script": "test:home-app-photo",
+          "note": "Batch 3 amendment A, with the owner's guard ruling: the body's top below 55% of the section height, and 4.5:1 at the four corners of the body and of the heading, read off the painted photograph under the scrim. Loads the real photograph, which test:marketing-routes blocks, so it is its own guard."
         }
       ]
     }
   },
   "balance": {
-    "deltaSeconds": 42,
+    "deltaSeconds": 16,
     "budgetSeconds": 120
   },
   "unassigned": []
