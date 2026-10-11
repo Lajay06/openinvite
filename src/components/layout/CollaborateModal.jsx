@@ -32,6 +32,26 @@ async function sendInvite({ collaboratorId, name, email, permissions }) {
   return data.collaborator;
 }
 
+/** Writes the CollaboratorGrant event that actually changes access
+ *  (/api/collaborator-revoke). Called BEFORE the Collaborator record is
+ *  touched: if this fails, the record is left alone, so the list never shows
+ *  someone as removed who can still get in. */
+async function changeAccess(body) {
+  const res = await fetch('/api/collaborator-revoke', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('base44_access_token')}`,
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'That did not save. Try again.');
+  return data;
+}
+
+const SAVE_FAILED = 'That did not save. Try again.';
+
 // Driven from collaboratorPageMap.js — the same list AnimatedSidebar.jsx
 // builds the collaborator's nav from, so a permission offered here can
 // never silently have no corresponding sidebar entry (or vice versa).
@@ -49,20 +69,34 @@ export default function CollaborateModal({ onClose }) {
   const [permissions, setPermissions] = useState(initialPermissions);
   const [editingCollaborator, setEditingCollaborator] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [confirmingRemove, setConfirmingRemove] = useState(null);
+  const [removing, setRemoving] = useState(false);
 
   useEffect(() => {
-    fetchCollaborators();
+    (async () => {
+      const data = await fetchCollaborators();
+      // Reconcile on open: revoke any grant whose collaborator no longer has
+      // a record here, which catches people removed before removal revoked
+      // anything. Only after a successful load: an empty list from a failed
+      // read would otherwise revoke everyone.
+      if (data) {
+        changeAccess({ action: 'reconcile', emails: data.map(c => c.email).filter(Boolean) })
+          .catch(err => console.error('Failed to reconcile collaborator access:', err));
+      }
+    })();
   }, []);
 
   const fetchCollaborators = async () => {
     setLoading(true);
+    let data = null;
     try {
-      const data = await getMyRecords('Collaborator', '-created_date');
+      data = await getMyRecords('Collaborator', '-created_date');
       setCollaborators(data);
     } catch (error) {
       console.error("Failed to fetch collaborators:", error);
     }
     setLoading(false);
+    return data;
   };
 
   const handlePermissionChange = (page, type) => {
@@ -100,12 +134,23 @@ export default function CollaborateModal({ onClose }) {
     setSending(true);
     try {
       if (editingCollaborator) {
-        // Editing an already-invited collaborator's permissions doesn't need
-        // a new email/token — only Resend (below) does that. A plain
-        // permissions update goes through the couple's own token directly,
-        // same RLS-safe path this always used.
-        await Collaborator.update(editingCollaborator.id, { name, email, permissions });
-        toast.success('Collaborator updated');
+        // The grant event goes first, because it is what the server reads.
+        // An accepted collaborator gets a new grant with these permissions;
+        // a pending invite has no grant yet, so it is resent instead, and the
+        // new link carries the new permissions.
+        let result;
+        try {
+          result = await changeAccess({ action: 'permissions', email: editingCollaborator.email, permissions });
+        } catch {
+          throw new Error(SAVE_FAILED);
+        }
+        if (result.pending) {
+          await sendInvite({ collaboratorId: editingCollaborator.id, name, email: editingCollaborator.email, permissions });
+          toast.success(`Invite resent to ${editingCollaborator.email}`);
+        } else {
+          await Collaborator.update(editingCollaborator.id, { name, email, permissions });
+          toast.success('Collaborator updated');
+        }
       } else {
         await sendInvite({ name, email, permissions });
         toast.success(`Invite sent to ${email}`);
@@ -142,14 +187,21 @@ export default function CollaborateModal({ onClose }) {
     setPermissions(mergedPermissions);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to remove this collaborator?")) {
-      try {
-        await Collaborator.delete(id);
-        fetchCollaborators();
-      } catch (error) {
-        console.error("Failed to delete collaborator:", error);
-      }
+  // Revoke first, then delete the record. If the revoke fails the record
+  // stays, so the owner can see the person still has access and try again.
+  const handleRemove = async (collab) => {
+    setRemoving(true);
+    try {
+      await changeAccess({ action: 'revoke', email: collab.email });
+      await Collaborator.delete(collab.id);
+      setConfirmingRemove(null);
+      if (editingCollaborator?.id === collab.id) resetForm();
+      fetchCollaborators();
+    } catch (error) {
+      console.error("Failed to remove collaborator:", error);
+      toast.error(SAVE_FAILED);
+    } finally {
+      setRemoving(false);
     }
   };
 
@@ -259,9 +311,18 @@ export default function CollaborateModal({ onClose }) {
                           </Button>
                         )}
                         <Button size="icon" variant="ghost" onClick={() => handleEdit(collab)} title="Edit permissions"><Edit className="w-4 h-4" /></Button>
-                        <Button size="icon" variant="ghost" onClick={() => handleDelete(collab.id)} className="text-red-500 hover:text-red-600" title="Revoke access"><Trash2 className="w-4 h-4" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => setConfirmingRemove(collab.id)} className="text-red-500 hover:text-red-600" title="Revoke access"><Trash2 className="w-4 h-4" /></Button>
                       </div>
                     </div>
+                    {confirmingRemove === collab.id && (
+                      <div className="mt-2 pt-2 border-t flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-sm">Remove {collab.name || collab.email}? They lose access straight away.</p>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" onClick={() => setConfirmingRemove(null)} disabled={removing}>Keep</Button>
+                          <Button size="sm" className="bg-red-600 hover:bg-red-700" onClick={() => handleRemove(collab)} disabled={removing}>Remove</Button>
+                        </div>
+                      </div>
+                    )}
                     <div className="mt-2 pt-2 border-t text-xs text-[rgba(10,10,10,0.6)] space-y-1">
                       <p className="font-medium">Permissions:</p>
                       <div className="flex flex-wrap gap-2">
