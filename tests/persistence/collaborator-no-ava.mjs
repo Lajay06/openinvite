@@ -56,6 +56,9 @@ async function bundleAvaButton() {
     // Production React: the same render, without development warnings about
     // server rendering that say nothing about this guard.
     define: { 'process.env.NODE_ENV': '"production"' },
+    // react-dom/server's Node build requires Node built-ins (stream, util),
+    // which an ESM bundle can only reach through a real require.
+    banner: { js: "import { createRequire as __oiCreateRequire } from 'module'; const require = __oiCreateRequire(import.meta.url);" },
     logLevel: 'silent',
   });
   // Written to a temp file rather than imported as a data: URL, so any stack
