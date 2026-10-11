@@ -62,6 +62,8 @@ async function overflow(page) {
 // app section built as its twin ([data-app-twin]) follows the same rule: at
 // 1440 and at 390 each is exactly the viewport's height, and nothing inside
 // it is cut off. Measured on the page already loaded, at both widths.
+// Sections on the one-screen rule: the twin ([data-app-twin]) and the home
+// photograph ([data-one-screen], batch 3 amendment A).
 const TWIN_ROUTES = { '/': 1, '/app': 1 };
 
 // THE FEATURES APP ROW KEEPS ITS NEIGHBOURS' LAYOUT (batch 3 amendment B).
@@ -90,9 +92,9 @@ async function featureRowLayout(page, path, wide) {
   return null;
 }
 async function oneScreen(page, path) {
-  const m = await page.evaluate(() => [...document.querySelectorAll('[data-app-twin], [data-value-prop]')].map((e) => ({
-    twin: e.hasAttribute('data-app-twin'), h: e.getBoundingClientRect().height, sh: e.scrollHeight, ch: e.clientHeight,
-    clipped: [...e.querySelectorAll('[data-app-twin-heading], [data-app-body], [data-app-store-line], [data-app-line], [data-app-phone-frame]')]
+  const m = await page.evaluate(() => [...document.querySelectorAll('[data-app-twin], [data-one-screen], [data-value-prop]')].map((e) => ({
+    twin: e.hasAttribute('data-app-twin') || e.hasAttribute('data-one-screen'), h: e.getBoundingClientRect().height, sh: e.scrollHeight, ch: e.clientHeight,
+    clipped: [...e.querySelectorAll('[data-app-twin-heading], [data-app-heading], [data-app-body], [data-app-store-line], [data-app-line], [data-app-phone-frame]')]
       .some((c) => { const r = c.getBoundingClientRect(), b = e.getBoundingClientRect(); return r.top < b.top - 1 || r.bottom > b.bottom + 1; }),
   })).concat([{ vh: window.innerHeight }]));
   const vh = m.pop().vh;

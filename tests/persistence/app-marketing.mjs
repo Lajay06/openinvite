@@ -117,8 +117,32 @@ export function runAppMarketing() {
 
   // ── item 1: the home block ─────────────────────────────────────────────
   const home = existsSync(join(PRE, 'index.html')) ? readFileSync(join(PRE, 'index.html'), 'utf8') : '';
-  const block = twinChecks(check, home, 'data-home-app', 'home', 'The whole planner, in your pocket.', 'h2');
+  // Batch 3 amendment A: one full-bleed photograph, no phone, no banner, no
+  // panel. Its one-screen height is measured by test:marketing-routes; where
+  // the copy sits and whether it reads, by test:home-app-photo.
+  const block = sectionWith(home, 'data-home-app');
   check('home: the app block is on the page', !!block);
+  check('home: no phone frame, no twin, no banner', !/data-app-phone-frame|data-app-twin/.test(block) && !bannerAbove(home, 'data-home-app') && !/data-title-banner/.test(block));
+  check('home: the heading, verbatim, as its h2', /<h2\b[^>]*data-app-heading[^>]*>\s*The whole planner, in your pocket\.\s*<\/h2>/.test(block));
+  const WANDER = 'DTS_WANDER_Jessica_MADAVO_Photos_ID12134_okhlfz';
+  const himg = /<img\b[^>]*data-home-app-photo[^>]*>/.exec(block)?.[0] || '';
+  const hset = (/srcset="([^"]+)"/i.exec(himg)?.[1] || '').replace(/&amp;/g, '&');
+  check('home: the WANDER photograph, at f_auto and q_auto, 1600, 1200 and 800 wide',
+    [1600, 1200, 800].every((w) => hset.includes(`/f_auto,q_auto,w_${w},c_limit/${WANDER}.jpg ${w}w`)) && !/\bg_|c_fill|c_crop/.test(hset), hset.slice(0, 90));
+  check('home: its alt text, verbatim', himg.includes('alt="A woman in a white outfit sits outside a vintage shop, reading her phone."'));
+  check('home: the only picture is that photograph', (block.match(/<img\b/g) || []).length === 1 && !/<video\b/.test(block));
+  const homeSrc = readFileSync(resolve(ROOT, 'src/components/home/AppPhoneSection.jsx'), 'utf8');
+  check('home: the scrim is the one specified, and the only overlay',
+    homeSrc.includes('linear-gradient(0deg, rgba(0,0,0,.78) 0%, rgba(0,0,0,.35) 45%, rgba(0,0,0,0) 75%)') && (block.match(/aria-hidden="true"/g) || []).length === 2);
+  check('home: framed with object-position 60% 40%, and 62% 30% on a phone, cover, no gravity crop',
+    /\.home-app__photo \{[^}]*object-fit: cover;[^}]*object-position: 60% 40%;/.test(homeSrc) && /@media \(max-width: 768px\) \{[\s\S]*?\.home-app__photo \{ object-position: 62% 30%; \}/.test(homeSrc));
+  check("home: the red section's height rule, 100vh with overflow hidden", /\.home-app \{[^}]*height: 100vh;[^}]*overflow: hidden;/.test(homeSrc));
+  check('home: the type as specified, 84, 22 and 16 at desktop and 44, 17 and 14 at 390',
+    /\.home-app__heading \{[^}]*font-size: 84px; line-height: 1\.02; letter-spacing: -0\.03em; font-weight: 700;/.test(homeSrc)
+      && /\.home-app__body \{[^}]*max-width: 560px; font-size: 22px; line-height: 1\.45; font-weight: 400;/.test(homeSrc)
+      && /\.home-app__small \{[^}]*font-size: 16px;[^}]*font-weight: 500;[^}]*opacity: 0\.7;/.test(homeSrc)
+      && /\.home-app__heading \{ font-size: 44px; \}/.test(homeSrc) && /\.home-app__body \{ font-size: 17px; \}/.test(homeSrc) && /\.home-app__small \{ font-size: 14px; \}/.test(homeSrc));
+  check('home: the 56 by 4 rule in #E03553, 28px above the heading', /\.home-app__rule \{ width: 56px; height: 4px; background: #E03553; margin-bottom: 28px; \}/.test(homeSrc));
   const t = textOf(block);
   check('home: the body, verbatim', t.includes('Plan on the train, on the couch, in the queue for coffee. Your guest list, budget and seating chart on your phone and your computer, always the same wedding.'));
   check('home: the small line, as text', t.includes('iPhone and Android. Coming at launch.') && /data-app-store-line/.test(block));
