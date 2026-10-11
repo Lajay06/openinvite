@@ -61,9 +61,92 @@ import { adminList, adminCreate, hasAdminKey } from './_lib/base44Entities.js';
 import { buildGuestNoteBlob } from './_lib/guestNotePii.js';
 import { firstNameOrNull } from '../src/lib/emailGreeting.js';
 import { notify } from './_lib/notify.js';
+import { Resend } from 'resend';
+import { getBase44User } from './_lib/base44Admin.js';
+import { guestNoteEmail } from './_lib/guestNoteNotification.js';
 
 /** The goal's cap. A note is a question, not an essay; 1000 characters is generous for one. */
 const MAX_MESSAGE_LENGTH = 1000;
+const LOG = '[guest-note-submit]';
+const FROM = 'Openinvite <hello@openinvite.com.au>';
+
+/**
+ * Item 4 of goals/2026-10-10-bounces-and-notes.md: one email to the couple's
+ * account address for each note.
+ *
+ * THE NOTE IS ALREADY STORED WHEN THIS RUNS, and that decides every branch
+ * below. A guest pressed send, the row exists, the bell has rung. Nothing
+ * here may turn that into an error the guest sees, so every failure is logged
+ * and returned as a reason rather than thrown, and the caller does not wait
+ * on it to decide the response.
+ *
+ * THE ADDRESS COMES FROM THE ACCOUNT, NOT FROM THE WEDDING ROW. The couple's
+ * own address is on the User, and the User entity needs the ?api_key= form
+ * rather than a bearer header: see BASE44_PLATFORM_NOTES.md. getBase44User
+ * already does that, and is used by the Stripe webhook, so this inherits a
+ * path that is known to work rather than opening a second one.
+ *
+ * EVERY DEPENDENCY IS INJECTABLE, so the guard can drive the real decisions
+ * with no network, no key and no Resend client.
+ *
+ * @returns {Promise<{sent: boolean, reason?: string}>}
+ */
+export async function sendNoteNotification({ wedding, guestName, message }, deps = {}) {
+  const getUser = deps.getUser
+    || ((id) => getBase44User(id, process.env.BASE44_ADMIN_KEY));
+  const render = deps.render || guestNoteEmail;
+  // The client is built at call time, never at module scope: new Resend(undefined)
+  // THROWS, so a module-level client would take down every import of this file
+  // in any environment without the key, the guard included.
+  const send = deps.send
+    || ((payload) => new Resend(process.env.RESEND_API_KEY).emails.send(payload));
+
+  // is_test skips, per the item. A test wedding's notes are the owner's own
+  // probes and an email for each one is noise in his inbox.
+  if (wedding?.is_test) {
+    console.log(`${LOG} test wedding, no note email sent`);
+    return { sent: false, reason: 'is_test' };
+  }
+
+  const ownerId = wedding?.created_by_id;
+  if (!ownerId) {
+    console.error(`${LOG} FAILURE: the wedding has no owner id, no note email sent`);
+    return { sent: false, reason: 'no_owner' };
+  }
+
+  let user = null;
+  try {
+    user = await getUser(ownerId);
+  } catch (err) {
+    console.error(`${LOG} FAILURE: could not read the account for the note email: ${err.message}`);
+    return { sent: false, reason: 'user_read_failed' };
+  }
+  const to = String(user?.email || '').trim();
+  if (!to) {
+    // NOT AN ERROR THE GUEST CAUSED, and not one the couple can fix from here.
+    // The note is on their Messages page either way, which is the sentence the
+    // email would have pointed them to.
+    console.warn(`${LOG} no account address for the owner, no note email sent`);
+    return { sent: false, reason: 'no_address' };
+  }
+
+  const email = render({ guestName, message });
+  try {
+    await send({
+      from: FROM,
+      to,
+      replyTo: email.replyTo,
+      subject: email.subject,
+      html: email.html,
+      text: email.text,
+    });
+    console.log(`${LOG} note email sent to the couple`);
+    return { sent: true };
+  } catch (err) {
+    console.error(`${LOG} FAILURE: the note email did not send: ${err.message}`);
+    return { sent: false, reason: 'send_failed' };
+  }
+}
 const MAX_NAME_LENGTH = 80;
 const MAX_EMAIL_LENGTH = 200;
 
@@ -186,6 +269,16 @@ export default async function handler(req, res) {
       title: firstName ? `New note from ${firstName}` : 'New note from a guest',
       link: '/Messages',
     });
+
+    // AWAITED, like notify() above and for the same reason: a Vercel function
+    // can freeze the moment the response is sent. It cannot fail the response,
+    // because it returns a reason rather than throwing.
+    //
+    // THE PLAINTEXT IS THE ONE WE WERE HANDED, never the blob read back. The
+    // blob keeps the sentence out of plain text in Base44, where any
+    // authenticated account can list the entity; it was never meant to keep
+    // the note from the couple it was written to.
+    await sendNoteNotification({ wedding, guestName: firstName, message });
 
     console.log('[guest-note-submit] Note created for wedding', weddingSlug);
     return res.status(200).json({ ok: true });
