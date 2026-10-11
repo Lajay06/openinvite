@@ -32,3 +32,14 @@ Self-merge under the protocol; print the merge SHA and the URLs for each PR. Sto
 ## Close
 
 Last line: "Closed <date> at main <full SHA>, PRs <list>".
+
+## Closing notes (2026-10-12)
+
+Open for the owner, none blocking the close:
+
+- The morning still is shot and uploaded but held off /features: under the Customizable Dashboard bullets it made that row 1116px at 1440, and that row is held to one screen as the app section's twin. Its placement needs a ruling.
+- The accordion's seating bullet says "drag guests onto tables"; the product seats a guest by clicking the table, then the name, and the clip under the bullet shows the click. The bullet is owner copy and is unchanged.
+- Two /features captions changed from the proposal because their stills could not back them: replies ("Who said yes, and to which event.") and vendors ("Every vendor, what they cost, and where each one stands.").
+- The four /tour lines are drafts for the owner's wording. /tour stays out of the nav, the footer and the sitemap, noindexed, until the owner rules it reads like the rest of the site.
+
+Closed 2026-10-12 at main 11e46b58c9f01af065f6547d42606cfa4f93c197, PRs #968, #971, #973, #975, #976, #983, #988, #1004, #1006, #1009, #1014
