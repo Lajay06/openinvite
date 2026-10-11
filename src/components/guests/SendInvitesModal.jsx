@@ -17,6 +17,7 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { fetchGuestLinks } from '@/lib/guestLinks';
 import { invitationsFor } from '@/lib/household';
 import { invitationGreetingName } from '@/lib/guestGreeting';
+import { isBounced, bouncedSkippedSentence } from '@/components/guests/emailBounce';
 
 // Guarded on the pattern already used by src/lib/app-params.js: read the
 // environment at module load only when there IS one. Browser behavior is
@@ -398,7 +399,15 @@ export default function SendInvitesModal({
   // is editable by whoever is running the client. Both exist on purpose: the
   // server one is the guarantee, this one is the sentence.
   const optedOutSelected = selectedGuests.filter(g => g.email_opt_out);
-  const sendableGuests = selectedGuests.filter(g => !g.email_opt_out);
+  // ── AND THE ONES WHOSE ADDRESS IS DEAD ────────────────────────────────
+  //
+  // Item 3 of goals/2026-10-10-bounces-and-notes.md. Same two-part shape as
+  // the opt-out above: api/send-invites.js skips a bounced guest from the
+  // database and returns skippedBounced, which is the guarantee; this is the
+  // sentence, and it is also what stops a token being minted for an address
+  // the server will not mail.
+  const bouncedSelected = selectedGuests.filter(isBounced);
+  const sendableGuests = selectedGuests.filter(g => !g.email_opt_out && !isBounced(g));
   const invitationsWithEmail = invitationsFor(sendableGuests).filter(i => i.email);
   const invitationsNoEmail = selectedInvitations.filter(i => !i.email);
 
@@ -658,8 +667,13 @@ export default function SendInvitesModal({
       // "asked not to be emailed" is the only answer that stops them
       // re-sending to chase the gap.
       const nSkipped = optedOutSelected.length;
+      // The bounced count travels in the same sentence, for the same reason:
+      // nPeople has already dropped by it, and a gap with no cause is what
+      // sends a couple back to re-send into the same dead address.
+      const nBounced = bouncedSelected.length;
       const msg = `${TYPE_LABELS[type]} sent, ${nEmails} email${plural(nEmails)} covering ${nPeople} guest${plural(nPeople)}`
-        + (nSkipped > 0 ? `, ${nSkipped} skipped who asked not to be emailed` : '');
+        + (nSkipped > 0 ? `, ${nSkipped} skipped who asked not to be emailed` : '')
+        + (nBounced > 0 ? `, ${bouncedSkippedSentence(nBounced)}` : '');
 
       toast.success(msg, { id: tid });
       onSent?.();
@@ -1173,6 +1187,18 @@ export default function SendInvitesModal({
                             </div>
                           ))}
                         </div>
+                      </div>
+                    )}
+                    {/* ── BOUNCED, AND SO NOT IN THE COUNT ABOVE ───────────────────
+                        Item 3. Before the press, not in the result: the couple is
+                        about to read a number that is lower than the number they
+                        selected, and this is the reason. The fix is the address,
+                        which is why the sentence sends them back to the row. */}
+                    {bouncedSelected.length > 0 && (
+                      <div data-bounced-skipped style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
+                        <p style={{ fontSize: 12, color: '#991b1b', margin: 0, ...F }}>
+                          {bouncedSkippedSentence(bouncedSelected.length)}
+                        </p>
                       </div>
                     )}
                   </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Upload, Download, Tag, Users, Utensils, Trash2, CalendarCheck, Link2, Send, FileSpreadsheet } from 'lucide-react';
+import { Upload, Download, Tag, Users, Utensils, Trash2, CalendarCheck, Send, FileSpreadsheet } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { BottomSheet, PillButton, Checkbox, Row, RowGroup, SelectField, TextField } from '../../ui';
 import PillChoice from '../../ui/PillChoice';
@@ -141,7 +141,7 @@ export function ImportGuestsSheet({ open, onClose, existingGuests = [], country 
  * (the same value for everyone), set dietary, add a tag, remove a tag,
  * set events, copy links, send invites, delete.
  */
-export function BulkActionsSheet({ open, onClose, guests = [], onSetCategory, onSetDietary, onAddTag, onRemoveTag, onSetEvents, onCopyLinks, onSend, onDelete }) {
+export function BulkActionsSheet({ open, onClose, guests = [], onSetCategory, onSetDietary, onAddTag, onRemoveTag, onSetEvents, onSend, onDelete }) {
   const [mode, setMode] = useState('menu');
   const [category, setCategory] = useState('');
   const [dietary, setDietary] = useState('');
@@ -159,7 +159,6 @@ export function BulkActionsSheet({ open, onClose, guests = [], onSetCategory, on
           <Row icon={Utensils} tile="neutral" label="Set dietary" onClick={() => setMode('dietary')} />
           <Row icon={Tag} tile="neutral" label="Add a tag" onClick={() => setMode('addTag')} />
           {tagsInSelection.length > 0 && <Row icon={Tag} tile="neutral" label="Remove a tag" onClick={() => setMode('removeTag')} />}
-          <Row icon={Link2} tile="neutral" label="Copy RSVP links" onClick={() => { onClose(); onCopyLinks(); }} />
           <Row icon={Send} tile="neutral" label="Send invites to selected" onClick={() => { onClose(); onSend(); }} />
           <Row icon={Trash2} tile="warn" label="Remove from the list" onClick={() => { onClose(); onDelete(); }} />
         </RowGroup>

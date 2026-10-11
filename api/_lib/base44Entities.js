@@ -108,3 +108,16 @@ export async function adminCreate(entity, payload) {
 export async function adminUpdate(entity, id, patch) {
   return adminFetch('PUT', entityPath(entity, `/${encodeURIComponent(id)}`), patch);
 }
+
+/**
+ * Deletes one row, for good.
+ *
+ * NO SOFT DELETE, and that is item 5 of goals/2026-10-10-bounces-and-notes.md
+ * speaking: the confirm the couple reads says "It goes for good", so a hidden
+ * flag that keeps the row would make that sentence untrue. The caller is
+ * responsible for proving the row is theirs BEFORE calling this: there is no
+ * ownership check here and there cannot be, because the admin key has none.
+ */
+export async function adminDelete(entity, id) {
+  return adminFetch('DELETE', entityPath(entity, `/${encodeURIComponent(id)}`));
+}
