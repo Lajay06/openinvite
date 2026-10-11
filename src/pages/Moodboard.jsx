@@ -23,7 +23,7 @@ import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import UploadStatus from '@/components/shared/UploadStatus';
-import { useCollaboratorContext } from '@/lib/collaboratorContext';
+import { useCollaboratorContext, withCollab } from '@/lib/collaboratorContext';
 import CountUp from "@/components/shared/CountUp";
 
 let moodboardQueueId = 0;
@@ -70,7 +70,7 @@ export default function MoodboardPage() {
     const id = location.state?.highlightId;
     if (!id) return;
     setPendingHighlightId(id);
-    navigate(location.pathname, { replace: true, state: {} });
+    navigate(withCollab(`${location.pathname}${location.search}`, collab.ownerUserId), { replace: true, state: {} });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state?.highlightId]);
 

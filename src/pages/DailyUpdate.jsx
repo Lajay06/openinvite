@@ -7,7 +7,7 @@ import { guestCounts } from '@/lib/guestRsvpTally';
 import { tallyEventsForGuests, eventCountLine, tallyIsInformative } from '@/lib/eventTallies';
 import { counts as householdCounts } from '@/lib/household';
 import { coupleDisplayName } from '@/lib/coupleNames';
-import { useCollaboratorContext } from '@/lib/collaboratorContext';
+import { useCollaboratorContext, withCollab } from '@/lib/collaboratorContext';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import Briefing from '@/components/dashboard/Briefing';
 import { todosFrom, resolveDayState, avaSentence } from '@/lib/dayState';
@@ -347,7 +347,7 @@ export default function DailyUpdate() {
                   <p style={{ fontFamily: PJS, fontSize: 16, fontWeight: 700, color: '#0A0A0A', margin: 0, lineHeight: 1.3 }}>
                     {l.text}
                   </p>
-                  <Link to={l.to} style={{ fontFamily: PJS, fontSize: 13, fontWeight: 600, color: '#E03553', textDecoration: 'none', display: 'inline-block', marginTop: 6 }}>
+                  <Link to={withCollab(l.to, collab.ownerUserId)} style={{ fontFamily: PJS, fontSize: 13, fontWeight: 600, color: '#E03553', textDecoration: 'none', display: 'inline-block', marginTop: 6 }}>
                     {LINK_LABEL[l.to] || 'Open'}
                   </Link>
                 </div>

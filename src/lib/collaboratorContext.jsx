@@ -34,6 +34,31 @@ export function permissionKeyForPageName(pageName) {
   return PAGE_NAME_TO_PERMISSION_KEY[pageName] || null;
 }
 
+/**
+ * The one way an in-app URL keeps a collaborator session: adds
+ * collabOwner=<ownerUserId> to it. Without the parameter, the next page
+ * renders the collaborator's OWN, unrelated dashboard, so every navigation in
+ * a collaborator session goes through this. "Exit collaboration" is the one
+ * link that drops it on purpose.
+ *
+ * Leaves the URL unchanged when there is no session (ownerUserId falsy), when
+ * it is not an in-app path (external, protocol-relative, mailto and the like),
+ * and when it already carries this owner. Other query params and the hash are
+ * kept.
+ */
+export function withCollab(url, ownerUserId) {
+  if (!ownerUserId || typeof url !== 'string' || !url.startsWith('/') || url.startsWith('//')) return url;
+  const hashAt = url.indexOf('#');
+  const hash = hashAt === -1 ? '' : url.slice(hashAt);
+  const beforeHash = hashAt === -1 ? url : url.slice(0, hashAt);
+  const queryAt = beforeHash.indexOf('?');
+  const path = queryAt === -1 ? beforeHash : beforeHash.slice(0, queryAt);
+  const params = new URLSearchParams(queryAt === -1 ? '' : beforeHash.slice(queryAt + 1));
+  if (params.get('collabOwner') === ownerUserId) return url;
+  params.set('collabOwner', ownerUserId);
+  return `${path}?${params.toString()}${hash}`;
+}
+
 export function hasPagePermission(permissions, page, level) {
   const p = permissions?.[page];
   if (!p) return false;

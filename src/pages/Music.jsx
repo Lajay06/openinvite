@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
-import { useCollaboratorContext } from '@/lib/collaboratorContext';
+import { useCollaboratorContext, withCollab } from '@/lib/collaboratorContext';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import CountUp from "@/components/shared/CountUp";
 import MusicTable from '@/components/music/MusicTable';
@@ -534,7 +534,7 @@ export default function MusicPage() {
             Your wedding isn&rsquo;t set up yet, so nothing on this page can save.
           </p>
           <Link
-            to={createPageUrl('Onboarding')}
+            to={withCollab(createPageUrl('Onboarding'), collab.ownerUserId)}
             style={{ fontSize: 13, fontWeight: 700, color: '#E03553', fontFamily: PJS }}
           >
             Finish setting up

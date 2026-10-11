@@ -13,7 +13,7 @@ import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import { base44 } from "@/api/base44Client";
 import { getMyRecords } from "@/lib/resolveMyWedding";
-import { useCollaboratorContext } from "@/lib/collaboratorContext";
+import { useCollaboratorContext, withCollab } from "@/lib/collaboratorContext";
 import { buildIcsCalendar, downloadIcs } from "@/lib/ics";
 import toast from "react-hot-toast";
 import CountUp from "@/components/shared/CountUp";
@@ -301,10 +301,10 @@ export default function ScheduleHub() {
   // ── Tab navigation ────────────────────────────────────────────────────────
   const handleTab = (key) => {
     if (key === "calendar") {
-      navigate("/Calendar");
+      navigate(withCollab("/Calendar", collab.ownerUserId));
     } else {
       setRunsheetView(key);
-      if (isCalendar) navigate("/Schedule");
+      if (isCalendar) navigate(withCollab("/Schedule", collab.ownerUserId));
     }
   };
 
@@ -415,7 +415,7 @@ export default function ScheduleHub() {
             if (item) handleEditEvent(item);
           }}
           onDelete={readOnly ? undefined : (e) => handleDelete(e.sourceId)}
-          onOpen={(to) => navigate(to)}
+          onOpen={(to) => navigate(withCollab(to, collab.ownerUserId))}
         />
       )}
 
