@@ -1,4 +1,5 @@
 import React from "react";
+import PlanBadge from "@/components/shared/PlanBadge";
 import { useNavigate, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { useAuth } from "@/lib/AuthContext";
@@ -306,16 +307,7 @@ function GroupHeader({ section, open, onToggle }) {
       <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(10,10,10,0.6)", fontFamily: PJS }}>
         {section.label}
       </span>
-      {section.guestSuite && (
-        <span style={{
-          fontSize: 8, fontWeight: 800,
-          background: "linear-gradient(135deg, #FBBF24, #F59E0B)",
-          color: "#FFFFFF", padding: "1px 4px", borderRadius: 3, flexShrink: 0,
-          fontFamily: PJS,
-        }}>
-          Ultra
-        </span>
-      )}
+      {section.guestSuite && <PlanBadge plan="ultra" padding="1px 4px" />}
       {/* THE SAME CHEVRON THE REST OF THE DASHBOARD USES. It was a pair of
           text-presentation carets (U+25BC / U+25B6) — legitimate under the
           emoji rule, which is about presentation rather than block, but not
@@ -400,15 +392,7 @@ function NavItem({ icon: Icon, label, url, onClick, isActive, showBadge, count =
           {count > 99 ? '99+' : count}
         </span>
       )}
-      {showBadge && (
-        <span style={{
-          fontSize: 8, fontWeight: 800, background: "linear-gradient(135deg, #FBBF24, #F59E0B)",
-          color: "#FFFFFF", padding: "2px 5px", borderRadius: 3, flexShrink: 0,
-          fontFamily: PJS,
-        }}>
-          Ultra
-        </span>
-      )}
+      {showBadge && <PlanBadge plan="ultra" />}
     </div>
   );
 }
@@ -782,15 +766,7 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, onOp
                         {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
                       </span>
                     )}
-                    {item.ultraBadge && !canAccessUltraMobile && (
-                      <span style={{
-                        fontSize: 9, fontWeight: 800, background: "linear-gradient(135deg, #FBBF24, #F59E0B)",
-                        color: "#FFFFFF", padding: "2px 6px", borderRadius: 3, flexShrink: 0,
-                        fontFamily: PJS,
-                      }}>
-                        Ultra
-                      </span>
-                    )}
+                    {item.ultraBadge && !canAccessUltraMobile && <PlanBadge plan="ultra" padding="2px 6px" fontSize={9} />}
                   </div>
                 );
               })}

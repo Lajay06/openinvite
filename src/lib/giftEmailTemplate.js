@@ -23,6 +23,7 @@
  */
 import { EMAIL_FONT, EMAIL_ACCENT, EMAIL_BLACK, EMAIL_LOGO_MARK_URL, escapeHtml, emailShell, emailFooterRow } from './emailBrand.js';
 import { REVEAL, fill, headlineText, giftPhotoUrl, photoLabel, DEFAULT_PHOTO_ID } from './giftingV2.js';
+import { PLAN_BADGE_BACKGROUND, PLAN_BADGE_LABEL } from './planBadge.js';
 
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 const NOTE_INK = '1C1916';
@@ -44,6 +45,19 @@ export function noteImageUrl(note, style, { ground = NOTE_GROUND } = {}) {
   const text = encodeURIComponent(note).replace(/%2C/g, '%252C').replace(/%2F/g, '%252F');
   return `${CLOUD}/c_scale,w_1,h_1/e_colorize:100,co_rgb:${ground}/l_text:${font}:${text},co_rgb:${NOTE_INK},w_1040,c_fit/fl_layer_apply/c_pad,w_1040,b_rgb:${ground}/f_png/${NOTE_BASE}.jpg`;
 }
+
+/**
+ * THE PLAN BADGE, IN HTML (owner ruling 2026-10-11: wherever Pro or Ultra is
+ * named, the dashboard's badge). The same colors as PlanBadge.jsx, from
+ * src/lib/planBadge.js; a solid color first, because Outlook and some Gmail
+ * views drop a gradient background.
+ */
+const BADGE_SOLID = { ultra: '#F59E0B', pro: '#E03553' };
+export function planBadgeHtml(plan) {
+  return `<span style="display:inline-block;font-size:12px;line-height:1.4;font-weight:800;color:#FFFFFF;background-color:${BADGE_SOLID[plan]};background:${PLAN_BADGE_BACKGROUND[plan]};padding:1px 6px;border-radius:3px;font-family:${EMAIL_FONT};vertical-align:baseline;">${PLAN_BADGE_LABEL[plan]}</span>`;
+}
+/** Escape a line, then set each plan name in it as its badge. */
+const withBadges = (text) => escapeHtml(text).replace(/\b(Ultra|Pro)\b/g, (m) => planBadgeHtml(m.toLowerCase()));
 
 function noteBody(note, style) {
   if (style === 'serif' || style === 'hand') {
@@ -83,7 +97,7 @@ export function renderGiftReveal({ plan = 'ultra', giver = '', names = '', note 
           <tr>
             <td style="padding:36px 40px 0;">
               <h1 style="margin:0;font-size:28px;line-height:1.2;font-weight:700;color:${EMAIL_BLACK};font-family:${EMAIL_FONT};">${escapeHtml(headlineText(headlineKey, names))}</h1>
-              <p style="margin:16px 0 0;font-size:16px;line-height:1.6;color:rgba(10,10,10,0.75);font-family:${EMAIL_FONT};">${escapeHtml(fill(REVEAL.body[plan] || REVEAL.body.ultra, vars))}</p>
+              <p style="margin:16px 0 0;font-size:16px;line-height:1.6;color:rgba(10,10,10,0.75);font-family:${EMAIL_FONT};">${withBadges(fill(REVEAL.body[plan] || REVEAL.body.ultra, vars))}</p>
             </td>
           </tr>
           <tr>
@@ -106,7 +120,7 @@ export function renderGiftReveal({ plan = 'ultra', giver = '', names = '', note 
           <tr>
             <td style="padding:32px 40px 32px;">
               <div style="width:40px;height:2px;background:${EMAIL_ACCENT};margin:0 0 16px;"></div>
-              <p style="margin:0;font-size:13px;line-height:1.6;color:rgba(10,10,10,0.6);font-family:${EMAIL_FONT};">${escapeHtml(REVEAL.descriptor[plan] || REVEAL.descriptor.ultra)}</p>
+              <p style="margin:0;font-size:13px;line-height:1.6;color:rgba(10,10,10,0.6);font-family:${EMAIL_FONT};">${withBadges(REVEAL.descriptor[plan] || REVEAL.descriptor.ultra)}</p>
             </td>
           </tr>
 ${emailFooterRow(escapeHtml(fill(REVEAL.footer, vars)))}`;

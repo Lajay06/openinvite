@@ -70,6 +70,8 @@ export const photoLabel = (id) => GIFT_PHOTOS.find((p) => p.id === id)?.label ||
  */
 export const ONBOARDING_IMAGES = {
   STEP_ONE: `${CLOUD}/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14263_su2ltz.jpg`,
+  // Page 2, who it is for: onboarding's names-step image (owner's review of #994).
+  WHO: `${CLOUD}/f_auto,q_auto/DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14160_vgcgxf.jpg`,
   DONE: `${CLOUD}/f_auto,q_auto/DTS_Community_Agust%C3%ADn_Far%C3%ADas_Photos_ID6374_iumjqj.jpg`,
 };
 
@@ -101,26 +103,29 @@ export const COPY = {
   plan: {
     heading: 'Give them the whole thing.',
     sub: 'One payment. Theirs for 24 months. Nothing for them to pay, ever.',
-    pro: 'The planner, complete. Guest list, budget, seating, vendors, schedule, to-dos, and Ava.',
-    ultra: 'Everything in Pro, plus the Guest Suite: the guest experience, from one link, no accounts, no app.',
+    // Owner's review of #994, 2026-10-11: product facts, not marketing. "Ava AI"
+    // on first mention, "Ava" after.
+    pro: 'The whole planner: guest list, budget, seating, vendors, schedule, to-dos.',
+    proLines: ['Ava AI included.'],
+    ultra: 'Everything in Pro, plus the Guest Suite:',
+    ultraLines: ['Digital invitations', 'Real-time RSVPs', 'A guest experience for everyone invited (their website)'],
   },
+  // The placeholder is the label, as onboarding's names step; no help lines.
   who: {
     heading: 'Who is the lucky couple?',
-    namesLabel: 'How should we address them?',
-    namesHelp: 'Exactly as it should read at the top of their email.',
+    namesLabel: 'How should we address them',
     emailLabel: 'Their email',
-    emailHelp: 'The gift goes here. You can change it until they open it.',
-    giverLabel: 'Your name, as they know it.',
+    giverLabel: 'Your name, as they know it',
   },
-  note: {
-    heading: 'Say the thing.',
-    help: 'It goes in their email exactly as you write it.',
-    styleLabel: 'Written in',
+  // Page 3, one accordion (owner's review of #994).
+  theirs: {
+    heading: 'Make it theirs.',
+    note: 'Your note',
+    headline: 'The first line they read',
+    photo: 'The picture at the top',
+    when: 'When it lands',
   },
-  headline: { heading: 'The first line they read.' },
-  photo: { heading: 'Pick the picture at the top.', sub: 'It sits above your note. Choose the one that feels like them.' },
   when: {
-    heading: 'When should it land?',
     now: { title: 'Now', line: 'Within a minute of your payment.' },
     date: { title: 'On a date', line: 'Pick a morning. We send it at 9 am where they are.' },
     // Owner ruling 2026-10-11: the browser's zone is the giver's, so the line says so.
@@ -149,19 +154,22 @@ export const REVEAL = {
   button: 'Open your gift',
   under: 'One tap. We will ask for your names and a date, and then it is yours.',
   descriptor: {
-    ultra: 'Openinvite runs the whole wedding from one place: the guest list, the budget, the seating, the vendors, the schedule, the to-dos, and Ava to tell you what today actually needs. Ultra adds the Guest Suite, the guest experience: everyone replies, picks their meal and finds the details from one link, with no accounts and no app. Yours for 24 months, and it never asks you for anything again.',
-    pro: 'Openinvite runs the whole wedding from one place: the guest list, the budget, the seating, the vendors, the schedule, the to-dos, and Ava to tell you what today actually needs. On your phone and your computer, always the same wedding. Yours for 24 months, and it never asks you for anything again.',
+    ultra: 'Openinvite runs the whole wedding from one place: the guest list, the budget, the seating, the vendors, the schedule, the to-dos, and Ava AI to tell you what today actually needs. Ultra adds the Guest Suite, the guest experience: everyone replies, picks their meal and finds the details from one link, with no accounts and no app. Yours for 24 months, and it never asks you for anything again.',
+    pro: 'Openinvite runs the whole wedding from one place: the guest list, the budget, the seating, the vendors, the schedule, the to-dos, and Ava AI to tell you what today actually needs. On your phone and your computer, always the same wedding. Yours for 24 months, and it never asks you for anything again.',
   },
   footer: 'Sent to you because {giver} typed in this address. Wrong person? Reply to this email and we will put it right.',
 };
 
-/** Fill {giver}, {names}, {email}, {Plan} in a copy line. */
+/**
+ * Fill {giver}, {names}, {email}, {Plan} in a copy line. `plan: null` leaves
+ * {Plan} in place, for a caller that sets the plan as its badge.
+ */
 export function fill(text, { giver = '', names = '', email = '', plan = 'ultra' } = {}) {
-  return String(text)
+  const out = String(text)
     .replace(/\{giver\}/g, giver)
     .replace(/\{names\}/g, names)
-    .replace(/\{email\}/g, email)
-    .replace(/\{Plan\}/g, PLAN_NAMES[plan] || 'Ultra');
+    .replace(/\{email\}/g, email);
+  return plan === null ? out : out.replace(/\{Plan\}/g, PLAN_NAMES[plan] || 'Ultra');
 }
 
 /**

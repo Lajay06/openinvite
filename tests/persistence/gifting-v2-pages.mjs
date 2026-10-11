@@ -47,15 +47,17 @@ export async function runGiftingV2Pages() {
 
   // ── the copy, verbatim, against the goal file itself ────────────────────
   const verbatim = [
-    lib.COPY.plan.heading, lib.COPY.plan.sub, lib.COPY.plan.pro, lib.COPY.plan.ultra,
-    lib.COPY.who.heading, lib.COPY.who.namesLabel, lib.COPY.who.namesHelp, lib.COPY.who.emailLabel, lib.COPY.who.emailHelp, lib.COPY.who.giverLabel,
-    lib.COPY.note.heading, lib.COPY.note.help, lib.COPY.headline.heading, lib.COPY.photo.heading, lib.COPY.photo.sub,
-    lib.COPY.when.heading, lib.COPY.when.now.line, lib.COPY.when.date.line, lib.COPY.when.fine,
+    lib.COPY.plan.heading, lib.COPY.plan.sub, lib.COPY.plan.pro, ...lib.COPY.plan.proLines, lib.COPY.plan.ultra, ...lib.COPY.plan.ultraLines,
+    lib.COPY.who.heading, lib.COPY.who.namesLabel, lib.COPY.who.emailLabel, lib.COPY.who.giverLabel,
+    lib.COPY.theirs.heading, lib.COPY.theirs.note, lib.COPY.theirs.headline, lib.COPY.theirs.photo, lib.COPY.theirs.when,
+    lib.COPY.when.now.line, lib.COPY.when.date.line, lib.COPY.when.fine,
     lib.COPY.done.heading, lib.COPY.done.body, lib.COPY.done.box, lib.COPY.done.second,
     ...lib.HEADLINES.map((h) => h.text),
     lib.REVEAL.body.ultra, lib.REVEAL.body.pro, lib.REVEAL.under, lib.REVEAL.descriptor.ultra, lib.REVEAL.descriptor.pro, lib.REVEAL.footer,
   ];
-  const missing = verbatim.filter((t) => !goal.includes(t));
+  // The descriptors carry "Ava AI" on first mention (the amendment's rule);
+  // otherwise they are the goal's lines exactly.
+  const missing = verbatim.filter((t) => !goal.includes(t) && !goal.includes(t.replace('Ava AI to tell you', 'Ava to tell you')));
   check('every line of copy appears in the goal file exactly', missing.length === 0, missing.slice(0, 2).join(' | ') || `${verbatim.length} lines`);
   check('the timezone line is the owner\'s ruling of 2026-10-11', lib.COPY.when.tzLine === 'at 9 am where they are ({timezone}, from your browser)');
   check('  in plain words where the zone has a city', lib.timezoneInWords('Australia/Sydney') === 'Sydney' && lib.timezoneInWords('Europe/London') === 'London'
@@ -78,19 +80,37 @@ export async function runGiftingV2Pages() {
       && tpl.noteImageUrl('a, b', 'hand').includes('a%252C%20b') && /w_1040,c_fit/.test(tpl.noteImageUrl('a', 'serif')) && tpl.noteImageUrl('a', 'plain') === '');
   check('  and carry the full note as alt text', /alt="A note\."/.test(tpl.renderGiftReveal({ note: 'A note.', noteStyle: 'serif' }).html));
 
-  // ── the preview on a phone (owner ruling 2026-10-11) ────────────────────
-  check('on a phone, steps 2 to 6 offer the email preview under the form, collapsed until asked for',
-    /\{s >= 2 && s <= 6 && <PhonePreview draft=\{draft\} \/>\}/.test(page) && /className="md:hidden" data-gift-phone-preview/.test(page)
-      && /See what they will get/.test(page) && /aria-expanded=\{open\}/.test(page) && /useState\(false\)/.test(page));
+  // ── the four pages (the owner's review of #994) ─────────────────────────
+  check('four pages: the gift, who it is for, make it theirs, done', /const PAGES = 4;/.test(page) && [1, 2, 3, 4].every((n) => new RegExp(`\\{s === ${n} && `).test(page)) && !/s === 5|s === 6|s === 7/.test(page));
+  check('each page\'s photo side: welcome, names step, the live preview, completion',
+    /s === 1 \? \{ image: ONBOARDING_IMAGES\.STEP_ONE \}/.test(page) && /s === 2 \? \{ image: ONBOARDING_IMAGES\.WHO \}/.test(page)
+      && /s === 4 \? \{ image: ONBOARDING_IMAGES\.DONE \}/.test(page) && /\{ aside: <EmailPreview draft=\{draft\} \/> \}/.test(page)
+      && lib.ONBOARDING_IMAGES.STEP_ONE.endsWith('ID14263_su2ltz.jpg') && lib.ONBOARDING_IMAGES.WHO.endsWith('ID14160_vgcgxf.jpg') && lib.ONBOARDING_IMAGES.DONE.includes('ID6374_iumjqj'));
+  check('page 2\'s fields are onboarding\'s placeholder-as-label underline inputs, no help lines',
+    (page.match(/<UnderlineInput /g) || []).length === 3 && /\.s1-input::placeholder \{ color: rgba\(10,10,10,0\.58\); \}/.test(page) && !/namesHelp|emailHelp/.test(page) && !('namesHelp' in lib.COPY.who));
+  check('page 3 is onboarding\'s theme accordion, four sections, the first open, each showing its value',
+    (page.match(/<AccordionSection /g) || []).length === 4 && /useState\(params\.get\('section'\) \|\| 'note'\)/.test(page) && (page.match(/summary=\{/g) || []).length === 4
+      && /import \{ AccordionSection, Pill \} from '@\/components\/onboarding\/OnboardingStep5WeddingType'/.test(page));
+  check('  its options are the accordion\'s own pills, and the photos the universe grid\'s rule and tile', /HEADLINES\.map\(\(h\) => <Pill /.test(page) && /className="universe-grid"/.test(page) && /repeat\(5, 1fr\)/.test(page));
+  check('the phone preview panel is on page 3 only', (page.match(/<PhonePreview draft=\{draft\} \/>/g) || []).length === 1 && /className="md:hidden" data-gift-phone-preview/.test(page) && /See what they will get/.test(page));
   check('  and it is the same template preview, sized to the email', /<EmailPreview draft=\{draft\} fit \/>/.test(page));
-  check('step 1 uses onboarding\'s welcome image, the owner\'s choice, and the done screen its completion image',
-    lib.ONBOARDING_IMAGES.STEP_ONE.endsWith('/DTS_BANDITS_PALI_MENDEZ_Photos_ID14263_su2ltz.jpg') && lib.ONBOARDING_IMAGES.DONE.includes('ID6374_iumjqj'));
+  // ── the plan badge, wherever a plan is named ────────────────────────────
+  const sidebar = read('src/components/layout/AnimatedSidebar.jsx');
+  check('the dashboard\'s badge is one component, consumed by the sidebar and the gift flow',
+    /export default function PlanBadge/.test(read('src/components/shared/PlanBadge.jsx')) && (sidebar.match(/<PlanBadge /g) || []).length === 3 && !/linear-gradient\(135deg, #FBBF24, #F59E0B\)/.test(sidebar)
+      && (page.match(/<PlanBadge /g) || []).length >= 3);
+  const badges = await import('../../src/lib/planBadge.js');
+  check('  Ultra the dashboard\'s yellow, Pro the brand pink', badges.PLAN_BADGE_BACKGROUND.ultra === 'linear-gradient(135deg, #FBBF24, #F59E0B)' && badges.PLAN_BADGE_BACKGROUND.pro === '#E03553');
+  check('  and the email preview carries the badge too', /<span style="[^"]*background:linear-gradient\(135deg, #FBBF24, #F59E0B\)[^"]*">Ultra<\/span>/.test(tpl.renderGiftReveal({ plan: 'ultra', note: 'x' }).html)
+    && /background:#E03553[^"]*">Pro<\/span>/.test(tpl.renderGiftReveal({ plan: 'pro', note: 'x' }).html));
+  check('"Ava AI" on first mention in the email', /Ava AI to tell you/.test(tpl.renderGiftReveal({ plan: 'pro', note: 'x' }).html) && lib.COPY.plan.proLines[0] === 'Ava AI included.');
 
   // ── consumed, not forked: additive props with unchanged defaults ────────
   check('AuthLayout takes aside, rendered only when given', /image, aside, bare = false/.test(read('src/components/AuthLayout.jsx')) && /\{aside \? aside : image \?/.test(read('src/components/AuthLayout.jsx')));
   check('OnboardingShell passes aside through', /aside={aside}/.test(read('src/components/onboarding/OnboardingShell.jsx')));
   const fork = read('src/components/onboarding/OnboardingStep8Fork.jsx');
   check('the Fork step\'s two cards are SelectCard, the one the gift flow consumes', (fork.match(/<SelectCard /g) || []).length === 2 && /export function SelectCard\(/.test(fork) && /import \{ SelectCard \}/.test(page));
+  check('the theme accordion and its pill are exported, not copied', /export function AccordionSection\(/.test(read('src/components/onboarding/OnboardingStep5WeddingType.jsx')) && /export function Pill\(/.test(read('src/components/onboarding/OnboardingStep5WeddingType.jsx')));
   check('UniverseGridTile is consumed with imageSrc and hideExplore, both optional', /export function UniverseGridTile\(\{[^}]*imageSrc, hideExplore = false \}/.test(read('src/components/onboarding/OnboardingStepUniverse.jsx')) && /<UniverseGridTile /.test(page));
   check('OnboardingCompletion is consumed with heading, body and children, falling back to its own', /heading \?\? \(firstName/.test(read('src/components/onboarding/OnboardingCompletion.jsx')) && /children \?\? </.test(read('src/components/onboarding/OnboardingCompletion.jsx')) && /<OnboardingCompletion /.test(page));
   check('emailShell keeps 560 for every other email', /width = 560 \}/.test(read('src/lib/emailBrand.js')));

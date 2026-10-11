@@ -46,7 +46,10 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 // faith capture here, drop it from the later page. This section now IS
 // that same canonical FAITH_OPTIONS single-select (+ Interfaith sub-pick),
 // ported over, writing directly to theme.faith/theme.faithSecondary.
-function Pill({ label, selected, onClick }) {
+// Exported, with AccordionSection below, for gifting v2's "make it theirs"
+// page, which consumes this step's accordion and its option pills (owner
+// ruling 2026-10-11). Exports only: this step renders exactly as before.
+export function Pill({ label, selected, onClick }) {
   return (
     <button
       type="button"
@@ -110,7 +113,7 @@ const SECTION_BORDER = {
 const sectionStateOf = (isOpen, summary) =>
   (isOpen ? 'open' : (summary && summary.length > 0 ? 'answered' : 'untouched'));
 
-function AccordionSection({ title, isOpen, onToggle, summary, children }) {
+export function AccordionSection({ title, isOpen, onToggle, summary, children }) {
   const state = sectionStateOf(isOpen, summary);
   return (
     <div data-section-state={state} style={{ borderBottom: `1px solid ${SECTION_BORDER[state]}` }}>
