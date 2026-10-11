@@ -49,8 +49,11 @@
  */
 
 import crypto from 'crypto';
+import { hmacB64Url } from './appKeys.js';
 
-const secret = () => process.env.BASE44_ADMIN_KEY || '';
+// APP_HASH_KEY, NOT THE ADMIN CREDENTIAL. See api/_lib/appKeys.js. Still read
+// per call, for the reason above.
+const secret = () => process.env.APP_HASH_KEY || '';
 
 /**
  * @param {string} guestId the Base44 Guest id this link belongs to
@@ -60,7 +63,9 @@ export function signGuestStopToken(guestId) {
   const id = String(guestId || '');
   if (!id) throw new Error('Refusing to sign a guest stop token with no guest id.');
   const body = Buffer.from(id, 'utf8').toString('base64url');
-  const sig = crypto.createHmac('sha256', secret()).update(body).digest('base64url');
+  // FAIL CLOSED, as in stopEmailsToken.js: an empty key would mint a token
+  // nothing can verify, silently.
+  const sig = hmacB64Url(body);
   return `${body}.${sig}`;
 }
 

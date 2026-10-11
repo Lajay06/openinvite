@@ -18,6 +18,13 @@ export async function runGuestPiiBlob() {
   const results = [];
   const prev = process.env.BASE44_ADMIN_KEY;
   process.env.BASE44_ADMIN_KEY = FIXED_KEY;
+  // THE CONSTRUCTION IS PINNED TO THE CIPHER KEY, not the credential, since
+  // 2026-10-11. FIXED_KEY keeps its name and its job: one stable value so the
+  // blob shape cannot drift between runs.
+  const prevEnc = process.env.APP_ENC_KEY;
+  const prevHash = process.env.APP_HASH_KEY;
+  process.env.APP_ENC_KEY = FIXED_KEY;
+  process.env.APP_HASH_KEY = FIXED_KEY;
   const { buildGuestPiiBlob, readGuestPiiBlob, mergeGuestPii, buildGuestWriteFields } =
     await import(`../../api/_lib/guestPii.js?t=${Date.now()}`);
   const { PII_FIELDS, BLOB_FIELD } = await import('../../api/_lib/guestProtectedFields.js');
@@ -186,5 +193,7 @@ export async function runGuestPiiBlob() {
            'found JSON.stringify(fields) — plaintext would reach Base44'));
 
   if (prev === undefined) delete process.env.BASE44_ADMIN_KEY; else process.env.BASE44_ADMIN_KEY = prev;
+  if (prevEnc === undefined) delete process.env.APP_ENC_KEY; else process.env.APP_ENC_KEY = prevEnc;
+  if (prevHash === undefined) delete process.env.APP_HASH_KEY; else process.env.APP_HASH_KEY = prevHash;
   return results;
 }

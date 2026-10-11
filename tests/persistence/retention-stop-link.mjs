@@ -31,10 +31,11 @@ export async function runRetentionStopLink() {
   const results = [];
   const ok = (label, cond, detail) => results.push(cond ? pass(label, detail) : fail(label, 'see name', detail));
 
-  // The token module reads BASE44_ADMIN_KEY at import, so it is placeheld
-  // exactly as the other admin-key guards do it. Never a real credential.
-  const priorKey = process.env.BASE44_ADMIN_KEY;
-  process.env.BASE44_ADMIN_KEY = 'test-admin-key-not-a-real-credential';
+  // THE TOKEN IS SIGNED WITH APP_HASH_KEY since 2026-10-11, not with the admin
+  // credential: a link that must still resolve months later cannot hang off a
+  // value that gets rotated. See api/_lib/appKeys.js. Never a real value.
+  const priorKey = process.env.APP_HASH_KEY;
+  process.env.APP_HASH_KEY = 'guard-only-hash-key';
   process.env.VITE_APP_URL = 'https://openinvite.com.au';
 
   const { signStopToken, verifyStopToken, stopEmailsUrl } =
@@ -66,11 +67,11 @@ export async function runRetentionStopLink() {
   }
   // THE EMPTY-SECRET CASE, which is the one that would make every signature
   // meaningless rather than merely wrong.
-  process.env.BASE44_ADMIN_KEY = '';
+  process.env.APP_HASH_KEY = '';
   const { verifyStopToken: verifyNoSecret } = await import(`../../api/_lib/stopEmailsToken.js?k=${Math.random()}`);
   ok('  and with no secret configured, nothing verifies at all',
      verifyNoSecret(token) === null, 'refuses rather than trusting an empty key');
-  process.env.BASE44_ADMIN_KEY = 'test-admin-key-not-a-real-credential';
+  process.env.APP_HASH_KEY = 'guard-only-hash-key';
 
   ok('the stop URL is the public route plus the token',
      stopEmailsUrl('user-abc-123') === `https://openinvite.com.au/stop-emails/${token}`, '/stop-emails/<token>');
@@ -176,11 +177,23 @@ export async function runRetentionStopLink() {
      !/notification_prefs[\s\S]{0,120}lifecycleEmails/.test(account)
      && !/lifecycleEmails[\s\S]{0,120}notification_prefs:/.test(account), 'separate save path');
 
-  // ── NO NEW SECRET ───────────────────────────────────────────────────────
+  // ── THE SECRET IS A DEDICATED KEY, NOT A CREDENTIAL ─────────────────────
+  //
+  // THIS ASSERTION IS INVERTED FROM WHAT IT SAID BEFORE 2026-10-11, and the
+  // inversion is the point. It used to require that this module introduce no
+  // new secret, which is why it keyed on BASE44_ADMIN_KEY. Then that
+  // credential was rotated, as credentials are, and every stop link already
+  // sitting in someone's inbox stopped verifying. Reusing a credential is not
+  // frugality, it is a hidden coupling between a routine rotation and data
+  // nobody can reissue. APP_HASH_KEY exists so the rotation and the signature
+  // are independent; owner ruling, same day.
   const tokenSrc = stripComments(read('api/_lib/stopEmailsToken.js'));
   const envNames = [...tokenSrc.matchAll(/process\.env\.([A-Z0-9_]+)/g)].map(m => m[1]);
-  ok('the token uses an existing server secret and introduces none',
-     envNames.every(n => ['BASE44_ADMIN_KEY', 'VITE_APP_URL'].includes(n)), envNames.join(', '));
+  ok('the token keys on the dedicated APP_HASH_KEY, never on a credential',
+     envNames.includes('APP_HASH_KEY')
+       && !envNames.includes('BASE44_ADMIN_KEY')
+       && envNames.every(n => ['APP_HASH_KEY', 'VITE_APP_URL'].includes(n)),
+     envNames.join(', '));
   // THE CONSTRUCTION, NOT THE SPELLING OF A VARIABLE.
   //
   // This matched /createHmac\('sha256', SECRET\)/ and went red when item 2
@@ -194,7 +207,7 @@ export async function runRetentionStopLink() {
      && /digest\('base64url'\)/.test(tokenSrc),
      'sha256, base64url, timingSafeEqual');
   ok('  and the key is read per call, so it cannot be fixed at import',
-     /const secret = \(\) => process\.env\.BASE44_ADMIN_KEY/.test(tokenSrc)
+     /\(\) => process\.env\.APP_HASH_KEY/.test(tokenSrc)
      && !/const SECRET = process\.env/.test(tokenSrc), 'read at call time');
 
   // ── THE ENDPOINT CANNOT BE TALKED INTO WRITING ANYTHING ELSE ────────────
@@ -204,8 +217,8 @@ export async function runRetentionStopLink() {
   ok('  and the flag is never set back to true here',
      !/lifecycleEmails: true/.test(apiSrc), 're-enabling is signed-in only');
 
-  if (priorKey === undefined) delete process.env.BASE44_ADMIN_KEY;
-  else process.env.BASE44_ADMIN_KEY = priorKey;
+  if (priorKey === undefined) delete process.env.APP_HASH_KEY;
+  else process.env.APP_HASH_KEY = priorKey;
 
   return results;
 }
