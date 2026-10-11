@@ -44,9 +44,39 @@ const BadgePill = ({ style, children }) => (
 );
 
 /* ── Per-event status chip — DESIGN_SPEC badge colours ───────────────────── */
+/**
+ * ── THE CHIP'S OWN BOX HOLDS ITS OWN TEXT ──────────────────────────────────
+ *
+ * Item 4 of goals/2026-10-11-dashboard-fixes-batch-1.md, from the owner's
+ * screenshot: the pills rendered as a thin colored stripe through the text.
+ *
+ * MEASURED, 2026-10-11: every chip painted 4px tall at 390 and at 1440, in
+ * every row. 2px of padding top and bottom, and a ZERO line box, because the
+ * button around it set lineHeight: 0 and this object never set a line-height
+ * of its own, so it inherited the zero. The glyphs are 10px and painted
+ * OUTSIDE the 4px box they were supposed to sit in. That is the stripe.
+ *
+ * It read as a contact-column problem because a taller row centers a 4px pill
+ * in more empty space, which is what made it obvious in the rows that had an
+ * email and a phone and not in the row that had neither. The pill was the same
+ * 4px in both.
+ *
+ * lineHeight IS SET HERE, not left to inherit, so the pill's height is a fact
+ * about the chip rather than about whatever ancestor last touched line-height.
+ * flexShrink: 0 is the other half: these sit in a nowrap flex row, where the
+ * default shrink would squeeze them before the +N pill took over.
+ */
 const CHIP_BASE = {
   display: 'inline-flex', alignItems: 'center',
-  fontFamily: PJS, fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 999, whiteSpace: 'nowrap',
+  fontFamily: PJS, fontSize: 10, fontWeight: 600, lineHeight: 1.4,
+  padding: '2px 8px', borderRadius: 999, whiteSpace: 'nowrap', flexShrink: 0,
+  // A TRANSPARENT BORDER SO EVERY CHIP IS ONE HEIGHT. Two of the variants draw
+  // a real 1px border (the not-invited outline and the "+N" pill) and the rest
+  // draw none, which made bordered chips 20px against filled ones at 18px: two
+  // pill heights in one row. Found by scripts/test-chip-height.mjs on its first
+  // run, not by the screenshot that started this item. Reserving the pixel here
+  // means a variant can turn its border visible without changing the geometry.
+  border: '1px solid transparent',
 };
 
 // Exported for Seating.jsx (PR6) — its per-event guest pool reuses the
@@ -98,7 +128,7 @@ function OverflowChips({ hidden: count, children }) {
   const [open, setOpen] = useState(false);
   return (
     <span
-      style={{ position: 'relative', display: 'inline-flex', lineHeight: 0 }}
+      style={{ position: 'relative', display: 'inline-flex' }}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
     >
@@ -127,7 +157,7 @@ function OverflowChips({ hidden: count, children }) {
           position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 20,
           display: open ? 'flex' : 'none', flexWrap: 'wrap', gap: 5,
           background: '#FFFFFF', border: '1px solid rgba(10,10,10,0.12)',
-          padding: 8, maxWidth: 320, lineHeight: 0,
+          padding: 8, maxWidth: 320,
         }}
       >
         {children}
@@ -283,8 +313,15 @@ function GuestStatusCell({ guest, weddingEvents, onToggleEvent, readOnly, filter
           ? `Remove ${guest.name} from ${event.name}. Their answer is kept.`
           : `Invite ${guest.name} to ${event.name}`}
         style={{
+          // display: inline-flex, NOT lineHeight: 0. The zero was here to kill
+          // the inline-baseline gap under the pill, and it did that by
+          // collapsing the pill's own line box to nothing (see CHIP_BASE).
+          // A flex box has no baseline gap to kill, so this removes the gap
+          // without taking the chip's height with it. flexShrink: 0 keeps the
+          // button from being squeezed in the nowrap row around it.
           background: 'none', border: 'none', padding: 0, margin: 0,
-          cursor: busy ? 'progress' : 'pointer', opacity: busy ? 0.5 : 1, lineHeight: 0,
+          display: 'inline-flex', flexShrink: 0,
+          cursor: busy ? 'progress' : 'pointer', opacity: busy ? 0.5 : 1,
         }}
       >
         <EventChip event={event} response={response} />
