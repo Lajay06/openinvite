@@ -71,5 +71,40 @@ export async function runIndexingPosture() {
     plantedIncomplete.length === 1 && plantedIncomplete[0].agent === 'PlantedBot',
     `detected ${plantedIncomplete.map((g) => g.agent).join(', ') || 'nothing'}`);
 
+  // ── THE MOBILE APP IS PRIVATE ON THE WEB ───────────────────────────────
+  // Owner check before parity PR 2 of goals/2026-10-10-mobile-pass.md: the
+  // /m routes are reachable from nothing on the marketing site, carry
+  // noindex, and serve no shell screen to a signed-out visitor who types the
+  // URL. Found 2026-10-11: no header on /m, and /m/welcome and /m/login
+  // rendered the shell's first-run screens to anyone on the web.
+  for (const source of ['/m', '/m/(.*)']) {
+    const rule = headerRules.find((r) => r.source === source);
+    const value = (rule?.headers?.find((h) => h.key.toLowerCase() === 'x-robots-tag')?.value || '').toLowerCase();
+    check(`${source} is noindex, nofollow and noarchive`,
+      ['noindex', 'nofollow', 'noarchive'].every((d) => value.includes(d)), value || 'MISSING');
+  }
+  const { MARKETING_ROUTES } = await import(root('scripts/marketingRoutes.mjs'));
+  check('  and no /m route is prerendered or in the sitemap',
+    MARKETING_ROUTES.length > 0 && !MARKETING_ROUTES.some((r) => r === '/m' || r.startsWith('/m/')),
+    `${MARKETING_ROUTES.length} marketing routes`);
+  // Every page and component outside the shell itself: the marketing site,
+  // and the dashboard too, which does not link to the app yet either.
+  const { trackedUnder } = await import('./_trackedFiles.mjs');
+  const files = [...trackedUnder('src/pages', /\.jsx?$/), ...trackedUnder('src/components', /\.jsx?$/)];
+  const linking = files.filter((f) => /(?:to|href)=["'{`]+\/m(?:[/"'`?]|$)/m.test(readFileSync(f, 'utf8')))
+    .map((f) => f.replace(root('') + '/', ''));
+  check('  and nothing on the marketing site links to it',
+    linking.length === 0 && files.length > 100, linking.join(', ') || `${files.length} files read`);
+  const app = readFileSync(root('src/App.jsx'), 'utf8');
+  check('  and the app itself sits behind ProtectedRoute',
+    /<Route element=\{<ProtectedRoute unauthenticatedElement=[^\n]*\n\s*<Route path="\/m\/\*" element=\{<MobileApp \/>\} \/>/.test(app),
+    'signed out goes to the web login');
+  check('  and its first-run screens render only inside the native shell',
+    /\(isNativeShell\(\) \|\| import\.meta\.env\.DEV\) \? \(\s*<>\s*<Route path="\/m\/welcome" element=\{<MobileFirstRun/.test(app)
+      && (app.match(/<MobileFirstRun /g) || []).length === 2
+      && /<Route path="\/m\/welcome" element=\{<Navigate to="\/login\?next=%2Fm" replace \/>\} \/>/.test(app)
+      && /<Route path="\/m\/login" element=\{<Navigate to="\/login\?next=%2Fm" replace \/>\} \/>/.test(app),
+    'on the web, /m/welcome and /m/login go to the web login');
+
   return results;
 }

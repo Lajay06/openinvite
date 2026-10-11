@@ -14,7 +14,7 @@ import { ShellContext } from '../../shell/MobileShell';
 import { usePlanData } from '../../data/plan';
 import { useTaskWrites } from '../../data/wedding';
 import { useApi, useSymbol } from '../../data/api';
-import { hapticLight, shareLink } from '../../native';
+import { hapticLight } from '../../native';
 import { siteUrlFor } from '../../lib/links';
 import { homeHeroImages, imageUrl } from '../../lib/images';
 import { heroSeed } from './heroPool';
@@ -119,12 +119,6 @@ export default function HomeContainer() {
       toast.success('Done');
     } catch { /* rolled back */ }
   };
-  const share = async () => {
-    const r = await shareLink({ title: coupleName ? `${coupleName}'s wedding` : 'Our wedding', text: 'Here is our guest suite.', url: siteUrl });
-    if (r === 'copied') toast.success('Link copied');
-    if (r === 'failed') toast.error('Could not share the link.');
-  };
-
   return (
     <HomeScreen
       firstName={firstName}
@@ -154,7 +148,6 @@ export default function HomeContainer() {
       onCompleteTask={completeTask}
       onOpenFeature={openFeature}
       onOpenAva={openAva}
-      onShare={share}
       onSearch={() => navigate(`${base}/search`)}
       onOpenLatest={(it) => { notifications?.markRead?.(it); navigate(it.link); }}
       onOpenNotifications={() => navigate(`${base}/notifications`)}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Phone, Pencil, Link2, Send, CalendarCheck, Gift } from 'lucide-react';
+import { Mail, Phone, Pencil, Send, CalendarCheck, Gift } from 'lucide-react';
 import Screen from '../../shell/Screen';
 import { Row, RowGroup, StatusPill, PillButton, ErrorState, Skeleton } from '../../ui';
 import { openExternal } from '../../native';
@@ -21,7 +21,7 @@ const fmtWhen = (iso) => { if (!iso) return ''; const d = new Date(iso); return 
  * reminder), the RSVP note and song request, and gifts from this guest.
  * Edit opens the full sheet; Edit events the per-event invite sheet.
  */
-export default function GuestDetailScreen({ guest, role = '', weddingEvents = [], mealOptions = [], gifts = [], symbol = '$', back, onEdit, onEditEvents, onDelete, onCopyLink, onSendInvite, loading, error, onRetry }) {
+export default function GuestDetailScreen({ guest, role = '', weddingEvents = [], mealOptions = [], gifts = [], symbol = '$', back, onEdit, onEditEvents, onDelete, onSendInvite, loading, error, onRetry }) {
   if (loading) return <Screen title="Guest" back={back}><div className="oi-m-stack oi-m-stack--24"><Skeleton kind="block" /><Skeleton kind="block" /></div></Screen>;
   if (error) return <Screen title="Guest" back={back}><div className="oi-m-stack"><ErrorState what="this guest" onRetry={onRetry} /></div></Screen>;
   if (!guest) return <Screen title="Guest" back={back}><div className="oi-m-stack"><p className="oi-m-body">This guest is not on your list any more.</p></div></Screen>;
@@ -126,7 +126,6 @@ export default function GuestDetailScreen({ guest, role = '', weddingEvents = []
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
             {onSendInvite && <PillButton variant="secondary" size="sm" icon={Send} onClick={onSendInvite}>{invited ? 'Send again' : (guest.event_responses || []).length ? 'Send invitation' : 'Set events and send'}</PillButton>}
-            {onCopyLink && <PillButton variant="secondary" size="sm" icon={Link2} onClick={onCopyLink}>Copy RSVP link</PillButton>}
             {onEditEvents && <PillButton variant="secondary" size="sm" icon={CalendarCheck} onClick={onEditEvents}>Edit events</PillButton>}
           </div>
         </section>

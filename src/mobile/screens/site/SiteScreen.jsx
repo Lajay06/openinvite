@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ExternalLink, Share2, Palette, LayoutTemplate, Sparkles, Clock, HelpCircle, Gift, Hotel, Car, MapPin, ScrollText, BarChart2, Monitor, Lock, X } from 'lucide-react';
+import { ExternalLink, Palette, LayoutTemplate, Sparkles, Clock, HelpCircle, Gift, Hotel, Car, MapPin, ScrollText, BarChart2, Monitor, Lock, X } from 'lucide-react';
 import Screen from '../../shell/Screen';
 import { Row, RowGroup, PillButton, StatusPill, Skeleton, ErrorState, Switch } from '../../ui';
 import { SitePreviewFrame, SitePreviewSheet } from './SitePreview';
@@ -10,12 +10,17 @@ const NOTE_PREF = 'suite_desktop_note_closed';
 
 /**
  * Guest suite: a large preview of it in a rounded frame, the universe
- * and live status, share and view, then rows into the guest-suite editors
+ * and live status and a way to view it, then rows into the guest-suite editors
  * (in the app) and the design tools (desktop). A slim note under the title
  * says the builder and Ava's Studio happen on a laptop; it closes once and
  * stays closed, and a small row at the bottom keeps the reminder.
+ *
+ * NO ADDRESS AND NO SHARE, as the web's share tab since #923: email from the
+ * studio is the only way guests receive the site, so the screen neither
+ * prints the address nor hands it to a share sheet or the clipboard.
+ * View guest suite opens it for the couple themselves.
  */
-export default function SiteScreen({ details, universeName, isLive, siteUrl, coupleName, onView, onShare, onOpen, onOpenDesktop, onTogglePublish, passwordOn = false, onPassword, loading, error, onRetry }) {
+export default function SiteScreen({ details, universeName, isLive, siteUrl, coupleName, onView, onOpen, onOpenDesktop, onTogglePublish, passwordOn = false, onPassword, loading, error, onRetry }) {
   const [noteClosed, setNoteClosed] = useState(true);
   const [previewOpen, setPreviewOpen] = useState(false);
   useEffect(() => { let live = true; prefGet(NOTE_PREF).then((v) => { if (live) setNoteClosed(v === '1'); }).catch(() => { if (live) setNoteClosed(false); }); return () => { live = false; }; }, []);
@@ -42,24 +47,21 @@ export default function SiteScreen({ details, universeName, isLive, siteUrl, cou
                 <div className="oi-m-row__label">{coupleName || 'Your wedding'}</div>
                 <div className="oi-m-row__sub">{universeName ? `${universeName} universe` : 'Choose a universe'}</div>
               </div>
-              {siteUrl ? <p className="oi-m-meta" style={{ overflowWrap: 'anywhere' }}>{siteUrl.replace(/^https?:\/\//, '')}</p> : <p className="oi-m-meta">Your guest suite does not have an address yet. Choose one in the studio on desktop.</p>}
+              {!siteUrl && <p className="oi-m-meta">Your guest suite does not have an address yet. Choose one in the studio on desktop.</p>}
               <div className="oi-m-row" style={{ padding: 0, minHeight: 44, background: 'transparent' }}>
-                <div className="oi-m-row__body"><div className="oi-m-row__label">{isLive ? 'Guest suite is live' : 'Guest suite is hidden'}</div><div className="oi-m-row__sub">{isLive ? 'Guests can open it at the address above' : siteUrl ? 'Only you can see it until you go live' : 'Choose an address first'}</div></div>
+                <div className="oi-m-row__body"><div className="oi-m-row__label">{isLive ? 'Guest suite is live' : 'Guest suite is hidden'}</div><div className="oi-m-row__sub">{isLive ? 'Guests receive it by email when you send invites' : siteUrl ? 'Only you can see it until you go live' : 'Choose an address first'}</div></div>
                 <Switch on={isLive} onChange={onTogglePublish} label="Guest suite is live" />
               </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <PillButton variant="primary" icon={ExternalLink} onClick={onView} disabled={!siteUrl} style={{ flex: 1 }}>View guest suite</PillButton>
-                <PillButton variant="secondary" icon={Share2} onClick={onShare} disabled={!siteUrl} style={{ flex: 1 }}>Share link</PillButton>
-              </div>
+              <PillButton variant="primary" icon={ExternalLink} onClick={onView} disabled={!siteUrl} block>View guest suite</PillButton>
             </div>
           </div>
         )}
 
         {!loading && !error && (
           <section>
-            <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Share</h2>
+            <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Privacy</h2>
             <RowGroup>
-              <Row icon={Lock} tile="neutral" label="Password protection" sub={passwordOn ? 'On. Guests enter a password to open the guest suite' : 'Off. Anyone with the link can open the guest suite'} onClick={onPassword} />
+              <Row icon={Lock} tile="neutral" label="Password protection" sub={passwordOn ? 'On. Guests enter a password to open the guest suite' : 'Off. Guests open it from their invitation with no password'} onClick={onPassword} />
             </RowGroup>
           </section>
         )}

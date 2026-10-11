@@ -15,7 +15,6 @@ import { BottomSheet, PillButton } from '../../ui';
 import { hapticLight, exportText, shareLink } from '../../native';
 import { getWeddingEvents, toggleEventInvite, getGuestEventResponse, mealOptionLabel, effectiveMealChoice } from '@/lib/weddingEvents';
 import { hasPlusOne, plusOneRsvpStatus } from '@/lib/plusOne';
-import { copyFromPromise } from '@/lib/copyToClipboard';
 import { countryFromWedding } from '@/lib/countryFromVenue';
 import { DEFAULT_COUNTRY } from '@/lib/phoneE164';
 
@@ -51,7 +50,6 @@ export default function GuestsContainer() {
   const [bulkOpen, setBulkOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [contactsOpen, setContactsOpen] = useState(false);
-  const [linksText, setLinksText] = useState('');
   const [templatesOpen, setTemplatesOpen] = useState(false); // shown when the clipboard refuses, as Guests.jsx does
   const [events, setEvents] = useState(null); // { guests, autoSend } for the set-events sheet
   const [bulkInvite, setBulkInvite] = useState(null); // { event, targets }
@@ -155,25 +153,9 @@ export default function GuestsContainer() {
     const r = await exportText('guest-list.csv', 'text/csv', csv);
     if (r !== 'failed') toast.success('Guest list exported'); else toast.error('Could not export the list.');
   };
-  // Guests.jsx: Copy links is part of Ultra; the promise goes to the
-  // clipboard inside the gesture (copyFromPromise), so Safari does not deny it.
-  const copyLinks = async (targets) => {
-    if (!targets.length) return;
-    if ((api.user?.plan || 'free') === 'pro') { toast('Copy links is part of Ultra. Upgrade to share invitations.'); return; }
-    const textPromise = (async () => {
-      const map = await api.guestLinks(targets.map((g) => g.id));
-      const urls = targets.map((g) => map[g.id]?.rsvpUrl).filter(Boolean);
-      if (!urls.length) throw new Error('Could not generate RSVP links');
-      return urls.join('\n');
-    })();
-    if (targets.length === 1) {
-      try { const url = await textPromise; const r = await shareLink({ title: `${targets[0].name}'s RSVP link`, url }); toast.success(r === 'copied' ? 'RSVP link copied' : 'RSVP link ready'); } catch (e) { toast.error(e?.message || 'Could not get the link'); }
-      return;
-    }
-    const { ok, text } = await copyFromPromise(textPromise);
-    if (!text) { toast.error('Could not generate RSVP links'); return; }
-    if (ok) toast.success(`${text.split('\n').length} RSVP links copied`); else setLinksText(text);
-  };
+  // NO COPY LINKS, as the web's Guests page since #924: email is the only way
+  // the site reaches a guest, and a copied RSVP link is the site handed out by
+  // hand, past the server's stop-emails check (#951).
   const goSend = (ids, restrictEventIds) => navigate(`${base}/plan/send-invites${ids?.length ? `?ids=${ids.join(',')}${restrictEventIds ? `&events=${restrictEventIds.join(',')}` : ''}` : ''}`);
   const bulk = {
     setCategory: async (category) => { category = category || null; try { await Promise.all(selectedGuests.map((g) => guestWrites.update(g.id, { category }))); toast.success(`Category set for ${selectedGuests.length}`); reload(); } catch { toast.error('Could not update some guests'); } },
@@ -208,7 +190,6 @@ export default function GuestsContainer() {
           onEdit={() => setSheet({ open: true, guest: current })}
           onEditEvents={() => setEvents({ guests: [current], autoSend: false })}
           onDelete={() => removeGuest(current, { goBack: true })}
-          onCopyLink={() => copyLinks([current])}
           onSendInvite={() => { if (!(current.event_responses || []).length && weddingEvents.length) setEvents({ guests: [current], autoSend: true }); else goSend([current.id]); }}
           loading={guests.loading && !current}
           error={loadError}
@@ -250,7 +231,7 @@ export default function GuestsContainer() {
       <EmailTemplatesSheet open={templatesOpen} onClose={() => setTemplatesOpen(false)} onUse={(type) => { setTemplatesOpen(false); navigate(`${base}/plan/send-invites?type=${type}`); }} />
       <ImportGuestsSheet open={importOpen} onClose={() => setImportOpen(false)} existingGuests={list} country={country} onCreate={(data) => guestWrites.create(data, d)} onImported={reload} />
       <ContactsImportSheet open={contactsOpen} onClose={() => setContactsOpen(false)} api={api} existingGuests={list} country={country} onCreate={(data) => guestWrites.create(data, d)} onImported={reload} onInvite={(created) => navigate(`${base}/plan/send-invites?ids=${created.map((g) => g.id).filter(Boolean).join(',')}`)} />
-      <BulkActionsSheet open={bulkOpen} onClose={() => setBulkOpen(false)} guests={selectedGuests} onSetCategory={bulk.setCategory} onSetDietary={bulk.setDietary} onAddTag={bulk.addTag} onRemoveTag={bulk.removeTag} onSetEvents={() => setEvents({ guests: selectedGuests, autoSend: false })} onCopyLinks={() => copyLinks(selectedGuests)} onSend={() => goSend(selectedGuests.map((g) => g.id))} onDelete={bulk.remove} />
+      <BulkActionsSheet open={bulkOpen} onClose={() => setBulkOpen(false)} guests={selectedGuests} onSetCategory={bulk.setCategory} onSetDietary={bulk.setDietary} onAddTag={bulk.addTag} onRemoveTag={bulk.removeTag} onSetEvents={() => setEvents({ guests: selectedGuests, autoSend: false })} onSend={() => goSend(selectedGuests.map((g) => g.id))} onDelete={bulk.remove} />
       <BottomSheet open={!!bulkInvite} onClose={() => setBulkInvite(null)} title={bulkInvite ? `Invite everyone to ${bulkInvite.event.name}?` : ''} footer={bulkInvite ? (
         <>
           <PillButton variant="secondary" onClick={() => setBulkInvite(null)}>Not now</PillButton>
@@ -258,10 +239,6 @@ export default function GuestsContainer() {
         </>
       ) : undefined}>
         {bulkInvite && <p className="oi-m-body">{bulkInvite.targets.length ? `${bulkInvite.targets.length} guest${bulkInvite.targets.length === 1 ? ' is' : 's are'} not invited to ${bulkInvite.event.name} yet. This marks them invited; it sends nothing until you send.` : `Everyone on the list is already invited to ${bulkInvite.event.name}.`}</p>}
-      </BottomSheet>
-      <BottomSheet open={!!linksText} onClose={() => setLinksText('')} title="RSVP links" footer={<PillButton variant="primary" block onClick={() => setLinksText('')}>Done</PillButton>}>
-        <p className="oi-m-meta" style={{ marginBottom: 12 }}>The clipboard was not available, so here they are to copy by hand.</p>
-        <textarea className="oi-m-input" readOnly value={linksText} rows={6} style={{ overflowWrap: 'anywhere' }} />
       </BottomSheet>
       {confirmEl}
     </>
