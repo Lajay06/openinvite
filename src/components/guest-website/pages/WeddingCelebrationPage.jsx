@@ -353,7 +353,8 @@ function WeddingCelebrationPageContent({ weddingDetails, theme, typography, univ
 
                 {/* Events */}
                 {events.map((ev, ei) => {
-                  const timeStr = [fmtTime(ev.startTime), ev.endTime && fmtTime(ev.endTime)].filter(Boolean).join(' – ');
+                  // "to", not a dash (owner ruling 2026-10-11: no em or en dash in copy).
+                  const timeStr = [fmtTime(ev.startTime), ev.endTime && fmtTime(ev.endTime)].filter(Boolean).join(' to ');
 
                   return (
                     <div key={ev._id} style={{ marginBottom: ei < events.length - 1 ? 72 : 0 }}>

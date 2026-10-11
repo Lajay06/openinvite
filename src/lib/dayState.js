@@ -354,7 +354,9 @@ export function avaSentence(day, { fullName = null, now = new Date() } = {}) {
     // host replies for both (guestCounts, guestRsvpTally.js).
     const inv = n.invitationsPending || 0;
     const lead = out ? `${out} and nothing's on you today` : "Nothing's on you today";
-    return `${hello} ${lead} — ${inv} ${inv === 1 ? 'invitation is' : 'invitations are'} still to reply, which is normal.`;
+    // A comma, not a dash (owner ruling 2026-10-11: no em or en dash in copy,
+    // and this sentence is shown on the marketing site as a still).
+    return `${hello} ${lead}, ${inv} ${inv === 1 ? 'invitation is' : 'invitations are'} still to reply, which is normal.`;
   }
   if (d.next?.title) {
     const when = d.next.at ? `, ${onDate(d.next.at)}` : '';
