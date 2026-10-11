@@ -189,15 +189,25 @@ export async function runGuestStopEmails() {
   ok('the guest row says when someone asked not to be emailed',
      /data-opted-out/.test(list) && /Asked not to be emailed/.test(list), 'labelled');
   ok('  read from the stored flag', /const optedOut = !!guest\.email_opt_out/.test(list), 'email_opt_out');
+  // ASSERTS THE BRANCH, NOT ITS CONDITION. This read `return optedOut ? <div
+  // data-send-history` until item 3 of goals/2026-10-10-bounces-and-notes.md
+  // added a second reason for the same branch, so the condition is now
+  // `(optedOut || bounced)`. What this item owns is that the zero-history
+  // branch still consults the opt-out flag and still returns the label row,
+  // and that is what is asserted; a branch that stopped consulting it is
+  // still red.
   ok('  and shown even when nothing was ever sent to them',
-     /return optedOut\s*\?\s*<div data-send-history/.test(list), 'not swallowed by Not sent');
+     /if \(history\.length === 0\) \{\s*return \([^)]*optedOut[^)]*\)\s*\?\s*<div data-send-history/.test(list),
+     'not swallowed by Not sent');
   ok('  without hiding the history that predates it',
      /<div data-send-history[\s\S]{0,200}\{optedOutLine\}[\s\S]{0,200}shown\.map/.test(list), 'above, not instead');
 
   // The client's half: the courtesy, and the count before the send.
   const modal = code('src/components/guests/SendInvitesModal.jsx');
+  // Open at the end for the same reason: item 3 added `&& !isBounced(g)` to
+  // the same filter. Dropping the opt-out condition is still red.
   ok('the send flow filters opted-out guests out of the send',
-     /const sendableGuests = selectedGuests\.filter\(g => !g\.email_opt_out\)/.test(modal), 'filtered');
+     /const sendableGuests = selectedGuests\.filter\(g => !g\.email_opt_out\b/.test(modal), 'filtered');
   ok('  mints no token for them', /ensureTokens\(sendableGuests\)/.test(modal), 'sendable only');
   ok('  and says how many were skipped, in the result',
      /skipped who asked not to be emailed/.test(modal), 'in the sentence');

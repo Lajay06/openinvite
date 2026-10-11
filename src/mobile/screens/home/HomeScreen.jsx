@@ -18,7 +18,7 @@ const KEEP_PLANNING = ['keepPlanning1', 'keepPlanning2', 'keepPlanning3', 'keepP
 export default function HomeScreen({
   firstName, coupleName, weddingDate, daysToGo, images = [], siteUrl,
   rsvp, budget, tasks = [], payments = [], keepPlanning = [], briefing, badge = null, thisWeek = [], numbers = [], failedSources = '', latest = [], songRequests = 0, guestbook = [], unreadMessages = 0, heroSeed = 0,
-  onOpenGuests, onOpenBudget, onOpenTasks, onCompleteTask, onOpenFeature, onOpenAva, onShare, onSearch, onOpenLatest, onOpenNotifications, onOpenLink,
+  onOpenGuests, onOpenBudget, onOpenTasks, onCompleteTask, onOpenFeature, onOpenAva, onSearch, onOpenLatest, onOpenNotifications, onOpenLink,
   loading = false, error = null, onRetry, onRefresh, loaded = true,
 }) {
   const img = (i) => images[i] || '';
@@ -40,7 +40,8 @@ export default function HomeScreen({
     if (songRequests > 0) middle.push({ key: 'songs', label: 'Song requests', number: songRequests, title: songRequests === 1 ? 'song to review' : 'songs to review', action: 'Review requests', onAction: () => onOpenFeature?.('music') });
     else if (guestbook[0]) middle.push({ key: 'guestbook', label: 'Guestbook', title: guestbook[0].message ? `"${String(guestbook[0].message).slice(0, 90)}${String(guestbook[0].message).length > 90 ? '...' : ''}"` : 'A new entry', sub: guestbook[0].name || guestbook[0].guest_name || '', action: 'Open guest suite', onAction: () => onOpenFeature?.('site') });
     if (unreadMessages > 0) middle.push({ key: 'messages', label: 'Messages', number: unreadMessages, title: unreadMessages === 1 ? 'unread message' : 'unread messages', action: 'Read them', onAction: () => onOpenFeature?.('messages') });
-    if (siteUrl) last = { key: 'share', label: 'Guest suite', title: 'Share with your guests', sub: 'One link for everything they need', action: 'Share link', onAction: onShare };
+    // Guests receive the site by email and nothing else (#923, #924), so this card sends invites rather than a link.
+    if (siteUrl) last = { key: 'send', label: 'Guest suite', title: 'Send it to your guests', sub: 'By email, with each guest\'s RSVP link', action: 'Send invites', onAction: () => onOpenFeature?.('send-invites') };
   }
   const heroes = pickHeroes({ first, middle, last }, heroSeed).map((h, i) => ({ ...h, image: img(i) }));
   // Nothing came back at all: the error is the whole screen. Drawing the
