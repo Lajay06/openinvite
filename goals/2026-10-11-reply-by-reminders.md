@@ -61,6 +61,47 @@ THE LIVE ROUND TRIP IS OWNER-RUN. It is written and registered, and item 1's PR
 opens without waiting on it; the merge is held until the owner reports it
 green. This checkout has no BASE44_TEST_EMAIL or BASE44_TEST_PASSWORD.
 
+## Findings
+
+Things found while building this goal that are not this goal's work. Recorded
+on the owner's instruction, 2026-10-11, and NOT acted on.
+
+SEVENTEEN MODULES UNDER api/ BUILD AN SDK CLIENT AT MODULE SCOPE, so importing
+any of them without the provider key throws: api/_lib/notify.js,
+api/admin/stats.js, api/create-checkout-session.js,
+api/create-portal-session.js, api/cron/check-activation-mismatch.js,
+api/cron/send-onboarding-emails.js, api/cron/send-weekly-digest.js,
+api/dev-send-test-digest.js, api/on-signup.js, api/retention-test.js,
+api/rsvp-link-request.js, api/rsvp-submit.js, api/send-collaborator-invite.js,
+api/send-email.js, api/send-guest-reply.js, api/send-invites.js and
+api/webhooks/stripe.js. A module-load client is fine in production, which is
+why the owner ruled these untouched; what it is not fine for is a test lane
+that imports them, and the hoist in scripts/test-persistence.mjs is the answer
+to that rather than seventeen edits.
+
+THE LIVE LANE HAS BEEN ATTEMPTING REAL RSVP CONFIRMATION SENDS. api/rsvp-submit
+.js calls resend.emails.send, and tests/persistence/anonymous-endpoints.mjs and
+tests/persistence/plus-one-identity.mjs both drive that handler, so every live
+run with a real RESEND_API_KEY in the environment has asked Resend to send.
+plus-one-identity.mjs submits plus-one-sentinel@example.com, so the provider was
+being asked to mail an example.com address.
+
+FIRST COMMIT THAT MADE IT SO: 1fb24857, 2026-10-08, "The vows PIN guard stops
+failing once in four hundred runs (#913)". All four halves appear there, the two
+guards driving the handler and the handler's send and its module-scope client.
+The repo squash-merges, so that is where the content reached main rather than
+where it was authored; the claim is three days, not months.
+
+Found because the provider-call assertion the owner asked for in the same
+breath caught a POST to api.resend.com on its first use. The fix, ruled the
+same day, is that the lane installs its own Resend fake for the whole run, so
+the key in the environment stops mattering; the assertion stays as the backstop
+for anything that slips past it.
+
+NO LANE RUNS THE LIVE SUITE. Standing rule, owner 2026-10-11, after this
+terminal ran it twice while verifying an import fix: it writes, so the owner
+runs it, always.
+
 ## Lessons
 
 DOCS COMMITS RIDE IN THE LANE'S NEXT PR. Standing rule, owner 2026-10-11, from
