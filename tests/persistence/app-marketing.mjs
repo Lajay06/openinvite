@@ -139,7 +139,7 @@ export function runAppMarketing() {
   check("home: the red section's height rule, 100vh with overflow hidden", /\.home-app \{[^}]*height: 100vh;[^}]*overflow: hidden;/.test(homeSrc));
   check('home: the type as specified, 84, 22 and 16 at desktop and 44, 17 and 14 at 390',
     /\.home-app__heading \{[^}]*font-size: 84px; line-height: 1\.02; letter-spacing: -0\.03em; font-weight: 700;/.test(homeSrc)
-      && /\.home-app__body \{[^}]*max-width: 560px; font-size: 22px; line-height: 1\.45; font-weight: 400;/.test(homeSrc)
+      && /\.home-app__body \{[^}]*max-width: 600px; font-size: 22px; line-height: 1\.45; font-weight: 400;/.test(homeSrc)
       && /\.home-app__small \{[^}]*font-size: 16px;[^}]*font-weight: 500;[^}]*opacity: 0\.7;/.test(homeSrc)
       && /\.home-app__heading \{ font-size: 44px; \}/.test(homeSrc) && /\.home-app__body \{ font-size: 17px; \}/.test(homeSrc) && /\.home-app__small \{ font-size: 14px; \}/.test(homeSrc));
   check('home: the 56 by 4 rule in #E03553, 28px above the heading', /\.home-app__rule \{ width: 56px; height: 4px; background: #E03553; margin-bottom: 28px; \}/.test(homeSrc));
