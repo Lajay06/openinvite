@@ -13,7 +13,7 @@ import { useAppLockSetting } from '../../shell/AppLock';
 import { openDesktop } from '../../lib/links';
 import { useWedding } from '../../data/wedding';
 import { heroImageFor } from '../../lib/images';
-import { dateLong } from '../../lib/format';
+import { dateShort } from '../../lib/format';
 import { ShellContext } from '../../shell/MobileShell';
 import { coupleDisplayName } from '@/lib/coupleNames';
 
@@ -67,7 +67,7 @@ export default function AccountContainer() {
         name={user?.full_name}
         email={user?.email}
         coupleName={coupleName}
-        weddingDate={d?.weddingDate ? dateLong(d.weddingDate) : ''}
+        weddingDate={d?.weddingDate ? dateShort(d.weddingDate) : ''}
         photo={heroImageFor(d)}
         planLabel={planLabel}
         planNote={planNote}
