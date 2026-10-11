@@ -45,9 +45,18 @@ export async function runCollaboratorInviteExpiry() {
   const priorKey = process.env.BASE44_ADMIN_KEY;
   process.env.BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY || 'test-admin-key-not-a-real-credential';
 
+  // collaborator-accept imports notify.js, which builds a Resend client at
+  // module scope and throws with no key. A module that throws on first
+  // evaluation stays failed for the whole process, so an unset key here would
+  // break every later guard that imports notify.js. Placeheld, as
+  // rsvp-confirmation-email.mjs does, and restored after the imports.
+  const priorResendKey = process.env.RESEND_API_KEY;
+  if (!process.env.RESEND_API_KEY) process.env.RESEND_API_KEY = 're_persistence_suite_placeholder';
   const { signInvite, isInviteExpired, INVITE_TTL_MS, INVITE_EXPIRED_MESSAGE } = await import('../../api/_lib/collaboratorInviteToken.js');
   const lookupHandler = (await import('../../api/collaborator-lookup.js')).default;
   const acceptHandler = (await import('../../api/collaborator-accept.js')).default;
+  if (priorResendKey === undefined) delete process.env.RESEND_API_KEY;
+  else process.env.RESEND_API_KEY = priorResendKey;
 
   const grantWrites = [];
   const realFetch = globalThis.fetch;
