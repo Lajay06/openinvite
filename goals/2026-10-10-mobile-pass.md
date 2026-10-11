@@ -73,7 +73,7 @@ Found while doing the parity items, inside lane D's territory. Findings 1 to 3 w
 4. The guest list does not group a household under its lead, as GuestList.jsx does through groupByHousehold. Parity 4 took the counts and the detail, as ordered.
 5. "guest suite" appears in lower case 77 times in the shell's copy. Parity 7 wrote "Guest Suite" in the two strings it replaced, as ruled. One case or the other throughout is a sweep, not done without an order.
 6. For store submission, not now: four strings tell the couple to upgrade at openinvite.com.au (Account, Send invites, the Ultra gates in DetailsScreen.jsx and schemas.js). They said "on the website" before parity 7; the wording changed, the direction to buy outside the app did not. App Store review rule 3.1.1 is about exactly this.
-7. Not ordered. The phone's send does not append Guest.send_history (src/lib/sendHistory.js's newSendEntry), which the web writes for every type it sends. A send made from the phone is missing from the guest's history on both surfaces.
+7. Fixed as ordered on 2026-10-12. The phone's send did not append Guest.send_history (src/lib/sendHistory.js's newSendEntry), which the web writes for every type it sends. A send made from the phone is missing from the guest's history on both surfaces.
 
 ## State (lane D)
 
@@ -98,7 +98,13 @@ src/mobile is "Guest Suite", 105 uses across 29 files (copy, comments and the mo
 doc), guarded by elimination in tests/persistence/mobile-guest-suite-case.mjs. The one
 exemption is the generated Ava starter copied from the web (lane A finding 8).
 
-WHAT IS NEXT. Nothing ordered beyond the device check. The Google sign-in device check waits for the
+Then finding 7, ordered on 2026-10-12: a send from the phone appends Guest.send_history
+exactly as SendInvitesModal.jsx does, one entry per guest a link was minted for, built by
+src/lib/sendHistory.js's newSendEntry, for every type, with one sentAt for the stamp and
+the entry. No api/ change was needed: the phone's tracking write is the same
+base44.entities.Guest.update the web makes. Guard: tests/persistence/mobile-send-history.mjs.
+
+WHAT IS NEXT. The Google sign-in device check, on the owner's "ready for the sign-in check". The Google sign-in device check waits for the
 owner's "ready for the sign-in check"; it needs the owner and the machine's one browser
 slot (the device run counts as it).
 

@@ -12,6 +12,7 @@ import { getWeddingEvents, getGuestEventResponse, getEventVenueAndDate } from '@
 import { renderInvitationEmail, getTypeComposeDefaults, getBannerImageUrl, getDefaultBannerChoice, buildGuestCtaUrl } from '@/lib/emailTemplate';
 import { siteOrigin } from '../../lib/links';
 import { invitationsFor } from '@/lib/household';
+import { newSendEntry } from '@/lib/sendHistory';
 import { isBounced, bouncedSkippedSentence, BOUNCE_ROW_LABEL } from '@/components/guests/emailBounce';
 import { InvitationPreviewSheet } from '../plan/InvitationPreview';
 
@@ -200,7 +201,18 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
         if (recipients.length) await api.json('/api/send-invites', { method: 'POST', body: JSON.stringify({ type, universeId, bannerChoice, guests: recipients, wedding: weddingPayload, customSubject: subject, customBody: body }) });
       }
       // Only invite and reminder have a tracking field on Guest; save the date must not write invite_sent_at (SendInvitesModal.jsx).
-      const track = (g) => (type === 'invite' || type === 'reminder' ? api.update('Guest', g.id, type === 'reminder' ? { reminder_sent_at: new Date().toISOString() } : { invite_sent_at: new Date().toISOString(), invite_channel: channelStr }) : Promise.resolve());
+      // AND THE HISTORY, APPENDED, as SendInvitesModal.jsx writes it: one entry
+      // per guest a link was minted for, built by src/lib/sendHistory.js's
+      // newSendEntry (type, sent_at, to_hash, never the address), spread onto
+      // the guest's existing array and never rewritten. Every type is
+      // recorded; only invite and reminder also carry a stamp. One sentAt for
+      // the stamp and the entry, as on the web.
+      const sentAt = new Date().toISOString();
+      const historyById = new Map(await Promise.all(withTokens.map(async (g) => [g.id, await newSendEntry(type, g.email, new Date(sentAt))])));
+      const appended = (g) => ({ send_history: [...(Array.isArray(g.send_history) ? g.send_history : []), historyById.get(g.id)] });
+      const track = (g) => api.update('Guest', g.id, type === 'invite' || type === 'reminder'
+        ? { ...(type === 'reminder' ? { reminder_sent_at: sentAt } : { invite_sent_at: sentAt, invite_channel: channelStr }), ...appended(g) }
+        : appended(g));
       // Each guest's status: on an invitation that went (the endpoint took the
       // batch), or on one with no email to send to. A member is named as
       // reached through the lead's email, which is how the web counts them.
