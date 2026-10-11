@@ -196,6 +196,15 @@ The findings that changed the items are recorded under each one.
    rather than inside item 3, so that PR stays a removals-and-move PR with no
    module deletion in it.
 
+   AS BUILT, 2026-10-11, taken ahead of item 5 on the owner's word because
+   item 5 is parked. The module is deleted and so are the two sections of
+   tests/persistence/guests-refresh.mjs that drove updatedLabel,
+   refreshFailedLine and clockTime: a guard for a module that no longer exists
+   is not a guard. The file itself STAYS, holding item 3's inverted checks,
+   because a removal nobody guards is one a later refactor can read as an
+   accident and undo. Two checks are added, not just deleted: the module's file
+   is gone from the repo, and nothing imports it.
+
 ## Stop conditions
 
 As CLAUDE.md. No held file is expected: if one appears, stop and report. Never
