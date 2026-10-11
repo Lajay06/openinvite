@@ -354,3 +354,25 @@ cd /tmp/wt && git merge --no-commit --no-ff origin/<the-other-branch>
 git diff --name-only --diff-filter=U        # the conflicted paths, if any
 cd - && git worktree remove --force /tmp/wt
 ```
+
+### test:prerendered-freshness renders dist/, so a stale build reports false staleness
+
+Recorded 2026-10-11, after it cost a wrong diagnosis during the admin key
+incident.
+
+`npm run test:prerendered-freshness` compares the committed
+`prerendered/<page>/index.html` against a render of the **built bundle**, not
+against source. So if `dist/` was built before the current checkout, the guard
+reports pages as stale that are perfectly in step, and it names the wrong cause:
+the diff it prints is between an old build and a committed snapshot, neither of
+which is the source you are looking at.
+
+The tell: the rendered side contains an asset id that appears nowhere in `src/`.
+On that day the renderer emitted an image id from a build made four merges
+earlier, the check reported 7 of 10 pages stale, and the finding was nearly
+filed against the lane that had in fact regenerated the snapshots correctly.
+
+**Run `npm run build` immediately before this guard, every time.** After a
+rebuild on the same commit the same tree reported 16 of 16 matching. Six
+`ERR_CONNECTION_REFUSED` render failures in the same run were local flakiness
+from the harness's own preview server and also cleared on the rebuild.
