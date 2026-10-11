@@ -179,7 +179,20 @@ export function runAppMarketing() {
     return b;
   };
   const features = existsSync(join(PRE, 'features/index.html')) ? readFileSync(join(PRE, 'features/index.html'), 'utf8') : '';
-  const fb = phonesBlock(features, 'features');
+  // Batch 3, item 2: the red section's twin with the dark box kept, three of
+  // the owner's four lines (the replies line waits for push), the desktop
+  // sentence unchanged.
+  const FEATURE_LINES = [
+    'Add a guest from the car park; it is on your computer before you are back inside.',
+    'Check the budget in the queue, not at the desk.',
+    'The seating chart in your hand at the venue walk-through.',
+  ];
+  const fb = twinChecks(check, features, 'data-app-phones', 'features', 'Everything, on your phone', 'h2');
+  const flines = [...fb.matchAll(/<li\b[^>]*data-app-line[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1]).trim());
+  check('features: the lines, verbatim and in order', JSON.stringify(flines) === JSON.stringify(FEATURE_LINES), JSON.stringify(flines).slice(0, 120));
+  check('features: no line promises a reply landing as guests tap', !/as guests tap them/.test(textOf(fb)), 'held until push');
+  check('features: the desktop sentence, verbatim', textOf(fb).includes(DESKTOP));
+  check('features: the dark box is kept', /app-twin--box/.test(fb));
   check('features: the store line, as text', textOf(fb).includes(STORE_LINE) && /data-app-store-line/.test(fb));
   // The accordion's first row, as the anchor: the app section sits above it
   // and is not one of its rows.
