@@ -7,7 +7,7 @@ import SiteScreen from './SiteScreen';
 import { PasswordSheet } from './SiteSheets';
 import { useWedding } from '../../data/wedding';
 import { useApi } from '../../data/api';
-import { openExternal, shareLink } from '../../native';
+import { openExternal } from '../../native';
 import { siteUrlFor, openDesktop } from '../../lib/links';
 import { coupleDisplayName } from '@/lib/coupleNames';
 
@@ -24,12 +24,6 @@ export default function SiteContainer() {
   const { base } = useContext(ShellContext);
   const siteUrl = siteUrlFor(d);
   const coupleName = coupleDisplayName(d || {});
-
-  const share = async () => {
-    const result = await shareLink({ title: coupleName ? `${coupleName}'s wedding` : 'Our wedding', text: 'Here is our guest suite.', url: siteUrl });
-    if (result === 'copied') toast.success('Link copied');
-    if (result === 'failed') toast.error('Could not share the link. Copy it from the address above.');
-  };
 
   // StudioShareTab.jsx's publish toggle: no address, no going live.
   const togglePublish = async (on) => {
@@ -52,7 +46,6 @@ export default function SiteContainer() {
       coupleName={coupleName}
       siteUrl={siteUrl}
       onView={() => openExternal(siteUrl)}
-      onShare={share}
       onOpen={(key) => navigate(`${base}/plan/${key}`)}
       onOpenDesktop={(path) => openDesktop(navigate, path)}
       loading={wedding.loading}
