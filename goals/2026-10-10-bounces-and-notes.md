@@ -138,6 +138,45 @@ pill is added this goal. The lesson is the general one: an item that says
 "beside the existing X" is naming a thing the terminal must find before it
 builds against it, because the item was written from memory of the surface.
 
+A SIGNING LIBRARY CAN CARRY ITS OWN CLOCK. svix, which the Resend SDK wraps,
+enforces a five minute tolerance against the process clock and cannot be told
+otherwise, so item 1's fixtures signed at a hardcoded timestamp went red on
+every machine except one. 35 of 71 checks failed as "signature verification
+failed", which reads as a product fault and was a fixture fault. Fixtures that
+carry a signature are signed from the real clock, and our own window gate is
+proved by its own log line rather than by a rejection svix might have made.
+
+A COMMIT IS NOT THE WORKING TREE, and git mv is where that bites. Moving
+api/webhooks/resend.js and then patching the moved file staged the OLD bytes:
+every local run passed off the working tree while CI read the commit and
+crashed the guard module on a stale import. After a move plus an edit, the
+commit is what gets proved, with git show HEAD:<path>, never the tree.
+
+THE DISJOINT-SET CHECK RUNS IN BOTH DIRECTIONS. It is natural to ask whether
+a guard main added reads a file this branch changed. The other direction is
+just as real and was nearly missed on item 5: this branch MODIFIED
+tests/persistence/guest-note-endpoints.mjs, which reads
+api/guest-note-submit.js, a file main had changed in #965, so the merged tree
+paired a new guard with a new endpoint that no CI run had seen together. Four
+of this goal's six PRs needed main merged in and a re-run; the route is the
+exception, not the default.
+
+A GUARD THAT CRASHES HAS NOT REPORTED. Three plants on item 4 and two on item
+2 took the guard down instead of turning a check red, every time by
+dereferencing a captured payload the plant had emptied. A throw is a red: the
+call is wrapped and the reason returned, and every dereference of anything a
+plant can remove is null safe. The same family of fault, found twice: a check
+that reads TEXT POSITION is not a check on reachability, and item 5's badge
+check survived a `return` placed between the delete and the recount until it
+was rewritten to read the span between them.
+
+A GUARD CAN READ ITS OWN EXPLANATION. Twice this goal a check matched the
+comment that described the thing it was looking for: "neither file
+re-implements the clear" matched a comment saying so, and "the email module
+does not reach into the invitation templates" matched a header sentence
+explaining why it does not. stripComments exists for this, and a check that
+greps for an identifier runs on the stripped source.
+
 ## Handed forward
 
 Not this goal's work, recorded here so it is not lost.
@@ -166,3 +205,6 @@ this, a deliberate change to payments tooling. The checker is not changed.
 ## Close
 
 Lessons section, then the last line: "Closed <date> at main <full SHA>, PRs <list>". Then the end-of-goal report, and tell the legal reviewer: email_bounce, the Resend webhook, the note notification, and Goal 3's opt-out link and stop page.
+
+Closed 2026-10-11 at main a0939d96678197476b0d34dca0f811f4e764d454, PRs #955 #957 #959 #964 #965 #969
+
