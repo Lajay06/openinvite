@@ -53,6 +53,34 @@ const DIR = resolve(dirname(fileURLToPath(import.meta.url)));
  * doing at the same time. That reasoning is scripts/test-ci.mjs's own header
  * and it has not changed; only the place the list lives has.
  */
+/**
+ * Live-credential guards the LANE DOES NOT SEQUENCE, each for a stated reason.
+ *
+ * ── WHY THIS SET HAD TO EXIST ──────────────────────────────────────────────
+ *
+ * scripts/test-persistence.mjs asserts that every entry in
+ * LIVE_CREDENTIAL_GUARDS is invoked by it, and three never were. That check
+ * has therefore been RED for as long as those three have been in the set, and
+ * nothing in CI runs that lane, so nobody saw it. Found 2026-10-11 while
+ * registering a new live guard for
+ * goals/2026-10-11-reply-by-reminders.md; the new guard was fine and the lane
+ * was already broken.
+ *
+ * The check was not wrong to ask the question. It was wrong to assume one
+ * answer: these three need a credential AND are run individually, which the
+ * registry's own comments already said in prose. Prose is not a set, so the
+ * check could not read it.
+ *
+ * A guard listed here must say WHY, in the same idiom as
+ * tests/persistence/route-interception-guard.mjs's EXEMPT map: an exemption
+ * without a reason is one nobody can audit later.
+ */
+export const LANE_SKIPS_GUARDS = new Map([
+  ['hero-masters-live.mjs', 'Cloudinary, not Base44: it needs no login and the lane has no step for it, so it is run on its own when the hero masters change.'],
+  ['tour-recordings-live.mjs', 'Cloudinary again, and the same split: run on its own beside hero-masters-live.mjs when a recording changes.'],
+  ['run-launch-smoke.mjs', 'Signs up a real account and sends a real email. The owner runs it deliberately, never as part of a sweep.'],
+]);
+
 export const LIVE_CREDENTIAL_GUARDS = new Set([
   'anonymous-endpoints.mjs',
   // Cloudinary, not Base44: it verifies HERO_MASTERS against the real assets,
