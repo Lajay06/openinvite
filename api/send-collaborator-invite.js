@@ -9,8 +9,9 @@
  * generates a fresh invite_token, and sends the on-brand invite email via
  * the existing Resend setup (src/lib/collaboratorEmailTemplate.js).
  *
- * A fresh token is generated every send (including resends), so an old
- * copy of the email can never be replayed after a resend.
+ * A fresh token is generated every send (including resends), and every send
+ * records a hashed CollaboratorInvite row (api/_lib/collaboratorInvites.js),
+ * so an old copy of the email is refused at accept after a resend.
  *
  * Body: {
  *   collaboratorId?: string,   // omit to create a new collaborator
@@ -25,6 +26,7 @@ import { applyCors, checkRateLimit, getClientIp, sanitizeString, isValidEmail } 
 import { verifyBase44User } from './_lib/auth.js';
 import { renderCollaboratorInviteEmail } from '../src/lib/collaboratorEmailTemplate.js';
 import { signInvite } from './_lib/collaboratorInviteToken.js';
+import { recordInviteSend } from './_lib/collaboratorInvites.js';
 
 import { coupleDisplayName } from './_lib/coupleNames.js';
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -111,8 +113,15 @@ export default async function handler(req, res) {
     // The accept link carries a signed payload, not a lookup key — the
     // accept page (and collaborator-accept.js) verify it and read the
     // owner id/permissions straight out of it, with zero Collaborator reads.
+    const iat = Date.now();
     const signedInvite = signInvite({
-      ownerUserId: caller.id, email: cleanEmail, name: cleanName, permissions: permissions || {}, iat: Date.now(),
+      ownerUserId: caller.id, email: cleanEmail, name: cleanName, permissions: permissions || {}, iat,
+    });
+    // Recorded BEFORE the email goes out: this row is what makes this link
+    // the live one and every earlier link for this person dead. If it cannot
+    // be written, nothing is sent, because the link would be refused.
+    await recordInviteSend({
+      ownerUserId: caller.id, email: cleanEmail, weddingId: wedding?.id, signedInvite, iat, ownerToken: callerToken,
     });
     const acceptUrl = `${origin}/collaborate/accept/${signedInvite}`;
     const { subject, html } = renderCollaboratorInviteEmail({

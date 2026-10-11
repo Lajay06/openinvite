@@ -89,6 +89,33 @@ export const ENTITY_FIELDS = {
       ]
     }
   },
+  "CollaboratorInvite": {
+    "fields": [
+      "collaborator_email_hash",
+      "expires_at",
+      "invite_token_hash",
+      "is_test",
+      "owner_user_id_hash",
+      "resend_count",
+      "status",
+      "wedding_id_hash"
+    ],
+    "required": [
+      "collaborator_email_hash",
+      "expires_at",
+      "invite_token_hash",
+      "owner_user_id_hash",
+      "status",
+      "wedding_id_hash"
+    ],
+    "enums": {
+      "status": [
+        "sent",
+        "superseded",
+        "revoked"
+      ]
+    }
+  },
   "CustomEventPage": {
     "fields": [
       "date",

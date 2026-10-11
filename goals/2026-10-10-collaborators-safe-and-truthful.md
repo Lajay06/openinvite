@@ -6,7 +6,7 @@ Legal review: yes, at close. A collaborator is a third party reading a couple's 
 
 ## Territory
 
-api/collaborator-accept.js, api/collaborator-context.js, api/collaborator-data.js, api/collaborator-guests.js, api/collaborator-lookup.js, api/collaborator-budget.js, api/_lib/collaboratorAuth.js, api/_lib/collaboratorInviteToken.js, and one new file at the api/ root, api/collaborator-revoke.js (held). api/send-collaborator-invite.js only under the named exceptions in items 1b and 1c: it is an api/send-*.js file and CLAUDE.md lists those as do not touch. src/lib/collaboratorContext.jsx, src/lib/collaboratorPageMap.js, src/lib/collaboratorEmailTemplate.js (held, it is email copy), src/components/layout/CollaborateModal.jsx, src/components/layout/AnimatedSidebar.jsx, src/components/shared/AvaButton.jsx, the collaborator gate in src/Layout.jsx, src/pages/CollaboratorAccept.jsx, src/pages/ChoosePlan.jsx only under the named exception in item 4 (held), the collaborator branches of the eleven permissioned pages, src/pages/Help.jsx (the "Inviting a collaborator" article, which is product chrome, not marketing), and tests/persistence.
+api/collaborator-accept.js, api/collaborator-context.js, api/collaborator-data.js, api/collaborator-guests.js, api/collaborator-lookup.js, api/collaborator-budget.js, api/_lib/collaboratorAuth.js (held, owner ruling 2026-10-11: the authorization check for every collaborator endpoint), api/_lib/collaboratorInviteToken.js, api/_lib/collaboratorInvites.js (new in 1b, held, owner ruling 2026-10-11: which invite link is the live one), and one new file at the api/ root, api/collaborator-revoke.js (held). api/send-collaborator-invite.js only under the named exceptions in items 1b and 1c: it is an api/send-*.js file and CLAUDE.md lists those as do not touch. src/lib/collaboratorContext.jsx, src/lib/collaboratorPageMap.js, src/lib/collaboratorEmailTemplate.js (held, it is email copy), src/components/layout/CollaborateModal.jsx, src/components/layout/AnimatedSidebar.jsx, src/components/shared/AvaButton.jsx, the collaborator gate in src/Layout.jsx, src/pages/CollaboratorAccept.jsx, src/pages/ChoosePlan.jsx only under the named exception in item 4 (held), the collaborator branches of the eleven permissioned pages, src/pages/Help.jsx (the "Inviting a collaborator" article, which is product chrome, not marketing), and tests/persistence.
 
 Not touched: src/pages/Register.jsx, src/pages/Login.jsx, src/lib/AuthContext.jsx, src/components/auth/. The payments path is frozen. No marketing pages and no prerendered/: collaboration claims on the marketing site are lane B's, listed under Handover below. No schema change by the terminal: item 1b needs one, added by the owner in Base44 chat and mirrored in a held PR.
 
@@ -126,7 +126,11 @@ As CLAUDE.md. Any held-list or do-not-touch file outside the named exceptions: s
 
 ## State
 
-As of 2026-10-11, all five lane C additions ruled and accepted. Started at 1a on c/collaborator-revoke.
+As of 2026-10-11:
+
+- 1a merged as #963 (revoke, permission edits, reconcile on open).
+- 1b merged in three PRs: #967 (7-day expiry), #981 (CollaboratorInvite mirror) and #982 (a resend or a removal kills the old link). The live round trip, tests/persistence/collaborator-invite-live.mjs, is run only by the owner, with the smoke account.
+- Next: 1c.
 
 ## Lessons
 

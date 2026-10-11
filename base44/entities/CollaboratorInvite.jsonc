@@ -1,0 +1,65 @@
+{
+  "name": "CollaboratorInvite",
+  "type": "object",
+  "properties": {
+    "wedding_id_hash": {
+      "type": "string",
+      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, owner's WeddingDetails record id) — a hash, not the raw id, for the same reason as every other field here: read:null makes this entity listable by anyone holding any API token, and computing a matching hash for a chosen id needs BASE44_ADMIN_KEY, which callers do not have."
+    },
+    "owner_user_id_hash": {
+      "type": "string",
+      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, owner's real Base44 User.id). Same construction and the same value as owner_user_id_hash on CollaboratorGrant, so an invite and its eventual grant can be joined on this field without either record holding the raw user id."
+    },
+    "collaborator_email_hash": {
+      "type": "string",
+      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, invitee's email, trimmed and lowercased). Same construction and the same value as collaborator_email_hash on CollaboratorGrant — the invitee's email is never stored in the clear here, on either record."
+    },
+    "invite_token_hash": {
+      "type": "string",
+      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, the full signed invite token) — a hash, not the token. This is what makes the accept step able to refuse any link that is not the latest one for that owner/invitee pair: a presented token is hashed and compared against the newest non-superseded row, so older links fail without the plaintext ever being stored."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "sent",
+        "superseded",
+        "revoked"
+      ],
+      "default": "sent",
+      "description": "Lifecycle of this invite: 'sent' while it is the newest link for the pair and still usable, 'superseded' once a newer invite replaces it, 'revoked' when the owner cancels it."
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the invite stops working — 7 days after it was signed, stamped at send time."
+    },
+    "resend_count": {
+      "type": "integer",
+      "default": 0,
+      "description": "How many times this invite has been resent. Optional; defaults to 0."
+    },
+    "is_test": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set by scripts/test-persistence.mjs on every record it creates. Product queries must exclude is_test records so test-harness data can never surface in real dashboards, even if harness cleanup fails."
+    }
+  },
+  "required": [
+    "wedding_id_hash",
+    "owner_user_id_hash",
+    "collaborator_email_hash",
+    "invite_token_hash",
+    "status",
+    "expires_at"
+  ],
+  "rls": {
+    "create": null,
+    "read": null,
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}
