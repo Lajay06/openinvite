@@ -21,7 +21,6 @@
  *   5. Exits 0 if all pass, 1 if any fail
  */
 
-import { readFileSync } from 'node:fs';
 import { pass, fail } from '../tests/persistence/_shared.mjs';
 import { guardFiles, guardFilesFor, LIVE_CREDENTIAL_GUARDS, STANDALONE_GUARDS, LANE_SKIPS_GUARDS } from '../tests/persistence/_registry.mjs';
 import { liveLaneFindingsForRepo } from './lib/liveLaneRegistry.mjs';
