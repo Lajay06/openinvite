@@ -71,28 +71,6 @@ function bannerAbove(html, attr) {
 }
 const PHONE = TOUR_PAGE_MEDIA['app-phone'];
 const POOL = 'DTS_POOL_PARTY_JELLY_LUISE_Photos_ID15749_om64j0';
-// ── THE TWIN OF THE RED SECTION (site fixes batch 3) ─────────────────────
-// No title banner; the heading inside the section; POOL_PARTY and the
-// recording's poster as its only pictures; the CSS phone. Its one-screen
-// height at 1440 and 390 is measured in a browser by test:marketing-routes.
-const twinChecks = (check, html, attr, where, heading, level) => {
-  const block = sectionWith(html, attr);
-  check(`${where}: the app section is the red section's twin`, /data-app-twin/.test(block));
-  check(`${where}: no title banner above it or inside it`, !bannerAbove(html, attr) && !/data-title-banner/.test(block));
-  check(`${where}: its heading, verbatim, as the ${level} inside it`,
-    new RegExp(`<${level}\\b[^>]*data-app-twin-heading[^>]*>\\s*${heading.replace(/[.,]/g, (c) => '\\' + c)}\\s*</${level}>`).test(block));
-  const imgs = [...block.matchAll(/<img\b[^>]*src="([^"]+)"/g), ...block.matchAll(/<video\b[^>]*poster="([^"]+)"/g)]
-    .map((m) => m[1].replace(/&amp;/g, '&'));
-  const others = imgs.filter((u) => !u.includes(POOL) && u !== PHONE?.poster);
-  check(`${where}: the only pictures are POOL_PARTY and the recording's poster`,
-    imgs.some((u) => u.includes(POOL)) && imgs.includes(PHONE?.poster) && others.length === 0, others.join(', ').slice(0, 90) || `${imgs.length} img`);
-  const frame = sectionWith(block, 'data-app-phone-frame');
-  const frameOnly = frame.replace(sectionWith(frame, 'data-app-phone-screen'), '');
-  check(`${where}: the phone frame is CSS, with no picture of its own`,
-    !!frame && !/<img\b|background-image|url\(/i.test(frameOnly), 'no raster bezel');
-  return block;
-};
-
 function htmlFiles(dir) {
   const out = [];
   for (const f of readdirSync(dir)) {
@@ -194,11 +172,13 @@ export function runAppMarketing() {
   const appHtml = existsSync(join(PRE, 'app/index.html')) ? readFileSync(join(PRE, 'app/index.html'), 'utf8') : '';
   check('/app: prerendered', !!appHtml);
   // Batch 3, item 3: /app's hero is the Features twin, larger, as its h1.
-  const ab = twinChecks(check, appHtml, 'data-app-phones', '/app', 'Everything, on your phone', 'h1');
+  // Owner ruling 2026-10-11: /app's hero is the Features row, as its h1.
+  const ab = sectionWith(appHtml, 'data-app-phones');
+  check('/app: the hero is the Features row', /data-feature-row="picture-left"/.test(ab) && !/data-app-twin/.test(ab));
+  check('/app: the heading, verbatim, as the page\'s h1', /<h1\b[^>]*>\s*Everything, on your phone\s*<\/h1>/.test(ab));
   const alines = [...ab.matchAll(/<li\b[^>]*data-app-line[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1]).trim());
   check('/app: the Features lines, verbatim and in order', JSON.stringify(alines) === JSON.stringify(FEATURE_LINES), JSON.stringify(alines).slice(0, 120));
   check('/app: the desktop sentence, verbatim', textOf(ab).includes(DESKTOP));
-  check('/app: the hero runs larger', /app-twin--large/.test(ab));
   check('/app: no line promises replies as they happen', !/replies arriving as they happen|as guests tap them/.test(textOf(appHtml)), 'held until push');
   check('/app: one h1 on the page', (appHtml.match(/<h1\b/g) || []).length === 1);
   const guests = textOf(sectionWith(appHtml, 'data-app-guests'));
@@ -255,20 +235,17 @@ export function runAppMarketing() {
     !!PHONE && [PHONE.webm, PHONE.mp4, PHONE.poster].every((u) => /\/studio-tour\/tour-page\/app-phone\/440-\d{14}\.(webm|mp4|jpg)$/.test(u)));
   const cloudSrc = readFileSync(resolve(ROOT, 'scripts/tour-recordings/lib/cloudinary.mjs'), 'utf8');
   check('phone recording: uploads go up with overwrite off', /overwrite: 'false'/.test(cloudSrc) && !/overwrite: 'true'/.test(cloudSrc));
-  // THE BANNER AND THE PHONE MOMENT ARE GONE (batch 3): every app section is
-  // the red section's twin, so the components that drew them are deleted
-  // rather than left with no caller.
+  // THE BANNER AND THE PHONE MOMENT ARE GONE (batch 3), deleted rather than
+  // left with no caller.
   check('the title banner and the phone moment components are deleted',
     ['TitleBanner', 'AppPhoneMoment', 'AppPhones'].every((n) => !existsSync(resolve(ROOT, `src/components/marketing/${n}.jsx`))), 'no dead copies');
-  // THE TWIN'S PHONE IS REDUCED TO FIT, NEVER RESIZED OUT OF ASPECT: its
-  // screen takes its width from the recording's own shape.
-  const twinSrc = readFileSync(resolve(ROOT, 'src/components/marketing/AppTwinSection.jsx'), 'utf8');
-  check("twin: the screen keeps the recording's 1320 by 2868 aspect",
-    /export const PHONE_ASPECT = "1320 \/ 2868";/.test(twinSrc) && /\.app-twin__screen \{[^}]*aspect-ratio: \$\{PHONE_ASPECT\}/.test(twinSrc)
-      && !/\.app-twin__screen \{[^}]*\bwidth:/.test(twinSrc), 'height from the section, width from the aspect');
-  check("twin: the red section's height rule, 100vh with overflow hidden",
-    /\.app-twin \{[^}]*height: 100vh;[^}]*overflow: hidden;/.test(twinSrc), 'one screen');
-  check('twin: drawn in the repo, no raster frame file', !/\.(png|jpe?g|webp|psd)['"]/i.test(stripComments(twinSrc)));
+  // NOTHING WITH A PHONE FRAME REMAINS ON THE MARKETING SITE (batch 3
+  // amendment, owner ruling 2026-10-11): the generic CSS phone and the twin
+  // that drew it are deleted, and no prerendered page carries a frame.
+  check('the twin section that drew the phone is deleted', !existsSync(resolve(ROOT, 'src/components/marketing/AppTwinSection.jsx')));
+  const framed = pages.filter((p) => /data-app-phone-frame|data-app-phone-screen|data-app-twin/.test(readFileSync(p, 'utf8')));
+  check('no marketing page draws a phone frame', pages.length > 0 && framed.length === 0,
+    framed.map((p) => p.slice(PRE.length + 1)).join(', ') || `${pages.length} pages`);
   // NOTHING FROM APPLE'S DESIGN RESOURCES PACK, referenced or committed: the
   // licence (2A and 2B) excludes this use, so the files never enter the repo.
   const tracked = execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' }).split('\n');

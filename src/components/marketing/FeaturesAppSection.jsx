@@ -15,6 +15,9 @@
  * with object-position, not a Cloudinary gravity crop. No radius, as the rows
  * around it have none.
  *
+ * /app renders the same row as its hero (batch 3, owner ruling 2026-10-11),
+ * with the heading as the page's h1.
+ *
  * Copy is the owner's, verbatim, each line checked against the product before
  * it shipped. One line is held back: "Replies land on your phone as guests
  * tap them." The app has no push yet (MOBILE_APP.md, "What real push needs"),
@@ -41,7 +44,8 @@ export const FEATURES_APP_LINES = [
 const PANEL = "#F6F2EC";
 const INK = "#1C1916";
 
-export default function FeaturesAppSection() {
+/** @param {{ headingLevel?: 'h1' | 'h2' }} props  h1 on /app, where the row is the page's hero. */
+export default function FeaturesAppSection({ headingLevel = "h2" }) {
   return (
     <section data-app-phones data-feature-row="picture-left" style={{ background: PANEL, minHeight: "100vh", display: "flex", overflow: "hidden" }} className="flex-col lg:flex-row">
       <div data-feature-row-picture className="w-full lg:w-1/2 order-1" style={{ position: "relative", minHeight: 320, overflow: "hidden", flexShrink: 0 }}>
@@ -59,7 +63,7 @@ export default function FeaturesAppSection() {
       </div>
       <div data-feature-row-text className="w-full lg:w-1/2 order-2 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", background: PANEL }}>
         <div style={{ maxWidth: 552 }}>
-          <FeatureSectionHeading color={INK}>{FEATURES_APP_HEADING}</FeatureSectionHeading>
+          <FeatureSectionHeading as={headingLevel} color={INK}>{FEATURES_APP_HEADING}</FeatureSectionHeading>
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
             {FEATURES_APP_LINES.map((line, i) => (
               <li key={line} data-app-line style={{ padding: "11px 0", borderBottom: i < FEATURES_APP_LINES.length - 1 ? "1px solid rgba(28,25,22,0.12)" : "none", color: INK, fontSize: 14, lineHeight: 1.5 }}>
