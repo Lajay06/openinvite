@@ -28,7 +28,7 @@
 // declaration order, so this one has already run by the time the rest are.
 // Owner ruling 2026-10-11: one hoist here, not five guard fixes.
 import {
-  SET_BY_US, restorePlaceholders, placeholdersStillSet, providerAttempts,
+  SET_BY_US, restorePlaceholders, placeholdersStillSet, providerAttempts, fakedSends,
 } from './lib/envPlaceholders.mjs';
 import { pass, fail, setFailureContext, recordedFailures } from '../tests/persistence/_shared.mjs';
 import { guardFiles, guardFilesFor, LIVE_CREDENTIAL_GUARDS, STANDALONE_GUARDS, LANE_SKIPS_GUARDS } from '../tests/persistence/_registry.mjs';
@@ -335,6 +335,7 @@ async function run() {
   // guard's own fetch fake.
   const stillSet = placeholdersStillSet();
   const sent = providerAttempts();
+  const intercepted = fakedSends();
   console.log(`${'─'.repeat(55)}`);
   console.log(SET_BY_US.length
     ? `  placeholder key(s) held for the import phase: ${SET_BY_US.join(', ')}`
@@ -343,9 +344,12 @@ async function run() {
   console.log(stillSet.length === 0
     ? '  ✅ none of them is still set'
     : `  ❌ STILL SET: ${stillSet.join(', ')}`);
+  console.log(intercepted.length === 0
+    ? '  ✅ the Resend fake answered nothing: no guard tried to send'
+    : `  ✅ the Resend fake answered ${intercepted.length} send(s): none left the process`);
   console.log(sent.length === 0
-    ? '  ✅ no email or charge was attempted'
-    : `  ❌ PROVIDER CALL ATTEMPTED: ${sent.join(', ')}`);
+    ? '  ✅ nothing slipped past it to a provider'
+    : `  ❌ PROVIDER CALL REACHED THE NETWORK: ${sent.join(', ')}`);
   console.log(`${'─'.repeat(55)}\n`);
 
   process.exit(allOk && hoistOk ? 0 : 1);

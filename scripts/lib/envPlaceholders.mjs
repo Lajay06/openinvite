@@ -30,14 +30,34 @@
  * Owner ruling, 2026-10-11: one hoist here rather than five guard fixes, no
  * provider key in any lane's .env.local, and none typed on a command line.
  *
- * ── AND NOTHING MAY ACTUALLY BE SENT ───────────────────────────────────────
+ * ── AND NOTHING IS SENT, BECAUSE RESEND IS FAKED FOR THE WHOLE RUN ─────────
  *
- * A placeholder that silently let a real send through would be worse than the
- * crash. So this also watches fetch and counts any request to a provider host.
- * The runner asserts that count is zero. Guards that install their own fetch
- * fake (the resend and stripe guards do) replace this wrapper for their own
- * duration, which is correct: what they record is their own business, and this
- * counter covers everything outside them.
+ * Owner ruling, 2026-10-11, after the provider-call assertion caught a POST to
+ * api.resend.com on its first use: api/rsvp-submit.js sends an RSVP
+ * confirmation, and anonymous-endpoints.mjs and plus-one-identity.mjs both
+ * drive that handler, so every live run WITH A REAL KEY has been attempting
+ * real sends since 1fb24857 on 2026-10-08.
+ *
+ * A placeholder only helps when the real key is absent. So this installs the
+ * same Resend fake the lane's own resend guards use, for the WHOLE RUN rather
+ * than the import phase: a request to api.resend.com never leaves the process,
+ * it is counted and answered with a fake 200. The key in the environment stops
+ * mattering.
+ *
+ * THE COUNTER STAYS AS THE BACKSTOP. It now counts only what reaches the real
+ * fetch, so a provider call appearing there means something slipped past the
+ * fake: a guard that replaced globalThis.fetch and then called through, or a
+ * host the fake does not cover. The runner asserts it is zero.
+ *
+ * STRIPE IS OBSERVED, NOT FAKED. The ruling names Resend, and no live guard
+ * drives a handler that reaches a charge: endpoint-auth drives
+ * create-portal-session expecting a 401 before Stripe is touched. A fake there
+ * would be inventing a response nobody asked for, so it stays counted, and the
+ * assertion is what would catch it.
+ *
+ * THE BODY IS NEVER RECORDED. The guards' own fakes keep payloads because they
+ * assert on them; this one counts. An address is not a diagnostic and this
+ * module has no use for one.
  */
 
 const PLACEHOLDERS = {
@@ -59,24 +79,40 @@ for (const [k, v] of Object.entries(PLACEHOLDERS)) {
 export const SET_BY_US = Object.freeze([...setByUs]);
 
 const attempts = [];
+const faked = [];
 const realFetch = globalThis.fetch;
 if (typeof realFetch === 'function') {
   globalThis.fetch = async (input, init) => {
+    let host = '';
     try {
       const href = typeof input === 'string' ? input : (input?.url || '');
-      const host = href ? new URL(href).hostname : '';
-      if (PROVIDER_HOSTS.has(host)) attempts.push(`${(init?.method || 'GET').toUpperCase()} ${host}`);
+      host = href ? new URL(href).hostname : '';
     } catch {
       // An unparseable input is not a provider call and is not this wrapper's
-      // business; never let the observer change what fetch does.
+      // business; never let it change what fetch does.
     }
+
+    // THE FAKE. A send never leaves the process, whatever key is set.
+    if (host === 'api.resend.com') {
+      faked.push(`${(init?.method || 'GET').toUpperCase()} ${host}`);
+      return new Response(JSON.stringify({ id: `faked-${faked.length}` }), {
+        status: 200, headers: { 'content-type': 'application/json' },
+      });
+    }
+
+    if (PROVIDER_HOSTS.has(host)) attempts.push(`${(init?.method || 'GET').toUpperCase()} ${host}`);
     return realFetch(input, init);
   };
 }
 
-/** Every provider call seen outside a guard's own fetch fake. */
+/** Provider calls that reached the real fetch. Must be empty. */
 export function providerAttempts() {
   return [...attempts];
+}
+
+/** Sends the fake answered, which is how many real emails did NOT go out. */
+export function fakedSends() {
+  return [...faked];
 }
 
 /**
