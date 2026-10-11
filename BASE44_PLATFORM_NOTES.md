@@ -66,6 +66,29 @@ way door. Any other clone, preview environment or key issued before that day may
 still be app-level, and for those the query form is the one that works. Bearer
 first with a fallback means one deployment authenticates either kind.
 
+### How it was closed, and the measured window
+
+The fix is PR #1005, merge commit `0c2b8c34`: one shared `adminFetch` in
+`api/_lib/base44Admin.js`, bearer first, `?api_key=` retried only on a 401 or
+403, and a 200 never retried so the fallback cannot double a write. Five call
+sites moved onto it. `api/webhooks/stripe.js` was not touched and was fixed
+transitively.
+
+Closed when the owner's production dry-route call returned **200** at
+2026-10-11T14:40Z. It had returned 404 before the merge, which is the dead-key
+signature: `getBase44User` returns null on any failure and the route reports
+that as an absent account.
+
+**The measured window is 2 hours 47 minutes**, from the 11:32:45Z redeploy that
+first carried the new token to the 14:20:16Z deployment of the fix. The first
+estimate during the incident was "about an hour", which was too short; the
+figure here comes from deployment timestamps.
+
+During the window one checkout session was created, at 12:59:07Z, and
+`/api/webhooks/stripe` logged no invocation at all, so no purchase completed and
+no activation was lost. That path would have survived regardless: the webhook
+answers 502 on a failed plan write, so Stripe retries for up to three days.
+
 ### What this does NOT change
 
 `GET /entities/User` (the LIST, no id) still answers `200 []` whichever form
