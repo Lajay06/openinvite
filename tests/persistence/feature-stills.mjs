@@ -28,7 +28,7 @@ import { pass, fail, stripComments } from './_shared.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const read = (p) => readFileSync(join(ROOT, p), 'utf8');
-const VERSIONED = /\/v[1-9]\d{5,}\/studio-tour\/(stills|tour-page)\/feature-[a-z]+\/1440-\d{14}/;
+const VERSIONED = /\/v[1-9]\d{5,}\/studio-tour\/(stills|tour-page)\/feature-[a-z]+\/\d{3,4}-\d{14}/;
 
 /** The id a still's src names, so the page can be searched for it. */
 const idOf = (url) => /\/(v\d+\/studio-tour\/[^,\s"]+)/.exec(url)?.[1] || '';

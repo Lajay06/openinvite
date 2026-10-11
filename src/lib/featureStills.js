@@ -35,7 +35,7 @@ function still(path, alt, caption) {
 
 export const FEATURE_STILLS = {
   morning: still(
-    'v0/studio-tour/stills/feature-morning/1440-PENDING',
+    'v1791728254/studio-tour/stills/feature-morning/1024-20261011141733',
     "The Daily update: the date and one sentence about the couple's day, above This week, Ava's briefing and their numbers",
     'The morning page. What today needs, in one sentence.',
   ),
@@ -55,7 +55,7 @@ export const FEATURE_STILLS = {
     'Every vendor, what they cost, and where each one stands.',
   ),
   suite: still(
-    'v0/studio-tour/stills/feature-suite/1440-PENDING',
+    'v1791727996/studio-tour/stills/feature-suite/1440-20261011141316',
     "The guest suite's celebration page: the day, then the ceremony with its time, place and dress code",
     'The schedule your guests see, on the site you designed.',
   ),
@@ -67,7 +67,7 @@ export const FEATURE_STILLS = {
  * table panel (x 598, y 430, 810 by 540 in the recording's own pixels).
  */
 const SEATING_CROP = 'c_crop,x_598,y_430,w_810,h_540';
-const SEATING_PATH = 'v1791727556/studio-tour/tour-page/feature-seating/1440-20261011140554';
+const SEATING_PATH = 'v1791728275/studio-tour/tour-page/feature-seating/1440-20261011141753';
 export const FEATURE_SEATING_CLIP = {
   webm: `${VIDEO}/${SEATING_CROP}/${SEATING_PATH}.webm`,
   mp4: `${VIDEO}/${SEATING_CROP}/vc_h264,q_auto:good/${SEATING_PATH}.mp4`,
