@@ -35,10 +35,13 @@ const LIB = new URL('../../api/_lib/', import.meta.url);
  * when either clears, its line is deleted and the guard tightens by itself.
  */
 const EXEMPT = new Map([
-  ['collaboratorAuth.js',
-   'collaborator hashing stays with lane C by owner ruling 2026-10-11; same orphaning, different owner'],
-  ['collaboratorInviteToken.js',
-   'collaborator invite signing stays with lane C by owner ruling 2026-10-11'],
+  // collaboratorAuth.js and collaboratorInviteToken.js WERE here, and their
+  // lines are gone because #1011 moved both onto COLLAB_HASH_KEY. That is the
+  // check below working as intended rather than a courtesy: a carve-out is
+  // asserted to still NEED one, so the day lane C fixed those modules this
+  // guard went red on them and the only correct response was to delete the
+  // lines. An exemption nobody has to re-earn becomes a hole that reads like a
+  // decision.
   ['giftAuth.js',
    'inside the payments freeze (scripts/check-payments-freeze.mjs FROZEN); needs the owner line and a Payments-Change trailer, so it is its own PR'],
 ]);
@@ -63,9 +66,8 @@ export async function runAppKeySourcing() {
      offenders.length === 0,
      offenders.length ? offenders.join(', ') : `${files.length} modules scanned, ${EXEMPT.size} carved out`);
 
-  ok('  and the carve-outs are exactly the three the owner named',
-     [...EXEMPT.keys()].sort().join(',')
-       === 'collaboratorAuth.js,collaboratorInviteToken.js,giftAuth.js',
+  ok('  and the carve-out list is giftAuth.js alone',
+     [...EXEMPT.keys()].sort().join(',') === 'giftAuth.js',
      [...EXEMPT.keys()].sort().join(','));
 
   // EVERY CARVE-OUT MUST STILL NEED ONE. A stale exemption is a hole that
