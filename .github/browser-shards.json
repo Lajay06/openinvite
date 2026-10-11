@@ -1,5 +1,6 @@
 {
   "_comment": [
+    "2026-10-11: one guard added, not a rebalance. test:chunk-reload (35s measured locally against a vite preview of feat/chunk-selfheal-guard, booked at 38 for a cold first navigation) to A, which was the lighter shard at 1024 against B's 1038. After: A 1062 / B 1038, a 24s delta on a 120s budget, and A becomes the heavier side by less than B was before. Its two sixteen-second waits are not padding: the wrapper's own hang guard is ten seconds, so a shorter wait would read a page still spinning as a page settled.",
     "2026-10-11: one guard added, not a rebalance. test:chip-height (28s, measured locally at two widths against a vite preview of feat/chip-height) to A, which was the lighter shard at 996 against B's 1038. After: A 1024 / B 1038, a 14s delta on a 120s budget, narrower than the 42s it replaces. The booked column is guard time and runs about 87s under wall-clock, as this file's 2026-10-10 note records.",
     "2026-10-10: A REBALANCE, not an addition. test:find-my-invitation (32s) moved A -> B. Before: A 1028 / B 1006, a 22s delta. After: A 996 / B 1038, a 42s delta on a 120s budget. MEASURED WALL-CLOCK FIRST, from main run 38003589277: A 18m35s (1115s) and B 17m40s (1060s) against the 25-minute job limit, so A sat 385s under it rather than close to it. Lane B reported A as near the limit; this records what the run actually shows, and the move still goes the right way because A was the heavier side. The booked column is guard time and runs about 87s under wall-clock, which is the setup and build this file has never counted; after the move both shards project to roughly 18m.",
     "2026-10-09: one guard added, not a rebalance. test:find-my-invitation (29s measured locally against a vite preview of this branch, booked at 32 for a cold first navigation) to A, which was the lighter shard. A 1028 / B 1006, a 22s delta on a 120s budget. It loads six pages, three universes in two recognition states each, which is why it is dearer than the other 390-width guards; the three routes are not interchangeable and the fonts in its output prove it exercised all three. MEASURED RED FIRST on three plants: removing the recognised gate (3 red), putting the pill back in a hero (3 red), and giving the link button styling (3 red).",
@@ -31,7 +32,7 @@
     "A": {
       "job": "Browser guards A",
       "port": 4223,
-      "measuredSeconds": 1024,
+      "measuredSeconds": 1062,
       "guards": [
         {
           "name": "Marketing-routes + guest-font-effect + no-invalid-date (against this build)",
@@ -178,6 +179,12 @@
           "seconds": 28,
           "script": "test:chip-height",
           "reason": "Item 4 of goals/2026-10-11-dashboard-fixes-batch-1.md. Every chip painted FOUR PIXELS tall before the fix: 2px of padding around a zero line box, because the button set lineHeight: 0 and CHIP_BASE inherited it, so 10px glyphs painted outside the box they sat in. A source read cannot see that: the declaration that broke the pill was on a different element and looked deliberate. Its own fixture carries the two row shapes the owner compared, one guest with an email and a phone and one with neither, because the shared fixture's three guests all have an email."
+        },
+        {
+          "name": "A stale tab heals itself, once, and then stops",
+          "seconds": 38,
+          "script": "test:chunk-reload",
+          "reason": "Item 6 of goals/2026-10-11-dashboard-fixes-batch-1.md, after the owner's stale-tab incident. Plants a 404 on one route's chunk, which is a stale index.html in one request, and counts LOADS: the healthy sequence is load, fail, reload, fail, hold, so exactly two. tests/persistence/chunk-selfheal.mjs drives the guard's decision directly; what it cannot prove is that the decision is ever reached, which needs a real failed import, Vite's own preload dispatch and a real navigation. Proved red three ways on 2026-10-11: with the reload removed it reports 1 load, with the loop guard removed 87, and with the stamp never written 121."
         }
       ]
     },
