@@ -19,6 +19,11 @@
  * browser, that the block sits in the scrim's dark band and that the body
  * reads at 4.5:1 against the photograph as rendered.
  *
+ * THE BODY IS 600px WIDE, NOT 560 (owner ruling 2026-10-11). At 560 its
+ * three lines ran so close to the edge that Linux Chromium wrapped it to four,
+ * which lifted the heading into a lighter part of the scrim, where its right
+ * corners read 4.01:1. At 600 it holds three lines everywhere.
+ *
  * Copy is the owner's, verbatim. NO BADGE AND NO STORE LINK: the small line
  * is text.
  */
@@ -60,7 +65,7 @@ export default function AppPhoneSection() {
         .home-app__copy { position: absolute; left: 5.56vw; bottom: 18%; max-width: 640px; color: #FFFFFF; }
         .home-app__rule { width: 56px; height: 4px; background: #E03553; margin-bottom: 28px; }
         .home-app__heading { margin: 0; font-size: 84px; line-height: 1.02; letter-spacing: -0.03em; font-weight: 700; color: #FFFFFF; }
-        .home-app__body { margin: 28px 0 0; max-width: 560px; font-size: 22px; line-height: 1.45; font-weight: 400; color: #FFFFFF; }
+        .home-app__body { margin: 28px 0 0; max-width: 600px; font-size: 22px; line-height: 1.45; font-weight: 400; color: #FFFFFF; }
         .home-app__small { margin: 22px 0 0; font-size: 16px; line-height: 1.4; font-weight: 500; color: #FFFFFF; opacity: 0.7; }
         @media (max-width: 768px) {
           .home-app__photo { object-position: 62% 30%; }
