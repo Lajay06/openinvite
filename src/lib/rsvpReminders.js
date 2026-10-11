@@ -66,9 +66,14 @@ function fromKey(key) {
 export function reminderSendDates(deadline) {
   const day = fromKey(deadline);
   if (!day) return [];
+  // THE DEADLINE TRAVELS WITH THE SEND. The owner's signature is
+  // sendIsDue(send, now, tz), and "before the reply-by date" is part of being
+  // due, so the send object carries the date it is measured against rather
+  // than the caller remembering to pass it.
   return SEND_OFFSETS.map(({ send, daysBefore }) => ({
     send,
     date: toKey(new Date(day.getTime() - daysBefore * DAY_MS)),
+    deadline,
   }));
 }
 
@@ -98,6 +103,81 @@ export function upcomingSends(deadline, now = new Date()) {
   const today = toKey(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())));
   if (!today) return [];
   return reminderSendDates(deadline).filter(({ date }) => date >= today);
+}
+
+/**
+ * The calendar day and the hour where the couple is.
+ *
+ * Intl rather than arithmetic: an offset is not a timezone, and the only way
+ * to know what 9 am means in Australia/Sydney on a given instant is to ask the
+ * runtime, which carries the rules including the day daylight saving moves.
+ *
+ * @param {Date} now
+ * @param {string} tz an IANA zone
+ * @returns {{date: string, hour: number}} date is YYYY-MM-DD, local
+ */
+export function localDayAndHour(now = new Date(), tz = FALLBACK_TIMEZONE) {
+  let parts;
+  try {
+    parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hour12: false,
+    }).formatToParts(now);
+  } catch {
+    // AN UNKNOWN ZONE IS NOT A REASON TO SEND AT THE WRONG TIME. Fall back to
+    // the named default rather than to UTC, which would be 9 am somewhere
+    // nobody involved lives.
+    parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: FALLBACK_TIMEZONE, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hour12: false,
+    }).formatToParts(now);
+  }
+  const get = (t) => (parts.find((p) => p.type === t) || {}).value;
+  // hour12: false can give 24 for midnight in some runtimes; 24 is hour 0.
+  const hour = Number(get('hour')) % 24;
+  return { date: `${get('year')}-${get('month')}-${get('day')}`, hour };
+}
+
+/**
+ * Whether one send is due now.
+ *
+ * Owner ruling, 2026-10-11: "due when now is at or after 9 am local on the
+ * send day and before the reply-by date; the hourly cron sends anything due
+ * and unsent, which means a switch turned on at 10 am on a send day gets that
+ * send on the next run, not never."
+ *
+ * THE SWITCH'S LINE AND THE CRON SHARE THIS, which is the point of it being
+ * here. Two readings of "due" is how a line comes to promise a send that never
+ * happens; that was the open edge this closes.
+ *
+ * BEFORE THE DEADLINE, NOT BEFORE THE SEND DAY. A reminder on the reply-by day
+ * itself is a reminder about a thing that has closed, so the window ends when
+ * the local day reaches the deadline.
+ *
+ * @param {{date: string, deadline: string}} send one entry from reminderSendDates
+ * @param {Date} now
+ * @param {string} tz
+ * @returns {boolean}
+ */
+export function sendIsDue(send, now = new Date(), tz = FALLBACK_TIMEZONE) {
+  if (!send?.date || !send?.deadline) return false;
+  const { date: today, hour } = localDayAndHour(now, tz);
+  if (today >= send.deadline) return false;
+  if (today > send.date) return true;
+  if (today < send.date) return false;
+  return hour >= SEND_HOUR;
+}
+
+/**
+ * The sends that are due and not yet stamped, which is exactly what the cron
+ * acts on and what the line describes.
+ *
+ * @returns {Array<{send: number, date: string, deadline: string}>}
+ */
+export function dueUnsentSends(rsvpContent, now = new Date()) {
+  if (!rsvpContent?.remindersOn) return [];
+  const tz = reminderTimezoneOf(rsvpContent);
+  const already = new Set(sentSends(rsvpContent));
+  return reminderSendDates(rsvpContent?.rsvpDeadline)
+    .filter((s) => !already.has(s.send) && sendIsDue(s, now, tz));
 }
 
 /**
@@ -162,6 +242,18 @@ export function writtenDay(key) {
 }
 
 /**
+ * The written day, or the word "today" when that is the day it is.
+ *
+ * Owner ruling: the line says "today" for a send still to go on the current
+ * day, because a date is how you read a plan and "today" is how you read a
+ * thing about to happen.
+ */
+export function writtenDayOrToday(key, now = new Date(), tz = FALLBACK_TIMEZONE) {
+  if (!key) return '';
+  return key === localDayAndHour(now, tz).date ? 'today' : writtenDay(key);
+}
+
+/**
  * The line under the switch, whatever state it is in.
  *
  * Every sentence is the owner's, verbatim. The placeholders are the only
@@ -183,15 +275,18 @@ export function reminderLine(rsvpContent, now = new Date()) {
   const sent = sentSends(rsvpContent);
   if (sent.length >= 2) return BOTH_SENT_LINE;
 
+  const tz = reminderTimezoneOf(rsvpContent);
+  const day = (key) => writtenDayOrToday(key, now, tz);
+
   if (sent.length === 1) {
     const first = sentRow(rsvpContent, sent[0]);
     const next = all.find((s) => s.send !== sent[0]);
     const n = Number(first?.count);
-    return `Sent ${writtenDay(first?.date || all.find((s) => s.send === sent[0])?.date)} to ${Number.isFinite(n) ? n : 0} guests. Next on ${writtenDay(next?.date)}.`;
+    return `Sent ${writtenDay(first?.date || all.find((s) => s.send === sent[0])?.date)} to ${Number.isFinite(n) ? n : 0} guests. Next on ${day(next?.date)}.`;
   }
 
   const [one, two] = all;
-  return `We will email anyone still to reply on ${writtenDay(one?.date)} and ${writtenDay(two?.date)}, at 9 am ${reminderTimezoneOf(rsvpContent)}.`;
+  return `We will email anyone still to reply on ${day(one?.date)} and ${day(two?.date)}, at 9 am ${tz}.`;
 }
 
 /**

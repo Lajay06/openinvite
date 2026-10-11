@@ -29,12 +29,13 @@ import {
  * the date because it is about that date: "email anyone still to reply" has no
  * meaning without one, which is also why it is disabled until the date exists.
  *
- * OPERABLE IN BOTH MODES, WHICH IS NOT WHAT readOnly DOES TO THE DATE. The
- * item's own guard is "both surfaces show the same state after a change on
- * either", so the switch can be thrown from Event details as well as from the
- * Send invites step, while the DATE stays read-only there as #974 left it.
- * That asymmetry is deliberate and reported: one control is a decision the
- * couple can take from either page, the other is an edit with one home.
+ * ONE PLACE TO TURN IT ON. The first version made the switch operable in both
+ * modes, reading the item's guard ("the same state after a change on either")
+ * as licence to throw it from either page. The owner ruled that wrong on
+ * 2026-10-11: Event details shows a date you cannot edit, so a switch you can
+ * throw beside it is an asymmetry with no reason. Event details now shows the
+ * switch's STATE and its line, with one sentence saying where to change it,
+ * and the Send invites step is the only place it moves.
  *
  * THE COUNT CLAUSE DID NOT COME WITH IT. The Guests page's sentence ended with
  * "N guests have not replied", which it could say because it held the whole
@@ -46,6 +47,9 @@ import {
 export const DEADLINE_LABEL = 'Reply by';
 export const NO_DEADLINE_LINE = 'Guests can reply until you set a date.';
 export const DEADLINE_SAVE_ERROR = 'Could not save the date. Please try again.';
+
+/** Shown under the switch on the surface that cannot change it. */
+export const REMINDERS_ELSEWHERE_LINE = 'Change this on the Send invites page.';
 
 /** "Replies close at the end of 1 May 2027." */
 export function deadlineClosesLine(value) {
@@ -101,12 +105,13 @@ export default function RsvpDeadlineField({ rsvpContent, onSaved, readOnly = fal
 
   const reminders = (
     <div data-rsvp-reminders style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: switchDisabled ? 'default' : 'pointer' }}>
+      <label style={{ display: 'flex', alignItems: 'center', gap: 10,
+        cursor: readOnly || switchDisabled ? 'default' : 'pointer' }}>
         <Switch
           data-rsvp-reminders-switch
           checked={remindersOn}
-          disabled={switchDisabled}
-          onCheckedChange={saveSwitch}
+          disabled={readOnly || switchDisabled}
+          onCheckedChange={readOnly ? undefined : saveSwitch}
           aria-label={REMINDERS_LABEL}
         />
         <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
@@ -116,6 +121,11 @@ export default function RsvpDeadlineField({ rsvpContent, onSaved, readOnly = fal
       <span data-rsvp-reminders-line style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
         {reminderLine(rsvpContent)}
       </span>
+      {readOnly && (
+        <span data-rsvp-reminders-elsewhere style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          {REMINDERS_ELSEWHERE_LINE}
+        </span>
+      )}
     </div>
   );
 

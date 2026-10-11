@@ -24,6 +24,53 @@ Runs under the goal autonomy protocol in WORKFLOW.md. Owner idea from the 2026-1
 4. Mirror PR for any schema the owner added. HELD.
 5. Close: live dry run on production against the smoke account, one send-mode test to the test address, report, and the goal file's Decisions, Handed forward and Lessons sections.
 
+## Decisions
+
+Owner rulings of 2026-10-11, after the item 0 scout and again after item 1 was
+first built. Written down so a later reader does not re-open them.
+
+THE SCOUT'S FIVE ANSWERS. send_history is written SERVER SIDE by the cron, one
+entry per guest per reminder, kind "reminder", send 1 or 2, with the timestamp;
+that entry is the idempotency stamp and it is what the couple sees on the
+guest's record, so no new declared field and item 4's mirror PR is empty unless
+something else surfaces. The cron is a NEW HOURLY cron,
+api/cron/send-rsvp-reminders.js, not the UTC-only 9 am job, so a missed hour
+catches up on the next run. The timezone is the BROWSER's at the moment the
+switch is turned on, stored as rsvpContent.reminderTimezone and printed in the
+line so the couple can see which one we picked, with Australia/Sydney for a
+wedding that has none and a logged COUNT of such weddings. rsvpContent is the
+accepted home for all three keys because the reply-by date already lives there,
+with a live round-trip test required before item 1 merges. Item 2 stays held
+because the reminder is api/send-invites.js with type 'reminder'.
+
+ONE HELPER FOR "DUE", SHARED WITH THE CRON. sendIsDue(send, now, tz): due when
+now is at or after 9 am local on the send day and before the reply-by date. The
+hourly cron sends anything due and unsent, so a switch turned on at 10 am on a
+send day gets that send on the NEXT RUN rather than never. The switch's line
+and the cron read the same function, because two readings of "due" is how a
+line comes to promise a send that does not happen. The line says "today" for a
+send still to go on the current day.
+
+ONE PLACE TO TURN IT ON. The switch is read-only on Event details, showing its
+state and its line with "Change this on the Send invites page." under it. The
+first build made it operable on both surfaces, reading item 1's guard as
+licence; the owner ruled that wrong, because a date you cannot edit beside a
+switch you can throw is an asymmetry with no reason.
+
+THE LIVE ROUND TRIP IS OWNER-RUN. It is written and registered, and item 1's PR
+opens without waiting on it; the merge is held until the owner reports it
+green. This checkout has no BASE44_TEST_EMAIL or BASE44_TEST_PASSWORD.
+
 ## Handed forward
 
 A third, final-day reminder if couples ask. Per-event reply-by dates.
+
+THREE PRE-EXISTING FAULTS IN THE LIVE-CREDENTIAL LANE, found while registering
+item 1's round-trip guard and not caused by it. scripts/test-persistence.mjs
+asserts that every entry in LIVE_CREDENTIAL_GUARDS is invoked by it, and three
+are not: hero-masters-live.mjs and tour-recordings-live.mjs are in the set but
+never called, and run-launch-smoke.mjs exports runLaunchSmoke while the check
+derives runRunLaunchSmoke from the filename. Nothing in CI runs that lane, so
+it has gone unseen, and it means the lane cannot currently come back green.
+Owner ruling 2026-10-11: one small separate fix PR on the protocol route, after
+item 1 opens.

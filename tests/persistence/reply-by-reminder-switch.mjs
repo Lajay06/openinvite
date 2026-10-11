@@ -41,6 +41,7 @@ import {
   SEND_OFFSETS, SEND_HOUR, FALLBACK_TIMEZONE,
   reminderSendDates, upcomingSends, switchAvailability,
   reminderTimezoneOf, sentSends, withRemindersSwitch, reminderLine, writtenDay,
+  localDayAndHour, sendIsDue, dueUnsentSends, writtenDayOrToday,
   LABEL, NO_DATE_LINE, OFF_LINE, BOTH_SENT_LINE,
 } from '../../src/lib/rsvpReminders.js';
 
@@ -123,6 +124,59 @@ export async function runReplyByReminderSwitch() {
      switchAvailability('2026-05-04', NOW).sends.map((s) => s.send).join(',') === '2',
      switchAvailability('2026-05-04', NOW).sends.map((s) => s.send).join(','));
 
+  // ── 3b. DUE IS ONE HELPER, SHARED WITH THE CRON ───────────────────────
+  //
+  // Owner ruling, 2026-10-11: "the switch's line and the cron must agree, so
+  // define one helper, sendIsDue(send, now, tz), used by both". Two readings
+  // of "due" is how a line comes to promise a send that never happens, which
+  // is the edge this closes.
+  const TZ = 'Australia/Sydney';
+  const sends = reminderSendDates(DEADLINE);
+  // AEST is +10, so these instants are chosen for what they are LOCALLY:
+  // 08:00, 09:00 and 10:00 on the first send day, 2026-05-22.
+  const at8 = new Date('2026-05-21T22:00:00Z');
+  const at9 = new Date('2026-05-21T23:00:00Z');
+  const at10 = new Date('2026-05-22T00:00:00Z');
+
+  ok('the local day and hour are read from the zone, not from an offset',
+     localDayAndHour(at10, TZ).date === '2026-05-22' && localDayAndHour(at10, TZ).hour === 10,
+     JSON.stringify(localDayAndHour(at10, TZ)));
+  // THE HOUR, NOT JUST THE DAY. This compared dates only, and at this instant
+  // Sydney and UTC share the date while differing by ten hours, so a fallback
+  // to UTC would have passed. The hour is the whole point of the fallback.
+  ok('  and an unknown zone falls back rather than sending at the wrong time',
+     JSON.stringify(localDayAndHour(at10, 'Not/AZone'))
+       === JSON.stringify(localDayAndHour(at10, FALLBACK_TIMEZONE))
+       && localDayAndHour(at10, 'Not/AZone').hour === 10,
+     JSON.stringify(localDayAndHour(at10, 'Not/AZone')));
+
+  ok('a send is not due at 8 am local on its day',
+     sendIsDue(sends[0], at8, TZ) === false, 'not yet');
+  ok('  is due at 9 am local', sendIsDue(sends[0], at9, TZ) === true, 'due');
+  ok('  and is still due at 10 am, which is the catch-up the owner ruled for',
+     sendIsDue(sends[0], at10, TZ) === true, 'due');
+  ok('  still due the next day, so a missed hour is not a missed send',
+     sendIsDue(sends[0], new Date('2026-05-22T23:00:00Z'), TZ) === true, 'due');
+  ok('  and never once the local day reaches the reply-by date',
+     sendIsDue(sends[0], new Date('2026-05-31T23:00:00Z'), TZ) === false
+       && sendIsDue(sends[1], new Date('2026-05-31T23:00:00Z'), TZ) === false,
+     'closed');
+  ok('  a send with no deadline on it is never due',
+     sendIsDue({ date: '2026-05-22' }, at10, TZ) === false, 'false');
+
+  // THE PLANT THE OWNER NAMED, AS A CHECK: a switch turned on at 10 am local
+  // on a send day gets that send, on the next hourly run, not never.
+  const onAt10 = withRemindersSwitch({ rsvpDeadline: DEADLINE }, true, TZ);
+  ok('a switch turned on at 10 am on a send day still gets that send',
+     dueUnsentSends(onAt10, at10).map((s) => s.send).join(',') === '1',
+     dueUnsentSends(onAt10, at10).map((s) => s.send).join(',') || 'none');
+  ok('  and not the one that is still days away',
+     !dueUnsentSends(onAt10, at10).some((s) => s.send === 2), 'send 2 waits');
+  ok('  a send already stamped is not due again, which is the idempotency',
+     dueUnsentSends({ ...onAt10, remindersSent: [{ send: 1 }] }, at10).length === 0, 'none');
+  ok('  and nothing is due while the switch is off',
+     dueUnsentSends({ ...onAt10, remindersOn: false }, at10).length === 0, 'none');
+
   // ── 4. THE FOUR LINES, VERBATIM ───────────────────────────────────────
   ok('the label is the owner’s', LABEL === 'Remind guests who have not replied', LABEL);
   ok('the no-date line is the owner’s', NO_DATE_LINE === 'Set a reply-by date first.', NO_DATE_LINE);
@@ -152,6 +206,15 @@ export async function runReplyByReminderSwitch() {
      /to 0 guests/.test(reminderLine({ rsvpDeadline: DEADLINE, remindersOn: true,
        remindersSent: [{ send: 1, date: '2026-05-22' }] }, NOW)),
      reminderLine({ rsvpDeadline: DEADLINE, remindersOn: true, remindersSent: [{ send: 1, date: '2026-05-22' }] }, NOW));
+
+  ok('a send going today reads as "today", not as its date',
+     writtenDayOrToday('2026-05-22', at10, TZ) === 'today'
+       && writtenDayOrToday('2026-05-30', at10, TZ) === 'May 30, 2026',
+     writtenDayOrToday('2026-05-22', at10, TZ));
+  ok('  and the line says so',
+     reminderLine({ rsvpDeadline: DEADLINE, remindersOn: true, reminderTimezone: TZ }, at10)
+       === 'We will email anyone still to reply on today and May 30, 2026, at 9 am Australia/Sydney.',
+     reminderLine({ rsvpDeadline: DEADLINE, remindersOn: true, reminderTimezone: TZ }, at10));
 
   // ── 5. THE TIMEZONE, CAPTURED AND SHOWN ───────────────────────────────
   ok('the fallback timezone is the one the owner named',
@@ -185,12 +248,29 @@ export async function runReplyByReminderSwitch() {
      sentSends({}).length === 0 && sentSends(null).length === 0, 'empty');
 
   // ── 6. ONE SWITCH, BOTH SURFACES ──────────────────────────────────────
+  // THE HANDLER IS NOW GATED, so this reads the gated form rather than the
+  // bare one it was written against before the read-only ruling.
   ok('the switch lives in the one shared field component',
-     /data-rsvp-reminders-switch/.test(live) && /onCheckedChange=\{saveSwitch\}/.test(live), 'one control');
+     /data-rsvp-reminders-switch/.test(live)
+       && /onCheckedChange=\{readOnly \? undefined : saveSwitch\}/.test(live),
+     'one control');
   ok('  rendered in the editable mode',
      /\{reminders\}/.test(live.slice(live.indexOf('data-rsvp-deadline '))), 'in the editor');
   ok('  and in the read-only mode, so Event details carries it too',
      /data-rsvp-deadline-shown[\s\S]{0,900}\{reminders\}/.test(live), 'in the shown mode');
+  // ONE PLACE TO TURN IT ON. Owner ruling 2026-10-11: Event details shows the
+  // state and says where to change it, because a date you cannot edit beside a
+  // switch you can throw is an asymmetry with no reason.
+  ok('  but read-only there, with one sentence saying where to change it',
+     /disabled=\{readOnly \|\| switchDisabled\}/.test(live)
+       && /onCheckedChange=\{readOnly \? undefined : saveSwitch\}/.test(live)
+       && /data-rsvp-reminders-elsewhere/.test(live),
+     'read-only on Event details');
+  ok('    and that sentence is the owner\u2019s',
+     field.includes("export const REMINDERS_ELSEWHERE_LINE = 'Change this on the Send invites page.';"),
+     'verbatim');
+  ok('    shown only on the surface that cannot change it',
+     /\{readOnly && \(\s*<span data-rsvp-reminders-elsewhere/.test(live), 'gated on readOnly');
   // ONE DEFINITION, TWO RENDERS. Two copies of the markup would be two
   // switches that could disagree, which is what the item's guard forbids.
   ok('  defined once, so the two cannot drift apart',
