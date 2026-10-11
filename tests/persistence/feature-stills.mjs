@@ -5,7 +5,7 @@
  * rulings 2026-10-11): one real still per feature section, from the rich
  * fixture, cut to 3:2, placed in space the section already had.
  *
- * The three stills in the deep dives are read off
+ * The morning band and the three stills in the deep dives are read off
  * prerendered/features, which is what a visitor is served before any script
  * runs. The two accordion rows' media only mount when a row is opened, so they
  * are read from the source that renders them.
@@ -28,7 +28,7 @@ import { pass, fail, stripComments } from './_shared.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const read = (p) => readFileSync(join(ROOT, p), 'utf8');
-const VERSIONED = /\/v[1-9]\d{5,}\/studio-tour\/(stills|tour-page)\/feature-[a-z]+\/\d{3,4}-\d{14}/;
+const VERSIONED = /\/v[1-9]\d{5,}\/studio-tour\/(stills|tour-page)\/feature-[a-z-]+\/\d{3,4}-\d{14}/;
 
 /** The id a still's src names, so the page can be searched for it. */
 const idOf = (url) => /\/(v\d+\/studio-tour\/[^,\s"]+)/.exec(url)?.[1] || '';
@@ -57,7 +57,7 @@ export function runFeatureStills() {
   const pre = join(ROOT, 'prerendered/features/index.html');
   const html = existsSync(pre) ? readFileSync(pre, 'utf8').replace(/&amp;/g, '&') : '';
   const figures = html.match(/<figure\b[^>]*data-feature-still="still"[\s\S]*?<\/figure>/g) || [];
-  check('prerendered /features carries the three inline stills', figures.length === 3, `${figures.length} figures`);
+  check('prerendered /features carries the four inline stills', figures.length === 4, `${figures.length} figures`);
   for (const k of ['replies', 'budget', 'suite']) {
     const s = FEATURE_STILLS[k];
     const fig = figures.find((f) => f.includes(idOf(s.src))) || '';
@@ -71,9 +71,16 @@ export function runFeatureStills() {
     const ul = src.lastIndexOf('</ul>', src.indexOf(name));
     return src.indexOf(name) > 0 && ul > 0 && !/<(section|div)\b/.test(src.slice(ul, src.indexOf(name)));
   };
-  // HELD (see src/lib/featureStills.js): the dashboard row is one screen, the
-  // app section's twin, and the morning still would make it 1116px.
-  check('morning page: held out of the one-screen dashboard row', !/FEATURE_STILLS\.morning/.test(stripComments(read('src/pages/Features.jsx'))));
+  // THE MORNING BAND (owner ruling 2026-10-12): full width at the top of the
+  // dashboard section, 2:1, outside the one-screen row, with the owner's caption.
+  const band = /<div\b[^>]*data-dashboard-band[^>]*>([\s\S]*?<\/figure>)/.exec(html)?.[1] || '';
+  const mid = idOf(FEATURE_STILLS.morning.src);
+  check('morning page: the band above the dashboard row, 2:1, 1312, 656 and 2624 wide',
+    band.includes(`w_1312/${mid} 1312w`) && band.includes(`w_2624/${mid} 2624w`) && band.includes(`w_656/${mid} 656w`) && /aspect-ratio:\s*2\s*\/\s*1/.test(band));
+  check('morning page: the caption is the owner\'s', FEATURE_STILLS.morning.caption === 'Every morning, one sentence tells you what today needs.' && band.includes(FEATURE_STILLS.morning.caption));
+  const dash = html.indexOf('data-dashboard-band');
+  check('morning page: the band comes straight before the Customizable Dashboard row, not inside it',
+    dash > 0 && html.indexOf('Customizable Dashboard', dash) > dash && !/<section\b[^>]*lg:flex-row[^>]*>(?:(?!<\/section>)[\s\S])*data-dashboard-band/.test(html));
   check('replies: under the guest management bullets', under('src/components/home/FeatureGuests.jsx', 'still={FEATURE_STILLS.replies}'));
   check('budget: under the budget bullets, on the dark ground', under('src/components/home/FeatureBudget.jsx', 'still={FEATURE_STILLS.budget} dark'));
   check('suite: under the timeline bullets', under('src/components/home/FeatureTimeline.jsx', 'still={FEATURE_STILLS.suite}'));

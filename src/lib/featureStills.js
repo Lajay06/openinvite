@@ -12,10 +12,11 @@
  * a new Cloudinary path with overwrite off. A reshoot is a new id here, never
  * a replaced file.
  *
- * HELD: the morning still. Under the Customizable Dashboard bullets it made
- * that row 1116px at 1440, and that row is held to one screen because the app
- * section after it is its twin (test:marketing-routes, featureRowLayout). It
- * stays here, uploaded, for the owner's ruling on where it goes instead.
+ * THE MORNING STILL IS A BAND, NOT A CARD (owner ruling 2026-10-12): full
+ * width at the top of the Customizable Dashboard section, 2:1, above the row
+ * rather than under its bullets, because that row is held to one screen as
+ * the app section's twin (test:marketing-routes, featureRowLayout) and the
+ * still under the bullets made it 1116px at 1440. Its caption is the owner's.
  *
  * Captions are the item 4 proposal's, accepted with the ruling, except two
  * that claimed what their stills cannot show: the guest list has no reply
@@ -28,21 +29,24 @@ const VIDEO = 'https://res.cloudinary.com/dsr84xknv/video/upload';
 /** 552 is the text column at 1440; 1104 is the same at 2x, the capture's own scale. */
 const STILL_WIDTHS = [552, 1104];
 
-function still(path, alt, caption) {
+function still(path, alt, caption, widths = STILL_WIDTHS) {
   const at = (w) => `${IMAGE}/f_auto,q_auto:good,c_limit,w_${w}/${path}`;
   return {
-    src: at(STILL_WIDTHS[0]),
-    srcSet: STILL_WIDTHS.map((w) => `${at(w)} ${w}w`).join(', '),
+    src: at(widths[0]),
+    srcSet: widths.map((w) => `${at(w)} ${w}w`).join(', '),
     alt,
     caption,
   };
 }
 
 export const FEATURE_STILLS = {
+  // 1312 is the band at 1440 (the page less its 64px gutters); 2624 the same
+  // at 2x, the capture's own scale; 656 for a phone.
   morning: still(
-    'v1791728254/studio-tour/stills/feature-morning/1024-20261011141733',
+    'v1791761490/studio-tour/stills/feature-morning-wide/1512-20261011233128',
     "The Daily update: the date and one sentence about the couple's day, above This week, Ava's briefing and their numbers",
-    'The morning page. What today needs, in one sentence.',
+    'Every morning, one sentence tells you what today needs.',
+    [1312, 656, 2624],
   ),
   replies: still(
     'v1791727534/studio-tour/stills/feature-replies/1440-20261011140534',

@@ -46,7 +46,8 @@ const ROWS = [
     "Keep quotes, contracts and contacts with each vendor",
   ]],
   ["Seating chart and the visualizer", [
-    "Lay out the venue and drag guests onto tables",
+    // Owner ruling 2026-10-12: the product seats a guest by clicking, not dragging.
+    "Click a table, choose a name, and the seat is theirs.",
     "See who is still unseated at a glance",
     "Walk the room in the visualizer, the way guests will see it",
     "A seating plan for each event, from the reception to the brunch",

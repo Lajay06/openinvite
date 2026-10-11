@@ -18,19 +18,21 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 const reducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-export default function FeatureStill({ still, clip, dark = false, sizes = "(min-width: 1024px) 552px, 100vw" }) {
+// `aspect` and `margin` are for the one still that is a band, not a card: the
+// morning page at the top of the dashboard section, full width at 2:1.
+export default function FeatureStill({ still, clip, dark = false, sizes = "(min-width: 1024px) 552px, 100vw", aspect = "3 / 2", margin = "32px 0 0" }) {
   const item = still || clip;
   if (!item) return null;
   const frame = {
     display: "block",
     width: "100%",
-    aspectRatio: "3 / 2",
+    aspectRatio: aspect,
     objectFit: "cover",
     border: `1px solid ${dark ? "rgba(255,255,255,0.12)" : "#E8E8E8"}`,
     background: dark ? "#141414" : "#FFFFFF",
   };
   return (
-    <figure data-feature-still={still ? "still" : "clip"} style={{ margin: "32px 0 0" }}>
+    <figure data-feature-still={still ? "still" : "clip"} style={{ margin }}>
       {still ? (
         <img src={still.src} srcSet={still.srcSet} sizes={sizes} alt={still.alt} loading="lazy" decoding="async" style={frame} />
       ) : reducedMotion() ? (
