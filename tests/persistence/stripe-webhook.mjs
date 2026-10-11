@@ -221,11 +221,54 @@ export async function runStripeWebhook() {
       userId: 'user_123', plan: 'ultra', planActivatedAt: '2026-01-01T00:00:00.000Z',
       adminKey: 'test_admin_key', fetchImpl: fakeFetch,
     });
-    const urlOk = capturedUrl?.includes('/entities/User/user_123') && capturedUrl?.includes('api_key=test_admin_key');
+    // THE KEY TRAVELS AS A BEARER, AND THE URL MUST BE CLEAN. Rotating the
+    // admin key to a personal access token on 2026-10-11 made `?api_key=` a
+    // 401 on every entity, which took the plan write out in production for an
+    // hour without throwing. This assertion is inverted from what it said
+    // before that day, deliberately: a key in a query string is now both
+    // broken and the thing that broke.
+    const urlOk = capturedUrl?.includes('/entities/User/user_123')
+      && !/api_key=/.test(capturedUrl)
+      && capturedInit?.headers?.Authorization === 'Bearer test_admin_key';
     const bodyOk = JSON.parse(capturedInit?.body || '{}');
     results.push(result.ok === true && urlOk && capturedInit?.method === 'PUT' && bodyOk.plan === 'ultra' && bodyOk.planActivatedAt === '2026-01-01T00:00:00.000Z'
       ? pass('writeBase44UserPlan — PUTs to the User entity with plan + planActivatedAt', JSON.stringify(bodyOk))
       : fail('writeBase44UserPlan — PUTs to the User entity with plan + planActivatedAt', '{plan:"ultra",...}', JSON.stringify({ url: capturedUrl, init: capturedInit })));
+  }
+
+  // writeBase44UserPlan — BEARER FIRST, `?api_key=` ONLY AFTER A 401.
+  //
+  // An app-level key (anything issued before 2026-10-11) is the opposite of a
+  // personal access token: the query form is the one it answers. Both must
+  // work from one deployment, so a 401 on the bearer attempt is retried in the
+  // legacy form, and a success is NOT retried.
+  {
+    const seen = [];
+    const rejectBearer = async (url, init) => {
+      seen.push({ url, init });
+      return seen.length === 1 ? { ok: false, status: 401, text: async () => 'Unauthorized' } : { ok: true, status: 200 };
+    };
+    const result = await writeBase44UserPlan({
+      userId: 'user_123', plan: 'ultra', planActivatedAt: 'x',
+      adminKey: 'app_level_key', fetchImpl: rejectBearer,
+    });
+    const first = seen[0], second = seen[1];
+    results.push(seen.length === 2 && result.ok === true
+      && first?.init?.headers?.Authorization === 'Bearer app_level_key' && !/api_key=/.test(first?.url || '')
+      && /api_key=app_level_key/.test(second?.url || '') && !second?.init?.headers?.Authorization
+      && second?.init?.method === 'PUT' && second?.init?.body === first?.init?.body
+      ? pass('writeBase44UserPlan — a 401 on the bearer form is retried as ?api_key=, same method and body', `${seen.length} attempts`)
+      : fail('writeBase44UserPlan — a 401 on the bearer form is retried as ?api_key=, same method and body', '2 attempts, bearer then api_key', JSON.stringify({ attempts: seen.length, ok: result.ok })));
+  }
+
+  // A SUCCESS IS NEVER RETRIED, so the fallback cannot double a write.
+  {
+    let calls = 0;
+    const okFetch = async () => { calls += 1; return { ok: true, status: 200 }; };
+    await writeBase44UserPlan({ userId: 'u', plan: 'pro', planActivatedAt: 'x', adminKey: 'k', fetchImpl: okFetch });
+    results.push(calls === 1
+      ? pass('writeBase44UserPlan — a 200 is not retried, so the fallback cannot write twice', '1 attempt')
+      : fail('writeBase44UserPlan — a 200 is not retried, so the fallback cannot write twice', '1 attempt', `${calls} attempts`));
   }
 
   // writeBase44UserPlan — a non-ok response is reported as a failure, not
@@ -304,7 +347,7 @@ export async function runStripeWebhook() {
   // doesn't short-circuit; the PUT then comes back non-ok) → 5xx, not 200.
   {
     const fetchImpl = async (url, init) => {
-      if (!init || init.method === undefined) return { ok: true, json: async () => ({ id: 'user_activation_test', plan: 'free' }) };
+      if ((init?.method || 'GET') !== 'PUT') return { ok: true, json: async () => ({ id: 'user_activation_test', plan: 'free' }) };
       return { ok: false, status: 500, text: async () => 'base44 down' };
     };
     const { status } = await handleCheckoutSessionCompleted(makeSession(), { adminKey: 'test_admin_key', fetchImpl });
@@ -316,7 +359,7 @@ export async function runStripeWebhook() {
   // 3. Successful write → 2xx.
   {
     const fetchImpl = async (url, init) => {
-      if (!init || init.method === undefined) return { ok: true, json: async () => ({ id: 'user_activation_test', plan: 'free' }) };
+      if ((init?.method || 'GET') !== 'PUT') return { ok: true, json: async () => ({ id: 'user_activation_test', plan: 'free' }) };
       return { ok: true, status: 200 };
     };
     const { status } = await handleCheckoutSessionCompleted(makeSession(), { adminKey: 'test_admin_key', fetchImpl });
@@ -331,7 +374,7 @@ export async function runStripeWebhook() {
   {
     let putCalled = false;
     const fetchImpl = async (url, init) => {
-      if (!init || init.method === undefined) return { ok: true, json: async () => ({ id: 'user_activation_test', plan: 'ultra' }) };
+      if ((init?.method || 'GET') !== 'PUT') return { ok: true, json: async () => ({ id: 'user_activation_test', plan: 'ultra' }) };
       putCalled = true;
       return { ok: true, status: 200 };
     };
@@ -348,7 +391,7 @@ export async function runStripeWebhook() {
   // wrongly coupling a non-critical email failure to the activation result.
   {
     const fetchImpl = async (url, init) => {
-      if (!init || init.method === undefined) return { ok: true, json: async () => ({ id: 'user_activation_test', plan: 'free' }) };
+      if ((init?.method || 'GET') !== 'PUT') return { ok: true, json: async () => ({ id: 'user_activation_test', plan: 'free' }) };
       return { ok: true, status: 200 };
     };
     const sendEmail = async () => { throw new Error('Resend is down'); };

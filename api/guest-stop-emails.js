@@ -37,13 +37,13 @@
 
 import { verifyGuestStopToken } from './_lib/guestStopToken.js';
 import { coupleDisplayName } from './_lib/coupleNames.js';
+import { adminFetch } from './_lib/base44Admin.js';
 
-const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY;
 
-const entityUrl = (entity, id) =>
-  `${BASE44_API}/apps/${BASE44_APP_ID}/entities/${entity}/${encodeURIComponent(id)}?api_key=${BASE44_ADMIN_KEY}`;
+const entityPath = (entity, id) =>
+  `/apps/${BASE44_APP_ID}/entities/${entity}/${encodeURIComponent(id)}`;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -68,7 +68,7 @@ export default async function handler(req, res) {
   // this lookup answers 404 for it exactly as it would for a guess.
   let guest = null;
   try {
-    const read = await fetch(entityUrl('Guest', guestId));
+    const read = await adminFetch(entityPath('Guest', guestId), { adminKey: BASE44_ADMIN_KEY });
     if (read.ok) guest = await read.json();
   } catch (err) {
     console.error(`[guest-stop-emails] guest read failed: ${err.message}`);
@@ -85,10 +85,10 @@ export default async function handler(req, res) {
   // would be an unauthenticated write to any Guest field, including the ones
   // that carry PII.
   try {
-    const write = await fetch(entityUrl('Guest', guestId), {
+    const write = await adminFetch(entityPath('Guest', guestId), {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email_opt_out: true, email_opt_out_at: new Date().toISOString() }),
+      body: { email_opt_out: true, email_opt_out_at: new Date().toISOString() },
+      adminKey: BASE44_ADMIN_KEY,
     });
     if (!write.ok) {
       const body = await write.text().catch(() => '');
@@ -107,8 +107,10 @@ export default async function handler(req, res) {
   let coupleNames = '';
   try {
     const q = encodeURIComponent(JSON.stringify({ created_by_id: guest.created_by_id }));
-    const url = `${BASE44_API}/apps/${BASE44_APP_ID}/entities/WeddingDetails?api_key=${BASE44_ADMIN_KEY}&q=${q}`;
-    const rows = await fetch(url).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    const rows = await adminFetch(
+      `/apps/${BASE44_APP_ID}/entities/WeddingDetails?q=${q}`,
+      { adminKey: BASE44_ADMIN_KEY },
+    ).then((r) => (r.ok ? r.json() : null)).catch(() => null);
     const wedding = Array.isArray(rows) ? rows[0] : null;
     if (wedding) coupleNames = coupleDisplayName(wedding) || '';
   } catch {
