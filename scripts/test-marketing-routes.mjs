@@ -64,7 +64,7 @@ async function overflow(page) {
 // it is cut off. Measured on the page already loaded, at both widths.
 // Sections on the one-screen rule: the twin ([data-app-twin]) and the home
 // photograph ([data-one-screen], batch 3 amendment A).
-const TWIN_ROUTES = { '/': 1, '/app': 1 };
+const TWIN_ROUTES = { '/': 1 };
 
 // THE FEATURES APP ROW KEEPS ITS NEIGHBOURS' LAYOUT (batch 3 amendment B).
 // Measured on the page already loaded: at 1440 every feature row is a

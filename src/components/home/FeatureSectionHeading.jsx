@@ -24,7 +24,7 @@ export const featureBodyTextStyle = {
 };
 
 const FeatureSectionHeading = React.forwardRef(function FeatureSectionHeading(
-  { children, color = "#0A0A0A", style, lineStyle },
+  { children, color = "#0A0A0A", style, lineStyle, as: Tag = "h2" },
   ref
 ) {
   return (
@@ -38,7 +38,7 @@ const FeatureSectionHeading = React.forwardRef(function FeatureSectionHeading(
           ...lineStyle,
         }}
       />
-      <h2
+      <Tag
         ref={ref}
         style={{
           fontSize: "clamp(32px, 4vw, 56px)",
@@ -56,7 +56,7 @@ const FeatureSectionHeading = React.forwardRef(function FeatureSectionHeading(
         }}
       >
         {children}
-      </h2>
+      </Tag>
     </>
   );
 });
