@@ -97,7 +97,10 @@ export const AUTH_LABEL_CLASS =
 // way). `bare` also switches the content column to left-aligned — every
 // onboarding step wants its heading/inputs/CTA flush to one left margin,
 // whereas Login/Register (the only non-bare callers) stay centered.
-export default function AuthLayout({ title, subtitle, footer, children, showNav = true, images = CAROUSEL_IMAGES, image, bare = false, contentMaxWidth }) {
+// `aside` (gifting v2, 2026-10-11) is content for the photo side in place of
+// a photograph: the gift flow shows its live email preview there. Additive like
+// the rest: with no `aside`, every caller renders exactly as before.
+export default function AuthLayout({ title, subtitle, footer, children, showNav = true, images = CAROUSEL_IMAGES, image, aside, bare = false, contentMaxWidth }) {
   return (
     <div className="h-screen overflow-hidden flex flex-col">
       {showNav && <PublicNav />}
@@ -109,7 +112,7 @@ export default function AuthLayout({ title, subtitle, footer, children, showNav 
             onboarding call site passes this per-step. Falls back to the
             4-photo crossfade carousel for Login/Register/Forgot/Reset. */}
         <div className="hidden md:block h-full" style={{ width: "50%", flexShrink: 0 }}>
-          {image ? (
+          {aside ? aside : image ? (
             <img src={image} alt="" className="h-full w-full object-cover" />
           ) : (
             <ImageSlider images={images} />

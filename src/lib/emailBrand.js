@@ -97,15 +97,17 @@ export function poweredByRow() {
 }
 
 /**
- * @param {{ title: string, bodyRowsHtml: string, showHeader?: boolean }} params
+ * @param {{ title: string, bodyRowsHtml: string, showHeader?: boolean, width?: number }} params
  *   — bodyRowsHtml is every `<tr>` between the header and the footer (the
  *   footer is not included automatically — call emailFooterRow() and
  *   append it yourself, since footer copy varies per email).
  *   showHeader defaults to true; set false for guest-facing emails (the
  *   couple's names should be the focus, not the Openinvite brand) — pair
  *   with poweredByRow() in the footer instead.
+ *   width is the card's max width; 560 for every brand email so far, 600
+ *   for the gift emails (gifting v2), whose layout is drawn at 600.
  */
-export function emailShell({ title, bodyRowsHtml, showHeader = true }) {
+export function emailShell({ title, bodyRowsHtml, showHeader = true, width = 560 }) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -117,7 +119,7 @@ export function emailShell({ title, bodyRowsHtml, showHeader = true }) {
   <table width="100%" cellpadding="0" cellspacing="0" style="background:${EMAIL_BG};padding:40px 16px;">
     <tr>
       <td align="center">
-        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#FFFFFF;border:1px solid ${EMAIL_CARD_BORDER};">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:${width}px;background:#FFFFFF;border:1px solid ${EMAIL_CARD_BORDER};">
 ${showHeader ? emailHeaderRow() : ''}
 ${bodyRowsHtml}
         </table>

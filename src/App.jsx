@@ -31,6 +31,9 @@ const RefundPolicy = lazyWithReload(() => import('./pages/RefundPolicy'));
 const ScrollMorph = lazyWithReload(() => import('./pages/ScrollMorph'));
 const Universes = lazyWithReload(() => import('./pages/Universes'));
 const Gifting = lazyWithReload(() => import('./pages/Gifting'));
+// Gifting v2 (goals/2026-10-11-gifting-v2.md), behind GIFTING_V2: with the
+// flag off the page sends the visitor to /gifting, which keeps working.
+const GiftV2 = lazyWithReload(() => import('./pages/GiftV2'));
 const GiftPurchaseSuccess = lazyWithReload(() => import('./pages/GiftPurchaseSuccess'));
 const Onboarding = lazyWithReload(() => import('./pages/Onboarding'));
 const Login = lazyWithReload(() => import('./pages/Login'));
@@ -129,6 +132,7 @@ const PUBLIC_PATH_SET = new Set([
   '/scroll-morph',
   '/universes',
   '/gifting',
+  '/gift',
   '/gift/success',
   '/forgot-password',
   '/reset-password',
@@ -233,6 +237,7 @@ const AuthenticatedApp = () => {
         <Route path="/scroll-morph" element={<ScrollMorph />} />
         <Route path="/universes" element={<Universes />} />
         <Route path="/gifting" element={<Gifting />} />
+        <Route path="/gift" element={<GiftV2 />} />
         <Route path="/gift/success" element={<GiftPurchaseSuccess />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
@@ -365,6 +370,7 @@ const AuthenticatedApp = () => {
         <Route path="/scroll-morph" element={<ScrollMorph />} />
         <Route path="/universes" element={<Universes />} />
         <Route path="/gifting" element={<Gifting />} />
+        <Route path="/gift" element={<GiftV2 />} />
         <Route path="/gift/success" element={<GiftPurchaseSuccess />} />
         <Route path="/w/:weddingSlug/accommodation" element={<AccommodationRedirect />} />
         <Route path="/w" element={<InvitationNotAvailable />} />
