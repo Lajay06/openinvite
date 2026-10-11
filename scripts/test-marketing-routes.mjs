@@ -62,7 +62,33 @@ async function overflow(page) {
 // app section built as its twin ([data-app-twin]) follows the same rule: at
 // 1440 and at 390 each is exactly the viewport's height, and nothing inside
 // it is cut off. Measured on the page already loaded, at both widths.
-const TWIN_ROUTES = { '/': 1, '/features': 1, '/app': 1 };
+const TWIN_ROUTES = { '/': 1, '/app': 1 };
+
+// THE FEATURES APP ROW KEEPS ITS NEIGHBOURS' LAYOUT (batch 3 amendment B).
+// Measured on the page already loaded: at 1440 every feature row is a
+// screen tall, the app row's text half has the gutters of the row before
+// it, and its picture is on the other side from that row's; at 390 it
+// stacks picture first, as they do.
+async function featureRowLayout(page, path, wide) {
+  if (path !== '/features') return null;
+  const rows = await page.evaluate(() => [...document.querySelectorAll('section.lg\\:flex-row')].map((s) => {
+    const r = s.getBoundingClientRect();
+    const kids = [...s.children].filter((k) => k.getBoundingClientRect().height > 0);
+    const pic = kids.find((k) => k.querySelector('img')), txt = kids.find((k) => k !== pic);
+    const pr = pic.getBoundingClientRect(), tr = txt.getBoundingClientRect();
+    return { app: s.hasAttribute('data-app-phones'), h: Math.round(r.height), vh: window.innerHeight,
+      pad: getComputedStyle(txt).padding, side: Math.round(pr.top) < Math.round(tr.top) ? 'top' : pr.left < tr.left ? 'left' : 'right' };
+  }));
+  const at = rows.findIndex((r) => r.app);
+  if (at < 1) return `the app row is ${at < 0 ? 'missing' : 'the first row'}; it needs a neighbour before it`;
+  const app = rows[at], prev = rows[at - 1];
+  if (app.pad !== prev.pad) return `text gutters ${app.pad} against the row before's ${prev.pad}`;
+  if (wide) {
+    if (Math.abs(app.h - app.vh) > 1 || Math.abs(prev.h - prev.vh) > 1) return `row heights ${app.h} and ${prev.h} against a ${app.vh}px screen`;
+    if (app.side === prev.side || app.side === 'top') return `picture ${app.side}, the row before has it ${prev.side}: the alternation breaks`;
+  } else if (app.side !== 'top' || prev.side !== 'top') return `at 390 the picture comes first in every row; app ${app.side}, before it ${prev.side}`;
+  return null;
+}
 async function oneScreen(page, path) {
   const m = await page.evaluate(() => [...document.querySelectorAll('[data-app-twin], [data-value-prop]')].map((e) => ({
     twin: e.hasAttribute('data-app-twin'), h: e.getBoundingClientRect().height, sh: e.scrollHeight, ch: e.clientHeight,
@@ -103,12 +129,17 @@ async function checkRoute(browser, path) {
       if (o1) { wide.ok = false; wide.reason = `horizontal overflow at 1440: ${o1}`; }
       const s1 = await oneScreen(page, path);
       if (s1 && wide.ok) { wide.ok = false; wide.reason = `one screen at 1440: ${s1}`; }
+      const r1 = await featureRowLayout(page, path, true);
+      if (r1 && wide.ok) { wide.ok = false; wide.reason = `feature rows at 1440: ${r1}`; }
       await page.setViewportSize(PHONE);
       await page.waitForTimeout(600); // let the reflow and any resize listeners settle
       const o2 = await overflow(page);
       if (pageErrors.length > 0) { phone.ok = false; phone.reason = `uncaught exception at 390: ${pageErrors[0]}`; }
       else if (o2) { phone.ok = false; phone.reason = `horizontal overflow at 390: ${o2}`; }
-      else { const s2 = await oneScreen(page, path); if (s2) { phone.ok = false; phone.reason = `one screen at 390: ${s2}`; } }
+      else {
+        const s2 = await oneScreen(page, path); if (s2) { phone.ok = false; phone.reason = `one screen at 390: ${s2}`; }
+        const r2 = await featureRowLayout(page, path, false); if (r2 && phone.ok) { phone.ok = false; phone.reason = `feature rows at 390: ${r2}`; }
+      }
     }
   } catch (err) {
     wide.ok = phone.ok = false;
