@@ -11,7 +11,13 @@ const CHECKLIST_ITEMS = [
   { id: 3, label: 'Ava is ready' },
 ];
 
-export default function OnboardingCompletion({ onDone, data }) {
+/**
+ * `heading`, `body` and `children` are for gifting v2's done screen, which
+ * consumes this one (goals/2026-10-11-gifting-v2.md): its own heading and
+ * line, and its own content in place of the checklist and the button.
+ * Onboarding passes none of them and renders exactly as before.
+ */
+export default function OnboardingCompletion({ onDone, data, heading, body, children }) {
   const [completedItems, setCompletedItems] = useState([]);
   const [showButton, setShowButton] = useState(false);
   const textPrimary = '#0A0A0A';
@@ -73,7 +79,7 @@ export default function OnboardingCompletion({ onDone, data }) {
         transition={{ delay: 0.2 }}
         style={{ fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 700, color: textPrimary, fontFamily: PJS, marginBottom: 12 }}
       >
-        {firstName ? `You're all set, ${firstName}.` : "You're all set."}
+        {heading ?? (firstName ? `You're all set, ${firstName}.` : "You're all set.")}
       </motion.h1>
 
       <motion.p
@@ -82,9 +88,10 @@ export default function OnboardingCompletion({ onDone, data }) {
         transition={{ delay: 0.3 }}
         style={{ color: textMuted, fontSize: 16, marginBottom: 48, fontFamily: PJS }}
       >
-        Ava is setting up your dashboard now.
+        {body ?? 'Ava is setting up your dashboard now.'}
       </motion.p>
 
+      {children ?? <>
       {/* Checklist */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -127,6 +134,7 @@ export default function OnboardingCompletion({ onDone, data }) {
           Let's go →
         </motion.button>
       )}
+      </>}
     </div>
   );
 }

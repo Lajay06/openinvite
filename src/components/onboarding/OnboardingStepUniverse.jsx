@@ -53,7 +53,14 @@ const UNIVERSES = UNIVERSE_CATALOG.map((u, i) => ({
 // "Make this my universe" button already used, so the two stay in sync
 // automatically; whichever path a couple takes, every tile's checkmark
 // reflects the current choice.
-function UniverseGridTile({ universe, index, isSelected, onExplore, onSelectTile }) {
+/**
+ * Exported for gifting v2's photo step, which consumes this tile for its
+ * picture grid (goals/2026-10-11-gifting-v2.md). `imageSrc` puts a given
+ * photograph in place of the universe's own, with `universe.name` as its
+ * label and alt text; `hideExplore` drops the Explore button, since a photo
+ * has no preview to open. Both are additive: the universe step passes neither.
+ */
+export function UniverseGridTile({ universe, index, isSelected, onExplore, onSelectTile, imageSrc, hideExplore = false }) {
   const [hovered, setHovered] = useState(false);
   const swatches = [
     { color: universe.colors.darkBg, label: 'Ground' },
@@ -89,8 +96,8 @@ function UniverseGridTile({ universe, index, isSelected, onExplore, onSelectTile
           runs, and it fails silently. 900x1200 is this tile's own 3:4 — the
           same shape Universes.jsx and UniverseTeaserSection ask for. */}
       <img
-        src={universeTileImage(universe.id, { width: 900, height: 1200 }) || universe.photo}
-        alt={`The ${universe.name} universe: ${universe.tagline || 'a full wedding aesthetic'}`}
+        src={imageSrc || universeTileImage(universe.id, { width: 900, height: 1200 }) || universe.photo}
+        alt={imageSrc ? universe.name : `The ${universe.name} universe: ${universe.tagline || 'a full wedding aesthetic'}`}
         loading={index < 5 ? 'eager' : 'lazy'}
         style={{
           position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
@@ -147,7 +154,7 @@ function UniverseGridTile({ universe, index, isSelected, onExplore, onSelectTile
             which would immediately reopen the preview right after Select
             was pressed. */}
         <div style={{ display: 'flex', gap: 6 }}>
-          <button
+          {!hideExplore && <button
             type="button"
             onClick={(e) => { e.stopPropagation(); onExplore(); }}
             style={{
@@ -157,7 +164,7 @@ function UniverseGridTile({ universe, index, isSelected, onExplore, onSelectTile
             }}
           >
             Explore
-          </button>
+          </button>}
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); if (!isSelected) onSelectTile(); }}
