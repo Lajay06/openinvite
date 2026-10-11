@@ -493,7 +493,7 @@ export async function runDailyUpdatePage() {
       forms.today === "Morning, Jay. 115 days out and you're ahead. Today's one thing: confirm the florist count.",
       forms.today);
     check('  Waiting counts INVITATIONS and says it is normal',
-      forms.waiting === "Morning, Jay. 115 days out and nothing's on you today — 61 invitations are still to reply, which is normal.",
+      forms.waiting === "Morning, Jay. 115 days out and nothing's on you today, 61 invitations are still to reply, which is normal.",
       forms.waiting);
     check('PLANT: no anxious word ever reaches the top line',
       Object.values(forms).every(t => !ANXIOUS_WORDS.some(w => new RegExp(`\\b${w}\\b`, 'i').test(t))),
