@@ -18,7 +18,31 @@ import { execSync } from 'node:child_process';
 import { writeFileSync, rmSync, appendFileSync } from 'node:fs';
 
 const sh = (c, opts = {}) => execSync(c, { encoding: 'utf8', stdio: 'pipe', ...opts }).trim();
-const run = (c) => { try { execSync(c, { stdio: 'pipe' }); return 0; } catch (e) { return e.status ?? 1; } };
+const run = (c, opts = {}) => {
+  try { execSync(c, { stdio: 'pipe', ...opts }); return 0; } catch (e) { return e.status ?? 1; }
+};
+
+/**
+ * A SETUP STEP WHOSE FAILURE IS NOT A RESULT.
+ *
+ * `run` returns the exit code and every caller but one ignored it, which is
+ * how this runner came to report a case that never happened as a case that
+ * FAILED. The "new file under api/webhooks/" case needs a commit; the
+ * pre-commit hook in .githooks/pre-commit refuses any commit that stages a
+ * path absent from HEAD unless it was declared, and the probe path never was.
+ * So the commit was refused, HEAD never moved,
+ * scripts/check-payments-freeze.mjs read an empty diff range and correctly
+ * exited 0, and the case was marked failed against a checker that was right.
+ * Red since #891 on 2026-10-06, the commit that put both sides of it on main;
+ * it was never green there.
+ *
+ * Setup that does not land must therefore stop the case rather than colour
+ * it. Diagnosed read-only on 2026-10-11, fixed here under the owner's ruling.
+ */
+const mustRun = (c, what, opts = {}) => {
+  const code = run(c, opts);
+  if (code !== 0) throw new Error(`setup failed (${what}): exit ${code}`);
+};
 
 const PIN = sh('git rev-parse HEAD');
 const restore = () => sh(`git reset --hard ${PIN}`);
@@ -36,8 +60,16 @@ const CASES = [
   { name: 'planPricing.js edited',            want: 1, act: edit('api/_lib/planPricing.js') },
   { name: 'planGift.js edited',               want: 1, act: edit('api/_lib/planGift.js') },
   { name: 'giftAuth.js edited',               want: 1, act: edit('api/_lib/giftAuth.js') },
-  { name: 'frozen file RENAMED',              want: 1, act: () => sh('git mv api/create-checkout-session.js api/cco-renamed.js') },
-  { name: 'new file under api/webhooks/',     want: 1, act: () => writeFileSync('api/webhooks/probe.js', 'export default function h(){}\n') },
+  // DECLARED TOO, AND NOT BECAUSE IT NEEDS IT TODAY. git mv stages a rename,
+  // which `git diff --cached --diff-filter=A` reports as R rather than A while
+  // git's rename detection holds, so the hook sees no added path and this case
+  // has always committed. That is a technicality, not a property: the case
+  // creates a path, and relying on rename detection to keep the hook quiet is
+  // the same unstated assumption that hid the case above.
+  { name: 'frozen file RENAMED',              want: 1, declare: 'api/cco-renamed.js',
+    act: () => sh('git mv api/create-checkout-session.js api/cco-renamed.js') },
+  { name: 'new file under api/webhooks/',     want: 1, declare: 'api/webhooks/probe.js',
+    act: () => writeFileSync('api/webhooks/probe.js', 'export default function h(){}\n') },
   { name: 'security.js edited (allowed)',     want: 0, act: edit('api/_lib/security.js') },
   { name: 'base44Admin.js edited (allowed)',  want: 0, act: edit('api/_lib/base44Admin.js') },
   { name: 'clean tree',                       want: 0, act: () => {} },
@@ -53,7 +85,7 @@ let executed = 0, failed = 0;
 for (const c of CASES) {
   try {
     c.act();
-    run('git add -A');
+    mustRun('git add -A', 'git add');
     // TWO -m FLAGS, not one with an escaped newline. Git joins successive -m
     // values with a blank line, which is what makes a trailer a TRAILER. A
     // "\n" inside a shell-quoted -m is a literal backslash-n, so the trailer
@@ -61,7 +93,13 @@ for (const c of CASES) {
     // this runner on its first execution.
     const msgs = (c.msg || 'freeze probe').split('\n\n')
       .map(m => `-m ${JSON.stringify(m)}`).join(' ');
-    run(`git commit -q ${msgs} --allow-empty`);
+    // STAGE_PATHS DECLARES THIS CASE'S NEW FILES TO THE HOOK. It is the
+    // mechanism the hook documents, not a bypass: --no-verify would skip the
+    // credential and canon guards too, and a probe is exactly the honest slip
+    // the declaration exists for. Only the cases that create a path need it,
+    // and naming them per case keeps the declaration a statement of intent.
+    mustRun(`git commit -q ${msgs} --allow-empty`, 'git commit',
+      c.declare ? { env: { ...process.env, STAGE_PATHS: c.declare } } : {});
     const rc = run(`${c.env ? Object.entries(c.env).map(([k, v]) => `${k}=${JSON.stringify(v)}`).join(' ') + ' ' : ''}node scripts/check-payments-freeze.mjs --ci ${PIN}`);
     executed++;
     const ok = rc === c.want;
