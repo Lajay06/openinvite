@@ -69,28 +69,8 @@ function bannerAbove(html, attr) {
   const between = html.slice(end, html.lastIndexOf('<', at)).replace(/<!--[\s\S]*?-->/g, '').trim();
   return between === '' ? banner : '';
 }
-// ── THE PHONE MOMENT (site fixes batch 2, item 1) ────────────────────────
-// The site's own phone, drawn in CSS, playing the real 1320 by 2868 daily
-// update over POOL_PARTY. The only pictures in the section are that photo and
-// the recording's poster: anything else would be a raster frame or a still
-// from somewhere else.
 const PHONE = TOUR_PAGE_MEDIA['app-phone'];
 const POOL = 'DTS_POOL_PARTY_JELLY_LUISE_Photos_ID15749_om64j0';
-const momentChecks = (check, block, where) => {
-  check(`${where}: the phone moment is the section`, /data-app-moment/.test(block));
-  // The poster arrives as an <img> before the video mounts, or as the
-  // <video>'s poster attribute where the phone is already in view (/app).
-  const imgs = [...block.matchAll(/<img\b[^>]*src="([^"]+)"/g), ...block.matchAll(/<video\b[^>]*poster="([^"]+)"/g)]
-    .map((m) => m[1].replace(/&amp;/g, '&'));
-  const others = imgs.filter((u) => !u.includes(POOL) && u !== PHONE?.poster);
-  check(`${where}: the only pictures are POOL_PARTY and the recording's poster`,
-    imgs.some((u) => u.includes(POOL)) && imgs.includes(PHONE?.poster) && others.length === 0, others.join(', ').slice(0, 90) || `${imgs.length} img`);
-  const frame = sectionWith(block, 'data-app-phone-frame');
-  const frameOnly = frame.replace(sectionWith(frame, 'data-app-phone-screen'), '');
-  check(`${where}: the phone frame is CSS, with no picture of its own`,
-    !!frame && !/<img\b|background-image|url\(/i.test(frameOnly), 'no raster bezel');
-};
-
 // ── THE TWIN OF THE RED SECTION (site fixes batch 3) ─────────────────────
 // No title banner; the heading inside the section; POOL_PARTY and the
 // recording's poster as its only pictures; the CSS phone. Its one-screen
@@ -111,15 +91,6 @@ const twinChecks = (check, html, attr, where, heading, level) => {
   check(`${where}: the phone frame is CSS, with no picture of its own`,
     !!frame && !/<img\b|background-image|url\(/i.test(frameOnly), 'no raster bezel');
   return block;
-};
-
-const AVA_GRADIENT = 'linear-gradient(to right, #DDF762, #F0A050, #D4896A, #C99BBF, #9B59CC)';
-const bannerChecks = (check, banner, where, text, level) => {
-  check(`${where}: a title banner opens the app section`, !!banner);
-  check(`${where}: the banner is the Ava section's, gradient and heights`,
-    banner.includes('rgb(221, 247, 98)') || banner.includes('#DDF762') || banner.includes(AVA_GRADIENT), 'gradient');
-  check(`${where}: the banner carries "${text}" as its ${level}`,
-    new RegExp(`<${level}\\b[^>]*>\\s*${text.replace(/[.,]/g, (c) => '\\' + c)}\\s*</${level}>`).test(banner));
 };
 
 function htmlFiles(dir) {
@@ -159,25 +130,7 @@ export function runAppMarketing() {
     cardsAt > -1 && blockAt > cardsAt && pricingAt > blockAt, `cards ${cardsAt}, app ${blockAt}, pricing ${pricingAt}`);
 
   // ── items 2 and 4: the phones, the lines, /app and the footer ─────────
-  const LINES = [
-    'The morning page that tells you what today needs.',
-    'The guest list, with replies arriving as they happen.',
-    'The seating chart, wherever you are.',
-    'The budget, with every vendor payment and what is still owed.',
-    'Ava on every page, at any hour.',
-  ];
   const DESKTOP = 'You design your guest suite on a desktop, where the space is; everything else is yours wherever you are.';
-  const phonesBlock = (html, where) => {
-    const b = sectionWith(html, 'data-app-phones');
-    const bt = textOf(b);
-    check(`${where}: the app section is on the page`, !!b);
-    bannerChecks(check, bannerAbove(html, 'data-app-phones'), where, 'Everything, on your phone', where === '/app' ? 'h1' : 'h2');
-    const lines = [...b.matchAll(/<li\b[^>]*data-app-line[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1]).trim());
-    check(`${where}: the five lines, verbatim and in order`, JSON.stringify(lines) === JSON.stringify(LINES), JSON.stringify(lines).slice(0, 120));
-    check(`${where}: the desktop sentence, verbatim`, bt.includes(DESKTOP));
-    momentChecks(check, b, where);
-    return b;
-  };
   const features = existsSync(join(PRE, 'features/index.html')) ? readFileSync(join(PRE, 'features/index.html'), 'utf8') : '';
   // Batch 3, item 2: the red section's twin with the dark box kept, three of
   // the owner's four lines (the replies line waits for push), the desktop
@@ -202,7 +155,13 @@ export function runAppMarketing() {
 
   const appHtml = existsSync(join(PRE, 'app/index.html')) ? readFileSync(join(PRE, 'app/index.html'), 'utf8') : '';
   check('/app: prerendered', !!appHtml);
-  const ab = phonesBlock(appHtml, '/app');
+  // Batch 3, item 3: /app's hero is the Features twin, larger, as its h1.
+  const ab = twinChecks(check, appHtml, 'data-app-phones', '/app', 'Everything, on your phone', 'h1');
+  const alines = [...ab.matchAll(/<li\b[^>]*data-app-line[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1]).trim());
+  check('/app: the Features lines, verbatim and in order', JSON.stringify(alines) === JSON.stringify(FEATURE_LINES), JSON.stringify(alines).slice(0, 120));
+  check('/app: the desktop sentence, verbatim', textOf(ab).includes(DESKTOP));
+  check('/app: the hero runs larger', /app-twin--large/.test(ab));
+  check('/app: no line promises replies as they happen', !/replies arriving as they happen|as guests tap them/.test(textOf(appHtml)), 'held until push');
   check('/app: one h1 on the page', (appHtml.match(/<h1\b/g) || []).length === 1);
   const guests = textOf(sectionWith(appHtml, 'data-app-guests'));
   check('/app: "Do my guests need it?" with its body, verbatim',
@@ -258,12 +217,11 @@ export function runAppMarketing() {
     !!PHONE && [PHONE.webm, PHONE.mp4, PHONE.poster].every((u) => /\/studio-tour\/tour-page\/app-phone\/440-\d{14}\.(webm|mp4|jpg)$/.test(u)));
   const cloudSrc = readFileSync(resolve(ROOT, 'scripts/tour-recordings/lib/cloudinary.mjs'), 'utf8');
   check('phone recording: uploads go up with overwrite off', /overwrite: 'false'/.test(cloudSrc) && !/overwrite: 'true'/.test(cloudSrc));
-  const momentSrc = readFileSync(resolve(ROOT, 'src/components/marketing/AppPhoneMoment.jsx'), 'utf8');
-  const screens = [...momentSrc.matchAll(/\{ width: (\d+), height: (\d+), bezel: (\d+) \}/g)].map((m) => [+m[1], +m[2], +m[3]]);
-  check('phone frame: every screen size is an exact fraction of 1320 by 2868, with an even bezel',
-    screens.length === 3 && screens.every(([w, h]) => 1320 % w === 0 && 1320 / w === 2868 / h),
-    screens.map(([w, h, b]) => `${w}x${h} (1/${1320 / w}) bezel ${b}`).join(', '));
-  check('phone frame: drawn in the repo, no raster frame file', !/\.(png|jpe?g|webp|psd)['"]/i.test(stripComments(momentSrc)));
+  // THE BANNER AND THE PHONE MOMENT ARE GONE (batch 3): every app section is
+  // the red section's twin, so the components that drew them are deleted
+  // rather than left with no caller.
+  check('the title banner and the phone moment components are deleted',
+    ['TitleBanner', 'AppPhoneMoment', 'AppPhones'].every((n) => !existsSync(resolve(ROOT, `src/components/marketing/${n}.jsx`))), 'no dead copies');
   // THE TWIN'S PHONE IS REDUCED TO FIT, NEVER RESIZED OUT OF ASPECT: its
   // screen takes its width from the recording's own shape.
   const twinSrc = readFileSync(resolve(ROOT, 'src/components/marketing/AppTwinSection.jsx'), 'utf8');
