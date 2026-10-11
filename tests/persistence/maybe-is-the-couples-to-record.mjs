@@ -209,9 +209,17 @@ export async function runMaybeIsTheCouplesToRecord() {
      'not a bare 1');
   ok('the Guests page counts maybe separately from pending',
      /else if \(r\.status === 'maybe'\) maybe\+\+/.test(code('src/pages/Guests.jsx')), 'own bucket');
-  ok('  and counts it as replied',
-     /r\.status === 'yes' \|\| r\.status === 'no' \|\| r\.status === 'maybe'\) replied\+\+/
-       .test(code('src/pages/Guests.jsx')), 'replied means answered');
+  // RE-POINTED, NOT DROPPED. This asserted the rule against the Guests page's
+  // per-event counts, which owner ruling 2026-10-11 removed from that page
+  // (item 3 of goals/2026-10-11-dashboard-fixes-batch-1.md). The rule itself
+  // is unchanged and now lives in the one place that still computes "replied",
+  // src/lib/eventTallies.js, which the Daily update reads. Asserted there,
+  // where it still decides something.
+  ok('  and counts it as replied, where replied is still computed',
+     /replied: yes \+ no \+ maybe/.test(code('src/lib/eventTallies.js')),
+     'replied means answered');
+  ok('  and the Guests page no longer computes a replied count of its own',
+     !/replied\+\+/.test(code('src/pages/Guests.jsx')), 'removed with the line');
   ok('the dashboard chart already labels a Maybe bucket',
      /maybe: 'Maybe'/.test(code('src/components/dashboard/RSVPChart.jsx')), 'labelled');
 

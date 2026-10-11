@@ -81,46 +81,51 @@ export async function runGuestsRefresh() {
   ok('the time is built from parts, so a locale cannot vary it',
      !/toLocaleTimeString|toLocaleString/.test(code('src/lib/lastUpdated.js')), 'no locale call');
 
-  // ── 3. THE PAGE: ONLY A SUCCESSFUL LOAD MAY CLAIM FRESHNESS ─────────────
+  // ── 3. THE PAGE NO LONGER CARRIES EITHER CONTROL ────────────────────────
+  //
+  // REMOVED BY OWNER RULING, 2026-10-11, item 3 of
+  // goals/2026-10-11-dashboard-fixes-batch-1.md: the Refresh button and the
+  // age line go together, which is how they shipped. Everything this section
+  // used to assert about them is therefore obsolete, and deleting the section
+  // outright would leave nothing to stop them being reinstated by a later
+  // refactor that read the removal as an accident.
+  //
+  // So it inverts: the controls must stay gone, and the page must not carry
+  // the state they needed. The sections above are untouched, because
+  // src/lib/lastUpdated.js still behaves correctly and is still worth
+  // guarding. It now has NO CONSUMERS: the Guests page was its only one, and
+  // that is reported rather than resolved by deleting a working module.
   const g = code('src/pages/Guests.jsx');
 
-  ok('the page has a Refresh control at the top of the list',
-     /data-guests-refresh/.test(g) && /onClick=\{refreshNow\}/.test(g), 'Refresh');
-  ok('  and the age beside it', /data-guests-updated/.test(g), 'updated line');
-  ok('  both reading from the same lastLoadedAt',
-     /updatedLabel\(lastLoadedAt\)/.test(g) && /refreshFailedLine\(lastLoadedAt\)/.test(g), 'one source');
+  ok('the Refresh control is gone from the Guests page',
+     !/data-guests-refresh/.test(g), 'removed');
+  ok('  and the age line with it',
+     !/data-guests-updated/.test(g), 'removed');
+  ok('  neither label is computed anywhere on the page',
+     !/updatedLabel\(/.test(g) && !/refreshFailedLine\(/.test(g), 'no caller');
+  ok('  and the page no longer imports them',
+     !/lib\/lastUpdated/.test(g), 'no import');
 
-  // THE CENTRAL ASSERTION. setLastLoadedAt may appear exactly once, and it
-  // must be inside the success path: more than one call site is how a failed
-  // attempt would come to move the timestamp.
-  const stamps = (g.match(/setLastLoadedAt\(/g) || []).length;
-  ok('the timestamp is set in exactly one place', stamps === 1, `${stamps} call site(s)`);
-  const stampAt = g.indexOf('setLastLoadedAt(');
-  const catchAt = g.indexOf('setRefreshFailed(true)');
-  ok('  and that place is before the catch, so only a success moves it',
-     stampAt > 0 && catchAt > 0 && stampAt < catchAt, `stamp at ${stampAt}, catch at ${catchAt}`);
+  ok('the freshness state is gone too, not just the controls',
+     !/setLastLoadedAt\(/.test(g) && !/lastLoadedAt/.test(g)
+       && !/setRefreshFailed\(/.test(g) && !/refreshFailed/.test(g),
+     'no state');
+  ok('  including the re-render tick, which existed only to age the label',
+     !/setNowTick/.test(g), 'removed');
 
-  // THE LIST SURVIVES. The catch must not clear the rows; asserted on what
-  // the catch block contains rather than on the absence of a setter
-  // elsewhere, because setGuests([]) is legitimate on other paths.
-  const catchBlock = g.slice(catchAt - 200, catchAt + 300);
-  ok('a failed refresh does not empty the list',
-     !/setGuests\(\s*\[\s*\]\s*\)/.test(catchBlock), 'rows kept');
-  ok('  and does not clear the tables either',
-     !/setTables\(\s*\[\s*\]\s*\)/.test(catchBlock), 'tables kept');
-  ok('  it records the failure so the line can be shown',
-     /setRefreshFailed\(true\)/.test(g), 'flagged');
-  ok('  and a later success clears that flag',
-     /setRefreshFailed\(false\)/.test(g), 'cleared on success');
-
-  // THE TICK CARRIES NO STATE. It exists to re-render, and the owner's words
-  // were "driven by the time of the last successful load, not by the page's
-  // own clock": a counter started at mount would survive a failed refresh.
-  ok('the re-render tick holds no age of its own',
-     /setNowTick\(\(t\) => t \+ 1\)/.test(g) && /clearInterval\(id\)/.test(g),
-     'interval, cleaned up');
-  ok('  and the label is never computed from it',
-     !/updatedLabel\([^)]*[Tt]ick/.test(g), 'tick is not an input');
+  // WHAT THE REMOVAL MUST NOT HAVE TAKEN WITH IT. The list still reloads on
+  // mount and after every write, which is what it did before either control
+  // existed. A removal that also stopped the page reloading would read as
+  // "Refresh was the only way to get fresh data", which was never true.
+  ok('the list still loads itself',
+     /const loadGuests = async \(\) => \{/.test(g) && /loadGuests\(\)/.test(g), 'still loads');
+  ok('  and a failed load still leaves the rows alone',
+     (() => {
+       const i = g.indexOf('toast.error("Failed to load guests")');
+       if (i < 0) return false;
+       const block = g.slice(i - 400, i + 200);
+       return !/setGuests\(\s*\[\s*\]\s*\)/.test(block) && !/setTables\(\s*\[\s*\]\s*\)/.test(block);
+     })(), 'rows kept');
 
   return results;
 }

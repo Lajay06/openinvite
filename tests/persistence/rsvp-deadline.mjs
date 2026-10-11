@@ -32,7 +32,7 @@ import path from 'path';
 import { pass, fail, stripComments } from './_shared.mjs';
 import {
   normalizeDeadline, deadlineDate, formatDeadline, deadlineHasPassed,
-  CLOSED_HEADING, closedBody,
+  CLOSED_HEADING, closedBody, mergedRsvpContent,
 } from '../../src/lib/rsvpDeadline.js';
 
 const ROOT = path.resolve(new URL('../../', import.meta.url).pathname);
@@ -43,6 +43,10 @@ const RSVP_PAGE = 'src/components/guest-website/pages/WeddingRSVPPage.jsx';
 const FORM = 'src/components/rsvp/RSVPPage.jsx';
 const SUBMIT = 'api/rsvp-submit.js';
 const GUESTS = 'src/pages/Guests.jsx';
+const FIELD = 'src/components/shared/RsvpDeadlineField.jsx';
+const SEND = 'src/components/guests/SendInvitesModal.jsx';
+const EVENT_DETAILS = 'src/pages/EventDetails.jsx';
+const PAGE_MAP = 'src/lib/collaboratorPageMap.js';
 
 export async function runRsvpDeadline() {
   const results = [];
@@ -202,24 +206,95 @@ export async function runRsvpDeadline() {
      /Replies closed on \{formatDeadline/.test(form), 'closed-on line');
 
   // ── 8. THE COUPLE CAN SET IT, AND CLEARING REOPENS ──────────────────────
+  //
+  // MOVED, NOT REMOVED. Owner ruling 2026-10-11, item 3 of
+  // goals/2026-10-11-dashboard-fixes-batch-1.md: the editor leaves the Guests
+  // page and becomes editable on the Send invites review step and shown on
+  // Event details. Nothing server-side changed, so sections 1 to 7 above are
+  // untouched and still cover the field, its normalization and all nine guest
+  // site readers.
+  //
+  // These checks follow the editor rather than the page. Each one asserts the
+  // rule it always asserted, at its new address.
   const guests = code(GUESTS);
-  ok('the Guests page has a reply-by editor',
-     /data-rsvp-deadline/.test(guests) && /id="rsvp-deadline"/.test(guests), 'date input');
+  const field = code(FIELD);
+  const send = code(SEND);
+  const details = code(EVENT_DETAILS);
+
+  ok('the editor is gone from the Guests page',
+     !/data-rsvp-deadline/.test(guests) && !/id="rsvp-deadline"/.test(guests), 'removed');
+  ok('  and the page keeps no deadline state behind it',
+     !/rsvpDeadline/.test(code(GUESTS).replace(/\/\/.*$/gm, '')) && !/saveDeadline/.test(guests),
+     'no state');
+
+  ok('there is one editor, shared by both new homes',
+     /data-rsvp-deadline/.test(field) && /id="rsvp-deadline"/.test(field), 'RsvpDeadlineField');
   ok('  storing a calendar date through the shared normalizer',
-     /type="date"/.test(guests) && /normalizeDeadline\(next\)/.test(guests), 'YYYY-MM-DD');
+     /type="date"/.test(field) && /normalizeDeadline\(/.test(field), 'YYYY-MM-DD');
   ok('  merging into rsvpContent rather than replacing it',
-     /\.\.\.\(rsvpContent \|\| \{\}\), rsvpDeadline: value/.test(guests), 'merged');
+     /mergedRsvpContent\(rsvpContent, next\)/.test(field)
+       && /rsvpContent: merged/.test(field),
+     'merged');
+  ok('  and the merge rule itself keeps the couple\u2019s other RSVP copy',
+     (() => {
+       const merged = mergedRsvpContent({ intro: 'ours', rsvpDeadline: '2027-01-01' }, '2027-05-01');
+       return merged.intro === 'ours' && merged.rsvpDeadline === '2027-05-01';
+     })(), 'other keys kept');
+  ok('  an emptied date stores null, which is what every reader means by none',
+     mergedRsvpContent({}, '').rsvpDeadline === null, 'null');
   ok('  showing the date in the dashboard format, not the guest-facing written one',
-     /formatDashboardDate\(rsvpDeadline\)/.test(guests) && !/formatDeadline\(/.test(guests),
+     /formatDashboardDate\(value\)/.test(field) && !/formatDeadline\(/.test(field),
      'dashboard chrome stays numeric');
-  ok('  showing how many have not replied beside it',
-     /\{stats\.awaiting\}/.test(guests) && /not replied/.test(guests), 'awaiting count');
   ok('  and offering a way to clear it, which reopens the form',
-     /onClick=\{\(\) => saveDeadline\(''\)\}/.test(guests), 'Clear');
-  ok('  hidden for a collaborator, who has no wedding of their own',
-     /!isCollaborating && !loading && \(\s*<div\s*data-rsvp-deadline/.test(guests)
-       || /!isCollaborating/.test(guests.slice(guests.indexOf('data-rsvp-deadline') - 400, guests.indexOf('data-rsvp-deadline'))),
-     'gated');
+     /onClick=\{\(\) => save\(''\)\}/.test(field), 'Clear');
+  // USED IN THE CATCH, not merely declared. The first version tested that the
+  // constant existed, which a plant satisfied by deleting the setError call
+  // and leaving the export: the message was still in the file and nothing
+  // could ever show it.
+  ok('  saying so when the save fails, rather than looking saved',
+     /catch \{[\s\S]{0,300}setError\(DEADLINE_SAVE_ERROR\)/.test(field)
+       && /Could not save the date/.test(field),
+     'error shown');
+
+  // THE COUNT CLAUSE IS GONE ON PURPOSE. It read "N guests have not replied",
+  // which the Guests page could say because it held the whole list. The Send
+  // invites flow holds a SELECTION, so the same words would count a different
+  // population under them.
+  ok('the not-replied count did not travel with it',
+     !/not replied/.test(field), 'dropped deliberately');
+
+  // THE TAG, NOT ITS PREFIX. /<RsvpDeadlineField/ also matches
+  // <RsvpDeadlineFieldX, so a plant that renamed the component away left this
+  // green while the review step rendered nothing.
+  ok('it is EDITABLE on the Send invites review step',
+     /<RsvpDeadlineField[\s/>]/.test(send)
+       && !/readOnly/.test(send.slice(send.indexOf('<RsvpDeadlineField'), send.indexOf('<RsvpDeadlineField') + 300)),
+     'editable');
+  ok('  reading and writing the wedding the modal already loaded',
+     /rsvpContent=\{wedding\?\.rsvpContent\}/.test(send) && /onSaved=\{/.test(send), 'one record');
+  ok('it is SHOWN on Event details, and not editable there',
+     /<RsvpDeadlineField rsvpContent=\{r\.rsvpContent\} readOnly \/>/.test(details),
+     'read only');
+  // ONE INPUT, counted as an input rather than as a marker: the first version
+  // of this counted /data-rsvp-deadline\b/, which also matches the read-only
+  // mode's own data-rsvp-deadline-shown and so read 2 for a file with one
+  // editor in it.
+  ok('  because two editors for one field is how two surfaces disagree',
+     (field.match(/id="rsvp-deadline"/g) || []).length === 1
+       && (field.match(/type="date"/g) || []).length === 1,
+     'one input');
+
+  // THE COLLABORATOR GATE, WHICH THE MOVE PRESERVES STRUCTURALLY. The old row
+  // was hidden behind !isCollaborating because a collaborator has no
+  // WeddingDetails of their own to write. The editor now lives on a route a
+  // collaborator cannot reach at all, and Event details, which they CAN reach,
+  // gets the read-only mode.
+  ok('a collaborator cannot reach the route that edits it',
+     !/'\/SendInvites'/.test(code(PAGE_MAP)) && !/pageName: 'SendInvites'/.test(code(PAGE_MAP)),
+     'not in the page map');
+  ok('  and the page they can reach shows it without an input',
+     /readOnly/.test(details.slice(details.indexOf('<RsvpDeadlineField'), details.indexOf('<RsvpDeadlineField') + 200)),
+     'read only there');
 
   return results;
 }
