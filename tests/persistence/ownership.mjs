@@ -1,10 +1,12 @@
 /**
  * tests/persistence/ownership.mjs
  *
- * Cross-tenant isolation: proves the created_by_id filter mechanism every
- * resolveMyWedding.js-style helper depends on actually scopes to the owner,
- * for both WeddingDetails (needs the shared sentinel's id, passed in by the
- * runner) and LiveStream (self-contained sentinel).
+ * Cross-tenant isolation. For the open-read entities, WeddingDetails (needs
+ * the shared sentinel's id, passed in by the runner) and Guest, it proves the
+ * created_by_id filter every resolveMyWedding.js-style helper depends on
+ * actually scopes to the owner. For LiveStream, whose read is owner-scoped,
+ * it proves isolation with a second real account instead, because a
+ * fabricated id in q proves nothing there.
  */
 
 import { APP_ID, api, pass, fail, cleanupEntity } from './_shared.mjs';
@@ -51,64 +53,82 @@ export async function runOwnership(token, weddingDetailsRecordId) {
     results.push(false); results.push(false);
   }
 
-  // ── LiveStream ownership isolation (fix/livestream-scoping) ───────────────
-  // GuestSuiteLiveStream.jsx and LiveStreaming.jsx both used to call
-  // LiveStream.list('-created_date') with no created_by_id filter — the exact
-  // "most-recent-record-across-the-whole-app" bug resolveMyWedding.js's own
-  // doc comment describes, just never migrated to that fix for this entity.
-  // Both now go through the new getMyLiveStream() helper. This proves the
-  // underlying filter mechanism it depends on actually isolates by owner:
-  // a sentinel LiveStream must be found when filtering by its real owner,
-  // and must NOT be found when filtering by a different (fabricated) user id.
-  console.log('\n  LiveStream ownership isolation tests (one wedding\'s stream is not resolvable from another\'s context):\n');
+  // ── LiveStream: a second real account cannot read this wedding's stream ──
+  // LiveStream's read rule is owner-scoped ({created_by_id: "{{user.id}}"}),
+  // unlike WeddingDetails and Guest above, whose read is open. On an
+  // owner-scoped entity a fabricated created_by_id in q proves nothing: the
+  // rule's own created_by_id appears to take its place, so the caller gets its
+  // OWN rows back whatever id the q names (inferred, see
+  // BASE44_PLATFORM_NOTES.md). This block used to do exactly that with the
+  // owner's token and reported its own sentinel as a breach.
+  //
+  // Owner ruling 2026-10-11: isolation on an owner-scoped-read entity is proved
+  // with a second real account, never with a fabricated id in q. The runner's
+  // account writes the sentinel; the second account (BASE44_TEST_EMAIL_2, see
+  // BASE44_PLATFORM_NOTES.md, "Registration requires real email-OTP
+  // verification") reads it three ways and must get nothing every time. The
+  // same applies to StreamChat if it is ever added here.
+  //
+  // LiveStream declares no is_test field, so the sentinel is marked by its
+  // title alone, and the finally deletes it by the id this run created.
+  console.log('\n  LiveStream isolation (a second real account cannot read this wedding\'s stream):\n');
+  const LIVESTREAM_CHECKS = 4;
+  const email2 = process.env.BASE44_TEST_EMAIL_2;
+  const password2 = process.env.BASE44_TEST_PASSWORD_2;
+  const liveStreamStart = results.length;
   let liveStreamId = null;
   try {
+    if (!email2 || !password2) {
+      throw new Error('BASE44_TEST_EMAIL_2 and BASE44_TEST_PASSWORD_2 are not set; isolation on an owner-scoped entity needs a second real account, so nothing was written');
+    }
+    const auth2 = await api('POST', `/apps/${APP_ID}/auth/login`, { email: email2, password: password2 });
+    const token2 = auth2?.access_token;
+    if (!token2) throw new Error('the second account did not log in; nothing was written');
+    const [me, other] = await Promise.all([
+      api('GET', `/apps/${APP_ID}/entities/User/me`, undefined, token),
+      api('GET', `/apps/${APP_ID}/entities/User/me`, undefined, token2),
+    ]);
+    if (!me?.id || !other?.id) throw new Error('could not resolve both accounts\' user ids; nothing was written');
+    if (me.id === other.id) throw new Error('the second account is the same user as the first; nothing was written');
+
     const created = await api('POST', `/apps/${APP_ID}/entities/LiveStream`, {
       title: '__PERSISTENCE_TEST_LIVESTREAM__',
       stream_url: 'https://www.youtube.com/watch?v=test-sentinel',
-      is_test: true,
     }, token);
-    liveStreamId = created.id;
+    liveStreamId = created?.id;
     if (!liveStreamId) throw new Error('No id on created LiveStream');
 
-    const me = await api('GET', `/apps/${APP_ID}/entities/User/me`, undefined, token);
-    const realUserId = me.id;
-    if (!realUserId) throw new Error('Could not resolve the test account\'s own user id');
+    const asList = (r) => Array.isArray(r) ? r : (r?.data || r?.results || []);
+    const ownQuery = encodeURIComponent(JSON.stringify({ created_by_id: me.id }));
 
-    const ownQuery = encodeURIComponent(JSON.stringify({ created_by_id: realUserId }));
-    const ownResults = await api('GET', `/apps/${APP_ID}/entities/LiveStream?q=${ownQuery}`, undefined, token);
-    const ownList = Array.isArray(ownResults) ? ownResults : (ownResults?.data || ownResults?.results || []);
-    const foundBySelf = ownList.some(s => s.id === liveStreamId);
-    results.push(foundBySelf
-      ? pass('LiveStream.filter({created_by_id: <real owner>})', 'sentinel found, as expected')
-      : fail('LiveStream.filter({created_by_id: <real owner>})', liveStreamId, ownList.map(s => s.id)));
+    // The positive half, so the negatives below cannot pass on an empty read.
+    const ownList = asList(await api('GET', `/apps/${APP_ID}/entities/LiveStream?q=${ownQuery}`, undefined, token));
+    results.push(ownList.some(s => s.id === liveStreamId)
+      ? pass('LiveStream: the owner reads its own stream', 'sentinel found, as expected')
+      : fail('LiveStream: the owner reads its own stream', liveStreamId, ownList.map(s => s.id)));
 
-    const fakeUserId = `test-second-user-${Date.now()}-does-not-exist`;
-    const fakeQuery = encodeURIComponent(JSON.stringify({ created_by_id: fakeUserId }));
-    const fakeResults = await api('GET', `/apps/${APP_ID}/entities/LiveStream?q=${fakeQuery}`, undefined, token);
-    const fakeList = Array.isArray(fakeResults) ? fakeResults : (fakeResults?.data || fakeResults?.results || []);
-    const leakedToOther = fakeList.some(s => s.id === liveStreamId);
-    results.push(!leakedToOther
-      ? pass('LiveStream.filter({created_by_id: <other user>})', 'sentinel correctly absent')
-      : fail('LiveStream.filter({created_by_id: <other user>}) — ISOLATION BREACH', 'sentinel absent', 'sentinel present'));
+    const namedList = asList(await api('GET', `/apps/${APP_ID}/entities/LiveStream?q=${ownQuery}`, undefined, token2));
+    results.push(!namedList.some(s => s.id === liveStreamId)
+      ? pass('LiveStream: a second account filtering on the owner\'s id gets nothing', `${namedList.length} row(s), none the sentinel`)
+      : fail('LiveStream: a second account filtering on the owner\'s id gets nothing, ISOLATION BREACH', 'sentinel absent', 'sentinel present'));
 
-    // The old bug specifically: an UNFILTERED list() call would return this
-    // sentinel as [0] (most recent) regardless of who's asking. Confirm the
-    // fixed helper's actual query shape excludes it for a different owner —
-    // i.e. simulate "another wedding's context" the same way
-    // getMyLiveStream() does, scoped by created_by_id, and confirm it comes
-    // back null rather than resolving this wedding's sentinel stream.
-    const otherContextResults = await api('GET', `/apps/${APP_ID}/entities/LiveStream?q=${fakeQuery}`, undefined, token);
-    const otherContextList = Array.isArray(otherContextResults) ? otherContextResults : (otherContextResults?.data || otherContextResults?.results || []);
-    const resolvedForOtherContext = otherContextList.filter(s => !s.is_test).length > 0
-      ? otherContextList.filter(s => !s.is_test).sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0]
-      : null;
-    results.push(resolvedForOtherContext === null
-      ? pass('getMyLiveStream() mechanism — another wedding\'s context resolves no stream', 'null, as expected')
-      : fail('getMyLiveStream() mechanism — another wedding\'s context resolves no stream', null, resolvedForOtherContext?.id));
+    const allList = asList(await api('GET', `/apps/${APP_ID}/entities/LiveStream`, undefined, token2));
+    results.push(!allList.some(s => s.id === liveStreamId)
+      ? pass('LiveStream: a second account listing with no filter gets nothing of the owner\'s', `${allList.length} row(s), none the sentinel`)
+      : fail('LiveStream: a second account listing with no filter, ISOLATION BREACH', 'sentinel absent', 'sentinel present'));
+
+    let byId = null;
+    try {
+      byId = await api('GET', `/apps/${APP_ID}/entities/LiveStream/${liveStreamId}`, undefined, token2);
+    } catch (err) {
+      if (!/HTTP 40[34]/.test(err.message)) throw err;
+    }
+    results.push(!byId?.id
+      ? pass('LiveStream: a second account reading the sentinel by its id gets nothing', 'refused or not found')
+      : fail('LiveStream: a second account reading the sentinel by its id, ISOLATION BREACH', 'nothing', byId.id));
   } catch (err) {
-    console.log(`  ❌ FAIL  LiveStream ownership isolation — error: ${err.message}`);
-    results.push(false, false, false);
+    console.log(`  ❌ FAIL  LiveStream isolation, error: ${err.message}`);
+    while (results.length < liveStreamStart + LIVESTREAM_CHECKS) results.push(false);
   } finally {
     if (liveStreamId) {
       await cleanupEntity(token, 'LiveStream', liveStreamId);
