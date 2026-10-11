@@ -1,4 +1,5 @@
 import { prefGet, prefSet } from '../native';
+import { formatDashboardDate } from '@/lib/dashboardDate';
 
 /**
  * The offline cache for the day (goal 8, item 11). Four screens keep the
@@ -47,5 +48,5 @@ export function cachedAtLabel(at) {
   const sameDay = d.toDateString() === today.toDateString();
   const time = d.toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' }).replace(' ', '').toLowerCase();
   if (sameDay) return `Last updated today at ${time}`;
-  return `Last updated ${d.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })} at ${time}`;
+  return `Last updated ${formatDashboardDate(d)} at ${time}`;
 }

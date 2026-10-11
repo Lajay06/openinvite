@@ -8,6 +8,7 @@ import Segments, { useSegment } from '../../ui/Segments';
 import { useConfirm } from '../../ui/ConfirmSheet';
 import FormSheet from '../../features/FormSheet';
 import { timeLabel } from '../../lib/format';
+import { formatDashboardDate } from '@/lib/dashboardDate';
 import { buildScheduleEvents, groupEventsByDay, WHEN_LABEL, WHEN_RANK, ROW_HOME, PLANNING_CATEGORIES, CATEGORY_LABEL, eventsInSchedule, runSheetFor, unplaceableCount } from '@/lib/scheduleEvents';
 import { sortScheduleItems } from '@/lib/scheduleOrder';
 import { buildIcsCalendar, slugifyForFilename } from '@/lib/ics';
@@ -49,7 +50,7 @@ function sortEvents(list, key, dir) {
   return dir === 'desc' ? out.reverse() : out;
 }
 
-const dayTitle = (date) => (date ? new Date(`${date}T00:00:00`).toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' }) : 'No date yet');
+const dayTitle = (date) => formatDashboardDate(date) || 'No date yet';
 
 /**
  * Schedule: the desktop ScheduleHub. Timeline is the merged list
