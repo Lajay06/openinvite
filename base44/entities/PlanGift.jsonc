@@ -4,11 +4,14 @@
   "properties": {
     "stripe_session_id": {
       "type": "string",
-      "description": "Buyer's original checkout session id. Plaintext (not sensitive) — idempotency key and support lookup."
+      "description": "Buyer's original checkout session id. Plaintext (not sensitive) \u2014 idempotency key and support lookup."
     },
     "plan": {
       "type": "string",
-      "enum": ["pro", "ultra"],
+      "enum": [
+        "pro",
+        "ultra"
+      ],
       "description": "The gifted plan tier, resolved server-side from the purchased Stripe price ID, never client-supplied."
     },
     "currency": {
@@ -21,7 +24,7 @@
     },
     "buyer_user_id_hash": {
       "type": "string",
-      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, buyer.id) — null when the buyer wasn't logged in (gifting doesn't require a buyer account). read:null means this entity is listable unscoped by anyone with any API token, so the raw user id never lives here."
+      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, buyer.id) \u2014 null when the buyer wasn't logged in (gifting doesn't require a buyer account). read:null means this entity is listable unscoped by anyone with any API token, so the raw user id never lives here."
     },
     "buyer_email_enc": {
       "type": "string",
@@ -41,7 +44,7 @@
     },
     "promotion_code_id": {
       "type": "string",
-      "description": "Plaintext Stripe Promotion Code id (promo_...) minted for this gift. Not sensitive — needed to correlate a later redemption back to this row."
+      "description": "Plaintext Stripe Promotion Code id (promo_...) minted for this gift. Not sensitive \u2014 needed to correlate a later redemption back to this row."
     },
     "promotion_code_display": {
       "type": "string",
@@ -62,7 +65,10 @@
     },
     "status": {
       "type": "string",
-      "enum": ["purchased", "redeemed"],
+      "enum": [
+        "purchased",
+        "redeemed"
+      ],
       "default": "purchased",
       "description": "purchased: gift bought, code minted and delivered (or fallback-only if recipient delivery failed). redeemed: the promotion code was used at a real (existing, unmodified) checkout."
     },
@@ -73,7 +79,7 @@
     },
     "redeemed_user_id_hash": {
       "type": "string",
-      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, redeemer.id) — the user who redeemed the code, set at the same time as redeemed_at."
+      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, redeemer.id) \u2014 the user who redeemed the code, set at the same time as redeemed_at."
     },
     "purchased_at": {
       "type": "string",
@@ -84,9 +90,72 @@
       "type": "boolean",
       "default": false,
       "description": "Set by the live-evidence run and any future test harness. Product queries must exclude is_test records."
+    },
+    "recipient_names_enc": {
+      "type": "string",
+      "description": "AES-256-GCM ciphertext of the recipient's name(s). Same key and construction as recipient_email_enc."
+    },
+    "headline_key": {
+      "type": "string",
+      "enum": [
+        "nice_start",
+        "for_you",
+        "enjoy_this",
+        "spreadsheet",
+        "sorted"
+      ],
+      "description": "Which reveal headline the recipient's page uses."
+    },
+    "photo_key": {
+      "type": "string",
+      "description": "Key of the photo chosen for the reveal page."
+    },
+    "note_style": {
+      "type": "string",
+      "enum": [
+        "plain",
+        "serif",
+        "hand"
+      ],
+      "description": "Typeface treatment for the buyer's personal note on the reveal page."
+    },
+    "send_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the reveal is scheduled to go out."
+    },
+    "sent_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the reveal actually went out."
+    },
+    "claim_token_hash": {
+      "type": "string",
+      "description": "HMAC-SHA256 hash of the recipient's claim token \u2014 a hash, not the token, so the link cannot be reconstructed from a row."
+    },
+    "claimed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the recipient claimed the gift."
+    },
+    "claimed_user_id_hash": {
+      "type": "string",
+      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, id of the user who claimed the gift). A hash, not the raw user id."
+    },
+    "edit_token_hash": {
+      "type": "string",
+      "description": "HMAC-SHA256 hash of the buyer's edit token \u2014 a hash, not the token."
+    },
+    "version": {
+      "type": "integer",
+      "description": "Whole-number version of the gift's editable content, bumped on each edit."
     }
   },
-  "required": ["stripe_session_id", "plan", "recipient_email_enc", "promotion_code_id", "promotion_code_display", "coupon_id"],
+  "required": [
+    "stripe_session_id",
+    "plan",
+    "recipient_email_enc"
+  ],
   "rls": {
     "create": null,
     "read": null,

@@ -1,0 +1,38 @@
+{
+  "name": "GiftDraft",
+  "type": "object",
+  "properties": {
+    "draft_enc": {
+      "type": "string",
+      "description": "AES-256-GCM ciphertext (base64, iv+authTag+ciphertext) of the in-progress gift draft. Key derived from BASE44_ADMIN_KEY, same construction as PlanGift's encrypted fields."
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this draft stops being usable."
+    },
+    "buyer_user_id_hash": {
+      "type": "string",
+      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, buyer.id). A hash, not the raw user id \u2014 read:null makes this entity listable unscoped by anyone with any API token."
+    },
+    "is_test": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set by the live-evidence run and any future test harness. Product queries must exclude is_test records."
+    }
+  },
+  "required": [
+    "draft_enc",
+    "expires_at"
+  ],
+  "rls": {
+    "create": null,
+    "read": null,
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}
