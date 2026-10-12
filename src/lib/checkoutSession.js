@@ -204,3 +204,43 @@ export async function startGiftCheckout(plan, setLoadingPlan, setCheckoutError, 
     setLoadingPlan(null);
   }
 }
+
+/**
+ * GIFTING V2 CHECKOUT (goals/2026-10-11-gifting-v2.md, item 6). The giver's
+ * draft goes to the server whole, which checks it, holds it for 60 minutes
+ * (GiftDraft) and answers with the Stripe URL; nothing reaches Stripe but the
+ * plan's price and the draft's id. The buyer needs no account: a signed-in
+ * buyer's id is sent so their purchase can be found, nothing else.
+ *
+ * @param {object} draft the page's draft (plan, names, email, giver, note,
+ *   noteStyle, headlineKey, photoId, when, date)
+ * @param {string} timezone the browser's IANA zone, for a dated send
+ * @returns {Promise<{ url?: string, error?: string }>}
+ */
+export async function startGiftV2Checkout(draft, timezone, deps = {}) {
+  const {
+    resolveUser = async () => (await import('@/api/base44Client')).base44.auth.me(),
+    doFetch = (...args) => fetch(...args),
+  } = deps;
+  const { priceId } = resolveCheckoutPriceId(draft.plan || 'ultra');
+  let userId = '';
+  let userEmail = '';
+  try { const me = await resolveUser(); userId = me?.id || ''; userEmail = me?.email || ''; } catch { /* a guest giver */ }
+  const giftDraft = {
+    names: draft.names, email: draft.email, giver: draft.giver, note: draft.note,
+    noteStyle: draft.noteStyle, headlineKey: draft.headlineKey, photoId: draft.photoId,
+    when: draft.when, ...(draft.when === 'date' ? { date: draft.date, timezone } : {}),
+  };
+  try {
+    const res = await doFetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ priceId, userId, userEmail, giftMode: true, giftVersion: 2, giftDraft }),
+    });
+    const data = (res.headers.get('content-type') || '').includes('application/json') ? await res.json() : {};
+    if (data.url) return { url: data.url };
+    return { error: data.error || 'Checkout could not start. Please try again.' };
+  } catch {
+    return { error: 'Network error: could not reach the checkout server. Please try again.' };
+  }
+}
