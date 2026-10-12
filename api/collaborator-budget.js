@@ -5,45 +5,26 @@
  * only. Same permission mechanism as collaborator-guests.js (CollaboratorGrant,
  * see api/_lib/collaboratorAuth.js), checked against the 'Budget' page
  * before touching any data. A collaborator with no Budget permission at
- * all gets a 403 here — before any Base44 call is even made — and would
- * be denied a second time regardless, since Budget.read is also
- * owner-scoped and the admin key can't satisfy that for a non-owner
- * either. Write operations aren't offered here at all: Budget.update is
- * owner-scoped the same way Guest's is, so an admin-key write would 403
- * even for a collaborator legitimately granted 'edit' (same limitation
- * documented in collaborator-guests.js).
+ * all gets a 403 here, before any Base44 call is even made, and would be
+ * denied a second time by the hosted function, which checks the grant again
+ * itself. Write operations aren't offered here at all: Budget stays view only
+ * (owner ruling 2026-10-12).
  *
  * Query always includes ownerUserId — the wedding owner's Base44 User.id.
+ *
+ * Item 7, PR 2: the admin key gets an empty list from Budget (owner-scoped
+ * read), so the rows come through the hosted function, by readOwnerScoped in
+ * collaborator-data.js. Not configured, nothing is read and the page gets an
+ * empty budget, the calm empty state.
  */
 
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
 import { getCollaborationFor, hasPagePermission } from './_lib/collaboratorAuth.js';
-import { excludeTestRecords } from './_lib/productData.js';
+import { collabReadsConfigured, readOwnerScoped, NOT_CONFIGURED } from './collaborator-data.js';
 
-const BASE44_API = 'https://base44.app/api';
-const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY;
 const PAGE = 'Budget';
-
-function unwrapList(payload) {
-  if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload?.data)) return payload.data;
-  if (Array.isArray(payload?.results)) return payload.results;
-  return [];
-}
-
-async function adminFetch(method, path) {
-  const res = await fetch(`${BASE44_API}${path}`, {
-    method,
-    headers: { Authorization: `Bearer ${BASE44_ADMIN_KEY}` },
-  });
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(`Base44 ${method} ${path} failed (${res.status}): ${text.slice(0, 200)}`);
-  }
-  return res.json();
-}
 
 export default async function handler(req, res) {
   if (applyCors(req, res)) return;
@@ -73,6 +54,12 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'ownerUserId is required' });
   }
 
+  // Before the grant check, which needs COLLAB_HASH_KEY: nothing is read.
+  if (!collabReadsConfigured()) {
+    console.log(NOT_CONFIGURED);
+    return res.status(200).json({ budget: [] });
+  }
+
   try {
     const collaboration = await getCollaborationFor(caller.id, ownerUserId, BASE44_ADMIN_KEY);
     if (!collaboration) {
@@ -82,10 +69,10 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: 'You do not have permission to view the budget for this wedding.' });
     }
 
-    const query = encodeURIComponent(JSON.stringify({ created_by_id: ownerUserId }));
-    const rows = unwrapList(await adminFetch('GET', `/apps/${BASE44_APP_ID}/entities/Budget?q=${query}`));
+    const callerToken = String(req.headers.authorization || '').replace(/^Bearer /, '');
+    const { Budget: budget } = await readOwnerScoped({ callerToken, ownerUserId, page: PAGE, entities: ['Budget'] });
 
-    return res.status(200).json({ budget: excludeTestRecords(rows) });
+    return res.status(200).json({ budget });
   } catch (err) {
     console.error('[collaborator-budget] Error:', err.message);
     return res.status(500).json({ error: 'Something went wrong — please try again.' });
