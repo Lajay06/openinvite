@@ -235,6 +235,16 @@ Exits 0 if all pass, 1 if any fail (CI-ready).
 **Requires:** `BASE44_TEST_EMAIL` and `BASE44_TEST_PASSWORD` in `.env.local`  
 (dedicated test account `jaygalaxy23@gmail.com` — credentials in `.env.local`, gitignored).
 
+**Also requires, for ownership.mjs:** `BASE44_TEST_EMAIL_2` and `BASE44_TEST_PASSWORD_2`,
+a second real account, owner-held (owner ruling 2026-10-12). The runner's account writes
+a LiveStream sentinel and this account reads it, because isolation on an owner-scoped-read
+entity cannot be proved with one account. Use a fresh `la.jay06+` alias, verified once
+through its email code. The two lines go in lane A's `.env.local`, the clone that runs the
+live lane. Without them the LiveStream checks fail and say why; nothing is written.
+
+**And, for collaborator-invite.mjs:** `COLLAB_HASH_KEY`, the production value, in lane A's
+`.env.local`. That guard signs invite links locally and sends them to production.
+
 **Run it when you:**
 - Add a new Guest Suite data field
 - Change a field name anywhere in the Guest Suite → Base44 pipeline
