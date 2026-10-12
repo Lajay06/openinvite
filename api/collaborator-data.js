@@ -20,6 +20,18 @@
  * `weddingDetailsFields` in the map is an explicit ALLOWLIST — only those
  * sub-fields are copied into the response, for the pages that declare it.
  *
+ * OWNER-SCOPED ENTITIES go through the hosted function (item 7, PR 2). Nine
+ * entities have owner-scoped read, and the admin key gets an empty list from
+ * every one of them. base44/functions/collaboratorRead reads them with
+ * asServiceRole, checking the grant again itself, and readOwnerScoped below is
+ * the one caller. Open entities and WeddingDetails stay on the admin key.
+ *
+ * NOT CONFIGURED FAILS CALM (owner, 2026-10-12): with COLLAB_FN_SECRET or a
+ * valid COLLAB_HASH_KEY missing, as on Preview, nothing is read and nothing is
+ * called, the log says "collaborator reads not configured" with no ids, and
+ * the page gets its empty lists: the calm empty state, never an error. A
+ * failed function call is the same: its entities come back empty.
+ *
  * Response: 200 { data: { [entityName]: [...], weddingDetails?: {...} }, coupleNames, canEdit }
  *        or 400 { error } if `page` isn't a real permission key
  *        or 403 { error } if not an accepted collaborator, or lacking view on this page
@@ -41,6 +53,57 @@ function unwrapList(payload) {
   if (Array.isArray(payload?.data)) return payload.data;
   if (Array.isArray(payload?.results)) return payload.results;
   return [];
+}
+
+/** The nine entities whose read is owner-scoped; the admin key cannot read them. */
+export const OWNER_SCOPED_ENTITIES = new Set([
+  'Budget', 'Schedule', 'Music', 'Invitation', 'Table', 'VenueAsset', 'RegistryItem', 'Vendor', 'MoodboardItem',
+]);
+
+export const NOT_CONFIGURED = 'collaborator reads not configured';
+
+/** Both secrets present, the hash key in its one valid shape. Read per call, never printed. */
+export function collabReadsConfigured() {
+  return !!process.env.COLLAB_FN_SECRET && /^[0-9a-f]{64}$/i.test(process.env.COLLAB_HASH_KEY || '');
+}
+
+/** Every entity a page reads, as an empty list: what a page shows when there is nothing to show. */
+export function emptyLists(entities) {
+  return Object.fromEntries(entities.filter(e => e !== 'WeddingDetails').map(e => [e, []]));
+}
+
+/**
+ * The owner's rows of owner-scoped entities, through the hosted function, as
+ * the collaborator. The caller's own token goes with it, so the function knows
+ * who is asking from Base44 rather than from us. Any failure is logged without
+ * ids and answers empty lists.
+ */
+export async function readOwnerScoped({ callerToken, ownerUserId, page, entities }) {
+  const out = emptyLists(entities);
+  if (!entities.length) return out;
+  try {
+    const res = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/functions/collaboratorRead`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${callerToken}`,
+        'X-Collab-Fn-Secret': process.env.COLLAB_FN_SECRET,
+      },
+      body: JSON.stringify({ ownerUserId, page }),
+    });
+    if (!res.ok) {
+      console.error(`[collaborator-data] collaborator read failed (${res.status})`);
+      return out;
+    }
+    const body = await res.json();
+    for (const entity of entities) {
+      if (Array.isArray(body?.data?.[entity])) out[entity] = body.data[entity];
+    }
+    return out;
+  } catch {
+    console.error('[collaborator-data] collaborator read failed');
+    return out;
+  }
 }
 
 async function adminFetch(path) {
@@ -88,6 +151,12 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Unknown page' });
   }
 
+  // Before the grant check, which needs COLLAB_HASH_KEY: nothing is read.
+  if (!collabReadsConfigured()) {
+    console.log(NOT_CONFIGURED);
+    return res.status(200).json({ data: emptyLists(pageConfig.entities), coupleNames: null, canEdit: false });
+  }
+
   try {
     const collaboration = await getCollaborationFor(caller.id, ownerUserId, BASE44_ADMIN_KEY);
     if (!collaboration) {
@@ -105,15 +174,20 @@ export default async function handler(req, res) {
     const entitiesToFetch = pageConfig.entities.filter(e => e !== 'WeddingDetails');
     const weddingQuery = encodeURIComponent(JSON.stringify({ created_by_id: ownerUserId }));
 
-    const [entityResults, weddings] = await Promise.all([
-      Promise.all(entitiesToFetch.map(entity =>
+    const openEntities = entitiesToFetch.filter(e => !OWNER_SCOPED_ENTITIES.has(e));
+    const scopedEntities = entitiesToFetch.filter(e => OWNER_SCOPED_ENTITIES.has(e));
+    const callerToken = String(req.headers.authorization || '').replace(/^Bearer /, '');
+
+    const [entityResults, scoped, weddings] = await Promise.all([
+      Promise.all(openEntities.map(entity =>
         adminFetch(`/apps/${BASE44_APP_ID}/entities/${entity}?q=${query}`).then(unwrapList).then(excludeTestRecords)
       )),
+      readOwnerScoped({ callerToken, ownerUserId, page, entities: scopedEntities }),
       adminFetch(`/apps/${BASE44_APP_ID}/entities/WeddingDetails?q=${weddingQuery}`).then(unwrapList).then(excludeTestRecords),
     ]);
 
-    const data = {};
-    entitiesToFetch.forEach((entity, i) => { data[entity] = entityResults[i]; });
+    const data = { ...scoped };
+    openEntities.forEach((entity, i) => { data[entity] = entityResults[i]; });
     const wedding = weddings.length > 0
       ? weddings.slice().sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0]
       : null;

@@ -90,6 +90,10 @@ export async function runCollaboratorRevoke() {
   // Collaborator hashes and invite links use COLLAB_HASH_KEY, never the admin key.
   const priorHashKey = process.env.COLLAB_HASH_KEY;
   process.env.COLLAB_HASH_KEY = '0123456789abcdef'.repeat(4);
+  // Configured, so collaborator-data.js runs its grant check rather than the
+  // not-configured empty page.
+  const priorFnSecret = process.env.COLLAB_FN_SECRET;
+  process.env.COLLAB_FN_SECRET = 'fn-secret-for-the-guard-only';
 
   const { hashId, getCollaborationFor } = await import('../../api/_lib/collaboratorAuth.js');
   const revokeHandler = (await import('../../api/collaborator-revoke.js')).default;
@@ -235,6 +239,7 @@ export async function runCollaboratorRevoke() {
     if (priorKey === undefined) delete process.env.BASE44_ADMIN_KEY;
     else process.env.BASE44_ADMIN_KEY = priorKey;
     if (priorHashKey === undefined) delete process.env.COLLAB_HASH_KEY; else process.env.COLLAB_HASH_KEY = priorHashKey;
+    if (priorFnSecret === undefined) delete process.env.COLLAB_FN_SECRET; else process.env.COLLAB_FN_SECRET = priorFnSecret;
   }
 
   // ── THE MODAL REVOKES BEFORE IT DELETES ─────────────────────────────────
