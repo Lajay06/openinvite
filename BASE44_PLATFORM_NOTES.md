@@ -99,37 +99,44 @@ Measured 2026-10-11, counts only:
 
 | Store | Rows under the dead cipher |
 |---|---|
-| `Guest.encrypted_guest_pii` | 375 of 382 (207 the owner's, 168 other accounts') |
+| `Guest.encrypted_guest_pii` | 375 of 382 (207 the owner's own account, 168 across 56 others; all test accounts) |
 | `WeddingDetails` encrypted fields | 19 of 81 |
 | `Note` PII blob | 0 of 0 |
 
-**Nothing is lost.** The plaintext columns are still present, by the deliberate
-two-script split: `scripts/migrate-guest-pii.mjs` writes blobs and nulls
-nothing, and `scripts/null-guest-pii.mjs` (Track D) is the separate destructive
-step. A dead blob falls back to plaintext, which is what the thirteen
-`[guestPii] blob failed to decrypt` log lines were.
+> **CORRECTED 2026-10-12. The three paragraphs that followed this line claimed
+> nothing was lost, that Track D was merely blocked, and that 207 rows could be
+> rewritten by a tool. All three were wrong, and they were wrong in the same
+> way: they were read out of code comments instead of counted. What is true is
+> below, under "What was actually lost".**
 
-**Track D cannot destroy anything, and that is a mechanism rather than a
-promise.** It verifies every target row before writing a single column
-(`null-guest-pii.mjs:174-194`): a row whose blob does not decrypt goes on an
-`unsafe` list, and one entry on that list aborts the entire run with nothing
-written. Run today it would refuse on all 375. An earlier note in this incident
-called that a data-loss hazard, which was wrong: the correct statement is that
-Track D is BLOCKED until the blobs are rebuilt, not that it is dangerous.
+**What was actually lost.** Track D had ALREADY RUN before the rotation. All
+375 dead-blob rows carry `name` equal to `NAME_PLACEHOLDER` and have their nine
+nullable PII columns null, which is Track D's signature and is the proof.
+Measured 2026-10-12: of the 375, exactly **1** retains any plaintext field, and
+**0** of the owner's 207 do. So when the rotation killed the cipher key, those
+rows had no second copy, and the name, email, phone and the other seven fields
+of **375 guest rows across 57 accounts are permanently gone**. Every one of
+those 57 accounts is a test account, confirmed by the owner the same day, so no
+real person's data was in them. That is luck about who the rows belonged to,
+not a property of the system.
 
-**Two routes back, and only one is a script.** Of the 375, the 207 owned by the
-smoke account can be rewritten by a tool, because `migrate-guest-pii.mjs`
-authenticates as the test user and `Guest.update` is owner-scoped. The other 168
-cannot be reached by any script for the same reason, and heal on their own
-couple's next guest edit: `api/my-guests.js:269,294` rebuilds the blob through
-`buildGuestWriteFields`, and `mergeGuestPii` falls back to plaintext when the old
-blob will not open.
+**Track D was never the danger, and neither was its script.**
+`null-guest-pii.mjs:174-194` does verify every row and abort on any blob that
+will not decrypt, so it cannot destroy a readable row, and a run today would
+refuse on all 375. But it had already done its intended job months earlier.
+Removing the plaintext is the POINT of Track D; the defect was rotating the key
+that encrypted the only remaining copy.
 
-`migrate-guest-pii.mjs` as written repairs none of them: line 125 targets rows
-with NO blob, so all 375 are classified `already` and skipped. A held follow-up
-adds a `--reencrypt` mode that rebuilds from plaintext for exactly the rows whose
-blob fails to decrypt under the current key, prints counts, and is run once by
-the owner. Track D stays parked until that has run.
+**There is no route back, and the `--reencrypt` mode proves it rather than
+fixing it.** `migrate-guest-pii.mjs --reencrypt` (#1019) selects rows whose blob
+no longer decrypts and rebuilds from the plaintext columns, which is the right
+shape and finds nothing: the owner's dry run reported 13 rows for the smoke
+account, all with plaintext gone, 0 to re-encrypt. Its skip-if-no-plaintext
+branch is what stopped it writing ten nulls over the only copy, so that branch
+earned its place even though the mode has nothing to do. Heal-on-read in
+`api/my-guests.js` was specified and then abandoned for the same reason: it
+would have healed 1 row in the whole app and 0 on the owner's account.
+
 
 ### What this does NOT change
 
@@ -821,6 +828,15 @@ with a new-key digest would take an HMAC collision.
 and prints the reason, so the next person does not spend 1,689 requests
 rediscovering it.
 
+**One amendment, 2026-10-12.** This entry was written alongside a claim that the
+guest PII blobs had lost nothing because their plaintext survived. That claim
+was false: Track D had already removed the plaintext, so 375 guest rows across
+57 test accounts lost their PII outright when the cipher key rotated. See the
+corrected section above. It does not change anything about THESE 1,689 rows,
+which are digests rather than ciphertext and carry no recoverable content
+either way, but the entry should not be read as resting on that framing.
+
+
 ## Single-record `GET .../Entity/:id` does NOT bypass owner-scoped read RLS for custom entities — the `User` entity's behavior is a special case, not a general capability
 
 Tested directly, 2026-08-03 (PR 1c experiment), not assumed. Created a
@@ -1423,3 +1439,40 @@ read as a promise. Every video between the real ceiling and 500 MB passed the
 client check and then died at the network, with `MediaLibraryModal`'s bare
 `catch {` discarding the reason. That is the shape this note exists to prevent:
 **an unmeasured limit written down once becomes a fact nobody re-checks.**
+
+## Two standing rules the key rotation of 2026-10-11 bought
+
+Both are written as rules because both were already true as comments and that
+changed nothing.
+
+### 1. A cipher key that encrypts the ONLY copy of data may not be rotated
+
+Before rotating any key that encrypts data at rest, prove a second copy exists,
+by counting it. If none does, re-encrypt first and rotate second: read with the
+old key, write with the new one, row by row, verifying each before moving on.
+
+`APP_ENC_KEY` is now the only such key in the app. `Guest.encrypted_guest_pii`
+is deliberately the sole store for those ten fields, because Track D removed
+the plaintext on purpose, so a rotation of that key with no migration destroys
+every guest's details and no backup inside this repo can bring them back. The
+2026-10-11 rotation did exactly that to 375 rows, and the only reason it was not
+an incident is that all 57 affected accounts happened to be test accounts.
+
+A corollary, since it is the part that will be forgotten: the migration tool
+must run as a principal that can WRITE the rows. `migrate-guest-pii.mjs`
+authenticates as the smoke account and `Guest.update` is owner-scoped, so it
+can only ever repair the smoke account's own guests, 13 of the 375. A repair
+tool that cannot reach the data is not a plan.
+
+### 2. "Nothing is lost" is a measurement, never a reading
+
+A comment that says a fallback exists is a statement about the day it was
+written. `api/_lib/guestPii.js` said the plaintext columns "through Track D
+still exist", which was true when Track C wrote it and false after Track D ran,
+and that sentence is what put the words "Nothing is lost" into this document
+over a production data loss. Count the rows before writing a reassurance into
+canon, and quote the count beside it.
+
+This repo already said the general form of this, in
+`scripts/check-payments-freeze.mjs`: a documented rule is evidence of intent,
+never compliance. The same applies to a documented fact.
