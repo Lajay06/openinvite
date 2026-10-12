@@ -29,7 +29,7 @@
     },
     "buyer_name_enc": {
       "type": "string",
-      "description": "AES-256-GCM ciphertext of the buyer's name when Stripe's customer_details.name is present. Optional."
+      "description": "AES-256-GCM ciphertext of the buyer's name: in v1 from Stripe's customer_details.name when present; in v2 the giver's name as the couple know it, typed in the flow. Optional."
     },
     "recipient_email_enc": {
       "type": "string",
@@ -41,15 +41,15 @@
     },
     "promotion_code_id": {
       "type": "string",
-      "description": "Plaintext Stripe Promotion Code id (promo_...) minted for this gift. Not sensitive — needed to correlate a later redemption back to this row."
+      "description": "Plaintext Stripe Promotion Code id (promo_...) minted for this gift. Not sensitive — needed to correlate a later redemption back to this row. v1 only; optional, since v2 gifts mint no promotion code."
     },
     "promotion_code_display": {
       "type": "string",
-      "description": "The human-readable redemption code shown in both emails (e.g. GIFT-AB12CD34) and used for support lookup/resend."
+      "description": "The human-readable redemption code shown in both emails (e.g. GIFT-AB12CD34) and used for support lookup/resend. v1 only; optional."
     },
     "coupon_id": {
       "type": "string",
-      "description": "Plaintext Stripe Coupon id backing the promotion code. For cleanup/debugging."
+      "description": "Plaintext Stripe Coupon id backing the promotion code. For cleanup/debugging. v1 only; optional."
     },
     "recipient_email_sent": {
       "type": "boolean",
@@ -84,9 +84,58 @@
       "type": "boolean",
       "default": false,
       "description": "Set by the live-evidence run and any future test harness. Product queries must exclude is_test records."
+    },
+    "recipient_names_enc": {
+      "type": "string",
+      "description": "Gifting v2. AES-256-GCM ciphertext of how the couple are addressed, same scheme as recipient_email_enc. Written only by the server. Optional."
+    },
+    "headline_key": {
+      "type": "string",
+      "enum": ["nice_start", "for_you", "enjoy_this", "spreadsheet", "sorted"],
+      "description": "Gifting v2. The first line the giver chose for the reveal. Plain. Optional."
+    },
+    "photo_key": {
+      "type": "string",
+      "description": "Gifting v2. The Cloudinary public id of the photo the giver chose, from the allowed list in src/lib/giftingV2.js. Plain. Optional."
+    },
+    "note_style": {
+      "type": "string",
+      "enum": ["plain", "serif", "hand"],
+      "description": "Gifting v2. The style the note is written in. Plain. Optional."
+    },
+    "send_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Gifting v2. When the reveal email should go (9 am where the couple are); empty means immediately. Plain. Optional."
+    },
+    "sent_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Gifting v2. When the reveal email went. Stamped by the webhook or the hourly cron after a successful send. Plain. Optional."
+    },
+    "claim_token_hash": {
+      "type": "string",
+      "description": "Gifting v2. Hex HMAC-SHA256 (APP_HASH_KEY) of the current claim token; the token itself is never stored (api/_lib/giftTokens.js). Optional."
+    },
+    "claimed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Gifting v2. When the couple claimed the gift. Plain. Optional."
+    },
+    "claimed_user_id_hash": {
+      "type": "string",
+      "description": "Gifting v2. Hex HMAC-SHA256 (APP_HASH_KEY) of the claiming user's id; the raw id never lives here. Optional."
+    },
+    "edit_token_hash": {
+      "type": "string",
+      "description": "Gifting v2. Hex HMAC-SHA256 (APP_HASH_KEY) of the giver's current edit token (change the address or the note until claimed). Optional."
+    },
+    "version": {
+      "type": "integer",
+      "description": "Gifting v2. 2 for the v2 flow; v1 rows have none. Plain. Optional."
     }
   },
-  "required": ["stripe_session_id", "plan", "recipient_email_enc", "promotion_code_id", "promotion_code_display", "coupon_id"],
+  "required": ["stripe_session_id", "plan", "recipient_email_enc"],
   "rls": {
     "create": null,
     "read": null,
