@@ -46,10 +46,10 @@ for (const f of readdirSync(new URL(`./${SET}/`, import.meta.url)).filter((x) =>
  * around the element (the top bar, tabs, filters), which is dashboard chrome
  * the ruling keeps out, so each still frames an element already close to 3:2.
  */
-export function cropTo32(box) {
+export function cropTo32(box, ratio = RATIO) {
   let { x, y, width: w, height: h } = box;
-  if (w / h > RATIO) w = h * RATIO; else h = w / RATIO;
-  return { x: Math.round(x), y: Math.round(y), width: Math.round(w), height: Math.round(w / RATIO) };
+  if (w / h > ratio) w = h * ratio; else h = w / ratio;
+  return { x: Math.round(x), y: Math.round(y), width: Math.round(w), height: Math.round(w / ratio) };
 }
 
 mkdirSync(`${OUT}/${SET}`, { recursive: true });
@@ -74,7 +74,9 @@ for (const still of stills) {
     });
     if (still.prepare) await still.prepare(page);
     const box = await still.frame(page);
-    const clip = cropTo32(box);
+    // A still may name its own ratio (the 2:1 morning band, owner ruling
+    // 2026-10-12); every other still is the site's 3:2.
+    const clip = cropTo32(box, still.ratio || RATIO);
     const file = `${OUT}/${SET}/${still.key}-${width}.png`;
     await page.screenshot({ path: file, clip });
     shots.push({ key: still.key, file, width });

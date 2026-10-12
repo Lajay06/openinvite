@@ -70,7 +70,7 @@ function useScrollReveal(threshold = 0.2) {
 // under the bullets, so the collapsed accordion is unchanged.
 const ALL_FEATURES = [
 { title: "Vendors and the marketplace", still: FEATURE_STILLS.vendors, bullets: ["Every vendor in one place, with contact, quote, deposit and what is still owed", "A marketplace connected to Google Places, with vendors worldwide", "Send an enquiry without leaving the studio", "Keep quotes, contracts and contacts with each vendor"] },
-{ title: "Seating chart and the visualizer", clip: FEATURE_SEATING_CLIP, bullets: ["Lay out the venue and drag guests onto tables", "See who is still unseated at a glance", "Walk the room in the visualizer, the way guests will see it", "A seating plan for each event, from the reception to the brunch"] },
+{ title: "Seating chart and the visualizer", clip: FEATURE_SEATING_CLIP, bullets: ["Click a table, choose a name, and the seat is theirs.", "See who is still unseated at a glance", "Walk the room in the visualizer, the way guests will see it", "A seating plan for each event, from the reception to the brunch"] },
 { title: "Calendar", bullets: ["One calendar for the whole engagement", "Deadlines, vendor payments and fittings beside every event on your run sheet", "Subscribe from your phone's calendar, so an edit here reaches it on its own.", "Export the run sheet for your vendors"] },
 { title: "Ava on every page", bullets: ["A short briefing each morning: what is coming up, what needs a decision", "Ask Ava from any page, about the page you are on", "Answers drawn from your own wedding, never generic advice", "Ask what is unpaid, who has not replied, or what still needs a decision"] },
 { title: "Mood board", bullets: ["Pin the looks you keep coming back to: colors, florals, dresses, tables", "Boards for the venue, the dress, the palette, or anything you name", "A note on every pin", "Inspiration next to the plan, not across six apps"] },
@@ -204,6 +204,14 @@ function DashboardSection() {
 
   const BULLETS = ["Invite your partner or planner", "Set role-based permissions", "Assign tasks with deadlines", "Real-time collaborative updates", "Shared vendor & budget views", "Manage who sees sensitive data"];
   return (
+    <>
+    {/* THE MORNING PAGE, AS A BAND (owner ruling 2026-10-12): full width at
+        the top of this section, 2:1, above the row rather than inside it,
+        because the row below is held to one screen as the app section's
+        twin. Same white ground and the row's own side gutters. */}
+    <div data-dashboard-band style={{ background: "#FFFFFF", padding: "80px clamp(32px, 5vw, 64px) 0" }}>
+      <FeatureStill still={FEATURE_STILLS.morning} aspect="2 / 1" margin="0" sizes="calc(100vw - 2 * clamp(32px, 5vw, 64px))" />
+    </div>
     <section ref={ref} style={{ background: "#FFFFFF", minHeight: "100vh", display: "flex", overflow: "hidden" }} className="flex-col lg:flex-row">
       <div className="w-full lg:w-1/2 order-2 lg:order-1 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(60px)", transition: `opacity 0.9s ${EASE} 0.15s, transform 1s ${EASE} 0.15s` }}>
         <div style={{ maxWidth: 552 }}>
@@ -222,7 +230,8 @@ function DashboardSection() {
         <img src={PHOTOS.photoN} alt="Wedding photo" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", transform: `scale(${imgScale})`, transition: prefersReduced() ? "none" : "transform 0.1s linear", opacity: visible ? 1 : 0 }} />
         <div className="lg:hidden" style={{ paddingBottom: "66.66%", position: "relative" }} />
       </div>
-    </section>);
+    </section>
+    </>);
 
 }
 
