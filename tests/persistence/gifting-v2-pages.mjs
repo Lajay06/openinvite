@@ -101,8 +101,8 @@ export async function runGiftingV2Pages() {
       && (page.match(/<PlanBadge /g) || []).length >= 3);
   const badges = await import('../../src/lib/planBadge.js');
   check('  Ultra the dashboard\'s yellow, Pro the brand pink', badges.PLAN_BADGE_BACKGROUND.ultra === 'linear-gradient(135deg, #FBBF24, #F59E0B)' && badges.PLAN_BADGE_BACKGROUND.pro === '#E03553');
-  check('  and the email preview carries the badge too', /<span style="[^"]*background:linear-gradient\(135deg, #FBBF24, #F59E0B\)[^"]*">Ultra<\/span>/.test(tpl.renderGiftReveal({ plan: 'ultra', note: 'x' }).html)
-    && /background:#E03553[^"]*">Pro<\/span>/.test(tpl.renderGiftReveal({ plan: 'pro', note: 'x' }).html));
+  check('  and the email preview carries the badge too, as its image', tpl.renderGiftReveal({ plan: 'ultra', note: 'x' }).html.includes(`src="${badges.PLAN_BADGE_EMAIL_IMAGE.ultra.url}" alt="Ultra"`)
+    && tpl.renderGiftReveal({ plan: 'pro', note: 'x' }).html.includes(`src="${badges.PLAN_BADGE_EMAIL_IMAGE.pro.url}" alt="Pro"`));
   check('"Ava AI" on first mention in the email', /Ava AI to tell you/.test(tpl.renderGiftReveal({ plan: 'pro', note: 'x' }).html) && lib.COPY.plan.proLines[0] === 'Ava AI included.');
 
   // ── consumed, not forked: additive props with unchanged defaults ────────

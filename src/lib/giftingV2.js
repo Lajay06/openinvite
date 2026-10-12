@@ -160,6 +160,21 @@ export const REVEAL = {
   footer: 'Sent to you because {giver} typed in this address. Wrong person? Reply to this email and we will put it right.',
 };
 
+/** The giver's email (the confirmation), verbatim from the goal. */
+export const CONFIRM = {
+  subject: 'Your gift to {names} is on its way',
+  preheader: 'Here is your copy, and their link.',
+  heading: 'Done. That was generous of you.',
+  body: 'You have given {names} Openinvite {Plan}. We have sent it to {email}, with your note exactly as you wrote it.',
+  // When send_at is in the future the body says this instead.
+  scheduled: 'You have given {names} Openinvite {Plan}. We will send it on {date} at 9 am where they are.',
+  linkBox: 'Their claim link, in case you want to hand it over yourself',
+  forward: 'If it has not arrived in an hour, forward this email to them; the link works either way.',
+  receipt: 'Your receipt from Stripe arrives separately.',
+  button: 'Change the address or the note',
+  footer: 'You are getting this because you bought a gift on openinvite.com.au. Questions, reply here.',
+};
+
 /**
  * Fill {giver}, {names}, {email}, {Plan} in a copy line. `plan: null` leaves
  * {Plan} in place, for a caller that sets the plan as its badge.
