@@ -48,9 +48,12 @@ export async function runMobileSendHistory() {
   const ok = (label, cond, detail) => results.push(cond ? pass(label, detail) : fail(label, 'see name', detail));
 
   // ── THE WEB'S WAY, STILL ─────────────────────────────────────────────────
+  //
+  // sentGuests, not withTokens, since 2026-10-12: the entry is built only for
+  // guests an email actually reached. src/lib/sentRecipients.js has the rule.
   const web = code('src/components/guests/SendInvitesModal.jsx');
   ok('the web builds each entry through newSendEntry', /import \{ newSendEntry \} from '@\/lib\/sendHistory';/.test(web)
-     && /withTokens\.map\(async \(g\) => \[g\.id, await newSendEntry\(type, g\.email, new Date\(sentAt\)\)\]\)/.test(web), 'SendInvitesModal.jsx');
+     && /sentGuests\.map\(async \(g\) => \[g\.id, await newSendEntry\(type, g\.email, new Date\(sentAt\)\)\]\)/.test(web), 'SendInvitesModal.jsx');
   ok('  and appends it to the guest\'s existing array', APPEND.test(web), 'never rewritten');
   ok('  for every type, the stamp beside it only for invite and reminder',
      (web.match(APPEND) && (web.match(/send_history: \[\.\.\./g) || []).length === 2), 'two writes');
