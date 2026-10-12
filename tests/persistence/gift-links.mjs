@@ -56,6 +56,9 @@ export async function runGiftLinks() {
       && /<PlainLinkPage text=\{EDIT\.gone\} \/>/.test(edit));
   check('the samples are reserved names, never the shape of a token', Object.keys(SAMPLE_GIFTS).every((k) => /^sample(-[a-z]+)?$/.test(k)));
 
+  check('the edit page\'s own lines are the owner\'s, verbatim (2026-10-12)',
+    EDIT.save === 'Save changes' && EDIT.claimed === 'They have opened it, so it can no longer be changed.'
+      && EDIT.gone === 'This link no longer works. If that is a surprise, reply to your confirmation email and we will sort it out.');
   check('the claim copy is the goal\'s, verbatim',
     CLAIM.button === 'Open your gift' && CLAIM.under === 'We will ask for your names and a date.'
       && CLAIM.used === 'This link has already been used. If that is a surprise, reply to the email it came in and we will look.');

@@ -185,8 +185,8 @@ export const CLAIM = {
 /**
  * The giver's edit page, /gift/edit/:token (item 3). The goal names the page
  * ("Change the address or the note") and the link that opens it, not its
- * copy: the heading and labels reuse lines the flow already has, and the
- * three lines of its own are drafts for the owner's review.
+ * copy: the heading and labels reuse lines the flow already has, and its
+ * three own lines are the owner's (ruled 2026-10-12).
  */
 export const EDIT = {
   heading: 'Change the address or the note',
@@ -194,7 +194,7 @@ export const EDIT = {
   noteLabel: 'Your note',
   save: 'Save changes',
   claimed: 'They have opened it, so it can no longer be changed.',
-  gone: 'This link no longer works. If that is a surprise, reply to your confirmation email and we will look.',
+  gone: 'This link no longer works. If that is a surprise, reply to your confirmation email and we will sort it out.',
 };
 
 /**
