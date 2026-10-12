@@ -34,6 +34,9 @@ const Gifting = lazyWithReload(() => import('./pages/Gifting'));
 // Gifting v2 (goals/2026-10-11-gifting-v2.md), behind GIFTING_V2: with the
 // flag off the page sends the visitor to /gifting, which keeps working.
 const GiftV2 = lazyWithReload(() => import('./pages/GiftV2'));
+// Item 3: what the gift links open, flagged and read-only until item 8.
+const GiftClaim = lazyWithReload(() => import('./pages/GiftClaim'));
+const GiftEdit = lazyWithReload(() => import('./pages/GiftEdit'));
 const GiftPurchaseSuccess = lazyWithReload(() => import('./pages/GiftPurchaseSuccess'));
 const Onboarding = lazyWithReload(() => import('./pages/Onboarding'));
 const Login = lazyWithReload(() => import('./pages/Login'));
@@ -144,7 +147,7 @@ const PUBLIC_PATH_SET = new Set([
   '/GuestRSVP',
 ]);
 const isPublicPath = (pathname) =>
-  PUBLIC_PATH_SET.has(pathname) || pathname.startsWith('/w/') || pathname.startsWith('/rsvp/') || pathname.startsWith('/games/') || pathname.startsWith('/collaborate/accept/') || pathname.startsWith('/stop-emails/') || pathname.startsWith('/guest-stop-emails/');
+  PUBLIC_PATH_SET.has(pathname) || pathname.startsWith('/w/') || pathname.startsWith('/rsvp/') || pathname.startsWith('/games/') || pathname.startsWith('/collaborate/accept/') || pathname.startsWith('/stop-emails/') || pathname.startsWith('/guest-stop-emails/') || pathname.startsWith('/gift/claim/') || pathname.startsWith('/gift/edit/');
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -238,6 +241,8 @@ const AuthenticatedApp = () => {
         <Route path="/universes" element={<Universes />} />
         <Route path="/gifting" element={<Gifting />} />
         <Route path="/gift" element={<GiftV2 />} />
+        <Route path="/gift/claim/:token" element={<GiftClaim />} />
+        <Route path="/gift/edit/:token" element={<GiftEdit />} />
         <Route path="/gift/success" element={<GiftPurchaseSuccess />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
@@ -371,6 +376,8 @@ const AuthenticatedApp = () => {
         <Route path="/universes" element={<Universes />} />
         <Route path="/gifting" element={<Gifting />} />
         <Route path="/gift" element={<GiftV2 />} />
+        <Route path="/gift/claim/:token" element={<GiftClaim />} />
+        <Route path="/gift/edit/:token" element={<GiftEdit />} />
         <Route path="/gift/success" element={<GiftPurchaseSuccess />} />
         <Route path="/w/:weddingSlug/accommodation" element={<AccommodationRedirect />} />
         <Route path="/w" element={<InvitationNotAvailable />} />

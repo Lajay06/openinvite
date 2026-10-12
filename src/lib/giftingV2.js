@@ -175,6 +175,28 @@ export const CONFIRM = {
   footer: 'You are getting this because you bought a gift on openinvite.com.au. Questions, reply here.',
 };
 
+/** The couple's claim page, /gift/claim/:token (item 3), verbatim from the goal. */
+export const CLAIM = {
+  button: 'Open your gift',
+  under: 'We will ask for your names and a date.',
+  used: 'This link has already been used. If that is a surprise, reply to the email it came in and we will look.',
+};
+
+/**
+ * The giver's edit page, /gift/edit/:token (item 3). The goal names the page
+ * ("Change the address or the note") and the link that opens it, not its
+ * copy: the heading and labels reuse lines the flow already has, and the
+ * three lines of its own are drafts for the owner's review.
+ */
+export const EDIT = {
+  heading: 'Change the address or the note',
+  emailLabel: 'Their email',
+  noteLabel: 'Your note',
+  save: 'Save changes',
+  claimed: 'They have opened it, so it can no longer be changed.',
+  gone: 'This link no longer works. If that is a surprise, reply to your confirmation email and we will look.',
+};
+
 /**
  * Fill {giver}, {names}, {email}, {Plan} in a copy line. `plan: null` leaves
  * {Plan} in place, for a caller that sets the plan as its badge.

@@ -27,6 +27,10 @@
  * DRAFT STATE lives in sessionStorage under one key until payment; nothing is
  * written to PlanGift before Stripe confirms. The pay step is a stub that goes
  * nowhere: checkout is item 6.
+ *
+ * The input, the email preview, the style sample, the badge line and the type
+ * styles are exported for the claim and edit pages (item 3), which use them as
+ * they are; exporting changes nothing about how these four pages render.
  */
 import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
@@ -51,7 +55,7 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 const INK = '#0A0A0A';
 const MUTED = 'rgba(10,10,10,0.6)';
 const PAGES = 4;
-const BIG_BADGE = { padding: '3px 8px', fontSize: 13 };
+export const BIG_BADGE = { padding: '3px 8px', fontSize: 13 };
 
 const EMPTY = { step: 1, plan: null, names: '', email: '', giver: '', note: '', noteStyle: 'plain', headlineKey: DEFAULT_HEADLINE, photoId: DEFAULT_PHOTO_ID, when: 'now', date: '' };
 // The owner's sample for the review screenshots (?sample=1): giver Sam, couple
@@ -72,14 +76,14 @@ function priceLabel(plan) {
 }
 
 /** A copy line with {Plan} set as the plan's badge. */
-function withPlanBadge(text, plan) {
+export function withPlanBadge(text, plan) {
   const parts = String(text).split('{Plan}');
   return parts.flatMap((p, i) => (i === 0 ? [p] : [<PlanBadge key={i} plan={plan} {...BIG_BADGE} />, p]));
 }
 
-const heading = { fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 700, color: INK, fontFamily: PJS, margin: '0 0 12px', lineHeight: 1.15 };
-const sub = { fontSize: 16, color: MUTED, fontFamily: PJS, margin: '0 0 32px', lineHeight: 1.6 };
-const primary = 'px-8 py-3 rounded-full text-white text-sm font-medium bg-[#E03553] hover:bg-black active:bg-neutral-900 transition-colors duration-150 border-none cursor-pointer disabled:opacity-40 disabled:cursor-default';
+export const heading = { fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 700, color: INK, fontFamily: PJS, margin: '0 0 12px', lineHeight: 1.15 };
+export const sub = { fontSize: 16, color: MUTED, fontFamily: PJS, margin: '0 0 32px', lineHeight: 1.6 };
+export const primary = 'px-8 py-3 rounded-full text-white text-sm font-medium bg-[#E03553] hover:bg-black active:bg-neutral-900 transition-colors duration-150 border-none cursor-pointer disabled:opacity-40 disabled:cursor-default';
 
 /**
  * ONBOARDING'S NAMES-STEP INPUT, REUSED AS ITS PATTERN (onboarding has no
@@ -88,13 +92,13 @@ const primary = 'px-8 py-3 rounded-full text-white text-sm font-medium bg-[#E035
  * difference is the width: the names step caps a name at 300px, and an email
  * address does not fit in 300px at this size, so these run the column's width.
  */
-const nameInputStyle = (value, focused) => ({
+export const nameInputStyle = (value, focused) => ({
   background: 'transparent', border: 'none',
   borderBottom: (value || focused) ? '2px solid #ec4899' : '1px solid rgba(10,10,10,0.18)',
   width: '100%', fontSize: 32, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS,
   padding: '4px 8px', outline: 'none', textAlign: 'left',
 });
-function UnderlineInput({ value, onChange, placeholder, type = 'text', autoComplete = 'off' }) {
+export function UnderlineInput({ value, onChange, placeholder, type = 'text', autoComplete = 'off' }) {
   const [focused, setFocused] = useState(false);
   return (
     <input type={type} value={value} placeholder={placeholder} aria-label={placeholder} className="s1-input" autoComplete={autoComplete}
@@ -104,7 +108,7 @@ function UnderlineInput({ value, onChange, placeholder, type = 'text', autoCompl
 }
 
 /** The live email preview: the template's own HTML, nothing redrawn. `fit` sizes it to the email on a phone. */
-function EmailPreview({ draft, fit = false }) {
+export function EmailPreview({ draft, fit = false }) {
   // The rendered styles fetch an image from Cloudinary for every change, so
   // they settle for 300 ms; plain text follows every keystroke.
   const [shown, setShown] = useState(draft);
@@ -152,7 +156,7 @@ function PhonePreview({ draft }) {
 }
 
 /** A style chip's label in its own face: the handwriting sample is the same Cloudinary render the email uses. */
-function styleSample(st) {
+export function styleSample(st) {
   if (st.key === 'hand') return <img src={noteImageUrl(st.label, 'hand', { ground: 'FFFFFF' })} alt={st.label} style={{ height: 16, width: 'auto', display: 'inline-block', verticalAlign: 'middle' }} />;
   return <span style={st.key === 'serif' ? { fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 15 } : undefined}>{st.label}</span>;
 }
