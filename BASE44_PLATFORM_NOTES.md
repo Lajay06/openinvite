@@ -154,6 +154,17 @@ Confirmed behavior, per operation, against an entity with owner-scoped RLS
 | `update` | `403 Permission denied for update operation` |
 | `delete` | (not directly tested, but `404`/`403` observed for records the admin key doesn't own) |
 
+**2026-10-11 correction to the `update` row above: it measures `401`, not
+`403`.** A reset attempted 1,689 admin-key `PUT`s against owner-scoped
+`PollVote` and `RsvpResponse` rows and every one returned `401`, in both the
+bearer and the `?api_key=` form. The `403` recorded above was measured in
+2026-07 and either the platform changed or the earlier reading was of a
+different case. This matters for diagnosis, not for behaviour: `401` reads as
+"bad credential" and sends you to check the token first, which is exactly the
+wrong place. The `delete` row's `404` is confirmed: an anonymous-owned row
+answers `404` to `DELETE`, measured twice now.
+
+
 This means: **any entity the admin key needs to read or write on behalf of
 a non-owner must have `read`/`create`/`update` set to `null` (open) for
 that operation** — there is no way to grant the admin key owner-equivalent
@@ -774,6 +785,41 @@ delete of orphaned `RsvpResponse` records where `created_by_id ==
 'anonymous'` — these are pre-encryption automated-test artifacts we
 cannot delete ourselves because our own owner-scoped delete RLS can never
 match Base44's own auto-assigned `'anonymous'` owner value."*
+
+### 2026-10-11: 1,689 more rows join this entry, from the key rotation
+
+The `BASE44_ADMIN_KEY` rotation that day orphaned every HMAC digest in the app.
+A reset was authorized and run with `--confirm`, and it cleared **nothing**:
+
+| Rows | Field | Result |
+|---|---|---|
+| 1,134 | `PollVote.guest_identifier` | every clear answered 401 |
+| 555 | `RsvpResponse.guest_id_hash` (216 of them also hold dead `encrypted_guest_level`) | every clear answered 401 |
+| 2 | `QuestionnaireResponse`, whole row | both deletes answered 404 |
+| 1 | `PlanGift`, the test row | deleted, the only write that worked |
+
+**No session can clear these, and that is the part worth keeping.** `update` on
+`PollVote` and `RsvpResponse` is owner-scoped, `delete` on
+`QuestionnaireResponse` likewise, and every one of those rows carries
+`created_by_id: "anonymous"`, which Base44 stamps itself. A rule of
+`created_by_id == {{user.id}}` can never match the literal string
+`"anonymous"`, for the admin key or for any real user's token. So this is not a
+credential problem and not fixable by logging in as anybody.
+
+`PlanGift` is the control that proves it: it is the one entity whose `create`,
+`read`, `update` and `delete` are all `null`, and its delete succeeded with the
+same token through the same helper.
+
+Owner ruling the same day: accepted as orphaned residue, and the entities are
+**not** opened to make the reset possible. They already carry `read: null`, so
+opening `update` as well would let anyone holding any app token modify guest
+RSVP rows, which is a real exposure bought for tidiness. A stale digest is
+inert: it can only fail to match, never match the wrong row, since colliding
+with a new-key digest would take an HMAC collision.
+
+`scripts/reset-orphaned-hashes.mjs` now refuses these three entities up front
+and prints the reason, so the next person does not spend 1,689 requests
+rediscovering it.
 
 ## Single-record `GET .../Entity/:id` does NOT bypass owner-scoped read RLS for custom entities — the `User` entity's behavior is a special case, not a general capability
 
