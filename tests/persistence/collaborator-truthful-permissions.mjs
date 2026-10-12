@@ -85,10 +85,14 @@ export async function runCollaboratorTruthfulPermissions() {
   ok('Seating reads data.weddingDetails, the key collaborator-data.js returns',
      /getWeddingEvents\(data\.weddingDetails\)/.test(seating) && !/data\.WeddingDetails/.test(seating), 'weddingDetails');
   const help = fs.readFileSync(path.join(ROOT, 'src/pages/Help.jsx'), 'utf8');
-  const article = help.slice(help.indexOf("'Inviting a collaborator': ("), help.indexOf("'Managing notification preferences': ("));
+  const at = help.indexOf("'Inviting a collaborator': (");
+  const article = help.slice(at, help.indexOf('\n  ),\n', at));
   ok('the Help article promises no edit access',
-     !/Full Access|view and edit|Changes made by collaborators|access level/i.test(article), 'old promises gone');
+     article.length > 500 && !/Full Access|view and edit|Changes made by collaborators|access level/i.test(article), `${article.length} chars`);
   ok('  and says they cannot change anything, with the 7-day link', /They cannot change anything\./.test(article) && /works for 7 days/.test(article), 'true copy');
+  // The article is replaced in place: every other article survives.
+  const titles = (h) => (h.match(/^  '[^']+': \(/mg) || []).length;
+  ok('  and the other Help articles are all still there', titles(help) >= 20, `${titles(help)} articles`);
 
   return results;
 }
