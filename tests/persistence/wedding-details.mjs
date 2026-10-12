@@ -267,13 +267,16 @@ const TEST_FIELDS = {
     photoBoothProvider: 'Test Photo Booth Co',
     entertainmentNotes: 'DJ to play until midnight',
   },
-  // fix/universe-picker-integrity: was undeclared on the schema entirely
-  // until this fix — every asset customisation a couple made was silently
-  // dropped on save.
-  assetContent: {
-    saveTheDate: { headerText: 'Test header', subtitle: 'Test subtitle', layout: 'centered' },
-    seatingChart: { title: 'Test seating chart', bgMode: 'light' },
-  },
+  // assetContent WAS PROBED HERE AND IS NOT ANY MORE. Owner ruling
+  // 2026-10-12, reversing one made the day before: the asset feature was
+  // removed in Wave 2 (src/pages/StudioWebsite.jsx:279-283 keeps the field
+  // only so existing data is not orphaned), nothing in the product writes it,
+  // and the named writer StudioAssetsTab.jsx does not exist. This probe sent
+  // headerText, subtitle, layout, title and bgMode; the schema declares
+  // saveTheDate{date, mainText, photoUrl, subtitle} and seatingChart
+  // {backgroundUrl, headline, note}, so four of those names never existed and
+  // the guard reported them as drift on every live run. A guard testing a
+  // removed feature manufactures a finding. No schema field was added.
   // Menu Phase 1 — couple-defined guest meal options (Ultra only). id is
   // stable and independent of label so renaming a label never orphans an
   // existing RsvpResponse.meal_choice value.
@@ -631,7 +634,7 @@ export async function runWeddingDetails(token) {
   // ── Planning page fields — previously silently dropped, now registered ────────
   console.log('\n  Planning page field persistence tests (foodAndBeverage, photography, attire, flowers, decorations, beauty, entertainmentDetails):\n');
 
-  for (const field of ['foodAndBeverage', 'photography', 'attire', 'flowers', 'decorations', 'beauty', 'entertainmentDetails', 'assetContent']) {
+  for (const field of ['foodAndBeverage', 'photography', 'attire', 'flowers', 'decorations', 'beauty', 'entertainmentDetails']) {
     const written = TEST_FIELDS[field];
     const got     = record[field];
     results.push(writtenSubsetMatches(written, got)

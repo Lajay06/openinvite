@@ -15,6 +15,7 @@ import { isAttending, isDeclined, isAwaitingPrimary } from '@/lib/guestRsvpTally
 import { interactiveDivProps } from '@/lib/a11y';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { fetchGuestLinks } from '@/lib/guestLinks';
+import { sentGuestIds, guestsActuallySent } from '@/lib/sentRecipients';
 import { invitationsFor } from '@/lib/household';
 import { invitationGreetingName } from '@/lib/guestGreeting';
 import { isBounced, bouncedSkippedSentence } from '@/components/guests/emailBounce';
@@ -570,6 +571,12 @@ export default function SendInvitesModal({
           events: buildGuestEvents(g),
         })),
       ];
+      // WHO WAS ACTUALLY SENT TO. Both writes below take this set, so neither
+      // can disagree with the other or with the recipient list. See
+      // src/lib/sentRecipients.js for the two rulings it encodes.
+      const sentIds = sentGuestIds({ emailedInvitations: emailList, plusOneGuests: plusOneEmailList });
+      const sentGuests = guestsActuallySent(withTokens, sentIds);
+
       if (recipients.length > 0) {
         const payload = {
           type,
@@ -626,14 +633,16 @@ export default function SendInvitesModal({
       // to_hash, NOT the address: src/lib/sendHistory.js explains why, and an
       // address that cannot be hashed yields '' rather than the address
       // itself, so a missing hash is a missing answer and never a leak.
+      // sentGuests, NOT withTokens: a history entry for a message nobody was
+      // sent is a record of something that did not happen.
       const historyEntries = await Promise.all(
-        withTokens.map(async (g) => [g.id, await newSendEntry(type, g.email, new Date(sentAt))]),
+        sentGuests.map(async (g) => [g.id, await newSendEntry(type, g.email, new Date(sentAt))]),
       );
       const historyById = new Map(historyEntries);
 
       if (type === 'invite' || type === 'reminder') {
         await Promise.all(
-          withTokens.map(g =>
+          sentGuests.map(g =>
             base44.entities.Guest.update(g.id, {
               ...(isReminder
                 ? { reminder_sent_at: sentAt }
@@ -649,7 +658,7 @@ export default function SendInvitesModal({
         // than tracking nothing. send_history is that field arriving, so they
         // are recorded now, and only here: no stamp is invented for them.
         await Promise.all(
-          withTokens.map(g =>
+          sentGuests.map(g =>
             base44.entities.Guest.update(g.id, {
               send_history: [...(Array.isArray(g.send_history) ? g.send_history : []), historyById.get(g.id)],
             })
