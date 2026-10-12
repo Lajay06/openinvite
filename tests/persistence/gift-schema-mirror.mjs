@@ -53,6 +53,9 @@ export function runGiftSchemaMirror() {
     gd.properties.draft_enc?.type === 'string' && gd.properties.expires_at?.format === 'date-time'
       && gd.properties.buyer_user_id_hash?.type === 'string' && gd.properties.is_test?.type === 'boolean'
       && Object.keys(gd.properties).length === 4);
+  check('GiftDraft: the draft is encrypted under APP_ENC_KEY and the buyer hash keyed with APP_HASH_KEY, never BASE44_ADMIN_KEY',
+    /under APP_ENC_KEY/.test(gd.properties.draft_enc.description) && /under APP_HASH_KEY/.test(gd.properties.buyer_user_id_hash.description)
+      && ['draft_enc', 'buyer_user_id_hash'].every((f) => /never (a key derived from )?BASE44_ADMIN_KEY/.test(gd.properties[f].description)));
   check('GiftDraft: requires the draft and its expiry, nothing else', JSON.stringify(gd.required) === JSON.stringify(['draft_enc', 'expires_at']));
   check('GiftDraft: create and read open, update and delete creator only (item 0 ruling)',
     gd.rls.create === null && gd.rls.read === null
