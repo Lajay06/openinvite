@@ -1,0 +1,69 @@
+/**
+ * tests/persistence/gift-links.mjs
+ *
+ * WHAT THE GIFT LINKS OPEN, FLAGGED AND READ-ONLY UNTIL ITEM 8.
+ * goals/2026-10-11-gifting-v2.md, item 3: the couple's claim page at
+ * /gift/claim/:token and the giver's edit page at /gift/edit/:token.
+ *
+ * What it holds:
+ *   - both routes exist in both route tables, and both pages send the visitor
+ *     to /gifting with the flag off (the seam answers null)
+ *   - nothing reaches the server: no fetch, no base44 client, no /api path in
+ *     the seam or the pages, and the claim and save buttons are disabled by
+ *     GIFT_LINKS_LIVE, which is false until item 8
+ *   - an unknown token reads as a used one, never as "not found"
+ *   - the claim page's copy is the goal's, verbatim; no dash and no
+ *     banned product name (the vocabulary guard's) in the new copy
+ *   - the note card has square corners (the 8px radius is the email's alone)
+ */
+import { readFileSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { pass, fail, stripComments } from './_shared.mjs';
+import { CLAIM, EDIT } from '../../src/lib/giftingV2.js';
+import { loadGiftByToken, SAMPLE_GIFTS, GIFT_LINKS_LIVE } from '../../src/lib/giftLinks.js';
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const read = (p) => readFileSync(resolve(ROOT, p), 'utf8');
+
+export async function runGiftLinks() {
+  const r = [];
+  const check = (name, ok, detail) => r.push(ok ? pass(name, detail) : fail(name, 'see name', detail));
+  console.log('\n  Gifting v2 item 3, the claim and edit pages:\n');
+
+  const app = read('src/App.jsx');
+  check('both routes are in both route tables',
+    (app.match(/<Route path="\/gift\/claim\/:token" element=\{<GiftClaim \/>\} \/>/g) || []).length === 2
+      && (app.match(/<Route path="\/gift\/edit\/:token" element=\{<GiftEdit \/>\} \/>/g) || []).length === 2);
+  check('both are public paths, as /gift is', /startsWith\('\/gift\/claim\/'\)/.test(app) && /startsWith\('\/gift\/edit\/'\)/.test(app));
+
+  // In node the flag is off (no Vite env, no window), which is production.
+  check('with the flag off the seam answers null, for every token', (await loadGiftByToken('sample')) === null && (await loadGiftByToken('anything')) === null);
+  const claim = stripComments(read('src/pages/GiftClaim.jsx'));
+  const edit = stripComments(read('src/pages/GiftEdit.jsx'));
+  const seam = stripComments(read('src/lib/giftLinks.js'));
+  check('and both pages send the visitor to /gifting on null', [claim, edit].every((s) => /gift === null\) return <Navigate to="\/gifting" replace \/>/.test(s)));
+
+  check('read-only: no fetch, base44 client or /api path in the seam or the pages',
+    [claim, edit, seam].every((s) => !/\bfetch\(|base44|['"`]\/api\//.test(s)));
+  check('GIFT_LINKS_LIVE is false until item 8', GIFT_LINKS_LIVE === false);
+  check('the claim button and the save button are disabled by it',
+    /disabled=\{!GIFT_LINKS_LIVE\}/.test(claim) && /disabled=\{!GIFT_LINKS_LIVE \|\|/.test(edit));
+  check('an unknown token reads as used', /return SAMPLE_GIFTS\[token\] \|\| \{ status: 'used' \};/.test(seam));
+  check('the claim page shows the used page for anything not open, the edit page tells claimed from gone',
+    /gift\.status !== 'open'\) return <PlainLinkPage text=\{CLAIM\.used\} \/>/.test(claim)
+      && /gift\.status === 'claimed'\) return <PlainLinkPage text=\{EDIT\.claimed\} \/>/.test(edit)
+      && /<PlainLinkPage text=\{EDIT\.gone\} \/>/.test(edit));
+  check('the samples are reserved names, never the shape of a token', Object.keys(SAMPLE_GIFTS).every((k) => /^sample(-[a-z]+)?$/.test(k)));
+
+  check('the claim copy is the goal\'s, verbatim',
+    CLAIM.button === 'Open your gift' && CLAIM.under === 'We will ask for your names and a date.'
+      && CLAIM.used === 'This link has already been used. If that is a surprise, reply to the email it came in and we will look.');
+  const copy = [...Object.values(CLAIM), ...Object.values(EDIT)].join(' ');
+  const banned = new RegExp(['wedding', 'website'].join(' '), 'i'); // spelled in parts so this file does not say it
+  check('no em or en dash, and never the banned product name, in the new copy', !/[–—]/.test(copy) && !banned.test(copy));
+  check('the note card has square corners and no shadow', !/borderRadius|boxShadow|rounded/.test(/function NoteCard[\s\S]*?\n}\n/.exec(claim)?.[0] || 'borderRadius'));
+  check('on a phone the claim page still shows the giver\'s photo', /className="md:hidden" data-gift-claim-phone-photo/.test(claim));
+
+  return r;
+}
