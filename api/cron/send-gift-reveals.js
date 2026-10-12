@@ -26,10 +26,12 @@
  *
  * Env: CRON_SECRET (Vercel sends it as the bearer on its own invocations),
  * BASE44_ADMIN_KEY (PlanGift is read and updated through it, RLS null),
- * RESEND_API_KEY, APP_HASH_KEY (to rebuild each claim link, giftTokens.js).
+ * RESEND_API_KEY, APP_HASH_KEY (to rebuild each claim link, giftTokens.js),
+ * APP_ENC_KEY (v2 rows' personal fields, giftCrypto.js; owner ruling
+ * 2026-10-12: never the frozen cipher derived from BASE44_ADMIN_KEY).
  */
 import { Resend } from 'resend';
-import { decryptString } from '../_lib/giftAuth.js';
+import { decryptGiftField } from '../_lib/giftCrypto.js';
 import { updatePlanGift } from '../_lib/planGift.js';
 import { buildRevealEmail } from '../_lib/giftEmails.js';
 import { currentToken, claimUrl } from '../_lib/giftTokens.js';
@@ -58,7 +60,7 @@ export function dueReveals(rows, now = new Date()) {
 }
 
 /** A PlanGift row as the email module reads a gift. Throws if a field will not decrypt. */
-export function giftFromRow(row, decrypt = decryptString) {
+export function giftFromRow(row, decrypt = decryptGiftField) {
   return {
     plan: row.plan,
     giver: decrypt(row.buyer_name_enc) || '',
@@ -115,7 +117,7 @@ export default async function handler(req, res, deps = {}) {
   counts.due = due.length;
 
   const resend = deps.resend || new Resend(env.RESEND_API_KEY);
-  const decrypt = deps.decrypt || decryptString;
+  const decrypt = deps.decrypt || decryptGiftField;
   for (const row of due) {
     let to;
     let gift;

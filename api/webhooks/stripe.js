@@ -72,6 +72,7 @@ import { getBase44User, writeBase44UserPlan } from '../_lib/base44Admin.js';
 import { hashId, encryptString, generateGiftCode } from '../_lib/giftAuth.js';
 import { createPlanGift, findPlanGiftBySessionId, findPlanGiftByPromotionCodeId, updatePlanGift } from '../_lib/planGift.js';
 import { isValidEmail } from '../_lib/security.js';
+import { isGiftV2Session, handleGiftV2CheckoutSessionCompleted } from '../_lib/giftV2Purchase.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -552,9 +553,16 @@ export default async function handler(req, res) {
         // Gift-mode purchases route to a completely separate branch that
         // never writes a User.plan — see this file's header comment and
         // handleGiftCheckoutSessionCompleted's own docstring.
-        const { status, body } = verifiedSession.metadata?.purchaseType === 'gift'
-          ? await handleGiftCheckoutSessionCompleted(verifiedSession)
-          : await handleCheckoutSessionCompleted(verifiedSession);
+        //
+        // A VERSION 2 gift (metadata gift_version '2', gifting v2 item 7)
+        // routes first, to its own handler in api/_lib/giftV2Purchase.js: no
+        // coupon, the row written from the giver's draft under APP_ENC_KEY.
+        // Every other gift is v1 and takes the branch below, unchanged.
+        const { status, body } = isGiftV2Session(verifiedSession)
+          ? await handleGiftV2CheckoutSessionCompleted(verifiedSession, { sendEmail: (opts, options) => resend.emails.send(opts, options) })
+          : verifiedSession.metadata?.purchaseType === 'gift'
+            ? await handleGiftCheckoutSessionCompleted(verifiedSession)
+            : await handleCheckoutSessionCompleted(verifiedSession);
         return res.status(status).json(body);
       }
 
