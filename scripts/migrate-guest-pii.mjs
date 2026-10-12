@@ -2,7 +2,7 @@
  * scripts/migrate-guest-pii.mjs
  *
  * Guest family migration: write encrypted_guest_pii on every row that does not
- * have one.
+ * have one, or, with --reencrypt, on every row whose blob no longer decrypts.
  *
  * Usage:
  *   node --env-file=.env.local scripts/migrate-guest-pii.mjs                    # dry run
@@ -46,7 +46,7 @@
  */
 
 import { buildGuestPiiBlob, readGuestPiiBlob } from '../api/_lib/guestPii.js';
-import { PII_FIELDS, BLOB_FIELD } from '../api/_lib/guestProtectedFields.js';
+import { PII_FIELDS, BLOB_FIELD, NAME_PLACEHOLDER } from '../api/_lib/guestProtectedFields.js';
 import { shouldRetry, backoffMs } from './lib/retryPolicy.mjs';
 
 const BASE44 = 'https://base44.app/api';
@@ -57,6 +57,7 @@ const MAX_RETRIES = 4;
 
 const args = process.argv.slice(2);
 const EXECUTE = args.includes('--execute');
+const REENCRYPT = args.includes('--reencrypt');
 const expectArg = args.find(a => a.startsWith('--expect-rows='));
 const EXPECT = expectArg ? Number(expectArg.split('=')[1]) : null;
 
@@ -104,7 +105,10 @@ async function fetchOne(id, token) {
   return rows[0] || null;
 }
 
-if (!process.env.BASE44_ADMIN_KEY) die('BASE44_ADMIN_KEY is not set — the blob cannot be built.');
+// THE BLOB'S KEY IS APP_ENC_KEY, NOT THE CREDENTIAL, since #1012. This check
+// used to name BASE44_ADMIN_KEY, which would now pass and then let the run die
+// inside appKeys.js several requests later.
+if (!process.env.APP_ENC_KEY) die('APP_ENC_KEY is not set — the blob cannot be built.');
 if (EXECUTE && EXPECT === null) die('--execute requires --expect-rows=<n> (STANDING-RULES RULE 8).');
 
 const email = process.env.BASE44_TEST_EMAIL, password = process.env.BASE44_TEST_PASSWORD;
@@ -122,13 +126,51 @@ console.log('SCOPE: writes blobs only. Nulls nothing. Plaintext columns are Trac
 console.log(`owner: ${ownerId}`);
 
 const guests = await fetchAllGuests(token, ownerId);
-const targets = guests.filter(g => !g[BLOB_FIELD]);
-const already = guests.filter(g => g[BLOB_FIELD]);
 
-console.log('\nSCAN');
+// ── TWO MODES, AND THEY SELECT OPPOSITE ROWS ──────────────────────────────
+//
+// Default: rows with NO blob. That is the original Track C migration.
+//
+// --reencrypt: rows WITH a blob that no longer opens. The 2026-10-11 key
+// rotation left 375 of 382 rows holding ciphertext under a key that no longer
+// exists, and the default mode skips every one of them because they have a
+// blob. Selecting on "does it decrypt" rather than "is it present" is the
+// whole difference, and it is derived per row rather than stored, exactly as
+// guestPii.js argues the migrated/not-migrated question should be.
+//
+// A ROW WHOSE BLOB IS DEAD AND WHOSE PLAINTEXT IS GONE IS SKIPPED, not
+// rebuilt. Rebuilding it would write ten nulls over the only copy of that
+// guest's details, and an unreadable copy is still worth more than a
+// provably empty one. Those rows are reported and left alone.
+const hasPlaintext = (g) =>
+  g[PII_FIELDS[0]] !== NAME_PLACEHOLDER && PII_FIELDS.some(f => g[f] !== undefined && g[f] !== null && g[f] !== '');
+
+let targets, already, deadNoPlaintext = [];
+if (REENCRYPT) {
+  const withBlob = guests.filter(g => g[BLOB_FIELD]);
+  const dead = withBlob.filter(g => readGuestPiiBlob(g[BLOB_FIELD]) === null);
+  targets = dead.filter(hasPlaintext);
+  deadNoPlaintext = dead.filter(g => !hasPlaintext(g));
+  already = guests.filter(g => g[BLOB_FIELD] && readGuestPiiBlob(g[BLOB_FIELD]) !== null);
+} else {
+  targets = guests.filter(g => !g[BLOB_FIELD]);
+  already = guests.filter(g => g[BLOB_FIELD]);
+}
+
+console.log(`\nSCAN  (mode: ${REENCRYPT ? 'REENCRYPT — rows whose blob no longer decrypts' : 'MIGRATE — rows with no blob'})`);
 console.log(`  guest rows (deduped single fetch) : ${guests.length}`);
-console.log(`  already migrated                  : ${already.length}`);
-console.log(`  TO MIGRATE                        : ${targets.length}`);
+console.log(`  ONLY THIS ACCOUNT'S ROWS ARE VISIBLE: the fetch filters on`);
+console.log(`  created_by_id, and Guest.update is owner-scoped, so rows owned by`);
+console.log(`  other couples cannot be read or written here by any token. They`);
+console.log(`  heal on their own couple's next guest edit, through`);
+console.log(`  api/my-guests.js's buildGuestWriteFields.`);
+if (REENCRYPT) {
+  console.log(`  blob present and still opens      : ${already.length}  (left alone)`);
+  console.log(`  blob dead, plaintext gone         : ${deadNoPlaintext.length}  (SKIPPED: a null blob is worse than an unreadable one)`);
+} else {
+  console.log(`  already migrated                  : ${already.length}`);
+}
+console.log(`  TO ${REENCRYPT ? 'REENCRYPT' : 'MIGRATE'}                       : ${targets.length}`);
 
 // Census only — never a filter. A row with no PII at all still gets a blob, so
 // that "migrated" means the same thing for every row.
@@ -145,7 +187,7 @@ if (EXPECT !== null && targets.length !== EXPECT) {
 
 if (!EXECUTE) {
   console.log('\nDRY RUN — no writes performed.');
-  console.log(`To execute:  node --env-file=.env.local scripts/migrate-guest-pii.mjs --execute --expect-rows=${targets.length}\n`);
+  console.log(`To execute:  node --env-file=.env.local scripts/migrate-guest-pii.mjs${REENCRYPT ? ' --reencrypt' : ''} --execute --expect-rows=${targets.length}\n`);
   process.exit(0);
 }
 
