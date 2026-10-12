@@ -10,7 +10,7 @@
  * the exact same markup for review.
  */
 
-import { emailShell, emailFooterRow, escapeHtml, EMAIL_FONT as FONT, EMAIL_ACCENT as ACCENT, EMAIL_BLACK as BLACK } from './emailBrand.js';
+import { emailShell, emailFooterRow, escapeHtml, EMAIL_FONT as FONT, EMAIL_ACCENT as ACCENT, EMAIL_BLACK as BLACK, EMAIL_MUTED_LIGHT, EMAIL_SUPPORT_ADDRESS } from './emailBrand.js';
 import { collaboratorPageLabels, COLLABORATOR_VIEW_ONLY_COPY } from './collaboratorPageMap.js';
 
 /**
@@ -22,6 +22,10 @@ export function renderCollaboratorInviteEmail({ collaboratorName, coupleNames, a
   const subject = coupleNames
     ? `You've been invited to help plan ${coupleNames}'s wedding`
     : "You've been invited to help plan a wedding";
+  // Owner copy, 2026-10-12.
+  const preheader = coupleNames
+    ? `${coupleNames} have shared their plans with you.`
+    : 'Someone has shared their wedding plans with you.';
 
   // Item 5 (owner ruling 2026-10-12): the pages by their nav labels, then one
   // sentence. Every page is view only, so nothing here says edit.
@@ -81,7 +85,7 @@ ${permissionsHtml}
               </p>
             </td>
           </tr>
-${emailFooterRow(`Sent by Openinvite on behalf of ${escapeHtml(coupleNames || 'a couple')}. If you weren't expecting this, you can safely ignore it.`)}`;
+${emailFooterRow(`Sent by Openinvite on behalf of ${escapeHtml(coupleNames || 'a couple')}. If you weren't expecting this, you can safely ignore it. Openinvite, Australia. <a href="mailto:${EMAIL_SUPPORT_ADDRESS}" style="color:${EMAIL_MUTED_LIGHT};text-decoration:underline;">${EMAIL_SUPPORT_ADDRESS}</a>`)}`;
 
-  return { subject, html: emailShell({ title: subject, bodyRowsHtml }) };
+  return { subject, preheader, html: emailShell({ title: subject, bodyRowsHtml, preheader }) };
 }

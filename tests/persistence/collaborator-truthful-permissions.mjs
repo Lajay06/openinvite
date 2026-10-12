@@ -66,7 +66,7 @@ export async function runCollaboratorTruthfulPermissions() {
      /\[page, \{ view: collaboratorCan\(perms, page, 'view'\) \}\]/.test(modal) && /setPermissions\(viewOnly\(collaborator\.permissions\)\)/.test(modal), 'viewOnly');
 
   console.log('\n  The invite email:\n');
-  const { html } = renderCollaboratorInviteEmail({
+  const { html, preheader } = renderCollaboratorInviteEmail({
     collaboratorName: 'Ada Lovelace', coupleNames: 'Alex and Sam', acceptUrl: 'https://openinvite.com.au/collaborate/accept/x',
     permissions: { 'Event Details': { view: true }, Guests: { view: true, edit: true } },
   });
@@ -76,6 +76,11 @@ export async function runCollaboratorTruthfulPermissions() {
      (text.match(/You can view these pages\. You will not be able to change anything\./g) || []).length === 1, 'once');
   ok('  and says edit nowhere', !/edit/i.test(text), 'no "view & edit"');
   ok('  and never an internal key name', !/Event Details|\bGuests\b/.test(text), 'labels, not keys');
+  ok('the preheader is the owner\'s line, in the inbox list only',
+     preheader === 'Alex and Sam have shared their plans with you.' && html.includes('display:none') && html.includes(preheader), preheader);
+  const anon = renderCollaboratorInviteEmail({ collaboratorName: '', coupleNames: '', acceptUrl: 'https://x', permissions: {} });
+  ok('  and with no couple names, its own line', anon.preheader === 'Someone has shared their wedding plans with you.', anon.preheader);
+  ok('the footer closes as the other Openinvite emails do', /Openinvite, Australia\. hello@openinvite\.com\.au/.test(text), 'Australia and the support address');
 
   console.log('\n  The accept page, Seating and Help:\n');
   const accept = read('src/pages/CollaboratorAccept.jsx');
@@ -90,6 +95,8 @@ export async function runCollaboratorTruthfulPermissions() {
   ok('the Help article promises no edit access',
      article.length > 500 && !/Full Access|view and edit|Changes made by collaborators|access level/i.test(article), `${article.length} chars`);
   ok('  and says they cannot change anything, with the 7-day link', /They cannot change anything\./.test(article) && /works for 7 days/.test(article), 'true copy');
+  ok('  in US English: check, trash icon, right away', /check "View only"/.test(article) && /trash icon/.test(article) && /right away/.test(article)
+     && !/\btick\b|\bbin\b|straight away/.test(article), 'owner edits');
   // The article is replaced in place: every other article survives.
   const titles = (h) => (h.match(/^  '[^']+': \(/mg) || []).length;
   ok('  and the other Help articles are all still there', titles(help) >= 20, `${titles(help)} articles`);

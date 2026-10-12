@@ -97,7 +97,7 @@ export function poweredByRow() {
 }
 
 /**
- * @param {{ title: string, bodyRowsHtml: string, showHeader?: boolean, width?: number }} params
+ * @param {{ title: string, bodyRowsHtml: string, showHeader?: boolean, width?: number, preheader?: string }} params
  *   — bodyRowsHtml is every `<tr>` between the header and the footer (the
  *   footer is not included automatically — call emailFooterRow() and
  *   append it yourself, since footer copy varies per email).
@@ -106,8 +106,14 @@ export function poweredByRow() {
  *   with poweredByRow() in the footer instead.
  *   width is the card's max width; 560 for every brand email so far, 600
  *   for the gift emails (gifting v2), whose layout is drawn at 600.
+ *   preheader, when given, is the inbox-list line: hidden in the open email,
+ *   the same construction as api/_lib/retentionEmails.js. Without it the
+ *   shell is unchanged, byte for byte.
  */
-export function emailShell({ title, bodyRowsHtml, showHeader = true, width = 560 }) {
+export function emailShell({ title, bodyRowsHtml, showHeader = true, width = 560, preheader = '' }) {
+  const preheaderHtml = preheader
+    ? `\n  <div style="display:none;font-size:1px;color:${EMAIL_BG};line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${escapeHtml(preheader)}</div>`
+    : '';
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -115,7 +121,7 @@ export function emailShell({ title, bodyRowsHtml, showHeader = true, width = 560
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${escapeHtml(title)}</title>
 </head>
-<body style="margin:0;padding:0;background:${EMAIL_BG};font-family:${EMAIL_FONT};">
+<body style="margin:0;padding:0;background:${EMAIL_BG};font-family:${EMAIL_FONT};">${preheaderHtml}
   <table width="100%" cellpadding="0" cellspacing="0" style="background:${EMAIL_BG};padding:40px 16px;">
     <tr>
       <td align="center">

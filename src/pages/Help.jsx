@@ -101,7 +101,7 @@ const ARTICLES = {
       <ol style={S.ol}>
         <li style={S.li}>Click "Collaborate" in the sidebar</li>
         <li style={S.li}>Enter their name and email address</li>
-        <li style={S.li}>Under "Pages they can view", tick "View only" for each page you want them to see</li>
+        <li style={S.li}>Under "Pages they can view", check "View only" for each page you want them to see</li>
         <li style={S.li}>Click "Send Invite". They get an email with a link to join</li>
       </ol>
       <h3 style={S.h3}>What collaborators can do</h3>
@@ -114,7 +114,7 @@ const ARTICLES = {
       <ul style={S.ul}>
         <li style={S.li}>Collaborators sign in with their own account. They never share your password</li>
         <li style={S.li}>An invite link works for 7 days. Sending the invite again replaces the old link</li>
-        <li style={S.li}>To remove someone, click the bin next to their name in Collaborate. They lose access straight away</li>
+        <li style={S.li}>To remove someone, click the trash icon next to their name in Collaborate. They lose access right away</li>
         <li style={S.li}>To change which pages they can view, click the pencil next to their name</li>
         <li style={S.li}>Billing and plan settings stay with your account</li>
       </ul>
