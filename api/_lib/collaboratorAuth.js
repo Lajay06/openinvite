@@ -22,6 +22,7 @@
  */
 
 import crypto from 'crypto';
+import { collaboratorCan } from '../../src/lib/collaboratorPageMap.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -118,9 +119,12 @@ export async function listGrantsForOwner(ownerUserId, adminKey) {
   return rows.filter(r => r.owner_user_id_hash === ownerHash);
 }
 
-/** True if `permissions` grants at least `level` ('view' or 'edit') on `page`. */
+/**
+ * True if `permissions` grants at least `level` ('view' or 'edit') on `page`.
+ * Item 5 (owner ruling 2026-10-12): every page is view only, so edit is false
+ * for every page until a write PR adds it to COLLABORATOR_EDIT_PAGES, and a
+ * stale grant that says edit does nothing.
+ */
 export function hasPagePermission(permissions, page, level) {
-  const p = permissions?.[page];
-  if (!p) return false;
-  return level === 'edit' ? !!p.edit : !!(p.view || p.edit);
+  return collaboratorCan(permissions, page, level);
 }

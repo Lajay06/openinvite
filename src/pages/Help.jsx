@@ -96,27 +96,29 @@ const ARTICLES = {
   ),
   'Inviting a collaborator': (
     <div>
-      <p style={S.p}>Collaborate lets you give your partner, a wedding planner, or a family member access to your Openinvite account so you can plan together.</p>
+      <p style={S.p}>Collaborate lets you show your wedding plans to someone else, such as your partner, a wedding planner or a family member. They sign in with their own account and can view the pages you choose. They cannot change anything.</p>
       <h3 style={S.h3}>How to add a collaborator</h3>
       <ol style={S.ol}>
-        <li style={S.li}>Click "Collaborate" in the sidebar (bottom section)</li>
-        <li style={S.li}>Enter the collaborator's email address</li>
-        <li style={S.li}>Choose their access level: View Only, or Full Access</li>
-        <li style={S.li}>Click Send Invitation — they'll receive an email with a link to join</li>
+        <li style={S.li}>Click "Collaborate" in the sidebar</li>
+        <li style={S.li}>Enter their name and email address</li>
+        <li style={S.li}>Under "Pages they can view", check "View only" for each page you want them to see</li>
+        <li style={S.li}>Click "Send Invite". They get an email with a link to join</li>
       </ol>
       <h3 style={S.h3}>What collaborators can do</h3>
       <ul style={S.ul}>
-        <li style={S.li}><strong>Full Access:</strong> view and edit everything across the planner, website builder, and Guest Suite</li>
-        <li style={S.li}><strong>View Only:</strong> see all pages but cannot make changes</li>
+        <li style={S.li}>View the pages you chose, showing your current plans</li>
+        <li style={S.li}>Nothing more: they cannot add, edit or delete anything, and Ava is not available to them</li>
+        <li style={S.li}>Their own Help and Account pages stay their own</li>
       </ul>
       <h3 style={S.h3}>Notes</h3>
       <ul style={S.ul}>
-        <li style={S.li}>Collaborators log in with their own account — they don't share your password</li>
-        <li style={S.li}>You can remove a collaborator at any time from the Collaborate page</li>
-        <li style={S.li}>Changes made by collaborators are saved to your account and visible to you instantly</li>
-        <li style={S.li}>The couple's primary account holder controls billing and plan settings</li>
+        <li style={S.li}>Collaborators sign in with their own account. They never share your password</li>
+        <li style={S.li}>An invite link works for 7 days. Sending the invite again replaces the old link</li>
+        <li style={S.li}>To remove someone, click the trash icon next to their name in Collaborate. They lose access right away</li>
+        <li style={S.li}>To change which pages they can view, click the pencil next to their name</li>
+        <li style={S.li}>Billing and plan settings stay with your account</li>
       </ul>
-      <div style={S.tip}><p style={S.tipText}><strong>Tip:</strong> If you're working with a professional wedding planner, give them Full Access so they can manage vendors, guests, and the checklist on your behalf.</p></div>
+      <div style={S.tip}><p style={S.tipText}><strong>Tip:</strong> If you're working with a wedding planner, choose the pages they need to see, such as My vendors, Schedule and Guest list.</p></div>
     </div>
   ),
   'What is Ava and what can Ava do?': (

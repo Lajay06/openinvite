@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
-import { Users, Loader2, Eye, PenSquare } from 'lucide-react';
+import { Users, Loader2, Eye } from 'lucide-react';
 import { hasPagePermission, COLLABORATOR_PAGE_MAP, COLLABORATOR_PERMISSION_KEYS } from '@/lib/collaboratorContext';
+import { collaboratorPageLabels, COLLABORATOR_VIEW_ONLY_COPY } from '@/lib/collaboratorPageMap';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -91,7 +92,8 @@ export default function CollaboratorAccept() {
     );
   }
 
-  const grantedPages = Object.entries(invite.permissions || {}).filter(([, p]) => p?.view || p?.edit);
+  // Item 5 (owner ruling 2026-10-12): nav labels, every page view only.
+  const grantedPages = collaboratorPageLabels(invite.permissions);
   const nextParam = encodeURIComponent(`/collaborate/accept/${token}`);
 
   return (
@@ -107,13 +109,14 @@ export default function CollaboratorAccept() {
 
         {grantedPages.length > 0 && (
           <div style={{ marginBottom: 24 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.06em', marginBottom: 6, fontFamily: PJS }}>you'll be able to help with</p>
-            {grantedPages.map(([page, p]) => (
-              <div key={page} style={PAGE_LABEL_STYLE}>
-                {p.edit ? <PenSquare size={13} style={{ color: '#E03553' }} /> : <Eye size={13} style={{ color: 'rgba(10,10,10,0.6)' }} />}
-                {page} <span style={{ color: 'rgba(10,10,10,0.6)' }}>({p.edit ? 'view & edit' : 'view only'})</span>
+            <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(10,10,10,0.6)', letterSpacing: '0.06em', marginBottom: 6, fontFamily: PJS }}>the pages you can view</p>
+            {grantedPages.map(label => (
+              <div key={label} style={PAGE_LABEL_STYLE}>
+                <Eye size={13} style={{ color: 'rgba(10,10,10,0.6)' }} />
+                {label}
               </div>
             ))}
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, marginTop: 8, fontFamily: PJS }}>{COLLABORATOR_VIEW_ONLY_COPY}</p>
           </div>
         )}
 

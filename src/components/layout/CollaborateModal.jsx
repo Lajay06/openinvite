@@ -2,13 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
-import { COLLABORATOR_PERMISSION_KEYS } from '@/lib/collaboratorPageMap';
+import { COLLABORATOR_PERMISSION_KEYS, COLLABORATOR_PAGE_MAP, collaboratorCan } from '@/lib/collaboratorPageMap';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge"; // Added this import
-import { X, Users, Send, Edit, Trash2, Eye, PenSquare, RotateCw } from 'lucide-react';
+import { X, Users, Send, Edit, Trash2, Eye, RotateCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { color } from '@/styles/tokens';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -57,10 +57,10 @@ const SAVE_FAILED = 'That did not save. Try again.';
 // never silently have no corresponding sidebar entry (or vice versa).
 const pages = COLLABORATOR_PERMISSION_KEYS;
 
-const initialPermissions = pages.reduce((acc, page) => {
-  acc[page] = { view: false, edit: false };
-  return acc;
-}, {});
+// Item 5 (owner ruling 2026-10-12): every page is view only. One toggle per
+// page, no edit control, and a saved grant carries view and nothing else.
+const viewOnly = (perms) => Object.fromEntries(pages.map(page => [page, { view: collaboratorCan(perms, page, 'view') }]));
+const initialPermissions = viewOnly({});
 
 export default function CollaborateModal({ onClose }) {
   const [collaborators, setCollaborators] = useState([]);
@@ -99,20 +99,8 @@ export default function CollaborateModal({ onClose }) {
     return data;
   };
 
-  const handlePermissionChange = (page, type) => {
-    setPermissions(prev => {
-      const newPermissions = { ...prev };
-      newPermissions[page][type] = !newPermissions[page][type];
-      // If edit is enabled, view must also be enabled
-      if (type === 'edit' && newPermissions[page][type]) {
-        newPermissions[page]['view'] = true;
-      }
-      // If view is disabled, edit must also be disabled
-      if (type === 'view' && !newPermissions[page][type]) {
-        newPermissions[page]['edit'] = false;
-      }
-      return newPermissions;
-    });
+  const handlePermissionChange = (page) => {
+    setPermissions(prev => ({ ...prev, [page]: { view: !prev[page]?.view } }));
   };
   
   const resetForm = () => {
@@ -182,9 +170,8 @@ export default function CollaborateModal({ onClose }) {
     setEditingCollaborator(collaborator);
     setName(collaborator.name);
     setEmail(collaborator.email);
-    // Ensure all pages are represented in the permissions object
-    const mergedPermissions = { ...initialPermissions, ...collaborator.permissions };
-    setPermissions(mergedPermissions);
+    // Every page represented, and a stale edit read as view.
+    setPermissions(viewOnly(collaborator.permissions));
   };
 
   // Revoke first, then delete the record. If the revoke fails the record
@@ -245,27 +232,17 @@ export default function CollaborateModal({ onClose }) {
               />
               
               <div className="space-y-3 pt-2">
-                <h4 className="font-medium">Page Permissions</h4>
+                <h4 className="font-medium">Pages they can view</h4>
                 {pages.map((page) => (
                   <div key={page} className="flex items-center justify-between p-2 rounded-md bg-gray-50">
-                    <span className="text-sm font-medium">{page}</span>
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id={`${page}-view`}
-                          checked={permissions[page]?.view}
-                          onCheckedChange={() => handlePermissionChange(page, 'view')}
-                        />
-                        <label htmlFor={`${page}-view`} className="text-sm">View</label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id={`${page}-edit`}
-                          checked={permissions[page]?.edit}
-                          onCheckedChange={() => handlePermissionChange(page, 'edit')}
-                        />
-                        <label htmlFor={`${page}-edit`} className="text-sm">Edit</label>
-                      </div>
+                    <span className="text-sm font-medium">{COLLABORATOR_PAGE_MAP[page].navLabel}</span>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id={`${page}-view`}
+                        checked={!!permissions[page]?.view}
+                        onCheckedChange={() => handlePermissionChange(page)}
+                      />
+                      <label htmlFor={`${page}-view`} className="text-sm">View only</label>
                     </div>
                   </div>
                 ))}
@@ -326,17 +303,12 @@ export default function CollaborateModal({ onClose }) {
                     <div className="mt-2 pt-2 border-t text-xs text-[rgba(10,10,10,0.6)] space-y-1">
                       <p className="font-medium">Permissions:</p>
                       <div className="flex flex-wrap gap-2">
-                        {Object.entries(collab.permissions || {}).map(([page, perms]) => {
-                          if (perms.view || perms.edit) {
-                            return (
-                              <Badge key={page} variant="secondary" className="font-normal">
-                                {page}
-                                {perms.edit ? <PenSquare className="w-3 h-3 ml-1.5" /> : <Eye className="w-3 h-3 ml-1.5" />}
-                              </Badge>
-                            )
-                          }
-                          return null;
-                        })}
+                        {pages.filter(page => collaboratorCan(collab.permissions, page, 'view')).map(page => (
+                          <Badge key={page} variant="secondary" className="font-normal">
+                            {COLLABORATOR_PAGE_MAP[page].navLabel}
+                            <Eye className="w-3 h-3 ml-1.5" />
+                          </Badge>
+                        ))}
                       </div>
                     </div>
                   </div>

@@ -10,7 +10,8 @@
  * the exact same markup for review.
  */
 
-import { emailShell, emailFooterRow, escapeHtml, EMAIL_FONT as FONT, EMAIL_ACCENT as ACCENT, EMAIL_BLACK as BLACK } from './emailBrand.js';
+import { emailShell, emailFooterRow, escapeHtml, EMAIL_FONT as FONT, EMAIL_ACCENT as ACCENT, EMAIL_BLACK as BLACK, EMAIL_MUTED_LIGHT, EMAIL_SUPPORT_ADDRESS } from './emailBrand.js';
+import { collaboratorPageLabels, COLLABORATOR_VIEW_ONLY_COPY } from './collaboratorPageMap.js';
 
 /**
  * @param {{ collaboratorName: string, coupleNames: string, acceptUrl: string, permissions: object }} params
@@ -21,15 +22,19 @@ export function renderCollaboratorInviteEmail({ collaboratorName, coupleNames, a
   const subject = coupleNames
     ? `You've been invited to help plan ${coupleNames}'s wedding`
     : "You've been invited to help plan a wedding";
+  // Owner copy, 2026-10-12.
+  const preheader = coupleNames
+    ? `${coupleNames} have shared their plans with you.`
+    : 'Someone has shared their wedding plans with you.';
 
-  const grantedPages = Object.entries(permissions)
-    .filter(([, p]) => p?.view || p?.edit)
-    .map(([page, p]) => `${escapeHtml(page)} (${p.edit ? 'view & edit' : 'view only'})`);
+  // Item 5 (owner ruling 2026-10-12): the pages by their nav labels, then one
+  // sentence. Every page is view only, so nothing here says edit.
+  const grantedPages = collaboratorPageLabels(permissions).map(escapeHtml);
 
   const permissionsHtml = grantedPages.length > 0 ? `
           <tr>
             <td style="padding:24px 40px 0;">
-              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:rgba(0,0,0,0.4);font-family:${FONT};">What you'll be able to help with</p>
+              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:rgba(0,0,0,0.4);font-family:${FONT};">The pages you can view</p>
               <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;">
                 ${grantedPages.map(label => `
                 <tr>
@@ -38,6 +43,7 @@ export function renderCollaboratorInviteEmail({ collaboratorName, coupleNames, a
                   </td>
                 </tr>`).join('')}
               </table>
+              <p style="margin:12px 0 0;font-size:14px;line-height:1.6;color:rgba(0,0,0,0.68);font-family:${FONT};">${COLLABORATOR_VIEW_ONLY_COPY}</p>
             </td>
           </tr>` : '';
 
@@ -79,7 +85,7 @@ ${permissionsHtml}
               </p>
             </td>
           </tr>
-${emailFooterRow(`Sent by Openinvite on behalf of ${escapeHtml(coupleNames || 'a couple')}. If you weren't expecting this, you can safely ignore it.`)}`;
+${emailFooterRow(`Sent by Openinvite on behalf of ${escapeHtml(coupleNames || 'a couple')}. If you weren't expecting this, you can safely ignore it. Openinvite, Australia. <a href="mailto:${EMAIL_SUPPORT_ADDRESS}" style="color:${EMAIL_MUTED_LIGHT};text-decoration:underline;">${EMAIL_SUPPORT_ADDRESS}</a>`)}`;
 
-  return { subject, html: emailShell({ title: subject, bodyRowsHtml }) };
+  return { subject, preheader, html: emailShell({ title: subject, bodyRowsHtml, preheader }) };
 }
