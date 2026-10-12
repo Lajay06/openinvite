@@ -21,7 +21,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { COLLABORATOR_PAGE_MAP, COLLABORATOR_PERMISSION_KEYS } from './collaboratorPageMap';
+import { COLLABORATOR_PAGE_MAP, COLLABORATOR_PERMISSION_KEYS, collaboratorCan } from './collaboratorPageMap';
 
 export { COLLABORATOR_PAGE_MAP, COLLABORATOR_PERMISSION_KEYS };
 
@@ -59,10 +59,9 @@ export function withCollab(url, ownerUserId) {
   return `${path}?${params.toString()}${hash}`;
 }
 
+/** The same check the server makes (collaboratorPageMap.js): every page view only until a write PR. */
 export function hasPagePermission(permissions, page, level) {
-  const p = permissions?.[page];
-  if (!p) return false;
-  return level === 'edit' ? !!p.edit : !!(p.view || p.edit);
+  return collaboratorCan(permissions, page, level);
 }
 
 const EMPTY = { permissions: {}, coupleNames: '', collaboratorEmail: '' };

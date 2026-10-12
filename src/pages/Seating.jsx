@@ -261,7 +261,8 @@ export default function SeatingPage() {
           setGuests(data.Guest || []);
           setTables((data.Table || []).map(t => ({ ...t, assigned_guests: t.assigned_guests || [] })));
           setVenueAssets(data.VenueAsset || []);
-          setWeddingEvents(getWeddingEvents(data.WeddingDetails));
+          // collaborator-data.js returns the allowlisted fields as weddingDetails.
+          setWeddingEvents(getWeddingEvents(data.weddingDetails));
         }
         setLoading(false);
         return;

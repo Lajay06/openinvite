@@ -124,3 +124,34 @@ export const COLLABORATOR_PAGE_MAP = {
 
 /** Every permission key CollaborateModal.jsx should offer — derived, not hand-kept in sync. */
 export const COLLABORATOR_PERMISSION_KEYS = Object.keys(COLLABORATOR_PAGE_MAP);
+
+/**
+ * PAGES A COLLABORATOR MAY CHANGE. Owner ruling 2026-10-12, item 5: every page
+ * in the map is offered, and every one is view only. A grant that says edit is
+ * read as view, on the server and in the app. Schedule and Moodboard join this
+ * list only with their own write PRs.
+ */
+export const COLLABORATOR_EDIT_PAGES = Object.freeze([]);
+
+/** The one sentence the invite email and the accept page say after the page list. */
+export const COLLABORATOR_VIEW_ONLY_COPY = 'You can view these pages. You will not be able to change anything.';
+
+/**
+ * The single permission check, shared by api/_lib/collaboratorAuth.js and
+ * src/lib/collaboratorContext.jsx. A key outside the map grants nothing, and
+ * edit holds only for a page on COLLABORATOR_EDIT_PAGES.
+ */
+export function collaboratorCan(permissions, page, level) {
+  if (!Object.prototype.hasOwnProperty.call(COLLABORATOR_PAGE_MAP, page)) return false;
+  const p = permissions?.[page];
+  if (!p) return false;
+  if (level === 'edit') return COLLABORATOR_EDIT_PAGES.includes(page) && !!p.edit;
+  return !!(p.view || p.edit);
+}
+
+/** The nav labels of the pages a grant can view, in the map's order. */
+export function collaboratorPageLabels(permissions) {
+  return COLLABORATOR_PERMISSION_KEYS
+    .filter(key => collaboratorCan(permissions, key, 'view'))
+    .map(key => COLLABORATOR_PAGE_MAP[key].navLabel);
+}
