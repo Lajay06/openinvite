@@ -1,0 +1,35 @@
+{
+  "name": "GiftDraft",
+  "type": "object",
+  "properties": {
+    "draft_enc": {
+      "type": "string",
+      "description": "Gifting v2. AES-256-GCM ciphertext, encrypted under APP_ENC_KEY (api/_lib/appKeys.js), never a key derived from BASE44_ADMIN_KEY, of the giver's whole draft (plan, how the couple are addressed, their email, the giver's name, the note and its style, the first line, the photo, when it lands). Held server side between checkout and Stripe's confirmation."
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Gifting v2. 60 minutes after the draft was made; the webhook refuses an expired draft."
+    },
+    "buyer_user_id_hash": {
+      "type": "string",
+      "description": "Gifting v2. Hex HMAC-SHA256 under APP_HASH_KEY (api/_lib/appKeys.js), never BASE44_ADMIN_KEY, of the buyer's user id when they were signed in; empty otherwise. Optional."
+    },
+    "is_test": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set by test harnesses. Product queries must exclude is_test records."
+    }
+  },
+  "required": ["draft_enc", "expires_at"],
+  "rls": {
+    "create": null,
+    "read": null,
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

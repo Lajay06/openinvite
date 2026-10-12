@@ -181,6 +181,19 @@ export const ENTITY_FIELDS = {
     ],
     "enums": {}
   },
+  "GiftDraft": {
+    "fields": [
+      "buyer_user_id_hash",
+      "draft_enc",
+      "expires_at",
+      "is_test"
+    ],
+    "required": [
+      "draft_enc",
+      "expires_at"
+    ],
+    "enums": {}
+  },
   "Guest": {
     "fields": [
       "category",
@@ -571,9 +584,16 @@ export const ENTITY_FIELDS = {
       "buyer_email_enc",
       "buyer_name_enc",
       "buyer_user_id_hash",
+      "claim_token_hash",
+      "claimed_at",
+      "claimed_user_id_hash",
       "coupon_id",
       "currency",
+      "edit_token_hash",
+      "headline_key",
       "is_test",
+      "note_style",
+      "photo_key",
       "plan",
       "promotion_code_display",
       "promotion_code_id",
@@ -581,17 +601,18 @@ export const ENTITY_FIELDS = {
       "recipient_email_enc",
       "recipient_email_error",
       "recipient_email_sent",
+      "recipient_names_enc",
       "recipient_note_enc",
       "redeemed_at",
       "redeemed_user_id_hash",
+      "send_at",
+      "sent_at",
       "status",
-      "stripe_session_id"
+      "stripe_session_id",
+      "version"
     ],
     "required": [
-      "coupon_id",
       "plan",
-      "promotion_code_display",
-      "promotion_code_id",
       "recipient_email_enc",
       "stripe_session_id"
     ],
@@ -603,6 +624,18 @@ export const ENTITY_FIELDS = {
       "status": [
         "purchased",
         "redeemed"
+      ],
+      "headline_key": [
+        "nice_start",
+        "for_you",
+        "enjoy_this",
+        "spreadsheet",
+        "sorted"
+      ],
+      "note_style": [
+        "plain",
+        "serif",
+        "hand"
       ]
     }
   },
