@@ -25,8 +25,9 @@
  * page 3.
  *
  * DRAFT STATE lives in sessionStorage under one key until payment; nothing is
- * written to PlanGift before Stripe confirms. The pay step is a stub that goes
- * nowhere: checkout is item 6.
+ * written to PlanGift before Stripe confirms. Pay (item 6) hands the draft to
+ * checkout, which holds it server side for 60 minutes (GiftDraft) and sends
+ * the giver to Stripe; the webhook writes the gift (item 7).
  *
  * The input, the email preview, the style sample, the badge line and the type
  * styles are exported for the claim and edit pages (item 3), which use them as
@@ -42,7 +43,7 @@ import OnboardingCompletion from '@/components/onboarding/OnboardingCompletion';
 import OpeninviteLogo from '@/components/public/OpeninviteLogo';
 import PlanBadge from '@/components/shared/PlanBadge';
 import { renderGiftReveal, noteImageUrl } from '@/lib/giftEmailTemplate';
-import { resolveCheckoutPriceId, PLAN_PRICES } from '@/lib/checkoutSession';
+import { resolveCheckoutPriceId, PLAN_PRICES, startGiftV2Checkout } from '@/lib/checkoutSession';
 import { loadFontFamilies } from '@/lib/selfHostedFonts';
 import { color } from '@/styles/tokens';
 import {
@@ -171,12 +172,24 @@ export default function GiftV2() {
   // Page 3's accordion: collapsed by default, the first section open.
   const [openSection, setOpenSection] = useState(params.get('section') || 'note');
   const tz = useMemo(() => browserTimezone(), []);
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState(null);
+  // Back from Stripe: the payment went through, so the giver sees the done page.
+  useEffect(() => { if (params.get('paid') === '1') setDraft((d) => ({ ...d, step: 4 })); }, [params]);
   useEffect(() => { loadFontFamilies(['Cormorant Garamond']); }, []);
   useEffect(() => { writeDraft(draft); }, [draft]);
 
   if (!on) return <Navigate to="/gifting" replace />;
 
   const set = (patch) => setDraft((d) => ({ ...d, ...patch }));
+  const pay = async () => {
+    setPaying(true);
+    setPayError(null);
+    const result = await startGiftV2Checkout(draft, tz);
+    if (result.url) { window.location.assign(result.url); return; }
+    setPayError(result.error);
+    setPaying(false);
+  };
   const go = (step) => set({ step: Math.max(1, Math.min(PAGES, step)) });
   const toggle = (key) => setOpenSection((cur) => (cur === key ? null : key));
   const plan = draft.plan || 'ultra';
@@ -297,11 +310,13 @@ export default function GiftV2() {
               ))}
             </div>
             <p style={{ fontSize: 13, color: MUTED, fontFamily: PJS, margin: '16px 0 0', lineHeight: 1.5 }}>{COPY.when.fine}</p>
-            {/* THE PAY STEP IS A STUB: it goes to the done page and charges
-                nothing. Checkout is item 6, held. */}
-            <button type="button" className={primary} disabled={!draft.note.trim() || (draft.when === 'date' && !draft.date)} onClick={() => go(4)} style={{ marginTop: 24 }}>
+            {/* PAY (item 6): the draft goes to checkout, which holds it server
+                side and sends the giver to Stripe; Stripe returns them to
+                /gift?paid=1, which opens the done page. */}
+            <button type="button" className={primary} disabled={paying || !draft.note.trim() || (draft.when === 'date' && !draft.date)} onClick={pay} style={{ marginTop: 24 }}>
               {`Pay ${priceLabel(plan)} and send`}
             </button>
+            {payError && <p role="alert" data-gift-pay-error style={{ fontSize: 14, color: '#B0263F', fontFamily: PJS, margin: '12px 0 0' }}>{payError}</p>}
             <PhonePreview draft={draft} />
           </>
         )}

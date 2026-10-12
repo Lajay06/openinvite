@@ -6,6 +6,8 @@ import {
   isValidPriceId,
 } from './_lib/security.js';
 import { resolvePlanFromPriceId, resolveCurrencyFromPriceId } from './_lib/planPricing.js';
+import { validateGiftDraft, createGiftDraft } from './_lib/giftDrafts.js';
+import { giftingV2OnServer } from './gift-email-preview.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -28,6 +30,30 @@ export function getPaymentMethodTypes(currency) {
  * call, same "exported for direct unit testing" convention this file
  * already applies to getPaymentMethodTypes above.
  */
+// GIFTING V2 (goals/2026-10-11-gifting-v2.md, item 6): no custom fields; the
+// giver's whole draft is held server side (api/_lib/giftDrafts.js) and the
+// session carries only gift_version 2 and the draft's id. The session closes
+// at 55 minutes, inside the draft's 60, so a payment can never complete
+// against a draft that has expired (Stripe's own default is 24 hours).
+export const GIFT_V2_SESSION_MS = 55 * 60 * 1000;
+
+export function buildGiftV2SessionParams({ priceId, plan, currency, userId, customerEmail, appUrl, giftDraftId, now = new Date() }) {
+  return {
+    mode: 'payment',
+    payment_method_types: getPaymentMethodTypes(currency),
+    line_items: [{ price: priceId, quantity: 1 }],
+    // As every checkout: the hosted page's own promotion code field. v2 mints
+    // no code for the gift itself; applying a discount is unchanged.
+    allow_promotion_codes: true,
+    metadata: { plan, purchaseType: 'gift', gift_version: '2', gift_draft_id: giftDraftId },
+    ...(userId ? { client_reference_id: userId } : {}),
+    ...(customerEmail ? { customer_email: customerEmail } : {}),
+    expires_at: Math.floor((now.getTime() + GIFT_V2_SESSION_MS) / 1000),
+    success_url: `${appUrl}/gift?paid=1&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${appUrl}/gift?checkout=cancelled`,
+  };
+}
+
 export function buildCheckoutSessionParams({ priceId, plan, currency, userId, customerEmail, isGift, appUrl }) {
   return {
     mode: 'payment',
@@ -90,9 +116,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { priceId, userId, userEmail, email, giftMode } = req.body || {};
+    const { priceId, userId, userEmail, email, giftMode, giftVersion, giftDraft } = req.body || {};
     const customerEmail = (userEmail || email || '').trim();
     const isGift = giftMode === true;
+    const isGiftV2 = isGift && giftVersion === 2;
+
+    // Gifting v2 is flagged: with GIFTING_V2 off (production until item 9) a
+    // v2 request is refused before anything is created, and v1 is untouched.
+    if (isGiftV2 && !giftingV2OnServer(process.env)) {
+      return res.status(404).json({ error: 'Not found' });
+    }
 
     if (!priceId) {
       return res.status(400).json({ error: 'priceId is required' });
@@ -139,6 +172,23 @@ export default async function handler(req, res) {
     console.log('[checkout] resolved currency:', currency, '| priceId:', priceId);
 
     const appUrl = process.env.VITE_APP_URL || 'https://openinvite.com.au';
+
+    if (isGiftV2) {
+      const checked = validateGiftDraft(giftDraft);
+      if (!checked.ok) return res.status(400).json({ error: `giftDraft.${checked.error} is missing or invalid` });
+      const draft = await createGiftDraft(checked.value, {
+        plan, userId: userId || null, adminKey: process.env.BASE44_ADMIN_KEY,
+        isTest: String(process.env.STRIPE_SECRET_KEY || '').startsWith('sk_test_'),
+      });
+      if (!draft.ok) {
+        console.error('[checkout] gift draft could not be saved:', draft.status || 'no status');
+        return res.status(502).json({ error: 'Your gift could not be saved. Please try again.' });
+      }
+      const v2 = await stripe.checkout.sessions.create(
+        buildGiftV2SessionParams({ priceId, plan, currency, userId, customerEmail, appUrl, giftDraftId: draft.id })
+      );
+      return res.status(200).json({ url: v2.url });
+    }
 
     // No top-level `currency` — Stripe infers it from the referenced Price
     // object itself, and errors if a top-level currency were passed that
