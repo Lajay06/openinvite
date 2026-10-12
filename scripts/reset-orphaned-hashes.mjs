@@ -95,10 +95,14 @@ const present = (row, field) => row && row[field] !== undefined && row[field] !=
  * else. `fields: null` means the row itself goes.
  */
 const PLAN = [
-  { entity: 'PollVote',              fields: ['guest_identifier'] },
-  { entity: 'RsvpResponse',          fields: ['guest_id_hash', 'encrypted_guest_level'] },
-  { entity: 'QuestionnaireResponse', fields: null, reason: 'both rows unreadable and unmatchable' },
-  { entity: 'PlanGift',              fields: null, reason: 'the single row is a test row, owner ruling' },
+  { entity: 'PollVote', fields: ['guest_identifier'], adminWritable: false,
+    why: 'update is owner-scoped (create/read null only) and every row is created_by_id "anonymous"' },
+  { entity: 'RsvpResponse', fields: ['guest_id_hash', 'encrypted_guest_level'], adminWritable: false,
+    why: 'update is owner-scoped and 2429 of 2565 rows are created_by_id "anonymous"' },
+  { entity: 'QuestionnaireResponse', fields: null, adminWritable: false,
+    why: 'delete is owner-scoped and both rows are created_by_id "anonymous", which Base44 masks as 404' },
+  { entity: 'PlanGift', fields: null, adminWritable: true,
+    why: 'create, read, update and delete are all null, which is why its delete was the one that worked' },
 ];
 
 async function counts() {
@@ -128,7 +132,17 @@ function report(label, snapshot) {
   console.log(`\n  ${label}`);
   for (const s of snapshot) {
     const parts = s.per.map(([f, n]) => `${f}=${n}`).join('  ');
-    console.log(`    ${s.entity.padEnd(23)} total=${String(s.total).padEnd(6)} ${parts}${s.note ? `   (${s.note})` : ''}`);
+    const mark = s.adminWritable === false ? '  REFUSED' : '';
+    console.log(`    ${s.entity.padEnd(23)} total=${String(s.total).padEnd(6)} ${parts}${mark}${s.note ? `   (${s.note})` : ''}`);
+  }
+  const refused = snapshot.filter((x) => x.adminWritable === false);
+  if (refused.length) {
+    console.log('\n  REFUSED, and not attempted: the admin key cannot write these.');
+    for (const r of refused) console.log(`    ${r.entity}: ${r.why}`);
+    console.log('    No session can write them either: created_by_id == {{user.id}} never');
+    console.log('    matches the literal "anonymous", so this is not a credential problem.');
+    console.log('    Measured 2026-10-11: 1689 clears answered 401 and 2 deletes answered 404.');
+    console.log('    Ruled accepted as orphaned residue, so the rows stay.');
   }
 }
 
@@ -145,6 +159,10 @@ console.log('\n  --confirm given. Writing.\n');
 let cleared = 0, deleted = 0, failed = 0;
 
 for (const step of PLAN) {
+  // UP FRONT, NOT PER ROW. Attempting 1689 writes that RLS will refuse is not
+  // thoroughness, it is 1689 requests and a failure list that buries whatever
+  // actually went wrong.
+  if (step.adminWritable === false) { console.log(`    ${step.entity}: skipped, see REFUSED above`); continue; }
   const snapshot = before.find((s) => s.entity === step.entity);
   for (const row of snapshot.rows) {
     if (!row?.id) continue;
