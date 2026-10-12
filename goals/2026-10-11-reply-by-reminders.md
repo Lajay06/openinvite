@@ -102,6 +102,46 @@ NO LANE RUNS THE LIVE SUITE. Standing rule, owner 2026-10-11, after this
 terminal ran it twice while verifying an import fix: it writes, so the owner
 runs it, always.
 
+THE LIVE LANE NEEDS BASE44_ADMIN_KEY IN THE OWNER'S SHELL, and the guards that
+fail without it are correct. Nine guards reported failures on the run of
+2026-10-11 that were entirely an unset admin key: they read as broken checks and
+are a missing credential. Owner ruling the same day: loud, not skipped, and no
+change to the guards. A guard that skips itself when a credential is absent is a
+guard that reports green on a machine that cannot run it, which is the shape
+that hid the three faults above for months.
+
+THIRTEEN GUEST ROWS LOGGED [guestPii] blob failed to decrypt ON LIVE DATA. Ruled
+a lane C finding, handed over with the guest ids HASHED and never raw. What
+looked like thirteen corrupt rows turned out to be the leading edge of something
+larger: by 2026-10-12, 375 of 382 Guest rows carried a blob that no longer
+decrypts, because the admin key those blobs were encrypted under was rotated
+that day. The full account is in BASE44_PLATFORM_NOTES.md. It is recorded here
+because thirteen log lines were the only warning anyone got, and they were read
+as noise about thirteen rows.
+
+A LIVESTREAM OWNERSHIP ISOLATION BREACH, ruled a lane C finding, LiveStream not
+touched by this lane. The mechanism, recorded verbatim so lane C does not have to
+rediscover it: LiveStream.filter({created_by_id: <another user's id>}) returns
+the caller's own sentinel row rather than nothing, so getMyLiveStream() can
+resolve another wedding's stream. The filter is not applied as an ownership
+scope.
+
+THE SongRequest CLEANUP 404 IS NOISE unless it repeats. Ruled 2026-10-11. It has
+not repeated.
+
+ASSETCONTENT: THE PREMISE DID NOT HOLD, and this one is a correction to a ruling
+rather than a finding. The run reported assetContent sub-fields dropping, and
+the ruling was that this is a real schema drop needing fields added. Nothing in
+the product writes assetContent: StudioWebsite.jsx:279-283 records that the
+asset feature was removed in Wave 2 and the field is retained only so existing
+data is not orphaned, the named writer StudioAssetsTab.jsx does not exist, and
+the only writer of those names is tests/persistence/wedding-details.mjs. The
+declared sub-keys are saveTheDate{date, mainText, photoUrl, subtitle} and
+seatingChart{backgroundUrl, headline, note}; the guard sent headerText,
+subtitle, layout, title and bgMode, so four names dropped because they are not
+in the schema and never were. The guard is testing a feature that no longer
+exists. Still open: re-point that section at the declared names, or delete it.
+
 ## Lessons
 
 DOCS COMMITS RIDE IN THE LANE'S NEXT PR. Standing rule, owner 2026-10-11, from
