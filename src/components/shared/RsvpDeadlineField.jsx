@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { putMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { normalizeDeadline, mergedRsvpContent } from '@/lib/rsvpDeadline';
 import { formatDashboardDate } from '@/lib/dashboardDate';
+import { Switch } from '@/components/ui/switch';
+import {
+  LABEL as REMINDERS_LABEL, reminderLine, switchAvailability, withRemindersSwitch,
+} from '@/lib/rsvpReminders';
 
 /**
  * src/components/shared/RsvpDeadlineField.jsx
@@ -19,6 +23,20 @@ import { formatDashboardDate } from '@/lib/dashboardDate';
  * normalization through src/lib/rsvpDeadline.js, same write through
  * putMyWeddingDetails, same nine readers on the guest site.
  *
+ * ── AND THE REMINDER SWITCH SITS BESIDE IT ─────────────────────────────────
+ *
+ * Item 1 of goals/2026-10-11-reply-by-reminders.md. The switch belongs next to
+ * the date because it is about that date: "email anyone still to reply" has no
+ * meaning without one, which is also why it is disabled until the date exists.
+ *
+ * ONE PLACE TO TURN IT ON. The first version made the switch operable in both
+ * modes, reading the item's guard ("the same state after a change on either")
+ * as license to throw it from either page. The owner ruled that wrong on
+ * 2026-10-11: Event details shows a date you cannot edit, so a switch you can
+ * throw beside it is an asymmetry with no reason. Event details now shows the
+ * switch's STATE and its line, with one sentence saying where to change it,
+ * and the Send invites step is the only place it moves.
+ *
  * THE COUNT CLAUSE DID NOT COME WITH IT. The Guests page's sentence ended with
  * "N guests have not replied", which it could say because it held the whole
  * guest list. The Send invites flow holds a SELECTION, so the same clause there
@@ -29,6 +47,9 @@ import { formatDashboardDate } from '@/lib/dashboardDate';
 export const DEADLINE_LABEL = 'Reply by';
 export const NO_DEADLINE_LINE = 'Guests can reply until you set a date.';
 export const DEADLINE_SAVE_ERROR = 'Could not save the date. Please try again.';
+
+/** Shown under the switch on the surface that cannot change it. */
+export const REMINDERS_ELSEWHERE_LINE = 'Change this on the Send invites page.';
 
 /** "Replies close at the end of 1 May 2027." */
 export function deadlineClosesLine(value) {
@@ -61,16 +82,66 @@ export default function RsvpDeadlineField({ rsvpContent, onSaved, readOnly = fal
     setSaving(false);
   };
 
+  // ONE WRITE, THE WHOLE OBJECT. The switch merges into the same rsvpContent
+  // the date lives in, through the same put, so the two can never half-save.
+  const saveSwitch = async (on) => {
+    setSaving(true);
+    setError('');
+    try {
+      const merged = withRemindersSwitch(rsvpContent, on);
+      await putMyWeddingDetails({ rsvpContent: merged });
+      onSaved?.(merged);
+    } catch {
+      setError(DEADLINE_SAVE_ERROR);
+    }
+    setSaving(false);
+  };
+
+  const availability = switchAvailability(deadline);
+  const remindersOn = !!rsvpContent?.remindersOn;
+  // DISABLED WHEN IT CANNOT BE TURNED ON, and never when it is already on:
+  // the couple must always be able to switch it back off.
+  const switchDisabled = saving || (!remindersOn && !availability.ok);
+
+  const reminders = (
+    <div data-rsvp-reminders style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <label style={{ display: 'flex', alignItems: 'center', gap: 10,
+        cursor: readOnly || switchDisabled ? 'default' : 'pointer' }}>
+        <Switch
+          data-rsvp-reminders-switch
+          checked={remindersOn}
+          disabled={readOnly || switchDisabled}
+          onCheckedChange={readOnly ? undefined : saveSwitch}
+          aria-label={REMINDERS_LABEL}
+        />
+        <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          {REMINDERS_LABEL}
+        </span>
+      </label>
+      <span data-rsvp-reminders-line style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        {reminderLine(rsvpContent)}
+      </span>
+      {readOnly && (
+        <span data-rsvp-reminders-elsewhere style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          {REMINDERS_ELSEWHERE_LINE}
+        </span>
+      )}
+    </div>
+  );
+
   const line = deadline
     ? <span>{deadlineClosesLine(deadline)}</span>
     : <span>{NO_DEADLINE_LINE}</span>;
 
   if (readOnly) {
     return (
-      <div data-rsvp-deadline-shown style={{ display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap',
-        fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, color: 'rgba(10,10,10,0.6)' }}>
-        <span style={{ fontWeight: 700, color: '#0A0A0A' }}>{DEADLINE_LABEL}</span>
-        {line}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div data-rsvp-deadline-shown style={{ display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap',
+          fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, color: 'rgba(10,10,10,0.6)' }}>
+          <span style={{ fontWeight: 700, color: '#0A0A0A' }}>{DEADLINE_LABEL}</span>
+          {line}
+        </div>
+        {reminders}
       </div>
     );
   }
@@ -107,6 +178,7 @@ export default function RsvpDeadlineField({ rsvpContent, onSaved, readOnly = fal
         </button>
       )}
       {error && <span style={{ color: '#E03553' }}>{error}</span>}
+      <div style={{ flexBasis: '100%' }}>{reminders}</div>
     </div>
   );
 }

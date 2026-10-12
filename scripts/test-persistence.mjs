@@ -106,6 +106,7 @@ import { runTodoListSchema } from '../tests/persistence/todo-list-schema.mjs';
 import { runNotifications } from '../tests/persistence/notifications.mjs';
 import { runOnboardingCronWindow } from '../tests/persistence/onboarding-cron-window.mjs';
 import { runGuidancePersistence } from '../tests/persistence/guidance-persistence.mjs';
+import { runReplyByRemindersPersistence } from '../tests/persistence/reply-by-reminders-persistence.mjs';
 
 // THE IMPORT PHASE IS OVER. Restored here and again in the finally below, so
 // an exit on the next line cannot leave a placeholder behind either.
@@ -211,6 +212,12 @@ async function run() {
     // Creates and deletes its own sentinel record — see the module header for
     // why the round trip cannot be proved credential-free.
     await runModule('runGuidancePersistence', () => runGuidancePersistence(token));
+    // Creates and deletes its own sentinel wedding, like the line above, so it
+    // takes the token and nothing else. Item 1 of
+    // goals/2026-10-11-reply-by-reminders.md: the three reminder keys live
+    // inside rsvpContent, which the mirror declares as a bare object, so only
+    // a real round trip can show they are kept.
+    await runModule('runReplyByRemindersPersistence', () => runReplyByRemindersPersistence(token));
     await runModule('runSchemaDriftGuard', () => runSchemaDriftGuard());
   await runModule('runAvaActionValidation', () => runAvaActionValidation());
   await runModule('runDailyUpdateLoadStates', () => runDailyUpdateLoadStates());
