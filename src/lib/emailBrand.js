@@ -110,7 +110,7 @@ export function poweredByRow() {
  *   the same construction as api/_lib/retentionEmails.js. Without it the
  *   shell is unchanged, byte for byte.
  */
-export function emailShell({ title, bodyRowsHtml, showHeader = true, width = 560, preheader = '' }) {
+export function emailShell({ title, bodyRowsHtml, showHeader = true, preheader = '', width = 560 }) {
   const preheaderHtml = preheader
     ? `\n  <div style="display:none;font-size:1px;color:${EMAIL_BG};line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${escapeHtml(preheader)}</div>`
     : '';
