@@ -37,6 +37,7 @@
 import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
 import { canonicalSlug, deriveSlug, slugRootFromNames } from './_lib/slugCanon.js';
+import { TOO_MANY_TRIES } from './_lib/calmErrors.js';
 
 const BASE44_API = 'https://base44.app/api';
 // VITE_BASE44_APP_ID, not BASE44_APP_ID. That is the name every other server
@@ -112,7 +113,7 @@ export default async function handler(req, res) {
 
   const ip = getClientIp(req);
   const { limited } = checkRateLimit(ip, 'claim-slug', 30, 60_000);
-  if (limited) return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
+  if (limited) return res.status(429).json({ error: TOO_MANY_TRIES });
 
   if (!BASE44_ADMIN_KEY || !BASE44_APP_ID) {
     console.error('[claim-slug] admin key or app id not configured');

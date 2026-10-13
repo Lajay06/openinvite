@@ -34,6 +34,7 @@ import {
 import { hashGuestIdentifier } from './_lib/pollAuth.js';
 import { guestGateBlocks, GUEST_GATE_MESSAGE } from './_lib/guestSafeWedding.js';
 import { resolveWeddingBySlug } from './_lib/resolveWeddingBySlug.js';
+import { TOO_MANY_TRIES, DID_NOT_GO_THROUGH } from './_lib/calmErrors.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -58,7 +59,7 @@ export default async function handler(req, res) {
   res.setHeader('X-RateLimit-Limit', '20');
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
-    return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   const weddingSlug = sanitizeString(req.body?.weddingSlug || '');
@@ -133,6 +134,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error('[wedding-poll-vote] Error:', err.message);
-    return res.status(500).json({ error: 'Something went wrong — please try again.' });
+    return res.status(500).json({ error: DID_NOT_GO_THROUGH });
   }
 }

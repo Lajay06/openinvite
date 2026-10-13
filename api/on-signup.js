@@ -56,6 +56,7 @@
 import { Resend } from 'resend';
 import { onboardingDay1Email } from './emails/onboarding-day1.js';
 import { checkRateLimit, getClientIp } from './_lib/security.js';
+import { TOO_MANY_TRIES } from './_lib/calmErrors.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -96,7 +97,7 @@ export default async function handler(req, res) {
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
     console.warn('[on-signup] Rate limited:', ip);
-    return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   const { email, name, token } = req.body || {};
@@ -108,7 +109,9 @@ export default async function handler(req, res) {
   // Verify the caller is a real authenticated user
   const user = await verifyUser(token);
   if (!user) {
-    return res.status(401).json({ error: 'Unauthorized — invalid or missing token' });
+    // A CODE, NOT A SENTENCE. Owner ruling 2026-10-13: Base44's signup hook is
+    // the only caller, so there is no person to read a line here.
+    return res.status(401).json({ code: 'UNAUTHORIZED' });
   }
 
   // Use the verified user's email and name as the source of truth

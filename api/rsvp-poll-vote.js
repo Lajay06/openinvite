@@ -36,6 +36,7 @@
 import { applyCors, checkRateLimit, getClientIp, sanitizeString, verifyTurnstileToken } from './_lib/security.js';
 import { resolveGuestByToken } from './_lib/rsvpAuth.js';
 import { hashGuestIdentifier } from './_lib/pollAuth.js';
+import { TOO_MANY_TRIES, DID_NOT_GO_THROUGH } from './_lib/calmErrors.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -53,7 +54,7 @@ export default async function handler(req, res) {
   res.setHeader('X-RateLimit-Limit', '15');
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
-    return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   const token = sanitizeString(req.body?.token || '');
@@ -116,6 +117,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error('[rsvp-poll-vote] Error:', err.message);
-    return res.status(500).json({ error: 'Something went wrong — please try again.' });
+    return res.status(500).json({ error: DID_NOT_GO_THROUGH });
   }
 }

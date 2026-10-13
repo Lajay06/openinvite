@@ -9,6 +9,7 @@
  */
 
 import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
+import { TOO_MANY_TRIES } from './_lib/calmErrors.js';
 
 export default async function handler(req, res) {
   if (applyCors(req, res)) return;
@@ -22,7 +23,7 @@ export default async function handler(req, res) {
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
     console.warn('[places-photo] Rate limited:', ip);
-    return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   const { ref, maxwidth = '600' } = req.query || {};

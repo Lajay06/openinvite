@@ -75,6 +75,7 @@ const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY;
 // The list lives in _lib so scripts/lib/seedSchema.mjs can read it without
 // importing this handler and running its module scope. See that file.
 import { ENCRYPTED_FIELDS } from './_lib/encryptedFields.js';
+import { TOO_MANY_TRIES, DID_NOT_GO_THROUGH } from './_lib/calmErrors.js';
 
 // One-way HASHED on write, never decrypted, never returned (Step 2b stage
 // iii). Encryption is for values the couple must read back; the only question
@@ -344,7 +345,7 @@ export default async function handler(req, res) {
   res.setHeader('X-RateLimit-Limit', '60');
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
-    return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   if (!BASE44_ADMIN_KEY) {
@@ -377,6 +378,6 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
     console.error('[my-wedding-details] Error:', err.message);
-    return res.status(500).json({ error: 'Something went wrong — please try again.' });
+    return res.status(500).json({ error: DID_NOT_GO_THROUGH });
   }
 }

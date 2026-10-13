@@ -103,6 +103,7 @@ import { previousSlugsOf } from './_lib/slugCanon.js';
 // React, the DOM or any browser global. Same arrangement api/guest-page.js
 // already uses for the sample-content chain.
 import { publicEventIds } from '../src/lib/guestEventVisibility.js';
+import { TOO_MANY_TRIES, DID_NOT_GO_THROUGH } from './_lib/calmErrors.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -230,7 +231,7 @@ export default async function handler(req, res) {
   res.setHeader('X-RateLimit-Limit', '60');
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
-    return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   // Inputs come from the body on POST, the query string on GET. The password
@@ -439,6 +440,6 @@ export default async function handler(req, res) {
     });
   } catch (err) {
     console.error('[wedding-by-slug] Error:', err.message);
-    return res.status(500).json({ error: 'Something went wrong — please try again.' });
+    return res.status(500).json({ error: DID_NOT_GO_THROUGH });
   }
 }

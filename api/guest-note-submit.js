@@ -64,6 +64,7 @@ import { notify } from './_lib/notify.js';
 import { Resend } from 'resend';
 import { getBase44User } from './_lib/base44Admin.js';
 import { guestNoteEmail } from './_lib/guestNoteNotification.js';
+import { TOO_MANY_TRIES, DID_NOT_GO_THROUGH } from './_lib/calmErrors.js';
 
 /** The goal's cap. A note is a question, not an essay; 1000 characters is generous for one. */
 const MAX_MESSAGE_LENGTH = 1000;
@@ -165,7 +166,7 @@ export default async function handler(req, res) {
   res.setHeader('X-RateLimit-Limit', '10');
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
-    return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   const weddingSlug = sanitizeString(req.body?.weddingSlug || '');
@@ -193,7 +194,7 @@ export default async function handler(req, res) {
   // (The RSVP form is the opposite case and stays that way: a guest with no
   // email must still be able to reply.)
   if (!isValidEmail(email)) {
-    return res.status(400).json({ error: 'Please check your email address — the couple will reply to it.' });
+    return res.status(400).json({ error: 'Check your email address. The couple will reply to it.' });
   }
 
   if (!turnstileToken) {
@@ -284,6 +285,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error('[guest-note-submit] Error:', err.message);
-    return res.status(500).json({ error: 'Something went wrong — please try again.' });
+    return res.status(500).json({ error: DID_NOT_GO_THROUGH });
   }
 }

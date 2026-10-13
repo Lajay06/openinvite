@@ -27,6 +27,7 @@ import { verifyInvite, isInviteExpired, INVITE_EXPIRED_MESSAGE } from './_lib/co
 import { inviteStanding } from './_lib/collaboratorInvites.js';
 
 import { coupleDisplayName } from './_lib/coupleNames.js';
+import { TOO_MANY_TRIES, DID_NOT_GO_THROUGH } from './_lib/calmErrors.js';
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY;
@@ -49,7 +50,7 @@ export default async function handler(req, res) {
   res.setHeader('X-RateLimit-Limit', '30');
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
-    return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   const token = sanitizeString(req.query?.token || '');
@@ -93,6 +94,6 @@ export default async function handler(req, res) {
     });
   } catch (err) {
     console.error('[collaborator-lookup] Error:', err.message);
-    return res.status(500).json({ error: 'Something went wrong — please try again.' });
+    return res.status(500).json({ error: DID_NOT_GO_THROUGH });
   }
 }

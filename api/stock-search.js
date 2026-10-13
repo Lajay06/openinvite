@@ -19,6 +19,7 @@
  */
 
 import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
+import { TOO_MANY_TRIES } from './_lib/calmErrors.js';
 
 export default async function handler(req, res) {
   if (applyCors(req, res)) return;
@@ -33,7 +34,7 @@ export default async function handler(req, res) {
   res.setHeader('X-RateLimit-Limit', '20');
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
-    return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   const { q, page = '1' } = req.query || {};
@@ -49,7 +50,7 @@ export default async function handler(req, res) {
     if (response.status === 429) {
       // Pexels' own 200/hour key limit has been hit — surface a friendly,
       // distinct message rather than a generic failure.
-      return res.status(429).json({ error: 'Stock photo search is busy right now — please try again shortly.' });
+      return res.status(429).json({ error: 'Photo search is busy right now. Try again in a minute.' });
     }
     if (!response.ok) {
       return res.status(502).json({ error: 'Stock photo search failed' });

@@ -35,6 +35,7 @@
 import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
 import { canonicalSlug, isReservedSlug, withAlias, previousSlugsOf } from './_lib/slugCanon.js';
+import { TOO_MANY_TRIES } from './_lib/calmErrors.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -55,7 +56,7 @@ export default async function handler(req, res) {
   // TIGHTER THAN claim-slug's 30/min. This is a deliberate, rare action; a
   // caller making it ten times a minute is not a couple renaming their site.
   const { limited } = checkRateLimit(getClientIp(req), 'change-address', 6, 60_000);
-  if (limited) return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
+  if (limited) return res.status(429).json({ error: TOO_MANY_TRIES });
 
   if (!BASE44_ADMIN_KEY || !BASE44_APP_ID) {
     console.error('[change-address] admin key or app id not configured');

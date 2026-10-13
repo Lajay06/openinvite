@@ -65,7 +65,8 @@ export default async function handler(req, res) {
   }
 
   if (!BASE44_ADMIN_KEY) {
-    return res.status(500).json({ error: 'BASE44_ADMIN_KEY not set' });
+    console.error('[dev-send-test-digest] NOT_CONFIGURED: BASE44_ADMIN_KEY is not set');
+    return res.status(500).json({ code: 'NOT_CONFIGURED' });
   }
 
   try {
@@ -82,7 +83,8 @@ export default async function handler(req, res) {
     const { subject, html } = renderWeeklyDigestEmail(digest);
 
     if (!process.env.RESEND_API_KEY) {
-      return res.status(500).json({ error: 'RESEND_API_KEY not set' });
+      console.error('[dev-send-test-digest] NOT_CONFIGURED: RESEND_API_KEY is not set');
+      return res.status(500).json({ code: 'NOT_CONFIGURED' });
     }
     const { data, error } = await resend.emails.send({ from: FROM, to: TEST_RECIPIENT, subject, html });
     if (error) {

@@ -26,6 +26,7 @@
  * upstream JSON unchanged, so every caller-side branch keeps working untouched.
  */
 import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
+import { TOO_MANY_TRIES } from './_lib/calmErrors.js';
 
 const UPSTREAM = 'https://open.er-api.com/v6/latest';
 
@@ -46,7 +47,7 @@ export default async function handler(req, res) {
   res.setHeader('X-RateLimit-Limit', '60');
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
-    return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   const base = String(req.query?.base || 'USD').toUpperCase();

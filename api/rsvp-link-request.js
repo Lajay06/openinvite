@@ -45,6 +45,7 @@ import { mergeGuestPii } from './_lib/guestPii.js';
 import { resolveWeddingBySlug } from './_lib/resolveWeddingBySlug.js';
 
 import { coupleDisplayName } from './_lib/coupleNames.js';
+import { TOO_MANY_TRIES, DID_NOT_GO_THROUGH } from './_lib/calmErrors.js';
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY; // server-side only, no VITE_ prefix
 
 const KNOWN_ORIGINS = new Set([
@@ -98,7 +99,7 @@ export default async function handler(req, res) {
   res.setHeader('X-RateLimit-Limit', '5');
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
-    return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   const email = sanitizeString(req.body?.email || '').toLowerCase();
@@ -237,6 +238,6 @@ export default async function handler(req, res) {
     return res.status(200).json(NEUTRAL);
   } catch (err) {
     console.error('[rsvp-link-request] Error:', err.message);
-    return res.status(500).json({ error: 'Something went wrong — please try again.' });
+    return res.status(500).json({ error: DID_NOT_GO_THROUGH });
   }
 }

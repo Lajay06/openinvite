@@ -28,6 +28,7 @@ import { getCollaborationFor, mostRecentCollaboration } from './_lib/collaborato
 import { excludeTestRecords } from './_lib/productData.js';
 
 import { coupleDisplayName } from './_lib/coupleNames.js';
+import { TOO_MANY_TRIES, DID_NOT_GO_THROUGH } from './_lib/calmErrors.js';
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 const BASE44_ADMIN_KEY = process.env.BASE44_ADMIN_KEY;
@@ -50,7 +51,7 @@ export default async function handler(req, res) {
   res.setHeader('X-RateLimit-Limit', '60');
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
-    return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   const caller = await verifyBase44User(req);
@@ -69,7 +70,7 @@ export default async function handler(req, res) {
       return res.status(200).json(mine ? { ownerUserId: mine.ownerUserId, permissions: mine.permissions } : { ownerUserId: null });
     } catch (err) {
       console.error('[collaborator-context] Error:', err.message);
-      return res.status(500).json({ error: 'Something went wrong — please try again.' });
+      return res.status(500).json({ error: DID_NOT_GO_THROUGH });
     }
   }
 
@@ -96,6 +97,6 @@ export default async function handler(req, res) {
     });
   } catch (err) {
     console.error('[collaborator-context] Error:', err.message);
-    return res.status(500).json({ error: 'Something went wrong — please try again.' });
+    return res.status(500).json({ error: DID_NOT_GO_THROUGH });
   }
 }

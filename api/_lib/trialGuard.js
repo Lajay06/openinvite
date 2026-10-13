@@ -41,7 +41,7 @@ export function rejectIfTrialExpired(req, res, user) {
   // prompt. An indistinguishable 403 would surface as "something went wrong",
   // which is both unhelpful and untrue -- nothing went wrong.
   res.status(403).json({
-    error: 'Your free trial has ended. Your work is safe and yours — upgrade to keep planning.',
+    error: 'Your free trial has ended. Everything you made is still here. Choose a plan to keep planning.',
     code: TRIAL_EXPIRED_CODE,
   });
   return true;
