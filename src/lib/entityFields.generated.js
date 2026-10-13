@@ -74,6 +74,7 @@ export const ENTITY_FIELDS = {
       "event_type",
       "granted_at",
       "is_test",
+      "owner_id_enc",
       "owner_user_id_hash",
       "permissions"
     ],

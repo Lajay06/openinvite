@@ -840,11 +840,11 @@ export default function AccountPage() {
   const [helpsWithAWedding, setHelpsWithAWedding] = useState(false);
   useEffect(() => {
     if (!user || !planStepNotDone(user)) { setHelpsWithAWedding(false); return; }
-    let cancelled = false;
+    let canceled = false;
     fetchMyCollaboration(localStorage.getItem('base44_access_token')).then((mine) => {
-      if (!cancelled) setHelpsWithAWedding(!!mine);
+      if (!canceled) setHelpsWithAWedding(!!mine);
     });
-    return () => { cancelled = true; };
+    return () => { canceled = true; };
   }, [user]);
 
   return (

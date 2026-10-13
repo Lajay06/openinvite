@@ -101,16 +101,16 @@ export default function ChoosePlan() {
     // always carries ?next= (Login.jsx sets it every time): the Account page's
     // "Start here" link arrives with no next, and must reach the plan step.
     if (!user || !params.has('next')) { setChecking(false); return; }
-    let cancelled = false;
+    let canceled = false;
     fetchMyCollaboration(localStorage.getItem('base44_access_token')).then((mine) => {
-      if (cancelled) return;
+      if (canceled) return;
       if (mine) {
         navigate(collaboratorLandingUrl(mine.ownerUserId, mine.permissions), { replace: true });
         return;
       }
       setChecking(false);
     });
-    return () => { cancelled = true; };
+    return () => { canceled = true; };
   }, [isLoadingAuth, user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Defensive parity with Pricing.jsx's own plan-aware buttons — normally
