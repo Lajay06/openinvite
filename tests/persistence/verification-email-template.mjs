@@ -40,8 +40,17 @@ export async function runVerificationEmailTemplate() {
   ok('  at 40px, bold, letter-spaced, in Plus Jakarta Sans',
      /class="code" style="font-family:'Plus Jakarta Sans'[^"]*font-size:40px;font-weight:700;letter-spacing:12px;/.test(body), '40px');
   ok('  on #F6F2EC', /<td align="center" style="background:#F6F2EC;[^"]*">\s*<div class="code"/.test(body), 'warm white');
-  ok('the photo is DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2 at 2:1, w_1200, f_auto, q_auto',
-     body.includes('https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_1200,c_fill,ar_2:1/DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2'), 'photo');
+  ok('the photo is DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2 at 2:1, w_1200, f_auto, q_auto, anchored north so both figures show whole',
+     body.includes('https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_1200,c_fill,ar_2:1,g_north/DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2'), 'photo');
+
+  console.log('\n  The full logo, not the mark alone:\n');
+  ok('the logo is the full lockup PNG, about 160px wide, alt Openinvite',
+     /<img src="https:\/\/www\.openinvite\.com\.au\/email-assets\/openinvite-logo-on-light-2x\.png" width="160" height="37" alt="Openinvite" style="display:block;width:160px;height:37px;border:0;" \/>/.test(body), 'lockup');
+  ok('  and the mark alone is gone', !/openinvite-icon-mark/.test(body), 'no mark-only image');
+  ok('  and no SVG anywhere', !/\.svg\b|<svg/i.test(body), 'PNG only');
+  const png = fs.readFileSync(path.join(ROOT, 'public/email-assets/openinvite-logo-on-light-2x.png'));
+  const w = png.readUInt32BE(16), h = png.readUInt32BE(20);
+  ok('  the PNG is 2x: 320 by 74, the asset\'s own proportions', png.slice(1, 4).toString() === 'PNG' && w === 320 && h === 74, `${w}x${h}`);
   ok('the footer closes as the house emails do', /Openinvite, Australia\. <a href="mailto:hello@openinvite\.com\.au"/.test(body), 'Australia and the support address');
 
   console.log('\n  Nothing of the Base44 default:\n');
