@@ -8,6 +8,7 @@ import { startCheckout } from '@/lib/checkoutSession';
 import { PRO_FEATURES, ULTRA_EXTRAS } from '@/lib/planFeatures';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { needsOnboarding } from '@/lib/needsOnboarding';
+import { fetchMyCollaboration, collaboratorLandingUrl } from '@/lib/collaboratorLanding';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -93,7 +94,23 @@ export default function ChoosePlan() {
         .catch(() => navigate(next, { replace: true }));
       return;
     }
-    setChecking(false);
+    // Owner ruling 2026-10-13: a collaborator-only account that signs in
+    // without the invite link goes into the wedding it helps with, writing
+    // nothing, as the accept link does. Every grant revoked, or none: the
+    // plan page, like anyone else. Only on the way in from a sign-in, which
+    // always carries ?next= (Login.jsx sets it every time): the Account page's
+    // "Start here" link arrives with no next, and must reach the plan step.
+    if (!user || !params.has('next')) { setChecking(false); return; }
+    let cancelled = false;
+    fetchMyCollaboration(localStorage.getItem('base44_access_token')).then((mine) => {
+      if (cancelled) return;
+      if (mine) {
+        navigate(collaboratorLandingUrl(mine.ownerUserId, mine.permissions), { replace: true });
+        return;
+      }
+      setChecking(false);
+    });
+    return () => { cancelled = true; };
   }, [isLoadingAuth, user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Defensive parity with Pricing.jsx's own plan-aware buttons — normally

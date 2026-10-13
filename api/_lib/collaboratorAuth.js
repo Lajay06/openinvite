@@ -23,6 +23,7 @@
 
 import crypto from 'crypto';
 import { collaboratorCan } from '../../src/lib/collaboratorPageMap.js';
+import { encKey } from './appKeys.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -50,6 +51,39 @@ export function collabHashKey() {
 export function hashId(rawValue) {
   if (!rawValue) return null;
   return crypto.createHmac('sha256', collabHashKey()).update(String(rawValue)).digest('hex');
+}
+
+/**
+ * THE OWNER'S ID, ENCRYPTED, on the grant written at accept (owner ruling
+ * 2026-10-13). The hashes above cannot be reversed, so a collaborator who signs
+ * in without the invite link had no way back to the wedding they help with.
+ *
+ * Encrypted under APP_ENC_KEY (api/_lib/appKeys.js), never COLLAB_HASH_KEY: one
+ * key per job, hashing or encryption, never both. AES-256-GCM, with the row's
+ * collaborator hash as additional data, so a value copied onto another
+ * person's grant does not decrypt. Format: v1.<iv>.<tag>.<ciphertext>, each
+ * base64url.
+ */
+export function encryptOwnerId(ownerUserId, collaboratorUserIdHash) {
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', encKey(), iv);
+  cipher.setAAD(Buffer.from(String(collaboratorUserIdHash)));
+  const ct = Buffer.concat([cipher.update(String(ownerUserId), 'utf8'), cipher.final()]);
+  return ['v1', iv, cipher.getAuthTag(), ct].map((p, i) => (i === 0 ? p : p.toString('base64url'))).join('.');
+}
+
+/** The owner's id, or null for anything that does not decrypt under this row's collaborator hash. */
+export function decryptOwnerId(value, collaboratorUserIdHash) {
+  try {
+    const [v, iv, tag, ct] = String(value || '').split('.');
+    if (v !== 'v1' || !iv || !tag || !ct) return null;
+    const decipher = crypto.createDecipheriv('aes-256-gcm', encKey(), Buffer.from(iv, 'base64url'));
+    decipher.setAAD(Buffer.from(String(collaboratorUserIdHash)));
+    decipher.setAuthTag(Buffer.from(tag, 'base64url'));
+    return Buffer.concat([decipher.update(Buffer.from(ct, 'base64url')), decipher.final()]).toString('utf8');
+  } catch {
+    return null;
+  }
 }
 
 function unwrapList(payload) {
@@ -108,6 +142,46 @@ export function latestEvent(rows) {
     if (a === b && r.event_type === 'revoke') return r;
     return best;
   }, null);
+}
+
+/**
+ * The wedding a collaborator-only account goes to when it signs in without the
+ * invite link (owner ruling 2026-10-13): of every owner whose latest event for
+ * this collaborator is a grant, the one accepted most recently. A later item
+ * may offer a picker; for now the most recent wins.
+ *
+ * The owner comes from owner_id_enc, and only counts when it hashes back to
+ * the row's own owner hash, so a forged or copied value is ignored. Returns
+ * { ownerUserId, permissions } or null.
+ */
+export async function mostRecentCollaboration(userId, adminKey) {
+  const collabHash = hashId(userId);
+  if (!collabHash) return null;
+  const query = encodeURIComponent(JSON.stringify({ collaborator_user_id_hash: collabHash }));
+  const rows = unwrapList(await adminFetch('GET', `/apps/${BASE44_APP_ID}/entities/CollaboratorGrant?q=${query}`, adminKey))
+    .filter(r => r.collaborator_user_id_hash === collabHash && !r.is_test);
+
+  const byOwner = new Map();
+  for (const r of rows) {
+    if (!byOwner.has(r.owner_user_id_hash)) byOwner.set(r.owner_user_id_hash, []);
+    byOwner.get(r.owner_user_id_hash).push(r);
+  }
+
+  let best = null;
+  for (const [ownerHash, events] of byOwner) {
+    const latest = latestEvent(events);
+    if (!latest || latest.event_type !== 'grant') continue;
+    // The accept rows carry owner_id_enc; a permission edit's grant may not.
+    const accepted = events
+      .filter(r => r.event_type === 'grant' && r.owner_id_enc)
+      .map(r => ({ r, ownerUserId: decryptOwnerId(r.owner_id_enc, collabHash) }))
+      .filter(x => x.ownerUserId && hashId(x.ownerUserId) === ownerHash)
+      .sort((a, b) => new Date(b.r.created_date) - new Date(a.r.created_date))[0];
+    if (!accepted) continue;
+    const at = new Date(accepted.r.created_date).getTime();
+    if (!best || at > best.at) best = { at, ownerUserId: accepted.ownerUserId, permissions: latest.permissions || {} };
+  }
+  return best ? { ownerUserId: best.ownerUserId, permissions: best.permissions } : null;
 }
 
 /** Every CollaboratorGrant row under one owner, re-checked against the hash rather than trusting the query filter. */

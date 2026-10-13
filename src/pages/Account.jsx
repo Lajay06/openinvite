@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Loader2, Check, CreditCard, Crown, Receipt, AlertTriangle } from 'lucide-react';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { getNotificationPrefs } from '@/lib/notificationPrefs';
 import { startCheckout, resolveCheckoutPriceId, PLAN_PRICES } from '@/lib/checkoutSession';
 import toast from 'react-hot-toast';
+import { planStepNotDone, fetchMyCollaboration, START_YOUR_OWN_LEAD, START_YOUR_OWN_LINK } from '@/lib/collaboratorLanding';
 import { DATE_FORMATS, DATE_FORMAT_LABELS, dateFormatExample, normalizeDateFormat, formatDashboardDate } from '@/lib/dashboardDate';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -834,10 +835,28 @@ export default function AccountPage() {
   })();
   const [tab, setTab] = useState(initialTab);
   const [avaOpen, setAvaOpen] = useState(false);
+  // Owner ruling 2026-10-13: one line, only for an account with an active
+  // grant that has not done the plan step. Starting is always theirs.
+  const [helpsWithAWedding, setHelpsWithAWedding] = useState(false);
+  useEffect(() => {
+    if (!user || !planStepNotDone(user)) { setHelpsWithAWedding(false); return; }
+    let cancelled = false;
+    fetchMyCollaboration(localStorage.getItem('base44_access_token')).then((mine) => {
+      if (!cancelled) setHelpsWithAWedding(!!mine);
+    });
+    return () => { cancelled = true; };
+  }, [user]);
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF', fontFamily: PJS }}>
       <DashboardPageHeader title="Account" subtitle="Manage your profile, plan, and security" />
+
+      {helpsWithAWedding && (
+        <p className="px-4 md:px-8 pt-4 text-sm" style={{ color: 'rgba(10,10,10,0.6)' }}>
+          {START_YOUR_OWN_LEAD}{' '}
+          <Link to="/choose-plan" style={{ color: '#0A0A0A', fontWeight: 600, textDecoration: 'underline' }}>{START_YOUR_OWN_LINK}</Link>
+        </p>
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <AvaButton
