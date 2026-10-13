@@ -244,7 +244,8 @@ export default function GiftV2() {
     : s === 2 ? { image: ONBOARDING_IMAGES.WHO }
       : s === 4 ? { image: ONBOARDING_IMAGES.DONE }
         : { aside: <EmailPreview draft={draft} /> };
-  const notePreview = draft.note.trim() ? `${draft.note.trim().slice(0, 40)}${draft.note.trim().length > 40 ? '...' : ''}` : '';
+  // The whole note, never cut short (owner ruling 2026-10-13): the chip wraps.
+  const notePreview = draft.note.trim();
   const styleLabel = NOTE_STYLES.find((x) => x.key === draft.noteStyle)?.label;
   const whenLabel = draft.when === 'date' && draft.date ? `${COPY.when.date.title}, ${draft.date}` : draft.when === 'date' ? COPY.when.date.title : COPY.when.now.title;
 
@@ -316,7 +317,7 @@ export default function GiftV2() {
           <>
             <h1 style={heading}>{COPY.theirs.heading}</h1>
             <div data-gift-accordion style={{ marginTop: 24, borderTop: `1px solid ${color.border}` }}>
-              <AccordionSection title={COPY.theirs.note} isOpen={openSection === 'note'} onToggle={() => toggle('note')} summary={notePreview ? [notePreview, styleLabel] : []}>
+              <AccordionSection summaryWrap title={COPY.theirs.note} isOpen={openSection === 'note'} onToggle={() => toggle('note')} summary={notePreview ? [notePreview, styleLabel] : []}>
                 <textarea value={draft.note} maxLength={NOTE_MAX} rows={5} placeholder={COPY.theirs.note} aria-label={COPY.theirs.note} className="s1-input"
                   onChange={(e) => set({ note: e.target.value })}
                   style={{ ...nameInputStyle(draft.note, false), fontSize: 17, fontWeight: 400, lineHeight: 1.6, resize: 'vertical' }} />
@@ -325,12 +326,12 @@ export default function GiftV2() {
                   {NOTE_STYLES.map((st) => <Pill key={st.key} label={styleSample(st)} selected={draft.noteStyle === st.key} onClick={() => set({ noteStyle: st.key })} />)}
                 </div>
               </AccordionSection>
-              <AccordionSection title={COPY.theirs.headline} isOpen={openSection === 'headline'} onToggle={() => toggle('headline')} summary={[headlineText(draft.headlineKey, draft.names)]}>
+              <AccordionSection summaryWrap title={COPY.theirs.headline} isOpen={openSection === 'headline'} onToggle={() => toggle('headline')} summary={[headlineText(draft.headlineKey, draft.names)]}>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {HEADLINES.map((h) => <Pill key={h.key} label={headlineText(h.key, draft.names)} selected={draft.headlineKey === h.key} onClick={() => set({ headlineKey: h.key })} />)}
                 </div>
               </AccordionSection>
-              <AccordionSection title={COPY.theirs.photo} isOpen={openSection === 'photo'} onToggle={() => toggle('photo')} summary={[photoLabel(draft.photoId)]}>
+              <AccordionSection summaryWrap title={COPY.theirs.photo} isOpen={openSection === 'photo'} onToggle={() => toggle('photo')} summary={[photoLabel(draft.photoId)]}>
                 <div className="universe-grid" style={{ display: 'grid', gap: 3 }}>
                   {GIFT_PHOTOS.map((p, i) => (
                     <UniverseGridTile key={p.id} index={i} hideExplore caption
@@ -341,7 +342,7 @@ export default function GiftV2() {
                   ))}
                 </div>
               </AccordionSection>
-              <AccordionSection title={COPY.theirs.when} isOpen={openSection === 'when'} onToggle={() => toggle('when')} summary={[whenLabel]}>
+              <AccordionSection summaryWrap title={COPY.theirs.when} isOpen={openSection === 'when'} onToggle={() => toggle('when')} summary={[whenLabel]}>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   <Pill label={COPY.when.now.title} selected={draft.when === 'now'} onClick={() => set({ when: 'now' })} />
                   <Pill label={COPY.when.date.title} selected={draft.when === 'date'} onClick={() => set({ when: 'date' })} />

@@ -63,9 +63,12 @@ const UNIVERSES = UNIVERSE_CATALOG.map((u, i) => ({
 /**
  * `caption` (optional, gifting v2's photo picker, owner ruling 2026-10-13: the
  * names covered the photos): the tile is a photograph with its name as a small
- * lower-third caption, about 12px, one line, bottom left, over a soft dark
- * gradient on the bottom fifth only, and the whole tile selects it. Without it
- * the universe tile renders exactly as before.
+ * lower-third caption, bottom left, over a soft dark gradient, and the whole
+ * tile selects it. Owner ruling 2026-10-13, after review: every word fits,
+ * never an ellipsis, so a long name wraps to a second line at 11px. The
+ * gradient sits behind the caption itself: the bottom fifth for one line,
+ * growing with a second, never past the lower third. Without `caption` the
+ * universe tile renders exactly as before.
  */
 export function UniverseGridTile({ universe, index, isSelected, onExplore, onSelectTile, imageSrc, hideExplore = false, caption = false }) {
   const [hovered, setHovered] = useState(false);
@@ -93,7 +96,6 @@ export function UniverseGridTile({ universe, index, isSelected, onExplore, onSel
             transform: hovered ? 'scale(1.04)' : 'scale(1)', transition: 'transform 0.6s cubic-bezier(0.16,1,0.3,1)',
           }}
         />
-        <div aria-hidden="true" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '20%', background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)' }} />
         {isSelected && (
           <div style={{
             position: 'absolute', top: 10, right: 10, width: 20, height: 20, borderRadius: '50%',
@@ -104,13 +106,18 @@ export function UniverseGridTile({ universe, index, isSelected, onExplore, onSel
             </svg>
           </div>
         )}
-        <p style={{
-          position: 'absolute', left: 10, right: 10, bottom: 8, margin: 0, zIndex: 1,
-          fontSize: 12, fontWeight: 600, lineHeight: 1.3, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif",
-          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        <div data-tile-caption-band style={{
+          position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 1, minHeight: '20%',
+          display: 'flex', alignItems: 'flex-end', padding: '8px 10px 8px', boxSizing: 'border-box',
+          background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)',
         }}>
-          {universe.name}
-        </p>
+          <p style={{
+            margin: 0, fontSize: 11, fontWeight: 600, lineHeight: 1.25, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif",
+            overflowWrap: 'break-word',
+          }}>
+            {universe.name}
+          </p>
+        </div>
       </article>
     );
   }
