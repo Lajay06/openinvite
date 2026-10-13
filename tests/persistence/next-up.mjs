@@ -19,6 +19,11 @@ const wedding = (over = {}) => ({
   pageSections: { home: [1], 'our-story': [1], celebration: [1] },
   rsvpContent: { enabled: true },
   websiteEnabled: true,
+  // A SLUG, because since 2026-10-12 a step is complete only when a guest could
+  // actually open the suite, and this fixture is meant to be a couple who
+  // finished. websiteEnabled with no address is the state that used to read as
+  // done and could not be opened.
+  slug: 'priya-and-dev',
   budget: { total: 154000 },
   mainCeremony: { venueName: 'Crown Sydney' },
   ...over,

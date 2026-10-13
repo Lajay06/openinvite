@@ -24,6 +24,7 @@ import WBEmailPreview from '@/components/website-builder/WBEmailPreview';
 import RotateNotice from '@/components/website-builder/RotateNotice';
 import { templatesOf, saveTemplates, EDITOR_TEMPLATES, SAVE_FAILURE_MESSAGE } from '@/lib/emailTemplateStore';
 import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
+import { isLive as isLiveSite } from '@/lib/publishState';
 const UNIVERSE_THEMES = {
   london: {
     name: 'London',
@@ -726,7 +727,7 @@ export default function StudioWebsite({ onBack }) {
   // slug says there is an address to go live AT. UniverseWorldView already
   // gates on exactly this pair, for exactly this reason — and two live
   // records were measured with websiteEnabled true and an empty slug.
-  const isLive = Boolean(details?.websiteEnabled && details?.slug);
+  const isLive = isLiveSite(details);
 
   if (isLoading || details === null) return (
     <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1C1C1E' }}>

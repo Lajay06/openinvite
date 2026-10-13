@@ -99,6 +99,7 @@ import { universeGallery } from '@/lib/universeGallery';
 // gallery tiles is deliberately ours rather than the universe's: it is a
 // structural rule, the same weight on every one of the twenty grounds.
 import { color as appColor } from '@/styles/tokens';
+import { isLive } from '@/lib/publishState';
 /** A crumb is a control that looks like text — no chrome of its own. */
 const CRUMB = {
   background: 'none', border: 'none', padding: 0, cursor: 'pointer',
@@ -392,7 +393,7 @@ export default function UniverseWorldView({
   // Four photographs of this universe, or [] where it has none. See
   // src/lib/universeGallery.js — hero excluded, duplicates topped up.
   const gallery = universeGallery(universe.id, universe.name);
-  const isPublished = Boolean(weddingDetails?.websiteEnabled && weddingDetails?.slug);
+  const isPublished = isLive(weddingDetails);
   const slug = weddingDetails?.slug || 'your-wedding';
   const showUpgrade = universe.isUltra && !canAccessUltra && !isCurrent;
   const motifLarge = MOTIF_LARGE[universe.id];

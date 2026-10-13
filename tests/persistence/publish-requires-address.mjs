@@ -96,10 +96,14 @@ export async function runPublishRequiresAddress() {
   }
 
   // ── 4. the green dot is both halves ───────────────────────────────────────
+  // BOTH NOW ASK src/lib/publishState.js. The requirement is unchanged, both
+  // halves and never the slug alone; what changed is that there is one place
+  // that knows it, after six of eight copies disagreed.
   check('the builder\'s live dot needs an address too',
-    /const isLive = Boolean\(details\?\.websiteEnabled && details\?\.slug\)/.test(studio),
-    'websiteEnabled AND slug');
-  check('  and the Share tab\'s does', /details\?\.websiteEnabled && hasAddress/.test(share), 'same pair');
+    /isLiveSite\(details\)/.test(studio) && /publishState/.test(studio),
+    'from publishState.js');
+  check('  and the Share tab\'s does',
+    /publishSentence\(details\)/.test(share) && /publishState/.test(share), 'from publishState.js');
 
   // ── 4b. THE STUDIO AND THE GUEST SIDE MUST READ THE FIELD THE SAME WAY ────
   //

@@ -7,6 +7,7 @@ import { useWebsitePasswordGate } from '@/lib/websitePasswordGate';
 
 import { coupleNameParts } from '@/lib/coupleNames';
 import { syncWeddingAddress } from '@/lib/weddingAddress';
+import { publishSentence, isLive } from '@/lib/publishState';
 function ToggleSwitch({ value, onChange, label }) {
   return (
     <button
@@ -188,10 +189,10 @@ export default function PublishModal({ onClose, details, onUpdate }) {
             <div>
               {/* Status */}
               <div style={{ padding: 16, background: '#F8F8F8', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 10, height: 10, borderRadius: '50%', background: details?.websiteEnabled ? '#22C55E' : '#AAAAAA', flexShrink: 0 }} />
+                <div style={{ width: 10, height: 10, borderRadius: '50%', background: isLive(details) ? '#22C55E' : '#AAAAAA', flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
                   <p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>
-                    {!hasRealSlug ? 'Add your names in Event details to get your address' : details?.websiteEnabled ? 'Your website is live' : 'Your website is not published yet'}
+                    {publishSentence(details)}
                   </p>
                   {/* THE ADDRESS WAS PRINTED HERE. 12a removes every URL
                       display from this modal, so the status says only what
