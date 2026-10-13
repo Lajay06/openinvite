@@ -104,7 +104,11 @@ export async function claimGift({ token, user, adminKey, fetchImpl = fetch, now 
   const stamped = await updatePlanGift(row.id, { claimed_at: claimedAt, claimed_user_id_hash: hmacHex(user.id) }, adminKey, fetchImpl);
   if (!stamped.ok) return { status: 502, body: { reason: 'retry' } };
 
-  const fields = { plan: outcome.plan, planExpiresAt: outcome.planExpiresAt, ...(outcome.changed ? { planActivatedAt: claimedAt } : {}) };
+  // planSource (owner ruling 2026-10-13): "gift" only when the gift changes
+  // the plan, in this same write. A gift that only moves the expiry leaves the
+  // account's planSource as it was, so a purchased Pro extended by a Pro gift
+  // still reads "purchase", and an account with no value keeps none.
+  const fields = { plan: outcome.plan, planExpiresAt: outcome.planExpiresAt, ...(outcome.changed ? { planActivatedAt: claimedAt, planSource: 'gift' } : {}) };
   if (!(await writeUserPlan(user.id, fields, { adminKey, fetchImpl }))) {
     await updatePlanGift(row.id, { claimed_at: null, claimed_user_id_hash: null }, adminKey, fetchImpl);
     return { status: 502, body: { reason: 'retry' } };

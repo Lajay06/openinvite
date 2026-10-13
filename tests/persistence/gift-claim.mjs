@@ -92,6 +92,39 @@ export async function runGiftClaim() {
     const onboarded = await gc.claimGift({ token: seed(b, { id: 'giftrow02' }).claim, user: { id: 'user7', plan: 'pro', onboardingCompleted: true }, adminKey: 'admin', fetchImpl: b.fetchImpl, now });
     check('an onboarded couple goes to their daily update instead', onboarded.body.next === '/DailyUpdate');
 
+    // ── planSource (owner ruling 2026-10-13) ────────────────────────────
+    // "gift" only when the claim changes the plan, and in the same write that
+    // sets it; when only the expiry moves, the write does not carry the field
+    // at all, so whatever the account held stands. Read off the request
+    // bodies, not the merged row: a store that merges would hide a write of
+    // the old value.
+    const userPuts = (bk) => {
+      const puts = [];
+      const inner = bk.fetchImpl;
+      bk.fetchImpl = async (url, opts = {}) => {
+        if ((opts.method || 'GET') === 'PUT' && /\/entities\/User\//.test(url)) puts.push(JSON.parse(opts.body));
+        return inner(url, opts);
+      };
+      return puts;
+    };
+    b = backend();
+    let puts = userPuts(b);
+    b.tables.User.set('user50', { id: 'user50', plan: 'free' });
+    await gc.claimGift({ token: seed(b, { id: 'giftrow50' }).claim, user: { id: 'user50', plan: 'free' }, adminKey: 'admin', fetchImpl: b.fetchImpl, now });
+    check('a claim that changes the plan writes planSource "gift" in the one write that sets the plan',
+      puts.length === 1 && puts[0].planSource === 'gift' && puts[0].plan === 'ultra' && b.tables.User.get('user50').planSource === 'gift', JSON.stringify(puts));
+    b = backend();
+    puts = userPuts(b);
+    b.tables.User.set('user51', { id: 'user51', plan: 'pro', planSource: 'purchase' });
+    await gc.claimGift({ token: seed(b, { id: 'giftrow51', plan: 'pro' }).claim, user: { id: 'user51', plan: 'pro', planExpiresAt: '2027-05-01T00:00:00.000Z' }, adminKey: 'admin', fetchImpl: b.fetchImpl, now });
+    check('a claim that only moves the expiry does not send planSource, and a purchased plan still reads "purchase"',
+      puts.length === 1 && !('planSource' in puts[0]) && puts[0].planExpiresAt === '2029-05-01T00:00:00.000Z' && b.tables.User.get('user51').planSource === 'purchase', JSON.stringify(puts));
+    b = backend();
+    puts = userPuts(b);
+    b.tables.User.set('user52', { id: 'user52', plan: 'pro' });
+    await gc.claimGift({ token: seed(b, { id: 'giftrow52', plan: 'pro' }).claim, user: { id: 'user52', plan: 'pro' }, adminKey: 'admin', fetchImpl: b.fetchImpl, now });
+    check('  and an account with no planSource keeps none', puts.length === 1 && !('planSource' in puts[0]) && !('planSource' in b.tables.User.get('user52')));
+
     b = backend();
     g = seed(b, { plan: 'pro' });
     out = await gc.claimGift({ token: g.claim, user: { id: 'u1', plan: 'ultra' }, adminKey: 'admin', fetchImpl: b.fetchImpl, now });
