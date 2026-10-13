@@ -66,6 +66,16 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
   font-family: var(--oi-body-font, 'Plus Jakarta Sans', sans-serif) !important;
 }
 
+/* ── A gift note in its chosen face ───────────────────────────────────
+   THE SAME ESCAPE, FOR THE SAME REASON. The note a giver writes for the
+   couple is shown in the style they chose (gifting v2: plain, serif,
+   handwriting), and the `*` lock above turned the serif and handwriting
+   notes back into Plus Jakarta Sans (gift-test, 2026-10-13). Scoped to the
+   note text and the style pill's sample; the chrome around them stays PJS. */
+.oi-note-face {
+  font-family: var(--oi-note-font, 'Plus Jakarta Sans', sans-serif) !important;
+}
+
 /* ── Guest-website font scope ─────────────────────────────────────── */
 /* The * rule above locks every element to PJS with !important, beating
    any inline style={{ fontFamily }}. To let the chosen typography pairing

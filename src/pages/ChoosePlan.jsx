@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { isGiftClaimPath, pendingClaimPath } from '@/lib/giftClaimReturn';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
@@ -79,8 +80,12 @@ export default function ChoosePlan() {
     // a sign-in that started on /gift/claim/ goes straight back there. The
     // gift is the plan; showing the picker first would ask them to choose,
     // or pay for, what they have just been given. Nothing is written here.
-    if (user && next.startsWith('/gift/claim/')) {
-      navigate(next, { replace: true });
+    // The claim comes from ?next= or, when a route in dropped the query, from
+    // the pending claim the claim page remembered (src/lib/giftClaimReturn.js):
+    // a new account through the email code lost it once (gift-test, 2026-10-13).
+    const giftReturn = isGiftClaimPath(next) ? next : (user ? pendingClaimPath() : null);
+    if (user && giftReturn) {
+      navigate(giftReturn, { replace: true });
       return;
     }
     if (isPastPlanStep(user)) {

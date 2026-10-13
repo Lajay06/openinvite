@@ -144,13 +144,13 @@ export async function runGiftClaim() {
 
     // ── the client changes ──────────────────────────────────────────────
     const choose = read('src/pages/ChoosePlan.jsx');
-    check('ChoosePlan sends a /gift/claim/ return straight back, before the picker (owner ruling 2026-10-13)',
-      /if \(user && next\.startsWith\('\/gift\/claim\/'\)\) \{\s*navigate\(next, \{ replace: true \}\);\s*return;\s*\}\s*if \(isPastPlanStep\(user\)\)/.test(choose));
+    check('ChoosePlan sends a gift claim return straight back, from ?next= or the remembered pending claim, before the picker (owner rulings 2026-10-13)',
+      /const giftReturn = isGiftClaimPath\(next\) \? next : \(user \? pendingClaimPath\(\) : null\);\s*if \(user && giftReturn\) \{\s*navigate\(giftReturn, \{ replace: true \}\);\s*return;\s*\}\s*if \(isPastPlanStep\(user\)\)/.test(choose));
     // THE THREE REDIRECTS, IN THE OWNER'S ORDER (2026-10-13): the collaborator
     // invite link, then the gift claim link, then the collaborator-only landing.
     const at = (re) => choose.search(re);
     const invite = at(/if \(isCollaboratorAcceptPath\(next\)\)/);
-    const giftAt = at(/if \(user && next\.startsWith\('\/gift\/claim\/'\)\)/);
+    const giftAt = at(/if \(user && giftReturn\)/);
     const landing = at(/fetchMyCollaboration\(/);
     check('  in order: invite link, gift claim link, collaborator-only landing', invite > 0 && giftAt > invite && landing > giftAt, `${invite} < ${giftAt} < ${landing}`);
     const onboarding = stripComments(read('src/pages/Onboarding.jsx'));
