@@ -137,7 +137,10 @@ As of 2026-10-12:
 - The LiveStream isolation scout found no leak (owner ruling 2026-10-11). #1000 makes tests/persistence/ownership.mjs prove isolation on an owner-scoped entity with a second real account (BASE44_TEST_EMAIL_2), never a fabricated id in q.
 - 7 scouted, and ruled 2026-10-12: a Base44 hosted function reads the nine owner-scoped entities for collaborators, checking the grant itself on every call; then writes for Schedule and Moodboard only, each held. Budget, Vendor and Invitation stay view only.
 - 7 setup merged as #1011: collaborator hashes and invite links use COLLAB_HASH_KEY, never BASE44_ADMIN_KEY (owner ruling 2026-10-12). The key was rotated before the merge. Every grant and invite link made before it stopped matching. The rebuild script, scripts/collab-grants-rebuild.ts, is not being run: both known collaborators are test accounts and are re-invited from the smoke account's dashboard when next needed (owner, 2026-10-12).
-- Next: 7, PR 1 (the hosted function, held), then PR 2 (the Vercel caller), then 5 and 4.
+- 7 reads merged: #1013, the hosted function base44/functions/collaboratorRead (deployed by the owner 2026-10-12), and #1018, the Vercel caller. The nine owner-scoped entities now reach collaborators. Without COLLAB_FN_SECRET or COLLAB_HASH_KEY, as on Preview, the pages are calm and empty. The create-stamp probe folds into the Schedule write PR (owner ruling 2026-10-12).
+- 5 merged as #1023: all eleven pages offered, every one view only (owner ruling 2026-10-12, replacing the two-page phase-1 set once the reads landed). canEdit is always false until a write PR adds its page to COLLABORATOR_EDIT_PAGES. The invite email gained the owner's preheader through an optional preheader on emailShell.
+- 4 built, held: ChoosePlan sends an accept next straight to the invite, writing nothing. Stop condition met: a collaborator-only account that later signs in without the link reaches choose-plan (isPastPlanStep is false for it), and "Start free" would take it to onboarding. Waiting on the owner's ruling.
+- Next: the Schedule write PR with the probe, the Moodboard write PR, then the branded verification email plan.
 
 ## Findings
 

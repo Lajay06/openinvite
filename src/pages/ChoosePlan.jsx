@@ -42,6 +42,17 @@ function isPastPlanStep(user) {
   return !!(user?.plan_step_completed || user?.onboardingCompleted || user?.plan === 'pro' || user?.plan === 'ultra');
 }
 
+/**
+ * A collaborator invite on its way to being accepted. Item 4 of
+ * goals/2026-10-10-collaborators-safe-and-truthful.md: a brand-new account
+ * that signed up from an invite lands on the invite, never here, and gets no
+ * trial and no wedding of its own. Exactly the accept route and one token
+ * segment (base64url and a dot), so `next` can never send anyone off the app.
+ */
+export function isCollaboratorAcceptPath(next) {
+  return /^\/collaborate\/accept\/[A-Za-z0-9_.-]+$/.test(String(next || ''));
+}
+
 export default function ChoosePlan() {
   const navigate = useNavigate();
   const { user, isLoadingAuth } = useAuth();
@@ -56,6 +67,13 @@ export default function ChoosePlan() {
 
   useEffect(() => {
     if (isLoadingAuth) return;
+    // Item 4: an invite comes first, for every account. No updateMe, so no
+    // plan_step_completed and no trialStartedAt; no wedding read; never
+    // /onboarding.
+    if (isCollaboratorAcceptPath(next)) {
+      navigate(next, { replace: true });
+      return;
+    }
     if (isPastPlanStep(user)) {
       // Lazy backfill — an existing account reaching here for the first
       // time (e.g. signed up before this flag existed) gets the flag
