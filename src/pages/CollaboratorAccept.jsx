@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { Users, Loader2, Eye } from 'lucide-react';
 import { hasPagePermission, COLLABORATOR_PAGE_MAP, COLLABORATOR_PERMISSION_KEYS } from '@/lib/collaboratorContext';
-import { collaboratorPageLabels, COLLABORATOR_VIEW_ONLY_COPY } from '@/lib/collaboratorPageMap';
+import { collaboratorPageLabels, collaboratorClosingCopy } from '@/lib/collaboratorPageMap';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -116,7 +116,7 @@ export default function CollaboratorAccept() {
                 {label}
               </div>
             ))}
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, marginTop: 8, fontFamily: PJS }}>{COLLABORATOR_VIEW_ONLY_COPY}</p>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, marginTop: 8, fontFamily: PJS }}>{collaboratorClosingCopy(invite.permissions)}</p>
           </div>
         )}
 

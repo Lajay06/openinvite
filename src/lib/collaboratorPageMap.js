@@ -128,13 +128,26 @@ export const COLLABORATOR_PERMISSION_KEYS = Object.keys(COLLABORATOR_PAGE_MAP);
 /**
  * PAGES A COLLABORATOR MAY CHANGE. Owner ruling 2026-10-12, item 5: every page
  * in the map is offered, and every one is view only. A grant that says edit is
- * read as view, on the server and in the app. Schedule and Moodboard join this
- * list only with their own write PRs.
+ * read as view, on the server and in the app. Schedule joined with its write PR
+ * (owner ruling 2026-10-13); Moodboard joins only with its own.
  */
-export const COLLABORATOR_EDIT_PAGES = Object.freeze([]);
+export const COLLABORATOR_EDIT_PAGES = Object.freeze(['Schedule']);
 
 /** The one sentence the invite email and the accept page say after the page list. */
 export const COLLABORATOR_VIEW_ONLY_COPY = 'You can view these pages. You will not be able to change anything.';
+
+/** The sentence instead, when the grant lets them change at least one page. */
+export const COLLABORATOR_SOME_EDIT_COPY = 'You can view these pages. You can make changes only where it says so.';
+
+/** After the label of a page they can change. */
+export const COLLABORATOR_CAN_CHANGE_SUFFIX = ' (you can make changes)';
+
+/** The closing sentence for a grant: the view-only one unless a page can be changed. */
+export function collaboratorClosingCopy(permissions) {
+  return COLLABORATOR_PERMISSION_KEYS.some(key => collaboratorCan(permissions, key, 'edit'))
+    ? COLLABORATOR_SOME_EDIT_COPY
+    : COLLABORATOR_VIEW_ONLY_COPY;
+}
 
 /**
  * The single permission check, shared by api/_lib/collaboratorAuth.js and
@@ -149,9 +162,9 @@ export function collaboratorCan(permissions, page, level) {
   return !!(p.view || p.edit);
 }
 
-/** The nav labels of the pages a grant can view, in the map's order. */
+/** The nav labels of the pages a grant can view, in the map's order, marked where they can change it. */
 export function collaboratorPageLabels(permissions) {
   return COLLABORATOR_PERMISSION_KEYS
     .filter(key => collaboratorCan(permissions, key, 'view'))
-    .map(key => COLLABORATOR_PAGE_MAP[key].navLabel);
+    .map(key => COLLABORATOR_PAGE_MAP[key].navLabel + (collaboratorCan(permissions, key, 'edit') ? COLLABORATOR_CAN_CHANGE_SUFFIX : ''));
 }

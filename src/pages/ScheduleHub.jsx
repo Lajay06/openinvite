@@ -13,7 +13,7 @@ import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import { base44 } from "@/api/base44Client";
 import { getMyRecords } from "@/lib/resolveMyWedding";
-import { useCollaboratorContext, withCollab } from "@/lib/collaboratorContext";
+import { useCollaboratorContext, withCollab, collaboratorWrite } from "@/lib/collaboratorContext";
 import { buildIcsCalendar, downloadIcs } from "@/lib/ics";
 import toast from "react-hot-toast";
 import CountUp from "@/components/shared/CountUp";
@@ -109,11 +109,20 @@ export default function ScheduleHub() {
 
   const collab = useCollaboratorContext();
   const isCollaborating = !!collab.ownerUserId;
-  // Read-only regardless of the 'edit' permission bit — Schedule's
-  // update/delete RLS is owner-scoped like every other entity here, so the
-  // admin key 403s on a write regardless of what was granted (same
-  // reasoning as Guests/Budget; see BASE44_PLATFORM_NOTES.md).
-  const readOnly = isCollaborating;
+  // A collaborator changes Schedule only with edit granted (owner ruling
+  // 2026-10-13), and the server's own answer, canEdit from collaborator-data.js,
+  // decides it, not the permissions this page was handed. The writes go
+  // through api/collaborator-write.js and the hosted function: Schedule's
+  // update and delete RLS is owner-scoped, so nothing else can make them.
+  const [collabCanEdit, setCollabCanEdit] = useState(false);
+  const readOnly = isCollaborating && !collabCanEdit;
+  const scheduleWrites = isCollaborating
+    ? {
+        create: (data) => collaboratorWrite({ ownerUserId: collab.ownerUserId, page: 'Schedule', action: 'create', data }),
+        update: (id, data) => collaboratorWrite({ ownerUserId: collab.ownerUserId, page: 'Schedule', action: 'update', id, data }),
+        delete: (id) => collaboratorWrite({ ownerUserId: collab.ownerUserId, page: 'Schedule', action: 'delete', id }),
+      }
+    : Schedule;
 
   // Arriving from Recent activity with an event to land on: show the list,
   // which is now where events are read.
@@ -142,8 +151,9 @@ export default function ScheduleHub() {
           headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
         });
         if (!res.ok) throw new Error('Failed to load schedule');
-        const { data } = await res.json();
+        const { data, canEdit } = await res.json();
         setScheduleItems(sortScheduleItems(data.Schedule));
+        setCollabCanEdit(canEdit === true);
       } else {
         const [data, vendorRows, inv] = await Promise.all([
           getMyRecords('Schedule', "start_time"),
@@ -271,7 +281,7 @@ export default function ScheduleHub() {
     if (!id) return;
     const tid = toast.loading('Deleting…');
     try {
-      await Schedule.delete(id);
+      await scheduleWrites.delete(id);
       toast.success('Event deleted', { id: tid });
       loadItems();
     } catch {
@@ -283,10 +293,10 @@ export default function ScheduleHub() {
     const tid = toast.loading(editingItem?.id ? "Updating…" : "Adding event…");
     try {
       if (editingItem?.id) {
-        await Schedule.update(editingItem.id, itemData);
+        await scheduleWrites.update(editingItem.id, itemData);
         toast.success("Event updated", { id: tid });
       } else {
-        await Schedule.create(itemData);
+        await scheduleWrites.create(itemData);
         toast.success("Event added", { id: tid });
       }
       setShowForm(false);
@@ -457,8 +467,8 @@ export default function ScheduleHub() {
             // ORDER IS THE TIME. Two rows swap start_time, so the clock and
             // the order can never disagree — which a separate order column
             // would eventually let them do.
-            await Schedule.update(a.id, { start_time: b.start_time });
-            await Schedule.update(b.id, { start_time: a.start_time });
+            await scheduleWrites.update(a.id, { start_time: b.start_time });
+            await scheduleWrites.update(b.id, { start_time: a.start_time });
             loadItems();
           }}
         />

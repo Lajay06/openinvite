@@ -11,7 +11,7 @@
  */
 
 import { emailShell, emailFooterRow, escapeHtml, EMAIL_FONT as FONT, EMAIL_ACCENT as ACCENT, EMAIL_BLACK as BLACK, EMAIL_MUTED_LIGHT, EMAIL_SUPPORT_ADDRESS } from './emailBrand.js';
-import { collaboratorPageLabels, COLLABORATOR_VIEW_ONLY_COPY } from './collaboratorPageMap.js';
+import { collaboratorPageLabels, collaboratorClosingCopy } from './collaboratorPageMap.js';
 
 /**
  * @param {{ collaboratorName: string, coupleNames: string, acceptUrl: string, permissions: object }} params
@@ -28,7 +28,7 @@ export function renderCollaboratorInviteEmail({ collaboratorName, coupleNames, a
     : 'Someone has shared their wedding plans with you.';
 
   // Item 5 (owner ruling 2026-10-12): the pages by their nav labels, then one
-  // sentence. Every page is view only, so nothing here says edit.
+  // sentence. A page they can change is marked, and the sentence says so.
   const grantedPages = collaboratorPageLabels(permissions).map(escapeHtml);
 
   const permissionsHtml = grantedPages.length > 0 ? `
@@ -43,7 +43,7 @@ export function renderCollaboratorInviteEmail({ collaboratorName, coupleNames, a
                   </td>
                 </tr>`).join('')}
               </table>
-              <p style="margin:12px 0 0;font-size:14px;line-height:1.6;color:rgba(0,0,0,0.68);font-family:${FONT};">${COLLABORATOR_VIEW_ONLY_COPY}</p>
+              <p style="margin:12px 0 0;font-size:14px;line-height:1.6;color:rgba(0,0,0,0.68);font-family:${FONT};">${collaboratorClosingCopy(permissions)}</p>
             </td>
           </tr>` : '';
 
