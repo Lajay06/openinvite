@@ -67,8 +67,11 @@ export async function runMobileSendPath() {
   ok('no shell file retypes the bounce field or the household key', retyped.length === 0, retyped.join(', ') || 'none');
 
   // ── 1. UNPUBLISHED IS REFUSED ────────────────────────────────────────────
-  ok('the shell holds the same two conditions',
-     /const unpublished = !wedding\?\.slug\s*\?/.test(shell) && /: wedding\?\.websiteEnabled !== true\s*\?/.test(shell), 'unpublished');
+  // Since lane A's #1029 the shell takes the two conditions from
+  // src/lib/publishState.js, which tests/persistence/mobile-publish-state.mjs
+  // drives for real; here it is enough that the refusal reads that state.
+  ok('the shell refuses on publishState.js\'s state',
+     /const pubState = publishState\(wedding\);/.test(shell) && /const unpublished = pubState === PUBLISH_STATE\.NO_ADDRESS/.test(shell), 'unpublished');
   ok('  the send stops on it before a link is minted',
      /if \(unpublished\) \{ toast\.error\(unpublished\); return; \}/.test(send)
        && send.indexOf('if (unpublished)') > -1 && send.indexOf('if (unpublished)') < send.indexOf('ensureTokens('), 'send');

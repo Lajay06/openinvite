@@ -4,6 +4,7 @@ import Screen from '../../shell/Screen';
 import { FeatureTile, ProgressBar, ErrorState, Skeleton } from '../../ui';
 import { GROUPS, featuresIn } from '../../features/registry';
 import { prefGet, prefSet } from '../../native';
+import { isLive } from '@/lib/publishState';
 
 const OPEN_PREF = 'plan_open_groups';
 
@@ -101,7 +102,7 @@ export function planProgress(d) {
     (d.vendors || []).some((v) => v.status === 'booked'),
     (d.schedule || []).length > 0,
     !!d.details?.celebrant?.name,
-    !!d.details?.websiteEnabled,
+    isLive(d.details), // src/lib/publishState.js: an address and the switch on
     (d.tasks || []).length > 0 && (d.tasks || []).every((t) => t.completed),
   ];
   const done = checks.filter(Boolean).length;

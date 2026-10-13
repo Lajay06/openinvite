@@ -25,6 +25,7 @@ import {
 import { imageUrl } from '../images';
 import { formatMoney, DEFAULT_CURRENCY } from '@/lib/money';
 import { formatDashboardDate } from '@/lib/dashboardDate';
+import { publishSentence } from '@/lib/publishState';
 
 const n = (v) => (Array.isArray(v) ? v.length : 0);
 const count = (arr, label) => `${n(arr)} ${n(arr) === 1 ? label : `${label}s`}`;
@@ -98,7 +99,7 @@ export const FEATURES = [
   { key: 'registry', group: 'finances', label: 'Registry', icon: Gift, desktop: '/Registry', path: 'registry', image: imageUrl('tileRegistry'), kind: 'custom', depth: 'full',
     stat: (d) => { const g = n(d.gifts); return g ? `${g} received` : `${n(d.registryItems) + n(d.registryProducts) + n(d.customGifts)} listed`; } },
   // Guest Suite
-  { key: 'studio', group: 'suite', label: 'Design studio', icon: Sparkles, desktop: '/studio', path: '../site', image: imageUrl('tileStudio'), kind: 'custom', depth: 'view', stat: (d) => (d.details?.websiteEnabled ? 'Guest Suite is live' : 'Guest Suite is a draft') },
+  { key: 'studio', group: 'suite', label: 'Design studio', icon: Sparkles, desktop: '/studio', path: '../site', image: imageUrl('tileStudio'), kind: 'custom', depth: 'view', stat: (d) => publishSentence(d.details) },
   { key: 'suite-schedule', group: 'suite', label: 'Schedule', icon: Clock, desktop: '/GuestSuiteSchedule', path: 'suite-schedule', image: imageUrl('tileSuiteSchedule'), kind: 'custom', depth: 'view', stat: (d) => count(d.schedule, 'event') },
   { key: 'qna', group: 'suite', label: 'Q&A', icon: HelpCircle, desktop: '/QandA', path: 'qna', image: imageUrl('tileQna'), kind: 'custom', depth: 'full', stat: (d) => count(d.details?.qna, 'question') },
   { key: 'suite-registry', group: 'suite', label: 'Registry', icon: Gift, desktop: '/GuestSuiteRegistry', path: 'registry', image: imageUrl('tileSuiteRegistry'), kind: 'custom', depth: 'full', stat: (d) => `${n(d.registryItems) + n(d.registryProducts) + n(d.customGifts)} on the Guest Suite` },
