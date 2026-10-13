@@ -61,6 +61,11 @@
         "guests24h": { "type": "string" },
         "guestsDay5": { "type": "string" }
       }
+    },
+    "planSource": {
+      "type": "string",
+      "enum": ["purchase", "gift", "comp"],
+      "description": "How this account came to its plan. Written by the server only: the Stripe webhook sets purchase on a completed payment, the gift claim sets gift, and comp is set by hand for an account the owner granted. NO DEFAULT, deliberately: an account from before this field existed has no value, and absence must read as unknown rather than as any one of the three. Account > Billing shows Manage billing only when a Stripe customer exists, and reads this to say why there is nothing to bill otherwise. Added live by the owner 2026-10-13."
     }
   },
   "required": []
