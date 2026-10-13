@@ -9,6 +9,7 @@ import { useWebsitePasswordGate } from '@/lib/websitePasswordGate';
 import ChangeAddressDialog from '@/components/event-details/ChangeAddressDialog';
 
 import { coupleDisplayName } from '@/lib/coupleNames';
+import { publishState, publishSentence, isLive } from '@/lib/publishState';
 const sans = "'Plus Jakarta Sans', sans-serif";
 
 function ToggleSwitch({ value, onChange, label }) {
@@ -105,7 +106,10 @@ export default function StudioShareTab({ details: propDetails }) {
   // the ruling keeps. It stays empty without an address for the same reason
   // as before: an email is the worst place for a guess.
   const siteUrl = details?.slug ? `${window.location.origin}/w/${details.slug}` : '';
+  // hasAddress KEEPS ITS NAME because the disabled state below asks exactly
+  // that question; the three-way answer comes from publishState.
   const hasAddress = !!details?.slug;
+  const state = publishState(details);
 
   const handleSend = async () => {
     if (!selectedGuests.length) return;
@@ -145,10 +149,10 @@ export default function StudioShareTab({ details: propDetails }) {
     <div style={{ fontFamily: sans }}>
       {/* STATUS BANNER */}
       <div style={{ padding: '20px 40px', background: details?.websiteEnabled ? 'rgba(34,197,94,0.06)' : '#FAFAFA', borderBottom: '1px solid #EEEEEE', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-        <div style={{ width: 10, height: 10, borderRadius: '50%', background: (details?.websiteEnabled && hasAddress) ? '#22C55E' : '#DDDDDD', flexShrink: 0 }} />
+        <div style={{ width: 10, height: 10, borderRadius: '50%', background: state === 'live' ? '#22C55E' : '#DDDDDD', flexShrink: 0 }} />
         <div style={{ flex: 1, minWidth: 180 }}>
           <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: '#0A0A0A' }}>
-            {!hasAddress ? 'No address yet' : details?.websiteEnabled ? 'Your website is live' : 'Your website is not published yet'}
+            {publishSentence(details)}
           </p>
           {/* THE ADDRESS USED TO BE PRINTED HERE, in monospace, as the status
               line. 12a removes every URL display from this tab, so the status
@@ -163,7 +167,7 @@ export default function StudioShareTab({ details: propDetails }) {
         <button data-tour-target="guest-suite-publish" onClick={togglePublish} disabled={!hasAddress && !details?.websiteEnabled} style={{ padding: '10px 24px', background: details?.websiteEnabled ? 'transparent' : 'linear-gradient(135deg, #E03553, #803D81)', color: details?.websiteEnabled ? '#E03553' : '#FFF', border: details?.websiteEnabled ? '1px solid #E03553' : 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: sans }}>
           {details?.websiteEnabled ? 'Unpublish' : 'Publish Website'}
         </button>
-        {details?.websiteEnabled && details?.slug && (
+        {isLive(details) && (
           <a href={`/w/${details.slug}`} target="_blank" rel="noreferrer" style={{ padding: '10px 24px', border: '1px solid #0A0A0A', color: '#0A0A0A', fontWeight: 700, fontSize: 13, textDecoration: 'none' }}>View Live Site ↗</a>
         )}
       </div>

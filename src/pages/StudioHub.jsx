@@ -9,6 +9,7 @@ import { getSampleWedding } from '@/lib/sampleContent';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import { interactiveDivProps } from '@/lib/a11y';
 import { useAuth } from '@/lib/AuthContext';
+import { publishLabel } from '@/lib/publishState';
 
 export default function StudioHub() {
   const navigate = useNavigate();
@@ -48,7 +49,9 @@ export default function StudioHub() {
       title: 'Guest Suite',
       subtitle: 'Build your guest suite, your invitation and your RSVP.',
       image: wedding?.coverPhoto || universeImage,
-      badge: wedding?.websiteEnabled ? 'Live' : 'Draft',
+      // "Draft" WAS A FOURTH WORD FOR THE SAME THING, and it read Live on the
+      // flag alone. publishLabel gives the three states one spelling.
+      badge: publishLabel(wedding),
       action: () => navigate('/studio/guest-suite'),
     },
     {

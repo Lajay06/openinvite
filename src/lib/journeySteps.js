@@ -29,6 +29,11 @@
 // SHELL_STEP_IMAGES (Onboarding.jsx) draws from — reused deliberately so
 // Ava Studio's photography-forward look shares the exact visual world as
 // onboarding, with no new asset sourcing.
+// THE ONLY IMPORT IN THIS FILE, and it keeps the promise in the header above:
+// publishState.js is pure, imports nothing itself, and resolves without the
+// Vite alias, so this file still runs under plain Node.
+import { isLive } from './publishState.js';
+
 const CLOUDINARY_BASE = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 const img = (path) => `${CLOUDINARY_BASE}/f_auto,q_auto/${path}`;
 
@@ -88,7 +93,9 @@ export const JOURNEY_STEPS = [
     route: '/studio/guest-suite/share',
     image: img('DTS_Community_Agust%C3%ADn_Far%C3%ADas_Photos_ID6374_iumjqj.jpg'),
     ultraGated: true,
-    isComplete: (wedding) => !!wedding?.websiteEnabled,
+    // COMPLETE MEANS A GUEST COULD OPEN IT. This was websiteEnabled alone, so
+    // the step read done for a suite with no address.
+    isComplete: (wedding) => isLive(wedding),
   },
   {
     key: 'budget',

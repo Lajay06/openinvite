@@ -561,7 +561,10 @@ export async function runDesignStudioEntrance() {
   // those have never published. Gating on the slug would show live links to
   // couples with no site. Two records have websiteEnabled with an empty slug,
   // so both halves are load-bearing.
-  results.push(/const isPublished = Boolean\(weddingDetails\?\.websiteEnabled && weddingDetails\?\.slug\)/.test(worldViewSource)
+  // THE CONDITION MOVED TO src/lib/publishState.js on 2026-10-12, so this now
+  // asserts the caller takes its answer from there. The requirement is
+  // unchanged: both halves, never the slug alone.
+  results.push(/const isPublished = isLive\(weddingDetails\)/.test(worldViewSource)
     ? pass('Published state requires websiteEnabled AND a slug, never the slug alone', 'found')
     : fail('Published state requires websiteEnabled AND a slug, never the slug alone', 'found', 'not found'));
   results.push(!/href=\{`\/w\/\$\{slug\}/.test(worldViewSource)

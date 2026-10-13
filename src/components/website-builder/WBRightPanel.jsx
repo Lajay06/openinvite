@@ -38,6 +38,7 @@ import PillSwitch from './PillSwitch';
 import { heroShowsNames, heroShowsDate, universeHeroRendersDate, OVERLAY_BLOCK_TYPES, heroShowsWelcome, heroShowsMotif } from '@/lib/heroDisplay';
 import { formatWeddingDate } from '@/lib/guestDate';
 import { resolveUniverseConfig } from '@/lib/universeStyling';
+import { publishSentence } from '@/lib/publishState';
 
 // Background music: writing surface HIDDEN (owner decision, video-sound batch).
 // guestExperienceSettings.backgroundMusic had two sources: 'curated' (the mood
@@ -716,7 +717,10 @@ function SettingsTab({ details, onChange }) {
           address is read and changed from the guest suite's share tab, which
           is the one place the ruling left it. */}
       <SLabel>Status</SLabel>
-      <Toggle tone="dark" label={`Website is ${details.websiteEnabled ? 'Live' : 'Hidden'}`} value={details.websiteEnabled} onChange={v => onChange('websiteEnabled', v)} />
+      {/* ONE VOCABULARY, AND THE SLUG COUNTS. This said "Website is Live" on
+          websiteEnabled alone, so a wedding with no address read as live when
+          /w/undefined is not a site. src/lib/publishState.js is the one answer. */}
+      <Toggle tone="dark" name="publish" label={publishSentence(details)} value={details.websiteEnabled} onChange={v => onChange('websiteEnabled', v)} />
       <Divider />
       {SHOW_BACKGROUND_MUSIC_UI && (<>
       <SLabel>Background music</SLabel>
@@ -748,7 +752,7 @@ function SettingsTab({ details, onChange }) {
       </>)}
       <Divider />
       <SLabel>Password protection</SLabel>
-      <Toggle tone="dark" label="Require password" value={passwordGate.wantsProtection} onChange={passwordGate.toggle} />
+      <Toggle tone="dark" name="require-password" label="Require password" value={passwordGate.wantsProtection} onChange={passwordGate.toggle} />
       {passwordGate.wantsProtection && (
         <>
           <UInput label={passwordGate.hasStoredPassword ? 'New password' : 'Password'} type="password" value={passwordGate.password} onChange={passwordGate.setPassword} onCommit={passwordGate.commitPassword} />
