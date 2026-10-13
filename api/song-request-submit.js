@@ -49,6 +49,7 @@ import { latestEventResponses, toEventResponsesShape, deriveRsvpStatus } from '.
 import { guestGateBlocks, GUEST_GATE_MESSAGE } from './_lib/guestSafeWedding.js';
 import { mergeGuestPii } from './_lib/guestPii.js';
 import { resolveWeddingBySlug } from './_lib/resolveWeddingBySlug.js';
+import { TOO_MANY_TRIES, DID_NOT_GO_THROUGH } from './_lib/calmErrors.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -85,7 +86,7 @@ export default async function handler(req, res) {
   res.setHeader('X-RateLimit-Limit', '10');
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
-    return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   const weddingSlug = sanitizeString(req.body?.weddingSlug || '');
@@ -163,7 +164,7 @@ export default async function handler(req, res) {
       const matchedGuest = guests.map(mergeGuestPii)
         .find(g => typeof g.email === 'string' && g.email.toLowerCase() === guestEmail);
       if (!matchedGuest) {
-        return res.status(403).json({ error: "We couldn't find your invitation — song requests are limited to confirmed guests." });
+        return res.status(403).json({ error: 'We could not find your invitation. Song requests are for invited guests.' });
       }
 
       // "Confirmed" = attending (RSVP'd yes to at least one invited event).
@@ -226,6 +227,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error('[song-request-submit] Error:', err.message);
-    return res.status(500).json({ error: 'Something went wrong — please try again.' });
+    return res.status(500).json({ error: DID_NOT_GO_THROUGH });
   }
 }

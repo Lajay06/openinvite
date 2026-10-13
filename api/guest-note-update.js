@@ -40,6 +40,7 @@
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
 import { adminList, adminGetOne, adminUpdate, adminDelete, hasAdminKey } from './_lib/base44Entities.js';
+import { TOO_MANY_TRIES, DID_NOT_GO_THROUGH } from './_lib/calmErrors.js';
 
 const MAX_REPLY_LENGTH = 4000;
 const ACTIONS = ['read', 'unread', 'reply', 'delete'];
@@ -76,7 +77,7 @@ export default async function handler(req, res, deps = {}) {
   res.setHeader('X-RateLimit-Limit', '60');
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
-    return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   if (!hasKey()) {
@@ -136,6 +137,6 @@ export default async function handler(req, res, deps = {}) {
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error('[guest-note-update] Error:', err.message);
-    return res.status(500).json({ error: 'Something went wrong — please try again.' });
+    return res.status(500).json({ error: DID_NOT_GO_THROUGH });
   }
 }

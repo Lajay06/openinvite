@@ -31,6 +31,7 @@ import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
 import { adminList, hasAdminKey } from './_lib/base44Entities.js';
 import { decorateGuestNote } from './_lib/guestNotePii.js';
+import { TOO_MANY_TRIES, DID_NOT_GO_THROUGH } from './_lib/calmErrors.js';
 
 /**
  * The caller's own wedding, resolved with the admin key.
@@ -58,7 +59,7 @@ export default async function handler(req, res) {
   res.setHeader('X-RateLimit-Limit', '60');
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
-    return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   if (!hasAdminKey()) {
@@ -88,6 +89,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ notes });
   } catch (err) {
     console.error('[guest-notes] Error:', err.message);
-    return res.status(500).json({ error: 'Something went wrong — please try again.' });
+    return res.status(500).json({ error: DID_NOT_GO_THROUGH });
   }
 }

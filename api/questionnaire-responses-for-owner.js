@@ -24,6 +24,7 @@ import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
 import { hashId, decryptPayload } from './_lib/questionnaireCrypto.js';
 import { excludeTestRecords } from './_lib/productData.js';
+import { TOO_MANY_TRIES, DID_NOT_GO_THROUGH } from './_lib/calmErrors.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -61,7 +62,7 @@ export default async function handler(req, res) {
   const { limited, remaining } = checkRateLimit(ip, 'questionnaire-responses-for-owner', 30, 60_000);
   res.setHeader('X-RateLimit-Limit', '30');
   res.setHeader('X-RateLimit-Remaining', String(remaining));
-  if (limited) return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
+  if (limited) return res.status(429).json({ error: TOO_MANY_TRIES });
 
   const auth = req.headers.authorization || '';
   const callerToken = auth.startsWith('Bearer ') ? auth.slice(7) : '';
@@ -106,6 +107,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ responses });
   } catch (err) {
     console.error('[questionnaire-responses-for-owner] Error:', err.message);
-    return res.status(500).json({ error: 'Something went wrong — please try again.' });
+    return res.status(500).json({ error: DID_NOT_GO_THROUGH });
   }
 }

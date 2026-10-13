@@ -31,6 +31,7 @@
  * URL, which is never echoed here.
  */
 import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
+import { TOO_MANY_TRIES } from './_lib/calmErrors.js';
 
 export default async function handler(req, res) {
   if (applyCors(req, res)) return;
@@ -44,14 +45,16 @@ export default async function handler(req, res) {
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
     console.warn('[places-search] Rate limited:', ip);
-    return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   const { q, location, lat, lng } = req.body || {};
   if (!q?.trim()) return res.status(400).json({ error: 'q is required' });
 
   const key = process.env.GOOGLE_PLACES_API_KEY;
-  if (!key) return res.status(503).json({ error: 'Google Places API not configured — add GOOGLE_PLACES_API_KEY env var' });
+  // NOT A WORD ABOUT CONFIGURATION. This named a server env var to a browser,
+  // which is the same leak as an echoed exception, just hand written.
+  if (!key) return res.status(503).json({ error: 'Address search is not available right now. Type the address in yourself.' });
 
   let url;
   if (lat != null && lng != null) {

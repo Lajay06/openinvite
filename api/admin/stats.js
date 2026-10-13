@@ -12,6 +12,7 @@
 
 import Stripe from 'stripe';
 import { checkRateLimit, getClientIp } from '../_lib/security.js';
+import { TOO_MANY_TRIES } from '../_lib/calmErrors.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -49,7 +50,7 @@ export default async function handler(req, res) {
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
     console.warn('[admin/stats] Rate limited:', ip);
-    return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   const isAdmin = await verifyAdmin(req);

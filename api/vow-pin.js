@@ -46,6 +46,7 @@
 import { verifyBase44User } from './_lib/auth.js';
 import { checkRateLimit, getClientIp } from './_lib/security.js';
 import { hashPin, verifyPin, isValidPin, isLocked } from './_lib/vowPinHash.js';
+import { DID_NOT_GO_THROUGH } from './_lib/calmErrors.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -127,6 +128,6 @@ export default async function handler(req, res) {
     return res.status(ok ? 200 : 401).json({ ok });
   } catch (err) {
     console.error('[vow-pin] Error:', err.message);
-    return res.status(500).json({ error: 'Something went wrong — please try again.' });
+    return res.status(500).json({ error: DID_NOT_GO_THROUGH });
   }
 }
