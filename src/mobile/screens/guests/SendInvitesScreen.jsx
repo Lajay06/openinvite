@@ -13,6 +13,7 @@ import { renderInvitationEmail, getTypeComposeDefaults, getBannerImageUrl, getDe
 import { siteOrigin } from '../../lib/links';
 import { invitationsFor } from '@/lib/household';
 import { newSendEntry } from '@/lib/sendHistory';
+import { sentGuestIds, guestsActuallySent } from '@/lib/sentRecipients';
 import { isBounced, bouncedSkippedSentence, BOUNCE_ROW_LABEL } from '@/components/guests/emailBounce';
 import { InvitationPreviewSheet } from '../plan/InvitationPreview';
 
@@ -191,42 +192,50 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
       // Grouped from withTokens, as on the web, so the lead carries the link
       // just ensured; the events are the lead's (household.js's entriesForNewMember).
       const invitations = invitationsFor(withTokens);
+      const emailList = invitations.filter((i) => i.email && i.lead?.rsvp_link_id);
+      const plusOneList = withTokens.filter((g) => g.plus_one_email && g.plus_one_rsvp_link_id);
       {
-        const emailList = invitations.filter((i) => i.email && i.lead?.rsvp_link_id);
-        const plusOneList = withTokens.filter((g) => g.plus_one_email && g.plus_one_rsvp_link_id);
         const recipients = [
           ...emailList.map((i) => ({ email: i.email, name: i.name, rsvpUrl: buildRsvpUrl(i.lead.rsvp_link_id), rsvpToken: i.lead.rsvp_link_id, events: buildGuestEvents(i.lead) })),
           ...plusOneList.map((g) => ({ email: g.plus_one_email, name: g.plus_one_name || 'Guest', rsvpUrl: buildRsvpUrl(g.plus_one_rsvp_link_id), rsvpToken: g.plus_one_rsvp_link_id, events: buildGuestEvents(g) })),
         ];
         if (recipients.length) await api.json('/api/send-invites', { method: 'POST', body: JSON.stringify({ type, universeId, bannerChoice, guests: recipients, wedding: weddingPayload, customSubject: subject, customBody: body }) });
       }
+      // WHO WAS ACTUALLY SENT TO, from src/lib/sentRecipients.js, as
+      // SendInvitesModal.jsx asks it (owner rulings 2026-10-12): every member of
+      // an invitation that was emailed, and a guest whose plus-one was; a guest
+      // alone on an invitation with no address gets neither the stamp nor the
+      // history entry. Both writes take this one set.
+      const sentIds = sentGuestIds({ emailedInvitations: emailList, plusOneGuests: plusOneList });
+      const sentGuests = guestsActuallySent(withTokens, sentIds);
       // Only invite and reminder have a tracking field on Guest; save the date must not write invite_sent_at (SendInvitesModal.jsx).
       // AND THE HISTORY, APPENDED, as SendInvitesModal.jsx writes it: one entry
-      // per guest a link was minted for, built by src/lib/sendHistory.js's
+      // per guest the send reached, built by src/lib/sendHistory.js's
       // newSendEntry (type, sent_at, to_hash, never the address), spread onto
       // the guest's existing array and never rewritten. Every type is
       // recorded; only invite and reminder also carry a stamp. One sentAt for
       // the stamp and the entry, as on the web.
       const sentAt = new Date().toISOString();
-      const historyById = new Map(await Promise.all(withTokens.map(async (g) => [g.id, await newSendEntry(type, g.email, new Date(sentAt))])));
+      const historyById = new Map(await Promise.all(sentGuests.map(async (g) => [g.id, await newSendEntry(type, g.email, new Date(sentAt))])));
       const appended = (g) => ({ send_history: [...(Array.isArray(g.send_history) ? g.send_history : []), historyById.get(g.id)] });
       const track = (g) => api.update('Guest', g.id, type === 'invite' || type === 'reminder'
         ? { ...(type === 'reminder' ? { reminder_sent_at: sentAt } : { invite_sent_at: sentAt, invite_channel: channelStr }), ...appended(g) }
         : appended(g));
-      // Each guest's status: on an invitation that went (the endpoint took the
-      // batch), or on one with no email to send to. A member is named as
-      // reached through the lead's email, which is how the web counts them.
+      // Each guest's status is the same set: sent when the send reached them,
+      // otherwise skipped for no email. A member is named as reached through
+      // the lead's email, which is how the web counts them.
       const rows = [
         ...invitations.flatMap((i) => i.members.map((g) => {
-          const went = !!(i.email && i.lead?.rsvp_link_id);
-          return { guest: g, status: went ? 'sent' : 'skipped', why: !went ? 'No email' : g === i.lead ? '' : `In the email to ${i.lead.name || i.email}` };
+          const went = sentIds.has(g.id);
+          const viaLead = !!(i.email && i.lead?.rsvp_link_id) && g !== i.lead;
+          return { guest: g, status: went ? 'sent' : 'skipped', why: !went ? 'No email' : viaLead ? `In the email to ${i.lead.name || i.email}` : '' };
         })),
         ...notSent,
       ];
-      await Promise.all(withTokens.map(track));
+      await Promise.all(sentGuests.map(track));
       // SendInvitesModal.jsx's sentence, word for word: emails are invitations,
       // the guests they cover are people, and the skipped say why.
-      const sent = invitations.filter((i) => i.email && i.lead?.rsvp_link_id).length;
+      const sent = emailList.length;
       toast.success(`${TYPE_LABELS[type]} sent, ${sent} email${plural(sent)} covering ${sendable.length} guest${plural(sendable.length)}`
         + (optedOut.length > 0 ? `, ${optedOut.length} skipped who asked not to be emailed` : '')
         + (bounced.length > 0 ? `, ${bouncedSkippedSentence(bounced.length)}` : ''), { id: tid });
