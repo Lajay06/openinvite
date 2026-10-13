@@ -102,13 +102,13 @@ const ARTICLES = {
         <li style={S.li}>Click "Collaborate" in the sidebar</li>
         <li style={S.li}>Enter their name and email address</li>
         <li style={S.li}>Under "Pages they can view", check "View only" for each page you want them to see</li>
-        <li style={S.li}>For Schedule, you can check "Can make changes" instead, so they can add, change and remove items on it</li>
+        <li style={S.li}>For Schedule, you can check "Can make changes" instead, so they can change and remove items on it</li>
         <li style={S.li}>Click "Send Invite". They get an email with a link to join</li>
       </ol>
       <h3 style={S.h3}>What collaborators can do</h3>
       <ul style={S.ul}>
         <li style={S.li}>View the pages you chose, showing your current plans</li>
-        <li style={S.li}>Change Schedule, only if you checked "Can make changes" for it</li>
+        <li style={S.li}>Change or remove Schedule items, only if you checked "Can make changes" for it</li>
         <li style={S.li}>Nothing more: they cannot add, edit or delete anything else, and Ava is not available to them</li>
         <li style={S.li}>Their own Help and Account pages stay their own</li>
       </ul>

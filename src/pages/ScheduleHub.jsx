@@ -114,13 +114,17 @@ export default function ScheduleHub() {
   // decides it, not the permissions this page was handed. The writes go
   // through api/collaborator-write.js and the hosted function: Schedule's
   // update and delete RLS is owner-scoped, so nothing else can make them.
+  //
+  // CHANGE AND REMOVE, NEVER ADD (owner ruling 2026-10-13, after the probe):
+  // a hosted function cannot stamp a new row as the owner, so a collaborator
+  // is never offered Add. The writer has no create, and the function refuses
+  // one outright.
   const [collabCanEdit, setCollabCanEdit] = useState(false);
   const readOnly = isCollaborating && !collabCanEdit;
   // Named Schedule, as it always was: every write site below is unchanged,
   // and in a collaborator session it is the collaborator write path.
   const Schedule = isCollaborating
     ? {
-        create: (data) => collaboratorWrite({ ownerUserId: collab.ownerUserId, page: 'Schedule', action: 'create', data }),
         update: (id, data) => collaboratorWrite({ ownerUserId: collab.ownerUserId, page: 'Schedule', action: 'update', id, data }),
         delete: (id) => collaboratorWrite({ ownerUserId: collab.ownerUserId, page: 'Schedule', action: 'delete', id }),
       }
@@ -390,7 +394,7 @@ export default function ScheduleHub() {
           >
             Download a snapshot (.ics)
           </button>
-          {!readOnly && (
+          {!readOnly && !isCollaborating && (
             <button onClick={handleAddEvent} className="btn-primary">
               + Add event
             </button>
@@ -451,6 +455,7 @@ export default function ScheduleHub() {
       />
       {activeTab === "runsheet" && (
         <RunSheet
+          collaborating={isCollaborating}
           scheduleItems={scheduleItems}
           category={runSheetEventId}
           onPickEvent={setRunSheetEventId}
@@ -458,7 +463,7 @@ export default function ScheduleHub() {
           loading={loadingStats}
           onEdit={handleEditEvent}
           onDelete={(r) => handleDelete(r.id)}
-          onAdd={(ev) => {
+          onAdd={isCollaborating ? undefined : (ev) => {
             // PRE-TAGGED AND PRE-DATED. A moment added from the reception's run
             // sheet is a reception row on the reception's day; asking again
             // would be asking a question the page already knows the answer to.

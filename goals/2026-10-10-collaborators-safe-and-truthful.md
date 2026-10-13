@@ -144,7 +144,10 @@ As of 2026-10-12:
 - 4's ruling merged as #1031: a collaborator-only account signing in without the link goes to the most recently accepted wedding; owner_id_enc is live on CollaboratorGrant.
 - Schedule write built, held: base44/functions/collaboratorWrite (the write twin of collaboratorRead, on the same conditions; a create checks its own stamp and deletes any row not stamped as the owner) and api/collaborator-write.js (new lane C file by ruling, generic for Moodboard). The admin-only probe on RlsExperimentThrowaway ships in it and is removed by a follow-up PR once the owner reports the result (owner ruling 2026-10-13). The picker, email and Help copy for Schedule's edit option go to the owner before merge.
 - Later item, not designed now (owner ruling 2026-10-13): recording which collaborator changed a row. No schema change until then; the owner sees the change, not who made it.
-- Next: the probe result and its removal PR, the Moodboard write PR, then the branded verification email plan.
+- Schedule write merged as #1035. The owner deployed collaboratorWrite and ran the probe (2026-10-13): a hosted function cannot set created_by_id to another user. Base44 stamped the row with an identity that was neither the requested owner, the caller nor anonymous; the probe could not tell which kind (service, admin or function identity), and no id was recorded. Ruling: collaborators with edit change and remove existing items, never add. Add is hidden in a collaborator session, the function refuses create outright, and the probe is removed, all in one PR.
+- The Moodboard write PR follows the same rule: change and remove, never add.
+- At the goal's close, BASE44_PLATFORM_NOTES.md records the probe's finding alongside the q-override entry.
+- Next: the Moodboard write PR, then the branded verification email plan.
 
 ## Findings
 

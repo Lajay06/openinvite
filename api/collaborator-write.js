@@ -1,6 +1,6 @@
 /**
  * POST /api/collaborator-write
- *   body: { ownerUserId, page, action: 'create' | 'update' | 'delete', id?, data? }
+ *   body: { ownerUserId, page, action: 'update' | 'delete', id, data? }
  *
  * The one write path for a collaborator, generic across the pages on
  * COLLABORATOR_EDIT_PAGES (src/lib/collaboratorPageMap.js): Schedule now,
@@ -32,7 +32,9 @@ import { COLLABORATOR_EDIT_PAGES } from '../src/lib/collaboratorPageMap.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
-const ACTIONS = ['create', 'update', 'delete'];
+// No create (owner ruling 2026-10-13): a hosted function cannot stamp a new row
+// as the owner, so a collaborator changes and removes, never adds.
+const ACTIONS = ['update', 'delete'];
 
 export const SAVE_FAILED = 'That did not save. Try again.';
 export const WRITES_NOT_CONFIGURED = 'collaborator writes not configured';
@@ -61,7 +63,7 @@ export default async function handler(req, res) {
   const page = typeof body.page === 'string' ? body.page : '';
   const action = typeof body.action === 'string' ? body.action : '';
   const id = typeof body.id === 'string' ? sanitizeString(body.id) : '';
-  if (!ownerUserId || !COLLABORATOR_EDIT_PAGES.includes(page) || !ACTIONS.includes(action) || (action !== 'create' && !id)) {
+  if (!ownerUserId || !COLLABORATOR_EDIT_PAGES.includes(page) || !ACTIONS.includes(action) || !id) {
     return res.status(400).json({ error: SAVE_FAILED });
   }
 

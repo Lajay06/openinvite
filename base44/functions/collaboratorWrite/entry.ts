@@ -21,18 +21,13 @@
  * 4. Both secrets are required, and X-Collab-Fn-Secret must match, so only
  *    api/collaborator-write.js can call it.
  *
- * A CREATE CHECKS ITS OWN STAMP. The row is created with created_by_id set to
- * the owner and read back. If Base44 stamped anyone else, the row is deleted
- * at once, by its id, and the call answers 409: a row the owner cannot see is
- * never left behind.
- *
- * ── THE PROBE, AND ITS ONE EXCEPTION (owner ruling 2026-10-13) ──────────────
- *
- * action "probe" is the only action without the secret header. It requires
- * auth.me().role === 'admin', acts only on RlsExperimentThrowaway, creates one
- * row asking for a created_by_id that is not the caller, reads back what
- * Base44 stamped, deletes that row by its id, and answers booleans only. A
- * follow-up PR removes it as soon as the owner reports the result.
+ * NO CREATE (owner ruling 2026-10-13). The probe this function carried showed
+ * that a hosted function cannot set created_by_id to another user: Base44
+ * stamped the row with an identity that was neither the requested owner, the
+ * caller nor anonymous. A row a collaborator added would belong to that
+ * identity, and the owner could not see it. So a collaborator changes and
+ * removes the owner's rows, never adds one: create is refused outright, before
+ * anything is read, and the app never offers Add. The probe is removed.
  *
  * Deploy, owner only: `base44 functions deploy collaboratorWrite` with the app
  * id. Never a bare `base44 deploy`.
@@ -49,15 +44,13 @@ export const EDIT_PAGES: Record<string, { entity: string; fields: string[] }> = 
   },
 };
 
-export const ACTIONS = ['create', 'update', 'delete'];
+export const ACTIONS = ['update', 'delete'];
 export const NOT_CONFIGURED = 'collaborator writes not configured';
-export const PROBE_ENTITY = 'RlsExperimentThrowaway';
 
 type Deps = {
   client: any;
   getSecret: (name: string) => string | undefined | Promise<string | undefined>;
   log: (line: string) => void;
-  randomId?: () => string;
 };
 
 const json = (status: number, body: unknown) => new Response(JSON.stringify(body), {
@@ -94,40 +87,14 @@ async function rowById(client: any, entity: string, id: string): Promise<any> {
   return (rows || []).find((r: any) => r?.id === id) || null;
 }
 
-/** The admin-only probe: one throwaway row, its stamp read back, deleted by id, booleans out. */
-async function probe(client: any, me: any, log: (l: string) => void, randomId: () => string): Promise<Response> {
-  if (me?.role !== 'admin') return json(403, { error: 'Forbidden' });
-  const requested = `probe-not-a-user-${randomId()}`;
-  const entity = client.asServiceRole.entities[PROBE_ENTITY];
-  const created = await entity.create({ marker: 'create-stamp probe', created_by_id: requested });
-  let back: any = null;
-  try { back = created?.id ? await rowById(client, PROBE_ENTITY, created.id) : null; } finally {
-    if (created?.id) await entity.delete(created.id);
-  }
-  const stamped = back?.created_by_id ?? created?.created_by_id ?? null;
-  const result = {
-    honored_requested_owner: stamped === requested,
-    stamped_as_caller: stamped === me.id,
-    stamped_anonymous: stamped === 'anonymous',
-    stamped_something_else: !!stamped && stamped !== requested && stamped !== me.id && stamped !== 'anonymous',
-    row_deleted: !!created?.id,
-  };
-  log(JSON.stringify({ fn: 'collaboratorWrite', action: 'probe', ...result }));
-  return json(200, result);
-}
-
-export async function handle(req: Request, { client, getSecret, log, randomId = () => crypto.randomUUID() }: Deps): Promise<Response> {
+export async function handle(req: Request, { client, getSecret, log }: Deps): Promise<Response> {
   if (req.method !== 'POST') return json(405, { error: 'Method not allowed' });
 
   let body: any = {};
   try { body = await req.json(); } catch { /* refused below */ }
 
-  // The one exception to the header, and only for the admin.
-  if (body?.action === 'probe') {
-    let me: any = null;
-    try { me = await client.auth.me(); } catch { /* refused in probe */ }
-    return probe(client, me, log, randomId);
-  }
+  // Never a create, whoever asks: refused before anything is read.
+  if (body?.action === 'create') return json(403, { error: 'Forbidden' });
 
   const fnSecret = String((await getSecret('COLLAB_FN_SECRET')) || '');
   const hashKey = String((await getSecret('COLLAB_HASH_KEY')) || '');
@@ -146,7 +113,7 @@ export async function handle(req: Request, { client, getSecret, log, randomId = 
   if (!ownerUserId || ownerUserId.length > 100 || !Object.hasOwn(EDIT_PAGES, page) || !ACTIONS.includes(action)) {
     return json(400, { error: 'Bad request' });
   }
-  if (action !== 'create' && (!id || id.length > 100)) return json(400, { error: 'Bad request' });
+  if (!id || id.length > 100) return json(400, { error: 'Bad request' });
 
   // Condition 1: who is asking comes from Base44, never from the body.
   let me: any = null;
@@ -168,19 +135,6 @@ export async function handle(req: Request, { client, getSecret, log, randomId = 
   const { entity } = EDIT_PAGES[page];
   const api = client.asServiceRole.entities[entity];
   const data = allowlisted(page, body?.data);
-
-  if (action === 'create') {
-    if (!Object.keys(data).length) return json(400, { error: 'Bad request' });
-    const created = await api.create({ ...data, created_by_id: ownerUserId });
-    const back = created?.id ? await rowById(client, entity, created.id) : null;
-    if (!back || back.created_by_id !== ownerUserId) {
-      if (created?.id) await api.delete(created.id);
-      log(JSON.stringify({ fn: 'collaboratorWrite', page, action, outcome: 'not stamped as the owner, removed' }));
-      return json(409, { error: 'Not stamped' });
-    }
-    log(JSON.stringify({ fn: 'collaboratorWrite', page, action, outcome: 'ok', fields: Object.keys(data).length }));
-    return json(200, { ok: true });
-  }
 
   const row = await rowById(client, entity, id);
   if (!row || row.created_by_id !== ownerUserId || row.is_test) return json(404, { error: 'Not found' });
