@@ -79,10 +79,14 @@ export async function runInviteEntranceAndPublishGate() {
 
   const modal = read('src/components/guests/SendInvitesModal.jsx');
   const send = modal.match(/const handleSend = async \(\) => \{[\s\S]*?setSending\(true\);/);
+  // THE RULE MOVED to src/lib/publishState.js on 2026-10-13; the requirement
+  // is unchanged. Both halves still refuse, still before setSending, and the
+  // no-address case still has its own branch and its own message.
   check('the client refuses in handleSend, before sending starts',
-    !!send && /websiteEnabled !== true/.test(send[0]) && /return;/.test(send[0]),
+    !!send && /sendability !== PUBLISH_STATE\.LIVE/.test(send[0]) && /return;/.test(send[0]),
     send ? 'refused before setSending' : 'no handleSend');
-  check('  it refuses an unclaimed address too', !!send && /!wedding\?\.slug/.test(send[0]), 'no slug, no send');
+  check('  it refuses an unclaimed address too',
+    !!send && /sendability === PUBLISH_STATE\.NO_ADDRESS/.test(send[0]), 'no slug, no send');
   check('  and says where to go', !!send && /Design studio/.test(send[0]), 'routes to Design studio');
   check('  the client sends the slug and the flag the server needs',
     /slug: wedding\?\.slug/.test(modal) && /websiteEnabled: wedding\?\.websiteEnabled/.test(modal), 'both in the payload');

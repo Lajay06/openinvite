@@ -44,6 +44,10 @@ const SITES = [
   // CORRECT inline copy, which the first scan missed. It is aliased on import
   // so its local boolean keeps its name.
   ['src/pages/StudioWebsite.jsx', /const isLive = isLiveSite\(details\)/, 'isLiveSite'],
+  // THE NINTH, 2026-10-13. The send gate had two correct hand-rolled branches,
+  // which is why the first sweep passed over it: it was not wrong, it was
+  // separate. Being separate is what let the server disagree with it.
+  ['src/components/guests/SendInvitesModal.jsx', /const sendability = publishState\(wedding\)/, 'publishState'],
 ];
 
 export async function runPublishStateOneAnswer() {
@@ -111,10 +115,28 @@ export async function runPublishStateOneAnswer() {
        'no hand-rolled copy');
   }
 
+  // ── THE SEND GATE KEEPS BOTH MESSAGES ──────────────────────────────────
+  //
+  // Collapsing them to one would lose the distinction the couple needs: an
+  // address is claimed in one place and publishing happens in another, so
+  // "not published yet" sends someone to the wrong screen when the real answer
+  // is that they have no address at all.
+  const modal = read('src/components/guests/SendInvitesModal.jsx');
+  ok('the send gate still answers no-address and not-published separately',
+     /PUBLISH_STATE\.NO_ADDRESS/.test(modal) && /Claim your website address first/.test(modal)
+       && /not published yet/.test(modal), 'two messages');
+  ok('  and it refuses anything that is not live, not merely hidden',
+     /sendability !== PUBLISH_STATE\.LIVE/.test(modal), 'not-live, not not-hidden');
+
   // ── AND THE SERVER IS LEFT ALONE, DELIBERATELY ──────────────────────────
   //
   // Each server reader found the row BY its slug, so a slug check there would
   // ask whether the thing it just looked up exists. Owner ruling the same day.
+  // api/send-invites.js IS NOT IN THIS LIST ANY MORE. It was, on the strength
+  // of a claim that it found its row by slug. It does not: it is scoped to
+  // created_by_id, so nothing there has established that an address exists, and
+  // it let a slugless wedding through while the modal refused it. It is a send
+  // file, so it moves under its own held PR.
   for (const server of ['api/guest-page.js', 'api/wedding-by-slug.js', 'api/wedding-poll-results.js']) {
     const src = read(server);
     ok(`  ${server.split('/').pop()} still tests the flag on its own`,
