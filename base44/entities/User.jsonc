@@ -87,6 +87,15 @@
           "type": "string"
         }
       }
+    },
+    "planSource": {
+      "type": "string",
+      "enum": [
+        "purchase",
+        "gift",
+        "comp"
+      ],
+      "description": "How this account's plan was obtained: purchase = paid at checkout, gift = redeemed a gifted plan, comp = granted by us. Optional and with no default, because accounts predating this field have no recorded origin."
     }
   },
   "required": []
