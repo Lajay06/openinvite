@@ -1089,6 +1089,7 @@ export const ENTITY_FIELDS = {
       "onboarding_completed",
       "planSource",
       "retentionEmails",
+      "stripeCustomerId",
       "tempUnit",
       "trialStartedAt"
     ],

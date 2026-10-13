@@ -62,6 +62,10 @@
         "guestsDay5": { "type": "string" }
       }
     },
+    "stripeCustomerId": {
+      "type": "string",
+      "description": "The account's Stripe customer id, written by the webhook when a purchase completes. A plain Stripe identifier, not a secret: api/create-portal-session.js still builds the portal session server side from the verified caller and never from a client-supplied id. READ IN TWO PLACES AND DECLARED IN NONE until 2026-10-13, which is why Account > Billing's receipts button rendered for nobody and that endpoint answered 400 to everyone. Absent on an account whose plan did not come from a purchase; read planSource for why. Added live by the owner 2026-10-13."
+    },
     "planSource": {
       "type": "string",
       "enum": ["purchase", "gift", "comp"],
