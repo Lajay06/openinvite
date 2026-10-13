@@ -22,14 +22,14 @@ import { collaboratorPageLabels, collaboratorClosingCopy } from './collaboratorP
  *     #F5F5F5; color.bgSubtle in src/styles/tokens.js);
  *   - the logo is the site header's lockup with its wordmark recolored for a
  *     light ground, a 2x PNG at /email-assets/openinvite-logo-on-light-2x.png;
- *   - the photo is DTS_QUIET_GLAMOUR_DTS_Studio_Photos_ID8370_coshvz, delivered
- *     as f_jpg,q_auto,w_1200 and shown 600 wide (1600x1200 at source, so 450
- *     tall), alt "Openinvite". It is referenced by URL only.
+ *   - the photo is DTS_QUIET_GLAMOUR_DTS_Studio_Photos_ID8370_coshvz, cropped
+ *     c_fill, ar_2:1, g_north, w_1200, f_jpg, q_auto and shown at 600x300,
+ *     alt "Openinvite" (owner, 2026-10-13). It is referenced by URL only.
  * emailShell itself is untouched: every other brand email keeps it.
  */
 export const INVITE_GROUND = '#F5F5F5';
 export const INVITE_LOGO_URL = 'https://www.openinvite.com.au/email-assets/openinvite-logo-on-light-2x.png';
-export const INVITE_PHOTO_URL = 'https://res.cloudinary.com/dsr84xknv/image/upload/f_jpg,q_auto,w_1200/DTS_QUIET_GLAMOUR_DTS_Studio_Photos_ID8370_coshvz';
+export const INVITE_PHOTO_URL = 'https://res.cloudinary.com/dsr84xknv/image/upload/c_fill,ar_2:1,g_north,w_1200,f_jpg,q_auto/DTS_QUIET_GLAMOUR_DTS_Studio_Photos_ID8370_coshvz';
 
 function inviteShell({ title, preheader, bodyRowsHtml }) {
   return `<!DOCTYPE html>
@@ -59,7 +59,7 @@ function inviteShell({ title, preheader, bodyRowsHtml }) {
           </tr>
           <tr>
             <td style="padding:0;">
-              <img src="${INVITE_PHOTO_URL}" width="600" height="450" alt="Openinvite" style="display:block;width:100%;max-width:600px;height:auto;border:0;background:#e8e4df;" />
+              <img src="${INVITE_PHOTO_URL}" width="600" height="300" alt="Openinvite" style="display:block;width:100%;max-width:600px;height:auto;border:0;background:#e8e4df;" />
             </td>
           </tr>
 ${bodyRowsHtml}
@@ -106,12 +106,11 @@ export function renderCollaboratorInviteEmail({ collaboratorName, coupleNames, a
           </tr>` : '';
 
   const bodyRowsHtml = `
-          <!-- Kicker + headline -->
+          <!-- Heading: no eyebrow line above it, in any email (owner, 2026-10-13) -->
           <tr>
             <td style="padding:32px 40px 0;">
-              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:${ACCENT};font-family:${FONT};">you're invited to collaborate</p>
               <p style="margin:0;font-size:24px;font-weight:700;color:${BLACK};line-height:1.3;font-family:${FONT};">
-                Hi ${escapeHtml(firstName)}, ${escapeHtml(coupleNames || 'a couple')} would love your help planning their wedding
+                ${escapeHtml(coupleNames || 'A couple')} would love your help planning their wedding.
               </p>
             </td>
           </tr>
@@ -119,7 +118,7 @@ export function renderCollaboratorInviteEmail({ collaboratorName, coupleNames, a
           <tr>
             <td style="padding:16px 40px 0;">
               <p style="margin:0;font-size:15px;line-height:1.7;color:rgba(0,0,0,0.68);font-family:${FONT};">
-                They've added you as a collaborator on their Openinvite wedding planning dashboard. Accept the invite below to sign in (or create a free account) and get started.
+                Hi ${escapeHtml(firstName)}, they've added you as a collaborator on their Openinvite wedding planning dashboard. Accept the invite below to sign in (or create a free account) and get started.
               </p>
             </td>
           </tr>

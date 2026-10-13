@@ -22,8 +22,11 @@ import path from 'path';
 import { pass, fail } from './_shared.mjs';
 
 const ROOT = path.resolve(new URL('../../', import.meta.url).pathname);
-const PHOTO = 'https://res.cloudinary.com/dsr84xknv/image/upload/f_jpg,q_auto,w_1200/DTS_QUIET_GLAMOUR_DTS_Studio_Photos_ID8370_coshvz';
-const LOGO = 'https://www.openinvite.com.au/email-assets/openinvite-logo-on-light-2x.png';
+const PHOTO = 'https://res.cloudinary.com/dsr84xknv/image/upload/c_fill,ar_2:1,g_north,w_1200,f_jpg,q_auto/DTS_QUIET_GLAMOUR_DTS_Studio_Photos_ID8370_coshvz';
+// The logo is whatever the sign-up code email uses, read from that file: the
+// two can never drift apart (owner, 2026-10-13).
+const CODE_EMAIL = fs.readFileSync(path.join(ROOT, 'base44/emails/EmailVerification.html'), 'utf8');
+const LOGO = (CODE_EMAIL.match(/<img src="(https:\/\/www\.openinvite\.com\.au\/email-assets\/[^"]+)"/) || [])[1] || 'missing from the code email';
 
 export async function runCollaboratorInviteEmailLayout() {
   const results = [];
@@ -35,13 +38,22 @@ export async function runCollaboratorInviteEmailLayout() {
   });
 
   console.log('\n  The header photo:\n');
-  ok('the photo is DTS_QUIET_GLAMOUR_DTS_Studio_Photos_ID8370_coshvz as f_jpg,q_auto,w_1200, nothing else',
+  ok('the photo is DTS_QUIET_GLAMOUR_DTS_Studio_Photos_ID8370_coshvz, c_fill ar_2:1 g_north w_1200 f_jpg q_auto',
      (html.match(/<img [^>]*src="([^"]*DTS_QUIET_GLAMOUR[^"]*)"/) || [])[1] === PHOTO, PHOTO);
-  ok('  shown 600 wide, alt "Openinvite"', new RegExp(`<img src="${PHOTO.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}" width="600" height="450" alt="Openinvite" style="display:block;width:100%;max-width:600px;height:auto;`).test(html), '600x450');
-  ok('  and it sits right under the logo, above the invite', html.indexOf(LOGO) < html.indexOf(PHOTO) && html.indexOf(PHOTO) < html.indexOf("you're invited to collaborate"), 'order');
+  ok('  shown at 600x300, alt "Openinvite"', new RegExp(`<img src="${PHOTO.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}" width="600" height="300" alt="Openinvite" style="display:block;width:100%;max-width:600px;height:auto;`).test(html), '600x300');
+  ok('  and it sits right under the logo, above the heading', html.indexOf(LOGO) < html.indexOf(PHOTO) && html.indexOf(PHOTO) < html.indexOf('would love your help planning their wedding.'), 'order');
+
+  console.log('\n  The heading and the body, no eyebrow:\n');
+  const text = html.replace(/<style[\s\S]*?<\/style>/g, '').replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&#39;|&#x27;/g, "'").replace(/\s+/g, ' ');
+  ok('no eyebrow line above the heading', !/you(&#39;|')re invited to collaborate/i.test(html), 'gone');
+  ok('the heading: "Alex and Sam would love your help planning their wedding."', text.includes('Alex and Sam would love your help planning their wedding.'), 'heading');
+  ok('the body starts "Hi Ada, they\'ve added you as a collaborator..."',
+     text.includes("Hi Ada, they've added you as a collaborator on their Openinvite wedding planning dashboard. Accept the invite below to sign in (or create a free account) and get started."), 'body');
+  const anon = renderCollaboratorInviteEmail({ collaboratorName: '', coupleNames: '', acceptUrl: 'https://x', permissions: {} }).html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+  ok('  with no names: "A couple would love..." and "Hi there,"', anon.includes('A couple would love your help planning their wedding.') && anon.includes('Hi there, they'), 'fallbacks');
 
   console.log('\n  The code email\'s frame:\n');
-  ok('the full logo, 160 wide, top left', html.includes(`<img src="${LOGO}" width="160" height="37" alt="Openinvite"`), 'lockup');
+  ok('the logo src is exactly the code email\'s, at 160x37', LOGO.startsWith('https://') && html.includes(`<img src="${LOGO}" width="160" height="37" alt="Openinvite"`), LOGO);
   ok('  not the mark alone', !/openinvite-icon-mark/.test(html), 'no mark-only image');
   const css = fs.readFileSync(path.join(ROOT, 'src/index.css'), 'utf8');
   const m = css.match(/:root\s*\{[\s\S]*?--background:\s*(\d+)\s+(\d+)%\s+(\d+)%;/);
