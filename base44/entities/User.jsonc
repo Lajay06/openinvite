@@ -96,6 +96,10 @@
         "comp"
       ],
       "description": "How this account's plan was obtained: purchase = paid at checkout, gift = redeemed a gifted plan, comp = granted by us. Optional and with no default, because accounts predating this field have no recorded origin."
+    },
+    "stripeCustomerId": {
+      "type": "string",
+      "description": "Stripe customer id (cus_...) for this account, written server-side by api/webhooks/stripe.js on a completed purchase and read by api/create-portal-session.js to open the billing portal and by Account.jsx to offer it. Absent on accounts that have never paid."
     }
   },
   "required": []
