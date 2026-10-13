@@ -75,6 +75,14 @@ export default function ChoosePlan() {
       navigate(next, { replace: true });
       return;
     }
+    // A COUPLE CLAIMING A GIFT (gifting v2 item 8, owner ruling 2026-10-13):
+    // a sign-in that started on /gift/claim/ goes straight back there. The
+    // gift is the plan; showing the picker first would ask them to choose,
+    // or pay for, what they have just been given. Nothing is written here.
+    if (user && next.startsWith('/gift/claim/')) {
+      navigate(next, { replace: true });
+      return;
+    }
     if (isPastPlanStep(user)) {
       // Lazy backfill — an existing account reaching here for the first
       // time (e.g. signed up before this flag existed) gets the flag

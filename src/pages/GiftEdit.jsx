@@ -11,17 +11,18 @@
  * sees the change land), the names step's underline input for the address,
  * and page 3's multi-line note field.
  *
- * READ-ONLY UNTIL ITEM 8 (src/lib/giftLinks.js): the fields can be tried and
- * the preview follows them, but Save changes is disabled; nothing is written.
- * Once the couple have opened the gift, or for a link that no longer works,
- * the page is a plain line.
+ * SAVE CHANGES (item 8) goes to api/gift-link.js. A new address moves the
+ * claim link to a new version, so the old link stops opening the gift, and if
+ * the reveal already went it goes again to the new address. Once the couple
+ * have claimed it, or for a link that no longer works, the page is a plain
+ * line.
  */
 import React, { useEffect, useState } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
 import OnboardingShell from '@/components/onboarding/OnboardingShell';
 import OpeninviteLogo from '@/components/public/OpeninviteLogo';
-import { EDIT, NOTE_MAX } from '@/lib/giftingV2';
-import { loadGiftByToken, GIFT_LINKS_LIVE } from '@/lib/giftLinks';
+import { EDIT, CLAIM, NOTE_MAX } from '@/lib/giftingV2';
+import { loadGiftByToken, saveGiftEdit, isSampleToken, GIFT_LINKS_LIVE } from '@/lib/giftLinks';
 import { heading, primary, nameInputStyle, UnderlineInput, EmailPreview } from '@/pages/GiftV2';
 import { PlainLinkPage } from '@/pages/GiftClaim';
 
@@ -32,9 +33,11 @@ export default function GiftEdit() {
   const { token } = useParams();
   const [gift, setGift] = useState(undefined);
   const [draft, setDraft] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState(null);
   useEffect(() => {
     let live = true;
-    loadGiftByToken(token).then((g) => { if (!live) return; setGift(g); if (g?.status === 'open') setDraft(g); });
+    loadGiftByToken(token, 'edit').then((g) => { if (!live) return; setGift(g); if (g?.status === 'open') setDraft(g); });
     return () => { live = false; };
   }, [token]);
 
@@ -46,6 +49,17 @@ export default function GiftEdit() {
   const set = (patch) => setDraft((d) => ({ ...d, ...patch }));
   const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.email.trim());
   const changed = draft.email !== gift.email || draft.note !== gift.note;
+  const save = async () => {
+    if (isSampleToken(token)) return; // a sample changes nothing
+    setSaving(true);
+    setNotice(null);
+    const out = await saveGiftEdit(token, { email: draft.email, note: draft.note });
+    setSaving(false);
+    if (out.ok) { setGift({ ...gift, email: draft.email.trim(), note: draft.note.trim() }); setNotice(out.resent ? EDIT.savedResent : EDIT.saved); return; }
+    if (out.reason === 'claimed') { setGift({ ...gift, status: 'claimed' }); return; }
+    if (out.reason === 'gone') { setGift({ status: 'used' }); return; }
+    setNotice(CLAIM.retry);
+  };
   return (
     <OnboardingShell contentMaxWidth={600} aside={<EmailPreview draft={draft} />}>
       <style>{'.s1-input::placeholder { color: rgba(10,10,10,0.58); }'}</style>
@@ -62,7 +76,8 @@ export default function GiftEdit() {
           </div>
         </div>
         <button type="button" className={primary} data-gift-edit-save
-          disabled={!GIFT_LINKS_LIVE || !changed || !validEmail || !draft.note.trim()} style={{ marginTop: 40 }}>{EDIT.save}</button>
+          disabled={!GIFT_LINKS_LIVE || saving || !changed || !validEmail || !draft.note.trim()} onClick={save} style={{ marginTop: 40 }}>{EDIT.save}</button>
+        {notice && <p role="status" data-gift-edit-notice style={{ fontSize: 15, color: '#0A0A0A', fontFamily: PJS, margin: '16px 0 0', lineHeight: 1.6 }}>{notice}</p>}
       </div>
     </OnboardingShell>
   );
