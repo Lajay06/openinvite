@@ -20,6 +20,46 @@ const DRAFT = {
   noteStyle: 'plain', headlineKey: 'for_you', photoId: 'DTS_UNWRAPPED_Franco_Dupuy_Photos_ID13773_dfzkub', when: 'now',
 };
 
+/**
+ * WHAT IS WRONG WITH A ROW'S SEALING, or [] when nothing is.
+ *
+ * This replaced a regex run over the whole row's JSON, ciphertext included,
+ * which went red on about 0.78% of runs (lane A measured 155 in 20,000): AES-GCM
+ * output is random base64, and "Sam" or "isla" turns up in it by chance. The
+ * ciphertext is now checked as ciphertext, and only the plain fields are
+ * searched for plaintext:
+ *   - each expected *_enc field is strict base64 (it round-trips) of exactly
+ *     iv (12) + tag (16) + the JSON of its plaintext in bytes, and decrypts
+ *     under the test key back to that plaintext;
+ *   - no field that is not *_enc holds any of the plaintext values, matched
+ *     exactly and case-sensitively, at any depth.
+ * Exported so the 20,000-run proof can call exactly this.
+ * @param {Record<string, unknown>} row
+ * @param {Record<string, string>} expected  *_enc field name to its plaintext
+ * @param {(blob: string) => string|null} decrypt
+ */
+export function sealedRowProblems(row, expected, decrypt) {
+  const problems = [];
+  for (const [field, plain] of Object.entries(expected)) {
+    const blob = row[field];
+    if (typeof blob !== 'string') { problems.push(`${field} is not a string`); continue; }
+    const bytes = Buffer.from(blob, 'base64');
+    if (bytes.toString('base64') !== blob) problems.push(`${field} is not strict base64`);
+    const want = 12 + 16 + Buffer.byteLength(JSON.stringify(plain), 'utf8');
+    if (bytes.length !== want) problems.push(`${field} is ${bytes.length} bytes, not ${want}`);
+    let opened;
+    try { opened = decrypt(blob); } catch (err) { opened = `(threw: ${err.message})`; }
+    if (opened !== plain) problems.push(`${field} does not decrypt to its plaintext`);
+  }
+  const plains = Object.values(expected).filter(Boolean);
+  for (const [field, value] of Object.entries(row)) {
+    if (field.endsWith('_enc')) continue;
+    const text = typeof value === 'string' ? value : JSON.stringify(value ?? null);
+    for (const p of plains) if (text.includes(p)) problems.push(`${field} holds a plaintext value`);
+  }
+  return problems;
+}
+
 /** A PlanGift table as Base44's REST answers it, with an optional failing PUT. */
 function store({ failPut = 0 } = {}) {
   const rows = new Map();
@@ -86,10 +126,12 @@ export async function runGiftV2Webhook() {
     const [row] = [...st.rows.values()];
     check('one PlanGift row, version 2, 200 to Stripe', out.status === 200 && st.rows.size === 1 && row.version === 2 && row.plan === 'ultra');
     check('  no coupon and no promotion code', !('coupon_id' in row) && !('promotion_code_id' in row) && !('promotion_code_display' in row));
-    check('  every personal field is ciphertext that opens under APP_ENC_KEY',
-      decryptGiftField(row.recipient_email_enc) === DRAFT.email && decryptGiftField(row.recipient_names_enc) === DRAFT.names
-        && decryptGiftField(row.recipient_note_enc) === DRAFT.note && decryptGiftField(row.buyer_name_enc) === DRAFT.giver
-        && decryptGiftField(row.buyer_email_enc) === 'sam@example.com' && !/isla|Theo|Sam|With love|example\.com/i.test(JSON.stringify(row)));
+    const sealing = sealedRowProblems(row, {
+      recipient_email_enc: DRAFT.email, recipient_names_enc: DRAFT.names, recipient_note_enc: DRAFT.note,
+      buyer_name_enc: DRAFT.giver, buyer_email_enc: 'sam@example.com',
+    }, decryptGiftField);
+    check('  every personal field is ciphertext that opens under APP_ENC_KEY, and no plain field holds one',
+      sealing.length === 0, sealing.join('; ') || '5 sealed');
     let frozenOpens = true;
     try { const { decryptString } = await import('../../api/_lib/giftAuth.js'); decryptString(row.recipient_email_enc); } catch { frozenOpens = false; }
     check('  and not under the frozen cipher', frozenOpens === false);

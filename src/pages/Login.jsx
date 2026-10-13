@@ -33,6 +33,12 @@ export default function Login() {
   // loginWithProvider call — passes straight through with no extra screen.
   const next = new URLSearchParams(window.location.search).get('next') || '/DailyUpdate';
   const choosePlanUrl = `/choose-plan?next=${encodeURIComponent(next)}`;
+  // THE NEXT TRAVELS TO CREATE ACCOUNT TOO. This link was a bare /register,
+  // so a couple who opened a gift, reached this page and chose "Create one"
+  // lost the gift there: Register had no next to hand on, and ChoosePlan
+  // showed the plan picker instead of the claim (gift-test, 2026-10-13).
+  const rawNext = new URLSearchParams(window.location.search).get('next');
+  const registerUrl = rawNext ? `/register?next=${encodeURIComponent(rawNext)}` : '/register';
 
   // A visitor who already has a valid session and lands on /login directly
   // (e.g. an old bookmark, or a marketing CTA reached before this session
@@ -79,7 +85,7 @@ export default function Login() {
       footer={
         <>
           Don't have an account?{" "}
-          <Link to="/register" className="text-primary font-medium hover:underline">
+          <Link to={registerUrl} className="text-primary font-medium hover:underline">
             Create one
           </Link>
         </>

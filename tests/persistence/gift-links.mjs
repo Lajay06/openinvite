@@ -69,7 +69,10 @@ export async function runGiftLinks() {
   const banned = new RegExp(['wedding', 'website'].join(' '), 'i'); // spelled in parts so this file does not say it
   check('no em or en dash, and never the banned product name, in the new copy', !/[–—]/.test(copy) && !banned.test(copy));
   check('the note card has square corners and no shadow', !/borderRadius|boxShadow|rounded/.test(/function NoteCard[\s\S]*?\n}\n/.exec(claim)?.[0] || 'borderRadius'));
-  check('on a phone the claim page still shows the giver\'s photo', /className="md:hidden" data-gift-claim-phone-photo/.test(claim));
+  // Owner ruling 2026-10-13: the photo is the full-height one on the left,
+  // once; the right column is text only. (It showed twice.)
+  check('the claim page shows the photo once, on the left, and the column beside it is text only',
+    !/data-gift-claim-phone-photo/.test(claim) && (claim.match(/giftPhotoUrl\(/g) || []).length === 1);
 
   return r;
 }

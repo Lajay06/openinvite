@@ -27,8 +27,10 @@ import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-
 import OnboardingShell from '@/components/onboarding/OnboardingShell';
 import OpeninviteLogo from '@/components/public/OpeninviteLogo';
 import PlanBadge from '@/components/shared/PlanBadge';
-import { noteImageUrl } from '@/lib/giftEmailTemplate';
-import { REVEAL, CLAIM, fill, headlineText, giftPhotoUrl, photoLabel, ONBOARDING_IMAGES } from '@/lib/giftingV2';
+import { loadFontFamilies } from '@/lib/selfHostedFonts';
+import { CAVEAT, ensureCaveat } from '@/lib/caveatFont';
+import { claimReturnPath, rememberPendingClaim, clearPendingClaim } from '@/lib/giftClaimReturn';
+import { REVEAL, CLAIM, fill, headlineText, giftPhotoUrl, ONBOARDING_IMAGES } from '@/lib/giftingV2';
 import { useAuth } from '@/lib/AuthContext';
 import { loadGiftByToken, claimGiftLink, isSampleToken, GIFT_LINKS_LIVE, GIFT_LANDING_KEY } from '@/lib/giftLinks';
 import { heading, sub, primary, BIG_BADGE } from '@/pages/GiftV2';
@@ -42,14 +44,31 @@ function withBadges(text) {
     (part === 'Ultra' || part === 'Pro') ? <PlanBadge key={i} plan={part.toLowerCase()} {...BIG_BADGE} /> : part);
 }
 
+/**
+ * The note in its style as LIVE TEXT (owner ruling 2026-10-13: the handwriting
+ * note was a raster scaled up, and blurry at 1440 and on retina). Serif is the
+ * self-hosted Cormorant Garamond italic, handwriting the self-hosted Caveat
+ * (src/lib/caveatFont.js), both sharp at any size. The email keeps its
+ * Cloudinary image, since Gmail loads no web fonts.
+ */
+// The face goes through --oi-note-font and the .oi-note-face escape in
+// src/index.css, because the global Plus Jakarta Sans lock beats an inline
+// fontFamily.
+const NOTE_FACE = {
+  plain: { '--oi-note-font': PJS, fontSize: 17, lineHeight: 1.6 },
+  serif: { '--oi-note-font': "'Cormorant Garamond', Georgia, serif", fontStyle: 'italic', fontSize: 24, lineHeight: 1.45 },
+  hand: { '--oi-note-font': CAVEAT, fontSize: 28, lineHeight: 1.3 },
+};
+
 export function NoteCard({ note, noteStyle, giver }) {
-  const rendered = noteStyle === 'serif' || noteStyle === 'hand';
+  useEffect(() => {
+    if (noteStyle === 'serif') loadFontFamilies(['Cormorant Garamond']);
+    if (noteStyle === 'hand') ensureCaveat();
+  }, [noteStyle]);
   return (
     <div data-gift-note-card style={{ background: '#F6F2EC', padding: '24px 28px 26px', margin: '0 0 32px' }}>
       <p aria-hidden="true" style={{ margin: '0 0 6px', fontSize: 56, lineHeight: 0.8, fontWeight: 700, color: '#E03553', fontFamily: 'Georgia, serif' }}>&ldquo;</p>
-      {rendered
-        ? <img src={noteImageUrl(note, noteStyle)} alt={note} style={{ display: 'block', width: '100%', maxWidth: 520, height: 'auto' }} />
-        : <p style={{ margin: 0, fontSize: 17, lineHeight: 1.6, color: NOTE_INK, fontFamily: PJS, whiteSpace: 'pre-wrap' }}>{note}</p>}
+      <p data-note-style={noteStyle} className="oi-note-face" style={{ margin: 0, color: NOTE_INK, whiteSpace: 'pre-wrap', ...(NOTE_FACE[noteStyle] || NOTE_FACE.plain) }}>{note}</p>
       <p style={{ margin: '16px 0 0', fontSize: 13, fontVariant: 'small-caps', color: 'rgba(28,25,22,0.75)', fontFamily: PJS }}>{giver}</p>
     </div>
   );
@@ -77,13 +96,20 @@ export default function GiftClaim() {
   const [message, setMessage] = useState(null);
   useEffect(() => { let live = true; loadGiftByToken(token, 'claim').then((g) => { if (live) setGift(g); }); return () => { live = false; }; }, [token]);
 
-  const signIn = () => navigate(`/login?next=${encodeURIComponent(`/gift/claim/${token}?go=1`)}`);
+  // To Create account, with the gift both in ?next= and remembered in this
+  // browser (src/lib/giftClaimReturn.js), so any way in comes back here.
+  const signIn = () => {
+    const back = claimReturnPath(token);
+    rememberPendingClaim(back);
+    navigate(`/register?next=${encodeURIComponent(back)}`);
+  };
   const claim = async () => {
     if (isSampleToken(token)) return; // a sample claims nothing
     if (!user) { signIn(); return; }
     setBusy(true);
     setMessage(null);
     const out = await claimGiftLink(token);
+    if (out.ok || out.reason === 'used') clearPendingClaim();
     if (out.ok) {
       try { sessionStorage.setItem(GIFT_LANDING_KEY, fill(CLAIM.landing, { giver: out.giver, plan: out.plan })); } catch { /* the line is a nicety */ }
       // A full load, so the account is read again with its new plan.
@@ -113,11 +139,8 @@ export default function GiftClaim() {
     <OnboardingShell contentMaxWidth={600} image={giftPhotoUrl(gift.photoId, { width: 1600, ratio: '4:5' })}>
       <div data-gift-claim style={{ padding: '32px 0 48px', fontFamily: PJS }}>
         <div style={{ margin: '0 0 40px' }}><OpeninviteLogo ground="light" size={24} /></div>
-        {/* The shell hides its photo side below 768px, as onboarding does, and
-            the photo is the giver's choice: on a phone it sits above the
-            headline at the email's own 6:5. */}
-        <img className="md:hidden" data-gift-claim-phone-photo src={giftPhotoUrl(gift.photoId, { width: 800 })} alt={photoLabel(gift.photoId)}
-          style={{ display: 'block', width: '100%', aspectRatio: '6 / 5', objectFit: 'cover', margin: '0 0 32px' }} />
+        {/* TEXT ONLY ON THIS SIDE (owner ruling 2026-10-13): the photo is the
+            full-height one on the left, once. It also showed here, twice. */}
         <h1 style={heading}>{headlineText(gift.headlineKey, gift.names)}</h1>
         <p style={sub}>{withBadges(fill(REVEAL.body[gift.plan] || REVEAL.body.ultra, vars))}</p>
         <NoteCard note={gift.note} noteStyle={gift.noteStyle} giver={gift.giver} />
