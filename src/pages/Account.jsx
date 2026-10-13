@@ -15,41 +15,27 @@ import { startCheckout, resolveCheckoutPriceId, PLAN_PRICES } from '@/lib/checko
 import toast from 'react-hot-toast';
 import { planStepNotDone, fetchMyCollaboration, START_YOUR_OWN_LEAD, START_YOUR_OWN_LINK } from '@/lib/collaboratorLanding';
 import { DATE_FORMATS, DATE_FORMAT_LABELS, dateFormatExample, normalizeDateFormat, formatDashboardDate } from '@/lib/dashboardDate';
+import { TRIAL_FEATURES, PRO_FEATURES, ULTRA_EXTRAS } from '@/lib/planFeatures';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
+/**
+ * ONE SOURCE, AND IT IS NOT THIS FILE. These three lists were typed out here
+ * and had drifted from src/lib/planFeatures.js, which is what the pricing page
+ * reads. This page carried a retired builder name the vocabulary guard bars, a
+ * count of eleven universe styles against a pricing page saying twenty, and an
+ * invitations line still naming the channel removed in batch 1 item 12b. A
+ * gifted Ultra account was being shown all three.
+ *
+ * Copying a list is how a list goes stale. Importing it is how it cannot.
+ */
 const PLAN_FEATURES = {
-  free: [
-    '14-day full access to every feature',
-    'Unlimited guests, budget, seating & vendors',
-    'Wedding website builder & premium themes',
-    'Digital invitations via email & WhatsApp',
-    'Online RSVP pages',
-    'Ava AI — unlimited conversations',
-    'Priority support',
-  ],
-  pro: [
-    'Unlimited guests & full RSVP management',
-    'Complete budget suite',
-    'Ava AI — unlimited & context-aware',
-    'Full vendor management & marketplace',
-    'Seating planner',
-    'Schedule & day-of timeline',
-    'Photography, styling & moodboard tools',
-    'Music planner & registry management',
-    'Vows & speeches writer',
-    'Priority support',
-    '24-month access',
-  ],
-  ultra: [
-    'Everything in Pro',
-    'Wedding website builder',
-    'Premium themes (11 universe styles)',
-    'Digital invitations via email & WhatsApp',
-    'Online RSVP pages for guests',
-    'Guest suite — stay, getting here & experience guide',
-    'Save the dates & thank you cards',
-  ],
+  free: TRIAL_FEATURES,
+  pro: PRO_FEATURES,
+  // "Everything in Pro" first, then the additions: ULTRA_EXTRAS is additive by
+  // its own contract, so spelling Pro's lines again here would be the same
+  // duplication in a new place.
+  ultra: ['Everything in Pro', ...ULTRA_EXTRAS],
 };
 
 // Price ID selection and the matching display amount both come from
