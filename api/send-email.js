@@ -53,6 +53,7 @@ import { purchaseConfirmationEmail } from './emails/purchase-confirmation.js';
 import { onboardingDay1Email } from './emails/onboarding-day1.js';
 import { onboardingDay3Email } from './emails/onboarding-day3.js';
 import { onboardingDay7Email } from './emails/onboarding-day7.js';
+import { TOO_MANY_TRIES } from './_lib/calmErrors.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -108,7 +109,7 @@ export default async function handler(req, res) {
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
     console.warn('[send-email] Rate limited:', ip);
-    return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   // ── Auth: only the authenticated caller's own address may be emailed ─────
