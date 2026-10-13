@@ -16,6 +16,26 @@
  * name a feature the product doesn't actually have.
  */
 
+/**
+ * The trial list. It is NOT Pro's and NOT Ultra's: a trial is full access for
+ * fourteen days, so it names the headline of each area rather than the full
+ * Ultra set. Three of its lines are the same strings ULTRA_EXTRAS uses, quoted
+ * exactly rather than reworded, because the Account page used to carry its own
+ * spelling of them and that is precisely how it drifted: a retired builder
+ * name the vocabulary guard bars, a count of eleven universe styles against a
+ * pricing page saying twenty, and an invitations line still naming a channel
+ * removed in batch 1 item 12b.
+ */
+export const TRIAL_FEATURES = [
+  "14-day full access to every feature",
+  "Unlimited guests, budget, seating & vendors",
+  "Guest suite builder",
+  "Digital invitations by email",
+  "Online RSVP pages for guests",
+  "Ava AI: unlimited conversations",
+  "Priority support",
+];
+
 export const PRO_FEATURES = [
   "Unlimited guests & full RSVP management",
   "Complete budget suite",

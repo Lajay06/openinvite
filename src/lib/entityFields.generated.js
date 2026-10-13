@@ -1087,6 +1087,7 @@ export const ENTITY_FIELDS = {
       "lifecycleEmails",
       "notification_prefs",
       "onboarding_completed",
+      "planSource",
       "retentionEmails",
       "tempUnit",
       "trialStartedAt"
@@ -1100,6 +1101,11 @@ export const ENTITY_FIELDS = {
       "dateFormat": [
         "dmy",
         "mdy"
+      ],
+      "planSource": [
+        "purchase",
+        "gift",
+        "comp"
       ]
     }
   },

@@ -1,7 +1,8 @@
 {
   "_comment": [
-    "2026-10-13: one guard added, not a rebalance. test:names-underline (8s measured locally against a vite preview of b/gift-pay-errors, booked at 10) to B. A 1062 / B 1101, a 39s delta on a 120s budget. MEASURED RED FIRST: on the pink underline, 4 of 8 checks go red (filled and focused, on onboarding step 1 and gift page 2).",
-    "2026-10-13: one guard added, not a rebalance. test:gift-no-truncation (42s measured locally against a vite preview of b/gift-pay-errors, booked at 45) to B. A 1062 / B 1091, a 29s delta on a 120s budget. MEASURED RED FIRST: with the caption ellipsis and the 40-character note slice put back, 6 of 27 checks go red.",
+    "2026-10-13: one guard added, not a rebalance. test:names-underline (8s measured locally against a vite preview of b/gift-pay-errors, booked at 10) to B. A 1062 / B 1126, a 64s delta on a 120s budget. MEASURED RED FIRST: on the pink underline, 4 of 8 checks go red (filled and focused, on onboarding step 1 and gift page 2).",
+    "2026-10-13: one guard added, not a rebalance. test:gift-no-truncation (42s measured locally against a vite preview of b/gift-pay-errors, booked at 45) to B. A 1062 / B 1116, a 54s delta on a 120s budget. MEASURED RED FIRST: with the caption ellipsis and the 40-character note slice put back, 6 of 27 checks go red.",
+    "2026-10-13: one guard added, not a rebalance. test:gift-claim-auth (21s measured locally against a vite preview of b/gift-claim-redirect, booked at 25 for a cold first navigation) to B, the lighter shard at 1046 against A's 1062. After: A 1062 / B 1071, a 9s delta on a 120s budget. MEASURED RED FIRST: against a build of main without the fix, the owner's exact path (log-in page, Create one, email code) lands on Choose your plan with the gift unclaimed, and three of the five paths fail.",
     "2026-10-11: one guard added, not a rebalance. test:home-app-photo (5.5s measured locally against a vite preview of this branch, booked at 8 for a cold first navigation and the real photograph loading) to B, the lighter shard. A 1062 / B 1046, a 16s delta on a 120s budget. MEASURED RED FIRST: with the scrim removed the body reads at 1.93:1 and the heading at 2.53:1 at 1440, and both checks go red.",
     "2026-10-11: one guard added, not a rebalance. test:chunk-reload (35s measured locally against a vite preview of feat/chunk-selfheal-guard, booked at 38 for a cold first navigation) to A, which was the lighter shard at 1024 against B's 1038. After: A 1062 / B 1038, a 24s delta on a 120s budget, and A becomes the heavier side by less than B was before. Its two sixteen-second waits are not padding: the wrapper's own hang guard is ten seconds, so a shorter wait would read a page still spinning as a page settled.",
     "2026-10-11: one guard added, not a rebalance. test:chip-height (28s, measured locally at two widths against a vite preview of feat/chip-height) to A, which was the lighter shard at 996 against B's 1038. After: A 1024 / B 1038, a 14s delta on a 120s budget, narrower than the 42s it replaces. The booked column is guard time and runs about 87s under wall-clock, as this file's 2026-10-10 note records.",
@@ -194,7 +195,7 @@
     "B": {
       "job": "Browser guards B",
       "port": 4224,
-      "measuredSeconds": 1101,
+      "measuredSeconds": 1126,
       "guards": [
         {
           "name": "The studio tour, as a couple meets it, at 390 and 1440",
@@ -369,6 +370,12 @@
           "note": "Batch 3 amendment A, with the owner's guard ruling: the body's top below 55% of the section height, and 4.5:1 at the four corners of the body and of the heading, read off the painted photograph under the scrim. Loads the real photograph, which test:marketing-routes blocks, so it is its own guard."
         },
         {
+          "name": "Every way in to a gift claim lands on the claim, then onboarding",
+          "seconds": 25,
+          "script": "test:gift-claim-auth",
+          "note": "Gifting v2, the owner's live run on gift-test (2026-10-13): a new account by email code landed on Choose your plan with the gift unclaimed, because the log-in page's Create one link dropped ?next=. Drives the real auth pages, the email-code step included, on five paths: new account by code (from the claim page, and from the log-in page's Create one), new account by Google, existing account logging in, already signed in, and the same link refused after a claim. The app is opened as gift-claim-test.vercel.app so the gifting flag is on in the CI build, every request to that host served from the local preview, and any other *.vercel.app host refused so nothing leaves the machine."
+        },
+        {
           "name": "Every word on /gift fits",
           "seconds": 45,
           "script": "test:gift-no-truncation",
@@ -384,7 +391,7 @@
     }
   },
   "balance": {
-    "deltaSeconds": 39,
+    "deltaSeconds": 64,
     "budgetSeconds": 120
   },
   "unassigned": []
