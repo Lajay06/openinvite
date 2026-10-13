@@ -149,6 +149,10 @@ export async function runGiftClaim() {
     const onboarding = stripComments(read('src/pages/Onboarding.jsx'));
     check('onboarding shows the landing line once, on its first step', /sessionStorage\.removeItem\(GIFT_LANDING_KEY\)/.test(onboarding) && /giftLanding && currentStepIndex === 0/.test(onboarding));
     const { CLAIM } = await import('../../src/lib/giftingV2.js');
+    const { EDIT } = await import('../../src/lib/giftingV2.js');
+    check('the retry and saved lines are the owner\'s, verbatim (2026-10-13)',
+      CLAIM.retry === 'That did not go through. Try again in a moment.' && EDIT.saved === 'Saved. They will see the change.'
+        && EDIT.savedResent === 'Saved. We sent it again to the new address with a fresh link, and the old one no longer works.');
     check('the refusal and the landing line are the goal\'s, verbatim',
       CLAIM.moreThanGift === 'You already have Ultra, which is more than this gift. Reply to this email and we will sort it out with {giver}.' && CLAIM.landing === 'A gift from {giver}. {Plan}, paid for, 24 months.');
   } finally {

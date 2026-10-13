@@ -184,8 +184,8 @@ export const CLAIM = {
   moreThanGift: 'You already have Ultra, which is more than this gift. Reply to this email and we will sort it out with {giver}.',
   // The single line at the top of onboarding after a claim. Verbatim from the goal.
   landing: 'A gift from {giver}. {Plan}, paid for, 24 months.',
-  // A claim that could not be finished (the server asked for a retry). Drafted, for the owner.
-  retry: 'That did not go through. Please try again.',
+  // A claim that could not be finished (the server asked for a retry). The owner's words (2026-10-13).
+  retry: 'That did not go through. Try again in a moment.',
 };
 
 /**
@@ -200,9 +200,9 @@ export const EDIT = {
   noteLabel: 'Your note',
   save: 'Save changes',
   claimed: 'They have opened it, so it can no longer be changed.',
-  // Item 8: after a save. Drafted, for the owner.
+  // Item 8: after a save. The owner's words (2026-10-13).
   saved: 'Saved. They will see the change.',
-  savedResent: 'Saved. We have sent it again to the new address, with a new link; the old one no longer opens it.',
+  savedResent: 'Saved. We sent it again to the new address with a fresh link, and the old one no longer works.',
   gone: 'This link no longer works. If that is a surprise, reply to your confirmation email and we will sort it out.',
 };
 
