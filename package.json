@@ -27,6 +27,7 @@
     "test:prerendered-freshness": "node scripts/test-prerendered-freshness.mjs",
     "test:us-english-spelling": "node scripts/test-us-english-spelling.mjs",
     "test:api-response-safety": "node scripts/test-api-response-safety.mjs",
+    "test:billing-states": "node scripts/test-billing-states.mjs",
     "test:calm-copy": "node scripts/test-calm-copy.mjs",
     "test:weather-states": "node scripts/test-weather-states.mjs",
     "test:attendees": "node scripts/test-attendees.mjs",
