@@ -9,8 +9,9 @@
  *   1. base44/functions/collaboratorWrite, bundled with esbuild and run in
  *      Node: the conditions (grant with edit on the page from the token's own
  *      identity, the allowlist, the owner's rows only, counts not ids, both
- *      secrets and the header), the create's own stamp check, and the
- *      admin-only probe that touches nothing but RlsExperimentThrowaway.
+ *      secrets and the header), and no create at all: the probe showed a
+ *      hosted function cannot stamp a new row as the owner (owner ruling
+ *      2026-10-13), so a collaborator changes and removes, never adds.
  *   2. api/collaborator-write.js over a stubbed Base44: fails closed when not
  *      configured, refuses without edit, forwards the collaborator's token.
  *   3. collaboratorWrite in collaboratorContext.jsx, executed.
@@ -18,8 +19,8 @@
  *      page is read only unless the server said canEdit.
  *
  * The plants, proven by hand and recorded in the PR body: the function
- * accepting view as edit; a create that keeps a row stamped as someone else;
- * ScheduleHub read only regardless of canEdit.
+ * accepting view as edit; the function accepting a create again; ScheduleHub
+ * read only regardless of canEdit.
  */
 
 import crypto from 'crypto';
@@ -62,10 +63,9 @@ export async function runCollaboratorScheduleWrite() {
     ok('the write function bundles and loads', false, err.message.split('\n')[0]);
     return results;
   }
-  const { handle, EDIT_PAGES, NOT_CONFIGURED, PROBE_ENTITY } = fn;
+  const { handle, EDIT_PAGES, NOT_CONFIGURED, ACTIONS } = fn;
 
   // ── the fake Base44 ──────────────────────────────────────────────────────
-  let stampMode = 'honor';
   let currentMe = null;
   let seq = 0;
   const store = {};
@@ -77,8 +77,7 @@ export async function runCollaboratorScheduleWrite() {
       filter: async (q) => { touched.add(`${name}:read`); return name === 'CollaboratorGrant' ? grants : store[name].filter(r => Object.entries(q || {}).every(([k, v]) => r[k] === v)); },
       create: async (data) => {
         touched.add(`${name}:create`);
-        const stamped = stampMode === 'honor' ? data.created_by_id : stampMode === 'caller' ? currentMe?.id : 'anonymous';
-        const row = { ...data, id: `${name}-${++seq}`, created_by_id: stamped, created_date: new Date().toISOString() };
+        const row = { ...data, id: `${name}-${++seq}`, created_date: new Date().toISOString() };
         store[name].push(row);
         return row;
       },
@@ -97,7 +96,7 @@ export async function runCollaboratorScheduleWrite() {
     const req = new Request('https://fn.example/collaboratorWrite', {
       method: 'POST', headers: { 'Content-Type': 'application/json', ...(header ? { 'X-Collab-Fn-Secret': header } : {}) }, body: JSON.stringify(body),
     });
-    const res = await handle(req, { client: client(me), getSecret: sec, log: (l) => logs.push(l), randomId: () => 'r1' });
+    const res = await handle(req, { client: client(me), getSecret: sec, log: (l) => logs.push(l) });
     let json = null; try { json = await res.json(); } catch { /* none */ }
     return { status: res.status, json };
   };
@@ -106,61 +105,44 @@ export async function runCollaboratorScheduleWrite() {
   });
   const base = { ownerUserId: 'owner-1', page: 'Schedule' };
 
-  // ── 1a. the probe ────────────────────────────────────────────────────────
-  console.log('\n  The probe: admin only, the throwaway entity only, its row deleted:\n');
-  ok('a non-admin gets 403 and nothing is written', (await call({ action: 'probe' })).status === 403 && touched.size === 0, `${touched.size} touch(es)`);
-  for (const [mode, key] of [['honor', 'honored_requested_owner'], ['caller', 'stamped_as_caller'], ['anonymous', 'stamped_anonymous']]) {
-    stampMode = mode; touched.clear();
-    const p = await call({ action: 'probe' }, { me: { id: 'admin-1', role: 'admin' }, header: null });
-    ok(`the admin, with no header, learns "${key}" when Base44 ${mode === 'honor' ? 'honors the asked-for owner' : `stamps ${mode}`}`,
-       p.status === 200 && p.json?.[key] === true && p.json?.row_deleted === true, JSON.stringify(p.json));
-    ok('  touching only RlsExperimentThrowaway, and its row is gone',
-       [...touched].every(t => t.startsWith(`${PROBE_ENTITY}:`)) && (store[PROBE_ENTITY] || []).length === 0, [...touched].join(','));
-  }
-  ok('  and the probe answers booleans, never an id', !/admin-1|probe-not-a-user|RlsExperimentThrowaway-/.test(logs.join('\n')), 'booleans');
-  stampMode = 'honor'; touched.clear(); logs.length = 0;
-
   // ── 1b. the conditions ───────────────────────────────────────────────────
   console.log('\n  Every write is checked, from the token\'s own identity:\n');
-  const noFn = await call({ ...base, action: 'create', data: { event_name: 'x' } }, { sec: secrets({ COLLAB_FN_SECRET: undefined }) });
+  store.Schedule = [{ id: 'own-row', created_by_id: 'owner-1', event_name: 'Ceremony', start_time: '15:00' }];
+  const upd = { ...base, action: 'update', id: 'own-row', data: { start_time: '16:00' } };
+  const noFn = await call(upd, { sec: secrets({ COLLAB_FN_SECRET: undefined }) });
   ok('no COLLAB_FN_SECRET: 503, "not configured" logged, nothing touched', noFn.status === 503 && logs.includes(NOT_CONFIGURED) && touched.size === 0, `status ${noFn.status}`);
-  ok('no header, as a browser would call it: 401', (await call({ ...base, action: 'create', data: { event_name: 'x' } }, { header: null })).status === 401, 'header required');
-  ok('a page not on the edit list: 400', (await call({ ownerUserId: 'owner-1', page: 'Budget', action: 'create', data: { item_name: 'x' } })).status === 400, 'Budget stays view only');
-  ok('an action that is not create, update or delete: 400', (await call({ ...base, action: 'list' })).status === 400, 'three actions');
-  ok('no grant: 403', (await call({ ...base, action: 'create', data: { event_name: 'x' } })).status === 403, 'no grant');
+  ok('no header, as a browser would call it: 401', (await call(upd, { header: null })).status === 401, 'header required');
+  ok('a page not on the edit list: 400', (await call({ ownerUserId: 'owner-1', page: 'Budget', action: 'update', id: 'own-row', data: { item_name: 'x' } })).status === 400, 'Budget stays view only');
+  ok('an action that is not update or delete: 400', (await call({ ...base, action: 'list', id: 'own-row' })).status === 400, 'two actions');
+  ok('no grant: 403', (await call(upd)).status === 403, 'no grant');
   grant({ Schedule: { view: true } }, '2026-10-01T00:00:00Z');
-  ok('a grant with view only: 403', (await call({ ...base, action: 'create', data: { event_name: 'x' } })).status === 403, 'edit required');
+  ok('a grant with view only: 403', (await call(upd)).status === 403, 'edit required');
   grant({ Schedule: { view: true, edit: true } }, '2026-10-02T00:00:00Z');
   grant(undefined, '2026-10-03T00:00:00Z', 'revoke');
-  ok('a later revoke: 403', (await call({ ...base, action: 'create', data: { event_name: 'x' } })).status === 403, 'latest wins');
+  ok('a later revoke: 403', (await call(upd)).status === 403, 'latest wins');
   grant({ Schedule: { view: true, edit: true } }, '2026-10-04T00:00:00Z');
-  ok('the owner calling as a collaborator: 403', (await call({ ...base, action: 'create', data: { event_name: 'x' } }, { me: { id: 'owner-1' } })).status === 403, 'not this path');
-  ok('a stranger naming the owner: 403', (await call({ ...base, action: 'create', data: { event_name: 'x' } }, { me: { id: 'collab-9' } })).status === 403, 'identity is the token\'s');
+  ok('the owner calling as a collaborator: 403', (await call(upd, { me: { id: 'owner-1' } })).status === 403, 'not this path');
+  ok('a stranger naming the owner: 403', (await call(upd, { me: { id: 'collab-9' } })).status === 403, 'identity is the token\'s');
 
-  console.log('\n  A create is stamped as the owner, or it does not stay:\n');
+  console.log('\n  No create, ever, whoever asks (owner ruling 2026-10-13):\n');
+  ok('the actions are update and delete, nothing else', JSON.stringify(ACTIONS) === '["update","delete"]', ACTIONS.join(','));
   touched.clear();
-  const made = await call({ ...base, action: 'create', data: { event_name: 'Ceremony', start_time: '15:00', created_by_id: 'collab-1', secret_extra: 'x' } });
-  const row = (store.Schedule || [])[0];
-  ok('with edit granted: 200, one row, stamped as the owner', made.status === 200 && store.Schedule.length === 1 && row?.created_by_id === 'owner-1', JSON.stringify(row));
-  ok('  carrying only allowlisted fields: no created_by_id from the body, nothing undeclared',
-     row && !('secret_extra' in row) && Object.keys(row).every(k => [...EDIT_PAGES.Schedule.fields, 'id', 'created_by_id', 'created_date'].includes(k)), Object.keys(row || {}).join(','));
-  ok('  and only Schedule and the grant read were touched', [...touched].every(t => /^(Schedule|CollaboratorGrant):/.test(t)), [...touched].join(','));
-  for (const mode of ['caller', 'anonymous']) {
-    stampMode = mode;
-    const before = store.Schedule.length;
-    const r = await call({ ...base, action: 'create', data: { event_name: 'Mis-stamped' } });
-    ok(`Base44 stamping ${mode}: 409, and the row is deleted at once`, r.status === 409 && store.Schedule.length === before && !store.Schedule.some(x => x.event_name === 'Mis-stamped'), `status ${r.status}, ${store.Schedule.length} row(s)`);
-  }
-  stampMode = 'honor';
+  const made = await call({ ...base, action: 'create', data: { event_name: 'New' } });
+  ok('a create with edit granted: 403, and nothing is read or written', made.status === 403 && touched.size === 0 && store.Schedule.length === 1, `status ${made.status}, ${touched.size} touch(es)`);
+  const noHeaderCreate = await call({ ...base, action: 'create', data: { event_name: 'New' } }, { header: null, me: { id: 'admin-1', role: 'admin' } });
+  ok('  nor for an admin without the header: the probe is gone', noHeaderCreate.status === 403 && (await call({ action: 'probe' }, { header: null, me: { id: 'admin-1', role: 'admin' } })).status !== 200, 'no exception left');
+  const row = store.Schedule[0];
 
   console.log('\n  Updates and deletes reach the owner\'s rows only:\n');
   store.Schedule.push({ id: 'other-row', created_by_id: 'owner-2', event_name: 'Not theirs' });
   ok('an update to another owner\'s row: 404, unchanged',
      (await call({ ...base, action: 'update', id: 'other-row', data: { event_name: 'x' } })).status === 404 && store.Schedule.find(r => r.id === 'other-row').event_name === 'Not theirs', 'refused');
   ok('  a delete of it: 404, still there', (await call({ ...base, action: 'delete', id: 'other-row' })).status === 404 && store.Schedule.some(r => r.id === 'other-row'), 'refused');
-  const up = await call({ ...base, action: 'update', id: row.id, data: { start_time: '16:00', created_by_id: 'collab-1' } });
+  touched.clear();
+  const up = await call({ ...base, action: 'update', id: row.id, data: { start_time: '17:00', created_by_id: 'collab-1', secret_extra: 'x' } });
   ok('an update to the owner\'s row: 200, allowlisted fields only, the stamp kept',
-     up.status === 200 && row.start_time === '16:00' && row.created_by_id === 'owner-1', JSON.stringify(row));
+     up.status === 200 && row.start_time === '17:00' && row.created_by_id === 'owner-1' && !('secret_extra' in row), JSON.stringify(row));
+  ok('  touching only Schedule and the grant read', [...touched].every(t => /^(Schedule|CollaboratorGrant):/.test(t)), [...touched].join(','));
   ok('  a delete of it: 200, gone', (await call({ ...base, action: 'delete', id: row.id })).status === 200 && !store.Schedule.some(r => r.id === row.id), 'deleted');
   ok('the log has outcomes and no owner id, collaborator id, row id or hash',
      !/owner-1|owner-2|collab-1|Schedule-\d|other-row|[0-9a-f]{64}/.test(logs.join('\n')), `${logs.length} line(s)`);
@@ -218,6 +200,9 @@ export async function runCollaboratorScheduleWrite() {
     ok('a page not on the edit list: 400, no call', (await post({ ...body, page: 'Budget' }))._status === 400 && !calls.some(c => c.path.endsWith('/functions/collaboratorWrite')), 'Budget');
     epGrants[0].permissions = { Schedule: { view: true, edit: true } };
     calls.length = 0;
+    ok('a create, even with edit: 400, and the function is never called',
+       (await post({ ownerUserId: 'owner-1', page: 'Schedule', action: 'create', data: { event_name: 'x' } }))._status === 400 && !calls.some(c => c.path.endsWith('/functions/collaboratorWrite')), 'no create');
+    calls.length = 0;
     const okRes = await post(body);
     const fnCall = calls.find(c => c.path.endsWith('/functions/collaboratorWrite'));
     ok('with edit: 200, one function call with the collaborator\'s token and the secret header',
@@ -252,9 +237,14 @@ export async function runCollaboratorScheduleWrite() {
   console.log('\n  ScheduleHub:\n');
   const hub = stripComments(fs.readFileSync(path.join(ROOT, 'src/pages/ScheduleHub.jsx'), 'utf8'), { trailing: true });
   ok('read only unless the server said canEdit', /const readOnly = isCollaborating && !collabCanEdit;/.test(hub) && /setCollabCanEdit\(canEdit === true\);/.test(hub), 'canEdit');
-  ok('  in a collaborator session Schedule is the collaborator write path, otherwise the entity',
-     /const Schedule = isCollaborating\s*\?\s*\{[\s\S]*?collaboratorWrite\(\{ ownerUserId: collab\.ownerUserId, page: 'Schedule', action: 'create', data \}\)[\s\S]*?\}\s*:\s*ScheduleEntity;/.test(hub)
-     && /^const ScheduleEntity = base44\.entities\.Schedule;$/m.test(hub), 'one switch');
+  const writer = (hub.match(/const Schedule = isCollaborating\s*\?\s*\{([\s\S]*?)\}\s*:\s*ScheduleEntity;/) || [])[1] || '';
+  ok('  in a collaborator session Schedule is the collaborator write path, update and delete only',
+     /update: \(id, data\) => collaboratorWrite\(/.test(writer) && /delete: \(id\) => collaboratorWrite\(/.test(writer) && !/create/.test(writer)
+     && /^const ScheduleEntity = base44\.entities\.Schedule;$/m.test(hub), 'no create');
+  ok('  Add event is not offered in a collaborator session', /\{!readOnly && !isCollaborating && \(\s*<button onClick=\{handleAddEvent\}/.test(hub), 'hidden');
+  ok('  nor Add a moment: RunSheet gets no onAdd, and shows its button only with one',
+     /onAdd=\{isCollaborating \? undefined : \(ev\) => \{/.test(hub)
+     && /actions=\{!readOnly && active && onAdd \? \(/.test(stripComments(fs.readFileSync(path.join(ROOT, 'src/components/schedule/RunSheet.jsx'), 'utf8'), { trailing: true })), 'hidden');
   ok('  and every write site goes through that Schedule, none straight to the entity',
      !/ScheduleEntity\.(create|update|delete)\(/.test(hub) && (hub.match(/\bSchedule\.(create|update|delete)\(/g) || []).length === 5, `${(hub.match(/\bSchedule\.(create|update|delete)\(/g) || []).length} site(s)`);
 

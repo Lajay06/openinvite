@@ -104,7 +104,7 @@ export default function RunSheet({ scheduleItems = [], category, onPickEvent, on
         ] : []}
         activeFilter={picked}
         onFilter={onPickEvent}
-        actions={!readOnly && active ? (
+        actions={!readOnly && active && onAdd ? (
           <button className="btn-primary" onClick={() => onAdd(active)}>+ Add a moment</button>
         ) : null}
       />
