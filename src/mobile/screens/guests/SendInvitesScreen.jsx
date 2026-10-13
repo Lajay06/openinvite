@@ -14,6 +14,7 @@ import { siteOrigin } from '../../lib/links';
 import { invitationsFor } from '@/lib/household';
 import { newSendEntry } from '@/lib/sendHistory';
 import { sentGuestIds, guestsActuallySent } from '@/lib/sentRecipients';
+import { publishState, PUBLISH_STATE, PUBLISH_SENTENCE } from '@/lib/publishState';
 import { isBounced, bouncedSkippedSentence, BOUNCE_ROW_LABEL } from '@/components/guests/emailBounce';
 import { InvitationPreviewSheet } from '../plan/InvitationPreview';
 
@@ -125,17 +126,17 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
   const nEmails = invitationsWithEmail.length;
   const plural = (n) => (n === 1 ? '' : 's');
   const emailsCovering = `${nEmails} email${plural(nEmails)} covering ${sendableGuests.length} guest${plural(sendableGuests.length)}`;
-  // THE PUBLISH RULE, the one SendInvitesModal.handleSend and api/send-invites.js
-  // both hold: an address, and the site switched on. Every link in these
-  // emails opens the couple's Guest Suite, and an unpublished one answers each
-  // guest with "this invitation does not work", so the send is refused, not
-  // warned. The two conditions are written inline on the web too; there is no
-  // shared module to import. The words are the shell's, because the web's say
-  // "website" (mobile parity 7).
-  const unpublished = !wedding?.slug
-    ? 'Your Guest Suite does not have an address yet, so these links would not work. Choose one in the studio on desktop, then send.'
-    : wedding?.websiteEnabled !== true
-      ? 'Your Guest Suite is not live yet, so these links would not work. Make it live on the Guest Suite tab, then send.'
+  // THE PUBLISH RULE, from src/lib/publishState.js (lane A's #1029): live is an
+  // address AND the switch on, the rule SendInvitesModal.handleSend and
+  // api/send-invites.js also hold. Every link in these emails opens the
+  // couple's Guest Suite, and one that is not live answers each guest with
+  // "this invitation does not work", so the send is refused, not warned. The
+  // state is named in the module's own sentence.
+  const pubState = publishState(wedding);
+  const unpublished = pubState === PUBLISH_STATE.NO_ADDRESS
+    ? `${PUBLISH_SENTENCE[pubState]}, so these links would not work. Choose an address in the studio on desktop, then send.`
+    : pubState === PUBLISH_STATE.HIDDEN
+      ? `${PUBLISH_SENTENCE[pubState]}, so these links would not work. Make it live on the Guest Suite tab, then send.`
       : '';
   // Groups: every category in use and every tag in use, each choosing its guests at once.
   const groups = useMemo(() => {

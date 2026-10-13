@@ -28,11 +28,19 @@
  *
  * ── THE SERVER DOES NOT USE THIS, DELIBERATELY ────────────────────────────
  *
- * api/guest-page.js, wedding-by-slug.js, wedding-poll-results.js and
- * send-invites.js all test `websiteEnabled !== true` on its own, and they are
- * right to: each found the row BY its slug, so a slug check there would be
- * asking whether the thing it just looked up by exists. Owner ruling the same
- * day: server callers stay as they are.
+ * api/guest-page.js, wedding-by-slug.js and wedding-poll-results.js test
+ * `websiteEnabled !== true` on its own, and they are right to: each found the
+ * row BY its slug, so a slug check there would be asking whether the thing it
+ * just looked up by exists. Owner ruling 2026-10-12: those stay as they are.
+ *
+ * CORRECTION 2026-10-13. This paragraph also named api/send-invites.js, which
+ * was wrong: that endpoint is scoped to `created_by_id`, not found by slug, so
+ * nothing there has already established that an address exists. It refused an
+ * unpublished wedding and let a wedding with NO address through, while
+ * SendInvitesModal refused both. A client and a server disagreeing about who
+ * may be sent to is the shape this module exists to remove, and the claim that
+ * they agreed was mine. The endpoint is a send file, so it moves under its own
+ * held PR.
  */
 
 /** The three states, which are all the states there are. */

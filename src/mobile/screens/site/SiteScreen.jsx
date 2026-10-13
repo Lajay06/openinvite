@@ -4,6 +4,7 @@ import Screen from '../../shell/Screen';
 import { Row, RowGroup, PillButton, StatusPill, Skeleton, ErrorState, Switch } from '../../ui';
 import { SitePreviewFrame, SitePreviewSheet } from './SitePreview';
 import { prefGet, prefSet } from '../../native';
+import { PUBLISH_STATE, PUBLISH_LABEL, PUBLISH_SENTENCE } from '@/lib/publishState';
 
 /** The desktop-only note at the top (goal 8): closed once, hidden for good on this device. */
 const NOTE_PREF = 'suite_desktop_note_closed';
@@ -20,7 +21,9 @@ const NOTE_PREF = 'suite_desktop_note_closed';
  * prints the address nor hands it to a share sheet or the clipboard.
  * View Guest Suite opens it for the couple themselves.
  */
-export default function SiteScreen({ details, universeName, isLive, siteUrl, coupleName, onView, onOpen, onOpenDesktop, onTogglePublish, passwordOn = false, onPassword, loading, error, onRetry }) {
+export default function SiteScreen({ details, universeName, state = PUBLISH_STATE.NO_ADDRESS, siteUrl, coupleName, onView, onOpen, onOpenDesktop, onTogglePublish, passwordOn = false, onPassword, loading, error, onRetry }) {
+  // src/lib/publishState.js: live is an address AND the switch on; no address never reads as hidden.
+  const isLive = state === PUBLISH_STATE.LIVE;
   const [noteClosed, setNoteClosed] = useState(true);
   const [previewOpen, setPreviewOpen] = useState(false);
   useEffect(() => { let live = true; prefGet(NOTE_PREF).then((v) => { if (live) setNoteClosed(v === '1'); }).catch(() => { if (live) setNoteClosed(false); }); return () => { live = false; }; }, []);
@@ -40,7 +43,7 @@ export default function SiteScreen({ details, universeName, isLive, siteUrl, cou
             {/* The desktop renderer, scaled into the tile (SitePreview.jsx); tap for the full preview. */}
             <div style={{ position: 'relative', padding: '12px 12px 0' }}>
               <SitePreviewFrame details={details} width={342} onOpen={() => setPreviewOpen(true)} />
-              <div style={{ position: 'absolute', top: 24, right: 24 }}><StatusPill tone={isLive ? 'ok' : 'light'}>{isLive ? 'Live' : 'Draft'}</StatusPill></div>
+              <div style={{ position: 'absolute', top: 24, right: 24 }} data-publish-state={state}><StatusPill tone={isLive ? 'ok' : 'light'}>{PUBLISH_LABEL[state]}</StatusPill></div>
             </div>
             <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div>
@@ -49,8 +52,8 @@ export default function SiteScreen({ details, universeName, isLive, siteUrl, cou
               </div>
               {!siteUrl && <p className="oi-m-meta">Your Guest Suite does not have an address yet. Choose one in the studio on desktop.</p>}
               <div className="oi-m-row" style={{ padding: 0, minHeight: 44, background: 'transparent' }}>
-                <div className="oi-m-row__body"><div className="oi-m-row__label">{isLive ? 'Guest Suite is live' : 'Guest Suite is hidden'}</div><div className="oi-m-row__sub">{isLive ? 'Guests receive it by email when you send invites' : siteUrl ? 'Only you can see it until you go live' : 'Choose an address first'}</div></div>
-                <Switch on={isLive} onChange={onTogglePublish} label="Guest Suite is live" />
+                <div className="oi-m-row__body"><div className="oi-m-row__label" data-publish-sentence={state}>{PUBLISH_SENTENCE[state]}</div><div className="oi-m-row__sub">{isLive ? 'Guests receive it by email when you send invites' : siteUrl ? 'Only you can see it until you go live' : 'Choose an address first'}</div></div>
+                <Switch on={isLive} onChange={onTogglePublish} label={PUBLISH_SENTENCE[PUBLISH_STATE.LIVE]} />
               </div>
               <PillButton variant="primary" icon={ExternalLink} onClick={onView} disabled={!siteUrl} block>View Guest Suite</PillButton>
             </div>
