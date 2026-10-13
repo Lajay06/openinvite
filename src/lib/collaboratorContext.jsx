@@ -59,9 +59,23 @@ export function withCollab(url, ownerUserId) {
   return `${path}?${params.toString()}${hash}`;
 }
 
-/** The same check the server makes (collaboratorPageMap.js): every page view only until a write PR. */
+/** The same check the server makes (collaboratorPageMap.js): view on every page, edit only on COLLABORATOR_EDIT_PAGES. */
 export function hasPagePermission(permissions, page, level) {
   return collaboratorCan(permissions, page, level);
+}
+
+/**
+ * The one write a collaborator makes: api/collaborator-write.js, which checks
+ * the grant and hands the write to the hosted function. Resolves on success,
+ * throws on anything else, so the page's own "did not save" handling runs.
+ */
+export async function collaboratorWrite({ ownerUserId, page, action, id, data }) {
+  const res = await fetch('/api/collaborator-write', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
+    body: JSON.stringify({ ownerUserId, page, action, ...(id ? { id } : {}), ...(data ? { data } : {}) }),
+  });
+  if (!res.ok) throw new Error('collaborator write failed');
 }
 
 const EMPTY = { permissions: {}, coupleNames: '', collaboratorEmail: '' };

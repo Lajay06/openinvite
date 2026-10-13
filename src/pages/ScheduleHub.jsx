@@ -13,7 +13,7 @@ import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import { base44 } from "@/api/base44Client";
 import { getMyRecords } from "@/lib/resolveMyWedding";
-import { useCollaboratorContext, withCollab } from "@/lib/collaboratorContext";
+import { useCollaboratorContext, withCollab, collaboratorWrite } from "@/lib/collaboratorContext";
 import { buildIcsCalendar, downloadIcs } from "@/lib/ics";
 import toast from "react-hot-toast";
 import CountUp from "@/components/shared/CountUp";
@@ -28,7 +28,7 @@ import PageConsiderations from '../components/shared/PageConsiderations';
 import { getMyInvitation, getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { syncCalendarFeed } from '@/lib/calendarFeedSync';
 import TableToolbar from '@/components/shared/TableToolbar';
-const Schedule = base44.entities.Schedule;
+const ScheduleEntity = base44.entities.Schedule;
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const statLabelStyle = {
@@ -109,11 +109,22 @@ export default function ScheduleHub() {
 
   const collab = useCollaboratorContext();
   const isCollaborating = !!collab.ownerUserId;
-  // Read-only regardless of the 'edit' permission bit — Schedule's
-  // update/delete RLS is owner-scoped like every other entity here, so the
-  // admin key 403s on a write regardless of what was granted (same
-  // reasoning as Guests/Budget; see BASE44_PLATFORM_NOTES.md).
-  const readOnly = isCollaborating;
+  // A collaborator changes Schedule only with edit granted (owner ruling
+  // 2026-10-13), and the server's own answer, canEdit from collaborator-data.js,
+  // decides it, not the permissions this page was handed. The writes go
+  // through api/collaborator-write.js and the hosted function: Schedule's
+  // update and delete RLS is owner-scoped, so nothing else can make them.
+  const [collabCanEdit, setCollabCanEdit] = useState(false);
+  const readOnly = isCollaborating && !collabCanEdit;
+  // Named Schedule, as it always was: every write site below is unchanged,
+  // and in a collaborator session it is the collaborator write path.
+  const Schedule = isCollaborating
+    ? {
+        create: (data) => collaboratorWrite({ ownerUserId: collab.ownerUserId, page: 'Schedule', action: 'create', data }),
+        update: (id, data) => collaboratorWrite({ ownerUserId: collab.ownerUserId, page: 'Schedule', action: 'update', id, data }),
+        delete: (id) => collaboratorWrite({ ownerUserId: collab.ownerUserId, page: 'Schedule', action: 'delete', id }),
+      }
+    : ScheduleEntity;
 
   // Arriving from Recent activity with an event to land on: show the list,
   // which is now where events are read.
@@ -142,8 +153,9 @@ export default function ScheduleHub() {
           headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
         });
         if (!res.ok) throw new Error('Failed to load schedule');
-        const { data } = await res.json();
+        const { data, canEdit } = await res.json();
         setScheduleItems(sortScheduleItems(data.Schedule));
+        setCollabCanEdit(canEdit === true);
       } else {
         const [data, vendorRows, inv] = await Promise.all([
           getMyRecords('Schedule', "start_time"),

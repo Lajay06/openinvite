@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
-import { COLLABORATOR_PERMISSION_KEYS, COLLABORATOR_PAGE_MAP, collaboratorCan } from '@/lib/collaboratorPageMap';
+import { COLLABORATOR_PERMISSION_KEYS, COLLABORATOR_PAGE_MAP, COLLABORATOR_EDIT_PAGES, COLLABORATOR_CAN_CHANGE_SUFFIX, collaboratorCan } from '@/lib/collaboratorPageMap';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -59,7 +59,12 @@ const pages = COLLABORATOR_PERMISSION_KEYS;
 
 // Item 5 (owner ruling 2026-10-12): every page is view only. One toggle per
 // page, no edit control, and a saved grant carries view and nothing else.
-const viewOnly = (perms) => Object.fromEntries(pages.map(page => [page, { view: collaboratorCan(perms, page, 'view') }]));
+// A page on COLLABORATOR_EDIT_PAGES (Schedule, owner ruling 2026-10-13) also
+// offers "Can make changes"; the two are a choice, never both.
+const viewOnly = (perms) => Object.fromEntries(pages.map(page => [page, {
+  view: collaboratorCan(perms, page, 'view'),
+  ...(COLLABORATOR_EDIT_PAGES.includes(page) ? { edit: collaboratorCan(perms, page, 'edit') } : {}),
+}]));
 const initialPermissions = viewOnly({});
 
 export default function CollaborateModal({ onClose }) {
@@ -99,8 +104,14 @@ export default function CollaborateModal({ onClose }) {
     return data;
   };
 
-  const handlePermissionChange = (page) => {
-    setPermissions(prev => ({ ...prev, [page]: { view: !prev[page]?.view } }));
+  const handlePermissionChange = (page, choice = 'view') => {
+    setPermissions(prev => {
+      const cur = prev[page] || {};
+      if (choice === 'edit') return { ...prev, [page]: { view: true, edit: !cur.edit } };
+      // "View only" is on only while edit is off: picking it turns edit off.
+      const viewOnlyNow = !!cur.view && !cur.edit;
+      return { ...prev, [page]: { view: !viewOnlyNow, ...(COLLABORATOR_EDIT_PAGES.includes(page) ? { edit: false } : {}) } };
+    });
   };
   
   const resetForm = () => {
@@ -236,13 +247,25 @@ export default function CollaborateModal({ onClose }) {
                 {pages.map((page) => (
                   <div key={page} className="flex items-center justify-between p-2 rounded-md bg-gray-50">
                     <span className="text-sm font-medium">{COLLABORATOR_PAGE_MAP[page].navLabel}</span>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id={`${page}-view`}
-                        checked={!!permissions[page]?.view}
-                        onCheckedChange={() => handlePermissionChange(page)}
-                      />
-                      <label htmlFor={`${page}-view`} className="text-sm">View only</label>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id={`${page}-view`}
+                          checked={!!permissions[page]?.view && !permissions[page]?.edit}
+                          onCheckedChange={() => handlePermissionChange(page, 'view')}
+                        />
+                        <label htmlFor={`${page}-view`} className="text-sm">View only</label>
+                      </div>
+                      {COLLABORATOR_EDIT_PAGES.includes(page) && (
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            id={`${page}-edit`}
+                            checked={!!permissions[page]?.edit}
+                            onCheckedChange={() => handlePermissionChange(page, 'edit')}
+                          />
+                          <label htmlFor={`${page}-edit`} className="text-sm">Can make changes</label>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -306,6 +329,7 @@ export default function CollaborateModal({ onClose }) {
                         {pages.filter(page => collaboratorCan(collab.permissions, page, 'view')).map(page => (
                           <Badge key={page} variant="secondary" className="font-normal">
                             {COLLABORATOR_PAGE_MAP[page].navLabel}
+                            {collaboratorCan(collab.permissions, page, 'edit') ? COLLABORATOR_CAN_CHANGE_SUFFIX : ''}
                             <Eye className="w-3 h-3 ml-1.5" />
                           </Badge>
                         ))}

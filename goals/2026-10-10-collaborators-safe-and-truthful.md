@@ -141,7 +141,10 @@ As of 2026-10-12:
 - 5 merged as #1023: all eleven pages offered, every one view only (owner ruling 2026-10-12, replacing the two-page phase-1 set once the reads landed). canEdit is always false until a write PR adds its page to COLLABORATOR_EDIT_PAGES. The invite email gained the owner's preheader through an optional preheader on emailShell.
 - 4 merged as #1027: ChoosePlan sends an accept next straight to the invite, writing nothing. Its stop condition (a collaborator-only account signing in without the link reached choose-plan) was ruled 2026-10-13: an active grant goes straight into the collaborator view of the most recently accepted wedding, writing nothing; every grant revoked gets the plan page; Account shows "Planning a wedding of your own? Start here." only to an account with an active grant that has not done the plan step. Built held: CollaboratorGrant.owner_id_enc, the owner's id under APP_ENC_KEY (never COLLAB_HASH_KEY: one key per job), written at accept. No migration; both collaborators get fresh invites.
 - Later item, not designed now (owner ruling 2026-10-13): a picker for an account with more than one active grant. Until then the most recently accepted wedding wins.
-- Next: the Schedule write PR with the probe, the Moodboard write PR, then the branded verification email plan.
+- 4's ruling merged as #1031: a collaborator-only account signing in without the link goes to the most recently accepted wedding; owner_id_enc is live on CollaboratorGrant.
+- Schedule write built, held: base44/functions/collaboratorWrite (the write twin of collaboratorRead, on the same conditions; a create checks its own stamp and deletes any row not stamped as the owner) and api/collaborator-write.js (new lane C file by ruling, generic for Moodboard). The admin-only probe on RlsExperimentThrowaway ships in it and is removed by a follow-up PR once the owner reports the result (owner ruling 2026-10-13). The picker, email and Help copy for Schedule's edit option go to the owner before merge.
+- Later item, not designed now (owner ruling 2026-10-13): recording which collaborator changed a row. No schema change until then; the owner sees the change, not who made it.
+- Next: the probe result and its removal PR, the Moodboard write PR, then the branded verification email plan.
 
 ## Findings
 

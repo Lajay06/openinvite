@@ -1,7 +1,9 @@
 /**
  * tests/persistence/collaborator-truthful-permissions.mjs
  *
- * EVERY COLLABORATOR PAGE IS VIEW ONLY, AND EVERYTHING SAYS SO.
+ * EVERY COLLABORATOR PAGE IS VIEW ONLY, EXCEPT SCHEDULE WHEN THE OWNER ALLOWS
+ * IT, AND EVERYTHING SAYS SO. (Schedule joined COLLABORATOR_EDIT_PAGES with
+ * its write PR, owner ruling 2026-10-13.)
  *
  * Item 5 of goals/2026-10-10-collaborators-safe-and-truthful.md, owner ruling
  * 2026-10-12: all eleven pages are offered, each view only. One "View only"
@@ -35,12 +37,13 @@ export async function runCollaboratorTruthfulPermissions() {
   const { renderCollaboratorInviteEmail } = await import('../../src/lib/collaboratorEmailTemplate.js');
   const keys = map.COLLABORATOR_PERMISSION_KEYS;
 
-  console.log('\n  Every page is view only, on the server:\n');
+  console.log('\n  Every page is view only, except Schedule when edit is granted, on the server:\n');
   ok('the map offers all eleven pages', keys.length === 11, keys.join(', '));
-  ok('  and no page is editable yet', map.COLLABORATOR_EDIT_PAGES.length === 0, 'Schedule and Moodboard wait for their write PRs');
+  ok('  and Schedule is the one editable page', JSON.stringify(map.COLLABORATOR_EDIT_PAGES) === '["Schedule"]', 'Moodboard waits for its write PR');
   const all = Object.fromEntries(keys.map(k => [k, { view: true, edit: true }]));
-  ok('a grant naming edit on every page: edit is false on every page',
-     keys.every(k => hasPagePermission(all, k, 'edit') === false), 'stale edit does nothing');
+  ok('a grant naming edit on every page: edit holds on Schedule and nowhere else',
+     keys.every(k => hasPagePermission(all, k, 'edit') === (k === 'Schedule')), 'a stale edit elsewhere does nothing');
+  ok('  and Schedule with view only cannot be changed', hasPagePermission({ Schedule: { view: true } }, 'Schedule', 'edit') === false, 'edit must be granted');
   ok('  while view holds on every page', keys.every(k => hasPagePermission(all, k, 'view') === true), 'view kept');
   ok('an edit-only grant still reads as view', hasPagePermission({ Budget: { edit: true } }, 'Budget', 'view') === true, 'edit implies view');
   ok('a key outside the map grants nothing, even granted', hasPagePermission({ Notes: { view: true } }, 'Notes', 'view') === false, 'Notes is retired');
@@ -55,15 +58,18 @@ export async function runCollaboratorTruthfulPermissions() {
   const data = read('api/collaborator-data.js');
   ok('collaborator-data.js derives canEdit from the same check', /canEdit: hasPagePermission\(collaboration\.permissions, page, 'edit'\)/.test(data), 'so it is false');
 
-  console.log('\n  The picker: one View only toggle per page, no edit control:\n');
+  console.log('\n  The picker: View only on every page, and Can make changes on Schedule alone:\n');
   const modal = read('src/components/layout/CollaborateModal.jsx');
   ok('it lists every key in the map', /const pages = COLLABORATOR_PERMISSION_KEYS;/.test(modal), 'all eleven');
   ok('  by its nav label', /COLLABORATOR_PAGE_MAP\[page\]\.navLabel/.test(modal), 'navLabel');
-  ok('  with exactly one checkbox per page, labeled View only',
-     (modal.match(/<Checkbox\b/g) || []).length === 1 && />View only<\/label>/.test(modal), `${(modal.match(/<Checkbox\b/g) || []).length} checkbox(es)`);
-  ok('  and no edit control or edit badge anywhere', !/handlePermissionChange\(page, 'edit'\)|PenSquare|>Edit<\/label>/.test(modal), 'none');
-  ok('a saved grant carries view only, and editing reads a stale edit as view',
-     /\[page, \{ view: collaboratorCan\(perms, page, 'view'\) \}\]/.test(modal) && /setPermissions\(viewOnly\(collaborator\.permissions\)\)/.test(modal), 'viewOnly');
+  ok('  with one View only checkbox per page, and one Can make changes only for an editable page',
+     (modal.match(/<Checkbox\b/g) || []).length === 2 && />View only<\/label>/.test(modal)
+     && /\{COLLABORATOR_EDIT_PAGES\.includes\(page\) && \(\s*<div[^>]*>\s*<Checkbox\s+id=\{`\$\{page\}-edit`\}/.test(modal) && />Can make changes<\/label>/.test(modal), `${(modal.match(/<Checkbox\b/g) || []).length} checkbox(es)`);
+  ok('  and no other edit control or edit icon', !/PenSquare|>Edit<\/label>/.test(modal), 'none');
+  ok('a saved grant carries edit only for an editable page, and editing reads a stale edit elsewhere as view',
+     /\.\.\.\(COLLABORATOR_EDIT_PAGES\.includes\(page\) \? \{ edit: collaboratorCan\(perms, page, 'edit'\) \} : \{\}\)/.test(modal) && /setPermissions\(viewOnly\(collaborator\.permissions\)\)/.test(modal), 'viewOnly');
+  ok('  and View only and Can make changes are a choice, never both',
+     /checked=\{!!permissions\[page\]\?\.view && !permissions\[page\]\?\.edit\}/.test(modal) && /if \(choice === 'edit'\) return \{ \.\.\.prev, \[page\]: \{ view: true, edit: !cur\.edit \} \};/.test(modal), 'exclusive');
 
   console.log('\n  The invite email:\n');
   const { html, preheader } = renderCollaboratorInviteEmail({
@@ -75,6 +81,13 @@ export async function runCollaboratorTruthfulPermissions() {
   ok('  followed by the ruled sentence once',
      (text.match(/You can view these pages\. You will not be able to change anything\./g) || []).length === 1, 'once');
   ok('  and says edit nowhere', !/edit/i.test(text), 'no "view & edit"');
+  const sched = renderCollaboratorInviteEmail({
+    collaboratorName: 'Ada', coupleNames: 'Alex and Sam', acceptUrl: 'https://x',
+    permissions: { Guests: { view: true }, Schedule: { view: true, edit: true } },
+  }).html.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ');
+  ok('with Schedule changeable: "Schedule (you can make changes)", and the other sentence',
+     sched.includes('Schedule (you can make changes)') && sched.includes('You can view these pages. You can make changes only where it says so.')
+     && !sched.includes('You will not be able to change anything.') && !sched.includes('Guest list (you can make changes)'), 'marked');
   ok('  and never an internal key name', !/Event Details|\bGuests\b/.test(text), 'labels, not keys');
   ok('the preheader is the owner\'s line, in the inbox list only',
      preheader === 'Alex and Sam have shared their plans with you.' && html.includes('display:none') && html.includes(preheader), preheader);
@@ -84,8 +97,8 @@ export async function runCollaboratorTruthfulPermissions() {
 
   console.log('\n  The accept page, Seating and Help:\n');
   const accept = read('src/pages/CollaboratorAccept.jsx');
-  ok('the accept page lists nav labels and the ruled sentence',
-     /collaboratorPageLabels\(invite\.permissions\)/.test(accept) && /COLLABORATOR_VIEW_ONLY_COPY/.test(accept) && !/view & edit|PenSquare/.test(accept), 'view only');
+  ok('the accept page lists nav labels and the grant\'s own closing sentence',
+     /collaboratorPageLabels\(invite\.permissions\)/.test(accept) && /collaboratorClosingCopy\(invite\.permissions\)/.test(accept) && !/view & edit|PenSquare/.test(accept), 'as the email');
   const seating = read('src/pages/Seating.jsx');
   ok('Seating reads data.weddingDetails, the key collaborator-data.js returns',
      /getWeddingEvents\(data\.weddingDetails\)/.test(seating) && !/data\.WeddingDetails/.test(seating), 'weddingDetails');
@@ -94,7 +107,9 @@ export async function runCollaboratorTruthfulPermissions() {
   const article = help.slice(at, help.indexOf('\n  ),\n', at));
   ok('the Help article promises no edit access',
      article.length > 500 && !/Full Access|view and edit|Changes made by collaborators|access level/i.test(article), `${article.length} chars`);
-  ok('  and says they cannot change anything, with the 7-day link', /They cannot change anything\./.test(article) && /works for 7 days/.test(article), 'true copy');
+  ok('  and says they cannot change anything except Schedule if allowed, with the 7-day link',
+     /They cannot change anything, except Schedule if you let them\./.test(article) && /check "Can make changes" instead/.test(article)
+     && /anything else, and Ava is not available/.test(article) && /works for 7 days/.test(article), 'true copy');
   ok('  in US English: check, trash icon, right away', /check "View only"/.test(article) && /trash icon/.test(article) && /right away/.test(article)
      && !/\btick\b|\bbin\b|straight away/.test(article), 'owner edits');
   // The article is replaced in place: every other article survives.
