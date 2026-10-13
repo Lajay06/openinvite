@@ -30,7 +30,7 @@ import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/s
 import { verifyBase44User } from './_lib/auth.js';
 import { verifyInvite, isInviteExpired, INVITE_EXPIRED_MESSAGE } from './_lib/collaboratorInviteToken.js';
 import { inviteStanding } from './_lib/collaboratorInvites.js';
-import { hashId } from './_lib/collaboratorAuth.js';
+import { hashId, encryptOwnerId } from './_lib/collaboratorAuth.js';
 import { notify } from './_lib/notify.js';
 
 const BASE44_API = 'https://base44.app/api';
@@ -86,16 +86,26 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'This invite has expired or is invalid.' });
     }
 
+    // The owner's id, encrypted, so a later sign-in without this link can find
+    // the wedding again (owner ruling 2026-10-13). A missing APP_ENC_KEY must
+    // not cost the person their access: the grant is written without it, and
+    // the log says so without ids.
+    const collaboratorHash = hashId(caller.id);
+    let ownerIdEnc = null;
+    try { ownerIdEnc = encryptOwnerId(invite.ownerUserId, collaboratorHash); } catch {
+      console.error('[collaborator-accept] owner id not stored: APP_ENC_KEY unavailable');
+    }
     const createRes = await fetch(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/CollaboratorGrant`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${callerToken}` },
       body: JSON.stringify({
         owner_user_id_hash: hashId(invite.ownerUserId),
-        collaborator_user_id_hash: hashId(caller.id),
+        collaborator_user_id_hash: collaboratorHash,
         collaborator_email_hash: hashId(invitedEmail),
         event_type: 'grant',
         permissions: invite.permissions || {},
         granted_at: new Date().toISOString(),
+        ...(ownerIdEnc ? { owner_id_enc: ownerIdEnc } : {}),
       }),
     });
     if (!createRes.ok) {

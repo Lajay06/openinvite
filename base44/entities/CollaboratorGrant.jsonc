@@ -31,6 +31,10 @@
       "type": "string",
       "format": "date-time"
     },
+    "owner_id_enc": {
+      "type": "string",
+      "description": "The owner's real Base44 User.id, AES-256-GCM under APP_ENC_KEY (never COLLAB_HASH_KEY: one key per job), written at accept. Lets a collaborator-only account that signs in without the invite link be sent to the wedding it helps with (owner ruling 2026-10-13). The hashes cannot be reversed, so without this nothing knows whose wedding a grant is for."
+    },
     "is_test": {
       "type": "boolean",
       "default": false,

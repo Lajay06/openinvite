@@ -12,11 +12,19 @@
  *
  * Response: 200 { permissions, coupleNames, collaboratorEmail }
  *        or 403 { error } if not an accepted collaborator for this owner
+ *
+ * WITHOUT ownerUserId it answers "which wedding do I help with" (owner ruling
+ * 2026-10-13), for ChoosePlan's routing of a collaborator-only account that
+ * signs in without the invite link, and for the Account page's one line:
+ * 200 { ownerUserId, permissions } for the most recently accepted wedding
+ * whose latest event is a grant (api/_lib/collaboratorAuth.js
+ * mostRecentCollaboration), or 200 { ownerUserId: null } when every grant is
+ * revoked or there are none. It reads nothing else and writes nothing.
  */
 
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
-import { getCollaborationFor } from './_lib/collaboratorAuth.js';
+import { getCollaborationFor, mostRecentCollaboration } from './_lib/collaboratorAuth.js';
 import { excludeTestRecords } from './_lib/productData.js';
 
 import { coupleDisplayName } from './_lib/coupleNames.js';
@@ -56,7 +64,13 @@ export default async function handler(req, res) {
 
   const ownerUserId = sanitizeString(req.query?.ownerUserId || '');
   if (!ownerUserId) {
-    return res.status(400).json({ error: 'ownerUserId is required' });
+    try {
+      const mine = await mostRecentCollaboration(caller.id, BASE44_ADMIN_KEY);
+      return res.status(200).json(mine ? { ownerUserId: mine.ownerUserId, permissions: mine.permissions } : { ownerUserId: null });
+    } catch (err) {
+      console.error('[collaborator-context] Error:', err.message);
+      return res.status(500).json({ error: 'Something went wrong — please try again.' });
+    }
   }
 
   try {
