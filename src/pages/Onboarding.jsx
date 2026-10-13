@@ -30,6 +30,7 @@ import OnboardingPathACultural from '@/components/onboarding/OnboardingPathACult
 import OnboardingPathAInspiration from '@/components/onboarding/OnboardingPathAInspiration';
 import OnboardingCompletion from '@/components/onboarding/OnboardingCompletion';
 import OnboardingShell from '@/components/onboarding/OnboardingShell';
+import { GIFT_LANDING_KEY } from '@/lib/giftLinks';
 import { syncWeddingAddress } from '@/lib/weddingAddress';
 import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
 
@@ -166,6 +167,17 @@ const SHELL_STEP_IMAGES = {
 export default function Onboarding() {
   const navigate = useNavigate();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  // A COUPLE WHO HAS JUST CLAIMED A GIFT (gifting v2 item 8) lands here with
+  // the goal's one line at the top of the first step: "A gift from {giver}.
+  // {Plan}, paid for, 24 months." Set by the claim page for this tab, read
+  // once, then gone.
+  const [giftLanding] = useState(() => {
+    try {
+      const line = sessionStorage.getItem(GIFT_LANDING_KEY);
+      if (line) sessionStorage.removeItem(GIFT_LANDING_KEY);
+      return line || '';
+    } catch { return ''; }
+  });
   const [user, setUser] = useState(null);
   const [hydrating, setHydrating] = useState(true);
   // Distinct from saveError (which guards the final-save step) — this
@@ -715,6 +727,9 @@ export default function Onboarding() {
 
   const stepContent = (
     <>
+      {giftLanding && currentStepIndex === 0 && (
+        <p data-gift-landing style={{ fontFamily: PJS, fontSize: 15, fontWeight: 600, color: '#0A0A0A', margin: '0 0 24px', lineHeight: 1.5 }}>{giftLanding}</p>
+      )}
       {currentStep === 'welcome' && (
         <OnboardingWelcome onNext={goNext} />
       )}

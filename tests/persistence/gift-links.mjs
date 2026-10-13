@@ -1,7 +1,7 @@
 /**
  * tests/persistence/gift-links.mjs
  *
- * WHAT THE GIFT LINKS OPEN, FLAGGED AND READ-ONLY UNTIL ITEM 8.
+ * WHAT THE GIFT LINKS OPEN, FLAGGED, LIVE SINCE ITEM 8.
  * goals/2026-10-11-gifting-v2.md, item 3: the couple's claim page at
  * /gift/claim/:token and the giver's edit page at /gift/edit/:token.
  *
@@ -29,7 +29,7 @@ const read = (p) => readFileSync(resolve(ROOT, p), 'utf8');
 export async function runGiftLinks() {
   const r = [];
   const check = (name, ok, detail) => r.push(ok ? pass(name, detail) : fail(name, 'see name', detail));
-  console.log('\n  Gifting v2 item 3, the claim and edit pages:\n');
+  console.log('\n  Gifting v2 items 3 and 8, the claim and edit pages:\n');
 
   const app = read('src/App.jsx');
   check('both routes are in both route tables',
@@ -44,12 +44,15 @@ export async function runGiftLinks() {
   const seam = stripComments(read('src/lib/giftLinks.js'));
   check('and both pages send the visitor to /gifting on null', [claim, edit].every((s) => /gift === null\) return <Navigate to="\/gifting" replace \/>/.test(s)));
 
-  check('read-only: no fetch, base44 client or /api path in the seam or the pages',
-    [claim, edit, seam].every((s) => !/\bfetch\(|base44|['"`]\/api\//.test(s)));
-  check('GIFT_LINKS_LIVE is false until item 8', GIFT_LINKS_LIVE === false);
-  check('the claim button and the save button are disabled by it',
-    /disabled=\{!GIFT_LINKS_LIVE\}/.test(claim) && /disabled=\{!GIFT_LINKS_LIVE \|\|/.test(edit));
-  check('an unknown token reads as used', /return SAMPLE_GIFTS\[token\] \|\| \{ status: 'used' \};/.test(seam));
+  // LIVE SINCE ITEM 8: the pages talk to api/gift-link.js and nothing else;
+  // the samples never reach the server.
+  check('live: the seam talks to /api/gift-link only, the pages never call the network themselves',
+    /\/api\/gift-link/.test(seam) && ![claim, edit].some((s) => /\bfetch\(|['"`]\/api\//.test(s)) && !/base44Client/.test(seam));
+  check('GIFT_LINKS_LIVE is true since item 8', GIFT_LINKS_LIVE === true);
+  check('the buttons act: Open your gift claims, Save changes saves',
+    /onClick=\{claim\}/.test(claim) && /onClick=\{save\}/.test(edit));
+  check('a sample token claims and saves nothing', /if \(isSampleToken\(token\)\) return; \/\/ a sample claims nothing/.test(read('src/pages/GiftClaim.jsx')) && /if \(isSampleToken\(token\)\) return; \/\/ a sample changes nothing/.test(read('src/pages/GiftEdit.jsx')));
+  check('a failed or unknown read reads as used', (seam.match(/return \{ status: 'used' \};/g) || []).length >= 2);
   check('the claim page shows the used page for anything not open, the edit page tells claimed from gone',
     /gift\.status !== 'open'\) return <PlainLinkPage text=\{CLAIM\.used\} \/>/.test(claim)
       && /gift\.status === 'claimed'\) return <PlainLinkPage text=\{EDIT\.claimed\} \/>/.test(edit)

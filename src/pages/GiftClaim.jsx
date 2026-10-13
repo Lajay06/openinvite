@@ -8,10 +8,13 @@
  * with nothing to enter. On a phone, where the shell hides its photo side,
  * the photo sits above the headline.
  *
- * READ-ONLY UNTIL ITEM 8 (src/lib/giftLinks.js): the button is shown and
- * disabled; sign in, the claim endpoint, the plan rules and the landing line
- * in onboarding arrive with it. A used, expired or unknown link is the goal's
- * plain page.
+ * OPEN YOUR GIFT (item 8): signed out, it goes to sign in with this page as
+ * where to come back (ChoosePlan lets a /gift/claim/ return straight
+ * through), and the page claims on return; signed in, it claims at once. The
+ * claim endpoint applies the plan rules (api/_lib/giftClaim.js); on success
+ * the couple land in onboarding with the goal's one line at the top. An
+ * account that already has more than the gift is told so and the gift stays
+ * unclaimed. A used, expired or unknown link is the goal's plain page.
  *
  * The note card is the email's card (src/lib/giftEmailTemplate.js) on the
  * page: the warm white ground, the large red quote, the note in its style (the
@@ -20,13 +23,14 @@
  * 8px radius is the email's alone.
  */
 import React, { useEffect, useState } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import OnboardingShell from '@/components/onboarding/OnboardingShell';
 import OpeninviteLogo from '@/components/public/OpeninviteLogo';
 import PlanBadge from '@/components/shared/PlanBadge';
 import { noteImageUrl } from '@/lib/giftEmailTemplate';
 import { REVEAL, CLAIM, fill, headlineText, giftPhotoUrl, photoLabel, ONBOARDING_IMAGES } from '@/lib/giftingV2';
-import { loadGiftByToken, GIFT_LINKS_LIVE } from '@/lib/giftLinks';
+import { useAuth } from '@/lib/AuthContext';
+import { loadGiftByToken, claimGiftLink, isSampleToken, GIFT_LINKS_LIVE, GIFT_LANDING_KEY } from '@/lib/giftLinks';
 import { heading, sub, primary, BIG_BADGE } from '@/pages/GiftV2';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -65,8 +69,40 @@ export function PlainLinkPage({ text }) {
 
 export default function GiftClaim() {
   const { token } = useParams();
+  const [params] = useSearchParams();
+  const navigate = useNavigate();
+  const { user, isLoadingAuth } = useAuth();
   const [gift, setGift] = useState(undefined);
-  useEffect(() => { let live = true; loadGiftByToken(token).then((g) => { if (live) setGift(g); }); return () => { live = false; }; }, [token]);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState(null);
+  useEffect(() => { let live = true; loadGiftByToken(token, 'claim').then((g) => { if (live) setGift(g); }); return () => { live = false; }; }, [token]);
+
+  const signIn = () => navigate(`/login?next=${encodeURIComponent(`/gift/claim/${token}?go=1`)}`);
+  const claim = async () => {
+    if (isSampleToken(token)) return; // a sample claims nothing
+    if (!user) { signIn(); return; }
+    setBusy(true);
+    setMessage(null);
+    const out = await claimGiftLink(token);
+    if (out.ok) {
+      try { sessionStorage.setItem(GIFT_LANDING_KEY, fill(CLAIM.landing, { giver: out.giver, plan: out.plan })); } catch { /* the line is a nicety */ }
+      // A full load, so the account is read again with its new plan.
+      window.location.assign(out.next);
+      return;
+    }
+    setBusy(false);
+    if (out.reason === 'sign_in') { signIn(); return; }
+    if (out.reason === 'used') { setGift({ status: 'used' }); return; }
+    if (out.reason === 'more_than_gift') { setMessage(fill(CLAIM.moreThanGift, { giver: out.giver || gift?.giver || '' })); return; }
+    setMessage(CLAIM.retry);
+  };
+  // Back from signing in: claim once, without a second tap.
+  const [autoTried, setAutoTried] = useState(false);
+  useEffect(() => {
+    if (autoTried || isLoadingAuth || !user || params.get('go') !== '1' || gift?.status !== 'open') return;
+    setAutoTried(true);
+    claim();
+  }, [autoTried, isLoadingAuth, user, params, gift]);
 
   if (gift === null) return <Navigate to="/gifting" replace />;
   if (gift === undefined) return null;
@@ -85,8 +121,9 @@ export default function GiftClaim() {
         <h1 style={heading}>{headlineText(gift.headlineKey, gift.names)}</h1>
         <p style={sub}>{withBadges(fill(REVEAL.body[gift.plan] || REVEAL.body.ultra, vars))}</p>
         <NoteCard note={gift.note} noteStyle={gift.noteStyle} giver={gift.giver} />
-        <button type="button" className={primary} disabled={!GIFT_LINKS_LIVE} data-gift-claim-button>{CLAIM.button}</button>
+        <button type="button" className={primary} disabled={!GIFT_LINKS_LIVE || busy} onClick={claim} data-gift-claim-button>{CLAIM.button}</button>
         <p style={{ ...sub, fontSize: 14, margin: '16px 0 0' }}>{CLAIM.under}</p>
+        {message && <p role="alert" data-gift-claim-message style={{ ...sub, color: '#0A0A0A', fontSize: 15, margin: '16px 0 0' }}>{message}</p>}
       </div>
     </OnboardingShell>
   );
