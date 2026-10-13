@@ -31,6 +31,7 @@ import { signInvite } from './_lib/collaboratorInviteToken.js';
 import { recordInviteSend } from './_lib/collaboratorInvites.js';
 
 import { coupleDisplayName } from './_lib/coupleNames.js';
+import { TOO_MANY_TRIES, DID_NOT_GO_THROUGH } from './_lib/calmErrors.js';
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = 'Openinvite <hello@openinvite.com.au>';
 const BASE44_API = 'https://base44.app/api';
@@ -54,7 +55,7 @@ export default async function handler(req, res) {
   res.setHeader('X-RateLimit-Limit', '20');
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
-    return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   const caller = await verifyBase44User(req);
@@ -142,6 +143,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ collaborator, acceptUrl });
   } catch (err) {
     console.error('[send-collaborator-invite] Error:', err.message);
-    return res.status(500).json({ error: 'Something went wrong — please try again.' });
+    return res.status(500).json({ error: DID_NOT_GO_THROUGH });
   }
 }

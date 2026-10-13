@@ -26,6 +26,7 @@ import { verifyBase44User } from './_lib/auth.js';
 import { renderGuestReplyEmail } from '../src/lib/guestReplyEmailTemplate.js';
 import { coupleDisplayName } from './_lib/coupleNames.js';
 import { adminList } from './_lib/base44Entities.js';
+import { TOO_MANY_TRIES, DID_NOT_GO_THROUGH } from './_lib/calmErrors.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const SUPPORT_ADDRESS = 'hello@openinvite.com.au';
@@ -60,7 +61,7 @@ export default async function handler(req, res) {
   res.setHeader('X-RateLimit-Limit', '30');
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
-    return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   const caller = await verifyBase44User(req);
@@ -129,6 +130,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ sent: true });
   } catch (err) {
     console.error('[send-guest-reply] Error:', err.message);
-    return res.status(500).json({ error: 'Something went wrong — please try again.' });
+    return res.status(500).json({ error: DID_NOT_GO_THROUGH });
   }
 }
