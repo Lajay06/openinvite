@@ -36,6 +36,7 @@ import {
 } from './_lib/security.js';
 import { renderInvitationEmail, getEmailTypeConfig, getBannerImageUrl } from '../src/lib/emailTemplate.js';
 import { guestStopEmailsUrl } from './_lib/guestStopToken.js';
+import { publishState, PUBLISH_STATE } from '../src/lib/publishState.js';
 import { adminList } from './_lib/base44Entities.js';
 import { invitationGreetingName } from '../src/lib/guestGreeting.js';
 import { verifyBase44User, fetchOwnedGuestEmails, filterGuestsByOwnership } from './_lib/auth.js';
@@ -272,9 +273,29 @@ export default async function handler(req, res, {
     // worst a crafted request buys is a broken link to the sender's own site.
     // The refusal a couple actually meets is this one plus the client's, in
     // SendInvitesModal.handleSend.
-    if (wedding.websiteEnabled !== true) {
+    // TWO REFUSALS, BECAUSE THERE ARE TWO WAYS TO NOT BE LIVE, and they send
+    // the couple to different screens. This endpoint used to refuse only the
+    // unpublished one and let a wedding with NO ADDRESS through, while
+    // SendInvitesModal refused both. The server being the laxer of the two is
+    // the wrong way round: the client is the sentence and the server is meant
+    // to be the guarantee. The rule now comes from src/lib/publishState.js, so
+    // the two cannot drift apart again.
+    //
+    // THE LAYER IS UNCHANGED, and the paragraph above still applies: both
+    // `slug` and `websiteEnabled` arrive in the request body, so this refuses a
+    // mis-wired or stale client rather than a crafted request. Re-reading them
+    // from Base44 would mean a new call carrying the admin key, which this
+    // change is still not permitted to add.
+    const sendability = publishState(wedding);
+    if (sendability === PUBLISH_STATE.NO_ADDRESS) {
       return res.status(409).json({
-        error: 'Your website is not published yet, so these links would not work. Publish it from Design studio, then send.',
+        error: 'Your Guest Suite needs an address first. Choose one in Design studio, then send.',
+        reason: 'website_no_address',
+      });
+    }
+    if (sendability !== PUBLISH_STATE.LIVE) {
+      return res.status(409).json({
+        error: 'Your Guest Suite is hidden, so guests could not open its link. Publish it in Design studio, then send.',
         reason: 'website_unpublished',
       });
     }
