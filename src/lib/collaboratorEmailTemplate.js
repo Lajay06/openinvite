@@ -10,8 +10,66 @@
  * the exact same markup for review.
  */
 
-import { emailShell, emailFooterRow, escapeHtml, EMAIL_FONT as FONT, EMAIL_ACCENT as ACCENT, EMAIL_BLACK as BLACK, EMAIL_MUTED_LIGHT, EMAIL_SUPPORT_ADDRESS } from './emailBrand.js';
+import { emailFooterRow, escapeHtml, EMAIL_FONT as FONT, EMAIL_ACCENT as ACCENT, EMAIL_BLACK as BLACK, EMAIL_MUTED_LIGHT, EMAIL_SUPPORT_ADDRESS } from './emailBrand.js';
 import { collaboratorPageLabels, collaboratorClosingCopy } from './collaboratorPageMap.js';
+
+/**
+ * THE CODE EMAIL'S LAYOUT (owner, 2026-10-13), not the shared emailShell: the
+ * onboarding page's grey behind a white card, the full Openinvite logo top
+ * left, one full-width header photo, then the invite. The pieces are the
+ * verification email's (base44/emails/EmailVerification.html):
+ *   - the grey is the app's --background token (src/index.css, hsl 0 0% 96%,
+ *     #F5F5F5; color.bgSubtle in src/styles/tokens.js);
+ *   - the logo is the site header's lockup with its wordmark recolored for a
+ *     light ground, a 2x PNG at /email-assets/openinvite-logo-on-light-2x.png;
+ *   - the photo is DTS_QUIET_GLAMOUR_DTS_Studio_Photos_ID8370_coshvz, delivered
+ *     as f_jpg,q_auto,w_1200 and shown 600 wide (1600x1200 at source, so 450
+ *     tall), alt "Openinvite". It is referenced by URL only.
+ * emailShell itself is untouched: every other brand email keeps it.
+ */
+export const INVITE_GROUND = '#F5F5F5';
+export const INVITE_LOGO_URL = 'https://www.openinvite.com.au/email-assets/openinvite-logo-on-light-2x.png';
+export const INVITE_PHOTO_URL = 'https://res.cloudinary.com/dsr84xknv/image/upload/f_jpg,q_auto,w_1200/DTS_QUIET_GLAMOUR_DTS_Studio_Photos_ID8370_coshvz';
+
+function inviteShell({ title, preheader, bodyRowsHtml }) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light only" />
+  <meta name="supported-color-schemes" content="light only" />
+  <title>${escapeHtml(title)}</title>
+  <style>
+    @media only screen and (max-width: 600px) {
+      .card { width: 100% !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background:${INVITE_GROUND};font-family:${FONT};">
+  <div style="display:none;font-size:1px;color:${INVITE_GROUND};line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${escapeHtml(preheader)}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${INVITE_GROUND};padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" class="card" style="width:600px;max-width:600px;background:#ffffff;">
+          <tr>
+            <td style="padding:32px 40px 24px;">
+              <img src="${INVITE_LOGO_URL}" width="160" height="37" alt="Openinvite" style="display:block;width:160px;height:37px;border:0;" />
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0;">
+              <img src="${INVITE_PHOTO_URL}" width="600" height="450" alt="Openinvite" style="display:block;width:100%;max-width:600px;height:auto;border:0;background:#e8e4df;" />
+            </td>
+          </tr>
+${bodyRowsHtml}
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
 
 /**
  * @param {{ collaboratorName: string, coupleNames: string, acceptUrl: string, permissions: object }} params
@@ -87,5 +145,5 @@ ${permissionsHtml}
           </tr>
 ${emailFooterRow(`Sent by Openinvite on behalf of ${escapeHtml(coupleNames || 'a couple')}. If you weren't expecting this, you can safely ignore it. Openinvite, Australia. <a href="mailto:${EMAIL_SUPPORT_ADDRESS}" style="color:${EMAIL_MUTED_LIGHT};text-decoration:underline;">${EMAIL_SUPPORT_ADDRESS}</a>`)}`;
 
-  return { subject, preheader, html: emailShell({ title: subject, bodyRowsHtml, preheader }) };
+  return { subject, preheader, html: inviteShell({ title: subject, preheader, bodyRowsHtml }) };
 }
