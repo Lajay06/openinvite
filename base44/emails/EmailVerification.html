@@ -15,8 +15,11 @@
   own copy before the write, and a template without the code is refused
   (`missing_code`), never sent.
 
-  The design is the retention emails' (api/_lib/retentionEmails.js): warm
-  ground, white card, one full-width photo, the footer over a hairline. Top
+  The design is the retention emails' (api/_lib/retentionEmails.js): ground,
+  white card, one full-width photo, the footer over a hairline. The ground and
+  the code box are the onboarding page's grey, the app's --background token
+  (src/index.css, hsl 0 0% 96%, #F5F5F5; color.bgSubtle in tokens.js), not
+  the retention emails' cream (owner, 2026-10-13). Top
   left is the full logo, mark and wordmark (owner, 2026-10-13): the site
   header's own file, public/openinvite-logo.png, with only its white wordmark
   recolored #0A0A0A so it reads on white, as a 2x PNG at
@@ -39,9 +42,9 @@
     }
   </style>
 </head>
-<body style="margin:0;padding:0;background:#f6f4f1;font-family:'Plus Jakarta Sans', Helvetica, Arial, sans-serif;">
-  <div style="display:none;font-size:1px;color:#f6f4f1;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">It lasts ten minutes.</div>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f6f4f1;padding:40px 16px;">
+<body style="margin:0;padding:0;background:#F5F5F5;font-family:'Plus Jakarta Sans', Helvetica, Arial, sans-serif;">
+  <div style="display:none;font-size:1px;color:#F5F5F5;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">It lasts ten minutes.</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F5F5F5;padding:40px 16px;">
     <tr>
       <td align="center">
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" class="card" style="width:600px;max-width:600px;background:#ffffff;">
@@ -69,7 +72,7 @@
             <td class="pad" style="padding:0 40px 24px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td align="center" style="background:#F6F2EC;padding:28px 16px;">
+                  <td align="center" style="background:#F5F5F5;padding:28px 16px;">
                     <div class="code" style="font-family:'Plus Jakarta Sans', Helvetica, Arial, sans-serif;font-size:40px;font-weight:700;letter-spacing:12px;line-height:1.2;color:#0A0A0A;">{{code}}</div>
                   </td>
                 </tr>

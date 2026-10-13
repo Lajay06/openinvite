@@ -39,7 +39,20 @@ export async function runVerificationEmailTemplate() {
   ok('the code appears once, in its box', (body.match(/\{\{code\}\}/g) || []).length === 1, 'once');
   ok('  at 40px, bold, letter-spaced, in Plus Jakarta Sans',
      /class="code" style="font-family:'Plus Jakarta Sans'[^"]*font-size:40px;font-weight:700;letter-spacing:12px;/.test(body), '40px');
-  ok('  on #F6F2EC', /<td align="center" style="background:#F6F2EC;[^"]*">\s*<div class="code"/.test(body), 'warm white');
+  // THE GREY IS THE APP'S OWN TOKEN, read here rather than pinned as a hex:
+  // the onboarding page's background, --background in src/index.css (owner,
+  // 2026-10-13). If the token moves, this check moves with it.
+  const css = fs.readFileSync(path.join(ROOT, 'src/index.css'), 'utf8');
+  const m = css.match(/:root\s*\{[\s\S]*?--background:\s*(\d+)\s+(\d+)%\s+(\d+)%;/);
+  const [hue, sat, light] = m ? [Number(m[1]), Number(m[2]) / 100, Number(m[3]) / 100] : [0, 0, 0];
+  const f = (n) => { const k = (n + hue / 30) % 12; const a = sat * Math.min(light, 1 - light);
+    return Math.round(255 * (light - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)))).toString(16).padStart(2, '0'); };
+  const grey = `#${f(0)}${f(8)}${f(4)}`.toUpperCase();
+  ok('the grey comes from --background in src/index.css', !!m && grey === '#F5F5F5', `${m ? m.slice(1).join(' ') : 'missing'} -> ${grey}`);
+  ok('  the code box is on that grey', new RegExp(`<td align="center" style="background:${grey};[^"]*">\\s*<div class="code"`).test(body), grey);
+  ok('  and so is the page behind the card', new RegExp(`<body style="[^"]*background:${grey};`).test(body) && new RegExp(`style="background:${grey};padding:40px 16px;"`).test(body), grey);
+  ok('  the card stays white and the code stays black', /class="card" style="[^"]*background:#ffffff;/.test(body) && /class="code" style="[^"]*color:#0A0A0A;/.test(body), 'white and black');
+  ok('  and the old cream is gone, both values', !/#f6f4f1|#F6F2EC/i.test(body), 'no cream');
   ok('the photo is DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2 at 2:1, w_1200, f_auto, q_auto, anchored north so both figures show whole',
      body.includes('https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_1200,c_fill,ar_2:1,g_north/DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2'), 'photo');
 
