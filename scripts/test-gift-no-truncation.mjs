@@ -11,6 +11,8 @@
  *   - no element is clamped to fewer than two lines (-webkit-line-clamp)
  *   - no text element clips its own text (overflow hidden and wider inside
  *     than out)
+ *   - no field's value runs past its box, including a long address typed
+ *     into page 2
  *   - the note's summary chip holds the whole note, not a slice of it
  *
  * A render guard, because each of these is a computed style or a measured
@@ -56,6 +58,9 @@ function findCuts() {
     if (Number.isFinite(clamp) && clamp < 2) cuts.push(`line-clamp ${clamp}: ${name(el)}`);
     const hasOwnText = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
     if (hasOwnText && /hidden|clip/.test(cs.overflowX) && el.scrollWidth > el.clientWidth + 1) cuts.push(`clipped: ${name(el)}`);
+    // A field's value is not a text node: measured on its own. Found on gift
+    // page 2, where "isla.and.theo@example.com" showed as "isla.and.theo@exa".
+    if (el.tagName === 'INPUT' && el.value && el.scrollWidth > el.clientWidth + 1) cuts.push(`value cut: input "${el.value.slice(0, 30)}"`);
   }
   return cuts;
 }
@@ -82,6 +87,12 @@ try {
       if (seen.path !== '/gift' || seen.text < 40) { check(`${w}, ${label}: the gift page renders`, false, `${seen.path}, ${seen.text} chars`); continue; }
       const cuts = await page.evaluate(findCuts);
       check(`${w}, ${label}: no ellipsis, no single-line clamp, no clipped text`, cuts.length === 0, cuts.slice(0, 4).join(' | ') || 'none');
+      if (label === 'page 2') {
+        await page.locator('input[type="email"]').fill('isla.and.theo.featherstonehaugh@example.com');
+        await page.waitForTimeout(200);
+        const long = await page.evaluate(findCuts);
+        check(`${w}, ${label}: a long address shows whole`, long.length === 0, long.slice(0, 3).join(' | ') || 'none');
+      }
       if (label === 'page 3, all closed') {
         const chips = await page.evaluate(() => [...document.querySelectorAll('span')].map((s) => s.textContent.trim()));
         check(`${w}, ${label}: the note's summary chip holds the whole note`, chips.includes(SAMPLE_NOTE));

@@ -304,9 +304,9 @@ export default function GiftV2() {
             <OnboardingStep1Names
               data={draft}
               lines={[
-                { key: 'names', text: COPY.who.forLine, placeholder: COPY.who.namesLabel },
-                { key: 'email', text: COPY.who.toLine, placeholder: COPY.who.emailLabel, type: 'email', valid: isValidGiftEmail, hint: EMAIL_CHECK },
-                { key: 'giver', text: COPY.who.fromLine, placeholder: COPY.who.giverLabel },
+                { key: 'names', text: COPY.who.forLine, placeholder: COPY.who.namesLabel, fit: true },
+                { key: 'email', text: COPY.who.toLine, placeholder: COPY.who.emailLabel, type: 'email', valid: isValidGiftEmail, hint: EMAIL_CHECK, fit: true },
+                { key: 'giver', text: COPY.who.fromLine, placeholder: COPY.who.giverLabel, fit: true },
               ]}
               onNext={(v) => set({ names: v.names.trim(), email: normalizeGiftEmail(v.email), giver: v.giver.trim(), step: 3 })}
             />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -19,6 +19,12 @@ const NAMES_LINES = [
  * (default: non-empty) decides when Continue appears, as an empty field does
  * today; `hint` is shown under a line whose field has been left holding
  * something not valid. Without `lines`, nothing about this step changes.
+ *
+ * A line may also set `fit` (gifting v2, owner ruling 2026-10-13: every word
+ * fits, nothing cut off): its field grows to its value, taking a row of its
+ * own when it needs one, and if the value is still wider than the row the
+ * type steps down from 32px, never below 12px. Lines without it, which is
+ * every onboarding line, are unchanged.
  */
 export default function OnboardingStep1Names({ onNext, data, lines = NAMES_LINES }) {
   // SEEDED FROM THE DRAFT, like every other step. This one alone took no
@@ -30,10 +36,26 @@ export default function OnboardingStep1Names({ onNext, data, lines = NAMES_LINES
   const [values, setValues] = useState(() => Object.fromEntries(lines.map((l) => [l.key, data?.[l.key] || ''])));
   const [focused, setFocused] = useState(null);
   const [left, setLeft] = useState({});
+  const fieldRefs = useRef({});
+  const [fitSize, setFitSize] = useState({});
+  // Steps a `fit` field's type down until its value shows whole.
+  useLayoutEffect(() => {
+    const next = {};
+    for (const l of lines) {
+      const el = fieldRefs.current[l.key];
+      if (!l.fit || !el) continue;
+      let size = 32;
+      el.style.fontSize = `${size}px`;
+      while (size > 12 && el.scrollWidth > el.clientWidth + 1) { size -= 2; el.style.fontSize = `${size}px`; }
+      next[l.key] = size;
+    }
+    setFitSize((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
+  });
 
   const labelColor = 'rgba(10,10,10,0.6)';
   const inputColor = '#0A0A0A';
   const inputBorderDefault = 'rgba(10,10,10,0.18)';
+  const inputBorderActive = 'rgba(10,10,10,0.55)';
 
   const isValid = (l) => (l.valid ? l.valid(values[l.key]) : !!values[l.key].trim());
   const allValid = lines.every(isValid);
@@ -53,8 +75,10 @@ export default function OnboardingStep1Names({ onNext, data, lines = NAMES_LINES
   const inputStyle = (value, isFocused) => ({
     background: 'transparent',
     border: 'none',
+    // No pink in any state (owner ruling 2026-10-13): empty keeps the faint
+    // line; focused or filled darkens the same 2px line, so focus stays visible.
     borderBottom: (value || isFocused)
-      ? '2px solid #ec4899'
+      ? `2px solid ${inputBorderActive}`
       : `1px solid ${inputBorderDefault}`,
     minWidth: 200,
     maxWidth: 300,
@@ -87,7 +111,10 @@ export default function OnboardingStep1Names({ onNext, data, lines = NAMES_LINES
                 onChange={e => setValues((v) => ({ ...v, [l.key]: e.target.value }))}
                 placeholder={l.placeholder}
                 className="s1-input"
-                style={inputStyle(values[l.key], focused === l.key)}
+                ref={(el) => { fieldRefs.current[l.key] = el; }}
+                style={l.fit
+                  ? { ...inputStyle(values[l.key], focused === l.key), maxWidth: '100%', flex: `1 1 ${Math.max(values[l.key].length, (l.placeholder || '').length, 8) + 2}ch`, fontSize: fitSize[l.key] || 32 }
+                  : inputStyle(values[l.key], focused === l.key)}
                 onFocus={() => setFocused(l.key)}
                 onBlur={() => { setFocused(null); if (l.hint) setLeft((s) => ({ ...s, [l.key]: true })); }}
                 onKeyDown={e => e.key === 'Enter' && allValid && handleSubmit()}
