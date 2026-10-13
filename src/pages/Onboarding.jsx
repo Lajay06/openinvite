@@ -30,6 +30,7 @@ import OnboardingPathACultural from '@/components/onboarding/OnboardingPathACult
 import OnboardingPathAInspiration from '@/components/onboarding/OnboardingPathAInspiration';
 import OnboardingCompletion from '@/components/onboarding/OnboardingCompletion';
 import OnboardingShell from '@/components/onboarding/OnboardingShell';
+import OnboardingStepChrome, { ShellStepChrome } from '@/components/onboarding/OnboardingStepChrome';
 import { GIFT_LANDING_KEY } from '@/lib/giftLinks';
 import { syncWeddingAddress } from '@/lib/weddingAddress';
 import { createMyWeddingDetails } from '@/lib/createMyWeddingDetails';
@@ -61,7 +62,6 @@ const PATH_A_STEPS = [
   'pathA-inspiration',
 ];
 
-const LOGO_URL = '/openinvite-logo.png';
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 // Core steps counted in the progress indicator (excludes welcome, pathA, and completion)
@@ -676,54 +676,11 @@ export default function Onboarding() {
     return <div style={{ minHeight: '100vh', background: '#FFFFFF' }} />;
   }
 
-  // Coloured logo: the source PNG's wordmark text is baked in white (built
-  // for dark backgrounds — see AuthLayout.jsx's own comment on the same
-  // asset), so flattening the whole lockup to black (the old approach here)
-  // was the only way to make it legible on white, at the cost of the icon's
-  // real color gradient. PublicFooter.jsx already solved this exact problem
-  // on its own white background: crop to just the icon (background-position,
-  // no filter) to keep its color, real "Openinvite" text alongside it
-  // instead of relying on the image's own (white) text. Reused verbatim
-  // here, scaled from PublicFooter's 41×48 icon crop down to a 20px-tall
-  // mark (20/48 of every dimension).
-  const stepChrome = (
-    <>
-      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-        <div
-          aria-hidden="true"
-          style={{
-            width: 17, height: 20, flexShrink: 0,
-            backgroundImage: `url(${LOGO_URL})`,
-            backgroundSize: '87px 20px',
-            backgroundPosition: '0 0',
-            backgroundRepeat: 'no-repeat',
-          }}
-        />
-        <span style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS }}>
-          Openinvite
-        </span>
-      </div>
-
-      {showStepCounter && (
-        <span style={{
-          fontSize: 11, fontFamily: PJS,
-          color: 'rgba(10,10,10,0.4)',
-        }}>
-          Step {stepNum} of {effectiveCoreSteps.length}
-        </span>
-      )}
-
-      {showBack && (
-        <button
-          onClick={goBack}
-          className="border-none cursor-pointer text-[13px] text-left bg-transparent rounded-full px-2 py-1 transition-colors duration-150 hover:bg-black hover:text-white active:bg-neutral-900 text-[rgba(10,10,10,0.4)]"
-          style={{ fontFamily: PJS, alignSelf: 'flex-start' }}
-        >
-          ← Back
-        </button>
-      )}
-    </>
-  );
+  // The logo, the step counter and Back: the shared OnboardingStepChrome
+  // (src/components/onboarding/OnboardingStepChrome.jsx), lifted out of this
+  // file unchanged so the gift flow's page 2 uses the same chrome.
+  const chromeProps = { showStepCounter, stepNum, totalSteps: effectiveCoreSteps.length, showBack, onBack: goBack };
+  const stepChrome = <OnboardingStepChrome {...chromeProps} />;
 
   const stepContent = (
     <>
@@ -862,9 +819,7 @@ export default function Onboarding() {
         >
           {isShellStep ? (
             <OnboardingShell contentMaxWidth={SHELL_CONTENT_WIDTH[currentStep] || 600} image={SHELL_STEP_IMAGES[currentStep]}>
-              <div style={{ marginBottom: 32, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {stepChrome}
-              </div>
+              <ShellStepChrome {...chromeProps} />
               {stepContent}
             </OnboardingShell>
           ) : stepContent}

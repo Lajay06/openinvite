@@ -95,9 +95,12 @@ export async function runGiftErrorText() {
   check('no v2 gift page renders a response\'s error field', pages.length >= 1 && leaking.length === 0, leaking.join(', ') || pages.join(', '));
   const v2 = stripComments(read('src/pages/GiftV2.jsx'));
   check('the pay error is the fixed line, never the result\'s text', /data-gift-pay-error[^>]*>\{GIFT_TRY_AGAIN\}<\/p>/.test(v2) && !/setPayError\(result\.error\)/.test(v2));
-  check('Continue and Pay both wait for a valid address',
-    /const validEmail = isValidGiftEmail\(draft\.email\)/.test(v2) && /disabled=\{!\(draft\.names\.trim\(\) && validEmail && draft\.giver\.trim\(\)\)\}/.test(v2) && /disabled=\{paying \|\| !validEmail \|\|/.test(v2));
-  check('the field is trimmed when it is left, and says "Check the email address." if it still is not one',
-    /onBlur=\{\(\) => \{ setEmailTouched\(true\); set\(\{ email: normalizeGiftEmail\(draft\.email\) \}\); \}\}/.test(v2) && /data-gift-email-check[^>]*>\{EMAIL_CHECK\}/.test(v2));
+  // Page 2 is onboarding step 1 (owner ruling 2026-10-13): its Continue only
+  // appears once every line is valid, and the address line is checked by the
+  // product's validator with the calm line as its hint.
+  check('Continue on page 2 and Pay on page 3 both wait for a valid address',
+    /const validEmail = isValidGiftEmail\(draft\.email\)/.test(v2) && /key: 'email'[^}]*valid: isValidGiftEmail, hint: EMAIL_CHECK/.test(v2) && /disabled=\{paying \|\| !validEmail \|\|/.test(v2));
+  check('the address is trimmed on its way into the draft, and the field says "Check the email address." when it is not one',
+    /email: normalizeGiftEmail\(v\.email\)/.test(v2) && /data-s1-hint=\{l\.key\}/.test(stripComments(read('src/components/onboarding/OnboardingStep1Names.jsx'))));
   return r;
 }

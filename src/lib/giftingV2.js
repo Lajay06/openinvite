@@ -112,10 +112,14 @@ export const COPY = {
   },
   // The placeholder is the label, as onboarding's names step; no help lines.
   who: {
-    heading: 'Who is the lucky couple?',
-    namesLabel: 'How should we address them',
+    // Page 2 is onboarding step 1's inline sentence (owner ruling 2026-10-13):
+    // "This gift is for [Their names] / and goes to [Their email] / from [Your name]".
+    forLine: 'This gift is for',
+    toLine: 'and goes to',
+    fromLine: 'from',
+    namesLabel: 'Their names',
     emailLabel: 'Their email',
-    giverLabel: 'Your name, as they know it',
+    giverLabel: 'Your name',
   },
   // Page 3, one accordion (owner's review of #994).
   theirs: {

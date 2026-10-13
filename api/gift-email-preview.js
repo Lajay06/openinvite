@@ -16,6 +16,7 @@
  */
 import { Resend } from 'resend';
 import { buildRevealEmail, buildConfirmationEmail } from './_lib/giftEmails.js';
+import { giftOrigin } from './_lib/giftTokens.js';
 import { DEFAULT_PHOTO_ID } from '../src/lib/giftingV2.js';
 
 export const PREVIEW_RECIPIENT = 'la.jay06+notiftest01@gmail.com';
@@ -45,7 +46,8 @@ export default async function handler(req, res, deps = {}) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const gift = sampleGift(req.body || {});
-  const origin = 'https://www.openinvite.com.au';
+  // The deployment's own host on a preview (api/_lib/giftTokens.js).
+  const origin = giftOrigin(env);
   // Sample links: the claim and edit pages are item 3, and a sample token
   // claims nothing.
   const claimUrl = `${origin}/gift/claim/sample-token`;

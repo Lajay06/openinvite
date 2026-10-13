@@ -48,7 +48,6 @@ export async function runGiftingV2Pages() {
   // ── the copy, verbatim, against the goal file itself ────────────────────
   const verbatim = [
     lib.COPY.plan.heading, lib.COPY.plan.sub, lib.COPY.plan.pro, ...lib.COPY.plan.proLines, lib.COPY.plan.ultra, ...lib.COPY.plan.ultraLines,
-    lib.COPY.who.heading, lib.COPY.who.namesLabel, lib.COPY.who.emailLabel, lib.COPY.who.giverLabel,
     lib.COPY.theirs.heading, lib.COPY.theirs.note, lib.COPY.theirs.headline, lib.COPY.theirs.photo, lib.COPY.theirs.when,
     lib.COPY.when.now.line, lib.COPY.when.date.line, lib.COPY.when.fine,
     lib.COPY.done.heading, lib.COPY.done.body, lib.COPY.done.box, lib.COPY.done.second,
@@ -86,8 +85,23 @@ export async function runGiftingV2Pages() {
     /s === 1 \? \{ image: ONBOARDING_IMAGES\.STEP_ONE \}/.test(page) && /s === 2 \? \{ image: ONBOARDING_IMAGES\.WHO \}/.test(page)
       && /s === 4 \? \{ image: ONBOARDING_IMAGES\.DONE \}/.test(page) && /\{ aside: <EmailPreview draft=\{draft\} \/> \}/.test(page)
       && lib.ONBOARDING_IMAGES.STEP_ONE.endsWith('ID14263_su2ltz.jpg') && lib.ONBOARDING_IMAGES.WHO.endsWith('ID14160_vgcgxf.jpg') && lib.ONBOARDING_IMAGES.DONE.includes('ID6374_iumjqj'));
-  check('page 2\'s fields are onboarding\'s placeholder-as-label underline inputs, no help lines',
-    (page.match(/<UnderlineInput /g) || []).length === 3 && /\.s1-input::placeholder \{ color: rgba\(10,10,10,0\.58\); \}/.test(page) && !/namesHelp|emailHelp/.test(page) && !('namesHelp' in lib.COPY.who));
+  // PAGE 2 IS ONBOARDING STEP 1 (owner ruling 2026-10-13): the same chrome
+  // and the same component, with the gift's three lines, verbatim.
+  check('page 2 is onboarding step 1 itself: its chrome and its component, imported, not copied',
+    /import OnboardingStep1Names from '@\/components\/onboarding\/OnboardingStep1Names'/.test(page) && /import \{ ShellStepChrome \} from '@\/components\/onboarding\/OnboardingStepChrome'/.test(page)
+      && /<ShellStepChrome showStepCounter stepNum=\{2\} totalSteps=\{PAGES\} showBack onBack=\{\(\) => go\(1\)\} \/>/.test(page) && /<OnboardingStep1Names\b/.test(page)
+      && !/<UnderlineInput /.test(page) && !('heading' in lib.COPY.who) && /\{s !== 2 && top\}/.test(page));
+  check('  its three lines are the owner\'s, verbatim: This gift is for / and goes to / from',
+    lib.COPY.who.forLine === 'This gift is for' && lib.COPY.who.toLine === 'and goes to' && lib.COPY.who.fromLine === 'from'
+      && lib.COPY.who.namesLabel === 'Their names' && lib.COPY.who.emailLabel === 'Their email' && lib.COPY.who.giverLabel === 'Your name');
+  check('page 1: both plans side by side, compact, the whole card selects, one Continue below',
+    /className="grid grid-cols-1 md:grid-cols-2 gap-4" data-plan-cards/.test(page) && /<SelectCard key=\{p\} wholeCard padding=\{24\}/.test(page)
+      && /onSelect=\{\(\) => set\(\{ plan: p \}\)\}/.test(page) && /disabled=\{!draft\.plan\} onClick=\{\(\) => go\(2\)\}/.test(page));
+  check('page 3: the side preview is the whole email scaled as one unit, by one transform, never reflowed',
+    /width: EMAIL_WIDTH, height, border: 0/.test(page) && /transform: `translateX\(-50%\) scale\(\$\{scale\}\)`/.test(page) && /const EMAIL_WIDTH = 600;/.test(page));
+  check('  the style pills\' samples are live text in their own faces, inheriting the pill\'s color',
+    /data-style-sample="hand" className="oi-note-face" style=\{\{ '--oi-note-font': CAVEAT/.test(page) && /data-style-sample="serif" className="oi-note-face"/.test(page) && !/noteImageUrl/.test(page));
+  check('  the photo tiles carry a lower-third caption, not the universe overlay', /<UniverseGridTile key=\{p\.id\} index=\{i\} hideExplore caption/.test(page));
   check('page 3 is onboarding\'s theme accordion, four sections, the first open, each showing its value',
     (page.match(/<AccordionSection /g) || []).length === 4 && /useState\(params\.get\('section'\) \|\| 'note'\)/.test(page) && (page.match(/summary=\{/g) || []).length === 4
       && /import \{ AccordionSection, Pill \} from '@\/components\/onboarding\/OnboardingStep5WeddingType'/.test(page));
@@ -111,7 +125,10 @@ export async function runGiftingV2Pages() {
   const fork = read('src/components/onboarding/OnboardingStep8Fork.jsx');
   check('the Fork step\'s two cards are SelectCard, the one the gift flow consumes', (fork.match(/<SelectCard /g) || []).length === 2 && /export function SelectCard\(/.test(fork) && /import \{ SelectCard \}/.test(page));
   check('the theme accordion and its pill are exported, not copied', /export function AccordionSection\(/.test(read('src/components/onboarding/OnboardingStep5WeddingType.jsx')) && /export function Pill\(/.test(read('src/components/onboarding/OnboardingStep5WeddingType.jsx')));
-  check('UniverseGridTile is consumed with imageSrc and hideExplore, both optional', /export function UniverseGridTile\(\{[^}]*imageSrc, hideExplore = false \}/.test(read('src/components/onboarding/OnboardingStepUniverse.jsx')) && /<UniverseGridTile /.test(page));
+  check('UniverseGridTile is consumed with imageSrc, hideExplore and caption, all optional', /export function UniverseGridTile\(\{[^}]*imageSrc, hideExplore = false, caption = false \}/.test(read('src/components/onboarding/OnboardingStepUniverse.jsx')) && /<UniverseGridTile /.test(page));
+  check('SelectCard and OnboardingStep1Names gained only optional props (wholeCard and padding; lines)',
+    /export function SelectCard\(\{ title, body, children, onSelect, selected, buttonLabel, wholeCard = false, padding \}\)/.test(read('src/components/onboarding/OnboardingStep8Fork.jsx'))
+      && /export default function OnboardingStep1Names\(\{ onNext, data, lines = NAMES_LINES \}\)/.test(read('src/components/onboarding/OnboardingStep1Names.jsx')));
   check('OnboardingCompletion is consumed with heading, body and children, falling back to its own', /heading \?\? \(firstName/.test(read('src/components/onboarding/OnboardingCompletion.jsx')) && /children \?\? </.test(read('src/components/onboarding/OnboardingCompletion.jsx')) && /<OnboardingCompletion /.test(page));
   check('emailShell keeps 560 for every other email', /width = 560 \}/.test(read('src/lib/emailBrand.js')));
 
