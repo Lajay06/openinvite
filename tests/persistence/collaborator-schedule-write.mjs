@@ -66,6 +66,7 @@ export async function runCollaboratorScheduleWrite() {
 
   // ── the fake Base44 ──────────────────────────────────────────────────────
   let stampMode = 'honor';
+  let currentMe = null;
   let seq = 0;
   const store = {};
   const touched = new Set();
@@ -85,7 +86,6 @@ export async function runCollaboratorScheduleWrite() {
       delete: async (id) => { touched.add(`${name}:delete`); store[name] = store[name].filter(x => x.id !== id); return {}; },
     };
   };
-  let currentMe = null;
   const client = (me) => ({
     auth: { me: async () => me },
     asServiceRole: { entities: new Proxy({}, { get: (_, name) => entityApi(name) }) },
@@ -252,10 +252,11 @@ export async function runCollaboratorScheduleWrite() {
   console.log('\n  ScheduleHub:\n');
   const hub = stripComments(fs.readFileSync(path.join(ROOT, 'src/pages/ScheduleHub.jsx'), 'utf8'), { trailing: true });
   ok('read only unless the server said canEdit', /const readOnly = isCollaborating && !collabCanEdit;/.test(hub) && /setCollabCanEdit\(canEdit === true\);/.test(hub), 'canEdit');
-  ok('  a collaborator\'s writes go through collaboratorWrite, the owner\'s through Schedule',
-     /const scheduleWrites = isCollaborating\s*\?\s*\{[\s\S]*?collaboratorWrite\(\{ ownerUserId: collab\.ownerUserId, page: 'Schedule', action: 'create', data \}\)[\s\S]*?\}\s*:\s*Schedule;/.test(hub), 'one switch');
-  ok('  and every write site uses it: no Schedule.create, update or delete left',
-     !/\bSchedule\.(create|update|delete)\(/.test(hub) && (hub.match(/scheduleWrites\.(create|update|delete)\(/g) || []).length === 5, `${(hub.match(/scheduleWrites\.(create|update|delete)\(/g) || []).length} site(s)`);
+  ok('  in a collaborator session Schedule is the collaborator write path, otherwise the entity',
+     /const Schedule = isCollaborating\s*\?\s*\{[\s\S]*?collaboratorWrite\(\{ ownerUserId: collab\.ownerUserId, page: 'Schedule', action: 'create', data \}\)[\s\S]*?\}\s*:\s*ScheduleEntity;/.test(hub)
+     && /^const ScheduleEntity = base44\.entities\.Schedule;$/m.test(hub), 'one switch');
+  ok('  and every write site goes through that Schedule, none straight to the entity',
+     !/ScheduleEntity\.(create|update|delete)\(/.test(hub) && (hub.match(/\bSchedule\.(create|update|delete)\(/g) || []).length === 5, `${(hub.match(/\bSchedule\.(create|update|delete)\(/g) || []).length} site(s)`);
 
   return results;
 }

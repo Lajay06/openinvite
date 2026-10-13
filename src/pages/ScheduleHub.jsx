@@ -28,7 +28,7 @@ import PageConsiderations from '../components/shared/PageConsiderations';
 import { getMyInvitation, getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { syncCalendarFeed } from '@/lib/calendarFeedSync';
 import TableToolbar from '@/components/shared/TableToolbar';
-const Schedule = base44.entities.Schedule;
+const ScheduleEntity = base44.entities.Schedule;
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
 const statLabelStyle = {
@@ -116,13 +116,15 @@ export default function ScheduleHub() {
   // update and delete RLS is owner-scoped, so nothing else can make them.
   const [collabCanEdit, setCollabCanEdit] = useState(false);
   const readOnly = isCollaborating && !collabCanEdit;
-  const scheduleWrites = isCollaborating
+  // Named Schedule, as it always was: every write site below is unchanged,
+  // and in a collaborator session it is the collaborator write path.
+  const Schedule = isCollaborating
     ? {
         create: (data) => collaboratorWrite({ ownerUserId: collab.ownerUserId, page: 'Schedule', action: 'create', data }),
         update: (id, data) => collaboratorWrite({ ownerUserId: collab.ownerUserId, page: 'Schedule', action: 'update', id, data }),
         delete: (id) => collaboratorWrite({ ownerUserId: collab.ownerUserId, page: 'Schedule', action: 'delete', id }),
       }
-    : Schedule;
+    : ScheduleEntity;
 
   // Arriving from Recent activity with an event to land on: show the list,
   // which is now where events are read.
@@ -281,7 +283,7 @@ export default function ScheduleHub() {
     if (!id) return;
     const tid = toast.loading('Deleting…');
     try {
-      await scheduleWrites.delete(id);
+      await Schedule.delete(id);
       toast.success('Event deleted', { id: tid });
       loadItems();
     } catch {
@@ -293,10 +295,10 @@ export default function ScheduleHub() {
     const tid = toast.loading(editingItem?.id ? "Updating…" : "Adding event…");
     try {
       if (editingItem?.id) {
-        await scheduleWrites.update(editingItem.id, itemData);
+        await Schedule.update(editingItem.id, itemData);
         toast.success("Event updated", { id: tid });
       } else {
-        await scheduleWrites.create(itemData);
+        await Schedule.create(itemData);
         toast.success("Event added", { id: tid });
       }
       setShowForm(false);
@@ -467,8 +469,8 @@ export default function ScheduleHub() {
             // ORDER IS THE TIME. Two rows swap start_time, so the clock and
             // the order can never disagree — which a separate order column
             // would eventually let them do.
-            await scheduleWrites.update(a.id, { start_time: b.start_time });
-            await scheduleWrites.update(b.id, { start_time: a.start_time });
+            await Schedule.update(a.id, { start_time: b.start_time });
+            await Schedule.update(b.id, { start_time: a.start_time });
             loadItems();
           }}
         />
