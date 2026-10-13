@@ -62,5 +62,12 @@ export async function runCollaboratorInviteEmailLayout() {
   ok('  the card is white', /class="card" style="[^"]*background:#ffffff;/.test(html), 'white');
   ok('  and no cream, and not the shared shell\'s #F7F7F7', !/#f6f4f1|#F6F2EC|#F7F7F7/i.test(html), 'no other ground');
 
+  console.log('\n  The accept page, no eyebrow either (owner, 2026-10-13):\n');
+  const accept = fs.readFileSync(path.join(ROOT, 'src/pages/CollaboratorAccept.jsx'), 'utf8').replace(/\/\*[\s\S]*?\*\/|^\s*\/\/.*$/mg, '');
+  ok('no "you\'re invited to collaborate" and no "invite not found" above a heading',
+     !/invited to collaborate/i.test(accept) && !/>invite not found</i.test(accept), 'gone');
+  ok('  and no small accent-colored, letter-spaced line anywhere on the page',
+     !/fontWeight: 700, color: '#E03553', letterSpacing: '0\.1em'/.test(accept), 'no eyebrow style');
+
   return results;
 }
