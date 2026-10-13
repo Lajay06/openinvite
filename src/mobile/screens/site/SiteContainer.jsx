@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { getUniverse } from '@/lib/universeCatalog';
 import { ShellContext } from '../../shell/MobileShell';
 import SiteScreen from './SiteScreen';
+import { publishState, PUBLISH_STATE, PUBLISH_SENTENCE } from '@/lib/publishState';
 import { PasswordSheet } from './SiteSheets';
 import { useWedding } from '../../data/wedding';
 import { useApi } from '../../data/api';
@@ -30,7 +31,8 @@ export default function SiteContainer() {
     if (on && !d?.slug) { toast.error('Add your names first so your Guest Suite has an address.'); return; }
     try {
       await wedding.optimistic((w) => ({ ...(w || {}), websiteEnabled: on }), () => api.wedding.save('websiteEnabled', on, false));
-      toast.success(on ? 'Your Guest Suite is live' : 'Guest Suite hidden');
+      // src/lib/publishState.js's sentences, the only words for the state.
+      toast.success(PUBLISH_SENTENCE[on ? PUBLISH_STATE.LIVE : PUBLISH_STATE.HIDDEN]);
     } catch { toast.error('Could not change that. Try again.'); }
   };
 
@@ -38,7 +40,7 @@ export default function SiteContainer() {
     <>
     <SiteScreen
       universeName={universe?.name}
-      isLive={!!d?.websiteEnabled}
+      state={publishState(d)}
       onTogglePublish={togglePublish}
       passwordOn={!!d?.websitePasswordEnabled}
       onPassword={() => setSheet('password')}
