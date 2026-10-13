@@ -147,7 +147,9 @@ As of 2026-10-12:
 - Schedule write merged as #1035. The owner deployed collaboratorWrite and ran the probe (2026-10-13): a hosted function cannot set created_by_id to another user. Base44 stamped the row with an identity that was neither the requested owner, the caller nor anonymous; the probe could not tell which kind (service, admin or function identity), and no id was recorded. Ruling: collaborators with edit change and remove existing items, never add. Add is hidden in a collaborator session, the function refuses create outright, and the probe is removed, all in one PR.
 - The Moodboard write PR follows the same rule: change and remove, never add.
 - At the goal's close, BASE44_PLATFORM_NOTES.md records the probe's finding alongside the q-override entry.
-- Next: the Moodboard write PR, then the branded verification email plan.
+- The no-add ruling merged as #1040 (the probe removed, create refused, Add hidden, the collaborator empty state "Nothing on the schedule yet.").
+- Moodboard write built, held, under the same rule: a collaborator with edit changes and removes the owner's items; no Upload, Add inspiration, Export, drop to upload or new board in a session; the empty state "Nothing on the moodboard yet." The owner redeploys collaboratorWrite after merge.
+- Next: the branded verification email plan, then stop for its ruling.
 
 ## Findings
 

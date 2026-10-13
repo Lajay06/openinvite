@@ -37,12 +37,12 @@ export async function runCollaboratorTruthfulPermissions() {
   const { renderCollaboratorInviteEmail } = await import('../../src/lib/collaboratorEmailTemplate.js');
   const keys = map.COLLABORATOR_PERMISSION_KEYS;
 
-  console.log('\n  Every page is view only, except Schedule when edit is granted, on the server:\n');
+  console.log('\n  Every page is view only, except Schedule and Moodboard when edit is granted, on the server:\n');
   ok('the map offers all eleven pages', keys.length === 11, keys.join(', '));
-  ok('  and Schedule is the one editable page', JSON.stringify(map.COLLABORATOR_EDIT_PAGES) === '["Schedule"]', 'Moodboard waits for its write PR');
+  ok('  and Schedule and Moodboard are the only editable pages', JSON.stringify(map.COLLABORATOR_EDIT_PAGES) === '["Schedule","Moodboard"]', 'change and remove only');
   const all = Object.fromEntries(keys.map(k => [k, { view: true, edit: true }]));
-  ok('a grant naming edit on every page: edit holds on Schedule and nowhere else',
-     keys.every(k => hasPagePermission(all, k, 'edit') === (k === 'Schedule')), 'a stale edit elsewhere does nothing');
+  ok('a grant naming edit on every page: edit holds on Schedule and Moodboard and nowhere else',
+     keys.every(k => hasPagePermission(all, k, 'edit') === (k === 'Schedule' || k === 'Moodboard')), 'a stale edit elsewhere does nothing');
   ok('  and Schedule with view only cannot be changed', hasPagePermission({ Schedule: { view: true } }, 'Schedule', 'edit') === false, 'edit must be granted');
   ok('  while view holds on every page', keys.every(k => hasPagePermission(all, k, 'view') === true), 'view kept');
   ok('an edit-only grant still reads as view', hasPagePermission({ Budget: { edit: true } }, 'Budget', 'view') === true, 'edit implies view');
@@ -108,7 +108,7 @@ export async function runCollaboratorTruthfulPermissions() {
   ok('the Help article promises no edit access',
      article.length > 500 && !/Full Access|view and edit|Changes made by collaborators|access level/i.test(article), `${article.length} chars`);
   ok('  and says they cannot change anything except Schedule if allowed, with the 7-day link',
-     /They cannot change anything, except Schedule if you let them\./.test(article) && /check "Can make changes" instead/.test(article)
+     /They cannot change anything, except Schedule and Moodboard if you let them\./.test(article) && /check "Can make changes" instead/.test(article)
      && /anything else, and Ava is not available/.test(article) && /works for 7 days/.test(article), 'true copy');
   ok('  in US English: check, trash icon, right away', /check "View only"/.test(article) && /trash icon/.test(article) && /right away/.test(article)
      && !/\btick\b|\bbin\b|straight away/.test(article), 'owner edits');

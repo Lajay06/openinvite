@@ -201,7 +201,11 @@ function MoodboardCard({ item, onDelete, onUpdate, readOnly, cardRef, highlighte
   );
 }
 
-export default function MoodboardGrid({ items, onDeleteItem, onUpdateItem, readOnly = false, scrollToItemId, highlightedItemId }) {
+// A collaborator, viewing or editing, can never add, so the empty state does
+// not invite them to (owner ruling 2026-10-13). The owner's lines are unchanged.
+export const COLLABORATOR_EMPTY = 'Nothing on the moodboard yet.';
+
+export default function MoodboardGrid({ items, onDeleteItem, onUpdateItem, readOnly = false, scrollToItemId, highlightedItemId, collaborating = false }) {
   const cardRefs = useRef(new Map());
   const scrolledForId = useRef(null);
 
@@ -215,6 +219,15 @@ export default function MoodboardGrid({ items, onDeleteItem, onUpdateItem, readO
       scrolledForId.current = scrollToItemId;
     }
   }, [scrollToItemId, items]);
+
+  if (items.length === 0 && collaborating) {
+    return (
+      <div style={{ padding: '80px 24px', textAlign: 'center', border: '1px solid rgba(10,10,10,0.12)' }}>
+        <ImageIcon size={40} style={{ color: 'rgba(10,10,10,0.3)', margin: '0 auto 16px' }} />
+        <p style={{ fontSize: 14, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{COLLABORATOR_EMPTY}</p>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (

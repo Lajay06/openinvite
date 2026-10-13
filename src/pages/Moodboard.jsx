@@ -23,12 +23,12 @@ import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import UploadStatus from '@/components/shared/UploadStatus';
-import { useCollaboratorContext, withCollab } from '@/lib/collaboratorContext';
+import { collaboratorWrite, useCollaboratorContext, withCollab } from '@/lib/collaboratorContext';
 import CountUp from "@/components/shared/CountUp";
 
 let moodboardQueueId = 0;
 
-const MoodboardItem = base44.entities.MoodboardItem;
+const MoodboardItemEntity = base44.entities.MoodboardItem;
 
 const labelStyle = {
   fontSize: 11, fontWeight: 700,
@@ -96,11 +96,20 @@ export default function MoodboardPage() {
 
   const collab = useCollaboratorContext();
   const isCollaborating = !!collab.ownerUserId;
-  // Always read-only while collaborating — same reasoning as every other
-  // newly-wired page: the admin key 403s updating/deleting an owner-scoped
-  // MoodboardItem regardless of the 'edit' bit, so there is no working
-  // write path to gate on yet.
-  const readOnly = isCollaborating;
+  // A collaborator changes the moodboard only with edit granted (owner ruling
+  // 2026-10-13), and the server's canEdit decides it. CHANGE AND REMOVE, NEVER
+  // ADD: a hosted function cannot stamp a new row as the owner, so in a
+  // collaborator session there is no Upload, no Add inspiration, no drop to
+  // upload and no new board, and the writer has no create. Named
+  // MoodboardItem, as it always was, so every write site is unchanged.
+  const [collabCanEdit, setCollabCanEdit] = useState(false);
+  const readOnly = isCollaborating && !collabCanEdit;
+  const MoodboardItem = isCollaborating
+    ? {
+        update: (id, data) => collaboratorWrite({ ownerUserId: collab.ownerUserId, page: 'Moodboard', action: 'update', id, data }),
+        delete: (id) => collaboratorWrite({ ownerUserId: collab.ownerUserId, page: 'Moodboard', action: 'delete', id }),
+      }
+    : MoodboardItemEntity;
 
   useEffect(() => { loadItems(); }, [isCollaborating]);
 
@@ -111,8 +120,9 @@ export default function MoodboardPage() {
           headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
         });
         if (res.ok) {
-          const { data } = await res.json();
+          const { data, canEdit } = await res.json();
           setItems(data.MoodboardItem || []);
+          setCollabCanEdit(canEdit === true);
         } else {
           toast.error('Failed to load — please refresh and try again.');
         }
@@ -285,7 +295,7 @@ export default function MoodboardPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}
       onDragOver={e => e.preventDefault()}
-      onDrop={e => { e.preventDefault(); if (!readOnly && !uploading && e.dataTransfer.files.length) handleFileUpload(e.dataTransfer.files); }}>
+      onDrop={e => { e.preventDefault(); if (!readOnly && !isCollaborating && !uploading && e.dataTransfer.files.length) handleFileUpload(e.dataTransfer.files); }}>
 
       <DashboardPageHeader title="Moodboard" subtitle="Collect and organize inspiration images for your wedding vision" />
 
@@ -306,7 +316,7 @@ export default function MoodboardPage() {
       {/* Ava + actions bar */}
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <AvaButton label="Ask Ava to find inspiration" onClick={() => setAvaOpen(true)} />
-        {!readOnly && (
+        {!readOnly && !isCollaborating && (
           <div className="flex flex-wrap items-center gap-[10px]">
             <button
               onClick={() => fileInputRef.current?.click()}
@@ -342,7 +352,7 @@ export default function MoodboardPage() {
 
       <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: 20 }}>
         {/* Board selector */}
-        <BoardSelector boards={boards} activeBoard={activeBoard} onBoardChange={setActiveBoard} onCreateBoard={handleCreateBoard} readOnly={readOnly} />
+        <BoardSelector boards={boards} activeBoard={activeBoard} onBoardChange={setActiveBoard} onCreateBoard={handleCreateBoard} readOnly={readOnly || isCollaborating} />
 
         {/* Search */}
         <div style={{ position: 'relative', maxWidth: 480 }}>
@@ -390,7 +400,7 @@ export default function MoodboardPage() {
             <span style={{ fontSize: 14, color: '#444444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Loading…</span>
           </div>
         ) : (
-          <MoodboardGrid items={filteredItems} onDeleteItem={readOnly ? undefined : handleDeleteItem} onUpdateItem={readOnly ? undefined : handleUpdateItem} readOnly={readOnly} scrollToItemId={scrollToItemId} highlightedItemId={highlightedItemId} />
+          <MoodboardGrid collaborating={isCollaborating} items={filteredItems} onDeleteItem={readOnly ? undefined : handleDeleteItem} onUpdateItem={readOnly ? undefined : handleUpdateItem} readOnly={readOnly} scrollToItemId={scrollToItemId} highlightedItemId={highlightedItemId} />
         )}
       </div>
 

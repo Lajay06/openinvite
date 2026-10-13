@@ -128,10 +128,11 @@ export const COLLABORATOR_PERMISSION_KEYS = Object.keys(COLLABORATOR_PAGE_MAP);
 /**
  * PAGES A COLLABORATOR MAY CHANGE. Owner ruling 2026-10-12, item 5: every page
  * in the map is offered, and every one is view only. A grant that says edit is
- * read as view, on the server and in the app. Schedule joined with its write PR
- * (owner ruling 2026-10-13); Moodboard joins only with its own.
+ * read as view, on the server and in the app. Schedule and Moodboard joined
+ * with their write PRs (owner rulings 2026-10-13), both change and remove only:
+ * a hosted function cannot stamp a new row as the owner, so nobody adds.
  */
-export const COLLABORATOR_EDIT_PAGES = Object.freeze(['Schedule']);
+export const COLLABORATOR_EDIT_PAGES = Object.freeze(['Schedule', 'Moodboard']);
 
 /** The one sentence the invite email and the accept page say after the page list. */
 export const COLLABORATOR_VIEW_ONLY_COPY = 'You can view these pages. You will not be able to change anything.';

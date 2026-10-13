@@ -42,6 +42,10 @@ export const EDIT_PAGES: Record<string, { entity: string; fields: string[] }> = 
     entity: 'Schedule',
     fields: ['event_name', 'event_date', 'start_time', 'end_time', 'location', 'description', 'responsible_person', 'category', 'notes'],
   },
+  Moodboard: {
+    entity: 'MoodboardItem',
+    fields: ['title', 'image_url', 'source_url', 'category', 'tags', 'notes', 'board_name', 'position_x', 'position_y', 'pinterest_id'],
+  },
 };
 
 export const ACTIONS = ['update', 'delete'];
