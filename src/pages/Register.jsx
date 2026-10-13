@@ -9,6 +9,7 @@ import { UserPlus, Mail, Loader2 } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { PasswordInput } from "@/components/ui/password-input";
 import AuthLayout, { AUTH_LABEL_CLASS } from "@/components/AuthLayout";
+import { isGiftClaimPath, GIFT_AUTH } from "@/lib/giftClaimReturn";
 import GoogleIcon from "@/components/GoogleIcon";
 import MicrosoftIcon from "@/components/MicrosoftIcon";
 import FacebookIcon from "@/components/FacebookIcon";
@@ -55,6 +56,12 @@ export default function Register() {
   const searchParams = new URLSearchParams(window.location.search);
   const next = searchParams.get('next');
   const plan = searchParams.get('plan');
+  // The log-in link keeps the same next, both ways (see Login.jsx).
+  const loginUrl = next ? `/login?next=${encodeURIComponent(next)}` : '/login';
+  // A GIFT IS WAITING (gifting v2, owner ruling 2026-10-13): the claim page
+  // sends a signed-out couple here, and the page says so, with "Log in" to
+  // switch. Everyone else sees this page as before.
+  const giftWaiting = isGiftClaimPath(next);
   const choosePlanUrl = () => {
     const p = new URLSearchParams();
     if (next) p.set('next', next);
@@ -171,12 +178,18 @@ export default function Register() {
   return (
     <AuthLayout
       icon={UserPlus}
-      title="Create your account"
-      subtitle="Sign up to get started"
+      title={giftWaiting ? GIFT_AUTH.heading : "Create your account"}
+      subtitle={giftWaiting ? (
+        <span data-gift-waiting>
+          {GIFT_AUTH.lineBefore}
+          <Link to={loginUrl} className="text-primary font-medium hover:underline">{GIFT_AUTH.linkText}</Link>
+          {GIFT_AUTH.lineAfter}
+        </span>
+      ) : "Sign up to get started"}
       footer={
         <>
           Already have an account?{" "}
-          <Link to="/login" className="text-primary font-medium hover:underline">
+          <Link to={loginUrl} className="text-primary font-medium hover:underline">
             Log in
           </Link>
         </>
