@@ -16,6 +16,7 @@ import { interactiveDivProps } from '@/lib/a11y';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { fetchGuestLinks } from '@/lib/guestLinks';
 import { sentGuestIds, guestsActuallySent } from '@/lib/sentRecipients';
+import { publishState, PUBLISH_STATE } from '@/lib/publishState';
 import { invitationsFor } from '@/lib/household';
 import { invitationGreetingName } from '@/lib/guestGreeting';
 import { isBounced, bouncedSkippedSentence } from '@/components/guests/emailBounce';
@@ -524,12 +525,18 @@ export default function SendInvitesModal({
     // site, and an unpublished site answers each one with "this invitation
     // does not work". A dialog the couple can click past would still spend
     // the one arrival each guest gets, so this stops and says where to go.
-    if (!wedding?.slug) {
-      toast.error('Claim your website address first — Design studio, then Share.');
+    // THE RULE COMES FROM src/lib/publishState.js, and the two messages stay.
+    // These were two correct hand-rolled branches, not a bug: they already
+    // distinguished "no address" from "not published", which is exactly the
+    // module's three states. What they could not do is stay in step with the
+    // other nine places that ask the same question, and with the server.
+    const sendability = publishState(wedding);
+    if (sendability === PUBLISH_STATE.NO_ADDRESS) {
+      toast.error('Claim your website address first, in Design studio, then Share.');
       return;
     }
-    if (wedding?.websiteEnabled !== true) {
-      toast.error('Your website is not published yet, so these links would not work. Publish it in Design studio, then send.');
+    if (sendability !== PUBLISH_STATE.LIVE) {
+      toast.error('Your Guest Suite is not published yet, so these links would not work. Publish it in Design studio, then send.');
       return;
     }
     setSending(true);

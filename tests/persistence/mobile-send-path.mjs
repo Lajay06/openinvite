@@ -54,8 +54,12 @@ export async function runMobileSendPath() {
   // ── THE RULES ARE STILL THE WEB'S, WHERE THE SHELL TAKES THEM FROM ────────
   ok("the web groups by invitation through household.js", /import \{ invitationsFor \} from '@\/lib\/household';/.test(web), 'SendInvitesModal.jsx');
   ok("the web skips bounces through emailBounce.js", /import \{ isBounced, bouncedSkippedSentence \} from '@\/components\/guests\/emailBounce';/.test(web), 'SendInvitesModal.jsx');
+  // BOTH CONDITIONS, NOW THROUGH publishState.js. Unchanged requirement: an
+  // unclaimed address and an unpublished suite are refused separately, because
+  // they send the couple to different screens.
   ok('the web refuses an unpublished send on these two conditions',
-     /if \(!wedding\?\.slug\)/.test(web) && /if \(wedding\?\.websiteEnabled !== true\)/.test(web), 'handleSend');
+     /sendability === PUBLISH_STATE\.NO_ADDRESS/.test(web)
+       && /sendability !== PUBLISH_STATE\.LIVE/.test(web), 'handleSend, via publishState.js');
   ok('  and so does the server', /if \(wedding\.websiteEnabled !== true\)/.test(server), 'api/send-invites.js');
 
   // ── THE SHELL IMPORTS THEM ───────────────────────────────────────────────
