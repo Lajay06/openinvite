@@ -68,12 +68,18 @@ await page.waitForTimeout(1500);
 // recognises a surface by a label the work is allowed to change cannot tell
 // "the panel is gone" from "the panel moved on".
 //
-// It anchors on the two controls the panel exists FOR instead. Both are the
-// subject of the contrast measurement below, both are named by aria-label
-// rather than by visible copy, and neither is something a copy pass can move.
+// It anchors on the two controls the panel exists FOR instead.
+//
+// AND THEN IT HAPPENED AGAIN, 2026-10-12. This said the two were "named by
+// aria-label rather than by visible copy, and neither is something a copy pass
+// can move". That was wrong. Toggle builds its aria-label as `Toggle ${label}`
+// FROM the visible copy, so when a ruling renamed "Website is Live" to
+// "Guest Suite is live" this guard reported the panel missing and skipped every
+// check it exists to run. The anchors are now data-toggle, set by a `name` prop
+// that is never rendered as text, so a copy pass genuinely cannot reach them.
 const onPanel = await page.evaluate(() =>
-  !!document.querySelector('button[aria-label^="Toggle Website is"]')
-  && !!document.querySelector('button[aria-label^="Toggle Require password"]'));
+  !!document.querySelector('button[data-toggle="publish"]')
+  && !!document.querySelector('button[data-toggle="require-password"]'));
 check('the Settings tab opens', onPanel, onPanel ? 'the panel is on screen' : 'no Settings panel');
 
 if (onPanel) {
@@ -108,7 +114,7 @@ if (onPanel) {
   const PANEL = `(() => {
     const marked = document.querySelector('[data-wb-settings-panel]');
     if (marked) return marked;
-    let n = document.querySelector('button[aria-label^="Toggle Website is"]');
+    let n = document.querySelector('button[data-toggle="publish"]');
     while (n && n.parentElement && !(n.innerText || '').includes('Require password')) n = n.parentElement;
     return n || null;
   })()`;
@@ -132,10 +138,14 @@ if (onPanel) {
   check('  and holds no input carrying it either', !url.editable, 'no slug field');
 
   // ── the two toggles: they work, AND they can be read ──────────────────────
-  for (const [aria, what] of [['Toggle Website is Live', 'the status toggle'], ['Toggle Require password', 'the password toggle']]) {
-    const btn = page.locator(`button[aria-label^="${aria.split(' Live')[0]}"]`).first();
+  // BY data-toggle, NOT BY LABEL. This loop held the literal
+  // 'Toggle Website is Live' and sliced a selector out of it, which is the last
+  // place in this guard that identified a control by copy the owner may rewrite.
+  // The 2026-10-12 rename reached it too.
+  for (const [name, what] of [['publish', 'the status toggle'], ['require-password', 'the password toggle']]) {
+    const btn = page.locator(`button[data-toggle="${name}"]`).first();
     const present = await btn.count() > 0;
-    check(`${what} is on the panel`, present, present ? aria : 'not found');
+    check(`${what} is on the panel`, present, present ? `data-toggle="${name}"` : 'not found');
     if (!present) { check(`  ${what}'s label can be read`, false, 'not found'); continue; }
 
     const seen = await page.evaluate((sel) => {
@@ -144,20 +154,24 @@ if (onPanel) {
       let n = span, bg = null;
       while (n && !bg) { const c = getComputedStyle(n).backgroundColor; if (c && c !== 'rgba(0, 0, 0, 0)') bg = c; n = n.parentElement; }
       return { text: span.innerText, fg: getComputedStyle(span).color, bg: bg || 'rgb(255, 255, 255)' };
-    }, `button[aria-label^="${aria.split(' Live')[0]}"]`);
+    }, `button[data-toggle="${name}"]`);
     const r = contrast(seen.fg, seen.bg);
     check(`  ${what}'s label can be read against the panel`, r >= AA,
       `${r.toFixed(2)}:1 — "${seen.text}" ${seen.fg} on ${seen.bg}`);
   }
 
   // ── the status toggle actually changes the record ─────────────────────────
-  const before = await page.locator('button[aria-label^="Toggle Website is"]').first().getAttribute('aria-pressed');
-  await page.locator('button[aria-label^="Toggle Website is"]').first().click().catch(() => {});
+  const before = await page.locator('button[data-toggle="publish"]').first().getAttribute('aria-pressed');
+  await page.locator('button[data-toggle="publish"]').first().click().catch(() => {});
   await page.waitForTimeout(600);
-  const after = await page.locator('button[aria-label^="Toggle Website is"]').first().getAttribute('aria-pressed');
-  const label = await page.evaluate(() => document.querySelector('button[aria-label^="Toggle Website is"]')?.parentElement.querySelector('span')?.innerText);
+  const after = await page.locator('button[data-toggle="publish"]').first().getAttribute('aria-pressed');
+  const label = await page.evaluate(() => document.querySelector('button[data-toggle="publish"]')?.parentElement.querySelector('span')?.innerText);
   check('the status toggle flips, and its label says which way',
-    before !== after && /Hidden|Live/.test(label || ''), `${before} → ${after}, "${label}"`);
+    // THE WORDS CHANGED with the 2026-10-12 vocabulary ruling: the sentence is
+    // now "Guest Suite is live" or "Guest Suite is hidden", lower case, and
+    // "No address yet" when there is no slug. Matching all three keeps the
+    // assertion about the label SAYING which way rather than about one spelling.
+    before !== after && /is live|is hidden|No address yet/.test(label || ''), `${before} → ${after}, "${label}"`);
 
   // ── AND NOTHING HANDS A GUEST THE SITE BY LINK ────────────────────────────
   //

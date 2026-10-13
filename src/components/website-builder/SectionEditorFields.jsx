@@ -78,11 +78,25 @@ export function AddBtn({ children, onClick }) {
  * becomes a regression somewhere nobody looked. The default is byte-identical
  * to what those three render today.
  */
-export function Toggle({ label, value, onChange, tone = 'light' }) {
+/**
+ * `name` is an OPTIONAL STABLE HOOK, and it exists because of a real failure.
+ *
+ * tests use aria-label to find a toggle, and aria-label here is
+ * `Toggle ${label}` — the visible copy. test-settings-tab.mjs anchored the
+ * whole Settings panel on `aria-label^="Toggle Website is"`, having moved OFF
+ * two visible strings for exactly this reason, and its own comment claims an
+ * aria-label is "not something a copy pass can move". On 2026-10-12 a ruled
+ * copy change renamed that label to "Guest Suite is live" and the guard
+ * reported the panel missing, skipping every check it existed to run.
+ *
+ * A label a product owner may rewrite cannot also be an identifier. `name` is
+ * never rendered as text, so a copy pass cannot reach it.
+ */
+export function Toggle({ label, value, onChange, tone = 'light', name }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 12, marginBottom: 4 }}>
       <span style={{ fontSize: 13, color: tone === 'dark' ? 'rgba(255,255,255,0.75)' : '#333' }}>{label}</span>
-      <button onClick={() => onChange(!value)} aria-label={label ? `Toggle ${label}` : 'Toggle'} aria-pressed={value} style={{ width: 38, height: 21, borderRadius: 11, border: 'none', cursor: 'pointer', flexShrink: 0, background: value ? '#E03553' : '#DDD', position: 'relative', transition: 'background 0.2s' }}>
+      <button onClick={() => onChange(!value)} data-toggle={name} aria-label={label ? `Toggle ${label}` : 'Toggle'} aria-pressed={value} style={{ width: 38, height: 21, borderRadius: 11, border: 'none', cursor: 'pointer', flexShrink: 0, background: value ? '#E03553' : '#DDD', position: 'relative', transition: 'background 0.2s' }}>
         <div style={{ position: 'absolute', width: 17, height: 17, borderRadius: '50%', background: '#fff', top: 2, left: value ? 19 : 2, transition: 'left 0.2s' }} />
       </button>
     </div>
