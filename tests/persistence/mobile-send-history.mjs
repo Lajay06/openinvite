@@ -62,15 +62,33 @@ export async function runMobileSendHistory() {
   const shell = code('src/mobile/screens/guests/SendInvitesScreen.jsx');
   const send = span(shell, 'const send = async', 'const failed = result');
   ok('the phone imports newSendEntry', /import \{ newSendEntry \} from '@\/lib\/sendHistory';/.test(shell), 'SendInvitesScreen.jsx');
-  ok('  builds one entry per guest a link was minted for',
-     /new Map\(await Promise\.all\(withTokens\.map\(async \(g\) => \[g\.id, await newSendEntry\(type, g\.email, new Date\(sentAt\)\)\]\)\)\)/.test(send) && ENTRY.test(send), 'historyById');
+  ok('  builds one entry per guest the send reached',
+     /new Map\(await Promise\.all\(sentGuests\.map\(async \(g\) => \[g\.id, await newSendEntry\(type, g\.email, new Date\(sentAt\)\)\]\)\)\)/.test(send) && ENTRY.test(send), 'historyById');
   ok('  appends it the web\'s way', APPEND.test(send), 'appended');
   ok('  on every type: no type writes nothing any more',
      /: appended\(g\)\);/.test(send) && !/Promise\.resolve\(\)/.test(send), 'update, save the date, thank you');
   ok('  beside the stamp for invite and reminder, with one sentAt for both',
      /\{ \.\.\.\(type === 'reminder' \? \{ reminder_sent_at: sentAt \} : \{ invite_sent_at: sentAt, invite_channel: channelStr \}\), \.\.\.appended\(g\) \}/.test(send)
        && !/_sent_at: new Date\(\)/.test(send), 'stamp and entry');
-  ok('  over the guests it sent to', /await Promise\.all\(withTokens\.map\(track\)\)/.test(send), 'withTokens');
+  ok('  over the guests it sent to', /await Promise\.all\(sentGuests\.map\(track\)\)/.test(send) && !/withTokens\.map\(track\)/.test(send), 'sentGuests');
+
+  // ── WHO WAS SENT TO: ONE RULE, IMPORTED (lane A's #1025) ────────────────
+  //
+  // src/lib/sentRecipients.js decides who the send reached: every member of an
+  // emailed invitation, and a guest whose plus-one was emailed; a guest alone
+  // on an invitation with no address gets nothing. The web and the phone ask
+  // it the same question, and both writes take the one set it answers.
+  ok('the web asks sentRecipients.js', /import \{ sentGuestIds, guestsActuallySent \} from '@\/lib\/sentRecipients';/.test(web)
+     && /const sentIds = sentGuestIds\(\{ emailedInvitations: emailList, plusOneGuests: plusOneEmailList \}\);/.test(web)
+     && /const sentGuests = guestsActuallySent\(withTokens, sentIds\);/.test(web), 'SendInvitesModal.jsx');
+  ok('the phone imports the same module', /import \{ sentGuestIds, guestsActuallySent \} from '@\/lib\/sentRecipients';/.test(shell), 'SendInvitesScreen.jsx');
+  ok('  and asks it the same question',
+     /const sentIds = sentGuestIds\(\{ emailedInvitations: emailList, plusOneGuests: plusOneList \}\);/.test(send)
+       && /const sentGuests = guestsActuallySent\(withTokens, sentIds\);/.test(send)
+       && /const emailList = invitations\.filter\(\(i\) => i\.email && i\.lead\?\.rsvp_link_id\);/.test(send)
+       && /const plusOneList = withTokens\.filter\(\(g\) => g\.plus_one_email && g\.plus_one_rsvp_link_id\);/.test(send), 'emailList, plusOneList');
+  ok('  and the result rows read the same set', /const went = sentIds\.has\(g\.id\);/.test(send), 'rows');
+  ok('  so no status is decided from the invitation alone', !/const went = !!\(i\.email/.test(send), 'no restated rule');
 
   const retyped = walk('src/mobile').filter((f) => /to_hash|crypto\.subtle|SHA-256/.test(code(f)));
   ok('no shell file builds an entry or a hash of its own', retyped.length === 0, retyped.join(', ') || 'none');

@@ -58,7 +58,7 @@ Recorded by lane D. Lane D does not edit these files.
 4. Lane A, open. Five dashboard dates on the web are still written out with a weekday, after #917 and #941 made dashboard dates numeric: src/components/dashboard/Briefing.jsx:29 (the eyebrow, "Monday 7 September"), src/pages/DailyUpdate.jsx:230 (the masthead), src/components/schedule/ScheduleDayList.jsx:15 (used by src/pages/ScheduleHub.jsx), src/pages/GuestSuiteSchedule.jsx:42 (en-GB, with an all-caps "NO DATE SET" beside it) and src/pages/UniverseStudio.jsx:52 (en-GB). The phone is numeric everywhere since mobile parity 6, so on these five the two surfaces now disagree.
 5. Lane A, for a ruling. src/pages/OurStory.jsx:418 offers Ava the starter "Write a short version for the website". The Guest Suite ruling of 2026-10-11 was given for the app, where the copied starter now says "for the Guest Suite"; whether it reaches the web is the advisor's call.
 
-6. Lane A, open. src/components/guests/SendInvitesModal.jsx:636 stamps invite_sent_at (and :652 appends send history) on every guest it minted a link for, including a guest alone on an invitation with no email, who was not sent anything. The modal says "with no email yet" for them before the send and "Invited" after it. The phone does the same through the same withTokens list, so a fix belongs on the web first and the shell follows it.
+6. Lane A, fixed by #1025 (src/lib/sentRecipients.js); the phone follows it. Was: src/components/guests/SendInvitesModal.jsx:636 stamps invite_sent_at (and :652 appends send history) on every guest it minted a link for, including a guest alone on an invitation with no email, who was not sent anything. The modal says "with no email yet" for them before the send and "Invited" after it. The phone does the same through the same withTokens list, so a fix belongs on the web first and the shell follows it.
 7. Lane A, for a choice. The publish rule a send obeys (a slug, and websiteEnabled === true) is written inline twice, in SendInvitesModal.jsx:526 and :530 and in api/send-invites.js:275, and the shell now holds a third copy because there is no module to import. A small predicate in src/lib would let all three consume one rule; tests/persistence/mobile-send-path.mjs checks that the three still agree until then.
 
 8. Lane A, for the ruling's reach. The web names the product in lower case 105 times across 43 files in src/pages, src/components and src/lib ("Guest suite" in chrome, "guest suite" in sentences). The 2026-10-12 ruling reads "everywhere it names the product"; lane D applied it to the shell only. One of the web's uses, src/pages/UniverseStudio.jsx's Ava starter "What should go on my guest suite?", reaches the phone through src/mobile/features/avaPages.generated.js, which is regenerated rather than edited, so it changes on the phone when it changes on the web.
@@ -103,6 +103,15 @@ exactly as SendInvitesModal.jsx does, one entry per guest a link was minted for,
 src/lib/sendHistory.js's newSendEntry, for every type, with one sentAt for the stamp and
 the entry. No api/ change was needed: the phone's tracking write is the same
 base44.entities.Guest.update the web makes. Guard: tests/persistence/mobile-send-history.mjs.
+
+Merged as #1010. On 2026-10-13, from lane A's #1025 (merge de35c130): the phone's send
+asks src/lib/sentRecipients.js who was actually sent to, as the web does, and both writes
+(the stamp and the history entry) and the result rows take that one set. Recorded in
+MOBILE_PARITY.md under Send invites.
+
+QUEUED, NOT STARTED. Lane A's shared Guest Suite state helper (no_address, hidden, live):
+once it lands, and not before, align SiteContainer, PlanHubScreen, SendInvitesScreen and
+features/registry.js to it.
 
 WHAT IS NEXT. The Google sign-in device check, on the owner's "ready for the sign-in check". The Google sign-in device check waits for the
 owner's "ready for the sign-in check"; it needs the owner and the machine's one browser

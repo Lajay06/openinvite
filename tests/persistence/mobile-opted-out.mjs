@@ -62,7 +62,7 @@ export async function runMobileOptedOut() {
        && /const sendable = list\.filter\(\(g\) => !g\.email_opt_out[ &)]/.test(send), 'optedOut, sendable');
   ok('  mints links for the sendable guests only', /await ensureTokens\(sendable\)/.test(send) && !/ensureTokens\(list\)/.test(send), 'ensureTokens(sendable)');
   ok('  stamps only the guests it sent to',
-     /await Promise\.all\(withTokens\.map\(track\)\)/.test(send) && !/list\.map\(track\)/.test(send), 'track over withTokens');
+     /await Promise\.all\(sentGuests\.map\(track\)\)/.test(send) && !/list\.map\(track\)/.test(send), 'track over the guests the send reached');
   ok('  lists an opted-out guest as skipped, with the reason',
      /optedOut\.map\(\(g\) => \(\{ guest: g, status: 'skipped', why: OPTED_OUT_LABEL \}\)\)/.test(send)
        && (send.match(/\.\.\.notSent/g) || []).length === 2,
