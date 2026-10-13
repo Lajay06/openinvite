@@ -40,6 +40,7 @@ import { publishState, PUBLISH_STATE } from '../src/lib/publishState.js';
 import { adminList } from './_lib/base44Entities.js';
 import { invitationGreetingName } from '../src/lib/guestGreeting.js';
 import { verifyBase44User, fetchOwnedGuestEmails, filterGuestsByOwnership } from './_lib/auth.js';
+import { TOO_MANY_TRIES } from './_lib/calmErrors.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const SUPPORT_ADDRESS = 'hello@openinvite.com.au';
@@ -219,7 +220,7 @@ export default async function handler(req, res, {
   res.setHeader('X-RateLimit-Limit', '20');
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
-    return res.status(429).json({ error: 'Too many requests — please wait a moment.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   const caller = await verifyUser(req);
