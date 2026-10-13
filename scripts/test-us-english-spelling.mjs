@@ -47,6 +47,7 @@
  */
 
 import { execSync } from 'node:child_process';
+import { responseStrings } from './lib/apiResponseCopy.mjs';
 
 // THE SCOPE, STATED. Three of this file's messages used to say
 // "dashboard/universe-builder source", which described a NARROWER scope than
@@ -64,6 +65,13 @@ const SCOPE_PATTERNS = [
   /^src\/components\//,
   /^src\/lib\//,
 ];
+
+/**
+ * api/ RESPONSE COPY IS IN SCOPE, the field and not the file. Owner ruling
+ * 2026-10-13. REPORT ONLY for now, with the existing drift being worded in
+ * tiers; see scripts/test-api-response-safety.mjs for the whole-repo picture.
+ */
+const isApiFile = (f) => /^api\/.*\.js$/.test(f);
 
 const OUT_OF_SCOPE_PATTERNS = [
   /^src\/components\/marketing\//,
@@ -201,6 +209,8 @@ try {
 }
 
 const scopedFiles = changedFiles.filter(inScope);
+const apiFiles = changedFiles.filter(isApiFile);
+const apiFindings = [];
 
 console.log('\n═══════════════════════════════════════════════════════');
 console.log('  US-English spelling guard (dashboard + universe builder)');
@@ -214,6 +224,35 @@ if (scopedFiles.length === 0) {
 
 const range = process.env.GITHUB_EVENT_NAME === 'push' ? `${base}..HEAD` : `${base}...HEAD`;
 const findings = [];
+
+// api/ RESPONSE COPY, READ THROUGH THE EXTRACTOR AND REPORTED, NOT ENFORCED.
+// Only what an endpoint says back to a person; its identifiers, its Base44
+// field names and its header prose are not copy and are not read.
+for (const file of apiFiles) {
+  let patch;
+  try { patch = git(`diff ${range} -- "${file}"`); } catch { continue; }
+  let lineNo = 0;
+  for (const raw of patch.split('\n')) {
+    if (raw.startsWith('@@')) { const m = /\+(\d+)/.exec(raw); lineNo = m ? parseInt(m[1], 10) - 1 : 0; continue; }
+    if (raw.startsWith('+++') || raw.startsWith('---')) continue;
+    if (!raw.startsWith('+')) continue;
+    lineNo += 1;
+    const content = raw.slice(1);
+    if (isAllowlisted(content)) continue;
+    for (const str of responseStrings(content)) {
+      const m = BANNED_RE.exec(str.text);
+      if (m) apiFindings.push({ file, line: lineNo, word: m[0], field: str.field, text: str.text.slice(0, 120) });
+    }
+  }
+}
+
+if (apiFindings.length) {
+  console.log(`  REPORT ONLY, not failing: ${apiFindings.length} banned spelling(s) in api/ response copy added on this branch.`);
+  for (const f of apiFindings) console.log(`      ${f.file}:${f.line}  "${f.word}"  ${f.field}: ${f.text}`);
+  console.log('  Owner ruling 2026-10-13 put api/ response fields in scope; enforcement follows the tiered fix.\n');
+} else if (apiFiles.length) {
+  console.log(`  ✓ api/ response copy in ${apiFiles.length} changed file(s) carries no banned spellings.`);
+}
 
 for (const file of scopedFiles) {
   let patch;
