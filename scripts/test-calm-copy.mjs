@@ -37,6 +37,7 @@
  */
 
 import { execSync } from 'node:child_process';
+import { responseStrings } from './lib/apiResponseCopy.mjs';
 
 // BY CODE POINT, NOT BY LITERAL, AND NOT BY ESCAPE EITHER. A \u escape written
 // into this file through a shell heredoc arrived as the character itself, which
@@ -110,6 +111,19 @@ function resolveDiffBase() {
 }
 
 const isSource = (f) => SOURCE_SCOPE.some((re) => re.test(f)) && !SOURCE_OUT_OF_SCOPE.some((re) => re.test(f));
+/**
+ * api/ IS IN SCOPE, BUT ONLY ITS RESPONSE COPY. Owner ruling 2026-10-13: the
+ * unit is the user-facing field in a response body, not the file, because an
+ * api file is mostly header prose, Base44 field names and log lines. The
+ * extractor is scripts/lib/apiResponseCopy.mjs.
+ *
+ * REPORT ONLY for now, by the same ruling: the existing drift is 83 strings
+ * across 51 files, spanning ordinary, held and frozen paths, and the owner is
+ * wording them in tiers. Failing on it today would block every lane on copy
+ * nobody has written yet. Added api lines are printed and do not change the
+ * exit status.
+ */
+const isApi = (f) => /^api\/.*\.js$/.test(f);
 const isDoc = (f) => DOC_SCOPE.some((re) => re.test(f)) && !DOC_OUT_OF_SCOPE.some((re) => re.test(f));
 
 /**
@@ -197,7 +211,8 @@ try {
   process.exit(0);
 }
 
-const scoped = changedFiles.filter((f) => isSource(f) || isDoc(f));
+const scoped = changedFiles.filter((f) => isSource(f) || isDoc(f) || isApi(f));
+const apiFindings = [];
 
 console.log('\n═══════════════════════════════════════════════════════');
 console.log('  Calm copy guard: no em dashes, no en dashes');
@@ -238,6 +253,17 @@ for (const file of scoped) {
     // Only the part of the line that is not inside a comment. A `//` line and a
     // continuation line inside a block comment both reduce to nothing, so both
     // are skipped, which is the whole point of doing it this way.
+    // AN api LINE IS READ THROUGH THE EXTRACTOR, so only what the endpoint
+    // says back to a person is checked, never its identifiers or its prose.
+    if (isApi(file)) {
+      for (const s of responseStrings(line)) {
+        for (const [ch, name] of BANNED) {
+          if (s.text.includes(ch)) { apiFindings.push({ file, lineNo, name, field: s.field, text: s.text.slice(0, 100) }); break; }
+        }
+      }
+      continue;
+    }
+
     const subject = residue ? (residue[lineNo - 1] ?? line) : line;
 
     for (const [ch, name] of BANNED) {
@@ -247,6 +273,16 @@ for (const file of scoped) {
       }
     }
   }
+}
+
+// REPORT ONLY, AND LOUD ABOUT IT. Printed before the verdict so it cannot be
+// mistaken for part of it.
+if (apiFindings.length) {
+  console.log(`  REPORT ONLY, not failing: ${apiFindings.length} dash(es) in api/ response copy added on this branch.`);
+  for (const f of apiFindings) console.log(`      ${f.file}:${f.lineNo}  ${f.name}  ${f.field}: ${f.text}`);
+  console.log('  Owner ruling 2026-10-13 put api/ response fields in scope; enforcement follows the tiered fix.\n');
+} else if (scoped.some(isApi)) {
+  console.log('  ✓ api/ response copy on this branch carries no em or en dashes.');
 }
 
 if (findings.length === 0) {
