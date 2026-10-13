@@ -72,7 +72,11 @@ export async function runInviteEntranceAndPublishGate() {
   // ── Sending ───────────────────────────────────────────────────────────────
   const api = read('api/send-invites.js');
   check('the server refuses when websiteEnabled is not true',
-    /if \(wedding\.websiteEnabled !== true\) \{/.test(api) && /status\(409\)/.test(api) && /website_unpublished/.test(api),
+    // THE RULE MOVED to src/lib/publishState.js on 2026-10-13, and the
+    // endpoint now refuses BOTH ways of not being live rather than only the
+    // unpublished one. Requirement unchanged: a 409 with website_unpublished,
+    // before anything renders.
+    /sendability !== PUBLISH_STATE\.LIVE/.test(api) && /status\(409\)/.test(api) && /website_unpublished/.test(api),
     '409 website_unpublished');
   check('  and refuses before any email is rendered or sent',
     api.indexOf('website_unpublished') < api.indexOf('renderInvitationEmail({'), 'refusal precedes the render call');

@@ -132,16 +132,34 @@ export async function runPublishStateOneAnswer() {
   //
   // Each server reader found the row BY its slug, so a slug check there would
   // ask whether the thing it just looked up exists. Owner ruling the same day.
-  // api/send-invites.js IS NOT IN THIS LIST ANY MORE. It was, on the strength
-  // of a claim that it found its row by slug. It does not: it is scoped to
-  // created_by_id, so nothing there has established that an address exists, and
-  // it let a slugless wedding through while the modal refused it. It is a send
-  // file, so it moves under its own held PR.
+  // api/send-invites.js IS NOT IN THIS LIST, and now asks the module instead.
+  // It was in it, on the strength of a claim that it found its row by slug. It
+  // does not: it is scoped to created_by_id, so nothing there had established
+  // that an address exists, and it let a slugless wedding through while the
+  // modal refused it. Asserted below as a module user.
   for (const server of ['api/guest-page.js', 'api/wedding-by-slug.js', 'api/wedding-poll-results.js']) {
     const src = read(server);
     ok(`  ${server.split('/').pop()} still tests the flag on its own`,
        /websiteEnabled !== true/.test(src) && !/publishState/.test(src), 'unchanged');
   }
+
+  // ── THE SEND ENDPOINT REFUSES BOTH WAYS OF NOT BEING LIVE ──────────────
+  const send = read('api/send-invites.js');
+  ok('api/send-invites.js asks publishState.js',
+     /const sendability = publishState\(wedding\)/.test(send), 'publishState');
+  ok('  and refuses a slugless send, which it used to allow',
+     /sendability === PUBLISH_STATE\.NO_ADDRESS/.test(send) && /website_no_address/.test(send),
+     '409 website_no_address');
+  ok('  as well as an unpublished one, keeping its original reason code',
+     /sendability !== PUBLISH_STATE\.LIVE/.test(send) && /website_unpublished/.test(send),
+     '409 website_unpublished');
+  ok('  both before anything is rendered or sent',
+     send.indexOf('website_no_address') < send.indexOf('renderInvitationEmail({')
+       && send.indexOf('website_unpublished') < send.indexOf('renderInvitationEmail({'),
+     'refusals precede the render');
+  ok('  and it still does not re-read the flag with the admin key',
+     !/adminList\('WeddingDetails'|entities\/WeddingDetails/.test(send.split('const sendability')[1]?.slice(0, 400) || ''),
+     'body-based layer, unchanged');
 
   return results;
 }

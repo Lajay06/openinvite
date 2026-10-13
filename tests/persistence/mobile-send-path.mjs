@@ -60,7 +60,11 @@ export async function runMobileSendPath() {
   ok('the web refuses an unpublished send on these two conditions',
      /sendability === PUBLISH_STATE\.NO_ADDRESS/.test(web)
        && /sendability !== PUBLISH_STATE\.LIVE/.test(web), 'handleSend, via publishState.js');
-  ok('  and so does the server', /if \(wedding\.websiteEnabled !== true\)/.test(server), 'api/send-invites.js');
+  // AND NOW IT REFUSES BOTH WAYS, through the same module the web uses. It
+  // used to refuse only the unpublished case and allow a slugless send.
+  ok('  and so does the server, both ways',
+     /sendability !== PUBLISH_STATE\.LIVE/.test(server)
+       && /sendability === PUBLISH_STATE\.NO_ADDRESS/.test(server), 'api/send-invites.js');
 
   // ── THE SHELL IMPORTS THEM ───────────────────────────────────────────────
   ok('the shell imports invitationsFor', /import \{ invitationsFor \} from '@\/lib\/household';/.test(shell), 'SendInvitesScreen.jsx');
