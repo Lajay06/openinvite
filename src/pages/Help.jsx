@@ -102,7 +102,7 @@ const ARTICLES = {
         <li style={S.li}>Click "Collaborate" in the sidebar</li>
         <li style={S.li}>Enter their name and email address</li>
         <li style={S.li}>Under "Pages they can view", check "View only" for each page you want them to see</li>
-        <li style={S.li}>For Schedule, you can check "Can make changes" instead, so they can add, edit and delete its events</li>
+        <li style={S.li}>For Schedule, you can check "Can make changes" instead, so they can add, change and remove items on it</li>
         <li style={S.li}>Click "Send Invite". They get an email with a link to join</li>
       </ol>
       <h3 style={S.h3}>What collaborators can do</h3>
