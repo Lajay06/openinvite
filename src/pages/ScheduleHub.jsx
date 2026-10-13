@@ -455,6 +455,7 @@ export default function ScheduleHub() {
       />
       {activeTab === "runsheet" && (
         <RunSheet
+          collaborating={isCollaborating}
           scheduleItems={scheduleItems}
           category={runSheetEventId}
           onPickEvent={setRunSheetEventId}

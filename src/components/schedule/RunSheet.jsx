@@ -41,7 +41,11 @@ function shift(time, minutes) {
  * first, so a wedding with one event never asks and a wedding with four opens
  * on the fullest.
  */
-export default function RunSheet({ scheduleItems = [], category, onPickEvent, onEdit, onDelete, onAdd, onReorder, readOnly, loading }) {
+// A collaborator, viewing or editing, can never add, so no empty state may
+// point at adding (owner ruling 2026-10-13). The owner's lines are unchanged.
+export const COLLABORATOR_EMPTY = 'Nothing on the schedule yet.';
+
+export default function RunSheet({ scheduleItems = [], category, onPickEvent, onEdit, onDelete, onAdd, onReorder, readOnly, loading, collaborating = false }) {
   const events = useMemo(() => eventsInSchedule(scheduleItems), [scheduleItems]);
   // PILL ORDER IS THE ORDER OF THE WEDDING, not the order of the counts.
   // `eventsInSchedule` sorts most-rows-first because that decides which event
@@ -119,14 +123,16 @@ export default function RunSheet({ scheduleItems = [], category, onPickEvent, on
 
       {!active && !showingAll ? (
         <p style={{ fontFamily: PJS, fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: 0 }}>
+          {collaborating ? COLLABORATOR_EMPTY : <>
           No events yet. Add one from List and tag it as part of an event — its run sheet appears here.
+          </>}
         </p>
       ) : (
         <DataTable
           columns={COLUMNS}
           rows={rows}
           loading={loading || busy}
-          empty={showingAll
+          empty={collaborating ? COLLABORATOR_EMPTY : showingAll
             ? 'Nothing on any run sheet yet — tag an item as part of an event and it appears here.'
             : `Nothing in the ${String(active.label).toLowerCase()} run sheet yet — “Add a moment” puts the first thing on it.`}
           actions={(r) => (readOnly ? [] : [

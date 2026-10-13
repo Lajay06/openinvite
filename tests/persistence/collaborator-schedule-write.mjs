@@ -248,5 +248,12 @@ export async function runCollaboratorScheduleWrite() {
   ok('  and every write site goes through that Schedule, none straight to the entity',
      !/ScheduleEntity\.(create|update|delete)\(/.test(hub) && (hub.match(/\bSchedule\.(create|update|delete)\(/g) || []).length === 5, `${(hub.match(/\bSchedule\.(create|update|delete)\(/g) || []).length} site(s)`);
 
+  const runSheet = stripComments(fs.readFileSync(path.join(ROOT, 'src/components/schedule/RunSheet.jsx'), 'utf8'), { trailing: true });
+  ok('in any collaborator session the run sheet\'s empty state is "Nothing on the schedule yet." with no button',
+     /export const COLLABORATOR_EMPTY = 'Nothing on the schedule yet\.';/.test(runSheet)
+     && /\{collaborating \? COLLABORATOR_EMPTY : <>/.test(runSheet) && /empty=\{collaborating \? COLLABORATOR_EMPTY : showingAll/.test(runSheet)
+     && /collaborating=\{isCollaborating\}/.test(hub), 'view or edit');
+  ok('  while the owner keeps the approved lines', runSheet.includes('No events yet. Add one from List and tag it as part of an event') && runSheet.includes('puts the first thing on it.'), 'unchanged');
+
   return results;
 }
