@@ -7,7 +7,7 @@
  * Owner, 2026-10-13: a header photo, the Cloudinary image
  * DTS_QUIET_GLAMOUR_DTS_Studio_Photos_ID8370_coshvz delivered as
  * f_jpg,q_auto,w_1200 and shown 600 wide, alt "Openinvite"; the same full
- * logo and the same grey as the sign-up code email
+ * logo and the same gray as the sign-up code email
  * (base44/emails/EmailVerification.html). The words are pinned elsewhere
  * (collaborator-truthful-permissions.mjs); this guard pins the frame.
  *
@@ -45,8 +45,8 @@ export async function runCollaboratorInviteEmailLayout() {
   ok('  not the mark alone', !/openinvite-icon-mark/.test(html), 'no mark-only image');
   const css = fs.readFileSync(path.join(ROOT, 'src/index.css'), 'utf8');
   const m = css.match(/:root\s*\{[\s\S]*?--background:\s*(\d+)\s+(\d+)%\s+(\d+)%;/);
-  const grey = m && m[2] === '0' && m[3] === '96' ? '#F5F5F5' : 'token moved';
-  ok('the page is the onboarding grey, --background in src/index.css', new RegExp(`<body style="[^"]*background:${grey};`).test(html) && html.includes(`style="background:${grey};padding:40px 16px;"`), grey);
+  const gray = m && m[2] === '0' && m[3] === '96' ? '#F5F5F5' : 'token moved';
+  ok('the page is the onboarding gray, --background in src/index.css', new RegExp(`<body style="[^"]*background:${gray};`).test(html) && html.includes(`style="background:${gray};padding:40px 16px;"`), gray);
   ok('  the card is white', /class="card" style="[^"]*background:#ffffff;/.test(html), 'white');
   ok('  and no cream, and not the shared shell\'s #F7F7F7', !/#f6f4f1|#F6F2EC|#F7F7F7/i.test(html), 'no other ground');
 

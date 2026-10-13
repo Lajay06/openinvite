@@ -15,10 +15,10 @@ import { collaboratorPageLabels, collaboratorClosingCopy } from './collaboratorP
 
 /**
  * THE CODE EMAIL'S LAYOUT (owner, 2026-10-13), not the shared emailShell: the
- * onboarding page's grey behind a white card, the full Openinvite logo top
+ * onboarding page's gray behind a white card, the full Openinvite logo top
  * left, one full-width header photo, then the invite. The pieces are the
  * verification email's (base44/emails/EmailVerification.html):
- *   - the grey is the app's --background token (src/index.css, hsl 0 0% 96%,
+ *   - the gray is the app's --background token (src/index.css, hsl 0 0% 96%,
  *     #F5F5F5; color.bgSubtle in src/styles/tokens.js);
  *   - the logo is the site header's lockup with its wordmark recolored for a
  *     light ground, a 2x PNG at /email-assets/openinvite-logo-on-light-2x.png;
