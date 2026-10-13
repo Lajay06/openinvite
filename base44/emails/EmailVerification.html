@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<!--
+  base44/emails/EmailVerification.html
+
+  MIRROR, HELD. Openinvite's own version of Base44's sign-up verification email
+  (application email type `email_verification`). Owner ruling 2026-10-13, route
+  1: Base44 cannot be told to stop sending its verification email, and only its
+  own code completes sign-up, so its email is replaced rather than a second one
+  sent. Base44 keeps the code, its ten-minute expiry and its rate limits.
+
+  Written into the app with "Customize application email" only after the owner
+  approves the rendered screenshots. Base44 reviews it before sending (up to an
+  hour); `authored_status` reads `live` once it is the one sent. It must show
+  the code: `{{code}}` below is checked against the placeholder name in Base44's
+  own copy before the write, and a template without the code is refused
+  (`missing_code`), never sent.
+
+  The design is the retention emails' (api/_lib/retentionEmails.js): warm
+  ground, white card, the mark top left, one full-width photo, the footer over
+  a hairline. Content is the owner's, word for word.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="light only" />
+  <meta name="supported-color-schemes" content="light only" />
+  <title>Your Openinvite code</title>
+  <style>
+    @media only screen and (max-width: 600px) {
+      .card { width: 100% !important; }
+      .pad { padding-left: 24px !important; padding-right: 24px !important; }
+      .code { font-size: 34px !important; letter-spacing: 8px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background:#f6f4f1;font-family:'Plus Jakarta Sans', Helvetica, Arial, sans-serif;">
+  <div style="display:none;font-size:1px;color:#f6f4f1;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">It lasts ten minutes.</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f6f4f1;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" class="card" style="width:600px;max-width:600px;background:#ffffff;">
+          <tr>
+            <td class="pad" style="padding:32px 40px 24px;">
+              <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1785659181/email-assets/openinvite-icon-mark.png" width="28" height="28" alt="Openinvite" style="display:block;width:28px;height:28px;border:0;" />
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0;">
+              <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_1200,c_fill,ar_2:1/DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2" width="600" height="300" alt="" style="display:block;width:100%;max-width:600px;height:auto;border:0;background:#e8e4df;" />
+            </td>
+          </tr>
+          <tr>
+            <td class="pad" style="padding:32px 40px 18px;">
+              <h1 style="margin:0;font-family:'Plus Jakarta Sans', Helvetica, Arial, sans-serif;font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.02em;color:#0A0A0A;">Nearly in.</h1>
+            </td>
+          </tr>
+          <tr>
+            <td class="pad" style="padding:0 40px 24px;">
+              <p style="margin:0;font-family:'Plus Jakarta Sans', Helvetica, Arial, sans-serif;font-size:15px;line-height:1.7;color:rgba(10,10,10,0.72);">Here is your code. Type it where you left off and you are through.</p>
+            </td>
+          </tr>
+          <tr>
+            <td class="pad" style="padding:0 40px 24px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" style="background:#F6F2EC;padding:28px 16px;">
+                    <div class="code" style="font-family:'Plus Jakarta Sans', Helvetica, Arial, sans-serif;font-size:40px;font-weight:700;letter-spacing:12px;line-height:1.2;color:#0A0A0A;">{{code}}</div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td class="pad" style="padding:0 40px 32px;">
+              <p style="margin:0;font-family:'Plus Jakarta Sans', Helvetica, Arial, sans-serif;font-size:15px;line-height:1.7;color:rgba(10,10,10,0.72);">It works for ten minutes. If you did not ask for it, ignore this and nothing happens.</p>
+            </td>
+          </tr>
+          <tr>
+            <td class="pad" style="padding:0 40px;">
+              <div style="height:1px;background:#e8e4df;line-height:1px;font-size:0;">&nbsp;</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="pad" style="padding:20px 40px 36px;">
+              <p style="margin:0;font-family:'Plus Jakarta Sans', Helvetica, Arial, sans-serif;font-size:12px;line-height:1.7;color:#8a8580;">You are getting this because this address was used to sign up for Openinvite. Openinvite, Australia. <a href="mailto:hello@openinvite.com.au" style="color:#8a8580;text-decoration:underline;">hello@openinvite.com.au</a></p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
