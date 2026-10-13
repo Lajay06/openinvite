@@ -8,7 +8,7 @@
  * families (src/lib/selfHostedFonts.js is generated from those), and adding a
  * package would mean committing a lockfile change, so the one face the flow
  * uses is served from public/fonts/caveat/ (latin, 400, from @fontsource/caveat
- * 5.2.8, OFL; the licence sits beside it as OFL.txt), as the owner approved.
+ * 5.2.8, OFL; the license sits beside it as OFL.txt), as the owner approved.
  *
  * The email still renders the note as an image through Cloudinary, because
  * Gmail loads no web fonts; this is for pages only.
