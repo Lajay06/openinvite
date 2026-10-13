@@ -69,5 +69,14 @@ export async function runCollaboratorInviteEmailLayout() {
   ok('  and no small accent-colored, letter-spaced line anywhere on the page',
      !/fontWeight: 700, color: '#E03553', letterSpacing: '0\.1em'/.test(accept), 'no eyebrow style');
 
+  // ONE PAGE PER ROW, AT 1440 AND AT 390 (owner, 2026-10-13). A block-level
+  // flex row takes the full width at any viewport, so the items stack at both;
+  // inline-flex is what let them run together on a wide screen. Read
+  // statically: CI's Build & test job has no browser. The PR body records the
+  // measured boxes at both widths.
+  ok('each page in the list is its own row: display flex, never inline',
+     /const PAGE_LABEL_STYLE = \{ display: 'flex', alignItems: 'center', gap: 10,/.test(accept) && !/PAGE_LABEL_STYLE = \{ display: 'inline/.test(accept), 'flex rows');
+  ok('  with a clear gap between the eye icon and its label', /PAGE_LABEL_STYLE = \{[^}]*gap: (\d+)/.test(accept) && Number(accept.match(/PAGE_LABEL_STYLE = \{[^}]*gap: (\d+)/)[1]) >= 8, 'gap at least 8px');
+
   return results;
 }

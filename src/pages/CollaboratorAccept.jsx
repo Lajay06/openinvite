@@ -7,7 +7,9 @@ import { collaboratorPageLabels, collaboratorClosingCopy } from '@/lib/collabora
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-const PAGE_LABEL_STYLE = { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#0A0A0A', fontFamily: PJS, padding: '6px 0' };
+// One page per row at every width (owner, 2026-10-13): a block-level flex row,
+// never inline, with a clear gap between the eye icon and its label.
+const PAGE_LABEL_STYLE = { display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#0A0A0A', fontFamily: PJS, padding: '6px 0' };
 
 export default function CollaboratorAccept() {
   const { token } = useParams();
