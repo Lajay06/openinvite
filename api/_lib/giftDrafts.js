@@ -22,6 +22,7 @@
 import { encryptPayload, decryptPayload } from './questionnaireCrypto.js';
 import { hmacHex } from './appKeys.js';
 import { GIFT_PHOTOS, HEADLINES, NOTE_STYLES, NOTE_MAX } from '../../src/lib/giftingV2.js';
+import { isValidGiftEmail, normalizeGiftEmail } from '../../src/lib/giftInput.js';
 
 const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
@@ -30,7 +31,6 @@ export const DRAFT_TTL_MS = 60 * 60 * 1000;
 const PHOTO_IDS = new Set(GIFT_PHOTOS.map((p) => p.id));
 const HEADLINE_KEYS = new Set(HEADLINES.map((h) => h.key));
 const STYLE_KEYS = new Set(NOTE_STYLES.map((s) => s.key));
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const IANA = /^[A-Za-z_]+(\/[A-Za-z0-9_+-]+){0,2}$/;
 
@@ -45,8 +45,9 @@ export function validateGiftDraft(draft, { today = new Date() } = {}) {
   const d = draft && typeof draft === 'object' ? draft : {};
   const names = text(d.names, 120);
   if (!names) return { ok: false, error: 'names' };
-  const email = text(d.email, 200);
-  if (!email || !EMAIL.test(email)) return { ok: false, error: 'email' };
+  // The page's own check (src/lib/giftInput.js), so a stray full stop fails here too.
+  const email = normalizeGiftEmail(d.email);
+  if (!isValidGiftEmail(email)) return { ok: false, error: 'email' };
   const giver = text(d.giver, 80);
   if (!giver) return { ok: false, error: 'giver' };
   const note = text(d.note, NOTE_MAX);
@@ -74,12 +75,21 @@ export function validateGiftDraft(draft, { today = new Date() } = {}) {
  * @returns {Promise<{ ok: true, id: string } | { ok: false, status?: number }>}
  */
 export async function createGiftDraft(value, { plan, userId = null, isTest = false, adminKey, now = new Date(), fetchImpl = fetch }) {
-  const record = {
-    draft_enc: encryptPayload({ ...value, plan }),
-    expires_at: new Date(now.getTime() + DRAFT_TTL_MS).toISOString(),
-    ...(userId ? { buyer_user_id_hash: hmacHex(userId) } : {}),
-    is_test: !!isTest,
-  };
+  // A missing key or any other failure to encrypt is the server's to log and
+  // the giver's only as the calm line the page shows: never thrown upward,
+  // where a handler's catch could hand its message to the page.
+  let record;
+  try {
+    record = {
+      draft_enc: encryptPayload({ ...value, plan }),
+      expires_at: new Date(now.getTime() + DRAFT_TTL_MS).toISOString(),
+      ...(userId ? { buyer_user_id_hash: hmacHex(userId) } : {}),
+      is_test: !!isTest,
+    };
+  } catch (err) {
+    console.error('[gift draft] could not be prepared:', err.message);
+    return { ok: false };
+  }
   try {
     const res = await fetchImpl(`${BASE44_API}/apps/${BASE44_APP_ID}/entities/GiftDraft`, {
       method: 'POST',

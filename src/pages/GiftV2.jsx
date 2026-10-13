@@ -44,6 +44,7 @@ import OpeninviteLogo from '@/components/public/OpeninviteLogo';
 import PlanBadge from '@/components/shared/PlanBadge';
 import { renderGiftReveal, noteImageUrl } from '@/lib/giftEmailTemplate';
 import { resolveCheckoutPriceId, PLAN_PRICES, startGiftV2Checkout } from '@/lib/checkoutSession';
+import { GIFT_TRY_AGAIN, EMAIL_CHECK, isValidGiftEmail, normalizeGiftEmail } from '@/lib/giftInput';
 import { loadFontFamilies } from '@/lib/selfHostedFonts';
 import { color } from '@/styles/tokens';
 import {
@@ -99,11 +100,12 @@ export const nameInputStyle = (value, focused) => ({
   width: '100%', fontSize: 32, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS,
   padding: '4px 8px', outline: 'none', textAlign: 'left',
 });
-export function UnderlineInput({ value, onChange, placeholder, type = 'text', autoComplete = 'off' }) {
+export function UnderlineInput({ value, onChange, placeholder, type = 'text', autoComplete = 'off', onBlur, invalid = false, describedBy }) {
   const [focused, setFocused] = useState(false);
   return (
     <input type={type} value={value} placeholder={placeholder} aria-label={placeholder} className="s1-input" autoComplete={autoComplete}
-      onChange={(e) => onChange(e.target.value)} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+      aria-invalid={invalid || undefined} aria-describedby={describedBy}
+      onChange={(e) => onChange(e.target.value)} onFocus={() => setFocused(true)} onBlur={() => { setFocused(false); if (onBlur) onBlur(); }}
       style={nameInputStyle(value, focused)} />
   );
 }
@@ -173,7 +175,8 @@ export default function GiftV2() {
   const [openSection, setOpenSection] = useState(params.get('section') || 'note');
   const tz = useMemo(() => browserTimezone(), []);
   const [paying, setPaying] = useState(false);
-  const [payError, setPayError] = useState(null);
+  const [payError, setPayError] = useState(false);
+  const [emailTouched, setEmailTouched] = useState(false);
   // Back from Stripe: the payment went through, so the giver sees the done page.
   useEffect(() => { if (params.get('paid') === '1') setDraft((d) => ({ ...d, step: 4 })); }, [params]);
   useEffect(() => { loadFontFamilies(['Cormorant Garamond']); }, []);
@@ -184,10 +187,11 @@ export default function GiftV2() {
   const set = (patch) => setDraft((d) => ({ ...d, ...patch }));
   const pay = async () => {
     setPaying(true);
-    setPayError(null);
+    setPayError(false);
     const result = await startGiftV2Checkout(draft, tz);
     if (result.url) { window.location.assign(result.url); return; }
-    setPayError(result.error);
+    // Only ever the fixed line below, never what the server said.
+    setPayError(!!result.error);
     setPaying(false);
   };
   const go = (step) => set({ step: Math.max(1, Math.min(PAGES, step)) });
@@ -195,7 +199,10 @@ export default function GiftV2() {
   const plan = draft.plan || 'ultra';
   const vars = { giver: draft.giver, names: draft.names, email: draft.email, plan };
   const s = draft.step;
-  const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.email.trim());
+  // Trimmed and checked before Continue and Pay (owner ruling 2026-10-13):
+  // a trailing full stop is not an address.
+  const validEmail = isValidGiftEmail(draft.email);
+  const showEmailCheck = emailTouched && draft.email.trim() !== '' && !validEmail;
   const photoSide = s === 1 ? { image: ONBOARDING_IMAGES.STEP_ONE }
     : s === 2 ? { image: ONBOARDING_IMAGES.WHO }
       : s === 4 ? { image: ONBOARDING_IMAGES.DONE }
@@ -250,7 +257,12 @@ export default function GiftV2() {
             <h1 style={heading}>{COPY.who.heading}</h1>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24, marginTop: 24 }}>
               <UnderlineInput value={draft.names} onChange={(v) => set({ names: v })} placeholder={COPY.who.namesLabel} />
-              <UnderlineInput value={draft.email} onChange={(v) => set({ email: v })} placeholder={COPY.who.emailLabel} type="email" />
+              <div>
+                <UnderlineInput value={draft.email} onChange={(v) => set({ email: v })} placeholder={COPY.who.emailLabel} type="email"
+                  onBlur={() => { setEmailTouched(true); set({ email: normalizeGiftEmail(draft.email) }); }}
+                  invalid={showEmailCheck} describedBy={showEmailCheck ? 'gift-email-check' : undefined} />
+                {showEmailCheck && <p id="gift-email-check" data-gift-email-check style={{ fontSize: 14, color: MUTED, fontFamily: PJS, margin: '8px 0 0 8px' }}>{EMAIL_CHECK}</p>}
+              </div>
               <UnderlineInput value={draft.giver} onChange={(v) => set({ giver: v })} placeholder={COPY.who.giverLabel} autoComplete="name" />
             </div>
             <button type="button" className={primary} disabled={!(draft.names.trim() && validEmail && draft.giver.trim())} onClick={() => go(3)} style={{ marginTop: 48 }}>Continue →</button>
@@ -313,10 +325,10 @@ export default function GiftV2() {
             {/* PAY (item 6): the draft goes to checkout, which holds it server
                 side and sends the giver to Stripe; Stripe returns them to
                 /gift?paid=1, which opens the done page. */}
-            <button type="button" className={primary} disabled={paying || !draft.note.trim() || (draft.when === 'date' && !draft.date)} onClick={pay} style={{ marginTop: 24 }}>
+            <button type="button" className={primary} disabled={paying || !validEmail || !draft.note.trim() || (draft.when === 'date' && !draft.date)} onClick={pay} style={{ marginTop: 24 }}>
               {`Pay ${priceLabel(plan)} and send`}
             </button>
-            {payError && <p role="alert" data-gift-pay-error style={{ fontSize: 14, color: '#B0263F', fontFamily: PJS, margin: '12px 0 0' }}>{payError}</p>}
+            {payError && <p role="alert" data-gift-pay-error style={{ fontSize: 14, color: '#B0263F', fontFamily: PJS, margin: '12px 0 0' }}>{GIFT_TRY_AGAIN}</p>}
             <PhonePreview draft={draft} />
           </>
         )}
