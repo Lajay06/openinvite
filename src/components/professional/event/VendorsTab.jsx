@@ -110,7 +110,7 @@ export default function VendorsTab({ event, me, readOnly }) {
           columns={[
             { key: 'vendor', label: 'Vendor', render: (b) => <span style={{ fontWeight: 600 }}>{b.vendor?.company || 'Removed from the book'}</span> },
             { key: 'role', label: 'Role' },
-            { key: 'phone', label: 'Phone', render: (b) => (b.vendor?.phone ? <a href={`tel:${b.vendor.phone}`} style={{ color: 'inherit' }}>{b.vendor.phone}</a> : '') },
+            { key: 'phone', label: 'Phone', render: (b) => (b.vendor?.phone ? <a href={`tel:${b.vendor.phone}`} style={{ color: PRO.link }}>{b.vendor.phone}</a> : '') },
             ...(showMoney ? [{ key: 'fee', label: 'Fee', align: 'right', render: (b) => money(b.fee) }, { key: 'deposit', label: 'Deposit', align: 'right', render: (b) => money(b.deposit) }] : []),
             { key: 'arrive', label: 'Arrives', render: (b) => fmtTime(b.arrive) },
             { key: 'finish', label: 'Finishes', render: (b) => fmtTime(b.finish) },

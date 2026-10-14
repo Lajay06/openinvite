@@ -10,7 +10,7 @@ import { can } from '@/lib/professionalAccess';
 import { DOC_KINDS, isSafeFileUrl } from '@/lib/professionalNotes';
 import { ProTable, Field, ProEmpty } from '../ProPage';
 import { downloadCsv, fileSlug } from '../proExport';
-import { s } from '../proTheme';
+import { s, PRO } from '../proTheme';
 import { TYPE } from '@/styles/typeScale';
 
 export default function DocumentsTab({ event, me, readOnly }) {
@@ -47,7 +47,7 @@ export default function DocumentsTab({ event, me, readOnly }) {
           label="Documents"
           rows={docs}
           columns={[
-            { key: 'name', label: 'Document', render: (d) => <a href={isSafeFileUrl(d.file_url) ? d.file_url : undefined} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', fontWeight: 600 }}>{d.name}</a> },
+            { key: 'name', label: 'Document', render: (d) => <a href={isSafeFileUrl(d.file_url) ? d.file_url : undefined} target="_blank" rel="noopener noreferrer" style={{ color: PRO.link, fontWeight: 600 }}>{d.name}</a> },
             { key: 'kind', label: 'Kind', render: (d) => kindLabel(d.kind) },
             ...(editable ? [{ key: 'x', label: '', render: (d) => <button type="button" style={s.btnQuiet} onClick={() => remove('ProDocument', d.id)}>Remove</button> }] : []),
           ]}

@@ -49,3 +49,22 @@ export function isProfessionalOn(env = import.meta.env) {
 export function homeForAccount(user) {
   return user?.accountType === ACCOUNT_TYPE.professional ? ROUTES.app : null;
 }
+
+/**
+ * PROFESSIONAL'S COLORS (owner ruling 2026-10-14). Gilt replaces red for
+ * Professional; red stays with the couple app only.
+ *   gilt       a fill, a button with black text, or the mark. NEVER text on a
+ *              white or #F5F5F5 ground (about 1.7:1 there).
+ *   deepGilt   links and small text on white, and focus rings on light grounds
+ *              (about 7:1 on white).
+ *   onGilt     the text on a gilt fill.
+ */
+export const BRAND = {
+  gilt: '#F6BC1C',
+  deepGilt: '#7A5200',
+  onGilt: '#0A0A0A',
+};
+
+/** The real brand mark recolored to gilt, a PNG (never SVG), for pages and for email. */
+export const MARK_PNG = '/professional/openinvite-mark-gilt.png';
+export const MARK_PNG_ABSOLUTE = 'https://www.openinvite.com.au/professional/openinvite-mark-gilt.png';

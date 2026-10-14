@@ -17,7 +17,7 @@ import { PLANS, PLAN_ORDER, usd, TALK_TO_US } from '@/lib/professionalPlans';
 import { ROUTES } from '@/lib/professionalBrand';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ProLogo } from '@/components/professional/ProShell';
-import { PRO, PJS } from '@/components/professional/proTheme';
+import { PRO, PJS, FOCUS_CSS } from '@/components/professional/proTheme';
 
 /** A partner code is a code, not shouting: rendered from a value, not written as text. */
 const SAMPLE_CODE = 'HOLLY10';
@@ -67,7 +67,7 @@ function Headline({ children, dark = true, sub }) {
 }
 
 const Cta = ({ label = COPY.cta }) => (
-  <Link to={ROUTES.start} style={{ display: 'inline-block', marginTop: 32, background: PRO.red, color: '#FFFFFF', borderRadius: 999, padding: '14px 28px', fontSize: 16, fontWeight: 600, textDecoration: 'none' }}>{label}</Link>
+  <Link to={ROUTES.start} style={{ display: 'inline-block', marginTop: 32, background: PRO.action, color: PRO.onAction, borderRadius: 999, padding: '14px 28px', fontSize: 16, fontWeight: 600, textDecoration: 'none' }}>{label}</Link>
 );
 
 /** A product card in HTML, the way the rest of the site shows the product. */
@@ -89,7 +89,8 @@ export default function ProfessionalMarketing() {
   const sideBySide = { display: 'flex', flexDirection: mobile ? 'column' : 'row', gap: mobile ? 32 : 56, alignItems: mobile ? 'stretch' : 'center', justifyContent: 'space-between' };
 
   return (
-    <div style={{ fontFamily: PJS, background: '#0A0A0A' }}>
+    <div className="oi-pro oi-pro-dark" style={{ fontFamily: PJS, background: '#0A0A0A' }}>
+      <style>{FOCUS_CSS}</style>
       <header style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 5, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: mobile ? '0 16px' : '0 32px' }}>
         <ProLogo size={20} />
         <Link to={`/login?next=${encodeURIComponent(ROUTES.app)}`} style={{ color: '#FFFFFF', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>Sign in</Link>

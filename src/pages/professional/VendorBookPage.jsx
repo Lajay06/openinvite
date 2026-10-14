@@ -12,7 +12,7 @@ import { shortDate } from '@/lib/professionalEvents';
 import { ProPage, ProTable, Pill } from '@/components/professional/ProPage';
 import VendorDialog from '@/components/professional/VendorDialog';
 import { downloadCsv } from '@/components/professional/proExport';
-import { s } from '@/components/professional/proTheme';
+import { s, PRO } from '@/components/professional/proTheme';
 
 const TONE = { expired: 'bad', soon: 'wait', ok: 'good', none: 'plain' };
 
@@ -53,7 +53,7 @@ export default function VendorBookPage() {
           { key: 'company', label: 'Company', render: (v) => <span style={{ fontWeight: 600 }}>{v.company}</span> },
           { key: 'role', label: 'Role' },
           { key: 'contact', label: 'Contact' },
-          { key: 'phone', label: 'Phone', render: (v) => (v.phone ? <a href={`tel:${v.phone}`} onClick={(e) => e.stopPropagation()} style={{ color: 'inherit' }}>{v.phone}</a> : '') },
+          { key: 'phone', label: 'Phone', render: (v) => (v.phone ? <a href={`tel:${v.phone}`} onClick={(e) => e.stopPropagation()} style={{ color: PRO.link }}>{v.phone}</a> : '') },
           { key: 'email', label: 'Email' },
           { key: 'ins', label: 'Insurance', render: (v) => { const st = insuranceState(v.insurance_expires); return <span title={v.insurance_expires ? shortDate(v.insurance_expires) : ''}><Pill tone={TONE[st]}>{INSURANCE_TEXT[st]}</Pill></span>; } },
           { key: 'uses', label: 'Events', align: 'right', render: (v) => uses(v.id) },

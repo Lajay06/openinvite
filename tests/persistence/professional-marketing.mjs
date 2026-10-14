@@ -33,7 +33,7 @@ export function runProfessionalMarketing() {
   check('professional marketing: the goal’s headline, subline, call to action and section lines are verbatim', missing.length === 0, missing.join(', ') || 'all five');
   const order = ['COPY.hero}', 'COPY.runsheet}', 'COPY.guests}', 'COPY.events}', 'COPY.codes}', 'COPY.pricing}', 'COPY.end}'].map((k) => src.indexOf(k));
   check('professional marketing: hero, run sheet, guests, events, partner codes, pricing, then the call to action', order.every((x, i) => x > 0 && (i === 0 || x > order[i - 1])), order.join(','));
-  check('professional marketing: the one call to action starts the trial at /professional/start', /to=\{ROUTES\.start\}/.test(src) && (src.match(/background: PRO\.red/g) || []).length === 1, 'one red pill');
+  check('professional marketing: the one call to action starts the trial at /professional/start', /to=\{ROUTES\.start\}/.test(src) && (src.match(/background: PRO\.action, color: PRO\.onAction/g) || []).length === 1, 'one gilt pill, black text');
   const ids = photoIds(src);
   check('professional marketing: photography from the owned Higgsfield set only', ids.length >= 1 && ids.every(owned), ids.join(', '));
   check('professional marketing: the product is live HTML cards, not screenshots', !/\.(png|jpg|webp)['"]/.test(src.replace(/openinvite-logo\.png/g, '')), 'no stills');

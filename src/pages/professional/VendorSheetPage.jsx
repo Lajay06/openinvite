@@ -14,8 +14,8 @@ import { useProStore, STORE_LIVE } from '@/lib/professionalStore';
 import { vendorSheetView, isVendorLinkLive, TOKEN_RE } from '@/lib/professionalVendors';
 import { vendorRows, fmtTime, fmtDuration } from '@/lib/professionalRunSheet';
 import { shortDate } from '@/lib/professionalEvents';
-import { ASSET } from '@/components/public/OpeninviteLogo';
-import { PRO, PJS, s } from '@/components/professional/proTheme';
+import { ProLogo } from '@/components/professional/ProShell';
+import { PRO, PJS, s, FOCUS_CSS } from '@/components/professional/proTheme';
 import { TYPE } from '@/styles/typeScale';
 
 const GONE = 'This link isn’t working. It may have expired or been turned off. Ask the planner who sent it for a new one.';
@@ -47,11 +47,11 @@ export default function VendorSheetPage() {
     }
   }
 
-  const scale = 16 / (ASSET.mark.y1 - ASSET.mark.y0 + 1);
   return (
-    <div style={{ minHeight: '100vh', background: PRO.work, fontFamily: PJS, color: PRO.text }}>
-      <header style={{ background: PRO.bar, height: PRO.barHeight, display: 'flex', alignItems: 'center', padding: '0 16px' }}>
-        <img src="/openinvite-logo.png" alt="Openinvite" style={{ height: Math.round(ASSET.height * scale) }} />
+    <div className="oi-pro" style={{ minHeight: '100vh', background: PRO.work, fontFamily: PJS, color: PRO.text }}>
+      <style>{FOCUS_CSS}</style>
+      <header className="oi-pro-dark" style={{ background: PRO.bar, height: PRO.barHeight, display: 'flex', alignItems: 'center', padding: '0 16px' }}>
+        <ProLogo size={16} to={null} />
       </header>
       <main style={{ maxWidth: 560, margin: '0 auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
         {remote === 'loading' && <p style={s.secondary}>Loading the run sheet.</p>}

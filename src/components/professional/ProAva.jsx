@@ -65,7 +65,7 @@ export default function ProAva() {
   return (
     <aside role="dialog" aria-label="Ava" style={{ position: 'fixed', zIndex: 70, right: mobile ? 0 : 16, bottom: mobile ? 0 : 16, left: mobile ? 0 : 'auto', top: mobile ? PRO.barHeight : 'auto', width: mobile ? 'auto' : 420, maxHeight: mobile ? undefined : '70vh', background: '#FFFFFF', border: `1px solid ${PRO.borderStrong}`, display: 'flex', flexDirection: 'column', fontFamily: PJS }}>
       <header style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 14px', borderBottom: `1px solid ${PRO.border}` }}>
-        <Sparkles size={14} color={PRO.red} aria-hidden="true" />
+        <Sparkles size={14} color={PRO.link} aria-hidden="true" />
         <span style={{ fontSize: TYPE.body, fontWeight: 600, flex: 1 }}>Ava{event ? `, on ${event.couple_names}` : ''}</span>
         <button type="button" aria-label="Close Ava" onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: PRO.icon, display: 'flex' }}><X size={16} /></button>
       </header>
