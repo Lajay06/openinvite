@@ -75,11 +75,59 @@ export function Pill({ tone = 'plain', children }) {
 }
 
 /**
- * A dense table: 40px rows, sticky header. A column with `wrap: true` lets its
+ * A dense table: 40px rows, sticky header; at 390 it stacks as cards (ProCards
+ * above). A column with `wrap: true` lets its
  * cell take a second line (the row grows past 40px) instead of widening the
  * table, so the table fits its box.
  */
+const isEmpty = (v) => v === null || v === undefined || v === false || v === '';
+
+/**
+ * AT 390, EVERY TABLE IS A STACK OF CARDS (owner ruling 2026-10-14): no
+ * sideways scroll anywhere in Professional. The first column is the card's
+ * title; each labeled column is a small label over its value (empty values
+ * are left out); columns with no label, the row's actions, sit at the foot.
+ */
+function ProCards({ columns, rows, empty, onRowClick, rowKey, label }) {
+  const [title, ...rest] = columns;
+  const fields = rest.filter((c) => c.label);
+  const actions = rest.filter((c) => !c.label);
+  if (rows.length === 0) return <p style={{ ...s.card, ...s.secondary, margin: 0 }}>{empty}</p>;
+  return (
+    <div role="list" aria-label={label} data-pro-cards style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      {rows.map((r) => {
+        const cell = (c) => (c.render ? c.render(r) : r[c.key]);
+        return (
+          <div
+            key={rowKey(r)}
+            role="listitem"
+            onClick={onRowClick ? () => onRowClick(r) : undefined}
+            onKeyDown={onRowClick ? (e) => { if (e.key === 'Enter') onRowClick(r); } : undefined}
+            tabIndex={onRowClick ? 0 : undefined}
+            style={{ ...s.card, padding: 14, display: 'flex', flexDirection: 'column', gap: 8, cursor: onRowClick ? 'pointer' : 'default', minWidth: 0 }}
+          >
+            <div style={{ fontSize: TYPE.input, fontWeight: 600, color: PRO.text, overflowWrap: 'break-word' }}>{cell(title)}</div>
+            {fields.map((c) => {
+              const v = cell(c);
+              if (isEmpty(v)) return null;
+              return (
+                <div key={c.key} style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                  <span style={s.label}>{c.label}</span>
+                  <span style={{ ...s.body, overflowWrap: 'break-word' }}>{v}</span>
+                </div>
+              );
+            })}
+            {actions.length > 0 && <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>{actions.map((c) => <span key={c.key}>{cell(c)}</span>)}</div>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function ProTable({ columns, rows, empty = 'Nothing here yet.', onRowClick, rowKey = (r) => r.id, label }) {
+  const mobile = useIsMobile();
+  if (mobile) return <ProCards columns={columns} rows={rows} empty={empty} onRowClick={onRowClick} rowKey={rowKey} label={label} />;
   return (
     <div style={{ background: '#FFFFFF', border: `1px solid ${PRO.border}`, overflow: 'auto', maxWidth: '100%' }}>
       <table aria-label={label} style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'inherit' }}>

@@ -75,6 +75,11 @@ export function runProfessionalDisplay() {
   check('professional display: planner names wrap between names, never inside one', /names\.flatMap\(\(n, i\) => \[i \? ' ' : null, <span key=\{n\} style=\{\{ whiteSpace: 'nowrap' \}\}>/.test(home), 'between names');
   check('professional display: the browser overflow check covers 1440 and 390 and the events home', /const WIDTHS = \[1440, 390\]/.test(read('scripts/professional-overflow.mjs')) && /'\/professional\/app',/.test(read('scripts/professional-overflow.mjs')), 'scripts/professional-overflow.mjs');
 
+  // 3c. At 390 every table stacks as cards (owner ruling 2026-10-14): no sideways scroll anywhere.
+  const overflow = read('scripts/professional-overflow.mjs');
+  check('professional display: at 390 every Professional table is a stack of cards', /if \(mobile\) return <ProCards /.test(page) && /data-pro-cards/.test(page), 'ProTable stacks');
+  check('professional display: the overflow check has no allowance and measures tables and cards at both widths', !/TABLES_THAT_SCROLL_AT_390|allowed\.includes/.test(overflow) && /data-pro-cards\] > \[role="listitem"\]/.test(overflow) && /const WIDTHS = \[1440, 390\]/.test(overflow), 'no allowance');
+
   // 4. One guest count, on the real seed.
   const store = Object.fromEntries(COLLECTIONS.map((c) => [c, list(c)]));
   const now = new Date();
