@@ -43,8 +43,14 @@ export async function runCollaboratorInviteMirror() {
      names.join(', '));
 
   const hashed = ['wedding_id_hash', 'owner_user_id_hash', 'collaborator_email_hash', 'invite_token_hash'];
-  ok('every identifying field is a hash string described as HMAC-SHA256 under BASE44_ADMIN_KEY',
-     hashed.every(f => props[f]?.type === 'string' && /HMAC-SHA256\(BASE44_ADMIN_KEY/.test(props[f]?.description || '')),
+  // THE KEY NAME CHANGED ON 2026-10-14, and so did what this can assert.
+  //
+  // It pinned HMAC-SHA256(BASE44_ADMIN_KEY, which was what the mirror said and
+  // was never what the code did: these four are keyed with COLLAB_HASH_KEY
+  // (api/_lib/collaboratorAuth.js). The mirror now reads from Base44 live,
+  // where the key name is correct, so this pins the correct one.
+  ok('every identifying field is a hash string described as HMAC-SHA256 under COLLAB_HASH_KEY',
+     hashed.every(f => props[f]?.type === 'string' && /HMAC-SHA256\(COLLAB_HASH_KEY/.test(props[f]?.description || '')),
      hashed.join(', '));
   const plain = names.filter(n => !hashed.includes(n));
   ok('  and every other field is a status, a time, a count or the test flag, none of which can hold an email, id or token',

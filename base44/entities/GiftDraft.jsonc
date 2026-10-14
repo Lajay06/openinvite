@@ -4,7 +4,7 @@
   "properties": {
     "draft_enc": {
       "type": "string",
-      "description": "Gifting v2. AES-256-GCM ciphertext, encrypted under APP_ENC_KEY (api/_lib/appKeys.js), never a key derived from BASE44_ADMIN_KEY, of the giver's whole draft (plan, how the couple are addressed, their email, the giver's name, the note and its style, the first line, the photo, when it lands). Held server side between checkout and Stripe's confirmation."
+      "description": "AES-256-GCM ciphertext (base64, iv+authTag+ciphertext) of the in-progress gift draft. Key derived from APP_ENC_KEY, same construction as PlanGift's encrypted fields."
     },
     "expires_at": {
       "type": "string",
@@ -13,7 +13,7 @@
     },
     "buyer_user_id_hash": {
       "type": "string",
-      "description": "Gifting v2. Hex HMAC-SHA256 under APP_HASH_KEY (api/_lib/appKeys.js), never BASE44_ADMIN_KEY, of the buyer's user id when they were signed in; empty otherwise. Optional."
+      "description": "HMAC-SHA256(APP_HASH_KEY, buyer.id). A hash, not the raw user id — read:null makes this entity listable unscoped by anyone with any API token."
     },
     "is_test": {
       "type": "boolean",
