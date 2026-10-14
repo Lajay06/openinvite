@@ -84,7 +84,7 @@ export async function runGiftingV2Pages() {
   check('each page\'s photo side: welcome, names step, the live preview, completion',
     /s === 1 \? \{ image: ONBOARDING_IMAGES\.STEP_ONE \}/.test(page) && /s === 2 \? \{ image: ONBOARDING_IMAGES\.WHO \}/.test(page)
       && /s === 4 \? \{ image: ONBOARDING_IMAGES\.DONE \}/.test(page) && /\{ aside: <EmailPreview draft=\{draft\} \/> \}/.test(page)
-      && lib.ONBOARDING_IMAGES.STEP_ONE.endsWith('ID14263_su2ltz.jpg') && lib.ONBOARDING_IMAGES.WHO.endsWith('ID14160_vgcgxf.jpg') && lib.ONBOARDING_IMAGES.DONE.includes('ID6374_iumjqj'));
+      && lib.ONBOARDING_IMAGES.STEP_ONE.endsWith('ID14263_su2ltz.jpg') && lib.ONBOARDING_IMAGES.WHO.endsWith('ID14160_vgcgxf.jpg') && lib.ONBOARDING_IMAGES.DONE.endsWith('DTS_BANDITS_PALI_MENDEZ_Photos_ID14218_hxqxw0.jpg'));
   // PAGE 2 IS ONBOARDING STEP 1 (owner ruling 2026-10-13): the same chrome
   // and the same component, with the gift's three lines, verbatim.
   check('page 2 is onboarding step 1 itself: its chrome and its component, imported, not copied',

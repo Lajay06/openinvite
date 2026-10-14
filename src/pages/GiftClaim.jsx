@@ -23,7 +23,7 @@
  * 8px radius is the email's alone.
  */
 import React, { useEffect, useState } from 'react';
-import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import OnboardingShell from '@/components/onboarding/OnboardingShell';
 import OpeninviteLogo from '@/components/public/OpeninviteLogo';
 import PlanBadge from '@/components/shared/PlanBadge';
@@ -77,7 +77,26 @@ export function NoteCard({ note, noteStyle, giver }) {
   );
 }
 
-/** The goal's plain page for a used, expired or unknown link. */
+/**
+ * A claim link already used, expired or unknown (owner's copy, 2026-10-14):
+ * the heading, the line, and Log in, which returns to the dashboard (the
+ * login page's own default). Its own photo: the owner's pick is pending, so
+ * it keeps the page's photo until then.
+ */
+export function UsedClaimPage() {
+  return (
+    <OnboardingShell contentMaxWidth={600} image={ONBOARDING_IMAGES.STEP_ONE}>
+      <div data-gift-claim-used style={{ padding: '32px 0 48px', fontFamily: PJS }}>
+        <div style={{ margin: '0 0 40px' }}><OpeninviteLogo ground="light" size={24} /></div>
+        <h1 style={heading}>{CLAIM.usedHeading}</h1>
+        <p style={{ ...sub, margin: '0 0 32px' }}>{CLAIM.usedLine}</p>
+        <Link to="/login" className={primary} data-gift-claim-login>{CLAIM.usedButton}</Link>
+      </div>
+    </OnboardingShell>
+  );
+}
+
+/** The goal's plain page for an edit link that can no longer edit. */
 export function PlainLinkPage({ text }) {
   return (
     <OnboardingShell contentMaxWidth={600} image={ONBOARDING_IMAGES.STEP_ONE}>
@@ -135,7 +154,7 @@ export default function GiftClaim() {
 
   if (gift === null) return <Navigate to="/gifting" replace />;
   if (gift === undefined) return null;
-  if (gift.status !== 'open') return <PlainLinkPage text={CLAIM.used} />;
+  if (gift.status !== 'open') return <UsedClaimPage />;
 
   const vars = { giver: gift.giver, names: gift.names, plan: gift.plan };
   return (

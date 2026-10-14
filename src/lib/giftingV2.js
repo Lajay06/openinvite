@@ -72,7 +72,8 @@ export const ONBOARDING_IMAGES = {
   STEP_ONE: `${CLOUD}/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14263_su2ltz.jpg`,
   // Page 2, who it is for: onboarding's names-step image (owner's review of #994).
   WHO: `${CLOUD}/f_auto,q_auto/DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14160_vgcgxf.jpg`,
-  DONE: `${CLOUD}/f_auto,q_auto/DTS_Community_Agust%C3%ADn_Far%C3%ADas_Photos_ID6374_iumjqj.jpg`,
+  // The done page shares "You're all set"'s photo (owner ruling 2026-10-14).
+  DONE: `${CLOUD}/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14218_hxqxw0.jpg`,
 };
 
 /** The five first lines. {names} is how the couple are addressed. */
@@ -202,7 +203,11 @@ export const CONFIRM = {
 export const CLAIM = {
   button: 'Open your gift',
   under: 'We will ask for your names and a date.',
-  used: 'This link has already been used. If that is a surprise, reply to the email it came in and we will look.',
+  // A used claim link (owner's copy, 2026-10-14): a heading, a line and a
+  // Log in button that returns to the dashboard.
+  usedHeading: 'This gift has already been opened.',
+  usedLine: "If that was you, log in to find it waiting. If not, reply to the gift email and we'll sort it out.",
+  usedButton: 'Log in',
   // Item 8: a Pro gift to an account already on Ultra; the gift stays unclaimed. Verbatim from the goal.
   moreThanGift: 'You already have Ultra, which is more than this gift. Reply to this email and we will sort it out with {giver}.',
   // The single line at the top of onboarding after a claim. Verbatim from the goal.
