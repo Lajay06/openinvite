@@ -176,7 +176,11 @@ export async function handleGiftCheckoutSessionCompleted(verifiedSession, {
       '[stripe-webhook] GIFT ACTIVATION FAILED — BASE44_ADMIN_KEY not set, cannot record gift:',
       { sessionId: verifiedSession.id, plan },
     );
-    return { status: 500, body: { error: 'Server misconfiguration: BASE44_ADMIN_KEY not set' } };
+    // A CODE, NOT THE VARIABLE'S NAME. The log above names it, which is where a
+    // person fixing it looks; a response body is read by whoever can reach the
+    // endpoint. Owner ruling 2026-10-13, after a giver was shown an
+    // APP_ENC_KEY message an endpoint had echoed.
+    return { status: 500, body: { code: 'NOT_CONFIGURED' } };
   }
 
   // ── Idempotency ──────────────────────────────────────────────────────────
@@ -401,7 +405,11 @@ export async function handleCheckoutSessionCompleted(verifiedSession, {
     // don't retry" and the customer would silently never get their plan.
     // A 5xx makes Stripe retry over its ~3-day window, giving time to fix
     // the env var without losing the event.
-    return { status: 500, body: { error: 'Server misconfiguration: BASE44_ADMIN_KEY not set' } };
+    // A CODE, NOT THE VARIABLE'S NAME. The log above names it, which is where a
+    // person fixing it looks; a response body is read by whoever can reach the
+    // endpoint. Owner ruling 2026-10-13, after a giver was shown an
+    // APP_ENC_KEY message an endpoint had echoed.
+    return { status: 500, body: { code: 'NOT_CONFIGURED' } };
   }
 
   // ── Idempotency ──────────────────────────────────────────────────────────
@@ -417,7 +425,28 @@ export async function handleCheckoutSessionCompleted(verifiedSession, {
   }
 
   const planActivatedAt = new Date().toISOString();
-  const writeResult = await writeBase44UserPlan({ userId, plan, planActivatedAt, adminKey, fetchImpl });
+  // THE CUSTOMER ID AND WHERE THE PLAN CAME FROM, written with the plan.
+  //
+  // stripeCustomerId was read in two places and written in none, so Account >
+  // Billing's receipts button rendered for nobody and create-portal-session
+  // answered 400 to everyone. It is a plain Stripe id, not a secret: the portal
+  // session is still created server side from the verified caller, never from a
+  // client-supplied id.
+  //
+  // planSource says how the plan arrived, so Billing can explain why there is
+  // nothing to bill WITHOUT inferring it from a missing field. The owner ruled
+  // that out: absence must read as unknown, because inferring "gift" from it
+  // would have told all three paying accounts their plan was a gift.
+  //
+  // It is NOT mirrored in base44/entities/User.jsonc, deliberately. The
+  // built-in User entity accepts arbitrary fields with no schema (see
+  // BASE44_PLATFORM_NOTES.md), User is not in the schema-drift guard's
+  // GUARDED_ENTITIES, and adding it to the mirror would claim a Base44 field
+  // that does not exist.
+  const stripeCustomerId = typeof verifiedSession.customer === 'string' ? verifiedSession.customer : '';
+  const writeResult = await writeBase44UserPlan({
+    userId, plan, planActivatedAt, stripeCustomerId, planSource: 'purchase', adminKey, fetchImpl,
+  });
 
   if (!writeResult.ok) {
     console.error(

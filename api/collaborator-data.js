@@ -32,7 +32,9 @@
  * the page gets its empty lists: the calm empty state, never an error. A
  * failed function call is the same: its entities come back empty.
  *
- * Response: 200 { data: { [entityName]: [...], weddingDetails?: {...} }, coupleNames, canEdit }
+ * Response: 200 { data: { [entityName]: [...], weddingDetails?: {...} }, coupleNames, canEdit, canSuggest }
+ * canSuggest (owner ruling 2026-10-14): the grant lets them suggest new items on
+ * this page (api/collaborator-suggestions.js).
  *        or 400 { error } if `page` isn't a real permission key
  *        or 403 { error } if not an accepted collaborator, or lacking view on this page
  */
@@ -155,7 +157,7 @@ export default async function handler(req, res) {
   // Before the grant check, which needs COLLAB_HASH_KEY: nothing is read.
   if (!collabReadsConfigured()) {
     console.log(NOT_CONFIGURED);
-    return res.status(200).json({ data: emptyLists(pageConfig.entities), coupleNames: null, canEdit: false });
+    return res.status(200).json({ data: emptyLists(pageConfig.entities), coupleNames: null, canEdit: false, canSuggest: false });
   }
 
   try {
@@ -205,6 +207,7 @@ export default async function handler(req, res) {
       data,
       coupleNames,
       canEdit: hasPagePermission(collaboration.permissions, page, 'edit'),
+      canSuggest: hasPagePermission(collaboration.permissions, page, 'suggest'),
     });
   } catch (err) {
     console.error('[collaborator-data] Error:', err.message);

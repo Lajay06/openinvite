@@ -44,6 +44,12 @@ export async function runCollaboratorTruthfulPermissions() {
   ok('a grant naming edit on every page: edit holds on Schedule and nowhere else',
      keys.every(k => hasPagePermission(all, k, 'edit') === (k === 'Schedule')), 'a stale edit elsewhere does nothing');
   ok('  and Schedule with view only cannot be changed', hasPagePermission({ Schedule: { view: true } }, 'Schedule', 'edit') === false, 'edit must be granted');
+  // SUGGEST (owner ruling 2026-10-14): the same grant bit lets them suggest, on
+  // Schedule and Moodboard only, and nowhere else.
+  ok('the suggest pages are Schedule and Moodboard', JSON.stringify(map.COLLABORATOR_SUGGEST_PAGES) === '["Schedule","Moodboard"]', 'two pages');
+  ok('  a grant naming edit on every page: suggest holds on Schedule and Moodboard and nowhere else',
+     keys.every(k => hasPagePermission(all, k, 'suggest') === (k === 'Schedule' || k === 'Moodboard')), 'suggest');
+  ok('  and Moodboard can never be changed directly, only suggested to', hasPagePermission(all, 'Moodboard', 'edit') === false, 'no edit on Moodboard');
   ok('  while view holds on every page', keys.every(k => hasPagePermission(all, k, 'view') === true), 'view kept');
   ok('an edit-only grant still reads as view', hasPagePermission({ Budget: { edit: true } }, 'Budget', 'view') === true, 'edit implies view');
   ok('a key outside the map grants nothing, even granted', hasPagePermission({ Notes: { view: true } }, 'Notes', 'view') === false, 'Notes is retired');
@@ -62,12 +68,15 @@ export async function runCollaboratorTruthfulPermissions() {
   const modal = read('src/components/layout/CollaborateModal.jsx');
   ok('it lists every key in the map', /const pages = COLLABORATOR_PERMISSION_KEYS;/.test(modal), 'all eleven');
   ok('  by its nav label', /COLLABORATOR_PAGE_MAP\[page\]\.navLabel/.test(modal), 'navLabel');
-  ok('  with one View only checkbox per page, and one Can make changes only for an editable page',
+  ok('  with one View only checkbox per page, and a second only on a suggest page, labeled for that page',
      (modal.match(/<Checkbox\b/g) || []).length === 2 && />View only<\/label>/.test(modal)
-     && /\{COLLABORATOR_EDIT_PAGES\.includes\(page\) && \(\s*<div[^>]*>\s*<Checkbox\s+id=\{`\$\{page\}-edit`\}/.test(modal) && />Can make changes<\/label>/.test(modal), `${(modal.match(/<Checkbox\b/g) || []).length} checkbox(es)`);
+     && /\{COLLABORATOR_SUGGEST_PAGES\.includes\(page\) && \(\s*<div[^>]*>\s*<Checkbox\s+id=\{`\$\{page\}-edit`\}/.test(modal)
+     && />\{COLLABORATOR_PICKER_LABEL\[page\]\}<\/label>/.test(modal)
+     && map.COLLABORATOR_PICKER_LABEL.Schedule === 'Can change details and suggest' && map.COLLABORATOR_PICKER_LABEL.Moodboard === 'Can suggest additions',
+     `${(modal.match(/<Checkbox\b/g) || []).length} checkbox(es)`);
   ok('  and no other edit control or edit icon', !/PenSquare|>Edit<\/label>/.test(modal), 'none');
-  ok('a saved grant carries edit only for an editable page, and editing reads a stale edit elsewhere as view',
-     /\.\.\.\(COLLABORATOR_EDIT_PAGES\.includes\(page\) \? \{ edit: collaboratorCan\(perms, page, 'edit'\) \} : \{\}\)/.test(modal) && /setPermissions\(viewOnly\(collaborator\.permissions\)\)/.test(modal), 'viewOnly');
+  ok('a saved grant carries edit only for a suggest page, and editing reads a stale edit elsewhere as view',
+     /\.\.\.\(COLLABORATOR_SUGGEST_PAGES\.includes\(page\) \? \{ edit: collaboratorCan\(perms, page, 'suggest'\) \} : \{\}\)/.test(modal) && /setPermissions\(viewOnly\(collaborator\.permissions\)\)/.test(modal), 'viewOnly');
   ok('  and View only and Can make changes are a choice, never both',
      /checked=\{!!permissions\[page\]\?\.view && !permissions\[page\]\?\.edit\}/.test(modal) && /if \(choice === 'edit'\) return \{ \.\.\.prev, \[page\]: \{ view: true, edit: !cur\.edit \} \};/.test(modal), 'exclusive');
 
@@ -85,9 +94,14 @@ export async function runCollaboratorTruthfulPermissions() {
     collaboratorName: 'Ada', coupleNames: 'Alex and Sam', acceptUrl: 'https://x',
     permissions: { Guests: { view: true }, Schedule: { view: true, edit: true } },
   }).html.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ');
-  ok('with Schedule changeable: "Schedule (you can make changes)", and the other sentence',
-     sched.includes('Schedule (you can make changes)') && sched.includes('You can view these pages. You can make changes only where it says so.')
-     && !sched.includes('You will not be able to change anything.') && !sched.includes('Guest list (you can make changes)'), 'marked');
+  ok('with Schedule granted: "Schedule (you can change details and suggest new items)", and the other sentence',
+     sched.includes('Schedule (you can change details and suggest new items)') && sched.includes('You can view these pages. You can make changes only where it says so.')
+     && !sched.includes('You will not be able to change anything.') && !/Guest list \(you can/.test(sched), 'marked');
+  const mood = renderCollaboratorInviteEmail({
+    collaboratorName: 'Ada', coupleNames: 'Alex and Sam', acceptUrl: 'https://x',
+    permissions: { Moodboard: { view: true, edit: true } },
+  }).html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+  ok('  with Moodboard granted: "Moodboard (you can suggest new items)"', mood.includes('Moodboard (you can suggest new items)'), 'marked');
   ok('  and never an internal key name', !/Event Details|\bGuests\b/.test(text), 'labels, not keys');
   ok('the preheader is the owner\'s line, in the inbox list only',
      preheader === 'Alex and Sam have shared their plans with you.' && html.includes('display:none') && html.includes(preheader), preheader);
@@ -107,9 +121,11 @@ export async function runCollaboratorTruthfulPermissions() {
   const article = help.slice(at, help.indexOf('\n  ),\n', at));
   ok('the Help article promises no edit access',
      article.length > 500 && !/Full Access|view and edit|Changes made by collaborators|access level/i.test(article), `${article.length} chars`);
-  ok('  and says they cannot change anything except Schedule if allowed, with the 7-day link',
-     /They cannot change anything, except Schedule if you let them\./.test(article) && /check "Can make changes" instead/.test(article)
-     && /anything else, and Ava is not available/.test(article) && /works for 7 days/.test(article), 'true copy');
+  ok('  and says what they can do on Schedule and Moodboard, never remove, with the 7-day link',
+     /They cannot change anything, except where you let them on Schedule and Moodboard, and they can never remove anything of yours\./.test(article)
+     && /check "Can change details and suggest" instead/.test(article) && /check "Can suggest additions" instead/.test(article)
+     && /Nothing is added until you approve it/.test(article) && /they can never remove your items, and Ava is not available/.test(article)
+     && /works for 7 days/.test(article), 'true copy');
   ok('  in US English: check, trash icon, right away', /check "View only"/.test(article) && /trash icon/.test(article) && /right away/.test(article)
      && !/\btick\b|\bbin\b|straight away/.test(article), 'owner edits');
   // The article is replaced in place: every other article survives.

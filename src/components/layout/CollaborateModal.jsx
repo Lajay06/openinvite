@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords } from '@/lib/resolveMyWedding';
-import { COLLABORATOR_PERMISSION_KEYS, COLLABORATOR_PAGE_MAP, COLLABORATOR_EDIT_PAGES, COLLABORATOR_CAN_CHANGE_SUFFIX, collaboratorCan } from '@/lib/collaboratorPageMap';
+import { COLLABORATOR_PERMISSION_KEYS, COLLABORATOR_PAGE_MAP, COLLABORATOR_SUGGEST_PAGES, COLLABORATOR_PICKER_LABEL, collaboratorCan, collaboratorPageSuffix } from '@/lib/collaboratorPageMap';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -59,11 +59,13 @@ const pages = COLLABORATOR_PERMISSION_KEYS;
 
 // Item 5 (owner ruling 2026-10-12): every page is view only. One toggle per
 // page, no edit control, and a saved grant carries view and nothing else.
-// A page on COLLABORATOR_EDIT_PAGES (Schedule, owner ruling 2026-10-13) also
-// offers "Can make changes"; the two are a choice, never both.
+// A page on COLLABORATOR_SUGGEST_PAGES (Schedule and Moodboard, owner ruling
+// 2026-10-14) also offers its own option: change details and suggest on
+// Schedule, suggest additions on Moodboard. View only and that option are a
+// choice, never both.
 const viewOnly = (perms) => Object.fromEntries(pages.map(page => [page, {
   view: collaboratorCan(perms, page, 'view'),
-  ...(COLLABORATOR_EDIT_PAGES.includes(page) ? { edit: collaboratorCan(perms, page, 'edit') } : {}),
+  ...(COLLABORATOR_SUGGEST_PAGES.includes(page) ? { edit: collaboratorCan(perms, page, 'suggest') } : {}),
 }]));
 const initialPermissions = viewOnly({});
 
@@ -110,7 +112,7 @@ export default function CollaborateModal({ onClose }) {
       if (choice === 'edit') return { ...prev, [page]: { view: true, edit: !cur.edit } };
       // "View only" is on only while edit is off: picking it turns edit off.
       const viewOnlyNow = !!cur.view && !cur.edit;
-      return { ...prev, [page]: { view: !viewOnlyNow, ...(COLLABORATOR_EDIT_PAGES.includes(page) ? { edit: false } : {}) } };
+      return { ...prev, [page]: { view: !viewOnlyNow, ...(COLLABORATOR_SUGGEST_PAGES.includes(page) ? { edit: false } : {}) } };
     });
   };
   
@@ -256,14 +258,14 @@ export default function CollaborateModal({ onClose }) {
                         />
                         <label htmlFor={`${page}-view`} className="text-sm">View only</label>
                       </div>
-                      {COLLABORATOR_EDIT_PAGES.includes(page) && (
+                      {COLLABORATOR_SUGGEST_PAGES.includes(page) && (
                         <div className="flex items-center gap-2">
                           <Checkbox
                             id={`${page}-edit`}
                             checked={!!permissions[page]?.edit}
                             onCheckedChange={() => handlePermissionChange(page, 'edit')}
                           />
-                          <label htmlFor={`${page}-edit`} className="text-sm">Can make changes</label>
+                          <label htmlFor={`${page}-edit`} className="text-sm">{COLLABORATOR_PICKER_LABEL[page]}</label>
                         </div>
                       )}
                     </div>
@@ -329,7 +331,7 @@ export default function CollaborateModal({ onClose }) {
                         {pages.filter(page => collaboratorCan(collab.permissions, page, 'view')).map(page => (
                           <Badge key={page} variant="secondary" className="font-normal">
                             {COLLABORATOR_PAGE_MAP[page].navLabel}
-                            {collaboratorCan(collab.permissions, page, 'edit') ? COLLABORATOR_CAN_CHANGE_SUFFIX : ''}
+                            {collaboratorPageSuffix(collab.permissions, page)}
                             <Eye className="w-3 h-3 ml-1.5" />
                           </Badge>
                         ))}

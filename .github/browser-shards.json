@@ -3,6 +3,7 @@
     "2026-10-13: one guard added, not a rebalance. test:names-underline (8s measured locally against a vite preview of b/gift-pay-errors, booked at 10) to B. A 1062 / B 1126, a 64s delta on a 120s budget. MEASURED RED FIRST: on the pink underline, 4 of 8 checks go red (filled and focused, on onboarding step 1 and gift page 2).",
     "2026-10-13: one guard added, not a rebalance. test:gift-no-truncation (42s measured locally against a vite preview of b/gift-pay-errors, booked at 45) to B. A 1062 / B 1116, a 54s delta on a 120s budget. MEASURED RED FIRST: with the caption ellipsis and the 40-character note slice put back, 6 of 27 checks go red.",
     "2026-10-13: one guard added, not a rebalance. test:gift-claim-auth (21s measured locally against a vite preview of b/gift-claim-redirect, booked at 25 for a cold first navigation) to B, the lighter shard at 1046 against A's 1062. After: A 1062 / B 1071, a 9s delta on a 120s budget. MEASURED RED FIRST: against a build of main without the fix, the owner's exact path (log-in page, Create one, email code) lands on Choose your plan with the gift unclaimed, and three of the five paths fail.",
+    "2026-10-13: one guard added, not a rebalance. test:billing-states (38s measured locally against a vite preview of fix/tier-3-billing, booked at 42 for a cold first navigation) to B, which was the lighter shard when the branch was cut. TWO LANES ADDED A GUARD TO B AT ONCE and this file conflicted on the rebase: lane B's test:gift-claim-auth landed first, so the figures this entry first carried (B 1088) were never true on main. THREE lanes added a guard to B within a day and this file conflicted twice on rebase. Every entry is kept and both totals recomputed from the guards: A 1062 / B 1168, a 106s delta on a 120s budget. MEASURED RED FIRST: the guard reported every state missing on its first run because it landed on /account, whose default tab is Settings; the billing card lives behind ?tab=billing, and 12 of 32 checks were red until the deep link was added.",
     "2026-10-11: one guard added, not a rebalance. test:home-app-photo (5.5s measured locally against a vite preview of this branch, booked at 8 for a cold first navigation and the real photograph loading) to B, the lighter shard. A 1062 / B 1046, a 16s delta on a 120s budget. MEASURED RED FIRST: with the scrim removed the body reads at 1.93:1 and the heading at 2.53:1 at 1440, and both checks go red.",
     "2026-10-11: one guard added, not a rebalance. test:chunk-reload (35s measured locally against a vite preview of feat/chunk-selfheal-guard, booked at 38 for a cold first navigation) to A, which was the lighter shard at 1024 against B's 1038. After: A 1062 / B 1038, a 24s delta on a 120s budget, and A becomes the heavier side by less than B was before. Its two sixteen-second waits are not padding: the wrapper's own hang guard is ten seconds, so a shorter wait would read a page still spinning as a page settled.",
     "2026-10-11: one guard added, not a rebalance. test:chip-height (28s, measured locally at two widths against a vite preview of feat/chip-height) to A, which was the lighter shard at 996 against B's 1038. After: A 1024 / B 1038, a 14s delta on a 120s budget, narrower than the 42s it replaces. The booked column is guard time and runs about 87s under wall-clock, as this file's 2026-10-10 note records.",
@@ -57,7 +58,7 @@
             "test:guest-no-invalid-date",
             "test:guest-export-address"
           ],
-          "note": "Serves this PR's own build (not production \u2014 CAPTURE_BASE_URL defaults to https://openinvite.com.au otherwise, which would test whatever's already live instead of the change under review) and points the marketing-routes smoke test at it."
+          "note": "Serves this PR's own build (not production — CAPTURE_BASE_URL defaults to https://openinvite.com.au otherwise, which would test whatever's already live instead of the change under review) and points the marketing-routes smoke test at it."
         },
         {
           "name": "Every text block on a guest page follows its universe's mark",
@@ -75,7 +76,7 @@
           "name": "The onboarding universe picker advances on Select",
           "seconds": 44,
           "script": "test:onboarding-universe-select",
-          "note": "Select is the answer, so Select advances \u2014 and keeps the answer."
+          "note": "Select is the answer, so Select advances — and keeps the answer."
         },
         {
           "name": "The onboarding universe tiles are the universes' own heroes",
@@ -195,7 +196,7 @@
     "B": {
       "job": "Browser guards B",
       "port": 4224,
-      "measuredSeconds": 1126,
+      "measuredSeconds": 1168,
       "guards": [
         {
           "name": "The studio tour, as a couple meets it, at 390 and 1440",
@@ -225,7 +226,7 @@
           "name": "The country picker offers the world",
           "seconds": 60,
           "script": "test:country-picker",
-          "note": "The full ISO list, searchable, with SVG flags \u2014 and no emoji in it."
+          "note": "The full ISO list, searchable, with SVG flags — and no emoji in it."
         },
         {
           "name": "The couple's reply reaches the guest's real address",
@@ -271,7 +272,7 @@
           "name": "Custom pages keep their order, and the builder shows its controls",
           "seconds": 21,
           "script": "test:builder-custom-pages",
-          "note": "MOVED HERE FROM BEFORE THE BUILD STEPS, 2026-09-08, because it now needs a browser and this is the first point in the job that has one.  #709 gave this guard a fallback: when a diff cannot answer the question \u2014 an empty range, or any run on main \u2014 it renders all fourteen marketing routes and compares bodies. That fallback fired on main immediately after #709 merged and crashed on `browserType.launch: Executable doesn't exist`, because it sat at line 87, one hundred and seventy lines before `npx playwright install`.  The guard was right and its placement was wrong. It stays a required step; it simply runs after Chromium exists. The diff path costs the same wherever it sits, and the fallback cannot run anywhere earlier. Needs the same preview server and browser as the guards above. The resume path it checks was written long ago and inert until c832e9e declared onboardingDraft \u2014 so this is the first CI run it has ever had. The breadcrumb's WORDS and its painted-ness, on two universe routes. Each hides the other's failure: right words behind an overlay reads correct in the DOM; wrong words on screen reads correct in a screenshot."
+          "note": "MOVED HERE FROM BEFORE THE BUILD STEPS, 2026-09-08, because it now needs a browser and this is the first point in the job that has one.  #709 gave this guard a fallback: when a diff cannot answer the question — an empty range, or any run on main — it renders all fourteen marketing routes and compares bodies. That fallback fired on main immediately after #709 merged and crashed on `browserType.launch: Executable doesn't exist`, because it sat at line 87, one hundred and seventy lines before `npx playwright install`.  The guard was right and its placement was wrong. It stays a required step; it simply runs after Chromium exists. The diff path costs the same wherever it sits, and the fallback cannot run anywhere earlier. Needs the same preview server and browser as the guards above. The resume path it checks was written long ago and inert until c832e9e declared onboardingDraft — so this is the first CI run it has ever had. The breadcrumb's WORDS and its painted-ness, on two universe routes. Each hides the other's failure: right words behind an overlay reads correct in the DOM; wrong words on screen reads correct in a screenshot."
         },
         {
           "name": "The full-page preview offers the devices the canvas does",
@@ -289,19 +290,19 @@
           "name": "The sidebar groups open shut and remember what you open",
           "seconds": 15,
           "script": "test:sidebar-groups",
-          "note": "Collapsed by default, remembered per device, and a chevron rather than a text caret. All three are claims about the rendered DOM after a mount \u2014 and the memory is checked by RELOADING, since reading state back without one proves only that it is in memory."
+          "note": "Collapsed by default, remembered per device, and a chevron rather than a text caret. All three are claims about the rendered DOM after a mount — and the memory is checked by RELOADING, since reading state back without one proves only that it is in memory."
         },
         {
           "name": "The seating grid reaches the edge of the frame at every zoom",
           "seconds": 14,
           "script": "test:seating-canvas",
-          "note": "The corners, at minimum and maximum zoom. The middle of the frame was never the broken part \u2014 a guard that sampled it would have passed on every build this fixes."
+          "note": "The corners, at minimum and maximum zoom. The middle of the frame was never the broken part — a guard that sampled it would have passed on every build this fixes."
         },
         {
           "name": "The unread count is visible on both sidebars",
           "seconds": 14,
           "script": "test:messages-badge",
-          "note": "The unread count was computed and rendered nowhere. The desktop sidebar is hidden lg:flex, so it stays in the DOM at phone width \u2014 this measures visibility, not presence, or it would pass on the hidden one."
+          "note": "The unread count was computed and rendered nowhere. The desktop sidebar is hidden lg:flex, so it stays in the DOM at phone width — this measures visibility, not presence, or it would pass on the hidden one."
         },
         {
           "name": "The builder Settings tab works and can be read",
@@ -386,6 +387,12 @@
           "seconds": 10,
           "script": "test:names-underline",
           "note": "Owner ruling 2026-10-13: OnboardingStep1Names drops #ec4899 in every state. Empty is 1px rgba(10,10,10,0.18), focused or filled the same 2px line at rgba(10,10,10,0.55). Read off the computed border of every field on onboarding step 1 (seeded harness) and gift page 2 (a *.vercel.app host routed to the local server, every other *.vercel.app host aborted), each empty, focused and filled."
+        },
+        {
+          "name": "Account > Billing, four states at 1440 and 390",
+          "seconds": 42,
+          "script": "test:billing-states",
+          "note": "Ten renders: five billing states at two widths, each a fresh seeded context with its own fixture user. 38s measured locally against a vite preview of fix/tier-3-billing, booked at 42 for a cold first navigation. The fifth state is a gifted account that later paid, which is the row that breaks if the customer id and the plan source are read in the wrong order."
         }
       ]
     }

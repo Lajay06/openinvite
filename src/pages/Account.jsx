@@ -588,15 +588,45 @@ function BillingTab({ user }) {
         </p>
       )}
 
+      {/* ── BILLING: FOUR STATES, AND THE CUSTOMER ID DECIDES FIRST ───────────
+          Owner rulings 2026-10-13.
+
+            stripeCustomerId exists   Manage billing, whatever planSource says.
+                                      A gifted account that later buys something
+                                      has a customer and must be able to manage
+                                      it, so the id wins over the source.
+            absent, source gift       "Your plan was a gift..."      no button
+            absent, source comp       "There is nothing to bill..."  no button
+            absent, source absent     the billing@ line              no button
+
+          THE LAST ROW IS NOT A GUESS. planSource has no default, so absence
+          reads as unknown and the line says nothing about how the plan arrived.
+          Inferring "gift" from it would have told all three paying accounts
+          their plan was a gift, which is why the field exists at all. */}
       {(plan === 'pro' || plan === 'ultra') && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 28 }}>
-          <a
-            href="mailto:lajay@openinvite.com.au?subject=Billing inquiry"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '9px 20px', borderRadius: 999, background: '#0A0A0A', color: '#FFFFFF', fontSize: 12, fontWeight: 700, fontFamily: PJS, textDecoration: 'none' }}
-          >
-            <CreditCard size={13} />
-            Manage billing
-          </a>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 28, alignItems: 'center' }}>
+          {user?.stripeCustomerId ? (
+            <a
+              href="mailto:billing@openinvite.com.au?subject=Billing inquiry"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '9px 20px', borderRadius: 999, background: '#0A0A0A', color: '#FFFFFF', fontSize: 12, fontWeight: 700, fontFamily: PJS, textDecoration: 'none' }}
+            >
+              <CreditCard size={13} />
+              Manage billing
+            </a>
+          ) : (
+            <p data-billing-note style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', margin: 0, fontFamily: PJS }}>
+              {user?.planSource === 'gift'
+                ? 'Your plan was a gift, so there is nothing to bill.'
+                : user?.planSource === 'comp'
+                  ? 'There is nothing to bill on this plan.'
+                  : (
+                    <>
+                      Questions about billing? Email{' '}
+                      <a href="mailto:billing@openinvite.com.au" style={{ color: '#E03553', fontWeight: 700, textDecoration: 'none' }}>billing@openinvite.com.au</a>.
+                    </>
+                  )}
+            </p>
+          )}
 
           {user?.stripeCustomerId && (
             <button

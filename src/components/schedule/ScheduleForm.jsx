@@ -18,7 +18,9 @@ const CATEGORIES = [
   { value: "other",          label: "Other" },
 ];
 
-export default function ScheduleForm({ item, onSubmit, onCancel }) {
+// `title` and `submitLabel` serve a collaborator's suggestion (owner ruling
+// 2026-10-14). Without them it is the couple's own form, unchanged.
+export default function ScheduleForm({ item, onSubmit, onCancel, title, submitLabel }) {
   const [formData, setFormData] = useState(item || {
     event_name: "", event_date: "", start_time: "", end_time: "",
     location: "", description: "", responsible_person: "", category: "other", notes: "",
@@ -36,7 +38,7 @@ export default function ScheduleForm({ item, onSubmit, onCancel }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          {item?.id ? 'Edit event' : 'Add event'}
+          {title || (item?.id ? 'Edit event' : 'Add event')}
         </span>
         <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4, borderRadius: 999 }}>
           <X size={16} />
@@ -115,7 +117,7 @@ export default function ScheduleForm({ item, onSubmit, onCancel }) {
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
           <button type="button" onClick={onCancel} className="btn-editorial-secondary">Cancel</button>
-          <button type="submit" className="btn-primary">{item?.id ? 'Update event' : 'Add event'}</button>
+          <button type="submit" className="btn-primary">{submitLabel || (item?.id ? 'Update event' : 'Add event')}</button>
         </div>
       </form>
     </div>

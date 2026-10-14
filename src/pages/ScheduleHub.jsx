@@ -13,7 +13,9 @@ import AvaButton from "@/components/shared/AvaButton";
 import AvaModal from "@/components/layout/AvaModal";
 import { base44 } from "@/api/base44Client";
 import { getMyRecords } from "@/lib/resolveMyWedding";
-import { useCollaboratorContext, withCollab, collaboratorWrite } from "@/lib/collaboratorContext";
+import { useCollaboratorContext, withCollab, collaboratorWrite, suggestionsRequest } from "@/lib/collaboratorContext";
+import SuggestionsPanel from "@/components/collaboration/SuggestionsPanel";
+import MySuggestions from "@/components/collaboration/MySuggestions";
 import { buildIcsCalendar, downloadIcs } from "@/lib/ics";
 import toast from "react-hot-toast";
 import CountUp from "@/components/shared/CountUp";
@@ -115,18 +117,42 @@ export default function ScheduleHub() {
   // through api/collaborator-write.js and the hosted function: Schedule's
   // update and delete RLS is owner-scoped, so nothing else can make them.
   //
-  // CHANGE AND REMOVE, NEVER ADD (owner ruling 2026-10-13, after the probe):
-  // a hosted function cannot stamp a new row as the owner, so a collaborator
-  // is never offered Add. The writer has no create, and the function refuses
-  // one outright.
+  // CHANGE, NEVER ADD, NEVER REMOVE (owner rulings 2026-10-13 and 2026-10-14):
+  // a collaborator changes the times and details of the couple's items, and
+  // nothing else. The writer has update only, and the function refuses create
+  // and delete outright. New items come in as suggestions the couple approves
+  // (the "Suggest an event" path below).
   const [collabCanEdit, setCollabCanEdit] = useState(false);
+  const [collabCanSuggest, setCollabCanSuggest] = useState(false);
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  const [editingSuggestion, setEditingSuggestion] = useState(null);
+  const [suggestionsKey, setSuggestionsKey] = useState(0);
+  const sendSuggestion = async (data) => {
+    try {
+      await suggestionsRequest({
+        method: 'POST', page: 'Schedule', ownerUserId: collab.ownerUserId,
+        body: editingSuggestion ? { action: 'edit', suggestionId: editingSuggestion.id, data } : { action: 'suggest', data },
+      });
+      toast.success(editingSuggestion ? 'Suggestion saved.' : 'Suggestion sent.');
+      setSuggestOpen(false);
+      setEditingSuggestion(null);
+      setSuggestionsKey(k => k + 1);
+    } catch {
+      toast.error('That did not save. Try again.');
+    }
+  };
+  const suggestionSummary = (d) => (
+    <div style={{ minWidth: 0 }}>
+      <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: PJS }}>{d.event_name}</p>
+      <p style={{ margin: 0, fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>{[d.event_date, d.start_time, d.location].filter(Boolean).join(' · ')}</p>
+    </div>
+  );
   const readOnly = isCollaborating && !collabCanEdit;
   // Named Schedule, as it always was: every write site below is unchanged,
   // and in a collaborator session it is the collaborator write path.
   const Schedule = isCollaborating
     ? {
         update: (id, data) => collaboratorWrite({ ownerUserId: collab.ownerUserId, page: 'Schedule', action: 'update', id, data }),
-        delete: (id) => collaboratorWrite({ ownerUserId: collab.ownerUserId, page: 'Schedule', action: 'delete', id }),
       }
     : ScheduleEntity;
 
@@ -157,9 +183,10 @@ export default function ScheduleHub() {
           headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
         });
         if (!res.ok) throw new Error('Failed to load schedule');
-        const { data, canEdit } = await res.json();
+        const { data, canEdit, canSuggest } = await res.json();
         setScheduleItems(sortScheduleItems(data.Schedule));
         setCollabCanEdit(canEdit === true);
+        setCollabCanSuggest(canSuggest === true);
       } else {
         const [data, vendorRows, inv] = await Promise.all([
           getMyRecords('Schedule', "start_time"),
@@ -399,8 +426,34 @@ export default function ScheduleHub() {
               + Add event
             </button>
           )}
+          {isCollaborating && collabCanSuggest && (
+            <button onClick={() => { setEditingSuggestion(null); setSuggestOpen(true); }} className="btn-primary">
+              Suggest an event
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Suggestions (owner ruling 2026-10-14): the couple approves; the
+          collaborator sees their own, waiting or settled. */}
+      {isCollaborating && collabCanSuggest && (
+        <div style={{ padding: "16px 32px 0" }}>
+          <MySuggestions
+            ownerUserId={collab.ownerUserId} page="Schedule" coupleNames={collab.coupleNames}
+            renderSummary={suggestionSummary} reloadKey={suggestionsKey}
+            onEdit={(s) => { setEditingSuggestion(s); setSuggestOpen(true); }}
+          />
+        </div>
+      )}
+      {!isCollaborating && (
+        <div style={{ padding: "16px 32px 0" }}>
+          <SuggestionsPanel
+            page="Schedule" renderSummary={suggestionSummary}
+            onApproved={() => { loadItems(); setRefreshKey(k => k + 1); }}
+            createItem={async (d) => (await ScheduleEntity.create(d)).id}
+          />
+        </div>
+      )}
 
       {/* 4 ── Tab bar */}
       <div style={{ borderBottom: "1px solid rgba(10,10,10,0.12)", padding: "0 32px", display: "flex" }}>
@@ -430,7 +483,7 @@ export default function ScheduleHub() {
             const item = scheduleItems.find(i => i.id === e.sourceId);
             if (item) handleEditEvent(item);
           }}
-          onDelete={readOnly ? undefined : (e) => handleDelete(e.sourceId)}
+          onDelete={readOnly || isCollaborating ? undefined : (e) => handleDelete(e.sourceId)}
           onOpen={(to) => navigate(withCollab(to, collab.ownerUserId))}
         />
       )}
@@ -462,7 +515,7 @@ export default function ScheduleHub() {
           readOnly={readOnly}
           loading={loadingStats}
           onEdit={handleEditEvent}
-          onDelete={(r) => handleDelete(r.id)}
+          onDelete={isCollaborating ? undefined : (r) => handleDelete(r.id)}
           onAdd={isCollaborating ? undefined : (ev) => {
             // PRE-TAGGED AND PRE-DATED. A moment added from the reception's run
             // sheet is a reception row on the reception's day; asking again
@@ -486,6 +539,19 @@ export default function ScheduleHub() {
           <PageConsiderations pageKey="schedule" />
         </div>
       )}
+
+      {/* A collaborator's suggestion: the same form, sent for the couple to approve */}
+      <Dialog open={isCollaborating && suggestOpen} onOpenChange={(open) => { if (!open) { setSuggestOpen(false); setEditingSuggestion(null); } }}>
+        <DialogContent hideClose title="Suggest an event" className="oi-modal-scale max-w-[600px] max-h-[90vh] overflow-y-auto p-0 gap-0">
+          <ScheduleForm
+            item={editingSuggestion ? editingSuggestion.data : null}
+            title="Suggest an event"
+            submitLabel={editingSuggestion ? 'Save suggestion' : 'Send suggestion'}
+            onSubmit={sendSuggestion}
+            onCancel={() => { setSuggestOpen(false); setEditingSuggestion(null); }}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Add / Edit form modal */}
       <Dialog open={!readOnly && showForm} onOpenChange={(open) => { if (!open) { setShowForm(false); setEditingItem(null); } }}>
