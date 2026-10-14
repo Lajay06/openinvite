@@ -37,9 +37,23 @@ import {
 const FROM = 'Openinvite <hello@openinvite.com.au>';
 const TO = process.env.CONTACT_TO_ADDRESS || 'hello@openinvite.com.au';
 
-const TOPICS = new Set([
-  'Guest management', 'Budget tracking', 'Universes', 'Ava', 'Pricing', 'Something else',
-]);
+// The topic list, in the order src/pages/Contact.jsx shows it. The two lists
+// are separate literals because a Vercel function and the client bundle share
+// no module; tests/persistence/contact-topic-routing.mjs holds them equal.
+export const TOPICS = ['General', 'Dashboard', 'Guest Suite', 'Gifting', 'Billing', 'Privacy', 'Other'];
+export const DEFAULT_TOPIC = 'General';
+
+// Topics with their own inbox. Every other topic goes to TO.
+export const TOPIC_INBOX = {
+  Billing: 'billing@openinvite.com.au',
+  Privacy: 'privacy@openinvite.com.au',
+};
+
+// An unknown topic is a crafted request, not a visitor's choice: it is filed
+// as Other and never reaches a dedicated inbox.
+export const resolveTopic = (topic) => (TOPICS.includes(topic) ? topic : 'Other');
+export const routeFor = (topic) => TOPIC_INBOX[resolveTopic(topic)] || TO;
+export const subjectFor = (topic, name) => `[${resolveTopic(topic)}] Contact form message from ${name}`;
 
 const esc = (s) => String(s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -69,7 +83,7 @@ export default async function handler(req, res) {
   if (!isValidEmail(email)) {
     return res.status(400).json({ error: 'Please check your email address.' });
   }
-  const safeTopic = TOPICS.has(topic) ? topic : 'Something else';
+  const safeTopic = resolveTopic(topic);
 
   // A missing key must not read as a delivered message. Without this the send
   // below throws and we 500 -- correct, but the log would not say why.
@@ -87,10 +101,10 @@ export default async function handler(req, res) {
   try {
     const result = await resend.emails.send({
       from: FROM,
-      to: TO,
+      to: routeFor(safeTopic),
       // So a reply from the inbox goes to the person who wrote in, not to us.
       replyTo: email,
-      subject: `Contact form: ${safeTopic} (from ${name})`,
+      subject: subjectFor(safeTopic, name),
       html,
     });
     // Resend reports delivery failures in the payload as well as by throwing.
