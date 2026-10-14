@@ -76,7 +76,7 @@ export const EMAIL_PHOTOS = {
     alt: '', width: 560, height: 420,
   },
   onboardingDay3: {
-    url: url('DTS_LONELY_COMMUTE_Mark_Forbes_Photos_ID2352_zrq7ma'),
+    url: url('DTS_MISC_1__NICK_FANCHER__Nick_Fancher_Photos_ID6165_ezpdio'),
     alt: '', width: 560, height: 373,
   },
   onboardingDay7: {

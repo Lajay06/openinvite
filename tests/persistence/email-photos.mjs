@@ -101,6 +101,35 @@ export async function runEmailPhotos() {
        html.includes(tag), html.includes(tag) ? 'rendered' : 'not found in the html');
   }
 
+  // ── THE IDS ARE PINNED, ONE PER EMAIL ───────────────────────────────────
+  //
+  // Not ceremony. Two of these are from the same photographer and the same
+  // collection, and their public ids differ by three characters:
+  // ...Nick_Fancher_Photos_ID6165_ezpdio on day 3 and ...ID6168_uikduy on the
+  // weekly digest. A paste that lands the wrong one of those in the wrong
+  // email is invisible to every other check in this file: the URL is still
+  // well formed, still 200, still the right ratio, still rendered.
+  //
+  // Updating this list is the cost of an owner photo swap, and it is the
+  // point: the swap should be a decision someone made, not a diff nobody read.
+  const EXPECTED_IDS = {
+    welcome: 'DTS_BANDITS_PALI_MENDEZ_Photos_ID14280_cddisg',
+    onboardingDay3: 'DTS_MISC_1__NICK_FANCHER__Nick_Fancher_Photos_ID6165_ezpdio',
+    onboardingDay7: 'DTS_INFLUENCER_Daniel_Far%C3%B2_Photos_ID8176_o11cc0',
+    purchaseConfirmation: 'hf_20260904_090213_add0b2d6-8dcc-44ce-8360-762925a327c7_g5eb7y',
+    giftReceipt: 'DTS_TERRA_Chris_Abatzis_Photos_ID13220_kxcbio',
+    weeklyDigest: 'DTS_MISC_1__NICK_FANCHER__Nick_Fancher_Photos_ID6168_uikduy',
+    notification: 'hf_20260907_065547_b4779030-2092-4779-9296-824674aac120_i7hid6',
+    guestNote: 'DTS_MINDFUL_MESS_Shauna_Summers_Photos_ID8767_sflfia',
+    guestReply: 'DTS_LUNAR_Daniel_Far%C3%B2_Photos_ID11287_f3krcq',
+  };
+  for (const [key, id] of Object.entries(EXPECTED_IDS)) {
+    const got = (EMAIL_PHOTOS[key]?.url || "").split('w_1200/')[1];
+    ok(`  ${key}: the id is the one the owner picked`, got === id, got || '(none)');
+  }
+  ok('  and no two emails share a photo',
+     new Set(Object.values(EXPECTED_IDS)).size === Object.keys(EXPECTED_IDS).length,
+     `${new Set(Object.values(EXPECTED_IDS)).size} distinct`);
   // ── EVERY BRAND EMAIL CARRIES THE FULL LOCKUP IN ITS HEADER ─────────────
   //
   // Owner ruling 2026-10-14. guest-reply was the last holdout: it passed
