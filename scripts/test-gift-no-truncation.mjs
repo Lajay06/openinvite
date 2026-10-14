@@ -14,6 +14,19 @@
  *   - no field's value runs past its box, including a long address typed
  *     into page 2
  *   - the note's summary chip holds the whole note, not a slice of it
+ *   - page 2 at 1440: "and goes to" and an ordinary address share one line,
+ *     every line of the sentence at one size; a longer address steps down on
+ *     that line to no smaller than 20px, and below that moves under its label
+ *     at 20px or more (owner rulings 2026-10-14)
+ *   - page 2 at 390: no field is set below 20px; an address too long for a
+ *     whole row at 20px wraps onto lines at 20px, after its @ or a dot where
+ *     both lines fit (owner ruling 2026-10-14)
+ *   - the done page names the giver and the couple; opened with no draft in
+ *     the tab and no gift to load, it says its plain lines, never a sentence
+ *     with a blank in it (owner ruling 2026-10-14)
+ *   - page 3: the three note style pills look one size, their lowercase
+ *     letters measured to within half a pixel of each other
+ *   - page 1: every bullet's dot sits on the first line of its text
  *
  * A render guard, because each of these is a computed style or a measured
  * box. Gifting v2 turns on only for a *.vercel.app host
@@ -44,6 +57,7 @@ const PAGES = [
   ['page 3, first line open', '/gift?sample=1&step=3&section=headline'],
   ['page 3, photo open', '/gift?sample=1&step=3&section=photo'],
   ['page 3, when open', '/gift?sample=1&step=3&section=when'],
+  ['done page', '/gift?sample=1&step=4'],
 ];
 
 /** Everything on the page (not inside the email preview's frame) that cuts text short. */
@@ -61,6 +75,8 @@ function findCuts() {
     // A field's value is not a text node: measured on its own. Found on gift
     // page 2, where "isla.and.theo@example.com" showed as "isla.and.theo@exa".
     if (el.tagName === 'INPUT' && el.value && el.scrollWidth > el.clientWidth + 1) cuts.push(`value cut: input "${el.value.slice(0, 30)}"`);
+    // The wrapped address field: no sideways scroll, no line hidden.
+    if (el.tagName === 'TEXTAREA' && el.dataset.s1Wrapped && (el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1)) cuts.push(`value cut: wrapped field "${el.value.slice(0, 30)}"`);
   }
   return cuts;
 }
@@ -87,11 +103,66 @@ try {
       if (seen.path !== '/gift' || seen.text < 40) { check(`${w}, ${label}: the gift page renders`, false, `${seen.path}, ${seen.text} chars`); continue; }
       const cuts = await page.evaluate(findCuts);
       check(`${w}, ${label}: no ellipsis, no single-line clamp, no clipped text`, cuts.length === 0, cuts.slice(0, 4).join(' | ') || 'none');
+      if (label === 'page 1') {
+        const dots = await page.evaluate(() => [...document.querySelectorAll('li')].filter((li) => li.firstElementChild?.textContent === '•').map((li) => {
+          const dot = li.firstElementChild.getBoundingClientRect();
+          const text = li.lastElementChild.getClientRects()[0];
+          return { line: li.lastElementChild.textContent.slice(0, 24), off: Math.abs(dot.top - text.top) };
+        }));
+        check(`${w}, ${label}: every bullet's dot sits on its first line`, dots.length > 0 && dots.every((d) => d.off <= 2), dots.filter((d) => d.off > 2).map((d) => `${d.line} ${Math.round(d.off)}px`).join(' | ') || `${dots.length} bullets`);
+      }
+      if (label === 'page 2' && w === 1440) {
+        const row = async (email) => {
+          await page.locator('input[type="email"]').fill(email);
+          await page.waitForTimeout(250);
+          return page.evaluate(() => [...document.querySelectorAll('input.s1-input')].map((i) => {
+            const l = i.parentElement.querySelector('span');
+            return { fs: parseFloat(getComputedStyle(i).fontSize), labelFs: parseFloat(getComputedStyle(l).fontSize), sameRow: Math.abs(i.getBoundingClientRect().top - l.getBoundingClientRect().top) < 20 };
+          }));
+        };
+        const ordinary = await row('la.jay06@gmail.com');
+        check(`${w}, ${label}: "and goes to la.jay06@gmail.com" is one line, the sentence one size`,
+          ordinary[1].sameRow && ordinary.every((f) => f.fs === ordinary[0].labelFs && f.labelFs === ordinary[0].labelFs), JSON.stringify(ordinary[1]));
+        const mid = await row('isla.and.theo@example.com');
+        check(`${w}, ${label}: a longer address steps down on its line, never below 20px`, mid[1].sameRow && mid[1].fs < mid[1].labelFs && mid[1].fs >= 20, JSON.stringify(mid[1]));
+        const long = await row('isla.and.theo.featherstonehaugh@example.com');
+        check(`${w}, ${label}: an address that would go below 20px moves under its label instead`, !long[1].sameRow && long[1].fs >= 20, JSON.stringify(long[1]));
+      }
+      if (label === 'page 2' && w === 390) {
+        const field = () => page.locator('[data-s1-wrapped="email"], input[type="email"]').first();
+        const read = () => page.evaluate(() => [...document.querySelectorAll('.s1-input')].map((f) => ({
+          tag: f.tagName, fs: parseFloat(getComputedStyle(f).fontSize), lines: Math.round((f.clientHeight - parseFloat(getComputedStyle(f).paddingTop) - parseFloat(getComputedStyle(f).paddingBottom)) / parseFloat(getComputedStyle(f).lineHeight)), shown: f.value,
+        })));
+        await field().fill('isla.and.theo.featherstonehaugh@example.com');
+        await page.waitForTimeout(300);
+        const longest = await read();
+        check(`${w}, ${label}: no field below 20px; the long address wraps onto two lines at 20px`,
+          longest.every((f) => f.fs >= 20) && longest[1].tag === 'TEXTAREA' && longest[1].fs === 20 && longest[1].lines === 2, JSON.stringify(longest[1]));
+        await field().fill('isla.and.theo.longname@example.com');
+        await page.waitForTimeout(300);
+        const atBreak = (await read())[1];
+        check(`${w}, ${label}: where both lines fit, it breaks after the @`, atBreak.tag === 'TEXTAREA' && atBreak.shown.includes('@\u200B') && atBreak.lines === 2, JSON.stringify(atBreak));
+      }
       if (label === 'page 2') {
-        await page.locator('input[type="email"]').fill('isla.and.theo.featherstonehaugh@example.com');
+        await page.locator('[data-s1-wrapped="email"], input[type="email"]').first().fill('isla.and.theo.featherstonehaugh@example.com');
         await page.waitForTimeout(200);
         const long = await page.evaluate(findCuts);
         check(`${w}, ${label}: a long address shows whole`, long.length === 0, long.slice(0, 3).join(' | ') || 'none');
+      }
+      if (label === 'page 3, note open') {
+        const xh = await page.evaluate(async () => {
+          await document.fonts.ready;
+          const c = document.createElement('canvas').getContext('2d');
+          return ['plain', 'serif', 'hand'].map((k) => {
+            const el = k === 'plain' ? [...document.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Plain') : document.querySelector(`[data-style-sample="${k}"]`);
+            const cs = getComputedStyle(el);
+            c.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+            const m = c.measureText('x');
+            return { k, px: cs.fontSize, italic: cs.fontStyle === 'italic', xh: m.actualBoundingBoxAscent + m.actualBoundingBoxDescent };
+          });
+        });
+        const spread = Math.max(...xh.map((x) => x.xh)) - Math.min(...xh.map((x) => x.xh));
+        check(`${w}, ${label}: the three style pills look one size, the serif upright`, spread <= 0.5 && !xh.some((x) => x.italic), xh.map((x) => `${x.k} ${x.px} x ${x.xh.toFixed(2)}`).join(' | '));
       }
       if (label === 'page 3, all closed') {
         const chips = await page.evaluate(() => [...document.querySelectorAll('span')].map((s) => s.textContent.trim()));
@@ -105,6 +176,18 @@ try {
         check(`${w}, ${label}: every caption stays in the lower third`, fit.length > 0 && fit.every((r) => r <= 0.334), `${fit.length} tiles, tallest ${Math.round(Math.max(...fit) * 100)}%`);
       }
     }
+    // The done page in a fresh tab: no draft, and the session cannot load.
+    const fresh = await ctx.newPage();
+    await fresh.goto(`${HOST}/gift?paid=1&session_id=cs_test_nothingHere000`, { waitUntil: 'networkidle', timeout: 45000 }).catch(() => {});
+    await fresh.waitForTimeout(800);
+    const plain = await fresh.evaluate(() => document.body.innerText);
+    check(`${w}, done page with nothing to load: the plain lines, no blank`,
+      plain.includes('That was generous of you.') && plain.includes('Your gift is on its way.') && !/of you, \.|on its way to \./.test(plain) && !/arrived in an hour/.test(plain));
+    await fresh.close();
+    await page.goto(`${HOST}/gift?sample=1&step=4`, { waitUntil: 'networkidle', timeout: 45000 }).catch(() => {});
+    await page.waitForTimeout(600);
+    const named = await page.evaluate(() => document.body.innerText);
+    check(`${w}, done page: the giver and the couple named`, named.includes('That was generous of you, Sam.') && named.includes('Your gift is on its way to Isla and Theo.') && named.includes("What they'll get"));
     await ctx.close();
   }
 } finally {

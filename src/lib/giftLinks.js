@@ -92,5 +92,24 @@ export async function saveGiftEdit(token, { email, note }, { doFetch = (...a) =>
   }
 }
 
+/**
+ * The done page's names when the giver's draft is not in this tab: the
+ * giver's name, the couple's names and the plan, by the paid Stripe session
+ * (and the draft id the success URL carries). Never the couple's address.
+ * Null when they cannot be loaded; the page then says its plain lines.
+ */
+export async function loadPaidGift(sessionId, draftId, { doFetch = (...a) => fetch(...a) } = {}) {
+  if (!sessionId || !isGiftingV2On()) return null;
+  try {
+    const q = `kind=paid&session=${encodeURIComponent(sessionId)}${draftId ? `&draft=${encodeURIComponent(draftId)}` : ''}`;
+    const res = await doFetch(`/api/gift-link?${q}`);
+    if (!res.ok) return null;
+    const out = await res.json();
+    return out && out.giver ? { giver: String(out.giver), names: String(out.names || ''), plan: out.plan === 'pro' ? 'pro' : 'ultra' } : null;
+  } catch {
+    return null;
+  }
+}
+
 /** The one line onboarding shows after a claim, kept for the next page in this tab only. */
 export const GIFT_LANDING_KEY = 'oi_gift_landing';

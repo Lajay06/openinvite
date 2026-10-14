@@ -23,14 +23,14 @@
  * 8px radius is the email's alone.
  */
 import React, { useEffect, useState } from 'react';
-import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import OnboardingShell from '@/components/onboarding/OnboardingShell';
 import OpeninviteLogo from '@/components/public/OpeninviteLogo';
 import PlanBadge from '@/components/shared/PlanBadge';
 import { loadFontFamilies } from '@/lib/selfHostedFonts';
 import { CAVEAT, ensureCaveat } from '@/lib/caveatFont';
 import { claimReturnPath, rememberPendingClaim, clearPendingClaim } from '@/lib/giftClaimReturn';
-import { REVEAL, CLAIM, fill, headlineText, giftPhotoUrl, ONBOARDING_IMAGES } from '@/lib/giftingV2';
+import { REVEAL, CLAIM, fill, headlineText, giftPhotoUrl, ONBOARDING_IMAGES, noteFaceSize } from '@/lib/giftingV2';
 import { useAuth } from '@/lib/AuthContext';
 import { loadGiftByToken, claimGiftLink, isSampleToken, GIFT_LINKS_LIVE, GIFT_LANDING_KEY } from '@/lib/giftLinks';
 import { heading, sub, primary, BIG_BADGE } from '@/pages/GiftV2';
@@ -47,7 +47,7 @@ function withBadges(text) {
 /**
  * The note in its style as LIVE TEXT (owner ruling 2026-10-13: the handwriting
  * note was a raster scaled up, and blurry at 1440 and on retina). Serif is the
- * self-hosted Cormorant Garamond italic, handwriting the self-hosted Caveat
+ * self-hosted Cormorant Garamond upright, handwriting the self-hosted Caveat
  * (src/lib/caveatFont.js), both sharp at any size. The email keeps its
  * Cloudinary image, since Gmail loads no web fonts.
  */
@@ -56,8 +56,14 @@ function withBadges(text) {
 // fontFamily.
 const NOTE_FACE = {
   plain: { '--oi-note-font': PJS, fontSize: 17, lineHeight: 1.6 },
-  serif: { '--oi-note-font': "'Cormorant Garamond', Georgia, serif", fontStyle: 'italic', fontSize: 24, lineHeight: 1.45 },
-  hand: { '--oi-note-font': CAVEAT, fontSize: 28, lineHeight: 1.3 },
+  // Every style looks the plain note's size, on the plain note's line, the
+  // serif upright (owner ruling 2026-10-14), as in the email: noteFaceSize
+  // matches the lowercase height.
+  serif: { '--oi-note-font': "'Cormorant Garamond', Georgia, serif", fontStyle: 'normal', fontSize: noteFaceSize('serif', 17), lineHeight: '27.2px' },
+  // The handwritten note: 30px, 24px on a phone, line height 1.3, a long
+  // word wrapping inside the card (owner ruling 2026-10-14). Its size lives
+  // in the class below, so the phone size can apply.
+  hand: { '--oi-note-font': CAVEAT, lineHeight: 1.3, overflowWrap: 'anywhere' },
 };
 
 export function NoteCard({ note, noteStyle, giver }) {
@@ -66,15 +72,35 @@ export function NoteCard({ note, noteStyle, giver }) {
     if (noteStyle === 'hand') ensureCaveat();
   }, [noteStyle]);
   return (
-    <div data-gift-note-card style={{ background: '#F6F2EC', padding: '24px 28px 26px', margin: '0 0 32px' }}>
+    <div data-gift-note-card style={{ background: '#F5F5F5', padding: '24px 28px 26px', margin: '0 0 32px' }}>
       <p aria-hidden="true" style={{ margin: '0 0 6px', fontSize: 56, lineHeight: 0.8, fontWeight: 700, color: '#E03553', fontFamily: 'Georgia, serif' }}>&ldquo;</p>
-      <p data-note-style={noteStyle} className="oi-note-face" style={{ margin: 0, color: NOTE_INK, whiteSpace: 'pre-wrap', ...(NOTE_FACE[noteStyle] || NOTE_FACE.plain) }}>{note}</p>
+      <style>{'.oi-note-hand { font-size: 30px; } @media (max-width: 600px) { .oi-note-hand { font-size: 24px; } }'}</style>
+      <p data-note-style={noteStyle} className={noteStyle === 'hand' ? 'oi-note-face oi-note-hand' : 'oi-note-face'} style={{ margin: 0, color: NOTE_INK, whiteSpace: 'pre-wrap', ...(NOTE_FACE[noteStyle] || NOTE_FACE.plain) }}>{note}</p>
       <p style={{ margin: '16px 0 0', fontSize: 13, fontVariant: 'small-caps', color: 'rgba(28,25,22,0.75)', fontFamily: PJS }}>{giver}</p>
     </div>
   );
 }
 
-/** The goal's plain page for a used, expired or unknown link. */
+/**
+ * A claim link already used, expired or unknown (owner's copy, 2026-10-14):
+ * the heading, the line, and Log in, which returns to the dashboard (the
+ * login page's own default). Its own photo: the owner's pick is pending, so
+ * it keeps the page's photo until then.
+ */
+export function UsedClaimPage() {
+  return (
+    <OnboardingShell contentMaxWidth={600} image={ONBOARDING_IMAGES.STEP_ONE}>
+      <div data-gift-claim-used style={{ padding: '32px 0 48px', fontFamily: PJS }}>
+        <div style={{ margin: '0 0 40px' }}><OpeninviteLogo ground="light" size={24} /></div>
+        <h1 style={heading}>{CLAIM.usedHeading}</h1>
+        <p style={{ ...sub, margin: '0 0 32px' }}>{CLAIM.usedLine}</p>
+        <Link to="/login" className={primary} data-gift-claim-login>{CLAIM.usedButton}</Link>
+      </div>
+    </OnboardingShell>
+  );
+}
+
+/** The goal's plain page for an edit link that can no longer edit. */
 export function PlainLinkPage({ text }) {
   return (
     <OnboardingShell contentMaxWidth={600} image={ONBOARDING_IMAGES.STEP_ONE}>
@@ -132,7 +158,7 @@ export default function GiftClaim() {
 
   if (gift === null) return <Navigate to="/gifting" replace />;
   if (gift === undefined) return null;
-  if (gift.status !== 'open') return <PlainLinkPage text={CLAIM.used} />;
+  if (gift.status !== 'open') return <UsedClaimPage />;
 
   const vars = { giver: gift.giver, names: gift.names, plan: gift.plan };
   return (

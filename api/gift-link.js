@@ -19,7 +19,7 @@
 import { Resend } from 'resend';
 import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
-import { findGiftByToken, giftView, claimGift, editGift } from './_lib/giftClaim.js';
+import { findGiftByToken, giftView, claimGift, editGift, paidGiftView } from './_lib/giftClaim.js';
 import { giftingV2OnServer } from './gift-email-preview.js';
 import { giftOrigin } from './_lib/giftTokens.js';
 
@@ -34,6 +34,10 @@ export default async function handler(req, res, deps = {}) {
   const { limited } = checkRateLimit(getClientIp(req), 'gift-link', 30);
   if (limited) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
 
+  if (req.method === 'GET' && req.query?.kind === 'paid') {
+    const view = await paidGiftView({ sessionId: req.query?.session, draftId: req.query?.draft, adminKey, fetchImpl });
+    return view ? res.status(200).json(view) : res.status(404).json({ status: 'unknown' });
+  }
   if (req.method === 'GET') {
     const kind = req.query?.kind === 'edit' ? 'edit' : 'claim';
     const row = await findGiftByToken(kind, String(req.query?.token || ''), { adminKey, fetchImpl });

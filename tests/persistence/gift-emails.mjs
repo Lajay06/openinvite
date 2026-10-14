@@ -50,7 +50,7 @@ export async function runGiftEmails() {
   check('a plain note is live text, in Plus Jakarta Sans with Helvetica and Arial behind it',
     all.filter((e) => e.noteStyle === 'plain').every((e) => /white-space:pre-wrap;">For you two, with love, Sam<\/p>/.test(noteOf(e)) && /'Plus Jakarta Sans', Helvetica, Arial, sans-serif/.test(noteOf(e))));
   check('serif and handwriting notes are Cloudinary text images at 1040 wide, with the note as alt text',
-    all.filter((e) => e.noteStyle !== 'plain').every((e) => /l_text:(Cormorant%20Garamond_56_italic|Caveat_56):/.test(noteOf(e)) && /w_1040,c_fit/.test(noteOf(e)) && /alt="For you two, with love, Sam"/.test(noteOf(e))));
+    all.filter((e) => e.noteStyle !== 'plain').every((e) => /l_text:(Cormorant%20Garamond_47|Caveat_60_line_spacing_2):/.test(noteOf(e)) && /w_1040,c_fit|c_lpad,w_924,/.test(noteOf(e)) && /alt="For you two, with love, Sam"/.test(noteOf(e))));
 
   // ── the plan, named by its badge, as an image ───────────────────────────
   const img = badge.PLAN_BADGE_EMAIL_IMAGE;
@@ -87,7 +87,7 @@ export async function runGiftEmails() {
   const get = await call({ GIFTING_V2: '1' }, 'GET', {});
   check('  and refuses anything but POST', get.status === 405 && sent.length === 0);
   const ok = await call({ VERCEL_ENV: 'preview' }, 'POST', { plan: 'pro', noteStyle: 'hand', to: 'someone@else.com' });
-  check('on a preview deploy it sends both emails', ok.status === 200 && sent.length === 2 && /has given you Openinvite Pro/.test(sent[0].subject) && /on its way/.test(sent[1].subject));
+  check('on a preview deploy it sends both emails', ok.status === 200 && sent.length === 2 && /gifted you Openinvite Pro/.test(sent[0].subject) && /on its way/.test(sent[1].subject));
   check('  to la.jay06+notiftest01 only, whatever the request asks', sent.every((m) => m.to === 'la.jay06+notiftest01@gmail.com') && preview.PREVIEW_RECIPIENT === 'la.jay06+notiftest01@gmail.com');
   check('  tagged as a preview', sent.every((m) => m.tags?.some((t) => t.name === 'kind' && t.value === 'gift_preview')));
   const src = readFileSync(resolve(ROOT, 'api/gift-email-preview.js'), 'utf8');

@@ -217,8 +217,9 @@ async function main() {
     // ── 5. the same link again ──────────────────────────────────────────
     await h.page.goto(`${HOST}/gift/claim/${t}`, { waitUntil: 'networkidle' });
     await h.page.waitForTimeout(800);
-    const used = await h.page.getByText('This link has already been used.', { exact: false }).count();
-    ok('path 5: the same link opened again is refused', used >= 1 && (await h.page.locator('[data-gift-claim-button]').count()) === 0);
+    const used = await h.page.getByText('This gift has already been opened.', { exact: false }).count();
+    const login = await h.page.locator('[data-gift-claim-login]').getAttribute('href').catch(() => null);
+    ok('path 5: the same link opened again is refused, with Log in to the dashboard', used >= 1 && login === '/login' && (await h.page.locator('[data-gift-claim-button]').count()) === 0);
     await h.ctx.close();
   });
 

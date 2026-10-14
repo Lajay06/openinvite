@@ -22,7 +22,8 @@
  * is written, and cleared again if the plan write fails, so two taps cannot
  * both claim and a failed claim does not burn the gift.
  */
-import { updatePlanGift } from './planGift.js';
+import { updatePlanGift, findPlanGiftBySessionId } from './planGift.js';
+import { readGiftDraft } from './giftDrafts.js';
 import { adminFetch } from './base44Admin.js';
 import { verifyGiftToken, giftToken, giftTokenHash, currentToken, claimUrl, MAX_VERSION, giftOrigin } from './giftTokens.js';
 import { decryptGiftField, encryptGiftField } from './giftCrypto.js';
@@ -56,6 +57,27 @@ export function applyGiftToAccount({ currentPlan, currentExpiresAt, giftPlan, no
   if (RANK[current] > RANK[giftPlan]) return { ok: false, reason: 'more_than_gift' };
   const from = currentExpiresAt && Date.parse(currentExpiresAt) > now.getTime() ? currentExpiresAt : now.toISOString();
   return { ok: true, plan: giftPlan, changed: current !== giftPlan, planExpiresAt: addMonths(from, TERM_MONTHS) };
+}
+
+const SESSION_ID = /^cs_(test|live)_[A-Za-z0-9]{10,200}$/;
+
+/**
+ * The done page's names for a paid session (owner ruling 2026-10-14): the
+ * giver's name, the couple's names and the plan, never the address. From the
+ * v2 gift the webhook recorded for that Stripe session; before the webhook
+ * has run, from the giver's draft, by the id the success URL carries, and
+ * only alongside a well-formed session id. Null when neither is found.
+ */
+export async function paidGiftView({ sessionId, draftId, adminKey, fetchImpl = fetch, now = new Date() }) {
+  if (!SESSION_ID.test(String(sessionId || ''))) return null;
+  const row = await findPlanGiftBySessionId(sessionId, adminKey, fetchImpl).catch(() => null);
+  if (row && Number(row.version) === 2) {
+    return { giver: decryptGiftField(row.buyer_name_enc) || '', names: decryptGiftField(row.recipient_names_enc) || '', plan: row.plan };
+  }
+  if (!draftId) return null;
+  const draft = await readGiftDraft(String(draftId), { adminKey, now, fetchImpl }).catch(() => null);
+  if (!draft?.ok) return null;
+  return { giver: draft.draft.giver || '', names: draft.draft.names || '', plan: draft.draft.plan };
 }
 
 /** The v2 gift a token opens, with its state, or null. */

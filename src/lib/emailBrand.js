@@ -175,7 +175,7 @@ export function poweredByRow() {
  *   full-bleed header photo directly under the logo, where the retention
  *   emails put theirs. Omitted, the shell is unchanged, byte for byte.
  */
-export function emailShell({ title, bodyRowsHtml, showHeader = true, preheader = '', photo = null, width = 560 }) {
+export function emailShell({ title, bodyRowsHtml, showHeader = true, preheader = '', photo = null, width = 560, headStyle = '' }) {
   const preheaderHtml = preheader
     ? `\n  <div style="display:none;font-size:1px;color:${EMAIL_BG};line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${escapeHtml(preheader)}</div>`
     : '';
@@ -184,7 +184,7 @@ export function emailShell({ title, bodyRowsHtml, showHeader = true, preheader =
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${escapeHtml(title)}</title>
+  <title>${escapeHtml(title)}</title>${headStyle ? `\n  <style>${headStyle}</style>` : ''}
 </head>
 <body style="margin:0;padding:0;background:${EMAIL_BG};font-family:${EMAIL_FONT};">${preheaderHtml}
   <table width="100%" cellpadding="0" cellspacing="0" style="background:${EMAIL_BG};padding:40px 16px;">

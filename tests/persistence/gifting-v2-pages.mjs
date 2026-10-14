@@ -50,7 +50,7 @@ export async function runGiftingV2Pages() {
     lib.COPY.plan.heading, lib.COPY.plan.sub, lib.COPY.plan.pro, ...lib.COPY.plan.proLines, lib.COPY.plan.ultra, ...lib.COPY.plan.ultraLines,
     lib.COPY.theirs.heading, lib.COPY.theirs.note, lib.COPY.theirs.headline, lib.COPY.theirs.photo, lib.COPY.theirs.when,
     lib.COPY.when.now.line, lib.COPY.when.date.line, lib.COPY.when.fine,
-    lib.COPY.done.heading, lib.COPY.done.body, lib.COPY.done.box, lib.COPY.done.second,
+    lib.COPY.done.heading, lib.COPY.done.headingPlain, lib.COPY.done.body, lib.COPY.done.bodyPlain, lib.COPY.done.boxTitle, lib.COPY.done.box,
     ...lib.HEADLINES.map((h) => h.text),
     lib.REVEAL.body.ultra, lib.REVEAL.body.pro, lib.REVEAL.under, lib.REVEAL.descriptor.ultra, lib.REVEAL.descriptor.pro, lib.REVEAL.footer,
   ];
@@ -75,7 +75,7 @@ export async function runGiftingV2Pages() {
   const ultra = tpl.renderGiftReveal({ plan: 'ultra', giver: 'Sam', names: 'Isla and Theo', note: 'A note.', headlineKey: 'for_you' }).html;
   check('  while an Ultra email does name the Guest Suite', /Guest Suite/.test(ultra));
   check('the rendered note styles are Cloudinary text images, 1040 wide, with commas escaped',
-    /l_text:Caveat_56:/.test(tpl.noteImageUrl('a, b', 'hand')) && /l_text:Cormorant%20Garamond_56_italic:/.test(tpl.noteImageUrl('a', 'serif'))
+    /l_text:Caveat_60_line_spacing_2:/.test(tpl.noteImageUrl('a, b', 'hand')) && /l_text:Cormorant%20Garamond_47:/.test(tpl.noteImageUrl('a', 'serif')) && !/italic/.test(tpl.noteImageUrl('a', 'serif'))
       && tpl.noteImageUrl('a, b', 'hand').includes('a%252C%20b') && /w_1040,c_fit/.test(tpl.noteImageUrl('a', 'serif')) && tpl.noteImageUrl('a', 'plain') === '');
   check('  and carry the full note as alt text', /alt="A note\."/.test(tpl.renderGiftReveal({ note: 'A note.', noteStyle: 'serif' }).html));
 
@@ -84,7 +84,7 @@ export async function runGiftingV2Pages() {
   check('each page\'s photo side: welcome, names step, the live preview, completion',
     /s === 1 \? \{ image: ONBOARDING_IMAGES\.STEP_ONE \}/.test(page) && /s === 2 \? \{ image: ONBOARDING_IMAGES\.WHO \}/.test(page)
       && /s === 4 \? \{ image: ONBOARDING_IMAGES\.DONE \}/.test(page) && /\{ aside: <EmailPreview draft=\{draft\} \/> \}/.test(page)
-      && lib.ONBOARDING_IMAGES.STEP_ONE.endsWith('ID14263_su2ltz.jpg') && lib.ONBOARDING_IMAGES.WHO.endsWith('ID14160_vgcgxf.jpg') && lib.ONBOARDING_IMAGES.DONE.includes('ID6374_iumjqj'));
+      && lib.ONBOARDING_IMAGES.STEP_ONE.endsWith('ID14263_su2ltz.jpg') && lib.ONBOARDING_IMAGES.WHO.endsWith('ID14160_vgcgxf.jpg') && lib.ONBOARDING_IMAGES.DONE.endsWith('DTS_BANDITS_PALI_MENDEZ_Photos_ID14218_hxqxw0.jpg'));
   // PAGE 2 IS ONBOARDING STEP 1 (owner ruling 2026-10-13): the same chrome
   // and the same component, with the gift's three lines, verbatim.
   check('page 2 is onboarding step 1 itself: its chrome and its component, imported, not copied',
@@ -126,11 +126,12 @@ export async function runGiftingV2Pages() {
   check('the Fork step\'s two cards are SelectCard, the one the gift flow consumes', (fork.match(/<SelectCard /g) || []).length === 2 && /export function SelectCard\(/.test(fork) && /import \{ SelectCard \}/.test(page));
   check('the theme accordion and its pill are exported, not copied', /export function AccordionSection\(/.test(read('src/components/onboarding/OnboardingStep5WeddingType.jsx')) && /export function Pill\(/.test(read('src/components/onboarding/OnboardingStep5WeddingType.jsx')));
   check('UniverseGridTile is consumed with imageSrc, hideExplore and caption, all optional', /export function UniverseGridTile\(\{[^}]*imageSrc, hideExplore = false, caption = false \}/.test(read('src/components/onboarding/OnboardingStepUniverse.jsx')) && /<UniverseGridTile /.test(page));
-  check('SelectCard and OnboardingStep1Names gained only optional props (wholeCard and padding; lines)',
+  check('SelectCard and OnboardingStep1Names gained only optional props (wholeCard and padding; lines and size)',
     /export function SelectCard\(\{ title, body, children, onSelect, selected, buttonLabel, wholeCard = false, padding \}\)/.test(read('src/components/onboarding/OnboardingStep8Fork.jsx'))
-      && /export default function OnboardingStep1Names\(\{ onNext, data, lines = NAMES_LINES \}\)/.test(read('src/components/onboarding/OnboardingStep1Names.jsx')));
+      && /export default function OnboardingStep1Names\(\{ onNext, data, lines = NAMES_LINES, size = 32 \}\)/.test(read('src/components/onboarding/OnboardingStep1Names.jsx')));
   check('OnboardingCompletion is consumed with heading, body and children, falling back to its own', /heading \?\? \(firstName/.test(read('src/components/onboarding/OnboardingCompletion.jsx')) && /children \?\? </.test(read('src/components/onboarding/OnboardingCompletion.jsx')) && /<OnboardingCompletion /.test(page));
-  check('emailShell keeps 560 for every other email', /width = 560 \}/.test(read('src/lib/emailBrand.js')));
+  check('emailShell keeps 560 for every other email, and no style block unless one is asked for',
+    /width = 560, headStyle = '' \}/.test(read('src/lib/emailBrand.js')) && /\$\{headStyle \? /.test(read('src/lib/emailBrand.js')));
 
   // ── the retired name, nowhere a giver reads ─────────────────────────────
   // Assembled from its two words so this file does not itself carry the
@@ -140,5 +141,58 @@ export async function runGiftingV2Pages() {
   const said = files.filter((f) => RETIRED.test(read(f)));
   check('nothing in the gift flow uses the retired name for the guest experience', said.length === 0, said.join(', ') || `${files.length} files`);
 
+  // ── owner design ruling 2026-10-14 ──────────────────────────────────────
+  const v2lib = await import('../../src/lib/giftingV2.js');
+  check('page 1 reads "Give the gift of a calmer wedding."', v2lib.COPY.plan?.heading === 'Give the gift of a calmer wedding.' || /heading: 'Give the gift of a calmer wedding\.'/.test(read('src/lib/giftingV2.js')));
+  check('every gift email line says "gifted you", none "has given you"',
+    /\{giver\} gifted you Openinvite \{Plan\}/.test(v2lib.REVEAL.subject) && Object.values(v2lib.REVEAL.body).every((b) => /^\{giver\} gifted you Openinvite /.test(b)) && !/has given you/.test(read('src/lib/giftingV2.js')));
+  const claim = stripComments(read('src/pages/GiftClaim.jsx'));
+  check('the note styles look the plain size (lowercase height matched, measured) and the serif is upright: the pills, the claim page and the email',
+    v2lib.NOTE_X_HEIGHT.plain === 53.6 && v2lib.NOTE_X_HEIGHT.serif === 38.6 && v2lib.NOTE_X_HEIGHT.hand === 35.4
+      && v2lib.noteFaceSize('serif', 17) === 23.6 && v2lib.noteFaceSize('hand', 17) === 25.7 && v2lib.noteFaceSize('plain', 17) === 17
+      && /data-style-sample="hand"[^>]*fontSize: noteFaceSize\('hand', 12\)/.test(page) && /data-style-sample="serif"[^>]*fontStyle: 'normal', fontSize: noteFaceSize\('serif', 12\)/.test(page)
+      && /serif: \{[^}]*fontStyle: 'normal', fontSize: noteFaceSize\('serif', 17\)/.test(claim)
+      && /l_text:Cormorant%20Garamond_47:/.test(tpl.noteImageUrl('a', 'serif')) && /l_text:Caveat_60_line_spacing_2:/.test(tpl.noteImageUrl('a', 'hand')));
+  // ── the handwritten note's size (owner ruling 2026-10-14) ───────────────
+  {
+    const H = tpl.HAND_NOTE;
+    check('the handwritten note is 30px wide and 24px on a phone, line height 1.3, drawn for its measured box',
+      H.wide.px === 30 && H.phone.px === 24 && H.lineHeight === 1.3 && H.wide.box === 462 && H.phone.box === 220
+        && /l_text:Caveat_60_line_spacing_2:[^/]*\/fl_layer_apply\/c_lpad,w_924,/.test(tpl.handNoteImageUrl('a', H.wide)) && /l_text:Caveat_48_line_spacing_1:[^/]*\/fl_layer_apply\/c_lpad,w_440,/.test(tpl.handNoteImageUrl('a', H.phone))
+        && !/c_fit|c_pad,/.test(tpl.handNoteImageUrl('a', H.wide)));
+    const word40 = 'x'.repeat(40);
+    const wideMax = Math.floor(462 / (30 * 0.42));
+    const phoneMax = Math.floor(220 / (24 * 0.42));
+    const wideLines = tpl.wrapNote(word40, wideMax);
+    const phoneLines = tpl.wrapNote(`With love ${word40}`, phoneMax);
+    check('  a 40-character word with no spaces wraps inside the box on both, never to the edge, and nothing is lost',
+      wideLines.length > 1 && wideLines.every((l) => l.length <= wideMax) && phoneLines.every((l) => l.length <= phoneMax)
+        && phoneLines.join('').replace(/ /g, '') === `Withlove${word40}` && tpl.handNoteImageUrl(word40, H.phone).includes(encodeURIComponent(tpl.wrapNote(word40, phoneMax).join('\n'))));
+    for (const [kind, html] of [['reveal', tpl.renderGiftReveal({ note: 'n', noteStyle: 'hand', giver: 'Sam', names: 'Isla and Theo', headlineKey: 'for_you' }).html], ['receipt', tpl.renderGiftConfirmation({ note: 'n', noteStyle: 'hand', giver: 'Sam', names: 'Isla and Theo', email: 'a@b.co' }).html]]) {
+      check(`  the ${kind} shows the 30px note, swaps in the 24px one on a phone, and keeps the quote mark and the signature`,
+        /class="oi-note-wide"[^>]*Caveat_60/.test(html) && /class="oi-note-phone"[^>]*Caveat_48/.test(html) && html.includes(tpl.HAND_NOTE_STYLE)
+          && /font-size:56px;line-height:0\.8;font-weight:700;color:#E03553/.test(html) && /font-variant:small-caps/.test(html));
+    }
+    check('the claim page sets the handwritten note at 30px, 24px on a phone, line height 1.3, wrapping long words',
+      /hand: \{ '--oi-note-font': CAVEAT, lineHeight: 1\.3, overflowWrap: 'anywhere' \}/.test(claim) && /\.oi-note-hand \{ font-size: 30px; \} @media \(max-width: 600px\) \{ \.oi-note-hand \{ font-size: 24px; \} \}/.test(read('src/pages/GiftClaim.jsx')));
+    check('the receipt says "You gifted", never "You have given"',
+      /^You gifted \{names\} Openinvite \{Plan\}\. /.test(lib.CONFIRM.body) && /^You gifted \{names\} Openinvite \{Plan\}\. /.test(lib.CONFIRM.scheduled)
+        && /You gifted Isla and Theo Openinvite/.test(tpl.renderGiftConfirmation({ note: 'n', giver: 'Sam', names: 'Isla and Theo', email: 'a@b.co' }).html.replace(/<[^>]+>/g, ''))
+        && !/have given/.test(read('src/lib/giftingV2.js')));
+  }
+  // ── the logo, from Cloudinary (owner ruling 2026-10-14) ─────────────────
+  {
+    const brand = await import('../../src/lib/emailBrand.js');
+    const LOGO = brand.EMAIL_LOGO_URL;
+    for (const [kind, html] of [['reveal', tpl.renderGiftReveal({ note: 'n', giver: 'Sam', names: 'Isla and Theo', headlineKey: 'for_you' }).html], ['receipt', tpl.renderGiftConfirmation({ note: 'n', giver: 'Sam', names: 'Isla and Theo', email: 'a@b.co' }).html]]) {
+      const logos = [...html.matchAll(/<img src="([^"]+)"[^>]*alt="Openinvite"[^>]*>/g)];
+      check(`the ${kind} email's logo is the full Cloudinary PNG at 160 by 37 with 24px clear under it, never the site's blocked copy or an SVG`,
+        /^https:\/\/res\.cloudinary\.com\/[^"]+\.png$/.test(LOGO) && brand.EMAIL_LOGO_WIDTH === 160 && brand.EMAIL_LOGO_HEIGHT === 37 && !('GIFT_EMAIL_LOGO_URL' in tpl) && logos.length === 1 && logos[0][1] === LOGO && /width="160" height="37"/.test(logos[0][0]) && /width:160px;height:37px;/.test(logos[0][0])
+          && /padding:28px 40px 24px;background:#FFFFFF;">\s*<img src="https:\/\/res\.cloudinary\.com/.test(html)
+          && !/openinvite\.com\.au\/email-assets|\.svg"|openinvite-icon-mark/.test(html));
+    }
+  }
+  check('the note card is the brand gray #F5F5F5, in the email and on the claim page',
+    /background:#F5F5F5/.test(tpl.renderGiftReveal({ note: 'n', noteStyle: 'plain' }).html) && /co_rgb:F5F5F5/.test(tpl.noteImageUrl('a', 'serif')) && /background: '#F5F5F5'/.test(claim) && !/F6F2EC/i.test(read('src/lib/giftEmailTemplate.js') + claim));
   return r;
 }

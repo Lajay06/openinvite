@@ -72,7 +72,8 @@ export const ONBOARDING_IMAGES = {
   STEP_ONE: `${CLOUD}/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14263_su2ltz.jpg`,
   // Page 2, who it is for: onboarding's names-step image (owner's review of #994).
   WHO: `${CLOUD}/f_auto,q_auto/DTS_SUITE_TALK_PALI_MENDEZ_Photos_ID14160_vgcgxf.jpg`,
-  DONE: `${CLOUD}/f_auto,q_auto/DTS_Community_Agust%C3%ADn_Far%C3%ADas_Photos_ID6374_iumjqj.jpg`,
+  // The done page shares "You're all set"'s photo (owner ruling 2026-10-14).
+  DONE: `${CLOUD}/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14218_hxqxw0.jpg`,
 };
 
 /** The five first lines. {names} is how the couple are addressed. */
@@ -96,12 +97,28 @@ export const NOTE_STYLES = [
 ];
 export const NOTE_MAX = 600;
 
+/**
+ * THE NOTE STYLES LOOK ONE SIZE (owner ruling 2026-10-14): each face is set so
+ * its lowercase letters stand as tall as Plain's, not at Plain's font size.
+ * Measured in the browser with each self-hosted face loaded, as the height of
+ * a lowercase x per 100px of type: Plus Jakarta Sans 53.6, Cormorant Garamond
+ * (upright regular) 38.6, Caveat 35.4. So Serif is set 53.6 / 38.6 times and
+ * Handwriting 53.6 / 35.4 times the size Plain is set at. Every surface takes
+ * its size from here: the style pills, the claim page and the email.
+ */
+export const NOTE_X_HEIGHT = { plain: 53.6, serif: 38.6, hand: 35.4 };
+/** The size a style is set at to look as large as Plain set at `plainPx`. */
+export function noteFaceSize(style, plainPx) {
+  const xh = NOTE_X_HEIGHT[style] || NOTE_X_HEIGHT.plain;
+  return Math.round(((plainPx * NOTE_X_HEIGHT.plain) / xh) * 10) / 10;
+}
+
 export const PLAN_NAMES = { pro: 'Pro', ultra: 'Ultra' };
 
 /** The giver's seven pages, verbatim. */
 export const COPY = {
   plan: {
-    heading: 'Give them the whole thing.',
+    heading: 'Give the gift of a calmer wedding.',
     sub: 'One payment. Theirs for 24 months. Nothing for them to pay, ever.',
     // Owner's review of #994, 2026-10-11: product facts, not marketing. "Ava AI"
     // on first mention, "Ava" after.
@@ -136,12 +153,15 @@ export const COPY = {
     tzLine: 'at 9 am where they are ({timezone}, from your browser)',
     fine: 'You pay on Stripe. Your receipt comes from Stripe; everything else comes from us. Refund any time until they open it.',
   },
+  // The owner's copy, 2026-10-14. When the names cannot be loaded, the page
+  // says the two plain lines, never a sentence with a blank in it.
   done: {
     heading: 'That was generous of you, {giver}.',
-    body: 'It is on its way to {email}. We have sent you a copy, with their claim link in case you want to hand it over in person.',
-    boxTitle: 'What happens next',
-    box: '{names} open the email, tap Open your gift, sign in with Google, Apple or email, and they are inside with {Plan} already on. Nothing to type, nothing to pay.',
-    second: 'If it has not arrived in an hour, forward your copy to them; the link works either way.',
+    headingPlain: 'That was generous of you.',
+    body: "Your gift is on its way to {names}. We've sent you a copy too, with their link, in case you'd rather hand it over yourself.",
+    bodyPlain: 'Your gift is on its way.',
+    boxTitle: "What they'll get",
+    box: 'An email with your note. One tap on Open your gift, a quick sign in, and {Plan} is already switched on, ready to plan. Nothing for them to set up or pay.',
     change: 'Change the address or the note',
     another: 'Give another',
   },
@@ -168,11 +188,11 @@ export const GIFT_WELCOME = {
 
 /** The couple's email, verbatim. */
 export const REVEAL = {
-  subject: '{giver} has given you Openinvite {Plan}',
+  subject: '{giver} gifted you Openinvite {Plan}',
   preheader: 'Paid for. One tap and it is yours.',
   body: {
-    ultra: '{giver} has given you Openinvite Ultra: every guest, every reply, every table, the budget, the Guest Suite, all of it. Paid for. Nothing for you to pay, now or later.',
-    pro: '{giver} has given you Openinvite Pro: every guest, every table, the budget, the schedule, the to-dos, all of it. Paid for. Nothing for you to pay, now or later.',
+    ultra: '{giver} gifted you Openinvite Ultra: every guest, every reply, every table, the budget, the Guest Suite, all of it. Paid for. Nothing for you to pay, now or later.',
+    pro: '{giver} gifted you Openinvite Pro: every guest, every table, the budget, the schedule, the to-dos, all of it. Paid for. Nothing for you to pay, now or later.',
   },
   button: 'Open your gift',
   under: 'One tap. We will ask for your names and a date, and then it is yours.',
@@ -188,9 +208,9 @@ export const CONFIRM = {
   subject: 'Your gift to {names} is on its way',
   preheader: 'Here is your copy, and their link.',
   heading: 'Done. That was generous of you.',
-  body: 'You have given {names} Openinvite {Plan}. We have sent it to {email}, with your note exactly as you wrote it.',
+  body: 'You gifted {names} Openinvite {Plan}. We have sent it to {email}, with your note exactly as you wrote it.',
   // When send_at is in the future the body says this instead.
-  scheduled: 'You have given {names} Openinvite {Plan}. We will send it on {date} at 9 am where they are.',
+  scheduled: 'You gifted {names} Openinvite {Plan}. We will send it on {date} at 9 am where they are.',
   linkBox: 'Their claim link, in case you want to hand it over yourself',
   forward: 'If it has not arrived in an hour, forward this email to them; the link works either way.',
   receipt: 'Your receipt from Stripe arrives separately.',
@@ -202,7 +222,11 @@ export const CONFIRM = {
 export const CLAIM = {
   button: 'Open your gift',
   under: 'We will ask for your names and a date.',
-  used: 'This link has already been used. If that is a surprise, reply to the email it came in and we will look.',
+  // A used claim link (owner's copy, 2026-10-14): a heading, a line and a
+  // Log in button that returns to the dashboard.
+  usedHeading: 'This gift has already been opened.',
+  usedLine: "If that was you, log in to find it waiting. If not, reply to the gift email and we'll sort it out.",
+  usedButton: 'Log in',
   // Item 8: a Pro gift to an account already on Ultra; the gift stays unclaimed. Verbatim from the goal.
   moreThanGift: 'You already have Ultra, which is more than this gift. Reply to this email and we will sort it out with {giver}.',
   // The single line at the top of onboarding after a claim. Verbatim from the goal.

@@ -54,7 +54,7 @@ export async function runGiftLinks() {
   check('a sample token claims and saves nothing', /if \(isSampleToken\(token\)\) return; \/\/ a sample claims nothing/.test(read('src/pages/GiftClaim.jsx')) && /if \(isSampleToken\(token\)\) return; \/\/ a sample changes nothing/.test(read('src/pages/GiftEdit.jsx')));
   check('a failed or unknown read reads as used', (seam.match(/return \{ status: 'used' \};/g) || []).length >= 2);
   check('the claim page shows the used page for anything not open, the edit page tells claimed from gone',
-    /gift\.status !== 'open'\) return <PlainLinkPage text=\{CLAIM\.used\} \/>/.test(claim)
+    /gift\.status !== 'open'\) return <UsedClaimPage \/>/.test(claim)
       && /gift\.status === 'claimed'\) return <PlainLinkPage text=\{EDIT\.claimed\} \/>/.test(edit)
       && /<PlainLinkPage text=\{EDIT\.gone\} \/>/.test(edit));
   check('the samples are reserved names, never the shape of a token', Object.keys(SAMPLE_GIFTS).every((k) => /^sample(-[a-z]+)?$/.test(k)));
@@ -64,7 +64,15 @@ export async function runGiftLinks() {
       && EDIT.gone === 'This link no longer works. If that is a surprise, reply to your confirmation email and we will sort it out.');
   check('the claim copy is the goal\'s, verbatim',
     CLAIM.button === 'Open your gift' && CLAIM.under === 'We will ask for your names and a date.'
-      && CLAIM.used === 'This link has already been used. If that is a surprise, reply to the email it came in and we will look.');
+      && CLAIM.usedHeading === 'This gift has already been opened.'
+      && CLAIM.usedLine === "If that was you, log in to find it waiting. If not, reply to the gift email and we'll sort it out."
+      && CLAIM.usedButton === 'Log in' && !('used' in CLAIM));
+  {
+    const claimPage = stripComments(readFileSync(resolve(ROOT, 'src/pages/GiftClaim.jsx'), 'utf8'));
+    check('a used claim link shows the owner\'s heading and line, and Log in goes to login (which returns to the dashboard)',
+      /if \(gift\.status !== 'open'\) return <UsedClaimPage \/>;/.test(claimPage) && /<Link to="\/login" className=\{primary\} data-gift-claim-login>\{CLAIM\.usedButton\}<\/Link>/.test(claimPage)
+        && /<h1 style=\{heading\}>\{CLAIM\.usedHeading\}<\/h1>/.test(claimPage));
+  }
   const copy = [...Object.values(CLAIM), ...Object.values(EDIT)].join(' ');
   const banned = new RegExp(['wedding', 'website'].join(' '), 'i'); // spelled in parts so this file does not say it
   check('no em or en dash, and never the banned product name, in the new copy', !/[–—]/.test(copy) && !banned.test(copy));

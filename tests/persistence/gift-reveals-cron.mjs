@@ -123,7 +123,7 @@ export async function runGiftRevealsCron() {
     check('  each send is idempotent on the gift id', sends.map((s) => s.options?.idempotencyKey).join(',') === 'gift-reveal-giftb0002,gift-reveal-gifta0001');
     check('  each carries its own current claim link',
       sends.every((s, i) => s.email.html.includes(`/gift/claim/${tokens.giftToken('claim', i === 0 ? 'giftb0002' : 'gifta0001', 1)}`)));
-    check('  tagged as a gift reveal, with the gift\'s subject', sends.every((s) => s.email.tags?.[0]?.value === 'gift_reveal') && sends[0].email.subject === 'Jo has given you Openinvite Pro');
+    check('  tagged as a gift reveal, with the gift\'s subject', sends.every((s) => s.email.tags?.[0]?.value === 'gift_reveal') && sends[0].email.subject === 'Jo gifted you Openinvite Pro');
     check('  and stamps sent_at on exactly those two',
       puts.length === 2 && puts.every((p) => p.body.sent_at === now.toISOString()) && puts.map((p) => p.url.split('/').pop()).join(',') === 'giftb0002,gifta0001');
     check('the run logs counts, never an address or a name',

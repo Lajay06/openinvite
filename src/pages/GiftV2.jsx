@@ -47,12 +47,13 @@ import PlanBadge from '@/components/shared/PlanBadge';
 import { renderGiftReveal } from '@/lib/giftEmailTemplate';
 import { resolveCheckoutPriceId, PLAN_PRICES, startGiftV2Checkout } from '@/lib/checkoutSession';
 import { GIFT_TRY_AGAIN, EMAIL_CHECK, isValidGiftEmail, normalizeGiftEmail } from '@/lib/giftInput';
+import { loadPaidGift } from '@/lib/giftLinks';
 import { loadFontFamilies } from '@/lib/selfHostedFonts';
 import { CAVEAT, ensureCaveat } from '@/lib/caveatFont';
 import { color } from '@/styles/tokens';
 import {
   isGiftingV2On, GIFT_DRAFT_KEY, GIFT_PHOTOS, DEFAULT_PHOTO_ID, giftPhotoUrl, photoLabel, ONBOARDING_IMAGES,
-  HEADLINES, DEFAULT_HEADLINE, headlineText, NOTE_STYLES, NOTE_MAX, COPY, fill,
+  HEADLINES, DEFAULT_HEADLINE, headlineText, NOTE_STYLES, NOTE_MAX, COPY, fill, noteFaceSize,
   timezoneInWords, browserTimezone,
 } from '@/lib/giftingV2';
 
@@ -198,8 +199,10 @@ export function styleSample(st) {
   // Through the .oi-note-face escape (src/index.css): the global Plus Jakarta
   // Sans lock beats an inline fontFamily, which is why these samples showed in
   // the product face. Color is inherited from the pill.
-  if (st.key === 'hand') return <span data-style-sample="hand" className="oi-note-face" style={{ '--oi-note-font': CAVEAT, fontSize: 19, lineHeight: 1 }}>{st.label}</span>;
-  if (st.key === 'serif') return <span data-style-sample="serif" className="oi-note-face" style={{ '--oi-note-font': "'Cormorant Garamond', Georgia, serif", fontStyle: 'italic', fontSize: 16 }}>{st.label}</span>;
+  // Every style looks the Plain label's size (12px), the serif upright (owner
+  // ruling 2026-10-14): noteFaceSize matches the lowercase height.
+  if (st.key === 'hand') return <span data-style-sample="hand" className="oi-note-face" style={{ '--oi-note-font': CAVEAT, fontSize: noteFaceSize('hand', 12), lineHeight: '15px' }}>{st.label}</span>;
+  if (st.key === 'serif') return <span data-style-sample="serif" className="oi-note-face" style={{ '--oi-note-font': "'Cormorant Garamond', Georgia, serif", fontStyle: 'normal', fontSize: noteFaceSize('serif', 12), lineHeight: '15px' }}>{st.label}</span>;
   return <span>{st.label}</span>;
 }
 
@@ -217,6 +220,21 @@ export default function GiftV2() {
   const [payError, setPayError] = useState(false);
   // Back from Stripe: the payment went through, so the giver sees the done page.
   useEffect(() => { if (params.get('paid') === '1') setDraft((d) => ({ ...d, step: 4 })); }, [params]);
+  // The done page's names come from the giver's draft in this tab. When it is
+  // not here (Stripe came back in another tab, or to another address), they
+  // load from the server by the paid session (owner ruling 2026-10-14); if
+  // that fails too, the page says the plain lines, never a blank.
+  const [paidGift, setPaidGift] = useState(null);
+  useEffect(() => {
+    if (params.get('paid') !== '1' || (draft.giver.trim() && draft.names.trim())) return;
+    let live = true;
+    loadPaidGift(params.get('session_id'), params.get('draft')).then((g) => { if (live) setPaidGift(g); });
+    return () => { live = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params]);
+  const doneGiver = (draft.giver.trim() || paidGift?.giver || '').trim();
+  const doneNames = (draft.names.trim() || paidGift?.names || '').trim();
+  const donePlan = draft.plan || paidGift?.plan || 'ultra';
   useEffect(() => { loadFontFamilies(['Cormorant Garamond']); ensureCaveat(); }, []);
   useEffect(() => { writeDraft(draft); }, [draft]);
 
@@ -281,8 +299,9 @@ export default function GiftV2() {
                 <SelectCard key={p} wholeCard padding={24} title={<PlanBadge plan={p} {...BIG_BADGE} />} body={COPY.plan[p]} selected={draft.plan === p} onSelect={() => set({ plan: p })}>
                   <ul data-plan-lines style={{ listStyle: 'none', margin: '-12px 0 16px', padding: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {COPY.plan[`${p}Lines`].map((line) => (
-                      <li key={line} style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#555555', fontSize: 14, fontFamily: PJS }}>
-                        <span style={{ color: '#E03553', fontWeight: 700, fontSize: 14, lineHeight: 1 }}>•</span> {line}
+                      <li key={line} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, color: '#555555', fontSize: 14, lineHeight: '21px', fontFamily: PJS }}>
+                        {/* Top aligned (owner ruling 2026-10-14): the dot shares the first line's height, so it sits on the first line of a bullet that wraps. */}
+                        <span aria-hidden="true" style={{ color: '#E03553', fontWeight: 700, fontSize: 14, lineHeight: '21px', flexShrink: 0 }}>•</span> <span>{line}</span>
                       </li>
                     ))}
                   </ul>
@@ -301,7 +320,9 @@ export default function GiftV2() {
         {s === 2 && (
           <div data-gift-page2>
             <ShellStepChrome showStepCounter stepNum={2} totalSteps={PAGES} showBack onBack={() => go(1)} />
+            {/* 28px, all three lines alike (owner ruling 2026-10-14): "and goes to" and an ordinary address share one line at 1440. */}
             <OnboardingStep1Names
+              size={28}
               data={draft}
               lines={[
                 { key: 'names', text: COPY.who.forLine, placeholder: COPY.who.namesLabel, fit: true },
@@ -378,13 +399,12 @@ export default function GiftV2() {
         )}
 
         {s === 4 && (
-          <OnboardingCompletion onDone={() => {}} data={{}} heading={fill(COPY.done.heading, vars)} body={fill(COPY.done.body, vars)}>
+          <OnboardingCompletion onDone={() => {}} data={{}} heading={doneGiver ? fill(COPY.done.heading, { giver: doneGiver }) : COPY.done.headingPlain} body={doneNames ? fill(COPY.done.body, { names: doneNames }) : COPY.done.bodyPlain}>
             <div style={{ border: '1px solid rgba(10,10,10,0.18)', padding: 20, margin: '0 0 20px' }}>
               <p style={{ fontSize: 14, fontWeight: 600, color: INK, margin: '0 0 8px', fontFamily: PJS }}>{COPY.done.boxTitle}</p>
-              <p data-done-box style={{ fontSize: 15, lineHeight: 1.6, color: INK, margin: 0, fontFamily: PJS }}>{withPlanBadge(fill(COPY.done.box, { ...vars, plan: null }), plan)}</p>
+              <p data-done-box style={{ fontSize: 15, lineHeight: 1.6, color: INK, margin: 0, fontFamily: PJS }}>{withPlanBadge(fill(COPY.done.box, { ...vars, plan: null }), donePlan)}</p>
             </div>
-            <p style={{ fontSize: 14, lineHeight: 1.6, color: MUTED, margin: '0 0 28px', fontFamily: PJS }}>{COPY.done.second}</p>
-            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginTop: 8 }}>
               <a href="#change" style={{ color: '#E03553', fontWeight: 600, fontSize: 15, fontFamily: PJS }}>{COPY.done.change}</a>
               <button type="button" onClick={() => setDraft({ ...EMPTY })} style={{ background: 'none', border: 'none', padding: 0, color: '#E03553', fontWeight: 600, fontSize: 15, fontFamily: PJS, cursor: 'pointer' }}>{COPY.done.another}</button>
             </div>
