@@ -39,8 +39,8 @@ const formatStored = (value, pattern) => {
  * here 403'd, which is the same defect that broke the song-request review panel
  * until 2026-08-17. api/guest-notes.js resolves the caller's own wedding
  * server-side and scopes by wedding_id instead, and decrypts the address and
- * message text out of encrypted_guest on the way — the key for that is derived
- * from BASE44_ADMIN_KEY, which the browser can never hold.
+ * message text out of encrypted_guest on the way — the key for that is
+ * APP_ENC_KEY, which the browser can never hold.
  */
 const authHeaders = () => ({
   'Content-Type': 'application/json',

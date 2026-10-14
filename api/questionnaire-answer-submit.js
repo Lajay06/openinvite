@@ -23,8 +23,8 @@
  * equality), so read:null is unavoidable once the admin key needs to find
  * these rows again — confidentiality instead comes from AES-256-GCM
  * encrypting the answer payload (api/_lib/questionnaireCrypto.js), keyed
- * from BASE44_ADMIN_KEY. questionnaire_id and guest_id are stored as HMAC
- * digests, never plaintext, for the same reason pollAuth.js hashes guest
+ * from APP_ENC_KEY. questionnaire_id and guest_id are stored as HMAC digests
+ * keyed from APP_HASH_KEY, never plaintext, for the same reason pollAuth.js hashes guest
  * identifiers on PollVote/PollComment.
  *
  * Privacy enforcement (server-side, not just UI):

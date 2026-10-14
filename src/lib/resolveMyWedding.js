@@ -35,7 +35,7 @@ function mostRecent(records) {
  * /api/my-wedding-details instead of a raw base44.entities.WeddingDetails.filter()
  * call — budget, contactPerson, emergencyContacts, dayVendorContacts,
  * celebrant and license are AES-256-GCM ciphertext at rest, and decrypting
- * needs BASE44_ADMIN_KEY, a server-only secret the browser never holds. The
+ * needs APP_ENC_KEY, a server-only secret the browser never holds. The
  * "owns more than one real record" telemetry that used to live here (the
  * "Alex & Sam" incident) moved server-side, into that endpoint.
  *
@@ -132,7 +132,7 @@ export async function getMyRecords(entityName, sort, limit, { strict = false } =
   // Guest is routed through a server endpoint rather than read directly.
   //
   // Guest family, Track A. Guest.read RLS is null, so the PII on those rows
-  // has to be encrypted at rest — and encryption needs BASE44_ADMIN_KEY, a
+  // has to be encrypted at rest — and encryption needs APP_ENC_KEY, a
   // server-only secret the browser can never hold. Every read therefore has to
   // come through a server endpoint before any field can be encrypted.
   //
@@ -217,11 +217,11 @@ async function fetchMyGuests(sort, { strict = false } = {}) {
  * fix/rsvp-response-encryption (PR 1a): this used to read
  * base44.entities.RsvpResponse directly, client-side. That's no longer
  * possible — RsvpResponse.guest_id is now guest_id_hash (an HMAC keyed by
- * BASE44_ADMIN_KEY, a server-only secret) and the guest-level text fields
- * live in an AES-256-GCM encrypted_guest_level blob, so the browser has no
- * way to compute a matching hash or decrypt the blob itself. The overlay is
- * now computed server-side by api/my-guests-rsvp.js (same admin key, same
- * aggregation helpers) and fetched here instead — the merge logic below is
+ * APP_HASH_KEY, a server-only secret) and the guest-level text fields
+ * live in an AES-256-GCM encrypted_guest_level blob keyed with APP_ENC_KEY, so
+ * the browser has no way to compute a matching hash or decrypt the blob
+ * itself. The overlay is now computed server-side by api/my-guests-rsvp.js
+ * (same keys, same aggregation helpers) and fetched here instead — the merge logic below is
  * unchanged, it just merges a fetched overlay map instead of one computed
  * inline. On any fetch failure this fails soft (returns the unenriched
  * guest list) rather than breaking the whole dashboard.

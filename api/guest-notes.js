@@ -16,8 +16,8 @@
  * AND WHY THE TEXT IS DECRYPTED HERE. GuestMessage.read RLS is null (it has to
  * be — no session can match "anonymous"), so the address and the message live
  * in an AES blob instead of in their plaintext columns. This endpoint is the
- * only place that opens it, because the key is derived from BASE44_ADMIN_KEY
- * and the browser can never hold that.
+ * only place that opens it, because the key is APP_ENC_KEY
+ * (api/_lib/appKeys.js) and the browser can never hold that.
  *
  * GET → { notes: GuestMessage[] }, newest first, is_test excluded, each row
  *   carrying guest_email and message as plain fields and NO encrypted_guest.
