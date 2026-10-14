@@ -35,11 +35,11 @@ export const MARKETING_PAGE_SEO = {
     // subtext on Home (src/components/home/HeroCollage.jsx); now lives only
     // here and in public/llms.txt so the exact wording stays crawler-facing
     // without duplicating on the visible page.
-    description: 'Openinvite is a wedding planning platform with a one-time payment: planning tools, guest management, digital invitations, a guest suite and an AI assistant.',
+    description: 'Openinvite is a wedding planning platform with a one-time payment: planning tools, guest management, digital invitations, a Guest Suite and an AI assistant.',
   },
   '/features': {
     title: 'Openinvite | Features',
-    description: "Explore Openinvite's wedding planning features: guest management, budget tracking, a guest suite builder, digital wedding invitations and 20 design themes, all in one platform.",
+    description: "Explore Openinvite's wedding planning features: guest management, budget tracking, a Guest Suite builder, digital wedding invitations and 20 design themes, all in one platform.",
   },
   '/ava': {
     title: 'Openinvite | Ava',
@@ -47,11 +47,11 @@ export const MARKETING_PAGE_SEO = {
   },
   '/universes': {
     title: 'Openinvite | Universes',
-    description: "Choose from 20 fully designed guest suite themes in Openinvite. Each universe sets the fonts, colors and style for your guest suite, invitations and printed pieces.",
+    description: "Choose from 20 fully designed Guest Suite themes in Openinvite. Each universe sets the fonts, colors and style for your Guest Suite, invitations and printed pieces.",
   },
   '/pricing': {
     title: 'Openinvite | Pricing',
-    description: "Openinvite pricing is a one-time payment, not a subscription. See what's included in the Pro and Ultra plans for your wedding planning platform and your guest suite.",
+    description: "Openinvite pricing is a one-time payment, not a subscription. See what's included in the Pro and Ultra plans for your wedding planning platform and your Guest Suite.",
   },
   '/gifting': {
     title: 'Openinvite | Gifting',
@@ -59,7 +59,7 @@ export const MARKETING_PAGE_SEO = {
   },
   '/contact': {
     title: 'Openinvite | Contact',
-    description: "Get in touch with Openinvite. We're here to help with questions about wedding planning, your guest suite or your account.",
+    description: "Get in touch with Openinvite. We're here to help with questions about wedding planning, your Guest Suite or your account.",
   },
   '/tour': {
     title: 'Openinvite | Tour the studio',
@@ -79,7 +79,7 @@ export const MARKETING_PAGE_SEO = {
   },
   '/terms-of-service': {
     title: 'Openinvite | Terms of service',
-    description: 'Read the terms of service for using Openinvite, the wedding planning platform and guest suite builder.',
+    description: 'Read the terms of service for using Openinvite, the wedding planning platform and Guest Suite builder.',
   },
   '/login': {
     title: 'Openinvite | Log in',

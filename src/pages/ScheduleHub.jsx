@@ -362,7 +362,7 @@ export default function ScheduleHub() {
       />
       {/* THE NOTE IS GONE, and the strip now sits against the header the way
           it does on every other page. Owner ruling, round two item 6: remove
-          the line "Visible to guests in your guest suite", and the separators
+          the line "Visible to guests in your Guest Suite", and the separators
           between the cards must reach the heading edge. They are the same
           instruction — the note was the 14px band between the header's rule
           and the top of the strip, so the vertical separators started below

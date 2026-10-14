@@ -21,7 +21,7 @@ const ARTICLES = {
       <p style={S.p}>Onboarding is a step-by-step conversational flow that collects your key wedding details and sets up your account. It takes about 3–5 minutes.</p>
       <h3 style={S.h3}>The steps</h3>
       <ol style={S.ol}>
-        <li style={S.li}><strong>Enter your names</strong> — Partner 1 and Partner 2 first names. These appear across your guest suite, your invitation, your emails, and all personalized content.</li>
+        <li style={S.li}><strong>Enter your names</strong>: Partner 1 and Partner 2 first names. These appear across your Guest Suite, your invitation, your emails, and all personalized content.</li>
         <li style={S.li}><strong>Set your wedding date</strong> — Use the date picker to select your date. This drives your countdown timer, checklist deadlines, and Ava's timeline suggestions.</li>
         <li style={S.li}><strong>Add your venue</strong> — Search using Google Places to find your ceremony venue. Start typing and select from the dropdown. The address auto-fills.</li>
         <li style={S.li}><strong>Guest count</strong> — Choose Intimate (under 50), Celebration (50–150), or Grand (150+), then enter your specific number. This helps Ava calibrate your budget and checklist.</li>
@@ -36,7 +36,7 @@ const ARTICLES = {
   ),
   'Setting up your Event Details': (
     <div>
-      <p style={S.p}>Event Details is the master source of truth for your wedding. Any detail you enter here flows automatically to your guest suite, your emails, your checklist, and Ava's responses.</p>
+      <p style={S.p}>Event Details is the master source of truth for your wedding. Any detail you enter here flows automatically to your Guest Suite, your emails, your checklist, and Ava's responses.</p>
       <h3 style={S.h3}>What lives in Event Details</h3>
       <ul style={S.ul}>
         <li style={S.li}>Partner names (drives all personalized content)</li>
@@ -61,7 +61,7 @@ const ARTICLES = {
       </ul>
       <h3 style={S.h3}>How to save</h3>
       <p style={S.p}>Changes auto-save after 1.5 seconds. You'll see "Saving..." then "Saved ✓" in the top bar.</p>
-      <div style={S.tip}><p style={S.tipText}><strong>Important:</strong> Never enter venue details by typing them manually — always use the Google Places search so the address, coordinates, and place ID are saved correctly. This enables map embeds in your guest suite.</p></div>
+      <div style={S.tip}><p style={S.tipText}><strong>Important:</strong> Never enter venue details by typing them manually. Always use the Google Places search so the address, coordinates, and place ID are saved correctly. This enables map embeds in your Guest Suite.</p></div>
     </div>
   ),
   'Understanding the dashboard': (
@@ -130,7 +130,7 @@ const ARTICLES = {
       <p style={S.p}>Ava is the AI wedding specialist built into every part of Openinvite. Ava's powered by Claude, one of the world's most advanced AI models.</p>
       <h3 style={S.h3}>Website building</h3>
       <ul style={S.ul}>
-        <li style={S.li}>Auto-fill your entire guest suite from your planning details in one click</li>
+        <li style={S.li}>Auto-fill your entire Guest Suite from your planning details in one click</li>
         <li style={S.li}>Write your love story, welcome message, and FAQ</li>
         <li style={S.li}>Suggest section layouts and content for each page</li>
       </ul>
@@ -165,7 +165,7 @@ const ARTICLES = {
   ),
   "Using Ava's Studio step-by-step": (
     <div>
-      <p style={S.p}>Ava's Studio is a guided, one-step-at-a-time builder for your guest suite. It's designed to remove overwhelm — you focus on one thing, Ava handles the rest.</p>
+      <p style={S.p}>Ava's Studio is a guided, one-step-at-a-time builder for your Guest Suite. It's designed to remove overwhelm: you focus on one thing, Ava handles the rest.</p>
       <h3 style={S.h3}>How to open it</h3>
       <ol style={S.ol}>
         <li style={S.li}>Click "Design Studio" in the sidebar</li>
@@ -233,7 +233,7 @@ const ARTICLES = {
   ),
   'Adding sections to your website': (
     <div>
-      <p style={S.p}>Your guest suite is built from blocks — individual content pieces you add, reorder, and customize for each page. There are 24 block types across 5 categories.</p>
+      <p style={S.p}>Your Guest Suite is built from blocks: individual content pieces you add, reorder, and customize for each page. There are 24 block types across 5 categories.</p>
       <h3 style={S.h3}>How to add a block</h3>
       <ol style={S.ol}>
         <li style={S.li}>Open Design Studio → Guest Suite → Website tab</li>
@@ -263,7 +263,7 @@ const ARTICLES = {
   ),
   'Choosing a theme and typography': (
     <div>
-      <p style={S.p}>Your theme and typography define the visual identity of your guest suite. Changes apply instantly across all pages in the preview.</p>
+      <p style={S.p}>Your theme and typography define the visual identity of your Guest Suite. Changes apply instantly across all pages in the preview.</p>
       <h3 style={S.h3}>Themes (21 available)</h3>
       <p style={S.p}>Themes control your color palette — dark background, light background, and accent color. Notable themes include: LONDON, STILL (Obsidian dark, Linen light — LONDON's default), DUSK (Deep brown, Warm cream, Gold), SAGE (Dark green, Sage, Forest), BLUSH (Dark plum, Blush, Rose), NOIR (Black, Pure white, Red), plus SLATE, IVORY, MIDNIGHT, TERRA, FOREST, CORAL, LAVENDER, BRONZE, ARCTIC, DESERT, PLUM, JADE, CHARCOAL, CHAMPAGNE, and OBSIDIAN.</p>
       <h3 style={S.h3}>How to change theme</h3>
@@ -297,7 +297,7 @@ const ARTICLES = {
   ),
   'Setting up your RSVP page': (
     <div>
-      <p style={S.p}>Your RSVP page lets guests respond to your invitation directly in your guest suite. Responses are collected in your Guest List automatically.</p>
+      <p style={S.p}>Your RSVP page lets guests respond to your invitation directly in your Guest Suite. Responses are collected in your Guest List automatically.</p>
       <h3 style={S.h3}>How to set up RSVP</h3>
       <ol style={S.ol}>
         <li style={S.li}>In the Guest Suite → Website tab, select "RSVP" from the left panel page list (toggle it on if off)</li>
@@ -319,10 +319,10 @@ const ARTICLES = {
   ),
   'Publishing and sharing your site': (
     <div>
-      <p style={S.p}>Publishing makes your guest suite live at openinvite.com.au/w/your-names so guests can visit it.</p>
+      <p style={S.p}>Publishing makes your Guest Suite live at openinvite.com.au/w/your-names so guests can visit it.</p>
       <h3 style={S.h3}>How to publish</h3>
       <ol style={S.ol}>
-        <li style={S.li}>Open the guest suite builder</li>
+        <li style={S.li}>Open the Guest Suite builder</li>
         <li style={S.li}>Click "Publish" in the top-right corner</li>
         <li style={S.li}>The Publish modal opens — click "Publish Now"</li>
         <li style={S.li}>Your site is immediately live</li>
@@ -340,7 +340,7 @@ const ARTICLES = {
       </ul>
       <h3 style={S.h3}>Password protection</h3>
       <p style={S.p}>Enable in Publish modal → Website tab. Guests see a password entry screen before your site loads. The preview links in your own dashboard skip that screen for you, because you are signed in as the owner — the same link does nothing for anyone else.</p>
-      <div style={S.tip}><p style={S.tipText}><strong>Privacy:</strong> Toggle "Hide from Search" to prevent Google from indexing your guest suite.</p></div>
+      <div style={S.tip}><p style={S.tipText}><strong>Privacy:</strong> Toggle "Hide from Search" to prevent Google from indexing your Guest Suite.</p></div>
     </div>
   ),
   'What is the Guest Suite?': (
@@ -423,7 +423,7 @@ const ARTICLES = {
   ),
   'Tracking RSVPs and responses': (
     <div>
-      <p style={S.p}>Openinvite automatically collects RSVPs when guests respond via your guest suite. You can also manually record responses for guests who reply by phone, text, or email.</p>
+      <p style={S.p}>Openinvite automatically collects RSVPs when guests respond via your Guest Suite. You can also manually record responses for guests who reply by phone, text, or email.</p>
       <h3 style={S.h3}>How RSVPs work</h3>
       <ol style={S.ol}>
         <li style={S.li}>Guest visits your website and finds the RSVP page</li>
@@ -683,7 +683,7 @@ const helpCategories = [
   {
     icon: 'Globe',
     title: 'Website builder',
-    description: 'Build and publish your guest suite',
+    description: 'Build and publish your Guest Suite',
     articles: [
       { title: 'Adding sections to your website', time: '3 min read' },
       { title: 'Choosing a theme and typography', time: '2 min read' },

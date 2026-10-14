@@ -54,7 +54,7 @@ export default function UniverseTeaserSection() {
           fontSize: 17, color: "rgba(255,255,255,0.55)", lineHeight: 1.6, maxWidth: 700, margin: "0 auto 56px",
           opacity: visible ? 1 : 0, transition: `opacity 0.7s ${EASE} 0.1s`,
         }}>
-          Choose a universe and your invitation, guest suite and RSVP follow it, automatically.
+          Choose a universe and your invitation, Guest Suite and RSVP follow it, automatically.
         </p>
 
         {/* Two columns, three from md. auto-fit/minmax(180px) put the five

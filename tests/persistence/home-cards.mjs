@@ -4,7 +4,7 @@
  * SIX CARDS ON THE HOME PAGE, ENDING ON PLUS 1.
  *
  * Item 2 of goals/2026-10-08-site-fixes-batch-1.md, whose ruling is the whole
- * of this guard: "remove Guest suite, change nothing else".
+ * of this guard: "remove Guest Suite, change nothing else".
  *
  * ── SO "NOTHING ELSE" IS WHAT IS ASSERTED ──────────────────────────────────
  *
@@ -17,7 +17,7 @@
  *
  * ── THE NUMBERING IS WHY THE LAST CARD WAS THE EASY ONE TO LOSE ────────────
  *
- * The cards carry their own "01" to "07" labels. Guest suite was 07 and last,
+ * The cards carry their own "01" to "07" labels. Guest Suite was 07 and last,
  * so removing it leaves 01 to 06 contiguous and nothing renumbered. Had it sat
  * in the middle, every card after it would have had to move, and the ruling
  * "change nothing else" would have been impossible to keep literally.
@@ -87,19 +87,28 @@ export async function runHomeCards() {
   check('and no seventh card of any name', descs.length, 6);
 
   // ── THE CARD THAT WENT ──────────────────────────────────────────────────
-  ok('no Guest suite card is rendered', !/Guest suite/.test(src), 'absent from the code');
-  ok('  and its photo went with it',
-     !/ID3565|Early_Honey_Moon/.test(src), 'no orphaned asset reference');
-  // THE DASHBOARD'S OWN "Guest suite" IS A DIFFERENT THING and must not be
+  // THE CARD IS PINNED BY ITS PHOTOGRAPH, NOT BY THE PRODUCT'S NAME.
+  //
+  // This asked whether the source contained "Guest suite" at all, which worked
+  // only while the page's other copy spelled the name differently from the
+  // card's label. Since 2026-10-15 every mention is "Guest Suite", so the name
+  // no longer tells a card from a sentence. The photograph only ever belonged
+  // to the card.
+  ok('no Guest Suite card is rendered',
+     !/ID3565|Early_Honey_Moon/.test(src), 'its photograph is absent from the code');
+  ok('  and no seventh card label is left behind',
+     !/"07"|'07'/.test(src), 'no 07 label');
+  // THE DASHBOARD'S OWN "Guest Suite" IS A DIFFERENT THING and must not be
   // swept by a later reading of this item: it is a sidebar group, pinned by
   // tests/persistence/dashboard-top.mjs.
   ok('the dashboard sidebar group of that name is untouched',
-     /'Guest suite'/.test(read('tests/persistence/dashboard-top.mjs')), 'still pinned there');
+     /'Guest Suite'/.test(read('tests/persistence/dashboard-top.mjs')), 'still pinned there');
 
   // ── THE SNAPSHOT SHIPS WITH THE PAGE ────────────────────────────────────
   const snap = read('prerendered/index.html');
   ok('the prerendered home snapshot ends on Plus 1', snap.includes('Plus 1'), 'present');
-  ok('  and carries no Guest suite card', !snap.includes('Guest suite'), 'regenerated');
+  ok('  and carries no Guest Suite card',
+     !/ID3565|Early_Honey_Moon/.test(snap), 'the card photograph is absent from the snapshot');
 
   return results;
 }

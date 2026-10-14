@@ -60,7 +60,7 @@ export default function Home() {
       <UniverseTeaserSection />
 
       {/* 5. AVA GRADIENT BANNER + SPOTLIGHT — the black carousel now runs
-          straight into the gradient banner. The "Invitations & guest suite"
+          straight into the gradient banner. The "Invitations & Guest Suite"
           moment and the "Three steps" how-it-works block that used to sit
           here are both gone: invitations/guest-suite now lives exclusively
           on the Universes page (which gets the full treatment), and

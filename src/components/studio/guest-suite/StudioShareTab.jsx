@@ -44,7 +44,7 @@ export default function StudioShareTab({ details: propDetails }) {
   useEffect(() => {
     const defaultSubjects = {
       'save-the-date': `Save the Date — ${coupleDisplayName(details, 'Our Wedding')}`,
-      'website-share': `Our guest suite is live — ${coupleDisplayName(details, '')}`,
+      'website-share': `Our Guest Suite is live: ${coupleDisplayName(details, '')}`,
       'rsvp-reminder': `RSVP Reminder — ${coupleDisplayName(details, 'Our Wedding')}`,
       'update': `Wedding Update from ${coupleDisplayName(details, 'the couple')}`,
     };
@@ -86,7 +86,7 @@ export default function StudioShareTab({ details: propDetails }) {
     // disabled button the modal has. A couple with no names could go live
     // here at an address that does not exist.
     if (next && !details?.slug) {
-      toast.error('Add your names first so your guest suite has an address.');
+      toast.error('Add your names first so your Guest Suite has an address.');
       return;
     }
     await updateField('websiteEnabled', next);
@@ -191,7 +191,7 @@ export default function StudioShareTab({ details: propDetails }) {
         <div className="oi-share-main" style={{ flex: 1, minWidth: 0, marginRight: 24 }}>
           <div style={{ border: '1px solid #EEEEEE', padding: 24 }}>
             <p style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', margin: '0 0 4px' }}>Email Your Guests</p>
-            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px' }}>Send your guest suite directly to your guest list.</p>
+            <p style={{ fontSize: 13, color: 'rgba(10,10,10,0.6)', margin: '0 0 20px' }}>Send your Guest Suite directly to your guest list.</p>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
               {[
                 { label: 'All Guests', count: guests.length, action: () => setSelectedGuests(guests.map(g => g.id)) },

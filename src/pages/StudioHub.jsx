@@ -47,7 +47,7 @@ export default function StudioHub() {
     {
       kicker: 'Website & guest experience',
       title: 'Guest Suite',
-      subtitle: 'Build your guest suite, your invitation and your RSVP.',
+      subtitle: 'Build your Guest Suite, your invitation and your RSVP.',
       image: wedding?.coverPhoto || universeImage,
       // "Draft" WAS A FOURTH WORD FOR THE SAME THING, and it read Live on the
       // flag alone. publishLabel gives the three states one spelling.

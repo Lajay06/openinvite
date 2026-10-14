@@ -117,8 +117,18 @@ export const UNGROUPED_ITEMS = [
  *   Event details stays ungrouped beside it — the judgment call the owner
  *   accepted by name.
  *
- * "Guest suite" is the brand name, exactly. It was "Guest Suite" before and
- * "Website & invitations" briefly; the owner named the spelling.
+ * "Guest Suite" is the brand name, exactly, with both capitals. It has been
+ * "Guest Suite", then "Website & invitations" briefly, then "Guest suite" from
+ * 2026-10-11 (#976), and "Guest Suite" again since the owner reversed that on
+ * 2026-10-15. The reversal is deliberate and is recorded in
+ * scratchpad/DECISION-LOG.md: the product's name is a name, like Pro and
+ * Ultra, so it keeps its capitals in every user-facing string on the web and
+ * on the phone.
+ *
+ * The identifiers do NOT follow it. GuestSuite the component, guestSuite the
+ * field and guest-suite the route and test id are unchanged, because renaming
+ * an identifier to match a display name breaks a route to win a style
+ * argument.
  *
  * EVERY GROUP CARRIES AN ICON so a collapsed sidebar is readable at a glance —
  * a column of seven identical carets tells you nothing. All eight come from
@@ -193,7 +203,7 @@ export const NAV_SECTIONS = [
     ],
   },
   {
-    label: "Guest suite",
+    label: "Guest Suite",
     icon: Globe,
     guestSuite: true,
     items: [
@@ -513,7 +523,7 @@ export function AnimatedSidebar({ weddingName, onOpenTour, onCollaborate, topOff
                   showBadge={item.ultraBadge && !canAccessUltra}
                   count={item.countKey === 'unreadMessages' ? unreadMessagesCount : 0}
                   disabled={guestSuiteDisabled}
-                  disabledTooltip="Upgrade to Ultra to unlock your guest suite"
+                  disabledTooltip="Upgrade to Ultra to unlock your Guest Suite"
                 />
               ))}
             </div>
@@ -744,7 +754,7 @@ export function MobileSidebarContent({ weddingName, onClose, onCollaborate, onOp
                   <div
                     key={ii}
                     onClick={guestSuiteDisabled ? undefined : () => handleNav(item.url)}
-                    title={guestSuiteDisabled ? "Upgrade to Ultra to unlock your guest suite" : undefined}
+                    title={guestSuiteDisabled ? "Upgrade to Ultra to unlock your Guest Suite" : undefined}
                     aria-label={item.label}
                     {...interactiveRowProps(() => handleNav(item.url), guestSuiteDisabled)}
                     style={{

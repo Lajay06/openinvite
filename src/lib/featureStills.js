@@ -65,7 +65,7 @@ export const FEATURE_STILLS = {
   ),
   suite: still(
     'v1791727996/studio-tour/stills/feature-suite/1440-20261011141316',
-    "The guest suite's celebration page: the day, then the ceremony with its time, place and dress code",
+    "The Guest Suite's celebration page: the day, then the ceremony with its time, place and dress code",
     'The schedule your guests see, on the site you designed.',
   ),
 };

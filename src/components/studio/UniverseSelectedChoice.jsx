@@ -28,12 +28,12 @@ export default function UniverseSelectedChoice({ universe, coupleName, onClose }
           {universe.name}
         </h2>
         <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)' }}>
-          Applied across your guest suite
+          Applied across your Guest Suite
         </p>
       </div>
 
       <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 28 }}>
-        Ready to build your guest suite?
+        Ready to build your Guest Suite?
       </p>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16, maxWidth: 320, width: '100%' }}>

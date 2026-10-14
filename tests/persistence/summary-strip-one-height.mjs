@@ -98,7 +98,11 @@ export async function runSummaryStripOneHeight() {
     !/\bsub:\s/.test(HUB_CODE.slice(HUB_CODE.indexOf('const STAT_CARDS'), HUB_CODE.indexOf('const STAT_CARDS') + 600)),
     'no sub key');
   check('  the note above the strip is gone, so the separators start at the heading',
-    !/Visible to guests in your Guest Suite/.test(HUB), 'note removed');
+    // READ THE STRIPPED SOURCE, NOT THE RAW FILE. The question is whether the
+    // note still RENDERS. A comment in ScheduleHub.jsx quotes the old line to
+    // explain why it went, and against the raw file that quote read as the
+    // note still being on the page.
+    !/Visible to guests in your Guest Suite/.test(HUB_CODE), 'note removed');
   check('  and the strip is the first thing under the page header',
     /<DashboardPageHeader[\s\S]{0,400}?\/>\s*(?:\{\/\*[\s\S]*?\*\/\}\s*)*<div className="flex flex-wrap w-full"/.test(HUB),
     'header then strip');

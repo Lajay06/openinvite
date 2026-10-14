@@ -187,7 +187,7 @@ export async function runStudioTourCopy() {
     tour.completedCount(['panel:/Guests', 'tour:welcome']) === 1, 'a panel dismissal is not a chapter');
 
   // ── the "?" mapping ──────────────────────────────────────────────────────
-  check('the "?" on the guest suite editor opens the publish chapter',
+  check('the "?" on the Guest Suite editor opens the publish chapter',
     tour.chapterKeyForRoute('/studio/guest-suite') === 'publish', tour.chapterKeyForRoute('/studio/guest-suite'));
   check('  longest match wins, so /studio still opens design studio',
     tour.chapterKeyForRoute('/studio') === 'design-studio', tour.chapterKeyForRoute('/studio'));

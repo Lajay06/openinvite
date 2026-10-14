@@ -193,13 +193,13 @@ function StatCell({ stat, index, inView }) {
 // ── How it works cards ────────────────────────────────────────
 const HOW_CARDS = [
 { num: "01", step: "LEARNS", heading: "Understands your wedding", body: "From the moment you start, Ava absorbs your details: your style, your priorities, your story, your budget. The more you plan, the smarter Ava gets." },
-{ num: "02", step: "PLANS", heading: "Builds your entire plan", body: "Ava auto-generates your personalized checklist, fills in your guest suite, flags budget risks, and creates seating suggestions, all based on your specific wedding." },
+{ num: "02", step: "PLANS", heading: "Builds your entire plan", body: "Ava auto-generates your personalized checklist, fills in your Guest Suite, flags budget risks, and creates seating suggestions, all based on your specific wedding." },
 { num: "03", step: "DELIVERS", heading: "Handles the details", body: "When something needs attention, Ava surfaces it. When you're stuck, Ava suggests. When it's time to write your vows, Ava helps you find the words." }];
 
 
 // ── Comparison table ──────────────────────────────────────────
 const TABLE_ROWS = [
-{ feature: "Guest suite", without: "Built manually, takes hours", with: "Auto-filled in 60 seconds" },
+{ feature: "Guest Suite", without: "Built manually, takes hours", with: "Auto-filled in 60 seconds" },
 { feature: "Checklist", without: "Generic template", with: "Personalized to your wedding" },
 { feature: "Budget tracking", without: "Spreadsheet chaos", with: "Real-time AI monitoring" },
 { feature: "Vow writing", without: "Blank page anxiety", with: "Guided by Ava" },
@@ -385,8 +385,8 @@ export default function AvaPage() {
         bgColor="#FFFFFF"
         label="GUEST SUITE"
         labelColor="#DDF762"
-        headline="Your guest suite, written by Ava."
-        body="Tell Ava about your love story, your venue, your vibe. Ava writes your welcome message, populates every page, and builds your whole guest suite, ready in under 60 seconds."
+        headline="Your Guest Suite, written by Ava."
+        body="Tell Ava about your love story, your venue, your vibe. Ava writes your welcome message, populates every page, and builds your whole Guest Suite, ready in under 60 seconds."
         bullets={["Couple names, date and venue auto-populated", "Love story written from your answers", "FAQ generated from your details", "Travel info and hotel suggestions", "Personalized welcome message"]}
         photo="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1779241785/aditya-gautama-putra-k0tGYZ6Xbhg-unsplash_z5r24i.jpg"
         reversed={false} />

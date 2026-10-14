@@ -149,12 +149,25 @@ export async function runSentenceCaseChrome() {
   // indistinguishable from a guard being silenced. This is the reason.
   check('artwork keeps its uppercase treatment', art.length >= 61, `${art.length} declarations preserved (baseline 61)`);
 
-  // Product names match the sidebar rather than drifting into Title Case.
+  // PRODUCT NAMES KEEP THEIR CAPITALS, and each matches the sidebar exactly.
+  //
+  // This read "product names are not Title Cased" and required "Guest suite".
+  // That was the ruling of 2026-10-11 (#976), which the owner reversed on
+  // 2026-10-15: "Guest Suite" is the product's name, with both capitals, on
+  // web and on the phone, the same way Pro and Ultra are names.
+  //
+  // The sentence-case rule is not weakened by this and is not an exception to
+  // it. Sentence case governs CHROME: headings, labels, buttons. A proper name
+  // inside a sentence keeps its own capitals, which is why "Design studio" has
+  // one and "Guest Suite" has two. The test is the sidebar, not a rule about
+  // letters: whatever NAV_SECTIONS calls a thing is what the chrome calls it.
+  //
+  // Recorded in scratchpad/DECISION-LOG.md under 2026-10-15.
   const gate = CHROME.find(([p]) => p === 'pages/UniverseStudio.jsx')?.[1] || '';
   const suite = CHROME.find(([p]) => p === 'pages/StudioGuestSuite.jsx')?.[1] || '';
-  check('  product names are not Title Cased',
-    /Design studio is an Ultra feature/.test(gate) && /Guest suite is an Ultra feature/.test(suite),
-    'match the sidebar labels');
+  check('  product names keep their capitals, and match the sidebar',
+    /Design studio is an Ultra feature/.test(gate) && /Guest Suite is an Ultra feature/.test(suite),
+    'Design studio with one capital, Guest Suite with two, as NAV_SECTIONS writes them');
 
   // CLAUDE.md must say what the codebase does.
   // Assert the RULE LINE, not merely that the phrase appears somewhere: the

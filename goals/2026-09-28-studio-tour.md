@@ -92,7 +92,7 @@ Try it: Music, Create playlist spotlighted.
 5. Design studio
 Title: Made to look like yours.
 Lead: One universe, carried through the invitation, the website and the entrance.
-Body: Pick your universe once. The guest suite is built on it, page by page. Change a photo or a line and the preview shows what guests will see. The entrance greets each guest by name when they arrive from their invitation.
+Body: Pick your universe once. The Guest Suite is built on it, page by page. Change a photo or a line and the preview shows what guests will see. The entrance greets each guest by name when they arrive from their invitation.
 Tip: Your web address is chosen here. Once invitations have gone out, old links keep working even if you change it.
 Try it: Design studio, My Universe card spotlighted.
 

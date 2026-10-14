@@ -16,11 +16,11 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 const FAQS = [
   {
     q: "What is Openinvite?",
-    a: "Openinvite is a wedding planner, on the web and on your phone and guest suite builder for couples. It combines guest management, budget tracking, a guest suite your guests can visit, digital wedding invitations and an AI wedding assistant called Ava in one platform, for a single one-time payment instead of a subscription.",
+    a: "Openinvite is a wedding planner, on the web and on your phone and Guest Suite builder for couples. It combines guest management, budget tracking, a Guest Suite your guests can visit, digital wedding invitations and an AI wedding assistant called Ava in one platform, for a single one-time payment instead of a subscription.",
   },
   {
     q: "Is there an app?",
-    a: "Yes, for iPhone and Android. It is coming to the App Store and Google Play at launch. You design your guest suite on a desktop, where the space is; the guest list, replies, budget and seating chart are yours on your phone.",
+    a: "Yes, for iPhone and Android. It is coming to the App Store and Google Play at launch. You design your Guest Suite on a desktop, where the space is; the guest list, replies, budget and seating chart are yours on your phone.",
   },
   {
     q: "How much does it cost? Is it really one payment?",
@@ -28,11 +28,11 @@ const FAQS = [
   },
   {
     q: "What's included in Pro versus Ultra?",
-    a: "Pro covers the full wedding planning toolkit: guest and RSVP management, budget tracking, vendor management, a seating planner, a schedule and Ava, the AI assistant. Ultra includes everything in Pro plus a guest suite with premium design themes, digital invitations, and online RSVP pages for guests.",
+    a: "Pro covers the full wedding planning toolkit: guest and RSVP management, budget tracking, vendor management, a seating planner, a schedule and Ava, the AI assistant. Ultra includes everything in Pro plus a Guest Suite with premium design themes, digital invitations, and online RSVP pages for guests.",
   },
   {
     q: "What are design universes?",
-    a: "Design universes are Openinvite's fully designed guest suite themes. There are 20 universes to choose from, each setting the fonts, colors and style for your guest suite, invitations and printed pieces, inspired by destinations like Tulum, Kyoto and Paris.",
+    a: "Design universes are Openinvite's fully designed Guest Suite themes. There are 20 universes to choose from, each setting the fonts, colors and style for your Guest Suite, invitations and printed pieces, inspired by destinations like Tulum, Kyoto and Paris.",
   },
   {
     q: "Who is Ava?",

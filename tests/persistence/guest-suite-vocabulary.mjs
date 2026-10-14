@@ -128,7 +128,7 @@ export async function runGuestSuiteVocabulary() {
   // ── the new name is actually in use ───────────────────────────────────────
   // "No wedding website anywhere" is true of a repo that says nothing at all.
   const users = all.filter((f) => f.startsWith('src/') && /guest suite/i.test(readFileSync(join(ROOT, f), 'utf8')));
-  check('and the product says "guest suite"', users.length >= 15, `${users.length} files in src/`);
+  check('and the product says "Guest Suite"', users.length >= 15, `${users.length} files in src/`);
 
   return results;
 }

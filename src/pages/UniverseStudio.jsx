@@ -188,7 +188,7 @@ export default function UniverseStudio() {
     return (
       <UltraGate
         heading="Design studio is an Ultra feature"
-        description="Choose from 20 fully designed style universes and apply that aesthetic across your guest suite, your invitation and your RSVP."
+        description="Choose from 20 fully designed style universes and apply that aesthetic across your Guest Suite, your invitation and your RSVP."
         tabs={['Universes', 'Website', 'Assets', 'Share']}
       />
     );
@@ -354,7 +354,7 @@ export default function UniverseStudio() {
         onClose={() => setAvaOpen(false)}
         pageTitle="Design studio"
         systemPrompt="You are Ava, helping a couple with both their wedding's visual design (universe/theme choice, website, invitations, print pieces) and their overall guest experience (RSVP flow, guest communication, making guests feel welcome)."
-        quickActions={["Which universe suits our wedding style?", "What should go on my guest suite?", "How do I write a great RSVP message?", "Tips for making guests feel welcome"]}
+        quickActions={["Which universe suits our wedding style?", "What should go on my Guest Suite?", "How do I write a great RSVP message?", "Tips for making guests feel welcome"]}
       />
     </div>
   );

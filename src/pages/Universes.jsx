@@ -251,7 +251,7 @@ const Universes = () => {
   // product cannot pay.
   const assets = [
     { name: 'Your invitation', description: 'The piece your guests open first, in your universe\u2019s color, type and photography.' },
-    { name: 'Your guest suite', description: 'Every page a guest needs — the day, the place, the answers — dressed the same way.' },
+    { name: 'Your Guest Suite', description: 'Every page a guest needs, the day, the place, the answers, dressed the same way.' },
     { name: 'Your RSVP', description: 'Replies come straight back to your guest list, styled to match the invitation that asked.' },
   ];
 
@@ -264,7 +264,7 @@ const Universes = () => {
     {
       number: '01',
       title: 'Set it once.',
-      body: 'Your names, your date, your venue: entered once in your planner. They flow through your invitation, your guest suite and your RSVP, so nothing is typed twice and nothing drifts.',
+      body: 'Your names, your date, your venue: entered once in your planner. They flow through your invitation, your Guest Suite and your RSVP, so nothing is typed twice and nothing drifts.',
     },
     {
       number: '02',
@@ -315,7 +315,7 @@ const Universes = () => {
             fontFamily: 'Plus Jakarta Sans, sans-serif',
             margin: 0,
           }}>
-            A universe is a complete visual system — one typography, color palette and mood — that carries across your invitation, your guest suite and your RSVP.
+            A universe is a complete visual system, one typography, color palette and mood, that carries across your invitation, your Guest Suite and your RSVP.
           </p>
         </div>
       </section>
@@ -350,7 +350,7 @@ const Universes = () => {
             maxWidth: 600,
             fontFamily: 'Plus Jakarta Sans',
           }}>
-            Choose a universe and your invitation, guest suite and RSVP take its color, type and photography — all from one set of details.
+            Choose a universe and your invitation, Guest Suite and RSVP take its color, type and photography, all from one set of details.
           </p>
 
           {/* THREE, so one column each on a phone and three across on a

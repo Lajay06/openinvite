@@ -116,7 +116,7 @@ export const CHAPTERS = [
     routes: ['/studio', '/website-editor'],
     title: 'Made to look like yours.',
     lead: 'One universe, carried through the invitation, the website and the entrance.',
-    body: 'Pick your universe once. The guest suite is built on it, page by page. Change a photo or a line and the preview shows what guests will see. The entrance greets each guest by name when they arrive from their invitation.',
+    body: 'Pick your universe once. The Guest Suite is built on it, page by page. Change a photo or a line and the preview shows what guests will see. The entrance greets each guest by name when they arrive from their invitation.',
     tip: 'Your web address is chosen here. Once invitations have gone out, old links keep working even if you change it.',
     tryIt: { label: 'Design studio', to: '/studio', spotlight: 'studio-my-universe' },
   },

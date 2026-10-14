@@ -78,7 +78,7 @@ export default function PublishModal({ onClose, details, onUpdate }) {
       // hint, not a gate; the write is the gate.
       const address = settled.slug || details.slug;
       if (!address) {
-        setRefusal('Add your names first so your guest suite has an address.');
+        setRefusal('Add your names first so your Guest Suite has an address.');
         return;
       }
     }
@@ -127,7 +127,7 @@ export default function PublishModal({ onClose, details, onUpdate }) {
 
   const [emailSubject, setEmailSubject] = useState(`${couple1} & ${couple2}'s Wedding — Save the Date`);
   const [emailMessage, setEmailMessage] = useState(
-    `We're so excited to share our guest suite with you!\n\nVisit: https://${siteUrl || `${siteHost}/w/`}\n\nWe can't wait to celebrate with you.\n\nWith love,\n${couple1} & ${couple2}`
+    `We're so excited to share our Guest Suite with you!\n\nVisit: https://${siteUrl || `${siteHost}/w/`}\n\nWe can't wait to celebrate with you.\n\nWith love,\n${couple1} & ${couple2}`
   );
 
   // ICONS, NOT EMOJI. These were a globe, a chain link, an envelope with a
@@ -275,7 +275,7 @@ export default function PublishModal({ onClose, details, onUpdate }) {
                 <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', marginBottom: 0 }}>Add your names in <a href="/EventDetails" style={{ color: '#E03553', fontWeight: 600 }}>Event details</a> first. The email needs an address to send.</p>
               ) : (
                 <>
-                  <p style={{ fontSize: 14, color: '#555', marginBottom: 20 }}>Send your guest suite link directly to guests by email.</p>
+                  <p style={{ fontSize: 14, color: '#555', marginBottom: 20 }}>Send your Guest Suite link directly to guests by email.</p>
 
                   <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>SUBJECT</p>
                   <input
