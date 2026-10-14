@@ -212,7 +212,7 @@ export async function runGiftClaim() {
       check('  it never mentions a trial, and never greets by the address or its local part',
         !/trial/i.test(w.email.html + w.email.text) && /<h1[^>]*>Welcome\.<\/h1>/.test(w.email.html) && !/Welcome, la\.jay06/.test(w.email.html));
       check('  the owner\'s words: the button, and the Ultra body with the giver named',
-        w.email.html.includes('Go to my dashboard') && w.email.text.includes("Sam gifted you Openinvite Ultra, and it's all switched on. Every guest, every reply, every table, the budget and the Guest Suite, for 24 months. Nothing to pay."));
+        w.email.html.includes('Go to my dashboard') && w.email.text.includes("You're getting this because you opened a gift on Openinvite. Openinvite, Australia.") && w.email.html.includes("It's all switched on.") && w.email.text.includes("Sam gifted you Openinvite Ultra, and it's all switched on. Every guest, every reply, every table, the budget and the Guest Suite, for 24 months. Nothing to pay."));
       const tpl = await import('../../src/lib/giftWelcomeEmail.js');
       const pro = tpl.renderGiftWelcome({ plan: 'pro', giver: 'Sam', fullName: 'Isla Rose', email: 'isla@example.com', dashboardUrl: 'x' });
       check('  Pro says Pro, and a real first name is used',

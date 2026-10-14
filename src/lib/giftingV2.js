@@ -163,7 +163,7 @@ export const GIFT_WELCOME = {
   },
   button: 'Go to my dashboard',
   preheader: "It's all switched on.",
-  footer: 'You are getting this because a gift was opened on this account. Openinvite, Australia.',
+  footer: "You're getting this because you opened a gift on Openinvite. Openinvite, Australia.",
 };
 
 /** The couple's email, verbatim. */
