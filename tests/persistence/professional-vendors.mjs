@@ -52,7 +52,7 @@ export function runProfessionalVendors(view = vendorSheetView) {
 
   if (view === vendorSheetView) {
     const planted = (x) => ({ ...x.booking, vendor: x.vendor, rows: x.rows });
-    const p = planted({ booking: { fee: 1, link_token: 't' }, vendor: { email: 'e@x.y' }, rows: [{ notes: 'n' }] });
+    const p = planted({ booking: { fee: 1, link_token: 't' }, vendor: { email: 'e@example.com' }, rows: [{ notes: 'n' }] });
     check('PLANT: a view spread from the booking is caught', keysDeep(p).some((k) => MONEY_OR_CONTACT.test(k)), keysDeep(p).filter((k) => MONEY_OR_CONTACT.test(k)).join(', '));
   }
   return r;

@@ -47,7 +47,7 @@ export function runProfessionalAccess(canFn = can) {
 
   check('professional entry: before the entities exist, everyone sees the test data', resolveEntry({ user: null, live: false }) === 'demo', 'demo');
   check('professional entry: a couple’s account is told one email cannot be both', resolveEntry({ user: { plan: 'ultra' }, live: true }) === 'couple' && isCoupleAccount({ onboardingCompleted: true }), 'couple');
-  check('professional entry: a professional account enters the app; a new one chooses', resolveEntry({ user: { accountType: 'professional', plan: 'ultra' }, live: true }) === 'app' && resolveEntry({ user: { email: 'a@b.c' }, live: true }) === 'start' && resolveEntry({ user: null, live: true }) === 'signin', 'routed');
+  check('professional entry: a professional account enters the app; a new one chooses', resolveEntry({ user: { accountType: 'professional', plan: 'ultra' }, live: true }) === 'app' && resolveEntry({ user: { email: 'a@example.com' }, live: true }) === 'start' && resolveEntry({ user: null, live: true }) === 'signin', 'routed');
 
   return r;
 }
