@@ -10,11 +10,9 @@
  * read-only), must be told apart from the right one by the same assertion.
  */
 import { readFileSync } from 'node:fs';
-import { pass, fail } from './_shared.mjs';
+import { pass, fail, stripComments } from './_shared.mjs';
 import { PLANS, TRIAL, limitsFor, readOnlyEventIds, hasFreeSlot, usd, isPastArchiveDate } from '../../src/lib/professionalPlans.js';
 import { PRODUCT_NAME, PRODUCT_SHORT, isProfessionalOn, homeForAccount } from '../../src/lib/professionalBrand.js';
-
-const stripComments = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
 
 export function runProfessionalPlans() {
   const r = [];
@@ -46,7 +44,7 @@ export function runProfessionalPlans() {
 
   // "Pro" alone is a couple plan. No Professional source file may call the product that.
   const files = ['src/lib/professionalBrand.js', 'src/lib/professionalPlans.js'];
-  const shortened = files.filter((f) => /['"`>]\s*Pro\s*['"`<]/.test(stripComments(readFileSync(new URL(`../../${f}`, import.meta.url), 'utf8'))));
+  const shortened = files.filter((f) => /['"`>]\s*Pro\s*['"`<]/.test(stripComments(readFileSync(new URL(`../../${f}`, import.meta.url), 'utf8'), { trailing: true })));
   check('professional brand: no Professional file shortens the product to "Pro"', shortened.length === 0, shortened.join(', ') || `${files.length} files`);
   return r;
 }
