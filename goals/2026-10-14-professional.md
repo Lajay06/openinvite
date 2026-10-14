@@ -231,3 +231,12 @@ Each item: build, guards (each proved red on a planted fault first), screenshots
 1. Plan limits: Solo 10 / Team 30 / Agency 75 active events (default). The owner first floated 5 events at US$29.95; the research says 5 is too few, because planners book a year ahead.
 2. Rewards as bill credit, US$20 Pro and US$50 Ultra (default). Cash payouts later.
 3. Whether venues and photographers who don't subscribe can hold a partner code (default: not in this goal).
+
+## Owner rulings, 2026-10-14 (after #1059)
+
+- Every Professional PR is HELD for the owner's line: anything touching an endpoint, the feed, PlannerLink, the routes, billing or any couple-side file.
+- The feed's check is an exact allowlist of keys at every level (FEED_SHAPE in api/_lib/professionalFeed.js); any other key fails. An email-shaped value is the second net.
+- Accessibility: the feed sends nothing. Guest.special_requests is not an accessibility field. The couple's accessibility switch stays hidden until a dedicated accessibility field exists.
+- Tables: the table name only (Guest.table_assignment). Seats, and the asServiceRole read of Table they would need, are parked.
+- The server flag: professionalOnServer() is on only with PROFESSIONAL=1, previews included. A Vercel preview alone is not enough.
+- The browser flag follows the server: isProfessionalOn() is on only when the build sets VITE_PROFESSIONAL=1, previews included. A *.vercel.app host alone, or a local dev server, is not enough. Every Professional screen and route (ProfessionalRoot) sends home while it is off.

@@ -31,7 +31,8 @@ export const SHARE_DEFAULTS = {
   vendors: false,
   budget: false,
   songs: false,
-  accessibility: false,
+  // No accessibility switch (owner ruling 2026-10-14): nothing is sent until a
+  // dedicated accessibility field exists; Guest.special_requests is not one.
 };
 export const SHARE_KEYS = Object.keys(SHARE_DEFAULTS);
 
@@ -85,7 +86,7 @@ export function buildLinkedFeed({ linkRows, guests, wedding, extras = {} }) {
   const shares = normalizeShares(latestLinkEvent(linkRows)?.shares);
 
   const totals = { invited: 0, coming: 0, not_coming: 0, waiting: 0, plus_ones: 0, children: 0 };
-  const meals = {};
+  const mealCounts = new Map();
   const dietary = [];
   const rows = [];
 
@@ -99,7 +100,7 @@ export function buildLinkedFeed({ linkRows, guests, wedding, extras = {} }) {
     if (child && status === 'coming') totals.children += 1;
 
     const meal = str(g?.meal_label);
-    if (status === 'coming' && meal) meals[meal] = (meals[meal] || 0) + 1;
+    if (status === 'coming' && meal) mealCounts.set(meal, (mealCounts.get(meal) || 0) + 1);
     const diet = str(g?.dietary_restrictions);
     const table = str(g?.table_assignment);
     if (status === 'coming' && diet && shares.dietary) {
@@ -116,14 +117,14 @@ export function buildLinkedFeed({ linkRows, guests, wedding, extras = {} }) {
     if (shares.dietary) row.dietary = diet;
     if (shares.meals) row.meal = meal;
     if (shares.tables) row.table = table;
-    if (shares.accessibility) row.accessibility = str(g?.special_requests);
     rows.push(row);
   }
 
   const out = { shares };
   if (shares.totals) out.totals = totals;
   if (shares.names || shares.dietary || shares.meals || shares.tables || shares.party) out.guests = rows;
-  if (shares.meals) out.meals = meals;
+  // A list, not a map keyed by meal name, so every key in the response is a fixed, approved one.
+  if (shares.meals) out.meals = [...mealCounts].map(([meal, count]) => ({ meal, count }));
   if (shares.dietary) out.dietary = dietary;
   if (shares.basics && wedding) {
     out.wedding = {
@@ -155,19 +156,63 @@ export function frozenTotals(feed) {
 }
 
 /**
- * The guard's own check, exported so the endpoint can assert it at runtime
- * too: walks a response and returns every key or value that must never leave.
+ * THE APPROVED KEYS, AT EVERY LEVEL (owner ruling 2026-10-14). The response
+ * may carry these keys and no others. A field that is not here fails, whatever
+ * it is called, so a new key cannot slip past a list of forbidden names.
+ * `[]` means a list of objects with these keys; `'strings'` a list of strings.
  */
-const FORBIDDEN_KEY = /(^|_)(email|phone|address|mailing|token|id)$|_enc$|_hash$|^encrypted_|^id$/i;
-const EMAIL_VALUE = /[^\s@]+@[^\s@]+\.[^\s@]+/;
-export function forbiddenInFeed(value, path = '') {
+export const FEED_SHAPE = {
+  shares: Object.fromEntries(SHARE_KEYS.map((k) => [k, true])),
+  totals: { invited: true, coming: true, not_coming: true, waiting: true, plus_ones: true, children: true },
+  guests: [{ status: true, name: true, child: true, plus_one: true, plus_one_name: true, dietary: true, meal: true, table: true }],
+  meals: [{ meal: true, count: true }],
+  dietary: [{ name: true, need: true, table: true }],
+  wedding: { date: true, venue: true, ceremony_time: true },
+  schedule: [{ time: true, title: true, location: true }],
+  vendors: [{ category: true, name: true }],
+  budget: { total: true, spent: true },
+  songs: 'strings',
+};
+
+/** Every path in `value` that the shape does not approve. Empty means clean. */
+export function keysOutsideAllowlist(value, shape = FEED_SHAPE, path = '') {
   const hits = [];
-  if (Array.isArray(value)) value.forEach((v, i) => hits.push(...forbiddenInFeed(v, `${path}[${i}]`)));
-  else if (value && typeof value === 'object') {
-    for (const [k, v] of Object.entries(value)) {
-      if (FORBIDDEN_KEY.test(k)) hits.push(`${path}.${k}`);
-      hits.push(...forbiddenInFeed(v, `${path}.${k}`));
-    }
-  } else if (typeof value === 'string' && EMAIL_VALUE.test(value)) hits.push(`${path} (an email address)`);
+  if (value === null || value === undefined) return hits;
+  if (shape === true) {
+    if (typeof value === 'object') hits.push(`${path} (an object where a value belongs)`);
+    return hits;
+  }
+  if (shape === 'strings') {
+    if (!Array.isArray(value) || value.some((v) => typeof v !== 'string')) hits.push(`${path} (not a list of strings)`);
+    return hits;
+  }
+  if (Array.isArray(shape)) {
+    if (!Array.isArray(value)) return [`${path} (not a list)`];
+    value.forEach((v, i) => hits.push(...keysOutsideAllowlist(v, shape[0], `${path}[${i}]`)));
+    return hits;
+  }
+  if (typeof value !== 'object' || Array.isArray(value)) return [`${path} (not an object)`];
+  for (const [k, v] of Object.entries(value)) {
+    if (!Object.hasOwn(shape, k)) hits.push(`${path}.${k}`);
+    else hits.push(...keysOutsideAllowlist(v, shape[k], `${path}.${k}`));
+  }
   return hits;
+}
+
+/** The second net: any string that looks like an email address. */
+const EMAIL_VALUE = /[^\s@]+@[^\s@]+\.[^\s@]+/;
+export function emailShapedValues(value, path = '') {
+  const hits = [];
+  if (Array.isArray(value)) value.forEach((v, i) => hits.push(...emailShapedValues(v, `${path}[${i}]`)));
+  else if (value && typeof value === 'object') for (const [k, v] of Object.entries(value)) hits.push(...emailShapedValues(v, `${path}.${k}`));
+  else if (typeof value === 'string' && EMAIL_VALUE.test(value)) hits.push(`${path} (an email address)`);
+  return hits;
+}
+
+/**
+ * The check the endpoint runs before any response leaves, and the guard
+ * proves: no key outside the approved shape, and no email-shaped value.
+ */
+export function forbiddenInFeed(feed) {
+  return [...keysOutsideAllowlist(feed), ...emailShapedValues(feed)];
 }

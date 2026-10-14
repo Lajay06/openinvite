@@ -17,8 +17,9 @@
  */
 import { pass, fail } from './_shared.mjs';
 import {
-  buildLinkedFeed, forbiddenInFeed, isLinkLive, normalizeShares, frozenTotals, SHARE_DEFAULTS,
+  buildLinkedFeed, forbiddenInFeed, keysOutsideAllowlist, isLinkLive, normalizeShares, frozenTotals, SHARE_DEFAULTS,
 } from '../../api/_lib/professionalFeed.js';
+import { professionalOnServer } from '../../api/_lib/professionalFlag.js';
 
 const WORST_GUEST = (i, over = {}) => ({
   id: `guest_${i}`,
@@ -63,11 +64,11 @@ export function runProfessionalFeed() {
   const feed = buildLinkedFeed({ linkRows: APPROVED, guests, wedding: WEDDING, extras: EXTRAS });
 
   const hits = forbiddenInFeed(feed);
-  check('professional feed: every switch on, no email, phone, address, id, token, _enc or _hash leaves', hits.length === 0, hits.join(', ') || 'clean');
+  check('professional feed: every switch on, every key in the response is an approved one, and no email-shaped value', hits.length === 0, hits.join(', ') || 'clean');
   const json = JSON.stringify(feed);
-  const leaks = ['@example.com', '555 0199', 'Main St', 'guest_1', 'v1.aaaa', 'ffffffff', 'private note', 'user_couple', 'wd_1'].filter((s) => json.includes(s));
-  check('professional feed: no planted contact value appears anywhere in the response text', leaks.length === 0, leaks.join(', ') || 'none of 9 planted values');
-  check('professional feed: names, meals and tables arrive when shared', feed.guests?.[0]?.name === 'Guest 1' && feed.meals?.Risotto === 1 && feed.guests[0].table === 'Table 3', JSON.stringify(feed.guests?.[0]));
+  const leaks = ['@example.com', '555 0199', 'Main St', 'guest_1', 'v1.aaaa', 'ffffffff', 'private note', 'user_couple', 'wd_1', 'Wheelchair'].filter((s) => json.includes(s));
+  check('professional feed: no planted contact, note or special request appears anywhere in the response text', leaks.length === 0, leaks.join(', ') || 'none of 10 planted values');
+  check('professional feed: names, meals and tables arrive when shared', feed.guests?.[0]?.name === 'Guest 1' && feed.meals?.[0]?.meal === 'Risotto' && feed.meals[0].count === 1 && feed.guests[0].table === 'Table 3', JSON.stringify(feed.guests?.[0]));
   check('professional feed: totals count coming, not coming and waiting', feed.totals.coming === 1 && feed.totals.not_coming === 1 && feed.totals.waiting === 1 && feed.totals.plus_ones === 1, JSON.stringify(feed.totals));
 
   const revoked = [...APPROVED, { event_type: 'unlink', created_date: '2026-10-03T00:00:00Z' }];
@@ -79,7 +80,9 @@ export function runProfessionalFeed() {
 
   const defaults = buildLinkedFeed({ linkRows: [{ event_type: 'approve', created_date: '2026-10-02T00:00:00Z' }], guests, wedding: WEDDING, extras: EXTRAS });
   const offByDefault = ['schedule', 'vendors', 'budget', 'songs'].filter((k) => k in defaults);
-  check('professional feed: schedule, vendors, budget and songs stay out unless the couple turns them on', offByDefault.length === 0 && !('accessibility' in defaults.guests[0]), offByDefault.join(', ') || 'all four absent');
+  check('professional feed: schedule, vendors, budget and songs stay out unless the couple turns them on', offByDefault.length === 0, offByDefault.join(', ') || 'all four absent');
+  check('professional feed: accessibility sends nothing, even with a stored switch on, and there is no such switch', !JSON.stringify(feed).includes('accessibility') && !('accessibility' in SHARE_DEFAULTS) && !('accessibility' in normalizeShares({ accessibility: true })), 'no switch, no field');
+  check('professional feed: tables are names only; no seat is sent', feed.guests.every((g) => !('seat' in g)) && !JSON.stringify(feed).includes('seat'), 'table names only');
 
   const noNames = buildLinkedFeed({ linkRows: [{ event_type: 'approve', created_date: '2026-10-02T00:00:00Z', shares: { names: false } }], guests, wedding: WEDDING });
   check('professional feed: with names off, no guest or plus-one name is sent', !JSON.stringify(noNames).includes('Guest 1') && !JSON.stringify(noNames).includes('Plus 1'), 'names absent');
@@ -90,9 +93,19 @@ export function runProfessionalFeed() {
   const frozen = frozenTotals(feed);
   check('professional feed: the frozen copy after an unlink holds totals only', frozen && !JSON.stringify(frozen).includes('Guest') && Object.keys(frozen).length === 6, JSON.stringify(frozen));
 
+  // PLANT, one field at a time: each must fail the exact allowlist.
+  for (const [field, value] of [['notes', 'private note from the couple'], ['message', 'see you there'], ['special_requests', 'Wheelchair access']]) {
+    const planted = { ...feed, guests: feed.guests.map((g, i) => (i === 0 ? { ...g, [field]: value } : g)) };
+    const caught = keysOutsideAllowlist(planted);
+    check(`PLANT: a guest row carrying ${field} fails the allowlist`, caught.length === 1 && caught[0] === `.guests[0].${field}`, caught.join(', '));
+  }
+
+  check('professional flag: off without PROFESSIONAL=1, a Vercel preview included', professionalOnServer({}) === false && professionalOnServer({ VERCEL_ENV: 'preview' }) === false && professionalOnServer({ VERCEL_ENV: 'production' }) === false, 'off');
+  check('professional flag: on only with PROFESSIONAL=1', professionalOnServer({ PROFESSIONAL: '1' }) === true && professionalOnServer({ PROFESSIONAL: 'true', VERCEL_ENV: 'preview' }) === false, 'on');
+
   // PLANT: the passthrough this module forbids. The detector must see it.
   const planted = { guests: guests.map((g) => ({ ...g })) };
   const plantHits = forbiddenInFeed(planted);
-  check('PLANT: a passthrough projection is caught by the detector', plantHits.length >= 9, `${plantHits.length} hits, e.g. ${plantHits.slice(0, 3).join(', ')}`);
+  check('PLANT: a passthrough projection is caught by the detector', plantHits.length >= 12, `${plantHits.length} hits, e.g. ${plantHits.slice(0, 3).join(', ')}`);
   return r;
 }
