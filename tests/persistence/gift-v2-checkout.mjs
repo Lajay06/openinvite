@@ -57,8 +57,16 @@ export async function runGiftV2Checkout() {
       fetchImpl: async (url, opts) => { posted = { url, body: JSON.parse(opts.body), auth: opts.headers.Authorization }; return { ok: true, json: async () => ({ id: 'draft999' }) }; },
     });
     check('the draft is written to GiftDraft through the admin key', created.ok && created.id === 'draft999' && /\/entities\/GiftDraft$/.test(posted.url) && posted.auth === 'Bearer admin');
+    // THE CIPHERTEXT IS NOT SEARCHED. A regex over the whole body matched the
+    // random base64 of draft_enc now and then (the flaw lane A measured in
+    // gift-v2-webhook.mjs: about 0.78% of runs). Only the fields that are not
+    // ciphertext are searched, for the draft's exact values; that draft_enc
+    // is ciphertext is checked by decrypting it, below.
+    const plainFields = Object.entries(posted.body).filter(([k]) => k !== 'draft_enc').map(([, v]) => JSON.stringify(v ?? ''));
+    const secrets = [GOOD.email, GOOD.names, GOOD.giver, GOOD.note].filter(Boolean);
     check('  as ciphertext only: no address, name or note in the clear',
-      !/isla|Theo|Sam|With love/i.test(JSON.stringify(posted.body)) && Object.keys(posted.body).sort().join(',') === 'buyer_user_id_hash,draft_enc,expires_at,is_test');
+      plainFields.every((f) => secrets.every((v) => !f.includes(v))) && typeof posted.body.draft_enc === 'string' && secrets.every((v) => !posted.body.draft_enc.includes(v))
+        && Object.keys(posted.body).sort().join(',') === 'buyer_user_id_hash,draft_enc,expires_at,is_test');
     check('  which decrypts under APP_ENC_KEY to the draft and the server\'s plan', decryptPayload(posted.body.draft_enc).email === GOOD.email && decryptPayload(posted.body.draft_enc).plan === 'pro');
     check('  expiring in 60 minutes, the buyer as an APP_HASH_KEY HMAC, is_test carried',
       posted.body.expires_at === new Date(now.getTime() + 3600e3).toISOString() && posted.body.buyer_user_id_hash === hmacHex('user42') && posted.body.is_test === true);

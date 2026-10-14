@@ -208,9 +208,9 @@ export const CONFIRM = {
   subject: 'Your gift to {names} is on its way',
   preheader: 'Here is your copy, and their link.',
   heading: 'Done. That was generous of you.',
-  body: 'You have given {names} Openinvite {Plan}. We have sent it to {email}, with your note exactly as you wrote it.',
+  body: 'You gifted {names} Openinvite {Plan}. We have sent it to {email}, with your note exactly as you wrote it.',
   // When send_at is in the future the body says this instead.
-  scheduled: 'You have given {names} Openinvite {Plan}. We will send it on {date} at 9 am where they are.',
+  scheduled: 'You gifted {names} Openinvite {Plan}. We will send it on {date} at 9 am where they are.',
   linkBox: 'Their claim link, in case you want to hand it over yourself',
   forward: 'If it has not arrived in an hour, forward this email to them; the link works either way.',
   receipt: 'Your receipt from Stripe arrives separately.',

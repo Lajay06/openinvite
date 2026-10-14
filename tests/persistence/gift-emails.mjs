@@ -50,7 +50,7 @@ export async function runGiftEmails() {
   check('a plain note is live text, in Plus Jakarta Sans with Helvetica and Arial behind it',
     all.filter((e) => e.noteStyle === 'plain').every((e) => /white-space:pre-wrap;">For you two, with love, Sam<\/p>/.test(noteOf(e)) && /'Plus Jakarta Sans', Helvetica, Arial, sans-serif/.test(noteOf(e))));
   check('serif and handwriting notes are Cloudinary text images at 1040 wide, with the note as alt text',
-    all.filter((e) => e.noteStyle !== 'plain').every((e) => /l_text:(Cormorant%20Garamond_47|Caveat_52):/.test(noteOf(e)) && /w_1040,c_fit/.test(noteOf(e)) && /alt="For you two, with love, Sam"/.test(noteOf(e))));
+    all.filter((e) => e.noteStyle !== 'plain').every((e) => /l_text:(Cormorant%20Garamond_47|Caveat_60_line_spacing_2):/.test(noteOf(e)) && /w_1040,c_fit|c_lpad,w_924,/.test(noteOf(e)) && /alt="For you two, with love, Sam"/.test(noteOf(e))));
 
   // ── the plan, named by its badge, as an image ───────────────────────────
   const img = badge.PLAN_BADGE_EMAIL_IMAGE;

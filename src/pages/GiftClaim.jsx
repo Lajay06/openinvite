@@ -60,7 +60,10 @@ const NOTE_FACE = {
   // serif upright (owner ruling 2026-10-14), as in the email: noteFaceSize
   // matches the lowercase height.
   serif: { '--oi-note-font': "'Cormorant Garamond', Georgia, serif", fontStyle: 'normal', fontSize: noteFaceSize('serif', 17), lineHeight: '27.2px' },
-  hand: { '--oi-note-font': CAVEAT, fontSize: noteFaceSize('hand', 17), lineHeight: '27.2px' },
+  // The handwritten note: 30px, 24px on a phone, line height 1.3, a long
+  // word wrapping inside the card (owner ruling 2026-10-14). Its size lives
+  // in the class below, so the phone size can apply.
+  hand: { '--oi-note-font': CAVEAT, lineHeight: 1.3, overflowWrap: 'anywhere' },
 };
 
 export function NoteCard({ note, noteStyle, giver }) {
@@ -71,7 +74,8 @@ export function NoteCard({ note, noteStyle, giver }) {
   return (
     <div data-gift-note-card style={{ background: '#F5F5F5', padding: '24px 28px 26px', margin: '0 0 32px' }}>
       <p aria-hidden="true" style={{ margin: '0 0 6px', fontSize: 56, lineHeight: 0.8, fontWeight: 700, color: '#E03553', fontFamily: 'Georgia, serif' }}>&ldquo;</p>
-      <p data-note-style={noteStyle} className="oi-note-face" style={{ margin: 0, color: NOTE_INK, whiteSpace: 'pre-wrap', ...(NOTE_FACE[noteStyle] || NOTE_FACE.plain) }}>{note}</p>
+      <style>{'.oi-note-hand { font-size: 30px; } @media (max-width: 600px) { .oi-note-hand { font-size: 24px; } }'}</style>
+      <p data-note-style={noteStyle} className={noteStyle === 'hand' ? 'oi-note-face oi-note-hand' : 'oi-note-face'} style={{ margin: 0, color: NOTE_INK, whiteSpace: 'pre-wrap', ...(NOTE_FACE[noteStyle] || NOTE_FACE.plain) }}>{note}</p>
       <p style={{ margin: '16px 0 0', fontSize: 13, fontVariant: 'small-caps', color: 'rgba(28,25,22,0.75)', fontFamily: PJS }}>{giver}</p>
     </div>
   );

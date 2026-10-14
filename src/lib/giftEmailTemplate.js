@@ -33,12 +33,89 @@ const NOTE_GROUND = 'F5F5F5';
 // (owner ruling 2026-10-14).
 const NOTE_FONTS = {
   serif: `Cormorant%20Garamond_${Math.round(noteFaceSize('serif', 34))}`,
-  hand: `Caveat_${Math.round(noteFaceSize('hand', 34))}`,
 };
+
 // A base for the text layer: the default photo, shrunk to one pixel and
 // colorized to the card's ground, so the text layer grows the canvas around
 // it. Cloudinary caches each derived note, so the base costs one fetch.
 const NOTE_BASE = DEFAULT_PHOTO_ID;
+
+/**
+ * THE HANDWRITTEN NOTE, SIZED FOR ITS BOX (owner ruling 2026-10-14, on the
+ * receipt from the gift-test purchase: "far too big"). 30px on a wide screen
+ * and 24px on a phone, line height 1.3. The note's box is 462px wide in the
+ * 600px email and 220px on a 390px phone (measured), so each size is its own
+ * image drawn at 2x for its box, and a media query shows the phone one; a
+ * client that ignores the query shows the 30px one. An image cannot wrap a
+ * word, so any word longer than a line is broken onto the next before it is
+ * drawn: a long word wraps inside the box, never to its edge.
+ */
+export const HAND_NOTE = {
+  wide: { box: 462, px: 30 },
+  phone: { box: 220, px: 24 },
+  lineHeight: 1.3,
+};
+// How many characters a line holds: Caveat's letters average about 0.35em
+// (measured: "With love, Sam" at 60px is 296px wide); 0.42em is the
+// conservative figure, so a line never runs past its box.
+const handLineChars = ({ box, px }) => Math.floor(box / (px * 0.42));
+/**
+ * The note with every word longer than a line broken onto the next, by a
+ * line break (never a space), so a long word wraps at the box's edge the way
+ * overflow-wrap: anywhere does, and no gap opens inside it.
+ */
+export function breakLongWords(note, maxChars) {
+  return String(note).split(/(\s+)/).map((w) => (/\s/.test(w) || w.length <= maxChars ? w : w.match(new RegExp(`.{1,${maxChars}}`, 'g')).join('\n'))).join('');
+}
+/**
+ * The note's lines for one box: the writer's own line breaks kept, words
+ * wrapped greedily at `maxChars`, a word longer than a line split across
+ * lines. The image draws these lines exactly; nothing is stretched to fit.
+ */
+export function wrapNote(note, maxChars) {
+  const lines = [];
+  for (const para of String(note).split(/\n/)) {
+    let line = '';
+    for (let word of para.trim().split(/\s+/).filter(Boolean)) {
+      if (line && line.length + 1 + word.length <= maxChars) { line += ` ${word}`; continue; }
+      if (word.length <= maxChars) { if (line) lines.push(line); line = word; continue; }
+      // Longer than a line: like overflow-wrap: anywhere, it starts where it
+      // stands and breaks at the box's edge, as many times as it needs.
+      if (line) {
+        const room = maxChars - line.length - 1;
+        if (room > 0) { line += ` ${word.slice(0, room)}`; word = word.slice(room); }
+        lines.push(line);
+      }
+      while (word.length > maxChars) { lines.push(word.slice(0, maxChars)); word = word.slice(maxChars); }
+      line = word;
+    }
+    lines.push(line);
+  }
+  return lines;
+}
+/**
+ * A handwritten note drawn for one box size, at 2x: the text at exactly the
+ * size asked for, its lines wrapped here, then padded out to the box width
+ * without scaling. Cloudinary's own wrapping box (w + c_fit) stretches text
+ * shorter than a line to fill it, which is what made a short note "far too
+ * big"; it is not used.
+ */
+export function handNoteImageUrl(note, size, { ground = NOTE_GROUND } = {}) {
+  if (!note) return '';
+  const w = size.box * 2;
+  const fontPx = size.px * 2;
+  const lines = wrapNote(note, handLineChars(size));
+  // Cloudinary's own leading for Caveat is about 1.27 of the font size
+  // (measured on the rendered note); the spacing tops it up to the ruled 1.3.
+  const spacing = Math.max(0, Math.round(fontPx * (HAND_NOTE.lineHeight - 1.27)));
+  // The drawn lines' own height (the last line is a glyph tall, not a line
+  // tall), with a little room; the text sits at the top of the box.
+  const h = Math.ceil((lines.length - 1) * fontPx * HAND_NOTE.lineHeight + fontPx * 1.15);
+  const text = encodeURIComponent(lines.join('\n')).replace(/%2C/g, '%252C').replace(/%2F/g, '%252F');
+  return `${CLOUD}/c_scale,w_1,h_1/e_colorize:100,co_rgb:${ground}/l_text:Caveat_${fontPx}_line_spacing_${spacing}:${text},co_rgb:${NOTE_INK}/fl_layer_apply/c_lpad,w_${w},h_${h},g_north_west,b_rgb:${ground}/f_png/${NOTE_BASE}.jpg`;
+}
+/** The head style that shows the phone note on a phone. */
+export const HAND_NOTE_STYLE = `@media only screen and (max-width: 600px) { .oi-note-wide { display: none !important; max-height: 0 !important; } .oi-note-phone { display: block !important; max-height: none !important; width: 100% !important; } }`;
 
 /**
  * The note as an image, for the serif and handwriting styles. Commas and
@@ -46,6 +123,7 @@ const NOTE_BASE = DEFAULT_PHOTO_ID;
  * comma as the start of the next parameter.
  */
 export function noteImageUrl(note, style, { ground = NOTE_GROUND } = {}) {
+  if (style === 'hand') return handNoteImageUrl(note, HAND_NOTE.wide, { ground });
   const font = NOTE_FONTS[style];
   if (!font || !note) return '';
   const text = encodeURIComponent(note).replace(/%2C/g, '%252C').replace(/%2F/g, '%252F');
@@ -100,7 +178,12 @@ function noteCardRow(note, noteStyle, giver) {
 }
 
 function noteBody(note, style) {
-  if (style === 'serif' || style === 'hand') {
+  if (style === 'hand') {
+    const alt = escapeHtml(note);
+    return `<img class="oi-note-wide" src="${handNoteImageUrl(note, HAND_NOTE.wide)}" alt="${alt}" width="${HAND_NOTE.wide.box}" style="display:block;width:100%;max-width:${HAND_NOTE.wide.box}px;height:auto;border:0;" />`
+      + `<!--[if !mso]><!--><img class="oi-note-phone" src="${handNoteImageUrl(note, HAND_NOTE.phone)}" alt="" width="${HAND_NOTE.phone.box}" style="display:none;max-height:0;overflow:hidden;width:${HAND_NOTE.phone.box}px;height:auto;border:0;" /><!--<![endif]-->`;
+  }
+  if (style === 'serif') {
     const src = noteImageUrl(note, style);
     return `<img src="${src}" alt="${escapeHtml(note)}" width="520" style="display:block;width:100%;max-width:520px;height:auto;border:0;" />`;
   }
@@ -143,7 +226,7 @@ ${noteCardRow(note, noteStyle, giver)}
             </td>
           </tr>
 ${emailFooterRow(escapeHtml(fill(REVEAL.footer, vars)))}`;
-  return { subject, preheader: REVEAL.preheader, html: emailShell({ title: subject, bodyRowsHtml: rows, showHeader: false, width: 600 }) };
+  return { subject, preheader: REVEAL.preheader, html: emailShell({ title: subject, bodyRowsHtml: rows, showHeader: false, width: 600, headStyle: HAND_NOTE_STYLE }) };
 }
 
 /**
@@ -198,5 +281,5 @@ ${noteCardRow(note, noteStyle, giver)}
             </td>
           </tr>
 ${emailFooterRow(escapeHtml(CONFIRM.footer))}`;
-  return { subject, preheader: CONFIRM.preheader, html: emailShell({ title: subject, bodyRowsHtml: rows, showHeader: false, width: 600 }) };
+  return { subject, preheader: CONFIRM.preheader, html: emailShell({ title: subject, bodyRowsHtml: rows, showHeader: false, width: 600, headStyle: HAND_NOTE_STYLE }) };
 }
