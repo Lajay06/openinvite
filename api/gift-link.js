@@ -21,6 +21,7 @@ import { applyCors, checkRateLimit, getClientIp } from './_lib/security.js';
 import { verifyBase44User } from './_lib/auth.js';
 import { findGiftByToken, giftView, claimGift, editGift, paidGiftView } from './_lib/giftClaim.js';
 import { giftingV2OnServer } from './gift-email-preview.js';
+import { giftOrigin } from './_lib/giftTokens.js';
 
 export default async function handler(req, res, deps = {}) {
   if (applyCors(req, res)) return;
@@ -52,7 +53,11 @@ export default async function handler(req, res, deps = {}) {
   if (body.action === 'claim') {
     const user = await (deps.verifyUser || verifyBase44User)(req);
     if (!user) return res.status(401).json({ reason: 'sign_in' });
-    const out = await claimGift({ token: String(body.token || ''), user, adminKey, fetchImpl, now: deps.now ? deps.now() : new Date() });
+    const resend = deps.resend || new Resend(env.RESEND_API_KEY);
+    const out = await claimGift({
+      token: String(body.token || ''), user, adminKey, fetchImpl, now: deps.now ? deps.now() : new Date(),
+      sendEmail: (email, options) => resend.emails.send(email, options), origin: giftOrigin(env),
+    });
     return res.status(out.status).json(out.body);
   }
 

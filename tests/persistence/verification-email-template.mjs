@@ -33,10 +33,14 @@ export async function runVerificationEmailTemplate() {
   ok('the body line', text.includes('Here is your code. Type it where you left off and you are through.'), 'body');
   ok('the line after the code', text.includes('It works for ten minutes. If you did not ask for it, ignore this and nothing happens.'), 'after');
   ok('and in that order: heading, body, code, closing line',
-     text.indexOf('Nearly in.') < text.indexOf('Here is your code') && text.indexOf('Here is your code') < text.indexOf('{{code}}') && text.indexOf('{{code}}') < text.indexOf('It works for ten minutes'), 'order');
+     text.indexOf('Nearly in.') < text.indexOf('Here is your code') && text.indexOf('Here is your code') < text.indexOf('{{otp_code}}') && text.indexOf('{{otp_code}}') < text.indexOf('It works for ten minutes'), 'order');
 
   console.log('\n  The code, the photo and the footer:\n');
-  ok('the code appears once, in its box', (body.match(/\{\{code\}\}/g) || []).length === 1, 'once');
+  // BASE44'S PLACEHOLDER IS {{otp_code}}, read from the default template Base44
+  // wrote into the app's code (2026-10-14). Any other name never fills, and
+  // Base44 refuses a template without the code (missing_code).
+  ok('the code is Base44\'s {{otp_code}}, once, in its box', (body.match(/\{\{otp_code\}\}/g) || []).length === 1, 'once');
+  ok('  and no other placeholder name for it', !/\{\{\s*(code|verification_code|otp)\s*\}\}/.test(body), 'not {{code}}');
   ok('  at 40px, bold, letter-spaced, in Plus Jakarta Sans',
      /class="code" style="font-family:'Plus Jakarta Sans'[^"]*font-size:40px;font-weight:700;letter-spacing:12px;/.test(body), '40px');
   // THE GREY IS THE APP'S OWN TOKEN, read here rather than pinned as a hex:

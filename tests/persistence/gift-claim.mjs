@@ -226,6 +226,43 @@ export async function runGiftClaim() {
         COPY.done.heading === 'That was generous of you, {giver}.' && COPY.done.body === "Your gift is on its way to {names}. We've sent you a copy too, with their link, in case you'd rather hand it over yourself."
           && COPY.done.boxTitle === "What they'll get" && COPY.done.box === 'An email with your note. One tap on Open your gift, a quick sign in, and {Plan} is already switched on, ready to plan. Nothing for them to set up or pay.');
     }
+
+    // ── the gift welcome, never the trial one (owner ruling 2026-10-14) ──────
+    {
+      const sends = [];
+      const sendEmail = async (email, options) => { sends.push({ email, options }); return { error: null }; };
+      let bw = backend();
+      bw.tables.User.set('newbie', { id: 'newbie', plan: 'free' });
+      const g1 = seed(bw, { id: 'giftrowW1' });
+      const fresh = { id: 'newbie', plan: 'free', email: 'la.jay06+giftclaim02@gmail.com', full_name: 'la.jay06+giftclaim02', onboardingCompleted: false };
+      const outW = await gc.claimGift({ token: g1.claim, user: fresh, adminKey: 'admin', fetchImpl: bw.fetchImpl, now, sendEmail, origin: 'https://www.openinvite.com.au' });
+      const w = sends[0];
+      check('a new account that claims gets the gift welcome, once, idempotent on the gift',
+        outW.status === 200 && sends.length === 1 && w.email.subject === 'Your Openinvite Ultra is ready' && w.options?.idempotencyKey === 'gift-welcome-giftrowW1' && w.email.tags?.[0]?.value === 'gift_welcome'
+          && w.email.from === 'Openinvite <hello@openinvite.com.au>' && w.email.html.includes('https://www.openinvite.com.au/DailyUpdate'));
+      check('  it never mentions a trial, and never greets by the address or its local part',
+        !/trial/i.test(w.email.html + w.email.text) && /<h1[^>]*>Welcome\.<\/h1>/.test(w.email.html) && !/Welcome, la\.jay06/.test(w.email.html));
+      check('  the owner\'s words: the button, and the Ultra body with the giver named',
+        w.email.html.includes('Go to my dashboard') && w.email.text.includes("You're getting this because you opened a gift on Openinvite. Openinvite, Australia.") && w.email.html.includes("It's all switched on.") && w.email.text.includes("Sam gifted you Openinvite Ultra, and it's all switched on. Every guest, every reply, every table, the budget and the Guest Suite, for 24 months. Nothing to pay."));
+      const tpl = await import('../../src/lib/giftWelcomeEmail.js');
+      const pro = tpl.renderGiftWelcome({ plan: 'pro', giver: 'Sam', fullName: 'Isla Rose', email: 'isla@example.com', dashboardUrl: 'x' });
+      check('  Pro says Pro, and a real first name is used',
+        pro.subject === 'Your Openinvite Pro is ready' && pro.text.startsWith('Welcome, Isla.') && pro.text.includes('Sam gifted you Openinvite Pro') && !/Guest Suite/.test(pro.html));
+      sends.length = 0;
+      bw = backend();
+      bw.tables.User.set('old', { id: 'old', plan: 'free' });
+      await gc.claimGift({ token: seed(bw, { id: 'giftrowW2' }).claim, user: { id: 'old', plan: 'free', email: 'old@example.com', onboardingCompleted: true }, adminKey: 'admin', fetchImpl: bw.fetchImpl, now, sendEmail });
+      check('  an account already onboarded is not new, and is not welcomed', sends.length === 0);
+      bw = backend();
+      bw.tables.User.set('newbie2', { id: 'newbie2', plan: 'free' });
+      const realErr = console.error; console.error = () => {};
+      const kept = await gc.claimGift({ token: seed(bw, { id: 'giftrowW3' }).claim, user: { ...fresh, id: 'newbie2' }, adminKey: 'admin', fetchImpl: bw.fetchImpl, now, sendEmail: async () => { throw new Error('resend down'); } });
+      console.error = realErr;
+      check('  a failed welcome never fails the claim', kept.status === 200 && bw.tables.User.get('newbie2').plan === 'ultra');
+      const onb = stripComments(readFileSync(resolve(ROOT, 'src/pages/Onboarding.jsx'), 'utf8'));
+      check('the trial welcome is never sent to an account whose plan came from a gift, and is sent once per page',
+        /if \(!wasAlreadyOnboarded && user\?\.planSource !== 'gift' && !welcomeSentRef\.current\) \{\s*welcomeSentRef\.current = true;/.test(onb));
+    }
   } finally {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
   }

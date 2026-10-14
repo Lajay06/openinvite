@@ -25,9 +25,10 @@
 import { updatePlanGift, findPlanGiftBySessionId } from './planGift.js';
 import { readGiftDraft } from './giftDrafts.js';
 import { adminFetch } from './base44Admin.js';
-import { verifyGiftToken, giftToken, giftTokenHash, currentToken, claimUrl, MAX_VERSION } from './giftTokens.js';
+import { verifyGiftToken, giftToken, giftTokenHash, currentToken, claimUrl, MAX_VERSION, giftOrigin } from './giftTokens.js';
 import { decryptGiftField, encryptGiftField } from './giftCrypto.js';
-import { buildRevealEmail } from './giftEmails.js';
+import { buildRevealEmail, GIFT_FROM, GIFT_REPLY_TO } from './giftEmails.js';
+import { renderGiftWelcome } from '../../src/lib/giftWelcomeEmail.js';
 import { hmacHex } from './appKeys.js';
 import { NOTE_MAX } from '../../src/lib/giftingV2.js';
 import { isValidGiftEmail } from '../../src/lib/giftInput.js';
@@ -115,7 +116,7 @@ async function writeUserPlan(userId, fields, { adminKey, fetchImpl }) {
  * Claims a gift for the signed-in `user`.
  * @returns {Promise<{ status: number, body: object }>}
  */
-export async function claimGift({ token, user, adminKey, fetchImpl = fetch, now = new Date() }) {
+export async function claimGift({ token, user, adminKey, fetchImpl = fetch, now = new Date(), sendEmail = null, origin = giftOrigin() }) {
   const row = await findGiftByToken('claim', token, { adminKey, fetchImpl });
   if (!row || row.claimed_at) return { status: 410, body: { reason: 'used' } };
   const giver = decryptGiftField(row.buyer_name_enc) || '';
@@ -134,6 +135,20 @@ export async function claimGift({ token, user, adminKey, fetchImpl = fetch, now 
   if (!(await writeUserPlan(user.id, fields, { adminKey, fetchImpl }))) {
     await updatePlanGift(row.id, { claimed_at: null, claimed_user_id_hash: null }, adminKey, fetchImpl);
     return { status: 502, body: { reason: 'retry' } };
+  }
+  // THE GIFT WELCOME (owner ruling 2026-10-14): a claimer is never on a
+  // trial, so an account new to Openinvite gets this welcome after the claim,
+  // in place of the trial one api/on-signup.js sends. An account already
+  // onboarded is not new, and is not welcomed. Idempotent on the gift; a
+  // failed send is logged and never fails the claim.
+  if (sendEmail && !user.onboardingCompleted && user.email) {
+    try {
+      const mail = renderGiftWelcome({ plan: outcome.plan, giver, fullName: user.full_name, email: user.email, dashboardUrl: `${origin}/DailyUpdate` });
+      const { error } = await sendEmail({ from: GIFT_FROM, to: user.email, replyTo: GIFT_REPLY_TO, ...mail, tags: [{ name: 'category', value: 'gift_welcome' }] }, { idempotencyKey: `gift-welcome-${row.id}` }) || {};
+      if (error) console.error('[gift-link] gift welcome send failed (claim kept)');
+    } catch {
+      console.error('[gift-link] gift welcome send failed (claim kept)');
+    }
   }
   const next = user.onboardingCompleted ? '/DailyUpdate' : '/onboarding';
   return { status: 200, body: { ok: true, next, giver, plan: outcome.plan } };

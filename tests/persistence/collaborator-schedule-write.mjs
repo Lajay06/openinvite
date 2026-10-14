@@ -124,8 +124,8 @@ export async function runCollaboratorScheduleWrite() {
   ok('the owner calling as a collaborator: 403', (await call(upd, { me: { id: 'owner-1' } })).status === 403, 'not this path');
   ok('a stranger naming the owner: 403', (await call(upd, { me: { id: 'collab-9' } })).status === 403, 'identity is the token\'s');
 
-  console.log('\n  No create, ever, whoever asks (owner ruling 2026-10-13):\n');
-  ok('the actions are update and delete, nothing else', JSON.stringify(ACTIONS) === '["update","delete"]', ACTIONS.join(','));
+  console.log('\n  No create and no delete, whoever asks (owner rulings 2026-10-13 and 2026-10-14):\n');
+  ok('the one action is update', JSON.stringify(ACTIONS) === '["update"]', ACTIONS.join(','));
   touched.clear();
   const made = await call({ ...base, action: 'create', data: { event_name: 'New' } });
   ok('a create with edit granted: 403, and nothing is read or written', made.status === 403 && touched.size === 0 && store.Schedule.length === 1, `status ${made.status}, ${touched.size} touch(es)`);
@@ -137,13 +137,16 @@ export async function runCollaboratorScheduleWrite() {
   store.Schedule.push({ id: 'other-row', created_by_id: 'owner-2', event_name: 'Not theirs' });
   ok('an update to another owner\'s row: 404, unchanged',
      (await call({ ...base, action: 'update', id: 'other-row', data: { event_name: 'x' } })).status === 404 && store.Schedule.find(r => r.id === 'other-row').event_name === 'Not theirs', 'refused');
-  ok('  a delete of it: 404, still there', (await call({ ...base, action: 'delete', id: 'other-row' })).status === 404 && store.Schedule.some(r => r.id === 'other-row'), 'refused');
+  ok('  a delete of it: refused, still there', (await call({ ...base, action: 'delete', id: 'other-row' })).status === 403 && store.Schedule.some(r => r.id === 'other-row'), 'refused');
   touched.clear();
   const up = await call({ ...base, action: 'update', id: row.id, data: { start_time: '17:00', created_by_id: 'collab-1', secret_extra: 'x' } });
   ok('an update to the owner\'s row: 200, allowlisted fields only, the stamp kept',
      up.status === 200 && row.start_time === '17:00' && row.created_by_id === 'owner-1' && !('secret_extra' in row), JSON.stringify(row));
   ok('  touching only Schedule and the grant read', [...touched].every(t => /^(Schedule|CollaboratorGrant):/.test(t)), [...touched].join(','));
-  ok('  a delete of it: 200, gone', (await call({ ...base, action: 'delete', id: row.id })).status === 200 && !store.Schedule.some(r => r.id === row.id), 'deleted');
+  touched.clear();
+  const del = await call({ ...base, action: 'delete', id: row.id });
+  ok('  a delete of the owner\'s own row: 403 before anything is read, still there',
+     del.status === 403 && touched.size === 0 && store.Schedule.some(r => r.id === row.id), `status ${del.status}`);
   ok('the log has outcomes and no owner id, collaborator id, row id or hash',
      !/owner-1|owner-2|collab-1|Schedule-\d|other-row|[0-9a-f]{64}/.test(logs.join('\n')), `${logs.length} line(s)`);
 
@@ -238,15 +241,21 @@ export async function runCollaboratorScheduleWrite() {
   const hub = stripComments(fs.readFileSync(path.join(ROOT, 'src/pages/ScheduleHub.jsx'), 'utf8'), { trailing: true });
   ok('read only unless the server said canEdit', /const readOnly = isCollaborating && !collabCanEdit;/.test(hub) && /setCollabCanEdit\(canEdit === true\);/.test(hub), 'canEdit');
   const writer = (hub.match(/const Schedule = isCollaborating\s*\?\s*\{([\s\S]*?)\}\s*:\s*ScheduleEntity;/) || [])[1] || '';
-  ok('  in a collaborator session Schedule is the collaborator write path, update and delete only',
-     /update: \(id, data\) => collaboratorWrite\(/.test(writer) && /delete: \(id\) => collaboratorWrite\(/.test(writer) && !/create/.test(writer)
+  ok('  in a collaborator session Schedule is the collaborator write path, update only',
+     /update: \(id, data\) => collaboratorWrite\(/.test(writer) && !/delete|create/.test(writer)
      && /^const ScheduleEntity = base44\.entities\.Schedule;$/m.test(hub), 'no create');
   ok('  Add event is not offered in a collaborator session', /\{!readOnly && !isCollaborating && \(\s*<button onClick=\{handleAddEvent\}/.test(hub), 'hidden');
   ok('  nor Add a moment: RunSheet gets no onAdd, and shows its button only with one',
      /onAdd=\{isCollaborating \? undefined : \(ev\) => \{/.test(hub)
      && /actions=\{!readOnly && active && onAdd \? \(/.test(stripComments(fs.readFileSync(path.join(ROOT, 'src/components/schedule/RunSheet.jsx'), 'utf8'), { trailing: true })), 'hidden');
-  ok('  and every write site goes through that Schedule, none straight to the entity',
-     !/ScheduleEntity\.(create|update|delete)\(/.test(hub) && (hub.match(/\bSchedule\.(create|update|delete)\(/g) || []).length === 5, `${(hub.match(/\bSchedule\.(create|update|delete)\(/g) || []).length} site(s)`);
+  ok('  and every write site goes through that Schedule; the one direct create is the couple\'s own approval',
+     (hub.match(/ScheduleEntity\.(create|update|delete)\(/g) || []).length === 1
+     && /createItem=\{async \(d\) => \(await ScheduleEntity\.create\(d\)\)\.id\}/.test(hub)
+     && (hub.match(/\bSchedule\.(create|update|delete)\(/g) || []).length === 5, `${(hub.match(/\bSchedule\.(create|update|delete)\(/g) || []).length} site(s)`);
+  ok('  no Delete for a collaborator in the list or the run sheet',
+     /onDelete=\{readOnly \|\| isCollaborating \? undefined : \(e\) => handleDelete\(e\.sourceId\)\}/.test(hub)
+     && /onDelete=\{isCollaborating \? undefined : \(r\) => handleDelete\(r\.id\)\}/.test(hub)
+     && /\.\.\.\(onDelete \? \[\{ label: 'Delete', onClick: \(\) => onDelete\(r\), danger: true \}\] : \[\]\)/.test(stripComments(fs.readFileSync(path.join(ROOT, 'src/components/schedule/RunSheet.jsx'), 'utf8'), { trailing: true })), 'no remove');
 
   const runSheet = stripComments(fs.readFileSync(path.join(ROOT, 'src/components/schedule/RunSheet.jsx'), 'utf8'), { trailing: true });
   ok('in any collaborator session the run sheet\'s empty state is "Nothing on the schedule yet." with no button',

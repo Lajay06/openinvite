@@ -142,7 +142,9 @@ export default function RunSheet({ scheduleItems = [], category, onPickEvent, on
             // start times would move a moment between events.
             { label: 'Move up', onClick: () => move(r, 'up'), disabled: showingAll || moments[0]?.id === r.id },
             { label: 'Move down', onClick: () => move(r, 'down'), disabled: showingAll || moments[moments.length - 1]?.id === r.id },
-            { label: 'Delete', onClick: () => onDelete(r), danger: true },
+            // Delete only where the page passes a handler: never in a collaborator
+            // session (owner ruling 2026-10-14).
+            ...(onDelete ? [{ label: 'Delete', onClick: () => onDelete(r), danger: true }] : []),
           ])}
         />
       )}

@@ -6,14 +6,29 @@ import { greeting } from '../../src/lib/emailGreeting.js';
  * Sent immediately when a new user completes signup / onboarding.
  *
  * Returns a plain HTML string (no JSX).
- * @param {{ name?: string, email: string }} opts
+ * @param {{ name?: string, email: string, onTrial?: boolean, plan?: string }} opts
+ *   onTrial comes from getTrialStatus(user).trialActive in the caller, never
+ *   from guessing at the plan here: a paid account and a lapsed trial are both
+ *   "not on trial" and the opening line must not claim a trial for either.
  */
-export function onboardingDay1Email({ name, email }) {
+export function onboardingDay1Email({ name, email, onTrial = true, plan }) {
   // Was `name.split(' ')[0]`, which printed the whole email address when
   // Base44's full_name carried one — see src/lib/emailGreeting.js. A missing
   // name now means a greeting with no name in it, never a placeholder and
   // never the address.
-  const hello = greeting('Welcome, {name}.', 'Welcome.', name);
+  const hello = greeting('Welcome, {name}.', 'Welcome.', name, email);
+
+  // THE OPENING LINE TELLS THE TRUTH ABOUT WHAT THIS ACCOUNT HAS. It used to
+  // say a trial had started whatever the account was, so an account that had
+  // already paid was told about a 14-day trial it was not on.
+  //
+  // Trial length is TRIAL_DAYS in src/lib/trialStatus.js and the headline of
+  // TRIAL_FEATURES in src/lib/planFeatures.js, both 14 days. The 24 months is
+  // the paid term, not the trial.
+  const planLabel = String(plan || '').toLowerCase() === 'ultra' ? 'Ultra' : 'Pro';
+  const openingLine = onTrial
+    ? "You're in. Your 14-day free trial has started, no credit card required."
+    : `You're in. Openinvite ${planLabel} is switched on for the next 24 months.`;
 
   const bodyRowsHtml = `
           <!-- Hero -->
@@ -23,7 +38,7 @@ export function onboardingDay1Email({ name, email }) {
                 ${hello}
               </h1>
               <p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:${EMAIL_BODY_TEXT};">
-                You're in. Your 14-day free trial has started, no credit card required.
+                ${openingLine}
                 We've built Openinvite so you can plan your entire wedding in one place,
                 without the overwhelm.
               </p>
