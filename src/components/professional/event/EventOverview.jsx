@@ -40,7 +40,7 @@ export default function EventOverview({ event, me, readOnly }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-        <Stat label="Coming" value={sum.coming ?? 'Not yet'} sub={sum.linked ? 'Live from the couple' : 'From your guest list'} />
+        <Stat label="Coming" value={sum.heads.heads ?? 'Not yet'} sub={[sum.heads.sub, sum.linked ? 'Live from the couple' : 'From your guest list'].filter(Boolean).join('. ')} />
         <Stat label="Waiting" value={sum.waiting ?? 'Not yet'} />
         <Stat label="Tasks overdue" value={sum.overdue} />
         {can(me, 'money.view', event) && <Stat label="Due this week" value={money(due.reduce((t, p) => t + p.amount, 0))} sub={`${due.length} payment${due.length === 1 ? '' : 's'}`} />}

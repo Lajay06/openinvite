@@ -59,7 +59,8 @@ export function runProfessionalShell() {
   const pages = files.filter((f) => /src\/pages\/professional\/(?!ProfessionalRoot|ProfessionalApp|ProfessionalStart|ProfessionalMarketing|VendorSheetPage|QuestionnairePage)[A-Za-z]+\.jsx$/.test(f));
   const noHeader = pages.filter((f) => !/<ProPage\b/.test(readFileSync(f, 'utf8'))).map((f) => relative(ROOT, f));
   const proPage = readFileSync(join(ROOT, 'src/components/professional/ProPage.jsx'), 'utf8');
-  check('professional shell: every workspace page uses ProPage, which renders DashboardPageHeader', noHeader.length === 0 && /<DashboardPageHeader\b/.test(proPage), noHeader.join(', ') || `${pages.length} pages`);
+  // ProPage renders ProPageHeader: DashboardPageHeader's spec without the couple's tour (owner ruling 2026-10-14).
+  check('professional shell: every workspace page uses ProPage, whose header is DashboardPageHeader\'s spec without the tour', noHeader.length === 0 && /<ProPageHeader\b/.test(proPage) && /fontSize: 18, fontWeight: 600/.test(proPage) && /borderBottom: '1px solid rgba\(10,10,10,0\.12\)', paddingTop: 10, paddingBottom: 10/.test(proPage), noHeader.join(', ') || `${pages.length} pages`);
 
   const store = readFileSync(join(ROOT, 'src/lib/professionalStore.js'), 'utf8');
   check('professional shell: the adapter carries no guest email, phone or address field in its seed', !/\b(email|phone|mailing_address|address)\s*:/.test(store.split('const ProGuest')[1]?.split('];')[0] || 'x'), 'ProGuest seed');

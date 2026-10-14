@@ -14,7 +14,7 @@
  * contact fields, so a leak would show on screen.
  */
 import { buildLinkedFeed, frozenTotals } from '../../api/_lib/professionalFeed.js';
-import { STORE_LIVE } from './professionalStore';
+import { STORE_LIVE } from './professionalStore.js';
 
 const DEMO_COUPLE = {
   ev_1: {

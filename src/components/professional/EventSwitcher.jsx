@@ -38,14 +38,14 @@ export default function EventSwitcher({ compact = false }) {
   };
 
   return (
-    <div ref={ref} style={{ position: 'relative', minWidth: 0 }}>
+    <div ref={ref} style={{ position: 'relative', minWidth: 0, flex: compact ? '1 1 auto' : '0 1 auto', display: 'flex' }}>
       <button
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
         style={{
-          display: 'flex', alignItems: 'center', gap: 8, maxWidth: compact ? 170 : 320, minWidth: 0,
+          display: 'flex', alignItems: 'center', gap: 8, maxWidth: compact ? '100%' : 320, minWidth: 0,
           background: 'rgba(255,255,255,0.1)', color: PRO.onDark, border: 'none', borderRadius: 999,
           padding: '6px 12px', fontSize: TYPE.button, fontWeight: 600, fontFamily: PJS, cursor: 'pointer',
         }}
@@ -60,7 +60,9 @@ export default function EventSwitcher({ compact = false }) {
           role="listbox"
           aria-label="Switch event"
           style={{
-            position: 'absolute', top: 'calc(100% + 6px)', left: compact ? -40 : 0, width: compact ? 300 : 340, maxHeight: 380, overflowY: 'auto',
+            // On a phone the list is pinned to the 16px gutters, so it never runs off the screen.
+            ...(compact ? { position: 'fixed', top: 54, left: 16, right: 16 } : { position: 'absolute', top: 'calc(100% + 6px)', left: 0, width: 340 }),
+            maxHeight: 380, overflowY: 'auto',
             background: '#FFFFFF', border: `1px solid ${PRO.borderStrong}`, margin: 0, padding: '6px 0', listStyle: 'none', zIndex: 60,
           }}
         >

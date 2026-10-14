@@ -136,3 +136,19 @@ export function catererSheet(rows) {
 export function feedRows(feed) {
   return (feed?.guests || []).map((g) => ({ name: g.name || 'Guest', status: g.status, dietary: g.dietary || '', meal: g.meal || '', table: g.table || '', plus_one: !!g.plus_one, child: !!g.child, plus_one_name: g.plus_one_name || '' }));
 }
+
+/**
+ * THE ONE GUEST COUNT (owner ruling 2026-10-14). Every screen that says how
+ * many are coming says it this way: total heads, plus-ones and children
+ * included, "8 coming", with "includes 1 plus-one" underneath when there are
+ * any. Events home, the Guests panel, day-of mode and the caterer sheet all
+ * call this, so they cannot disagree.
+ * `totals` is { coming, plus_ones } (guest rows coming, children among them,
+ * and the plus-ones coming with them). Missing totals read as not known.
+ */
+export function guestHeads(totals) {
+  if (!totals || totals.coming === null || totals.coming === undefined) return { heads: null, plusOnes: 0, line: 'Not linked yet', sub: '' };
+  const plusOnes = Number(totals.plus_ones) || 0;
+  const heads = (Number(totals.coming) || 0) + plusOnes;
+  return { heads, plusOnes, line: `${heads} coming`, sub: plusOnes ? `includes ${plusOnes} plus-one${plusOnes === 1 ? '' : 's'}` : '' };
+}

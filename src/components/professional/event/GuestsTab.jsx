@@ -14,7 +14,7 @@ import { useProStore, create, update, remove, bulk, STORE_LIVE, CURRENT } from '
 import { can } from '@/lib/professionalAccess';
 import { linkedFeedFor } from '@/lib/professionalFeedClient';
 import { latestLinkEvent, normalizeShares, frozenTotals } from '../../../../api/_lib/professionalFeed.js';
-import { importGuests, droppedLine, panelFigures, catererSheet, feedRows } from '@/lib/professionalGuests';
+import { importGuests, droppedLine, panelFigures, catererSheet, feedRows, guestHeads } from '@/lib/professionalGuests';
 import { suggestCode, normalizeCode, isValidEmailShape } from '@/lib/professionalCodes';
 import { shortDate } from '@/lib/professionalEvents';
 import { FilterPill } from '@/components/shared/TableToolbar';
@@ -26,8 +26,9 @@ import { TYPE } from '@/styles/typeScale';
 const STATUS = { coming: ['Coming', 'good'], not_coming: ['Not coming', 'bad'], waiting: ['Waiting', 'wait'] };
 const SHARE_TEXT = { names: 'names', party: 'plus-ones and children', dietary: 'dietary needs', meals: 'meals', tables: 'tables', schedule: 'their schedule', vendors: 'their vendors', budget: 'their budget', songs: 'song requests' };
 
-function Caterer({ rows, event, brand }) {
+function Caterer({ rows, totals, event, brand }) {
   const sheet = catererSheet(rows);
+  const h = guestHeads(totals);
   const name = fileSlug(`${event.couple_names} caterer sheet`);
   const csv = () => downloadCsv(`${name}.csv`, ['Section', 'Table', 'Meal or need', 'Guest', 'Count'], [
     ...sheet.meals.map(([meal, n]) => ['Meals', '', meal, '', n]),
@@ -35,7 +36,7 @@ function Caterer({ rows, event, brand }) {
   ]);
   const pdf = (format) => downloadTablePdf({
     title: `${event.couple_names}: caterer sheet`,
-    subtitle: `${shortDate(event.event_date)}${event.venue ? `, ${event.venue}` : ''}. ${sheet.total} coming, plus-ones included.`,
+    subtitle: `${shortDate(event.event_date)}${event.venue ? `, ${event.venue}` : ''}. ${h.line}${h.sub ? `, ${h.sub}` : ''}.`,
     columns: [{ label: 'Table', weight: 1 }, { label: 'Meal or need', weight: 2 }, { label: 'Guest', weight: 2 }, { label: 'Count', weight: 0.6 }],
     rows: [],
     groups: [
@@ -154,10 +155,9 @@ export default function GuestsTab({ event, me, readOnly }) {
       )}
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-        <Stat label="Coming" value={totals.coming} />
+        <Stat label="Coming" value={guestHeads(totals).heads} sub={guestHeads(totals).sub || 'Plus-ones and children included'} />
         <Stat label="Not coming" value={totals.not_coming} />
         <Stat label="Waiting" value={totals.waiting} />
-        <Stat label="Plus-ones" value={totals.plus_ones} />
         <Stat label="Children" value={totals.children} />
       </div>
 
@@ -177,7 +177,7 @@ export default function GuestsTab({ event, me, readOnly }) {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
         {[['all', 'Everyone'], ['coming', 'Coming'], ['waiting', 'Waiting'], ['not_coming', 'Not coming']].map(([k, l]) => <FilterPill key={k} label={l} active={filter === k} onClick={() => setFilter(k)} />)}
         <span style={{ flex: 1 }} />
-        {rows.length > 0 && <Caterer rows={rows} event={event} brand={brand} />}
+        {rows.length > 0 && <Caterer rows={rows} totals={totals} event={event} brand={brand} />}
         {!linked && can(me, 'link.invite', event) && !readOnly && !pending && <button type="button" style={s.btnPrimary} onClick={() => setInviting(true)}>Invite the couple</button>}
       </div>
       {inviting && <InviteCouple event={event} onClose={() => setInviting(false)} />}

@@ -6,6 +6,7 @@
  */
 import { isPastArchiveDate } from './professionalPlans.js';
 import { compareDayThenTime } from './scheduleOrder.js';
+import { guestHeads } from './professionalGuests.js';
 
 const DAY = 86400000;
 const utcDay = (d) => { const x = new Date(d); return Date.UTC(x.getUTCFullYear(), x.getUTCMonth(), x.getUTCDate()); };
@@ -87,6 +88,9 @@ export function eventSummary(event, store, now = new Date(), feed = null) {
   // A couple who unlinked leaves the last totals behind, frozen, and no names.
   const t = feed?.totals || event.frozen_totals || null;
   const coming = linked ? t?.coming ?? null : guests.filter((g) => g.status === 'coming').length;
+  const plusOnes = linked ? t?.plus_ones ?? 0 : guests.filter((g) => g.status === 'coming' && g.plus_one).length;
   const waiting = linked ? t?.waiting ?? null : guests.filter((g) => g.status === 'waiting').length;
-  return { coming, waiting, overdue, nextPayment, linked };
+  // The one count: heads coming, plus-ones and children included.
+  const heads = guestHeads(coming === null ? null : { coming, plus_ones: plusOnes });
+  return { coming, waiting, overdue, nextPayment, linked, heads };
 }

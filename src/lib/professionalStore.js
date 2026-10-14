@@ -109,7 +109,7 @@ export function seedData() {
   const RunSheetRow = [
     ...sheet('ev_1', 'Setup', [[9 * 60, 120, 'Florist load-in and arch build', 'Garden lawn', 'v_flor', 'Gates open at 9'], [11 * 60, 60, 'Chairs and aisle runner', 'Garden lawn', 'mem_jo', '']]),
     ...sheet('ev_1', 'Ceremony', [[15 * 60 + 30, 30, 'Guests arrive, welcome drinks', 'Terrace', 'mem_jo', ''], [16 * 60, 30, 'Ceremony', 'Garden lawn', 'mem_sam', 'Music cue: processional'], [16 * 60 + 30, 15, 'Confetti and group photo', 'Steps', 'v_photo', '']]),
-    ...sheet('ev_1', 'Reception', [[17 * 60, 60, 'Canapes and cocktails', 'Terrace', 'v_cater', ''], [18 * 60, 15, 'Guests seated', 'Glasshouse', 'mem_jo', 'DJ: soft music'], [18 * 60 + 30, 15, 'Couple entrance', 'Glasshouse', 'v_dj', 'Entrance song'], [19 * 60, 60, 'Dinner service', 'Glasshouse', 'v_cater', ''], [20 * 60 + 15, 20, 'Speeches', 'Glasshouse', 'mem_sam', 'Mic check at 20:00'], [21 * 60, 120, 'Dancing', 'Glasshouse', 'v_dj', 'First dance']]),
+    ...sheet('ev_1', 'Reception', [[17 * 60, 60, 'Canapes and cocktails', 'Terrace', 'v_cater', ''], [18 * 60, 15, 'Guests seated', 'Glasshouse', 'mem_jo', 'DJ: soft music'], [18 * 60 + 30, 15, 'Couple entrance', 'Glasshouse', 'v_dj', 'Entrance song'], [19 * 60, 60, 'Dinner service', 'Glasshouse', 'v_cater', ''], [20 * 60 + 15, 20, 'Speeches', 'Glasshouse', 'mem_sam', 'Mic check at 8:00 pm'], [21 * 60, 120, 'Dancing', 'Glasshouse', 'v_dj', 'First dance']]),
   ];
   const VendorContact = [
     { id: 'v_flor', workspace_id: ws, role: 'Florist', company: 'Wild Stem Florals', contact: 'Ruth Hale', phone: '+1 415 555 0101', email: 'ruth@example.com', insurance_expires: addDays(200), notes: '', is_test: true },

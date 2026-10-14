@@ -165,11 +165,13 @@ export default function RunSheetTab({ event, me, readOnly }) {
         <span style={s.label}>Rows every</span>
         {STEPS.map((n) => <FilterPill key={n} label={`${n} min`} active={view === 'grid' && step === n} onClick={() => { setView('grid'); setStep(n); }} />)}
         <FilterPill label="Items only" active={view === 'items'} onClick={() => setView('items')} />
-        <span style={{ ...s.label, marginLeft: 8 }}>Show</span>
-        <select aria-label="Filter by vendor" value={vendor} onChange={(e) => setVendor(e.target.value)} style={{ ...s.input, width: 'auto', fontSize: TYPE.pill }}>
-          <option value="">The whole sheet</option>
-          {vendors.map((v) => <option key={v.id} value={v.id}>{v.company}&apos;s items only</option>)}
-        </select>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap', marginLeft: mobile ? 0 : 8 }}>
+          <span style={s.label}>Show</span>
+          <select aria-label="Filter by vendor" value={vendor} onChange={(e) => setVendor(e.target.value)} style={{ ...s.input, width: 'auto', fontSize: TYPE.pill }}>
+            <option value="">The whole sheet</option>
+            {vendors.map((v) => <option key={v.id} value={v.id}>{v.company}&apos;s items only</option>)}
+          </select>
+        </span>
         {editable && selected && (
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginLeft: mobile ? 0 : 8 }}>
             <span style={s.label}>Shift everything after this row by</span>
@@ -197,8 +199,68 @@ export default function RunSheetTab({ event, me, readOnly }) {
           tabIndex={0}
           onKeyDown={onKey}
           aria-label="Run sheet. Arrows to move, Enter to edit, Command or Control D to duplicate."
-          style={{ flex: 1, minWidth: 0, background: '#FFFFFF', border: `1px solid ${PRO.border}`, overflow: 'auto', maxHeight: '70vh', outline: 'none', width: '100%' }}
+          style={{ flex: 1, minWidth: 0, background: mobile ? 'transparent' : '#FFFFFF', border: mobile ? 'none' : `1px solid ${PRO.border}`, overflow: mobile ? 'visible' : 'auto', maxHeight: mobile ? 'none' : '70vh', outline: 'none', width: '100%' }}
         >
+          {mobile ? (
+            // AT 390, STACKED CARDS, NO SIDEWAYS SCROLL (owner ruling 2026-10-14):
+            // time, item, length, then the rest.
+            <div role="list" aria-label="Run sheet rows" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {flat.length === 0 && <p style={{ ...s.secondary, margin: 0 }}>{vendor ? 'Nothing on this sheet for this vendor yet.' : 'No rows yet.'}</p>}
+              {flat.map((x) => {
+                if (x.type === 'slot') {
+                  return (
+                    <button key={`slot${x.minute}`} type="button" role="listitem" onClick={() => addAt(x.minute)} disabled={!editable} style={{ display: 'flex', gap: 12, alignItems: 'center', minHeight: 36, padding: '0 12px', background: '#FFFFFF', border: `1px solid ${PRO.border}`, fontFamily: 'inherit', textAlign: 'left', cursor: editable ? 'pointer' : 'default' }}>
+                      <span style={{ ...s.secondary, width: 64 }}>{fmtTime(x.minute)}</span>
+                      <span style={{ fontSize: TYPE.secondary, color: PRO.placeholder }}>{editable ? 'Add an item' : ''}</span>
+                    </button>
+                  );
+                }
+                const r = x.row;
+                if (editing?.id === r.id) {
+                  return (
+                    <div key={r.id} role="listitem" style={{ ...s.card, padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {[['time', 'Time'], ['item', 'Item'], ['duration_minutes', 'Length in minutes'], ['location', 'Location'], ['cue', 'Cue'], ['notes', 'Notes']].map(([k, label]) => (
+                        <label key={k} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}><span style={s.label}>{label}</span>{cellInput(k, { autoFocus: k === 'time' })}</label>
+                      ))}
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <span style={s.label}>Responsible</span>
+                        <select aria-label="Responsible" value={editing.owner_ref || ''} onChange={(e) => setEditing((d) => ({ ...d, owner_ref: e.target.value }))} style={{ ...s.input, fontSize: TYPE.input }}>
+                          <option value="">Nobody yet</option>
+                          <optgroup label="Team">{team.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}</optgroup>
+                          <optgroup label="Vendors">{vendors.map((v) => <option key={v.id} value={v.id}>{v.company}</option>)}</optgroup>
+                        </select>
+                      </label>
+                      <span style={{ display: 'flex', gap: 8 }}>
+                        <button type="button" style={s.btnPrimary} onClick={saveEdit}>Save</button>
+                        <button type="button" style={s.btnSecondary} onClick={() => setEditing(null)}>Cancel</button>
+                        <button type="button" style={s.btnQuiet} onClick={() => { remove('RunSheetRow', r.id); setEditing(null); }}>Delete</button>
+                      </span>
+                    </div>
+                  );
+                }
+                return (
+                  <div key={r.id} role="listitem" onClick={() => setSelected(r.id)} style={{ ...s.card, padding: 14, display: 'flex', flexDirection: 'column', gap: 4, outline: selected === r.id ? `1px solid ${PRO.text}` : 'none', outlineOffset: -1, opacity: r.status === 'skipped' ? 0.6 : 1 }}>
+                    <span style={{ fontSize: TYPE.input, fontWeight: 700 }}>{fmtTime(r.start_minute)}</span>
+                    <span style={{ fontSize: TYPE.input, fontWeight: 600, overflowWrap: 'anywhere' }}>
+                      {issueIds.has(r.id) && <AlertTriangle size={12} color="#854d0e" aria-label="See the warning above" style={{ marginRight: 4, verticalAlign: '-1px' }} />}
+                      {r.item}
+                    </span>
+                    <span style={s.secondary}>{fmtDuration(r.duration_minutes || 0)}{vendor ? `, ${r.sheet}` : ''}</span>
+                    {(r.location || r.owner_ref) && <span style={s.body}>{[r.location, nameOf(r.owner_ref)].filter(Boolean).join(', ')}</span>}
+                    {r.cue && <span style={s.body}>Cue: {r.cue}</span>}
+                    {r.notes && <span style={{ ...s.secondary, overflowWrap: 'anywhere' }}>{r.notes}</span>}
+                    <span style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 6 }}>
+                      <button type="button" disabled={!canTick} onClick={(e) => { e.stopPropagation(); tick(r); }} style={{ background: 'none', border: 'none', padding: 0, cursor: canTick ? 'pointer' : 'default' }} aria-label={r.status === 'done' ? `Mark ${r.item} not done` : `Mark ${r.item} done`}>
+                        <Pill tone={r.status === 'done' ? 'good' : r.status === 'skipped' ? 'plain' : 'wait'}>{(STATUS.find((x2) => x2.key === r.status) || STATUS[0]).label}</Pill>
+                      </button>
+                      {editable && <button type="button" style={s.btnQuiet} onClick={(e) => { e.stopPropagation(); setSelected(r.id); startEdit(r); }}>Edit</button>}
+                      {editable && <button type="button" style={s.btnQuiet} onClick={(e) => { e.stopPropagation(); duplicate(r.id); }}>Duplicate</button>}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 900 }}>
             <thead>
               <tr>
@@ -279,6 +341,7 @@ export default function RunSheetTab({ event, me, readOnly }) {
               })}
             </tbody>
           </table>
+          )}
         </div>
 
         {coupleLane && (

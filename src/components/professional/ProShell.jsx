@@ -84,7 +84,7 @@ export default function ProShell({ children, notice = null }) {
       <header
         style={{
           position: 'fixed', top: 0, left: 0, right: 0, height: PRO.barHeight, zIndex: 50, background: PRO.bar,
-          display: 'flex', alignItems: 'center', gap: mobile ? 10 : 20, padding: mobile ? '0 12px' : '0 16px',
+          display: 'flex', alignItems: 'center', gap: mobile ? 10 : 20, padding: '0 16px', minWidth: 0,
           borderBottom: `1px solid ${PRO.onDarkLine}`,
         }}
       >
@@ -94,7 +94,7 @@ export default function ProShell({ children, notice = null }) {
             aria-label={open ? 'Close menu' : 'Open menu'}
             aria-expanded={open}
             onClick={() => setOpen((o) => !o)}
-            style={{ background: 'transparent', border: 'none', color: PRO.onDark, padding: 4, cursor: 'pointer', display: 'flex' }}
+            style={{ background: 'transparent', border: 'none', color: PRO.onDark, padding: 4, cursor: 'pointer', display: 'flex', flexShrink: 0 }}
           >
             {open ? <X size={18} /> : <Menu size={18} />}
           </button>
