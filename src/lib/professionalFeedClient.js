@@ -54,8 +54,8 @@ function demoGuests(list) {
 export function linkedFeedFor(event, store) {
   if (!event || event.kind !== 'linked') return null;
   if (STORE_LIVE) return (store.__feeds || {})[event.id] || null;
-  const demo = DEMO_COUPLE[event.id];
-  if (!demo) return null;
+  // Any linked test event borrows the one fictional couple's list.
+  const demo = DEMO_COUPLE[event.id] || DEMO_COUPLE.ev_1;
   const linkRows = (store.PlannerLink || []).filter((l) => l.event_id === event.id);
   return buildLinkedFeed({
     linkRows,

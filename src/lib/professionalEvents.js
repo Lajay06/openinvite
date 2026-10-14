@@ -80,7 +80,9 @@ export function eventSummary(event, store, now = new Date(), feed = null) {
     .filter((p) => p.event_id === event.id && p.status === 'due')
     .sort((a, b) => String(a.due_date).localeCompare(String(b.due_date)))[0] || null;
   const linked = event.kind === 'linked';
-  const coming = linked ? feed?.totals?.coming ?? null : guests.filter((g) => g.status === 'coming').length;
-  const waiting = linked ? feed?.totals?.waiting ?? null : guests.filter((g) => g.status === 'waiting').length;
+  // A couple who unlinked leaves the last totals behind, frozen, and no names.
+  const t = feed?.totals || event.frozen_totals || null;
+  const coming = linked ? t?.coming ?? null : guests.filter((g) => g.status === 'coming').length;
+  const waiting = linked ? t?.waiting ?? null : guests.filter((g) => g.status === 'waiting').length;
   return { coming, waiting, overdue, nextPayment, linked };
 }
