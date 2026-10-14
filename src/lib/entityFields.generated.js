@@ -117,6 +117,30 @@ export const ENTITY_FIELDS = {
       ]
     }
   },
+  "CollaboratorSuggestion": {
+    "fields": [
+      "collaborator_user_id_hash",
+      "event_type",
+      "is_test",
+      "owner_user_id_hash",
+      "page",
+      "payload_enc",
+      "suggestion_id"
+    ],
+    "required": [
+      "collaborator_user_id_hash",
+      "event_type",
+      "owner_user_id_hash",
+      "page"
+    ],
+    "enums": {
+      "event_type": [
+        "suggest",
+        "approve",
+        "decline"
+      ]
+    }
+  },
   "CustomEventPage": {
     "fields": [
       "date",

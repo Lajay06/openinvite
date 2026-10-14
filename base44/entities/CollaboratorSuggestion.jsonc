@@ -1,0 +1,47 @@
+{
+  "name": "CollaboratorSuggestion",
+  "type": "object",
+  "properties": {
+    "owner_user_id_hash": {
+      "type": "string",
+      "description": "HMAC-SHA256 of the owner's Base44 User id under COLLAB_HASH_KEY, the same as on CollaboratorGrant. Hashed because read is open."
+    },
+    "collaborator_user_id_hash": {
+      "type": "string",
+      "description": "HMAC-SHA256 of the collaborator's Base44 User id under COLLAB_HASH_KEY, matching CollaboratorGrant and CollaboratorInvite."
+    },
+    "page": {
+      "type": "string",
+      "description": "The page the suggestion is for: Moodboard or Schedule."
+    },
+    "event_type": {
+      "type": "string",
+      "enum": ["suggest", "approve", "decline"],
+      "description": "Append-only event log, same pattern as CollaboratorGrant: a collaborator raises 'suggest', and the owner's 'approve' or 'decline' settles it. Latest event per suggestion_id wins at read time; rows are never mutated."
+    },
+    "suggestion_id": {
+      "type": "string",
+      "description": "Stable id grouping the events of one suggestion. Optional."
+    },
+    "payload_enc": {
+      "type": "string",
+      "description": "AES-256-GCM ciphertext (base64, iv+authTag+ciphertext) of the suggested item, under APP_ENC_KEY."
+    },
+    "is_test": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set by scripts/test-persistence.mjs on every record it creates. Product queries must exclude is_test records so test-harness data can never surface in real dashboards, even if harness cleanup fails."
+    }
+  },
+  "required": ["owner_user_id_hash", "collaborator_user_id_hash", "page", "event_type"],
+  "rls": {
+    "create": null,
+    "read": null,
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

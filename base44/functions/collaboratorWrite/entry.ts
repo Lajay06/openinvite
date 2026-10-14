@@ -25,9 +25,13 @@
  * that a hosted function cannot set created_by_id to another user: Base44
  * stamped the row with an identity that was neither the requested owner, the
  * caller nor anonymous. A row a collaborator added would belong to that
- * identity, and the owner could not see it. So a collaborator changes and
- * removes the owner's rows, never adds one: create is refused outright, before
- * anything is read, and the app never offers Add. The probe is removed.
+ * identity, and the owner could not see it. So create is refused outright,
+ * before anything is read, and the app never offers Add. The probe is removed.
+ *
+ * NO REMOVE EITHER (owner ruling 2026-10-14). A collaborator never removes the
+ * couple's items: delete is refused outright too, and update is the one
+ * action. New items come in as suggestions the couple approves
+ * (api/collaborator-suggestions.js), never through this function.
  *
  * Deploy, owner only: `base44 functions deploy collaboratorWrite` with the app
  * id. Never a bare `base44 deploy`.
@@ -44,7 +48,7 @@ export const EDIT_PAGES: Record<string, { entity: string; fields: string[] }> = 
   },
 };
 
-export const ACTIONS = ['update', 'delete'];
+export const ACTIONS = ['update'];
 export const NOT_CONFIGURED = 'collaborator writes not configured';
 
 type Deps = {
@@ -94,7 +98,7 @@ export async function handle(req: Request, { client, getSecret, log }: Deps): Pr
   try { body = await req.json(); } catch { /* refused below */ }
 
   // Never a create, whoever asks: refused before anything is read.
-  if (body?.action === 'create') return json(403, { error: 'Forbidden' });
+  if (body?.action === 'create' || body?.action === 'delete') return json(403, { error: 'Forbidden' });
 
   const fnSecret = String((await getSecret('COLLAB_FN_SECRET')) || '');
   const hashKey = String((await getSecret('COLLAB_HASH_KEY')) || '');
@@ -138,12 +142,8 @@ export async function handle(req: Request, { client, getSecret, log }: Deps): Pr
 
   const row = await rowById(client, entity, id);
   if (!row || row.created_by_id !== ownerUserId || row.is_test) return json(404, { error: 'Not found' });
-  if (action === 'update') {
-    if (!Object.keys(data).length) return json(400, { error: 'Bad request' });
-    await api.update(id, data);
-  } else {
-    await api.delete(id);
-  }
+  if (!Object.keys(data).length) return json(400, { error: 'Bad request' });
+  await api.update(id, data);
   log(JSON.stringify({ fn: 'collaboratorWrite', page, action, outcome: 'ok', fields: Object.keys(data).length }));
   return json(200, { ok: true });
 }

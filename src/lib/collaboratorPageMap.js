@@ -128,10 +128,30 @@ export const COLLABORATOR_PERMISSION_KEYS = Object.keys(COLLABORATOR_PAGE_MAP);
 /**
  * PAGES A COLLABORATOR MAY CHANGE. Owner ruling 2026-10-12, item 5: every page
  * in the map is offered, and every one is view only. A grant that says edit is
- * read as view, on the server and in the app. Schedule joined with its write PR
- * (owner ruling 2026-10-13); Moodboard joins only with its own.
+ * read as view, on the server and in the app.
+ *
+ * Owner ruling 2026-10-14: a collaborator never removes the couple's items and
+ * never adds to them directly. On Schedule, edit means changing the times and
+ * details of the couple's items (no remove); new items, on Schedule and on
+ * Moodboard, come in as suggestions the couple approves
+ * (api/collaborator-suggestions.js). One grant bit, `edit`, carries both:
+ *   - 'edit'    holds only on COLLABORATOR_EDIT_PAGES (Schedule)
+ *   - 'suggest' holds only on COLLABORATOR_SUGGEST_PAGES (Schedule, Moodboard)
  */
 export const COLLABORATOR_EDIT_PAGES = Object.freeze(['Schedule']);
+export const COLLABORATOR_SUGGEST_PAGES = Object.freeze(['Schedule', 'Moodboard']);
+
+/** The picker's label for the grant bit, per page. Owner copy. */
+export const COLLABORATOR_PICKER_LABEL = Object.freeze({
+  Schedule: 'Can change details and suggest',
+  Moodboard: 'Can suggest additions',
+});
+
+/** After a page's label in the invite email, the accept page and the badges. Owner copy. */
+export const COLLABORATOR_PAGE_SUFFIX = Object.freeze({
+  Schedule: ' (you can change details and suggest new items)',
+  Moodboard: ' (you can suggest new items)',
+});
 
 /** The one sentence the invite email and the accept page say after the page list. */
 export const COLLABORATOR_VIEW_ONLY_COPY = 'You can view these pages. You will not be able to change anything.';
@@ -139,12 +159,14 @@ export const COLLABORATOR_VIEW_ONLY_COPY = 'You can view these pages. You will n
 /** The sentence instead, when the grant lets them change at least one page. */
 export const COLLABORATOR_SOME_EDIT_COPY = 'You can view these pages. You can make changes only where it says so.';
 
-/** After the label of a page they can change. */
-export const COLLABORATOR_CAN_CHANGE_SUFFIX = ' (you can make changes)';
+/** The suffix for one page under a grant, or '' when the grant only lets them view it. */
+export function collaboratorPageSuffix(permissions, page) {
+  return collaboratorCan(permissions, page, 'suggest') ? COLLABORATOR_PAGE_SUFFIX[page] : '';
+}
 
 /** The closing sentence for a grant: the view-only one unless a page can be changed. */
 export function collaboratorClosingCopy(permissions) {
-  return COLLABORATOR_PERMISSION_KEYS.some(key => collaboratorCan(permissions, key, 'edit'))
+  return COLLABORATOR_PERMISSION_KEYS.some(key => collaboratorCan(permissions, key, 'suggest'))
     ? COLLABORATOR_SOME_EDIT_COPY
     : COLLABORATOR_VIEW_ONLY_COPY;
 }
@@ -159,6 +181,7 @@ export function collaboratorCan(permissions, page, level) {
   const p = permissions?.[page];
   if (!p) return false;
   if (level === 'edit') return COLLABORATOR_EDIT_PAGES.includes(page) && !!p.edit;
+  if (level === 'suggest') return COLLABORATOR_SUGGEST_PAGES.includes(page) && !!p.edit;
   return !!(p.view || p.edit);
 }
 
@@ -166,5 +189,5 @@ export function collaboratorCan(permissions, page, level) {
 export function collaboratorPageLabels(permissions) {
   return COLLABORATOR_PERMISSION_KEYS
     .filter(key => collaboratorCan(permissions, key, 'view'))
-    .map(key => COLLABORATOR_PAGE_MAP[key].navLabel + (collaboratorCan(permissions, key, 'edit') ? COLLABORATOR_CAN_CHANGE_SUFFIX : ''));
+    .map(key => COLLABORATOR_PAGE_MAP[key].navLabel + collaboratorPageSuffix(permissions, key));
 }

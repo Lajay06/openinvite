@@ -1,6 +1,6 @@
 /**
  * POST /api/collaborator-write
- *   body: { ownerUserId, page, action: 'update' | 'delete', id, data? }
+ *   body: { ownerUserId, page, action: 'update', id, data }
  *
  * The one write path for a collaborator, generic across the pages on
  * COLLABORATOR_EDIT_PAGES (src/lib/collaboratorPageMap.js): Schedule now,
@@ -34,7 +34,9 @@ const BASE44_API = 'https://base44.app/api';
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 // No create (owner ruling 2026-10-13): a hosted function cannot stamp a new row
 // as the owner, so a collaborator changes and removes, never adds.
-const ACTIONS = ['update', 'delete'];
+// No remove either (owner ruling 2026-10-14): the couple's items are never
+// deleted by a collaborator. Update is the one action.
+const ACTIONS = ['update'];
 
 export const SAVE_FAILED = 'That did not save. Try again.';
 export const WRITES_NOT_CONFIGURED = 'collaborator writes not configured';
