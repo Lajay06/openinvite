@@ -27,8 +27,7 @@
  * Env: CRON_SECRET (Vercel sends it as the bearer on its own invocations),
  * BASE44_ADMIN_KEY (PlanGift is read and updated through it, RLS null),
  * RESEND_API_KEY, APP_HASH_KEY (to rebuild each claim link, giftTokens.js),
- * APP_ENC_KEY (v2 rows' personal fields, giftCrypto.js; owner ruling
- * 2026-10-12: never the frozen cipher derived from BASE44_ADMIN_KEY).
+ * APP_ENC_KEY (v2 rows' personal fields, giftCrypto.js).
  */
 import { Resend } from 'resend';
 import { decryptGiftField } from '../_lib/giftCrypto.js';

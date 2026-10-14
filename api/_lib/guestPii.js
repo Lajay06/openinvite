@@ -12,10 +12,10 @@
  * Uses questionnaireCrypto's encryptPayload/decryptPayload directly rather
  * than a new module: the declared field contract says "same construction as
  * api/_lib/questionnaireCrypto.js", and the surest way to keep that true is to
- * be the same code. Key is derived from BASE44_ADMIN_KEY — deliberately the
- * admin key and not a dedicated secret, because unlike RSVP tokens this data
- * is never externally distributed, so a rotation is a re-runnable re-encrypt
- * migration rather than an unrecoverable break.
+ * be the same code. Key is derived from APP_ENC_KEY — a dedicated secret, not
+ * the admin credential. Rotating it leaves this blob unreadable unless a
+ * decrypt-old/re-encrypt-new migration has run under the old key before it
+ * retires, which is the wording the declared field carries on Base44.
  *
  * THE DISCRIMINATOR IS DERIVED, NOT STORED: a row is migrated iff
  * encrypted_guest_pii != null. A separate boolean would be a second source of

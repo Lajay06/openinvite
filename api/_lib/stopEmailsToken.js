@@ -12,18 +12,16 @@
  * flag to clear, but it travels WITH a signature over it, and the endpoint
  * refuses anything whose signature does not verify.
  *
- * ── THE SECRET IS BASE44_ADMIN_KEY, AND NO NEW ONE IS CREATED ──────────────
+ * ── THE SECRET IS APP_HASH_KEY ─────────────────────────────────────────────
  *
- * The goal says to use an existing server secret and to stop and ask if there
- * is none. There is one, and there is already a precedent for exactly this
- * use: api/_lib/collaboratorInviteToken.js signs an invite payload with
- * BASE44_ADMIN_KEY as the HMAC key, for the same reason (a link that must
- * resolve without a session). This file follows it deliberately rather than
- * inventing a second convention.
+ * This signed with BASE44_ADMIN_KEY when it was written, following
+ * collaboratorInviteToken.js, which did the same. Both moved: this file onto
+ * APP_HASH_KEY (#1012) and the invite token onto COLLAB_HASH_KEY (#1011). The
+ * reason is the 2026-10-11 rotation, which orphaned every digest keyed on a
+ * bearer credential.
  *
- * Rotating BASE44_ADMIN_KEY therefore invalidates every stop link already
- * mailed. That is the same trade collaboratorInviteToken and
- * calendarFeedToken already accept, and the failure mode is a dead link that
+ * Rotating APP_HASH_KEY still invalidates every stop link already mailed. That
+ * trade is unchanged and it is accepted: the failure mode is a dead link that
  * says so, not a silent wrong answer.
  *
  * ── FORMAT ─────────────────────────────────────────────────────────────────

@@ -212,7 +212,7 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
       // Only invite and reminder have a tracking field on Guest; save the date must not write invite_sent_at (SendInvitesModal.jsx).
       // AND THE HISTORY, APPENDED, as SendInvitesModal.jsx writes it: one entry
       // per guest the send reached, built by src/lib/sendHistory.js's
-      // newSendEntry (type, sent_at, to_hash, never the address), spread onto
+      // newSendEntry (type and sent_at, never the address), spread onto
       // the guest's existing array and never rewritten. Every type is
       // recorded; only invite and reminder also carry a stamp. One sentAt for
       // the stamp and the entry, as on the web.

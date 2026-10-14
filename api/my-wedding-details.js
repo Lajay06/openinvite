@@ -6,7 +6,7 @@
  * client-side chokepoint every dashboard page reads WeddingDetails
  * through. Exists because fix/weddingdetails-field-encryption (Step 2a)
  * moves a handful of WeddingDetails fields to AES-256-GCM ciphertext
- * (api/_lib/questionnaireCrypto.js) — decrypting needs BASE44_ADMIN_KEY, a
+ * (api/_lib/questionnaireCrypto.js) — decrypting needs APP_ENC_KEY, a
  * server-only secret the browser can never hold, so the raw client
  * `base44.entities.WeddingDetails.filter(...)` call getMyWeddingDetails()
  * used to make can no longer return usable values for those fields.
