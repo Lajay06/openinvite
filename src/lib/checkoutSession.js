@@ -12,6 +12,7 @@
  * Vite dev 404), an API-returned error, or an unexpected exception. Success
  * navigates the browser to the Stripe-hosted checkout URL.
  */
+import { GIFT_TRY_AGAIN, normalizeGiftEmail } from './giftInput.js';
 
 // Optional chaining on import.meta.env — Vite injects this at build/dev
 // time in the browser, but plain Node (used by tests/persistence/*.mjs to
@@ -231,6 +232,7 @@ export async function startGiftV2Checkout(draft, timezone, deps = {}) {
     noteStyle: draft.noteStyle, headlineKey: draft.headlineKey, photoId: draft.photoId,
     when: draft.when, ...(draft.when === 'date' ? { date: draft.date, timezone } : {}),
   };
+  giftDraft.email = normalizeGiftEmail(giftDraft.email);
   try {
     const res = await doFetch('/api/create-checkout-session', {
       method: 'POST',
@@ -239,8 +241,12 @@ export async function startGiftV2Checkout(draft, timezone, deps = {}) {
     });
     const data = (res.headers.get('content-type') || '').includes('application/json') ? await res.json() : {};
     if (data.url) return { url: data.url };
-    return { error: data.error || 'Checkout could not start. Please try again.' };
+    // NEVER THE SERVER'S WORDS (owner ruling 2026-10-13): whatever it said is
+    // for the logs; the giver gets the one calm line. The status alone goes to
+    // the console, for whoever is debugging.
+    console.warn('[gift checkout] refused with status', res.status);
+    return { error: GIFT_TRY_AGAIN };
   } catch {
-    return { error: 'Network error: could not reach the checkout server. Please try again.' };
+    return { error: GIFT_TRY_AGAIN };
   }
 }

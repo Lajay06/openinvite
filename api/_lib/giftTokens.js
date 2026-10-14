@@ -79,5 +79,20 @@ export function currentToken(kind, gift) {
   return null;
 }
 
-export const claimUrl = (token) => `${GIFT_ORIGIN}/gift/claim/${token}`;
-export const editUrl = (token) => `${GIFT_ORIGIN}/gift/edit/${token}`;
+/**
+ * THE HOST A GIFT EMAIL'S LINKS POINT AT (owner ruling 2026-10-13). In
+ * production, always www.openinvite.com.au, exactly as before. On a preview,
+ * the deployment's own address, so a gift bought on gift-test opens on
+ * gift-test rather than on production, where gifting is off and the link
+ * landed on /gifting. VERCEL_BRANCH_URL is the branch's stable alias;
+ * VERCEL_URL, this deployment's own host, is the fallback. Anything else, a
+ * local run included, keeps the production domain.
+ */
+export function giftOrigin(env = process.env) {
+  if (env.VERCEL_ENV !== 'preview') return GIFT_ORIGIN;
+  const host = env.VERCEL_BRANCH_URL || env.VERCEL_URL;
+  return host && /^[a-z0-9.-]+\.vercel\.app$/i.test(host) ? `https://${host}` : GIFT_ORIGIN;
+}
+
+export const claimUrl = (token, origin = giftOrigin()) => `${origin}/gift/claim/${token}`;
+export const editUrl = (token, origin = giftOrigin()) => `${origin}/gift/edit/${token}`;

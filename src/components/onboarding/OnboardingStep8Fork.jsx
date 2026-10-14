@@ -1,4 +1,5 @@
 import React from 'react';
+import { interactiveDivProps } from '@/lib/a11y';
 import { motion } from 'framer-motion';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -36,25 +37,32 @@ const accentColor = '#E03553';
  * steps consume it rather than copying it. `selected` and `buttonLabel` are
  * additive: this step passes neither and renders exactly as it did.
  */
-export function SelectCard({ title, body, children, onSelect, selected, buttonLabel }) {
+/**
+ * `wholeCard` (optional, gifting v2 page 1, owner ruling 2026-10-13): the
+ * card itself is the control, selected shown by the dark border it already
+ * uses, and there is no Select button; `padding` makes it compact. Without
+ * them the card renders exactly as before.
+ */
+export function SelectCard({ title, body, children, onSelect, selected, buttonLabel, wholeCard = false, padding }) {
   return (
     <motion.div
       className={selected ? "border border-[#0A0A0A] transition-colors duration-150" : "border border-[rgba(10,10,10,0.12)] hover:border-[#0A0A0A] transition-colors duration-150"}
-      style={cardStyle}
+      style={wholeCard || padding != null ? { ...cardStyle, ...(padding != null ? { padding } : {}), ...(wholeCard ? { cursor: 'pointer' } : {}) } : cardStyle}
+      {...(wholeCard ? { onClick: onSelect, ...interactiveDivProps(onSelect), 'aria-pressed': !!selected } : {})}
     >
       <h3 style={{ color: textDark, fontSize: 18, fontWeight: 700, marginBottom: 12, fontFamily: PJS }}>{title}</h3>
       <p style={{ color: textMid, fontSize: 14, marginBottom: 24, lineHeight: 1.6, fontFamily: PJS }}>
         {body}
       </p>
       {children}
-      <button
+      {!wholeCard && <button
         onClick={onSelect}
         aria-pressed={selected === undefined ? undefined : selected}
         style={{ marginTop: 'auto', alignSelf: 'flex-start' }}
         className="px-8 py-3 rounded-full text-white text-sm font-medium bg-[#E03553] hover:bg-black active:bg-neutral-900 transition-colors duration-150 border-none cursor-pointer"
       >
         {buttonLabel || (selected ? 'Selected' : 'Select')}
-      </button>
+      </button>}
     </motion.div>
   );
 }

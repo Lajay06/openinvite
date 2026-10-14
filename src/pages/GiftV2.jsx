@@ -36,15 +36,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import OnboardingShell from '@/components/onboarding/OnboardingShell';
+import OnboardingStep1Names from '@/components/onboarding/OnboardingStep1Names';
+import { ShellStepChrome } from '@/components/onboarding/OnboardingStepChrome';
 import { SelectCard } from '@/components/onboarding/OnboardingStep8Fork';
 import { AccordionSection, Pill } from '@/components/onboarding/OnboardingStep5WeddingType';
 import { UniverseGridTile } from '@/components/onboarding/OnboardingStepUniverse';
 import OnboardingCompletion from '@/components/onboarding/OnboardingCompletion';
 import OpeninviteLogo from '@/components/public/OpeninviteLogo';
 import PlanBadge from '@/components/shared/PlanBadge';
-import { renderGiftReveal, noteImageUrl } from '@/lib/giftEmailTemplate';
+import { renderGiftReveal } from '@/lib/giftEmailTemplate';
 import { resolveCheckoutPriceId, PLAN_PRICES, startGiftV2Checkout } from '@/lib/checkoutSession';
+import { GIFT_TRY_AGAIN, EMAIL_CHECK, isValidGiftEmail, normalizeGiftEmail } from '@/lib/giftInput';
 import { loadFontFamilies } from '@/lib/selfHostedFonts';
+import { CAVEAT, ensureCaveat } from '@/lib/caveatFont';
 import { color } from '@/styles/tokens';
 import {
   isGiftingV2On, GIFT_DRAFT_KEY, GIFT_PHOTOS, DEFAULT_PHOTO_ID, giftPhotoUrl, photoLabel, ONBOARDING_IMAGES,
@@ -56,6 +60,8 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 const INK = '#0A0A0A';
 const MUTED = 'rgba(10,10,10,0.6)';
 const PAGES = 4;
+// The email's own width (src/lib/giftEmailTemplate.js lays it out at 600).
+const EMAIL_WIDTH = 600;
 export const BIG_BADGE = { padding: '3px 8px', fontSize: 13 };
 
 const EMPTY = { step: 1, plan: null, names: '', email: '', giver: '', note: '', noteStyle: 'plain', headlineKey: DEFAULT_HEADLINE, photoId: DEFAULT_PHOTO_ID, when: 'now', date: '' };
@@ -99,11 +105,12 @@ export const nameInputStyle = (value, focused) => ({
   width: '100%', fontSize: 32, fontWeight: 700, color: '#0A0A0A', fontFamily: PJS,
   padding: '4px 8px', outline: 'none', textAlign: 'left',
 });
-export function UnderlineInput({ value, onChange, placeholder, type = 'text', autoComplete = 'off' }) {
+export function UnderlineInput({ value, onChange, placeholder, type = 'text', autoComplete = 'off', onBlur, invalid = false, describedBy }) {
   const [focused, setFocused] = useState(false);
   return (
     <input type={type} value={value} placeholder={placeholder} aria-label={placeholder} className="s1-input" autoComplete={autoComplete}
-      onChange={(e) => onChange(e.target.value)} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+      aria-invalid={invalid || undefined} aria-describedby={describedBy}
+      onChange={(e) => onChange(e.target.value)} onFocus={() => setFocused(true)} onBlur={() => { setFocused(false); if (onBlur) onBlur(); }}
       style={nameInputStyle(value, focused)} />
   );
 }
@@ -123,15 +130,41 @@ export function EmailPreview({ draft, fit = false }) {
     note: shown.note || 'Your note goes here, exactly as you write it.', noteStyle: shown.noteStyle,
     headlineKey: shown.headlineKey, photoId: shown.photoId,
   }), [shown]);
-  // On a phone the frame takes the email's own height, so the page scrolls
-  // rather than a box inside it. allow-same-origin (no scripts) lets the
-  // frame be measured; nothing in the email runs.
+  // The frame is measured in both modes: allow-same-origin with no scripts
+  // lets the page read its height, and nothing in the email runs.
+  //   On a phone it takes the email's own height, so the page scrolls rather
+  //   than a box inside it.
+  //   On the photo side (owner ruling 2026-10-13) the whole email fits the
+  //   viewport with no scrolling: the frame is laid out at the email's own
+  //   600px and full height, then scaled down as one unit by a single
+  //   transform, so the email is never reflowed.
   const [height, setHeight] = useState(1400);
+  const [box, setBox] = useState(null);
+  const wrapRef = React.useRef(null);
   const measure = (e) => { try { setHeight(e.currentTarget.contentDocument.documentElement.scrollHeight); } catch { /* keep the default */ } };
+  useEffect(() => {
+    if (fit || !wrapRef.current || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(([entry]) => setBox({ w: entry.contentRect.width, h: entry.contentRect.height }));
+    ro.observe(wrapRef.current);
+    return () => ro.disconnect();
+  }, [fit]);
+  if (fit) {
+    return (
+      <div data-gift-preview="phone" style={{ height: 'auto', background: '#F7F7F7' }}>
+        <iframe title="Their email, as they will see it" srcDoc={html} sandbox="allow-same-origin" onLoad={measure}
+          style={{ width: '100%', height, border: 0, display: 'block' }} />
+      </div>
+    );
+  }
+  const PAD = 24;
+  const scale = box ? Math.min(1, (box.h - PAD * 2) / height, (box.w - PAD * 2) / EMAIL_WIDTH) : 1;
   return (
-    <div data-gift-preview={fit ? 'phone' : 'side'} style={{ height: fit ? 'auto' : '100%', background: '#F7F7F7' }}>
-      <iframe title="Their email, as they will see it" srcDoc={html} sandbox={fit ? 'allow-same-origin' : ''} onLoad={fit ? measure : undefined}
-        style={{ width: '100%', height: fit ? height : '100%', border: 0, display: 'block' }} />
+    <div ref={wrapRef} data-gift-preview="side" data-preview-scale={scale.toFixed(3)} style={{ position: 'relative', height: '100%', overflow: 'hidden', background: '#F7F7F7' }}>
+      <iframe title="Their email, as they will see it" srcDoc={html} sandbox="allow-same-origin" onLoad={measure} scrolling="no"
+        style={{
+          position: 'absolute', top: PAD, left: '50%', width: EMAIL_WIDTH, height, border: 0, display: 'block',
+          transform: `translateX(-50%) scale(${scale})`, transformOrigin: 'top center',
+        }} />
     </div>
   );
 }
@@ -156,10 +189,18 @@ function PhonePreview({ draft }) {
   );
 }
 
-/** A style chip's label in its own face: the handwriting sample is the same Cloudinary render the email uses. */
+/**
+ * A style chip's label in its own face. The handwriting sample is live text in
+ * the self-hosted Caveat (owner ruling 2026-10-13): it inherits the pill's
+ * color, white on black when selected, with no background of its own.
+ */
 export function styleSample(st) {
-  if (st.key === 'hand') return <img src={noteImageUrl(st.label, 'hand', { ground: 'FFFFFF' })} alt={st.label} style={{ height: 16, width: 'auto', display: 'inline-block', verticalAlign: 'middle' }} />;
-  return <span style={st.key === 'serif' ? { fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 15 } : undefined}>{st.label}</span>;
+  // Through the .oi-note-face escape (src/index.css): the global Plus Jakarta
+  // Sans lock beats an inline fontFamily, which is why these samples showed in
+  // the product face. Color is inherited from the pill.
+  if (st.key === 'hand') return <span data-style-sample="hand" className="oi-note-face" style={{ '--oi-note-font': CAVEAT, fontSize: 19, lineHeight: 1 }}>{st.label}</span>;
+  if (st.key === 'serif') return <span data-style-sample="serif" className="oi-note-face" style={{ '--oi-note-font': "'Cormorant Garamond', Georgia, serif", fontStyle: 'italic', fontSize: 16 }}>{st.label}</span>;
+  return <span>{st.label}</span>;
 }
 
 export default function GiftV2() {
@@ -173,10 +214,10 @@ export default function GiftV2() {
   const [openSection, setOpenSection] = useState(params.get('section') || 'note');
   const tz = useMemo(() => browserTimezone(), []);
   const [paying, setPaying] = useState(false);
-  const [payError, setPayError] = useState(null);
+  const [payError, setPayError] = useState(false);
   // Back from Stripe: the payment went through, so the giver sees the done page.
   useEffect(() => { if (params.get('paid') === '1') setDraft((d) => ({ ...d, step: 4 })); }, [params]);
-  useEffect(() => { loadFontFamilies(['Cormorant Garamond']); }, []);
+  useEffect(() => { loadFontFamilies(['Cormorant Garamond']); ensureCaveat(); }, []);
   useEffect(() => { writeDraft(draft); }, [draft]);
 
   if (!on) return <Navigate to="/gifting" replace />;
@@ -184,10 +225,11 @@ export default function GiftV2() {
   const set = (patch) => setDraft((d) => ({ ...d, ...patch }));
   const pay = async () => {
     setPaying(true);
-    setPayError(null);
+    setPayError(false);
     const result = await startGiftV2Checkout(draft, tz);
     if (result.url) { window.location.assign(result.url); return; }
-    setPayError(result.error);
+    // Only ever the fixed line below, never what the server said.
+    setPayError(!!result.error);
     setPaying(false);
   };
   const go = (step) => set({ step: Math.max(1, Math.min(PAGES, step)) });
@@ -195,12 +237,15 @@ export default function GiftV2() {
   const plan = draft.plan || 'ultra';
   const vars = { giver: draft.giver, names: draft.names, email: draft.email, plan };
   const s = draft.step;
-  const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.email.trim());
+  // Trimmed and checked before Continue and Pay (owner ruling 2026-10-13):
+  // a trailing full stop is not an address.
+  const validEmail = isValidGiftEmail(draft.email);
   const photoSide = s === 1 ? { image: ONBOARDING_IMAGES.STEP_ONE }
     : s === 2 ? { image: ONBOARDING_IMAGES.WHO }
       : s === 4 ? { image: ONBOARDING_IMAGES.DONE }
         : { aside: <EmailPreview draft={draft} /> };
-  const notePreview = draft.note.trim() ? `${draft.note.trim().slice(0, 40)}${draft.note.trim().length > 40 ? '...' : ''}` : '';
+  // The whole note, never cut short (owner ruling 2026-10-13): the chip wraps.
+  const notePreview = draft.note.trim();
   const styleLabel = NOTE_STYLES.find((x) => x.key === draft.noteStyle)?.label;
   const whenLabel = draft.when === 'date' && draft.date ? `${COPY.when.date.title}, ${draft.date}` : draft.when === 'date' ? COPY.when.date.title : COPY.when.now.title;
 
@@ -222,46 +267,57 @@ export default function GiftV2() {
         @media (min-width: 1000px) { .universe-grid { grid-template-columns: repeat(5, 1fr); } }
       `}</style>
       <div data-gift-step={s} style={{ padding: '32px 0 48px', fontFamily: PJS }}>
-        {top}
+        {s !== 2 && top}
 
         {s === 1 && (
           <>
             <h1 style={heading}>{COPY.plan.heading}</h1>
             <p style={sub}>{COPY.plan.sub}</p>
-            <div className="grid grid-cols-1 gap-6">
+            {/* BOTH PLANS ON ONE SCREEN (owner ruling 2026-10-13): side by
+                side and compact, the whole card selects it, and one Continue
+                below both replaces each card's Select button. */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-plan-cards>
               {['pro', 'ultra'].map((p) => (
-                <SelectCard key={p} title={<PlanBadge plan={p} {...BIG_BADGE} />} body={COPY.plan[p]} selected={draft.plan === p} onSelect={() => set({ plan: p, step: 2 })}>
-                  <ul data-plan-lines style={{ listStyle: 'none', margin: '-12px 0 20px', padding: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <SelectCard key={p} wholeCard padding={24} title={<PlanBadge plan={p} {...BIG_BADGE} />} body={COPY.plan[p]} selected={draft.plan === p} onSelect={() => set({ plan: p })}>
+                  <ul data-plan-lines style={{ listStyle: 'none', margin: '-12px 0 16px', padding: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {COPY.plan[`${p}Lines`].map((line) => (
                       <li key={line} style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#555555', fontSize: 14, fontFamily: PJS }}>
                         <span style={{ color: '#E03553', fontWeight: 700, fontSize: 14, lineHeight: 1 }}>•</span> {line}
                       </li>
                     ))}
                   </ul>
-                  <p style={{ fontSize: 28, fontWeight: 800, color: INK, margin: '0 0 24px', fontFamily: PJS }}>{priceLabel(p)}</p>
+                  <p style={{ fontSize: 28, fontWeight: 800, color: INK, margin: 'auto 0 0', fontFamily: PJS }}>{priceLabel(p)}</p>
                 </SelectCard>
               ))}
             </div>
+            <button type="button" className={primary} disabled={!draft.plan} onClick={() => go(2)} style={{ marginTop: 32 }} data-plan-continue>Continue →</button>
           </>
         )}
 
+        {/* PAGE 2 IS ONBOARDING STEP 1 (owner ruling 2026-10-13: "not a
+            lookalike"): the same chrome and the same component, with the
+            gift's three lines. The address is trimmed and checked by the
+            product's validator before Continue appears. */}
         {s === 2 && (
-          <>
-            <h1 style={heading}>{COPY.who.heading}</h1>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 24, marginTop: 24 }}>
-              <UnderlineInput value={draft.names} onChange={(v) => set({ names: v })} placeholder={COPY.who.namesLabel} />
-              <UnderlineInput value={draft.email} onChange={(v) => set({ email: v })} placeholder={COPY.who.emailLabel} type="email" />
-              <UnderlineInput value={draft.giver} onChange={(v) => set({ giver: v })} placeholder={COPY.who.giverLabel} autoComplete="name" />
-            </div>
-            <button type="button" className={primary} disabled={!(draft.names.trim() && validEmail && draft.giver.trim())} onClick={() => go(3)} style={{ marginTop: 48 }}>Continue →</button>
-          </>
+          <div data-gift-page2>
+            <ShellStepChrome showStepCounter stepNum={2} totalSteps={PAGES} showBack onBack={() => go(1)} />
+            <OnboardingStep1Names
+              data={draft}
+              lines={[
+                { key: 'names', text: COPY.who.forLine, placeholder: COPY.who.namesLabel, fit: true },
+                { key: 'email', text: COPY.who.toLine, placeholder: COPY.who.emailLabel, type: 'email', valid: isValidGiftEmail, hint: EMAIL_CHECK, fit: true },
+                { key: 'giver', text: COPY.who.fromLine, placeholder: COPY.who.giverLabel, fit: true },
+              ]}
+              onNext={(v) => set({ names: v.names.trim(), email: normalizeGiftEmail(v.email), giver: v.giver.trim(), step: 3 })}
+            />
+          </div>
         )}
 
         {s === 3 && (
           <>
             <h1 style={heading}>{COPY.theirs.heading}</h1>
             <div data-gift-accordion style={{ marginTop: 24, borderTop: `1px solid ${color.border}` }}>
-              <AccordionSection title={COPY.theirs.note} isOpen={openSection === 'note'} onToggle={() => toggle('note')} summary={notePreview ? [notePreview, styleLabel] : []}>
+              <AccordionSection summaryWrap title={COPY.theirs.note} isOpen={openSection === 'note'} onToggle={() => toggle('note')} summary={notePreview ? [notePreview, styleLabel] : []}>
                 <textarea value={draft.note} maxLength={NOTE_MAX} rows={5} placeholder={COPY.theirs.note} aria-label={COPY.theirs.note} className="s1-input"
                   onChange={(e) => set({ note: e.target.value })}
                   style={{ ...nameInputStyle(draft.note, false), fontSize: 17, fontWeight: 400, lineHeight: 1.6, resize: 'vertical' }} />
@@ -270,15 +326,15 @@ export default function GiftV2() {
                   {NOTE_STYLES.map((st) => <Pill key={st.key} label={styleSample(st)} selected={draft.noteStyle === st.key} onClick={() => set({ noteStyle: st.key })} />)}
                 </div>
               </AccordionSection>
-              <AccordionSection title={COPY.theirs.headline} isOpen={openSection === 'headline'} onToggle={() => toggle('headline')} summary={[headlineText(draft.headlineKey, draft.names)]}>
+              <AccordionSection summaryWrap title={COPY.theirs.headline} isOpen={openSection === 'headline'} onToggle={() => toggle('headline')} summary={[headlineText(draft.headlineKey, draft.names)]}>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {HEADLINES.map((h) => <Pill key={h.key} label={headlineText(h.key, draft.names)} selected={draft.headlineKey === h.key} onClick={() => set({ headlineKey: h.key })} />)}
                 </div>
               </AccordionSection>
-              <AccordionSection title={COPY.theirs.photo} isOpen={openSection === 'photo'} onToggle={() => toggle('photo')} summary={[photoLabel(draft.photoId)]}>
+              <AccordionSection summaryWrap title={COPY.theirs.photo} isOpen={openSection === 'photo'} onToggle={() => toggle('photo')} summary={[photoLabel(draft.photoId)]}>
                 <div className="universe-grid" style={{ display: 'grid', gap: 3 }}>
                   {GIFT_PHOTOS.map((p, i) => (
-                    <UniverseGridTile key={p.id} index={i} hideExplore
+                    <UniverseGridTile key={p.id} index={i} hideExplore caption
                       universe={{ id: p.id, name: p.label, colors: {} }}
                       imageSrc={giftPhotoUrl(p.id, { width: 600, ratio: '3:4' })}
                       isSelected={draft.photoId === p.id}
@@ -286,7 +342,7 @@ export default function GiftV2() {
                   ))}
                 </div>
               </AccordionSection>
-              <AccordionSection title={COPY.theirs.when} isOpen={openSection === 'when'} onToggle={() => toggle('when')} summary={[whenLabel]}>
+              <AccordionSection summaryWrap title={COPY.theirs.when} isOpen={openSection === 'when'} onToggle={() => toggle('when')} summary={[whenLabel]}>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   <Pill label={COPY.when.now.title} selected={draft.when === 'now'} onClick={() => set({ when: 'now' })} />
                   <Pill label={COPY.when.date.title} selected={draft.when === 'date'} onClick={() => set({ when: 'date' })} />
@@ -313,10 +369,10 @@ export default function GiftV2() {
             {/* PAY (item 6): the draft goes to checkout, which holds it server
                 side and sends the giver to Stripe; Stripe returns them to
                 /gift?paid=1, which opens the done page. */}
-            <button type="button" className={primary} disabled={paying || !draft.note.trim() || (draft.when === 'date' && !draft.date)} onClick={pay} style={{ marginTop: 24 }}>
+            <button type="button" className={primary} disabled={paying || !validEmail || !draft.note.trim() || (draft.when === 'date' && !draft.date)} onClick={pay} style={{ marginTop: 24 }}>
               {`Pay ${priceLabel(plan)} and send`}
             </button>
-            {payError && <p role="alert" data-gift-pay-error style={{ fontSize: 14, color: '#B0263F', fontFamily: PJS, margin: '12px 0 0' }}>{payError}</p>}
+            {payError && <p role="alert" data-gift-pay-error style={{ fontSize: 14, color: '#B0263F', fontFamily: PJS, margin: '12px 0 0' }}>{GIFT_TRY_AGAIN}</p>}
             <PhonePreview draft={draft} />
           </>
         )}

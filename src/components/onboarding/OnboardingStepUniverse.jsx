@@ -60,8 +60,67 @@ const UNIVERSES = UNIVERSE_CATALOG.map((u, i) => ({
  * label and alt text; `hideExplore` drops the Explore button, since a photo
  * has no preview to open. Both are additive: the universe step passes neither.
  */
-export function UniverseGridTile({ universe, index, isSelected, onExplore, onSelectTile, imageSrc, hideExplore = false }) {
+/**
+ * `caption` (optional, gifting v2's photo picker, owner ruling 2026-10-13: the
+ * names covered the photos): the tile is a photograph with its name as a small
+ * lower-third caption, bottom left, over a soft dark gradient, and the whole
+ * tile selects it. Owner ruling 2026-10-13, after review: every word fits,
+ * never an ellipsis, so a long name wraps to a second line at 11px. The
+ * gradient sits behind the caption itself: the bottom fifth for one line,
+ * growing with a second, never past the lower third. Without `caption` the
+ * universe tile renders exactly as before.
+ */
+export function UniverseGridTile({ universe, index, isSelected, onExplore, onSelectTile, imageSrc, hideExplore = false, caption = false }) {
   const [hovered, setHovered] = useState(false);
+  if (caption) {
+    const pick = () => { if (!isSelected) onSelectTile(); };
+    return (
+      <article
+        onClick={pick}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        {...interactiveDivProps(pick, { label: universe.name })}
+        aria-pressed={!!isSelected}
+        data-tile-caption
+        style={{
+          position: 'relative', aspectRatio: '3 / 4', overflow: 'hidden', cursor: 'pointer',
+          outline: isSelected ? '2px solid #E03553' : 'none', outlineOffset: -2,
+        }}
+      >
+        <img
+          src={imageSrc}
+          alt={universe.name}
+          loading={index < 5 ? 'eager' : 'lazy'}
+          style={{
+            position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+            transform: hovered ? 'scale(1.04)' : 'scale(1)', transition: 'transform 0.6s cubic-bezier(0.16,1,0.3,1)',
+          }}
+        />
+        {isSelected && (
+          <div style={{
+            position: 'absolute', top: 10, right: 10, width: 20, height: 20, borderRadius: '50%',
+            background: '#E03553', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2,
+          }}>
+            <svg width="10" height="10" viewBox="0 0 14 14" fill="none">
+              <path d="M2.5 7L5.5 10L11.5 4" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        )}
+        <div data-tile-caption-band style={{
+          position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 1, minHeight: '20%',
+          display: 'flex', alignItems: 'flex-end', padding: '8px 10px 8px', boxSizing: 'border-box',
+          background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%)',
+        }}>
+          <p style={{
+            margin: 0, fontSize: 11, fontWeight: 600, lineHeight: 1.25, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif",
+            overflowWrap: 'break-word',
+          }}>
+            {universe.name}
+          </p>
+        </div>
+      </article>
+    );
+  }
   const swatches = [
     { color: universe.colors.darkBg, label: 'Ground' },
     { color: universe.colors.lightBg, label: 'Paper' },

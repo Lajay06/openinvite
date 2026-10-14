@@ -23,6 +23,7 @@ import OnboardingShell from '@/components/onboarding/OnboardingShell';
 import OpeninviteLogo from '@/components/public/OpeninviteLogo';
 import { EDIT, CLAIM, NOTE_MAX } from '@/lib/giftingV2';
 import { loadGiftByToken, saveGiftEdit, isSampleToken, GIFT_LINKS_LIVE } from '@/lib/giftLinks';
+import { isValidGiftEmail } from '@/lib/giftInput';
 import { heading, primary, nameInputStyle, UnderlineInput, EmailPreview } from '@/pages/GiftV2';
 import { PlainLinkPage } from '@/pages/GiftClaim';
 
@@ -47,7 +48,8 @@ export default function GiftEdit() {
   if (gift.status !== 'open' || !draft) return <PlainLinkPage text={EDIT.gone} />;
 
   const set = (patch) => setDraft((d) => ({ ...d, ...patch }));
-  const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.email.trim());
+  // The product's one address check (src/lib/giftInput.js): a stray full stop fails.
+  const validEmail = isValidGiftEmail(draft.email);
   const changed = draft.email !== gift.email || draft.note !== gift.note;
   const save = async () => {
     if (isSampleToken(token)) return; // a sample changes nothing

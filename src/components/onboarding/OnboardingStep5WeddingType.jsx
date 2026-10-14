@@ -76,12 +76,17 @@ export function Pill({ label, selected, onClick }) {
 // Read-only chip used in a collapsed section's summary row — visually
 // distinct from the interactive Pill/s5-pill above (no border, no hover
 // affordance) so a collapsed section never reads as still-clickable.
-function SummaryChip({ label }) {
+//
+// `wrap` (gifting v2 only, owner ruling 2026-10-13: every word fits, never an
+// ellipsis): a long value such as the giver's whole note wraps inside the
+// chip instead of running on one line. Off, the chip is unchanged.
+function SummaryChip({ label, wrap = false }) {
   return (
     <span style={{
-      display: 'inline-block', padding: '4px 10px', borderRadius: 999,
+      display: 'inline-block', padding: wrap ? '4px 12px' : '4px 10px', borderRadius: 999,
       background: 'rgba(10,10,10,0.06)', color: 'rgba(10,10,10,0.6)',
-      fontSize: 11, fontWeight: 500, fontFamily: PJS, whiteSpace: 'nowrap',
+      fontSize: 11, fontWeight: 500, fontFamily: PJS,
+      ...(wrap ? { whiteSpace: 'normal', overflowWrap: 'break-word', maxWidth: '100%', lineHeight: 1.45 } : { whiteSpace: 'nowrap' }),
     }}>
       {label}
     </span>
@@ -113,7 +118,7 @@ const SECTION_BORDER = {
 const sectionStateOf = (isOpen, summary) =>
   (isOpen ? 'open' : (summary && summary.length > 0 ? 'answered' : 'untouched'));
 
-export function AccordionSection({ title, isOpen, onToggle, summary, children }) {
+export function AccordionSection({ title, isOpen, onToggle, summary, children, summaryWrap = false }) {
   const state = sectionStateOf(isOpen, summary);
   return (
     <div data-section-state={state} style={{ borderBottom: `1px solid ${SECTION_BORDER[state]}` }}>
@@ -139,7 +144,7 @@ export function AccordionSection({ title, isOpen, onToggle, summary, children })
 
       {!isOpen && summary.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, paddingBottom: 16 }}>
-          {summary.map((s, i) => <SummaryChip key={i} label={s} />)}
+          {summary.map((s, i) => <SummaryChip key={i} label={s} wrap={summaryWrap} />)}
         </div>
       )}
       {!isOpen && summary.length === 0 && (

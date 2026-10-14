@@ -105,6 +105,8 @@
     "test:onboarding-universe-select": "node scripts/test-onboarding-universe-select.mjs",
     "test:studio-rotate-notice": "node scripts/test-studio-rotate-notice.mjs",
     "test:onboarding-card-fit": "node scripts/test-onboarding-card-fit.mjs",
+    "test:gift-no-truncation": "node scripts/test-gift-no-truncation.mjs",
+    "test:names-underline": "node scripts/test-names-underline.mjs",
     "test:onboarding-accordion-borders": "node scripts/test-onboarding-accordion-borders.mjs",
     "test:dress-code-render": "node scripts/test-dress-code-render.mjs",
     "test:guest-note-render": "node scripts/test-guest-note-render.mjs",

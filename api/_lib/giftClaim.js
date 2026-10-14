@@ -29,10 +29,10 @@ import { decryptGiftField, encryptGiftField } from './giftCrypto.js';
 import { buildRevealEmail } from './giftEmails.js';
 import { hmacHex } from './appKeys.js';
 import { NOTE_MAX } from '../../src/lib/giftingV2.js';
+import { isValidGiftEmail } from '../../src/lib/giftInput.js';
 
 const BASE44_APP_ID = process.env.VITE_BASE44_APP_ID || '68731d183f075e406eda2236';
 export const TERM_MONTHS = 24;
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const RANK = { free: 0, pro: 1, ultra: 2 };
 
 /** An ISO instant `months` calendar months after `iso`. */
@@ -130,7 +130,7 @@ export async function editGift({ token, email, note, adminKey, fetchImpl = fetch
   if (row.claimed_at) return { status: 409, body: { reason: 'claimed' } };
   const nextEmail = typeof email === 'string' ? email.trim() : '';
   const nextNote = typeof note === 'string' ? note.trim() : '';
-  if (!EMAIL.test(nextEmail) || nextEmail.length > 200) return { status: 400, body: { reason: 'email' } };
+  if (!isValidGiftEmail(nextEmail)) return { status: 400, body: { reason: 'email' } };
   if (!nextNote || nextNote.length > NOTE_MAX) return { status: 400, body: { reason: 'note' } };
 
   const patch = {};

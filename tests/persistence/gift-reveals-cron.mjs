@@ -48,6 +48,14 @@ export async function runGiftRevealsCron() {
     const src = readFileSync(resolve(ROOT, 'api/_lib/giftTokens.js'), 'utf8');
     check('tokens are keyed through appKeys, never BASE44_ADMIN_KEY', /from '\.\/appKeys\.js'/.test(src) && !/process\.env\.BASE44_ADMIN_KEY/.test(src));
 
+    // ── where the links point (owner ruling 2026-10-13) ─────────────────
+    check('in production a gift link is always www.openinvite.com.au',
+      tokens.giftOrigin({ VERCEL_ENV: 'production', VERCEL_BRANCH_URL: 'x.vercel.app' }) === 'https://www.openinvite.com.au' && tokens.giftOrigin({}) === 'https://www.openinvite.com.au');
+    check('on a preview it is that deployment\'s own branch address, then its own host',
+      tokens.giftOrigin({ VERCEL_ENV: 'preview', VERCEL_BRANCH_URL: 'openinvite-git-gift-test-team.vercel.app', VERCEL_URL: 'openinvite-abc-team.vercel.app' }) === 'https://openinvite-git-gift-test-team.vercel.app'
+        && tokens.giftOrigin({ VERCEL_ENV: 'preview', VERCEL_URL: 'openinvite-abc-team.vercel.app' }) === 'https://openinvite-abc-team.vercel.app');
+    check('  and anything that is not a vercel.app host falls back to production', tokens.giftOrigin({ VERCEL_ENV: 'preview', VERCEL_BRANCH_URL: 'evil.example.com' }) === 'https://www.openinvite.com.au');
+
     // ── what is due ─────────────────────────────────────────────────────
     const now = new Date('2026-11-01T10:00:00Z');
     const past = (h) => new Date(now.getTime() - h * 3600e3).toISOString();
