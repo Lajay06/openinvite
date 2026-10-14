@@ -34,9 +34,10 @@
  * it is cheap to brute-force a guessable wedding password against. scrypt is
  * deliberately slow and memory-hard.
  *
- * Unlike questionnaireCrypto.js, nothing here is keyed on BASE44_ADMIN_KEY.
- * A hash needs no secret, and not depending on one means rotating the admin
- * key can never strand every couple out of their own gate.
+ * Nothing here is keyed on any secret at all. questionnaireCrypto.js is keyed
+ * on APP_ENC_KEY, and this file deliberately is not: a password hash needs no
+ * secret, and not depending on one means no key rotation can ever strand a
+ * couple out of their own gate.
  */
 
 import crypto from 'crypto';

@@ -88,37 +88,6 @@ export function sendHistoryFor(guest) {
   });
 }
 
-/**
- * A hash of the address a send went to, for Guest.send_history's to_hash.
- *
- * NOT THE ADDRESS, which is the field's whole point: every other guest
- * address in that entity is encrypted or hashed, and the reason the owner gave
- * for keeping a hash at all is that a later send can tell whether the address
- * CHANGED since last time. An unkeyed digest answers exactly that question and
- * nothing else, so there is no key to manage and nothing to rotate.
- *
- * Lower-cased and trimmed first, because "Ada@Example.com" and
- * "ada@example.com " are the same mailbox and a hash that said otherwise
- * would report a change that did not happen.
- *
- * @returns {Promise<string>} a hex digest, or '' when there is no address or
- *   no crypto to hash it with. An absent hash is a missing answer, never a
- *   wrong one, so the caller stores the entry without it.
- */
-export async function hashRecipient(address) {
-  const clean = String(address || '').trim().toLowerCase();
-  if (!clean) return '';
-  const subtle = typeof globalThis !== 'undefined'
-    && globalThis.crypto && globalThis.crypto.subtle;
-  if (!subtle) return '';
-  try {
-    const bytes = new TextEncoder().encode(clean);
-    const digest = await subtle.digest('SHA-256', bytes);
-    return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
-  } catch {
-    return '';
-  }
-}
 
 /**
  * One send_history entry, ready to append.
@@ -126,11 +95,36 @@ export async function hashRecipient(address) {
  * APPENDED, NEVER REWRITTEN, which is the field's contract. The caller spreads
  * it onto the guest's existing array; this builds the entry and nothing else,
  * so there is no path here that could replace a history.
+ *
+ * ── NO to_hash SINCE 2026-10-14, AND THE REASON IS WORTH KEEPING ──────────
+ *
+ * This used to carry an unkeyed SHA-256 of the address, so that a later send
+ * could tell whether the address had changed. Nothing ever read it:
+ * sendHistoryFor() maps each entry to {type, label, sent_at} and drops the
+ * rest, and no other caller touches it. The comparison it existed for was
+ * never built.
+ *
+ * It was not merely unused. Guest has read:null, so the entity is listable by
+ * anyone holding any API token, which is why every other address on it is
+ * encrypted. An unkeyed digest of an email is not one-way in practice:
+ * addresses are low-entropy and enumerable, so a candidate list recovers the
+ * plaintext. The field handed back exactly what the encryption beside it
+ * withholds, in exchange for a feature that did not exist.
+ *
+ * The address is still taken and still ignored, because both call sites pass it
+ * and one of them is the mobile shell, which is another lane's file. Dropping
+ * the parameter would be a change there for no gain here.
+ *
+ * STILL async, for the same reason: both callers await it inside a
+ * Promise.all, and nothing is gained by making them stop.
+ *
+ * Rows written before this keep their to_hash, and Guest.send_history still
+ * declares the field. That residue is a separate, quoted clean-up.
  */
+// eslint-disable-next-line no-unused-vars
 export async function newSendEntry(type, address, now = new Date()) {
   return {
     type: String(type || '').trim() || 'invite',
     sent_at: (now instanceof Date ? now : new Date(now)).toISOString(),
-    to_hash: await hashRecipient(address),
   };
 }

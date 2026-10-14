@@ -68,8 +68,8 @@ export default function EmergencyContactPage() {
   };
 
   // Both of this page's fields are AES-256-GCM ciphertext at rest (Step 2b),
-  // so they can only be written server-side — encrypting needs
-  // BASE44_ADMIN_KEY, which the browser never holds. putMyWeddingDetails()
+  // so they can only be written server-side — encrypting needs APP_ENC_KEY,
+  // which the browser never holds. putMyWeddingDetails()
   // sends both in ONE request: two separate calls on a first-ever save would
   // each find no record and each create one. It also creates the record when
   // the couple has none yet, which is why there is no create branch here any

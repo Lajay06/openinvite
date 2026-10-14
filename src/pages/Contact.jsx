@@ -24,7 +24,7 @@ export default function Contact() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    topic: "",
+    topic: "General",
     message: "",
   });
 
@@ -64,7 +64,7 @@ export default function Contact() {
       }
       // Clearing happens only after a confirmed send.
       setSubmitted(true);
-      setFormData({ name: "", email: "", topic: "", message: "" });
+      setFormData({ name: "", email: "", topic: "General", message: "" });
     } catch {
       setSendError("Message could not be sent. Please check your connection and try again.");
     } finally {
@@ -72,7 +72,10 @@ export default function Contact() {
     }
   };
 
-  const topics = ["Guest management", "Budget tracking", "Universes", "Ava", "Pricing", "Something else"];
+  // Routing for these lives in api/contact.js (Billing and Privacy have their
+  // own inboxes); tests/persistence/contact-topic-routing.mjs holds the two
+  // lists equal, in this order.
+  const topics = ["General", "Dashboard", "Guest Suite", "Gifting", "Billing", "Privacy", "Other"];
 
   const labelStyle = { display: "block", fontSize: 11, fontWeight: 600, color: "rgba(10,10,10,0.6)", letterSpacing: "0.15em", marginBottom: 10 };
   const fieldStyle = {
@@ -167,7 +170,6 @@ export default function Contact() {
                       onFocus={focusField}
                       onBlur={blurField}
                     >
-                      <option value="" disabled>Choose a topic</option>
                       {topics.map((item) => (
                         <option key={item} value={item}>{item}</option>
                       ))}

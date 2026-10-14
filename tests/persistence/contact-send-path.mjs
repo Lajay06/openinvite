@@ -60,7 +60,7 @@ export async function runContactSendPath() {
 
   // ---- server, exercised for real ----
   const handler = (await import('../../api/contact.js')).default;
-  const good = { name: 'Ada', email: 'ada@example.com', topic: 'Ava', message: 'The date it gave me is wrong.' };
+  const good = { name: 'Ada', email: 'ada@example.com', topic: 'General', message: 'The date it gave me is wrong.' };
 
   let r = mockRes();
   await handler(req(good, 'GET'), r);

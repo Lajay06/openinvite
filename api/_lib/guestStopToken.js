@@ -22,16 +22,16 @@
  * travels in the clear here too, because the endpoint has to know whose flag to
  * set, but it travels WITH a signature over it.
  *
- * ── THE SECRET IS BASE44_ADMIN_KEY, AND NO NEW ONE IS CREATED ─────────────
+ * ── THE SECRET IS APP_HASH_KEY ────────────────────────────────────────────
  *
- * The goal says the same helper family as the retention stop link, and that
- * family uses BASE44_ADMIN_KEY for the same reason: a link that must resolve
- * without a session. api/_lib/collaboratorInviteToken.js and
- * api/_lib/calendarFeedToken.js do the same.
+ * Same helper family as the retention stop link, and that family now keys on
+ * APP_HASH_KEY. It no longer keys on the admin credential, and neither does
+ * api/_lib/collaboratorInviteToken.js, which moved to COLLAB_HASH_KEY. The 2026-10-11 rotation is why: a digest keyed on a bearer
+ * credential dies when the credential is replaced.
  *
- * Rotating BASE44_ADMIN_KEY therefore invalidates every stop link already
- * mailed. That is the trade those three already accept, and the failure mode is
- * a dead link that says so, not a silent wrong answer.
+ * Rotating APP_HASH_KEY still invalidates every stop link already mailed. That
+ * trade is accepted, and the failure mode is a dead link that says so, not a
+ * silent wrong answer.
  *
  * READ AT CALL TIME, NOT AT MODULE LOAD, which stopEmailsToken.js learned the
  * hard way: a module-scope env read fixes the secret for every later importer
