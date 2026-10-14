@@ -8,6 +8,7 @@ import {
 import { resolvePlanFromPriceId, resolveCurrencyFromPriceId } from './_lib/planPricing.js';
 import { validateGiftDraft, createGiftDraft } from './_lib/giftDrafts.js';
 import { giftingV2OnServer } from './gift-email-preview.js';
+import { TOO_MANY_TRIES } from './_lib/calmErrors.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -112,7 +113,7 @@ export default async function handler(req, res) {
   res.setHeader('X-RateLimit-Remaining', String(remaining));
   if (limited) {
     console.warn('[checkout] Rate limited:', ip);
-    return res.status(429).json({ error: 'Too many requests — please wait a moment and try again.' });
+    return res.status(429).json({ error: TOO_MANY_TRIES });
   }
 
   try {

@@ -107,11 +107,20 @@ export async function getBase44User(userId, adminKey, fetchImpl = fetch) {
 /**
  * @returns {Promise<{ok: boolean, status?: number, body?: string, error?: string}>}
  */
-export async function writeBase44UserPlan({ userId, plan, planActivatedAt, adminKey, fetchImpl = fetch }) {
+export async function writeBase44UserPlan({
+  userId, plan, planActivatedAt, stripeCustomerId, planSource, adminKey, fetchImpl = fetch,
+}) {
   try {
+    // OMITTED, NEVER NULLED. A PUT replaces the whole value of each field it
+    // names, so sending stripeCustomerId: undefined on a renewal would erase
+    // the customer id this account already has. Each of the two is in the body
+    // only when the caller actually has it.
+    const payload = { plan, planActivatedAt };
+    if (stripeCustomerId) payload.stripeCustomerId = stripeCustomerId;
+    if (planSource) payload.planSource = planSource;
     const res = await adminFetch(userPath(userId), {
       method: 'PUT',
-      body: { plan, planActivatedAt },
+      body: payload,
       adminKey,
       fetchImpl,
     });
