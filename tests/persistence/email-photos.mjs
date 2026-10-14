@@ -101,6 +101,20 @@ export async function runEmailPhotos() {
        html.includes(tag), html.includes(tag) ? 'rendered' : 'not found in the html');
   }
 
+  // ── EVERY BRAND EMAIL CARRIES THE FULL LOCKUP IN ITS HEADER ─────────────
+  //
+  // Owner ruling 2026-10-14. guest-reply was the last holdout: it passed
+  // showHeader: false so the couple's names led, and the ruling overrides that.
+  // Checked on the rendered html rather than the call, because a flag can be
+  // set and the shell still draw nothing.
+  const { EMAIL_LOGO_URL, EMAIL_LOGO_WIDTH, EMAIL_LOGO_HEIGHT } = await import('../../src/lib/emailBrand.js');
+  const LOCKUP = `<img src="${EMAIL_LOGO_URL}" width="${EMAIL_LOGO_WIDTH}" height="${EMAIL_LOGO_HEIGHT}"`;
+  for (const [key, , render] of PLACEMENTS) {
+    const html = await render();
+    ok(`  ${key}: the header carries the full lockup`, html.includes(LOCKUP), 'lockup');
+  }
+  ok('  and the mark alone is in no header', EMAIL_LOGO_WIDTH === 160 && EMAIL_LOGO_HEIGHT === 37, `${EMAIL_LOGO_WIDTH}x${EMAIL_LOGO_HEIGHT}`);
+
   // ── AVA'S ICON IS A PNG, NOT CSS ────────────────────────────────────────
   //
   // onboarding-day3 drew it as a div with a linear-gradient and a glyph. Outlook

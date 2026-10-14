@@ -70,5 +70,16 @@ ${originalHtml}
 ${emailFooterRow(`This is a reply to the note you sent ${escapeHtml(couple)} from their wedding site. Replying to this email goes straight to them.`)}
 ${poweredByRow()}`;
 
-  return { subject, html: emailShell({ title: subject, bodyRowsHtml, photo: EMAIL_PHOTOS.guestReply, showHeader: false }) };
+  // THE HEADER IS ON, like every other brand email. Owner ruling 2026-10-14.
+  //
+  // This passed showHeader: false, and emailBrand.js's own note explains why:
+  // guest-facing emails omitted the brand header so the couple's names stayed
+  // the visual focus, and carried poweredByRow() in the footer instead. The
+  // ruling is that every brand email carries the full logo, so the header goes
+  // on here too.
+  //
+  // poweredByRow() is left in the footer. It was the stand-in for a header that
+  // now exists, so the lockup and the small mark both appear; that is worth a
+  // look, but removing it is a separate call and not this one.
+  return { subject, html: emailShell({ title: subject, bodyRowsHtml, photo: EMAIL_PHOTOS.guestReply, showHeader: true }) };
 }
