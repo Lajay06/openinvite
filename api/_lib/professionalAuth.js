@@ -13,10 +13,12 @@
  */
 import { can, ROLES } from '../../src/lib/professionalAccess.js';
 
-/** On in preview and wherever the owner sets PROFESSIONAL=1; off in production until then. */
-export function professionalOnServer(env = process.env) {
-  return env.PROFESSIONAL === '1' || env.VERCEL_ENV === 'preview';
-}
+/**
+ * The server flag lives in professionalFlag.js (owner ruling 2026-10-14: on
+ * only with PROFESSIONAL=1, previews included). Re-exported here so every
+ * handler keeps one import; nothing in this file decides it.
+ */
+export { professionalOnServer } from './professionalFlag.js';
 
 /**
  * Collection to areas. `scope: 'event'` collections are checked against the

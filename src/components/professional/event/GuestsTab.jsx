@@ -24,7 +24,7 @@ import { s, PRO } from '../proTheme';
 import { TYPE } from '@/styles/typeScale';
 
 const STATUS = { coming: ['Coming', 'good'], not_coming: ['Not coming', 'bad'], waiting: ['Waiting', 'wait'] };
-const SHARE_TEXT = { names: 'names', party: 'plus-ones and children', dietary: 'dietary needs', meals: 'meals', tables: 'tables', schedule: 'their schedule', vendors: 'their vendors', budget: 'their budget', songs: 'song requests', accessibility: 'accessibility notes' };
+const SHARE_TEXT = { names: 'names', party: 'plus-ones and children', dietary: 'dietary needs', meals: 'meals', tables: 'tables', schedule: 'their schedule', vendors: 'their vendors', budget: 'their budget', songs: 'song requests' };
 
 function Caterer({ rows, event, brand }) {
   const sheet = catererSheet(rows);
