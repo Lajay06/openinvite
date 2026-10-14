@@ -140,7 +140,7 @@
     },
     "claimed_user_id_hash": {
       "type": "string",
-      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, id of the user who claimed the gift). A hash, not the raw user id."
+      "description": "HMAC-SHA256(APP_HASH_KEY, id of the user who claimed the gift). A hash, not the raw user id."
     },
     "edit_token_hash": {
       "type": "string",
