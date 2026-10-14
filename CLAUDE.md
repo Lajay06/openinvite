@@ -85,7 +85,7 @@ var sourcing). Update it when you learn something new the same way.
   shared modal wrapper (src/components/ui/dialog.jsx's DialogContent).
   Never set border-radius on an individual modal; if a modal needs its own
   radius override, that's drift — fix it at the wrapper instead.
-- Every dashboard page must use DashboardPageHeader component
+- Every couple dashboard page must use DashboardPageHeader; Professional pages use ProPage's header
 - All data via base44.entities.* authenticated client only
 - No imports from @/entities/* — use base44.entities.* instead
 - Font: Plus Jakarta Sans, always

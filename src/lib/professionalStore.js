@@ -15,6 +15,12 @@
  */
 import { useSyncExternalStore } from 'react';
 
+/**
+ * False until the owner adds the entities and the endpoints are wired. While
+ * false, the app shows the test data and says so on every screen.
+ */
+export const STORE_LIVE = false;
+
 export const COLLECTIONS = [
   'ProWorkspace', 'ProMember', 'ProEvent', 'PlannerLink', 'ProGuest', 'RunSheetRow',
   'VendorContact', 'ProVendorBooking', 'PaymentDue', 'ProTask', 'ProTemplate',
@@ -89,6 +95,7 @@ export function seedData() {
     { id: 'mem_owner', workspace_id: ws, name: 'Holly Reed', email_display: 'holly@example.com', role: 'owner', assigned_event_ids: [], is_test: true },
     { id: 'mem_sam', workspace_id: ws, name: 'Sam Ortiz', email_display: 'sam@example.com', role: 'planner', assigned_event_ids: ['ev_1', 'ev_3'], is_test: true },
     { id: 'mem_jo', workspace_id: ws, name: 'Jo Park', email_display: 'jo@example.com', role: 'assistant', assigned_event_ids: ['ev_1'], is_test: true },
+    { id: 'mem_kai', workspace_id: ws, name: 'Kai Ruiz', email_display: 'kai@example.com', role: 'dayof', assigned_event_ids: ['ev_1'], is_test: true },
   ];
   const ProEvent = [
     { id: 'ev_1', workspace_id: ws, couple_names: 'Maya and Theo', event_date: addDays(23), venue: 'The Glasshouse, Napa', status: 'active', kind: 'linked', guest_estimate: 140, assigned_member_ids: ['mem_sam', 'mem_jo'], created_date: '2026-01-10T00:00:00Z', is_test: true },
@@ -102,7 +109,7 @@ export function seedData() {
   const RunSheetRow = [
     ...sheet('ev_1', 'Setup', [[9 * 60, 120, 'Florist load-in and arch build', 'Garden lawn', 'v_flor', 'Gates open at 9'], [11 * 60, 60, 'Chairs and aisle runner', 'Garden lawn', 'mem_jo', '']]),
     ...sheet('ev_1', 'Ceremony', [[15 * 60 + 30, 30, 'Guests arrive, welcome drinks', 'Terrace', 'mem_jo', ''], [16 * 60, 30, 'Ceremony', 'Garden lawn', 'mem_sam', 'Music cue: processional'], [16 * 60 + 30, 15, 'Confetti and group photo', 'Steps', 'v_photo', '']]),
-    ...sheet('ev_1', 'Reception', [[17 * 60, 60, 'Canapes and cocktails', 'Terrace', 'v_cater', ''], [18 * 60, 15, 'Guests seated', 'Glasshouse', 'mem_jo', 'DJ: soft music'], [18 * 60 + 30, 15, 'Couple entrance', 'Glasshouse', 'v_dj', 'Entrance song'], [19 * 60, 60, 'Dinner service', 'Glasshouse', 'v_cater', ''], [20 * 60 + 15, 20, 'Speeches', 'Glasshouse', 'mem_sam', 'Mic check at 20:00'], [21 * 60, 120, 'Dancing', 'Glasshouse', 'v_dj', 'First dance']]),
+    ...sheet('ev_1', 'Reception', [[17 * 60, 60, 'Canapes and cocktails', 'Terrace', 'v_cater', ''], [18 * 60, 15, 'Guests seated', 'Glasshouse', 'mem_jo', 'DJ: soft music'], [18 * 60 + 30, 15, 'Couple entrance', 'Glasshouse', 'v_dj', 'Entrance song'], [19 * 60, 60, 'Dinner service', 'Glasshouse', 'v_cater', ''], [20 * 60 + 15, 20, 'Speeches', 'Glasshouse', 'mem_sam', 'Mic check at 8:00 pm'], [21 * 60, 120, 'Dancing', 'Glasshouse', 'v_dj', 'First dance']]),
   ];
   const VendorContact = [
     { id: 'v_flor', workspace_id: ws, role: 'Florist', company: 'Wild Stem Florals', contact: 'Ruth Hale', phone: '+1 415 555 0101', email: 'ruth@example.com', insurance_expires: addDays(200), notes: '', is_test: true },
@@ -137,14 +144,20 @@ export function seedData() {
     { id: 'pg_4', event_id: 'ev_2', name: 'Tom Hart', dietary: '', meal: '', table: '', plus_one: false, child: false, status: 'waiting', is_test: true },
   ];
   const PlannerLink = [
-    { id: 'pl_1', event_id: 'ev_1', workspace_id: ws, event_type: 'approve', created_date: '2026-09-01T10:00:00Z', last_viewed_at: null, is_test: true },
+    { id: 'pl_0', event_id: 'ev_1', workspace_id: ws, event_type: 'request', created_date: '2026-08-30T10:00:00Z', is_test: true },
+    { id: 'pl_1', event_id: 'ev_1', workspace_id: ws, event_type: 'approve', shares: { totals: true, names: true, party: true, dietary: true, meals: true, tables: true, basics: true, schedule: true }, created_date: '2026-09-01T10:00:00Z', is_test: true },
+  ];
+  const ProCost = [
+    { id: 'pc_fee', event_id: 'ev_1', kind: 'fee', label: 'Full planning fee', amount: 9500, is_test: true },
+    { id: 'pc_com', event_id: 'ev_1', kind: 'commission', label: 'Florist referral', amount: 420, is_test: true },
+    { id: 'pc_cost', event_id: 'ev_1', kind: 'cost', label: 'Day-of assistant', amount: 450, is_test: true },
   ];
   const PartnerCode = [{ id: 'pc_1', workspace_id: ws, code: 'HOLLY10', label: 'Main', status: 'active', created_date: '2026-09-01T00:00:00Z', is_test: true }];
   const PartnerReward = [
     { id: 'pr_1', code_id: 'pc_1', plan: 'ultra', amount: 50, status: 'pending', created_date: '2026-10-08T00:00:00Z', earn_after: addDays(8), is_test: true },
     { id: 'pr_2', code_id: 'pc_1', plan: 'pro', amount: 20, status: 'earned', created_date: '2026-09-03T00:00:00Z', earn_after: addDays(-20), is_test: true },
   ];
-  return { ProWorkspace, ProMember, ProEvent, RunSheetRow, VendorContact, ProVendorBooking, PaymentDue, ProTask, ProGuest, PlannerLink, PartnerCode, PartnerReward };
+  return { ProWorkspace, ProMember, ProEvent, RunSheetRow, VendorContact, ProVendorBooking, PaymentDue, ProTask, ProGuest, PlannerLink, PartnerCode, PartnerReward, ProCost };
 }
 
 resetStore();
