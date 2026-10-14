@@ -39,7 +39,8 @@ export function runProfessionalPlans() {
 
   check('professional brand: the product name is Openinvite Professional, short form Professional', PRODUCT_NAME === 'Openinvite Professional' && PRODUCT_SHORT === 'Professional', PRODUCT_SHORT);
   check('professional flag: off on openinvite.com.au with no build flag', isProfessionalOn({}, 'openinvite.com.au') === false, 'off');
-  check('professional flag: on with VITE_PROFESSIONAL=1, and on a vercel.app preview', isProfessionalOn({ VITE_PROFESSIONAL: '1' }, 'openinvite.com.au') && isProfessionalOn({}, 'openinvite-git-x.vercel.app'), 'on');
+  check('professional flag: on with VITE_PROFESSIONAL=1, previews included', isProfessionalOn({ VITE_PROFESSIONAL: '1' }, 'openinvite.com.au') && isProfessionalOn({ VITE_PROFESSIONAL: '1' }, 'openinvite-git-x.vercel.app'), 'on');
+  check('professional flag: a preview host without the flag shows no Professional screens or routes', isProfessionalOn({}, 'openinvite-git-x.vercel.app') === false && isProfessionalOn({ DEV: true }, 'localhost') === false && isProfessionalOn({ VITE_PROFESSIONAL: 'true' }, 'x.vercel.app') === false, 'off');
   check('professional routing: a professional account goes to /professional/app; a couple is untouched', homeForAccount({ accountType: 'professional' }) === '/professional/app' && homeForAccount({ plan: 'ultra' }) === null, 'as the goal');
 
   // "Pro" alone is a couple plan. No Professional source file may call the product that.

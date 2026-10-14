@@ -35,16 +35,14 @@ export const ACCOUNT_TYPE = { couple: 'couple', professional: 'professional' };
 export const CONTACT_EMAIL = 'hello@openinvite.com.au';
 
 /**
- * THE FLAG. On when the build sets VITE_PROFESSIONAL=1, in local development,
- * and on Vercel preview deploys (*.vercel.app), the same shape as GIFTING_V2,
- * so the owner can review on a preview while openinvite.com.au never sees it.
- * `env` and `host` are injectable for the guard.
+ * THE FLAG. On only when the build sets VITE_PROFESSIONAL=1, previews
+ * included (owner ruling 2026-10-14): the browser follows the server, whose
+ * professionalOnServer() needs PROFESSIONAL=1. A *.vercel.app host alone, or a
+ * local dev server, is not enough. `env` is injectable for the guard; the
+ * second argument is ignored and kept only so old callers still read.
  */
-export function isProfessionalOn(env = import.meta.env, host = typeof window !== 'undefined' ? window.location.hostname : '') {
-  if (env?.VITE_PROFESSIONAL === '1') return true;
-  if (env?.DEV) return true;
-  if (/\.vercel\.app$/.test(host || '')) return true;
-  return false;
+export function isProfessionalOn(env = import.meta.env) {
+  return env?.VITE_PROFESSIONAL === '1';
 }
 
 /** Where a signed-in account belongs after login. A professional goes to the app. */

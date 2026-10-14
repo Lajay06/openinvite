@@ -239,3 +239,4 @@ Each item: build, guards (each proved red on a planted fault first), screenshots
 - Accessibility: the feed sends nothing. Guest.special_requests is not an accessibility field. The couple's accessibility switch stays hidden until a dedicated accessibility field exists.
 - Tables: the table name only (Guest.table_assignment). Seats, and the asServiceRole read of Table they would need, are parked.
 - The server flag: professionalOnServer() is on only with PROFESSIONAL=1, previews included. A Vercel preview alone is not enough.
+- The browser flag follows the server: isProfessionalOn() is on only when the build sets VITE_PROFESSIONAL=1, previews included. A *.vercel.app host alone, or a local dev server, is not enough. Every Professional screen and route (ProfessionalRoot) sends home while it is off.
