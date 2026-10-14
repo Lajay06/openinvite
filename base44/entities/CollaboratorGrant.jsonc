@@ -4,15 +4,15 @@
   "properties": {
     "owner_user_id_hash": {
       "type": "string",
-      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, owner's real Base44 User.id). Collaborator's own RLS stays owner-scoped and untouched — the admin key can never read/write it, so enforcement can't go through that record at all. This entity exists purely so admin-key-backed endpoints can resolve 'does X have permission on Y's wedding' without ever touching Collaborator. Hashed (not the raw id) because read:null makes this entity listable by anyone with any API token — an attacker would need BASE44_ADMIN_KEY itself to compute a matching hash for a chosen id, which they don't have, so a forged row can never target a real owner/collaborator pair."
+      "description": "HMAC-SHA256(COLLAB_HASH_KEY, owner's real Base44 User.id). Collaborator's own RLS stays owner-scoped and untouched — the admin key can never read/write it, so enforcement can't go through that record at all. This entity exists purely so admin-key-backed endpoints can resolve 'does X have permission on Y's wedding' without ever touching Collaborator. Hashed (not the raw id) because read:null makes this entity listable by anyone with any API token — an attacker would need COLLAB_HASH_KEY itself to compute a matching hash for a chosen id, which they don't have, so a forged row can never target a real owner/collaborator pair."
     },
     "collaborator_user_id_hash": {
       "type": "string",
-      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, collaborator's real Base44 User.id) — same reasoning as owner_user_id_hash."
+      "description": "HMAC-SHA256(COLLAB_HASH_KEY, collaborator's real Base44 User.id) — same reasoning as owner_user_id_hash."
     },
     "collaborator_email_hash": {
       "type": "string",
-      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, invited email, lowercased) — lets the owner's own dashboard (using its own bearer token, which CAN read/write its own Collaborator rows) reconcile a pending invite's email against an accepted grant without needing the collaborator's user id in advance."
+      "description": "HMAC-SHA256(COLLAB_HASH_KEY, invited email, lowercased) — lets the owner's own dashboard (using its own bearer token, which CAN read/write its own Collaborator rows) reconcile a pending invite's email against an accepted grant without needing the collaborator's user id in advance."
     },
     "event_type": {
       "type": "string",
@@ -33,7 +33,7 @@
     },
     "owner_id_enc": {
       "type": "string",
-      "description": "The owner's real Base44 User.id, AES-256-GCM under APP_ENC_KEY (never COLLAB_HASH_KEY: one key per job), written at accept. Lets a collaborator-only account that signs in without the invite link be sent to the wedding it helps with (owner ruling 2026-10-13). The hashes cannot be reversed, so without this nothing knows whose wedding a grant is for."
+      "description": "AES-256-GCM ciphertext (base64, iv+authTag+ciphertext) of the owner's real Base44 User.id, recoverable server-side only. Paired with owner_user_id_hash, which stays the lookup key — this is the decryptable form, for endpoints that must present or act on the owner id rather than merely match it. Key derived from APP_ENC_KEY."
     },
     "is_test": {
       "type": "boolean",

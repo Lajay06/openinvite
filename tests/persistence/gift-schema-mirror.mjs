@@ -53,9 +53,22 @@ export function runGiftSchemaMirror() {
     gd.properties.draft_enc?.type === 'string' && gd.properties.expires_at?.format === 'date-time'
       && gd.properties.buyer_user_id_hash?.type === 'string' && gd.properties.is_test?.type === 'boolean'
       && Object.keys(gd.properties).length === 4);
-  check('GiftDraft: the draft is encrypted under APP_ENC_KEY and the buyer hash keyed with APP_HASH_KEY, never BASE44_ADMIN_KEY',
-    /under APP_ENC_KEY/.test(gd.properties.draft_enc.description) && /under APP_HASH_KEY/.test(gd.properties.buyer_user_id_hash.description)
-      && ['draft_enc', 'buyer_user_id_hash'].every((f) => /never (a key derived from )?BASE44_ADMIN_KEY/.test(gd.properties[f].description)));
+  // THIS ASSERTED A SENTENCE THAT ONLY EXISTED IN THE MIRROR.
+  //
+  // It required both descriptions to say "never BASE44_ADMIN_KEY". Our mirror
+  // did; Base44's live schema said "Key derived from BASE44_ADMIN_KEY" on the
+  // same two fields, naming the credential as the real key. The guard was
+  // checking our paraphrase against itself and reported green while the schema
+  // it mirrors said the opposite.
+  //
+  // So the ruling-out clause is gone, here and from the mirror. It is also now
+  // forbidden outright: tests/persistence/mirror-names-no-credential.mjs fails
+  // on any mention of the credential in base44/entities, including one that
+  // only rules it out, because a sentence like that is indistinguishable from
+  // a mistake to everything except a human reading carefully.
+  check('GiftDraft: the draft is keyed on APP_ENC_KEY and the buyer hash on APP_HASH_KEY',
+    /APP_ENC_KEY/.test(gd.properties.draft_enc.description)
+      && /HMAC-SHA256\(APP_HASH_KEY/.test(gd.properties.buyer_user_id_hash.description));
   check('GiftDraft: requires the draft and its expiry, nothing else', JSON.stringify(gd.required) === JSON.stringify(['draft_enc', 'expires_at']));
   check('GiftDraft: create and read open, update and delete creator only (item 0 ruling)',
     gd.rls.create === null && gd.rls.read === null
