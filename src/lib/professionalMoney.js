@@ -24,3 +24,32 @@ export function dueThisWeek(payments, now = new Date()) {
 export function isOverdue(p, now = new Date()) {
   return p.status === 'due' && !!p.due_date && utcDay(`${p.due_date}T00:00:00Z`) < utcDay(now);
 }
+
+export const COST_KINDS = [
+  { key: 'fee', label: 'Your fee' },
+  { key: 'commission', label: 'Commission' },
+  { key: 'cost', label: 'Cost' },
+];
+
+/** The professional's own budget: fee and commissions in, costs out. */
+export function budgetTotals(lines) {
+  const by = (k) => total((lines || []).filter((l) => l.kind === k));
+  const income = by('fee') + by('commission');
+  return { fee: by('fee'), commission: by('commission'), cost: by('cost'), income, left: income - by('cost') };
+}
+
+export const PAYMENT_FILTERS = [
+  { key: 'week', label: 'Due this week' },
+  { key: 'overdue', label: 'Overdue' },
+  { key: 'due', label: 'All due' },
+  { key: 'paid', label: 'Paid' },
+  { key: 'all', label: 'Everything' },
+];
+
+export function filterPayments(rows, key, now = new Date()) {
+  if (key === 'week') return dueThisWeek(rows, now);
+  if (key === 'overdue') return (rows || []).filter((p) => isOverdue(p, now));
+  if (key === 'due') return (rows || []).filter((p) => p.status === 'due');
+  if (key === 'paid') return (rows || []).filter((p) => p.status === 'paid');
+  return rows || [];
+}

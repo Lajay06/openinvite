@@ -146,12 +146,17 @@ export function seedData() {
     { id: 'pl_0', event_id: 'ev_1', workspace_id: ws, event_type: 'request', created_date: '2026-08-30T10:00:00Z', is_test: true },
     { id: 'pl_1', event_id: 'ev_1', workspace_id: ws, event_type: 'approve', shares: { totals: true, names: true, party: true, dietary: true, meals: true, tables: true, basics: true, schedule: true }, created_date: '2026-09-01T10:00:00Z', is_test: true },
   ];
+  const ProCost = [
+    { id: 'pc_fee', event_id: 'ev_1', kind: 'fee', label: 'Full planning fee', amount: 9500, is_test: true },
+    { id: 'pc_com', event_id: 'ev_1', kind: 'commission', label: 'Florist referral', amount: 420, is_test: true },
+    { id: 'pc_cost', event_id: 'ev_1', kind: 'cost', label: 'Day-of assistant', amount: 450, is_test: true },
+  ];
   const PartnerCode = [{ id: 'pc_1', workspace_id: ws, code: 'HOLLY10', label: 'Main', status: 'active', created_date: '2026-09-01T00:00:00Z', is_test: true }];
   const PartnerReward = [
     { id: 'pr_1', code_id: 'pc_1', plan: 'ultra', amount: 50, status: 'pending', created_date: '2026-10-08T00:00:00Z', earn_after: addDays(8), is_test: true },
     { id: 'pr_2', code_id: 'pc_1', plan: 'pro', amount: 20, status: 'earned', created_date: '2026-09-03T00:00:00Z', earn_after: addDays(-20), is_test: true },
   ];
-  return { ProWorkspace, ProMember, ProEvent, RunSheetRow, VendorContact, ProVendorBooking, PaymentDue, ProTask, ProGuest, PlannerLink, PartnerCode, PartnerReward };
+  return { ProWorkspace, ProMember, ProEvent, RunSheetRow, VendorContact, ProVendorBooking, PaymentDue, ProTask, ProGuest, PlannerLink, PartnerCode, PartnerReward, ProCost };
 }
 
 resetStore();
