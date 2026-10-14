@@ -54,9 +54,9 @@ export function isPastArchiveDate(eventDate, now = new Date()) {
  * read-only until a slot frees. Never deletes, only marks.
  * Returns a Set of event ids.
  */
-export function readOnlyEventIds(events, plan, { now = new Date(), cancelled = false } = {}) {
+export function readOnlyEventIds(events, plan, { now = new Date(), canceled = false } = {}) {
   const out = new Set();
-  if (cancelled) { events.forEach((e) => out.add(e.id)); return out; }
+  if (canceled) { events.forEach((e) => out.add(e.id)); return out; }
   const { events: limit } = limitsFor(plan);
   const active = [];
   for (const e of events) {

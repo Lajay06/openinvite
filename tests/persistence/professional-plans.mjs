@@ -32,7 +32,7 @@ export function runProfessionalPlans() {
   const ro = readOnlyEventIds(events, 'trial', { now });
   check('professional plans: over the limit, the newest events go read-only, and nothing is removed', ro.has('c') && !ro.has('a') && !ro.has('b') && events.length === 4, [...ro].join(','));
   check('professional plans: an event 30 days past its date is archived and read-only', ro.has('old') && isPastArchiveDate('2026-08-01', now) && !isPastArchiveDate('2026-09-20', now), 'old archived');
-  check('professional plans: a cancelled workspace is read-only throughout', readOnlyEventIds(events, 'agency', { now, cancelled: true }).size === 4, 'all four');
+  check('professional plans: a canceled workspace is read-only throughout', readOnlyEventIds(events, 'agency', { now, canceled: true }).size === 4, 'all four');
   check('professional plans: no free slot on a full trial', !hasFreeSlot(events, 'trial', now) && hasFreeSlot(events, 'solo', now), 'trial full, solo free');
 
   // PLANT: the wrong sort direction. The assertion above must reject it.

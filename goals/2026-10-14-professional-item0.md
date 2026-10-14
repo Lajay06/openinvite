@@ -19,7 +19,7 @@ scripts/check-payments-freeze.mjs freezes exactly `api/webhooks/` and five files
 
 goals/2026-10-10-pay-it-forward.md: `REFERRALS_ENABLED`, `User.referral_code`, `User.referred_by_code`, a `ReferralJoin` log, one shared FRIEND10 Stripe promotion code made by hand, no reward to the referrer, a count of friends who joined. State: ruled, not started. Nothing is built: no files, no entities, no branches.
 
-So lane E builds the engine generically, in src/lib/professionalReferral.js and api/_lib/professionalReferral.js, with two kinds: `couple` (lane C's: a code, a join, no reward) and `partner` (a code, a Stripe promotion code per code, a reward ledger with pending, earned, credited and cancelled). Lane C's ReferralJoin becomes the couple kind's join log. Two things for lane C: its design still says the hash key is BASE44_ADMIN_KEY (stale since #1011; it should be APP_HASH_KEY), and its item 7 notes that Stripe rejects `discounts` together with `allow_promotion_codes`, which applies to partner codes too, so a partner code is typed at checkout, never pre-applied.
+So lane E builds the engine generically, in src/lib/professionalReferral.js and api/_lib/professionalReferral.js, with two kinds: `couple` (lane C's: a code, a join, no reward) and `partner` (a code, a Stripe promotion code per code, a reward ledger with pending, earned, credited and canceled). Lane C's ReferralJoin becomes the couple kind's join log. Two things for lane C: its design still says the hash key is BASE44_ADMIN_KEY (stale since #1011; it should be APP_HASH_KEY), and its item 7 notes that Stripe rejects `discounts` together with `allow_promotion_codes`, which applies to partner codes too, so a partner code is typed at checkout, never pre-applied.
 
 ## The Base44 boxes
 
@@ -34,7 +34,7 @@ Add one optional field to the User entity: accountType, a string enum with the v
 **Box 2, ProWorkspace**
 
 ```
-Create an entity ProWorkspace. Fields: owner_user_id_hash (string, required), name (string, required), plan (string enum: trial, solo, team, agency; required), plan_status (string enum: trialing, active, past_due, cancelled; required), event_limit (number), seat_limit (number), stripe_customer_id (string), stripe_subscription_id (string), brand_logo_url (string), brand_name (string), trial_ends_at (date-time), cancelled_at (date-time), reward_cap_monthly (number, default 500), is_test (boolean, default false). RLS: create, read, update and delete all {"created_by_id": "{{user.id}}"}.
+Create an entity ProWorkspace. Fields: owner_user_id_hash (string, required), name (string, required), plan (string enum: trial, solo, team, agency; required), plan_status (string enum: trialing, active, past_due, canceled; required), event_limit (number), seat_limit (number), stripe_customer_id (string), stripe_subscription_id (string), brand_logo_url (string), brand_name (string), trial_ends_at (date-time), canceled_at (date-time), reward_cap_monthly (number, default 500), is_test (boolean, default false). RLS: create, read, update and delete all {"created_by_id": "{{user.id}}"}.
 ```
 
 **Box 3, ProMember**
@@ -85,7 +85,7 @@ The name VendorBooking is already taken by the couple-side entity. Create a new 
 
 ```
 Create these entities, each with RLS all four {"created_by_id": "{{user.id}}"} and is_test (boolean, default false):
-PaymentDue: event_id (string, required), booking_id (string), label (string, required), amount (number, required), due_date (date, required), payer (string enum: couple, planner, other), status (string enum: due, paid, cancelled).
+PaymentDue: event_id (string, required), booking_id (string), label (string, required), amount (number, required), due_date (date, required), payer (string enum: couple, planner, other), status (string enum: due, paid, canceled).
 ProCost: event_id (string, required), kind (string enum: fee, commission, cost; required), label (string, required), amount (number, required).
 ProTask: event_id (string), title (string, required), owner_id (string), due_date (date), done (boolean), months_out (string).
 ProTemplate: workspace_id (string, required), kind (string enum: runsheet, checklist, budget, questionnaire, vendors; required), name (string, required), body (object, required).
@@ -99,7 +99,7 @@ ProNote: event_id (string, required), author_member_id (string), body_enc (strin
 ```
 Create an entity PartnerCode. Fields: workspace_id (string, required), code (string, required), code_hash (string, required), label (string), stripe_promotion_code_id (string), status (string enum: active, revoked; required), is_test (boolean, default false). RLS: all four {"created_by_id": "{{user.id}}"}.
 
-Create an entity PartnerReward. Fields: code_id (string, required), workspace_id (string, required), couple_user_id_hash (string, required), plan (string enum: pro, ultra; required), amount (number, required), status (string enum: pending, earned, credited, cancelled; required), earn_after (date-time, required), stripe_balance_txn_id (string), is_test (boolean, default false). RLS: all four {"created_by_id": "{{user.id}}"}.
+Create an entity PartnerReward. Fields: code_id (string, required), workspace_id (string, required), couple_user_id_hash (string, required), plan (string enum: pro, ultra; required), amount (number, required), status (string enum: pending, earned, credited, canceled; required), earn_after (date-time, required), stripe_balance_txn_id (string), is_test (boolean, default false). RLS: all four {"created_by_id": "{{user.id}}"}.
 ```
 
 **Box 12, the hosted function (owner deploys, never a bare base44 deploy)**
