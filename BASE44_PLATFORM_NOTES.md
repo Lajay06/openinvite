@@ -1440,10 +1440,11 @@ client check and then died at the network, with `MediaLibraryModal`'s bare
 `catch {` discarding the reason. That is the shape this note exists to prevent:
 **an unmeasured limit written down once becomes a fact nobody re-checks.**
 
-## Two standing rules the key rotation of 2026-10-11 bought
+## Three standing rules the key rotation of 2026-10-11 bought
 
-Both are written as rules because both were already true as comments and that
-changed nothing.
+All three are written as rules because all three were already true as comments
+and that changed nothing. The third was bought by the cleanup rather than the
+rotation itself, on 2026-10-14.
 
 ### 1. A cipher key that encrypts the ONLY copy of data may not be rotated
 
@@ -1476,3 +1477,43 @@ canon, and quote the count beside it.
 This repo already said the general form of this, in
 `scripts/check-payments-freeze.mjs`: a documented rule is evidence of intent,
 never compliance. The same applies to a documented fact.
+
+### 3. Every description edit is read from Base44 live, never from the repo mirror
+
+`base44/entities/*.jsonc` is a mirror. It is not the schema, and it is not
+evidence about the schema. Before stating what a description says, or
+instructing a change to one, read it with `list_entity_schemas`.
+
+**This cost three wrong statements in one afternoon**, all of them the same
+mistake, all of them made while correcting the very drift they then repeated:
+
+- `PlanGift.claimed_user_id_hash` was reported as already naming APP_HASH_KEY.
+  The mirror said so. Base44 said `HMAC-SHA256(BASE44_ADMIN_KEY, ...)`, in a
+  completely different sentence.
+- `Guest.encrypted_guest_pii` was corrected with a targeted phrase swap, which
+  left its ROTATION sentence still naming the credential, and left the clause
+  "deliberately the admin key and NOT a dedicated secret" sitting inside a
+  sentence that now said APP_ENC_KEY. A description that contradicts itself was
+  produced by an instruction written from a partial read.
+- `GiftDraft` was affirmatively excluded, with "needs no change: already names
+  APP_ENC_KEY and APP_HASH_KEY". That was the mirror again. Base44 named the
+  credential as the real key on both fields, and the exclusion would have left
+  it there.
+
+The third is the one that matters most. The first two were omissions; this was
+an instruction to leave a wrong description alone, issued with confidence, from
+a file that is downstream of the thing it was describing.
+
+**The guard that came out of it does not check agreement with live**, because
+that would need the network on every run. It checks the one property that holds
+offline: `tests/persistence/mirror-names-no-credential.mjs` fails if
+BASE44_ADMIN_KEY appears anywhere in `base44/entities`, with no allowance, not
+even to rule the credential out. The allowance was drafted and then deleted when
+the ruling-out sentence it protected turned out to exist only in the mirror.
+
+Note the shape, because it is not specific to schemas: a derived copy that is
+easier to read than its source will be read instead of the source, and will be
+quoted with the source's authority. `BASE44_PLATFORM_NOTES.md:662` records the
+same thing happening to `User.jsonc`, resolved the same way. Writing it down
+there did not stop it happening again, which is itself the point of
+"Documenting a trap does not immunize you from it".
