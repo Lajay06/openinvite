@@ -4,19 +4,19 @@
   "properties": {
     "wedding_id_hash": {
       "type": "string",
-      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, owner's WeddingDetails record id) \u2014 a hash, not the raw id, for the same reason as every other field here: read:null makes this entity listable by anyone holding any API token, and computing a matching hash for a chosen id needs BASE44_ADMIN_KEY, which callers do not have."
+      "description": "HMAC-SHA256(COLLAB_HASH_KEY, owner's WeddingDetails record id) \u2014 a hash, not the raw id, for the same reason as every other field here: read:null makes this entity listable by anyone holding any API token, and computing a matching hash for a chosen id needs COLLAB_HASH_KEY, which callers do not have."
     },
     "owner_user_id_hash": {
       "type": "string",
-      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, owner's real Base44 User.id). Same construction and the same value as owner_user_id_hash on CollaboratorGrant, so an invite and its eventual grant can be joined on this field without either record holding the raw user id."
+      "description": "HMAC-SHA256(COLLAB_HASH_KEY, owner's real Base44 User.id). Same construction and the same value as owner_user_id_hash on CollaboratorGrant, so an invite and its eventual grant can be joined on this field without either record holding the raw user id."
     },
     "collaborator_email_hash": {
       "type": "string",
-      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, invitee's email, trimmed and lowercased). Same construction and the same value as collaborator_email_hash on CollaboratorGrant \u2014 the invitee's email is never stored in the clear here, on either record."
+      "description": "HMAC-SHA256(COLLAB_HASH_KEY, invitee's email, trimmed and lowercased). Same construction and the same value as collaborator_email_hash on CollaboratorGrant \u2014 the invitee's email is never stored in the clear here, on either record."
     },
     "invite_token_hash": {
       "type": "string",
-      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, the full signed invite token) \u2014 a hash, not the token. This is what makes the accept step able to refuse any link that is not the latest one for that owner/invitee pair: a presented token is hashed and compared against the newest non-superseded row, so older links fail without the plaintext ever being stored."
+      "description": "HMAC-SHA256(COLLAB_HASH_KEY, the full signed invite token) \u2014 a hash, not the token. This is what makes the accept step able to refuse any link that is not the latest one for that owner/invitee pair: a presented token is hashed and compared against the newest non-superseded row, so older links fail without the plaintext ever being stored."
     },
     "status": {
       "type": "string",

@@ -24,23 +24,23 @@
     },
     "buyer_user_id_hash": {
       "type": "string",
-      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, buyer.id) \u2014 null when the buyer wasn't logged in (gifting doesn't require a buyer account). read:null means this entity is listable unscoped by anyone with any API token, so the raw user id never lives here."
+      "description": "HMAC-SHA256(APP_HASH_KEY, buyer.id) \u2014 null when the buyer wasn't logged in (gifting doesn't require a buyer account). read:null means this entity is listable unscoped by anyone with any API token, so the raw user id never lives here."
     },
     "buyer_email_enc": {
       "type": "string",
-      "description": "AES-256-GCM ciphertext (base64, iv+authTag+ciphertext) of the buyer's email, from Stripe's own customer_details.email. Key derived from BASE44_ADMIN_KEY."
+      "description": "AES-256-GCM ciphertext (base64, iv+authTag+ciphertext) of the buyer's email, from Stripe's own customer_details.email. Key derived from APP_ENC_KEY."
     },
     "buyer_name_enc": {
       "type": "string",
-      "description": "AES-256-GCM ciphertext of the buyer's name when Stripe's customer_details.name is present. Optional."
+      "description": "AES-256-GCM ciphertext of the buyer's name when Stripe's customer_details.name is present. Optional. Key derived from APP_ENC_KEY."
     },
     "recipient_email_enc": {
       "type": "string",
-      "description": "AES-256-GCM ciphertext of the recipient's email, collected via a Stripe Checkout custom field on the buyer's own session."
+      "description": "AES-256-GCM ciphertext of the recipient's email, collected via a Stripe Checkout custom field on the buyer's own session. Key derived from APP_ENC_KEY."
     },
     "recipient_note_enc": {
       "type": "string",
-      "description": "AES-256-GCM ciphertext of the buyer's optional personal note to the recipient, from a Stripe Checkout custom field. Optional."
+      "description": "AES-256-GCM ciphertext of the buyer's optional personal note to the recipient, from a Stripe Checkout custom field. Optional. Key derived from APP_ENC_KEY."
     },
     "promotion_code_id": {
       "type": "string",
@@ -79,7 +79,7 @@
     },
     "redeemed_user_id_hash": {
       "type": "string",
-      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, redeemer.id) \u2014 the user who redeemed the code, set at the same time as redeemed_at."
+      "description": "HMAC-SHA256(APP_HASH_KEY, redeemer.id) \u2014 the user who redeemed the code, set at the same time as redeemed_at."
     },
     "purchased_at": {
       "type": "string",

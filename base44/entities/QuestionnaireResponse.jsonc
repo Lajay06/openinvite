@@ -4,20 +4,20 @@
   "properties": {
     "questionnaire_id_hash": {
       "type": "string",
-      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, questionnaire_id) — read:null means this entity is listable unscoped by anyone with any API token, so the plaintext Questionnaire.id never lives here. Server endpoints compute the same deterministic hash to filter (api/_lib/questionnaireCrypto.js hashId)."
+      "description": "HMAC-SHA256(APP_HASH_KEY, questionnaire_id) \u2014 read:null means this entity is listable unscoped by anyone with any API token, so the plaintext Questionnaire.id never lives here. Server endpoints compute the same deterministic hash to filter (api/_lib/questionnaireCrypto.js hashId)."
     },
     "guest_id_hash": {
       "type": "string",
-      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, guest.id) — same reasoning as questionnaire_id_hash. Never the raw Guest.id."
+      "description": "HMAC-SHA256(APP_HASH_KEY, guest.id) \u2014 same reasoning as questionnaire_id_hash. Never the raw Guest.id."
     },
     "encrypted_answers": {
       "type": "string",
-      "description": "AES-256-GCM ciphertext (base64, iv+authTag+ciphertext) of {guest_name, answers, submitted_at} — key derived from BASE44_ADMIN_KEY. Decryptable only server-side; an unscoped list of this entity yields opaque blobs, never plaintext answers."
+      "description": "AES-256-GCM ciphertext (base64, iv+authTag+ciphertext) of {guest_name, answers, submitted_at} \u2014 key derived from APP_ENC_KEY. Decryptable only server-side; an unscoped list of this entity yields opaque blobs, never plaintext answers."
     },
     "submitted_at": {
       "type": "string",
       "format": "date-time",
-      "description": "Plaintext timestamp — not sensitive on its own, kept outside the ciphertext so latest-wins dedup (append-only, mirrors rsvpAggregation.js) doesn't require decrypting every row just to sort them."
+      "description": "Plaintext timestamp \u2014 not sensitive on its own, kept outside the ciphertext so latest-wins dedup (append-only, mirrors rsvpAggregation.js) doesn't require decrypting every row just to sort them."
     },
     "is_test": {
       "type": "boolean",

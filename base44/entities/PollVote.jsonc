@@ -16,7 +16,7 @@
     },
     "guest_identifier": {
       "type": "string",
-      "description": "HMAC-SHA256 digest (keyed with BASE44_ADMIN_KEY, computed server-side, never the raw value) of: the Guest.id for the RSVP-token-scoped flow (rsvp-poll-vote.js), or a client-generated anonymous id for the fully-anonymous flow (wedding-poll-vote.js). Used only to keep each voter's latest vote when aggregating counts (group by poll_id+guest_identifier, keep latest created_date) — never reversible to a real identity, never an auth mechanism."
+      "description": "HMAC-SHA256 digest (keyed with APP_HASH_KEY, computed server-side, never the raw value) of: the Guest.id for the RSVP-token-scoped flow (rsvp-poll-vote.js), or a client-generated anonymous id for the fully-anonymous flow (wedding-poll-vote.js). Used only to keep each voter's latest vote when aggregating counts (group by poll_id+guest_identifier, keep latest created_date) \u2014 never reversible to a real identity, never an auth mechanism."
     },
     "is_test": {
       "type": "boolean",

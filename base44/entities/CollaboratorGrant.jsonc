@@ -4,15 +4,15 @@
   "properties": {
     "owner_user_id_hash": {
       "type": "string",
-      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, owner's real Base44 User.id). Collaborator's own RLS stays owner-scoped and untouched \u2014 the admin key can never read/write it, so enforcement can't go through that record at all. This entity exists purely so admin-key-backed endpoints can resolve 'does X have permission on Y's wedding' without ever touching Collaborator. Hashed (not the raw id) because read:null makes this entity listable by anyone with any API token \u2014 an attacker would need BASE44_ADMIN_KEY itself to compute a matching hash for a chosen id, which they don't have, so a forged row can never target a real owner/collaborator pair."
+      "description": "HMAC-SHA256(COLLAB_HASH_KEY, owner's real Base44 User.id). Collaborator's own RLS stays owner-scoped and untouched \u2014 the admin key can never read/write it, so enforcement can't go through that record at all. This entity exists purely so admin-key-backed endpoints can resolve 'does X have permission on Y's wedding' without ever touching Collaborator. Hashed (not the raw id) because read:null makes this entity listable by anyone with any API token \u2014 an attacker would need COLLAB_HASH_KEY itself to compute a matching hash for a chosen id, which they don't have, so a forged row can never target a real owner/collaborator pair."
     },
     "collaborator_user_id_hash": {
       "type": "string",
-      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, collaborator's real Base44 User.id) \u2014 same reasoning as owner_user_id_hash."
+      "description": "HMAC-SHA256(COLLAB_HASH_KEY, collaborator's real Base44 User.id) \u2014 same reasoning as owner_user_id_hash."
     },
     "collaborator_email_hash": {
       "type": "string",
-      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, invited email, lowercased) \u2014 lets the owner's own dashboard (using its own bearer token, which CAN read/write its own Collaborator rows) reconcile a pending invite's email against an accepted grant without needing the collaborator's user id in advance."
+      "description": "HMAC-SHA256(COLLAB_HASH_KEY, invited email, lowercased) \u2014 lets the owner's own dashboard (using its own bearer token, which CAN read/write its own Collaborator rows) reconcile a pending invite's email against an accepted grant without needing the collaborator's user id in advance."
     },
     "event_type": {
       "type": "string",
