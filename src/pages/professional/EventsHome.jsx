@@ -10,7 +10,7 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertTriangle } from 'lucide-react';
 import { useProStore, CURRENT } from '@/lib/professionalStore';
-import { activeEvents, daysToGo, daysToGoText, shortDate, monthKey, monthLabel, findClashes, eventSummary } from '@/lib/professionalEvents';
+import { activeEvents, daysToGo, daysToGoText, shortDate, monthKey, monthLabel, findClashes, eventSummary, byEventDate } from '@/lib/professionalEvents';
 import { visibleEvents, can } from '@/lib/professionalAccess';
 import { ROUTES } from '@/lib/professionalBrand';
 import { money } from '@/lib/professionalMoney';
@@ -51,7 +51,7 @@ export default function EventsHome() {
     .sort((a, b) => {
       if (sort === 'couple') return a.couple_names.localeCompare(b.couple_names);
       if (sort === 'overdue') return b.sum.overdue - a.sum.overdue;
-      return String(a.event_date || '9999').localeCompare(String(b.event_date || '9999'));
+      return byEventDate(a, b);
     });
 
   const name = (id) => members.find((m) => m.id === id)?.name || '';

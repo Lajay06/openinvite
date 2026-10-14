@@ -5,15 +5,19 @@
  * goals/2026-10-14-professional.md, What a professional gets, 1 and 2.
  */
 import { isPastArchiveDate } from './professionalPlans.js';
+import { compareDayThenTime } from './scheduleOrder.js';
 
 const DAY = 86400000;
 const utcDay = (d) => { const x = new Date(d); return Date.UTC(x.getUTCFullYear(), x.getUTCMonth(), x.getUTCDate()); };
+
+/** Events by date, undated last: the one ordering rule, scheduleOrder.js. */
+export const byEventDate = (a, b) => compareDayThenTime(a.event_date, null, b.event_date, null);
 
 export function activeEvents(events, now = new Date()) {
   return (events || [])
     .filter((e) => e.status !== 'archived' && !isPastArchiveDate(e.event_date, now))
     .slice()
-    .sort((a, b) => String(a.event_date || '9999').localeCompare(String(b.event_date || '9999')));
+    .sort(byEventDate);
 }
 
 export function daysToGo(date, now = new Date()) {
