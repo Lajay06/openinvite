@@ -7,7 +7,9 @@ import { collaboratorPageLabels, collaboratorClosingCopy } from '@/lib/collabora
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-const PAGE_LABEL_STYLE = { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#0A0A0A', fontFamily: PJS, padding: '6px 0' };
+// One page per row at every width (owner, 2026-10-13): a block-level flex row,
+// never inline, with a clear gap between the eye icon and its label.
+const PAGE_LABEL_STYLE = { display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#0A0A0A', fontFamily: PJS, padding: '6px 0' };
 
 export default function CollaboratorAccept() {
   const { token } = useParams();
@@ -84,7 +86,6 @@ export default function CollaboratorAccept() {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAFAFA', padding: 24 }}>
         <div style={{ textAlign: 'center', maxWidth: 400 }}>
-          <p style={{ fontSize: 13, fontWeight: 700, color: '#E03553', letterSpacing: '0.1em', marginBottom: 12, fontFamily: PJS }}>invite not found</p>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', marginBottom: 12, letterSpacing: '-0.02em', fontFamily: PJS }}>This invite has expired or is invalid</h1>
           <p style={{ fontSize: 14, color: 'rgba(10,10,10,0.6)', lineHeight: 1.6, fontFamily: PJS }}>Please ask the couple to send you a new invite.</p>
         </div>
@@ -102,7 +103,6 @@ export default function CollaboratorAccept() {
         <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(224,53,83,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
           <Users size={22} style={{ color: '#E03553' }} />
         </div>
-        <p style={{ fontSize: 11, fontWeight: 700, color: '#E03553', letterSpacing: '0.1em', marginBottom: 10, fontFamily: PJS }}>you're invited to collaborate</p>
         <h1 style={{ fontSize: 22, fontWeight: 700, color: '#0A0A0A', letterSpacing: '-0.02em', lineHeight: 1.3, marginBottom: 16, fontFamily: PJS }}>
           {invite.coupleNames ? `${invite.coupleNames} would love your help planning their wedding` : "You've been invited to help plan a wedding"}
         </h1>
