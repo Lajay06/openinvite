@@ -12,7 +12,7 @@
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { pass, fail } from './_shared.mjs';
+import { pass, fail, stripComments } from './_shared.mjs';
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const DIRS = ['src/pages/professional', 'src/components/professional'];
@@ -25,7 +25,6 @@ const walk = (dir, out = []) => {
   }
   return out;
 };
-const stripComments = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
 
 export const RULES = [
   { name: 'no letter-spacing', re: /letterSpacing|letter-spacing|\btracking-/ },
@@ -47,7 +46,7 @@ export function runProfessionalShell() {
   const files = DIRS.flatMap((d) => walk(join(ROOT, d)));
   check('professional shell: the Professional folders exist and hold screens', files.length >= 10, `${files.length} files`);
   for (const rule of RULES) {
-    const hits = files.filter((f) => rule.re.test(stripComments(readFileSync(f, 'utf8')))).map((f) => relative(ROOT, f));
+    const hits = files.filter((f) => rule.re.test(stripComments(readFileSync(f, 'utf8'), { trailing: true }))).map((f) => relative(ROOT, f));
     check(`professional shell: ${rule.name}`, hits.length === 0, hits.join(', ') || `${files.length} files clean`);
   }
 
