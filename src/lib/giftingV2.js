@@ -147,6 +147,25 @@ export const COPY = {
   },
 };
 
+/**
+ * The welcome a gift claimer gets after the claim, instead of the trial
+ * welcome (owner's copy, 2026-10-14). {Plan} is Pro or Ultra; {name} is a
+ * first name, and with none the heading is headingBare. The preheader and
+ * footer are the lane's, in the code email's register.
+ */
+export const GIFT_WELCOME = {
+  subject: 'Your Openinvite {Plan} is ready',
+  heading: 'Welcome, {name}.',
+  headingBare: 'Welcome.',
+  body: {
+    ultra: "{giver} gifted you Openinvite Ultra, and it's all switched on. Every guest, every reply, every table, the budget and the Guest Suite, for 24 months. Nothing to pay.",
+    pro: "{giver} gifted you Openinvite Pro, and it's all switched on. The whole planner: every guest, every reply, every table, the budget, for 24 months. Nothing to pay.",
+  },
+  button: 'Go to my dashboard',
+  preheader: "It's all switched on.",
+  footer: "You're getting this because you opened a gift on Openinvite. Openinvite, Australia.",
+};
+
 /** The couple's email, verbatim. */
 export const REVEAL = {
   subject: '{giver} has given you Openinvite {Plan}',

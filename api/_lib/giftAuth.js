@@ -11,19 +11,24 @@
  * same construction as api/_lib/questionnaireCrypto.js, reused verbatim
  * rather than reinvented.
  *
- * Key is derived from BASE44_ADMIN_KEY (server-only env var, never bundled
- * to the browser) via SHA-256 to get a fixed 32-byte AES-256-GCM key.
+ * KEYS COME FROM api/_lib/appKeys.js, NEVER FROM A CREDENTIAL. APP_HASH_KEY
+ * signs the digests, APP_ENC_KEY keys the cipher, both read per call, exactly
+ * as the v2 path does (api/_lib/giftCrypto.js, api/_lib/giftTokens.js).
+ *
+ * This module read BASE44_ADMIN_KEY until 2026-10-14. That is a bearer
+ * credential, so the rotation of 2026-10-13 silently orphaned every digest
+ * and sealed every ciphertext it had written. There is no dual-key read path
+ * here because there is nothing to read: a production count on 2026-10-14
+ * found zero v1 PlanGift rows (every row carries version 2), so the swap has
+ * no compatibility surface. The absence is measured, not assumed.
  */
 
 import crypto from 'crypto';
-
-const ADMIN_KEY = process.env.BASE44_ADMIN_KEY || '';
-const ENC_KEY = crypto.createHash('sha256').update(ADMIN_KEY).digest();
+import { hmacHex, encKey } from './appKeys.js';
 
 /** One-way HMAC-SHA256 digest, same construction as questionnaireCrypto.js/pollAuth.js. */
 export function hashId(rawValue) {
-  if (!rawValue) return null;
-  return crypto.createHmac('sha256', ADMIN_KEY).update(String(rawValue)).digest('hex');
+  return hmacHex(rawValue);
 }
 
 /**
@@ -33,7 +38,7 @@ export function hashId(rawValue) {
 export function encryptString(plaintext) {
   if (plaintext == null) return null;
   const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv('aes-256-gcm', ENC_KEY, iv);
+  const cipher = crypto.createCipheriv('aes-256-gcm', encKey(), iv);
   const ciphertext = Buffer.concat([cipher.update(String(plaintext), 'utf8'), cipher.final()]);
   const authTag = cipher.getAuthTag();
   return Buffer.concat([iv, authTag, ciphertext]).toString('base64');
@@ -50,7 +55,7 @@ export function decryptString(blob) {
   const iv = buf.subarray(0, 12);
   const authTag = buf.subarray(12, 28);
   const ciphertext = buf.subarray(28);
-  const decipher = crypto.createDecipheriv('aes-256-gcm', ENC_KEY, iv);
+  const decipher = crypto.createDecipheriv('aes-256-gcm', encKey(), iv);
   decipher.setAuthTag(authTag);
   const plaintext = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
   return plaintext.toString('utf8');

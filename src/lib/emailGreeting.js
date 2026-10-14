@@ -41,16 +41,47 @@ const LOOKS_LIKE_EMAIL = /^\S+@\S+$/;
  * @param {string|null|undefined} fullName as stored on the User record
  * @returns {string|null}
  */
-export function firstNameOrNull(fullName) {
+/**
+ * A name shape: letters, and the punctuation real names carry. No digits, no
+ * dots, no plus tags. This is what separates "isla" from "la.jay06" when both
+ * happen to be the local part of the address.
+ */
+const LOOKS_LIKE_A_NAME = /^[A-Za-z][A-Za-z'\u2019-]*$/;
+
+/** The part before the @, lowercased. Null when there is no address to read. */
+function localPartOf(email) {
+  const at = String(email ?? '').indexOf('@');
+  return at > 0 ? String(email).slice(0, at).trim().toLowerCase() : null;
+}
+
+export function firstNameOrNull(fullName, email) {
   const raw = String(fullName ?? '').trim();
   if (!raw) return null;
-  // ONE CHECK, ON THE WORD ACTUALLY USED. There were two — this and the same
-  // test against the untrimmed whole field — and a planted failure showed the
-  // first one was dead: every input it would have caught is caught here as
-  // well, because the address IS the first word. A line no plant can make
-  // matter is a line that reads as protection and is not.
+
+  // AN ADDRESS ANYWHERE IN THE FIELD DISQUALIFIES IT, not just in the first
+  // word. The check used to read the first word alone, which was enough while
+  // the only known shape was a full_name that WAS the address. "Smith
+  // la.jay06@gmail.com" got through it and greeted as Smith, which is a name
+  // the product never knew.
+  if (raw.includes('@')) return null;
+
   const first = raw.split(/\s+/)[0];
   if (!first || LOOKS_LIKE_EMAIL.test(first)) return null;
+
+  // THE LOCAL PART WEARING A NAME'S CLOTHES. Base44 sometimes stores the part
+  // before the @ as full_name, so the field holds no address and still is one:
+  // "la.jay06" reads as a name to every check above and is the database spoken
+  // out loud.
+  //
+  // The equality test alone would be too eager, and the owner said so: a
+  // person actually called Isla at isla@ matches it exactly. So the shape
+  // decides. A local part that reads as a plain word is allowed to be a name,
+  // because it probably is one and the cost of being wrong is a correct
+  // greeting to someone with a tidy address. One carrying dots, digits or a
+  // plus tag is not a name anyone chose, and it is dropped.
+  const local = localPartOf(email);
+  if (local && raw.toLowerCase() === local && !LOOKS_LIKE_A_NAME.test(raw)) return null;
+
   return first;
 }
 
@@ -62,8 +93,10 @@ export function firstNameOrNull(fullName) {
  *                          template so the nameless form can drop it cleanly
  * @param {string} bare     what to say when there is no name, e.g. "Welcome."
  * @param {string|null|undefined} fullName
+ * @param {string|null|undefined} email the address on the same record, so a
+ *                 full_name that is only its local part can be recognized
  */
-export function greeting(template, bare, fullName) {
-  const first = firstNameOrNull(fullName);
+export function greeting(template, bare, fullName, email) {
+  const first = firstNameOrNull(fullName, email);
   return first ? template.replace('{name}', first) : bare;
 }
