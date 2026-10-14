@@ -637,7 +637,7 @@ export default function SendInvitesModal({
       // reason those had no field was that none existed, not that they did not
       // count.
       //
-      // to_hash, NOT the address: src/lib/sendHistory.js explains why, and an
+      // type and sent_at only: src/lib/sendHistory.js explains why there is no
       // address that cannot be hashed yields '' rather than the address
       // itself, so a missing hash is a missing answer and never a leak.
       // sentGuests, NOT withTokens: a history entry for a message nobody was
