@@ -15,6 +15,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { ASSET } from '@/components/public/OpeninviteLogo';
 import { PRODUCT_SHORT, ROUTES } from '@/lib/professionalBrand';
 import EventSwitcher from './EventSwitcher';
+import ProAva from './ProAva';
 import { PRO, PJS } from './proTheme';
 import { TYPE } from '@/styles/typeScale';
 
@@ -118,6 +119,7 @@ export default function ProShell({ children, notice = null }) {
         {notice}
         <div style={{ maxWidth: dayOf ? 520 : undefined, margin: dayOf ? '0 auto' : undefined }}>{children}</div>
       </main>
+      <ProAva />
     </div>
   );
 }

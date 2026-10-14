@@ -17,6 +17,7 @@ import { money } from '@/lib/professionalMoney';
 import { copyText } from '@/lib/copyToClipboard';
 import { ProTable, Pill, Field, ProEmpty } from '../ProPage';
 import VendorDialog from '../VendorDialog';
+import { ProAvaButton } from '../ProAva';
 import { downloadCsv, fileSlug } from '../proExport';
 import { s, PRO } from '../proTheme';
 import { TYPE } from '@/styles/typeScale';
@@ -96,6 +97,7 @@ export default function VendorsTab({ event, me, readOnly }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+        {rows.length > 0 && <ProAvaButton label="Ask Ava to draft the vendor emails" prompt="vendor" eventId={event.id} />}
         <button type="button" style={s.btnSecondary} onClick={csv}>CSV</button>
         {editable && <button type="button" style={s.btnPrimary} onClick={() => setBooking(true)}>Book a vendor</button>}
       </div>

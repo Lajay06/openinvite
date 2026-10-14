@@ -19,6 +19,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { FilterPill } from '@/components/shared/TableToolbar';
 import { ProPage, ProTable, ProEmpty, Pill } from '@/components/professional/ProPage';
 import NewEventDialog from '@/components/professional/NewEventDialog';
+import { ProAvaButton } from '@/components/professional/ProAva';
 import { PRO, s } from '@/components/professional/proTheme';
 import { TYPE } from '@/styles/typeScale';
 
@@ -79,7 +80,12 @@ export default function EventsHome() {
     <ProPage
       title="Events"
       subtitle={`${all.length} active`}
-      actions={can(me, 'workspace.events.create') && <button type="button" style={s.btnPrimary} onClick={() => setCreating(true)}>New event</button>}
+      actions={(
+        <>
+          <ProAvaButton label="Ask Ava what's due" prompt="week" />
+          {can(me, 'workspace.events.create') && <button type="button" style={s.btnPrimary} onClick={() => setCreating(true)}>New event</button>}
+        </>
+      )}
       toolbar={(
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', padding: mobile ? '12px 16px' : '12px 32px', background: '#FFFFFF', borderBottom: `1px solid ${PRO.border}` }}>
           <span style={s.label}>Planner</span>
