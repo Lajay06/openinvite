@@ -48,6 +48,8 @@ export default function TemplatesPage() {
     e.preventDefault();
     const event = events.find((x) => x.id === form.event_id);
     if (!event) return;
+    // A budget template copies the event's money; it needs money access on that event.
+    if (form.kind === 'budget' && !can(me, 'money.view', event)) { setSaved(''); return; }
     const label = TEMPLATE_KINDS.find((k) => k.key === form.kind)?.label;
     const name = form.name.trim() || `${event.couple_names}, ${label.toLowerCase()}`;
     create('ProTemplate', { workspace_id: CURRENT.workspaceId, kind: form.kind, name, body: bodyFrom(form.kind, event, store), is_test: true });
@@ -59,7 +61,7 @@ export default function TemplatesPage() {
     <ProPage title="Templates" subtitle={`${all.length} shown`}>
       {editable && (
         <form onSubmit={save} style={{ ...s.card, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 12, alignItems: 'end', marginBottom: 16 }}>
-          <Field label="Save the"><select style={s.input} value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })}>{TEMPLATE_KINDS.map((k) => <option key={k.key} value={k.key}>{k.label.toLowerCase()}</option>)}</select></Field>
+          <Field label="Save the"><select style={s.input} value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })}>{TEMPLATE_KINDS.filter((k) => k.key !== 'budget' || can(me, 'money.view', events.find((x) => x.id === form.event_id))).map((k) => <option key={k.key} value={k.key}>{k.label.toLowerCase()}</option>)}</select></Field>
           <Field label="From"><select style={s.input} value={form.event_id} onChange={(e) => setForm({ ...form, event_id: e.target.value })}>{events.map((ev) => <option key={ev.id} value={ev.id}>{ev.couple_names}</option>)}</select></Field>
           <Field label="Name it"><input style={s.input} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Barn wedding, full day" /></Field>
           <button type="submit" style={s.btnPrimary}>Save as a template</button>
