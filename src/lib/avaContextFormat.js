@@ -18,6 +18,7 @@ import { tallyEventsForGuests, householdCountLine } from './eventTallies.js';
 import { coupleDisplayName } from './coupleNames.js';
 import { daysUntilWedding, countdownForPrompt } from './weddingCountdown.js';
 import { deriveSeason } from './weddingSeason.js';
+import { publishState, PUBLISH_STATE } from './publishState.js';
 
 /**
  * THE FORMATTING, SPLIT OUT SO IT CAN BE TESTED.
@@ -33,6 +34,29 @@ import { deriveSeason } from './weddingSeason.js';
  * @param {object} o
  * @param {string[]} o.unavailable labels of stores that failed to load (5.3)
  */
+/**
+ * WHAT AVA IS TOLD ABOUT THE SITE, from the one rule that decides it.
+ *
+ * This was written inline here: `websiteEnabled && slug` for published, then
+ * `slug` alone for reserved, then nothing. That is exactly publishState()'s
+ * three states, restated by hand, which is the copy the owner ruled out on
+ * 2026-10-13 when the send modal and the send endpoint adopted the module.
+ * This one was missed then because nobody was looking in Ava's context.
+ *
+ * A fourth copy is worse here than in the UI: a wrong answer does not look
+ * wrong, it gets spoken to the couple as fact.
+ *
+ * The sentences are Ava's own and deliberately unchanged. What moved is where
+ * the branch comes from.
+ */
+function websiteLine(wd) {
+  switch (publishState(wd)) {
+    case PUBLISH_STATE.LIVE: return `published at /w/${wd.slug}`;
+    case PUBLISH_STATE.HIDDEN: return `not published yet (address reserved: /w/${wd.slug})`;
+    default: return 'not published, no address yet';
+  }
+}
+
 export function formatWeddingContext({ guests = [], budget = [], vendors = [], schedule = [], todos = [], wd = {}, user = {}, unavailable = [] }) {
   const theme       = wd.theme || {};
   const expectedCount    = wd.guestCount ? String(wd.guestCount) : '';
@@ -314,7 +338,7 @@ ${openTodos.filter(t => !overdue.includes(t)).slice(0, 25).map(t => '  ' + todoL
 SCHEDULE (${schedule.length}):
 ${scheduleLines.join('\n') || 'No schedule items yet'}
 
-WEBSITE: ${wd.websiteEnabled && wd.slug ? `published at /w/${wd.slug}` : wd.slug ? `not published yet (address reserved: /w/${wd.slug})` : 'not published, no address yet'}
+WEBSITE: ${websiteLine(wd)}
 ${unavailable.length ? `\nCANNOT BE SEEN RIGHT NOW: ${unavailable.join(', ')}. Say so plainly if the couple asks about any of these, and never answer as though the missing part were empty or zero. This is a loading failure on our side, not a fact about their wedding.` : ''}`;
 
   return ctx.trim();
