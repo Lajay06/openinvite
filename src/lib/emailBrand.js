@@ -127,9 +127,18 @@ export function emailFooterRow(footerHtml) {
 }
 
 /**
- * Small muted "Powered by openinvite" line for guest-facing emails, which
- * omit the full brand header so the couple's names stay the visual focus.
- * Pass into emailFooterRow() alongside the email's own footer copy.
+ * Small muted "Powered by Openinvite" line.
+ *
+ * NOTHING CALLS THIS as of 2026-10-14, and the reason is worth keeping rather
+ * than the function being quietly deleted. It existed for guest-facing emails,
+ * which omitted the full brand header so the couple's names stayed the visual
+ * focus; guest-reply was the last of those, and the owner ruled that every
+ * brand email carries the lockup. With a header at the top, this said the same
+ * thing again in 11px at the bottom.
+ *
+ * Left in place, uncalled, because the pattern may return for a surface that
+ * genuinely should not lead with our logo. A caller must pass it into
+ * emailFooterRow() alongside that email's own footer copy.
  */
 export function poweredByRow() {
   return `
@@ -154,9 +163,9 @@ export function poweredByRow() {
  *   — bodyRowsHtml is every `<tr>` between the header and the footer (the
  *   footer is not included automatically — call emailFooterRow() and
  *   append it yourself, since footer copy varies per email).
- *   showHeader defaults to true; set false for guest-facing emails (the
- *   couple's names should be the focus, not the Openinvite brand) — pair
- *   with poweredByRow() in the footer instead.
+ *   showHeader defaults to true and every brand email now leaves it there
+ *   (owner, 2026-10-14). It used to be set false for guest-facing emails so
+ *   the couple's names led; guest-reply was the last to do that.
  *   width is the card's max width; 560 for every brand email so far, 600
  *   for the gift emails (gifting v2), whose layout is drawn at 600.
  *   preheader, when given, is the inbox-list line: hidden in the open email,

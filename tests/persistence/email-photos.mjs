@@ -113,6 +113,16 @@ export async function runEmailPhotos() {
     const html = await render();
     ok(`  ${key}: the header carries the full lockup`, html.includes(LOCKUP), 'lockup');
   }
+  // GUEST-REPLY SPECIFICALLY: the lockup at the top and no small mark at the
+  // bottom. It carried poweredByRow() as the stand-in for the header it did not
+  // have, and keeping both would have said Openinvite twice in one email.
+  const reply = await (PLACEMENTS.find(([k]) => k === 'guestReply')[2])();
+  ok('  guest-reply has the lockup and no Powered by mark',
+     reply.includes(LOCKUP) && !/Powered by/i.test(reply),
+     'lockup, no powered-by');
+  ok('    and no 11px mark image is left behind',
+     !/openinvite-icon-mark/.test(reply), 'no mark image');
+
   ok('  and the mark alone is in no header', EMAIL_LOGO_WIDTH === 160 && EMAIL_LOGO_HEIGHT === 37, `${EMAIL_LOGO_WIDTH}x${EMAIL_LOGO_HEIGHT}`);
 
   // ── AVA'S ICON IS A PNG, NOT CSS ────────────────────────────────────────

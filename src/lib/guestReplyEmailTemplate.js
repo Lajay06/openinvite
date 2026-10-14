@@ -17,7 +17,7 @@
  * the resolution that moved, not the shape.
  */
 
-import { emailShell, emailFooterRow, poweredByRow, escapeHtml, EMAIL_FONT as FONT, EMAIL_ACCENT as ACCENT, EMAIL_BLACK as BLACK } from './emailBrand.js';
+import { emailShell, emailFooterRow, escapeHtml, EMAIL_FONT as FONT, EMAIL_ACCENT as ACCENT, EMAIL_BLACK as BLACK } from './emailBrand.js';
 import { EMAIL_PHOTOS } from './emailPhotos.js';
 
 function nl2br(str) {
@@ -67,8 +67,7 @@ export function renderGuestReplyEmail({ guestName, coupleNames, originalMessage,
 
 ${originalHtml}
           <tr><td style="padding:24px 0 0;"></td></tr>
-${emailFooterRow(`This is a reply to the note you sent ${escapeHtml(couple)} from their wedding site. Replying to this email goes straight to them.`)}
-${poweredByRow()}`;
+${emailFooterRow(`This is a reply to the note you sent ${escapeHtml(couple)} from their wedding site. Replying to this email goes straight to them.`)}`;
 
   // THE HEADER IS ON, like every other brand email. Owner ruling 2026-10-14.
   //
@@ -78,8 +77,8 @@ ${poweredByRow()}`;
   // ruling is that every brand email carries the full logo, so the header goes
   // on here too.
   //
-  // poweredByRow() is left in the footer. It was the stand-in for a header that
-  // now exists, so the lockup and the small mark both appear; that is worth a
-  // look, but removing it is a separate call and not this one.
+  // poweredByRow() is GONE from the footer, same ruling. It was the stand-in
+  // for a header that now exists, so keeping it meant the lockup at the top and
+  // an 11px mark at the bottom saying the same thing twice.
   return { subject, html: emailShell({ title: subject, bodyRowsHtml, photo: EMAIL_PHOTOS.guestReply, showHeader: true }) };
 }
