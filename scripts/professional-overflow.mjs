@@ -46,7 +46,7 @@ for (const width of WIDTHS) {
   const ctx = await browser.newContext({ viewport: { width, height: 900 } });
   const page = await ctx.newPage();
   const origin = new URL(BASE).origin;
-  await page.route('**/*', (r) => (r.request().url().startsWith(origin) || /fonts\.(googleapis|gstatic)\.com|res\.cloudinary\.com/.test(r.request().url()) ? r.continue() : r.abort()));
+  await page.route(() => true, (r) => (r.request().url().startsWith(origin) || /fonts\.(googleapis|gstatic)\.com|res\.cloudinary\.com/.test(r.request().url()) ? r.continue() : r.abort()));
   for (const path of PAGES) {
     await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle' });
     await page.waitForTimeout(300);
