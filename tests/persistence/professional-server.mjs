@@ -63,9 +63,9 @@ export function runProfessionalServer(auth = authorize) {
   const handlers = readdirSync(new URL('api/professional/', ROOT)).filter((f) => f.endsWith('.js'));
   const noFlag = handlers.filter((f) => !/if \(!professionalOnServer\(\)\) return res\.status\(404\)/.test(read(`api/professional/${f}`)));
   check('professional server: every Professional endpoint is a 404 while the flag is off', noFlag.length === 0, noFlag.join(', ') || `${handlers.length} handlers`);
-  const auth = stripComments(read('api/_lib/professionalAuth.js'), { trailing: true });
+  const authSrc = stripComments(read('api/_lib/professionalAuth.js'), { trailing: true });
   const ownFlag = handlers.filter((f) => /VERCEL_ENV|process\.env\.PROFESSIONAL/.test(stripComments(read(`api/professional/${f}`), { trailing: true })));
-  check('professional server: the flag comes from professionalFlag.js alone; no handler or helper decides it', /export \{ professionalOnServer \} from '\.\/professionalFlag\.js';/.test(auth) && !/function professionalOnServer/.test(auth) && ownFlag.length === 0, ownFlag.join(', ') || 'one source');
+  check('professional server: the flag comes from professionalFlag.js alone; no handler or helper decides it', /export \{ professionalOnServer \} from '\.\/professionalFlag\.js';/.test(authSrc) && !/function professionalOnServer/.test(authSrc) && ownFlag.length === 0, ownFlag.join(', ') || 'one source');
   const data = stripComments(read('api/professional/data.js'), { trailing: true });
   const iAuth = data.indexOf('authorize({');
   const iWrite = data.search(/proFn\(op,|proFn\('list'|proFn\('remove'/);
