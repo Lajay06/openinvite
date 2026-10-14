@@ -101,7 +101,7 @@ export const PLAN_NAMES = { pro: 'Pro', ultra: 'Ultra' };
 /** The giver's seven pages, verbatim. */
 export const COPY = {
   plan: {
-    heading: 'Give them the whole thing.',
+    heading: 'Give the gift of a calmer wedding.',
     sub: 'One payment. Theirs for 24 months. Nothing for them to pay, ever.',
     // Owner's review of #994, 2026-10-11: product facts, not marketing. "Ava AI"
     // on first mention, "Ava" after.
@@ -149,11 +149,11 @@ export const COPY = {
 
 /** The couple's email, verbatim. */
 export const REVEAL = {
-  subject: '{giver} has given you Openinvite {Plan}',
+  subject: '{giver} gifted you Openinvite {Plan}',
   preheader: 'Paid for. One tap and it is yours.',
   body: {
-    ultra: '{giver} has given you Openinvite Ultra: every guest, every reply, every table, the budget, the Guest Suite, all of it. Paid for. Nothing for you to pay, now or later.',
-    pro: '{giver} has given you Openinvite Pro: every guest, every table, the budget, the schedule, the to-dos, all of it. Paid for. Nothing for you to pay, now or later.',
+    ultra: '{giver} gifted you Openinvite Ultra: every guest, every reply, every table, the budget, the Guest Suite, all of it. Paid for. Nothing for you to pay, now or later.',
+    pro: '{giver} gifted you Openinvite Pro: every guest, every table, the budget, the schedule, the to-dos, all of it. Paid for. Nothing for you to pay, now or later.',
   },
   button: 'Open your gift',
   under: 'One tap. We will ask for your names and a date, and then it is yours.',

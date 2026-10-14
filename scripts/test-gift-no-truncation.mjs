@@ -14,6 +14,10 @@
  *   - no field's value runs past its box, including a long address typed
  *     into page 2
  *   - the note's summary chip holds the whole note, not a slice of it
+ *   - page 2 at 1440: "and goes to" and an ordinary address share one line,
+ *     every line of the sentence at one size; a long address shrinks on that
+ *     line instead of wrapping (owner ruling 2026-10-14)
+ *   - page 1: every bullet's dot sits on the first line of its text
  *
  * A render guard, because each of these is a computed style or a measured
  * box. Gifting v2 turns on only for a *.vercel.app host
@@ -87,6 +91,29 @@ try {
       if (seen.path !== '/gift' || seen.text < 40) { check(`${w}, ${label}: the gift page renders`, false, `${seen.path}, ${seen.text} chars`); continue; }
       const cuts = await page.evaluate(findCuts);
       check(`${w}, ${label}: no ellipsis, no single-line clamp, no clipped text`, cuts.length === 0, cuts.slice(0, 4).join(' | ') || 'none');
+      if (label === 'page 1') {
+        const dots = await page.evaluate(() => [...document.querySelectorAll('li')].filter((li) => li.firstElementChild?.textContent === '•').map((li) => {
+          const dot = li.firstElementChild.getBoundingClientRect();
+          const text = li.lastElementChild.getClientRects()[0];
+          return { line: li.lastElementChild.textContent.slice(0, 24), off: Math.abs(dot.top - text.top) };
+        }));
+        check(`${w}, ${label}: every bullet's dot sits on its first line`, dots.length > 0 && dots.every((d) => d.off <= 2), dots.filter((d) => d.off > 2).map((d) => `${d.line} ${Math.round(d.off)}px`).join(' | ') || `${dots.length} bullets`);
+      }
+      if (label === 'page 2' && w === 1440) {
+        const row = async (email) => {
+          await page.locator('input[type="email"]').fill(email);
+          await page.waitForTimeout(250);
+          return page.evaluate(() => [...document.querySelectorAll('input.s1-input')].map((i) => {
+            const l = i.parentElement.querySelector('span');
+            return { fs: parseFloat(getComputedStyle(i).fontSize), labelFs: parseFloat(getComputedStyle(l).fontSize), sameRow: Math.abs(i.getBoundingClientRect().top - l.getBoundingClientRect().top) < 20 };
+          }));
+        };
+        const ordinary = await row('la.jay06@gmail.com');
+        check(`${w}, ${label}: "and goes to la.jay06@gmail.com" is one line, the sentence one size`,
+          ordinary[1].sameRow && ordinary.every((f) => f.fs === ordinary[0].labelFs && f.labelFs === ordinary[0].labelFs), JSON.stringify(ordinary[1]));
+        const long = await row('isla.and.theo.featherstonehaugh@example.com');
+        check(`${w}, ${label}: a long address shrinks on its line instead of wrapping`, long[1].sameRow && long[1].fs < long[1].labelFs, JSON.stringify(long[1]));
+      }
       if (label === 'page 2') {
         await page.locator('input[type="email"]').fill('isla.and.theo.featherstonehaugh@example.com');
         await page.waitForTimeout(200);

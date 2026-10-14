@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -25,8 +25,15 @@ const NAMES_LINES = [
  * own when it needs one, and if the value is still wider than the row the
  * type steps down from 32px, never below 12px. Lines without it, which is
  * every onboarding line, are unchanged.
+ *
+ * `size` (optional, default 32, the size onboarding has always used) sets the
+ * whole sentence, labels and fields alike. Gift page 2 sets it smaller (owner
+ * ruling 2026-10-14) so "and goes to" and an ordinary address share one line
+ * at 1440; a `fit` field then stays on its label's row while the row has room
+ * (it wraps below the label on a phone) and steps down from `size` when its
+ * value is longer than the room left.
  */
-export default function OnboardingStep1Names({ onNext, data, lines = NAMES_LINES }) {
+export default function OnboardingStep1Names({ onNext, data, lines = NAMES_LINES, size = 32 }) {
   // SEEDED FROM THE DRAFT, like every other step. This one alone took no
   // `data` prop and started both fields empty, so a couple resuming an
   // unfinished sign-up stepped back to "Hi, my name is" and found their own
@@ -38,16 +45,29 @@ export default function OnboardingStep1Names({ onNext, data, lines = NAMES_LINES
   const [left, setLeft] = useState({});
   const fieldRefs = useRef({});
   const [fitSize, setFitSize] = useState({});
+  // A field measured before the web font arrives, or before a resize, is
+  // measured again after it: the fallback face is narrower, so a value that
+  // fitted in it can be cut in Plus Jakarta Sans.
+  const [, remeasure] = useState(0);
+  const anyFit = lines.some((l) => l.fit);
+  useEffect(() => {
+    if (!anyFit) return undefined;
+    const again = () => remeasure((n) => n + 1);
+    window.addEventListener('resize', again);
+    document.fonts?.addEventListener?.('loadingdone', again);
+    document.fonts?.ready?.then(again);
+    return () => { window.removeEventListener('resize', again); document.fonts?.removeEventListener?.('loadingdone', again); };
+  }, [anyFit]);
   // Steps a `fit` field's type down until its value shows whole.
   useLayoutEffect(() => {
     const next = {};
     for (const l of lines) {
       const el = fieldRefs.current[l.key];
       if (!l.fit || !el) continue;
-      let size = 32;
-      el.style.fontSize = `${size}px`;
-      while (size > 12 && el.scrollWidth > el.clientWidth + 1) { size -= 2; el.style.fontSize = `${size}px`; }
-      next[l.key] = size;
+      let px = size;
+      el.style.fontSize = `${px}px`;
+      while (px > 12 && el.scrollWidth > el.clientWidth + 1) { px -= 1; el.style.fontSize = `${px}px`; }
+      next[l.key] = px;
     }
     setFitSize((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
   });
@@ -67,7 +87,7 @@ export default function OnboardingStep1Names({ onNext, data, lines = NAMES_LINES
   };
 
   const sentenceStyle = {
-    fontSize: 32, fontWeight: 400,
+    fontSize: size, fontWeight: 400,
     color: labelColor, fontFamily: PJS,
     margin: 0, flexShrink: 0,
   };
@@ -83,7 +103,7 @@ export default function OnboardingStep1Names({ onNext, data, lines = NAMES_LINES
     minWidth: 200,
     maxWidth: 300,
     width: '100%',
-    fontSize: 32,
+    fontSize: size,
     fontWeight: 700,
     color: inputColor,
     fontFamily: PJS,
@@ -113,7 +133,7 @@ export default function OnboardingStep1Names({ onNext, data, lines = NAMES_LINES
                 className="s1-input"
                 ref={(el) => { fieldRefs.current[l.key] = el; }}
                 style={l.fit
-                  ? { ...inputStyle(values[l.key], focused === l.key), maxWidth: '100%', flex: `1 1 ${Math.max(values[l.key].length, (l.placeholder || '').length, 8) + 2}ch`, fontSize: fitSize[l.key] || 32 }
+                  ? { ...inputStyle(values[l.key], focused === l.key), minWidth: 0, maxWidth: '100%', flex: '1 1 220px', fontSize: fitSize[l.key] || size }
                   : inputStyle(values[l.key], focused === l.key)}
                 onFocus={() => setFocused(l.key)}
                 onBlur={() => { setFocused(null); if (l.hint) setLeft((s) => ({ ...s, [l.key]: true })); }}

@@ -47,7 +47,7 @@ function withBadges(text) {
 /**
  * The note in its style as LIVE TEXT (owner ruling 2026-10-13: the handwriting
  * note was a raster scaled up, and blurry at 1440 and on retina). Serif is the
- * self-hosted Cormorant Garamond italic, handwriting the self-hosted Caveat
+ * self-hosted Cormorant Garamond upright, handwriting the self-hosted Caveat
  * (src/lib/caveatFont.js), both sharp at any size. The email keeps its
  * Cloudinary image, since Gmail loads no web fonts.
  */
@@ -56,8 +56,10 @@ function withBadges(text) {
 // fontFamily.
 const NOTE_FACE = {
   plain: { '--oi-note-font': PJS, fontSize: 17, lineHeight: 1.6 },
-  serif: { '--oi-note-font': "'Cormorant Garamond', Georgia, serif", fontStyle: 'italic', fontSize: 24, lineHeight: 1.45 },
-  hand: { '--oi-note-font': CAVEAT, fontSize: 28, lineHeight: 1.3 },
+  // Every style at the plain note's size, the serif upright (owner ruling
+  // 2026-10-14), as in the email.
+  serif: { '--oi-note-font': "'Cormorant Garamond', Georgia, serif", fontStyle: 'normal', fontSize: 17, lineHeight: 1.6 },
+  hand: { '--oi-note-font': CAVEAT, fontSize: 17, lineHeight: 1.6 },
 };
 
 export function NoteCard({ note, noteStyle, giver }) {
@@ -66,7 +68,7 @@ export function NoteCard({ note, noteStyle, giver }) {
     if (noteStyle === 'hand') ensureCaveat();
   }, [noteStyle]);
   return (
-    <div data-gift-note-card style={{ background: '#F6F2EC', padding: '24px 28px 26px', margin: '0 0 32px' }}>
+    <div data-gift-note-card style={{ background: '#F5F5F5', padding: '24px 28px 26px', margin: '0 0 32px' }}>
       <p aria-hidden="true" style={{ margin: '0 0 6px', fontSize: 56, lineHeight: 0.8, fontWeight: 700, color: '#E03553', fontFamily: 'Georgia, serif' }}>&ldquo;</p>
       <p data-note-style={noteStyle} className="oi-note-face" style={{ margin: 0, color: NOTE_INK, whiteSpace: 'pre-wrap', ...(NOTE_FACE[noteStyle] || NOTE_FACE.plain) }}>{note}</p>
       <p style={{ margin: '16px 0 0', fontSize: 13, fontVariant: 'small-caps', color: 'rgba(28,25,22,0.75)', fontFamily: PJS }}>{giver}</p>

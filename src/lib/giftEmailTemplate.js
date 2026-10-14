@@ -10,14 +10,14 @@
  *
  * Layout, top to bottom, 600px: a white header with the mark and a dark
  * wordmark; the chosen photo at 6:5; the headline; the body line; the note
- * card (#F6F2EC, 8px radius as the owner specified, a large #E03553 opening
+ * card (the brand gray #F5F5F5, owner ruling 2026-10-14; 8px radius as the owner specified; a large #E03553 opening
  * quote, the note in its style, the giver's name in small caps); the red
  * button; the under line; a 40 by 2 red rule and the descriptor at 13px; the
  * footer.
  *
  * FONTS IN EMAIL: Gmail loads no web fonts. The plain note is live text in
  * Plus Jakarta Sans with Helvetica and Arial behind it. The serif (Cormorant
- * Garamond italic) and handwriting (Caveat) notes are an image from
+ * Garamond, upright) and handwriting (Caveat) notes are an image from
  * Cloudinary's text overlay at 2x, 520px wide, with the full note as alt
  * text (noteImageUrl below).
  */
@@ -27,8 +27,10 @@ import { PLAN_BADGE_LABEL, PLAN_BADGE_EMAIL_IMAGE } from './planBadge.js';
 
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 const NOTE_INK = '1C1916';
-const NOTE_GROUND = 'F6F2EC';
-const NOTE_FONTS = { serif: 'Cormorant%20Garamond_56_italic', hand: 'Caveat_56' };
+const NOTE_GROUND = 'F5F5F5';
+// 34px at 2x shows at 17px, the plain note's size; the serif is upright
+// regular, never italic (owner ruling 2026-10-14).
+const NOTE_FONTS = { serif: 'Cormorant%20Garamond_34', hand: 'Caveat_34' };
 // A base for the text layer: the default photo, shrunk to one pixel and
 // colorized to the card's ground, so the text layer grows the canvas around
 // it. Cloudinary caches each derived note, so the base costs one fetch.
@@ -77,7 +79,7 @@ const preheaderRow = (text) => `
             <td style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#FFFFFF;">${escapeHtml(text)}</td>
           </tr>`;
 
-/** The note card, shared by both emails: warm white, 8px radius, a red opening quote, the giver in small caps. */
+/** The note card, shared by both emails: the brand gray #F5F5F5, 8px radius, a red opening quote, the giver in small caps. */
 function noteCardRow(note, noteStyle, giver) {
   return `
           <tr>

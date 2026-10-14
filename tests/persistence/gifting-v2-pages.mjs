@@ -75,7 +75,7 @@ export async function runGiftingV2Pages() {
   const ultra = tpl.renderGiftReveal({ plan: 'ultra', giver: 'Sam', names: 'Isla and Theo', note: 'A note.', headlineKey: 'for_you' }).html;
   check('  while an Ultra email does name the Guest Suite', /Guest Suite/.test(ultra));
   check('the rendered note styles are Cloudinary text images, 1040 wide, with commas escaped',
-    /l_text:Caveat_56:/.test(tpl.noteImageUrl('a, b', 'hand')) && /l_text:Cormorant%20Garamond_56_italic:/.test(tpl.noteImageUrl('a', 'serif'))
+    /l_text:Caveat_34:/.test(tpl.noteImageUrl('a, b', 'hand')) && /l_text:Cormorant%20Garamond_34:/.test(tpl.noteImageUrl('a', 'serif')) && !/italic/.test(tpl.noteImageUrl('a', 'serif'))
       && tpl.noteImageUrl('a, b', 'hand').includes('a%252C%20b') && /w_1040,c_fit/.test(tpl.noteImageUrl('a', 'serif')) && tpl.noteImageUrl('a', 'plain') === '');
   check('  and carry the full note as alt text', /alt="A note\."/.test(tpl.renderGiftReveal({ note: 'A note.', noteStyle: 'serif' }).html));
 
@@ -126,9 +126,9 @@ export async function runGiftingV2Pages() {
   check('the Fork step\'s two cards are SelectCard, the one the gift flow consumes', (fork.match(/<SelectCard /g) || []).length === 2 && /export function SelectCard\(/.test(fork) && /import \{ SelectCard \}/.test(page));
   check('the theme accordion and its pill are exported, not copied', /export function AccordionSection\(/.test(read('src/components/onboarding/OnboardingStep5WeddingType.jsx')) && /export function Pill\(/.test(read('src/components/onboarding/OnboardingStep5WeddingType.jsx')));
   check('UniverseGridTile is consumed with imageSrc, hideExplore and caption, all optional', /export function UniverseGridTile\(\{[^}]*imageSrc, hideExplore = false, caption = false \}/.test(read('src/components/onboarding/OnboardingStepUniverse.jsx')) && /<UniverseGridTile /.test(page));
-  check('SelectCard and OnboardingStep1Names gained only optional props (wholeCard and padding; lines)',
+  check('SelectCard and OnboardingStep1Names gained only optional props (wholeCard and padding; lines and size)',
     /export function SelectCard\(\{ title, body, children, onSelect, selected, buttonLabel, wholeCard = false, padding \}\)/.test(read('src/components/onboarding/OnboardingStep8Fork.jsx'))
-      && /export default function OnboardingStep1Names\(\{ onNext, data, lines = NAMES_LINES \}\)/.test(read('src/components/onboarding/OnboardingStep1Names.jsx')));
+      && /export default function OnboardingStep1Names\(\{ onNext, data, lines = NAMES_LINES, size = 32 \}\)/.test(read('src/components/onboarding/OnboardingStep1Names.jsx')));
   check('OnboardingCompletion is consumed with heading, body and children, falling back to its own', /heading \?\? \(firstName/.test(read('src/components/onboarding/OnboardingCompletion.jsx')) && /children \?\? </.test(read('src/components/onboarding/OnboardingCompletion.jsx')) && /<OnboardingCompletion /.test(page));
   check('emailShell keeps 560 for every other email', /width = 560 \}/.test(read('src/lib/emailBrand.js')));
 
@@ -140,5 +140,17 @@ export async function runGiftingV2Pages() {
   const said = files.filter((f) => RETIRED.test(read(f)));
   check('nothing in the gift flow uses the retired name for the guest experience', said.length === 0, said.join(', ') || `${files.length} files`);
 
+  // ── owner design ruling 2026-10-14 ──────────────────────────────────────
+  const v2lib = await import('../../src/lib/giftingV2.js');
+  check('page 1 reads "Give the gift of a calmer wedding."', v2lib.COPY.plan?.heading === 'Give the gift of a calmer wedding.' || /heading: 'Give the gift of a calmer wedding\.'/.test(read('src/lib/giftingV2.js')));
+  check('every gift email line says "gifted you", none "has given you"',
+    /\{giver\} gifted you Openinvite \{Plan\}/.test(v2lib.REVEAL.subject) && Object.values(v2lib.REVEAL.body).every((b) => /^\{giver\} gifted you Openinvite /.test(b)) && !/has given you/.test(read('src/lib/giftingV2.js')));
+  const claim = stripComments(read('src/pages/GiftClaim.jsx'));
+  check('the note styles are the plain size and the serif upright: the style pills, the claim page and the email',
+    !/data-style-sample="(hand|serif)"[^>]*fontSize/.test(page) && !/data-style-sample="serif"[^>]*italic/.test(page)
+      && /serif: \{[^}]*fontStyle: 'normal', fontSize: 17/.test(claim) && /hand: \{[^}]*fontSize: 17/.test(claim)
+      && /l_text:Cormorant%20Garamond_34:/.test(tpl.noteImageUrl('a', 'serif')) && /l_text:Caveat_34:/.test(tpl.noteImageUrl('a', 'hand')));
+  check('the note card is the brand gray #F5F5F5, in the email and on the claim page',
+    /background:#F5F5F5/.test(tpl.renderGiftReveal({ note: 'n', noteStyle: 'plain' }).html) && /co_rgb:F5F5F5/.test(tpl.noteImageUrl('a', 'serif')) && /background: '#F5F5F5'/.test(claim) && !/F6F2EC/i.test(read('src/lib/giftEmailTemplate.js') + claim));
   return r;
 }

@@ -198,8 +198,10 @@ export function styleSample(st) {
   // Through the .oi-note-face escape (src/index.css): the global Plus Jakarta
   // Sans lock beats an inline fontFamily, which is why these samples showed in
   // the product face. Color is inherited from the pill.
-  if (st.key === 'hand') return <span data-style-sample="hand" className="oi-note-face" style={{ '--oi-note-font': CAVEAT, fontSize: 19, lineHeight: 1 }}>{st.label}</span>;
-  if (st.key === 'serif') return <span data-style-sample="serif" className="oi-note-face" style={{ '--oi-note-font': "'Cormorant Garamond', Georgia, serif", fontStyle: 'italic', fontSize: 16 }}>{st.label}</span>;
+  // Every style at the Plain label's size, and the serif upright (owner
+  // ruling 2026-10-14).
+  if (st.key === 'hand') return <span data-style-sample="hand" className="oi-note-face" style={{ '--oi-note-font': CAVEAT }}>{st.label}</span>;
+  if (st.key === 'serif') return <span data-style-sample="serif" className="oi-note-face" style={{ '--oi-note-font': "'Cormorant Garamond', Georgia, serif", fontStyle: 'normal' }}>{st.label}</span>;
   return <span>{st.label}</span>;
 }
 
@@ -281,8 +283,9 @@ export default function GiftV2() {
                 <SelectCard key={p} wholeCard padding={24} title={<PlanBadge plan={p} {...BIG_BADGE} />} body={COPY.plan[p]} selected={draft.plan === p} onSelect={() => set({ plan: p })}>
                   <ul data-plan-lines style={{ listStyle: 'none', margin: '-12px 0 16px', padding: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {COPY.plan[`${p}Lines`].map((line) => (
-                      <li key={line} style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#555555', fontSize: 14, fontFamily: PJS }}>
-                        <span style={{ color: '#E03553', fontWeight: 700, fontSize: 14, lineHeight: 1 }}>•</span> {line}
+                      <li key={line} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, color: '#555555', fontSize: 14, lineHeight: '21px', fontFamily: PJS }}>
+                        {/* Top aligned (owner ruling 2026-10-14): the dot shares the first line's height, so it sits on the first line of a bullet that wraps. */}
+                        <span aria-hidden="true" style={{ color: '#E03553', fontWeight: 700, fontSize: 14, lineHeight: '21px', flexShrink: 0 }}>•</span> <span>{line}</span>
                       </li>
                     ))}
                   </ul>
@@ -301,7 +304,9 @@ export default function GiftV2() {
         {s === 2 && (
           <div data-gift-page2>
             <ShellStepChrome showStepCounter stepNum={2} totalSteps={PAGES} showBack onBack={() => go(1)} />
+            {/* 28px, all three lines alike (owner ruling 2026-10-14): "and goes to" and an ordinary address share one line at 1440. */}
             <OnboardingStep1Names
+              size={28}
               data={draft}
               lines={[
                 { key: 'names', text: COPY.who.forLine, placeholder: COPY.who.namesLabel, fit: true },
