@@ -11,9 +11,10 @@
   Written into the app with "Customize application email" only after the owner
   approves the rendered screenshots. Base44 reviews it before sending (up to an
   hour); `authored_status` reads `live` once it is the one sent. It must show
-  the code: `{{code}}` below is checked against the placeholder name in Base44's
-  own copy before the write, and a template without the code is refused
-  (`missing_code`), never sent.
+  the code: `{{otp_code}}` is Base44's own placeholder name, read from the
+  default template Base44 wrote into the app's code at
+  base44/emails/EmailVerification.html (2026-10-14). A template without the
+  code is refused (`missing_code`), never sent.
 
   The design is the retention emails' (api/_lib/retentionEmails.js): ground,
   white card, one full-width photo, the footer over a hairline. The ground and
@@ -73,7 +74,7 @@
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center" style="background:#F5F5F5;padding:28px 16px;">
-                    <div class="code" style="font-family:'Plus Jakarta Sans', Helvetica, Arial, sans-serif;font-size:40px;font-weight:700;letter-spacing:12px;line-height:1.2;color:#0A0A0A;">{{code}}</div>
+                    <div class="code" style="font-family:'Plus Jakarta Sans', Helvetica, Arial, sans-serif;font-size:40px;font-weight:700;letter-spacing:12px;line-height:1.2;color:#0A0A0A;">{{otp_code}}</div>
                   </td>
                 </tr>
               </table>
