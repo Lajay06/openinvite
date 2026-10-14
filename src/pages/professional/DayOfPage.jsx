@@ -15,7 +15,7 @@ import { activeEvents, daysToGo, shortDate, daysToGoText } from '@/lib/professio
 import { fmtTime, fmtDuration } from '@/lib/professionalRunSheet';
 import { nowNextLater, minuteOfDay, KIT_DEFAULT, saveDayOfCopy, readDayOfCopy, readKit, saveKit, dialable } from '@/lib/professionalDayOf';
 import { linkedFeedFor } from '@/lib/professionalFeedClient';
-import { panelFigures } from '@/lib/professionalGuests';
+import { panelFigures, guestHeads } from '@/lib/professionalGuests';
 import { ProPage, ProEmpty } from '@/components/professional/ProPage';
 import { s, PRO, PJS } from '@/components/professional/proTheme';
 import { TYPE } from '@/styles/typeScale';
@@ -113,11 +113,13 @@ export default function DayOfPage() {
         ...vendors.map(({ b, v }) => ({ id: v.id, name: v.company, role: `${b.role || v.role}${v.contact ? `, ${v.contact}` : ''}`, phone: v.phone })),
         ...team.map((m) => ({ id: m.id, name: m.name, role: m.role === 'owner' ? 'Planner' : m.role === 'dayof' ? 'Day-of team' : m.role === 'assistant' ? 'Assistant' : 'Planner', phone: m.phone || '' })),
       ],
-      coming: (totals.coming || 0) + (totals.plus_ones || 0),
+      // The one count (owner ruling 2026-10-14), kept whole for the offline copy.
+      coming: guestHeads(totals).heads ?? 0,
+      comingSub: guestHeads(totals).sub,
     };
   }, [event, store]);
 
-  useEffect(() => { if (event && live && online) saveDayOfCopy(event.id, { rows: live.rows, contacts: live.contacts, coming: live.coming }); }, [event, live, online]);
+  useEffect(() => { if (event && live && online) saveDayOfCopy(event.id, { rows: live.rows, contacts: live.contacts, coming: live.coming, comingSub: live.comingSub }); }, [event, live, online]);
 
   if (!eventId) return <Picker />;
   const copy = !online || !live ? readDayOfCopy(eventId) : null;
@@ -145,8 +147,9 @@ export default function DayOfPage() {
           {!today && <div style={s.secondary}>Not today. Showing the day from the start.</div>}
         </div>
         <div style={{ ...s.card, padding: 12, minWidth: 110 }}>
-          <div style={s.label}>Guests coming</div>
-          <div style={{ fontSize: 22, fontWeight: 700 }}>{data.coming}</div>
+          <div style={s.label}>Guests</div>
+          <div style={{ fontSize: 22, fontWeight: 700 }}>{data.coming} coming</div>
+          {data.comingSub && <div style={s.secondary}>{data.comingSub}</div>}
         </div>
       </div>
       <div role="tablist" aria-label="Day-of" style={{ display: 'flex', borderBottom: `1px solid ${PRO.border}` }}>
