@@ -83,16 +83,36 @@ export async function runEmailPhotos() {
     ok(`  ${key}: the width is the card it sits on`,
        photo.width === cardWidth, `${photo.width} on a ${cardWidth} card`);
 
+    // DECORATIVE, SO SILENT. Owner ruling 2026-10-14: these nine carry no
+    // information the copy does not already carry, so alt="" tells a screen
+    // reader to skip them. A missing alt attribute would not: that is read as
+    // "this might matter", and the reader falls back to the filename.
+    ok(`  ${key}: the alt is empty, because the photo is decorative`,
+       photo.alt === '', JSON.stringify(photo.alt));
+
     ok(`  ${key}: it carries its own height, not a shared one`,
        Number.isInteger(photo.height) && photo.height > 0, String(photo.height));
 
     // RENDERED, NOT JUST DECLARED. The constant can be perfect and the
     // template still not use it.
     const html = await render();
-    const tag = new RegExp(`<img src="${photo.url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}" width="${photo.width}" height="${photo.height}"`);
+    const tag = `<img src="${photo.url}" width="${photo.width}" height="${photo.height}" alt=""`;
     ok(`  ${key}: and the template actually renders it, at that size`,
-       tag.test(html), tag.test(html) ? 'rendered' : 'not found in the html');
+       html.includes(tag), html.includes(tag) ? 'rendered' : 'not found in the html');
   }
+
+  // ── AVA'S ICON IS A PNG, NOT CSS ────────────────────────────────────────
+  //
+  // onboarding-day3 drew it as a div with a linear-gradient and a glyph. Outlook
+  // does not render CSS gradients, so Ava's icon was a blank box there and no
+  // status check could have said so: there was no image to check.
+  const { AVA_ICON } = await import('../../src/lib/emailPhotos.js');
+  const day3 = (await import('../../api/emails/onboarding-day3.js')).onboardingDay3Email({ name: 'Isla', email: 'isla@example.com' });
+  ok('Ava\'s icon is an image, at 48 with a 2x source',
+     day3.includes(`<img src="${AVA_ICON.url}" width="48" height="48" alt=""`),
+     AVA_ICON.url.split('/').pop());
+  ok('  and no email template paints an icon in CSS',
+     !/linear-gradient/.test(day3), 'no gradient');
 
   // ── NO EMAIL IMAGE MAY COME FROM A HOST THAT BLOCKS CROSS-ORIGIN USE ────
   //
