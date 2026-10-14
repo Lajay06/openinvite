@@ -15,6 +15,12 @@
  */
 import { useSyncExternalStore } from 'react';
 
+/**
+ * False until the owner adds the entities and the endpoints are wired. While
+ * false, the app shows the test data and says so on every screen.
+ */
+export const STORE_LIVE = false;
+
 export const COLLECTIONS = [
   'ProWorkspace', 'ProMember', 'ProEvent', 'PlannerLink', 'ProGuest', 'RunSheetRow',
   'VendorContact', 'ProVendorBooking', 'PaymentDue', 'ProTask', 'ProTemplate',
