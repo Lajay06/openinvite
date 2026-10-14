@@ -55,6 +55,7 @@
 
 import { Resend } from 'resend';
 import { onboardingDay1Email } from './emails/onboarding-day1.js';
+import { getTrialStatus } from '../src/lib/trialStatus.js';
 import { checkRateLimit, getClientIp } from './_lib/security.js';
 import { TOO_MANY_TRIES } from './_lib/calmErrors.js';
 
@@ -114,17 +115,48 @@ export default async function handler(req, res) {
     return res.status(401).json({ code: 'UNAUTHORIZED' });
   }
 
+  // A GIFTED ACCOUNT IS NOT ON A TRIAL AND IS NOT WELCOMED AS ONE.
+  //
+  // Owner ruling 2026-10-14. Someone handed a gift gets lane B's gift welcome
+  // instead, so sending this one as well would be two welcomes, one of them
+  // announcing a trial they are not on.
+  //
+  // planSource is a declared User field (base44/entities/User.jsonc, enum
+  // purchase|gift|comp, no default) and api/_lib/giftClaim.js writes "gift" in
+  // the same write that changes the plan. The claim then routes an unfinished
+  // account to /onboarding, which is what calls this route, so the value is
+  // already on the record by the time this runs.
+  //
+  // A CODE, NOT A SENTENCE, and 200 rather than an error: nothing went wrong,
+  // and the only caller is a hook with no person reading it.
+  if (user.planSource === 'gift') {
+    console.log('[on-signup] Gifted account, no trial welcome sent');
+    return res.status(200).json({ sent: false, code: 'GIFT_ACCOUNT' });
+  }
+
   // Use the verified user's email and name as the source of truth
   const verifiedEmail = user.email || email;
   const verifiedName = user.full_name || name || '';
 
+  // THE OPENING LINE FOLLOWS THE ACCOUNT, not the assumption that a new signup
+  // is always on a trial. getTrialStatus is the one definition of that, and it
+  // already answers false for a paid plan.
+  const { trialActive } = getTrialStatus(user);
+
   try {
+    // ONE WELCOME PER ACCOUNT, ENFORCED AT RESEND. This route is not
+    // idempotent by itself and the rate limit is per IP, so two calls from the
+    // same onboarding (a retry, a double submit) sent two emails. The key is
+    // the account, so the second call is answered from the first send.
+    // Same construction as api/cron/send-gift-reveals.js.
     const result = await resend.emails.send({
       from: FROM,
       to: verifiedEmail,
       subject: 'Welcome to Openinvite. Let\'s plan your perfect wedding',
-      html: onboardingDay1Email({ email: verifiedEmail, name: verifiedName }),
-    });
+      html: onboardingDay1Email({
+        email: verifiedEmail, name: verifiedName, onTrial: trialActive, plan: user.plan,
+      }),
+    }, { idempotencyKey: `welcome-${user.id}` });
 
     console.log('[on-signup] Welcome email sent to:', verifiedEmail, '| id:', result.data?.id);
     return res.status(200).json({ sent: true, id: result.data?.id });
