@@ -195,6 +195,37 @@ export async function runGiftClaim() {
         && EDIT.savedResent === 'Saved. We sent it again to the new address with a fresh link, and the old one no longer works.');
     check('the refusal and the landing line are the goal\'s, verbatim',
       CLAIM.moreThanGift === 'You already have Ultra, which is more than this gift. Reply to this email and we will sort it out with {giver}.' && CLAIM.landing === 'A gift from {giver}. {Plan}, paid for, 24 months.');
+
+    // ── the done page's names, by the paid session (owner ruling 2026-10-14) ─
+    {
+      const { encryptPayload } = await import('../../api/_lib/questionnaireCrypto.js');
+      const SID = 'cs_test_a1B2c3D4e5F6g7H8';
+      const giftRow = { id: 'pg1', version: 2, plan: 'pro', stripe_session_id: SID, buyer_name_enc: encryptGiftField('Jaye'), recipient_names_enc: encryptGiftField('Isla and Theo'), recipient_email_enc: encryptGiftField('isla@example.com') };
+      const draftRow = { id: 'dr1', draft_enc: encryptPayload({ giver: 'Jaye', names: 'Mara and Kit', email: 'mk@example.com', plan: 'ultra' }), expires_at: new Date(now.getTime() + 30 * 60 * 1000).toISOString() };
+      const paidFetch = ({ withGift }) => async (url) => {
+        const json = (body, ok = true, status = 200) => ({ ok, status, json: async () => body });
+        if (/PlanGift\?q=/.test(url)) return json(withGift && decodeURIComponent(url).includes(SID) ? [giftRow] : []);
+        if (/GiftDraft\/dr1/.test(url)) return json(draftRow);
+        return json(null, false, 404);
+      };
+      const fromGift = await gc.paidGiftView({ sessionId: SID, draftId: 'dr1', adminKey: 'admin', fetchImpl: paidFetch({ withGift: true }), now });
+      check('the done page\'s names come from the gift the webhook recorded for the session, without the address',
+        fromGift?.giver === 'Jaye' && fromGift.names === 'Isla and Theo' && fromGift.plan === 'pro' && !('email' in fromGift) && !JSON.stringify(fromGift).includes('@'));
+      const fromDraft = await gc.paidGiftView({ sessionId: SID, draftId: 'dr1', adminKey: 'admin', fetchImpl: paidFetch({ withGift: false }), now });
+      check('  before the webhook has run, from the giver\'s draft, still without the address',
+        fromDraft?.giver === 'Jaye' && fromDraft.names === 'Mara and Kit' && !JSON.stringify(fromDraft).includes('@'));
+      check('  nothing for a malformed session id, or for no gift and no draft',
+        (await gc.paidGiftView({ sessionId: 'dr1', draftId: 'dr1', adminKey: 'admin', fetchImpl: paidFetch({ withGift: true }), now })) === null
+          && (await gc.paidGiftView({ sessionId: SID, adminKey: 'admin', fetchImpl: paidFetch({ withGift: false }), now })) === null);
+      const { COPY } = await import('../../src/lib/giftingV2.js');
+      const pageSrc = stripComments(readFileSync(resolve(ROOT, 'src/pages/GiftV2.jsx'), 'utf8'));
+      check('the done page never renders a blank: the plain lines when the names cannot be loaded, and no "arrived in an hour" line',
+        COPY.done.headingPlain === 'That was generous of you.' && COPY.done.bodyPlain === 'Your gift is on its way.' && !('second' in COPY.done)
+          && /doneGiver \? fill\(COPY\.done\.heading, \{ giver: doneGiver \}\) : COPY\.done\.headingPlain/.test(pageSrc) && /doneNames \? fill\(COPY\.done\.body, \{ names: doneNames \}\) : COPY\.done\.bodyPlain/.test(pageSrc));
+      check('the done page copy is the owner\'s, verbatim (2026-10-14)',
+        COPY.done.heading === 'That was generous of you, {giver}.' && COPY.done.body === "Your gift is on its way to {names}. We've sent you a copy too, with their link, in case you'd rather hand it over yourself."
+          && COPY.done.boxTitle === "What they'll get" && COPY.done.box === 'An email with your note. One tap on Open your gift, a quick sign in, and {Plan} is already switched on, ready to plan. Nothing for them to set up or pay.');
+    }
   } finally {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
   }

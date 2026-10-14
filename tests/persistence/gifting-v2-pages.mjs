@@ -50,7 +50,7 @@ export async function runGiftingV2Pages() {
     lib.COPY.plan.heading, lib.COPY.plan.sub, lib.COPY.plan.pro, ...lib.COPY.plan.proLines, lib.COPY.plan.ultra, ...lib.COPY.plan.ultraLines,
     lib.COPY.theirs.heading, lib.COPY.theirs.note, lib.COPY.theirs.headline, lib.COPY.theirs.photo, lib.COPY.theirs.when,
     lib.COPY.when.now.line, lib.COPY.when.date.line, lib.COPY.when.fine,
-    lib.COPY.done.heading, lib.COPY.done.body, lib.COPY.done.box, lib.COPY.done.second,
+    lib.COPY.done.heading, lib.COPY.done.headingPlain, lib.COPY.done.body, lib.COPY.done.bodyPlain, lib.COPY.done.boxTitle, lib.COPY.done.box,
     ...lib.HEADLINES.map((h) => h.text),
     lib.REVEAL.body.ultra, lib.REVEAL.body.pro, lib.REVEAL.under, lib.REVEAL.descriptor.ultra, lib.REVEAL.descriptor.pro, lib.REVEAL.footer,
   ];

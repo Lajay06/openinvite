@@ -47,6 +47,7 @@ import PlanBadge from '@/components/shared/PlanBadge';
 import { renderGiftReveal } from '@/lib/giftEmailTemplate';
 import { resolveCheckoutPriceId, PLAN_PRICES, startGiftV2Checkout } from '@/lib/checkoutSession';
 import { GIFT_TRY_AGAIN, EMAIL_CHECK, isValidGiftEmail, normalizeGiftEmail } from '@/lib/giftInput';
+import { loadPaidGift } from '@/lib/giftLinks';
 import { loadFontFamilies } from '@/lib/selfHostedFonts';
 import { CAVEAT, ensureCaveat } from '@/lib/caveatFont';
 import { color } from '@/styles/tokens';
@@ -219,6 +220,21 @@ export default function GiftV2() {
   const [payError, setPayError] = useState(false);
   // Back from Stripe: the payment went through, so the giver sees the done page.
   useEffect(() => { if (params.get('paid') === '1') setDraft((d) => ({ ...d, step: 4 })); }, [params]);
+  // The done page's names come from the giver's draft in this tab. When it is
+  // not here (Stripe came back in another tab, or to another address), they
+  // load from the server by the paid session (owner ruling 2026-10-14); if
+  // that fails too, the page says the plain lines, never a blank.
+  const [paidGift, setPaidGift] = useState(null);
+  useEffect(() => {
+    if (params.get('paid') !== '1' || (draft.giver.trim() && draft.names.trim())) return;
+    let live = true;
+    loadPaidGift(params.get('session_id'), params.get('draft')).then((g) => { if (live) setPaidGift(g); });
+    return () => { live = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params]);
+  const doneGiver = (draft.giver.trim() || paidGift?.giver || '').trim();
+  const doneNames = (draft.names.trim() || paidGift?.names || '').trim();
+  const donePlan = draft.plan || paidGift?.plan || 'ultra';
   useEffect(() => { loadFontFamilies(['Cormorant Garamond']); ensureCaveat(); }, []);
   useEffect(() => { writeDraft(draft); }, [draft]);
 
@@ -383,13 +399,12 @@ export default function GiftV2() {
         )}
 
         {s === 4 && (
-          <OnboardingCompletion onDone={() => {}} data={{}} heading={fill(COPY.done.heading, vars)} body={fill(COPY.done.body, vars)}>
+          <OnboardingCompletion onDone={() => {}} data={{}} heading={doneGiver ? fill(COPY.done.heading, { giver: doneGiver }) : COPY.done.headingPlain} body={doneNames ? fill(COPY.done.body, { names: doneNames }) : COPY.done.bodyPlain}>
             <div style={{ border: '1px solid rgba(10,10,10,0.18)', padding: 20, margin: '0 0 20px' }}>
               <p style={{ fontSize: 14, fontWeight: 600, color: INK, margin: '0 0 8px', fontFamily: PJS }}>{COPY.done.boxTitle}</p>
-              <p data-done-box style={{ fontSize: 15, lineHeight: 1.6, color: INK, margin: 0, fontFamily: PJS }}>{withPlanBadge(fill(COPY.done.box, { ...vars, plan: null }), plan)}</p>
+              <p data-done-box style={{ fontSize: 15, lineHeight: 1.6, color: INK, margin: 0, fontFamily: PJS }}>{withPlanBadge(fill(COPY.done.box, { ...vars, plan: null }), donePlan)}</p>
             </div>
-            <p style={{ fontSize: 14, lineHeight: 1.6, color: MUTED, margin: '0 0 28px', fontFamily: PJS }}>{COPY.done.second}</p>
-            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginTop: 8 }}>
               <a href="#change" style={{ color: '#E03553', fontWeight: 600, fontSize: 15, fontFamily: PJS }}>{COPY.done.change}</a>
               <button type="button" onClick={() => setDraft({ ...EMPTY })} style={{ background: 'none', border: 'none', padding: 0, color: '#E03553', fontWeight: 600, fontSize: 15, fontFamily: PJS, cursor: 'pointer' }}>{COPY.done.another}</button>
             </div>

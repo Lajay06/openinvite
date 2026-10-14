@@ -152,12 +152,15 @@ export const COPY = {
     tzLine: 'at 9 am where they are ({timezone}, from your browser)',
     fine: 'You pay on Stripe. Your receipt comes from Stripe; everything else comes from us. Refund any time until they open it.',
   },
+  // The owner's copy, 2026-10-14. When the names cannot be loaded, the page
+  // says the two plain lines, never a sentence with a blank in it.
   done: {
     heading: 'That was generous of you, {giver}.',
-    body: 'It is on its way to {email}. We have sent you a copy, with their claim link in case you want to hand it over in person.',
-    boxTitle: 'What happens next',
-    box: '{names} open the email, tap Open your gift, sign in with Google, Apple or email, and they are inside with {Plan} already on. Nothing to type, nothing to pay.',
-    second: 'If it has not arrived in an hour, forward your copy to them; the link works either way.',
+    headingPlain: 'That was generous of you.',
+    body: "Your gift is on its way to {names}. We've sent you a copy too, with their link, in case you'd rather hand it over yourself.",
+    bodyPlain: 'Your gift is on its way.',
+    boxTitle: "What they'll get",
+    box: 'An email with your note. One tap on Open your gift, a quick sign in, and {Plan} is already switched on, ready to plan. Nothing for them to set up or pay.',
     change: 'Change the address or the note',
     another: 'Give another',
   },

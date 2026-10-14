@@ -21,6 +21,9 @@
  *   - page 2 at 390: no field is set below 20px; an address too long for a
  *     whole row at 20px wraps onto lines at 20px, after its @ or a dot where
  *     both lines fit (owner ruling 2026-10-14)
+ *   - the done page names the giver and the couple; opened with no draft in
+ *     the tab and no gift to load, it says its plain lines, never a sentence
+ *     with a blank in it (owner ruling 2026-10-14)
  *   - page 3: the three note style pills look one size, their lowercase
  *     letters measured to within half a pixel of each other
  *   - page 1: every bullet's dot sits on the first line of its text
@@ -54,6 +57,7 @@ const PAGES = [
   ['page 3, first line open', '/gift?sample=1&step=3&section=headline'],
   ['page 3, photo open', '/gift?sample=1&step=3&section=photo'],
   ['page 3, when open', '/gift?sample=1&step=3&section=when'],
+  ['done page', '/gift?sample=1&step=4'],
 ];
 
 /** Everything on the page (not inside the email preview's frame) that cuts text short. */
@@ -172,6 +176,18 @@ try {
         check(`${w}, ${label}: every caption stays in the lower third`, fit.length > 0 && fit.every((r) => r <= 0.334), `${fit.length} tiles, tallest ${Math.round(Math.max(...fit) * 100)}%`);
       }
     }
+    // The done page in a fresh tab: no draft, and the session cannot load.
+    const fresh = await ctx.newPage();
+    await fresh.goto(`${HOST}/gift?paid=1&session_id=cs_test_nothingHere000`, { waitUntil: 'networkidle', timeout: 45000 }).catch(() => {});
+    await fresh.waitForTimeout(800);
+    const plain = await fresh.evaluate(() => document.body.innerText);
+    check(`${w}, done page with nothing to load: the plain lines, no blank`,
+      plain.includes('That was generous of you.') && plain.includes('Your gift is on its way.') && !/of you, \.|on its way to \./.test(plain) && !/arrived in an hour/.test(plain));
+    await fresh.close();
+    await page.goto(`${HOST}/gift?sample=1&step=4`, { waitUntil: 'networkidle', timeout: 45000 }).catch(() => {});
+    await page.waitForTimeout(600);
+    const named = await page.evaluate(() => document.body.innerText);
+    check(`${w}, done page: the giver and the couple named`, named.includes('That was generous of you, Sam.') && named.includes('Your gift is on its way to Isla and Theo.') && named.includes("What they'll get"));
     await ctx.close();
   }
 } finally {
