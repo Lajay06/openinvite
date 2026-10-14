@@ -69,6 +69,21 @@ export const BUILT_IN = [
       ],
     },
   },
+  {
+    id: 'builtin_questionnaire',
+    kind: 'questionnaire',
+    name: 'The couple questionnaire',
+    body: {
+      questions: [
+        { id: 'q_songs', label: 'Songs we must hear', kind: 'long' },
+        { id: 'q_never', label: 'Songs we never want to hear', kind: 'long' },
+        { id: 'q_family', label: 'Family notes we should know about', kind: 'long' },
+        { id: 'q_photos', label: 'Photos we want, and who is in them', kind: 'long' },
+        { id: 'q_speeches', label: 'Who is giving a speech, and in what order', kind: 'long' },
+        { id: 'q_contact', label: 'Who to call on the day if not you', kind: 'short' },
+      ],
+    },
+  },
 ];
 
 /** A task due date for a months-out key, counted back from the event. */
@@ -81,13 +96,14 @@ export function dueDateFor(eventDate, monthsOutKey) {
 }
 
 /**
- * The rows a template adds to a new event. Pure: returns { RunSheetRow: [],
- * ProTask: [], ProCost: [], VendorBookingIds: [] } for the caller to write.
+ * The rows a template adds to a new event. Pure: returns lists keyed by
+ * collection (RunSheetRow, ProTask, ProCost, ProQuestionnaire,
+ * ProVendorBooking) for the caller to write.
  * A task whose due date is already past keeps its date, so it shows as
  * overdue rather than vanishing.
  */
 export function applyTemplate(template, event) {
-  const out = { RunSheetRow: [], ProTask: [], ProCost: [], ProQuestionnaire: [] };
+  const out = { RunSheetRow: [], ProTask: [], ProCost: [], ProQuestionnaire: [], ProVendorBooking: [] };
   if (!template) return out;
   const b = template.body || {};
   if (template.kind === 'runsheet') {
@@ -106,7 +122,10 @@ export function applyTemplate(template, event) {
     (b.lines || []).forEach((l) => out.ProCost.push({ event_id: event.id, kind: l.kind || 'cost', label: l.label, amount: Number(l.amount) || 0 }));
   }
   if (template.kind === 'questionnaire') {
-    out.ProQuestionnaire.push({ event_id: event.id, title: template.name, questions: b.questions || [], status: 'draft' });
+    out.ProQuestionnaire.push({ event_id: event.id, title: template.name, questions: (b.questions || []).map((q) => ({ ...q })), status: 'draft', answers: null, token: null });
+  }
+  if (template.kind === 'vendors') {
+    (b.vendor_ids || []).forEach((vendor_id) => out.ProVendorBooking.push({ event_id: event.id, vendor_id, role: '', fee: 0, deposit: 0, arrive: null, finish: null, contract_file: '', link_token: null, link_expires_at: null }));
   }
   return out;
 }
