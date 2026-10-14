@@ -42,7 +42,12 @@ const browser = await chromium.launch();
 
 for (const width of [390, 1440]) {
   console.log(`\n  The universe picker at ${width}\n`);
-  const ctx = await seededContext(browser, { width, height: 950, seed: ONBOARDING_SEED, user: ONBOARDING_USER });
+  // THE SAVE CAN BE CONFIRMED. With the fork parked (owner ruling
+  // 2026-10-14) the universe is the last question, so Select runs the final
+  // save and then shows "You're all set". The save reads its record back and
+  // compares the couple's names; this harness keeps no writes, so the record it
+  // reads back is seeded with the names this walkthrough types (Ada & Alan).
+  const ctx = await seededContext(browser, { width, height: 950, seed: { ...ONBOARDING_SEED, WeddingDetails: [{ id: 'wd-select', coupleNames: 'Ada & Alan', created_by: 'fixture@example.com' }] }, user: ONBOARDING_USER });
   const page = await ctx.newPage();
   // Every write the wizard makes, read off the REQUEST rather than from
   // component state — the question is what was persisted, not what a variable
@@ -123,9 +128,11 @@ for (const width of [390, 1440]) {
   await page.waitForTimeout(2600);
 
   const after = await stepOf(page);
-  check('  tapping Select advances the wizard', !!after && after !== before, `Step ${before} -> Step ${after}`);
-  // EXPLORE, NOT SELECT. The step after this one is the fork, and its two
-  // cards each carry a button labelled "Select" — so counting Select controls
+  const landed = await page.evaluate(() => /You're all set/.test(document.body.innerText));
+  check('  tapping Select saves and goes on to "You\'re all set"', landed && after !== before, `Step ${before} -> ${landed ? "You're all set" : `Step ${after}`}`);
+  // EXPLORE, NOT SELECT. The step after this one used to be the fork (parked
+  // since 2026-10-14), whose two cards each carried a button labelled
+  // "Select" — so counting Select controls
   // reported "still on the picker" on a wizard that had advanced correctly.
   // Explore belongs to the universe tiles and to nothing else.
   // And after the tap exactly one does read Selected — an absent default must
