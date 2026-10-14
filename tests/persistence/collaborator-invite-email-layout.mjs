@@ -26,7 +26,14 @@ const PHOTO = 'https://res.cloudinary.com/dsr84xknv/image/upload/c_fill,ar_2:1,g
 // The logo is whatever the sign-up code email uses, read from that file: the
 // two can never drift apart (owner, 2026-10-13).
 const CODE_EMAIL = fs.readFileSync(path.join(ROOT, 'base44/emails/EmailVerification.html'), 'utf8');
-const LOGO = (CODE_EMAIL.match(/<img src="(https:\/\/www\.openinvite\.com\.au\/email-assets\/[^"]+)"/) || [])[1] || 'missing from the code email';
+// THE HOST IS NOT PINNED HERE, deliberately. This guard's claim is that the
+// two emails carry the SAME logo, whatever that is, so it reads the code
+// email's src and compares. Pinning www.openinvite.com.au here meant that when
+// the logo moved to Cloudinary on 2026-10-14 (that host sends
+// cross-origin-resource-policy: same-site, so mail clients refused to draw
+// it), this stopped finding a logo at all and reported the invite as broken
+// rather than reporting the two as agreeing.
+const LOGO = (CODE_EMAIL.match(/<img src="(https:\/\/[^"]*openinvite-logo-on-light-2x\.png)"/) || [])[1] || 'missing from the code email';
 
 export async function runCollaboratorInviteEmailLayout() {
   const results = [];

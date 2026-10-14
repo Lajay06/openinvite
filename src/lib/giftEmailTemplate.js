@@ -21,7 +21,7 @@
  * Cloudinary's text overlay at 2x, 520px wide, with the full note as alt
  * text (noteImageUrl below).
  */
-import { EMAIL_FONT, EMAIL_ACCENT, EMAIL_BLACK, escapeHtml, emailShell, emailFooterRow } from './emailBrand.js';
+import { EMAIL_FONT, EMAIL_ACCENT, EMAIL_BLACK, EMAIL_LOGO_URL, EMAIL_LOGO_WIDTH, EMAIL_LOGO_HEIGHT, escapeHtml, emailShell, emailFooterRow } from './emailBrand.js';
 import { REVEAL, CONFIRM, fill, headlineText, giftPhotoUrl, photoLabel, DEFAULT_PHOTO_ID, noteFaceSize } from './giftingV2.js';
 import { PLAN_BADGE_LABEL, PLAN_BADGE_EMAIL_IMAGE } from './planBadge.js';
 
@@ -145,20 +145,17 @@ export function planBadgeHtml(plan) {
 const withBadges = (text) => escapeHtml(text).replace(/\b(Ultra|Pro)\b/g, (m) => planBadgeHtml(m.toLowerCase()));
 
 /**
- * THE FULL LOGO, FROM CLOUDINARY (owner ruling 2026-10-14). Lane A found the
- * site's own /email-assets copy blocked in real inboxes: the site answers
- * every file with cross-origin-resource-policy: same-site, so a webmail that
- * loads images in the browser shows nothing. This is lane A's Cloudinary copy
- * of the same file (#1061): mark and dark wordmark, a 2x PNG, never SVG.
+ * The white header: the full logo, with 24px clear under it, shared by both
+ * emails. The logo is lane A's EMAIL_LOGO_URL (#1061), the Cloudinary copy:
+ * the site's own /email-assets copy is blocked in real inboxes, because the
+ * site answers every file with cross-origin-resource-policy: same-site (owner
+ * ruling 2026-10-14). A 2x PNG at EMAIL_LOGO_WIDTH by EMAIL_LOGO_HEIGHT.
  */
-export const GIFT_EMAIL_LOGO_URL = 'https://res.cloudinary.com/dsr84xknv/image/upload/v1791969939/email-assets/openinvite-logo-on-light-2x.png';
-
-/** The white header: the full logo at 160 by 37, with 24px clear under it, shared by both emails. */
 function headerRow() {
   return `
           <tr>
             <td style="padding:28px 40px 24px;background:#FFFFFF;">
-              <img src="${GIFT_EMAIL_LOGO_URL}" width="160" height="37" alt="Openinvite" style="display:block;width:160px;height:37px;border:0;" />
+              <img src="${EMAIL_LOGO_URL}" width="${EMAIL_LOGO_WIDTH}" height="${EMAIL_LOGO_HEIGHT}" alt="Openinvite" style="display:block;width:${EMAIL_LOGO_WIDTH}px;height:${EMAIL_LOGO_HEIGHT}px;border:0;" />
             </td>
           </tr>`;
 }

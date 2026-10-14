@@ -1,4 +1,5 @@
 import { emailShell, emailFooterRow, EMAIL_ACCENT, EMAIL_BLACK, EMAIL_FONT, EMAIL_MUTED, EMAIL_BODY_TEXT } from '../../src/lib/emailBrand.js';
+import { EMAIL_PHOTOS } from '../../src/lib/emailPhotos.js';
 import { greeting } from '../../src/lib/emailGreeting.js';
 
 /**
@@ -119,5 +120,5 @@ ${emailFooterRow(`
                 Questions? Reply to this email, we read every one.
               `)}`;
 
-  return emailShell({ title: 'Welcome to Openinvite', bodyRowsHtml });
+  return emailShell({ title: 'Welcome to Openinvite', bodyRowsHtml, photo: EMAIL_PHOTOS.welcome });
 }

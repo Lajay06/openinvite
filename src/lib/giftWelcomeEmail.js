@@ -17,7 +17,7 @@ import { GIFT_WELCOME, fill } from './giftingV2.js';
 import { firstNameOrNull } from './emailGreeting.js';
 
 const FONT = "'Plus Jakarta Sans', Helvetica, Arial, sans-serif";
-const LOGO = 'https://www.openinvite.com.au/email-assets/openinvite-logo-on-light-2x.png';
+const LOGO = 'https://res.cloudinary.com/dsr84xknv/image/upload/v1791969939/email-assets/openinvite-logo-on-light-2x.png';
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /**

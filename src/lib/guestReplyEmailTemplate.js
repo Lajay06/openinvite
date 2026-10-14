@@ -17,7 +17,8 @@
  * the resolution that moved, not the shape.
  */
 
-import { emailShell, emailFooterRow, poweredByRow, escapeHtml, EMAIL_FONT as FONT, EMAIL_ACCENT as ACCENT, EMAIL_BLACK as BLACK } from './emailBrand.js';
+import { emailShell, emailFooterRow, escapeHtml, EMAIL_FONT as FONT, EMAIL_ACCENT as ACCENT, EMAIL_BLACK as BLACK } from './emailBrand.js';
+import { EMAIL_PHOTOS } from './emailPhotos.js';
 
 function nl2br(str) {
   return escapeHtml(str).replace(/\n/g, '<br />');
@@ -66,8 +67,18 @@ export function renderGuestReplyEmail({ guestName, coupleNames, originalMessage,
 
 ${originalHtml}
           <tr><td style="padding:24px 0 0;"></td></tr>
-${emailFooterRow(`This is a reply to the note you sent ${escapeHtml(couple)} from their wedding site. Replying to this email goes straight to them.`)}
-${poweredByRow()}`;
+${emailFooterRow(`This is a reply to the note you sent ${escapeHtml(couple)} from their wedding site. Replying to this email goes straight to them.`)}`;
 
-  return { subject, html: emailShell({ title: subject, bodyRowsHtml, showHeader: false }) };
+  // THE HEADER IS ON, like every other brand email. Owner ruling 2026-10-14.
+  //
+  // This passed showHeader: false, and emailBrand.js's own note explains why:
+  // guest-facing emails omitted the brand header so the couple's names stayed
+  // the visual focus, and carried poweredByRow() in the footer instead. The
+  // ruling is that every brand email carries the full logo, so the header goes
+  // on here too.
+  //
+  // poweredByRow() is GONE from the footer, same ruling. It was the stand-in
+  // for a header that now exists, so keeping it meant the lockup at the top and
+  // an 11px mark at the bottom saying the same thing twice.
+  return { subject, html: emailShell({ title: subject, bodyRowsHtml, photo: EMAIL_PHOTOS.guestReply, showHeader: true }) };
 }

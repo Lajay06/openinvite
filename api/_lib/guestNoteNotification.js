@@ -52,6 +52,7 @@ import {
   EMAIL_SUPPORT_ADDRESS,
   escapeHtml,
 } from '../../src/lib/emailBrand.js';
+import { EMAIL_PHOTOS } from '../../src/lib/emailPhotos.js';
 
 /**
  * The retention palette, by value rather than by import, for the same reason
@@ -59,12 +60,18 @@ import {
  * shared constant deciding that they cannot.
  */
 const BG = '#f6f4f1';
+const PHOTO = EMAIL_PHOTOS.guestNote;
+// A tone off this email's own palette, so a blocked image reads as a
+// placeholder rather than a gap. Matches RETENTION_HAIRLINE.
+const HAIRLINE_BG = '#e8e4df';
 const CARD = '#ffffff';
 const FOOTER_TEXT = '#8a8580';
 const HAIRLINE = '#e8e4df';
 const BODY_TEXT = 'rgba(10,10,10,0.72)';
 
-const LOGO_URL = 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1785659181/email-assets/openinvite-icon-mark.png';
+const LOGO_URL = 'https://res.cloudinary.com/dsr84xknv/image/upload/v1791969939/email-assets/openinvite-logo-on-light-2x.png';
+const LOGO_W = 160;
+const LOGO_H = 37;
 
 const APP_URL = process.env.VITE_APP_URL || 'https://openinvite.com.au';
 
@@ -176,9 +183,16 @@ export function guestNoteEmail({ guestName, message } = {}) {
     <tr>
       <td align="center">
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;background:${CARD};">
+          <!-- The header photo, where the retention emails put theirs. Its own
+               height reserves the right box while images are still off. -->
+          <tr>
+            <td style="padding:0;">
+              <img src="${PHOTO.url}" width="${PHOTO.width}" height="${PHOTO.height}" alt="${escapeHtml(PHOTO.alt)}" style="display:block;width:100%;max-width:${PHOTO.width}px;height:auto;border:0;background:${HAIRLINE_BG};" />
+            </td>
+          </tr>
           <tr>
             <td style="padding:32px 40px 24px;">
-              <img src="${LOGO_URL}" width="28" height="28" alt="Openinvite" style="display:block;width:28px;height:28px;border:0;" />
+              <img src="${LOGO_URL}" width="${LOGO_W}" height="${LOGO_H}" alt="Openinvite" style="display:block;width:${LOGO_W}px;height:${LOGO_H}px;border:0;" />
             </td>
           </tr>
           <tr>
