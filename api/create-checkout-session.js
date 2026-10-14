@@ -8,6 +8,7 @@ import {
 import { resolvePlanFromPriceId, resolveCurrencyFromPriceId } from './_lib/planPricing.js';
 import { validateGiftDraft, createGiftDraft } from './_lib/giftDrafts.js';
 import { giftingV2OnServer } from './gift-email-preview.js';
+import { giftOrigin } from './_lib/giftTokens.js';
 import { TOO_MANY_TRIES } from './_lib/calmErrors.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -50,7 +51,10 @@ export function buildGiftV2SessionParams({ priceId, plan, currency, userId, cust
     ...(userId ? { client_reference_id: userId } : {}),
     ...(customerEmail ? { customer_email: customerEmail } : {}),
     expires_at: Math.floor((now.getTime() + GIFT_V2_SESSION_MS) / 1000),
-    success_url: `${appUrl}/gift?paid=1&session_id={CHECKOUT_SESSION_ID}`,
+    // The draft id rides along so the done page can name the giver and the
+    // couple before the webhook has recorded the gift (owner ruling
+    // 2026-10-14); it opens nothing without the paid session id beside it.
+    success_url: `${appUrl}/gift?paid=1&draft=${encodeURIComponent(giftDraftId)}&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${appUrl}/gift?checkout=cancelled`,
   };
 }
@@ -185,8 +189,12 @@ export default async function handler(req, res) {
         console.error('[checkout] gift draft could not be saved:', draft.status || 'no status');
         return res.status(502).json({ error: 'Your gift could not be saved. Please try again.' });
       }
+      // On a preview deploy, Stripe returns the giver to that deploy, where
+      // the flag is on and the draft is (owner ruling 2026-10-14); production
+      // keeps appUrl exactly as before.
+      const giftAppUrl = process.env.VERCEL_ENV === 'preview' ? giftOrigin(process.env) : appUrl;
       const v2 = await stripe.checkout.sessions.create(
-        buildGiftV2SessionParams({ priceId, plan, currency, userId, customerEmail, appUrl, giftDraftId: draft.id })
+        buildGiftV2SessionParams({ priceId, plan, currency, userId, customerEmail, appUrl: giftAppUrl, giftDraftId: draft.id })
       );
       return res.status(200).json({ url: v2.url });
     }
