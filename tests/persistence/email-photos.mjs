@@ -94,6 +94,38 @@ export async function runEmailPhotos() {
        tag.test(html), tag.test(html) ? 'rendered' : 'not found in the html');
   }
 
+  // ── NO EMAIL IMAGE MAY COME FROM A HOST THAT BLOCKS CROSS-ORIGIN USE ────
+  //
+  // www.openinvite.com.au serves email-assets with
+  // cross-origin-resource-policy: same-site. curl reports 200 and a valid PNG,
+  // so every status check passed, and the logo still failed to draw in every
+  // mail client: net::ERR_BLOCKED_BY_RESPONSE.NotSameSite. It was broken in
+  // production in the collaborator invite and the verification email, and the
+  // only thing that found it was rendering the email in a browser.
+  //
+  // This is a path check rather than a fetch, for the same reason the ids are
+  // not re-fetched: it must be true of the source, every run, offline.
+  const SAME_SITE_HOST = /openinvite\.com\.au\/email-assets/;
+  const EMAIL_SOURCES = [
+    'src/lib/emailBrand.js', 'src/lib/emailPhotos.js', 'src/lib/collaboratorEmailTemplate.js',
+    'src/lib/giftWelcomeEmail.js', 'src/lib/guestReplyEmailTemplate.js',
+    'src/lib/notificationEmailTemplate.js', 'src/lib/weeklyDigestEmailTemplate.js',
+    'api/_lib/retentionEmails.js', 'api/_lib/guestNoteNotification.js',
+    'api/emails/gift-reveal.js', 'base44/emails/EmailVerification.html',
+  ];
+  const { readFileSync } = await import('node:fs');
+  const { resolve } = await import('node:path');
+  const ROOT = resolve(new URL('../../', import.meta.url).pathname);
+  const offenders = EMAIL_SOURCES.filter((p) => SAME_SITE_HOST.test(readFileSync(resolve(ROOT, p), 'utf8')));
+  ok('no email template serves an image from the same-site host',
+     offenders.length === 0,
+     offenders.join(', ') || `${EMAIL_SOURCES.length} source(s) clean`);
+
+  // AND THE CHECK CAN FAIL, or it is a line that reads as protection.
+  ok('  and that check would catch it',
+     SAME_SITE_HOST.test('<img src=https://www.openinvite.com.au/email-assets/x.png>'),
+     'caught');
+
   // THE PHOTO SITS ABOVE THE WORDS, which is what "header photo" means. In
   // every one of these the first heading must come after the image.
   for (const [key, , render] of PLACEMENTS.slice(0, 3)) {

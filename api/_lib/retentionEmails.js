@@ -50,10 +50,15 @@ export const RETENTION_HAIRLINE = '#e8e4df';
 export const RETENTION_BODY_TEXT = 'rgba(10,10,10,0.72)';
 
 /**
- * THE LOGO IS THE MARK, NOT A WORDMARK, and that is a reversal of the goal's
- * word rather than of its intent.
+ * THE LOGO IS THE FULL LOCKUP, which is what the goal asked for all along.
  *
- * The goal asks for a "logo wordmark top left". There is no wordmark asset:
+ * This said "the logo is the mark, not a wordmark" until 2026-10-14, and the
+ * reason it gave was that no wordmark asset existed. That premise is gone: the
+ * full lockup is now a hosted 2x PNG, so the goal's "logo wordmark top left"
+ * can be taken literally. Owner ruling, same date: every brand email header
+ * carries the full logo, never the mark alone.
+ *
+ * The original note, for the record. The goal asked for a "logo wordmark top left". There was no wordmark asset:
  * src/lib/emailBrand.js ships one logo file, the "O" mark, and its comment
  * records that the header renders that image ALONE, "not a separate plain-text
  * wordmark next to it" — a decision made after an earlier version had one. So
@@ -61,7 +66,9 @@ export const RETENTION_BODY_TEXT = 'rgba(10,10,10,0.72)';
  * 28px. Drawing a text wordmark here instead would reverse that decision for
  * two emails and leave six disagreeing with them.
  */
-const LOGO_URL = 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1785659181/email-assets/openinvite-icon-mark.png';
+const LOGO_URL = 'https://res.cloudinary.com/dsr84xknv/image/upload/v1791969939/email-assets/openinvite-logo-on-light-2x.png';
+const LOGO_W = 160;
+const LOGO_H = 37;
 
 /** The two photos, named by the goal, with the alt text it specifies. */
 /**
@@ -209,7 +216,7 @@ function shell({ title, preheader, photo, bodyRowsHtml, footerHtml }) {
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;background:${RETENTION_CARD};">
           <tr>
             <td style="padding:32px 40px 24px;">
-              <img src="${LOGO_URL}" width="28" height="28" alt="Openinvite" style="display:block;width:28px;height:28px;border:0;" />
+              <img src="${LOGO_URL}" width="${LOGO_W}" height="${LOGO_H}" alt="Openinvite" style="display:block;width:${LOGO_W}px;height:${LOGO_H}px;border:0;" />
             </td>
           </tr>
           <tr>

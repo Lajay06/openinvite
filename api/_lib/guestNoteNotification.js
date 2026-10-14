@@ -69,7 +69,9 @@ const FOOTER_TEXT = '#8a8580';
 const HAIRLINE = '#e8e4df';
 const BODY_TEXT = 'rgba(10,10,10,0.72)';
 
-const LOGO_URL = 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1785659181/email-assets/openinvite-icon-mark.png';
+const LOGO_URL = 'https://res.cloudinary.com/dsr84xknv/image/upload/v1791969939/email-assets/openinvite-logo-on-light-2x.png';
+const LOGO_W = 160;
+const LOGO_H = 37;
 
 const APP_URL = process.env.VITE_APP_URL || 'https://openinvite.com.au';
 
@@ -190,7 +192,7 @@ export function guestNoteEmail({ guestName, message } = {}) {
           </tr>
           <tr>
             <td style="padding:32px 40px 24px;">
-              <img src="${LOGO_URL}" width="28" height="28" alt="Openinvite" style="display:block;width:28px;height:28px;border:0;" />
+              <img src="${LOGO_URL}" width="${LOGO_W}" height="${LOGO_H}" alt="Openinvite" style="display:block;width:${LOGO_W}px;height:${LOGO_H}px;border:0;" />
             </td>
           </tr>
           <tr>

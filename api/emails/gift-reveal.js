@@ -1,6 +1,6 @@
 import {
   EMAIL_FONT, EMAIL_ACCENT, EMAIL_BLACK, EMAIL_BG, EMAIL_CARD_BORDER, EMAIL_DIVIDER,
-  EMAIL_MUTED, EMAIL_MUTED_LIGHT, EMAIL_BODY_TEXT, EMAIL_SUPPORT_ADDRESS, EMAIL_LOGO_MARK_URL,
+  EMAIL_MUTED, EMAIL_MUTED_LIGHT, EMAIL_BODY_TEXT, EMAIL_SUPPORT_ADDRESS, EMAIL_LOGO_URL, EMAIL_LOGO_WIDTH, EMAIL_LOGO_HEIGHT,
   escapeHtml,
 } from '../../src/lib/emailBrand.js';
 
@@ -71,7 +71,7 @@ export function giftRevealEmail({ plan, code, note, buyerLabel }) {
           <!-- Small logo row -->
           <tr>
             <td style="padding:28px 40px 0;">
-              <img src="${EMAIL_LOGO_MARK_URL}" width="24" height="24" alt="Openinvite" style="display:block;width:24px;height:24px;" />
+              <img src="${EMAIL_LOGO_URL}" width="${EMAIL_LOGO_WIDTH}" height="${EMAIL_LOGO_HEIGHT}" alt="Openinvite" style="display:block;width:160px;height:37px;border:0;" />
             </td>
           </tr>
 

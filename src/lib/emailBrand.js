@@ -40,18 +40,50 @@ export const EMAIL_SUPPORT_ADDRESS = 'hello@openinvite.com.au';
 // unreliable in Outlook/older clients). This is the actual logo file — the
 // header renders this image alone (with an "Openinvite" alt for clients
 // that block remote images), not a separate plain-text wordmark next to it.
+/**
+ * THE FULL LOCKUP, mark and wordmark, exactly as the site header shows it.
+ *
+ * public/email-assets/openinvite-logo-on-light-2x.png, served from our own
+ * domain over https. A 2x asset: the file is 320x74, so it renders at 160x37,
+ * which is its exact ratio and therefore crops nothing. The descender on the
+ * wordmark is inside that height, and the header row leaves clear space under
+ * it rather than letting the next rule sit on the type.
+ *
+ * Owner ruling 2026-10-14: every brand email header carries this, never the
+ * mark alone. The code email (base44/emails/EmailVerification.html) and the
+ * collaborator invite already did; this brings the shared shell into line, and
+ * with it every email built on it.
+ *
+ * NOT an SVG. Outlook and older clients do not render SVG in mail at all, and
+ * a logo that silently fails is worse than one that is merely small.
+ */
+export const EMAIL_LOGO_URL = 'https://res.cloudinary.com/dsr84xknv/image/upload/v1791969939/email-assets/openinvite-logo-on-light-2x.png';
+export const EMAIL_LOGO_WIDTH = 160;
+export const EMAIL_LOGO_HEIGHT = 37;
+
 export const EMAIL_LOGO_MARK_URL = 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1785659181/email-assets/openinvite-icon-mark.png';
 
 export function escapeHtml(str) {
   return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-/** The one header row every brand email starts with — the logo mark, no separate text wordmark. */
+/**
+ * The one header row every brand email starts with: the FULL logo, mark and
+ * wordmark together.
+ *
+ * It was the 28px mark alone until 2026-10-14. Nineteen emails inherited that
+ * from this one function, which is why the contact sheet showed a mark-only
+ * header almost everywhere and why one edit here fixes all of them.
+ *
+ * The 24px of padding under the image is clear space, not decoration: at
+ * 160x37 the wordmark's descender reaches the bottom of the box, and a rule
+ * drawn tight under it reads as a line through the type.
+ */
 export function emailHeaderRow() {
   return `
           <tr>
-            <td style="padding:40px 40px 32px;border-bottom:1px solid ${EMAIL_DIVIDER};">
-              <img src="${EMAIL_LOGO_MARK_URL}" width="28" height="28" alt="Openinvite" style="display:block;width:28px;height:28px;" />
+            <td style="padding:40px 40px 24px;border-bottom:1px solid ${EMAIL_DIVIDER};">
+              <img src="${EMAIL_LOGO_URL}" width="${EMAIL_LOGO_WIDTH}" height="${EMAIL_LOGO_HEIGHT}" alt="Openinvite" style="display:block;width:${EMAIL_LOGO_WIDTH}px;height:${EMAIL_LOGO_HEIGHT}px;border:0;" />
             </td>
           </tr>`;
 }
