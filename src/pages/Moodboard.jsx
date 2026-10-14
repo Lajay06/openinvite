@@ -23,7 +23,9 @@ import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import UploadStatus from '@/components/shared/UploadStatus';
-import { useCollaboratorContext, withCollab } from '@/lib/collaboratorContext';
+import { useCollaboratorContext, withCollab, suggestionsRequest } from '@/lib/collaboratorContext';
+import SuggestionsPanel from '@/components/collaboration/SuggestionsPanel';
+import MySuggestions from '@/components/collaboration/MySuggestions';
 import CountUp from "@/components/shared/CountUp";
 
 let moodboardQueueId = 0;
@@ -101,6 +103,39 @@ export default function MoodboardPage() {
   // MoodboardItem regardless of the 'edit' bit, so there is no working
   // write path to gate on yet.
   const readOnly = isCollaborating;
+  // SUGGEST, NEVER ADD (owner ruling 2026-10-14): a collaborator never adds to
+  // or changes the couple's moodboard. With the grant to suggest (the server's
+  // canSuggest), they send suggestions, which the couple approves from their
+  // own session; the couple's own create makes the item.
+  const [collabCanSuggest, setCollabCanSuggest] = useState(false);
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  const [editingSuggestion, setEditingSuggestion] = useState(null);
+  const [suggestionsKey, setSuggestionsKey] = useState(0);
+  const sendSuggestion = async (data) => {
+    try {
+      await suggestionsRequest({
+        method: 'POST', page: 'Moodboard', ownerUserId: collab.ownerUserId,
+        body: editingSuggestion
+          ? { action: 'edit', suggestionId: editingSuggestion.id, data: { ...data, board_name: editingSuggestion.data.board_name || activeBoard } }
+          : { action: 'suggest', data: { ...data, board_name: activeBoard } },
+      });
+      toast.success(editingSuggestion ? 'Suggestion saved.' : 'Suggestion sent.');
+      setSuggestOpen(false);
+      setEditingSuggestion(null);
+      setSuggestionsKey(k => k + 1);
+    } catch {
+      toast.error('That did not save. Try again.');
+    }
+  };
+  const suggestionSummary = (d) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+      {d.image_url ? <img src={d.image_url} alt="" style={{ width: 48, height: 48, objectFit: 'cover', flexShrink: 0 }} /> : null}
+      <div style={{ minWidth: 0 }}>
+        <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{d.title}</p>
+        {d.category ? <p style={{ margin: 0, fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{d.category}</p> : null}
+      </div>
+    </div>
+  );
 
   useEffect(() => { loadItems(); }, [isCollaborating]);
 
@@ -111,8 +146,9 @@ export default function MoodboardPage() {
           headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
         });
         if (res.ok) {
-          const { data } = await res.json();
+          const { data, canSuggest } = await res.json();
           setItems(data.MoodboardItem || []);
+          setCollabCanSuggest(canSuggest === true);
         } else {
           toast.error('Failed to load — please refresh and try again.');
         }
@@ -306,6 +342,11 @@ export default function MoodboardPage() {
       {/* Ava + actions bar */}
       <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
         <AvaButton label="Ask Ava to find inspiration" onClick={() => setAvaOpen(true)} />
+        {isCollaborating && collabCanSuggest && (
+          <button type="button" onClick={() => { setEditingSuggestion(null); setSuggestOpen(true); }} className="btn-primary" style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Plus size={12} />Suggest an item
+          </button>
+        )}
         {!readOnly && (
           <div className="flex flex-wrap items-center gap-[10px]">
             <button
@@ -341,6 +382,20 @@ export default function MoodboardPage() {
       </div>
 
       <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+        {isCollaborating && collabCanSuggest && (
+          <MySuggestions
+            ownerUserId={collab.ownerUserId} page="Moodboard" coupleNames={collab.coupleNames}
+            renderSummary={suggestionSummary} reloadKey={suggestionsKey}
+            onEdit={(s) => { setEditingSuggestion(s); setSuggestOpen(true); }}
+          />
+        )}
+        {!isCollaborating && (
+          <SuggestionsPanel
+            page="Moodboard" renderSummary={suggestionSummary} onApproved={loadItems}
+            createItem={async (d) => (await MoodboardItem.create({ ...d, board_name: d.board_name || activeBoard })).id}
+          />
+        )}
+
         {/* Board selector */}
         <BoardSelector boards={boards} activeBoard={activeBoard} onBoardChange={setActiveBoard} onCreateBoard={handleCreateBoard} readOnly={readOnly} />
 
@@ -394,6 +449,14 @@ export default function MoodboardPage() {
         )}
       </div>
 
+      {suggestOpen && (
+        <AddItemModal
+          title="Suggest an item" submitLabel={editingSuggestion ? 'Save suggestion' : 'Send suggestion'}
+          initial={editingSuggestion?.data} onAddItem={sendSuggestion}
+          onClose={() => { setSuggestOpen(false); setEditingSuggestion(null); }}
+          categories={CATEGORIES.filter(c => c !== 'all')}
+        />
+      )}
       {showAddModal && <AddItemModal onClose={() => setShowAddModal(false)} onAddItem={handleAddItem} categories={CATEGORIES.filter(c => c !== 'all')} />}
       {showSearch && <InspirationSearch onClose={() => setShowSearch(false)} onAddItems={loadItems} activeBoard={activeBoard} />}
 

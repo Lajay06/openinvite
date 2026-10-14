@@ -96,20 +96,22 @@ const ARTICLES = {
   ),
   'Inviting a collaborator': (
     <div>
-      <p style={S.p}>Collaborate lets you show your wedding plans to someone else, such as your partner, a wedding planner or a family member. They sign in with their own account and can view the pages you choose. They cannot change anything, except Schedule if you let them.</p>
+      <p style={S.p}>Collaborate lets you show your wedding plans to someone else, such as your partner, a wedding planner or a family member. They sign in with their own account and can view the pages you choose. They cannot change anything, except where you let them on Schedule and Moodboard, and they can never remove anything of yours.</p>
       <h3 style={S.h3}>How to add a collaborator</h3>
       <ol style={S.ol}>
         <li style={S.li}>Click "Collaborate" in the sidebar</li>
         <li style={S.li}>Enter their name and email address</li>
         <li style={S.li}>Under "Pages they can view", check "View only" for each page you want them to see</li>
-        <li style={S.li}>For Schedule, you can check "Can make changes" instead, so they can change and remove items on it</li>
+        <li style={S.li}>For Schedule, you can check "Can change details and suggest" instead. For Moodboard, you can check "Can suggest additions" instead</li>
         <li style={S.li}>Click "Send Invite". They get an email with a link to join</li>
       </ol>
       <h3 style={S.h3}>What collaborators can do</h3>
       <ul style={S.ul}>
         <li style={S.li}>View the pages you chose, showing your current plans</li>
-        <li style={S.li}>Change or remove Schedule items, only if you checked "Can make changes" for it</li>
-        <li style={S.li}>Nothing more: they cannot add, edit or delete anything else, and Ava is not available to them</li>
+        <li style={S.li}>On Schedule, change the times and details of your items, if you checked "Can change details and suggest"</li>
+        <li style={S.li}>Suggest new items for Schedule and Moodboard. Nothing is added until you approve it on that page</li>
+        <li style={S.li}>Edit or withdraw their own suggestions until you decide</li>
+        <li style={S.li}>Nothing more: they can never remove your items, and Ava is not available to them</li>
         <li style={S.li}>Their own Help and Account pages stay their own</li>
       </ul>
       <h3 style={S.h3}>Notes</h3>

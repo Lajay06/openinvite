@@ -78,6 +78,24 @@ export async function collaboratorWrite({ ownerUserId, page, action, id, data })
   if (!res.ok) throw new Error('collaborator write failed');
 }
 
+/**
+ * Suggest and approve (owner ruling 2026-10-14): api/collaborator-suggestions.js.
+ * A GET lists (the collaborator's own with ownerUserId, the couple's pending
+ * without); a POST carries an action. Resolves with the JSON, throws on any
+ * refusal so the caller's "did not save" handling runs.
+ */
+export async function suggestionsRequest({ method = 'GET', page, ownerUserId, body }) {
+  const token = localStorage.getItem('base44_access_token');
+  const qs = new URLSearchParams({ page, ...(ownerUserId ? { ownerUserId } : {}) });
+  const res = await fetch(method === 'GET' ? `/api/collaborator-suggestions?${qs}` : '/api/collaborator-suggestions', {
+    method,
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    ...(method === 'GET' ? {} : { body: JSON.stringify({ page, ...(ownerUserId ? { ownerUserId } : {}), ...body }) }),
+  });
+  if (!res.ok) throw new Error('suggestions request failed');
+  return res.json();
+}
+
 const EMPTY = { permissions: {}, coupleNames: '', collaboratorEmail: '' };
 
 /**

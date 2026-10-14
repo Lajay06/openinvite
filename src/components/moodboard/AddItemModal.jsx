@@ -12,8 +12,13 @@ const labelStyle = {
   fontFamily: "'Plus Jakarta Sans', sans-serif",
 };
 
-export default function AddItemModal({ onClose, onAddItem, categories }) {
-  const [formData, setFormData] = useState({ title: '', image_url: '', source_url: '', category: 'other', tags: '', notes: '' });
+// `title`, `submitLabel` and `initial` serve a collaborator's suggestion (owner
+// ruling 2026-10-14). Without them it is the couple's own form, unchanged.
+export default function AddItemModal({ onClose, onAddItem, categories, title = 'Add inspiration', submitLabel = 'Add to moodboard', initial }) {
+  const [formData, setFormData] = useState(() => ({
+    title: '', image_url: '', source_url: '', category: 'other', tags: '', notes: '',
+    ...(initial ? { ...initial, tags: Array.isArray(initial.tags) ? initial.tags.join(', ') : (initial.tags || '') } : {}),
+  }));
   const [preview, setPreview] = useState('');
 
   const set = (field, value) => {
@@ -28,12 +33,12 @@ export default function AddItemModal({ onClose, onAddItem, categories }) {
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent hideClose title="Add inspiration" className="oi-modal-scale max-w-[680px] max-h-[90vh] overflow-y-auto p-0 gap-0">
+      <DialogContent hideClose title={title} className="oi-modal-scale max-w-[680px] max-h-[90vh] overflow-y-auto p-0 gap-0">
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <ImageIcon size={14} style={{ color: 'rgba(10,10,10,0.6)' }} />
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Add inspiration</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: '#0A0A0A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{title}</span>
           </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(10,10,10,0.6)', display: 'flex', padding: 4 }}><X size={16} /></button>
         </div>
@@ -91,7 +96,7 @@ export default function AddItemModal({ onClose, onAddItem, categories }) {
           <button onClick={onClose} className="btn-editorial-secondary" style={{ fontSize: 12 }}>Cancel</button>
           <button onClick={handleSubmit} disabled={!formData.title || !formData.image_url} className="btn-primary"
             style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, opacity: !formData.title || !formData.image_url ? 0.5 : 1 }}>
-            <Save size={13} />Add to moodboard
+            <Save size={13} />{submitLabel}
           </button>
         </div>
       </DialogContent>
