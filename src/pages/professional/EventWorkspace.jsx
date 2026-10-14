@@ -45,7 +45,8 @@ export default function EventWorkspace() {
       subtitle={`${shortDate(event.event_date)}${event.venue ? `, ${event.venue}` : ''}, ${daysToGoText(daysToGo(event.event_date)).toLowerCase()}`}
       actions={<span style={{ display: 'inline-flex', gap: 6 }}>{event.kind === 'linked' ? <Pill tone="good">Linked couple</Pill> : <Pill>Standalone</Pill>}{readOnly && <Pill tone="wait">Read-only</Pill>}</span>}
       toolbar={(
-        <nav aria-label="Event" style={{ display: 'flex', gap: 0, overflowX: 'auto', background: '#FFFFFF', borderBottom: `1px solid ${PRO.border}`, padding: mobile ? '0 8px' : '0 24px' }}>
+        // At 390 the tabs wrap onto rows; nothing in Professional scrolls sideways (owner ruling 2026-10-14).
+        <nav aria-label="Event" style={{ display: 'flex', flexWrap: mobile ? 'wrap' : 'nowrap', gap: 0, overflowX: mobile ? 'visible' : 'auto', background: '#FFFFFF', borderBottom: `1px solid ${PRO.border}`, padding: mobile ? '0 8px' : '0 24px' }}>
           {tabs.map((t) => (
             <NavLink
               key={t.key}

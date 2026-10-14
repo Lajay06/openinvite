@@ -1,10 +1,11 @@
-/* global document */
+/* global document, getComputedStyle */
 /**
  * scripts/professional-overflow.mjs
  *
  * Openinvite Professional: no horizontal overflow on the seed data, at 1440
  * and at 390 (owner ruling 2026-10-14, the events home table).
- *   - On every page, at both widths, the page itself never scrolls sideways.
+ *   - On every page, at both widths, the page itself never scrolls sideways,
+ *     and no element in it does either (a tab strip, a toolbar, a box).
  *   - At both widths, no table is wider than its own box, and no card is
  *     wider than its list (owner ruling 2026-10-14: at 390 every table stacks
  *     as cards; there is no allowance).
@@ -59,6 +60,13 @@ for (const width of WIDTHS) {
         const box = t.parentElement;
         const label = t.getAttribute('aria-label') || 'unnamed';
         if (t.scrollWidth > box.clientWidth + 1) out.push(`table ${i + 1} (${label}): ${t.scrollWidth} in a ${box.clientWidth} box`);
+      });
+      // Any element at all that scrolls sideways: a tab strip, a toolbar, a box.
+      document.querySelectorAll('body *').forEach((el) => {
+        const ox = getComputedStyle(el).overflowX;
+        if ((ox === 'auto' || ox === 'scroll') && el.scrollWidth > el.clientWidth + 1 && el.tagName !== 'TABLE') {
+          out.push(`scrolls sideways: <${el.tagName.toLowerCase()}${el.getAttribute('aria-label') ? ` aria-label="${el.getAttribute('aria-label')}"` : ''}> ${el.scrollWidth} in ${el.clientWidth}`);
+        }
       });
       document.querySelectorAll('[data-pro-cards] > [role="listitem"]').forEach((card, i) => {
         if (card.scrollWidth > card.clientWidth + 1) out.push(`card ${i + 1} (${card.parentElement.getAttribute('aria-label') || 'unnamed'}): ${card.scrollWidth} in ${card.clientWidth}`);

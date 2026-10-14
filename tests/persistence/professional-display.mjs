@@ -80,6 +80,8 @@ export function runProfessionalDisplay() {
   check('professional display: at 390 every Professional table is a stack of cards', /if \(mobile\) return <ProCards /.test(page) && /data-pro-cards/.test(page), 'ProTable stacks');
   check('professional display: the overflow check has no allowance and measures tables and cards at both widths', !/TABLES_THAT_SCROLL_AT_390|allowed\.includes/.test(overflow) && /data-pro-cards\] > \[role="listitem"\]/.test(overflow) && /const WIDTHS = \[1440, 390\]/.test(overflow), 'no allowance');
 
+  check('professional display: the event tabs wrap onto rows at 390 instead of scrolling sideways', /<nav aria-label="Event" style=\{\{ display: 'flex', flexWrap: mobile \? 'wrap' : 'nowrap', gap: 0, overflowX: mobile \? 'visible' : 'auto'/.test(code('src/pages/professional/EventWorkspace.jsx')) && /overflowX === 'auto' \|\| ox === 'scroll'|ox === 'auto' \|\| ox === 'scroll'/.test(overflow), 'wraps; the check catches any scroller');
+
   // 4. One guest count, on the real seed.
   const store = Object.fromEntries(COLLECTIONS.map((c) => [c, list(c)]));
   const now = new Date();
