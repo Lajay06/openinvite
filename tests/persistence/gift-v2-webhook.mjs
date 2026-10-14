@@ -109,10 +109,15 @@ export async function runGiftV2Webhook() {
     const run = async (st, sess, { draft = { ok: true, draft: DRAFT, isTest: true }, sends = [], failSend = false } = {}) => {
       quiet();
       try {
-        return await v2.handleGiftV2CheckoutSessionCompleted(sess, {
+        const out = await v2.handleGiftV2CheckoutSessionCompleted(sess, {
           adminKey: 'admin', fetchImpl: st.fetchImpl, now: () => now, readDraft: async () => draft,
           sendEmail: async (email, options) => { sends.push({ email, options }); return { error: failSend && email.to !== 'hello@openinvite.com.au' ? { message: 'down' } : null }; },
         });
+        // What Stripe sees, then what afterResponse runs once it has gone.
+        out.sendsBeforeAnswer = sends.length;
+        out.rowsAtAnswer = [...st.rows.values()].map((r) => ({ ...r }));
+        if (out.after) await out.after();
+        return out;
       } finally { loud(); }
     };
 
@@ -195,10 +200,55 @@ export async function runGiftV2Webhook() {
     check('  and the redelivery finishes it: same row, hashes stored, both emails',
       out.status === 200 && st5.rows.size === 1 && !!row5.claim_token_hash && !!row5.sent_at && sends5.length === 2);
 
+    // ── answer first, send after (owner ruling 2026-10-14) ──────────────
+    {
+      const stA = store();
+      const sendsA = [];
+      const outA = await run(stA, session({ id: 'cs_test_answer_first' }), { sends: sendsA });
+      const [rowA] = outA.rowsAtAnswer;
+      check('Stripe is answered before any email: the gift and its token hashes are already saved',
+        outA.status === 200 && typeof outA.after === 'function' && outA.sendsBeforeAnswer === 0 && !!rowA?.id && !!rowA.claim_token_hash && !!rowA.edit_token_hash && !rowA.sent_at);
+      check('  and after the answer both emails go, and sent_at is stamped',
+        sendsA.length === 2 && !![...stA.rows.values()][0].sent_at && sendsA.some((s) => s.options?.idempotencyKey?.startsWith('gift-reveal-')) && sendsA.some((s) => s.options?.idempotencyKey?.startsWith('gift-confirm-')));
+      const again = await run(stA, session({ id: 'cs_test_answer_first' }), { sends: sendsA });
+      check('  a retry of the same session afterwards answers 200 and sends nothing, with nothing to run after',
+        again.status === 200 && !again.after && sendsA.length === 2 && stA.rows.size === 1);
+      const stB = store();
+      const sendsB = [];
+      const outB = await run(stB, session({ id: 'cs_test_reveal_down' }), { sends: sendsB, failSend: true });
+      const [rowB] = [...stB.rows.values()];
+      check('a reveal that fails after the answer is handed to the hourly cron: send_at stamped, sent_at empty, the answer still 200',
+        outB.status === 200 && outB.sendsBeforeAnswer === 0 && !!rowB.send_at && !rowB.sent_at && rowB.send_at <= now.toISOString());
+      const src = readFileSync(resolve(ROOT, 'api/_lib/giftV2Purchase.js'), 'utf8');
+      check('every step is timed in the log: the reads, the writes and each send',
+        ['findGift', 'readDraft', 'createGift', 'storeTokenHashes', 'sendReveal', 'stampSentAt', 'sendConfirmation'].every((n) => src.includes(`timed('${n}'`))
+          && /gift recorded, answering Stripe:`, \{ sessionId, plan, scheduled: !!row\.send_at, steps \}/.test(src) && /emails done after the answer:`, \{ sessionId, revealSent: !!row\.sent_at, steps \}/.test(src));
+    }
+
     // ── the route ───────────────────────────────────────────────────────
     const hook = readFileSync(resolve(ROOT, 'api/webhooks/stripe.js'), 'utf8');
-    check('the webhook routes v2 first, then v1 gifts and purchases as before',
-      /isGiftV2Session\(verifiedSession\)\s*\?\s*await handleGiftV2CheckoutSessionCompleted\(verifiedSession[\s\S]*?:\s*verifiedSession\.metadata\?\.purchaseType === 'gift'\s*\?\s*await handleGiftCheckoutSessionCompleted\(verifiedSession\)\s*:\s*await handleCheckoutSessionCompleted\(verifiedSession\)/.test(hook));
+    check('the webhook routes v2 first, answering Stripe before the emails, then v1 gifts and purchases as before',
+      /if \(isGiftV2Session\(verifiedSession\)\) \{\s*const v2 = await handleGiftV2CheckoutSessionCompleted\(verifiedSession, \{[\s\S]*?timings: \{ untilRetrieve: retrieveStart - startedAt, retrieveSession: retrieveMs \},[\s\S]*?\}\);\s*res\.status\(v2\.status\)\.json\(v2\.body\);[\s\S]*?if \(v2\.after\) await afterResponse\(v2\.after\(\)/.test(hook)
+        && /const \{ status, body \} = verifiedSession\.metadata\?\.purchaseType === 'gift'\s*\?\s*await handleGiftCheckoutSessionCompleted\(verifiedSession\)\s*:\s*await handleCheckoutSessionCompleted\(verifiedSession\)/.test(hook));
+    {
+      const { afterResponse } = await import('../../api/_lib/afterResponse.js');
+      let done = false;
+      const sym = Symbol.for('@vercel/request-context');
+      const prior = globalThis[sym];
+      const handed = [];
+      globalThis[sym] = { get: () => ({ waitUntil: (p) => handed.push(p) }) };
+      await afterResponse(new Promise((r) => setTimeout(() => { done = true; r(); }, 20)));
+      const returnedFirst = !done && handed.length === 1;
+      await handed[0];
+      globalThis[sym] = prior;
+      let awaited = false;
+      await afterResponse(new Promise((r) => setTimeout(() => { awaited = true; r(); }, 5)));
+      const realErr2 = console.error; console.error = () => {};
+      let threw = false;
+      try { await afterResponse(Promise.reject(new Error('boom'))); } catch { threw = true; } finally { console.error = realErr2; }
+      check('afterResponse hands the work to Vercel\'s waitUntil when it is there, awaits it when not, and never throws',
+        returnedFirst && done && awaited && !threw);
+    }
     const cron = readFileSync(resolve(ROOT, 'api/cron/send-gift-reveals.js'), 'utf8');
     check('the hourly cron opens v2 rows with the same APP_ENC_KEY cipher', /from '\.\.\/_lib\/giftCrypto\.js'/.test(cron) && !/giftAuth/.test(cron));
   } finally {

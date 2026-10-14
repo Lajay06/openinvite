@@ -74,15 +74,32 @@ async function alertSupport(sendEmail, sessionId, reason) {
   }
 }
 
-/** @returns {Promise<{ status: number, body: object }>} */
+/**
+ * ANSWER FIRST, SEND AFTER (owner ruling 2026-10-14). A delivery took 31.7s
+ * and Stripe gave up waiting. The gift record and its token hashes are saved
+ * before the answer, so a retry finds them; the reveal and the confirmation go
+ * after it, in `after`, which the webhook hands to afterResponse. Every step
+ * is timed in the log. A retry never sends twice: a gift already sent skips
+ * the draft and returns before any send, and both sends carry per-gift
+ * idempotency keys. A reveal that fails after the answer can no longer be
+ * retried by Stripe, so its send_at is stamped and the hourly cron
+ * (api/cron/send-gift-reveals.js) sends it.
+ *
+ * @returns {Promise<{ status: number, body: object, after?: () => Promise<void> }>}
+ */
 export async function handleGiftV2CheckoutSessionCompleted(session, {
   adminKey = process.env.BASE44_ADMIN_KEY,
   fetchImpl = fetch,
   sendEmail,
   now = () => new Date(),
   readDraft = readGiftDraft,
+  timings = {},
+  clock = () => Date.now(),
 } = {}) {
   const sessionId = session.id;
+  // Each step's duration, in ms, for the log line that closes the delivery.
+  const steps = { ...timings };
+  const timed = async (name, fn) => { const t = clock(); try { return await fn(); } finally { steps[name] = clock() - t; } };
   const priceId = session.line_items?.data?.[0]?.price?.id;
   const plan = resolvePlanFromPriceId(priceId) || (['pro', 'ultra'].includes(session.metadata?.plan) ? session.metadata.plan : null);
   if (!plan) {
@@ -96,10 +113,10 @@ export async function handleGiftV2CheckoutSessionCompleted(session, {
   }
 
   // ── 1. the row: found by its session, or written from the draft ─────────
-  let row = await findPlanGiftBySessionId(sessionId, adminKey, fetchImpl);
+  let row = await timed('findGift', () => findPlanGiftBySessionId(sessionId, adminKey, fetchImpl));
   let draft = null;
   if (!row || !row.sent_at || !row.claim_token_hash) {
-    const read = await readDraft(session.metadata?.gift_draft_id, { adminKey, now: now(), fetchImpl });
+    const read = await timed('readDraft', () => readDraft(session.metadata?.gift_draft_id, { adminKey, now: now(), fetchImpl }));
     if (!read.ok) {
       if (read.reason === 'missing' && !row) return { status: 502, body: { error: 'Gift draft not found, will retry' } };
       if (!row) {
@@ -136,7 +153,7 @@ export async function handleGiftV2CheckoutSessionCompleted(session, {
       purchased_at: t.toISOString(),
       is_test: session.livemode === false,
     };
-    const created = await createPlanGift(record, adminKey, fetchImpl);
+    const created = await timed('createGift', () => createPlanGift(record, adminKey, fetchImpl));
     if (!created.ok) {
       console.error(`${TAG} PlanGift create failed, will retry:`, { sessionId, status: created.status });
       return { status: 502, body: { error: 'Failed to record gift, will retry' } };
@@ -149,7 +166,7 @@ export async function handleGiftV2CheckoutSessionCompleted(session, {
   const edit = giftToken('edit', row.id, 1);
   if (!row.claim_token_hash) {
     const patch = { claim_token_hash: giftTokenHash(claim), edit_token_hash: giftTokenHash(edit) };
-    const stamped = await updatePlanGift(row.id, patch, adminKey, fetchImpl);
+    const stamped = await timed('storeTokenHashes', () => updatePlanGift(row.id, patch, adminKey, fetchImpl));
     if (!stamped.ok) {
       console.error(`${TAG} token hashes not stored, will retry:`, { sessionId, status: stamped.status });
       return { status: 502, body: { error: 'Failed to finish gift, will retry' } };
@@ -160,31 +177,39 @@ export async function handleGiftV2CheckoutSessionCompleted(session, {
   // must not resurrect version 1.
   if (row.claim_token_hash !== giftTokenHash(claim)) return { status: 200, body: { received: true } };
 
-  if (!draft) return { status: 200, body: { received: true } };
+  if (!draft) {
+    console.log(`${TAG} already recorded and sent, nothing to do:`, { sessionId, steps });
+    return { status: 200, body: { received: true } };
+  }
   const gift = { plan, giver: draft.giver, names: draft.names, email: draft.email, note: draft.note, noteStyle: draft.noteStyle, headlineKey: draft.headlineKey, photoId: draft.photoId };
   const tags = (kind) => [{ name: 'kind', value: kind }];
-
-  // ── 3. the couple's reveal, now, unless it is scheduled ─────────────────
-  if (!row.send_at && !row.sent_at) {
-    const { error } = await sendEmail({ ...buildRevealEmail(gift, { to: draft.email, claimUrl: claimUrl(claim) }), tags: tags('gift_reveal') }, { idempotencyKey: `gift-reveal-${row.id}` });
-    if (error) {
-      // The row stays unsent; the next delivery tries again.
-      console.error(`${TAG} reveal send failed, will retry`);
-      return { status: 502, body: { error: 'Reveal not sent, will retry' } };
-    }
-    const sentAt = now().toISOString();
-    const stamped = await updatePlanGift(row.id, { sent_at: sentAt }, adminKey, fetchImpl);
-    if (stamped.ok) row.sent_at = sentAt;
-  }
-
-  // ── 4. the giver's confirmation ─────────────────────────────────────────
   const buyerEmail = session.customer_details?.email || session.customer_email || '';
-  if (buyerEmail) {
-    const sendDate = row.send_at ? writtenDate(draft.date) : '';
-    const { error } = await sendEmail({ ...buildConfirmationEmail(gift, { to: buyerEmail, claimUrl: claimUrl(claim), editUrl: editUrl(edit), sendDate }), tags: tags('gift_confirmation') }, { idempotencyKey: `gift-confirm-${row.id}` });
-    if (error) console.error(`${TAG} confirmation send failed (gift recorded; not retried for this)`);
-  }
+  // The gift is recorded and its links can be checked: Stripe gets its answer
+  // now, and the emails go after it.
+  console.log(`${TAG} gift recorded, answering Stripe:`, { sessionId, plan, scheduled: !!row.send_at, steps });
 
-  console.log(`${TAG} gift recorded:`, { sessionId, plan, scheduled: !!row.send_at, revealSent: !!row.sent_at });
-  return { status: 200, body: { received: true } };
+  const after = async () => {
+    // ── 3. the couple's reveal, now, unless it is scheduled ───────────────
+    if (!row.send_at && !row.sent_at) {
+      const { error } = await timed('sendReveal', () => sendEmail({ ...buildRevealEmail(gift, { to: draft.email, claimUrl: claimUrl(claim) }), tags: tags('gift_reveal') }, { idempotencyKey: `gift-reveal-${row.id}` }));
+      if (error) {
+        // Stripe has its answer and will not retry: the hourly cron sends a
+        // version 2 gift whose send_at has passed and sent_at is empty.
+        console.error(`${TAG} reveal send failed after the answer; handed to the hourly cron:`, { sessionId });
+        await timed('handToCron', () => updatePlanGift(row.id, { send_at: now().toISOString() }, adminKey, fetchImpl));
+      } else {
+        const sentAt = now().toISOString();
+        const stamped = await timed('stampSentAt', () => updatePlanGift(row.id, { sent_at: sentAt }, adminKey, fetchImpl));
+        if (stamped.ok) row.sent_at = sentAt;
+      }
+    }
+    // ── 4. the giver's confirmation ───────────────────────────────────────
+    if (buyerEmail) {
+      const sendDate = row.send_at ? writtenDate(draft.date) : '';
+      const { error } = await timed('sendConfirmation', () => sendEmail({ ...buildConfirmationEmail(gift, { to: buyerEmail, claimUrl: claimUrl(claim), editUrl: editUrl(edit), sendDate }), tags: tags('gift_confirmation') }, { idempotencyKey: `gift-confirm-${row.id}` }));
+      if (error) console.error(`${TAG} confirmation send failed (gift recorded; not retried for this)`);
+    }
+    console.log(`${TAG} emails done after the answer:`, { sessionId, revealSent: !!row.sent_at, steps });
+  };
+  return { status: 200, body: { received: true }, after };
 }

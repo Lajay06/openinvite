@@ -73,6 +73,7 @@ import { hashId, encryptString, generateGiftCode } from '../_lib/giftAuth.js';
 import { createPlanGift, findPlanGiftBySessionId, findPlanGiftByPromotionCodeId, updatePlanGift } from '../_lib/planGift.js';
 import { isValidEmail } from '../_lib/security.js';
 import { isGiftV2Session, handleGiftV2CheckoutSessionCompleted } from '../_lib/giftV2Purchase.js';
+import { afterResponse } from '../_lib/afterResponse.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -523,6 +524,7 @@ export async function handleCheckoutSessionCompleted(verifiedSession, {
 }
 
 export default async function handler(req, res) {
+  const startedAt = Date.now();
   console.log('[stripe-webhook] invoked, method:', req.method);
 
   if (req.method !== 'POST') {
@@ -575,9 +577,11 @@ export default async function handler(req, res) {
         // handleCheckoutSessionCompleted — widened here rather than a
         // second retrieve call, since Stripe allows requesting it alongside
         // line_items in one round trip.
+        const retrieveStart = Date.now();
         const verifiedSession = await stripe.checkout.sessions.retrieve(session.id, {
           expand: ['line_items', 'total_details.breakdown.discounts'],
         });
+        const retrieveMs = Date.now() - retrieveStart;
 
         // Gift-mode purchases route to a completely separate branch that
         // never writes a User.plan — see this file's header comment and
@@ -587,9 +591,21 @@ export default async function handler(req, res) {
         // routes first, to its own handler in api/_lib/giftV2Purchase.js: no
         // coupon, the row written from the giver's draft under APP_ENC_KEY.
         // Every other gift is v1 and takes the branch below, unchanged.
-        const { status, body } = isGiftV2Session(verifiedSession)
-          ? await handleGiftV2CheckoutSessionCompleted(verifiedSession, { sendEmail: (opts, options) => resend.emails.send(opts, options) })
-          : verifiedSession.metadata?.purchaseType === 'gift'
+        // ANSWER FIRST FOR A VERSION 2 GIFT (owner ruling 2026-10-14): a
+        // delivery took 31.7s and Stripe gave up waiting. The gift and its
+        // token hashes are saved before the answer; the two emails go after
+        // it (giftV2Purchase.js's `after`, kept alive by afterResponse).
+        if (isGiftV2Session(verifiedSession)) {
+          const v2 = await handleGiftV2CheckoutSessionCompleted(verifiedSession, {
+            sendEmail: (opts, options) => resend.emails.send(opts, options),
+            timings: { untilRetrieve: retrieveStart - startedAt, retrieveSession: retrieveMs },
+          });
+          res.status(v2.status).json(v2.body);
+          console.log('[stripe-webhook] answered in ms:', Date.now() - startedAt, { status: v2.status });
+          if (v2.after) await afterResponse(v2.after(), { tag: '[stripe-webhook gift v2]' });
+          return undefined;
+        }
+        const { status, body } = verifiedSession.metadata?.purchaseType === 'gift'
             ? await handleGiftCheckoutSessionCompleted(verifiedSession)
             : await handleCheckoutSessionCompleted(verifiedSession);
         return res.status(status).json(body);
