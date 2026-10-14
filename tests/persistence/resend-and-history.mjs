@@ -30,7 +30,7 @@
 import fs from 'fs';
 import path from 'path';
 import { pass, fail, stripComments } from './_shared.mjs';
-import { sendHistoryFor, sendTypeLabel, newSendEntry, hashRecipient } from '../../src/lib/sendHistory.js';
+import { sendHistoryFor, sendTypeLabel, newSendEntry } from '../../src/lib/sendHistory.js';
 
 const ROOT = path.resolve(new URL('../../', import.meta.url).pathname);
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
@@ -85,19 +85,27 @@ export async function runResendAndHistory() {
   ok('  and the owner\'s types read in sentence case',
      sendTypeLabel('save_the_date') === 'Save the date' && sendTypeLabel('reminder') === 'Reminder', 'labels');
 
-  // ── 3. THE HASH IS A HASH, AND NEVER THE ADDRESS ────────────────────────
-  const h1 = await hashRecipient(' Ada@Example.com ');
-  const h2 = await hashRecipient('ada@example.com');
-  ok('the recipient hash normalizes case and whitespace', h1 === h2 && h1.length === 64, `${h1.slice(0, 12)}…`);
-  ok('  and never contains the address', !h1.includes('ada') && !h1.includes('@'), 'no address in it');
-  ok('  a different address hashes differently',
-     (await hashRecipient('bob@example.com')) !== h1, 'distinct');
-  ok('  no address yields no hash, rather than hashing an empty string',
-     (await hashRecipient('')) === '' && (await hashRecipient(null)) === '', 'empty');
-
+  // ── 3. NO HASH OF THE ADDRESS, AND NO ADDRESS EITHER ────────────────────
+  //
+  // This block used to assert that to_hash was a correct unkeyed SHA-256 of
+  // the address. The field is gone (owner ruling 2026-10-14): nothing read it,
+  // and on an entity with read:null an unkeyed digest of an email is
+  // recoverable from a candidate list, so it handed back what the encryption
+  // beside it withholds.
+  //
+  // What is asserted now is the absence, and the absence of any digest-shaped
+  // value, because "we stopped setting the field" and "we stopped deriving it"
+  // are different claims and only the second one is the point.
   const entry = await newSendEntry('reminder', 'a@b.c', new Date('2026-10-09T09:00:00Z'));
-  eq('a new entry is exactly type, sent_at and to_hash', Object.keys(entry).sort(), ['sent_at', 'to_hash', 'type']);
+  eq('a new entry is exactly type and sent_at', Object.keys(entry).sort(), ['sent_at', 'type']);
+  ok('  with no to_hash', !('to_hash' in entry), 'no to_hash key');
   ok('  with no plaintext address key', !('to' in entry) && !('email' in entry), 'no address key');
+  ok('  and nothing in it is a digest of the address',
+     !Object.values(entry).some((v) => typeof v === 'string' && /^[0-9a-f]{64}$/.test(v)),
+     'no 64-hex value');
+  ok('  and the address it was given appears nowhere',
+     !JSON.stringify(entry).includes('a@b.c') && !JSON.stringify(entry).includes('a%40b.c'),
+     'address absent');
   ok('  and the timestamp is the send time it was given', entry.sent_at === '2026-10-09T09:00:00.000Z', entry.sent_at);
 
   // ── 4. EXACTLY ONE GUEST, THROUGH THE EXISTING FLOW ─────────────────────
