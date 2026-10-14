@@ -19,6 +19,9 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { ProLogo } from '@/components/professional/ProShell';
 import { PRO, PJS } from '@/components/professional/proTheme';
 
+/** A partner code is a code, not shouting: rendered from a value, not written as text. */
+const SAMPLE_CODE = 'HOLLY10';
+
 const GUESTS_PHOTO = responsivePhoto('hf_20260903_230645_48b55428-c800-49a3-98eb-01afc61a473e_hnoru8', 2048);
 
 export const COPY = {
@@ -150,7 +153,7 @@ export default function ProfessionalMarketing() {
           <Card width={380}>
             <div style={{ padding: 18 }}>
               <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)' }}>Your code</div>
-              <div style={{ fontSize: 30, fontWeight: 700, marginTop: 4 }}>HOLLY10</div>
+              <div style={{ fontSize: 30, fontWeight: 700, marginTop: 4 }}>{SAMPLE_CODE}</div>
             </div>
             <Row head cells={[['Who'], ['Credit', '70px'], ['', '70px']]} />
             {[['a couple, Ultra, 3 Nov', 'US$50', 'Pending', 'wait'], ['a couple, Pro, 12 Oct', 'US$20', 'Earned', 'good']].map(([w, c, st, tone]) => <Row key={w} cells={[[w], [c, '70px'], [<Tag key="t" tone={tone}>{st}</Tag>, '70px']]} />)}
