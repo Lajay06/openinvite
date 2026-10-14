@@ -1,4 +1,5 @@
 import { emailShell, emailFooterRow, EMAIL_ACCENT, EMAIL_BLACK, EMAIL_FONT, EMAIL_MUTED, EMAIL_BODY_TEXT } from '../../src/lib/emailBrand.js';
+import { EMAIL_PHOTOS, AVA_ICON } from '../../src/lib/emailPhotos.js';
 import { greeting } from '../../src/lib/emailGreeting.js';
 
 /**
@@ -20,9 +21,7 @@ export function onboardingDay3Email({ name, email }) {
           <tr>
             <td style="padding:40px 40px 8px;">
               <!-- Ava avatar -->
-              <div style="width:48px;height:48px;border-radius:999px;background:linear-gradient(135deg,#ec4899,#9333ea);display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px;">
-                <span style="font-size:20px;line-height:1;">✦</span>
-              </div>
+              <img src="${AVA_ICON.url}" width="${AVA_ICON.width}" height="${AVA_ICON.height}" alt="${AVA_ICON.alt}" style="display:block;width:${AVA_ICON.width}px;height:${AVA_ICON.height}px;border:0;margin-bottom:20px;" />
               <h1 style="margin:0 0 12px;font-size:26px;font-weight:700;color:${EMAIL_BLACK};letter-spacing:-0.02em;line-height:1.2;">
                 ${hello}
               </h1>
@@ -82,5 +81,5 @@ ${emailFooterRow(`
                 Questions? Reply to this email, we read every one.
               `)}`;
 
-  return emailShell({ title: 'Have you tried Ava yet?', bodyRowsHtml });
+  return emailShell({ title: 'Have you tried Ava yet?', bodyRowsHtml, photo: EMAIL_PHOTOS.onboardingDay3 });
 }

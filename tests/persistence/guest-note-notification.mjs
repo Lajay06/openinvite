@@ -30,6 +30,7 @@
  */
 
 import { pass, fail, stripComments } from './_shared.mjs';
+import { EMAIL_PHOTOS } from '../../src/lib/emailPhotos.js';
 import { readFileSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -146,13 +147,27 @@ export async function runGuestNoteNotification() {
   ok('the footer line is in the body', email.html.includes(NOTE_FOOTER_LINE), 'footer');
   ok('replyTo travels with the rendered email', email.replyTo === 'hello@openinvite.com.au', email.replyTo);
 
-  // THE ITEM SAYS NO PHOTO. The retention pair open with a full-width image;
-  // this one must not, and "no photo" is checked by counting images rather
-  // than by looking for the one photo URL the retention emails happen to use.
+  // THIS ASSERTION FLIPPED ON 2026-10-14, and the flip is the ruling.
+  //
+  // It used to read "no photo: the only image is the logo mark", because the
+  // item that built this email said no photo. The owner then went through the
+  // email contact sheet and picked a header photo for each of the nine emails
+  // that had none, this one among them.
+  //
+  // So it now pins the photo instead: the owner's own id, at the size of the
+  // 600px card this email draws on, above the heading. The counting form is
+  // kept, because the point was always that the images here are known rather
+  // than merely present.
   const imgs = email.html.match(/<img\b/g) || [];
-  ok('no photo: the only image is the logo mark',
-     imgs.length === 1 && /<img src="[^"]*openinvite-icon-mark\.png"/.test(email.html),
-     `${imgs.length} image(s)`);
+  const photo = EMAIL_PHOTOS.guestNote;
+  ok('the header photo is the owner\'s pick, at the card\'s width',
+     email.html.includes(`<img src="${photo.url}" width="600" height="400"`),
+     photo.url.split('w_1200/')[1] || photo.url);
+  ok('  and it is the logo mark plus that photo, nothing else',
+     imgs.length === 2, `${imgs.length} image(s)`);
+  ok('  with the photo above the heading',
+     email.html.indexOf(photo.url) < email.html.search(/<h1/),
+     'photo first');
 
   // The retention emails' layout, which is what the item asks for.
   ok('the retention table layout, down to the card width',

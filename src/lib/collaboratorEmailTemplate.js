@@ -28,7 +28,7 @@ import { collaboratorPageLabels, collaboratorClosingCopy } from './collaboratorP
  * emailShell itself is untouched: every other brand email keeps it.
  */
 export const INVITE_GROUND = '#F5F5F5';
-export const INVITE_LOGO_URL = 'https://www.openinvite.com.au/email-assets/openinvite-logo-on-light-2x.png';
+export const INVITE_LOGO_URL = 'https://res.cloudinary.com/dsr84xknv/image/upload/v1791969939/email-assets/openinvite-logo-on-light-2x.png';
 export const INVITE_PHOTO_URL = 'https://res.cloudinary.com/dsr84xknv/image/upload/c_fill,ar_2:1,g_north,w_1200,f_jpg,q_auto/DTS_QUIET_GLAMOUR_DTS_Studio_Photos_ID8370_coshvz';
 
 function inviteShell({ title, preheader, bodyRowsHtml }) {

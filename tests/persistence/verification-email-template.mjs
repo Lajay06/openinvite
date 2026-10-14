@@ -61,8 +61,21 @@ export async function runVerificationEmailTemplate() {
      body.includes('https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto,w_1200,c_fill,ar_2:1,g_north/DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2'), 'photo');
 
   console.log('\n  The full logo, not the mark alone:\n');
+  // THE HOST MOVED ON 2026-10-14, and the move is the point.
+  //
+  // This pinned www.openinvite.com.au, which serves the file with
+  // cross-origin-resource-policy: same-site. curl sees 200 and a valid PNG; a
+  // browser, and therefore a mail client, refuses to render it cross-origin
+  // (net::ERR_BLOCKED_BY_RESPONSE.NotSameSite). The logo was broken in every
+  // inbox while every status check said it was fine.
+  //
+  // Cloudinary serves it with access-control-allow-origin: * and no CORP, so
+  // the asset is the same bytes from a host that lets mail clients draw it.
+  // Pinning the host is what keeps it from drifting back.
   ok('the logo is the full lockup PNG, about 160px wide, alt Openinvite',
-     /<img src="https:\/\/www\.openinvite\.com\.au\/email-assets\/openinvite-logo-on-light-2x\.png" width="160" height="37" alt="Openinvite" style="display:block;width:160px;height:37px;border:0;" \/>/.test(body), 'lockup');
+     /<img src="https:\/\/res\.cloudinary\.com\/dsr84xknv\/image\/upload\/v\d+\/email-assets\/openinvite-logo-on-light-2x\.png" width="160" height="37" alt="Openinvite" style="display:block;width:160px;height:37px;border:0;" \/>/.test(body), 'lockup');
+  ok('  and it is not served from a host that blocks it cross-origin',
+     !/www\.openinvite\.com\.au\/email-assets/.test(body), 'not the same-site host');
   ok('  and the mark alone is gone', !/openinvite-icon-mark/.test(body), 'no mark-only image');
   ok('  and no SVG anywhere', !/\.svg\b|<svg/i.test(body), 'PNG only');
   const png = fs.readFileSync(path.join(ROOT, 'public/email-assets/openinvite-logo-on-light-2x.png'));

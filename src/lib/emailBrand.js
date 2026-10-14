@@ -40,18 +40,71 @@ export const EMAIL_SUPPORT_ADDRESS = 'hello@openinvite.com.au';
 // unreliable in Outlook/older clients). This is the actual logo file — the
 // header renders this image alone (with an "Openinvite" alt for clients
 // that block remote images), not a separate plain-text wordmark next to it.
+/**
+ * THE FULL LOCKUP, mark and wordmark, exactly as the site header shows it.
+ *
+ * public/email-assets/openinvite-logo-on-light-2x.png, served from our own
+ * domain over https. A 2x asset: the file is 320x74, so it renders at 160x37,
+ * which is its exact ratio and therefore crops nothing. The descender on the
+ * wordmark is inside that height, and the header row leaves clear space under
+ * it rather than letting the next rule sit on the type.
+ *
+ * Owner ruling 2026-10-14: every brand email header carries this, never the
+ * mark alone. The code email (base44/emails/EmailVerification.html) and the
+ * collaborator invite already did; this brings the shared shell into line, and
+ * with it every email built on it.
+ *
+ * NOT an SVG. Outlook and older clients do not render SVG in mail at all, and
+ * a logo that silently fails is worse than one that is merely small.
+ */
+export const EMAIL_LOGO_URL = 'https://res.cloudinary.com/dsr84xknv/image/upload/v1791969939/email-assets/openinvite-logo-on-light-2x.png';
+export const EMAIL_LOGO_WIDTH = 160;
+export const EMAIL_LOGO_HEIGHT = 37;
+
 export const EMAIL_LOGO_MARK_URL = 'https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/v1785659181/email-assets/openinvite-icon-mark.png';
 
 export function escapeHtml(str) {
   return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-/** The one header row every brand email starts with — the logo mark, no separate text wordmark. */
+/**
+ * The one header row every brand email starts with: the FULL logo, mark and
+ * wordmark together.
+ *
+ * It was the 28px mark alone until 2026-10-14. Nineteen emails inherited that
+ * from this one function, which is why the contact sheet showed a mark-only
+ * header almost everywhere and why one edit here fixes all of them.
+ *
+ * The 24px of padding under the image is clear space, not decoration: at
+ * 160x37 the wordmark's descender reaches the bottom of the box, and a rule
+ * drawn tight under it reads as a line through the type.
+ */
 export function emailHeaderRow() {
   return `
           <tr>
-            <td style="padding:40px 40px 32px;border-bottom:1px solid ${EMAIL_DIVIDER};">
-              <img src="${EMAIL_LOGO_MARK_URL}" width="28" height="28" alt="Openinvite" style="display:block;width:28px;height:28px;" />
+            <td style="padding:40px 40px 24px;border-bottom:1px solid ${EMAIL_DIVIDER};">
+              <img src="${EMAIL_LOGO_URL}" width="${EMAIL_LOGO_WIDTH}" height="${EMAIL_LOGO_HEIGHT}" alt="Openinvite" style="display:block;width:${EMAIL_LOGO_WIDTH}px;height:${EMAIL_LOGO_HEIGHT}px;border:0;" />
+            </td>
+          </tr>`;
+}
+
+/**
+ * THE HEADER PHOTO, directly under the logo.
+ *
+ * width and height are the photo's own (src/lib/emailPhotos.js) because they
+ * are what reserves the right box while images are still off, which is how
+ * Outlook and Gmail both open. The background is a tone off the card's palette
+ * rather than nothing: on a white card an unstyled reserved box is a white
+ * rectangle, invisible, and the email appears to begin with a gap instead of a
+ * placeholder. Same reasoning as api/_lib/retentionEmails.js.
+ *
+ * @param {{url: string, alt: string, width: number, height: number}} photo
+ */
+export function emailPhotoRow(photo) {
+  return `
+          <tr>
+            <td style="padding:0;">
+              <img src="${photo.url}" width="${photo.width}" height="${photo.height}" alt="${escapeHtml(photo.alt)}" style="display:block;width:100%;max-width:${photo.width}px;height:auto;border:0;background:${EMAIL_CARD_BORDER};" />
             </td>
           </tr>`;
 }
@@ -74,9 +127,18 @@ export function emailFooterRow(footerHtml) {
 }
 
 /**
- * Small muted "Powered by openinvite" line for guest-facing emails, which
- * omit the full brand header so the couple's names stay the visual focus.
- * Pass into emailFooterRow() alongside the email's own footer copy.
+ * Small muted "Powered by Openinvite" line.
+ *
+ * NOTHING CALLS THIS as of 2026-10-14, and the reason is worth keeping rather
+ * than the function being quietly deleted. It existed for guest-facing emails,
+ * which omitted the full brand header so the couple's names stayed the visual
+ * focus; guest-reply was the last of those, and the owner ruled that every
+ * brand email carries the lockup. With a header at the top, this said the same
+ * thing again in 11px at the bottom.
+ *
+ * Left in place, uncalled, because the pattern may return for a surface that
+ * genuinely should not lead with our logo. A caller must pass it into
+ * emailFooterRow() alongside that email's own footer copy.
  */
 export function poweredByRow() {
   return `
@@ -101,16 +163,19 @@ export function poweredByRow() {
  *   — bodyRowsHtml is every `<tr>` between the header and the footer (the
  *   footer is not included automatically — call emailFooterRow() and
  *   append it yourself, since footer copy varies per email).
- *   showHeader defaults to true; set false for guest-facing emails (the
- *   couple's names should be the focus, not the Openinvite brand) — pair
- *   with poweredByRow() in the footer instead.
+ *   showHeader defaults to true and every brand email now leaves it there
+ *   (owner, 2026-10-14). It used to be set false for guest-facing emails so
+ *   the couple's names led; guest-reply was the last to do that.
  *   width is the card's max width; 560 for every brand email so far, 600
  *   for the gift emails (gifting v2), whose layout is drawn at 600.
  *   preheader, when given, is the inbox-list line: hidden in the open email,
  *   the same construction as api/_lib/retentionEmails.js. Without it the
  *   shell is unchanged, byte for byte.
+ *   photo, when given, is an entry from src/lib/emailPhotos.js and renders a
+ *   full-bleed header photo directly under the logo, where the retention
+ *   emails put theirs. Omitted, the shell is unchanged, byte for byte.
  */
-export function emailShell({ title, bodyRowsHtml, showHeader = true, preheader = '', width = 560 }) {
+export function emailShell({ title, bodyRowsHtml, showHeader = true, preheader = '', photo = null, width = 560 }) {
   const preheaderHtml = preheader
     ? `\n  <div style="display:none;font-size:1px;color:${EMAIL_BG};line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${escapeHtml(preheader)}</div>`
     : '';
@@ -127,6 +192,7 @@ export function emailShell({ title, bodyRowsHtml, showHeader = true, preheader =
       <td align="center">
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width:${width}px;background:#FFFFFF;border:1px solid ${EMAIL_CARD_BORDER};">
 ${showHeader ? emailHeaderRow() : ''}
+${photo ? emailPhotoRow(photo) : ''}
 ${bodyRowsHtml}
         </table>
       </td>
