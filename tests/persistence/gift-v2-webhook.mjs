@@ -132,9 +132,20 @@ export async function runGiftV2Webhook() {
     }, decryptGiftField);
     check('  every personal field is ciphertext that opens under APP_ENC_KEY, and no plain field holds one',
       sealing.length === 0, sealing.join('; ') || '5 sealed');
-    let frozenOpens = true;
-    try { const { decryptString } = await import('../../api/_lib/giftAuth.js'); decryptString(row.recipient_email_enc); } catch { frozenOpens = false; }
-    check('  and not under the frozen cipher', frozenOpens === false);
+    // THIS ASSERTION FLIPPED ON 2026-10-14, and the flip is the point.
+    //
+    // It used to read "and not under the frozen cipher": v2 sealed its fields
+    // under APP_ENC_KEY while api/_lib/giftAuth.js still derived its key from
+    // BASE44_ADMIN_KEY, so a v2 blob was deliberately unopenable by the v1
+    // module, and that separation was worth pinning.
+    //
+    // giftAuth.js now keys on APP_ENC_KEY too, so there is no frozen cipher
+    // left to be separate from. One key for both paths is the thing to hold,
+    // and a re-fork would show up right here. That no file under api/ keys on
+    // the credential is pinned separately, in app-key-sourcing.mjs.
+    let v1Opens = true;
+    try { const { decryptString } = await import('../../api/_lib/giftAuth.js'); decryptString(row.recipient_email_enc); } catch { v1Opens = false; }
+    check('  and the v1 module opens it too, both keyed on APP_ENC_KEY', v1Opens === true);
     check('  the choices plain, the buyer an APP_HASH_KEY HMAC, a test session marked is_test',
       row.headline_key === 'for_you' && row.photo_key === DRAFT.photoId && row.note_style === 'plain' && /^[0-9a-f]{64}$/.test(row.buyer_user_id_hash) && row.is_test === true);
     check('  only the hashes of the claim and edit tokens are stored',
