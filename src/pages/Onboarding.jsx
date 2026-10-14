@@ -236,6 +236,7 @@ export default function Onboarding() {
   // the start, so a write enqueued after that point would otherwise still
   // race saveOnboarding's own onboardingDraft:false write.
   const completingRef = useRef(false);
+  const welcomeSentRef = useRef(false);
   const draftWeddingIdRef = useRef(null);
   useEffect(() => { draftWeddingIdRef.current = draftWeddingId; }, [draftWeddingId]);
 
@@ -572,7 +573,14 @@ export default function Onboarding() {
       await base44.auth.updateMe({ onboardingCompleted: true, onboardingPath: path });
       completed.userFlag = true;
 
-      if (!wasAlreadyOnboarded) {
+      // NOT FOR A GIFT, AND ONCE (owner ruling 2026-10-14). This is the trial
+      // welcome; an account whose plan came from a gift is on no trial, and
+      // got its own welcome when the gift was claimed (api/_lib/giftClaim.js).
+      // And at most once per page: `user` is the copy loaded when the page
+      // opened, so a second save (the giftclaim02 test sent two, two seconds
+      // apart) read wasAlreadyOnboarded as false again.
+      if (!wasAlreadyOnboarded && user?.planSource !== 'gift' && !welcomeSentRef.current) {
+        welcomeSentRef.current = true;
         const token = localStorage.getItem('base44_access_token') || '';
         fetch('/api/on-signup', {
           method: 'POST',
