@@ -98,7 +98,7 @@ export function ProTable({ columns, rows, empty = 'Nothing here yet.', onRowClic
               tabIndex={onRowClick ? 0 : undefined}
               style={{ cursor: onRowClick ? 'pointer' : 'default' }}
             >
-              {columns.map((c) => <td key={c.key} style={{ ...s.td, textAlign: c.align || 'left', ...(c.wrap ? { whiteSpace: 'normal', overflowWrap: 'anywhere', paddingTop: 8, paddingBottom: 8, lineHeight: 1.35 } : {}) }}>{c.render ? c.render(r) : r[c.key]}</td>)}
+              {columns.map((c) => <td key={c.key} style={{ ...s.td, textAlign: c.align || 'left', ...(c.wrap ? { whiteSpace: 'normal', overflowWrap: 'break-word', paddingTop: 8, paddingBottom: 8, lineHeight: 1.35 } : {}) }}>{c.render ? c.render(r) : r[c.key]}</td>)}
             </tr>
           ))}
         </tbody>

@@ -71,7 +71,8 @@ export function runProfessionalDisplay() {
   const home = code('src/pages/professional/EventsHome.jsx');
   const wrapping = ['couple', 'venue', 'guests', 'pay', 'planner'].filter((k) => !new RegExp(`key: '${k}', label: '[^']+', wrap: true`).test(home));
   check('professional display: the events home wraps couple, venue, coming, next payment and planner instead of widening', wrapping.length === 0 && /c\.wrap \? \{ whiteSpace: 'normal'/.test(page), wrapping.join(', ') || 'five columns wrap');
-  check('professional display: the coming cell is "8 coming" on line one and the plus-ones smaller underneath', /<span style=\{\{ display: 'block', whiteSpace: 'nowrap' \}\}>\{e\.sum\.heads\.line\}<\/span>\{e\.sum\.heads\.sub && <span style=\{\{ \.\.\.s\.secondary, display: 'block'/.test(home), 'two lines');
+  check('professional display: the coming cell is "8 coming" on line one and the plus-ones smaller underneath', /<span style=\{\{ display: 'block', whiteSpace: 'nowrap' \}\}>\{e\.sum\.heads\.line\}<\/span>\{e\.sum\.heads\.sub && <span style=\{\{ \.\.\.s\.secondary, display: 'block', lineHeight: 1\.25, whiteSpace: 'nowrap' \}\}/.test(home), 'two lines, each whole');
+  check('professional display: planner names wrap between names, never inside one', /names\.flatMap\(\(n, i\) => \[i \? ' ' : null, <span key=\{n\} style=\{\{ whiteSpace: 'nowrap' \}\}>/.test(home), 'between names');
   check('professional display: the browser overflow check covers 1440 and 390 and the events home', /const WIDTHS = \[1440, 390\]/.test(read('scripts/professional-overflow.mjs')) && /'\/professional\/app',/.test(read('scripts/professional-overflow.mjs')), 'scripts/professional-overflow.mjs');
 
   // 4. One guest count, on the real seed.

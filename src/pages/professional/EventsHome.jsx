@@ -71,11 +71,12 @@ export default function EventsHome() {
     { key: 'togo', label: 'Days to go', render: (e) => daysToGoText(daysToGo(e.event_date)) },
     { key: 'kind', label: 'Guests from', render: (e) => (e.kind === 'linked' ? <Pill tone="good">Linked</Pill> : <Pill>Standalone</Pill>) },
     // "8 coming" on line one, "includes 1 plus-one" smaller underneath, inside the cell.
-    { key: 'guests', label: 'Coming', wrap: true, render: (e) => (e.sum.heads.heads === null ? 'Not linked yet' : <span><span style={{ display: 'block', whiteSpace: 'nowrap' }}>{e.sum.heads.line}</span>{e.sum.heads.sub && <span style={{ ...s.secondary, display: 'block', lineHeight: 1.25 }}>{e.sum.heads.sub}</span>}</span>) },
+    { key: 'guests', label: 'Coming', wrap: true, render: (e) => (e.sum.heads.heads === null ? 'Not linked yet' : <span><span style={{ display: 'block', whiteSpace: 'nowrap' }}>{e.sum.heads.line}</span>{e.sum.heads.sub && <span style={{ ...s.secondary, display: 'block', lineHeight: 1.25, whiteSpace: 'nowrap' }}>{e.sum.heads.sub}</span>}</span>) },
     { key: 'waiting', label: 'Waiting', align: 'right', render: (e) => (e.sum.waiting === null ? '' : e.sum.waiting) },
     { key: 'overdue', label: 'Overdue', align: 'right', render: (e) => (e.sum.overdue ? <Pill tone="bad">{e.sum.overdue}</Pill> : '0') },
-    { key: 'pay', label: 'Next payment', wrap: true, render: (e) => (e.sum.nextPayment && can(me, 'money.view', e) ? `${money(e.sum.nextPayment.amount)}, ${shortDate(e.sum.nextPayment.due_date, { weekday: false, year: false })}` : '') },
-    { key: 'planner', label: 'Planner', wrap: true, render: (e) => (e.assigned_member_ids || []).map(name).filter(Boolean).join(', ') || 'Unassigned' },
+    { key: 'pay', label: 'Next payment', wrap: true, render: (e) => (e.sum.nextPayment && can(me, 'money.view', e) ? <span><span style={{ display: 'block', whiteSpace: 'nowrap' }}>{money(e.sum.nextPayment.amount)}</span><span style={{ ...s.secondary, display: 'block', whiteSpace: 'nowrap' }}>{shortDate(e.sum.nextPayment.due_date, { weekday: false, year: false })}</span></span> : '') },
+    // Names wrap between names, never inside one.
+    { key: 'planner', label: 'Planner', wrap: true, render: (e) => { const names = (e.assigned_member_ids || []).map(name).filter(Boolean); return names.length ? names.flatMap((n, i) => [i ? ' ' : null, <span key={n} style={{ whiteSpace: 'nowrap' }}>{n}{i < names.length - 1 ? ',' : ''}</span>]) : 'Unassigned'; } },
   ];
 
   return (
