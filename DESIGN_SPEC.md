@@ -233,7 +233,7 @@ that is an asset limit, not a code one, and only a larger upload lifts it.
 - No text-transform: uppercase anywhere
 - No box-shadow on cards
 - No rounded corners except buttons, pills, badges
-- Every dashboard page must use DashboardPageHeader
+- Every couple dashboard page must use DashboardPageHeader; Professional pages use ProPage's header
 - All data fetched via base44.entities.* authenticated client
 - Sentence case everywhere — headings, labels, tabs, buttons
 - Muted text minimum contrast: rgba(10,10,10,0.6), never #888888
