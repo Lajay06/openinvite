@@ -6,6 +6,11 @@ const PJS = "'Plus Jakarta Sans', sans-serif";
 // The sentence this step has always asked. A caller that passes no `lines`
 // gets exactly these, in this order, with these placeholders, seeded from the
 // same draft fields, and onNext receives the same object as before.
+// A `fit` field's smallest size on its label's row, and below its label only
+// for a value too long for a whole row at FIT_FLOOR (owner ruling 2026-10-14).
+const FIT_FLOOR = 20;
+const FIT_LAST_RESORT = 12;
+
 const NAMES_LINES = [
   { key: 'couple1Name', text: 'Hi, my name is', placeholder: 'Your name' },
   { key: 'couple2Name', text: "and my partner's name is", placeholder: "Partner's name" },
@@ -22,16 +27,14 @@ const NAMES_LINES = [
  *
  * A line may also set `fit` (gifting v2, owner ruling 2026-10-13: every word
  * fits, nothing cut off): its field grows to its value, taking a row of its
- * own when it needs one, and if the value is still wider than the row the
- * type steps down from 32px, never below 12px. Lines without it, which is
- * every onboarding line, are unchanged.
+ * own when it needs one. Lines without it, which is every onboarding line,
+ * are unchanged.
  *
  * `size` (optional, default 32, the size onboarding has always used) sets the
  * whole sentence, labels and fields alike. Gift page 2 sets it smaller (owner
  * ruling 2026-10-14) so "and goes to" and an ordinary address share one line
- * at 1440; a `fit` field then stays on its label's row while the row has room
- * (it wraps below the label on a phone) and steps down from `size` when its
- * value is longer than the room left.
+ * at 1440; a `fit` field then stays on its label's row, stepping down from
+ * `size` to no smaller than 20px, and below that moves under its label.
  */
 export default function OnboardingStep1Names({ onNext, data, lines = NAMES_LINES, size = 32 }) {
   // SEEDED FROM THE DRAFT, like every other step. This one alone took no
@@ -58,16 +61,28 @@ export default function OnboardingStep1Names({ onNext, data, lines = NAMES_LINES
     document.fonts?.ready?.then(again);
     return () => { window.removeEventListener('resize', again); document.fonts?.removeEventListener?.('loadingdone', again); };
   }, [anyFit]);
-  // Steps a `fit` field's type down until its value shows whole.
+  // Sizes each `fit` field from the width its value needs, measured in the
+  // field's own face (owner ruling 2026-10-14): on its label's row it may
+  // step down to FIT_FLOOR (20px); below that it moves under its label and
+  // starts again from `size`. Only a value too long for a whole row at
+  // FIT_FLOOR goes smaller, to FIT_LAST_RESORT, so nothing is ever cut.
   useLayoutEffect(() => {
     const next = {};
+    const ctx = document.createElement('canvas').getContext('2d');
     for (const l of lines) {
       const el = fieldRefs.current[l.key];
-      if (!l.fit || !el) continue;
-      let px = size;
-      el.style.fontSize = `${px}px`;
-      while (px > 12 && el.scrollWidth > el.clientWidth + 1) { px -= 1; el.style.fontSize = `${px}px`; }
-      next[l.key] = px;
+      if (!l.fit || !el || !ctx) continue;
+      const row = el.parentElement;
+      const label = row?.querySelector('span');
+      const cs = getComputedStyle(el);
+      const pad = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) + 4;
+      const text = values[l.key] || l.placeholder || '';
+      const widthAt = (px) => { ctx.font = `${cs.fontWeight} ${px}px ${cs.fontFamily}`; return ctx.measureText(text).width + pad; };
+      const largest = (room, floor) => { let px = size; while (px > floor && widthAt(px) > room) px -= 1; return px; };
+      const inlineRoom = row.clientWidth - (label?.getBoundingClientRect().width || 0) - 12;
+      const inline = largest(inlineRoom, FIT_FLOOR);
+      if (widthAt(inline) <= inlineRoom) { next[l.key] = { px: inline, below: false }; continue; }
+      next[l.key] = { px: largest(row.clientWidth, FIT_LAST_RESORT), below: true };
     }
     setFitSize((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
   });
@@ -133,7 +148,7 @@ export default function OnboardingStep1Names({ onNext, data, lines = NAMES_LINES
                 className="s1-input"
                 ref={(el) => { fieldRefs.current[l.key] = el; }}
                 style={l.fit
-                  ? { ...inputStyle(values[l.key], focused === l.key), minWidth: 0, maxWidth: '100%', flex: '1 1 220px', fontSize: fitSize[l.key] || size }
+                  ? { ...inputStyle(values[l.key], focused === l.key), minWidth: 0, maxWidth: '100%', flex: fitSize[l.key]?.below ? '1 1 100%' : '1 1 0px', fontSize: fitSize[l.key]?.px || size }
                   : inputStyle(values[l.key], focused === l.key)}
                 onFocus={() => setFocused(l.key)}
                 onBlur={() => { setFocused(null); if (l.hint) setLeft((s) => ({ ...s, [l.key]: true })); }}

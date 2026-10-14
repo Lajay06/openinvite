@@ -30,7 +30,7 @@ import PlanBadge from '@/components/shared/PlanBadge';
 import { loadFontFamilies } from '@/lib/selfHostedFonts';
 import { CAVEAT, ensureCaveat } from '@/lib/caveatFont';
 import { claimReturnPath, rememberPendingClaim, clearPendingClaim } from '@/lib/giftClaimReturn';
-import { REVEAL, CLAIM, fill, headlineText, giftPhotoUrl, ONBOARDING_IMAGES } from '@/lib/giftingV2';
+import { REVEAL, CLAIM, fill, headlineText, giftPhotoUrl, ONBOARDING_IMAGES, noteFaceSize } from '@/lib/giftingV2';
 import { useAuth } from '@/lib/AuthContext';
 import { loadGiftByToken, claimGiftLink, isSampleToken, GIFT_LINKS_LIVE, GIFT_LANDING_KEY } from '@/lib/giftLinks';
 import { heading, sub, primary, BIG_BADGE } from '@/pages/GiftV2';
@@ -56,10 +56,11 @@ function withBadges(text) {
 // fontFamily.
 const NOTE_FACE = {
   plain: { '--oi-note-font': PJS, fontSize: 17, lineHeight: 1.6 },
-  // Every style at the plain note's size, the serif upright (owner ruling
-  // 2026-10-14), as in the email.
-  serif: { '--oi-note-font': "'Cormorant Garamond', Georgia, serif", fontStyle: 'normal', fontSize: 17, lineHeight: 1.6 },
-  hand: { '--oi-note-font': CAVEAT, fontSize: 17, lineHeight: 1.6 },
+  // Every style looks the plain note's size, on the plain note's line, the
+  // serif upright (owner ruling 2026-10-14), as in the email: noteFaceSize
+  // matches the lowercase height.
+  serif: { '--oi-note-font': "'Cormorant Garamond', Georgia, serif", fontStyle: 'normal', fontSize: noteFaceSize('serif', 17), lineHeight: '27.2px' },
+  hand: { '--oi-note-font': CAVEAT, fontSize: noteFaceSize('hand', 17), lineHeight: '27.2px' },
 };
 
 export function NoteCard({ note, noteStyle, giver }) {

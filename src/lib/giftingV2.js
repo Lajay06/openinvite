@@ -96,6 +96,22 @@ export const NOTE_STYLES = [
 ];
 export const NOTE_MAX = 600;
 
+/**
+ * THE NOTE STYLES LOOK ONE SIZE (owner ruling 2026-10-14): each face is set so
+ * its lowercase letters stand as tall as Plain's, not at Plain's font size.
+ * Measured in the browser with each self-hosted face loaded, as the height of
+ * a lowercase x per 100px of type: Plus Jakarta Sans 53.6, Cormorant Garamond
+ * (upright regular) 38.6, Caveat 35.4. So Serif is set 53.6 / 38.6 times and
+ * Handwriting 53.6 / 35.4 times the size Plain is set at. Every surface takes
+ * its size from here: the style pills, the claim page and the email.
+ */
+export const NOTE_X_HEIGHT = { plain: 53.6, serif: 38.6, hand: 35.4 };
+/** The size a style is set at to look as large as Plain set at `plainPx`. */
+export function noteFaceSize(style, plainPx) {
+  const xh = NOTE_X_HEIGHT[style] || NOTE_X_HEIGHT.plain;
+  return Math.round(((plainPx * NOTE_X_HEIGHT.plain) / xh) * 10) / 10;
+}
+
 export const PLAN_NAMES = { pro: 'Pro', ultra: 'Ultra' };
 
 /** The giver's seven pages, verbatim. */

@@ -22,15 +22,19 @@
  * text (noteImageUrl below).
  */
 import { EMAIL_FONT, EMAIL_ACCENT, EMAIL_BLACK, EMAIL_LOGO_MARK_URL, escapeHtml, emailShell, emailFooterRow } from './emailBrand.js';
-import { REVEAL, CONFIRM, fill, headlineText, giftPhotoUrl, photoLabel, DEFAULT_PHOTO_ID } from './giftingV2.js';
+import { REVEAL, CONFIRM, fill, headlineText, giftPhotoUrl, photoLabel, DEFAULT_PHOTO_ID, noteFaceSize } from './giftingV2.js';
 import { PLAN_BADGE_LABEL, PLAN_BADGE_EMAIL_IMAGE } from './planBadge.js';
 
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 const NOTE_INK = '1C1916';
 const NOTE_GROUND = 'F5F5F5';
-// 34px at 2x shows at 17px, the plain note's size; the serif is upright
-// regular, never italic (owner ruling 2026-10-14).
-const NOTE_FONTS = { serif: 'Cormorant%20Garamond_34', hand: 'Caveat_34' };
+// At 2x: each face set to look as large as the plain note's 17px, its
+// lowercase as tall (noteFaceSize), the serif upright regular, never italic
+// (owner ruling 2026-10-14).
+const NOTE_FONTS = {
+  serif: `Cormorant%20Garamond_${Math.round(noteFaceSize('serif', 34))}`,
+  hand: `Caveat_${Math.round(noteFaceSize('hand', 34))}`,
+};
 // A base for the text layer: the default photo, shrunk to one pixel and
 // colorized to the card's ground, so the text layer grows the canvas around
 // it. Cloudinary caches each derived note, so the base costs one fetch.

@@ -75,7 +75,7 @@ export async function runGiftingV2Pages() {
   const ultra = tpl.renderGiftReveal({ plan: 'ultra', giver: 'Sam', names: 'Isla and Theo', note: 'A note.', headlineKey: 'for_you' }).html;
   check('  while an Ultra email does name the Guest Suite', /Guest Suite/.test(ultra));
   check('the rendered note styles are Cloudinary text images, 1040 wide, with commas escaped',
-    /l_text:Caveat_34:/.test(tpl.noteImageUrl('a, b', 'hand')) && /l_text:Cormorant%20Garamond_34:/.test(tpl.noteImageUrl('a', 'serif')) && !/italic/.test(tpl.noteImageUrl('a', 'serif'))
+    /l_text:Caveat_52:/.test(tpl.noteImageUrl('a, b', 'hand')) && /l_text:Cormorant%20Garamond_47:/.test(tpl.noteImageUrl('a', 'serif')) && !/italic/.test(tpl.noteImageUrl('a', 'serif'))
       && tpl.noteImageUrl('a, b', 'hand').includes('a%252C%20b') && /w_1040,c_fit/.test(tpl.noteImageUrl('a', 'serif')) && tpl.noteImageUrl('a', 'plain') === '');
   check('  and carry the full note as alt text', /alt="A note\."/.test(tpl.renderGiftReveal({ note: 'A note.', noteStyle: 'serif' }).html));
 
@@ -146,10 +146,12 @@ export async function runGiftingV2Pages() {
   check('every gift email line says "gifted you", none "has given you"',
     /\{giver\} gifted you Openinvite \{Plan\}/.test(v2lib.REVEAL.subject) && Object.values(v2lib.REVEAL.body).every((b) => /^\{giver\} gifted you Openinvite /.test(b)) && !/has given you/.test(read('src/lib/giftingV2.js')));
   const claim = stripComments(read('src/pages/GiftClaim.jsx'));
-  check('the note styles are the plain size and the serif upright: the style pills, the claim page and the email',
-    !/data-style-sample="(hand|serif)"[^>]*fontSize/.test(page) && !/data-style-sample="serif"[^>]*italic/.test(page)
-      && /serif: \{[^}]*fontStyle: 'normal', fontSize: 17/.test(claim) && /hand: \{[^}]*fontSize: 17/.test(claim)
-      && /l_text:Cormorant%20Garamond_34:/.test(tpl.noteImageUrl('a', 'serif')) && /l_text:Caveat_34:/.test(tpl.noteImageUrl('a', 'hand')));
+  check('the note styles look the plain size (lowercase height matched, measured) and the serif is upright: the pills, the claim page and the email',
+    v2lib.NOTE_X_HEIGHT.plain === 53.6 && v2lib.NOTE_X_HEIGHT.serif === 38.6 && v2lib.NOTE_X_HEIGHT.hand === 35.4
+      && v2lib.noteFaceSize('serif', 17) === 23.6 && v2lib.noteFaceSize('hand', 17) === 25.7 && v2lib.noteFaceSize('plain', 17) === 17
+      && /data-style-sample="hand"[^>]*fontSize: noteFaceSize\('hand', 12\)/.test(page) && /data-style-sample="serif"[^>]*fontStyle: 'normal', fontSize: noteFaceSize\('serif', 12\)/.test(page)
+      && /serif: \{[^}]*fontStyle: 'normal', fontSize: noteFaceSize\('serif', 17\)/.test(claim) && /hand: \{[^}]*fontSize: noteFaceSize\('hand', 17\)/.test(claim)
+      && /l_text:Cormorant%20Garamond_47:/.test(tpl.noteImageUrl('a', 'serif')) && /l_text:Caveat_52:/.test(tpl.noteImageUrl('a', 'hand')));
   check('the note card is the brand gray #F5F5F5, in the email and on the claim page',
     /background:#F5F5F5/.test(tpl.renderGiftReveal({ note: 'n', noteStyle: 'plain' }).html) && /co_rgb:F5F5F5/.test(tpl.noteImageUrl('a', 'serif')) && /background: '#F5F5F5'/.test(claim) && !/F6F2EC/i.test(read('src/lib/giftEmailTemplate.js') + claim));
   return r;

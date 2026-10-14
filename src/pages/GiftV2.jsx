@@ -52,7 +52,7 @@ import { CAVEAT, ensureCaveat } from '@/lib/caveatFont';
 import { color } from '@/styles/tokens';
 import {
   isGiftingV2On, GIFT_DRAFT_KEY, GIFT_PHOTOS, DEFAULT_PHOTO_ID, giftPhotoUrl, photoLabel, ONBOARDING_IMAGES,
-  HEADLINES, DEFAULT_HEADLINE, headlineText, NOTE_STYLES, NOTE_MAX, COPY, fill,
+  HEADLINES, DEFAULT_HEADLINE, headlineText, NOTE_STYLES, NOTE_MAX, COPY, fill, noteFaceSize,
   timezoneInWords, browserTimezone,
 } from '@/lib/giftingV2';
 
@@ -198,10 +198,10 @@ export function styleSample(st) {
   // Through the .oi-note-face escape (src/index.css): the global Plus Jakarta
   // Sans lock beats an inline fontFamily, which is why these samples showed in
   // the product face. Color is inherited from the pill.
-  // Every style at the Plain label's size, and the serif upright (owner
-  // ruling 2026-10-14).
-  if (st.key === 'hand') return <span data-style-sample="hand" className="oi-note-face" style={{ '--oi-note-font': CAVEAT }}>{st.label}</span>;
-  if (st.key === 'serif') return <span data-style-sample="serif" className="oi-note-face" style={{ '--oi-note-font': "'Cormorant Garamond', Georgia, serif", fontStyle: 'normal' }}>{st.label}</span>;
+  // Every style looks the Plain label's size (12px), the serif upright (owner
+  // ruling 2026-10-14): noteFaceSize matches the lowercase height.
+  if (st.key === 'hand') return <span data-style-sample="hand" className="oi-note-face" style={{ '--oi-note-font': CAVEAT, fontSize: noteFaceSize('hand', 12), lineHeight: '15px' }}>{st.label}</span>;
+  if (st.key === 'serif') return <span data-style-sample="serif" className="oi-note-face" style={{ '--oi-note-font': "'Cormorant Garamond', Georgia, serif", fontStyle: 'normal', fontSize: noteFaceSize('serif', 12), lineHeight: '15px' }}>{st.label}</span>;
   return <span>{st.label}</span>;
 }
 

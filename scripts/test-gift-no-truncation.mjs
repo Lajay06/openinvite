@@ -15,8 +15,11 @@
  *     into page 2
  *   - the note's summary chip holds the whole note, not a slice of it
  *   - page 2 at 1440: "and goes to" and an ordinary address share one line,
- *     every line of the sentence at one size; a long address shrinks on that
- *     line instead of wrapping (owner ruling 2026-10-14)
+ *     every line of the sentence at one size; a longer address steps down on
+ *     that line to no smaller than 20px, and below that moves under its label
+ *     at 20px or more (owner rulings 2026-10-14)
+ *   - page 3: the three note style pills look one size, their lowercase
+ *     letters measured to within half a pixel of each other
  *   - page 1: every bullet's dot sits on the first line of its text
  *
  * A render guard, because each of these is a computed style or a measured
@@ -111,14 +114,31 @@ try {
         const ordinary = await row('la.jay06@gmail.com');
         check(`${w}, ${label}: "and goes to la.jay06@gmail.com" is one line, the sentence one size`,
           ordinary[1].sameRow && ordinary.every((f) => f.fs === ordinary[0].labelFs && f.labelFs === ordinary[0].labelFs), JSON.stringify(ordinary[1]));
+        const mid = await row('isla.and.theo@example.com');
+        check(`${w}, ${label}: a longer address steps down on its line, never below 20px`, mid[1].sameRow && mid[1].fs < mid[1].labelFs && mid[1].fs >= 20, JSON.stringify(mid[1]));
         const long = await row('isla.and.theo.featherstonehaugh@example.com');
-        check(`${w}, ${label}: a long address shrinks on its line instead of wrapping`, long[1].sameRow && long[1].fs < long[1].labelFs, JSON.stringify(long[1]));
+        check(`${w}, ${label}: an address that would go below 20px moves under its label instead`, !long[1].sameRow && long[1].fs >= 20, JSON.stringify(long[1]));
       }
       if (label === 'page 2') {
         await page.locator('input[type="email"]').fill('isla.and.theo.featherstonehaugh@example.com');
         await page.waitForTimeout(200);
         const long = await page.evaluate(findCuts);
         check(`${w}, ${label}: a long address shows whole`, long.length === 0, long.slice(0, 3).join(' | ') || 'none');
+      }
+      if (label === 'page 3, note open') {
+        const xh = await page.evaluate(async () => {
+          await document.fonts.ready;
+          const c = document.createElement('canvas').getContext('2d');
+          return ['plain', 'serif', 'hand'].map((k) => {
+            const el = k === 'plain' ? [...document.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Plain') : document.querySelector(`[data-style-sample="${k}"]`);
+            const cs = getComputedStyle(el);
+            c.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+            const m = c.measureText('x');
+            return { k, px: cs.fontSize, italic: cs.fontStyle === 'italic', xh: m.actualBoundingBoxAscent + m.actualBoundingBoxDescent };
+          });
+        });
+        const spread = Math.max(...xh.map((x) => x.xh)) - Math.min(...xh.map((x) => x.xh));
+        check(`${w}, ${label}: the three style pills look one size, the serif upright`, spread <= 0.5 && !xh.some((x) => x.italic), xh.map((x) => `${x.k} ${x.px} x ${x.xh.toFixed(2)}`).join(' | '));
       }
       if (label === 'page 3, all closed') {
         const chips = await page.evaluate(() => [...document.querySelectorAll('span')].map((s) => s.textContent.trim()));
