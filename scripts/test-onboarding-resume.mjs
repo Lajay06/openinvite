@@ -98,7 +98,7 @@ const browser = await chromium.launch();
   // against the whole page and passed on a 134-character shell — the page had
   // barely rendered and the guard called it a resume.
   check('it lands on the step the draft recorded (index 4, guestCount)',
-    /Step 4 of 8/.test(seen.text) && /How many guests are you expecting/i.test(seen.text),
+    /Step 4 of 7/.test(seen.text) && /How many guests are you expecting/i.test(seen.text),
     seen.text.split('\n').filter((l) => l.trim())[1] || '(nothing rendered)');
 
   // AND THE ANSWERS CAME WITH IT. Landing on the right step with empty fields
@@ -137,7 +137,7 @@ const browser = await chromium.launch();
   const back = await readWizard(page);
   const names = back.values.map((v) => v.toLowerCase());
   check('stepping back shows the names they had already given',
-    /Step 1 of 8/.test(back.text) && names.includes('nadia') && names.includes('theo'),
+    /Step 1 of 7/.test(back.text) && names.includes('nadia') && names.includes('theo'),
     `step-1 inputs: ${back.values.join(' · ') || '(empty)'}`);
   await ctx.close();
 }

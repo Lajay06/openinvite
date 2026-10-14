@@ -22,8 +22,6 @@ export default function OnboardingCompletion({ onDone, data, heading, body, chil
   const [showButton, setShowButton] = useState(false);
   const textPrimary = '#0A0A0A';
   const textMuted = 'rgba(10,10,10,0.6)';
-  const itemBg = '#FFFFFF';
-  const itemBorder = 'rgba(10,10,10,0.18)';
   // First token only, in case a full name ever ends up in this field —
   // this heading is a first-name greeting, not a full-name one.
   const firstName = data.couple1Name?.trim().split(/\s+/)[0] || '';
@@ -105,12 +103,10 @@ export default function OnboardingCompletion({ onDone, data, heading, body, chil
             initial={{ opacity: 0, x: -20 }}
             animate={completedItems.includes(item.id) ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
             transition={{ duration: 0.4 }}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 16,
-              background: itemBg,
-              border: `1px solid ${itemBorder}`,
-              padding: 16,
-            }}
+            // A plain list (owner ruling 2026-10-14): a green check, then
+            // the line, no border, no fill, starting at the heading's left
+            // edge, evenly spaced by the list's space-y-4.
+            style={{ display: 'flex', alignItems: 'center', gap: 12 }}
           >
             <motion.div
               initial={{ scale: 0 }}

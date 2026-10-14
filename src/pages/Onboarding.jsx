@@ -64,6 +64,14 @@ const PATH_A_STEPS = [
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
+// THE FORK IS PARKED (owner ruling 2026-10-14): "One last thing." (Tell us
+// more / Get started now) is hidden, and with it the detailed path it opened,
+// so onboarding goes from the last question straight to "You're all set",
+// saving on the way exactly as Get started now did. The step and its code
+// stay, hidden rather than deleted, for the reason pathA-cultural's comment
+// below gives; turning this back on restores them unchanged.
+export const ONBOARDING_FORK_ON = false;
+
 // Core steps counted in the progress indicator (excludes welcome, pathA, and completion)
 const CORE_STEPS = ['names', 'date', 'location', 'guestCount', 'weddingType', 'ava', 'universe', 'fork'];
 
@@ -79,6 +87,7 @@ const CORE_STEPS = ['names', 'date', 'location', 'guestCount', 'weddingType', 'a
 // — every one of them calls this or nextVisibleIndex() below rather than
 // re-deriving "is this a Pro account" separately.
 function isStepVisible(step, plan) {
+  if (!ONBOARDING_FORK_ON && (step === 'fork' || PATH_A_STEPS.includes(step))) return false;
   if (step === 'universe') return plan !== 'pro';
   // pathA-cultural ASKED A QUESTION THAT IS NOW ASKED EARLIER, ONCE.
   //
@@ -365,7 +374,13 @@ export default function Onboarding() {
         const rawResumeIndex = typeof draft.onboardingStepIndex === 'number'
           ? Math.min(Math.max(draft.onboardingStepIndex, 0), STEPS.length - 1)
           : 0;
-        const resumeIndex = nextVisibleIndex(rawResumeIndex, 1, currentUser?.plan);
+        let resumeIndex = nextVisibleIndex(rawResumeIndex, 1, currentUser?.plan);
+        // A draft saved on the parked fork (or past it) would walk forward to
+        // "You're all set" without the final save ever running: it resumes on
+        // the last question instead, whose Continue saves.
+        if (!ONBOARDING_FORK_ON && STEPS[resumeIndex] === 'completion') {
+          resumeIndex = nextVisibleIndex(STEPS.indexOf('completion') - 1, -1, currentUser?.plan);
+        }
         setCurrentStepIndex(resumeIndex);
       }
     } catch (err) {
@@ -419,11 +434,26 @@ export default function Onboarding() {
       });
   };
 
-  const goNext = (data) => {
+  const goNext = async (data) => {
     const merged = { ...onboardingData, ...(data || {}) };
     setOnboardingData(merged);
     const rawNext = Math.min(currentStepIndex + 1, STEPS.length - 1);
     const nextIndex = nextVisibleIndex(rawNext, 1, user?.plan);
+    // With the fork parked, the last question's Continue does what Get
+    // started now did: the quick save, with this step's answer in it, and
+    // only then "You're all set".
+    if (!ONBOARDING_FORK_ON && STEPS[nextIndex] === 'completion') {
+      setLastAttemptedPath('quick');
+      const result = await saveOnboarding('quick', merged);
+      if (result.success) {
+        setSaveError(null);
+        setCurrentStepIndex(nextIndex);
+        window.scrollTo(0, 0);
+      } else {
+        setSaveError(result.error || 'Something went wrong saving your details.');
+      }
+      return;
+    }
     setCurrentStepIndex(nextIndex);
     window.scrollTo(0, 0);
     // Only worth persisting once there's a name to identify the draft by —
@@ -477,7 +507,7 @@ export default function Onboarding() {
   // /api/claim-slug.
 
 
-  const saveOnboarding = async (path) => {
+  const saveOnboarding = async (path, data = onboardingData) => {
     // Set before anything else (even before awaiting the chain below) — a
     // persistDraftStep call already mid-chain, or one that fires while this
     // function is still running, must see this as true the moment its own
@@ -501,7 +531,7 @@ export default function Onboarding() {
       // this write is deterministically last.
       await draftSaveChain.current;
 
-      const payload = { ...buildWeddingDetailsPayload(onboardingData), onboardingDraft: false, onboardingStepIndex: null };
+      const payload = { ...buildWeddingDetailsPayload(data), onboardingDraft: false, onboardingStepIndex: null };
       // Claimed AFTER the record exists, through /api/claim-slug — a
       // client-side check-then-write cannot be made safe by tightening it, only
       // by moving it somewhere the race does not exist. The desired address is
@@ -531,7 +561,7 @@ export default function Onboarding() {
 
       completed.weddingDetails = true;
 
-      if (onboardingData.guestList.length > 0) {
+      if (data.guestList.length > 0) {
         // bulkCreate goes straight to the SDK, bypassing api/my-guests.js -- so
         // these guests, the very first a couple ever has, are the one creation
         // path that does not mint an RSVP token with the row. Sweeping them
@@ -539,7 +569,7 @@ export default function Onboarding() {
         // what makes a guest reachable by api/rsvp-link-request.js later.
         // Non-fatal: onboarding must not fail over a token a later sweep can
         // still mint.
-        const createdGuests = await Guest.bulkCreate(onboardingData.guestList);
+        const createdGuests = await Guest.bulkCreate(data.guestList);
         const newIds = (Array.isArray(createdGuests) ? createdGuests : [])
           .map(g => g?.id).filter(Boolean);
         if (newIds.length > 0) {
@@ -549,11 +579,11 @@ export default function Onboarding() {
       }
       completed.guests = true;
 
-      if (onboardingData.budget) {
+      if (data.budget) {
         await Budget.create({
           category: 'miscellaneous',
           item_name: 'Total Budget',
-          budgeted_amount: onboardingData.budget,
+          budgeted_amount: data.budget,
         });
       }
       completed.budget = true;
@@ -590,7 +620,7 @@ export default function Onboarding() {
       // the shape of request that race shows up in. Only report failure
       // (surfacing the manual "Retry" UI) once every attempt has come back
       // still mismatched.
-      const expectedNames = `${onboardingData.couple1Name || ''} & ${onboardingData.couple2Name || ''}`;
+      const expectedNames = `${data.couple1Name || ''} & ${data.couple2Name || ''}`;
       const VERIFY_ATTEMPTS = 3;
       const VERIFY_BACKOFF_MS = 500;
       let verifiedOk = false;
