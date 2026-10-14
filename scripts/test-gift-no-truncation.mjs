@@ -18,6 +18,9 @@
  *     every line of the sentence at one size; a longer address steps down on
  *     that line to no smaller than 20px, and below that moves under its label
  *     at 20px or more (owner rulings 2026-10-14)
+ *   - page 2 at 390: no field is set below 20px; an address too long for a
+ *     whole row at 20px wraps onto lines at 20px, after its @ or a dot where
+ *     both lines fit (owner ruling 2026-10-14)
  *   - page 3: the three note style pills look one size, their lowercase
  *     letters measured to within half a pixel of each other
  *   - page 1: every bullet's dot sits on the first line of its text
@@ -68,6 +71,8 @@ function findCuts() {
     // A field's value is not a text node: measured on its own. Found on gift
     // page 2, where "isla.and.theo@example.com" showed as "isla.and.theo@exa".
     if (el.tagName === 'INPUT' && el.value && el.scrollWidth > el.clientWidth + 1) cuts.push(`value cut: input "${el.value.slice(0, 30)}"`);
+    // The wrapped address field: no sideways scroll, no line hidden.
+    if (el.tagName === 'TEXTAREA' && el.dataset.s1Wrapped && (el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1)) cuts.push(`value cut: wrapped field "${el.value.slice(0, 30)}"`);
   }
   return cuts;
 }
@@ -119,8 +124,23 @@ try {
         const long = await row('isla.and.theo.featherstonehaugh@example.com');
         check(`${w}, ${label}: an address that would go below 20px moves under its label instead`, !long[1].sameRow && long[1].fs >= 20, JSON.stringify(long[1]));
       }
+      if (label === 'page 2' && w === 390) {
+        const field = () => page.locator('[data-s1-wrapped="email"], input[type="email"]').first();
+        const read = () => page.evaluate(() => [...document.querySelectorAll('.s1-input')].map((f) => ({
+          tag: f.tagName, fs: parseFloat(getComputedStyle(f).fontSize), lines: Math.round((f.clientHeight - parseFloat(getComputedStyle(f).paddingTop) - parseFloat(getComputedStyle(f).paddingBottom)) / parseFloat(getComputedStyle(f).lineHeight)), shown: f.value,
+        })));
+        await field().fill('isla.and.theo.featherstonehaugh@example.com');
+        await page.waitForTimeout(300);
+        const longest = await read();
+        check(`${w}, ${label}: no field below 20px; the long address wraps onto two lines at 20px`,
+          longest.every((f) => f.fs >= 20) && longest[1].tag === 'TEXTAREA' && longest[1].fs === 20 && longest[1].lines === 2, JSON.stringify(longest[1]));
+        await field().fill('isla.and.theo.longname@example.com');
+        await page.waitForTimeout(300);
+        const atBreak = (await read())[1];
+        check(`${w}, ${label}: where both lines fit, it breaks after the @`, atBreak.tag === 'TEXTAREA' && atBreak.shown.includes('@\u200B') && atBreak.lines === 2, JSON.stringify(atBreak));
+      }
       if (label === 'page 2') {
-        await page.locator('input[type="email"]').fill('isla.and.theo.featherstonehaugh@example.com');
+        await page.locator('[data-s1-wrapped="email"], input[type="email"]').first().fill('isla.and.theo.featherstonehaugh@example.com');
         await page.waitForTimeout(200);
         const long = await page.evaluate(findCuts);
         check(`${w}, ${label}: a long address shows whole`, long.length === 0, long.slice(0, 3).join(' | ') || 'none');
