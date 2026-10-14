@@ -59,9 +59,9 @@ Recorded by lane D. Lane D does not edit these files.
 5. Lane A, for a ruling. src/pages/OurStory.jsx:418 offers Ava the starter "Write a short version for the website". The Guest Suite ruling of 2026-10-11 was given for the app, where the copied starter now says "for the Guest Suite"; whether it reaches the web is the advisor's call.
 
 6. Lane A, fixed by #1025 (src/lib/sentRecipients.js); the phone follows it. Was: src/components/guests/SendInvitesModal.jsx:636 stamps invite_sent_at (and :652 appends send history) on every guest it minted a link for, including a guest alone on an invitation with no email, who was not sent anything. The modal says "with no email yet" for them before the send and "Invited" after it. The phone does the same through the same withTokens list, so a fix belongs on the web first and the shell follows it.
-7. Lane A, partly closed by #1029: src/lib/publishState.js now holds the rule and the phone uses it, but SendInvitesModal.jsx and api/send-invites.js still write the two conditions inline. Was: the publish rule a send obeys (a slug, and websiteEnabled === true) is written inline twice, in SendInvitesModal.jsx:526 and :530 and in api/send-invites.js:275, and the shell now holds a third copy because there is no module to import. A small predicate in src/lib would let all three consume one rule; tests/persistence/mobile-send-path.mjs checks that the three still agree until then.
+7. Lane A, ruled 2026-10-15: lane A moves the web send modal and api/send-invites.js onto src/lib/publishState.js. partly closed by #1029: src/lib/publishState.js now holds the rule and the phone uses it, but SendInvitesModal.jsx and api/send-invites.js still write the two conditions inline. Was: the publish rule a send obeys (a slug, and websiteEnabled === true) is written inline twice, in SendInvitesModal.jsx:526 and :530 and in api/send-invites.js:275, and the shell now holds a third copy because there is no module to import. A small predicate in src/lib would let all three consume one rule; tests/persistence/mobile-send-path.mjs checks that the three still agree until then.
 
-8. Lane A, for the ruling's reach. The web names the product in lower case 105 times across 43 files in src/pages, src/components and src/lib ("Guest suite" in chrome, "guest suite" in sentences). The 2026-10-12 ruling reads "everywhere it names the product"; lane D applied it to the shell only. One of the web's uses, src/pages/UniverseStudio.jsx's Ava starter "What should go on my guest suite?", reaches the phone through src/mobile/features/avaPages.generated.js, which is regenerated rather than edited, so it changes on the phone when it changes on the web.
+8. Lane A, ruled 2026-10-15: lane A applies "Guest Suite" capitals on the web. Was: for the ruling's reach. The web names the product in lower case 105 times across 43 files in src/pages, src/components and src/lib ("Guest suite" in chrome, "guest suite" in sentences). The 2026-10-12 ruling reads "everywhere it names the product"; lane D applied it to the shell only. One of the web's uses, src/pages/UniverseStudio.jsx's Ava starter "What should go on my guest suite?", reaches the phone through src/mobile/features/avaPages.generated.js, which is regenerated rather than edited, so it changes on the phone when it changes on the web.
 
 ## Lane D's own findings
 
@@ -117,7 +117,13 @@ the demo wedding has a slug and is live, the empty one has neither. Guard:
 tests/persistence/mobile-publish-state.mjs, anchored on the module's names and data-
 attributes, not the words.
 
-WHAT IS NEXT. The Google sign-in device check, on the owner's "ready for the sign-in check". The Google sign-in device check waits for the
+Merged as #1032. On 2026-10-15, after lane A's #1069 (merge dce40cdf) dropped to_hash
+from send_history: MOBILE_PARITY.md records it, and nothing under src/mobile builds, reads
+or displays to_hash.
+
+WHAT IS NEXT. The Google sign-in device check. The owner started it on 2026-10-15 and
+stopped before step 2 (open Xcode, run on the iPhone, reach "Continue with Google"); the
+owner resumes it. The browser slot was released. The Google sign-in device check waits for the
 owner's "ready for the sign-in check"; it needs the owner and the machine's one browser
 slot (the device run counts as it).
 
