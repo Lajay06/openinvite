@@ -95,6 +95,7 @@ export function seedData() {
     { id: 'mem_owner', workspace_id: ws, name: 'Holly Reed', email_display: 'holly@example.com', role: 'owner', assigned_event_ids: [], is_test: true },
     { id: 'mem_sam', workspace_id: ws, name: 'Sam Ortiz', email_display: 'sam@example.com', role: 'planner', assigned_event_ids: ['ev_1', 'ev_3'], is_test: true },
     { id: 'mem_jo', workspace_id: ws, name: 'Jo Park', email_display: 'jo@example.com', role: 'assistant', assigned_event_ids: ['ev_1'], is_test: true },
+    { id: 'mem_kai', workspace_id: ws, name: 'Kai Ruiz', email_display: 'kai@example.com', role: 'dayof', assigned_event_ids: ['ev_1'], is_test: true },
   ];
   const ProEvent = [
     { id: 'ev_1', workspace_id: ws, couple_names: 'Maya and Theo', event_date: addDays(23), venue: 'The Glasshouse, Napa', status: 'active', kind: 'linked', guest_estimate: 140, assigned_member_ids: ['mem_sam', 'mem_jo'], created_date: '2026-01-10T00:00:00Z', is_test: true },

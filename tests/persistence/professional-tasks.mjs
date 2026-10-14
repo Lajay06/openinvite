@@ -27,7 +27,7 @@ export function runProfessionalTasks(week = dueThisWeek) {
   check('professional tasks: overdue means past due and open', isTaskOverdue(t[0], now) && !isTaskOverdue(t[4], now), 'late only');
   check('professional tasks: stages run 12 months out to the day of, then the rest', byStage(t).map((g) => g.key).join() === '1,week,other', byStage(t).map((g) => g.key).join());
   if (week === dueThisWeek) {
-    const planted = (list, n) => list.filter((x) => !x.done && x.due_date >= '2026-10-14' && x.due_date <= '2026-10-21');
+    const planted = (list) => list.filter((x) => !x.done && x.due_date >= '2026-10-14' && x.due_date <= '2026-10-21');
     check('PLANT: a week that drops overdue tasks is told apart', planted(t, now).map((x) => x.id).sort().join() !== 'late,soon,theirs', 'planted drops late');
   }
   return r;

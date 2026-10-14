@@ -107,7 +107,7 @@ export function moveTo(rows, rowId, targetId) {
 
 /** A copy of a row, just after it. */
 export function duplicateOf(row) {
-  const { id, created_date, updated_date, ...rest } = row;
+  const { id: _id, created_date: _c, updated_date: _u, ...rest } = row;
   return { ...rest, sort: (row.sort ?? 0) + 0.5, status: 'todo' };
 }
 
