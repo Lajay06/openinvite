@@ -3,9 +3,10 @@
  *
  * THE CIPHER FOR A VERSION 2 PlanGift ROW'S PERSONAL FIELDS.
  * Owner ruling 2026-10-12 (gifting v2, item 7): v2 rows are encrypted under
- * APP_ENC_KEY, never the frozen cipher in giftAuth.js, whose key is derived
- * from BASE44_ADMIN_KEY, a bearer credential that is rotated. v1 rows keep
- * the frozen cipher and are never touched.
+ * APP_ENC_KEY. That ruling was written while giftAuth.js still derived its key
+ * from the admin credential, so this said "never the frozen cipher". #1054
+ * moved giftAuth.js onto APP_ENC_KEY too, and a production count found zero v1
+ * rows, so there is no second cipher left to be separate from.
  *
  * The shared AES-256-GCM construction (questionnaireCrypto's encryptPayload,
  * keyed by api/_lib/appKeys.js): iv || authTag || ciphertext, base64, one

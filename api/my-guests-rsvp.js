@@ -6,8 +6,8 @@
  * fix/rsvp-response-encryption (PR 1a) moved RsvpResponse's guest_id to a
  * one-way guest_id_hash (HMAC of guest.id) and its guest-level text fields
  * (song_request/note/dietary_restrictions/email) into one AES-256-GCM
- * encrypted_guest_level blob — both keyed off BASE44_ADMIN_KEY, a
- * server-only secret. The browser can no longer read RsvpResponse directly
+ * encrypted_guest_level blob — the hash keyed with APP_HASH_KEY and the blob
+ * with APP_ENC_KEY, both server-only secrets. The browser can no longer read RsvpResponse directly
  * the way it used to (base44.entities.RsvpResponse.filter(...)) — it has
  * no way to compute hashId(guest.id) or call decryptPayload() itself. This
  * endpoint does that work server-side and returns the exact same overlay

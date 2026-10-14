@@ -5,8 +5,10 @@
  *
  * WHY THIS IS A SEPARATE MODULE FROM questionnaireCrypto.js
  *
- * Not style — a different key, on purpose. questionnaireCrypto derives
- * everything from BASE44_ADMIN_KEY. RSVP tokens are the one secret in this app
+ * Not style — a different key, on purpose. questionnaireCrypto keys on
+ * APP_ENC_KEY and APP_HASH_KEY; it derived everything from BASE44_ADMIN_KEY
+ * when this was written, which is what the 2026-10-11 rotation destroyed.
+ * RSVP tokens are the one secret in this app
  * that is EXTERNALLY DISTRIBUTED: printed in invitations, sitting in guests'
  * inboxes, entirely beyond our control. Sharing a failure domain with the
  * admin key would mean an admin-key rotation — done for any unrelated reason,

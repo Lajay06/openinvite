@@ -104,8 +104,8 @@ function BudgetPlanner({ symbol = '$', savedBudget, defaultTotal, defaultCategor
     };
     try {
       // fix/weddingdetails-field-encryption (Step 2a): budget is AES-256-GCM
-      // ciphertext at rest — encrypting needs BASE44_ADMIN_KEY, a server-
-      // only secret, so this can no longer write WeddingDetails.budget
+      // ciphertext at rest — encrypting needs APP_ENC_KEY, a server-only
+      // secret, so this can no longer write WeddingDetails.budget
       // directly. This endpoint handles both update (existing wedding) and
       // create (first-ever save) the same way getMyWeddingDetails() did.
       const res = await fetch('/api/my-wedding-details', {

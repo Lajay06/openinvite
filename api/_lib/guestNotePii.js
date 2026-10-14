@@ -16,10 +16,9 @@
  *
  * SAME CONSTRUCTION AS THE GUEST PII BLOB, deliberately the same code rather
  * than a second copy of it: questionnaireCrypto's AES-256-GCM
- * encryptPayload/decryptPayload, keyed off BASE44_ADMIN_KEY. See
- * api/_lib/guestPii.js's header for why the admin key and not a dedicated
- * secret — this data is never distributed to a guest, so a rotation is a
- * re-runnable re-encrypt rather than an unrecoverable break.
+ * encryptPayload/decryptPayload, keyed with APP_ENC_KEY (api/_lib/appKeys.js).
+ * See api/_lib/guestPii.js's header: a dedicated secret, not the admin
+ * credential.
  *
  * THE PLAINTEXT COLUMNS ARE NEVER WRITTEN. guest_email and message stay
  * declared on the entity (undeclaring a field drops its stored data — gotcha

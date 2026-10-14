@@ -22,8 +22,10 @@
  * Response: 200 { ok: true, ownerUserId } or 403/404 { error }
  *        or 410 { error, expired: true } for an invite more than 7 days old
  *
- * Required env var: BASE44_ADMIN_KEY (only used here to derive the HMAC
- * hashes — the actual write uses the caller's own bearer token).
+ * Required env vars: COLLAB_HASH_KEY, which keys the grant hashes
+ * (api/_lib/collaboratorAuth.js), and APP_ENC_KEY, which encrypts owner_id_enc.
+ * BASE44_ADMIN_KEY is not read here at all: the write uses the caller's own
+ * bearer token.
  */
 
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from './_lib/security.js';
