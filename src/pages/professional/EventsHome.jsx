@@ -14,6 +14,7 @@ import { activeEvents, daysToGo, daysToGoText, shortDate, monthKey, monthLabel, 
 import { visibleEvents, can } from '@/lib/professionalAccess';
 import { ROUTES } from '@/lib/professionalBrand';
 import { money } from '@/lib/professionalMoney';
+import { linkedFeedFor } from '@/lib/professionalFeedClient';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { FilterPill } from '@/components/shared/TableToolbar';
 import { ProPage, ProTable, ProEmpty, Pill } from '@/components/professional/ProPage';
@@ -46,7 +47,7 @@ export default function EventsHome() {
   const rows = all
     .filter((e) => planner === 'all' || (e.assigned_member_ids || []).includes(planner))
     .filter((e) => month === 'all' || monthKey(e.event_date) === month)
-    .map((e) => ({ ...e, sum: eventSummary(e, store) }))
+    .map((e) => ({ ...e, sum: eventSummary(e, store, new Date(), linkedFeedFor(e, store)) }))
     .sort((a, b) => {
       if (sort === 'couple') return a.couple_names.localeCompare(b.couple_names);
       if (sort === 'overdue') return b.sum.overdue - a.sum.overdue;
@@ -67,7 +68,7 @@ export default function EventsHome() {
     { key: 'venue', label: 'Venue', render: (e) => e.venue || '' },
     { key: 'togo', label: 'Days to go', render: (e) => daysToGoText(daysToGo(e.event_date)) },
     { key: 'kind', label: 'Guests from', render: (e) => (e.kind === 'linked' ? <Pill tone="good">Linked</Pill> : <Pill>Standalone</Pill>) },
-    { key: 'guests', label: 'Coming / waiting', align: 'right', render: (e) => (e.sum.coming === null ? 'Live once opened' : `${e.sum.coming} / ${e.sum.waiting}`) },
+    { key: 'guests', label: 'Coming / waiting', align: 'right', render: (e) => (e.sum.coming === null ? 'Not linked yet' : `${e.sum.coming} / ${e.sum.waiting}`) },
     { key: 'overdue', label: 'Overdue', align: 'right', render: (e) => (e.sum.overdue ? <Pill tone="bad">{e.sum.overdue}</Pill> : '0') },
     { key: 'pay', label: 'Next payment', render: (e) => (e.sum.nextPayment && can(me, 'money.view', e) ? `${money(e.sum.nextPayment.amount)}, ${shortDate(e.sum.nextPayment.due_date, { weekday: false, year: false })}` : '') },
     { key: 'planner', label: 'Planner', render: (e) => (e.assigned_member_ids || []).map(name).filter(Boolean).join(', ') || 'Unassigned' },
@@ -127,7 +128,7 @@ export default function EventsHome() {
               <span style={s.secondary}>{shortDate(e.event_date)}, {daysToGoText(daysToGo(e.event_date)).toLowerCase()}</span>
               <span style={s.secondary}>{e.venue}</span>
               <span style={{ ...s.secondary, color: PRO.text }}>
-                {e.sum.coming === null ? 'Guests live once opened' : `${e.sum.coming} coming, ${e.sum.waiting} waiting`}{e.sum.overdue ? `, ${e.sum.overdue} overdue` : ''}
+                {e.sum.coming === null ? 'Not linked yet' : `${e.sum.coming} coming, ${e.sum.waiting} waiting`}{e.sum.overdue ? `, ${e.sum.overdue} overdue` : ''}
               </span>
             </button>
           ))}

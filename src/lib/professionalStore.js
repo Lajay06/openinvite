@@ -143,7 +143,8 @@ export function seedData() {
     { id: 'pg_4', event_id: 'ev_2', name: 'Tom Hart', dietary: '', meal: '', table: '', plus_one: false, child: false, status: 'waiting', is_test: true },
   ];
   const PlannerLink = [
-    { id: 'pl_1', event_id: 'ev_1', workspace_id: ws, event_type: 'approve', created_date: '2026-09-01T10:00:00Z', last_viewed_at: null, is_test: true },
+    { id: 'pl_0', event_id: 'ev_1', workspace_id: ws, event_type: 'request', created_date: '2026-08-30T10:00:00Z', is_test: true },
+    { id: 'pl_1', event_id: 'ev_1', workspace_id: ws, event_type: 'approve', shares: { totals: true, names: true, party: true, dietary: true, meals: true, tables: true, basics: true, schedule: true }, created_date: '2026-09-01T10:00:00Z', is_test: true },
   ];
   const PartnerCode = [{ id: 'pc_1', workspace_id: ws, code: 'HOLLY10', label: 'Main', status: 'active', created_date: '2026-09-01T00:00:00Z', is_test: true }];
   const PartnerReward = [

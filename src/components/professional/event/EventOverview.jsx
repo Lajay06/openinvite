@@ -9,6 +9,7 @@ import React, { useState } from 'react';
 import { useProStore, update, CURRENT } from '@/lib/professionalStore';
 import { can } from '@/lib/professionalAccess';
 import { eventSummary } from '@/lib/professionalEvents';
+import { linkedFeedFor } from '@/lib/professionalFeedClient';
 import { hasFreeSlot } from '@/lib/professionalPlans';
 import { money, dueThisWeek } from '@/lib/professionalMoney';
 import { Stat, Field } from '../ProPage';
@@ -18,7 +19,7 @@ import { TYPE } from '@/styles/typeScale';
 export default function EventOverview({ event, me, readOnly }) {
   const store = useProStore();
   const ws = store.ProWorkspace.find((w) => w.id === CURRENT.workspaceId);
-  const sum = eventSummary(event, store);
+  const sum = eventSummary(event, store, new Date(), linkedFeedFor(event, store));
   const due = dueThisWeek(store.PaymentDue.filter((p) => p.event_id === event.id));
   const editable = !readOnly && can(me, 'event.edit', event);
   const [draft, setDraft] = useState(null);

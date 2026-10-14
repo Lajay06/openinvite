@@ -71,7 +71,7 @@ export function findClashes(events) {
 }
 
 /** The figures a row on the events home shows, from the adapter's collections. */
-export function eventSummary(event, store, now = new Date()) {
+export function eventSummary(event, store, now = new Date(), feed = null) {
   const today = utcDay(now);
   const guests = (store.ProGuest || []).filter((g) => g.event_id === event.id);
   const tasks = (store.ProTask || []).filter((t) => t.event_id === event.id && !t.done);
@@ -80,7 +80,6 @@ export function eventSummary(event, store, now = new Date()) {
     .filter((p) => p.event_id === event.id && p.status === 'due')
     .sort((a, b) => String(a.due_date).localeCompare(String(b.due_date)))[0] || null;
   const linked = event.kind === 'linked';
-  const feed = linked ? (store.__feeds || {})[event.id] : null;
   const coming = linked ? feed?.totals?.coming ?? null : guests.filter((g) => g.status === 'coming').length;
   const waiting = linked ? feed?.totals?.waiting ?? null : guests.filter((g) => g.status === 'waiting').length;
   return { coming, waiting, overdue, nextPayment, linked };
