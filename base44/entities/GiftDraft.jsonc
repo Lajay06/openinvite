@@ -4,7 +4,7 @@
   "properties": {
     "draft_enc": {
       "type": "string",
-      "description": "AES-256-GCM ciphertext (base64, iv+authTag+ciphertext) of the in-progress gift draft. Key derived from BASE44_ADMIN_KEY, same construction as PlanGift's encrypted fields."
+      "description": "AES-256-GCM ciphertext (base64, iv+authTag+ciphertext) of the in-progress gift draft. Key derived from APP_ENC_KEY, same construction as PlanGift's encrypted fields."
     },
     "expires_at": {
       "type": "string",
@@ -13,7 +13,7 @@
     },
     "buyer_user_id_hash": {
       "type": "string",
-      "description": "HMAC-SHA256(BASE44_ADMIN_KEY, buyer.id). A hash, not the raw user id \u2014 read:null makes this entity listable unscoped by anyone with any API token."
+      "description": "HMAC-SHA256(APP_HASH_KEY, buyer.id). A hash, not the raw user id \u2014 read:null makes this entity listable unscoped by anyone with any API token."
     },
     "is_test": {
       "type": "boolean",

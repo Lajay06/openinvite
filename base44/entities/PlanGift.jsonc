@@ -131,7 +131,7 @@
     },
     "claim_token_hash": {
       "type": "string",
-      "description": "HMAC-SHA256 hash of the recipient's claim token \u2014 a hash, not the token, so the link cannot be reconstructed from a row."
+      "description": "HMAC-SHA256 hash of the recipient's claim token \u2014 a hash, not the token, so the link cannot be reconstructed from a row. Keyed with APP_HASH_KEY."
     },
     "claimed_at": {
       "type": "string",
@@ -144,7 +144,7 @@
     },
     "edit_token_hash": {
       "type": "string",
-      "description": "HMAC-SHA256 hash of the buyer's edit token \u2014 a hash, not the token."
+      "description": "HMAC-SHA256 hash of the buyer's edit token \u2014 a hash, not the token. Keyed with APP_HASH_KEY."
     },
     "version": {
       "type": "integer",

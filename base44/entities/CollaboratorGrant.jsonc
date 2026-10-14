@@ -50,7 +50,7 @@
     },
     "owner_id_enc": {
       "type": "string",
-      "description": "AES-256-GCM ciphertext (base64, iv+authTag+ciphertext) of the owner's real Base44 User.id, recoverable server-side only. Paired with owner_user_id_hash, which stays the lookup key \u2014 this is the decryptable form, for endpoints that must present or act on the owner id rather than merely match it."
+      "description": "AES-256-GCM ciphertext (base64, iv+authTag+ciphertext) of the owner's real Base44 User.id, recoverable server-side only. Paired with owner_user_id_hash, which stays the lookup key \u2014 this is the decryptable form, for endpoints that must present or act on the owner id rather than merely match it. Key derived from APP_ENC_KEY."
     }
   },
   "required": [
