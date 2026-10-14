@@ -180,6 +180,17 @@ export async function runGiftingV2Pages() {
         && /You gifted Isla and Theo Openinvite/.test(tpl.renderGiftConfirmation({ note: 'n', giver: 'Sam', names: 'Isla and Theo', email: 'a@b.co' }).html.replace(/<[^>]+>/g, ''))
         && !/have given/.test(read('src/lib/giftingV2.js')));
   }
+  // ── the logo, from Cloudinary (owner ruling 2026-10-14) ─────────────────
+  {
+    const LOGO = 'https://res.cloudinary.com/dsr84xknv/image/upload/v1791969939/email-assets/openinvite-logo-on-light-2x.png';
+    for (const [kind, html] of [['reveal', tpl.renderGiftReveal({ note: 'n', giver: 'Sam', names: 'Isla and Theo', headlineKey: 'for_you' }).html], ['receipt', tpl.renderGiftConfirmation({ note: 'n', giver: 'Sam', names: 'Isla and Theo', email: 'a@b.co' }).html]]) {
+      const logos = [...html.matchAll(/<img src="([^"]+)"[^>]*alt="Openinvite"[^>]*>/g)];
+      check(`the ${kind} email's logo is the full Cloudinary PNG at 160 by 37 with 24px clear under it, never the site's blocked copy or an SVG`,
+        tpl.GIFT_EMAIL_LOGO_URL === LOGO && logos.length === 1 && logos[0][1] === LOGO && /width="160" height="37"/.test(logos[0][0]) && /width:160px;height:37px;/.test(logos[0][0])
+          && /padding:28px 40px 24px;background:#FFFFFF;">\s*<img src="https:\/\/res\.cloudinary\.com/.test(html)
+          && !/openinvite\.com\.au\/email-assets|\.svg"|openinvite-icon-mark/.test(html));
+    }
+  }
   check('the note card is the brand gray #F5F5F5, in the email and on the claim page',
     /background:#F5F5F5/.test(tpl.renderGiftReveal({ note: 'n', noteStyle: 'plain' }).html) && /co_rgb:F5F5F5/.test(tpl.noteImageUrl('a', 'serif')) && /background: '#F5F5F5'/.test(claim) && !/F6F2EC/i.test(read('src/lib/giftEmailTemplate.js') + claim));
   return r;

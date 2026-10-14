@@ -21,7 +21,7 @@
  * Cloudinary's text overlay at 2x, 520px wide, with the full note as alt
  * text (noteImageUrl below).
  */
-import { EMAIL_FONT, EMAIL_ACCENT, EMAIL_BLACK, EMAIL_LOGO_MARK_URL, escapeHtml, emailShell, emailFooterRow } from './emailBrand.js';
+import { EMAIL_FONT, EMAIL_ACCENT, EMAIL_BLACK, escapeHtml, emailShell, emailFooterRow } from './emailBrand.js';
 import { REVEAL, CONFIRM, fill, headlineText, giftPhotoUrl, photoLabel, DEFAULT_PHOTO_ID, noteFaceSize } from './giftingV2.js';
 import { PLAN_BADGE_LABEL, PLAN_BADGE_EMAIL_IMAGE } from './planBadge.js';
 
@@ -144,15 +144,21 @@ export function planBadgeHtml(plan) {
 /** Escape a line, then set each plan name in it as its badge. */
 const withBadges = (text) => escapeHtml(text).replace(/\b(Ultra|Pro)\b/g, (m) => planBadgeHtml(m.toLowerCase()));
 
-/** The white header with the mark and the dark wordmark, shared by both emails. */
+/**
+ * THE FULL LOGO, FROM CLOUDINARY (owner ruling 2026-10-14). Lane A found the
+ * site's own /email-assets copy blocked in real inboxes: the site answers
+ * every file with cross-origin-resource-policy: same-site, so a webmail that
+ * loads images in the browser shows nothing. This is lane A's Cloudinary copy
+ * of the same file (#1061): mark and dark wordmark, a 2x PNG, never SVG.
+ */
+export const GIFT_EMAIL_LOGO_URL = 'https://res.cloudinary.com/dsr84xknv/image/upload/v1791969939/email-assets/openinvite-logo-on-light-2x.png';
+
+/** The white header: the full logo at 160 by 37, with 24px clear under it, shared by both emails. */
 function headerRow() {
   return `
           <tr>
-            <td style="padding:28px 40px;background:#FFFFFF;">
-              <table cellpadding="0" cellspacing="0" role="presentation"><tr>
-                <td style="vertical-align:middle;padding-right:8px;"><img src="${EMAIL_LOGO_MARK_URL}" width="24" height="24" alt="" style="display:block;width:24px;height:24px;" /></td>
-                <td style="vertical-align:middle;font-size:18px;font-weight:700;color:${EMAIL_BLACK};font-family:${EMAIL_FONT};">Openinvite</td>
-              </tr></table>
+            <td style="padding:28px 40px 24px;background:#FFFFFF;">
+              <img src="${GIFT_EMAIL_LOGO_URL}" width="160" height="37" alt="Openinvite" style="display:block;width:160px;height:37px;border:0;" />
             </td>
           </tr>`;
 }
