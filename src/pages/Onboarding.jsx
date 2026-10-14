@@ -170,7 +170,9 @@ const SHELL_STEP_IMAGES = {
   'pathA-vendors': `${CLOUDINARY_BASE}/f_auto,q_auto,c_fill,g_face,w_800,h_1200/DTS_Misc_1__Nick_Fancher__Nick_Fancher_Photos_ID6183_eapdy7.jpg`,
   'pathA-cultural': CULTURAL_IMAGE,
   'pathA-inspiration': `${CLOUDINARY_BASE}/f_auto,q_auto/DTS_TERRA_Chris_Abatzis_Photos_ID13220_kxcbio.jpg`,
-  completion: `${CLOUDINARY_BASE}/f_auto,q_auto/DTS_Community_Agust%C3%ADn_Far%C3%ADas_Photos_ID6374_iumjqj.jpg`,
+  // Its own photo, the owner's pick (2026-10-14): the old one was the gift
+  // done page's couple.
+  completion: `${CLOUDINARY_BASE}/f_auto,q_auto/DTS_BANDITS_PALI_MENDEZ_Photos_ID14218_hxqxw0.jpg`,
 };
 
 export default function Onboarding() {

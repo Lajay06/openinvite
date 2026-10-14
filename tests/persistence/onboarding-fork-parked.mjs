@@ -15,6 +15,7 @@
  *   - a draft saved on the parked fork resumes on the last question, never on
  *     "You're all set" with the save skipped
  *   - the "You're all set" checklist is a plain list: no border, no fill
+ *   - "You're all set" has its own photo (the owner's pick, 2026-10-14)
  */
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
@@ -53,5 +54,7 @@ export async function runOnboardingForkParked() {
   const item = done.slice(done.indexOf('CHECKLIST_ITEMS.map'), done.indexOf('</motion.div>', done.indexOf('CHECKLIST_ITEMS.map')));
   check('"You\'re all set" lists its three lines plainly: no border, no fill, no padding',
     /style=\{\{ display: 'flex', alignItems: 'center', gap: 12 \}\}/.test(item) && !/border|background|padding/.test(item));
+  check('"You\'re all set" has its own photo, the owner\'s pick, not the gift done page\'s',
+    /completion: `\$\{CLOUDINARY_BASE\}\/f_auto,q_auto\/DTS_BANDITS_PALI_MENDEZ_Photos_ID14218_hxqxw0\.jpg`/.test(src) && !/completion: [^\n]*ID6374_iumjqj/.test(src));
   return r;
 }
