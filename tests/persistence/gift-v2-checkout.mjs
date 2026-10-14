@@ -37,7 +37,18 @@ export async function runGiftV2Checkout() {
     check('  and its metadata is the plan, gift, gift_version 2 and the draft id, nothing personal',
       JSON.stringify(p.metadata) === JSON.stringify({ plan: 'ultra', purchaseType: 'gift', gift_version: '2', gift_draft_id: 'draft123' }));
     check('  it closes at 55 minutes, inside the draft\'s 60', p.expires_at === Math.floor(now.getTime() / 1000) + 55 * 60 && drafts.DRAFT_TTL_MS === 60 * 60 * 1000);
-    check('  and Stripe returns the giver to /gift', p.success_url === 'https://openinvite.com.au/gift?paid=1&session_id={CHECKOUT_SESSION_ID}' && p.cancel_url === 'https://openinvite.com.au/gift?checkout=cancelled');
+    check('  and Stripe returns the giver to /gift, with the draft id for the done page\'s names', p.success_url === 'https://openinvite.com.au/gift?paid=1&draft=draft123&session_id={CHECKOUT_SESSION_ID}' && p.cancel_url === 'https://openinvite.com.au/gift?checkout=cancelled');
+    {
+      const { readFileSync } = await import('node:fs');
+      const src = readFileSync(new URL('../../api/create-checkout-session.js', import.meta.url), 'utf8');
+      const tokens = await import('../../api/_lib/giftTokens.js');
+      // Owner ruling 2026-10-14: a preview deploy returns the giver to itself;
+      // production keeps appUrl exactly as before.
+      check('on a preview deploy Stripe returns the giver to that deploy; production keeps appUrl',
+        /const giftAppUrl = process\.env\.VERCEL_ENV === 'preview' \? giftOrigin\(process\.env\) : appUrl;/.test(src) && /appUrl: giftAppUrl, giftDraftId: draft\.id/.test(src)
+          && tokens.giftOrigin({ VERCEL_ENV: 'preview', VERCEL_BRANCH_URL: 'openinvite-git-gift-test-x.vercel.app' }) === 'https://openinvite-git-gift-test-x.vercel.app'
+          && tokens.giftOrigin({ VERCEL_ENV: 'preview', VERCEL_BRANCH_URL: 'evil.example.com' }) !== 'https://evil.example.com');
+    }
     const v1 = co.buildCheckoutSessionParams({ priceId: 'price_x', plan: 'ultra', currency: 'usd', userId: '', customerEmail: '', isGift: true, appUrl: 'https://openinvite.com.au' });
     check('v1 gift sessions are unchanged: both custom fields, the v1 metadata', v1.custom_fields?.length === 2 && JSON.stringify(v1.metadata) === JSON.stringify({ plan: 'ultra', purchaseType: 'gift' }));
 
