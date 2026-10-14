@@ -1,4 +1,5 @@
 import { emailShell, emailFooterRow, EMAIL_ACCENT, EMAIL_BLACK, EMAIL_FONT, EMAIL_MUTED, EMAIL_MUTED_LIGHT, EMAIL_BODY_TEXT } from '../../src/lib/emailBrand.js';
+import { EMAIL_PHOTOS } from '../../src/lib/emailPhotos.js';
 import { greeting } from '../../src/lib/emailGreeting.js';
 import { PRO_FEATURES, ULTRA_EXTRAS } from '../../src/lib/planFeatures.js';
 
@@ -121,5 +122,5 @@ ${emailFooterRow(`
                 If you decide not to upgrade, your account stays read-only after the trial. Your data is safe.
               `)}`;
 
-  return emailShell({ title: 'Your free trial has 7 days left', bodyRowsHtml });
+  return emailShell({ title: 'Your free trial has 7 days left', bodyRowsHtml, photo: EMAIL_PHOTOS.onboardingDay7 });
 }

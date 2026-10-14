@@ -7,6 +7,7 @@
  */
 
 import { emailShell, emailFooterRow, escapeHtml, EMAIL_FONT as FONT, EMAIL_ACCENT as ACCENT, EMAIL_BLACK as BLACK } from './emailBrand.js';
+import { EMAIL_PHOTOS } from './emailPhotos.js';
 import { countdownLabel } from './weddingCountdown.js';
 
 function statRow(label, value) {
@@ -131,5 +132,5 @@ ${activityHtml}
           </tr>
 ${emailFooterRow(`You're receiving this because weekly digest emails are on for your Openinvite account. <a href="${escapeHtml(accountUrl)}" style="color:rgba(0,0,0,0.5);">Manage this in Account &rarr; Notifications</a>.`)}`;
 
-  return { subject, html: emailShell({ title: subject, bodyRowsHtml }) };
+  return { subject, html: emailShell({ title: subject, bodyRowsHtml, photo: EMAIL_PHOTOS.weeklyDigest }) };
 }

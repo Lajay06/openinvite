@@ -1,4 +1,5 @@
 import { emailShell, emailFooterRow, EMAIL_BLACK, EMAIL_MUTED, EMAIL_BODY_TEXT, EMAIL_SUPPORT_ADDRESS } from '../../src/lib/emailBrand.js';
+import { EMAIL_PHOTOS } from '../../src/lib/emailPhotos.js';
 
 /**
  * Gift receipt email — sent to the BUYER immediately after a gift-mode
@@ -69,5 +70,5 @@ ${emailFooterRow(`
                 Questions about this gift? Reply to this email or contact us at ${EMAIL_SUPPORT_ADDRESS}
               `)}`;
 
-  return emailShell({ title: `Your Openinvite ${planLabel} gift is confirmed`, bodyRowsHtml });
+  return emailShell({ title: `Your Openinvite ${planLabel} gift is confirmed`, bodyRowsHtml, photo: EMAIL_PHOTOS.giftReceipt });
 }

@@ -56,6 +56,27 @@ export function emailHeaderRow() {
           </tr>`;
 }
 
+/**
+ * THE HEADER PHOTO, directly under the logo.
+ *
+ * width and height are the photo's own (src/lib/emailPhotos.js) because they
+ * are what reserves the right box while images are still off, which is how
+ * Outlook and Gmail both open. The background is a tone off the card's palette
+ * rather than nothing: on a white card an unstyled reserved box is a white
+ * rectangle, invisible, and the email appears to begin with a gap instead of a
+ * placeholder. Same reasoning as api/_lib/retentionEmails.js.
+ *
+ * @param {{url: string, alt: string, width: number, height: number}} photo
+ */
+export function emailPhotoRow(photo) {
+  return `
+          <tr>
+            <td style="padding:0;">
+              <img src="${photo.url}" width="${photo.width}" height="${photo.height}" alt="${escapeHtml(photo.alt)}" style="display:block;width:100%;max-width:${photo.width}px;height:auto;border:0;background:${EMAIL_CARD_BORDER};" />
+            </td>
+          </tr>`;
+}
+
 /** @param {string} footerHtml — inline HTML for the small muted footer paragraph. */
 export function emailFooterRow(footerHtml) {
   return `
@@ -109,8 +130,11 @@ export function poweredByRow() {
  *   preheader, when given, is the inbox-list line: hidden in the open email,
  *   the same construction as api/_lib/retentionEmails.js. Without it the
  *   shell is unchanged, byte for byte.
+ *   photo, when given, is an entry from src/lib/emailPhotos.js and renders a
+ *   full-bleed header photo directly under the logo, where the retention
+ *   emails put theirs. Omitted, the shell is unchanged, byte for byte.
  */
-export function emailShell({ title, bodyRowsHtml, showHeader = true, preheader = '', width = 560 }) {
+export function emailShell({ title, bodyRowsHtml, showHeader = true, preheader = '', photo = null, width = 560 }) {
   const preheaderHtml = preheader
     ? `\n  <div style="display:none;font-size:1px;color:${EMAIL_BG};line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${escapeHtml(preheader)}</div>`
     : '';
@@ -127,6 +151,7 @@ export function emailShell({ title, bodyRowsHtml, showHeader = true, preheader =
       <td align="center">
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width:${width}px;background:#FFFFFF;border:1px solid ${EMAIL_CARD_BORDER};">
 ${showHeader ? emailHeaderRow() : ''}
+${photo ? emailPhotoRow(photo) : ''}
 ${bodyRowsHtml}
         </table>
       </td>

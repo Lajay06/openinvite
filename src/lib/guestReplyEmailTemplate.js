@@ -18,6 +18,7 @@
  */
 
 import { emailShell, emailFooterRow, poweredByRow, escapeHtml, EMAIL_FONT as FONT, EMAIL_ACCENT as ACCENT, EMAIL_BLACK as BLACK } from './emailBrand.js';
+import { EMAIL_PHOTOS } from './emailPhotos.js';
 
 function nl2br(str) {
   return escapeHtml(str).replace(/\n/g, '<br />');
@@ -69,5 +70,5 @@ ${originalHtml}
 ${emailFooterRow(`This is a reply to the note you sent ${escapeHtml(couple)} from their wedding site. Replying to this email goes straight to them.`)}
 ${poweredByRow()}`;
 
-  return { subject, html: emailShell({ title: subject, bodyRowsHtml, showHeader: false }) };
+  return { subject, html: emailShell({ title: subject, bodyRowsHtml, photo: EMAIL_PHOTOS.guestReply, showHeader: false }) };
 }

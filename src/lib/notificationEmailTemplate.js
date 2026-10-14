@@ -7,6 +7,7 @@
  */
 
 import { emailShell, emailFooterRow, escapeHtml, EMAIL_FONT as FONT, EMAIL_ACCENT as ACCENT, EMAIL_BLACK as BLACK } from './emailBrand.js';
+import { EMAIL_PHOTOS } from './emailPhotos.js';
 
 /**
  * @param {{ title: string, body?: string, link: string, ctaLabel?: string }} params
@@ -50,5 +51,5 @@ export function renderNotificationEmail({ title, body, link, ctaLabel = 'View in
           </tr>
 ${emailFooterRow('You\'re receiving this because instant email notifications are on for your Openinvite account. Manage this in Account &rarr; Notifications.')}`;
 
-  return { subject, html: emailShell({ title: subject, bodyRowsHtml }) };
+  return { subject, html: emailShell({ title: subject, bodyRowsHtml, photo: EMAIL_PHOTOS.notification }) };
 }

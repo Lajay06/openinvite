@@ -1,4 +1,5 @@
 import { emailShell, emailFooterRow, EMAIL_ACCENT, EMAIL_BLACK, EMAIL_FONT, EMAIL_MUTED, EMAIL_DIVIDER, EMAIL_BODY_TEXT, EMAIL_SUPPORT_ADDRESS } from '../../src/lib/emailBrand.js';
+import { EMAIL_PHOTOS } from '../../src/lib/emailPhotos.js';
 
 /**
  * Purchase confirmation email — sent after a successful Stripe checkout.
@@ -68,5 +69,5 @@ ${emailFooterRow(`
                 Questions about your purchase? Reply to this email or contact us at ${EMAIL_SUPPORT_ADDRESS}
               `)}`;
 
-  return emailShell({ title: `Your Openinvite ${planLabel} plan is confirmed`, bodyRowsHtml });
+  return emailShell({ title: `Your Openinvite ${planLabel} plan is confirmed`, bodyRowsHtml, photo: EMAIL_PHOTOS.purchaseConfirmation });
 }
