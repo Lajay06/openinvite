@@ -20,6 +20,7 @@ import { FilterPill } from '@/components/shared/TableToolbar';
 import { ProPage, ProTable, ProEmpty, Pill } from '@/components/professional/ProPage';
 import NewEventDialog from '@/components/professional/NewEventDialog';
 import { ProAvaButton } from '@/components/professional/ProAva';
+import { downloadCsv } from '@/components/professional/proExport';
 import { PRO, s } from '@/components/professional/proTheme';
 import { TYPE } from '@/styles/typeScale';
 
@@ -83,6 +84,7 @@ export default function EventsHome() {
       actions={(
         <>
           <ProAvaButton label="Ask Ava what's due" prompt="week" />
+          <button type="button" style={s.btnSecondary} onClick={() => downloadCsv('events.csv', ['Couple', 'Date', 'Venue', 'Days to go', 'Guests from', 'Coming', 'Waiting', 'Overdue tasks', 'Planner'], rows.map((e) => [e.couple_names, e.event_date || '', e.venue || '', daysToGo(e.event_date) ?? '', e.kind === 'linked' ? 'Linked' : 'Standalone', e.sum.coming ?? '', e.sum.waiting ?? '', e.sum.overdue, (e.assigned_member_ids || []).map(name).filter(Boolean).join('; ')]))}>CSV</button>
           {can(me, 'workspace.events.create') && <button type="button" style={s.btnPrimary} onClick={() => setCreating(true)}>New event</button>}
         </>
       )}
