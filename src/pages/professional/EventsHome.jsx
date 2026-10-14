@@ -60,21 +60,22 @@ export default function EventsHome() {
   const open = (e) => nav(`${ROUTES.app}/events/${e.id}`);
 
   const columns = [
-    { key: 'couple', label: 'Couple', render: (e) => (
+    { key: 'couple', label: 'Couple', wrap: true, render: (e) => (
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600 }}>
         {clashIds.has(e.id) && <AlertTriangle size={13} color="#854d0e" aria-label="Date clash" />}
         {e.couple_names}
       </span>
     ) },
     { key: 'date', label: 'Date', render: (e) => shortDate(e.event_date) },
-    { key: 'venue', label: 'Venue', render: (e) => e.venue || '' },
+    { key: 'venue', label: 'Venue', wrap: true, render: (e) => e.venue || '' },
     { key: 'togo', label: 'Days to go', render: (e) => daysToGoText(daysToGo(e.event_date)) },
     { key: 'kind', label: 'Guests from', render: (e) => (e.kind === 'linked' ? <Pill tone="good">Linked</Pill> : <Pill>Standalone</Pill>) },
-    { key: 'guests', label: 'Coming', render: (e) => (e.sum.heads.heads === null ? 'Not linked yet' : <span>{e.sum.heads.line}{e.sum.heads.sub && <span style={{ ...s.secondary, display: 'block', lineHeight: 1.2 }}>{e.sum.heads.sub}</span>}</span>) },
+    // "8 coming" on line one, "includes 1 plus-one" smaller underneath, inside the cell.
+    { key: 'guests', label: 'Coming', wrap: true, render: (e) => (e.sum.heads.heads === null ? 'Not linked yet' : <span><span style={{ display: 'block', whiteSpace: 'nowrap' }}>{e.sum.heads.line}</span>{e.sum.heads.sub && <span style={{ ...s.secondary, display: 'block', lineHeight: 1.25 }}>{e.sum.heads.sub}</span>}</span>) },
     { key: 'waiting', label: 'Waiting', align: 'right', render: (e) => (e.sum.waiting === null ? '' : e.sum.waiting) },
     { key: 'overdue', label: 'Overdue', align: 'right', render: (e) => (e.sum.overdue ? <Pill tone="bad">{e.sum.overdue}</Pill> : '0') },
-    { key: 'pay', label: 'Next payment', render: (e) => (e.sum.nextPayment && can(me, 'money.view', e) ? `${money(e.sum.nextPayment.amount)}, ${shortDate(e.sum.nextPayment.due_date, { weekday: false, year: false })}` : '') },
-    { key: 'planner', label: 'Planner', render: (e) => (e.assigned_member_ids || []).map(name).filter(Boolean).join(', ') || 'Unassigned' },
+    { key: 'pay', label: 'Next payment', wrap: true, render: (e) => (e.sum.nextPayment && can(me, 'money.view', e) ? `${money(e.sum.nextPayment.amount)}, ${shortDate(e.sum.nextPayment.due_date, { weekday: false, year: false })}` : '') },
+    { key: 'planner', label: 'Planner', wrap: true, render: (e) => (e.assigned_member_ids || []).map(name).filter(Boolean).join(', ') || 'Unassigned' },
   ];
 
   return (

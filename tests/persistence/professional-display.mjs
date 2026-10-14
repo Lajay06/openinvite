@@ -67,6 +67,13 @@ export function runProfessionalDisplay() {
   check('professional display: each card reads time, item, length, then the rest', order.every((x, i) => x > 0 && (i === 0 || x > order[i - 1])), order.join(','));
   check('professional display: "Show" stays on one line with its dropdown', /whiteSpace: 'nowrap'[^>]*>\s*<span style=\{s\.label\}>Show<\/span>/.test(rs), 'nowrap');
 
+  // 3b. The events home fits its box at 1440 (owner ruling 2026-10-14): long cells wrap, the table never widens.
+  const home = code('src/pages/professional/EventsHome.jsx');
+  const wrapping = ['couple', 'venue', 'guests', 'pay', 'planner'].filter((k) => !new RegExp(`key: '${k}', label: '[^']+', wrap: true`).test(home));
+  check('professional display: the events home wraps couple, venue, coming, next payment and planner instead of widening', wrapping.length === 0 && /c\.wrap \? \{ whiteSpace: 'normal'/.test(page), wrapping.join(', ') || 'five columns wrap');
+  check('professional display: the coming cell is "8 coming" on line one and the plus-ones smaller underneath', /<span style=\{\{ display: 'block', whiteSpace: 'nowrap' \}\}>\{e\.sum\.heads\.line\}<\/span>\{e\.sum\.heads\.sub && <span style=\{\{ \.\.\.s\.secondary, display: 'block'/.test(home), 'two lines');
+  check('professional display: the browser overflow check covers 1440 and 390 and the events home', /const WIDTHS = \[1440, 390\]/.test(read('scripts/professional-overflow.mjs')) && /'\/professional\/app',/.test(read('scripts/professional-overflow.mjs')), 'scripts/professional-overflow.mjs');
+
   // 4. One guest count, on the real seed.
   const store = Object.fromEntries(COLLECTIONS.map((c) => [c, list(c)]));
   const now = new Date();
