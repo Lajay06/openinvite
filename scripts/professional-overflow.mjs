@@ -1,15 +1,14 @@
-/* global document */
+/* global document, getComputedStyle */
 /**
  * scripts/professional-overflow.mjs
  *
  * Openinvite Professional: no horizontal overflow on the seed data, at 1440
  * and at 390 (owner ruling 2026-10-14, the events home table).
- *   - On every page, at both widths, the page itself never scrolls sideways.
- *   - At 1440, no table is wider than its own box.
- *   - At 390, the events home fits too (it shows cards). The other tables at
- *     390 still scroll inside their own box, as designed before this ruling;
- *     whether they stack like the run sheet is the owner's call, and this
- *     check names them under TABLES_THAT_SCROLL_AT_390 until then.
+ *   - On every page, at both widths, the page itself never scrolls sideways,
+ *     and no element in it does either (a tab strip, a toolbar, a box).
+ *   - At both widths, no table is wider than its own box, and no card is
+ *     wider than its list (owner ruling 2026-10-14: at 390 every table stacks
+ *     as cards; there is no allowance).
  *
  * A BROWSER CHECK. It needs a server with the /professional routes mounted
  * and VITE_PROFESSIONAL=1, so it cannot join the browser shards until the
@@ -29,6 +28,11 @@ export const PAGES = [
   '/professional/app/events/ev_1/guests',
   '/professional/app/events/ev_1/vendors',
   '/professional/app/events/ev_1/payments',
+  '/professional/app/events/ev_1/budget',
+  '/professional/app/events/ev_1/documents',
+  '/professional/app/team',
+  '/professional/app/codes',
+  '/professional/app/templates',
   '/professional/app/vendors',
   '/professional/app/payments',
   '/professional/app/tasks',
@@ -36,8 +40,6 @@ export const PAGES = [
   '/professional',
 ];
 const WIDTHS = [1440, 390];
-/** Tables that may still scroll inside their own box at 390, pending the owner's ruling. */
-export const TABLES_THAT_SCROLL_AT_390 = ['Guests', 'Vendors on this event', 'Payment schedule', 'Vendor book'];
 
 const browser = await chromium.launch();
 const failures = [];
@@ -50,18 +52,27 @@ for (const width of WIDTHS) {
   for (const path of PAGES) {
     await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle' });
     await page.waitForTimeout(300);
-    const found = await page.evaluate(({ narrow, allowed }) => {
+    const found = await page.evaluate(() => {
       const out = [];
       const doc = document.documentElement;
       if (doc.scrollWidth > doc.clientWidth + 1) out.push(`page scrolls sideways: ${doc.scrollWidth} in ${doc.clientWidth}`);
       document.querySelectorAll('table').forEach((t, i) => {
         const box = t.parentElement;
         const label = t.getAttribute('aria-label') || 'unnamed';
-        if (narrow && allowed.includes(label)) return;
         if (t.scrollWidth > box.clientWidth + 1) out.push(`table ${i + 1} (${label}): ${t.scrollWidth} in a ${box.clientWidth} box`);
       });
+      // Any element at all that scrolls sideways: a tab strip, a toolbar, a box.
+      document.querySelectorAll('body *').forEach((el) => {
+        const ox = getComputedStyle(el).overflowX;
+        if ((ox === 'auto' || ox === 'scroll') && el.scrollWidth > el.clientWidth + 1 && el.tagName !== 'TABLE') {
+          out.push(`scrolls sideways: <${el.tagName.toLowerCase()}${el.getAttribute('aria-label') ? ` aria-label="${el.getAttribute('aria-label')}"` : ''}> ${el.scrollWidth} in ${el.clientWidth}`);
+        }
+      });
+      document.querySelectorAll('[data-pro-cards] > [role="listitem"]').forEach((card, i) => {
+        if (card.scrollWidth > card.clientWidth + 1) out.push(`card ${i + 1} (${card.parentElement.getAttribute('aria-label') || 'unnamed'}): ${card.scrollWidth} in ${card.clientWidth}`);
+      });
       return out;
-    }, { narrow: width === 390, allowed: TABLES_THAT_SCROLL_AT_390 });
+    });
     checked += 1;
     for (const f of found) failures.push(`${width}px ${path}: ${f}`);
   }
