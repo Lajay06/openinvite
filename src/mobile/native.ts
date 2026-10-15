@@ -11,6 +11,8 @@
  * haptic feedback is a smaller failure than a screen that will not render.
  */
 
+import { webPathAction } from './lib/webPaths';
+
 type Plugin = Record<string, any>;
 
 declare global {
@@ -206,8 +208,30 @@ export async function exportText(filename: string, mime: string, content: string
   }
 }
 
-/** External links open in the system browser natively, a new tab on the web. */
+/**
+ * Hands a URL to Safari itself, natively. A top-level navigation to another
+ * host is cancelled by Capacitor's WebViewDelegationHandler and given to
+ * UIApplication.shared.open, so the app's webview never shows it; unlike
+ * window.open it needs no tap to be allowed. Ruling 3.
+ */
+export function openInSafari(url: string): void {
+  if (typeof window === 'undefined') return;
+  if (!isNative()) { window.open(url, '_blank', 'noopener,noreferrer'); return; }
+  window.location.assign(url);
+}
+
+/** True for a URL on the website (openinvite.com.au or www). */
+function isOwnSite(url: string): boolean {
+  try { return /(^|\.)openinvite\.com\.au$/i.test(new URL(url).hostname); } catch { return false; }
+}
+
+/**
+ * External links open in the system browser natively, a new tab on the web.
+ * A page of the website opens in Safari itself, never in a browser inside
+ * the app (ruling 3); other sites keep the in-app browser sheet.
+ */
 export async function openExternal(url: string): Promise<void> {
+  if (isNative() && isOwnSite(url)) { openInSafari(url); return; }
   const mod = await load('browser');
   if (mod) {
     try {
@@ -347,6 +371,57 @@ export function installNativeApiBase(origin: string = API_ORIGIN): void {
 
 // Installed as early as this module is evaluated. A no-op on the web.
 installNativeApiBase();
+
+/**
+ * Keeps every web path out of the app's webview (ruling 3; lane A's finding
+ * 2). Natively, each history change and the page the webview loaded are read
+ * through webPathAction: a phone path is shown, /login becomes the phone's
+ * sign-in, and anything else (pricing, checkout, /gift, /professional, every
+ * public and dashboard page) opens on the website in Safari while the app
+ * stays where it was. Installed at module evaluation, before the router reads
+ * the location; src/App.jsx imports this module above its routes.
+ */
+export function installWebPathGuard(): void {
+  if (typeof window === 'undefined' || !isNative()) return;
+  const w = window as any;
+  if (w.__oiWebPathGuard) return;
+  w.__oiWebPathGuard = true;
+
+  const route = (url: string | URL | null | undefined): { allow: boolean; swap?: string } => {
+    if (url == null) return { allow: true };
+    let next: URL;
+    try { next = new URL(String(url), window.location.href); } catch { return { allow: true }; }
+    // Protocol and host, not origin: capacitor://localhost is a non-special
+    // scheme, so URL.origin is "null" by the URL spec and would match nothing.
+    if (next.protocol !== window.location.protocol || next.host !== window.location.host) return { allow: true };
+    const action = webPathAction(next.pathname);
+    if (action.kind === 'phone') return { allow: true };
+    if (action.kind === 'swap') return { allow: true, swap: `${action.path}${next.search}` };
+    openInSafari(`${PROD_ORIGIN}${next.pathname}${next.search}${next.hash}`);
+    return { allow: false };
+  };
+
+  const wrap = (fn: History['pushState']): History['pushState'] => function (this: History, data: any, unused: string, url?: string | URL | null) {
+    const r = route(url);
+    if (!r.allow) return undefined;
+    return fn.call(this, data, unused, r.swap ?? url);
+  };
+  history.pushState = wrap(history.pushState);
+  history.replaceState = wrap(history.replaceState);
+
+  // The page the webview loaded: a full load of a web path (AuthContext's
+  // window.location.href = '/login', or any other) lands here first.
+  const first = webPathAction(window.location.pathname);
+  if (first.kind === 'swap') {
+    history.replaceState(history.state, '', `${first.path}${window.location.search}`);
+  } else if (first.kind === 'external') {
+    const target = `${PROD_ORIGIN}${window.location.pathname}${window.location.search}${window.location.hash}`;
+    history.replaceState(history.state, '', '/m');
+    openInSafari(target);
+  }
+}
+
+installWebPathGuard();
 
 /** Runs the native setup once when the shell mounts. No-op on the web. */
 export async function bootNative(): Promise<void> {

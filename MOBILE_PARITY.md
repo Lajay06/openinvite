@@ -348,6 +348,10 @@ Read-only mirror of polls with stats and a link to Polls. **Status.** Parity thr
 
 ---
 
+## Web paths stay out of the app (2026-10-15)
+
+Ruling 3 of `goals/2026-10-15-app-store-launch.md`, closing lane A's finding 2 of the mobile pass. The desktop is every path `src/App.jsx` routes; the app is `/m` and its children, plus the two entry points App.jsx sends to `/m` ("/" and "/DailyUpdate"). Natively, `installWebPathGuard` in `src/mobile/native.ts` reads every `history.pushState` and `history.replaceState`, and the page the webview first loaded, through `webPathAction` in `src/mobile/lib/webPaths.js`. A phone path is shown. `/login` (where AuthContext sends a signed-out session, after Log out or an expired token) becomes the phone's own sign-in, `/m/login`. Every other path, pricing, checkout, `/gift`, `/professional` and every dashboard and public page among them, opens on the website in Safari itself and the app stays where it was. Links to the website from any screen (View Guest Suite, the privacy policy, support) also open in Safari rather than the in-app browser sheet; other sites keep the sheet. The hand-off is a top-level navigation, which Capacitor cancels and gives to `UIApplication.shared.open`; it needs no tap, where `window.open` would. Guard: `tests/persistence/mobile-web-paths.mjs`.
+
 ## Field-name drift found and corrected
 
 | Where | Mobile had | Desktop writes |
