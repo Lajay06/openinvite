@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import OpeninviteLogo from '@/components/public/OpeninviteLogo';
+import { isProfessionalOn } from '@/lib/professionalBrand';
 
 // Paths are lowercase to match what the site actually serves. React Router
 // matches case-insensitively so "/Features" routed fine, but isActive() below
@@ -18,6 +19,8 @@ const NAV_LINKS = [
   // the site. When it does, it sits before Pricing, lowercase "/tour", since
   // isActive() is a case-sensitive pathname check.
   { label: "Pricing", to: "/pricing" },
+  // Openinvite Professional's page, only while VITE_PROFESSIONAL=1 (goals/2026-10-14-professional.md).
+  ...(isProfessionalOn() ? [{ label: "For planners", to: "/professional" }] : []),
 ];
 
 const UserIcon = () => (

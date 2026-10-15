@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import CookieBanner from "./CookieBanner";
 import OpeninviteLogo from '@/components/public/OpeninviteLogo';
+import { isProfessionalOn } from '@/lib/professionalBrand';
 
 export default function PublicFooter() {
   return (
@@ -27,6 +28,8 @@ export default function PublicFooter() {
               <li><Link to="/app" data-footer-app className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">The app</Link></li>
               <li><Link to="/gifting" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Gifting</Link></li>
               <li><Link to="/faq" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">FAQ</Link></li>
+              {/* Openinvite Professional's page, only while VITE_PROFESSIONAL=1. */}
+              {isProfessionalOn() && <li><Link to="/professional" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">For planners</Link></li>}
             </ul>
           </div>
 
