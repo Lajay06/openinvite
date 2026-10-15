@@ -147,7 +147,7 @@ As of 2026-10-12:
 - Schedule write merged as #1035. The owner deployed collaboratorWrite and ran the probe (2026-10-13): a hosted function cannot set created_by_id to another user. Base44 stamped the row with an identity that was neither the requested owner, the caller nor anonymous; the probe could not tell which kind (service, admin or function identity), and no id was recorded. Ruling: collaborators with edit change and remove existing items, never add. Add is hidden in a collaborator session, the function refuses create outright, and the probe is removed, all in one PR.
 - The Moodboard write PR follows the same rule: change and remove, never add.
 - At the goal's close, BASE44_PLATFORM_NOTES.md records the probe's finding alongside the q-override entry.
-- Next: the Moodboard write PR, then the branded verification email plan.
+- Next: the Moodboard write PR. The branded verification email is parked (see Open items).
 
 ## Findings
 
@@ -157,6 +157,14 @@ As of 2026-10-12:
 ## Open items for the owner
 
 - Base44 and GitHub have drifted (found 2026-10-14, report only; owner ruling: nobody pulls, calls Get GitHub connection or saves an app file until ruled). The app is connected to this repo: base44-builder[bot] has 35 commits here, the latest 2026-09-08, and the repo has an active app.base44.com push webhook. But the app's code is behind main: it has #956 (2026-10-10) and lacks #1031 (2026-10-13), so it last took main between those dates. And it is ahead: its package.json pins @base44/sdk ^0.8.53, which is not in this repo's history (main has ^0.8.48). Its base44/emails/EmailVerification.html is Base44's default, very likely written by one of the three failed Customize calls, while main's is ours. A pull would bring main's base44/ files into Base44 and could collide with both. The follow-up that sets {{otp_code}} in the mirror is held until the owner rules on the sync.
+- The branded verification email is PARKED (owner ruling 2026-10-15). No Base44 app file save, no Customize application email call, no production test account. It waits until the Base44 and GitHub drift above is resolved, then it is done as one planned step: the Customize call, our template from base44/emails/EmailVerification.html (with {{otp_code}}), Base44's review, and one test code email. Found on 2026-10-15, read only, before any write:
+  - The app (68731d183f075e406eda2236) has no authored template: List email templates returns an empty list, and Preview application email for email_verification reports authored_template_id null.
+  - authored_status is null, not no_email_domain. Base44 documents null as either "the plan doesn't include its own version" or "the app sends from its own email domain but has no version of its own".
+  - Customize application email (POST /api/apps/{app_id}/emails/system/email_verification/materialize) writes base44/emails/EmailVerification.html into the app's code, because an app's email templates are files in base44/emails/. It is therefore an app file save, inside the drift ruling, and through the connected repo it may land on GitHub as a base44-builder commit.
+  - Customize alone gives a copy of Base44's default, not our design: our template needs a second write (a builder turn or a file save), then Base44's review (up to an hour, awaiting_screen) before authored_status reads live.
+  - Base44's own test send goes only to the address the API key belongs to. A real code at another address needs a registration through Base44 auth, which creates a production User row.
+  - The repo does not record how the three earlier Customize attempts failed.
+  - The email sent today is Base44's default: the pink header band, "OPENINVITE" in capitals, subject "Verify your email for Openinvite".
 
 ## Lessons
 
