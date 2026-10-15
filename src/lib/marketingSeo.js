@@ -53,6 +53,12 @@ export const MARKETING_PAGE_SEO = {
     title: 'Openinvite | Pricing',
     description: "Openinvite pricing is a one-time payment, not a subscription. See what's included in the Pro and Ultra plans for your wedding planning platform and your Guest Suite.",
   },
+  // THE GIFT FLOW ITSELF (owner ruling 2026-10-16): /gift had no entry, so it
+  // kept whatever title and canonical the page before it left behind.
+  '/gift': {
+    title: 'Openinvite | Give a gift',
+    description: 'Give a couple Openinvite Pro or Ultra. Choose a plan, add a photo and a note, pay once, and they get an email that switches it on for 24 months.',
+  },
   '/gifting': {
     title: 'Openinvite | Gifting',
     description: 'Give a couple the gift of Openinvite, a wedding planning platform with a one-time payment. Request a gift code and they redeem it at checkout, no subscription required.',

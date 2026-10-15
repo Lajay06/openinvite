@@ -35,6 +35,7 @@
  */
 import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
+import { useMarketingSeo } from '@/hooks/useMarketingSeo';
 import OnboardingShell from '@/components/onboarding/OnboardingShell';
 import OnboardingStep1Names from '@/components/onboarding/OnboardingStep1Names';
 import { ShellStepChrome } from '@/components/onboarding/OnboardingStepChrome';
@@ -207,6 +208,8 @@ export function styleSample(st) {
 }
 
 export default function GiftV2() {
+  // Its own title, description and canonical (/gift, never a query string).
+  useMarketingSeo();
   const [params] = useSearchParams();
   const on = isGiftingV2On();
   const [draft, setDraft] = useState(() => {

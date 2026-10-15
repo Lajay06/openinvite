@@ -231,7 +231,7 @@ export default function TransportPage() {
               <SectionInput label="Accessibility parking" value={parking.accessibilityNotes} onChange={e => updateParking({ accessibilityNotes: e.target.value })} placeholder="e.g. 4 accessible spaces at main entrance" />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <label style={labelStyle}>Nearby car parks</label>
+                  <label style={labelStyle}>Nearby parking</label>
                   <button onClick={addCarPark} style={{ fontSize: 12, color: '#E03553', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontFamily: PJS, display: 'flex', alignItems: 'center', gap: 4 }}>
                     <Plus size={11} />Add
                   </button>

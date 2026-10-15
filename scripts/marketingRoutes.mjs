@@ -20,6 +20,14 @@
  */
 export const UNLISTED_ROUTES = ['/tour'];
 
+/**
+ * Listed in sitemap.xml but NOT prerendered (owner ruling 2026-10-16). /gift
+ * is the gift flow: its on switch is a build variable (VITE_GIFTING_V2) set in
+ * production only, so a local prerender would capture the redirect to
+ * /gifting. It renders in the browser, under its own title and canonical.
+ */
+export const SITEMAP_ONLY_ROUTES = ['/gift'];
+
 export const MARKETING_ROUTES = [
   '/',
   '/features',
