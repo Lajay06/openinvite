@@ -7,7 +7,7 @@ import HeroCollage from "@/components/home/HeroCollage";
 import ValuePropSection from "@/components/home/ValuePropSection";
 import HorizontalScrollSection from "@/components/home/HorizontalScrollSection";
 import UniverseMiniHero from "@/components/home/UniverseMiniHero";
-import UniverseTeaserSection from "@/components/home/UniverseTeaserSection";
+import ShowcaseWorlds from "@/components/marketing/showcase/ShowcaseWorlds";
 import AvaSpotlightSection from "@/components/home/AvaSpotlightSection";
 import AppPhoneSection from "@/components/home/AppPhoneSection";
 import MarketingEndCap from "@/components/marketing/MarketingEndCap";
@@ -51,13 +51,12 @@ export default function Home() {
           content right below it. */}
       <UniverseMiniHero />
 
-      {/* 4c. UNIVERSES TEASER — universes had no presence on the homepage
-          at all after the carousel's Universes card and the old
-          Invitations/guest-suite section were both removed. High level
-          only (5 real photos, not the full 20-universe grid — that's the
-          Universes page's job), dark and minimal to match the rest of the
-          homepage, with a clear CTA through to /universes. */}
-      <UniverseTeaserSection />
+      {/* 4c. ONE GUEST SUITE, TWENTY WORLDS. Concept 5 replaces "One
+          aesthetic vision, from your invitation to your RSVP." in the same
+          place and for the same job, rebuilt on black (consumer launch goal,
+          item 2): the same couple in three universes, with the way through to
+          /universes. */}
+      <ShowcaseWorlds />
 
       {/* 5. AVA GRADIENT BANNER + SPOTLIGHT — the black carousel now runs
           straight into the gradient banner. The "Invitations & Guest Suite"
