@@ -224,7 +224,7 @@ export async function runGiftClaim() {
           && /doneGiver \? fill\(COPY\.done\.heading, \{ giver: doneGiver \}\) : COPY\.done\.headingPlain/.test(pageSrc) && /doneNames \? fill\(COPY\.done\.body, \{ names: doneNames \}\) : COPY\.done\.bodyPlain/.test(pageSrc));
       check('the done page copy is the owner\'s, verbatim (2026-10-14)',
         COPY.done.heading === 'That was generous of you, {giver}.' && COPY.done.body === "Your gift is on its way to {names}. We've sent you a copy too, with their link, in case you'd rather hand it over yourself."
-          && COPY.done.boxTitle === "What they'll get" && COPY.done.box === 'An email with your note. One tap on Open your gift, a quick sign in, and {Plan} is already switched on, ready to plan. Nothing for them to set up or pay.');
+          && COPY.done.boxTitle === "What they'll get" && COPY.done.box === 'An email with your note. One tap to open your gift, a quick sign in, and {Plan} is already switched on, ready to plan. Nothing for them to set up or pay.');
     }
 
     // ── the gift welcome, never the trial one (owner ruling 2026-10-14) ──────

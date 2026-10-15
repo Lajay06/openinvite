@@ -74,9 +74,9 @@ export async function runGiftingV2Pages() {
   check('a Pro email never names the Guest Suite, RSVP, songs, the registry or a website', pro.every((h) => !FORBIDDEN.test(h)), 'all three note styles');
   const ultra = tpl.renderGiftReveal({ plan: 'ultra', giver: 'Sam', names: 'Isla and Theo', note: 'A note.', headlineKey: 'for_you' }).html;
   check('  while an Ultra email does name the Guest Suite', /Guest Suite/.test(ultra));
-  check('the rendered note styles are Cloudinary text images, 1040 wide, with commas escaped',
-    /l_text:Caveat_60_line_spacing_2:/.test(tpl.noteImageUrl('a, b', 'hand')) && /l_text:Cormorant%20Garamond_47:/.test(tpl.noteImageUrl('a', 'serif')) && !/italic/.test(tpl.noteImageUrl('a', 'serif'))
-      && tpl.noteImageUrl('a, b', 'hand').includes('a%252C%20b') && /w_1040,c_fit/.test(tpl.noteImageUrl('a', 'serif')) && tpl.noteImageUrl('a', 'plain') === '');
+  check('the rendered note styles are Cloudinary text images drawn for their box, with commas escaped',
+    /l_text:Caveat_60_line_spacing_2:/.test(tpl.noteImageUrl('a, b', 'hand')) && /l_text:Cormorant%20Garamond_47_line_spacing_3:/.test(tpl.noteImageUrl('a', 'serif')) && !/italic/.test(tpl.noteImageUrl('a', 'serif'))
+      && tpl.noteImageUrl('a, b', 'hand').includes('a%252C%20b') && /c_lpad,w_924,/.test(tpl.noteImageUrl('a', 'serif')) && !/c_fit/.test(tpl.noteImageUrl('a', 'serif')) && tpl.noteImageUrl('a', 'plain') === '');
   check('  and carry the full note as alt text', /alt="A note\."/.test(tpl.renderGiftReveal({ note: 'A note.', noteStyle: 'serif' }).html));
 
   // ── the four pages (the owner's review of #994) ─────────────────────────
@@ -152,7 +152,35 @@ export async function runGiftingV2Pages() {
       && v2lib.noteFaceSize('serif', 17) === 23.6 && v2lib.noteFaceSize('hand', 17) === 25.7 && v2lib.noteFaceSize('plain', 17) === 17
       && /data-style-sample="hand"[^>]*fontSize: noteFaceSize\('hand', 12\)/.test(page) && /data-style-sample="serif"[^>]*fontStyle: 'normal', fontSize: noteFaceSize\('serif', 12\)/.test(page)
       && /serif: \{[^}]*fontStyle: 'normal', fontSize: noteFaceSize\('serif', 17\)/.test(claim)
-      && /l_text:Cormorant%20Garamond_47:/.test(tpl.noteImageUrl('a', 'serif')) && /l_text:Caveat_60_line_spacing_2:/.test(tpl.noteImageUrl('a', 'hand')));
+      && /l_text:Cormorant%20Garamond_47_line_spacing_3:/.test(tpl.noteImageUrl('a', 'serif')) && /l_text:Caveat_60_line_spacing_2:/.test(tpl.noteImageUrl('a', 'hand')));
+  // ── the caps, for every style (owner ruling 2026-10-14) ─────────────────
+  {
+    const W40 = 'w'.repeat(40);
+    const NOTE40 = `With love ${W40} from Sam`;
+    check('no note style is drawn above 30px in the email or 24px on a phone; the serif keeps its matched size',
+      tpl.NOTE_CAPS.wide === 30 && tpl.NOTE_CAPS.phone === 24 && tpl.HAND_NOTE.wide.px <= 30 && tpl.HAND_NOTE.phone.px <= 24
+        && tpl.SERIF_NOTE.wide.px === v2lib.noteFaceSize('serif', 17) && tpl.SERIF_NOTE.wide.px <= 30 && tpl.SERIF_NOTE.phone.px <= 24);
+    for (const style of ['plain', 'serif', 'hand']) {
+      for (const [kind, html] of [['reveal', tpl.renderGiftReveal({ note: NOTE40, noteStyle: style, giver: 'Sam', names: 'Isla and Theo', headlineKey: 'for_you' }).html], ['receipt', tpl.renderGiftConfirmation({ note: NOTE40, noteStyle: style, giver: 'Sam', names: 'Isla and Theo', email: 'a@b.co' }).html]]) {
+        let ok;
+        if (style === 'plain') {
+          ok = /font-size:17px;[^"]*overflow-wrap:anywhere;word-break:break-word;">With love w{40} from Sam<\/p>/.test(html);
+        } else {
+          const imgs = [...html.matchAll(/<img class="oi-note-(wide|phone)" src="([^"]+)"/g)];
+          ok = imgs.length === 2 && imgs.every(([, which, src]) => {
+            const m = /l_text:[A-Za-z%0-9]+_(\d+)_line_spacing_\d+:([^,]+),/.exec(src);
+            const px = m && Number(m[1]) / 2;
+            const lines = m ? decodeURIComponent(m[2]).split('\n') : [];
+            const cap = which === 'wide' ? 30 : 24;
+            const box = which === 'wide' ? 462 : 220;
+            return px && px <= cap + 0.5 && lines.join('').replace(/ /g, '') === `Withlove${W40}fromSam` && lines.every((l) => l.length * px * (style === 'serif' ? 0.404 : 0.344) <= box) && !/c_fit/.test(src);
+          });
+        }
+        check(`  ${style}, ${kind}: a 40-character word wraps inside the box at both sizes, within the caps`, ok);
+      }
+    }
+    check('  and the page 3 preview draws the same email (renderGiftReveal), so it carries the same notes', /renderGiftReveal\(/.test(page) && /srcDoc=\{html\}/.test(page));
+  }
   // ── the handwritten note's size (owner ruling 2026-10-14) ───────────────
   {
     const H = tpl.HAND_NOTE;

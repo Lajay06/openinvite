@@ -55,11 +55,11 @@ function withBadges(text) {
 // src/index.css, because the global Plus Jakarta Sans lock beats an inline
 // fontFamily.
 const NOTE_FACE = {
-  plain: { '--oi-note-font': PJS, fontSize: 17, lineHeight: 1.6 },
+  plain: { '--oi-note-font': PJS, fontSize: 17, lineHeight: 1.6, overflowWrap: 'anywhere' },
   // Every style looks the plain note's size, on the plain note's line, the
   // serif upright (owner ruling 2026-10-14), as in the email: noteFaceSize
   // matches the lowercase height.
-  serif: { '--oi-note-font': "'Cormorant Garamond', Georgia, serif", fontStyle: 'normal', fontSize: noteFaceSize('serif', 17), lineHeight: '27.2px' },
+  serif: { '--oi-note-font': "'Cormorant Garamond', Georgia, serif", fontStyle: 'normal', fontSize: noteFaceSize('serif', 17), lineHeight: '27.2px', overflowWrap: 'anywhere' },
   // The handwritten note: 30px, 24px on a phone, line height 1.3, a long
   // word wrapping inside the card (owner ruling 2026-10-14). Its size lives
   // in the class below, so the phone size can apply.

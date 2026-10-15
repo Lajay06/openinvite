@@ -17,9 +17,10 @@
  *
  * FONTS IN EMAIL: Gmail loads no web fonts. The plain note is live text in
  * Plus Jakarta Sans with Helvetica and Arial behind it. The serif (Cormorant
- * Garamond, upright) and handwriting (Caveat) notes are an image from
- * Cloudinary's text overlay at 2x, 520px wide, with the full note as alt
- * text (noteImageUrl below).
+ * Garamond, upright) and handwriting (Caveat) notes are images drawn from
+ * Cloudinary's text layer at 2x, wrapped here and never stretched, one for the
+ * 600px email and one for a phone (drawnNoteImageUrl), with the full note as
+ * alt text.
  */
 import { EMAIL_FONT, EMAIL_ACCENT, EMAIL_BLACK, EMAIL_LOGO_URL, EMAIL_LOGO_WIDTH, EMAIL_LOGO_HEIGHT, escapeHtml, emailShell, emailFooterRow } from './emailBrand.js';
 import { REVEAL, CONFIRM, fill, headlineText, giftPhotoUrl, photoLabel, DEFAULT_PHOTO_ID, noteFaceSize } from './giftingV2.js';
@@ -28,12 +29,6 @@ import { PLAN_BADGE_LABEL, PLAN_BADGE_EMAIL_IMAGE } from './planBadge.js';
 const CLOUD = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 const NOTE_INK = '1C1916';
 const NOTE_GROUND = 'F5F5F5';
-// At 2x: each face set to look as large as the plain note's 17px, its
-// lowercase as tall (noteFaceSize), the serif upright regular, never italic
-// (owner ruling 2026-10-14).
-const NOTE_FONTS = {
-  serif: `Cormorant%20Garamond_${Math.round(noteFaceSize('serif', 34))}`,
-};
 
 // A base for the text layer: the default photo, shrunk to one pixel and
 // colorized to the card's ground, so the text layer grows the canvas around
@@ -55,10 +50,37 @@ export const HAND_NOTE = {
   phone: { box: 220, px: 24 },
   lineHeight: 1.3,
 };
-// How many characters a line holds: Caveat's letters average about 0.35em
-// (measured: "With love, Sam" at 60px is 296px wide); 0.42em is the
-// conservative figure, so a line never runs past its box.
-const handLineChars = ({ box, px }) => Math.floor(box / (px * 0.42));
+
+/**
+ * THE CAPS, FOR EVERY NOTE STYLE (owner ruling 2026-10-14, after the final
+ * gift-test purchase): no note is drawn larger than 30px in the email, or
+ * 24px on a phone. Handwriting is at the caps (HAND_NOTE). The serif keeps its
+ * size matched to Plain by lowercase height (noteFaceSize: 23.6px beside
+ * Plain's 17px), under both caps, and is drawn the same way as Handwriting:
+ * wrapped here, at its own size, one image per box. Plain is live text at
+ * 17px, under both caps, and wraps a long word with overflow-wrap: anywhere.
+ */
+export const NOTE_CAPS = { wide: 30, phone: 24 };
+const SERIF_PX = noteFaceSize('serif', 17);
+export const SERIF_NOTE = {
+  wide: { box: HAND_NOTE.wide.box, px: Math.min(NOTE_CAPS.wide, SERIF_PX) },
+  phone: { box: HAND_NOTE.phone.box, px: Math.min(NOTE_CAPS.phone, SERIF_PX) },
+  lineHeight: HAND_NOTE.lineHeight,
+};
+
+/**
+ * Each drawn face, as measured in Cloudinary's text layer: `em` is a
+ * conservative letter width (Caveat averages 0.344em, Cormorant 0.404em, on
+ * the same 47-character line), so a line never runs past its box; `leading`
+ * is Cloudinary's own line pitch for the face (Caveat 1.267, Cormorant
+ * 1.234), which the spacing tops up to the ruled 1.3.
+ */
+const DRAWN_FACE = {
+  hand: { font: 'Caveat', em: 0.42, leading: 1.27, sizes: HAND_NOTE },
+  serif: { font: 'Cormorant%20Garamond', em: 0.48, leading: 1.234, sizes: SERIF_NOTE },
+};
+const lineCharsFor = (face, { box, px }) => Math.floor(box / (px * face.em));
+const handLineChars = (size) => lineCharsFor(DRAWN_FACE.hand, size);
 /**
  * The note with every word longer than a line broken onto the next, by a
  * line break (never a space), so a long word wraps at the box's edge the way
@@ -100,34 +122,33 @@ export function wrapNote(note, maxChars) {
  * shorter than a line to fill it, which is what made a short note "far too
  * big"; it is not used.
  */
-export function handNoteImageUrl(note, size, { ground = NOTE_GROUND } = {}) {
-  if (!note) return '';
+export function drawnNoteImageUrl(note, style, size, { ground = NOTE_GROUND } = {}) {
+  const face = DRAWN_FACE[style];
+  if (!note || !face) return '';
   const w = size.box * 2;
-  const fontPx = size.px * 2;
-  const lines = wrapNote(note, handLineChars(size));
-  // Cloudinary's own leading for Caveat is about 1.27 of the font size
-  // (measured on the rendered note); the spacing tops it up to the ruled 1.3.
-  const spacing = Math.max(0, Math.round(fontPx * (HAND_NOTE.lineHeight - 1.27)));
+  const fontPx = Math.round(size.px * 2);
+  const lines = wrapNote(note, lineCharsFor(face, size));
+  const spacing = Math.max(0, Math.round(fontPx * (face.sizes.lineHeight - face.leading)));
   // The drawn lines' own height (the last line is a glyph tall, not a line
   // tall), with a little room; the text sits at the top of the box.
-  const h = Math.ceil((lines.length - 1) * fontPx * HAND_NOTE.lineHeight + fontPx * 1.15);
+  const h = Math.ceil((lines.length - 1) * fontPx * face.sizes.lineHeight + fontPx * 1.15);
   const text = encodeURIComponent(lines.join('\n')).replace(/%2C/g, '%252C').replace(/%2F/g, '%252F');
-  return `${CLOUD}/c_scale,w_1,h_1/e_colorize:100,co_rgb:${ground}/l_text:Caveat_${fontPx}_line_spacing_${spacing}:${text},co_rgb:${NOTE_INK}/fl_layer_apply/c_lpad,w_${w},h_${h},g_north_west,b_rgb:${ground}/f_png/${NOTE_BASE}.jpg`;
+  return `${CLOUD}/c_scale,w_1,h_1/e_colorize:100,co_rgb:${ground}/l_text:${face.font}_${fontPx}_line_spacing_${spacing}:${text},co_rgb:${NOTE_INK}/fl_layer_apply/c_lpad,w_${w},h_${h},g_north_west,b_rgb:${ground}/f_png/${NOTE_BASE}.jpg`;
 }
+/** A handwritten note drawn for one box size (drawnNoteImageUrl for 'hand'). */
+export const handNoteImageUrl = (note, size, opts) => drawnNoteImageUrl(note, 'hand', size, opts);
 /** The head style that shows the phone note on a phone. */
 export const HAND_NOTE_STYLE = `@media only screen and (max-width: 600px) { .oi-note-wide { display: none !important; max-height: 0 !important; } .oi-note-phone { display: block !important; max-height: none !important; width: 100% !important; } }`;
 
 /**
- * The note as an image, for the serif and handwriting styles. Commas and
- * slashes in the text are double-encoded, because Cloudinary reads a bare
- * comma as the start of the next parameter.
+ * The note as an image, for the serif and handwriting styles: the wide (600px
+ * email) one. Commas and slashes in the text are double-encoded, because
+ * Cloudinary reads a bare comma as the start of the next parameter.
  */
 export function noteImageUrl(note, style, { ground = NOTE_GROUND } = {}) {
   if (style === 'hand') return handNoteImageUrl(note, HAND_NOTE.wide, { ground });
-  const font = NOTE_FONTS[style];
-  if (!font || !note) return '';
-  const text = encodeURIComponent(note).replace(/%2C/g, '%252C').replace(/%2F/g, '%252F');
-  return `${CLOUD}/c_scale,w_1,h_1/e_colorize:100,co_rgb:${ground}/l_text:${font}:${text},co_rgb:${NOTE_INK},w_1040,c_fit/fl_layer_apply/c_pad,w_1040,b_rgb:${ground}/f_png/${NOTE_BASE}.jpg`;
+  if (style === 'serif') return drawnNoteImageUrl(note, 'serif', SERIF_NOTE.wide, { ground });
+  return '';
 }
 
 /**
@@ -181,16 +202,15 @@ function noteCardRow(note, noteStyle, giver) {
 }
 
 function noteBody(note, style) {
-  if (style === 'hand') {
+  const face = DRAWN_FACE[style];
+  if (face) {
+    const { wide, phone } = face.sizes;
     const alt = escapeHtml(note);
-    return `<img class="oi-note-wide" src="${handNoteImageUrl(note, HAND_NOTE.wide)}" alt="${alt}" width="${HAND_NOTE.wide.box}" style="display:block;width:100%;max-width:${HAND_NOTE.wide.box}px;height:auto;border:0;" />`
-      + `<!--[if !mso]><!--><img class="oi-note-phone" src="${handNoteImageUrl(note, HAND_NOTE.phone)}" alt="" width="${HAND_NOTE.phone.box}" style="display:none;max-height:0;overflow:hidden;width:${HAND_NOTE.phone.box}px;height:auto;border:0;" /><!--<![endif]-->`;
+    return `<img class="oi-note-wide" src="${drawnNoteImageUrl(note, style, wide)}" alt="${alt}" width="${wide.box}" style="display:block;width:100%;max-width:${wide.box}px;height:auto;border:0;" />`
+      + `<!--[if !mso]><!--><img class="oi-note-phone" src="${drawnNoteImageUrl(note, style, phone)}" alt="" width="${phone.box}" style="display:none;max-height:0;overflow:hidden;width:${phone.box}px;height:auto;border:0;" /><!--<![endif]-->`;
   }
-  if (style === 'serif') {
-    const src = noteImageUrl(note, style);
-    return `<img src="${src}" alt="${escapeHtml(note)}" width="520" style="display:block;width:100%;max-width:520px;height:auto;border:0;" />`;
-  }
-  return `<p style="margin:0;font-size:17px;line-height:1.6;color:#${NOTE_INK};font-family:${EMAIL_FONT};white-space:pre-wrap;">${escapeHtml(note)}</p>`;
+  // Plain: live text at 17px, under both caps; a long word wraps in the box.
+  return `<p style="margin:0;font-size:17px;line-height:1.6;color:#${NOTE_INK};font-family:${EMAIL_FONT};white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;">${escapeHtml(note)}</p>`;
 }
 
 /**
