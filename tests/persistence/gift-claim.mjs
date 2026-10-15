@@ -246,6 +246,19 @@ export async function runGiftClaim() {
         w.email.html.includes('Go to my dashboard') && w.email.text.includes("You're getting this because you opened a gift on Openinvite. Openinvite, Australia.") && w.email.html.includes("It's all switched on.") && w.email.text.includes("Sam gifted you Openinvite Ultra, and it's all switched on. Every guest, every reply, every table, the budget and the Guest Suite, for 24 months. Nothing to pay."));
       const tpl = await import('../../src/lib/giftWelcomeEmail.js');
       const pro = tpl.renderGiftWelcome({ plan: 'pro', giver: 'Sam', fullName: 'Isla Rose', email: 'isla@example.com', dashboardUrl: 'x' });
+      // THE PICTURE (owner ruling 2026-10-16): the giver's photo, full width under
+      // the shared logo header; with none chosen, onboarding's "you're all set".
+      const chosen = tpl.renderGiftWelcome({ plan: 'ultra', giver: 'Sam', photoId: 'pin_edinburgh_couple', dashboardUrl: 'x' });
+      const headerAt = (h) => h.indexOf('openinvite-logo-on-light-2x.png');
+      check('  the welcome opens on the gift\'s own photo, full width at 6:5, under the gift emails\' logo header',
+        /<img src="[^"]*w_1200,ar_6:5,c_fill,g_auto\/pin_edinburgh_couple" alt="Chips on the hill" width="600" style="display:block;width:100%;max-width:600px;/.test(chosen.html)
+          && headerAt(chosen.html) > 0 && headerAt(chosen.html) < chosen.html.indexOf('pin_edinburgh_couple') && chosen.html.indexOf('pin_edinburgh_couple') < chosen.html.indexOf('<h1'));
+      check('  with no photo chosen it shows the all-set photo, and the claim passes the row\'s own',
+        tpl.renderGiftWelcome({ plan: 'ultra', giver: 'Sam', dashboardUrl: 'x' }).html.includes(`ar_6:5,c_fill,g_auto/${tpl.WELCOME_FALLBACK_PHOTO_ID}`) && tpl.WELCOME_FALLBACK_PHOTO_ID === 'DTS_BANDITS_PALI_MENDEZ_Photos_ID14218_hxqxw0'
+          && w.email.html.includes('ar_6:5,c_fill,g_auto/DTS_UNWRAPPED_Franco_Dupuy_Photos_ID13773_dfzkub')
+          && /renderGiftWelcome\(\{[^}]*photoId: row\.photo_key/.test(readFileSync(resolve(ROOT, 'api/_lib/giftClaim.js'), 'utf8')));
+      check('  in the reveal\'s type: a 28px headline, 16px body, and the red pill',
+        /<h1 style="margin:0;font-size:28px;line-height:1\.2;font-weight:700;/.test(chosen.html) && /<p style="margin:16px 0 0;font-size:16px;line-height:1\.6;/.test(chosen.html) && /border-radius:999px;background:#E03553/i.test(chosen.html));
       check('  Pro says Pro, and a real first name is used',
         pro.subject === 'Your Openinvite Pro is ready' && pro.text.startsWith('Welcome, Isla.') && pro.text.includes('Sam gifted you Openinvite Pro') && !/Guest Suite/.test(pro.html));
       sends.length = 0;

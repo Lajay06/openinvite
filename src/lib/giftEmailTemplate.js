@@ -172,7 +172,7 @@ const withBadges = (text) => escapeHtml(text).replace(/\b(Ultra|Pro)\b/g, (m) =>
  * site answers every file with cross-origin-resource-policy: same-site (owner
  * ruling 2026-10-14). A 2x PNG at EMAIL_LOGO_WIDTH by EMAIL_LOGO_HEIGHT.
  */
-function headerRow() {
+export function headerRow() {
   return `
           <tr>
             <td style="padding:28px 40px 24px;background:#FFFFFF;">
@@ -180,7 +180,7 @@ function headerRow() {
             </td>
           </tr>`;
 }
-const preheaderRow = (text) => `
+export const preheaderRow = (text) => `
           <tr>
             <td style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#FFFFFF;">${escapeHtml(text)}</td>
           </tr>`;
