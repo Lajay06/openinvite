@@ -21,7 +21,7 @@ const NOTE_PREF = 'suite_desktop_note_closed';
  * prints the address nor hands it to a share sheet or the clipboard.
  * View Guest Suite opens it for the couple themselves.
  */
-export default function SiteScreen({ details, universeName, state = PUBLISH_STATE.NO_ADDRESS, siteUrl, coupleName, onView, onOpen, onOpenDesktop, onTogglePublish, passwordOn = false, onPassword, loading, error, onRetry }) {
+export default function SiteScreen({ details, universeName, state = PUBLISH_STATE.NO_ADDRESS, siteUrl, coupleName, onView, onOpen, handoff = () => undefined, onTogglePublish, passwordOn = false, onPassword, loading, error, onRetry }) {
   // src/lib/publishState.js: live is an address AND the switch on; no address never reads as hidden.
   const isLive = state === PUBLISH_STATE.LIVE;
   const [noteClosed, setNoteClosed] = useState(true);
@@ -86,13 +86,13 @@ export default function SiteScreen({ details, universeName, state = PUBLISH_STAT
         <section>
           <h2 className="oi-m-section" style={{ marginBottom: 12 }}>Design</h2>
           <RowGroup>
-            <Row icon={Palette} tile="tint" label="Choose a universe" sub="The look of your whole suite" onClick={() => onOpenDesktop('/studio/universe')} />
-            <Row icon={LayoutTemplate} tile="tint" label="Guest Suite" sub="Best on desktop" onClick={() => onOpenDesktop('/studio/website')} />
-            <Row icon={Sparkles} tile="tint" label="Ava studio" sub="Best on desktop" onClick={() => onOpenDesktop('/studio/ava')} />
+            <Row icon={Palette} tile="tint" label="Choose a universe" sub="The look of your whole suite" onClick={handoff('/studio/universe')} />
+            <Row icon={LayoutTemplate} tile="tint" label="Guest Suite" sub="Best on desktop" onClick={handoff('/studio/website')} />
+            <Row icon={Sparkles} tile="tint" label="Ava studio" sub="Best on desktop" onClick={handoff('/studio/ava')} />
           </RowGroup>
         </section>
         <RowGroup>
-          <Row icon={Monitor} tile="neutral" label="Edit on a laptop" sub="The builder and Ava's Studio need a bigger screen" onClick={() => onOpenDesktop('/studio/website')} />
+          <Row icon={Monitor} tile="neutral" label="Edit on a laptop" sub="The builder and Ava's Studio need a bigger screen" onClick={handoff('/studio/website')} />
         </RowGroup>
       </div>
       <SitePreviewSheet details={details} open={previewOpen} onClose={() => setPreviewOpen(false)} />
