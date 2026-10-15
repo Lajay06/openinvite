@@ -57,7 +57,7 @@ const FAQS = [
   },
   {
     q: "Can I upgrade from Pro to Ultra later?",
-    a: "Yes, you can upgrade at any time and pay only the difference ($50).",
+    a: "Yes, you can upgrade at any time and pay only the difference (US$50).",
   },
   {
     q: "What if I want a refund?",
