@@ -118,6 +118,9 @@ const MobileFirstRun = lazyWithReload(() => import('./mobile/MobileFirstRun'));
 const FAQ = lazyWithReload(() => import('./pages/FAQ'));
 const Tour = lazyWithReload(() => import('./pages/Tour'));
 const AppPage = lazyWithReload(() => import('./pages/AppPage'));
+// Openinvite Professional, behind PROFESSIONAL=1: ProfessionalRoot sends every
+// /professional path home while the flag is off (goals/2026-10-14-professional.md).
+const ProfessionalRoot = lazyWithReload(() => import('./pages/professional/ProfessionalRoot'));
 
 // ── Public paths — bypass auth check entirely ─────────────────────────────────
 const PUBLIC_PATH_SET = new Set([
@@ -147,7 +150,7 @@ const PUBLIC_PATH_SET = new Set([
   '/GuestRSVP',
 ]);
 const isPublicPath = (pathname) =>
-  PUBLIC_PATH_SET.has(pathname) || pathname.startsWith('/w/') || pathname.startsWith('/rsvp/') || pathname.startsWith('/games/') || pathname.startsWith('/collaborate/accept/') || pathname.startsWith('/stop-emails/') || pathname.startsWith('/guest-stop-emails/') || pathname.startsWith('/gift/claim/') || pathname.startsWith('/gift/edit/');
+  PUBLIC_PATH_SET.has(pathname) || pathname.startsWith('/w/') || pathname.startsWith('/rsvp/') || pathname.startsWith('/games/') || pathname.startsWith('/collaborate/accept/') || pathname.startsWith('/stop-emails/') || pathname.startsWith('/guest-stop-emails/') || pathname.startsWith('/gift/claim/') || pathname.startsWith('/gift/edit/') || pathname === '/professional' || pathname.startsWith('/professional/');
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -282,6 +285,7 @@ const AuthenticatedApp = () => {
             one above. Different id space, different entity, different flag. */}
         <Route path="/guest-stop-emails/:token" element={<GuestStopEmails />} />
         <Route path="/GuestRSVP" element={<GuestRSVPRetired />} />
+        <Route path="/professional/*" element={<ProfessionalRoot />} />
       </Routes>
     );
   }
