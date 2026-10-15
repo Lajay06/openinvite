@@ -1,12 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { Loader2 } from "lucide-react";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import MarketingHero from "@/components/marketing/MarketingHero";
 import ApplePillButton from "@/components/motion/ApplePillButton";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
-import { startGiftCheckout } from "@/lib/checkoutSession";
 import { PRO_FEATURES, ULTRA_EXTRAS } from "@/lib/planFeatures";
 import { responsivePhoto } from "@/lib/marketingImage";
 
@@ -27,21 +25,25 @@ const HERO = responsivePhoto("DTS_SNOWBOUND_Daniel_Far%C3%B2_Photos_ID12431_yunn
 // nothing to leave in place (PR G4 proposal, open question 5).
 const GIFT_MAILTO = "mailto:hello@openinvite.com.au?subject=I'd%20like%20to%20give%20the%20gift%20of%20Openinvite&body=Hi%20Openinvite%20team%2C%0A%0AI'd%20like%20to%20give%20Openinvite%20as%20a%20gift.%20Here's%20who%20it's%20for%3A%0A";
 
+// THE STEPS ARE GIFTING V2'S (consumer launch goal, item 4, 2026-10-16). The
+// page used to describe the first gift flow: a one-time code the couple typed
+// at checkout. Since the v2 switch-on the plan buttons open /gift, so the steps
+// say what that flow does; step 3 is the done page's own "What they'll get".
 const STEPS = [
   {
     num: "01",
-    heading: "Choose a plan and pay",
-    body: "Pick Pro or Ultra and check out securely, right here. You'll tell us who it's for on the same page, no separate step.",
+    heading: "Choose a plan and make it theirs",
+    body: "Pick Pro or Ultra, add their email, a photo and a note in your words, then pay once, securely.",
   },
   {
     num: "02",
-    heading: "We email them a beautiful gift",
-    body: "A photo-rich email lands in their inbox the moment your payment goes through, with your note if you left one and a one-time code that's theirs alone.",
+    heading: "We email them your gift",
+    body: "It lands the moment your payment goes through, or on the day you choose, with your note and a link that is theirs alone.",
   },
   {
     num: "03",
-    heading: "They create an account, free",
-    body: "They sign up, pick the plan you gave them, and enter the code at checkout. Their 24 months of access starts the moment they redeem it, not today.",
+    heading: "One tap and they're planning",
+    body: "They open the gift, sign in, and the plan is already switched on for 24 months. Nothing for them to set up or pay.",
   },
 ];
 
@@ -53,9 +55,7 @@ function CheckIcon() {
   );
 }
 
-function PlanCard({ label, price, features, accent, loadingPlan, onSelect }) {
-  const planKey = label.toLowerCase();
-  const isLoading = loadingPlan === planKey;
+function PlanCard({ label, price, features, accent }) {
   return (
     <div style={{
       flex: "0 1 300px", minWidth: 260, border: "1px solid #E5E5E5",
@@ -76,32 +76,24 @@ function PlanCard({ label, price, features, accent, loadingPlan, onSelect }) {
           </li>
         ))}
       </ul>
-      <button
-        onClick={() => onSelect(planKey)}
-        disabled={!!loadingPlan}
+      {/* Gifting v2 is live: a plan button opens the gift flow at /gift,
+          which starts by choosing the plan (it takes no plan parameter). */}
+      <Link
+        to="/gift"
         style={{
           width: "100%", padding: "13px 0", borderRadius: 999, fontSize: 13, fontWeight: 700,
-          fontFamily: PJS, background: accent, color: "#FFFFFF", border: "none",
-          cursor: loadingPlan ? "default" : "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-          opacity: loadingPlan && !isLoading ? 0.5 : 1,
-          transition: "opacity 0.15s",
+          fontFamily: PJS, background: accent, color: "#FFFFFF", textDecoration: "none",
+          display: "flex", alignItems: "center", justifyContent: "center",
         }}
       >
-        {isLoading ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : `Give ${label} — ${price}`}
-      </button>
+        {`Give ${label}, ${price}`}
+      </Link>
     </div>
   );
 }
 
 export default function Gifting() {
   useMarketingSeo();
-  const [loadingPlan, setLoadingPlan] = useState(null);
-  const [checkoutError, setCheckoutError] = useState(null);
-
-  const handleSelect = (plan) => {
-    startGiftCheckout(plan, setLoadingPlan, setCheckoutError);
-  };
 
   return (
     <div style={{ background: "#FFFFFF", minHeight: "100vh", fontFamily: PJS }}>
@@ -125,15 +117,10 @@ export default function Gifting() {
             You'll add their email on the next page. They'll have a gift waiting in their inbox within minutes.
           </p>
           <div style={{ display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
-            <PlanCard label="Pro" price="US$49" features={PRO_FEATURES.slice(0, 6)} accent="#E03553" loadingPlan={loadingPlan} onSelect={handleSelect} />
-            <PlanCard label="Ultra" price="US$99" features={["Everything in Pro", ...ULTRA_EXTRAS.slice(0, 5)]} accent="#0A0A0A" loadingPlan={loadingPlan} onSelect={handleSelect} />
+            <PlanCard label="Pro" price="US$49" features={PRO_FEATURES.slice(0, 6)} accent="#E03553" />
+            <PlanCard label="Ultra" price="US$99" features={["Everything in Pro", ...ULTRA_EXTRAS.slice(0, 5)]} accent="#0A0A0A" />
           </div>
 
-          {checkoutError && (
-            <p style={{ marginTop: 24, textAlign: "center", fontSize: 13, color: "#E03553", fontFamily: PJS }}>
-              {checkoutError}
-            </p>
-          )}
         </div>
       </section>
 
