@@ -74,7 +74,11 @@ export function Pill({ tone = 'plain', children }) {
   return <span style={{ ...s.pill, background: bg, color: fg }}>{children}</span>;
 }
 
-/** A dense table: 40px rows, sticky header, horizontal scroll inside its own box at 390. */
+/**
+ * A dense table: 40px rows, sticky header. A column with `wrap: true` lets its
+ * cell take a second line (the row grows past 40px) instead of widening the
+ * table, so the table fits its box.
+ */
 export function ProTable({ columns, rows, empty = 'Nothing here yet.', onRowClick, rowKey = (r) => r.id, label }) {
   return (
     <div style={{ background: '#FFFFFF', border: `1px solid ${PRO.border}`, overflow: 'auto', maxWidth: '100%' }}>
@@ -94,7 +98,7 @@ export function ProTable({ columns, rows, empty = 'Nothing here yet.', onRowClic
               tabIndex={onRowClick ? 0 : undefined}
               style={{ cursor: onRowClick ? 'pointer' : 'default' }}
             >
-              {columns.map((c) => <td key={c.key} style={{ ...s.td, textAlign: c.align || 'left' }}>{c.render ? c.render(r) : r[c.key]}</td>)}
+              {columns.map((c) => <td key={c.key} style={{ ...s.td, textAlign: c.align || 'left', ...(c.wrap ? { whiteSpace: 'normal', overflowWrap: 'break-word', paddingTop: 8, paddingBottom: 8, lineHeight: 1.35 } : {}) }}>{c.render ? c.render(r) : r[c.key]}</td>)}
             </tr>
           ))}
         </tbody>

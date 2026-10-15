@@ -21,6 +21,8 @@
  *      log line, never a partial send.
  *   6. The read is logged (PlannerLinkView): who, which event, when. A read
  *      that cannot be logged is refused.
+ *   7. The last totals (no names) are kept on the event, so an unlink
+ *      leaves the planner a frozen copy and nothing more.
  */
 import { applyCors, checkRateLimit, getClientIp, sanitizeString } from '../_lib/security.js';
 import { verifyBase44User } from '../_lib/auth.js';
@@ -28,7 +30,7 @@ import { hmacHex } from '../_lib/appKeys.js';
 import { TOO_MANY_TRIES, DID_NOT_GO_THROUGH } from '../_lib/calmErrors.js';
 import { professionalOnServer, authorize, liveMember } from '../_lib/professionalAuth.js';
 import { proFn, isConfigured } from '../_lib/professionalData.js';
-import { buildLinkedFeed, latestLinkEvent, isLinkLive, forbiddenInFeed } from '../_lib/professionalFeed.js';
+import { buildLinkedFeed, latestLinkEvent, isLinkLive, forbiddenInFeed, frozenTotals } from '../_lib/professionalFeed.js';
 import { readCouple, toFeedGuests } from '../_lib/professionalCoupleRead.js';
 
 const BASE = 'https://base44.app/api';
@@ -88,6 +90,8 @@ export default async function handler(req, res) {
     // Every read through a link is logged, or it does not happen: the log is
     // written before the panel is sent, and a failed write refuses the read.
     await admin('/entities/PlannerLinkView', { method: 'POST', body: JSON.stringify({ event_id: eventId, wedding_id_hash: hmacHex(couple.wedding?.id || coupleUserId), viewer_member_hash: hmacHex(member.member_user_id_hash || member.id), viewed_at: new Date().toISOString(), is_test: false }) });
+    // The frozen copy a planner keeps if the couple unlinks: the last totals, no names.
+    await proFn('update', { collection: 'ProEvent', id: eventId, workspace_id: workspaceId, data: { frozen_totals: frozenTotals(feed) } }, token);
     return res.status(200).json({ feed });
   } catch (err) {
     console.error('[professional-feed]', err?.status || 'error');

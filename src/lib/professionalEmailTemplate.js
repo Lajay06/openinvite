@@ -1,13 +1,17 @@
 /**
  * src/lib/professionalEmailTemplate.js
  *
- * PROFESSIONAL EMAILS, in the collaborator invite's look: the full logo on a
- * #F5F5F5 ground, a white card, one red pill. An Agency workspace's own name
+ * PROFESSIONAL EMAILS, in the collaborator invite's look: the lockup on a
+ * #F5F5F5 ground, a white card, one pill. The lockup is "Openinvite |
+ * Professional": the real mark recolored to Gilt as a PNG (email never gets
+ * SVG), the words in black. The pill is Gilt with black text; Gilt is never
+ * text on white (owner ruling 2026-10-14). An Agency workspace's own name
  * leads the card; Openinvite stays in the footer. No eyebrow line above a
  * heading. US English, no dashes.
  */
-import { escapeHtml, EMAIL_FONT as FONT, EMAIL_ACCENT as ACCENT, EMAIL_BLACK as BLACK } from './emailBrand.js';
-import { INVITE_GROUND, INVITE_LOGO_URL } from './collaboratorEmailTemplate.js';
+import { escapeHtml, EMAIL_FONT as FONT, EMAIL_BLACK as BLACK } from './emailBrand.js';
+import { INVITE_GROUND } from './collaboratorEmailTemplate.js';
+import { BRAND, MARK_PNG_ABSOLUTE } from './professionalBrand.js';
 import { ROLES } from './professionalAccess.js';
 
 const MUTED = 'rgba(0,0,0,0.68)';
@@ -16,7 +20,12 @@ const QUIET = 'rgba(0,0,0,0.45)';
 export function proShell({ title, preheader, brandName = '', rows }) {
   const brand = brandName
     ? `<p style="margin:0;font-size:16px;font-weight:700;color:${BLACK};font-family:${FONT};">${escapeHtml(brandName)}</p>`
-    : `<img src="${INVITE_LOGO_URL}" width="160" height="37" alt="Openinvite" style="display:block;width:160px;height:37px;border:0;" />`;
+    : `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+            <td style="padding:0 10px 0 0;vertical-align:middle;"><img src="${MARK_PNG_ABSOLUTE}" width="26" height="26" alt="" style="display:block;width:26px;height:26px;border:0;" /></td>
+            <td style="vertical-align:middle;font-size:18px;font-weight:700;color:${BLACK};font-family:${FONT};white-space:nowrap;">Openinvite</td>
+            <td style="vertical-align:middle;padding:0 10px;"><div style="width:1px;height:16px;background:${BLACK};opacity:0.45;"></div></td>
+            <td style="vertical-align:middle;font-size:18px;font-weight:700;color:${BLACK};font-family:${FONT};white-space:nowrap;">Professional</td>
+          </tr></table>`;
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,8 +58,8 @@ const para = (text) => `
         <tr><td style="padding:16px 40px 0;"><p style="margin:0;font-size:15px;line-height:1.7;color:${MUTED};font-family:${FONT};">${text}</p></td></tr>`;
 const button = (label, url) => `
         <tr><td style="padding:28px 40px 0;">
-          <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background:${ACCENT};border-radius:999px;">
-            <a href="${escapeHtml(url)}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:999px;font-family:${FONT};">${escapeHtml(label)}</a>
+          <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background:${BRAND.gilt};border-radius:999px;">
+            <a href="${escapeHtml(url)}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:700;color:${BRAND.onGilt};text-decoration:none;border-radius:999px;font-family:${FONT};">${escapeHtml(label)}</a>
           </td></tr></table>
           <p style="margin:14px 0 0;font-size:12px;color:${QUIET};word-break:break-all;font-family:${FONT};">${escapeHtml(url)}</p>
         </td></tr>`;

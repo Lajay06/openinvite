@@ -14,6 +14,7 @@ import { isValidEmailShape } from '@/lib/professionalCodes';
 import { FilterPill } from '@/components/shared/TableToolbar';
 import { ProPage, ProTable, Pill, Field, ProEmpty } from '@/components/professional/ProPage';
 import { s } from '@/components/professional/proTheme';
+import { downloadCsv } from '@/components/professional/proExport';
 import { TYPE } from '@/styles/typeScale';
 
 export default function TeamPage() {
@@ -38,7 +39,7 @@ export default function TeamPage() {
   };
 
   return (
-    <ProPage title="Team" subtitle={`${members.length} of ${seats === Infinity ? 'unlimited' : seats} seat${seats === 1 ? '' : 's'}`}>
+    <ProPage title="Team" subtitle={`${members.length} of ${seats === Infinity ? 'unlimited' : seats} seat${seats === 1 ? '' : 's'}`} actions={<button type="button" style={s.btnSecondary} onClick={() => downloadCsv('team.csv', ['Name', 'Email', 'Role', 'Events'], members.map((m) => [m.name, m.email_display || '', ROLES[m.role]?.label, m.role === 'owner' ? 'All' : (m.assigned_event_ids || []).map((id) => store.ProEvent.find((e) => e.id === id)?.couple_names).filter(Boolean).join('; ')]))}>CSV</button>}>
       {!STORE_LIVE && (
         <div style={{ ...s.card, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 16 }}>
           <span style={s.label}>Preview as</span>

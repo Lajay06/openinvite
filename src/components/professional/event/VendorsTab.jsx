@@ -17,6 +17,7 @@ import { money } from '@/lib/professionalMoney';
 import { copyText } from '@/lib/copyToClipboard';
 import { ProTable, Pill, Field, ProEmpty } from '../ProPage';
 import VendorDialog from '../VendorDialog';
+import { ProAvaButton } from '../ProAva';
 import { downloadCsv, fileSlug } from '../proExport';
 import { s, PRO } from '../proTheme';
 import { TYPE } from '@/styles/typeScale';
@@ -96,6 +97,7 @@ export default function VendorsTab({ event, me, readOnly }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+        {rows.length > 0 && <ProAvaButton label="Ask Ava to draft the vendor emails" prompt="vendor" eventId={event.id} />}
         <button type="button" style={s.btnSecondary} onClick={csv}>CSV</button>
         {editable && <button type="button" style={s.btnPrimary} onClick={() => setBooking(true)}>Book a vendor</button>}
       </div>
@@ -108,7 +110,7 @@ export default function VendorsTab({ event, me, readOnly }) {
           columns={[
             { key: 'vendor', label: 'Vendor', render: (b) => <span style={{ fontWeight: 600 }}>{b.vendor?.company || 'Removed from the book'}</span> },
             { key: 'role', label: 'Role' },
-            { key: 'phone', label: 'Phone', render: (b) => (b.vendor?.phone ? <a href={`tel:${b.vendor.phone}`} style={{ color: 'inherit' }}>{b.vendor.phone}</a> : '') },
+            { key: 'phone', label: 'Phone', render: (b) => (b.vendor?.phone ? <a href={`tel:${b.vendor.phone}`} style={{ color: PRO.link }}>{b.vendor.phone}</a> : '') },
             ...(showMoney ? [{ key: 'fee', label: 'Fee', align: 'right', render: (b) => money(b.fee) }, { key: 'deposit', label: 'Deposit', align: 'right', render: (b) => money(b.deposit) }] : []),
             { key: 'arrive', label: 'Arrives', render: (b) => fmtTime(b.arrive) },
             { key: 'finish', label: 'Finishes', render: (b) => fmtTime(b.finish) },
