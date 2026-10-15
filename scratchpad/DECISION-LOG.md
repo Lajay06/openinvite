@@ -6372,3 +6372,59 @@ both let the two sessions push to the same remote as they already do.
 If a tree IS shared and the other session is mid-package: park with a labelled
 stash and say so, which is exactly what happened here — never `git checkout --`
 a file, and never discard.
+
+
+---
+
+## 2026-10-15: "Guest Suite" takes its capitals back, reversing the 2026-10-11 ruling
+
+**The product's name is "Guest Suite", with both capitals, in every user-facing
+string on the web and on the phone. This reverses the 2026-10-11 ruling in #976
+that required "Guest suite". The reversal is deliberate.**
+
+#976 read the sentence case rule as governing the name itself and lowercased the
+second word everywhere, then pinned that spelling in sixteen guards. The owner
+ruled on 2026-10-15 that this was wrong: "Guest Suite" is a name, like Pro and
+Ultra, and a name keeps its own capitals wherever it appears.
+
+**The sentence case rule is not weakened by this and this is not an exception to
+it.** Sentence case governs chrome: headings, labels, buttons, the shape of a
+sentence. It says do not Title Case A Whole Phrase. It has never said lowercase
+a proper noun that happens to sit inside a heading. Both rules hold at once,
+which is why "Design studio" has one capital and "Guest Suite" has two.
+
+**The test is the sidebar, not a rule about letters.** Whatever `NAV_SECTIONS`
+calls a thing is what the chrome calls it. That is a single place to read, it is
+already the thing the dashboard renders, and it settles the question without
+anyone having to reason from the rule each time. A rule you reason from gets
+reasoned differently by the next person, which is how #976 happened.
+
+**Identifiers and routes do not follow the display name.** `GuestSuite` the
+component, `guestSuite` the field, and `guest-suite` the route and test id are
+all unchanged. Renaming an identifier to match a display name breaks a route to
+win a style argument.
+
+Enforcement is `tests/persistence/guest-suite-capitals.mjs`: it scans copy for
+the lower and sentence case forms, carries inline fixtures proving it catches
+both, asserts that an identifier and a comment are not copy, and holds each of
+the three identifier forms above a floor so a future sweep cannot quietly take
+them. It also asserts the name appears often enough for the scan to mean
+something, 131 correct uses across the 688 copy files it reads when this entry
+was written, so it cannot pass by finding nothing.
+
+Those are floors, not exact counts, deliberately: an exact count turns every
+unrelated PR that adds a mention into a red guard, and the property worth
+holding is that the identifiers still exist, not that there are exactly so many
+of them.
+
+**What this cost, and the lesson in it.** Sixteen guards had pinned the old
+spelling, two of them in prose that stated the ruling as the reason. Reversing a
+ruling therefore meant rewriting assertions and the comments that explain them,
+one at a time with a reason each, not adding an exception beside them. A guard
+that pins a ruling is the right thing to have built; it just means the cost of
+changing a ruling is paid in the guards, which is where it belongs and where it
+is visible. Every negative test was kept.
+
+Landed in #1074, merge `5e64cc87`, and verified live on ten public pages with no
+lower case occurrence left. The 2026-10-11 entry stands as written: it records
+what was decided then, and this entry records that it no longer holds.
