@@ -6,15 +6,15 @@ import ScrollProgress from "@/components/motion/ScrollProgress";
 import AnimDivider from "@/components/motion/AnimDivider";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 import FeatureTimeline from "@/components/home/FeatureTimeline";
-import FeatureGuests from "@/components/home/FeatureGuests";
 import FeatureBudget from "@/components/home/FeatureBudget";
 import FeatureSectionHeading, { featureBodyTextStyle } from "@/components/home/FeatureSectionHeading";
 import MarketingHero from "@/components/marketing/MarketingHero";
 import MarketingEndCap from "@/components/marketing/MarketingEndCap";
 import { responsivePhoto } from "@/lib/marketingImage";
 import FeaturesAppSection from "@/components/marketing/FeaturesAppSection";
+import FeatureRow from "@/components/marketing/FeatureRow";
 import FeatureStill from "@/components/marketing/FeatureStill";
-import { FEATURE_STILLS, FEATURE_SEATING_CLIP } from "@/lib/featureStills";
+import { FEATURE_STILLS } from "@/lib/featureStills";
 
 // Both are web exports (1280x853 and 1600x1078), so 0.34x and 0.42x of the
 // device pixels their boxes need at dpr 2 is the ceiling until larger masters
@@ -22,6 +22,14 @@ import { FEATURE_STILLS, FEATURE_SEATING_CLIP } from "@/lib/featureStills";
 // advertising candidates Cloudinary would silently downgrade.
 const HERO = responsivePhoto("v1779185631/DTS_THE_INTERN_Shauna_Summers_Photos_ID11406_giy6nx", 1280);
 const END_CAP = responsivePhoto("DTS_CURATIVE_Chris_Abatzis_Photos_ID7678_dlsgrm", 1600);
+
+// REPLIES AND SEATING (owner ruling 2026-10-16). Two rows built exactly like
+// the quick start wizard (src/components/marketing/FeatureRow.jsx), which
+// between them take over Advanced guest management's two jobs: the replies,
+// and the seating. Owned Higgsfield photographs: the woman reading her phone
+// (038), and the long dinner table under paper lanterns (pin_kyoto_party).
+const REPLIES_PHOTO = responsivePhoto("hf_20260905_124238_2e0981ad-2b66-46cc-948d-a8db441b4929_whdhah", 1536);
+const SEATING_PHOTO = responsivePhoto("pin_kyoto_party", 1664);
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
@@ -70,7 +78,7 @@ function useScrollReveal(threshold = 0.2) {
 // under the bullets, so the collapsed accordion is unchanged.
 const ALL_FEATURES = [
 { title: "Vendors and the marketplace", still: FEATURE_STILLS.vendors, bullets: ["Every vendor in one place, with contact, quote, deposit and what is still owed", "A marketplace connected to Google Places, with vendors worldwide", "Send an enquiry without leaving the studio", "Keep quotes, contracts and contacts with each vendor"] },
-{ title: "Seating chart and the visualizer", clip: FEATURE_SEATING_CLIP, bullets: ["Click a table, choose a name, and the seat is theirs.", "See who is still unseated at a glance", "Walk the room in the visualizer, the way guests will see it", "A seating plan for each event, from the reception to the brunch"] },
+{ title: "Seating chart and the visualizer", bullets: ["Click a table, choose a name, and the seat is theirs.", "See who is still unseated at a glance", "Walk the room in the visualizer, the way guests will see it", "A seating plan for each event, from the reception to the brunch"] },
 { title: "Calendar", bullets: ["One calendar for the whole engagement", "Deadlines, vendor payments and fittings beside every event on your run sheet", "Subscribe from your phone's calendar, so an edit here reaches it on its own.", "Export the run sheet for your vendors"] },
 { title: "Ava on every page", bullets: ["A short briefing each morning: what is coming up, what needs a decision", "Ask Ava from any page, about the page you are on", "Answers drawn from your own wedding, never generic advice", "Ask what is unpaid, who has not replied, or what still needs a decision"] },
 { title: "Mood board", bullets: ["Pin the looks you keep coming back to: colors, florals, dresses, tables", "Boards for the venue, the dress, the palette, or anything you name", "A note on every pin", "Inspiration next to the plan, not across six apps"] },
@@ -143,9 +151,34 @@ export default function Features() {
       <AccordionSection features={ALL_FEATURES} dots={DOTS} openFeature={openFeature} setOpenFeature={setOpenFeature} />
 
       {/* ── S7: FEATURE DEEP DIVES ───────────────────────── */}
+      {/* Timeline (white), then Replies (black) and Seating (white) in
+          Advanced guest management's place, then budget (black): the page
+          keeps alternating. Replies carries the Ultra badge: the RSVP step is
+          Ultra-gated in src/lib/journeySteps.js and the guest's meal choice
+          in src/pages/FoodBeverage.jsx (MealOptionsUltraGate). */}
       <div style={{ background: "#FFFFFF" }}>
         <FeatureTimeline />
-        <FeatureGuests />
+        <FeatureRow
+          name="replies"
+          ground="black"
+          photo="right"
+          src={REPLIES_PHOTO.src}
+          srcSet={REPLIES_PHOTO.srcSet}
+          alt="A woman in a white slip dress smiling at her phone"
+          heading="Watch the yeses roll in."
+          body="Every guest gets their own link. They RSVP in seconds, pick their meal, request a song (yes, ABBA counts) and it all lands in your guest list, sorted by household."
+          ultra
+        />
+        <FeatureRow
+          name="seating"
+          ground="white"
+          photo="left"
+          src={SEATING_PHOTO.src}
+          srcSet={SEATING_PHOTO.srcSet}
+          alt="Guests seated along a long dinner table under paper lanterns at night"
+          heading="Seating, minus the drama."
+          body="Drag guests to tables and the rest sorts itself out: meals go to the caterer, names go on the place cards, and the plan goes to every phone on the day."
+        />
         <FeatureBudget />
       </div>
 
@@ -164,25 +197,21 @@ export default function Features() {
 }
 
 function QuickStartSection() {
-  const [ref, visible] = useScrollReveal(0.2);
+  // The row the Replies and Seating rows are built from, rendered through the
+  // same component so the three cannot drift apart; only the wizard keeps its
+  // pale blue wash over the photograph.
   return (
-    /* Direction is owned by the flex-col / lg:flex-row classes below. An
-       inline flexDirection: "row" used to override them, so these columns
-       stayed side by side under lg and the text ran off screen. */
-    <section ref={ref} style={{ background: "#0A0A0A", minHeight: "100vh", display: "flex", overflow: "hidden" }} className="flex-col lg:flex-row">
-      <div className="w-full lg:w-1/2 order-1" style={{ position: "relative", minHeight: 320, overflow: "hidden", flexShrink: 0 }}>
-        <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_INFLUENCER_Daniel_Farò_Photos_ID8195_hcbnri.jpg" alt="A person setting up their wedding plan on a laptop" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(-100px)", transition: `opacity 0.9s ${EASE}, transform 1s ${EASE}` }} />
-        <div style={{ position: "absolute", inset: 0, background: "rgba(194,229,243,0.12)", mixBlendMode: "multiply", pointerEvents: "none" }} />
-        <div className="lg:hidden" style={{ paddingBottom: "66.66%", position: "relative" }} />
-      </div>
-      <div className="w-full lg:w-1/2 order-2 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(40px)", transition: `opacity 0.9s ${EASE} 0.2s, transform 0.9s ${EASE} 0.2s` }}>
-        <div style={{ maxWidth: 552 }}>
-          <FeatureSectionHeading color="#FFFFFF">Quick start wizard</FeatureSectionHeading>
-          <p style={{ ...featureBodyTextStyle, color: "rgba(255,255,255,0.4)" }}>Get set up in seconds: enter your names, date, location, and vibe. No overwhelm, just momentum.</p>
-        </div>
-      </div>
-    </section>);
-
+    <FeatureRow
+      name="quick-start"
+      ground="black"
+      photo="left"
+      src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_INFLUENCER_Daniel_Farò_Photos_ID8195_hcbnri.jpg"
+      alt="A person setting up their wedding plan on a laptop"
+      heading="Quick start wizard"
+      body="Get set up in seconds: enter your names, date, location, and vibe. No overwhelm, just momentum."
+      tint="rgba(194,229,243,0.12)"
+    />
+  );
 }
 
 function DashboardSection() {

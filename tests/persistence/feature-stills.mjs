@@ -57,8 +57,10 @@ export function runFeatureStills() {
   const pre = join(ROOT, 'prerendered/features/index.html');
   const html = existsSync(pre) ? readFileSync(pre, 'utf8').replace(/&amp;/g, '&') : '';
   const figures = html.match(/<figure\b[^>]*data-feature-still="still"[\s\S]*?<\/figure>/g) || [];
-  check('prerendered /features carries the four inline stills', figures.length === 4, `${figures.length} figures`);
-  for (const k of ['replies', 'budget', 'suite']) {
+  // Three since 2026-10-16: the replies still went with Advanced guest
+  // management, whose place the Replies and Seating rows took.
+  check('prerendered /features carries the three inline stills', figures.length === 3, `${figures.length} figures`);
+  for (const k of ['budget', 'suite']) {
     const s = FEATURE_STILLS[k];
     const fig = figures.find((f) => f.includes(idOf(s.src))) || '';
     check(`${k}: on the page, 552 and 1104 wide, with its caption`,
@@ -81,12 +83,14 @@ export function runFeatureStills() {
   const dash = html.indexOf('data-dashboard-band');
   check('morning page: the band comes straight before the Customizable Dashboard row, not inside it',
     dash > 0 && html.indexOf('Customizable Dashboard', dash) > dash && !/<section\b[^>]*lg:flex-row[^>]*>(?:(?!<\/section>)[\s\S])*data-dashboard-band/.test(html));
-  check('replies: under the guest management bullets', under('src/components/home/FeatureGuests.jsx', 'still={FEATURE_STILLS.replies}'));
+  check('replies: gone with Advanced guest management', !existsSync(join(ROOT, 'src/components/home/FeatureGuests.jsx')) && !html.includes(idOf(FEATURE_STILLS.replies.src)));
   check('budget: under the budget bullets, on the dark ground', under('src/components/home/FeatureBudget.jsx', 'still={FEATURE_STILLS.budget} dark'));
   check('suite: under the timeline bullets', under('src/components/home/FeatureTimeline.jsx', 'still={FEATURE_STILLS.suite}'));
   const features = stripComments(read('src/pages/Features.jsx'));
-  check('vendors row carries the vendors still, seating row the clip',
-    /title: "Vendors and the marketplace", still: FEATURE_STILLS\.vendors,/.test(features) && /title: "Seating chart and the visualizer", clip: FEATURE_SEATING_CLIP,/.test(features));
+  // The seating clip left the accordion on 2026-10-16 (the Seating row shows
+  // the job now); the clip stays in the map for the studio tour.
+  check('vendors row carries the vendors still, and the seating row no clip',
+    /title: "Vendors and the marketplace", still: FEATURE_STILLS\.vendors,/.test(features) && /title: "Seating chart and the visualizer", bullets:/.test(features) && !/FEATURE_SEATING_CLIP/.test(features));
   check('accordion media sits inside the open panel only, at 480 wide',
     /openFeature === i &&[\s\S]*?<\/ul>\s*\{\(f\.still \|\| f\.clip\) &&\s*<div style=\{\{ maxWidth: 480 \}\}>/.test(features));
 
