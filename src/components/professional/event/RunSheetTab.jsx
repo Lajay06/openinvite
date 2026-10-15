@@ -23,6 +23,7 @@ import { FilterPill } from '@/components/shared/TableToolbar';
 import { downloadCsv, downloadTablePdf, fileSlug } from '../proExport';
 import { linkedFeedFor } from '@/lib/professionalFeedClient';
 import { Pill } from '../ProPage';
+import { ProAvaButton } from '../ProAva';
 import { s, PRO } from '../proTheme';
 import { TYPE } from '@/styles/typeScale';
 
@@ -156,6 +157,7 @@ export default function RunSheetTab({ event, me, readOnly }) {
           {editable && <button type="button" onClick={addSheet} style={{ ...s.btnQuiet, display: 'inline-flex', gap: 4, alignItems: 'center', color: PRO.muted }}><Plus size={13} /> Sheet</button>}
         </div>
         <span style={{ flex: 1 }} />
+        <ProAvaButton label="Ask Ava to find gaps" prompt="gaps" eventId={event.id} />
         <button type="button" style={s.btnSecondary} onClick={csv}>CSV</button>
         <button type="button" style={s.btnSecondary} onClick={() => pdf('a4')}>PDF, A4</button>
         <button type="button" style={s.btnSecondary} onClick={() => pdf('letter')}>PDF, Letter</button>

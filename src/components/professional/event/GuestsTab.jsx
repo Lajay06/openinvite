@@ -177,6 +177,7 @@ export default function GuestsTab({ event, me, readOnly }) {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
         {[['all', 'Everyone'], ['coming', 'Coming'], ['waiting', 'Waiting'], ['not_coming', 'Not coming']].map(([k, l]) => <FilterPill key={k} label={l} active={filter === k} onClick={() => setFilter(k)} />)}
         <span style={{ flex: 1 }} />
+        {rows.length > 0 && <button type="button" style={s.btnSecondary} onClick={() => downloadCsv(`${fileSlug(`${event.couple_names} guests`)}.csv`, ['Guest', 'Reply', 'Plus one', 'Child', 'Meal', 'Dietary', 'Table'], rows.map((g) => [g.name, STATUS[g.status]?.[0] || 'Waiting', g.plus_one ? (g.plus_one_name || 'Yes') : '', g.child ? 'Yes' : '', g.meal, g.dietary, g.table]))}>Guest list CSV</button>}
         {rows.length > 0 && <Caterer rows={rows} totals={totals} event={event} brand={brand} />}
         {!linked && can(me, 'link.invite', event) && !readOnly && !pending && <button type="button" style={s.btnPrimary} onClick={() => setInviting(true)}>Invite the couple</button>}
       </div>

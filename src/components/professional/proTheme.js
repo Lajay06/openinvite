@@ -3,12 +3,13 @@
  *
  * THE PROFESSIONAL WORKPLACE LOOK, IN ONE PLACE. goals/2026-10-14-professional.md,
  * Look and feel: black bars, a #F5F5F5 work area with white cards, Plus
- * Jakarta Sans, red for actions only, dense 40px table rows with sticky
+ * Jakarta Sans, gilt for actions only (never as text on a light ground), dense 40px table rows with sticky
  * headers. Sizes come from the type scale; nothing is tracked, nothing is
  * lighter than 400, cards are square with no shadow.
  */
 import { TYPE } from '@/styles/typeScale';
 import { color } from '@/styles/tokens';
+import { BRAND } from '@/lib/professionalBrand';
 
 export const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -16,7 +17,10 @@ export const PRO = {
   bar: color.black,
   work: color.bgSubtle,
   card: color.white,
-  red: color.red,
+  // Gilt for actions, never as text on a light ground; Deep gilt for links and focus on light grounds.
+  action: BRAND.gilt,
+  onAction: BRAND.onGilt,
+  link: BRAND.deepGilt,
   text: color.black,
   muted: color.textMuted,
   placeholder: color.textPlaceholder,
@@ -46,7 +50,7 @@ export const s = {
   body: { fontSize: TYPE.body, color: PRO.text },
   secondary: { fontSize: TYPE.secondary, color: PRO.muted },
   pill: { display: 'inline-block', borderRadius: 999, fontSize: TYPE.rowPill, fontWeight: 600, padding: '2px 7px', whiteSpace: 'nowrap' },
-  btnPrimary: { background: PRO.red, color: '#FFFFFF', border: 'none', borderRadius: 999, padding: '6px 14px', fontSize: TYPE.button, fontWeight: 600, cursor: 'pointer', fontFamily: PJS, whiteSpace: 'nowrap' },
+  btnPrimary: { background: PRO.action, color: PRO.onAction, border: 'none', borderRadius: 999, padding: '6px 14px', fontSize: TYPE.button, fontWeight: 600, cursor: 'pointer', fontFamily: PJS, whiteSpace: 'nowrap' },
   btnSecondary: { background: 'rgba(10,10,10,0.08)', color: PRO.text, border: '1px solid rgba(10,10,10,0.12)', borderRadius: 999, padding: '6px 14px', fontSize: TYPE.button, fontWeight: 600, cursor: 'pointer', fontFamily: PJS, whiteSpace: 'nowrap' },
   btnQuiet: { background: 'transparent', color: PRO.text, border: 'none', padding: '6px 8px', fontSize: TYPE.button, fontWeight: 600, cursor: 'pointer', fontFamily: PJS },
   input: { border: 'none', borderBottom: '1px solid rgba(10,10,10,0.15)', background: 'transparent', fontSize: TYPE.input, color: PRO.text, padding: '6px 0', outline: 'none', fontFamily: PJS, width: '100%', borderRadius: 0 },
@@ -57,3 +61,12 @@ export const s = {
 };
 
 export const MOBILE_MAX = 767;
+
+/**
+ * FOCUS RINGS: Deep gilt on light grounds (3:1 and more for a non-text
+ * indicator), Gilt on the black bars where it reads. Scoped to Professional.
+ */
+export const FOCUS_CSS = `
+.oi-pro :focus-visible { outline: 2px solid ${BRAND.deepGilt}; outline-offset: 2px; }
+.oi-pro .oi-pro-dark :focus-visible { outline-color: ${BRAND.gilt}; }
+`;

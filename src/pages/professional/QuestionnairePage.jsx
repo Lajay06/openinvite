@@ -10,8 +10,8 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProStore, update, STORE_LIVE } from '@/lib/professionalStore';
 import { formView, cleanAnswers, MAX_ANSWER } from '@/lib/professionalForms';
-import { ASSET } from '@/components/public/OpeninviteLogo';
-import { PRO, PJS, s } from '@/components/professional/proTheme';
+import { ProLogo } from '@/components/professional/ProShell';
+import { PRO, PJS, s, FOCUS_CSS } from '@/components/professional/proTheme';
 import { TYPE } from '@/styles/typeScale';
 
 const GONE = 'This link isn’t working. Ask your planner to send it again.';
@@ -31,12 +31,12 @@ export default function QuestionnairePage() {
     update('ProQuestionnaire', form.id, { answers: cleanAnswers(view.questions, answers), status: 'answered' });
     setSent(true);
   };
-  const scale = 16 / (ASSET.mark.y1 - ASSET.mark.y0 + 1);
 
   return (
-    <div style={{ minHeight: '100vh', background: PRO.work, fontFamily: PJS, color: PRO.text }}>
-      <header style={{ background: PRO.bar, height: PRO.barHeight, display: 'flex', alignItems: 'center', padding: '0 16px', color: '#FFFFFF', fontWeight: 700, fontSize: TYPE.input }}>
-        {view?.from ? view.from : <img src="/openinvite-logo.png" alt="Openinvite" style={{ height: Math.round(ASSET.height * scale) }} />}
+    <div className="oi-pro" style={{ minHeight: '100vh', background: PRO.work, fontFamily: PJS, color: PRO.text }}>
+      <style>{FOCUS_CSS}</style>
+      <header className="oi-pro-dark" style={{ background: PRO.bar, height: PRO.barHeight, display: 'flex', alignItems: 'center', padding: '0 16px', color: '#FFFFFF', fontWeight: 700, fontSize: TYPE.input }}>
+        {view?.from ? view.from : <ProLogo size={16} to={null} />}
       </header>
       <main style={{ maxWidth: 620, margin: '0 auto', padding: 16 }}>
         {!view && <p style={{ ...s.card, ...s.body, margin: 0 }}>{GONE}</p>}

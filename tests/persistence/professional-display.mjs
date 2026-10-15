@@ -67,6 +67,14 @@ export function runProfessionalDisplay() {
   check('professional display: each card reads time, item, length, then the rest', order.every((x, i) => x > 0 && (i === 0 || x > order[i - 1])), order.join(','));
   check('professional display: "Show" stays on one line with its dropdown', /whiteSpace: 'nowrap'[^>]*>\s*<span style=\{s\.label\}>Show<\/span>/.test(rs), 'nowrap');
 
+  // 3b. The events home fits its box at 1440 (owner ruling 2026-10-14): long cells wrap, the table never widens.
+  const home = code('src/pages/professional/EventsHome.jsx');
+  const wrapping = ['couple', 'venue', 'guests', 'pay', 'planner'].filter((k) => !new RegExp(`key: '${k}', label: '[^']+', wrap: true`).test(home));
+  check('professional display: the events home wraps couple, venue, coming, next payment and planner instead of widening', wrapping.length === 0 && /c\.wrap \? \{ whiteSpace: 'normal'/.test(page), wrapping.join(', ') || 'five columns wrap');
+  check('professional display: the coming cell is "8 coming" on line one and the plus-ones smaller underneath', /<span style=\{\{ display: 'block', whiteSpace: 'nowrap' \}\}>\{e\.sum\.heads\.line\}<\/span>\{e\.sum\.heads\.sub && <span style=\{\{ \.\.\.s\.secondary, display: 'block', lineHeight: 1\.25, whiteSpace: 'nowrap' \}\}/.test(home), 'two lines, each whole');
+  check('professional display: planner names wrap between names, never inside one', /names\.flatMap\(\(n, i\) => \[i \? ' ' : null, <span key=\{n\} style=\{\{ whiteSpace: 'nowrap' \}\}>/.test(home), 'between names');
+  check('professional display: the browser overflow check covers 1440 and 390 and the events home', /const WIDTHS = \[1440, 390\]/.test(read('scripts/professional-overflow.mjs')) && /'\/professional\/app',/.test(read('scripts/professional-overflow.mjs')), 'scripts/professional-overflow.mjs');
+
   // 4. One guest count, on the real seed.
   const store = Object.fromEntries(COLLECTIONS.map((c) => [c, list(c)]));
   const now = new Date();
@@ -80,7 +88,7 @@ export function runProfessionalDisplay() {
     check(`professional display: ${event.couple_names}: events home, Guests panel, day-of and the caterer sheet count the same heads`, home.heads === panel.heads && home.line === panel.line && home.sub === panel.sub && panel.heads === panelTotals.coming + panelTotals.plus_ones, `${home.line}${home.sub ? `, ${home.sub}` : ''}`);
   }
   check('professional display: the count reads "8 coming" and "includes 1 plus-one"', guestHeads({ coming: 7, plus_ones: 1 }).line === '8 coming' && guestHeads({ coming: 7, plus_ones: 1 }).sub === 'includes 1 plus-one' && guestHeads({ coming: 5, plus_ones: 0 }).sub === '' && guestHeads({ coming: 2, plus_ones: 3 }).sub === 'includes 3 plus-ones', 'worded');
-  const COUNT_PLACES = ['src/pages/professional/EventsHome.jsx', 'src/components/professional/event/GuestsTab.jsx', 'src/components/professional/event/EventOverview.jsx', ...(files.includes('src/pages/professional/DayOfPage.jsx') && /guestHeads/.test(read('src/pages/professional/DayOfPage.jsx')) ? ['src/pages/professional/DayOfPage.jsx'] : [])];
+  const COUNT_PLACES = ['src/pages/professional/EventsHome.jsx', 'src/components/professional/event/GuestsTab.jsx', 'src/components/professional/event/EventOverview.jsx', ...(files.includes('src/pages/professional/DayOfPage.jsx') && /coming/i.test(code('src/pages/professional/DayOfPage.jsx')) ? ['src/pages/professional/DayOfPage.jsx'] : [])];
   const ownCount = COUNT_PLACES.filter((f) => /totals\.coming\s*[+]|coming \|\| 0\) \+|\.plus_ones \|\| 0\)/.test(code(f)) || !/guestHeads|\.heads\b/.test(code(f)));
   check('professional display: every place that shows the count takes it from guestHeads', ownCount.length === 0, ownCount.join(', ') || COUNT_PLACES.map((f) => f.split('/').pop()).join(', '));
 
