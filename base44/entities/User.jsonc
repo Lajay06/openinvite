@@ -100,6 +100,11 @@
     "stripeCustomerId": {
       "type": "string",
       "description": "Stripe customer id (cus_...) for this account, written server-side by api/webhooks/stripe.js on a completed purchase and read by api/create-portal-session.js to open the billing portal and by Account.jsx to offer it. Absent on accounts that have never paid."
+    },
+    "planExpiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the couple's 24-month plan term ends. Written on purchase and on gift claim. After this date the couple can view and export but not edit; guests are never affected."
     }
   },
   "required": []
