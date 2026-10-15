@@ -123,7 +123,7 @@ export function runAppMarketing() {
       && /\.home-app__heading \{ font-size: 44px; \}/.test(homeSrc) && /\.home-app__body \{ font-size: 17px; \}/.test(homeSrc) && /\.home-app__small \{ font-size: 14px; \}/.test(homeSrc));
   check('home: the 56 by 4 rule in #E03553, 28px above the heading', /\.home-app__rule \{ width: 56px; height: 4px; background: #E03553; margin-bottom: 28px; \}/.test(homeSrc));
   const t = textOf(block);
-  check('home: the body, verbatim', t.includes('Plan on the train, on the couch, in the queue for coffee. Your guest list, budget and seating chart on your phone and your computer, always the same wedding.'));
+  check('home: the body, verbatim', t.includes('Plan on the train, on the couch, in line for coffee. Your guest list, budget and seating chart on your phone and your computer, always the same wedding.'));
   check('home: the small line, as text', t.includes('iPhone and Android. Coming at launch.') && /data-app-store-line/.test(block));
   check('home: the small line is not a link', !/<a\b[^>]*>[^<]*Coming at launch/.test(block));
   const blockAt = home.indexOf('data-home-app');
@@ -139,8 +139,8 @@ export function runAppMarketing() {
   // the owner's four lines (the replies line waits for push), the desktop
   // sentence unchanged.
   const FEATURE_LINES = [
-    'Add a guest from the car park; it is on your computer before you are back inside.',
-    'Check the budget in the queue, not at the desk.',
+    'Add a guest from the parking lot; it is on your computer before you are back inside.',
+    'Check the budget in line, not at the desk.',
     'The seating chart in your hand at the venue walk-through.',
   ];
   // Batch 3 amendment B: one row of the feature rows, a photograph and a

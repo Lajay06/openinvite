@@ -39,7 +39,7 @@ const photoUrl = (w) => `${CLOUD}/f_auto,q_auto,w_${w},c_limit/${HOME_APP_PHOTO_
 export const HOME_APP_SRCSET = [2400, 1600, 1200, 800].map((w) => `${photoUrl(w)} ${w}w`).join(", ");
 
 export const HOME_APP_HEADING = "The whole planner, in your pocket.";
-export const HOME_APP_BODY = "Plan on the train, on the couch, in the queue for coffee. Your guest list, budget and seating chart on your phone and your computer, always the same wedding.";
+export const HOME_APP_BODY = "Plan on the train, on the couch, in line for coffee. Your guest list, budget and seating chart on your phone and your computer, always the same wedding.";
 export const HOME_APP_SMALL = "iPhone and Android. Coming at launch.";
 export const HOME_APP_ALT = "A woman in a white outfit sits outside a vintage shop, reading her phone.";
 export const HOME_APP_SCRIM = "linear-gradient(0deg, rgba(0,0,0,.78) 0%, rgba(0,0,0,.35) 45%, rgba(0,0,0,0) 75%)";
