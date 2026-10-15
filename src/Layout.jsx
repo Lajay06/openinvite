@@ -43,7 +43,7 @@ const TOAST_MARK = {
   alignItems: 'center',
 };
 import { CollaboratorProvider, useCollaboratorContext, permissionKeyForPageName, hasPagePermission } from '@/lib/collaboratorContext';
-import { getTrialStatus } from '@/lib/trialStatus';
+import { getTrialStatus, getPlanTerm } from '@/lib/trialStatus';
 import TopBarSearch from './components/layout/TopBarSearch';
 import { formatDashboardDate } from '@/lib/dashboardDate';
 
@@ -571,8 +571,17 @@ function LayoutShell({ children, currentPageName }) {
     // string alone -- so the banner could say the trial had ended beside
     // features that still worked.
     const { isPaid, trialExpired, daysLeft } = getTrialStatus(user);
-    if (isPaid) return null;
-    return trialExpired ? { expired: true, daysLeft: 0 } : { expired: false, daysLeft };
+    if (!isPaid) {
+      return trialExpired
+        ? { kind: 'trial', expired: true, daysLeft: 0 }
+        : { kind: 'trial', expired: false, daysLeft };
+    }
+    // A PAID PLAN RUNS FOR A TERM, and past it this banner is the only
+    // explanation the couple gets for why edits stop saving. Owner ruling
+    // 2026-10-15. Nothing is shown while the term is still running: a
+    // countdown on a 24-month window is noise for 23 of them.
+    const term = getPlanTerm(user);
+    return term.expired ? { kind: 'term', expired: true, daysLeft: 0 } : null;
   }, [user, isCollaborating]);
 
   // The trial banner's height is NOT a constant. `36` was its minHeight, true
@@ -733,13 +742,20 @@ function LayoutShell({ children, currentPageName }) {
           }}
         >
           <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', fontFamily: PJS }}>
-            {trialBanner.expired
-              // Canon: no data-hostage language. The couple's work is not
-              // withheld or ransomed -- it is theirs, readable and exportable.
-              // What ends is the ability to keep CHANGING it. "Unlock your
-              // data" would be both hostile and untrue.
-              ? 'Your free trial has ended. Your work is safe and yours — upgrade to keep planning.'
-              : `14-day free trial — ${trialBanner.daysLeft} day${trialBanner.daysLeft !== 1 ? 's' : ''} remaining.`}
+            {trialBanner.kind === 'term'
+              // THE SAME CANON, and it matters more here: this couple PAID.
+              // Their 24 months are up, and what they keep is everything they
+              // can read and export, forever and at no cost. The published
+              // guest site stays live and guests are unaffected. So the line
+              // states what ended and what did not, and asks for nothing.
+              ? 'Your 24 months of access have ended. Everything is still yours to read and export.'
+              : trialBanner.expired
+                // Canon: no data-hostage language. The couple's work is not
+                // withheld or ransomed -- it is theirs, readable and exportable.
+                // What ends is the ability to keep CHANGING it. "Unlock your
+                // data" would be both hostile and untrue.
+                ? 'Your free trial has ended. Your work is safe and yours — upgrade to keep planning.'
+                : `14-day free trial — ${trialBanner.daysLeft} day${trialBanner.daysLeft !== 1 ? 's' : ''} remaining.`}
           </span>
           <a
             href="/pricing"
@@ -753,7 +769,7 @@ function LayoutShell({ children, currentPageName }) {
             onMouseEnter={e => { e.currentTarget.style.opacity = '0.85'; }}
             onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
           >
-            Upgrade
+            {trialBanner.kind === 'term' ? 'Renew' : 'Upgrade'}
           </a>
         </div>
       )}
