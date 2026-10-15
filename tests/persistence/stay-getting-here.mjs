@@ -178,8 +178,8 @@ export async function runStayGettingHere() {
   const sidebar = readFileSync(join(ROOT, 'src/components/layout/AnimatedSidebar.jsx'), 'utf8');
   const stayCount = (sidebar.match(/label:\s*"Stay"/g) || []).length;
   const hereCount = (sidebar.match(/label:\s*"Getting here"/g) || []).length;
-  check('  the sidebar names both sections Stay (On the day, Guest suite)', stayCount === 2, `${stayCount} of 2`);
-  check('  the sidebar names both sections Getting here (On the day, Guest suite)', hereCount === 2, `${hereCount} of 2`);
+  check('  the sidebar names both sections Stay (On the day, Guest Suite)', stayCount === 2, `${stayCount} of 2`);
+  check('  the sidebar names both sections Getting here (On the day, Guest Suite)', hereCount === 2, `${hereCount} of 2`);
 
   const site = readFileSync(join(ROOT, 'src/components/guest-website/WeddingWebsiteNav.jsx'), 'utf8');
   check('  the live site still says Stay and Getting here',

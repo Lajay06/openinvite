@@ -62,7 +62,7 @@ export async function runPublishRequiresAddress() {
   const modal = read('src/components/website-builder/PublishModal.jsx');
   check('the publish modal refuses without an address', /if \(!address\) \{/.test(modal),
     'the write is guarded, not just the button');
-  check('  and says what to do about it', /Add your names first so your guest suite has an address/.test(modal)
+  check('  and says what to do about it', /Add your names first so your Guest Suite has an address/.test(modal)
     && /EventDetails/.test(modal), 'message + link to Event details');
 
   const share = read('src/components/studio/guest-suite/StudioShareTab.jsx');

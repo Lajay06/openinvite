@@ -80,7 +80,7 @@ const ROWS = [
     "Getting there, where to stay, who to call, what to wear",
     "Stay and Getting here pages for out-of-town guests",
     "Dress code and policies in one place",
-    "Written once, shown to guests on your guest suite where they need it",
+    "Written once, shown to guests on your Guest Suite where they need it",
   ]],
   ["Registry and cash funds", [
     "Link the registry you already have",
@@ -90,7 +90,7 @@ const ROWS = [
   ]],
 ];
 
-const GONE = ['A guest suite, written for you', 'Twenty universes', 'Invitations and RSVP',
+const GONE = ['A Guest Suite, written for you', 'Twenty universes', 'Invitations and RSVP',
               'Vendors, seating and your calendar'];
 
 export async function runFeaturesAccordionRows() {

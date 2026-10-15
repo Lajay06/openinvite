@@ -29,7 +29,7 @@
 export const TRIAL_FEATURES = [
   "14-day full access to every feature",
   "Unlimited guests, budget, seating & vendors",
-  "Guest suite builder",
+  "Guest Suite builder",
   "Digital invitations by email",
   "Online RSVP pages for guests",
   "Ava AI: unlimited conversations",
@@ -51,10 +51,10 @@ export const PRO_FEATURES = [
 ];
 
 export const ULTRA_EXTRAS = [
-  "Guest suite builder",
-  "Universes (20 guest suite styles)",
+  "Guest Suite builder",
+  "Universes (20 Guest Suite styles)",
   "Digital invitations by email",
   "Online RSVP pages for guests",
-  "Guest suite: stay, getting here & experience guide",
+  "Guest Suite: stay, getting here & experience guide",
   "Save the dates & thank you cards",
 ];

@@ -30,10 +30,13 @@ const code = (p) => stripComments(readFileSync(join(ROOT, p), 'utf8'), { trailin
  * Money & vendors · Website & invitations) are gone; what survives from that
  * pass is the behaviour, not the taxonomy.
  *
- * "Guest suite" is the brand name, exactly — it was "Guest Suite" before and
+ * "Guest Suite" is the brand name, exactly, with both capitals. It was
+ * "Guest Suite", then "Guest suite" from 2026-10-11 (#976), and the owner
+ * reversed that on 2026-10-15: the product's name keeps its capitals on web
+ * and on the phone, like Pro and Ultra. It was also
  * "Website & invitations" briefly. The owner named the spelling.
  */
-const GROUPS = ['Planning', 'Guests', 'Style & experience', 'Vendors', 'On the day', 'Finances', 'Guest suite', 'Extras'];
+const GROUPS = ['Planning', 'Guests', 'Style & experience', 'Vendors', 'On the day', 'Finances', 'Guest Suite', 'Extras'];
 
 export async function runDashboardTop() {
   const results = [];
@@ -69,13 +72,13 @@ export async function runDashboardTop() {
     /get\('next'\) \|\| '\/DailyUpdate'/.test(code('src/pages/Login.jsx')), 'the landing page');
 
   // ── FIVE GROUPS, IN THE CALM PASS'S ORDER ───────────────────────────────
-  // Groups now declare an icon, and the guest suite declares both. The
+  // Groups now declare an icon, and the Guest Suite declares both. The
   // matcher has to allow either, in that order, or it silently finds none —
   // which is a guard reporting "the groups are wrong" when they are right.
   const groups = [...nav.matchAll(/\n    label: "([^"]+)",\n    (?:icon: \w+,\n    )?(?:guestSuite: true,\n    )?items: \[/g)].map((m) => m[1]);
   check('PLANT: the pre-#697 groups are back',
     groups.length === GROUPS.length, `${groups.length}: ${groups.join(' · ')}`);
-  check('  in their original order, with the guest suite named exactly',
+  check('  in their original order, with the Guest Suite named exactly',
     groups.join('|') === GROUPS.join('|'), groups.join(' · '));
   check('PLANT: every group carries an icon, so a collapsed sidebar reads',
     (nav.match(/\n    icon: [A-Z]\w+,/g) || []).length === GROUPS.length,
@@ -84,13 +87,13 @@ export async function runDashboardTop() {
     /\{section\.icon && <section\.icon size=\{11\}/.test(nav), 'beside the label');
 
   // ── DESIGN STUDIO'S NEW HOME ────────────────────────────────────────────
-  const website = /label: "Guest suite",[\s\S]*?items: \[([\s\S]*?)\n    \],/.exec(nav)?.[1] || '';
+  const website = /label: "Guest Suite",[\s\S]*?items: \[([\s\S]*?)\n    \],/.exec(nav)?.[1] || '';
   const websiteItems = [...website.matchAll(/label: "([^"]+)"/g)].map((m) => m[1]);
-  check('PLANT: Design studio is the FIRST item of Guest suite',
+  check('PLANT: Design studio is the FIRST item of Guest Suite',
     websiteItems[0] === 'Design studio', websiteItems.join(' · '));
   check('  it keeps its Ultra treatment',
     /label: "Design studio",\s*url: "\/studio", ultraBadge: true/.test(nav)
-      && /label: "Guest suite",\s*icon: Globe,\s*guestSuite: true/.test(nav),
+      && /label: "Guest Suite",\s*icon: Globe,\s*guestSuite: true/.test(nav),
     'the badge on the item and the Ultra tag on the group');
   check('  and it is no longer a top-level link',
     !/label="Design studio"/.test(nav), 'one entry, not two');

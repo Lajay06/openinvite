@@ -49,7 +49,7 @@ const FAQS = [
   },
   {
     q: "What's the difference between Pro and Ultra?",
-    a: "Pro includes everything you need to plan your wedding: guests, budget, vendors, seating, timeline, and more. Ultra adds the guest suite, invitations, online RSVP, and all twenty universes.",
+    a: "Pro includes everything you need to plan your wedding: guests, budget, vendors, seating, timeline, and more. Ultra adds the Guest Suite, invitations, online RSVP, and all twenty universes.",
   },
   {
     q: "Is the app included?",
@@ -82,7 +82,7 @@ const TABLE_ROWS = [
   { feature: "Seating planner",         trial: true,        pro: true,         ultra: true },
   { feature: "Schedule & timeline",     trial: true,        pro: true,         ultra: true },
   { feature: "Music & registry",        trial: true,        pro: true,         ultra: true },
-  { feature: "Guest suite",             trial: true,        pro: false,        ultra: true },
+  { feature: "Guest Suite",             trial: true,        pro: false,        ultra: true },
   { feature: "Digital invitations",     trial: true,        pro: false,        ultra: true },
   { feature: "Online RSVP",            trial: true,        pro: false,        ultra: true },
   { feature: "Universes",               trial: true,        pro: false,        ultra: true },
@@ -285,7 +285,7 @@ export default function Pricing() {
               24-month access · one-time payment
             </p>
             <p style={{ fontSize: 14, lineHeight: 1.6, color: "rgba(10,10,10,0.6)", marginBottom: 20, fontFamily: PJS }}>
-              Everything in Pro, plus the full digital wedding suite: your guest suite, invitations, and RSVP.
+              Everything in Pro, plus the full digital wedding suite: your Guest Suite, invitations, and RSVP.
             </p>
             <div style={{ height: 1, background: "rgba(10,10,10,0.06)", marginBottom: 14 }} />
             <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(10,10,10,0.6)", marginBottom: 12, letterSpacing: "0.04em", fontFamily: PJS }}>

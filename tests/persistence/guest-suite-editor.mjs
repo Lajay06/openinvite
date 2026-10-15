@@ -37,7 +37,7 @@ export async function runGuestSuiteEditor() {
   const results = [];
   const check = (name, cond, detail) => results.push(cond ? pass(name, detail) : fail(name, 'see name', detail));
 
-  console.log('\n  The guest suite editor:\n');
+  console.log('\n  The Guest Suite editor:\n');
 
   // ── A CUSTOM PAGE IS A PAGE, END TO END ─────────────────────────────────
   {

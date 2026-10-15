@@ -33,7 +33,7 @@ export const FEATURES_APP_SRCSET = [1600, 1200, 800].map((w) => `${photoUrl(w)} 
 export const FEATURES_APP_ALT = "A woman lies on her bed, phone in both hands, reading.";
 
 export const APP_STORE_LINE = "Coming to the App Store and Google Play at launch.";
-export const APP_DESKTOP_LINE = "You design your guest suite on a desktop, where the space is; everything else is yours wherever you are.";
+export const APP_DESKTOP_LINE = "You design your Guest Suite on a desktop, where the space is; everything else is yours wherever you are.";
 export const FEATURES_APP_HEADING = "Everything, on your phone";
 export const FEATURES_APP_LINES = [
   "Add a guest from the car park; it is on your computer before you are back inside.",

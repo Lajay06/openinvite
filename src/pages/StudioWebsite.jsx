@@ -764,7 +764,7 @@ export default function StudioWebsite({ onBack }) {
           onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
         >
           <ChevronLeft size={14} />
-          {onBack ? 'Design Studio' : 'Guest suite'}
+          {onBack ? 'Design Studio' : 'Guest Suite'}
         </button>
         {/* CENTRED BY TAKING IT OUT OF FLOW, which is why it collided. Absolute
             centring ignores the two button groups either side, so at phone

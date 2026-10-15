@@ -133,7 +133,7 @@ export function runAppMarketing() {
     cardsAt > -1 && blockAt > cardsAt && pricingAt > blockAt, `cards ${cardsAt}, app ${blockAt}, pricing ${pricingAt}`);
 
   // ── items 2 and 4: the phones, the lines, /app and the footer ─────────
-  const DESKTOP = 'You design your guest suite on a desktop, where the space is; everything else is yours wherever you are.';
+  const DESKTOP = 'You design your Guest Suite on a desktop, where the space is; everything else is yours wherever you are.';
   const features = existsSync(join(PRE, 'features/index.html')) ? readFileSync(join(PRE, 'features/index.html'), 'utf8') : '';
   // Batch 3, item 2: the red section's twin with the dark box kept, three of
   // the owner's four lines (the replies line waits for push), the desktop
@@ -219,13 +219,13 @@ export function runAppMarketing() {
     textOf(faqHtml).includes('Is there an app?')
       && faqSrc.indexOf('q: "Is there an app?"') > faqSrc.indexOf('q: "What is Openinvite?"')
       && !/q: "[^"]+",[\s\S]*?q: "Is there an app\?"/.test(faqSrc.slice(faqSrc.indexOf('q: "What is Openinvite?"') + 30, faqSrc.indexOf('q: "Is there an app?"') + 30)));
-  check('faq: its answer, verbatim', faqSrc.includes('a: "Yes, for iPhone and Android. It is coming to the App Store and Google Play at launch. You design your guest suite on a desktop, where the space is; the guest list, replies, budget and seating chart are yours on your phone."'));
+  check('faq: its answer, verbatim', faqSrc.includes('a: "Yes, for iPhone and Android. It is coming to the App Store and Google Play at launch. You design your Guest Suite on a desktop, where the space is; the guest list, replies, budget and seating chart are yours on your phone."'));
   check('faq: "What is Openinvite?" says a wedding planner, on the web and on your phone',
     faqSrc.includes('Openinvite is a wedding planner, on the web and on your phone') && !faqSrc.includes('a wedding planning app'));
   const pricingSrc = readFileSync(resolve(ROOT, 'src/pages/Pricing.jsx'), 'utf8');
   check('pricing: "Is the app included?" is asked', textOf(pricing).includes('Is the app included?'));
   check('pricing: its answer, verbatim', pricingSrc.includes('a: "Yes. Both plans include the app at no extra cost, and it is coming to the App Store and Google Play at launch."'));
-  check('pricing: the comparison table has one "Guest suite" row', (pricingSrc.match(/feature: "Guest suite"/g) || []).length === 1);
+  check('pricing: the comparison table has one "Guest Suite" row', (pricingSrc.match(/feature: "Guest Suite"/g) || []).length === 1);
   check('plan features: "Digital invitations by email", and no WhatsApp',
     ULTRA_EXTRAS.includes('Digital invitations by email') && ![...PRO_FEATURES, ...ULTRA_EXTRAS].some((f) => /whats\s?app/i.test(f)));
   // ── the phone's screen asset and frame (site fixes batch 2, item 1) ────

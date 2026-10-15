@@ -714,7 +714,7 @@ function SettingsTab({ details, onChange }) {
     <div data-wb-settings-panel>
       {/* "YOUR SITE URL" WAS HERE, twice over: the address bar and, under it,
           the full link with a Copy button beside it. 12a removes both. The
-          address is read and changed from the guest suite's share tab, which
+          address is read and changed from the Guest Suite's share tab, which
           is the one place the ruling left it. */}
       <SLabel>Status</SLabel>
       {/* ONE VOCABULARY, AND THE SLUG COUNTS. This said "Website is Live" on

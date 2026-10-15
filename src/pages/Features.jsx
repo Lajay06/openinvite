@@ -75,7 +75,7 @@ const ALL_FEATURES = [
 { title: "Ava on every page", bullets: ["A short briefing each morning: what is coming up, what needs a decision", "Ask Ava from any page, about the page you are on", "Answers drawn from your own wedding, never generic advice", "Ask what is unpaid, who has not replied, or what still needs a decision"] },
 { title: "Mood board", bullets: ["Pin the looks you keep coming back to: colors, florals, dresses, tables", "Boards for the venue, the dress, the palette, or anything you name", "A note on every pin", "Inspiration next to the plan, not across six apps"] },
 { title: "Toasts and speeches", bullets: ["Who is speaking, in what order, for how long", "A short brief and a deadline for every speaker, so nobody writes theirs in the car", "Vow drafts in the tone you choose, refined until they sound like you", "Your vows locked behind a PIN"] },
-{ title: "On the day details", bullets: ["Getting there, where to stay, who to call, what to wear", "Stay and Getting here pages for out-of-town guests", "Dress code and policies in one place", "Written once, shown to guests on your guest suite where they need it"] },
+{ title: "On the day details", bullets: ["Getting there, where to stay, who to call, what to wear", "Stay and Getting here pages for out-of-town guests", "Dress code and policies in one place", "Written once, shown to guests on your Guest Suite where they need it"] },
 { title: "Registry and cash funds", bullets: ["Link the registry you already have", "Products and cash funds side by side on one registry page", "Guests give toward a honeymoon or a specific gift", "Shown to guests only when you say so"] }];
 
 
@@ -122,7 +122,7 @@ export default function Features() {
       <section style={{ background: "#FFFFFF", padding: "80px clamp(24px, 6vw, 80px)", textAlign: "center" }}>
         <div style={{ maxWidth: 1300, margin: "0 auto" }}>
           <p style={{ fontSize: "clamp(28px, 4vw, 52px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.2, color: "#0A0A0A", fontFamily: "Plus Jakarta Sans, sans-serif", margin: 0 }}>
-            Openinvite brings your guest list, budget, schedule, seating chart and guest suite into one connected platform, so nothing falls through the cracks.
+            Openinvite brings your guest list, budget, schedule, seating chart and Guest Suite into one connected platform, so nothing falls through the cracks.
           </p>
         </div>
       </section>

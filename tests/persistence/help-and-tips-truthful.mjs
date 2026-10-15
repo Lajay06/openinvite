@@ -82,7 +82,7 @@ export async function runHelpAndTipsTruthful() {
       hits.length ? hits.join(', ') : `${GONE.length} phrases checked`);
     // R6 is the sweep everywhere; these four are the ones this package owns.
     const ww = (src.match(/wedding website/gi) || []).length;
-    check(`  and says "guest suite", not "wedding website"`, ww === 0, ww ? `${ww} occurrence(s)` : 'none');
+    check(`  and says "Guest Suite", not "wedding website"`, ww === 0, ww ? `${ww} occurrence(s)` : 'none');
   }
 
   // ── the universe count is checked against the universes ───────────────────
