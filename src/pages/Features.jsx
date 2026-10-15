@@ -1,13 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import { PHOTOS } from "@/lib/photos";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import ScrollProgress from "@/components/motion/ScrollProgress";
 import AnimDivider from "@/components/motion/AnimDivider";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
-import FeatureTimeline from "@/components/home/FeatureTimeline";
-import FeatureGuests from "@/components/home/FeatureGuests";
-import FeatureBudget from "@/components/home/FeatureBudget";
 import FeatureSectionHeading, { featureBodyTextStyle } from "@/components/home/FeatureSectionHeading";
 import MarketingHero from "@/components/marketing/MarketingHero";
 import MarketingEndCap from "@/components/marketing/MarketingEndCap";
@@ -15,6 +11,11 @@ import { responsivePhoto } from "@/lib/marketingImage";
 import FeaturesAppSection from "@/components/marketing/FeaturesAppSection";
 import FeatureStill from "@/components/marketing/FeatureStill";
 import { FEATURE_STILLS, FEATURE_SEATING_CLIP } from "@/lib/featureStills";
+import ShowcaseInvitation from "@/components/marketing/showcase/ShowcaseInvitation";
+import ShowcaseYear from "@/components/marketing/showcase/ShowcaseYear";
+import ShowcaseReplies from "@/components/marketing/showcase/ShowcaseReplies";
+import ShowcaseSeating from "@/components/marketing/showcase/ShowcaseSeating";
+import ShowcaseBudget from "@/components/marketing/showcase/ShowcaseBudget";
 
 // Both are web exports (1280x853 and 1600x1078), so 0.34x and 0.42x of the
 // device pixels their boxes need at dpr 2 is the ceiling until larger masters
@@ -130,8 +131,12 @@ export default function Features() {
       {/* ── S3: QUICK START ──────────────────────────────── */}
       <QuickStartSection />
 
-      {/* ── S3: DASHBOARD ────────────────────────────────── */}
-      <DashboardSection />
+      {/* ── S4: THE INVITATION AND THE PLANNER BEHIND IT ──────
+          Concept 1 takes the Customizable Dashboard section's place and job
+          (goals/2026-10-15-consumer-launch-website.md, item 1), on white, so
+          the page still runs black, white, black: quick start, this, the app.
+          The morning band that sat above the old row went with it. */}
+      <ShowcaseInvitation />
 
       {/* ── S5: THE APP ──────────────────────────────────────
           Its own section above the accordion, not a ninth row (app goal,
@@ -142,12 +147,15 @@ export default function Features() {
       {/* ── S6: ACCORDION ────────────────────────────────── */}
       <AccordionSection features={ALL_FEATURES} dots={DOTS} openFeature={openFeature} setOpenFeature={setOpenFeature} />
 
-      {/* ── S7: FEATURE DEEP DIVES ───────────────────────── */}
-      <div style={{ background: "#FFFFFF" }}>
-        <FeatureTimeline />
-        <FeatureGuests />
-        <FeatureBudget />
-      </div>
+      {/* ── S7: THE THREE DEEP DIVES, AS SHOWCASES ───────────
+          The long white block (timeline and schedule, guest management, smart
+          budget) becomes concept 4 on black, concept 2 on white, concept 3 on
+          the confetti photograph, then smart budget as text on white (item 1
+          of the consumer launch goal). Each replaces the section with its job. */}
+      <ShowcaseYear />
+      <ShowcaseReplies />
+      <ShowcaseSeating />
+      <ShowcaseBudget />
 
       {/* ── S8: FINAL CTA ────────────────────────────────── */}
       <MarketingEndCap
@@ -182,56 +190,6 @@ function QuickStartSection() {
         </div>
       </div>
     </section>);
-
-}
-
-function DashboardSection() {
-  const [ref, visible] = useScrollReveal(0.2);
-  const [imgScale, setImgScale] = useState(1.15);
-  useEffect(() => {
-    if (prefersReduced()) return;
-    const handler = () => {
-      if (!ref.current) return;
-      const rect = ref.current.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const center = rect.top + rect.height / 2 - vh / 2;
-      const p = Math.max(-1, Math.min(1, center / (vh * 0.6)));
-      setImgScale(1.0 + Math.abs(p) * 0.15);
-    };
-    window.addEventListener("scroll", handler, { passive: true });
-    return () => window.removeEventListener("scroll", handler);
-  }, []);
-
-  const BULLETS = ["Invite your partner or planner", "Set role-based permissions", "Assign tasks with deadlines", "Real-time collaborative updates", "Shared vendor & budget views", "Manage who sees sensitive data"];
-  return (
-    <>
-    {/* THE MORNING PAGE, AS A BAND (owner ruling 2026-10-12): full width at
-        the top of this section, 2:1, above the row rather than inside it,
-        because the row below is held to one screen as the app section's
-        twin. Same white ground and the row's own side gutters. */}
-    <div data-dashboard-band style={{ background: "#FFFFFF", padding: "80px clamp(32px, 5vw, 64px) 0" }}>
-      <FeatureStill still={FEATURE_STILLS.morning} aspect="2 / 1" margin="0" sizes="calc(100vw - 2 * clamp(32px, 5vw, 64px))" />
-    </div>
-    <section ref={ref} style={{ background: "#FFFFFF", minHeight: "100vh", display: "flex", overflow: "hidden" }} className="flex-col lg:flex-row">
-      <div className="w-full lg:w-1/2 order-2 lg:order-1 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(60px)", transition: `opacity 0.9s ${EASE} 0.15s, transform 1s ${EASE} 0.15s` }}>
-        <div style={{ maxWidth: 552 }}>
-          <FeatureSectionHeading color="#0A0A0A">Customizable Dashboard</FeatureSectionHeading>
-          <p style={{ ...featureBodyTextStyle, color: "#444444", marginBottom: 32 }}>Invite your partner, planner, or mom. Set who sees what, and assign tasks like a pro.</p>
-          <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-            {BULLETS.map((b, i) =>
-            <li key={i} style={{ padding: "11px 0", borderBottom: i < BULLETS.length - 1 ? "1px solid #E8E8E8" : "none", color: "#444444", fontSize: 14, lineHeight: 1.5 }}>
-                {b}
-              </li>
-            )}
-          </ul>
-        </div>
-      </div>
-      <div className="w-full lg:w-1/2 order-1 lg:order-2" style={{ position: "relative", minHeight: 320, overflow: "hidden", flexShrink: 0 }}>
-        <img src={PHOTOS.photoN} alt="Wedding photo" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", transform: `scale(${imgScale})`, transition: prefersReduced() ? "none" : "transform 0.1s linear", opacity: visible ? 1 : 0 }} />
-        <div className="lg:hidden" style={{ paddingBottom: "66.66%", position: "relative" }} />
-      </div>
-    </section>
-    </>);
 
 }
 

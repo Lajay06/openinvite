@@ -274,7 +274,10 @@ export function runAppMarketing() {
     'src/pages/Universes.jsx', 'src/pages/About.jsx', 'src/pages/Contact.jsx', 'src/pages/FAQ.jsx', 'src/pages/Gifting.jsx',
     'src/pages/Tour.jsx', 'src/pages/AppPage.jsx', 'src/lib/planFeatures.js',
     ...readdirSync(resolve(ROOT, 'src/components/home')).map((f) => `src/components/home/${f}`),
-    ...readdirSync(resolve(ROOT, 'src/components/marketing')).map((f) => `src/components/marketing/${f}`)];
+    // Recursive: the showcases live in a folder of their own (consumer launch
+    // goal, 2026-10-15), and their copy is marketing copy like the rest.
+    ...readdirSync(resolve(ROOT, 'src/components/marketing'), { recursive: true }).map((f) => `src/components/marketing/${f}`)
+      .filter((f) => statSync(resolve(ROOT, f)).isFile())];
   // Comments may name the word to say it is gone; copy may not. The shared
   // stripper, not a hand-written one (the ratchet from #925).
   const copyOf = (src) => stripComments(src);
