@@ -240,3 +240,63 @@ Each item: build, guards (each proved red on a planted fault first), screenshots
 - Tables: the table name only (Guest.table_assignment). Seats, and the asServiceRole read of Table they would need, are parked.
 - The server flag: professionalOnServer() is on only with PROFESSIONAL=1, previews included. A Vercel preview alone is not enough.
 - The browser flag follows the server: isProfessionalOn() is on only when the build sets VITE_PROFESSIONAL=1, previews included. A *.vercel.app host alone, or a local dev server, is not enough. Every Professional screen and route (ProfessionalRoot) sends home while it is off.
+
+## Parked, 2026-10-15 (owner ruling)
+
+Launch is consumer only. Professional is parked until after launch. No new Professional work starts until the owner lifts this.
+
+### State at parking
+
+- Merged to main, all behind the flags and hidden in production:
+  - #1056 ce64b326, this goal file.
+  - #1059 1217b301, item 0: names, plans, the adapter, the feed allowlist, and goals/2026-10-14-professional-item0.md with the 12 Base44 boxes.
+  - #1063 5cc12ba2, the feed's exact allowlist, no accessibility, both flags.
+  - #1062 77276e1a, items 1 to 10.
+  - #1064 570b3cc5, items 11 to 15, Gilt, and the events table fix.
+  - #1075 a13ac2c5, every table stacks as cards at 390 and the event tabs wrap.
+  - #1077 450f17f5, ProfessionalRoot mounted at /professional/*, and "For planners" in the nav and footer behind isProfessionalOn().
+- Checked on production after #1077 (2026-10-15): /professional and /professional/app land on / at 1440 and 390. No page shows "For planners" or links to Professional. GET /api/professional/feed and POST /api/professional/data return 404 {"error":"Not found"}. The bare domain answers 307 to www (recorded, not changed).
+- With PROFESSIONAL and VITE_PROFESSIONAL unset in production, nothing here can reach a customer. STORE_LIVE is false, so the app runs on in-memory demo data until the entities exist.
+
+### Remaining list, for when the owner unparks
+
+Local branches, never pushed, both HELD:
+
+1. e/professional-couple-held (couple side). Needs a rebase onto main first. It holds:
+   - the couple's Link your planner page at /professional/link/:token;
+   - MyPlannerSection, with a 2-line Account.jsx edit;
+   - ShareSwitches and professionalLinkCopy.js;
+   - api/professional/link.js and api/professional/invite-couple.js, with renderCoupleInviteEmail;
+   - the guards professional-couple-pin.mjs and professional-link.mjs.
+
+   On rebase:
+   - drop accessibility from SHARE_OFF, per the ruling;
+   - put the couple invite email on the Gilt shell;
+   - keep the couple screens red. The brand guard already exempts couple/ and LinkPlannerPage.
+2. e/professional-billing-held. Started, nothing written. The plan:
+   - api/_lib/professionalBilling.js;
+   - api/professional/subscribe.js and billing-portal.js;
+   - a cron for rewards;
+   - hosted-function service operations.
+
+   The webhook branch lives in the frozen api/webhooks/stripe.js. It is prepared locally only, with the Payments-Change trailer and the owner's passphrase push named to the branch.
+
+Owner actions:
+
+3. Add the Base44 entities from the boxes in goals/2026-10-14-professional-item0.md, plus inviter_display on PlannerLink and the accountType field on User.
+4. Deploy the hosted function base44/functions/professionalData:
+   - set the secrets PRO_FN_SECRET and APP_HASH_KEY;
+   - run `base44 functions deploy professionalData`, never a bare deploy.
+5. Create the Stripe sandbox prices.
+6. Set PROFESSIONAL=1 and VITE_PROFESSIONAL=1 on previews to view it, then run the end-to-end test.
+
+Other items:
+
+7. The Privacy Policy section for the planner link (the PRIVACY_PLANNER_SECTION placeholder): the advisor writes it and the solicitor reviews it.
+8. scripts/professional-overflow.mjs can join a browser shard.
+9. Tell lane C two things:
+   - the referral engine is generic: couple and partner kinds in src/lib/professionalCodes.js;
+   - the BASE44_ADMIN_KEY hash reference in their design is stale and should be APP_HASH_KEY.
+10. Rulings still open:
+    - the refund window (14 days used, since the policy names none);
+    - the three open questions above, which stay at their defaults.
