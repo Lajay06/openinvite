@@ -36,8 +36,8 @@ export const APP_STORE_LINE = "Coming to the App Store and Google Play at launch
 export const APP_DESKTOP_LINE = "You design your Guest Suite on a desktop, where the space is; everything else is yours wherever you are.";
 export const FEATURES_APP_HEADING = "Everything, on your phone";
 export const FEATURES_APP_LINES = [
-  "Add a guest from the car park; it is on your computer before you are back inside.",
-  "Check the budget in the queue, not at the desk.",
+  "Add a guest from the parking lot; it is on your computer before you are back inside.",
+  "Check the budget in line, not at the desk.",
   "The seating chart in your hand at the venue walk-through.",
 ];
 
