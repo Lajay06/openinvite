@@ -143,7 +143,7 @@ export async function claimGift({ token, user, adminKey, fetchImpl = fetch, now 
   // failed send is logged and never fails the claim.
   if (sendEmail && !user.onboardingCompleted && user.email) {
     try {
-      const mail = renderGiftWelcome({ plan: outcome.plan, giver, fullName: user.full_name, email: user.email, dashboardUrl: `${origin}/DailyUpdate` });
+      const mail = renderGiftWelcome({ plan: outcome.plan, giver, fullName: user.full_name, email: user.email, photoId: row.photo_key, dashboardUrl: `${origin}/DailyUpdate` });
       const { error } = await sendEmail({ from: GIFT_FROM, to: user.email, replyTo: GIFT_REPLY_TO, ...mail, tags: [{ name: 'category', value: 'gift_welcome' }] }, { idempotencyKey: `gift-welcome-${row.id}` }) || {};
       if (error) console.error('[gift-link] gift welcome send failed (claim kept)');
     } catch {
