@@ -6,7 +6,8 @@ import { isDemoBuild, isRealBuild } from '../../demo';
 import { getTrialStatus } from '@/lib/trialStatus';
 import CollaborateModal from '@/components/layout/CollaborateModal';
 import AccountScreen from './AccountScreen';
-import { AccountDetailsSheet, EmailPreferencesSheet } from './AccountSheets';
+import { AccountDetailsSheet, EmailPreferencesSheet, DeleteAccountSheet } from './AccountSheets';
+import toast from 'react-hot-toast';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { isNative } from '../../native';
 import { useAppLockSetting } from '../../shell/AppLock';
@@ -33,7 +34,7 @@ export default function AccountContainer() {
   const logout = api.mode === 'preview' ? () => {} : auth.logout;
   const navigate = useNavigate();
   const [collab, setCollab] = useState(false);
-  const [sheet, setSheet] = useState(null); // 'details' | 'email'
+  const [sheet, setSheet] = useState(null); // 'details' | 'email' | 'delete'
   const [, bump] = useState(0);
   const currency = useCurrency();
   const isPreview = api.mode === 'preview';
@@ -53,6 +54,14 @@ export default function AccountContainer() {
   const trial = getTrialStatus(user);
   const planLabel = PLAN_LABELS[trial.plan] || 'Free trial';
   const appLock = useAppLockSetting();
+  // Ruling 2: deletion starts here and runs the website's request; the stamp is what both sides read back.
+  const [deletionSent, setDeletionSent] = useState(false);
+  const deletionRequested = deletionSent || !!user?.deletionRequestedAt;
+  const requestDeletion = async () => {
+    await api.requestAccountDeletion(user);
+    setDeletionSent(true);
+    toast.success('Deletion requested. We will confirm by email within 7 business days.');
+  };
 
   const planNote = trial.isPaid
     ? null
@@ -82,6 +91,8 @@ export default function AccountContainer() {
         onPrivacy={() => openWebPage(navigate, 'privacy')}
         onTerms={() => openWebPage(navigate, 'terms')}
         onLogout={() => logout()}
+        deletionRequested={deletionRequested}
+        onDeleteAccount={() => setSheet('delete')}
         loading={isLoadingAuth}
         appLock={isNative() ? appLock : null}
         // Review builds only (goal 7): a long press on the title brings the daily update back whatever the day's answer.
@@ -92,6 +103,7 @@ export default function AccountContainer() {
       {collab && <CollaborateModal onClose={() => setCollab(false)} />}
       <AccountDetailsSheet open={sheet === 'details'} user={user} currencyCode={currencyCode} onClose={() => setSheet(null)} onSave={saveDetails} />
       <EmailPreferencesSheet open={sheet === 'email'} user={user} onClose={() => setSheet(null)} onSave={savePrefs} />
+      <DeleteAccountSheet open={sheet === 'delete'} user={user} onClose={() => setSheet(null)} onConfirm={requestDeletion} />
     </>
   );
 }
