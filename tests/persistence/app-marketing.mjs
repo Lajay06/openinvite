@@ -163,7 +163,8 @@ export function runAppMarketing() {
   check('features: framed with object-position 55% 40%, cover, no radius',
     /object-fit:\s*cover/.test(fimg) && /object-position:\s*55% 40%/.test(fimg) && !/border-radius/.test(fimg));
   check('features: its alt text, verbatim', fimg.includes('alt="A woman lies on her bed, phone in both hands, reading."'));
-  check('features: the text panel is #F6F2EC with #1C1916 ink', /background:\s*rgb\(246, 242, 236\)|#F6F2EC/i.test(fb) && /color:\s*rgb\(28, 25, 22\)|#1C1916/i.test(fb));
+  // Black since the owner's ruling of 2026-10-16 (it was the cream #F6F2EC).
+  check('features: the text panel is black with white ink, and no cream', /background:\s*rgb\(10, 10, 10\)|#0A0A0A/i.test(fb) && /color:\s*rgb\(255, 255, 255\)|#FFFFFF/i.test(fb) && !/#F6F2EC|rgb\(246, 242, 236\)/i.test(fb));
   // The accordion's first row, as the anchor: the app section sits above it
   // and is not one of its rows.
   const accAt = features.indexOf('Vendors and the marketplace');

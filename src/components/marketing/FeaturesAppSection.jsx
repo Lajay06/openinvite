@@ -41,8 +41,11 @@ export const FEATURES_APP_LINES = [
   "The seating chart in your hand at the venue walk-through.",
 ];
 
-const PANEL = "#F6F2EC";
-const INK = "#1C1916";
+// BLACK, NOT CREAM (owner ruling 2026-10-16): the panel was #F6F2EC, the
+// only cream on the marketing site. It sits between the white dashboard row
+// and the light accordion, so black keeps the page alternating.
+const PANEL = "#0A0A0A";
+const INK = "#FFFFFF";
 
 /** @param {{ headingLevel?: 'h1' | 'h2' }} props  h1 on /app, where the row is the page's hero. */
 export default function FeaturesAppSection({ headingLevel = "h2" }) {
@@ -66,12 +69,12 @@ export default function FeaturesAppSection({ headingLevel = "h2" }) {
           <FeatureSectionHeading as={headingLevel} color={INK}>{FEATURES_APP_HEADING}</FeatureSectionHeading>
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
             {FEATURES_APP_LINES.map((line, i) => (
-              <li key={line} data-app-line style={{ padding: "11px 0", borderBottom: i < FEATURES_APP_LINES.length - 1 ? "1px solid rgba(28,25,22,0.12)" : "none", color: INK, fontSize: 14, lineHeight: 1.5 }}>
+              <li key={line} data-app-line style={{ padding: "11px 0", borderBottom: i < FEATURES_APP_LINES.length - 1 ? "1px solid rgba(255,255,255,0.12)" : "none", color: INK, fontSize: 14, lineHeight: 1.5 }}>
                 {line}
               </li>
             ))}
           </ul>
-          <p data-app-desktop-line style={{ ...featureBodyTextStyle, color: INK, margin: "32px 0 0" }}>{APP_DESKTOP_LINE}</p>
+          <p data-app-desktop-line style={{ ...featureBodyTextStyle, color: "rgba(255,255,255,0.72)", margin: "32px 0 0" }}>{APP_DESKTOP_LINE}</p>
         </div>
       </div>
     </section>
