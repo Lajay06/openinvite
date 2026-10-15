@@ -45,16 +45,16 @@ export async function runContactSendPath() {
   check('the client actually posts the message',
     /fetch\("\/api\/contact"/.test(CLIENT) && /method: "POST"/.test(CLIENT), '/api/contact');
   check('  success is gated on a 2xx response',
-    /if \(!res\.ok\)/.test(CLIENT) && /setSubmitted\(true\)/.test(CLIENT), 'res.ok gate');
+    /if \(!res\.ok\)/.test(CLIENT) && /setSubmitted\(sentCopy\(/.test(CLIENT), 'res.ok gate');
   check('  the old fire-and-forget success is gone',
-    !/setSubmitted\(true\);\s*setTimeout/.test(CLIENT), 'no unconditional success');
+    !/setSubmitted\([^;]*\);\s*setTimeout/.test(CLIENT), 'no unconditional success');
   check('  a failure sets an error state instead',
     /setSendError\(/.test(CLIENT) && /role="alert"/.test(CLIENT), 'failure state rendered');
   check('  the visitor keeps their text on failure (E3)',
     (() => {
       // setFormData({...}) may only appear on the success path, i.e. after
-      // setSubmitted(true) and never inside the !res.ok branch.
-      const failBranch = CLIENT.slice(CLIENT.indexOf('if (!res.ok)'), CLIENT.indexOf('setSubmitted(true)'));
+      // setSubmitted(...) and never inside the !res.ok branch.
+      const failBranch = CLIENT.slice(CLIENT.indexOf('if (!res.ok)'), CLIENT.indexOf('setSubmitted(sentCopy('));
       return !/setFormData\(\s*\{\s*name:\s*""/.test(failBranch);
     })(), 'fields cleared only after a confirmed send');
 

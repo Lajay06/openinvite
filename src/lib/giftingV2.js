@@ -161,7 +161,7 @@ export const COPY = {
     body: "Your gift is on its way to {names}. We've sent you a copy too, with their link, in case you'd rather hand it over yourself.",
     bodyPlain: 'Your gift is on its way.',
     boxTitle: "What they'll get",
-    box: 'An email with your note. One tap on Open your gift, a quick sign in, and {Plan} is already switched on, ready to plan. Nothing for them to set up or pay.',
+    box: 'An email with your note. One tap to open your gift, a quick sign in, and {Plan} is already switched on, ready to plan. Nothing for them to set up or pay.',
     change: 'Change the address or the note',
     another: 'Give another',
   },

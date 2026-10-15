@@ -4,6 +4,7 @@ import PublicFooter from "@/components/public/PublicFooter";
 import { Instagram, ChevronDown } from "lucide-react";
 import ApplePillButton from "@/components/motion/ApplePillButton";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
+import { SEND_FAILED, firstNameOf, sentCopy } from "@/lib/contactCopy";
 
 // lucide-react has no TikTok glyph — same hand-rolled path used in
 // PublicFooter.jsx, kept in sync so both places render the identical mark.
@@ -28,7 +29,9 @@ export default function Contact() {
     message: "",
   });
 
-  const [submitted, setSubmitted] = useState(false);
+  // The confirmation's two lines, built at send time because the fields are
+  // cleared once the send is confirmed. null until then.
+  const [submitted, setSubmitted] = useState(null);
   // `sending` blocks a double-submit; `sendError` drives the failure state.
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState(null);
@@ -56,17 +59,16 @@ export default function Contact() {
         body: JSON.stringify(formData),
       });
       if (!res.ok) {
-        const payload = await res.json().catch(() => ({}));
         // The visitor's text is NEVER cleared on failure. Losing what someone
         // typed is the one unforgivable outcome here.
-        setSendError(payload.error || "Message could not be sent. Please try again.");
+        setSendError(SEND_FAILED);
         return;
       }
       // Clearing happens only after a confirmed send.
-      setSubmitted(true);
+      setSubmitted(sentCopy({ firstName: firstNameOf(formData.name), email: formData.email.trim() }));
       setFormData({ name: "", email: "", topic: "General", message: "" });
     } catch {
-      setSendError("Message could not be sent. Please check your connection and try again.");
+      setSendError(SEND_FAILED);
     } finally {
       setSending(false);
     }
@@ -121,10 +123,11 @@ export default function Contact() {
       <div className="contact-shell">
         {/* LEFT: TAGLINE + FORM */}
         <div className="contact-form-col">
-          <h1 style={{ fontSize: "clamp(30px, 3.6vw, 42px)", fontWeight: 700, color: "#0A0A0A", lineHeight: 1.15, letterSpacing: "-0.02em", margin: "0 0 32px", maxWidth: 440 }}>
-            Let's plan something beautiful.
-          </h1>
           {!submitted ? (
+            <>
+            <h1 style={{ fontSize: "clamp(30px, 3.6vw, 42px)", fontWeight: 700, color: "#0A0A0A", lineHeight: 1.15, letterSpacing: "-0.02em", margin: "0 0 32px", maxWidth: 440 }}>
+              Let's plan something beautiful.
+            </h1>
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 28, opacity: formPhase >= 1 ? 1 : 0, transform: formPhase >= 1 ? "translateY(0)" : "translateY(20px)", transition: `opacity 0.6s ${EASE}, transform 0.6s ${EASE}` }}>
                 <div>
                   <label htmlFor="contact-name" style={labelStyle}>Name</label>
@@ -202,7 +205,7 @@ export default function Contact() {
                       fontFamily: "'Plus Jakarta Sans', sans-serif",
                     }}
                   >
-                    {sendError} Your message is still here, so nothing you wrote is lost.
+                    {sendError}
                   </div>
                 )}
 
@@ -212,10 +215,15 @@ export default function Contact() {
                   </ApplePillButton>
                 </div>
             </form>
+            </>
           ) : (
-            <div style={{ textAlign: "center", opacity: 1 }}>
-              <p style={{ fontSize: 32, fontWeight: 700, color: "#0A0A0A", marginBottom: 16 }}>Wow, so nice of you ✦</p>
-              <p style={{ fontSize: 16, color: "rgba(10,10,10,0.6)" }}>We'll be in touch shortly.</p>
+            <div role="status">
+              <h1 style={{ fontSize: "clamp(30px, 3.6vw, 42px)", fontWeight: 700, color: "#0A0A0A", lineHeight: 1.15, letterSpacing: "-0.02em", margin: "0 0 16px", maxWidth: 440 }}>
+                {submitted.heading}
+              </h1>
+              <p style={{ fontSize: 16, color: "rgba(10,10,10,0.6)", lineHeight: 1.55, margin: 0, overflowWrap: "anywhere" }}>
+                {submitted.body}
+              </p>
             </div>
           )}
         </div>
