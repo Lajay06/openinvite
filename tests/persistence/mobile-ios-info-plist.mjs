@@ -9,6 +9,12 @@
  * ITSAppUsesNonExemptEncryption is false. Without the key, App Store Connect
  * asks the export question again on every build uploaded to TestFlight.
  *
+ * Location. "Use my location" on the Marketplace and in every place search
+ * (MarketplaceScreen.jsx, ui/PlaceField.jsx) calls navigator.geolocation.
+ * Inside WKWebView that is the app's own Core Location permission, which iOS
+ * refuses outright when the Info.plist has no purpose string, so the button
+ * could only ever fail. The string says when it is used and what for.
+ *
  * Read as text, not with plutil: the suite also runs on Linux.
  */
 
@@ -35,6 +41,12 @@ export async function runMobileIosInfoPlist() {
   ok('the Info.plist is there', plist.includes('<plist'), PLIST);
 
   ok('export compliance: the app uses no non-exempt encryption', plistValue(plist, 'ITSAppUsesNonExemptEncryption') === '<false/>', String(plistValue(plist, 'ITSAppUsesNonExemptEncryption')));
+
+  const shell = ['src/mobile/screens/plan/MarketplaceScreen.jsx', 'src/mobile/ui/PlaceField.jsx'].filter((f) => /navigator\.geolocation\.getCurrentPosition/.test(read(f)));
+  const why = plistValue(plist, 'NSLocationWhenInUseUsageDescription') || '';
+  ok('the app asks for location, so the Info.plist says when and why',
+     shell.length === 0 || (/Use my location/.test(why) && /only when you tap/.test(why)), shell.length ? why || 'missing' : 'the app no longer asks');
+  ok('  and asks only while in use, never always', plistValue(plist, 'NSLocationAlwaysAndWhenInUseUsageDescription') === null && plistValue(plist, 'NSLocationAlwaysUsageDescription') === null, 'no Always key');
 
   const probe = [
     plistValue('<key>A</key>\n\t<false/>', 'A'),
