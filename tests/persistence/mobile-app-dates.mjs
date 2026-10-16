@@ -82,28 +82,39 @@ export async function runMobileAppDates() {
   ok('  and the sweep catches a hardcoded locale, not a number or a comment', probe.join(',') === '2,1,1,0,0', probe.join(','));
 
   // 2. The order. West of Greenwich, so a UTC reading of a date-only string would show the day before.
+  // The CI runner imports every guard into one process, so the zone and the
+  // storage stub are put back afterwards: a leaked TZ moved wedding-season.mjs's
+  // December dates into November.
+  const hadTZ = 'TZ' in process.env;
+  const prevTZ = process.env.TZ;
+  const prevStorage = globalThis.localStorage;
   process.env.TZ = 'America/Los_Angeles';
   let stored = null;
   globalThis.localStorage = { getItem: (k) => (k === 'oi_user' ? stored : null) };
-  const m = await import(path.join(ROOT, DOOR));
-  const as = (user, locale) => { stored = user === undefined ? null : JSON.stringify(user); return m.formatAppDate('2026-10-16', m.appDateFormat(locale)); };
+  try {
+    const m = await import(path.join(ROOT, DOOR));
+    const as = (user, locale) => { stored = user === undefined ? null : JSON.stringify(user); return m.formatAppDate('2026-10-16', m.appDateFormat(locale)); };
 
-  ok('no choice on a US phone reads 10/16/2026', as(undefined, 'en-US') === '10/16/2026', as(undefined, 'en-US'));
-  ok('no choice on an Australian phone reads 16/10/2026', as(undefined, 'en-AU') === '16/10/2026', as(undefined, 'en-AU'));
-  ok('the couple\'s "dmy" wins on a US phone', as({ dateFormat: 'dmy' }, 'en-US') === '16/10/2026', as({ dateFormat: 'dmy' }, 'en-US'));
-  ok('the couple\'s "mdy" wins on an Australian phone', as({ dateFormat: 'mdy' }, 'en-AU') === '10/16/2026', as({ dateFormat: 'mdy' }, 'en-AU'));
-  ok('a value that is not a choice falls to the phone', as({ dateFormat: 'ymd' }, 'en-US') === '10/16/2026', as({ dateFormat: 'ymd' }, 'en-US'));
-  stored = '{not json';
-  ok('an unreadable cache falls to the phone', m.formatAppDate('2026-10-16', m.appDateFormat('en-US')) === '10/16/2026');
+    ok('no choice on a US phone reads 10/16/2026', as(undefined, 'en-US') === '10/16/2026', as(undefined, 'en-US'));
+    ok('no choice on an Australian phone reads 16/10/2026', as(undefined, 'en-AU') === '16/10/2026', as(undefined, 'en-AU'));
+    ok('the couple\'s "dmy" wins on a US phone', as({ dateFormat: 'dmy' }, 'en-US') === '16/10/2026', as({ dateFormat: 'dmy' }, 'en-US'));
+    ok('the couple\'s "mdy" wins on an Australian phone', as({ dateFormat: 'mdy' }, 'en-AU') === '10/16/2026', as({ dateFormat: 'mdy' }, 'en-AU'));
+    ok('a value that is not a choice falls to the phone', as({ dateFormat: 'ymd' }, 'en-US') === '10/16/2026', as({ dateFormat: 'ymd' }, 'en-US'));
+    stored = '{not json';
+    ok('an unreadable cache falls to the phone', m.formatAppDate('2026-10-16', m.appDateFormat('en-US')) === '10/16/2026');
 
-  const w = [
-    m.formatAppDateWritten('2026-10-16', { format: 'mdy' }),
-    m.formatAppDateWritten('2026-10-16', { format: 'dmy' }),
-    m.formatAppDateWritten('2026-10-16', { format: 'mdy', month: 'short' }),
-  ];
-  ok('the written date puts the month where the couple reads it', w.join(' | ') === 'October 16, 2026 | 16 October 2026 | Oct 16, 2026', w.join(' | '));
-  ok('a time reads 3:05pm', m.formatAppTime(new Date(2026, 9, 16, 15, 5)) === '3:05pm', m.formatAppTime(new Date(2026, 9, 16, 15, 5)));
-  ok('no date is the empty string', m.formatAppDate('', 'mdy') === '' && m.formatAppDateWritten(null) === '' && m.formatAppDateTime('nope') === '');
+    const w = [
+      m.formatAppDateWritten('2026-10-16', { format: 'mdy' }),
+      m.formatAppDateWritten('2026-10-16', { format: 'dmy' }),
+      m.formatAppDateWritten('2026-10-16', { format: 'mdy', month: 'short' }),
+    ];
+    ok('the written date puts the month where the couple reads it', w.join(' | ') === 'October 16, 2026 | 16 October 2026 | Oct 16, 2026', w.join(' | '));
+    ok('a time reads 3:05pm', m.formatAppTime(new Date(2026, 9, 16, 15, 5)) === '3:05pm', m.formatAppTime(new Date(2026, 9, 16, 15, 5)));
+    ok('no date is the empty string', m.formatAppDate('', 'mdy') === '' && m.formatAppDateWritten(null) === '' && m.formatAppDateTime('nope') === '');
+  } finally {
+    if (hadTZ) process.env.TZ = prevTZ; else delete process.env.TZ;
+    globalThis.localStorage = prevStorage;
+  }
 
   return results;
 }
