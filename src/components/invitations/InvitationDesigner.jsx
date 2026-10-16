@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import toast from 'react-hot-toast';
 import { color } from '@/styles/tokens';
 import { InvokeLLM } from '@/integrations/Core';
+import { formatWeddingDateText } from '@/lib/weddingDateText';
+import { accountDateFormat } from '@/lib/dateFormatPreference';
 
 export default function InvitationDesigner({ invitation, onDesignUpdate, weddingDetails }) {
   const [activeTab, setActiveTab] = useState('sections');
@@ -93,12 +95,13 @@ export default function InvitationDesigner({ invitation, onDesignUpdate, wedding
             id: `date-${Date.now()}`,
             type: 'text',
             content: { 
-              text: invitation?.wedding_date ? 
-                new Date(invitation.wedding_date).toLocaleDateString('en-US', { 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                }) : 'Wedding Date'
+              // The couple's own order, through the one written-date source;
+              // weekday: false to match the app's starter, which has never
+              // carried one. Owner ruling 2026-10-16(c). Written ONCE, into
+              // the saved design, so no existing invitation is rewritten.
+              text: invitation?.wedding_date
+                ? formatWeddingDateText(invitation.wedding_date, accountDateFormat(), { weekday: false })
+                : 'Wedding Date'
             },
             styles: { 
               fontSize: '1.25rem', 
