@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Plus, Lock } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import Screen from '../shell/Screen';
 import { useSaveSubtitle } from '../lib/saveStatus';
-import { Row, RowGroup, PillButton, ErrorState, Skeleton, EmptyState, SmartImage, PanelCard } from '../ui';
+import { Row, RowGroup, PillButton, ErrorState, Skeleton, EmptyState, SmartImage, PlanLock } from '../ui';
 import Segments, { useSegment } from '../ui/Segments';
 import { SchemaField, coerce, fieldVisible } from './FieldRenderer';
 import FormSheet from './FormSheet';
@@ -26,7 +26,7 @@ import { useConsiderations } from './ConsiderationsSheet';
  *   key + sub           details[key][sub]
  *   key + list.self     details[key] IS the list (dayVendorContacts)
  * `encrypted` keys save through the encrypted PUT. `ultra: true` on a
- * section shows the desktop's gate card unless the plan allows it.
+ * section shows the neutral PlanLock unless the plan allows it.
  *
  * props: schema, details, onSave, loading, error, onRetry, back, user
  */
@@ -118,7 +118,7 @@ export default function DetailsScreen({ schema, details, onSave, loading, error,
               <h2 className="oi-m-section" style={{ marginBottom: 12 }}>{section.title}</h2>
               {section.intro && <p className="oi-m-meta" style={{ marginBottom: 12 }}>{section.intro}</p>}
               {section.ultra && !ultra ? (
-                <PanelCard tone="ink" label="Ultra" title={section.gateTitle || 'This is an Ultra feature'} body={section.gateBody || 'Upgrade at openinvite.com.au to switch it on.'}><Lock size={18} style={{ opacity: 0.7 }} /></PanelCard>
+                <PlanLock about={section.gateAbout} />
               ) : section.roster ? (
                 <RosterSection category={section.roster} onOpen={onOpenVendors} />
               ) : section.list ? (

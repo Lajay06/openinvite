@@ -8,7 +8,7 @@ import { useApi, useCurrencyCode } from '../../data/api';
 import useLoad from '../../data/useLoad';
 import { useOfflineGuard, offlineNotice } from '../../data/offlineDay';
 import { hapticLight, shareLink, openExternal, prefGet, prefSet } from '../../native';
-import { openDesktop, siteUrlFor, siteOrigin } from '../../lib/links';
+import { desktopHandoff, siteUrlFor, siteOrigin } from '../../lib/links';
 import { useConfirm } from '../../ui/ConfirmSheet';
 import { resolveRecipients } from '@/lib/questionnaireRecipients';
 import { copyFromPromise } from '@/lib/copyToClipboard';
@@ -41,6 +41,7 @@ import ExperienceScreen from './ExperienceScreen';
 import GoodToKnowScreen from './GoodToKnowScreen';
 import InvitationsScreen from './InvitationsScreen';
 import MarketplaceScreen from './MarketplaceScreen';
+import { formatAppDateWritten } from '../../lib/dates';
 
 const genId = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
 
@@ -75,7 +76,7 @@ export default function PlanFeatureContainer() {
   if (f.key === 'invitations') return <InvitationsContainer back={back} />;
   if (f.kind === 'details') return <DetailsContainer f={f} back={back} />;
   if (f.kind === 'entity') return <EntityContainer f={f} back={back} />;
-  if (f.kind === 'desktop') return <DesktopFeatureScreen title={f.label} body={desktopBody(f.key)} stat="" back={back} onDesktop={() => openDesktop(navigate, f.desktop)} />;
+  if (f.kind === 'desktop') return <DesktopFeatureScreen title={f.label} body={desktopBody(f.key)} stat="" back={back} onDesktop={desktopHandoff(navigate, f.desktop)} />;
   switch (f.key) {
     case 'checklist': return <ChecklistContainer back={back} />;
     case 'budget': return id ? <BudgetCategoryContainer category={id} back={`${base}/plan/budget`} /> : <BudgetContainer back={back} />;
@@ -93,7 +94,7 @@ export default function PlanFeatureContainer() {
     case 'wedding-party': return <WeddingPartyContainer back={back} />;
     case 'marketplace': return <MarketplaceContainer back={back} />;
     case 'studio': return <DesktopFeatureScreen title="Design studio" body="The Guest Suite and Ava studio need a bigger screen." back={back} onDesktop={() => navigate(`${base}/site`)} />;
-    default: return <DesktopFeatureScreen title={f.label} body="Best on desktop for now." back={back} onDesktop={() => openDesktop(navigate, f.desktop)} />;
+    default: return <DesktopFeatureScreen title={f.label} body="Best on desktop for now." back={back} onDesktop={desktopHandoff(navigate, f.desktop)} />;
   }
 }
 
@@ -267,7 +268,7 @@ function InvitationsContainer({ back }) {
   const wd = useWeddingDetails();
   // InvitationBuilder.jsx's starter design, verbatim, so the desktop builder opens the same record.
   const create = async ({ coupleNames, weddingDate }) => {
-    const shown = weddingDate ? new Date(`${weddingDate}T00:00:00`).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+    const shown = weddingDate ? formatAppDateWritten(weddingDate) : '';
     const design = {
       globalStyles: { fontFamily: 'Playfair Display', scrollDirection: 'vertical', transitionType: 'fade', parallax: true },
       sections: [{ id: 'hero', name: 'Hero Section', background: { type: 'gradient', value: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }, components: [
@@ -280,7 +281,7 @@ function InvitationsContainer({ back }) {
     inv.reload();
   };
   const url = inv.data ? `${siteOrigin()}/guest-invitation/${inv.data.id}` : '';
-  return <InvitationsScreen invitation={inv.data} details={wd.details} invitationUrl={url} loading={inv.loading} error={inv.error} onRetry={inv.reload} onCreate={create} onDesktop={() => openDesktop(navigate, '/Invitations')} onSend={() => navigate(`${base}/plan/send-invites`)} back={back} />;
+  return <InvitationsScreen invitation={inv.data} details={wd.details} invitationUrl={url} loading={inv.loading} error={inv.error} onRetry={inv.reload} onCreate={create} onDesktop={desktopHandoff(navigate, '/Invitations')} onSend={() => navigate(`${base}/plan/send-invites`)} back={back} />;
 }
 
 /* ── Generic ─────────────────────────────────────────────────────────── */
@@ -518,7 +519,7 @@ Return assignments[], unassigned[], and summary.`, { add_context_from_internet: 
       toast.success(`${ok} seated${err > 0 ? `, ${err} could not be` : ''}`, { id: tid });
     } catch { toast.error('Could not apply the plan', { id: tid }); }
   };
-  return <SeatingScreen notice={offlineNotice(tables, guests, wd)} tables={all} guests={guests.data || []} weddingEvents={weddingEvents} activeEventId={activeEventId} onEvent={setActiveEventId} manualEvents={manualEvents} onAddEventTab={(id) => { setManualEvents((m) => [...m, id]); setActiveEventId(id); }} onAddTable={guard(addTable)} onUpdateTable={guard(updateTable)} onDeleteTable={guard(deleteTable)} onSeat={guard(seat)} onUnseat={guard(unseat)} onAvaPlan={guard(avaPlan)} onApplyPlan={guard(applyPlan)} loading={tables.loading || guests.loading} error={tables.error || guests.error} onRetry={() => { tables.reload(); guests.reload(); }} back={back} onDesktop={() => openDesktop(navigate, '/Seating')} onRefresh={async () => { tables.reload(); guests.reload(); }} />;
+  return <SeatingScreen notice={offlineNotice(tables, guests, wd)} tables={all} guests={guests.data || []} weddingEvents={weddingEvents} activeEventId={activeEventId} onEvent={setActiveEventId} manualEvents={manualEvents} onAddEventTab={(id) => { setManualEvents((m) => [...m, id]); setActiveEventId(id); }} onAddTable={guard(addTable)} onUpdateTable={guard(updateTable)} onDeleteTable={guard(deleteTable)} onSeat={guard(seat)} onUnseat={guard(unseat)} onAvaPlan={guard(avaPlan)} onApplyPlan={guard(applyPlan)} loading={tables.loading || guests.loading} error={tables.error || guests.error} onRetry={() => { tables.reload(); guests.reload(); }} back={back} onDesktop={desktopHandoff(navigate, '/Seating')} onRefresh={async () => { tables.reload(); guests.reload(); }} />;
 }
 
 /* ── Polls and games: WeddingDetails.polls as Polls.jsx persists them; Questionnaire records ── */

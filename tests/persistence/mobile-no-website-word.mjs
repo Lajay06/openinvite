@@ -9,7 +9,8 @@
  * couple in the app. "Website builder" and "The website builder" became
  * "Guest Suite". The other cases the ruling reaches, and what they became:
  *
- *   the web app ("Upgrade on the website")       -> "at openinvite.com.au"
+ *   the web app ("Upgrade on the website")       -> removed with every purchase
+ *                                                  route (mobile-no-purchase-routes)
  *   a vendor's, hotel's or place's own link      -> "Web address", "Visit"
  *   an Ava starter copied from the web           -> "for the Guest Suite"
  *
@@ -90,7 +91,7 @@ export async function runMobileNoWebsiteWord() {
   // have BECOME something, and the builder must still be reachable.
   const site = code('src/mobile/screens/site/SiteScreen.jsx');
   ok('the Site screen row is the Guest Suite, and still opens the builder',
-     /label="Guest Suite" sub="Best on desktop" onClick=\{\(\) => onOpenDesktop\('\/studio\/website'\)\}/.test(site), 'SiteScreen.jsx');
+     /label="Guest Suite" sub="Best on desktop" onClick=\{handoff\('\/studio\/website'\)\}/.test(site), 'SiteScreen.jsx');
   const plan = code('src/mobile/screens/plan/PlanContainer.jsx');
   ok('the Plan hub says the Guest Suite needs a bigger screen',
      /body="The Guest Suite and Ava studio need a bigger screen\."/.test(plan), 'PlanContainer.jsx');
@@ -102,7 +103,7 @@ export async function runMobileNoWebsiteWord() {
     readableWebsiteText(`body: 'Upgrade on the website.'`).length,
     readableWebsiteText(`<p>Edit your website</p>`).length,
     readableWebsiteText(`t('website', 'Web address')`).length,
-    readableWebsiteText(`onOpenDesktop('/studio/website')`).length,
+    readableWebsiteText(`handoff('/studio/website')`).length,
   ];
   ok('  and the sweep catches labels, sentences and JSX text, not keys or paths',
      probe.join(',') === '1,1,1,0,0', probe.join(','));

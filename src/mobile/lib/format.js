@@ -1,7 +1,7 @@
 /** Small formatters shared by the mobile screens. */
 
 import { isChild } from '@/lib/household';
-import { formatDashboardDate } from '@/lib/dashboardDate';
+import { formatAppDate } from './dates';
 
 /**
  * GuestList.jsx's child label, word for word: "Child, 6" when an age is
@@ -19,14 +19,14 @@ export function childLabel(guest) {
 
 /**
  * EVERY DATE A COUPLE READS ON THE PHONE IS NUMERIC, in the format their
- * account chose, through src/lib/dashboardDate.js (#917, #941, mobile parity
- * 6). There was a long written form with the weekday and a short one without
+ * account chose or, if they never chose, in the phone's order, through
+ * src/mobile/lib/dates.js (#917, #941, mobile parity 6). There was a long written form with the weekday and a short one without
  * the year; the web dropped both, and a weekday in front of a numeric date
  * reads as a sentence that lost its words (ScheduleTable.jsx). Guest-facing
  * text keeps its written date and does not come through here.
  */
 export function dateShort(iso) {
-  return formatDashboardDate(iso);
+  return formatAppDate(iso);
 }
 
 /** "Due 20 Mar", "Due today", "Overdue by 3 days" */

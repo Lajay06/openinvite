@@ -1,17 +1,24 @@
 /**
  * tests/persistence/mobile-dates.mjs
  *
- * EVERY DATE A COUPLE READS ON THE PHONE IS NUMERIC, IN THEIR ACCOUNT'S FORMAT.
+ * EVERY DATE A COUPLE READS ON THE PHONE IS NUMERIC, IN THEIR ACCOUNT'S FORMAT,
+ * AND IN THE PHONE'S ORDER WHEN THEY NEVER CHOSE ONE.
  *
  * Mobile parity 6 of goals/2026-10-10-mobile-pass.md, after #917 and #941 on
  * the web: dashboard dates go through src/lib/dashboardDate.js, day/month/year
  * or month/day/year as the account chose, with no weekday in front. The
  * advisor's ruling keeps one written date, the invitation email's.
  *
+ * Since the screenshot pass of 2026-10-16 every date goes through
+ * src/mobile/lib/dates.js, which reads the account's choice and, when there is
+ * none, asks the phone which comes first (tests/persistence/mobile-app-dates.mjs
+ * holds that). The written form lives there too, as formatAppDateWritten.
+ *
  * BY ELIMINATION. No file list: every source file under src/mobile is read,
  * and any locale date formatter, weekday or written month in it is a failure
- * unless it is one of the two guest-facing lines named below. Both are text a
- * GUEST reads, which is the line goals/2026-10-10-mobile-pass.md item 6 draws:
+ * unless it is in dates.js. formatAppDateWritten is called only on the two
+ * guest-facing lines named below. Both are text a GUEST reads, which is the
+ * line goals/2026-10-10-mobile-pass.md item 6 draws:
  *
  *   1. The invitation email's date (SendInvitesScreen.jsx `dateStr`), the
  *      advisor's named exception. It becomes the {date} merge tag in the
@@ -27,7 +34,6 @@ import os from 'os';
 import path from 'path';
 import { pathToFileURL } from 'url';
 import { pass, fail, stripComments } from './_shared.mjs';
-import { localeDateFormat } from '../../src/lib/dashboardDate.js';
 
 const ROOT = path.resolve(new URL('../../', import.meta.url).pathname);
 const SHELL = 'src/mobile';
@@ -35,10 +41,11 @@ const read = (rel) => { try { return fs.readFileSync(path.join(ROOT, rel), 'utf8
 const code = (rel) => stripComments(read(rel), { line: true });
 
 const GUEST_FACING = [
-  { file: 'src/mobile/screens/guests/SendInvitesScreen.jsx', line: /^const dateStr = weddingDate \? new Date\(weddingDate\)\.toLocaleDateString\(/ },
-  { file: 'src/mobile/screens/plan/PlanContainer.jsx', line: /^const shown = weddingDate \? new Date\(`\$\{weddingDate\}T00:00:00`\)\.toLocaleDateString\(/ },
+  { file: 'src/mobile/screens/guests/SendInvitesScreen.jsx', line: /^const dateStr = weddingDate \? formatAppDateWritten\(weddingDate\)/ },
+  { file: 'src/mobile/screens/plan/PlanContainer.jsx', line: /^const shown = weddingDate \? formatAppDateWritten\(weddingDate\)/ },
 ];
-const WRITTEN = /toLocaleDateString\(|DateTimeFormat\(|\bweekday:\s*'|\bmonth:\s*'(?:long|short|narrow)'/;
+const DOOR = 'src/mobile/lib/dates.js';
+const WRITTEN = /toLocaleDateString\(|DateTimeFormat\(|\bweekday:\s*'|\bmonth:\s*'(?:long|short|narrow)'|formatAppDateWritten\(/;
 
 function walk(dir) {
   let out = [];
@@ -79,6 +86,7 @@ export async function runMobileDates() {
   const exemptionsUsed = new Set();
   for (const f of files) {
     const rel = path.relative(ROOT, f);
+    if (rel === DOOR) continue;
     for (const raw of code(rel).split('\n')) {
       if (!WRITTEN.test(raw)) continue;
       const hit = GUEST_FACING.find((g) => g.file === rel && g.line.test(raw.trim()));
@@ -105,23 +113,17 @@ export async function runMobileDates() {
     globalThis.localStorage = { getItem: (k) => (k === 'oi_user' && dateFormat ? JSON.stringify({ dateFormat }) : null) };
     try { return fn(); } finally { globalThis.localStorage = prev; }
   };
-  // WITH NO STORED PREFERENCE THE FORMAT FOLLOWS THE READER'S LOCALE, which
-  // changed on 2026-10-16: src/lib/dashboardDate.js used to answer "dmy" for
-  // everyone, so a US couple who had never opened the setting read 16/10/2026.
-  // This assertion used to pin '20/03/2027' outright and so depended on the
-  // locale of whatever machine ran it: it passed on an en-AU laptop and failed
-  // on CI, whose runner reports a US locale. The expectation is now derived
-  // from the same locale the module itself reads.
-  const noPreference = withFormat(null, () => safe(() => fmt.dateShort('2027-03-20')));
-  const expected = localeDateFormat() === 'mdy' ? '03/20/2027' : '20/03/2027';
-  ok('a date with no stored preference follows the reader\'s locale',
-     noPreference === expected, `${noPreference} (locale order ${localeDateFormat()})`);
-  // BOTH EXPLICIT CHOICES STAY PINNED, with no dependence on the environment,
-  // which is what actually protects the rendering.
-  const explicitDmy = withFormat('dmy', () => safe(() => fmt.dateShort('2027-03-20')));
+  // With no choice the order is the phone's, so the expected value is this
+  // machine's: the same question dates.js asks, asked here independently.
+  const hostFirst = new Intl.DateTimeFormat(undefined, { year: 'numeric', month: '2-digit', day: '2-digit' })
+    .formatToParts(new Date(2027, 2, 20)).find((p) => p.type === 'month' || p.type === 'day')?.type;
+  const hostDate = hostFirst === 'month' ? '03/20/2027' : '20/03/2027';
+  const dmy = withFormat('dmy', () => safe(() => fmt.dateShort('2027-03-20')));
   const mdy = withFormat('mdy', () => safe(() => fmt.dateShort('2027-03-20')));
-  ok('  and day/month/year when the account chose it', explicitDmy === '20/03/2027', explicitDmy);
-  ok('  and month/day/year when the account chose it', mdy === '03/20/2027', mdy);
+  const none = withFormat(null, () => safe(() => fmt.dateShort('2027-03-20')));
+  ok('a date reads day/month/year when the account chose it', dmy === '20/03/2027', dmy);
+  ok('  and month/day/year when the account chose that', mdy === '03/20/2027', mdy);
+  ok("  and in the phone's order when the account chose neither", none === hostDate, `${none}, this machine ${hostDate}`);
   const due = withFormat('dmy', () => safe(() => fmt.dueLabel('2027-03-20', new Date('2027-03-01T09:00:00'))));
   ok('  and a due date says so numerically', due === 'Due 20/03/2027', due);
 
@@ -130,8 +132,8 @@ export async function runMobileDates() {
     'src/mobile/screens/plan/ScheduleScreen.jsx', 'src/mobile/features/EntityListScreen.jsx', 'src/mobile/features/registry.js',
     'src/mobile/data/offlineCache.js', 'src/mobile/data/dailyUpdate.js', 'src/mobile/notifications/feed.js',
   ];
-  const missing = through.filter((rel) => !/import \{ formatDashboardDate \} from '@\/lib\/dashboardDate';/.test(code(rel)));
-  ok('the screens that formatted their own dates use dashboardDate.js', missing.length === 0, missing.join(', ') || `${through.length} files`);
+  const missing = through.filter((rel) => !/import \{ formatAppDate(?:, formatAppTime)? \} from '@\/mobile\/lib\/dates';/.test(code(rel)));
+  ok('the screens that formatted their own dates use src/mobile/lib/dates.js', missing.length === 0, missing.join(', ') || `${through.length} files`);
 
   return results;
 }

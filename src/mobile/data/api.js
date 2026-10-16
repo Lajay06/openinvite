@@ -32,6 +32,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
  *   calendarFeed()             the subscribe URL once the feed answers with a calendar, else null (goal 8)
  *   upload(file)               -> { file_url }
  *   updateMe(patch)
+ *   requestAccountDeletion(user)   the website's deletion request: the email to the team, then deletionRequestedAt (ruling 2)
  */
 export const ApiContext = createContext(null);
 
