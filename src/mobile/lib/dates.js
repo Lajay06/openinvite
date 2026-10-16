@@ -6,12 +6,22 @@
  *
  * The couple's choice is User.dateFormat, "dmy" or "mdy", set on the web's
  * Account page and cached by AuthContext under `oi_user`, the same cache
- * src/lib/dashboardDate.js reads. That module falls back to day/month/year
- * when no choice was made, which is right for the dashboard's existing
- * accounts but wrong on a phone in the US: a couple who never opened the
- * setting read 16/10/2026 for October 16. So the app reads the raw value
- * itself, and only a real "dmy" or "mdy" counts as a choice. Anything else
- * asks the device locale, through Intl, which month or day comes first.
+ * src/lib/dashboardDate.js reads. That module USED TO fall back to
+ * day/month/year when no choice was made, which was wrong on a phone in the
+ * US: a couple who never opened the setting read 16/10/2026 for October 16.
+ * That is the reason this module reads the raw value itself, and only a real
+ * "dmy" or "mdy" counts as a choice; anything else asks the device locale,
+ * through Intl, which month or day comes first.
+ *
+ * The web has since been fixed the same way (#1098), so dashboardDate.js now
+ * asks the browser's locale too and the two agree on the question. They still
+ * differ on ONE answer, deliberately and worth knowing: for a YEAR-FIRST
+ * locale such as ja-JP or en-CA, deviceDateFormat below looks at whichever of
+ * month or day comes first and says "dmy", while dashboardDate.js compares
+ * their positions and says "mdy". Nothing here can diverge because of it,
+ * since formatAppDate always passes an explicit format, but a couple on a
+ * Japanese device would read a different order on the web than in the app.
+ * For the owner to rule on.
  *
  * Two shapes, as the web has them:
  *   - formatAppDate: numeric, for everything the couple reads in the app

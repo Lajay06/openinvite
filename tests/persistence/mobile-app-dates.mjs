@@ -3,10 +3,12 @@
  *
  * EVERY DATE THE APP WRITES FOLLOWS THE COUPLE'S DATE FORMAT, AND THE PHONE'S
  * WHEN THEY NEVER CHOSE ONE. The screenshot pass of 2026-10-16 read 16/10/2026
- * on a US phone: src/lib/dashboardDate.js falls back to day/month/year when
- * the account has no dateFormat, and three screens hardcoded a locale of their
- * own ('en-AU' in SendInvitesScreen and offlineCache, 'en-US' in PlanContainer
- * and VendorsScreen).
+ * on a US phone: src/lib/dashboardDate.js FELL BACK to day/month/year when the
+ * account had no dateFormat, and three screens hardcoded a locale of their own
+ * ('en-AU' in SendInvitesScreen and offlineCache, 'en-US' in PlanContainer and
+ * VendorsScreen). Past tense on the first of those since #1098, which taught
+ * dashboardDate.js to ask the browser's locale as well; the app still reads
+ * the raw preference itself, and the two halves below are unaffected.
  *
  * Two halves.
  *
