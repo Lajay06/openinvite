@@ -15,7 +15,7 @@
  *
  * ── THE TIME ZONE CHECKS ARE REAL, AND THAT WAS VERIFIED ───────────────────
  *
- * These set process.env.TZ in-process, which Node honours for Date formatting
+ * These set process.env.TZ in-process, which Node honors for Date formatting
  * afterwards: measured before writing them, America/Los_Angeles turned
  * "Monday 18 May 2026" into "Sunday 17 May 2026" and setting TZ back to UTC
  * restored it. A timezone check that does not actually change the zone passes
