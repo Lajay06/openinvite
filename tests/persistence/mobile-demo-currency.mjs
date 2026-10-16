@@ -11,6 +11,10 @@
  * pins that constant to USD, checks the demo user carries it, and checks that
  * no source file in src/mobile names AUD or writes A$ for itself (comments
  * stripped). A couple's real currency still comes from their account.
+ *
+ * The demo's own copy is read the same way: Ava's scripted draft said "on
+ * 20 March", day before month, in screenshots for US buyers. No string in
+ * src/mobile/fixtures writes a day before a month name.
  */
 
 import fs from 'fs';
@@ -46,6 +50,12 @@ export async function runMobileDemoCurrency() {
     .filter((f) => /['"`]AUD['"`]|A\$/.test(code(f)))
     .map((f) => path.relative(ROOT, f));
   ok('no file in src/mobile names AUD or writes A$', offenders.length === 0, offenders.join(', ') || 'none');
+
+  const DAY_MONTH = /\b\d{1,2} (January|February|March|April|May|June|July|August|September|October|November|December)\b/;
+  const dayFirst = walk(path.join(SHELL, 'fixtures'))
+    .filter((f) => DAY_MONTH.test(code(f)))
+    .map((f) => path.relative(ROOT, f));
+  ok('  and the demo copy writes the month before the day', dayFirst.length === 0, dayFirst.join(', ') || 'March 20, not 20 March');
 
   return results;
 }
