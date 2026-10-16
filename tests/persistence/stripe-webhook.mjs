@@ -43,11 +43,19 @@ export async function runStripeWebhook() {
     ? pass('resolvePlanFromPriceId — AUD Pro price ID resolves to \'pro\'', 'pro')
     : fail('resolvePlanFromPriceId — AUD Pro price ID resolves to \'pro\'', 'pro', resolvePlanFromPriceId(PRO_PRICE_ID)));
 
-  // The literal string every gating check in the app compares against
-  // (AuthContext.jsx → StudioGuestSuite.jsx:87-88, Account.jsx:65,
-  // Layout.jsx:304-305) — this is the "a paid Ultra user resolves as Ultra"
-  // guarantee: the webhook's resolved value must be the exact string those
-  // checks test for, not just "truthy" or a differently-cased/spelled tier.
+  // The literal string the app's ONE access gate compares against. It lives in
+  // hasUltraAccess() in src/lib/trialStatus.js, and every surface reaches it
+  // through canAccessUltra(): AnimatedSidebar, UniverseStudio, StudioGuestSuite,
+  // FoodBeverage, journeySteps and the mobile DetailsScreen. This is the
+  // "a paid Ultra user resolves as Ultra" guarantee: the webhook's resolved
+  // value must be the exact string that gate tests for, not merely "truthy" or
+  // a differently cased or spelled tier.
+  //
+  // These pointers name functions, not line numbers, because the previous
+  // version named four file:line pairs and every one of them had rotted.
+  // StudioGuestSuite.jsx moved to src/pages/ and stopped comparing the literal
+  // at all when the gate was unified; Layout.jsx and AuthContext.jsx no longer
+  // name it either. A line number in a comment is a fact with no test behind it.
   const ultraResolved = resolvePlanFromPriceId(ULTRA_PRICE_ID);
   results.push(ultraResolved === 'ultra'
     ? pass('resolvePlanFromPriceId — AUD Ultra price ID resolves to the exact gating literal \'ultra\'', ultraResolved)
