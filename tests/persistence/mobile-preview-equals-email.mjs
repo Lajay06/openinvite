@@ -12,7 +12,7 @@
  * send, so after #1100 the server would have written every app-sent email
  * day-first whatever the preview said.
  *
- * Four halves, all run, none read off a comment.
+ * Five halves, all run, none read off a comment.
  *
  *   1. THE SHAPE. formatAppDateWritten gives the two ruled strings, on a phone
  *      west of Greenwich, so a UTC reading of a date-only string would show
@@ -27,6 +27,9 @@
  *      dateFormat, and api/send-invites.js's own expression, run on that
  *      payload, writes the same string the preview showed. A probe drops
  *      dateFormat from the payload and proves the check then fails.
+ *   5. THE STARTER. PlanContainer's starter invitation design is the one
+ *      written date with NO weekday, "June 14, 2027" or "14 June 2027", as
+ *      the web's starter (lane A's ruling, accepted). Its own line is run.
  */
 
 import fs from 'fs';
@@ -36,6 +39,8 @@ import { pass, fail, stripComments } from './_shared.mjs';
 const ROOT = path.resolve(new URL('../../', import.meta.url).pathname);
 const SCREEN = 'src/mobile/screens/guests/SendInvitesScreen.jsx';
 const SERVER = 'api/send-invites.js';
+const STARTER = 'src/mobile/screens/plan/PlanContainer.jsx';
+const WEEKDAY = /\b(Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day\b/;
 const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
 
 /** One `const NAME = EXPR;` line from a source, or null. */
@@ -140,6 +145,20 @@ export async function runMobilePreviewEqualsEmail() {
     // day-first, and a month-first couple's email disagrees with its preview.
     const bare = sendFor('mdy', payloadExpr.replace(/\bdateFormat,\s*/, ''));
     ok('  and the check fails when the payload drops dateFormat', bare.email !== bare.preview, `"${bare.preview}" vs "${bare.email}"`);
+
+    // 5. The starter. PlanContainer's starter invitation design is printed on
+    // the invitation, not sent, and carries no weekday (lane A's ruling,
+    // accepted): its own line, lifted and run, for both orders.
+    const plan = stripComments(read(STARTER), { line: true });
+    const starterExpr = lift(plan, 'shown');
+    const starter = (couple) => {
+      stored = JSON.stringify({ dateFormat: couple });
+      return run(starterExpr, { formatAppDateWritten: app.formatAppDateWritten, weddingDate: '2027-06-14' });
+    };
+    const starters = ['mdy', 'dmy'].map(starter);
+    ok(`${STARTER}'s starter design has no weekday: "June 14, 2027" and "14 June 2027"`,
+       starters.join(' | ') === 'June 14, 2027 | 14 June 2027', starters.join(' | ') || 'no `const shown =` line');
+    ok('  while the send preview keeps it', !WEEKDAY.test(starters.join(' ')) && WEEKDAY.test(app.formatAppDateWritten('2027-06-14', { format: 'mdy' })));
   } finally {
     if (hadTZ) process.env.TZ = prevTZ; else delete process.env.TZ;
     globalThis.localStorage = prevStorage;

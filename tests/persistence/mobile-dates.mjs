@@ -43,7 +43,7 @@ const code = (rel) => stripComments(read(rel), { line: true });
 
 const GUEST_FACING = [
   { file: 'src/mobile/screens/guests/SendInvitesScreen.jsx', line: /^const dateStr = weddingDate \? formatAppDateWritten\(weddingDate, \{ format: dateFormat \}\)/ },
-  { file: 'src/mobile/screens/plan/PlanContainer.jsx', line: /^const shown = weddingDate \? formatAppDateWritten\(weddingDate\)/ },
+  { file: 'src/mobile/screens/plan/PlanContainer.jsx', line: /^const shown = weddingDate \? formatAppDateWritten\(weddingDate, \{ weekday: false \}\)/ },
 ];
 const DOOR = 'src/mobile/lib/dates.js';
 const WRITTEN = /toLocaleDateString\(|DateTimeFormat\(|\bweekday:\s*'|\bmonth:\s*'(?:long|short|narrow)'|formatAppDateWritten\(/;

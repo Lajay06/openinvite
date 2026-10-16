@@ -560,8 +560,9 @@ from `src/lib/dateFormatPreference.js`, kept under its old name for its
 callers, so there is one order rule. `formatAppDateWritten` is now
 `formatWeddingDateText`, so the app writes "Monday, June 14, 2027" or "Monday
 14 June 2027", weekday included, exactly as the email does. The app's starter
-invitation design uses the same written date and gains the weekday too, by
-owner ruling.
+invitation design is the one exception: it passes `weekday: false` and reads
+"June 14, 2027" or "14 June 2027", the same string the web's starter writes
+(lane A's ruling, accepted by the owner).
 
 The app's send now carries the order as `wedding.dateFormat`, as
 SendInvitesModal does on the web. `api/send-invites.js` writes the email's date

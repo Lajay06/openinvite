@@ -65,7 +65,7 @@ export async function runStarterInvitationDate() {
   // Driven, not grepped: both formatters are called and their output compared.
   const { formatAppDateWritten } = await import('../../src/mobile/lib/dates.js');
   const webStarter = (format) => formatWeddingDateText(DATE, format, { weekday: false });
-  const appStarter = (format) => formatAppDateWritten(DATE, { format });
+  const appStarter = (format) => formatAppDateWritten(DATE, { ...new Function(`return ${code(read(APP_STARTER)).match(/const shown = weddingDate \? formatAppDateWritten\(weddingDate, (\{[^}]*\})\)/)?.[1] ?? '{}'}`)(), format });
   for (const format of ['dmy', 'mdy']) {
     check(`the web and app starters write the same date for ${format}`,
           webStarter(format), appStarter(format));
@@ -121,8 +121,8 @@ export async function runStarterInvitationDate() {
   // This PR is web files and tests only, by the ruling. The app's starter
   // already followed the couple's format, which is why it is the reference
   // the equality above is measured against rather than something to change.
-  ok('the app starter still uses its own written formatter, unchanged',
-     /formatAppDateWritten\(weddingDate\)/.test(code(read(APP_STARTER))), 'untouched');
+  ok('the app starter uses its own written formatter, without the weekday',
+     /formatAppDateWritten\(weddingDate, \{ weekday: false \}\)/.test(code(read(APP_STARTER))), 'weekday: false');
 
   // ── NO DATE IS STILL NO DATE ────────────────────────────────────────────
   check('nothing in, nothing out',

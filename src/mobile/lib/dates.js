@@ -30,7 +30,7 @@
  *     (mobile parity 6). 10/16/2026 or 16/10/2026.
  *   - formatAppDateWritten: the invitation's written date, for text that
  *     leaves the app and is read by guests (an invitation's [Wedding date],
- *     the date on a starter invitation design).
+ *     the date on a starter invitation design, which has no weekday).
  *
  * A date-only string ("2026-10-16") is read as LOCAL midnight. `new Date()`
  * on it alone is UTC midnight, which is the day before for every couple west
@@ -73,10 +73,12 @@ export function formatAppDate(value, format) {
 
 /**
  * The invitation email's written date, in the couple's order: "Monday, June
- * 14, 2027" or "Monday 14 June 2027". '' for no date.
+ * 14, 2027" or "Monday 14 June 2027". '' for no date. `weekday: false` is the
+ * starter invitation design's form, "June 14, 2027" or "14 June 2027", the
+ * same string the web's starter writes (lane A's ruling, accepted).
  */
-export function formatAppDateWritten(value, { format } = {}) {
-  return formatWeddingDateText(value, format || appDateFormat());
+export function formatAppDateWritten(value, { format, weekday = true } = {}) {
+  return formatWeddingDateText(value, format || appDateFormat(), { weekday });
 }
 
 /** "3:05pm", the app's time style, the same on every phone. */
