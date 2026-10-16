@@ -45,90 +45,25 @@
  * empty string because a preference could not be found.
  */
 
-/** The two the schema allows. User.dateFormat is enum ["dmy","mdy"]. */
-export const DATE_FORMATS = ['dmy', 'mdy'];
+// The formatter's own body needs these two; the re-export below is a separate
+// thing and does NOT bring them into local scope.
+import { DATE_FORMATS, accountDateFormat } from './dateFormatPreference.js';
 
-export const DEFAULT_DATE_FORMAT = 'dmy';
-
-/** Anything that is not one of the two is the default. */
-export function normalizeDateFormat(value) {
-  return DATE_FORMATS.includes(value) ? value : DEFAULT_DATE_FORMAT;
-}
-
-/**
- * Is this resolved locale tag the root locale, meaning Intl had no locale
- * information to work from?
- *
- * Exported so it can be asserted directly. Passing 'und' INTO
- * Intl.DateTimeFormat does not reproduce the condition, because ICU resolves
- * an explicit 'und' to the runtime default and reports that instead, which is
- * how a first attempt at asserting this passed on one machine and failed on
- * another.
- */
-export function isUnresolvedLocale(resolved) {
-  return /^und\b/.test(String(resolved ?? ''));
-}
-
-/**
- * The order the reader's own locale puts a numeric date in, used ONLY when the
- * account has stated no preference.
- *
- * Read from Intl, by asking for a numeric date and seeing which part comes
- * first, rather than from a hand-kept list of countries that would be wrong
- * the day it was written. A locale that puts the year first (en-CA, ja-JP,
- * zh-CN, hu-HU) still puts its month before its day, so it reads as "mdy":
- * of the two orders this module offers, that is the one that agrees with it.
- *
- * @param {string} [locale] a BCP 47 tag; omitted means the browser's own.
- * @returns {'dmy'|'mdy'}
- */
-export function localeDateFormat(locale) {
-  try {
-    const fmt = new Intl.DateTimeFormat(locale, {
-      day: 'numeric', month: 'numeric', year: 'numeric',
-    });
-    // AN UNRESOLVED LOCALE IS NOT A LOCALE. A runtime with no locale at all,
-    // which is the normal state of a CI runner and of a server with no LANG
-    // set, resolves to the root locale "und". Root is year-month-day, so its
-    // month precedes its day and the naive reading of the parts below would
-    // call it "mdy" and quietly change the answer for every account on an
-    // unlocalized runtime. There is no locale information here, so this defers
-    // to the documented last resort instead of inventing one. A browser always
-    // reports a real locale, so this path is not reachable from the product.
-    if (isUnresolvedLocale(fmt.resolvedOptions().locale)) return DEFAULT_DATE_FORMAT;
-    // A fixed date whose day and month cannot be confused for one another.
-    const parts = fmt.formatToParts(new Date(Date.UTC(2026, 4, 18)));
-    const month = parts.findIndex((part) => part.type === 'month');
-    const day = parts.findIndex((part) => part.type === 'day');
-    if (month === -1 || day === -1) return DEFAULT_DATE_FORMAT;
-    return month < day ? 'mdy' : 'dmy';
-  } catch {
-    // Intl throws RangeError on a malformed tag, and this must not take the
-    // page with it.
-    return DEFAULT_DATE_FORMAT;
-  }
-}
-
-/**
- * The signed-in account's choice, from the cache AuthContext writes, falling
- * back to the browser's locale when the account has not chosen.
- *
- * Wrapped in try/catch because localStorage throws rather than returning null
- * in a private window with site data blocked, and is simply absent in Node,
- * and a thrown date formatter takes the page with it.
- */
-export function accountDateFormat() {
-  let stored;
-  try {
-    const raw = localStorage.getItem('oi_user');
-    stored = raw ? JSON.parse(raw)?.dateFormat : undefined;
-  } catch {
-    stored = undefined;
-  }
-  // A STATED preference wins. Anything else, including a value outside the
-  // enum, means nothing was stated, so the locale answers.
-  return DATE_FORMATS.includes(stored) ? stored : localeDateFormat();
-}
+// ── THE ORDER RULE LIVES IN ITS OWN MODULE ─────────────────────────────────
+//
+// Owner ruling 2026-10-16(a): one function answers "which order does this
+// couple read dates in", for the web and the app alike. It moved to
+// src/lib/dateFormatPreference.js because this module is the NUMERIC dashboard
+// formatter, which guest-facing files are forbidden to import
+// (tests/persistence/dashboard-date-format.mjs), and the invitation preview
+// needs the question without the numeric answer.
+//
+// Re-exported here, unchanged, so the sixteen modules that already import from
+// this file keep working and there is still one definition.
+export {
+  DATE_FORMATS, DEFAULT_DATE_FORMAT, normalizeDateFormat,
+  isUnresolvedLocale, localeDateFormat, accountDateFormat,
+} from './dateFormatPreference.js';
 
 /**
  * A date as the dashboard shows it: zero-padded numerals, four-digit year,

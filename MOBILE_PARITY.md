@@ -529,3 +529,28 @@ same screen.
 ## Dates follow the couple's format, then the phone (2026-10-16)
 
 The desktop's date format choice (Day/month/year or Month/day/year, `User.dateFormat`) is read on the phone and orders every date through `src/mobile/lib/dates.js`. With no choice made, the phone's own order is used, so a US phone reads 10/16/2026 where the desktop's default would read 16/10/2026. The choice itself is made on the desktop; the phone has no switch for it yet.
+
+## Date order: one shared rule (owner ruling 2026-10-16a)
+
+`src/mobile/lib/dates.js`'s `deviceDateFormat` should import
+`localeDateFormat` from `src/lib/dateFormatPreference.js` instead of deriving
+the order itself.
+
+To be clear about what is and is not wrong: **the two agree.** Swept across 50
+locales, including every year-first one (`ja-JP`, `zh-CN`, `en-CA`, `hu-HU`,
+`lt-LT`), they return the same answer every time, and both resolve a year-first
+locale to month-first as the ruling requires. An earlier note here claimed they
+diverged; that was a misreading of `deviceDateFormat`'s `first` lookup, which
+takes the first of month-or-day rather than the first part overall.
+
+The reason to collapse them is simply that two copies of one rule are two
+copies. `tests/persistence/date-order-one-rule.mjs` asserts the agreement
+across a locale sweep in the meantime, so they cannot drift apart unnoticed.
+
+One import and one deleted function. Lane D's file, lane D's PR.
+
+Written dates follow the same ruling (2026-10-16b): the invitation preview and
+the email now come from `src/lib/weddingDateText.js`, weekday and month as a
+word, ordered by the couple's format, so a preview always equals what the guest
+receives. `formatAppDateWritten` in the app is the third copy and should call
+the shared one, which also drops its missing weekday.

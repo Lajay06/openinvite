@@ -227,8 +227,14 @@ export async function runDashboardDateFormat() {
   // THE PREVIEW HAS TO MATCH THE SEND, which is why SendInvitesModal is on
   // that list: api/send-invites.js formats the same merge tag as a written
   // date, and a numeric preview would misdescribe the email.
-  ok('the server still writes the wedding date in words',
-     /toLocaleDateString\('en-AU', \{ weekday/.test(read('api/send-invites.js')), 'unchanged');
+  // Owner ruling 2026-10-16(b) replaced the server's own hardcoded 'en-AU'
+  // call with the one shared written-date formatter, so the assertion is now
+  // that it goes through that helper. The written style itself, and that the
+  // preview string equals the email string, are asserted in
+  // tests/persistence/wedding-date-text.mjs where they belong.
+  ok('the server writes the wedding date through the shared written formatter',
+     /formatWeddingDateText\(weddingDate, dateFormat\)/.test(read('api/send-invites.js')),
+     'one written style, in the couple\'s order');
 
   // ── THE SETTINGS CONTROL AND ITS CACHE MIRROR ───────────────────────────
 
@@ -245,7 +251,7 @@ export async function runDashboardDateFormat() {
   // THE CACHE KEY IS AuthContext'S OWN, not a second source of truth.
   ok('the formatter reads the key AuthContext writes',
      /localStorage\.setItem\('oi_user'/.test(read('src/lib/AuthContext.jsx'))
-     && /'oi_user'/.test(code(read('src/lib/dashboardDate.js'))), 'one cache');
+     && /'oi_user'/.test(code(read('src/lib/dateFormatPreference.js'))), 'one cache');
 
   return results;
 }

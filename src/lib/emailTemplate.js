@@ -27,6 +27,7 @@ import { getUniverseEmailStyle } from './universeEmailStyles.js';
 import { EMAIL_LOGO_MARK_URL } from './emailBrand.js';
 import { emailPalette, normalizeVariant, normalizeButtonStyle } from './emailPalette.js';
 import { invitationGreetingName } from './guestGreeting.js';
+import { formatWeddingDateText } from './weddingDateText.js';
 
 const SANS_FALLBACK = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
@@ -281,11 +282,22 @@ function nl2br(str) {
   return escapeHtml(str).replace(/\n/g, '<br />');
 }
 
-function formatEventDate(iso) {
-  if (!iso) return '';
-  const d = new Date(iso + (String(iso).length <= 10 ? 'T00:00:00' : ''));
-  if (isNaN(d.getTime())) return '';
-  return d.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+/**
+ * Every written date in an invitation, through the one shared formatter.
+ *
+ * Owner ruling 2026-10-16(b): one written style everywhere, ordered by the
+ * couple's chosen format. This used to hardcode 'en-AU', so a US couple's
+ * guests read "Monday 14 June 2027" in the email body while the [Wedding date]
+ * merge tag beside it was about to start reading "Monday, June 14, 2027". Two
+ * orders in one email is worse than either.
+ *
+ * `format` is threaded in from the caller rather than read from a cache,
+ * because renderInvitationEmail runs BOTH in the browser for the preview and
+ * on the server for the send. Passing it makes the two identical by
+ * construction instead of by coincidence.
+ */
+function formatEventDate(iso, format) {
+  return formatWeddingDateText(iso, format);
 }
 
 function dividerHtml(style, accent) {
@@ -327,6 +339,9 @@ export function renderInvitationEmail({
   rsvpToken,
   siteUrl,
   weddingDate,
+  // The couple's chosen date order, for every written date below. Absent means
+  // dmy, never a guess. Owner ruling 2026-10-16(b).
+  dateFormat,
   bannerImageUrl,
   design,
   // ── THE GUEST'S WAY OUT, PASSED IN RATHER THAN BUILT HERE ──────────────
@@ -394,7 +409,7 @@ export function renderInvitationEmail({
   // out loud because it changes the common case, not only the unusual one.
   const showEventsHere = cfg.showEvents || (cfg.showEventsWhenSeveral && events.length > 1);
   const eventBlocksHtml = showEventsHere ? events.map(ev => {
-    const dateStr = formatEventDate(ev.date);
+    const dateStr = formatEventDate(ev.date, dateFormat);
     const metaLine = [dateStr, ev.startTime].filter(Boolean).join(' · ');
     return `
           <tr>
@@ -408,7 +423,7 @@ export function renderInvitationEmail({
 
   // One line, in the display face, where the event blocks used to be.
   const inviteDateStr = cfg.showDate
-    ? formatEventDate(weddingDate || events?.[0]?.date)
+    ? formatEventDate(weddingDate || events?.[0]?.date, dateFormat)
     : '';
   const dateHtml = inviteDateStr ? `
           <tr>
@@ -573,7 +588,7 @@ ${markCellHtml}
     // because the two halves are built separately. A text part that disagreed
     // with the HTML is the version a screen reader and a plain-text client get.
     ...(showEventsHere ? events.flatMap(ev => {
-      const dateStr = formatEventDate(ev.date);
+      const dateStr = formatEventDate(ev.date, dateFormat);
       const metaLine = [dateStr, ev.startTime].filter(Boolean).join(' · ');
       return [ev.name, metaLine, cfg.showEvents ? ev.venue : '', ''].filter(l => l !== undefined && l !== '');
     }) : []),
@@ -642,6 +657,16 @@ export function renderRsvpConfirmationEmail({
   venueName,
   design,
   people = [],
+  // DECLARED SO IT IS NOT A FREE VARIABLE. This email's written date goes
+  // through the same shared formatter as the invitation, and absent means dmy,
+  // which is exactly what this email produced before the ruling. Nothing has
+  // changed for it yet: api/rsvp-submit.js, a guest-triggered path outside
+  // ruling 2026-10-16(b)'s scope, does not pass a format, so these emails keep
+  // AU order until someone decides to pass one. One line there when the owner
+  // wants it. Written down rather than left implicit because `no-undef` is off
+  // in this repo, so the undeclared read this replaces would have thrown a
+  // ReferenceError at send time with nothing catching it first.
+  dateFormat,
 }) {
   const style = getUniverseEmailStyle(universeId);
   const pal = emailPalette(style, normalizeVariant(design?.paletteVariant));
@@ -662,7 +687,7 @@ export function renderRsvpConfirmationEmail({
   // THE MIDDLE LINE, OR NOTHING. A date is what makes it worth printing; the
   // name and venue alone are facts the guest already has.
   const eventLine = date
-    ? [eventName, formatEventDate(date), venueName].filter(Boolean).join(' · ')
+    ? [eventName, formatEventDate(date, dateFormat), venueName].filter(Boolean).join(' · ')
     : '';
 
   // ── WHO THIS REPLY WAS FOR ──────────────────────────────────────────────
