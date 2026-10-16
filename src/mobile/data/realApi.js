@@ -12,7 +12,8 @@ import { assignGuestToTableByName, unassignGuestFromTables, assignGuestToSeat, u
 import { saveVendorFromPlaces, getSavedPlaceIds } from '@/lib/vendorPlaces';
 import { fetchGuestLinks } from '@/lib/guestLinks';
 import { syncWeddingAddress } from '@/lib/weddingAddress';
-import { InvokeLLM, UploadFile } from '@/integrations/Core';
+import { InvokeLLM, UploadFile, SendEmail } from '@/integrations/Core';
+import { deletionRequestEmail, deletionStamp } from '../lib/accountDeletion';
 import { readContacts } from '../native';
 import { setPin, unlock, clearPin } from '@/lib/vowPinLock';
 import { authHeaders } from './api';
@@ -131,5 +132,10 @@ export function createRealApi(user) {
     },
     upload: (file) => UploadFile({ file }),
     updateMe: (patch) => base44.auth.updateMe(patch),
+    // Ruling 2: the website's deletion request, the email first and then the stamp, as Account.jsx runs it.
+    requestAccountDeletion: async (user) => {
+      await SendEmail(deletionRequestEmail(user));
+      return base44.auth.updateMe(deletionStamp());
+    },
   };
 }

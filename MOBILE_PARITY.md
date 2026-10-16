@@ -344,9 +344,15 @@ Read-only mirror of polls with stats and a link to Polls. **Status.** Parity thr
 **Desktop.** Profile name (`base44.auth.updateMe`), currency (`CurrencyModal`), temperature unit, email notification preferences (`notification_prefs`), plan and billing, change password, delete account, collaborators.
 **Mobile.** Rows; account details hand off to desktop; purchases hidden natively.
 **Gaps.** Name, currency, temperature unit and the email preferences are editable on desktop and hand off here.
-**Status.** Done. An Account details sheet (name through `updateMe`, currency through CurrencyContext, temperature unit) and an Email notifications sheet on `notification_prefs` with the desktop's four switches and in-app-only dimming. Password change and account deletion stay on the desktop page (auth surface, locked by CLAUDE.md). Plan and billing hand off outside the native shell only.
+**Status.** Done. An Account details sheet (name through `updateMe`, currency through CurrencyContext, temperature unit) and an Email notifications sheet on `notification_prefs` with the desktop's four switches and in-app-only dimming. Password change stays on the website, through Forgot password on the sign-in screen (auth surface, locked by CLAUDE.md). Account deletion moved into the app on 2026-10-15, below. Plan and billing hand off outside the native shell only.
+**No purchase routes (2026-10-15).** App Store rule 3.1.1, ruling 1 of `goals/2026-10-15-app-store-launch.md`. The desktop keeps its plans, upgrade prompts and billing; the app has none of them, natively or on the web. The plan is a read-only label on Account, and the trial note says how many days are left or that the trial has ended, with nothing to press. The two plan gates, Send invites and Guest meal options, show the neutral `PlanLock` ("Not included in your plan", no button, link, price, plan name or mention of the website). Desktop hand-offs ("Open on desktop" on Seating, Invitations, the Site screen's design rows and the desktop-only features) are plain text natively, through `desktopHandoff`, and stay in-app navigation on the web. The only website pages the app opens are `WEB_PAGES` in `src/mobile/lib/links.js`: the privacy policy, the terms, support (`/contact`) and Forgot password. Account gains Privacy policy and Terms of service rows; Help center is gone (it was a signed-in desktop page). Natively, the sign-up sheet no longer links to the website's sign-up, where a plan is chosen. Guard: `tests/persistence/mobile-no-purchase-routes.mjs`.
+**Delete account (2026-10-15).** App Store rule 5.1.1(v), ruling 2 of `goals/2026-10-15-app-store-launch.md`, which authorizes this one change to the auth surface. The desktop's deletion (`Account.jsx` `handleDeleteRequest`) is a verified request: an email to hello@openinvite.com.au through `SendEmail`, then `updateMe({ deletionRequestedAt })`, and the team deletes within 7 business days (`DataDeletion.jsx`). The app runs the same two calls in the same order (`src/mobile/lib/accountDeletion.js`, `requestAccountDeletion` in the real api; the demo only stamps its fixture user). Account has a Delete account row; its sheet names what is deleted, from `DataDeletion.jsx`'s list, and waits for DELETE typed, as the desktop modal does. Once requested, the row reads "Deletion requested" from the stamp, on either side. The handler is repeated, not imported, because it lives inside the page; moving it to `src/lib` is a finding for lane A. Guard: `tests/persistence/mobile-account-deletion.mjs`, which reads the desktop handler for its inbox, subject and stamp.
 
 ---
+
+## Web paths stay out of the app (2026-10-15)
+
+Ruling 3 of `goals/2026-10-15-app-store-launch.md`, closing lane A's finding 2 of the mobile pass. The desktop is every path `src/App.jsx` routes; the app is `/m` and its children, plus the two entry points App.jsx sends to `/m` ("/" and "/DailyUpdate"). Natively, `installWebPathGuard` in `src/mobile/native.ts` reads every `history.pushState` and `history.replaceState`, and the page the webview first loaded, through `webPathAction` in `src/mobile/lib/webPaths.js`. A phone path is shown. `/login` (where AuthContext sends a signed-out session, after Log out or an expired token) becomes the phone's own sign-in, `/m/login`. Every other path, pricing, checkout, `/gift`, `/professional` and every dashboard and public page among them, opens on the website in Safari itself and the app stays where it was. Links to the website from any screen (View Guest Suite, the privacy policy, support) also open in Safari rather than the in-app browser sheet; other sites keep the sheet. The hand-off is a top-level navigation, which Capacitor cancels and gives to `UIApplication.shared.open`; it needs no tap, where `window.open` would. Guard: `tests/persistence/mobile-web-paths.mjs`.
 
 ## Field-name drift found and corrected
 
@@ -519,3 +525,49 @@ the priming screen got wrong: it told a couple "your first reply is in" off
 server-written `Notification` rows the shell could reach, while the guest list
 those replies are counted against had not loaded, so Replies read 0 on the
 same screen.
+
+## Dates follow the couple's format, then the phone (2026-10-16)
+
+The desktop's date format choice (Day/month/year or Month/day/year, `User.dateFormat`) is read on the phone and orders every date through `src/mobile/lib/dates.js`. With no choice made, the phone's own order is used, so a US phone reads 10/16/2026 where the desktop's default would read 16/10/2026. The choice itself is made on the desktop; the phone has no switch for it yet.
+
+## Date order: one shared rule (owner ruling 2026-10-16a)
+
+`src/mobile/lib/dates.js`'s `deviceDateFormat` should import
+`localeDateFormat` from `src/lib/dateFormatPreference.js` instead of deriving
+the order itself.
+
+To be clear about what is and is not wrong: **the two agree.** Swept across 50
+locales, including every year-first one (`ja-JP`, `zh-CN`, `en-CA`, `hu-HU`,
+`lt-LT`), they return the same answer every time, and both resolve a year-first
+locale to month-first as the ruling requires. An earlier note here claimed they
+diverged; that was a misreading of `deviceDateFormat`'s `first` lookup, which
+takes the first of month-or-day rather than the first part overall.
+
+The reason to collapse them is simply that two copies of one rule are two
+copies. `tests/persistence/date-order-one-rule.mjs` asserts the agreement
+across a locale sweep in the meantime, so they cannot drift apart unnoticed.
+
+One import and one deleted function. Lane D's file, lane D's PR.
+
+Written dates follow the same ruling (2026-10-16b): the invitation preview and
+the email now come from `src/lib/weddingDateText.js`, weekday and month as a
+word, ordered by the couple's format, so a preview always equals what the guest
+receives. `formatAppDateWritten` in the app is the third copy and should call
+the shared one, which also drops its missing weekday.
+
+**Done in the app (2026-10-17).** `deviceDateFormat` is now `localeDateFormat`
+from `src/lib/dateFormatPreference.js`, kept under its old name for its
+callers, so there is one order rule. `formatAppDateWritten` is now
+`formatWeddingDateText`, so the app writes "Monday, June 14, 2027" or "Monday
+14 June 2027", weekday included, exactly as the email does. The app's starter
+invitation design is the one exception: it passes `weekday: false` and reads
+"June 14, 2027" or "14 June 2027", the same string the web's starter writes
+(lane A's ruling, accepted by the owner).
+
+The app's send now carries the order as `wedding.dateFormat`, as
+SendInvitesModal does on the web. `api/send-invites.js` writes the email's date
+in whatever order the client sends and reads a missing one as day-first, so
+before this a month-first couple's preview in the app would have disagreed
+with the email they sent. `tests/persistence/mobile-preview-equals-email.mjs`
+runs the screen's own lines and the server's own expression for both orders and
+holds the two equal.

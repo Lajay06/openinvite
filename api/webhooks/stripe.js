@@ -16,7 +16,8 @@
  *                            mapping a completed session back to a plan tier.
  *
  * Events handled:
- *   checkout.session.completed → writes User.plan + planActivatedAt, then
+ *   checkout.session.completed → writes User.plan, planActivatedAt and
+ *                                 planExpiresAt (the 24-month term), then
  *                                 sends a purchase confirmation email.
  *
  *   checkout.session.completed WHERE metadata.purchaseType === 'gift'
@@ -69,6 +70,12 @@ import { giftReceiptEmail } from '../emails/gift-receipt.js';
 import { giftRevealEmail } from '../emails/gift-reveal.js';
 import { resolvePlanFromPriceId } from '../_lib/planPricing.js';
 import { getBase44User, writeBase44UserPlan } from '../_lib/base44Admin.js';
+// ONE MONTH ARITHMETIC FOR THE WHOLE TERM. A gift writes planExpiresAt with
+// this addMonths, src/lib/trialStatus.js computes the read-side fallback with
+// the same maths (asserted equal in tests/persistence/plan-term.mjs), and a
+// purchase now uses it too. Three copies of "plus 24 months" would put the
+// same couple's expiry on three different days.
+import { addMonths, TERM_MONTHS } from '../_lib/giftClaim.js';
 import { hashId, encryptString, generateGiftCode } from '../_lib/giftAuth.js';
 import { createPlanGift, findPlanGiftBySessionId, findPlanGiftByPromotionCodeId, updatePlanGift } from '../_lib/planGift.js';
 import { isValidEmail } from '../_lib/security.js';
@@ -439,14 +446,33 @@ export async function handleCheckoutSessionCompleted(verifiedSession, {
   // that out: absence must read as unknown, because inferring "gift" from it
   // would have told all three paying accounts their plan was a gift.
   //
-  // It is NOT mirrored in base44/entities/User.jsonc, deliberately. The
-  // built-in User entity accepts arbitrary fields with no schema (see
-  // BASE44_PLATFORM_NOTES.md), User is not in the schema-drift guard's
-  // GUARDED_ENTITIES, and adding it to the mirror would claim a Base44 field
-  // that does not exist.
+  // BOTH ARE MIRRORED NOW. This said they were deliberately NOT mirrored
+  // because the field did not exist on Base44 and claiming it would be a lie.
+  // The owner declared stripeCustomerId and planSource live on 2026-10-13 and
+  // planExpiresAt on 2026-10-15, so base44/entities/User.jsonc carries all
+  // three, read from the live schema per rule 9. The comment outlived its
+  // reason by two days and is corrected rather than deleted, because the
+  // reasoning is still the right test for the next field.
   const stripeCustomerId = typeof verifiedSession.customer === 'string' ? verifiedSession.customer : '';
+
+  // THE 24-MONTH TERM, ON THE SAME RULE A GIFT USES: the later of now and any
+  // term still running, plus 24 months. Owner ruling 2026-10-13.
+  //
+  // Extending rather than resetting matters on an UPGRADE, which is the only
+  // way this line is reached twice: the idempotency check above returns early
+  // when the plan already matches, so a repeat purchase of the same plan never
+  // gets here, but Pro to Ultra does. Resetting would silently shorten a term
+  // the couple had already paid for whenever they upgraded with time left, and
+  // a paying customer must never come out behind a gift recipient, who gets
+  // the extension by rule.
+  const runningUntil = existingUser?.planExpiresAt ? new Date(existingUser.planExpiresAt) : null;
+  const termFrom = runningUntil && !Number.isNaN(runningUntil.getTime()) && runningUntil > new Date(planActivatedAt)
+    ? runningUntil.toISOString()
+    : planActivatedAt;
+  const planExpiresAt = addMonths(termFrom, TERM_MONTHS);
+
   const writeResult = await writeBase44UserPlan({
-    userId, plan, planActivatedAt, stripeCustomerId, planSource: 'purchase', adminKey, fetchImpl,
+    userId, plan, planActivatedAt, planExpiresAt, stripeCustomerId, planSource: 'purchase', adminKey, fetchImpl,
   });
 
   if (!writeResult.ok) {
@@ -462,7 +488,7 @@ export async function handleCheckoutSessionCompleted(verifiedSession, {
     return { status: 502, body: { error: 'Failed to activate plan — will retry' } };
   }
 
-  console.log('[stripe-webhook] Base44 plan written:', { userId, plan, planSource, sessionId: verifiedSession.id });
+  console.log('[stripe-webhook] Base44 plan written:', { userId, plan, planSource, planExpiresAt, sessionId: verifiedSession.id });
 
   // ── Send confirmation email ─────────────────────────────────────────────
   // Deliberately NOT part of the status-code contract above: the plan is

@@ -19,6 +19,8 @@ import { sentGuestIds, guestsActuallySent } from '@/lib/sentRecipients';
 import { publishState, PUBLISH_STATE } from '@/lib/publishState';
 import { invitationsFor } from '@/lib/household';
 import { invitationGreetingName } from '@/lib/guestGreeting';
+import { formatWeddingDateText } from '@/lib/weddingDateText';
+import { accountDateFormat } from '@/lib/dateFormatPreference';
 import { isBounced, bouncedSkippedSentence } from '@/components/guests/emailBounce';
 import RsvpDeadlineField from '@/components/shared/RsvpDeadlineField';
 
@@ -309,9 +311,19 @@ export default function SendInvitesModal({
   const siteUrl = wedding?.slug
     ? `${typeof window === 'undefined' ? '' : window.location.origin}/w/${wedding.slug}`
     : '';
-  const dateStr = weddingDate
-    ? new Date(weddingDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })
-    : '';
+  // The [Wedding date] merge tag for the PREVIEW, through the one helper that
+  // also knows what api/send-invites.js sends (src/lib/weddingDateText.js).
+  // It used to be built here with `new Date(weddingDate).toLocaleDateString`,
+  // which read a date-only string as UTC midnight and so showed every couple
+  // west of Greenwich the day BEFORE their own wedding, and which left the
+  // weekday out while the email put it in.
+  // THE ORDER THE PREVIEW ACTUALLY RESOLVED, sent with the request so the email
+  // is formatted from the same input. accountDateFormat() is the couple's
+  // User.dateFormat when they chose one, else their browser's locale (#1098).
+  // The server has no browser to read, which is why this travels in the
+  // payload rather than being looked up there. Owner ruling 2026-10-16(b).
+  const resolvedDateFormat = accountDateFormat();
+  const dateStr = formatWeddingDateText(weddingDate, resolvedDateFormat);
   const universeId = wedding?.activeUniverse;
 
   // Events the wedding has set up, enriched with venue/date (getWeddingEvents
@@ -461,6 +473,7 @@ export default function SendInvitesModal({
   // no reason. Real links are fetched at send time, in ensureTokens.
   const previewRsvpUrl = previewGuest?.rsvp_link_id ? buildRsvpUrl(previewGuest.rsvp_link_id) : `${RSVP_BASE}preview-token`;
   const previewEmailHtml = renderInvitationEmail({
+    dateFormat: resolvedDateFormat,
     universeId,
     type,
     coupleNames: coupleName,
@@ -590,7 +603,7 @@ export default function SendInvitesModal({
           universeId,
           bannerChoice,
           guests: recipients,
-          wedding: { coupleName, weddingDate, venue, siteUrl, slug: wedding?.slug, websiteEnabled: wedding?.websiteEnabled, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl },
+          wedding: { coupleName, weddingDate, dateFormat: resolvedDateFormat, venue, siteUrl, slug: wedding?.slug, websiteEnabled: wedding?.websiteEnabled, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl },
           customSubject: subject,
           customBody: messageBody,
         };
@@ -712,7 +725,7 @@ export default function SendInvitesModal({
         bannerChoice,
         isTest: true,
         guests: [{ email: user.email, name: 'Test guest', rsvpUrl: previewRsvpUrl, events: previewEvents }],
-        wedding: { coupleName, weddingDate, venue, siteUrl, slug: wedding?.slug, websiteEnabled: wedding?.websiteEnabled, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl },
+        wedding: { coupleName, weddingDate, dateFormat: resolvedDateFormat, venue, siteUrl, slug: wedding?.slug, websiteEnabled: wedding?.websiteEnabled, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl },
         customSubject: subject,
         customBody: messageBody,
       };

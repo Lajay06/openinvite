@@ -1111,6 +1111,7 @@ export const ENTITY_FIELDS = {
       "lifecycleEmails",
       "notification_prefs",
       "onboarding_completed",
+      "planExpiresAt",
       "planSource",
       "retentionEmails",
       "stripeCustomerId",

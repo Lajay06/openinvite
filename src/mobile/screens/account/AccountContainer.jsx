@@ -6,11 +6,13 @@ import { isDemoBuild, isRealBuild } from '../../demo';
 import { getTrialStatus } from '@/lib/trialStatus';
 import CollaborateModal from '@/components/layout/CollaborateModal';
 import AccountScreen from './AccountScreen';
-import { AccountDetailsSheet, EmailPreferencesSheet } from './AccountSheets';
+import { AccountDetailsSheet, EmailPreferencesSheet, DeleteAccountSheet } from './AccountSheets';
+import toast from 'react-hot-toast';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { DEFAULT_CURRENCY } from '@/lib/money';
 import { isNative } from '../../native';
 import { useAppLockSetting } from '../../shell/AppLock';
-import { openDesktop } from '../../lib/links';
+import { openWebPage } from '../../lib/links';
 import { useWedding } from '../../data/wedding';
 import { heroImageFor } from '../../lib/images';
 import { dateShort } from '../../lib/format';
@@ -20,9 +22,10 @@ import { coupleDisplayName } from '@/lib/coupleNames';
 const PLAN_LABELS = { free: 'Free trial', pro: 'Pro', ultra: 'Ultra' };
 
 /**
- * Reads the user from AuthContext, as Account.jsx does. Purchases: every
- * upgrade / checkout / billing-portal call to action is hidden when the app
- * runs natively (see MOBILE_APP.md, "Needs a decision").
+ * Reads the user from AuthContext, as Account.jsx does. Purchases: none. No
+ * upgrade, checkout, billing portal or pricing page is reachable from the app,
+ * natively or on the web (App Store rule 3.1.1, ruling 1 of
+ * goals/2026-10-15-app-store-launch.md). The plan shows as a read-only label.
  */
 export default function AccountContainer() {
   const auth = useAuth();
@@ -32,11 +35,11 @@ export default function AccountContainer() {
   const logout = api.mode === 'preview' ? () => {} : auth.logout;
   const navigate = useNavigate();
   const [collab, setCollab] = useState(false);
-  const [sheet, setSheet] = useState(null); // 'details' | 'email'
+  const [sheet, setSheet] = useState(null); // 'details' | 'email' | 'delete'
   const [, bump] = useState(0);
   const currency = useCurrency();
   const isPreview = api.mode === 'preview';
-  const currencyCode = isPreview ? (user?.currency || 'AUD') : currency.currencyCode;
+  const currencyCode = isPreview ? (user?.currency || DEFAULT_CURRENCY) : currency.currencyCode;
   // Account.jsx's Settings tab: name and tempUnit through updateMe, currency
   // through CurrencyContext (which writes updateMe itself), then refresh the user.
   const saveDetails = async ({ full_name, currency: code, tempUnit }) => {
@@ -51,13 +54,20 @@ export default function AccountContainer() {
   const coupleName = coupleDisplayName(d || {});
   const trial = getTrialStatus(user);
   const planLabel = PLAN_LABELS[trial.plan] || 'Free trial';
-  const showPurchases = !isNative();
   const appLock = useAppLockSetting();
+  // Ruling 2: deletion starts here and runs the website's request; the stamp is what both sides read back.
+  const [deletionSent, setDeletionSent] = useState(false);
+  const deletionRequested = deletionSent || !!user?.deletionRequestedAt;
+  const requestDeletion = async () => {
+    await api.requestAccountDeletion(user);
+    setDeletionSent(true);
+    toast.success('Deletion requested. We will confirm by email within 7 business days.');
+  };
 
   const planNote = trial.isPaid
     ? null
     : trial.trialExpired
-      ? 'Your free trial has ended. Your work is safe and yours. Upgrade at openinvite.com.au to keep planning.'
+      ? 'Your free trial has ended. Your work is safe and yours.'
       : `${trial.daysLeft} day${trial.daysLeft === 1 ? '' : 's'} left on your free trial.`;
 
   return (
@@ -72,17 +82,18 @@ export default function AccountContainer() {
         planLabel={planLabel}
         planNote={planNote}
         trialDaysLeft={trial.isPaid ? null : trial.daysLeft}
-        showPurchases={showPurchases}
-        onUpgrade={() => openDesktop(navigate, '/pricing')}
         onDetails={() => setSheet('details')}
         detailsSub={`Name, ${currencyCode}, °${user?.tempUnit || 'C'}`}
         onEventDetails={() => navigate(`${base}/plan/event-details`)}
         onCollaborators={() => setCollab(true)}
         onNotifications={() => setSheet('email')}
         onNotificationSettings={() => navigate(`${base}/notifications/settings`)}
-        onHelp={() => openDesktop(navigate, '/help')}
-        onContact={() => openDesktop(navigate, '/Contact')}
+        onContact={() => openWebPage(navigate, 'support')}
+        onPrivacy={() => openWebPage(navigate, 'privacy')}
+        onTerms={() => openWebPage(navigate, 'terms')}
         onLogout={() => logout()}
+        deletionRequested={deletionRequested}
+        onDeleteAccount={() => setSheet('delete')}
         loading={isLoadingAuth}
         appLock={isNative() ? appLock : null}
         // Review builds only (goal 7): a long press on the title brings the daily update back whatever the day's answer.
@@ -91,8 +102,9 @@ export default function AccountContainer() {
         onTestNotification={isDemoBuild || import.meta.env.DEV ? () => navigate(`${base}/priming?test=1`) : undefined}
       />
       {collab && <CollaborateModal onClose={() => setCollab(false)} />}
-      <AccountDetailsSheet open={sheet === 'details'} user={user} currencyCode={currencyCode} onClose={() => setSheet(null)} onSave={saveDetails} onDesktop={() => { setSheet(null); openDesktop(navigate, '/account'); }} />
+      <AccountDetailsSheet open={sheet === 'details'} user={user} currencyCode={currencyCode} onClose={() => setSheet(null)} onSave={saveDetails} />
       <EmailPreferencesSheet open={sheet === 'email'} user={user} onClose={() => setSheet(null)} onSave={savePrefs} />
+      <DeleteAccountSheet open={sheet === 'delete'} user={user} onClose={() => setSheet(null)} onConfirm={requestDeletion} />
     </>
   );
 }

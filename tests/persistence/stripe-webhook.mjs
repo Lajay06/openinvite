@@ -43,11 +43,19 @@ export async function runStripeWebhook() {
     ? pass('resolvePlanFromPriceId — AUD Pro price ID resolves to \'pro\'', 'pro')
     : fail('resolvePlanFromPriceId — AUD Pro price ID resolves to \'pro\'', 'pro', resolvePlanFromPriceId(PRO_PRICE_ID)));
 
-  // The literal string every gating check in the app compares against
-  // (AuthContext.jsx → StudioGuestSuite.jsx:87-88, Account.jsx:65,
-  // Layout.jsx:304-305) — this is the "a paid Ultra user resolves as Ultra"
-  // guarantee: the webhook's resolved value must be the exact string those
-  // checks test for, not just "truthy" or a differently-cased/spelled tier.
+  // The literal string the app's ONE access gate compares against. It lives in
+  // hasUltraAccess() in src/lib/trialStatus.js, and every surface reaches it
+  // through canAccessUltra(): AnimatedSidebar, UniverseStudio, StudioGuestSuite,
+  // FoodBeverage, journeySteps and the mobile DetailsScreen. This is the
+  // "a paid Ultra user resolves as Ultra" guarantee: the webhook's resolved
+  // value must be the exact string that gate tests for, not merely "truthy" or
+  // a differently cased or spelled tier.
+  //
+  // These pointers name functions, not line numbers, because the previous
+  // version named four file:line pairs and every one of them had rotted.
+  // StudioGuestSuite.jsx moved to src/pages/ and stopped comparing the literal
+  // at all when the gate was unified; Layout.jsx and AuthContext.jsx no longer
+  // name it either. A line number in a comment is a fact with no test behind it.
   const ultraResolved = resolvePlanFromPriceId(ULTRA_PRICE_ID);
   results.push(ultraResolved === 'ultra'
     ? pass('resolvePlanFromPriceId — AUD Ultra price ID resolves to the exact gating literal \'ultra\'', ultraResolved)
@@ -399,6 +407,73 @@ export async function runStripeWebhook() {
     results.push(status >= 200 && status < 300
       ? pass('handleCheckoutSessionCompleted — successful write + failing email → still 2xx (email is non-critical)', `status ${status}`)
       : fail('handleCheckoutSessionCompleted — successful write + failing email → still 2xx (email is non-critical)', '2xx', `status ${status}`));
+  }
+
+  // ── 6. THE 24-MONTH TERM IS WRITTEN WITH THE PLAN ──────────────────────
+  //
+  // Owner ruling 2026-10-13, enforced 2026-10-15. Before this, planExpiresAt
+  // was written only by a gift claim, so every PAYING account had no recorded
+  // term at all and src/lib/trialStatus.js had nothing to read but a fallback.
+  //
+  // The rule is the gift's rule: the later of now and any term still running,
+  // plus 24 months. Reached twice only on an upgrade, because the idempotency
+  // check above returns before the write when the plan already matches.
+  const termOf = async (existing) => {
+    let body = null;
+    const fetchImpl = async (url, init) => {
+      if ((init?.method || 'GET') !== 'PUT') return { ok: true, json: async () => ({ id: 'user_activation_test', ...existing }) };
+      body = JSON.parse(init.body);
+      return { ok: true, status: 200 };
+    };
+    await handleCheckoutSessionCompleted(makeSession(), { adminKey: 'test_admin_key', fetchImpl });
+    return body;
+  };
+  const monthsBetween = (fromIso, toIso) => {
+    const a = new Date(fromIso); const b = new Date(toIso);
+    return (b.getUTCFullYear() - a.getUTCFullYear()) * 12 + (b.getUTCMonth() - a.getUTCMonth());
+  };
+
+  {
+    const body = await termOf({ plan: 'free' });
+    const ok = body?.planExpiresAt && monthsBetween(body.planActivatedAt, body.planExpiresAt) === 24;
+    results.push(ok
+      ? pass('a purchase writes planExpiresAt, 24 months from activation', `${body.planActivatedAt} -> ${body.planExpiresAt}`)
+      : fail('a purchase writes planExpiresAt, 24 months from activation', '24 months', JSON.stringify(body)));
+  }
+
+  {
+    // An upgrade with time still on the clock EXTENDS from that expiry. Were
+    // it to reset to now, upgrading would silently shorten a term already paid
+    // for, and a paying customer would come out behind a gift recipient, who
+    // gets the extension by rule.
+    const running = '2028-01-01T00:00:00.000Z';
+    const body = await termOf({ plan: 'pro', planExpiresAt: running });
+    results.push(body?.planExpiresAt === '2030-01-01T00:00:00.000Z'
+      ? pass('  an upgrade extends the running term rather than resetting it', `${running} -> ${body.planExpiresAt}`)
+      : fail('  an upgrade extends the running term rather than resetting it', '2030-01-01T00:00:00.000Z', JSON.stringify(body)));
+  }
+
+  {
+    // A term that already lapsed counts from NOW, never from the past: adding
+    // 24 months to a 2020 expiry would hand the couple a term that was already
+    // over before they paid.
+    const body = await termOf({ plan: 'pro', planExpiresAt: '2020-01-01T00:00:00.000Z' });
+    const ok = body?.planExpiresAt && monthsBetween(body.planActivatedAt, body.planExpiresAt) === 24;
+    results.push(ok
+      ? pass('  a lapsed term counts from now, not from the past', `-> ${body.planExpiresAt}`)
+      : fail('  a lapsed term counts from now, not from the past', '24 months from now', JSON.stringify(body)));
+  }
+
+  {
+    // OMITTED, NEVER NULLED, the same property the customer id has: a PUT
+    // replaces every field it names, so sending planExpiresAt: undefined would
+    // erase a term the account already had.
+    let body = null;
+    const okFetch = async (url, init) => { if ((init?.method || 'GET') === 'PUT') body = JSON.parse(init.body); return { ok: true, status: 200 }; };
+    await writeBase44UserPlan({ userId: 'u', plan: 'pro', planActivatedAt: 'x', adminKey: 'k', fetchImpl: okFetch });
+    results.push(body && !('planExpiresAt' in body)
+      ? pass('  and a caller with no term omits the field rather than nulling it', JSON.stringify(body))
+      : fail('  and a caller with no term omits the field rather than nulling it', 'no planExpiresAt key', JSON.stringify(body)));
   }
 
   process.env.VITE_STRIPE_PRO_PRICE_ID = restore.pro;

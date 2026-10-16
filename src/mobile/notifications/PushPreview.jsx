@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { notificationCopy } from './copy';
 import { formatMoney } from '@/lib/money';
-import { formatDashboardDate } from '@/lib/dashboardDate';
+import { formatAppDate } from '@/mobile/lib/dates';
 import { DEMO_CURRENCY } from '../fixtures/previewApi';
 import { deliver } from '../lib/images';
 import { imageUrl } from '../images';
@@ -44,7 +44,7 @@ export default function PushPreview() {
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.05) 30%, rgba(0,0,0,0.45) 100%)' }} />
       <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100%', padding: 'calc(env(safe-area-inset-top, 0px) + 12px) 12px 12px', color: '#FFFFFF' }}>
         <div style={{ textAlign: 'center', marginTop: 44 }}>
-          <div style={{ fontSize: 20, lineHeight: '24px', fontWeight: 500, opacity: 0.95 }}>{formatDashboardDate(now)}</div>
+          <div style={{ fontSize: 20, lineHeight: '24px', fontWeight: 500, opacity: 0.95 }}>{formatAppDate(now)}</div>
           <div style={{ fontSize: 88, lineHeight: '92px', fontWeight: 600 }}>9:41</div>
         </div>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: 8, paddingBottom: 56 }}>

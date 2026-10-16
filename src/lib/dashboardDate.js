@@ -25,39 +25,45 @@
  * rather than a second one invented here. A component that already holds the
  * user can pass the format explicitly instead, and SendInvitesModal does.
  *
- * EVERY FAILURE PATH IS "dmy". No cache, unparseable JSON, no field, a value
- * that is not one of the two, localStorage throwing in a private window: all
- * of them fall back to day/month/year, which is the item's default and what
- * every existing account reads as. A date is never rendered as the empty
- * string because a preference could not be found.
- */
-
-/** The two the schema allows. User.dateFormat is enum ["dmy","mdy"]. */
-export const DATE_FORMATS = ['dmy', 'mdy'];
-
-export const DEFAULT_DATE_FORMAT = 'dmy';
-
-/** Anything that is not one of the two is the default. */
-export function normalizeDateFormat(value) {
-  return DATE_FORMATS.includes(value) ? value : DEFAULT_DATE_FORMAT;
-}
-
-/**
- * The signed-in account's choice, from the cache AuthContext writes.
+ * ── NO STATED PREFERENCE MEANS THE BROWSER'S LOCALE, NOT day/month/year ────
  *
- * Wrapped in try/catch because localStorage throws rather than returning null
- * in a private window with site data blocked, and a thrown date formatter
- * takes the page with it.
+ * Lane D's finding, fixed 2026-10-16. This module used to fall back to "dmy"
+ * on every path, so a US couple who had never opened the setting read their
+ * own wedding as 16/10/2026. The product sells to the US in USD, so the single
+ * most likely reader of an unset preference is the one the old default served
+ * worst.
+ *
+ * The fallback is now the order the BROWSER'S OWN locale puts a numeric date
+ * in, read from Intl rather than from a list of countries kept by hand. An
+ * account that HAS chosen still wins: the locale is consulted only when there
+ * is nothing to honor.
+ *
+ * "dmy" survives as the LAST RESORT, for when Intl cannot answer at all. No
+ * cache, unparseable JSON, no field, localStorage throwing in a private
+ * window, Intl throwing on a malformed locale tag: every one of those still
+ * yields a date rather than an empty cell. A date is never rendered as the
+ * empty string because a preference could not be found.
  */
-export function accountDateFormat() {
-  try {
-    const raw = localStorage.getItem('oi_user');
-    if (!raw) return DEFAULT_DATE_FORMAT;
-    return normalizeDateFormat(JSON.parse(raw)?.dateFormat);
-  } catch {
-    return DEFAULT_DATE_FORMAT;
-  }
-}
+
+// The formatter's own body needs these two; the re-export below is a separate
+// thing and does NOT bring them into local scope.
+import { DATE_FORMATS, accountDateFormat } from './dateFormatPreference.js';
+
+// ── THE ORDER RULE LIVES IN ITS OWN MODULE ─────────────────────────────────
+//
+// Owner ruling 2026-10-16(a): one function answers "which order does this
+// couple read dates in", for the web and the app alike. It moved to
+// src/lib/dateFormatPreference.js because this module is the NUMERIC dashboard
+// formatter, which guest-facing files are forbidden to import
+// (tests/persistence/dashboard-date-format.mjs), and the invitation preview
+// needs the question without the numeric answer.
+//
+// Re-exported here, unchanged, so the sixteen modules that already import from
+// this file keep working and there is still one definition.
+export {
+  DATE_FORMATS, DEFAULT_DATE_FORMAT, normalizeDateFormat,
+  isUnresolvedLocale, localeDateFormat, accountDateFormat,
+} from './dateFormatPreference.js';
 
 /**
  * A date as the dashboard shows it: zero-padded numerals, four-digit year,
@@ -68,7 +74,8 @@ export function accountDateFormat() {
  *   midnight rather than UTC, which is why the 'T00:00:00' is appended: UTC
  *   would render the day before for every account west of Greenwich, and
  *   EventDetails was already doing this by hand for exactly that reason.
- * @param {'dmy'|'mdy'} [format]  defaults to the account's choice
+ * @param {'dmy'|'mdy'} [format]  defaults to the account's choice, which
+ *   defaults to the browser's locale
  * @returns {string} the formatted date, or '' when there is no date to show
  */
 export function formatDashboardDate(value, format) {
@@ -80,7 +87,11 @@ export function formatDashboardDate(value, format) {
   const dd = String(d.getDate()).padStart(2, '0');
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const yyyy = String(d.getFullYear()).padStart(4, '0');
-  return normalizeDateFormat(format ?? accountDateFormat()) === 'mdy'
+  // An explicit, valid format wins. Anything else defers to the account, which
+  // defers to the locale. normalizeDateFormat is NOT used here on purpose: it
+  // coerces to 'dmy', which is the behavior this fix exists to remove.
+  const chosen = DATE_FORMATS.includes(format) ? format : accountDateFormat();
+  return chosen === 'mdy'
     ? `${mm}/${dd}/${yyyy}`
     : `${dd}/${mm}/${yyyy}`;
 }

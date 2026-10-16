@@ -8,7 +8,7 @@
  */
 import { notificationCopy } from './copy';
 import { formatMoney } from '@/lib/money';
-import { formatDashboardDate } from '@/lib/dashboardDate';
+import { formatAppDate } from '@/mobile/lib/dates';
 import { isAttending, isDeclined, isMaybe, isAwaitingPrimary } from '@/lib/guestRsvpTally';
 import { budgetCategoryLabel } from '@/lib/budgetCategories';
 
@@ -99,7 +99,7 @@ export function buildFeed({ entity = [], guests = [], messages = [], songRequest
     const due = t(`${String(b.payment_date).slice(0, 10)}T00:00:00`);
     const days = Math.round((due - today) / DAY);
     if (days < -30 || days > 7) continue;
-    const { title, body } = notificationCopy('payment_due', { item: b.item_name, vendor: b.vendor, amount: formatMoney(b.actual_amount || b.budgeted_amount || 0, currency), due: days < 0 ? 'now' : days === 0 ? 'today' : days === 1 ? 'tomorrow' : formatDashboardDate(due) });
+    const { title, body } = notificationCopy('payment_due', { item: b.item_name, vendor: b.vendor, amount: formatMoney(b.actual_amount || b.budgeted_amount || 0, currency), due: days < 0 ? 'now' : days === 0 ? 'today' : days === 1 ? 'tomorrow' : formatAppDate(due) });
     push({ id: `pay:${b.id}`, type: 'payment_due', ts: now - Math.max(0, days) * 60000 - 1, title, body, link: `${base}/plan/budget/${b.category}`, group: 'tasks', data: { ...b, categoryLabel: budgetCategoryLabel(b.category) } });
   }
 
@@ -144,5 +144,5 @@ export function relativeTime(ts, now = Date.now()) {
   if (h < 24) return `${h} hr ago`;
   const d = Math.floor(h / 24);
   if (d < 7) return `${d} day${d === 1 ? '' : 's'} ago`;
-  return formatDashboardDate(ts);
+  return formatAppDate(ts);
 }

@@ -235,7 +235,7 @@ export function DesktopFeatureScreen({ title, body, image, onDesktop, back, stat
   return (
     <Screen title={title} back={back}>
       <div className="oi-m-stack oi-m-stack--24">
-        <PanelCard tone="ink" label={stat} title="Best on a bigger screen" body={body} action="Open on desktop" onClick={onDesktop} />
+        <PanelCard tone="ink" label={stat} title="Best on a bigger screen" body={body} action={onDesktop ? 'Open on desktop' : undefined} onClick={onDesktop} />
         <div className="oi-m-meta" style={{ display: 'flex', gap: 8, alignItems: 'center' }}><Monitor size={16} /> Everything you change on desktop shows up here.</div>
       </div>
     </Screen>
