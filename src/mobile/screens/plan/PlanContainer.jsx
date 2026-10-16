@@ -41,6 +41,7 @@ import ExperienceScreen from './ExperienceScreen';
 import GoodToKnowScreen from './GoodToKnowScreen';
 import InvitationsScreen from './InvitationsScreen';
 import MarketplaceScreen from './MarketplaceScreen';
+import { formatAppDateWritten } from '../../lib/dates';
 
 const genId = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
 
@@ -267,7 +268,7 @@ function InvitationsContainer({ back }) {
   const wd = useWeddingDetails();
   // InvitationBuilder.jsx's starter design, verbatim, so the desktop builder opens the same record.
   const create = async ({ coupleNames, weddingDate }) => {
-    const shown = weddingDate ? new Date(`${weddingDate}T00:00:00`).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+    const shown = weddingDate ? formatAppDateWritten(weddingDate) : '';
     const design = {
       globalStyles: { fontFamily: 'Playfair Display', scrollDirection: 'vertical', transitionType: 'fade', parallax: true },
       sections: [{ id: 'hero', name: 'Hero Section', background: { type: 'gradient', value: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }, components: [

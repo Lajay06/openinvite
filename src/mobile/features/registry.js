@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { imageUrl } from '../images';
 import { formatMoney, DEFAULT_CURRENCY } from '@/lib/money';
-import { formatDashboardDate } from '@/lib/dashboardDate';
+import { formatAppDate } from '@/mobile/lib/dates';
 import { publishSentence } from '@/lib/publishState';
 
 const n = (v) => (Array.isArray(v) ? v.length : 0);
@@ -44,7 +44,7 @@ export const GROUPS = [
 export const FEATURES = [
   // Planning
   { key: 'event-details', group: 'planning', label: 'Event details', icon: CalendarDays, desktop: '/event-details', path: 'event-details', image: imageUrl('tileEventDetails'), kind: 'details', depth: 'full',
-    stat: (d) => (d.details?.weddingDate ? formatDashboardDate(d.details.weddingDate) : 'Add your date') },
+    stat: (d) => (d.details?.weddingDate ? formatAppDate(d.details.weddingDate) : 'Add your date') },
   { key: 'schedule', group: 'planning', label: 'Schedule', icon: Calendar, desktop: '/Schedule', path: 'schedule', image: imageUrl('tileSchedule'), kind: 'entity', depth: 'full',
     stat: (d) => count(d.schedule, 'event') },
   { key: 'checklist', group: 'planning', label: 'To do', icon: ListTodo, desktop: '/TodoList', path: 'checklist', image: imageUrl('tileChecklist'), kind: 'custom', depth: 'full',

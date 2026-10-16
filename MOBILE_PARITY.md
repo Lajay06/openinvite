@@ -345,6 +345,7 @@ Read-only mirror of polls with stats and a link to Polls. **Status.** Parity thr
 **Mobile.** Rows; account details hand off to desktop; purchases hidden natively.
 **Gaps.** Name, currency, temperature unit and the email preferences are editable on desktop and hand off here.
 **Status.** Done. An Account details sheet (name through `updateMe`, currency through CurrencyContext, temperature unit) and an Email notifications sheet on `notification_prefs` with the desktop's four switches and in-app-only dimming. Password change and account deletion stay on the desktop page (auth surface, locked by CLAUDE.md). Plan and billing hand off outside the native shell only.
+**Dates (2026-10-16).** The desktop's date format choice (Day/month/year or Month/day/year, `User.dateFormat`) is read on the phone and orders every date through `src/mobile/lib/dates.js`. With no choice made, the phone's own order is used, so a US phone reads 10/16/2026 where the desktop's default would read 16/10/2026. The choice itself is made on the desktop; the phone has no switch for it yet.
 
 ---
 
