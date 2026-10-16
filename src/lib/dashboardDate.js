@@ -25,11 +25,24 @@
  * rather than a second one invented here. A component that already holds the
  * user can pass the format explicitly instead, and SendInvitesModal does.
  *
- * EVERY FAILURE PATH IS "dmy". No cache, unparseable JSON, no field, a value
- * that is not one of the two, localStorage throwing in a private window: all
- * of them fall back to day/month/year, which is the item's default and what
- * every existing account reads as. A date is never rendered as the empty
- * string because a preference could not be found.
+ * ── NO STATED PREFERENCE MEANS THE BROWSER'S LOCALE, NOT day/month/year ────
+ *
+ * Lane D's finding, fixed 2026-10-16. This module used to fall back to "dmy"
+ * on every path, so a US couple who had never opened the setting read their
+ * own wedding as 16/10/2026. The product sells to the US in USD, so the single
+ * most likely reader of an unset preference is the one the old default served
+ * worst.
+ *
+ * The fallback is now the order the BROWSER'S OWN locale puts a numeric date
+ * in, read from Intl rather than from a list of countries kept by hand. An
+ * account that HAS chosen still wins: the locale is consulted only when there
+ * is nothing to honor.
+ *
+ * "dmy" survives as the LAST RESORT, for when Intl cannot answer at all. No
+ * cache, unparseable JSON, no field, localStorage throwing in a private
+ * window, Intl throwing on a malformed locale tag: every one of those still
+ * yields a date rather than an empty cell. A date is never rendered as the
+ * empty string because a preference could not be found.
  */
 
 /** The two the schema allows. User.dateFormat is enum ["dmy","mdy"]. */
@@ -43,20 +56,54 @@ export function normalizeDateFormat(value) {
 }
 
 /**
- * The signed-in account's choice, from the cache AuthContext writes.
+ * The order the reader's own locale puts a numeric date in, used ONLY when the
+ * account has stated no preference.
  *
- * Wrapped in try/catch because localStorage throws rather than returning null
- * in a private window with site data blocked, and a thrown date formatter
- * takes the page with it.
+ * Read from Intl, by asking for a numeric date and seeing which part comes
+ * first, rather than from a hand-kept list of countries that would be wrong
+ * the day it was written. A locale that puts the year first (en-CA, ja-JP,
+ * zh-CN, hu-HU) still puts its month before its day, so it reads as "mdy":
+ * of the two orders this module offers, that is the one that agrees with it.
+ *
+ * @param {string} [locale] a BCP 47 tag; omitted means the browser's own.
+ * @returns {'dmy'|'mdy'}
  */
-export function accountDateFormat() {
+export function localeDateFormat(locale) {
   try {
-    const raw = localStorage.getItem('oi_user');
-    if (!raw) return DEFAULT_DATE_FORMAT;
-    return normalizeDateFormat(JSON.parse(raw)?.dateFormat);
+    // A fixed date whose day and month cannot be confused for one another.
+    const parts = new Intl.DateTimeFormat(locale, {
+      day: 'numeric', month: 'numeric', year: 'numeric',
+    }).formatToParts(new Date(Date.UTC(2026, 4, 18)));
+    const month = parts.findIndex((part) => part.type === 'month');
+    const day = parts.findIndex((part) => part.type === 'day');
+    if (month === -1 || day === -1) return DEFAULT_DATE_FORMAT;
+    return month < day ? 'mdy' : 'dmy';
   } catch {
+    // Intl throws RangeError on a malformed tag, and this must not take the
+    // page with it.
     return DEFAULT_DATE_FORMAT;
   }
+}
+
+/**
+ * The signed-in account's choice, from the cache AuthContext writes, falling
+ * back to the browser's locale when the account has not chosen.
+ *
+ * Wrapped in try/catch because localStorage throws rather than returning null
+ * in a private window with site data blocked, and is simply absent in Node,
+ * and a thrown date formatter takes the page with it.
+ */
+export function accountDateFormat() {
+  let stored;
+  try {
+    const raw = localStorage.getItem('oi_user');
+    stored = raw ? JSON.parse(raw)?.dateFormat : undefined;
+  } catch {
+    stored = undefined;
+  }
+  // A STATED preference wins. Anything else, including a value outside the
+  // enum, means nothing was stated, so the locale answers.
+  return DATE_FORMATS.includes(stored) ? stored : localeDateFormat();
 }
 
 /**
@@ -68,7 +115,8 @@ export function accountDateFormat() {
  *   midnight rather than UTC, which is why the 'T00:00:00' is appended: UTC
  *   would render the day before for every account west of Greenwich, and
  *   EventDetails was already doing this by hand for exactly that reason.
- * @param {'dmy'|'mdy'} [format]  defaults to the account's choice
+ * @param {'dmy'|'mdy'} [format]  defaults to the account's choice, which
+ *   defaults to the browser's locale
  * @returns {string} the formatted date, or '' when there is no date to show
  */
 export function formatDashboardDate(value, format) {
@@ -80,7 +128,11 @@ export function formatDashboardDate(value, format) {
   const dd = String(d.getDate()).padStart(2, '0');
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const yyyy = String(d.getFullYear()).padStart(4, '0');
-  return normalizeDateFormat(format ?? accountDateFormat()) === 'mdy'
+  // An explicit, valid format wins. Anything else defers to the account, which
+  // defers to the locale. normalizeDateFormat is NOT used here on purpose: it
+  // coerces to 'dmy', which is the behaviour this fix exists to remove.
+  const chosen = DATE_FORMATS.includes(format) ? format : accountDateFormat();
+  return chosen === 'mdy'
     ? `${mm}/${dd}/${yyyy}`
     : `${dd}/${mm}/${yyyy}`;
 }

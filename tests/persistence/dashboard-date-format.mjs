@@ -36,7 +36,7 @@ import fs from 'fs';
 import path from 'path';
 import { pass, fail } from './_shared.mjs';
 import {
-  formatDashboardDate, normalizeDateFormat, accountDateFormat,
+  formatDashboardDate, normalizeDateFormat, accountDateFormat, localeDateFormat,
   dateFormatExample, DATE_FORMATS, DATE_FORMAT_LABELS, DEFAULT_DATE_FORMAT,
 } from '../../src/lib/dashboardDate.js';
 
@@ -121,10 +121,41 @@ export async function runDashboardDateFormat() {
     if (priorTz === undefined) delete process.env.TZ; else process.env.TZ = priorTz;
     check('a date-only string is not shifted a day west of Greenwich', west, '18/05/2026');
   }
-  // EVERY FAILURE PATH IS THE DEFAULT, never an empty cell with no date.
-  check('an unknown format falls back to the default',
-        formatDashboardDate('2026-05-18', 'nonsense'), formatDashboardDate('2026-05-18', DEFAULT_DATE_FORMAT));
-  check('  and the default is day/month/year', DEFAULT_DATE_FORMAT, 'dmy');
+  // ── NO STATED PREFERENCE MEANS THE LOCALE, NOT day/month/year ───────────
+  //
+  // Lane D's finding, fixed 2026-10-16: a US couple who had never opened the
+  // setting read their own wedding as 16/10/2026. These assert the ORDER each
+  // locale asks for, not a list of countries, and they are the reason the
+  // fallback can never quietly go back to "dmy" for everyone.
+  check('a US reader with no stated preference reads month first',
+        localeDateFormat('en-US'), 'mdy');
+  check('  and that is the actual bug: 16 October 2026 reads 10/16/2026',
+        formatDashboardDate('2026-10-16', localeDateFormat('en-US')), '10/16/2026');
+  check('  Australia, Britain, New Zealand and Europe still read day first',
+        ['en-AU', 'en-GB', 'en-NZ', 'de-DE', 'fr-FR', 'es-MX', 'pt-BR'].map(localeDateFormat),
+        ['dmy', 'dmy', 'dmy', 'dmy', 'dmy', 'dmy', 'dmy']);
+  // A year-first locale puts its month before its day, so of the two orders
+  // this module offers it reads as mdy. Asserted so the mapping is a decision
+  // on the record rather than an accident of findIndex.
+  check('  a year-first locale reads month before day',
+        ['en-CA', 'ja-JP', 'zh-CN', 'hu-HU'].map(localeDateFormat),
+        ['mdy', 'mdy', 'mdy', 'mdy']);
+  // Intl throws RangeError on a malformed tag. The old code could not reach
+  // Intl at all, so this path is new and is the one that would white-screen.
+  check('  a malformed locale tag does not throw, it falls back',
+        localeDateFormat('not-a-locale!!'), DEFAULT_DATE_FORMAT);
+  check('  and the last resort is still day/month/year', DEFAULT_DATE_FORMAT, 'dmy');
+
+  // A STATED preference beats the locale, in both directions, or the setting
+  // would be decorative.
+  check('an account that chose day/month/year keeps it in the US',
+        formatDashboardDate('2026-10-16', 'dmy'), '16/10/2026');
+  check('  and an account that chose month/day/year keeps it in Australia',
+        formatDashboardDate('2026-10-16', 'mdy'), '10/16/2026');
+
+  // EVERY FAILURE PATH IS STILL A DATE, never an empty cell.
+  check('an unknown format falls back to the account, which falls back to the locale',
+        formatDashboardDate('2026-05-18', 'nonsense'), formatDashboardDate('2026-05-18', accountDateFormat()));
   check('normalize rejects anything else', [normalizeDateFormat('mdy'), normalizeDateFormat(''), normalizeDateFormat(undefined), normalizeDateFormat('DMY')],
         ['mdy', 'dmy', 'dmy', 'dmy']);
   // NO DATE IS NOT A DATE: these render nothing rather than "Invalid Date".
@@ -136,8 +167,11 @@ export async function runDashboardDateFormat() {
         DATE_FORMATS.map((f) => `${DATE_FORMAT_LABELS[f]} ${dateFormatExample(f)}`),
         ['Day/month/year 18/05/2026', 'Month/day/year 05/18/2026']);
   // IN NODE THERE IS NO localStorage: the reader must answer, not throw.
+  // Asserted as "one of the two", NOT as a fixed value: the answer now depends
+  // on the locale of whatever machine runs this, and pinning it to 'dmy' would
+  // pass on an en-AU laptop and fail on a US CI runner.
   ok('reading the preference outside a browser does not throw',
-     accountDateFormat() === DEFAULT_DATE_FORMAT, 'falls back');
+     DATE_FORMATS.includes(accountDateFormat()), `answered ${accountDateFormat()}`);
 
   // ── THE FOUR DASHBOARD HELPERS ──────────────────────────────────────────
 
