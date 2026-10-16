@@ -55,7 +55,9 @@ export default function MobilePreviewApp() {
  * `?daily=1` on any shell route forces it (/m/preview/daily-update, the
  * goal 6 address, redirects there).
  */
+import { useShotTour } from './shotTour';
 function MobilePreviewInner() {
+  useShotTour();
   const dailyLoad = useDailyUpdate();
   const daily = useMemo(() => ({ ready: !dailyLoad.loading, content: dailyLoad.content }), [dailyLoad.loading, dailyLoad.content]);
 
