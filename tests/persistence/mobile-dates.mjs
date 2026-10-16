@@ -27,6 +27,7 @@ import os from 'os';
 import path from 'path';
 import { pathToFileURL } from 'url';
 import { pass, fail, stripComments } from './_shared.mjs';
+import { localeDateFormat } from '../../src/lib/dashboardDate.js';
 
 const ROOT = path.resolve(new URL('../../', import.meta.url).pathname);
 const SHELL = 'src/mobile';
@@ -104,11 +105,24 @@ export async function runMobileDates() {
     globalThis.localStorage = { getItem: (k) => (k === 'oi_user' && dateFormat ? JSON.stringify({ dateFormat }) : null) };
     try { return fn(); } finally { globalThis.localStorage = prev; }
   };
-  const dmy = withFormat(null, () => safe(() => fmt.dateShort('2027-03-20')));
+  // WITH NO STORED PREFERENCE THE FORMAT FOLLOWS THE READER'S LOCALE, which
+  // changed on 2026-10-16: src/lib/dashboardDate.js used to answer "dmy" for
+  // everyone, so a US couple who had never opened the setting read 16/10/2026.
+  // This assertion used to pin '20/03/2027' outright and so depended on the
+  // locale of whatever machine ran it: it passed on an en-AU laptop and failed
+  // on CI, whose runner reports a US locale. The expectation is now derived
+  // from the same locale the module itself reads.
+  const noPreference = withFormat(null, () => safe(() => fmt.dateShort('2027-03-20')));
+  const expected = localeDateFormat() === 'mdy' ? '03/20/2027' : '20/03/2027';
+  ok('a date with no stored preference follows the reader\'s locale',
+     noPreference === expected, `${noPreference} (locale order ${localeDateFormat()})`);
+  // BOTH EXPLICIT CHOICES STAY PINNED, with no dependence on the environment,
+  // which is what actually protects the rendering.
+  const explicitDmy = withFormat('dmy', () => safe(() => fmt.dateShort('2027-03-20')));
   const mdy = withFormat('mdy', () => safe(() => fmt.dateShort('2027-03-20')));
-  ok('a date reads day/month/year by default', dmy === '20/03/2027', dmy);
+  ok('  and day/month/year when the account chose it', explicitDmy === '20/03/2027', explicitDmy);
   ok('  and month/day/year when the account chose it', mdy === '03/20/2027', mdy);
-  const due = withFormat(null, () => safe(() => fmt.dueLabel('2027-03-20', new Date('2027-03-01T09:00:00'))));
+  const due = withFormat('dmy', () => safe(() => fmt.dueLabel('2027-03-20', new Date('2027-03-01T09:00:00'))));
   ok('  and a due date says so numerically', due === 'Due 20/03/2027', due);
 
   // ── THE ONES THAT WERE NOT THROUGH format.js ─────────────────────────────

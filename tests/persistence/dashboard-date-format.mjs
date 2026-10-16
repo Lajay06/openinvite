@@ -36,7 +36,7 @@ import fs from 'fs';
 import path from 'path';
 import { pass, fail } from './_shared.mjs';
 import {
-  formatDashboardDate, normalizeDateFormat, accountDateFormat, localeDateFormat,
+  formatDashboardDate, normalizeDateFormat, accountDateFormat, localeDateFormat, isUnresolvedLocale,
   dateFormatExample, DATE_FORMATS, DATE_FORMAT_LABELS, DEFAULT_DATE_FORMAT,
 } from '../../src/lib/dashboardDate.js';
 
@@ -145,6 +145,17 @@ export async function runDashboardDateFormat() {
   check('  a malformed locale tag does not throw, it falls back',
         localeDateFormat('not-a-locale!!'), DEFAULT_DATE_FORMAT);
   check('  and the last resort is still day/month/year', DEFAULT_DATE_FORMAT, 'dmy');
+  // AN UNRESOLVED LOCALE DEFERS TO THAT LAST RESORT, and this is not
+  // hypothetical: CI runners have no LANG, so Intl resolves to the root locale
+  // "und", which is year-month-day and whose month precedes its day. Reading
+  // the parts naively called that "mdy" and changed the answer for every
+  // account on an unlocalized runtime. Caught by CI failing mobile-dates.mjs,
+  // which asserts the no-preference default renders 20/03/2027.
+  check('the root locale is recognized as "no locale information"',
+        [isUnresolvedLocale('und'), isUnresolvedLocale('und-US'), isUnresolvedLocale('en-US'), isUnresolvedLocale('en-AU'), isUnresolvedLocale(undefined)],
+        [true, true, false, false, false]);
+  ok('  so the suite answers the same on a laptop and on an unlocalized runner',
+     DATE_FORMATS.includes(localeDateFormat()), `this runtime says ${localeDateFormat()}`);
 
   // A STATED preference beats the locale, in both directions, or the setting
   // would be decorative.

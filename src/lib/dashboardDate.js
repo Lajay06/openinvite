@@ -56,6 +56,20 @@ export function normalizeDateFormat(value) {
 }
 
 /**
+ * Is this resolved locale tag the root locale, meaning Intl had no locale
+ * information to work from?
+ *
+ * Exported so it can be asserted directly. Passing 'und' INTO
+ * Intl.DateTimeFormat does not reproduce the condition, because ICU resolves
+ * an explicit 'und' to the runtime default and reports that instead, which is
+ * how a first attempt at asserting this passed on one machine and failed on
+ * another.
+ */
+export function isUnresolvedLocale(resolved) {
+  return /^und\b/.test(String(resolved ?? ''));
+}
+
+/**
  * The order the reader's own locale puts a numeric date in, used ONLY when the
  * account has stated no preference.
  *
@@ -70,10 +84,20 @@ export function normalizeDateFormat(value) {
  */
 export function localeDateFormat(locale) {
   try {
-    // A fixed date whose day and month cannot be confused for one another.
-    const parts = new Intl.DateTimeFormat(locale, {
+    const fmt = new Intl.DateTimeFormat(locale, {
       day: 'numeric', month: 'numeric', year: 'numeric',
-    }).formatToParts(new Date(Date.UTC(2026, 4, 18)));
+    });
+    // AN UNRESOLVED LOCALE IS NOT A LOCALE. A runtime with no locale at all,
+    // which is the normal state of a CI runner and of a server with no LANG
+    // set, resolves to the root locale "und". Root is year-month-day, so its
+    // month precedes its day and the naive reading of the parts below would
+    // call it "mdy" and quietly change the answer for every account on an
+    // unlocalized runtime. There is no locale information here, so this defers
+    // to the documented last resort instead of inventing one. A browser always
+    // reports a real locale, so this path is not reachable from the product.
+    if (isUnresolvedLocale(fmt.resolvedOptions().locale)) return DEFAULT_DATE_FORMAT;
+    // A fixed date whose day and month cannot be confused for one another.
+    const parts = fmt.formatToParts(new Date(Date.UTC(2026, 4, 18)));
     const month = parts.findIndex((part) => part.type === 'month');
     const day = parts.findIndex((part) => part.type === 'day');
     if (month === -1 || day === -1) return DEFAULT_DATE_FORMAT;
