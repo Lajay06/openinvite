@@ -89,7 +89,7 @@ export default function SeatingScreen({ notice, tables = [], guests = [], weddin
               <StatCard icon={Armchair} label="Assigned" numeric={seatedCount} sub={`${attendees.length - seatedCount} unassigned`} />
               <StatCard icon={Armchair} label="Complete" numeric={attendees.length ? Math.round((seatedCount / attendees.length) * 100) : 0} suffix="%" ink />
             </div>
-            <PanelCard tone="neutral" label="Best on desktop" body="The table layout is drawn on a bigger screen. Here you can add tables, seat people and move them." action="Open on desktop" onClick={onDesktop}>
+            <PanelCard tone="neutral" label="Best on desktop" body="The table layout is drawn on a bigger screen. Here you can add tables, seat people and move them." action={onDesktop ? 'Open on desktop' : undefined} onClick={onDesktop}>
               <Monitor size={18} style={{ opacity: 0.6 }} />
             </PanelCard>
             <section>

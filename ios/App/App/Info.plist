@@ -33,6 +33,8 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSContactsUsageDescription</key>
@@ -41,6 +43,8 @@
 	<string>Openinvite uses the camera so you can take a photo for your moodboard or your site.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Openinvite uses Face ID to unlock the app when you have asked it to.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Openinvite uses your location only when you tap Use my location, to find vendors and places near you.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Openinvite can save a photo you take to your library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

@@ -42,7 +42,7 @@ export default function InvitationsScreen({ invitation, details, invitationUrl, 
             <RowGroup>
               <Row icon={Link2} tile="neutral" label="Copy invitation link" sub={invitationUrl.replace(/^https?:\/\//, '')} onClick={copy} chevron={false} />
               <Row icon={Send} tile="neutral" label="Send invites" sub="By email, with each guest's RSVP link" onClick={onSend} />
-              <Row icon={Monitor} tile="neutral" label="Open the builder on desktop" sub="Layout, colors, type and imagery" onClick={onDesktop} />
+              <Row icon={Monitor} tile="neutral" label={onDesktop ? 'Open the builder on desktop' : 'The builder is on desktop'} sub="Layout, colors, type and imagery" onClick={onDesktop} />
             </RowGroup>
           </>
         ) : (

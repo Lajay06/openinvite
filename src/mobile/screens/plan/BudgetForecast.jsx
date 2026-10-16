@@ -55,7 +55,7 @@ export function projectionPoints(categoryData, stats) {
 
 /* The running bar: eases toward 90 percent over about thirty seconds, then completes when the answer lands. */
 const RUN_MS = 30000;
-const RUN_LINES = ['Reading your categories', 'Comparing with the usual split', 'Weighing what is already spent', 'Looking for the three biggest risks', 'Pricing the savings', 'Scoring your budget'];
+const RUN_LINES = ['Reading your categories', 'Comparing with the usual split', 'Weighing what is already spent', 'Looking for the three biggest risks', 'Costing the savings', 'Scoring your budget'];
 function useRun(running) {
   const [pct, setPct] = useState(0);
   const [line, setLine] = useState(0);

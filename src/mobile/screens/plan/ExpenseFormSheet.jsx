@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BottomSheet, PillButton, TextField, TextAreaField, SelectField, Checkbox } from '../../ui';
 import { BUDGET_CATEGORIES } from '@/lib/budgetCategories';
+import { currencySymbol } from '@/lib/money';
 
 const CATEGORY_OPTIONS = BUDGET_CATEGORIES.map((c) => ({ value: c.key, label: c.label }));
 const EMPTY = { category: '', item_name: '', budgeted_amount: '', actual_amount: '', vendor: '', paid: false, payment_date: '', notes: '' };

@@ -4,11 +4,11 @@ import useLoad from './useLoad';
 import { todosFrom, resolveDayState, avaSentence, greetingFor } from '@/lib/dayState';
 import { coupleDisplayName } from '@/lib/coupleNames';
 import { daysUntilWedding } from '@/lib/weddingCountdown';
-import { formatDashboardDate } from '@/lib/dashboardDate';
+import { formatAppDate } from '@/mobile/lib/dates';
 
 /** Today, numeric in the account's format (mobile parity 6). Briefing.jsx still writes "Monday 7 September"; that is recorded for lane A in the goal file. */
 export function todayLabel(now = new Date()) {
-  return formatDashboardDate(now);
+  return formatAppDate(now);
 }
 
 /** Local calendar day, for "shown once a day". */

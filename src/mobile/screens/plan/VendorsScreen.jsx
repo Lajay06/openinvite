@@ -12,6 +12,7 @@ import { vendorFields, vendorPayload, vendorInitial, VENDOR_CATEGORIES, VENDOR_S
 import { imageUrl } from '../../images';
 import { openExternal } from '../../native';
 import { VENDOR_STATUS_LABEL, VENDOR_STATUS_TONE, dateShort } from '../../lib/format';
+import { formatAppDateTime } from '../../lib/dates';
 import { formatMoney } from '@/lib/money';
 
 /* Vendors.jsx's filter lists, verbatim (its category labels differ from the form's on purpose there too). */
@@ -132,7 +133,7 @@ export function VendorDetailScreen({ notice, vendor, logs = [], tasks = [], curr
             </RowGroup>
             <div className="oi-m-card oi-m-card--flush">
               {kv('Contact', vendor.contact_person)}
-              {kv('Meeting', vendor.meeting_date ? new Date(vendor.meeting_date).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : '')}
+              {kv('Meeting', vendor.meeting_date ? formatAppDateTime(vendor.meeting_date) : '')}
               {kv('Status', VENDOR_STATUS_LABEL[vendor.status] || vendor.status)}
               {kv('Quote', vendor.quoted_price ? formatMoney(vendor.quoted_price, currency) : '')}
               {kv('Deposit', vendor.deposit_amount ? `${formatMoney(vendor.deposit_amount, currency)}${vendor.deposit_paid ? ', paid' : ', not paid'}` : vendor.deposit_paid ? 'Paid' : '')}

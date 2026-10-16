@@ -15,6 +15,7 @@ export { default as ImageCard } from './ImageCard';
 export { default as FeatureTile } from './FeatureTile';
 export { default as StatCard } from './StatCard';
 export { default as PanelCard } from './PanelCard';
+export { default as PlanLock } from './PlanLock';
 export { default as Switch } from './Switch';
 export { Skeleton, SkeletonRows } from './Skeleton';
 export { TextField, TextAreaField, SelectField, Checkbox } from './Field';

@@ -129,9 +129,9 @@ export const FIXTURE_VENDORS = [
 ].map((v) => ({ ...v, created_date: '2026-06-01T00:00:00Z' }));
 
 export const FIXTURE_AVA_MESSAGES = [
-  { role: 'assistant', text: 'Hi Priya. You have 14 guests still to reply and the celebrant is not booked yet. Want me to draft a reminder to the guests who have not replied?' },
+  { role: 'assistant', text: 'Hi Priya. You have 21 guests still to reply and the celebrant is not booked yet. Want me to draft a reminder to the guests who have not replied?' },
   { role: 'user', text: 'Yes please, keep it short.' },
-  { role: 'assistant', text: 'Here is a draft: "Hi, we would love to know if you can make it on 20 March. Reply through the link when you have a moment." I can send it to the 14 guests, or you can edit it first.' },
+  { role: 'assistant', text: 'Here is a draft: "Hi, we would love to know if you can make it on March 20. Reply through the link when you have a moment." I can send it to the 21 guests, or you can edit it first.' },
 ];
 
 /* ── Goal 2: every feature has realistic preview data ──────────────────── */
@@ -216,7 +216,7 @@ export const FIXTURE_DETAILS_EXTRA = {
     { id: 'ev-brunch', event_id: 'ev-brunch', name: 'Recovery brunch', type: 'Next-Day Brunch', kind: 'post', date: '2027-03-21', startTime: '10:00', endTime: '12:30', time: '10:00', venueName: 'Bayleaf Cafe', venue: 'Bayleaf Cafe', venueAddress: '2 Marvell St, Byron Bay NSW 2481', address: '2 Marvell St, Byron Bay NSW 2481', venueMapsUrl: 'https://www.google.com/maps/place/?q=place_id:demo-bayleaf', venuePhotoUrl: '', venuePlaceId: 'demo-bayleaf', dressCode: '', parkingInfo: '', accessibilityNotes: '', notes: '', details: '' },
   ],
   theme: { aesthetic: ['Beach', 'Boho'], faith: 'Non-religious', faithSecondary: '', culture: ['Indian'], cultureOther: '', atmosphere: ['Outdoor & nature', 'Big party'], season: 'Autumn', setting: 'Mix of both' },
-  celebrant: { name: 'Jo Marsh', title: '', type: 'celebrant', phone: '+61 412 000 111', email: 'jo@example.com', notes: 'Wants the readings by 1 March.' },
+  celebrant: { name: 'Jo Marsh', title: '', type: 'celebrant', phone: '+61 412 000 111', email: 'jo@example.com', notes: 'Wants the readings by March 1.' },
   license: { issuingOffice: 'Births, Deaths and Marriages NSW', applicationDate: '2027-01-15', issueDate: '', expiryDate: '', licenseNumber: '', witnessesRequired: 2, notes: '' },
   ceremonyType: 'Civil, outdoors', ceremonyMusic: 'Golden Hour on the walk in', ceremonyReadings: 'Union by Robert Fulghum', vowsNotes: 'Two minutes each, no jokes about parking',
   attire: {
