@@ -23,8 +23,8 @@ import {
 import { FIXTURE_PLACES, FIXTURE_PLACE_DETAILS, FIXTURE_GAMES, FIXTURE_GAME_RESPONSES, FIXTURE_VENDOR_LOGS, FIXTURE_VENDOR_TASKS, FIXTURE_POLL_COMMENTS, FIXTURE_INVITATION, FIXTURE_CONTACTS } from './extra';
 import { deletionStamp } from '../lib/accountDeletion';
 
-/** The demo couple's account currency. Every amount the preview prints comes from it through src/lib/money.js. */
-export const DEMO_CURRENCY = 'AUD';
+/** The demo couple's account currency, US dollars for the store screenshots. Every amount the preview prints comes from it through src/lib/money.js. */
+export const DEMO_CURRENCY = 'USD';
 const S = currencySymbol(DEMO_CURRENCY);
 
 const clone = (v) => JSON.parse(JSON.stringify(v));
