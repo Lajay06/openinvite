@@ -8,6 +8,7 @@ import CollaborateModal from '@/components/layout/CollaborateModal';
 import AccountScreen from './AccountScreen';
 import { AccountDetailsSheet, EmailPreferencesSheet } from './AccountSheets';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { DEFAULT_CURRENCY } from '@/lib/money';
 import { isNative } from '../../native';
 import { useAppLockSetting } from '../../shell/AppLock';
 import { openDesktop } from '../../lib/links';
@@ -36,7 +37,7 @@ export default function AccountContainer() {
   const [, bump] = useState(0);
   const currency = useCurrency();
   const isPreview = api.mode === 'preview';
-  const currencyCode = isPreview ? (user?.currency || 'AUD') : currency.currencyCode;
+  const currencyCode = isPreview ? (user?.currency || DEFAULT_CURRENCY) : currency.currencyCode;
   // Account.jsx's Settings tab: name and tempUnit through updateMe, currency
   // through CurrencyContext (which writes updateMe itself), then refresh the user.
   const saveDetails = async ({ full_name, currency: code, tempUnit }) => {
