@@ -525,3 +525,7 @@ the priming screen got wrong: it told a couple "your first reply is in" off
 server-written `Notification` rows the shell could reach, while the guest list
 those replies are counted against had not loaded, so Replies read 0 on the
 same screen.
+
+## Dates follow the couple's format, then the phone (2026-10-16)
+
+The desktop's date format choice (Day/month/year or Month/day/year, `User.dateFormat`) is read on the phone and orders every date through `src/mobile/lib/dates.js`. With no choice made, the phone's own order is used, so a US phone reads 10/16/2026 where the desktop's default would read 16/10/2026. The choice itself is made on the desktop; the phone has no switch for it yet.

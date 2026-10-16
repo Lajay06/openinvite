@@ -6,7 +6,7 @@ import { FilterPills, EmptyState, ErrorState, SkeletonRows, ItemCard, ItemList, 
 import FormSheet from './FormSheet';
 import { useConfirm } from '../ui/ConfirmSheet';
 import { useCurrencyCode } from '../data/api';
-import { formatDashboardDate } from '@/lib/dashboardDate';
+import { formatAppDate } from '@/mobile/lib/dates';
 
 /**
  * A list of records with add / edit / delete, from an ENTITIES schema.
@@ -37,7 +37,7 @@ export default function EntityListScreen({ schema, items = [], onCreate, onUpdat
     if (!schema.groupBy) return [{ key: 'all', title: null, items: visible }];
     const m = new Map();
     for (const it of visible) { const k = schema.groupBy(it); if (!m.has(k)) m.set(k, []); m.get(k).push(it); }
-    return [...m.entries()].map(([k, list]) => ({ key: k, title: k === 'No date' ? k : formatDashboardDate(k), items: list }));
+    return [...m.entries()].map(([k, list]) => ({ key: k, title: k === 'No date' ? k : formatAppDate(k), items: list }));
   }, [visible, schema]);
 
   const save = async (values) => {

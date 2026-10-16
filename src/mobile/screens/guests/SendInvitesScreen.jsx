@@ -5,6 +5,7 @@ import Screen from '../../shell/Screen';
 import { FilterPills, RowGroup, Row, Checkbox, PillButton, TextField, TextAreaField, BottomSheet, SkeletonRows, ErrorState, EmptyState, StatusPill, PlanLock } from '../../ui';
 import PillChoice from '../../ui/PillChoice';
 import { initials, GUEST_CATEGORY_LABEL, OPTED_OUT_LABEL } from '../../lib/format';
+import { formatAppDateWritten } from '../../lib/dates';
 import { useApi } from '../../data/api';
 import { isAttending, isDeclined, isAwaitingPrimary } from '@/lib/guestRsvpTally';
 import { coupleDisplayName } from '@/lib/coupleNames';
@@ -89,7 +90,7 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
   const weddingDate = wedding?.weddingDate || '';
   const venue = wedding?.mainCeremony?.venueName || '';
   const siteUrl = wedding?.slug ? `${siteOrigin()}/w/${wedding.slug}` : '';
-  const dateStr = weddingDate ? new Date(weddingDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+  const dateStr = weddingDate ? formatAppDateWritten(weddingDate) : '';
   const universeId = wedding?.activeUniverse;
   const weddingEvents = useMemo(() => (wedding ? getWeddingEvents(wedding).map((ev) => ({ ...ev, ...getEventVenueAndDate(wedding, ev) })) : []), [wedding]);
   const buildGuestEvents = (g) => weddingEvents.filter((ev) => getGuestEventResponse(g, ev).invited).filter((ev) => !restrictEventIds || restrictEventIds.includes(ev.event_id)).map((ev) => ({ name: ev.name, date: ev.date, startTime: ev.startTime, venue: ev.venue }));
