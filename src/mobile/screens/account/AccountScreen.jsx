@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserRound, Users, CreditCard, Bell, MessageSquare, LogOut, CalendarDays, BellRing, ScanFace, Smartphone, ShieldCheck, FileText } from 'lucide-react';
+import { UserRound, Users, CreditCard, Bell, MessageSquare, LogOut, CalendarDays, BellRing, ScanFace, Smartphone, ShieldCheck, FileText, Trash2 } from 'lucide-react';
 import Screen from '../../shell/Screen';
 import { Row, RowGroup, Skeleton, SmartImage, PanelCard, Switch } from '../../ui';
 import { initials } from '../../lib/format';
@@ -9,7 +9,7 @@ import { initials } from '../../lib/format';
  * rows. The plan is a read-only label: no upgrade, checkout, billing portal
  * or pricing call to action renders anywhere in the app (App Store rule 3.1.1).
  */
-export default function AccountScreen({ name, email, coupleName, weddingDate, photo, planLabel, planNote, trialDaysLeft, onDetails, onEventDetails, onCollaborators, onNotifications, onNotificationSettings, onContact, onPrivacy, onTerms, onLogout, loading, appLock = null, subtitle, detailsSub, onTitleLongPress, onTestNotification }) {
+export default function AccountScreen({ name, email, coupleName, weddingDate, photo, planLabel, planNote, trialDaysLeft, onDetails, onEventDetails, onCollaborators, onNotifications, onNotificationSettings, onContact, onPrivacy, onTerms, onLogout, onDeleteAccount, deletionRequested = false, loading, appLock = null, subtitle, detailsSub, onTitleLongPress, onTestNotification }) {
   return (
     <Screen title="Account" subtitle={subtitle} root onTitleLongPress={onTitleLongPress}>
       <div className="oi-m-stack oi-m-stack--24">
@@ -66,6 +66,14 @@ export default function AccountScreen({ name, email, coupleName, weddingDate, ph
 
         <RowGroup>
           <Row icon={LogOut} label="Log out" onClick={onLogout} chevron={false} />
+        </RowGroup>
+
+        <RowGroup>
+          <div data-delete-account={deletionRequested ? 'requested' : 'offered'}>
+            {deletionRequested
+              ? <Row icon={Trash2} tile="neutral" label="Deletion requested" sub="We will confirm by email within 7 business days" wrap />
+              : <Row icon={Trash2} tile="neutral" label="Delete account" sub="Your account and everything in it" onClick={onDeleteAccount} />}
+          </div>
         </RowGroup>
       </div>
     </Screen>

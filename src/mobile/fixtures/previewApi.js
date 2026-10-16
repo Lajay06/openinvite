@@ -21,6 +21,7 @@ import {
   FIXTURE_SONG_REQUESTS, FIXTURE_MUSIC, FIXTURE_POLL_VOTES, FIXTURE_GIFTS, FIXTURE_REGISTRY, FIXTURE_VOWS, FIXTURE_MOODBOARD, FIXTURE_TABLES, FIXTURE_NOTIFICATION_ENTITY,
 } from './index';
 import { FIXTURE_PLACES, FIXTURE_PLACE_DETAILS, FIXTURE_GAMES, FIXTURE_GAME_RESPONSES, FIXTURE_VENDOR_LOGS, FIXTURE_VENDOR_TASKS, FIXTURE_POLL_COMMENTS, FIXTURE_INVITATION, FIXTURE_CONTACTS } from './extra';
+import { deletionStamp } from '../lib/accountDeletion';
 
 /** The demo couple's account currency. Every amount the preview prints comes from it through src/lib/money.js. */
 export const DEMO_CURRENCY = 'AUD';
@@ -286,5 +287,7 @@ export function createPreviewApi() {
     // The demo's calendar feed: the desktop's URL shape, answered as verified (the real api checks the feed itself).
     calendarFeed: async () => { await gate(null, { empty: null }); return 'https://www.openinvite.com.au/api/schedule.ics?w=preview-wedding&t=demo'; },
     updateMe: async (patch) => Object.assign(FIXTURE_USER, patch),
+    // The demo sends no email: it stamps the fixture user, so the requested state shows.
+    requestAccountDeletion: async () => { await gate(null, {}); return Object.assign(FIXTURE_USER, deletionStamp()); },
   };
 }
