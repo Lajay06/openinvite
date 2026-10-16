@@ -15,6 +15,7 @@ import { startCheckout, resolveCheckoutPriceId, PLAN_PRICES } from '@/lib/checko
 import toast from 'react-hot-toast';
 import { planStepNotDone, fetchMyCollaboration, START_YOUR_OWN_LEAD, START_YOUR_OWN_LINK } from '@/lib/collaboratorLanding';
 import { DATE_FORMATS, DATE_FORMAT_LABELS, dateFormatExample, normalizeDateFormat, formatDashboardDate } from '@/lib/dashboardDate';
+import { getPlanTerm } from '@/lib/trialStatus';
 import { TRIAL_FEATURES, PRO_FEATURES, ULTRA_EXTRAS } from '@/lib/planFeatures';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -453,6 +454,13 @@ function BillingTab({ user }) {
   const plan = user?.plan || 'free';
   const planLabel = PLAN_LABELS[plan] || 'Free trial';
   const planActivatedAt = formatDashboardDate(user?.planActivatedAt) || null;
+  // THE END OF THE TERM, from the one place that computes it. Read here rather
+  // than formatted from user.planExpiresAt directly: most accounts do not
+  // carry that field at all and their end date is planActivatedAt plus 24
+  // months, so reading the raw field would show a date to some couples and
+  // nothing to the rest for no reason they could see.
+  const planTerm = getPlanTerm(user);
+  const planEndsAt = planTerm.end ? formatDashboardDate(planTerm.end.toISOString()) : null;
 
   const handlePortal = async () => {
     setPortalLoading(true);
@@ -505,6 +513,16 @@ function BillingTab({ user }) {
         </span>
         {planActivatedAt && (
           <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>Active since {planActivatedAt}</span>
+        )}
+        {planEndsAt && (
+          // Past the term it says so in the past tense, because "Access until"
+          // a date that has gone reads as though it still applies. What it
+          // never says is that anything is locked: reading and exporting go on
+          // working, which is the ruling and also the promise on the pricing
+          // page.
+          <span style={{ fontSize: 12, color: 'rgba(10,10,10,0.6)', fontFamily: PJS }}>
+            {planTerm.expired ? `Editing ended ${planEndsAt}. Reading and exporting stay open.` : `Access until ${planEndsAt}`}
+          </span>
         )}
       </div>
 

@@ -33,6 +33,7 @@
 // publishState.js is pure, imports nothing itself, and resolves without the
 // Vite alias, so this file still runs under plain Node.
 import { isLive } from './publishState.js';
+import { hasUltraAccess } from './trialStatus.js';
 
 const CLOUDINARY_BASE = 'https://res.cloudinary.com/dsr84xknv/image/upload';
 const img = (path) => `${CLOUDINARY_BASE}/f_auto,q_auto/${path}`;
@@ -127,12 +128,14 @@ export const JOURNEY_STEPS = [
 ];
 
 export function getJourneyProgress(wedding, counts, { plan = 'ultra', trialActive = false } = {}) {
-  // Same rule as the sidebar (src/lib/trialStatus.js): an ACTIVE trial has
-  // Ultra, an expired one does not. This read `plan === 'ultra'` alone, which
-  // was the mirror image of the sidebar's bug -- the sidebar handed an expired
-  // account Ultra, while this told a couple mid-trial their Ultra steps were
-  // plan-locked. Both are now the same expression.
-  const hasUltra = plan === 'ultra' || trialActive;
+  // THE SAME FUNCTION as the sidebar, not merely the same words.
+  //
+  // This read `plan === 'ultra'` alone, the mirror image of the sidebar's bug:
+  // the sidebar handed an expired account Ultra while this told a couple
+  // mid-trial their Ultra steps were plan-locked. Both were then written as
+  // the same expression, in two files, which is a copy and copies drift. It is
+  // now one call into trialStatus.js, which owns the rule.
+  const hasUltra = hasUltraAccess({ plan, trialActive });
   const byKey = {};
   const steps = JOURNEY_STEPS.map((s) => {
     const done = s.isComplete(wedding, counts);
