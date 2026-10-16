@@ -7,9 +7,13 @@ import WelcomeScreen from './WelcomeScreen';
 import LoginScreen from './LoginScreen';
 import PrimingScreen from './PrimingScreen';
 import { BottomSheet, PillButton } from '../../ui';
-import { isNative, openExternal, prefGet, prefSet, requestNotificationPermission, PROD_ORIGIN, APP_SCHEME } from '../../native';
+import { isNative, prefGet, prefSet, requestNotificationPermission, APP_SCHEME } from '../../native';
+import { openWebPage } from '../../lib/links';
 import { ShellContext } from '../../shell/MobileShell';
 import { sendTestNotifications } from '../../notifications/testNotification';
+
+/** The sign-in providers offered beside email. */
+const PROVIDERS = [{ key: 'google', label: 'Continue with Google' }, { key: 'apple', label: 'Continue with Apple' }];
 
 export const WELCOME_PREF = 'welcome_seen';
 export const PRIMING_PREF = 'notif_priming';
@@ -65,8 +69,8 @@ export function LoginContainer() {
       <LoginScreen
         onSubmit={submit}
         onProvider={provider}
-        providers={[{ key: 'google', label: 'Continue with Google' }, { key: 'apple', label: 'Continue with Apple' }]}
-        onForgot={() => (isNative() ? openExternal(`${PROD_ORIGIN}/forgot-password`) : navigate('/forgot-password'))}
+        providers={PROVIDERS}
+        onForgot={() => openWebPage(navigate, 'forgotPassword')}
         onSignUp={() => setSignup(true)}
         onBack={() => navigate('/m/welcome')}
         busy={busy}
@@ -74,9 +78,20 @@ export function LoginContainer() {
       />
       <BottomSheet open={signup} onClose={() => setSignup(false)} title="Create an account">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <p className="oi-m-body">Accounts are created at openinvite.com.au, where you also choose a plan. It takes a minute, and then you sign in here.</p>
-          <PillButton variant="primary" block onClick={() => (isNative() ? openExternal(`${PROD_ORIGIN}/register`) : navigate('/register'))}>Open openinvite.com.au</PillButton>
-          <PillButton variant="ghost" block onClick={() => setSignup(false)}>Not now</PillButton>
+          {isNative() ? (
+            // App Store rule 3.1.1 (ruling 1): no link to the website's sign-up, which is where a plan is chosen.
+            <>
+              {PROVIDERS.length > 0 && <p className="oi-m-body">Continue with {PROVIDERS.map((p) => p.label.replace('Continue with ', '')).join(' or ')} and your account is made as you sign in.</p>}
+              <p className="oi-m-body">For an email and password, create your account on a computer first, then sign in here with the same email.</p>
+              <PillButton variant="primary" block onClick={() => setSignup(false)}>OK</PillButton>
+            </>
+          ) : (
+            <>
+              <p className="oi-m-body">It takes a minute, and then you sign in here.</p>
+              <PillButton variant="primary" block onClick={() => navigate('/register')}>Create an account</PillButton>
+              <PillButton variant="ghost" block onClick={() => setSignup(false)}>Not now</PillButton>
+            </>
+          )}
         </div>
       </BottomSheet>
     </>

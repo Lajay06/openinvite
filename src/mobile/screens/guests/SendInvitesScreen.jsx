@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Search, Mail, Eye, FlaskConical, Send, Check, RotateCcw, Image as ImageIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Screen from '../../shell/Screen';
-import { FilterPills, RowGroup, Row, Checkbox, PillButton, TextField, TextAreaField, BottomSheet, SkeletonRows, ErrorState, EmptyState, PanelCard, StatusPill } from '../../ui';
+import { FilterPills, RowGroup, Row, Checkbox, PillButton, TextField, TextAreaField, BottomSheet, SkeletonRows, ErrorState, EmptyState, StatusPill, PlanLock } from '../../ui';
 import PillChoice from '../../ui/PillChoice';
 import { initials, GUEST_CATEGORY_LABEL, OPTED_OUT_LABEL } from '../../lib/format';
 import { useApi } from '../../data/api';
@@ -267,7 +267,7 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
     return (
       <Screen title="Send invites" back={back}>
         <div className="oi-m-stack oi-m-stack--24">
-          <PanelCard tone="ink" label="Ultra" title="Sending invitations is part of Ultra" body="Upgrade at openinvite.com.au to email your guests from here. Your list, events and RSVP links are all ready." />
+          <PlanLock about="Emailing your guests from here." />
         </div>
       </Screen>
     );

@@ -10,7 +10,7 @@ import { AccountDetailsSheet, EmailPreferencesSheet } from './AccountSheets';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { isNative } from '../../native';
 import { useAppLockSetting } from '../../shell/AppLock';
-import { openDesktop } from '../../lib/links';
+import { openWebPage } from '../../lib/links';
 import { useWedding } from '../../data/wedding';
 import { heroImageFor } from '../../lib/images';
 import { dateShort } from '../../lib/format';
@@ -20,9 +20,10 @@ import { coupleDisplayName } from '@/lib/coupleNames';
 const PLAN_LABELS = { free: 'Free trial', pro: 'Pro', ultra: 'Ultra' };
 
 /**
- * Reads the user from AuthContext, as Account.jsx does. Purchases: every
- * upgrade / checkout / billing-portal call to action is hidden when the app
- * runs natively (see MOBILE_APP.md, "Needs a decision").
+ * Reads the user from AuthContext, as Account.jsx does. Purchases: none. No
+ * upgrade, checkout, billing portal or pricing page is reachable from the app,
+ * natively or on the web (App Store rule 3.1.1, ruling 1 of
+ * goals/2026-10-15-app-store-launch.md). The plan shows as a read-only label.
  */
 export default function AccountContainer() {
   const auth = useAuth();
@@ -51,13 +52,12 @@ export default function AccountContainer() {
   const coupleName = coupleDisplayName(d || {});
   const trial = getTrialStatus(user);
   const planLabel = PLAN_LABELS[trial.plan] || 'Free trial';
-  const showPurchases = !isNative();
   const appLock = useAppLockSetting();
 
   const planNote = trial.isPaid
     ? null
     : trial.trialExpired
-      ? 'Your free trial has ended. Your work is safe and yours. Upgrade at openinvite.com.au to keep planning.'
+      ? 'Your free trial has ended. Your work is safe and yours.'
       : `${trial.daysLeft} day${trial.daysLeft === 1 ? '' : 's'} left on your free trial.`;
 
   return (
@@ -72,16 +72,15 @@ export default function AccountContainer() {
         planLabel={planLabel}
         planNote={planNote}
         trialDaysLeft={trial.isPaid ? null : trial.daysLeft}
-        showPurchases={showPurchases}
-        onUpgrade={() => openDesktop(navigate, '/pricing')}
         onDetails={() => setSheet('details')}
         detailsSub={`Name, ${currencyCode}, °${user?.tempUnit || 'C'}`}
         onEventDetails={() => navigate(`${base}/plan/event-details`)}
         onCollaborators={() => setCollab(true)}
         onNotifications={() => setSheet('email')}
         onNotificationSettings={() => navigate(`${base}/notifications/settings`)}
-        onHelp={() => openDesktop(navigate, '/help')}
-        onContact={() => openDesktop(navigate, '/Contact')}
+        onContact={() => openWebPage(navigate, 'support')}
+        onPrivacy={() => openWebPage(navigate, 'privacy')}
+        onTerms={() => openWebPage(navigate, 'terms')}
         onLogout={() => logout()}
         loading={isLoadingAuth}
         appLock={isNative() ? appLock : null}
@@ -91,7 +90,7 @@ export default function AccountContainer() {
         onTestNotification={isDemoBuild || import.meta.env.DEV ? () => navigate(`${base}/priming?test=1`) : undefined}
       />
       {collab && <CollaborateModal onClose={() => setCollab(false)} />}
-      <AccountDetailsSheet open={sheet === 'details'} user={user} currencyCode={currencyCode} onClose={() => setSheet(null)} onSave={saveDetails} onDesktop={() => { setSheet(null); openDesktop(navigate, '/account'); }} />
+      <AccountDetailsSheet open={sheet === 'details'} user={user} currencyCode={currencyCode} onClose={() => setSheet(null)} onSave={saveDetails} />
       <EmailPreferencesSheet open={sheet === 'email'} user={user} onClose={() => setSheet(null)} onSave={savePrefs} />
     </>
   );

@@ -12,10 +12,11 @@ const UNITS = [{ value: 'C', label: 'Celsius' }, { value: 'F', label: 'Fahrenhei
 /**
  * Account details, as Account.jsx's Settings tab: the name
  * (base44.auth.updateMe full_name), the currency (CurrencyModal) and the
- * temperature unit (tempUnit). Email, password and deletion stay on the
- * desktop page: the auth surface is locked by CLAUDE.md.
+ * temperature unit (tempUnit). The email cannot change here, and the password
+ * changes through Forgot password on the sign-in screen: the app links to no
+ * account page of the website (App Store rule 3.1.1, ruling 1).
  */
-export function AccountDetailsSheet({ open, user, currencyCode, onClose, onSave, onDesktop }) {
+export function AccountDetailsSheet({ open, user, currencyCode, onClose, onSave }) {
   const offline = !useOnline();
   const [f, setF] = useState({ full_name: '', currency: 'USD', tempUnit: 'C' });
   const [error, setError] = useState('');
@@ -38,7 +39,7 @@ export function AccountDetailsSheet({ open, user, currencyCode, onClose, onSave,
         <TextField label="Email" value={user?.email || ''} readOnly />
         <SelectField label="Currency" value={f.currency} onChange={(e) => setF((s) => ({ ...s, currency: e.target.value }))} options={CURRENCY_OPTIONS} />
         <PillChoice label="Temperature" options={UNITS} value={f.tempUnit} onChange={(v) => v && setF((s) => ({ ...s, tempUnit: v }))} hint="For the weather on your Guest Suite and in the app" />
-        <RowGroup><Row icon={KeyRound} tile="neutral" label="Password and account" sub="Change your password or delete your account at openinvite.com.au" onClick={onDesktop} /></RowGroup>
+        <RowGroup><Row icon={KeyRound} tile="neutral" label="Password" sub="To change it, log out and choose Forgot password" /></RowGroup>
       </div>
     </BottomSheet>
   );

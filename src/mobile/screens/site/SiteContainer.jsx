@@ -9,7 +9,7 @@ import { PasswordSheet } from './SiteSheets';
 import { useWedding } from '../../data/wedding';
 import { useApi } from '../../data/api';
 import { openExternal } from '../../native';
-import { siteUrlFor, openDesktop } from '../../lib/links';
+import { siteUrlFor, desktopHandoff } from '../../lib/links';
 import { coupleDisplayName } from '@/lib/coupleNames';
 
 export default function SiteContainer() {
@@ -49,7 +49,7 @@ export default function SiteContainer() {
       siteUrl={siteUrl}
       onView={() => openExternal(siteUrl)}
       onOpen={(key) => navigate(`${base}/plan/${key}`)}
-      onOpenDesktop={(path) => openDesktop(navigate, path)}
+      handoff={(path) => desktopHandoff(navigate, path)}
       loading={wedding.loading}
       error={wedding.error}
       onRetry={wedding.reload}

@@ -1,15 +1,15 @@
 import React from 'react';
-import { UserRound, Users, CreditCard, Bell, LifeBuoy, MessageSquare, LogOut, CalendarDays, ArrowUpRight, BellRing, ScanFace, Smartphone } from 'lucide-react';
+import { UserRound, Users, CreditCard, Bell, MessageSquare, LogOut, CalendarDays, BellRing, ScanFace, Smartphone, ShieldCheck, FileText } from 'lucide-react';
 import Screen from '../../shell/Screen';
-import { Row, RowGroup, PillButton, Skeleton, SmartImage, PanelCard, Switch } from '../../ui';
+import { Row, RowGroup, Skeleton, SmartImage, PanelCard, Switch } from '../../ui';
 import { initials } from '../../lib/format';
 
 /**
  * Account: a profile card with the couple's photo and names, then stacked
- * rows. `showPurchases` is false inside the native shell, so no upgrade,
- * checkout or billing-portal call to action renders there.
+ * rows. The plan is a read-only label: no upgrade, checkout, billing portal
+ * or pricing call to action renders anywhere in the app (App Store rule 3.1.1).
  */
-export default function AccountScreen({ name, email, coupleName, weddingDate, photo, planLabel, planNote, trialDaysLeft, showPurchases, onUpgrade, onDetails, onEventDetails, onCollaborators, onNotifications, onNotificationSettings, onHelp, onContact, onLogout, loading, appLock = null, subtitle, detailsSub, onTitleLongPress, onTestNotification }) {
+export default function AccountScreen({ name, email, coupleName, weddingDate, photo, planLabel, planNote, trialDaysLeft, onDetails, onEventDetails, onCollaborators, onNotifications, onNotificationSettings, onContact, onPrivacy, onTerms, onLogout, loading, appLock = null, subtitle, detailsSub, onTitleLongPress, onTestNotification }) {
   return (
     <Screen title="Account" subtitle={subtitle} root onTitleLongPress={onTitleLongPress}>
       <div className="oi-m-stack oi-m-stack--24">
@@ -38,7 +38,7 @@ export default function AccountScreen({ name, email, coupleName, weddingDate, ph
           <Row icon={UserRound} tile="neutral" label="Account details" sub={detailsSub || 'Name, currency, temperature'} onClick={onDetails} />
           <Row icon={CalendarDays} tile="neutral" label="Wedding details" sub="Names, date, venues" onClick={onEventDetails} />
           {onCollaborators && <Row icon={Users} tile="neutral" label="Collaborators" sub="Share the planning" onClick={onCollaborators} />}
-          <Row icon={CreditCard} tile="neutral" label="Plan" value={planLabel} onClick={showPurchases ? onUpgrade : undefined} chevron={!!showPurchases} />
+          <Row icon={CreditCard} tile="neutral" label="Plan" value={planLabel} />
           <Row icon={BellRing} tile="neutral" label="Notifications" sub="What you hear about, and when" onClick={onNotificationSettings} />
           <Row icon={Bell} tile="neutral" label="Email notifications" sub="Which emails you get" onClick={onNotifications} />
           {onTestNotification && <Row icon={Smartphone} tile="tint" label="Send a test notification" sub="Three on the lock screen, half a minute apart" onClick={onTestNotification} />}
@@ -55,14 +55,13 @@ export default function AccountScreen({ name, email, coupleName, weddingDate, ph
         </RowGroup>
 
         {planNote && (
-          <PanelCard tone={trialDaysLeft != null && trialDaysLeft <= 3 ? 'ink' : 'neutral'} label="Your plan" body={planNote}>
-            {showPurchases && trialDaysLeft != null && <PillButton variant="light" size="sm" icon={ArrowUpRight} onClick={onUpgrade} style={{ alignSelf: 'flex-start', marginTop: 8 }}>See plans</PillButton>}
-          </PanelCard>
+          <PanelCard tone={trialDaysLeft != null && trialDaysLeft <= 3 ? 'ink' : 'neutral'} label="Your plan" body={planNote} />
         )}
 
         <RowGroup>
-          <Row icon={LifeBuoy} tile="neutral" label="Help center" onClick={onHelp} />
           <Row icon={MessageSquare} tile="neutral" label="Contact support" onClick={onContact} />
+          <Row icon={ShieldCheck} tile="neutral" label="Privacy policy" onClick={onPrivacy} />
+          <Row icon={FileText} tile="neutral" label="Terms of service" onClick={onTerms} />
         </RowGroup>
 
         <RowGroup>
