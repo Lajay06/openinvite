@@ -19,6 +19,7 @@ import { sentGuestIds, guestsActuallySent } from '@/lib/sentRecipients';
 import { publishState, PUBLISH_STATE } from '@/lib/publishState';
 import { invitationsFor } from '@/lib/household';
 import { invitationGreetingName } from '@/lib/guestGreeting';
+import { formatWeddingDateText } from '@/lib/weddingDateText';
 import { isBounced, bouncedSkippedSentence } from '@/components/guests/emailBounce';
 import RsvpDeadlineField from '@/components/shared/RsvpDeadlineField';
 
@@ -309,9 +310,13 @@ export default function SendInvitesModal({
   const siteUrl = wedding?.slug
     ? `${typeof window === 'undefined' ? '' : window.location.origin}/w/${wedding.slug}`
     : '';
-  const dateStr = weddingDate
-    ? new Date(weddingDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })
-    : '';
+  // The [Wedding date] merge tag for the PREVIEW, through the one helper that
+  // also knows what api/send-invites.js sends (src/lib/weddingDateText.js).
+  // It used to be built here with `new Date(weddingDate).toLocaleDateString`,
+  // which read a date-only string as UTC midnight and so showed every couple
+  // west of Greenwich the day BEFORE their own wedding, and which left the
+  // weekday out while the email put it in.
+  const dateStr = formatWeddingDateText(weddingDate);
   const universeId = wedding?.activeUniverse;
 
   // Events the wedding has set up, enriched with venue/date (getWeddingEvents
