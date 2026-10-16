@@ -5,7 +5,7 @@ import Screen from '../../shell/Screen';
 import { FilterPills, RowGroup, Row, Checkbox, PillButton, TextField, TextAreaField, BottomSheet, SkeletonRows, ErrorState, EmptyState, StatusPill, PlanLock } from '../../ui';
 import PillChoice from '../../ui/PillChoice';
 import { initials, GUEST_CATEGORY_LABEL, OPTED_OUT_LABEL } from '../../lib/format';
-import { formatAppDateWritten } from '../../lib/dates';
+import { appDateFormat, formatAppDateWritten } from '../../lib/dates';
 import { useApi } from '../../data/api';
 import { isAttending, isDeclined, isAwaitingPrimary } from '@/lib/guestRsvpTally';
 import { coupleDisplayName } from '@/lib/coupleNames';
@@ -90,7 +90,11 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
   const weddingDate = wedding?.weddingDate || '';
   const venue = wedding?.mainCeremony?.venueName || '';
   const siteUrl = wedding?.slug ? `${siteOrigin()}/w/${wedding.slug}` : '';
-  const dateStr = weddingDate ? formatAppDateWritten(weddingDate) : '';
+  // The order the preview resolved travels with the send, because the server
+  // writes the email's date in whatever order it is given (absent means dmy),
+  // so the preview and the email come from one input. As SendInvitesModal.
+  const dateFormat = appDateFormat();
+  const dateStr = weddingDate ? formatAppDateWritten(weddingDate, { format: dateFormat }) : '';
   const universeId = wedding?.activeUniverse;
   const weddingEvents = useMemo(() => (wedding ? getWeddingEvents(wedding).map((ev) => ({ ...ev, ...getEventVenueAndDate(wedding, ev) })) : []), [wedding]);
   const buildGuestEvents = (g) => weddingEvents.filter((ev) => getGuestEventResponse(g, ev).invited).filter((ev) => !restrictEventIds || restrictEventIds.includes(ev.event_id)).map((ev) => ({ name: ev.name, date: ev.date, startTime: ev.startTime, venue: ev.venue }));
@@ -155,8 +159,8 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
   const previewEvents = previewGuest ? buildGuestEvents(previewGuest) : weddingEvents.map((ev) => ({ name: ev.name, date: ev.date, startTime: ev.startTime, venue: ev.venue }));
   const previewRsvpUrl = previewGuest?.rsvp_link_id ? buildRsvpUrl(previewGuest.rsvp_link_id) : `${RSVP_BASE}preview-token`;
   const previewHtml = useMemo(() => {
-    try { return renderInvitationEmail({ universeId, type, coupleNames: coupleName, siteUrl, weddingDate, events: previewEvents, personalMessage: replaceMergeTags(body, previewGuest?.name, coupleName, dateStr), rsvpUrl: previewRsvpUrl, rsvpToken: previewGuest?.rsvp_link_id || '', bannerImageUrl }).html; } catch { return ''; }
-  }, [universeId, type, coupleName, siteUrl, weddingDate, body, previewGuest, bannerImageUrl, previewRsvpUrl, dateStr]); // eslint-disable-line react-hooks/exhaustive-deps
+    try { return renderInvitationEmail({ universeId, type, coupleNames: coupleName, siteUrl, weddingDate, dateFormat, events: previewEvents, personalMessage: replaceMergeTags(body, previewGuest?.name, coupleName, dateStr), rsvpUrl: previewRsvpUrl, rsvpToken: previewGuest?.rsvp_link_id || '', bannerImageUrl }).html; } catch { return ''; }
+  }, [universeId, type, coupleName, siteUrl, weddingDate, body, previewGuest, bannerImageUrl, previewRsvpUrl, dateStr, dateFormat]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const ensureTokens = async (list) => {
     const map = await api.guestLinks(list.map((g) => g.id), { includePlusOne: true, throwOnFailure: true });
@@ -169,7 +173,7 @@ export default function SendInvitesScreen({ guests = [], wedding, invitation = n
   };
   // slug and websiteEnabled travel as on the web: the server derives the site
   // link from the slug and refuses the send when websiteEnabled is not true.
-  const weddingPayload = { coupleName, weddingDate, venue, siteUrl, slug: wedding?.slug, websiteEnabled: wedding?.websiteEnabled, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl };
+  const weddingPayload = { coupleName, weddingDate, dateFormat, venue, siteUrl, slug: wedding?.slug, websiteEnabled: wedding?.websiteEnabled, coverPhoto: wedding?.coverPhoto, venuePhotoUrl: wedding?.mainCeremony?.photoUrl };
 
   // SENDABLE ONLY, as SendInvitesModal.jsx (#951, mobile parity 8). A guest who
   // asked not to be emailed is not minted a token, not sent to and not stamped

@@ -22,7 +22,7 @@
  *      wins over the phone, no choice (or a value that is not one of the two)
  *      falls to the phone's order, a date-only string is the local day on a
  *      phone west of Greenwich, and the written form puts the month where the
- *      couple reads it.
+ *      couple reads it, weekday first, as the invitation email does.
  */
 
 import fs from 'fs';
@@ -105,12 +105,12 @@ export async function runMobileAppDates() {
     stored = '{not json';
     ok('an unreadable cache falls to the phone', m.formatAppDate('2026-10-16', m.appDateFormat('en-US')) === '10/16/2026');
 
+    // The written date is the invitation email's (mobile-preview-equals-email.mjs holds that it equals it).
     const w = [
       m.formatAppDateWritten('2026-10-16', { format: 'mdy' }),
       m.formatAppDateWritten('2026-10-16', { format: 'dmy' }),
-      m.formatAppDateWritten('2026-10-16', { format: 'mdy', month: 'short' }),
     ];
-    ok('the written date puts the month where the couple reads it', w.join(' | ') === 'October 16, 2026 | 16 October 2026 | Oct 16, 2026', w.join(' | '));
+    ok('the written date puts the month where the couple reads it', w.join(' | ') === 'Friday, October 16, 2026 | Friday 16 October 2026', w.join(' | '));
     ok('a time reads 3:05pm', m.formatAppTime(new Date(2026, 9, 16, 15, 5)) === '3:05pm', m.formatAppTime(new Date(2026, 9, 16, 15, 5)));
     ok('no date is the empty string', m.formatAppDate('', 'mdy') === '' && m.formatAppDateWritten(null) === '' && m.formatAppDateTime('nope') === '');
   } finally {
