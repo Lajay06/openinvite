@@ -130,7 +130,7 @@ export function formatDashboardDate(value, format) {
   const yyyy = String(d.getFullYear()).padStart(4, '0');
   // An explicit, valid format wins. Anything else defers to the account, which
   // defers to the locale. normalizeDateFormat is NOT used here on purpose: it
-  // coerces to 'dmy', which is the behaviour this fix exists to remove.
+  // coerces to 'dmy', which is the behavior this fix exists to remove.
   const chosen = DATE_FORMATS.includes(format) ? format : accountDateFormat();
   return chosen === 'mdy'
     ? `${mm}/${dd}/${yyyy}`
