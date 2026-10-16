@@ -268,7 +268,7 @@ function InvitationsContainer({ back }) {
   const wd = useWeddingDetails();
   // InvitationBuilder.jsx's starter design, verbatim, so the desktop builder opens the same record.
   const create = async ({ coupleNames, weddingDate }) => {
-    const shown = weddingDate ? formatAppDateWritten(weddingDate) : '';
+    const shown = weddingDate ? formatAppDateWritten(weddingDate, { weekday: false }) : '';
     const design = {
       globalStyles: { fontFamily: 'Playfair Display', scrollDirection: 'vertical', transitionType: 'fade', parallax: true },
       sections: [{ id: 'hero', name: 'Hero Section', background: { type: 'gradient', value: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }, components: [

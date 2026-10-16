@@ -22,7 +22,8 @@
  *
  *   1. The invitation email's date (SendInvitesScreen.jsx `dateStr`), the
  *      advisor's named exception. It becomes the {date} merge tag in the
- *      email body.
+ *      email body, in the order the screen resolved and sends with the email
+ *      (tests/persistence/mobile-preview-equals-email.mjs).
  *   2. The invitation starter design's date (PlanContainer.jsx `shown`),
  *      copied from InvitationBuilder.jsx so the desktop builder opens the same
  *      record. It is printed on the invitation itself. Reported to the
@@ -41,8 +42,8 @@ const read = (rel) => { try { return fs.readFileSync(path.join(ROOT, rel), 'utf8
 const code = (rel) => stripComments(read(rel), { line: true });
 
 const GUEST_FACING = [
-  { file: 'src/mobile/screens/guests/SendInvitesScreen.jsx', line: /^const dateStr = weddingDate \? formatAppDateWritten\(weddingDate\)/ },
-  { file: 'src/mobile/screens/plan/PlanContainer.jsx', line: /^const shown = weddingDate \? formatAppDateWritten\(weddingDate\)/ },
+  { file: 'src/mobile/screens/guests/SendInvitesScreen.jsx', line: /^const dateStr = weddingDate \? formatAppDateWritten\(weddingDate, \{ format: dateFormat \}\)/ },
+  { file: 'src/mobile/screens/plan/PlanContainer.jsx', line: /^const shown = weddingDate \? formatAppDateWritten\(weddingDate, \{ weekday: false \}\)/ },
 ];
 const DOOR = 'src/mobile/lib/dates.js';
 const WRITTEN = /toLocaleDateString\(|DateTimeFormat\(|\bweekday:\s*'|\bmonth:\s*'(?:long|short|narrow)'|formatAppDateWritten\(/;

@@ -5,38 +5,32 @@
  * and, when they have not chosen, in the order their phone uses.
  *
  * The couple's choice is User.dateFormat, "dmy" or "mdy", set on the web's
- * Account page and cached by AuthContext under `oi_user`, the same cache
- * src/lib/dashboardDate.js reads. That module USED TO fall back to
- * day/month/year when no choice was made, which was wrong on a phone in the
- * US: a couple who never opened the setting read 16/10/2026 for October 16.
- * That is the reason this module reads the raw value itself, and only a real
- * "dmy" or "mdy" counts as a choice; anything else asks the device locale,
- * through Intl, which month or day comes first.
+ * Account page and cached by AuthContext under `oi_user`. Only a real "dmy"
+ * or "mdy" counts as a choice; anything else asks the phone's locale.
  *
- * The web has since been fixed the same way (#1098), so it asks the browser's
- * locale too, and the two AGREE: swept across 50 locales, including every
- * year-first one (ja-JP, zh-CN, en-CA, hu-HU, lt-LT), deviceDateFormat below
- * and localeDateFormat in src/lib/dateFormatPreference.js return the same
- * answer every time. Both say month-first for a year-first locale, because in
- * y-M-d the month does precede the day.
+ * ONE RULE, ONE WRITTEN STYLE, SHARED WITH THE WEB (owner rulings 2026-10-16a
+ * and b). The phone's order is localeDateFormat from
+ * src/lib/dateFormatPreference.js, the same function the web asks, so a
+ * year-first locale (ja-JP, en-CA) reads month-first in both. deviceDateFormat
+ * stays exported under its old name because the app's callers and
+ * tests/persistence/date-order-one-rule.mjs name it; it is that function now,
+ * not a copy of it.
  *
- * An earlier version of this comment claimed the two differed on year-first
- * locales. That was my misreading of the `first` lookup below, which takes the
- * first of MONTH OR DAY rather than the first part overall, and it is
- * corrected here rather than quietly deleted because the owner ruled on it.
- * tests/persistence/date-order-one-rule.mjs now asserts the agreement across
- * a locale sweep, so the two cannot drift apart unnoticed while both exist.
- *
- * They should still collapse into one (owner ruling 2026-10-16a): two copies
- * of a rule that agree today are two copies. One import and one deleted
- * function, in lane D's own PR.
+ * The written date is formatWeddingDateText from src/lib/weddingDateText.js,
+ * which writes the invitation email, so the app's preview of an invitation
+ * equals what the guest receives, weekday included:
+ *   mdy   Monday, June 14, 2027
+ *   dmy   Monday 14 June 2027
+ * The email is written in whatever order the client sends, so
+ * SendInvitesScreen resolves the order once and passes the same value to the
+ * preview and to /api/send-invites.
  *
  * Two shapes, as the web has them:
  *   - formatAppDate: numeric, for everything the couple reads in the app
  *     (mobile parity 6). 10/16/2026 or 16/10/2026.
- *   - formatAppDateWritten: the month as a word, for text that leaves the
- *     app and is read by guests (an invitation's [Wedding date], the date on
- *     a starter invitation design). October 16, 2026 or 16 October 2026.
+ *   - formatAppDateWritten: the invitation's written date, for text that
+ *     leaves the app and is read by guests (an invitation's [Wedding date],
+ *     the date on a starter invitation design, which has no weekday).
  *
  * A date-only string ("2026-10-16") is read as LOCAL midnight. `new Date()`
  * on it alone is UTC midnight, which is the day before for every couple west
@@ -47,19 +41,12 @@
  * tests/persistence/mobile-app-dates.mjs holds that line.
  */
 
-import { DATE_FORMATS, formatDashboardDate } from '../../lib/dashboardDate.js';
+import { formatDashboardDate } from '../../lib/dashboardDate.js';
+import { DATE_FORMATS, localeDateFormat } from '../../lib/dateFormatPreference.js';
+import { formatWeddingDateText } from '../../lib/weddingDateText.js';
 
-/** "mdy" when the locale writes the month before the day, else "dmy". */
-export function deviceDateFormat(locale) {
-  try {
-    const parts = new Intl.DateTimeFormat(locale || undefined, { year: 'numeric', month: '2-digit', day: '2-digit' })
-      .formatToParts(new Date(2026, 4, 18));
-    const first = parts.find((p) => p.type === 'month' || p.type === 'day');
-    return first?.type === 'month' ? 'mdy' : 'dmy';
-  } catch {
-    return 'dmy';
-  }
-}
+/** "mdy" when the phone's locale writes the month before the day, else "dmy". The web's rule. */
+export const deviceDateFormat = (locale) => localeDateFormat(locale || undefined);
 
 /** The couple's choice when they made one, else the phone's. */
 export function appDateFormat(locale) {
@@ -85,14 +72,13 @@ export function formatAppDate(value, format) {
 }
 
 /**
- * The month as a word, in the couple's order: "October 16, 2026" or
- * "16 October 2026". `month: 'short'` gives "Oct 16, 2026".
+ * The invitation email's written date, in the couple's order: "Monday, June
+ * 14, 2027" or "Monday 14 June 2027". '' for no date. `weekday: false` is the
+ * starter invitation design's form, "June 14, 2027" or "14 June 2027", the
+ * same string the web's starter writes (lane A's ruling, accepted).
  */
-export function formatAppDateWritten(value, { month = 'long', format } = {}) {
-  const d = toDate(value);
-  if (!d) return '';
-  const locale = (format || appDateFormat()) === 'mdy' ? 'en-US' : 'en-GB';
-  return d.toLocaleDateString(locale, { day: 'numeric', month, year: 'numeric' });
+export function formatAppDateWritten(value, { format, weekday = true } = {}) {
+  return formatWeddingDateText(value, format || appDateFormat(), { weekday });
 }
 
 /** "3:05pm", the app's time style, the same on every phone. */

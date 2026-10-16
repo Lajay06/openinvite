@@ -554,3 +554,20 @@ the email now come from `src/lib/weddingDateText.js`, weekday and month as a
 word, ordered by the couple's format, so a preview always equals what the guest
 receives. `formatAppDateWritten` in the app is the third copy and should call
 the shared one, which also drops its missing weekday.
+
+**Done in the app (2026-10-17).** `deviceDateFormat` is now `localeDateFormat`
+from `src/lib/dateFormatPreference.js`, kept under its old name for its
+callers, so there is one order rule. `formatAppDateWritten` is now
+`formatWeddingDateText`, so the app writes "Monday, June 14, 2027" or "Monday
+14 June 2027", weekday included, exactly as the email does. The app's starter
+invitation design is the one exception: it passes `weekday: false` and reads
+"June 14, 2027" or "14 June 2027", the same string the web's starter writes
+(lane A's ruling, accepted by the owner).
+
+The app's send now carries the order as `wedding.dateFormat`, as
+SendInvitesModal does on the web. `api/send-invites.js` writes the email's date
+in whatever order the client sends and reads a missing one as day-first, so
+before this a month-first couple's preview in the app would have disagreed
+with the email they sent. `tests/persistence/mobile-preview-equals-email.mjs`
+runs the screen's own lines and the server's own expression for both orders and
+holds the two equal.
