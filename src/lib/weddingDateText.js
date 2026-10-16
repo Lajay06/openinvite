@@ -74,6 +74,21 @@ export const WEDDING_DATE_PARTS = {
 };
 
 /**
+ * The same date without its weekday, for a STARTER INVITATION's date block.
+ *
+ * Owner ruling 2026-10-16(c), and the one place the written style is not
+ * identical everywhere. An email is a sentence a guest reads, so it names the
+ * day: "Monday 14 June 2027". A starter invitation's date block is artwork on
+ * a card, and the app's starter has never carried a weekday. Matching the app
+ * is the explicit requirement, and adding a weekday to invitation artwork is a
+ * design change nobody asked for, so the weekday is dropped here and ONLY
+ * here. The order is still the couple's.
+ */
+export const STARTER_DATE_PARTS = {
+  day: 'numeric', month: 'long', year: 'numeric',
+};
+
+/**
  * The locale for a couple's chosen order. Anything that is not 'mdy' is the
  * default, so a missing or malformed format can never produce a third style.
  */
@@ -105,13 +120,16 @@ export function weddingCalendarDate(value) {
  *
  * @param {string|number|Date} value
  * @param {'dmy'|'mdy'} [format] the couple's chosen order; absent means dmy
+ * @param {{weekday?: boolean}} [opts] weekday: false for a starter
+ *   invitation's date block, which is artwork rather than a sentence
  * @returns {string} the written date, or '' when there is no date to write
  */
-export function formatWeddingDateText(value, format) {
+export function formatWeddingDateText(value, format, { weekday = true } = {}) {
   const d = weddingCalendarDate(value);
   if (!d) return '';
   try {
-    return d.toLocaleDateString(writtenDateLocale(format), WEDDING_DATE_PARTS);
+    return d.toLocaleDateString(writtenDateLocale(format),
+      weekday ? WEDDING_DATE_PARTS : STARTER_DATE_PARTS);
   } catch {
     // Intl throws on a malformed locale tag. A merge tag that cannot be
     // written falls back to its own placeholder upstream, never to a crash.

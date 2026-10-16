@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { base44 } from "@/api/base44Client";
 import { color } from '@/styles/tokens';
+import { formatWeddingDateText } from '@/lib/weddingDateText';
+import { accountDateFormat } from '@/lib/dateFormatPreference';
 const Invitation = base44.entities.Invitation;
 
 // This is now a simple, one-step builder to gather initial details.
@@ -39,7 +41,14 @@ export default function InvitationBuilder({ onInvitationSaved, onBack }) {
                {
                 id: `date_${Date.now()}`,
                 type: 'text',
-                content: { text: weddingDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) },
+                // The couple's own order, through the one written-date source.
+                // This hardcoded 'en-US' wrote "June 14, 2027" for everyone,
+                // including couples whose every other date reads day-first.
+                // weekday: false because a starter's date block is artwork and
+                // the app's starter has never carried one. Owner ruling
+                // 2026-10-16(c). Written ONCE, into the saved design, so no
+                // existing invitation is rewritten.
+                content: { text: formatWeddingDateText(weddingDate, accountDateFormat(), { weekday: false }) },
                 styles: { padding: '10px', margin: '0', textAlign: 'center', fontSize: '1.25rem', color: '#ffffff' }
               }
             ]
