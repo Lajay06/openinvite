@@ -39,6 +39,7 @@ import { guestStopEmailsUrl } from './_lib/guestStopToken.js';
 import { publishState, PUBLISH_STATE } from '../src/lib/publishState.js';
 import { adminList } from './_lib/base44Entities.js';
 import { invitationGreetingName } from '../src/lib/guestGreeting.js';
+import { formatWeddingDateText, DEFAULT_WRITTEN_FORMAT } from '../src/lib/weddingDateText.js';
 import { verifyBase44User, fetchOwnedGuestEmails, filterGuestsByOwnership } from './_lib/auth.js';
 import { TOO_MANY_TRIES } from './_lib/calmErrors.js';
 
@@ -331,9 +332,21 @@ export default async function handler(req, res, {
     const FROM = `${fromName} <${SUPPORT_ADDRESS}>`;
     const replyTo = caller.email || SUPPORT_ADDRESS;
 
-    const dateStr = weddingDate
-      ? new Date(weddingDate).toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-      : '';
+    // ── ONE WRITTEN DATE STYLE, IN THE COUPLE'S OWN ORDER ─────────────────
+    //
+    // Owner ruling 2026-10-16(b). This used to hardcode 'en-AU', and it also
+    // read a date-only string as UTC midnight, which is the day before for
+    // every couple west of Greenwich; the shared formatter fixes both. It was
+    // invisible here only because this runs on Vercel in UTC.
+    //
+    // The order is the format THE CLIENT ACTUALLY RESOLVED for the preview the
+    // couple approved, sent in the payload. A server has no browser to read a
+    // preference from, so looking it up here would mean a second source of
+    // truth and a preview that can disagree with the email. Absent means dmy,
+    // which is what this produced before the ruling, so an older client that
+    // sends no format is unchanged rather than guessed at.
+    const dateFormat = sanitizeString(wedding.dateFormat) || DEFAULT_WRITTEN_FORMAT;
+    const dateStr = formatWeddingDateText(weddingDate, dateFormat);
 
     // ── GUESTS WHO ASKED NOT TO BE EMAILED ARE SKIPPED HERE ───────────────
     //
@@ -449,6 +462,7 @@ export default async function handler(req, res, {
 
       const { html, text } = renderInvitationEmail({
         universeId, type, guestName, coupleNames: coupleName, events, personalMessage: processedBody, rsvpUrl, rsvpToken, siteUrl, weddingDate, bannerImageUrl,
+        dateFormat,
         stopEmailsUrl,
       });
 

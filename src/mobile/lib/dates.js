@@ -13,15 +13,23 @@
  * "dmy" or "mdy" counts as a choice; anything else asks the device locale,
  * through Intl, which month or day comes first.
  *
- * The web has since been fixed the same way (#1098), so dashboardDate.js now
- * asks the browser's locale too and the two agree on the question. They still
- * differ on ONE answer, deliberately and worth knowing: for a YEAR-FIRST
- * locale such as ja-JP or en-CA, deviceDateFormat below looks at whichever of
- * month or day comes first and says "dmy", while dashboardDate.js compares
- * their positions and says "mdy". Nothing here can diverge because of it,
- * since formatAppDate always passes an explicit format, but a couple on a
- * Japanese device would read a different order on the web than in the app.
- * For the owner to rule on.
+ * The web has since been fixed the same way (#1098), so it asks the browser's
+ * locale too, and the two AGREE: swept across 50 locales, including every
+ * year-first one (ja-JP, zh-CN, en-CA, hu-HU, lt-LT), deviceDateFormat below
+ * and localeDateFormat in src/lib/dateFormatPreference.js return the same
+ * answer every time. Both say month-first for a year-first locale, because in
+ * y-M-d the month does precede the day.
+ *
+ * An earlier version of this comment claimed the two differed on year-first
+ * locales. That was my misreading of the `first` lookup below, which takes the
+ * first of MONTH OR DAY rather than the first part overall, and it is
+ * corrected here rather than quietly deleted because the owner ruled on it.
+ * tests/persistence/date-order-one-rule.mjs now asserts the agreement across
+ * a locale sweep, so the two cannot drift apart unnoticed while both exist.
+ *
+ * They should still collapse into one (owner ruling 2026-10-16a): two copies
+ * of a rule that agree today are two copies. One import and one deleted
+ * function, in lane D's own PR.
  *
  * Two shapes, as the web has them:
  *   - formatAppDate: numeric, for everything the couple reads in the app

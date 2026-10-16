@@ -29,7 +29,7 @@ import path from 'path';
 import { pass, fail, stripComments } from './_shared.mjs';
 import {
   formatWeddingDateText, weddingCalendarDate,
-  WEDDING_DATE_LOCALE, WEDDING_DATE_PARTS,
+  WRITTEN_DATE_LOCALES, WEDDING_DATE_PARTS, DEFAULT_WRITTEN_FORMAT,
 } from '../../src/lib/weddingDateText.js';
 
 const ROOT = path.resolve(new URL('../../', import.meta.url).pathname);
@@ -86,34 +86,85 @@ export async function runWeddingDateText() {
      inZone('America/Los_Angeles', () => oldWay('2026-05-18')) !== inZone('UTC', () => oldWay('2026-05-18')),
      'the control differs by zone');
 
-  // ── THE PREVIEW MATCHES THE SEND ────────────────────────────────────────
+  // ── ONE WRITTEN STYLE, IN THE COUPLE'S ORDER ────────────────────────────
   //
-  // Read off api/send-invites.js's own call rather than retyped here, so the
-  // two cannot drift without this failing. That file is frozen by CLAUDE.md,
-  // so this guard is the only thing holding the pair together today.
-  const server = read(SERVER);
-  ok('the server writes the wedding date in words, weekday included',
-     /toLocaleDateString\('en-AU', \{ weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' \}\)/.test(server),
-     'unchanged');
-  check('  and the helper asks for exactly those parts', WEDDING_DATE_PARTS,
+  // Owner ruling 2026-10-16(b). The two shapes ARE the ruling, so they are
+  // asserted literally. 14 June 2027 is a MONDAY: the ruling's own example
+  // said Saturday, which is why the real weekday is pinned here.
+  check('mdy writes the US order', formatWeddingDateText('2027-06-14', 'mdy'), 'Monday, June 14, 2027');
+  check('  and dmy writes the AU order', formatWeddingDateText('2027-06-14', 'dmy'), 'Monday 14 June 2027');
+  check('  an absent format is dmy, never a guess',
+        [formatWeddingDateText('2027-06-14'), formatWeddingDateText('2027-06-14', 'nonsense'), formatWeddingDateText('2027-06-14', null)],
+        ['Monday 14 June 2027', 'Monday 14 June 2027', 'Monday 14 June 2027']);
+  check('  and that default is named, not implied', DEFAULT_WRITTEN_FORMAT, 'dmy');
+  check('  the two locales are the two shapes', WRITTEN_DATE_LOCALES, { mdy: 'en-US', dmy: 'en-AU' });
+  check('  with weekday, month as a word, day and year', WEDDING_DATE_PARTS,
         { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  check('  in exactly that locale', WEDDING_DATE_LOCALE, 'en-AU');
-  ok('  so the preview string equals what the send would produce',
-     inZone('UTC', () => formatWeddingDateText('2026-05-18'))
-       === inZone('UTC', () => new Date('2026-05-18').toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })),
-     'identical in the server\'s own zone');
+
+  // ── THE PREVIEW STRING EQUALS THE EMAIL STRING ──────────────────────────
+  //
+  // The owner asked for this one by name. Not a source grep: it renders the
+  // REAL email through renderInvitationEmail, the same function the modal's
+  // preview pane and api/send-invites.js both call, and looks for the written
+  // date inside the HTML a guest would receive. If the merge tag and the email
+  // body ever disagree, or either stops following the couple's order, this
+  // fails with both strings in hand.
+  const { renderInvitationEmail } = await import('../../src/lib/emailTemplate.js');
+  const renderedDate = (dateFormat) => {
+    const html = renderInvitationEmail({
+      universeId: 'capri', type: 'invite', guestName: 'Sam', coupleNames: 'A & B',
+      events: [{ name: 'Ceremony', date: '2027-06-14', venue: 'A venue' }],
+      weddingDate: '2027-06-14', dateFormat, rsvpUrl: 'https://example.test/r',
+      rsvpToken: 't', siteUrl: 'https://example.test', stopEmailsUrl: 'https://example.test/stop',
+    }).html;
+    return (html.match(/(Monday[^<·]*2027)/) || [])[1]?.trim() || '(not found in the email)';
+  };
+  for (const f of ['dmy', 'mdy']) {
+    const preview = formatWeddingDateText('2027-06-14', f);
+    const email = inZone('UTC', () => renderedDate(f));
+    check(`the preview string equals the email string for ${f}`, email, preview);
+  }
+
+  // AND THE SERVER GOES THROUGH THE SHARED FORMATTER, so neither of the above
+  // can be true of the helper while the send quietly does its own thing.
+  const server = read(SERVER);
+  ok('the server formats the merge tag with the shared helper',
+     /formatWeddingDateText\(weddingDate, dateFormat\)/.test(code(server)), 'formatWeddingDateText');
+  ok('  and no longer hardcodes a locale of its own',
+     !/toLocaleDateString\('en-AU'/.test(code(server)), "no 'en-AU' literal left");
+  ok('  reading the order the client resolved, defaulting to dmy',
+     /wedding\.dateFormat\) \|\| DEFAULT_WRITTEN_FORMAT/.test(code(server)), 'from the payload');
+  ok('  and passing it to the email template',
+     /^\s*dateFormat,$/m.test(code(server)), 'threaded into renderInvitationEmail');
+  // THE CLIENT SENDS WHAT IT RESOLVED, not the raw User field: the owner's
+  // refinement. accountDateFormat() is User.dateFormat else the browser locale.
+  const modalSrc = code(read(MODAL));
+  ok('the client sends the order it actually resolved for the preview',
+     /const resolvedDateFormat = accountDateFormat\(\)/.test(modalSrc), 'accountDateFormat()');
+  ok('  in every send payload, not just one of them',
+     (modalSrc.match(/dateFormat: resolvedDateFormat/g) || []).length >= 3,
+     `${(modalSrc.match(/dateFormat: resolvedDateFormat/g) || []).length} use(s): the preview and both payloads`);
+  // The email template must not keep a second written-date style.
+  ok('the email template has no hardcoded written-date locale left',
+     !/toLocaleDateString\('en-AU'/.test(code(read('src/lib/emailTemplate.js'))), 'one style');
 
   // ── THE MODAL GOES THROUGH THE HELPER ───────────────────────────────────
   const modal = code(read(MODAL));
   ok('the modal builds the merge tag with the helper',
-     /const dateStr = formatWeddingDateText\(weddingDate\)/.test(modal), 'formatWeddingDateText');
+     /const dateStr = formatWeddingDateText\(weddingDate, resolvedDateFormat\)/.test(modal), 'formatWeddingDateText');
   ok('  and imports it', /import \{ formatWeddingDateText \} from '@\/lib\/weddingDateText'/.test(modal), 'imported');
   ok('  and no longer formats the wedding date by hand',
      !/new Date\(weddingDate\)\.toLocaleDateString/.test(modal), 'no raw toLocaleDateString on weddingDate');
   // THE BOUNDARY STAYS. dashboard-date-format.mjs forbids the numeric
   // dashboard formatter here, because this date is guest-facing and written.
+  // THE BOUNDARY STAYS, and this is why the order rule had to move out of
+  // dashboardDate.js: the modal needs to ASK which order the couple reads
+  // dates in, without importing the NUMERIC dashboard formatter that
+  // dashboard-date-format.mjs forbids on guest-facing files.
   ok('  and still does not reach for the numeric dashboard formatter',
      !/dashboardDate/.test(read(MODAL)), 'guest-facing, written dates kept');
+  ok('  it asks the shared order module instead',
+     /from '@\/lib\/dateFormatPreference'/.test(read(MODAL)), 'dateFormatPreference');
 
   // ── NO DATE IS NOT A DATE ───────────────────────────────────────────────
   check('nothing in, nothing out',

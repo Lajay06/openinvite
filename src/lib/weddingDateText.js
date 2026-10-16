@@ -25,16 +25,30 @@
  *
  * ── TWO: THE PREVIEW HAS TO MATCH THE SEND ─────────────────────────────────
  *
- * api/send-invites.js formats the same merge tag with weekday INCLUDED, so the
- * email said "Monday 18 May 2026" while the preview beside it said
+ * api/send-invites.js formatted the same merge tag with weekday INCLUDED, so
+ * the email said "Monday 18 May 2026" while the preview beside it said
  * "18 May 2026". A preview that misdescribes the email is worse than no
  * preview, because the couple approves it.
  *
- * WEDDING_DATE_LOCALE and WEDDING_DATE_PARTS are exported so a guard can read
- * them against api/send-invites.js's own call and fail when the two drift.
- * They are deliberately the server's values, not better ones: matching the
- * email is this module's whole job. Whether the EMAIL should speak en-AU to a
- * couple in Denver is a real question, and a different one, for the owner.
+ * ── ONE WRITTEN STYLE, IN THE COUPLE'S OWN ORDER ───────────────────────────
+ *
+ * Owner ruling 2026-10-16(b). This module is now the ONE written-date source
+ * for the invitation: the email body (through emailTemplate.js), the merge tag
+ * the server expands, and the preview the couple approves all come through
+ * here. Weekday, month as a word, day, year, ordered by the couple's format:
+ *
+ *   mdy   Monday, June 14, 2027     (en-US)
+ *   dmy   Monday 14 June 2027       (en-AU)
+ *
+ * The order is the couple's CHOSEN format, which is why callers pass it in
+ * rather than this module reading a cache: the server has no browser to read.
+ * The client sends the format it actually resolved for the preview, so the
+ * preview and the email are formatted from the same input, and an absent
+ * format means "dmy" rather than a guess.
+ *
+ * The previous question, whether the email should speak en-AU to a couple in
+ * Denver, is answered: it should not. A US couple's guests now read US order.
+ * That is a deliberate change to outbound copy.
  *
  * ── WHY NOT dashboardDate.js ───────────────────────────────────────────────
  *
@@ -44,13 +58,28 @@
  * this reason, and that boundary is left intact.
  */
 
-/** The locale api/send-invites.js speaks. Matching it is the point. */
-export const WEDDING_DATE_LOCALE = 'en-AU';
+/** The order used when a caller states none. Owner ruling: never a guess. */
+export const DEFAULT_WRITTEN_FORMAT = 'dmy';
 
-/** The parts api/send-invites.js asks for, weekday included. */
+/**
+ * The locale that writes each order. en-US gives "Monday, June 14, 2027";
+ * en-AU gives "Monday 14 June 2027". These two shapes ARE the ruling, so they
+ * are named here once and read by the guard rather than retyped at call sites.
+ */
+export const WRITTEN_DATE_LOCALES = { mdy: 'en-US', dmy: 'en-AU' };
+
+/** The parts every written invitation date asks for, weekday included. */
 export const WEDDING_DATE_PARTS = {
   weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
 };
+
+/**
+ * The locale for a couple's chosen order. Anything that is not 'mdy' is the
+ * default, so a missing or malformed format can never produce a third style.
+ */
+export function writtenDateLocale(format) {
+  return WRITTEN_DATE_LOCALES[format === 'mdy' ? 'mdy' : DEFAULT_WRITTEN_FORMAT];
+}
 
 /** A bare date-only string, "2026-05-18". */
 const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
@@ -71,17 +100,18 @@ export function weddingCalendarDate(value) {
 }
 
 /**
- * The wedding date as the invitation writes it, matching what
- * api/send-invites.js sends.
+ * The wedding date as the invitation writes it, in the couple's order. The
+ * email, the merge tag and the preview all call this one function.
  *
  * @param {string|number|Date} value
+ * @param {'dmy'|'mdy'} [format] the couple's chosen order; absent means dmy
  * @returns {string} the written date, or '' when there is no date to write
  */
-export function formatWeddingDateText(value) {
+export function formatWeddingDateText(value, format) {
   const d = weddingCalendarDate(value);
   if (!d) return '';
   try {
-    return d.toLocaleDateString(WEDDING_DATE_LOCALE, WEDDING_DATE_PARTS);
+    return d.toLocaleDateString(writtenDateLocale(format), WEDDING_DATE_PARTS);
   } catch {
     // Intl throws on a malformed locale tag. A merge tag that cannot be
     // written falls back to its own placeholder upstream, never to a crash.
