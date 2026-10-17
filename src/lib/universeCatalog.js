@@ -120,7 +120,7 @@ export function universeTileImage(id, { width = 1200, height = 800 } = {}) {
 
 /**
  * WHERE THE COUPLE IS, for the heroes face detection gets wrong in a portrait
- * tile (owner review of #1092, 2026-10-17). The subject's horizontal centre
+ * tile (owner review of #1092, 2026-10-17). The subject's horizontal center
  * as a fraction of the master's width, measured off the master, the same
  * figures heroFocus.js records for the phone hero: brooklyn's couple spans
  * 26-50% and g_faces:auto finds no face, so the 3:4 tile was the bodega;
@@ -133,7 +133,7 @@ export const TILE_SUBJECT_CENTER = { brooklyn: 0.38, havana: 0.56 };
 
 /**
  * A tile narrower than its master, cut around the measured subject: first an
- * explicit crop of the master at the tile's aspect, centred on the couple and
+ * explicit crop of the master at the tile's aspect, centered on the couple and
  * held inside the frame, then the fill to the tile's size. Null when the
  * universe has no measurement, the master is unmeasured, or the image is not
  * portrait (the 16:9 scroll is a hero, framed by heroFocus.js), so everything
