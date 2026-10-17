@@ -3,9 +3,10 @@
  *
  * ONE ANCHOR PER PAGE. Within a guest page, the kicker (the universe's own
  * SectionMark), the heading, the paragraph and the quote share ONE alignment
- * and ONE left edge, and that anchor is the mark's: left for the marks that
- * set textAlign left or lay out as a flex row, centered for the two that
- * center. The mark is artwork and stays as designed; the body follows it.
+ * and ONE left edge, and that anchor is the mark's. Since Batch 2's
+ * layout parity every mark centers on the page's axis, and the guard also
+ * asserts that ACROSS universes: one declared anchor, and per page and
+ * viewport every universe's mark on the same axis.
  * Hero mastheads are excluded — their per-universe alignment is design, not
  * drift, and this guard never looks at them.
  *
@@ -42,7 +43,7 @@
  *     accident. Guarded: 1440 runs too, and textAlign is checked at both.
  */
 /* eslint-env browser */
-/* global document, getComputedStyle, NodeFilter */
+/* global document, getComputedStyle, NodeFilter, window */
 import { chromium } from 'playwright';
 import { readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
@@ -142,7 +143,17 @@ const MEASURE = () => {
     // A decorated row — a mark's icon, kyoto's vertical rule before the date —
     // starts at the column edge and puts its glyphs after the ornament. The
     // row is the edge; it declares itself with data-oi-anchor-root.
-    const root = el.closest('[data-oi-anchor-root]');
+    //
+    // On the CENTER axis only a ROW root (ornament beside the words) is an
+    // honest edge: it is shrunk to its content. Any other root fills its
+    // column, so its box center is the column center whatever the glyphs do,
+    // and a left-painted mark would pass vacuously. Its edge is its own
+    // painted line instead.
+    let root = el.closest('[data-oi-anchor-root]');
+    if (root && window.__anchor === 'center') {
+      const cs = getComputedStyle(root);
+      if (!(cs.display === 'flex' && cs.flexDirection === 'row')) root = null;
+    }
     const box = (root || el).getBoundingClientRect();
     out[role] = {
       textAlign: norm(getComputedStyle(el).textAlign),
@@ -204,6 +215,7 @@ async function main() {
         try {
           await page.goto(url, { waitUntil: 'load', timeout: 30000 });
           await page.waitForFunction((t) => document.body.innerText.includes(t), expect, { timeout: 15000 });
+          await page.evaluate((a) => { window.__anchor = a; }, anchor);
           const m = await page.evaluate(MEASURE);
           problems = judge(m, anchor);
           results.push({ width, id, slug, anchor, m, problems });
@@ -221,6 +233,28 @@ async function main() {
   }
   await browser.close();
 
+  // ACROSS UNIVERSES (Batch 2, layout parity). Per page and viewport, every
+  // universe declares the same anchor and paints its mark on the same axis.
+  // Within-page agreement alone let seventeen universes sit left under a
+  // centered hero while three sat centered, and every row still passed.
+  const anchors = new Set(ids.map((id) => anchorFor(UNIVERSE_CONFIGS[id].layout)));
+  const across = [];
+  if (anchors.size !== 1) across.push(`universes declare ${anchors.size} anchors (${[...anchors].join(', ')}); parity needs one`);
+  for (const width of VIEWPORTS) {
+    for (const [slug] of PAGES) {
+      const row = results.filter((r) => r.width === width && r.slug === slug && r.m.mark && !r.m.mark.error);
+      if (row.length !== ids.length) { across.push(`${width} ${slug}: a mark measured in ${row.length}/${ids.length} universes`); continue; }
+      const key = row[0].anchor === 'center' ? 'edgeCenter' : 'edgeLeft';
+      const tol = row[0].anchor === 'center' ? CENTER_TOLERANCE : TOLERANCE;
+      const xs = row.map((r) => r.m.mark[key]);
+      const lo = Math.min(...xs), hi = Math.max(...xs);
+      if (hi - lo > tol) {
+        const far = row.filter((r) => Math.abs(r.m.mark[key] - xs[0]) > tol).map((r) => `${r.id}@${r.m.mark[key].toFixed(0)}`);
+        across.push(`${width} ${slug}: marks span ${lo.toFixed(0)}..${hi.toFixed(0)} (${row[0].id}@${xs[0].toFixed(0)}; ${far.join(' ')})`);
+      }
+    }
+  }
+
   const failed = results.filter((r) => r.problems.length);
   console.log(`\n  Page anchor parity — ${ran} page renders (${ids.length} universes × ${PAGES.length} pages × ${VIEWPORTS.length} viewports)\n`);
   for (const r of results) {
@@ -232,6 +266,8 @@ async function main() {
   const byDefect = {};
   for (const r of failed) for (const p of r.problems) { const k = p.replace(/[\d.]+/g, '#'); byDefect[k] = (byDefect[k] || 0) + 1; }
   console.log(`\n  ${results.length - failed.length}/${results.length} passed, ${failed.length} failed.`);
+  console.log(`  Across universes: ${across.length ? `${across.length} problem(s)` : `one anchor (${[...anchors][0]}), one axis per page, at ${VIEWPORTS.join(' and ')}`}.`);
+  for (const p of across) console.log(`    · ${p}`);
   if (failed.length) {
     console.log('  Defect classes:');
     for (const [k, n] of Object.entries(byDefect).sort((a, b) => b[1] - a[1])) console.log(`    ${String(n).padStart(4)}  ${k}`);
@@ -242,7 +278,7 @@ async function main() {
     const { writeFileSync } = await import('node:fs');
     writeFileSync(resolve(outDir, 'page-anchor-parity.json'), JSON.stringify(results, null, 2));
   }
-  process.exit(failed.length ? 1 : 0);
+  process.exit(failed.length || across.length ? 1 : 0);
 }
 
 main().catch((err) => { console.error(err); process.exit(1); });

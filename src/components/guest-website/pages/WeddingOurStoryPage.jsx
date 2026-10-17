@@ -3,6 +3,7 @@ import SectionReveal from '../SectionReveal';
 import { isMotionEnabled } from '@/lib/universeStyling';
 import EditorialSectionKicker from '../layouts/EditorialSectionKicker';
 import MinimalSectionMark from '../layouts/MinimalSectionMark';
+import { pageAnchorFor } from '../layouts/sectionMarks';
 import KyotoSectionMark from '../layouts/KyotoSectionMark';
 import VerticalRule from '../layouts/VerticalRule';
 import BrooklynSectionMark from '../layouts/BrooklynSectionMark';
@@ -16,6 +17,7 @@ import CapeTownSectionMark from '../layouts/CapeTownSectionMark';
 import VineRule from '../layouts/VineRule';
 import UniverseBlocks from '../blocks/UniverseBlocks';
 import AmalfiSectionMark from '../layouts/AmalfiSectionMark';
+import TulumSectionMark from '../layouts/TulumSectionMark';
 import SedonaSectionMark from '../layouts/SedonaSectionMark';
 import AspenSectionMark from '../layouts/AspenSectionMark';
 import TajSectionMark from '../layouts/TajSectionMark';
@@ -56,7 +58,7 @@ function GenericStoryComposition({ SectionMark, weddingDetails, theme, typograph
 
         {photos.length > 0 && (
           <div style={{ marginBottom: 56 }}>
-            <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 36 }}>Moments</h2>
+            <h2 style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 36 }}>Moments</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '20px' }}>
               {photos.map((photo, i) => (
                 <SectionReveal key={i} universeConfig={universeConfig} disabled={!motionEnabled}>
@@ -69,7 +71,7 @@ function GenericStoryComposition({ SectionMark, weddingDetails, theme, typograph
 
         {milestones.length > 0 && (
           <div>
-            <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 36 }}>Our journey</h2>
+            <h2 style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 36 }}>Our journey</h2>
             {milestones.map((milestone, i) => (
               <SectionReveal key={i} universeConfig={universeConfig} disabled={!motionEnabled} style={{ marginBottom: 28 }}>
                 <div style={{ fontFamily: typography.bodyFont, fontSize: '0.875rem', fontWeight: 700, color: theme.accent, marginBottom: 6 }}>{milestone.date}</div>
@@ -107,6 +109,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
   const isFlorence = universeConfig?.layout === 'florence-editorial';
   const isSeoul = universeConfig?.layout === 'seoul-glass';
   const isShanghai = universeConfig?.layout === 'shanghai-glamour';
+  const isTulum = universeConfig?.layout === 'tulum-horizon';
   const copy = universeConfig?.copy || {};
 
   const genericStoryProps = { weddingDetails, theme, typography, universeConfig, copy, storyText, photos, milestones };
@@ -120,6 +123,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
   if (isFlorence) return <GenericStoryComposition SectionMark={FlorenceSectionMark} {...genericStoryProps} />;
   if (isSeoul) return <GenericStoryComposition SectionMark={SeoulSectionMark} {...genericStoryProps} />;
   if (isShanghai) return <GenericStoryComposition SectionMark={ShanghaiSectionMark} {...genericStoryProps} />;
+  if (isTulum) return <GenericStoryComposition SectionMark={TulumSectionMark} {...genericStoryProps} />;
 
   if (isParis) {
     return (
@@ -138,7 +142,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
 
           {photos.length > 0 && (
             <div style={{ marginBottom: 72 }}>
-              <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 40 }}>Moments</h2>
+              <h2 style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 40 }}>Moments</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
                 {photos.map((photo, i) => (
                   <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
@@ -182,7 +186,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
 
           {photos.length > 0 && (
             <div style={{ marginBottom: 56 }}>
-              <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 36 }}>Moments</h2>
+              <h2 style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 36 }}>Moments</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '20px' }}>
                 {photos.map((photo, i) => (
                   <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
@@ -195,7 +199,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
 
           {milestones.length > 0 && (
             <div>
-              <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 36 }}>Our journey</h2>
+              <h2 style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 36 }}>Our journey</h2>
               {milestones.map((milestone, i) => (
                 <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ marginBottom: 28 }}>
                   <div style={{ fontFamily: typography.bodyFont, fontSize: '0.875rem', fontWeight: 700, color: theme.accent, marginBottom: 6 }}>{milestone.date}</div>
@@ -226,7 +230,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
 
           {photos.length > 0 && (
             <div style={{ marginBottom: 88 }}>
-              <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.5rem, 3.5vw, 2.25rem)', letterSpacing: '-0.01em', marginBottom: 40 }}>Moments</h2>
+              <h2 style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.5rem, 3.5vw, 2.25rem)', letterSpacing: '-0.01em', marginBottom: 40 }}>Moments</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px' }}>
                 {photos.map((photo, i) => (
                   <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
@@ -239,7 +243,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
 
           {milestones.length > 0 && (
             <div>
-              <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.5rem, 3.5vw, 2.25rem)', letterSpacing: '-0.01em', marginBottom: 40 }}>Our journey</h2>
+              <h2 style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.5rem, 3.5vw, 2.25rem)', letterSpacing: '-0.01em', marginBottom: 40 }}>Our journey</h2>
               {milestones.map((milestone, i) => (
                 <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ display: 'flex', gap: 18, marginBottom: 36 }}>
                   <CubeBlock color={theme.accent} width={8} height={8} style={{ marginTop: 6, flexShrink: 0 }} />
@@ -273,7 +277,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
 
           {photos.length > 0 && (
             <div style={{ marginBottom: 72 }}>
-              <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 40 }}>Moments</h2>
+              <h2 style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 40 }}>Moments</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px' }}>
                 {photos.map((photo, i) => (
                   <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
@@ -285,11 +289,11 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
           )}
 
           {milestones.length > 0 && (
-            <div style={{ maxWidth: 520 }}>
-              <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 40 }}>Our journey</h2>
+            <div style={{ maxWidth: 520, margin: '0 auto', textAlign: pageAnchorFor(universeConfig) }}>
+              <h2 style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 40 }}>Our journey</h2>
               {milestones.map((milestone, i) => (
                 <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-                  {i > 0 && <VineRule color={theme.lightText} opacity={0.35} style={{ maxWidth: 140, margin: '28px 0' }} />}
+                  {i > 0 && <VineRule color={theme.lightText} opacity={0.35} style={{ maxWidth: 140, margin: '28px auto' }} />}
                   <div style={{ fontFamily: typography.bodyFont, fontSize: '0.8125rem', fontWeight: 600, letterSpacing: '0.04em', color: theme.accent, marginBottom: 6 }}>{milestone.date}</div>
                   <div style={{ fontFamily: typography.bodyFont, fontSize: '1rem', lineHeight: 1.7 }}>{milestone.text}</div>
                 </SectionReveal>
@@ -321,7 +325,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
 
           {photos.length > 0 && (
             <div style={{ marginBottom: 96 }}>
-              <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.5rem, 3vw, 2rem)', letterSpacing: '0.01em', marginBottom: 48 }}>Moments</h2>
+              <h2 style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.5rem, 3vw, 2rem)', letterSpacing: '0.01em', marginBottom: 48 }}>Moments</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '32px' }}>
                 {photos.map((photo, i) => (
                   <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
@@ -334,7 +338,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
 
           {milestones.length > 0 && (
             <div>
-              <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.5rem, 3vw, 2rem)', letterSpacing: '0.01em', marginBottom: 48 }}>Our journey</h2>
+              <h2 style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.5rem, 3vw, 2rem)', letterSpacing: '0.01em', marginBottom: 48 }}>Our journey</h2>
               {milestones.map((milestone, i) => (
                 <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ display: 'flex', gap: 24, marginBottom: 40 }}>
                   <VerticalRule color={theme.accent} opacity={0.5} height={44} thickness={1} style={{ flexShrink: 0, marginTop: 4 }} />
@@ -363,7 +367,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
           {storyText && (
             <SectionReveal anchorRole="paragraph"
               universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
-              style={{ fontFamily: typography.bodyFont, fontSize: 'clamp(1.05rem, 2vw, 1.25rem)', lineHeight: 1.75, marginBottom: 64, maxWidth: 640, whiteSpace: 'pre-wrap' }}
+              style={{ fontFamily: typography.bodyFont, fontSize: 'clamp(1.05rem, 2vw, 1.25rem)', lineHeight: 1.75, marginBottom: 64, maxWidth: 640, marginLeft: 'auto', marginRight: 'auto', whiteSpace: 'pre-wrap' }}
             >
               {storyText}
             </SectionReveal>
@@ -371,7 +375,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
 
           {photos.length > 0 && (
             <div style={{ marginBottom: 64 }}>
-              <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(2rem, 5vw, 3rem)', marginBottom: 32 }}>Moments</h2>
+              <h2 style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(2rem, 5vw, 3rem)', marginBottom: 32 }}>Moments</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
                 {photos.map((photo, i) => (
                   <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
@@ -384,8 +388,8 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
 
           {milestones.length > 0 && (
             <div>
-              <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(2rem, 5vw, 3rem)', marginBottom: 32 }}>The story so far</h2>
-              <div style={{ maxWidth: 640 }}>
+              <h2 style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(2rem, 5vw, 3rem)', marginBottom: 32 }}>The story so far</h2>
+              <div style={{ maxWidth: 640, margin: '0 auto' }}>
                 {milestones.map((milestone, i) => (
                   <SectionReveal
                     key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}
@@ -421,11 +425,11 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
             </SectionReveal>
           )}
 
-          {(storyText || photos.length > 0) && <WaveDivider color={theme.lightText} opacity={0.3} height={18} style={{ maxWidth: 160, marginBottom: 56 }} />}
+          {(storyText || photos.length > 0) && <WaveDivider color={theme.lightText} opacity={0.3} height={18} style={{ maxWidth: 160, margin: '0 auto 56px' }} />}
 
           {photos.length > 0 && (
             <div style={{ marginBottom: 56 }}>
-              <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 40 }}>Moments</h2>
+              <h2 style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 40 }}>Moments</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px' }}>
                 {photos.map((photo, i) => (
                   <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
@@ -438,7 +442,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
 
           {milestones.length > 0 && (
             <div>
-              <h2 style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 40 }}>Our journey</h2>
+              <h2 style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', marginBottom: 40 }}>Our journey</h2>
               {milestones.map((milestone, i) => (
                 <SectionReveal key={i} universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ marginBottom: 32 }}>
                   <div style={{ fontFamily: typography.bodyFont, fontSize: '0.875rem', color: theme.accent, marginBottom: 6 }}>{milestone.date}</div>
@@ -453,7 +457,9 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
   }
 
   const containerMaxWidth = isMinimal ? '620px' : isEditorial ? '900px' : '800px';
-  const containerMargin = isEditorial ? '0 0 0 auto' : '0 auto';
+  // One column on the page's axis in every universe; the editorial layout
+  // used to push its column right (Batch 2, layout parity).
+  const containerMargin = '0 auto';
   const containerPadding = isMinimal ? '110px 40px' : isEditorial ? '90px 40px' : '60px 24px';
 
   return (
@@ -487,7 +493,7 @@ function WeddingOurStoryPageContent({ weddingDetails, theme, typography, univers
               fontSize: isMinimal ? 'clamp(1.15rem, 2.2vw, 1.5rem)' : isEditorial ? 'clamp(1.25rem, 2.6vw, 1.75rem)' : 'clamp(1rem, 2vw, 1.125rem)',
               fontStyle: isEditorial ? 'italic' : 'normal',
               lineHeight: isMinimal ? 1.75 : isEditorial ? 1.55 : 1.8,
-              textAlign: isEditorial ? 'left' : 'center',
+              textAlign: pageAnchorFor(universeConfig),
               marginBottom: isMinimal ? '88px' : '60px',
               whiteSpace: 'pre-wrap'
             }}

@@ -5,13 +5,14 @@
  * sections.
  */
 import React from 'react';
+import { ROW_MARK_ROOT } from './markAnchor';
 import TicketStub from './TicketStub';
 
 export default function BrooklynSectionMark({ kicker, theme, typography, textColor, accentColor, as: Tag = 'p' }) {
   const color = textColor || theme.lightText;
   const accent = accentColor || theme.accent;
   return (
-    <div data-oi-anchor-root="" style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 48 }}>
+    <div data-oi-anchor-root="" style={{ ...ROW_MARK_ROOT, gap: 16, marginBottom: 48 }}>
       <TicketStub color={accent} width={48} height={10} />
       {kicker && (
         <Tag data-oi-anchor="mark" className="wb-body-face"
@@ -34,6 +35,7 @@ export default function BrooklynSectionMark({ kicker, theme, typography, textCol
 }
 
 // THE PAGE ANCHOR. Body copy on a page follows its mark rather than fighting
-// it (Batch 2, phase two): the guard measures the painted mark and asserts it
-// agrees with this declaration, so the two cannot drift apart unnoticed.
-BrooklynSectionMark.anchor = 'left';
+// it (Batch 2, phase two), and every mark now sits on the page's center axis
+// (Batch 2, layout parity: see markAnchor.js). The guard measures the painted
+// mark and asserts it agrees with this declaration.
+BrooklynSectionMark.anchor = 'center';

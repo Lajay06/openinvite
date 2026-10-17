@@ -14,6 +14,7 @@
  */
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import { pageAnchorFor } from './layouts/sectionMarks';
 
 export default function SectionReveal({
   children,
@@ -41,6 +42,14 @@ export default function SectionReveal({
   const hasConfig = universeConfig != null;
   const shouldAnimate = !disabled && !prefersReduced && (!!m?.sectionReveal || !hasConfig);
 
+  // A text block that the guard measures takes the page anchor unless its
+  // caller says otherwise. Several Our story branches set no textAlign and
+  // inherited left from the page, which is how a body sat left under a
+  // centered mark (Batch 2, layout parity).
+  const anchored = anchorRole && anchorRole !== 'mark' && style?.textAlign === undefined
+    ? { textAlign: pageAnchorFor(universeConfig), ...style }
+    : style;
+
   const yOffset  = m?.yOffset  ?? 20;
   const duration = m?.duration ?? 0.7;
   const ease     = m?.ease     ?? 'easeOut';
@@ -51,7 +60,7 @@ export default function SectionReveal({
       whileInView={shouldAnimate ? { opacity: 1, y: 0 } : undefined}
       viewport={{ once: true, margin: '-40px' }}
       transition={shouldAnimate ? { duration, ease } : undefined}
-      style={style}
+      style={anchored}
       className={className}
       data-oi-anchor={anchorRole}
       data-oi-anchor-root={anchorRoot ? '' : undefined}

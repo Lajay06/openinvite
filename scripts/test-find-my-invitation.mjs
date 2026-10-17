@@ -13,10 +13,11 @@
  *
  *   · london   a BESPOKE branch, written out in full in that file
  *   · amalfi   one of ten that delegate to GenericMastheadHero
- *   · tulum    the ONLY universe with no layout value, so the only one that
- *              falls through to the DEFAULT branch. That branch was also the
- *              only hero still holding an /rsvp href, a pill reading "RSVP",
- *              which item 3 removed.
+ *   · none     no universe at all, the only way left to fall through to the
+ *              DEFAULT branch. tulum used to be that route, as the one
+ *              universe with no layout value; it has its own masthead since
+ *              Batch 2. That branch was also the only hero still holding an
+ *              /rsvp href, a pill reading "RSVP", which item 3 removed.
  *
  * Counting in one universe would have proved nothing about the other
  * nineteen, which is exactly how the link could have been built into a hero
@@ -69,7 +70,7 @@ const readLink = (page) => page.evaluate(() => {
 const UNIVERSES = [
   ['london', 'a bespoke branch'],
   ['amalfi', 'a GenericMastheadHero universe'],
-  ['tulum', 'the default branch, the one that had the pill'],
+  [null, 'the default branch, the one that had the pill'],
 ];
 
 const browser = await chromium.launch();
@@ -86,7 +87,7 @@ for (const [universe, why] of UNIVERSES) {
     await page.goto(`${BASE}/w/${SLUG}`, { waitUntil: 'domcontentloaded', timeout: 45000 }).catch(() => {});
     await page.waitForTimeout(4500);
     const l = await readLink(page);
-    check(`${universe} (${why}): a stranger sees the link exactly once`, l.count === 1, `${l.count} found`);
+    check(`${universe ?? 'no universe'} (${why}): a stranger sees the link exactly once`, l.count === 1, `${l.count} found`);
     if (l.count === 1) {
       check('  it reads "Find my invitation"', l.text === 'Find my invitation', `"${l.text}"`);
       check('  and points at the RSVP tab', l.href === `/w/${SLUG}/rsvp`, l.href);

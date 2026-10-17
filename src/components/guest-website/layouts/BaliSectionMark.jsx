@@ -4,12 +4,13 @@
  * with the same easy, flowing feel as BaliMasthead.
  */
 import React from 'react';
+import { STACKED_MARK_ROOT } from './markAnchor';
 import LeafCurve from './LeafCurve';
 
 export default function BaliSectionMark({ kicker, theme, typography, textColor, as: Tag = 'p' }) {
   const color = textColor || theme.lightText;
   return (
-    <div data-oi-anchor-root="" style={{ textAlign: 'left', marginBottom: 48 }}>
+    <div data-oi-anchor-root="" style={{ ...STACKED_MARK_ROOT, marginBottom: 48 }}>
       <LeafCurve color={color} opacity={0.55} size={26} style={{ marginBottom: 14 }} />
       {kicker && (
         <Tag data-oi-anchor="mark" className="wb-body-face"
@@ -31,6 +32,7 @@ export default function BaliSectionMark({ kicker, theme, typography, textColor, 
 }
 
 // THE PAGE ANCHOR. Body copy on a page follows its mark rather than fighting
-// it (Batch 2, phase two): the guard measures the painted mark and asserts it
-// agrees with this declaration, so the two cannot drift apart unnoticed.
-BaliSectionMark.anchor = 'left';
+// it (Batch 2, phase two), and every mark now sits on the page's center axis
+// (Batch 2, layout parity: see markAnchor.js). The guard measures the painted
+// mark and asserts it agrees with this declaration.
+BaliSectionMark.anchor = 'center';

@@ -558,6 +558,20 @@ export const UNIVERSE_CONFIGS = {
     },
     motion: { sectionReveal: 'fade', duration: 0.7, yOffset: 16, ease: 'easeOut', intensity: 'subtle' },
     pageTransition: { type: 'lift', direction: 'up', duration: 0.3 },
+    // Tulum was the one universe with no layout and no copy block, so it fell
+    // through to the default hero and to the generic "You're invited". Both
+    // are its own now. The copy is a DRAFT awaiting the owner (Batch 2).
+    layout: 'tulum-horizon',
+    copy: {
+      heroKicker: 'Join us on the sand',
+      storyKicker: 'Our story',
+      celebrationKicker: 'The celebration',
+      rsvpKicker: 'RSVP',
+      rsvpIntro: 'Replying takes a minute. Leave the address they have for you, and your own link will drift in shortly after.',
+      rsvpWelcome: 'So glad you found your way here.',
+      rsvpCta: 'Send my link',
+      rsvpSent: 'Thank you. If that address is on the list, your invitation is on its way, so look in your inbox and your spam folder. If nothing arrives, ask the couple to add you.',
+    },
     // Design Studio tile metadata (fix/design-studio-entrance) — see london's
     // tags/tileDescription/imageUrl comment above for what these do.
     tags: ['tropical', 'coastal'],
