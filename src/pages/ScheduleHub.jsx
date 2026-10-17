@@ -30,6 +30,7 @@ import PageConsiderations from '../components/shared/PageConsiderations';
 import { getMyInvitation, getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { syncCalendarFeed } from '@/lib/calendarFeedSync';
 import TableToolbar from '@/components/shared/TableToolbar';
+import { useConfirm } from '@/components/shared/ConfirmDialog';
 const ScheduleEntity = base44.entities.Schedule;
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -73,6 +74,7 @@ const TABS = [
 
 export default function ScheduleHub() {
   const location = useLocation();
+  const [askToConfirm, confirmDialog] = useConfirm();
   const navigate  = useNavigate();
 
   // ── Shared schedule data (for stat strip, Export, Add event) ──────────────
@@ -312,6 +314,7 @@ export default function ScheduleHub() {
   const handleEditEvent = (item) => { setEditingItem(item); setShowForm(true); };
   const handleDelete = async (id) => {
     if (!id) return;
+    if (!(await askToConfirm('Delete this event?'))) return;
     const tid = toast.loading('Deleting…');
     try {
       await Schedule.delete(id);
@@ -354,6 +357,7 @@ export default function ScheduleHub() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div style={{ minHeight: "100vh", background: "#FFFFFF" }}>
+      {confirmDialog}
 
       {/* 1 ── Page header */}
       <DashboardPageHeader

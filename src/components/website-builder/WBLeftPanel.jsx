@@ -6,6 +6,7 @@ import NewPageModal from './NewPageModal';
 import { ALWAYS_ON_PAGES } from '@/lib/guestPages';
 import { EDITOR_TEMPLATES, isWritten } from '@/lib/emailTemplateStore';
 import { orderedCustomPages } from '@/lib/customPages';
+import { useConfirm } from '@/components/shared/ConfirmDialog';
 import PillSwitch from './PillSwitch';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
@@ -49,6 +50,7 @@ function Divider() {
 
 export default function WBLeftPanel({ details, onChange, currentPage, onPageChange, emailDraft, selectedEmail, onSelectEmail }) {
   const [showNewPage, setShowNewPage] = useState(false);
+  const [askToConfirm, confirmDialog] = useConfirm();
   const [hoveredPage, setHoveredPage] = useState(null);
   const [hoveredEmail, setHoveredEmail] = useState(null);
   const [hoverNewPage, setHoverNewPage] = useState(false);
@@ -166,8 +168,15 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
     ? { boxShadow: 'inset 0 2px 0 0 #E03553' }
     : null);
 
-  const handleDeleteCustomPage = (e, slug) => {
+  // CONFIRMED FIRST, the way Vendors, expenses, seating tables and registry
+  // links already confirm a delete, through the product's own dialog rather
+  // than a native one (src/components/shared/ConfirmDialog.jsx). A custom
+  // page is the couple's own writing, and the next autosave makes its
+  // removal permanent.
+  const handleDeleteCustomPage = async (e, slug) => {
     e.stopPropagation();
+    const name = customPages.find(p => p.slug === slug)?.name;
+    if (!(await askToConfirm(name ? `Delete the "${name}" page?` : 'Delete this page?'))) return;
     onChange('customPages', customPages.filter(p => p.slug !== slug));
     onChange('enabledPages', enabledPages.filter(s => s !== slug));
     if (currentPage === slug) onPageChange('home');
@@ -182,6 +191,7 @@ export default function WBLeftPanel({ details, onChange, currentPage, onPageChan
       color: 'rgba(255,255,255,0.6)',
       zIndex: 50,
     }}>
+      {confirmDialog}
 
       {/* ── Pages ── */}
       <SLabel onClick={() => setPagesOpen(o => !o)} isOpen={pagesOpen}>Pages</SLabel>

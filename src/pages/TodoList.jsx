@@ -8,6 +8,7 @@ import { Plus, Trash2, CheckSquare, Square, Edit3, Calendar, ChevronUp, ChevronD
 import DashboardPageHeader from '../components/layout/DashboardPageHeader';
 import { PRIORITY, SETTABLE_PRIORITIES, SORT_KEYS, DEFAULT_SORT, normalizePriority, nextSort, sortTasks } from '@/lib/todoSort';
 import { formatDashboardDate } from '@/lib/dashboardDate';
+import { useConfirm } from '@/components/shared/ConfirmDialog';
 
 const Note = base44.entities.Note;
 
@@ -109,6 +110,7 @@ function SortableHeader({ label, sortKey, sort, onSort, width }) {
 }
 
 export default function TodoList({ embedded = false }) {
+  const [askToConfirm, confirmDialog] = useConfirm();
   const [tasks, setTasks]           = useState([]);
   const [loading, setLoading]       = useState(true);
   const [view, setView]             = useState('list');       // 'list' | 'kanban'
@@ -193,6 +195,7 @@ export default function TodoList({ embedded = false }) {
   };
 
   const handleDelete = async (id) => {
+    if (!(await askToConfirm('Delete this task?'))) return;
     try {
       await Note.delete(id);
       setTasks(prev => prev.filter(t => t.id !== id));
@@ -266,6 +269,7 @@ export default function TodoList({ embedded = false }) {
   /* ── Render ── */
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
+      {confirmDialog}
 
       {!embedded && <DashboardPageHeader title="To do list" subtitle="Track tasks, ideas, and to-dos for your wedding" />}
 
