@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, ChevronDown, ChevronRight, Pencil } from "lucide-react";
+import { MoreHorizontal, Edit2, Trash2, Mail, Phone, Users, ChevronDown, ChevronRight, Pencil, CalendarPlus } from "lucide-react";
 import { getGuestEventResponse, effectiveMealChoice, mealOptionLabel } from "@/lib/weddingEvents";
 import { deriveRsvpStatus } from "@/lib/rsvpAggregation";
 import { groupByHousehold, isChild } from "@/lib/household";
@@ -953,7 +953,7 @@ function AddGuestRow({ onQuickAdd, columnCount }) {
 /* ─── Main component ─────────────────────────────────────────────────────── */
 export default function GuestList({
   guests, onEdit, onDelete, onUpdate, onQuickAdd, guestRoles = {}, loading, weddingEvents = [],
-  onAddToHousehold, onMoveOutOfHousehold, onResend,
+  onAddToHousehold, onMoveOutOfHousehold, onResend, onSetEventsAndSend,
   selectedIds, onToggleSelect, onToggleSelectAll, onEditEvents, onToggleEvent, busyEventId, scrollToGuestId,
   highlightedGuestId,
   readOnly = false,
@@ -1375,6 +1375,23 @@ export default function GuestList({
                           {onResend && (
                             <DropdownMenuItem data-resend-invitation onClick={() => onResend(guest)}>
                               Resend invitation
+                            </DropdownMenuItem>
+                          )}
+                          {/* ── SET EVENTS & SEND, FROM THE ROW ─────────────
+                              Batch 1, item 1. Guests.jsx has carried
+                              handleSetEventsAndSend since the status chips
+                              replaced the old inline button, and nothing
+                              reached it. It opens the existing SetEventsModal
+                              for this one guest and, on save, the existing
+                              send flow with them selected. Offered only to a
+                              guest who has never been sent an invitation
+                              (invite_sent_at, the same field the "Not invited"
+                              filter reads), and only when there are events to
+                              choose. Guests.jsx withholds the handler where
+                              sending is not available. */}
+                          {onSetEventsAndSend && !guest.invite_sent_at && weddingEvents.length > 0 && (
+                            <DropdownMenuItem data-set-events-and-send onClick={() => onSetEventsAndSend(guest)}>
+                              <CalendarPlus size={13} style={{ marginRight: 8 }} />Set events &amp; send
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuItem onClick={() => onEdit(guest)}>

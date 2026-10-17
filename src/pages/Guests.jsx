@@ -1278,6 +1278,7 @@ export default function Guests() {
               onToggleSelectAll={readOnly ? undefined : toggleSelectAll}
               onEditEvents={readOnly ? undefined : handleEditEvents}
               onResend={readOnly ? undefined : handleResend}
+              onSetEventsAndSend={readOnly || isPro ? undefined : handleSetEventsAndSend}
               onAddToHousehold={readOnly ? undefined : handleAddToHousehold}
               onMoveOutOfHousehold={readOnly ? undefined : handleMoveOutOfHousehold}
               onToggleEvent={readOnly ? undefined : handleToggleEvent}
