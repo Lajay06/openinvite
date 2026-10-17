@@ -54,7 +54,9 @@ function VendorThumbnail({ vendor, cfg }) {
   );
 }
 
-export default function VendorCard({ vendor, onViewProfile, onSave, isSaved, isSaving }) {
+export default function VendorCard({ vendor, onViewProfile, onSave, onRemove, isSaved, isSaving }) {
+  // Hovering "Added" says what a click now does, in the same few characters.
+  const [addedHover, setAddedHover] = React.useState(false);
   // vendor.category is Google's own classification, or null when Google has
   // none — 70% of wedding-vendor results, measured. The tag is omitted in
   // that case rather than shown as "Other" or "Uncategorized": an absent tag
@@ -116,12 +118,18 @@ export default function VendorCard({ vendor, onViewProfile, onSave, isSaved, isS
             favorite is a separate action that lives on that page. The old
             "Save" + bookmark icon read as starring, which is why adding
             here and then finding nothing under Favorites looked broken. */}
+        {/* ADDED IS UNDOABLE when the page passes onRemove: a click asks
+            first (the page's confirm, the same one every vendor removal
+            uses) and then takes the vendor off My vendors. */}
         <button
-          onClick={() => onSave(vendor)}
-          disabled={isSaved || isSaving}
-          style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, fontFamily: PJS, cursor: isSaved ? 'default' : 'pointer', border: 'none', background: 'none', color: isSaved ? '#10B981' : 'rgba(10,10,10,0.6)', padding: '2px 0', transition: 'color 0.12s', textAlign: 'right' }}
-          onMouseEnter={e => { if (!isSaved) e.currentTarget.style.color = '#0A0A0A'; }}
-          onMouseLeave={e => { if (!isSaved) e.currentTarget.style.color = 'rgba(10,10,10,0.6)'; }}
+          onClick={() => (isSaved ? onRemove?.(vendor) : onSave(vendor))}
+          disabled={isSaving || (isSaved && !onRemove)}
+          data-remove-vendor={isSaved && onRemove ? '' : undefined}
+          aria-label={isSaved && onRemove ? `Remove ${vendor.name} from my vendors` : undefined}
+          title={isSaved && onRemove ? 'Remove from my vendors' : undefined}
+          style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, fontFamily: PJS, cursor: isSaved && !onRemove ? 'default' : 'pointer', border: 'none', background: 'none', color: isSaved ? (addedHover && onRemove ? '#E03553' : '#10B981') : 'rgba(10,10,10,0.6)', padding: '2px 0', transition: 'color 0.12s', textAlign: 'right' }}
+          onMouseEnter={e => { setAddedHover(true); if (!isSaved) e.currentTarget.style.color = '#0A0A0A'; }}
+          onMouseLeave={e => { setAddedHover(false); if (!isSaved) e.currentTarget.style.color = 'rgba(10,10,10,0.6)'; }}
         >
           {/* The added state is "Added", not the full sentence the modal
               uses. This column is flexShrink: 0, so every character in it
@@ -130,7 +138,7 @@ export default function VendorCard({ vendor, onViewProfile, onSave, isSaved, isS
               carries the rest of the meaning; the name is what the couple
               actually needs to read. */}
           {isSaved ? <Check size={11} /> : <Plus size={11} />}
-          {isSaving ? 'Adding…' : isSaved ? 'Added' : 'Add to my vendors'}
+          {isSaving ? (isSaved ? 'Removing…' : 'Adding…') : isSaved ? (addedHover && onRemove ? 'Remove' : 'Added') : 'Add to my vendors'}
         </button>
       </div>
     </div>

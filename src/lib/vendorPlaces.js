@@ -144,3 +144,21 @@ export async function saveVendorFromPlaces(vendor, details) {
   });
   return { record, created: true };
 }
+
+/**
+ * Undoes an add from the marketplace: deletes this couple's Vendor record(s)
+ * for a Places id. Owner-scoped exactly as the add's duplicate check is, so
+ * it can only remove what this couple added, and every copy goes, so the
+ * card's "Added" cannot survive a reload on an older duplicate.
+ *
+ * @returns {Promise<number>} how many records were removed
+ */
+export async function removeVendorByPlaceId(placeId) {
+  if (!placeId) return 0;
+  const me = await base44.auth.me().catch(() => null);
+  if (!me?.id) throw new Error('not signed in');
+  const rows = await base44.entities.Vendor.filter({ created_by_id: me.id, google_place_id: placeId });
+  const mine = (rows || []).filter(r => !r.is_test && r.created_by_id === me.id && r.google_place_id === placeId);
+  await Promise.all(mine.map(r => base44.entities.Vendor.delete(r.id)));
+  return mine.length;
+}
