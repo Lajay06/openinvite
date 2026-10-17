@@ -164,7 +164,9 @@ export async function runSentenceCaseChrome() {
   //
   // Recorded in scratchpad/DECISION-LOG.md under 2026-10-15.
   const gate = CHROME.find(([p]) => p === 'pages/UniverseStudio.jsx')?.[1] || '';
-  const suite = CHROME.find(([p]) => p === 'pages/StudioGuestSuite.jsx')?.[1] || '';
+  // The Guest Suite paywall copy moved into GuestSuiteGate.jsx (fix batch 1,
+  // item 6) so /studio/guest-suite and /website-editor show one sentence.
+  const suite = CHROME.find(([p]) => p === 'components/studio/guest-suite/GuestSuiteGate.jsx')?.[1] || '';
   check('  product names keep their capitals, and match the sidebar',
     /Design studio is an Ultra feature/.test(gate) && /Guest Suite is an Ultra feature/.test(suite),
     'Design studio with one capital, Guest Suite with two, as NAV_SECTIONS writes them');

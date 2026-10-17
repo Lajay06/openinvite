@@ -4,7 +4,7 @@ import { ChevronLeft } from 'lucide-react';
 import { getMyWeddingDetails } from '@/lib/resolveMyWedding';
 import { useAuth } from '@/lib/AuthContext';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import UltraGate from '@/components/shared/UltraGate';
+import { GuestSuiteUltraGate } from '@/components/studio/guest-suite/GuestSuiteGate';
 
 const F = { fontFamily: "'Plus Jakarta Sans', sans-serif" };
 
@@ -65,12 +65,7 @@ export default function StudioGuestSuite() {
     navigate(pathMap[tabId], { replace: true });
   };
 
-  if (!canAccess) return (
-    <UltraGate
-      heading="Guest Suite is an Ultra feature"
-      description="Build your Guest Suite, manage where guests stay, create your experience guide, and share it with your guests, all in one place."
-    />
-  );
+  if (!canAccess) return <GuestSuiteUltraGate />;
 
   const previewUrl = details?.slug ? `/w/${details.slug}?preview=true` : null;
 
