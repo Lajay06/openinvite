@@ -4,15 +4,21 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { tableCapacityError, MIN_TABLE_CAPACITY, MAX_TABLE_CAPACITY } from '@/lib/tableCapacity';
 
 export default function AddTableModal({ onAdd, onClose }) {
   const [name, setName] = useState('');
   const [shape, setShape] = useState('round');
   const [capacity, setCapacity] = useState(8);
+  const [capacityError, setCapacityError] = useState(null);
 
+  // The same rule a capacity edit uses (src/lib/tableCapacity.js), with no
+  // one seated yet.
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (name && capacity > 0) {
+    const error = tableCapacityError(capacity, 0);
+    setCapacityError(error);
+    if (name && !error) {
       onAdd({ name, shape, capacity: Number(capacity) });
     }
   };
@@ -58,12 +64,15 @@ export default function AddTableModal({ onAdd, onClose }) {
               <Input
                 id="tcap"
                 type="number"
-                min="1"
-                max="20"
+                min={MIN_TABLE_CAPACITY}
+                max={MAX_TABLE_CAPACITY}
                 value={capacity}
-                onChange={e => setCapacity(e.target.value)}
+                onChange={e => { setCapacity(e.target.value); setCapacityError(null); }}
                 required
               />
+              {capacityError && (
+                <p role="alert" style={{ fontSize: 12, color: '#E03553', margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{capacityError}</p>
+              )}
             </div>
           </div>
 
