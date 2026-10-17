@@ -61,7 +61,7 @@ export const MARKETING_PAGE_SEO = {
   },
   '/gifting': {
     title: 'Openinvite | Gifting',
-    description: 'Give a couple the gift of Openinvite, a wedding planning platform with a one-time payment. Request a gift code and they redeem it at checkout, no subscription required.',
+    description: 'Give a couple the gift of Openinvite Pro or Ultra. Pay once, add a photo and a note, and they get an email that switches their plan on for 24 months.',
   },
   '/contact': {
     title: 'Openinvite | Contact',
@@ -69,7 +69,7 @@ export const MARKETING_PAGE_SEO = {
   },
   '/tour': {
     title: 'Openinvite | Tour the studio',
-    description: 'Eight short recordings of the Openinvite studio: Daily update, Schedule, Guest list, Seating, Budget, Universes, Ava and Your site. Nothing to sign up for.',
+    description: 'A short tour of the Openinvite studio in four moments: the daily update, guest replies, seating and your Guest Suite. Nothing to sign up for.',
   },
   '/app': {
     title: 'Openinvite | The app',
@@ -117,6 +117,7 @@ const SHARE_PHOTOS = {
   '/universes': 'DTS_ISOLA_Daniel_Far%C3%B2_Photos_ID13172_fu4zfe',
   '/pricing': 'DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_-_Print_ew6e2a',
   '/gifting': 'DTS_SNOWBOUND_Daniel_Faro_4k_i1ojvs',
+  '/gift': 'DTS_SNOWBOUND_Daniel_Faro_4k_i1ojvs',
   '/contact': 'DTS_Weirdly_Ever_After_Agust%C3%ADn_Far%C3%ADas_Photos_ID8960_nspx4l',
   '/tour': 'DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2',
   '/app': 'DTS_STAYCATION_Mathew_Addington_Photos_ID3369_l8e9dm',

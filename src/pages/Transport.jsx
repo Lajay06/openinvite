@@ -239,7 +239,7 @@ export default function TransportPage() {
                 {carParks.map((cp, i) => (
                   <div key={i} style={{ border: '1px solid rgba(10,10,10,0.12)', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                      <input value={cp.name || ''} onChange={e => updateCarPark(i, 'name', e.target.value)} placeholder="Car park name" style={inputStyle} />
+                      <input value={cp.name || ''} onChange={e => updateCarPark(i, 'name', e.target.value)} placeholder="Parking lot name" style={inputStyle} />
                       <input value={cp.address || ''} onChange={e => updateCarPark(i, 'address', e.target.value)} placeholder="Address" style={inputStyle} />
                       <input value={cp.distance || ''} onChange={e => updateCarPark(i, 'distance', e.target.value)} placeholder="Distance" style={inputStyle} />
                       <input value={cp.cost || ''} onChange={e => updateCarPark(i, 'cost', e.target.value)} placeholder="Cost" style={inputStyle} />

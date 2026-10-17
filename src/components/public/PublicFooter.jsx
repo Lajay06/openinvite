@@ -23,7 +23,7 @@ export default function PublicFooter() {
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: '#0A0A0A', marginBottom: 16 }}>Links</p>
             <ul className="space-y-3">
               <li><Link to="/" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Home</Link></li>
-              <li><Link to="/About" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">About</Link></li>
+              <li><Link to="/about" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">About</Link></li>
               <li><Link to="/universes" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Universes</Link></li>
               <li><Link to="/gifting" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">Gifting</Link></li>
               <li><Link to="/faq" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors">FAQ</Link></li>
@@ -47,7 +47,7 @@ export default function PublicFooter() {
           {/* Contact */}
           <div>
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', fontFamily: "'Plus Jakarta Sans', sans-serif", color: '#0A0A0A', marginBottom: 16 }}>Contact</p>
-            <Link to="/Contact" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors block mb-2">
+            <Link to="/contact" className="text-[#0A0A0A] hover:text-[#E03553] text-sm transition-colors block mb-2">
               Get in touch
             </Link>
 

@@ -258,11 +258,11 @@ const ALL_ITEMS = [
       ];
       if (p.isOutdoor) return [
         'Outdoor venues often have limited or unpaved parking, restricted access for catering trucks, and no natural shelter for guests arriving in adverse weather. Walk the site with your venue coordinator and map out exactly where cars, vendors, and guests will all arrive.',
-        'If the venue is not easily walkable, consider shuttle buses between a nearby carpark and the site. This also reduces drink-driving risk at the end of the night.',
+        'If the venue is not easily walkable, consider shuttle buses between a nearby parking lot and the site. This also reduces drink-driving risk at the end of the night.',
       ];
       return [
         'Guest transport is most critical for events that involve a venue change — for example, a ceremony location separate from the reception. Guests should never have to figure out transport themselves on the day.',
-        'Consider chartered coaches, Uber codes, or designated carpark drop-off points. Communicate logistics clearly in your pre-wedding information pack.',
+        'Consider chartered coaches, Uber codes, or designated drop-off points. Communicate logistics clearly in your pre-wedding information pack.',
       ];
     },
     tips: () => [
