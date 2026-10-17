@@ -9,6 +9,11 @@
  * photograph: no cards, tables, chips or overlays. The wizard itself renders
  * through this too, so the three can never drift apart.
  *
+ * BULLETS (owner review of #1092, 2026-10-17): Replies and Seating follow the
+ * live reference blocks (Customizable Dashboard, Timeline, Smart Budget): the
+ * line, then plain fact bullets in those blocks' own list style, and nothing
+ * under the bullets. The wizard passes none.
+ *
  * On a phone the photograph comes first at 3:2, as the wizard's always has.
  * The row reveals on scroll the way the wizard did, and not at all under
  * reduced motion.
@@ -22,19 +27,19 @@ const prefersReduced = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const GROUNDS = {
-  black: { background: "#0A0A0A", heading: "#FFFFFF", body: "rgba(255,255,255,0.4)" },
-  white: { background: "#FFFFFF", heading: "#0A0A0A", body: "#444444" },
+  black: { background: "#0A0A0A", heading: "#FFFFFF", body: "rgba(255,255,255,0.4)", rule: "rgba(255,255,255,0.08)" },
+  white: { background: "#FFFFFF", heading: "#0A0A0A", body: "#444444", rule: "#E8E8E8" },
 };
 
 /**
  * @param {{ name: string, ground: 'black'|'white', photo: 'left'|'right',
  *   src: string, srcSet?: string, alt: string, heading: string, body: string,
- *   ultra?: boolean, tint?: string }} props
+ *   bullets?: string[], ultra?: boolean, tint?: string }} props
  *   `ultra` sets the product's Ultra badge beside the headline, for a feature
  *   the plan gating in code holds to Ultra. `tint` is the wizard's own wash
  *   over its photograph, and only the wizard passes it.
  */
-export default function FeatureRow({ name, ground, photo, src, srcSet, alt, heading, body, ultra = false, tint }) {
+export default function FeatureRow({ name, ground, photo, src, srcSet, alt, heading, body, bullets, ultra = false, tint }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(prefersReduced());
   useEffect(() => {
@@ -62,7 +67,16 @@ export default function FeatureRow({ name, ground, photo, src, srcSet, alt, head
             {heading}
             {ultra ? <span data-ultra-badge style={{ display: "inline-flex", verticalAlign: "middle", marginLeft: 14, position: "relative", top: -4 }}><PlanBadge plan="ultra" padding="4px 9px" fontSize={13} /></span> : null}
           </FeatureSectionHeading>
-          <p style={{ ...featureBodyTextStyle, color: g.body }}>{body}</p>
+          <p style={{ ...featureBodyTextStyle, color: g.body, marginBottom: bullets ? 32 : undefined }}>{body}</p>
+          {bullets ? (
+            <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+              {bullets.map((b, i) => (
+                <li key={b} style={{ padding: "11px 0", borderBottom: i < bullets.length - 1 ? `1px solid ${g.rule}` : "none", color: g.body, fontSize: 14, lineHeight: 1.5 }}>
+                  {b}
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </div>
       </div>
     </section>

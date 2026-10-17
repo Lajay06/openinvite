@@ -10,7 +10,7 @@
  * navy/lemon palette, long since corrected in the real config).
  */
 import { UNIVERSE_CONFIGS } from './websiteThemes.js';
-import { heroDeliveryWidth } from './heroMasters.js';
+import { heroDeliveryWidth, HERO_MASTERS, heroPublicId } from './heroMasters.js';
 import { getSampleWedding } from './sampleContent/index.js';
 import { subjectCropUrl } from './universeGallery.js';
 
@@ -114,8 +114,40 @@ export function getUniverse(id) {
  */
 export function universeTileImage(id, { width = 1200, height = 800 } = {}) {
   const cover = getSampleWedding(id)?.coverPhoto;
-  const cropped = cover ? subjectCropUrl(cover, { width, height }) : null;
+  const cropped = cover ? (subjectWindowUrl(id, cover, { width, height }) || subjectCropUrl(cover, { width, height })) : null;
   return cropped || getUniverse(id)?.imageUrl || null;
+}
+
+/**
+ * WHERE THE COUPLE IS, for the heroes face detection gets wrong in a portrait
+ * tile (owner review of #1092, 2026-10-17). The subject's horizontal centre
+ * as a fraction of the master's width, measured off the master, the same
+ * figures heroFocus.js records for the phone hero: brooklyn's couple spans
+ * 26-50% and g_faces:auto finds no face, so the 3:4 tile was the bodega;
+ * havana's spans 38-62% and the detector's bystanders pushed the woman off
+ * the right edge; 0.56, not the midpoint, because her skirt swings past 62%
+ * and the man at 38% has room to spare. The other eighteen tiles were checked on a contact sheet
+ * and keep g_faces:auto.
+ */
+export const TILE_SUBJECT_CENTER = { brooklyn: 0.38, havana: 0.56 };
+
+/**
+ * A tile narrower than its master, cut around the measured subject: first an
+ * explicit crop of the master at the tile's aspect, centred on the couple and
+ * held inside the frame, then the fill to the tile's size. Null when the
+ * universe has no measurement, the master is unmeasured, or the image is not
+ * portrait (the 16:9 scroll is a hero, framed by heroFocus.js), so everything
+ * else is unchanged.
+ */
+function subjectWindowUrl(id, cover, { width, height }) {
+  const center = TILE_SUBJECT_CENTER[id];
+  const publicId = heroPublicId(cover);
+  const master = HERO_MASTERS[publicId];
+  if (center == null || !master || width > height) return null;
+  const cropWidth = Math.round(master.height * width / height);
+  const x = Math.max(0, Math.min(master.width - cropWidth, Math.round(center * master.width - cropWidth / 2)));
+  const base = String(cover).split('/image/upload/')[0];
+  return `${base}/image/upload/c_crop,x_${x},y_0,w_${cropWidth},h_${master.height}/c_fill,f_auto,q_auto,w_${width},h_${height}/${publicId}`;
 }
 
 /**

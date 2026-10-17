@@ -9,8 +9,6 @@ import { useSpotlight } from "@/hooks/useSpotlight";
 import { useAppleReveal } from "@/hooks/useAppleReveal";
 import FeatureSectionHeading, { featureBodyTextStyle } from "@/components/home/FeatureSectionHeading";
 import { responsivePhoto } from "@/lib/marketingImage";
-import FeatureStill from "@/components/marketing/FeatureStill";
-import { FEATURE_STILLS } from "@/lib/featureStills";
 
 // Not full-viewport like the other two: the photo column is `w-full lg:w-1/2`,
 // so it spans the viewport below Tailwind's lg (1024px) and half of it above.
@@ -125,7 +123,6 @@ export default function FeatureBudget() {
               </li>
             ))}
           </ul>
-          <FeatureStill still={FEATURE_STILLS.budget} dark />
         </div>
       </div>
 

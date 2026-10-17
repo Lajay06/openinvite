@@ -133,16 +133,20 @@ export function runAppMarketing() {
     cardsAt > -1 && blockAt > cardsAt && pricingAt > blockAt, `cards ${cardsAt}, app ${blockAt}, pricing ${pricingAt}`);
 
   // ── items 2 and 4: the phones, the lines, /app and the footer ─────────
-  const DESKTOP = 'You design your Guest Suite on a desktop, where the space is; everything else is yours wherever you are.';
   const features = existsSync(join(PRE, 'features/index.html')) ? readFileSync(join(PRE, 'features/index.html'), 'utf8') : '';
-  // Batch 3, item 2: the red section's twin with the dark box kept, three of
-  // the owner's four lines (the replies line waits for push), the desktop
-  // sentence unchanged.
+  // Owner review of #1092 (2026-10-17): the reference blocks' shape, one
+  // engaging line and five facts about what the iPhone app does today, each
+  // confirmed in src/mobile (FeaturesAppSection.jsx says where). The parking
+  // lot, in line and desktop lines are gone, and no line promises push.
+  const BODY = 'Plan from anywhere. The app carries the same wedding as your computer, so every guest, table and expense goes where you go.';
   const FEATURE_LINES = [
-    'Add a guest from the parking lot; it is on your computer before you are back inside.',
-    'Check the budget in line, not at the desk.',
-    'The seating chart in your hand at the venue walk-through.',
+    'Same sign in, same wedding as the website',
+    'Add and edit guests, expenses, vendors and to-dos',
+    'Seat guests and move them between tables',
+    'Your run sheet, seating and vendor contacts open without signal',
+    'Ask Ava anything, and read your daily update',
   ];
+  const GONE = /parking lot|in line, not at the desk|You design your Guest Suite on a desktop/;
   // Batch 3 amendment B: one row of the feature rows, a photograph and a
   // text panel, no phone and no twin. Its layout against its neighbours is
   // measured in a browser by test:marketing-routes.
@@ -153,8 +157,8 @@ export function runAppMarketing() {
   check('features: the heading, verbatim, as its h2', /<h2\b[^>]*>\s*Everything, on your phone\s*<\/h2>/.test(fb));
   const flines = [...fb.matchAll(/<li\b[^>]*data-app-line[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1]).trim());
   check('features: the lines, verbatim and in order', JSON.stringify(flines) === JSON.stringify(FEATURE_LINES), JSON.stringify(flines).slice(0, 120));
-  check('features: no line promises a reply landing as guests tap', !/as guests tap them/.test(ft), 'held until push');
-  check('features: the desktop sentence, verbatim', ft.includes(DESKTOP));
+  check('features: the engaging line, verbatim', ft.includes(BODY));
+  check('features: no line promises push, a reply landing as guests tap, or the retired lines', !/as guests tap them|push/i.test(ft) && !GONE.test(ft), 'held until push');
   const STAY = 'DTS_STAYCATION_Mathew_Addington_Photos_ID3369_l8e9dm';
   const fimg = /<img\b[^>]*data-features-app-photo[^>]*>/.exec(fb)?.[0] || '';
   const fset = (/srcset="([^"]+)"/i.exec(fimg)?.[1] || '').replace(/&amp;/g, '&');
@@ -180,7 +184,7 @@ export function runAppMarketing() {
   check('/app: the heading, verbatim, as the page\'s h1', /<h1\b[^>]*>\s*Everything, on your phone\s*<\/h1>/.test(ab));
   const alines = [...ab.matchAll(/<li\b[^>]*data-app-line[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1]).trim());
   check('/app: the Features lines, verbatim and in order', JSON.stringify(alines) === JSON.stringify(FEATURE_LINES), JSON.stringify(alines).slice(0, 120));
-  check('/app: the desktop sentence, verbatim', textOf(ab).includes(DESKTOP));
+  check('/app: the engaging line, and none of the retired lines', textOf(ab).includes(BODY) && !GONE.test(textOf(ab)));
   check('/app: no line promises replies as they happen', !/replies arriving as they happen|as guests tap them/.test(textOf(appHtml)), 'held until push');
   check('/app: one h1 on the page', (appHtml.match(/<h1\b/g) || []).length === 1);
   const guests = textOf(sectionWith(appHtml, 'data-app-guests'));
@@ -193,15 +197,14 @@ export function runAppMarketing() {
   check('/app: not noindexed', !!appHtml && !/<meta name="robots"[^>]*noindex/i.test(appHtml));
   check('/app: its title', /<title>Openinvite \| The app<\/title>/.test(appHtml));
   check('/app: its description', appHtml.includes('content="The Openinvite wedding planner on your phone: guests, replies, seating, budget, vendors, schedule and Ava. iPhone and Android, included with every plan. Guests never need it."'));
-  // EVERY PAGE THAT HAS THE MARKETING FOOTER. The auth pages (login, register,
-  // forgot password) render none, so there is nothing to add the link to
-  // there; the count pins how many pages do, so a footer that appears on a new
-  // page without the link still fails.
+  // NO "THE APP" IN THE FOOTER (owner review of #1092, 2026-10-17): the link
+  // is gone from every page that has the marketing footer. The count still
+  // pins how many pages carry the footer.
   const withFooter = pages.filter((p) => /data-public-footer/.test(readFileSync(p, 'utf8')));
-  const noFooterLink = withFooter.filter((p) => !/<a\b[^>]*href="\/app"[^>]*>The app<\/a>/.test(readFileSync(p, 'utf8')));
-  check('the footer links to /app as "The app" on every page that has the marketing footer',
-    withFooter.length >= 13 && noFooterLink.length === 0,
-    noFooterLink.length ? noFooterLink.map((p) => p.slice(PRE.length + 1)).join(', ') : `${withFooter.length} of ${pages.length} pages carry the footer`);
+  const footerLink = withFooter.filter((p) => /data-footer-app|<a\b[^>]*href="\/app"[^>]*>The app<\/a>/.test(readFileSync(p, 'utf8')));
+  check('the footer has no "The app" link, on any page that has the marketing footer',
+    withFooter.length >= 13 && footerLink.length === 0,
+    footerLink.length ? footerLink.map((p) => p.slice(PRE.length + 1)).join(', ') : `${withFooter.length} of ${pages.length} pages carry the footer`);
 
   // ── item 3: the pricing line ──────────────────────────────────────────
   const pricing = existsSync(join(PRE, 'pricing/index.html')) ? readFileSync(join(PRE, 'pricing/index.html'), 'utf8') : '';

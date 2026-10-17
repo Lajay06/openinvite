@@ -116,7 +116,7 @@ const SHARE_PHOTOS = {
   '/ava': 'v1779217006/DTS_Misc_1__Nick_Fancher__Nick_Fancher_Photos_ID6161_isrtef',
   '/universes': 'DTS_ISOLA_Daniel_Far%C3%B2_Photos_ID13172_fu4zfe',
   '/pricing': 'DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_-_Print_ew6e2a',
-  '/gifting': 'DTS_SNOWBOUND_Daniel_Far%C3%B2_Photos_ID12431_yunnan',
+  '/gifting': 'DTS_SNOWBOUND_Daniel_Faro_4k_i1ojvs',
   '/contact': 'DTS_Weirdly_Ever_After_Agust%C3%ADn_Far%C3%ADas_Photos_ID8960_nspx4l',
   '/tour': 'DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2',
   '/app': 'DTS_STAYCATION_Mathew_Addington_Photos_ID3369_l8e9dm',

@@ -28,6 +28,33 @@ const END_CAP = responsivePhoto("DTS_CURATIVE_Chris_Abatzis_Photos_ID7678_dlsgrm
 // between them take over Advanced guest management's two jobs: the replies,
 // and the seating. Owned Higgsfield photographs: the woman reading her phone
 // (038), and the long dinner table under paper lanterns (pin_kyoto_party).
+// THE BULLETS ARE FACTS (owner review of #1092, 2026-10-17), each confirmed
+// in the code before it was written:
+//   replies: the personal link, api/my-guest-links.js and api/send-invites.js;
+//     one answer per event, RSVPPage.jsx's EventCard and api/rsvp-submit.js;
+//     meal, dietary, plus-one and song on the form, RSVPPage.jsx; the
+//     deadline, SendInvitesModal.jsx's RsvpDeadlineField and rsvp-submit.js;
+//     the counts and the CSV with meals and tables, Guests.jsx
+//   seating: round and rectangle tables, AddTableModal.jsx, on the floor
+//     plan Seating.jsx imports; click a table then a name, and the unseated
+//     filter, Seating.jsx; Ava's plan with plus-ones beside their guest,
+//     AISeatingGenerator.jsx; one plan per event, Seating.jsx activeEventId;
+//     the one PDF of layout and names, Seating.jsx handleExportSeating
+const REPLIES_BULLETS = [
+  "A personal RSVP link for every guest, sent by email",
+  "One answer per event, from the ceremony to the reception",
+  "Meal choice, dietary needs, plus-ones and song requests on the form",
+  "A reply deadline you set, and the form closes after it",
+  "Attending, declined and awaiting at a glance, and a CSV with every meal and table",
+];
+const SEATING_BULLETS = [
+  "Round and rectangle tables, laid out on your venue's floor plan",
+  "Click a table, choose a name, and see who is still unseated",
+  "Ava drafts a plan and keeps plus-ones at their guest's table",
+  "A seating plan for each event",
+  "Export the layout and every table's names as one PDF",
+];
+
 const REPLIES_PHOTO = responsivePhoto("hf_20260905_124238_2e0981ad-2b66-46cc-948d-a8db441b4929_whdhah", 1536);
 const SEATING_PHOTO = responsivePhoto("pin_kyoto_party", 1664);
 
@@ -153,9 +180,10 @@ export default function Features() {
       {/* ── S7: FEATURE DEEP DIVES ───────────────────────── */}
       {/* Timeline (white), then Replies (black) and Seating (white) in
           Advanced guest management's place, then budget (black): the page
-          keeps alternating. Replies carries the Ultra badge: the RSVP step is
-          Ultra-gated in src/lib/journeySteps.js and the guest's meal choice
-          in src/pages/FoodBeverage.jsx (MealOptionsUltraGate). */}
+          keeps alternating. Replies carries the Ultra badge: "Online RSVP
+          pages for guests" is in ULTRA_EXTRAS (src/lib/planFeatures.js), the
+          RSVP step is Ultra-gated in src/lib/journeySteps.js, and the guest's
+          meal choice in src/pages/FoodBeverage.jsx (MealOptionsUltraGate). */}
       <div style={{ background: "#FFFFFF" }}>
         <FeatureTimeline />
         <FeatureRow
@@ -165,8 +193,9 @@ export default function Features() {
           src={REPLIES_PHOTO.src}
           srcSet={REPLIES_PHOTO.srcSet}
           alt="A woman in a white slip dress smiling at her phone"
-          heading="Watch the yeses roll in."
+          heading="Watch the replies roll in."
           body="Every guest gets their own link. They RSVP in seconds, pick their meal, request a song (yes, ABBA counts) and it all lands in your guest list, sorted by household."
+          bullets={REPLIES_BULLETS}
           ultra
         />
         <FeatureRow
@@ -177,7 +206,8 @@ export default function Features() {
           srcSet={SEATING_PHOTO.srcSet}
           alt="Guests seated along a long dinner table under paper lanterns at night"
           heading="Seating, minus the drama."
-          body="Drag guests to tables and the rest sorts itself out: meals go to the caterer, names go on the place cards, and the plan goes to every phone on the day."
+          body="Drag guests to tables and the rest sorts itself out: meals go to the caterer, names go on the place cards."
+          bullets={SEATING_BULLETS}
         />
         <FeatureBudget />
       </div>
@@ -234,13 +264,8 @@ function DashboardSection() {
   const BULLETS = ["Invite your partner or planner", "Set role-based permissions", "Assign tasks with deadlines", "Real-time collaborative updates", "Shared vendor & budget views", "Manage who sees sensitive data"];
   return (
     <>
-    {/* THE MORNING PAGE, AS A BAND (owner ruling 2026-10-12): full width at
-        the top of this section, 2:1, above the row rather than inside it,
-        because the row below is held to one screen as the app section's
-        twin. Same white ground and the row's own side gutters. */}
-    <div data-dashboard-band style={{ background: "#FFFFFF", padding: "80px clamp(32px, 5vw, 64px) 0" }}>
-      <FeatureStill still={FEATURE_STILLS.morning} aspect="2 / 1" margin="0" sizes="calc(100vw - 2 * clamp(32px, 5vw, 64px))" />
-    </div>
+    {/* The morning band ("Morning, Isla") is gone (owner review of #1092,
+        2026-10-17): no screenshot or mock card on a Features section. */}
     <section ref={ref} style={{ background: "#FFFFFF", minHeight: "100vh", display: "flex", overflow: "hidden" }} className="flex-col lg:flex-row">
       <div className="w-full lg:w-1/2 order-2 lg:order-1 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(60px)", transition: `opacity 0.9s ${EASE} 0.15s, transform 1s ${EASE} 0.15s` }}>
         <div style={{ maxWidth: 552 }}>

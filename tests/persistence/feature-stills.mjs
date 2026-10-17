@@ -10,6 +10,11 @@
  * runs. The two accordion rows' media only mount when a row is opened, so they
  * are read from the source that renders them.
  *
+ * NO STILL ON A FEATURES SECTION (owner review of #1092, 2026-10-17): the
+ * morning band and the timeline and budget stills are gone, so /features
+ * serves no inline still; the vendors still in the accordion's open panel
+ * stays. The map keeps every entry for the studio tour.
+ *
  * What it holds:
  *   - every asset is a versioned upload, never a placeholder or a v0 path, so
  *     a reshoot is a new id (a live Cloudinary path is never overwritten)
@@ -53,39 +58,17 @@ export function runFeatureStills() {
     !!crop && Number(crop[1]) * 2 === Number(crop[2]) * 3 && [FEATURE_SEATING_CLIP.mp4, FEATURE_SEATING_CLIP.poster].every((u) => u.includes(crop[0])),
     crop?.[0]);
 
-  // ── the four stills, as served ─────────────────────────────────────────
+  // ── none on the page, as served ────────────────────────────────────────
   const pre = join(ROOT, 'prerendered/features/index.html');
   const html = existsSync(pre) ? readFileSync(pre, 'utf8').replace(/&amp;/g, '&') : '';
   const figures = html.match(/<figure\b[^>]*data-feature-still="still"[\s\S]*?<\/figure>/g) || [];
-  // Three since 2026-10-16: the replies still went with Advanced guest
-  // management, whose place the Replies and Seating rows took.
-  check('prerendered /features carries the three inline stills', figures.length === 3, `${figures.length} figures`);
-  for (const k of ['budget', 'suite']) {
-    const s = FEATURE_STILLS[k];
-    const fig = figures.find((f) => f.includes(idOf(s.src))) || '';
-    check(`${k}: on the page, 552 and 1104 wide, with its caption`,
-      !!fig && fig.includes(`w_552/${idOf(s.src)} 552w`) && fig.includes(`w_1104/${idOf(s.src)} 1104w`) && fig.replace(/&#x27;/g, "'").includes(s.caption));
+  check('prerendered /features carries no inline still', !!html && figures.length === 0, `${figures.length} figures`);
+  check('the morning band is gone', !html.includes('data-dashboard-band') && !html.includes(idOf(FEATURE_STILLS.morning.src)));
+  for (const k of ['replies', 'budget', 'suite']) {
+    check(`${k}: not on the page`, !html.includes(idOf(FEATURE_STILLS[k].src)));
   }
-
-  // ── where each one sits ────────────────────────────────────────────────
-  const under = (file, name) => {
-    const src = stripComments(read(file));
-    const ul = src.lastIndexOf('</ul>', src.indexOf(name));
-    return src.indexOf(name) > 0 && ul > 0 && !/<(section|div)\b/.test(src.slice(ul, src.indexOf(name)));
-  };
-  // THE MORNING BAND (owner ruling 2026-10-12): full width at the top of the
-  // dashboard section, 2:1, outside the one-screen row, with the owner's caption.
-  const band = /<div\b[^>]*data-dashboard-band[^>]*>([\s\S]*?<\/figure>)/.exec(html)?.[1] || '';
-  const mid = idOf(FEATURE_STILLS.morning.src);
-  check('morning page: the band above the dashboard row, 2:1, 1312, 656 and 2624 wide',
-    band.includes(`w_1312/${mid} 1312w`) && band.includes(`w_2624/${mid} 2624w`) && band.includes(`w_656/${mid} 656w`) && /aspect-ratio:\s*2\s*\/\s*1/.test(band));
-  check('morning page: the caption is the owner\'s', FEATURE_STILLS.morning.caption === 'Every morning, one sentence tells you what today needs.' && band.includes(FEATURE_STILLS.morning.caption));
-  const dash = html.indexOf('data-dashboard-band');
-  check('morning page: the band comes straight before the Customizable Dashboard row, not inside it',
-    dash > 0 && html.indexOf('Customizable Dashboard', dash) > dash && !/<section\b[^>]*lg:flex-row[^>]*>(?:(?!<\/section>)[\s\S])*data-dashboard-band/.test(html));
-  check('replies: gone with Advanced guest management', !existsSync(join(ROOT, 'src/components/home/FeatureGuests.jsx')) && !html.includes(idOf(FEATURE_STILLS.replies.src)));
-  check('budget: under the budget bullets, on the dark ground', under('src/components/home/FeatureBudget.jsx', 'still={FEATURE_STILLS.budget} dark'));
-  check('suite: under the timeline bullets', under('src/components/home/FeatureTimeline.jsx', 'still={FEATURE_STILLS.suite}'));
+  check('timeline and budget render no still under their bullets',
+    !/FeatureStill|FEATURE_STILLS/.test(stripComments(read('src/components/home/FeatureTimeline.jsx')) + stripComments(read('src/components/home/FeatureBudget.jsx'))));
   const features = stripComments(read('src/pages/Features.jsx'));
   // The seating clip left the accordion on 2026-10-16 (the Seating row shows
   // the job now); the clip stays in the map for the studio tour.

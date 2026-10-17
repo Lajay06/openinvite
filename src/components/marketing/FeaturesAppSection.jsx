@@ -18,11 +18,21 @@
  * /app renders the same row as its hero (batch 3, owner ruling 2026-10-11),
  * with the heading as the page's h1.
  *
- * Copy is the owner's, verbatim, each line checked against the product before
- * it shipped. One line is held back: "Replies land on your phone as guests
- * tap them." The app has no push yet (MOBILE_APP.md, "What real push needs"),
- * and in the app a reply appears within a minute only while it is open, so
- * the line could not be stood behind. It returns when push does.
+ * THE COPY FOLLOWS THE REFERENCE BLOCKS (owner review of #1092, 2026-10-17):
+ * the heading, one engaging line, then five plain facts about what the iPhone
+ * app does today, each confirmed in src/mobile before it was written:
+ *   - same account and wedding: FirstRunContainers.jsx signs in with
+ *     base44.auth, and data/realApi.js writes through the desktop's helpers
+ *   - guests, expenses, vendors and to-dos: GuestFormSheet.jsx,
+ *     ExpenseFormSheet.jsx, and MOBILE_PARITY.md (Vendors, To do)
+ *   - seating as lists: screens/plan/SeatingScreen.jsx
+ *   - offline, read only: data/offlineCache.js keeps the run sheet, seating,
+ *     vendor contacts and emergency contacts
+ *   - Ava and the daily update: MobileApp.jsx (AvaChatPod), shell/DailyUpdate.jsx
+ * No notification line: the app has no push, and the only local notices it
+ * schedules are the three test ones (notifications/testNotification.js).
+ * The parking lot, in line and desktop lines are gone. /app renders the same
+ * row as its hero.
  */
 import FeatureSectionHeading, { featureBodyTextStyle } from "@/components/home/FeatureSectionHeading";
 
@@ -33,12 +43,14 @@ export const FEATURES_APP_SRCSET = [1600, 1200, 800].map((w) => `${photoUrl(w)} 
 export const FEATURES_APP_ALT = "A woman lies on her bed, phone in both hands, reading.";
 
 export const APP_STORE_LINE = "Coming to the App Store and Google Play at launch.";
-export const APP_DESKTOP_LINE = "You design your Guest Suite on a desktop, where the space is; everything else is yours wherever you are.";
 export const FEATURES_APP_HEADING = "Everything, on your phone";
+export const FEATURES_APP_BODY = "Plan from anywhere. The app carries the same wedding as your computer, so every guest, table and expense goes where you go.";
 export const FEATURES_APP_LINES = [
-  "Add a guest from the parking lot; it is on your computer before you are back inside.",
-  "Check the budget in line, not at the desk.",
-  "The seating chart in your hand at the venue walk-through.",
+  "Same sign in, same wedding as the website",
+  "Add and edit guests, expenses, vendors and to-dos",
+  "Seat guests and move them between tables",
+  "Your run sheet, seating and vendor contacts open without signal",
+  "Ask Ava anything, and read your daily update",
 ];
 
 // BLACK, NOT CREAM (owner ruling 2026-10-16): the panel was #F6F2EC, the
@@ -67,14 +79,15 @@ export default function FeaturesAppSection({ headingLevel = "h2" }) {
       <div data-feature-row-text className="w-full lg:w-1/2 order-2 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", background: PANEL }}>
         <div style={{ maxWidth: 552 }}>
           <FeatureSectionHeading as={headingLevel} color={INK}>{FEATURES_APP_HEADING}</FeatureSectionHeading>
+          {/* The Smart Budget block's body and bullets, on the same black. */}
+          <p data-app-body style={{ ...featureBodyTextStyle, color: "rgba(255,255,255,0.4)", marginBottom: 32 }}>{FEATURES_APP_BODY}</p>
           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
             {FEATURES_APP_LINES.map((line, i) => (
-              <li key={line} data-app-line style={{ padding: "11px 0", borderBottom: i < FEATURES_APP_LINES.length - 1 ? "1px solid rgba(255,255,255,0.12)" : "none", color: INK, fontSize: 14, lineHeight: 1.5 }}>
+              <li key={line} data-app-line style={{ padding: "11px 0", borderBottom: i < FEATURES_APP_LINES.length - 1 ? "1px solid rgba(255,255,255,0.08)" : "none", color: "rgba(255,255,255,0.4)", fontSize: 14, lineHeight: 1.5 }}>
                 {line}
               </li>
             ))}
           </ul>
-          <p data-app-desktop-line style={{ ...featureBodyTextStyle, color: "rgba(255,255,255,0.72)", margin: "32px 0 0" }}>{APP_DESKTOP_LINE}</p>
         </div>
       </div>
     </section>
