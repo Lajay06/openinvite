@@ -216,16 +216,17 @@ export async function runGuestNoteForm() {
       && !/Send me my RSVP link/.test(GATE), 'both replaced');
   // THE VOICES ARE UNTOUCHED, asserted by count so a later sweep cannot thin
   // them. capri's exclamation mark is named in CLAUDE.md as owner-approved.
-  check('all 19 universe rsvpIntro voices survive',
-    (THEMES.match(/rsvpIntro:/g) || []).length === 19,
-    `${(THEMES.match(/rsvpIntro:/g) || []).length} of 19`);
+  // 19 until tulum gained its copy block (Batch 2); now every universe.
+  check('all 20 universe rsvpIntro voices survive',
+    (THEMES.match(/rsvpIntro:/g) || []).length === 20,
+    `${(THEMES.match(/rsvpIntro:/g) || []).length} of 20`);
   check("  including capri's owner-approved line",
     THEMES.includes('This is the part where you say yes!'), 'not stripped');
   // rsvpCta IS NOW UNREAD, and left in place deliberately rather than swept:
   // deleting 19 lines of the owner's voiced copy is their call, not a
   // side effect of making the button global. Reported in the PR.
-  check('the 19 rsvpCta values are still present, now unread',
-    (THEMES.match(/rsvpCta:/g) || []).length === 19,
+  check('the 20 rsvpCta values are still present, now unread',
+    (THEMES.match(/rsvpCta:/g) || []).length === 20,
     'left for the owner to strike, not swept');
 
   // ── editors show what guests see ─────────────────────────────────────────

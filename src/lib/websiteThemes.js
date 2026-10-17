@@ -567,7 +567,7 @@ export const UNIVERSE_CONFIGS = {
       storyKicker: 'Our story',
       celebrationKicker: 'The celebration',
       rsvpKicker: 'RSVP',
-      rsvpIntro: 'Replying takes a minute. Leave the address they have for you, and your own link will drift in shortly after.',
+      rsvpIntro: 'Your reply travels with your own invitation, so take your time.',
       rsvpWelcome: 'So glad you found your way here.',
       rsvpCta: 'Send my link',
       rsvpSent: 'Thank you. If that address is on the list, your invitation is on its way, so look in your inbox and your spam folder. If nothing arrives, ask the couple to add you.',
