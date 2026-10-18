@@ -8,7 +8,7 @@ import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 import MarketingHero from "@/components/marketing/MarketingHero";
 import MarketingEndCap from "@/components/marketing/MarketingEndCap";
 import { PRO_FEATURES, ULTRA_EXTRAS } from "@/lib/planFeatures";
-import { responsivePhoto } from "@/lib/marketingImage";
+import { responsivePhoto, GIFT_HD_PHOTO } from "@/lib/marketingImage";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -57,7 +57,7 @@ const FAQS = [
   },
   {
     q: "Can I upgrade from Pro to Ultra later?",
-    a: "Yes, you can upgrade at any time and pay only the difference ($50).",
+    a: "Yes, you can upgrade at any time and pay only the difference (US$50).",
   },
   {
     q: "What if I want a refund?",
@@ -168,6 +168,9 @@ export default function Pricing() {
         image={HERO.src}
         srcSet={HERO.srcSet}
         imagePosition="center 30%"
+        // A slight dark overlay so the headline reads (owner review of #1092),
+        // the Features hero's 0.2.
+        overlay={0.2}
         title={<>Pay once.<br />Plan your entire wedding.</>}
         showScrollCue={false}
         maxWidth={900}
@@ -349,8 +352,12 @@ export default function Pricing() {
 
       {/* ── GIFT MOMENT ── */}
       <section style={{ position: "relative", padding: "160px 24px", textAlign: "center", overflow: "hidden", background: "#0A0A0A" }}>
+        {/* The owner's HD photograph (src/lib/marketingImage.js), shared with
+            the gifting hero. */}
         <img
-          src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_SNOWBOUND_Daniel_Far%C3%B2_Photos_ID12431_yunnan.jpg"
+          src={GIFT_HD_PHOTO.src}
+          srcSet={GIFT_HD_PHOTO.srcSet}
+          sizes="100vw"
           alt="A couple unwrapping a gift together"
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
         />

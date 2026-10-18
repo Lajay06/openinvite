@@ -222,5 +222,16 @@ export async function runGiftingV2Pages() {
   }
   check('the note card is the brand gray #F5F5F5, in the email and on the claim page',
     /background:#F5F5F5/.test(tpl.renderGiftReveal({ note: 'n', noteStyle: 'plain' }).html) && /co_rgb:F5F5F5/.test(tpl.noteImageUrl('a', 'serif')) && /background: '#F5F5F5'/.test(claim) && !/F6F2EC/i.test(read('src/lib/giftEmailTemplate.js') + claim));
+  // THE PLAN IS ASKED ONCE (owner ruling on #1092): a plan button on /gifting
+  // opens /gift with that plan chosen, the flow starts on the names page, and
+  // the parameter is dropped so a reload keeps the giver's page. Give Ultra
+  // wears the Ultra gradient with #0A0A0A text, 9.2:1 at its darker end.
+  const gifting = stripComments(read('src/pages/Gifting.jsx'));
+  check('/gifting plan buttons carry the plan into /gift',
+    /to=\{`\/gift\?plan=\$\{label\.toLowerCase\(\)\}`\}/.test(gifting) && !/to="\/gift"/.test(gifting));
+  check('  and /gift starts on page 2 with that plan, then drops the parameter',
+    /chosen === 'pro' \|\| chosen === 'ultra'\) return \{ \.\.\.\(readDraft\(\) \|\| EMPTY\), plan: chosen, step: 2 \}/.test(page) && /p\.delete\('plan'\)/.test(page));
+  check('Give Ultra: the Ultra gradient with #0A0A0A text',
+    /accent=\{PLAN_BADGE_BACKGROUND\.ultra\} textColor="#0A0A0A"/.test(gifting));
   return r;
 }

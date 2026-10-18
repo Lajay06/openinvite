@@ -53,9 +53,15 @@ export const MARKETING_PAGE_SEO = {
     title: 'Openinvite | Pricing',
     description: "Openinvite pricing is a one-time payment, not a subscription. See what's included in the Pro and Ultra plans for your wedding planning platform and your Guest Suite.",
   },
+  // THE GIFT FLOW ITSELF (owner ruling 2026-10-16): /gift had no entry, so it
+  // kept whatever title and canonical the page before it left behind.
+  '/gift': {
+    title: 'Openinvite | Give a gift',
+    description: 'Give a couple Openinvite Pro or Ultra. Choose a plan, add a photo and a note, pay once, and they get an email that switches it on for 24 months.',
+  },
   '/gifting': {
     title: 'Openinvite | Gifting',
-    description: 'Give a couple the gift of Openinvite, a wedding planning platform with a one-time payment. Request a gift code and they redeem it at checkout, no subscription required.',
+    description: 'Give a couple the gift of Openinvite Pro or Ultra. Pay once, add a photo and a note, and they get an email that switches their plan on for 24 months.',
   },
   '/contact': {
     title: 'Openinvite | Contact',
@@ -63,7 +69,7 @@ export const MARKETING_PAGE_SEO = {
   },
   '/tour': {
     title: 'Openinvite | Tour the studio',
-    description: 'Eight short recordings of the Openinvite studio: Daily update, Schedule, Guest list, Seating, Budget, Universes, Ava and Your site. Nothing to sign up for.',
+    description: 'A short tour of the Openinvite studio in four moments: the daily update, guest replies, seating and your Guest Suite. Nothing to sign up for.',
   },
   '/app': {
     title: 'Openinvite | The app',
@@ -87,7 +93,7 @@ export const MARKETING_PAGE_SEO = {
   },
   '/register': {
     title: 'Openinvite | Create account',
-    description: 'Create a free Openinvite account and start planning your wedding today.',
+    description: 'Start your 14-day free trial of Openinvite.',
   },
   '/forgot-password': {
     title: 'Openinvite | Reset password',
@@ -98,6 +104,31 @@ export const MARKETING_PAGE_SEO = {
     description: 'Answers to common questions about Openinvite: pricing, what is included in Pro and Ultra, design universes, Ava, collaborators, guest RSVPs and currencies.',
   },
 };
+
+// EACH PAGE'S OWN SHARE IMAGE (consumer launch goal, item 6, 2026-10-16):
+// a link to /pricing used to unfurl as the same RSVP poster as every other
+// page. Each marketing page now shares its own hero photograph, the one a
+// visitor sees first, cropped by Cloudinary to the 1200 by 630 card, as a
+// JPEG for the crawlers that read nothing else. Home keeps the poster; so do
+// the FAQ, which has no hero, and the legal and sign-in pages.
+const SHARE_PHOTOS = {
+  '/features': 'v1779185631/DTS_THE_INTERN_Shauna_Summers_Photos_ID11406_giy6nx',
+  '/ava': 'v1779217006/DTS_Misc_1__Nick_Fancher__Nick_Fancher_Photos_ID6161_isrtef',
+  '/universes': 'DTS_ISOLA_Daniel_Far%C3%B2_Photos_ID13172_fu4zfe',
+  '/pricing': 'DTS_Please_Do_Not_Disturb_Fanette_Guilloud_Photos_ID8854_-_Print_ew6e2a',
+  '/gifting': 'DTS_SNOWBOUND_Daniel_Faro_4k_i1ojvs',
+  '/gift': 'DTS_SNOWBOUND_Daniel_Faro_4k_i1ojvs',
+  '/contact': 'DTS_Weirdly_Ever_After_Agust%C3%ADn_Far%C3%ADas_Photos_ID8960_nspx4l',
+  '/tour': 'DTS_Tradition_Chris_Abatzis_Photos_ID9181_erzsi2',
+  '/app': 'DTS_STAYCATION_Mathew_Addington_Photos_ID3369_l8e9dm',
+  '/about': 'DTS_Modern_Home_Rob_Christain_Crosby_Photos_ID3654_h6b8gy',
+};
+
+/** The share image for a route: its hero at 1200 by 630, else the poster. */
+export function getShareImage(pathname) {
+  const id = SHARE_PHOTOS[pathname];
+  return id ? `https://res.cloudinary.com/dsr84xknv/image/upload/c_fill,g_auto,w_1200,h_630,q_auto,f_jpg/${id}` : DEFAULT_OG_IMAGE;
+}
 
 export function getMarketingSeo(pathname) {
   return MARKETING_PAGE_SEO[pathname] || MARKETING_PAGE_SEO['/'];

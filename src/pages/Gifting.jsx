@@ -1,47 +1,51 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { Loader2 } from "lucide-react";
 import PublicNav from "@/components/public/PublicNav";
 import PublicFooter from "@/components/public/PublicFooter";
 import MarketingHero from "@/components/marketing/MarketingHero";
 import ApplePillButton from "@/components/motion/ApplePillButton";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
-import { startGiftCheckout } from "@/lib/checkoutSession";
 import { PRO_FEATURES, ULTRA_EXTRAS } from "@/lib/planFeatures";
-import { responsivePhoto } from "@/lib/marketingImage";
+import { GIFT_HD_PHOTO } from "@/lib/marketingImage";
+import { PLAN_BADGE_BACKGROUND } from "@/lib/planBadge";
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
-// Same bright, well-lit photo already proven to work with overlay={false}
-// (AuthLayout.jsx's carousel) — no dark gradient, per the standing "bright
-// imagery, no dark overlays" direction for this page. Also reused as the
-// gift-reveal email's own banner (api/emails/gift-reveal.js) for one
-// consistent "gifting" visual identity across the page and the email.
-// Web export (1280x853): 0.34x at dpr 2 is this asset's ceiling.
-// api/emails/gift-reveal.js keeps its own literal copy of this URL rather than
-// importing it — deliberately, since email clients ignore srcset and that
-// banner wants one fixed file. Changing the ladder here does not touch it.
-const HERO = responsivePhoto("DTS_SNOWBOUND_Daniel_Far%C3%B2_Photos_ID12431_yunnan", 1280);
+// THE OWNER'S HD PHOTOGRAPH (given 2026-10-13, swapped in 2026-10-17): the
+// same SNOWBOUND scene as the soft 1280 web export it replaces, at 4096x2732,
+// so the ladder runs to 3840. No dark gradient, per the standing "bright
+// imagery, no dark overlays" direction for this page. The Pricing gift banner
+// uses the same id. api/emails/gift-reveal.js keeps its own literal copy of
+// the old URL, deliberately: email clients ignore srcset and that banner
+// wants one fixed file, so this swap does not touch it.
+const HERO = GIFT_HD_PHOTO;
 
 // Support-only fallback, kept alongside the real checkout flow — costs
 // nothing to leave in place (PR G4 proposal, open question 5).
 const GIFT_MAILTO = "mailto:hello@openinvite.com.au?subject=I'd%20like%20to%20give%20the%20gift%20of%20Openinvite&body=Hi%20Openinvite%20team%2C%0A%0AI'd%20like%20to%20give%20Openinvite%20as%20a%20gift.%20Here's%20who%20it's%20for%3A%0A";
 
+// THE STEPS ARE GIFTING V2'S, checked against the flow end to end (owner
+// review of #1092, 2026-10-17). /gift asks for the plan, then their names,
+// their email and the giver's name, then the note, the first line, the photo
+// and when it lands (now, or 9 am their time on a date), then Stripe. The
+// webhook sends a "Now" gift and api/cron/send-gift-reveals.js a dated one;
+// the giver gets a copy with the link. The couple taps Open your gift, signs
+// in, and src/pages/GiftClaim.jsx claims it.
 const STEPS = [
   {
     num: "01",
-    heading: "Choose a plan and pay",
-    body: "Pick Pro or Ultra and check out securely, right here. You'll tell us who it's for on the same page, no separate step.",
+    heading: "Choose a plan and make it theirs",
+    body: "Pick Pro or Ultra, add their names and email, choose a photo, write a note, then pay once on Stripe.",
   },
   {
     num: "02",
-    heading: "We email them a beautiful gift",
-    body: "A photo-rich email lands in their inbox the moment your payment goes through, with your note if you left one and a one-time code that's theirs alone.",
+    heading: "We email them your gift",
+    body: "It arrives within a minute of your payment, or at 9 am their time on the date you pick, with your photo, your note and a link that is theirs alone. You get a copy too.",
   },
   {
     num: "03",
-    heading: "They create an account, free",
-    body: "They sign up, pick the plan you gave them, and enter the code at checkout. Their 24 months of access starts the moment they redeem it, not today.",
+    heading: "One tap and they're planning",
+    body: "They tap Open your gift, sign in, and their plan is switched on for 24 months. Nothing for them to set up or pay.",
   },
 ];
 
@@ -53,9 +57,7 @@ function CheckIcon() {
   );
 }
 
-function PlanCard({ label, price, features, accent, loadingPlan, onSelect }) {
-  const planKey = label.toLowerCase();
-  const isLoading = loadingPlan === planKey;
+function PlanCard({ label, price, features, accent, textColor = "#FFFFFF" }) {
   return (
     <div style={{
       flex: "0 1 300px", minWidth: 260, border: "1px solid #E5E5E5",
@@ -76,32 +78,25 @@ function PlanCard({ label, price, features, accent, loadingPlan, onSelect }) {
           </li>
         ))}
       </ul>
-      <button
-        onClick={() => onSelect(planKey)}
-        disabled={!!loadingPlan}
+      {/* Gifting v2 is live: a plan button opens the gift flow at /gift with
+          that plan already chosen, so the next page asks for their names and
+          email, never the plan again (owner ruling on #1092). */}
+      <Link
+        to={`/gift?plan=${label.toLowerCase()}`}
         style={{
           width: "100%", padding: "13px 0", borderRadius: 999, fontSize: 13, fontWeight: 700,
-          fontFamily: PJS, background: accent, color: "#FFFFFF", border: "none",
-          cursor: loadingPlan ? "default" : "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-          opacity: loadingPlan && !isLoading ? 0.5 : 1,
-          transition: "opacity 0.15s",
+          fontFamily: PJS, background: accent, color: textColor, textDecoration: "none",
+          display: "flex", alignItems: "center", justifyContent: "center",
         }}
       >
-        {isLoading ? <><Loader2 size={14} style={{ animation: "oi-spin 0.8s linear infinite" }} /> Redirecting…</> : `Give ${label} — ${price}`}
-      </button>
+        {`Give ${label}, ${price}`}
+      </Link>
     </div>
   );
 }
 
 export default function Gifting() {
   useMarketingSeo();
-  const [loadingPlan, setLoadingPlan] = useState(null);
-  const [checkoutError, setCheckoutError] = useState(null);
-
-  const handleSelect = (plan) => {
-    startGiftCheckout(plan, setLoadingPlan, setCheckoutError);
-  };
 
   return (
     <div style={{ background: "#FFFFFF", minHeight: "100vh", fontFamily: PJS }}>
@@ -125,15 +120,12 @@ export default function Gifting() {
             You'll add their email on the next page. They'll have a gift waiting in their inbox within minutes.
           </p>
           <div style={{ display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
-            <PlanCard label="Pro" price="US$49" features={PRO_FEATURES.slice(0, 6)} accent="#E03553" loadingPlan={loadingPlan} onSelect={handleSelect} />
-            <PlanCard label="Ultra" price="US$99" features={["Everything in Pro", ...ULTRA_EXTRAS.slice(0, 5)]} accent="#0A0A0A" loadingPlan={loadingPlan} onSelect={handleSelect} />
+            <PlanCard label="Pro" price="US$49" features={PRO_FEATURES.slice(0, 6)} accent="#E03553" />
+            {/* Give Ultra wears the Ultra badge's gradient with #0A0A0A text, 9.2:1
+                on #F59E0B and 11.9:1 on #FBBF24 (owner rulings on #1092). */}
+            <PlanCard label="Ultra" price="US$99" features={["Everything in Pro", ...ULTRA_EXTRAS.slice(0, 5)]} accent={PLAN_BADGE_BACKGROUND.ultra} textColor="#0A0A0A" />
           </div>
 
-          {checkoutError && (
-            <p style={{ marginTop: 24, textAlign: "center", fontSize: 13, color: "#E03553", fontFamily: PJS }}>
-              {checkoutError}
-            </p>
-          )}
         </div>
       </section>
 

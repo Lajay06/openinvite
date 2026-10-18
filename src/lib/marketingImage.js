@@ -120,3 +120,11 @@ export const HERO_SIZES = "(max-aspect-ratio: 4/3) 134vh, 100vw";
  * viewport the site supports, so plain 100vw is correct here.
  */
 export const ENDCAP_SIZES = "100vw";
+
+/**
+ * THE OWNER'S HD GIFT PHOTOGRAPH (given 2026-10-13): the SNOWBOUND couple at
+ * 4096x2732, the sharp master of the soft 1280 web export the gifting hero and
+ * the Pricing gift banner used to share. Both read it from here.
+ */
+export const GIFT_HD_PHOTO_ID = "DTS_SNOWBOUND_Daniel_Faro_4k_i1ojvs";
+export const GIFT_HD_PHOTO = responsivePhoto(GIFT_HD_PHOTO_ID, 4096);

@@ -35,6 +35,7 @@
  */
 import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
+import { useMarketingSeo } from '@/hooks/useMarketingSeo';
 import OnboardingShell from '@/components/onboarding/OnboardingShell';
 import OnboardingStep1Names from '@/components/onboarding/OnboardingStep1Names';
 import { ShellStepChrome } from '@/components/onboarding/OnboardingStepChrome';
@@ -207,12 +208,26 @@ export function styleSample(st) {
 }
 
 export default function GiftV2() {
-  const [params] = useSearchParams();
+  // Its own title, description and canonical (/gift, never a query string).
+  useMarketingSeo();
+  const [params, setParams] = useSearchParams();
   const on = isGiftingV2On();
   const [draft, setDraft] = useState(() => {
     if (params.get('sample') === '1') return { ...SAMPLE, step: Number(params.get('step')) || 1 };
+    // A plan button on /gifting already chose the plan (owner ruling on #1092),
+    // so the giver starts on their names and is never asked twice. Back still
+    // reaches page 1 to change it.
+    const chosen = params.get('plan');
+    if (chosen === 'pro' || chosen === 'ultra') return { ...(readDraft() || EMPTY), plan: chosen, step: 2 };
     return readDraft() || EMPTY;
   });
+  // The plan is read once, then dropped from the address, so a reload keeps
+  // the page the giver is on instead of sending them back to page 2.
+  useEffect(() => {
+    if (!params.has('plan')) return;
+    setParams((p) => { p.delete('plan'); return p; }, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // Page 3's accordion: collapsed by default, the first section open.
   const [openSection, setOpenSection] = useState(params.get('section') || 'note');
   const tz = useMemo(() => browserTimezone(), []);

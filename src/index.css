@@ -1045,6 +1045,15 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, li, label, input, textarea, sel
   opacity: 1;
   filter: blur(0px);
 }
+/* Under reduced motion the reveal script never runs, so the line must start
+   readable instead of waiting for a .visible that never comes. */
+@media (prefers-reduced-motion: reduce) {
+  .feature-body-text {
+    opacity: 1;
+    filter: none;
+    transition: none;
+  }
+}
 
 /* ── Apple pill button ─────────────────────────────────────── */
 .apple-pill-btn {

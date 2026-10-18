@@ -40,16 +40,18 @@ const code = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/
 
 const ROWS = [
   ["Vendors and the marketplace", [
-    "Every vendor in one place, with contact, quote, deposit and what is still owed",
+    // Owner rulings on #1092: five facts confirmed in the code, no still.
+    "Every vendor in one place, with contact details, quote and deposit",
     "A marketplace connected to Google Places, with vendors worldwide",
-    "Send an enquiry without leaving the studio",
-    "Keep quotes, contracts and contacts with each vendor",
+    "Add a marketplace find to your vendors in one tap",
+    "Track each one from researching to booked",
+    "Contracts, quotes and invoices filed with each vendor",
   ]],
   ["Seating chart and the visualizer", [
     // Owner ruling 2026-10-12: the product seats a guest by clicking, not dragging.
     "Click a table, choose a name, and the seat is theirs.",
     "See who is still unseated at a glance",
-    "Walk the room in the visualizer, the way guests will see it",
+    "Lay out the room on your venue's floor plan.",
     "A seating plan for each event, from the reception to the brunch",
   ]],
   ["Calendar", [
@@ -120,7 +122,9 @@ export async function runFeaturesAccordionRows() {
   // after batch 1's one sentence per row. Each bullet is compared whole.
   const bullets = [...block.matchAll(/bullets: \[(.*?)\] \}/g)]
     .map((m) => [...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1]));
-  check('four bullets per row, 32 in all', bullets.map((b) => b.length), ROWS.map(() => 4));
+  check('five bullets on vendors, four on every other row', bullets.map((b) => b.length), ROWS.map((r) => r[1].length));
+  ok('vendors opens on its line in the reference tone',
+     block.includes('title: "Vendors and the marketplace", body: "Find them, book them, keep them straight. Every vendor lives in one list, from the first search to the signed contract.",'), 'body');
   for (const [title, want] of ROWS) {
     const i = titles.indexOf(title);
     check(`  ${title}`, bullets[i], want);

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { SITE_URL, DEFAULT_OG_IMAGE, getMarketingSeo } from '@/lib/marketingSeo';
+import { SITE_URL, getMarketingSeo, getShareImage } from '@/lib/marketingSeo';
 
 function setMetaByName(name, content) {
   let el = document.querySelector(`meta[name="${name}"]`);
@@ -52,6 +52,7 @@ export function useMarketingSeo() {
     const pathname = window.location.pathname;
     const { title, description } = getMarketingSeo(pathname);
     const canonicalUrl = `${SITE_URL}${pathname === '/' ? '' : pathname}`;
+    const shareImage = getShareImage(pathname);
 
     document.title = title;
     setMetaByName('description', description);
@@ -61,12 +62,12 @@ export function useMarketingSeo() {
     setMetaByProperty('og:description', description);
     setMetaByProperty('og:url', canonicalUrl);
     setMetaByProperty('og:type', 'website');
-    setMetaByProperty('og:image', DEFAULT_OG_IMAGE);
+    setMetaByProperty('og:image', shareImage);
     setMetaByProperty('og:site_name', 'Openinvite');
 
     setMetaByName('twitter:card', 'summary_large_image');
     setMetaByName('twitter:title', title);
     setMetaByName('twitter:description', description);
-    setMetaByName('twitter:image', DEFAULT_OG_IMAGE);
+    setMetaByName('twitter:image', shareImage);
   }, [window.location.pathname]);
 }

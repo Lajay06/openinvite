@@ -112,18 +112,25 @@ export function runAppMarketing() {
   check('home: the only picture is that photograph', (block.match(/<img\b/g) || []).length === 1 && !/<video\b/.test(block));
   const homeSrc = readFileSync(resolve(ROOT, 'src/components/home/AppPhoneSection.jsx'), 'utf8');
   check('home: the scrim is the one specified, and the only overlay',
-    homeSrc.includes('linear-gradient(0deg, rgba(0,0,0,.78) 0%, rgba(0,0,0,.35) 45%, rgba(0,0,0,0) 75%)') && (block.match(/aria-hidden="true"/g) || []).length === 2);
+    homeSrc.includes('linear-gradient(0deg, rgba(0,0,0,.78) 0%, rgba(0,0,0,.35) 45%, rgba(0,0,0,0) 75%)') && (block.match(/aria-hidden="true"/g) || []).length === 1);
   check('home: framed with object-position 60% 40%, and 62% 30% on a phone, cover, no gravity crop',
     /\.home-app__photo \{[^}]*object-fit: cover;[^}]*object-position: 60% 40%;/.test(homeSrc) && /@media \(max-width: 768px\) \{[\s\S]*?\.home-app__photo \{ object-position: 62% 30%; \}/.test(homeSrc));
   check("home: the red section's height rule, 100vh with overflow hidden", /\.home-app \{[^}]*height: 100vh;[^}]*overflow: hidden;/.test(homeSrc));
-  check('home: the type as specified, 84, 22 and 16 at desktop and 44, 17 and 14 at 390',
-    /\.home-app__heading \{[^}]*font-size: 84px; line-height: 1\.02; letter-spacing: -0\.03em; font-weight: 700;/.test(homeSrc)
-      && /\.home-app__body \{[^}]*max-width: 600px; font-size: 22px; line-height: 1\.45; font-weight: 400;/.test(homeSrc)
+  // The heading shares the value prop's style (owner ruling on #1092): the
+  // class, not copied values, and the section sets no type of its own on it.
+  const shared = readFileSync(resolve(ROOT, 'src/components/home/homeStatementHeading.js'), 'utf8');
+  const valueProp = readFileSync(resolve(ROOT, 'src/components/home/ValuePropSection.jsx'), 'utf8');
+  check('home: the heading takes HOME_STATEMENT_HEADING, like "All the powerful tools", and sets no size of its own',
+    /\$\{homeStatementHeadingCss\('\.home-app__heading'\)\}/.test(homeSrc) && /\.\.\.HOME_STATEMENT_HEADING\.phone/.test(valueProp) && /\.\.\.HOME_STATEMENT_HEADING\.desktop/.test(valueProp)
+      && shared.includes("desktop: { fontSize: 'clamp(26px, 4.17vw, 97px)', fontWeight: 700, lineHeight: 1.15, letterSpacing: '-0.02em' }")
+      && !/\.home-app__heading \{[^}]*font-size/.test(homeSrc) && !/fontSize: "clamp/.test(valueProp));
+  check('home: the type as specified, 22 and 16 at desktop and 17 and 14 at 390',
+    /\.home-app__body \{[^}]*max-width: 600px; font-size: 22px; line-height: 1\.45; font-weight: 400;/.test(homeSrc)
       && /\.home-app__small \{[^}]*font-size: 16px;[^}]*font-weight: 500;[^}]*opacity: 0\.7;/.test(homeSrc)
-      && /\.home-app__heading \{ font-size: 44px; \}/.test(homeSrc) && /\.home-app__body \{ font-size: 17px; \}/.test(homeSrc) && /\.home-app__small \{ font-size: 14px; \}/.test(homeSrc));
-  check('home: the 56 by 4 rule in #E03553, 28px above the heading', /\.home-app__rule \{ width: 56px; height: 4px; background: #E03553; margin-bottom: 28px; \}/.test(homeSrc));
+      && /\.home-app__body \{ font-size: 17px; \}/.test(homeSrc) && /\.home-app__small \{ font-size: 14px; \}/.test(homeSrc));
+  check('home: no red line above the heading (owner ruling on #1092)', !/home-app__rule/.test(homeSrc));
   const t = textOf(block);
-  check('home: the body, verbatim', t.includes('Plan on the train, on the couch, in the queue for coffee. Your guest list, budget and seating chart on your phone and your computer, always the same wedding.'));
+  check('home: the body, verbatim', t.includes('Plan on the train, on the couch, in line for coffee. Your guest list, budget and seating chart on your phone and your computer, always the same wedding.'));
   check('home: the small line, as text', t.includes('iPhone and Android. Coming at launch.') && /data-app-store-line/.test(block));
   check('home: the small line is not a link', !/<a\b[^>]*>[^<]*Coming at launch/.test(block));
   const blockAt = home.indexOf('data-home-app');
@@ -133,16 +140,20 @@ export function runAppMarketing() {
     cardsAt > -1 && blockAt > cardsAt && pricingAt > blockAt, `cards ${cardsAt}, app ${blockAt}, pricing ${pricingAt}`);
 
   // ── items 2 and 4: the phones, the lines, /app and the footer ─────────
-  const DESKTOP = 'You design your Guest Suite on a desktop, where the space is; everything else is yours wherever you are.';
   const features = existsSync(join(PRE, 'features/index.html')) ? readFileSync(join(PRE, 'features/index.html'), 'utf8') : '';
-  // Batch 3, item 2: the red section's twin with the dark box kept, three of
-  // the owner's four lines (the replies line waits for push), the desktop
-  // sentence unchanged.
+  // Owner review of #1092 (2026-10-17): the reference blocks' shape, one
+  // engaging line and five facts about what the iPhone app does today, each
+  // confirmed in src/mobile (FeaturesAppSection.jsx says where). The parking
+  // lot, in line and desktop lines are gone, and no line promises push.
+  const BODY = 'Plan from anywhere. The app carries the same wedding as your computer, so every guest, table and expense goes where you go.';
   const FEATURE_LINES = [
-    'Add a guest from the car park; it is on your computer before you are back inside.',
-    'Check the budget in the queue, not at the desk.',
-    'The seating chart in your hand at the venue walk-through.',
+    'Same sign in, same wedding as the website',
+    'Add and edit guests, expenses, vendors and to-dos',
+    'Seat guests and move them between tables',
+    'Your run sheet, seating and vendor contacts open without signal',
+    'Ask Ava anything, and read your daily update',
   ];
+  const GONE = /parking lot|in line, not at the desk|You design your Guest Suite on a desktop/;
   // Batch 3 amendment B: one row of the feature rows, a photograph and a
   // text panel, no phone and no twin. Its layout against its neighbours is
   // measured in a browser by test:marketing-routes.
@@ -153,8 +164,8 @@ export function runAppMarketing() {
   check('features: the heading, verbatim, as its h2', /<h2\b[^>]*>\s*Everything, on your phone\s*<\/h2>/.test(fb));
   const flines = [...fb.matchAll(/<li\b[^>]*data-app-line[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1]).trim());
   check('features: the lines, verbatim and in order', JSON.stringify(flines) === JSON.stringify(FEATURE_LINES), JSON.stringify(flines).slice(0, 120));
-  check('features: no line promises a reply landing as guests tap', !/as guests tap them/.test(ft), 'held until push');
-  check('features: the desktop sentence, verbatim', ft.includes(DESKTOP));
+  check('features: the engaging line, verbatim', ft.includes(BODY));
+  check('features: no line promises push, a reply landing as guests tap, or the retired lines', !/as guests tap them|push/i.test(ft) && !GONE.test(ft), 'held until push');
   const STAY = 'DTS_STAYCATION_Mathew_Addington_Photos_ID3369_l8e9dm';
   const fimg = /<img\b[^>]*data-features-app-photo[^>]*>/.exec(fb)?.[0] || '';
   const fset = (/srcset="([^"]+)"/i.exec(fimg)?.[1] || '').replace(/&amp;/g, '&');
@@ -163,7 +174,8 @@ export function runAppMarketing() {
   check('features: framed with object-position 55% 40%, cover, no radius',
     /object-fit:\s*cover/.test(fimg) && /object-position:\s*55% 40%/.test(fimg) && !/border-radius/.test(fimg));
   check('features: its alt text, verbatim', fimg.includes('alt="A woman lies on her bed, phone in both hands, reading."'));
-  check('features: the text panel is #F6F2EC with #1C1916 ink', /background:\s*rgb\(246, 242, 236\)|#F6F2EC/i.test(fb) && /color:\s*rgb\(28, 25, 22\)|#1C1916/i.test(fb));
+  // Black since the owner's ruling of 2026-10-16 (it was the cream #F6F2EC).
+  check('features: the text panel is black with white ink, and no cream', /background:\s*rgb\(10, 10, 10\)|#0A0A0A/i.test(fb) && /color:\s*rgb\(255, 255, 255\)|#FFFFFF/i.test(fb) && !/#F6F2EC|rgb\(246, 242, 236\)/i.test(fb));
   // The accordion's first row, as the anchor: the app section sits above it
   // and is not one of its rows.
   const accAt = features.indexOf('Vendors and the marketplace');
@@ -179,7 +191,7 @@ export function runAppMarketing() {
   check('/app: the heading, verbatim, as the page\'s h1', /<h1\b[^>]*>\s*Everything, on your phone\s*<\/h1>/.test(ab));
   const alines = [...ab.matchAll(/<li\b[^>]*data-app-line[^>]*>([\s\S]*?)<\/li>/g)].map((m) => textOf(m[1]).trim());
   check('/app: the Features lines, verbatim and in order', JSON.stringify(alines) === JSON.stringify(FEATURE_LINES), JSON.stringify(alines).slice(0, 120));
-  check('/app: the desktop sentence, verbatim', textOf(ab).includes(DESKTOP));
+  check('/app: the engaging line, and none of the retired lines', textOf(ab).includes(BODY) && !GONE.test(textOf(ab)));
   check('/app: no line promises replies as they happen', !/replies arriving as they happen|as guests tap them/.test(textOf(appHtml)), 'held until push');
   check('/app: one h1 on the page', (appHtml.match(/<h1\b/g) || []).length === 1);
   const guests = textOf(sectionWith(appHtml, 'data-app-guests'));
@@ -192,15 +204,14 @@ export function runAppMarketing() {
   check('/app: not noindexed', !!appHtml && !/<meta name="robots"[^>]*noindex/i.test(appHtml));
   check('/app: its title', /<title>Openinvite \| The app<\/title>/.test(appHtml));
   check('/app: its description', appHtml.includes('content="The Openinvite wedding planner on your phone: guests, replies, seating, budget, vendors, schedule and Ava. iPhone and Android, included with every plan. Guests never need it."'));
-  // EVERY PAGE THAT HAS THE MARKETING FOOTER. The auth pages (login, register,
-  // forgot password) render none, so there is nothing to add the link to
-  // there; the count pins how many pages do, so a footer that appears on a new
-  // page without the link still fails.
+  // NO "THE APP" IN THE FOOTER (owner review of #1092, 2026-10-17): the link
+  // is gone from every page that has the marketing footer. The count still
+  // pins how many pages carry the footer.
   const withFooter = pages.filter((p) => /data-public-footer/.test(readFileSync(p, 'utf8')));
-  const noFooterLink = withFooter.filter((p) => !/<a\b[^>]*href="\/app"[^>]*>The app<\/a>/.test(readFileSync(p, 'utf8')));
-  check('the footer links to /app as "The app" on every page that has the marketing footer',
-    withFooter.length >= 13 && noFooterLink.length === 0,
-    noFooterLink.length ? noFooterLink.map((p) => p.slice(PRE.length + 1)).join(', ') : `${withFooter.length} of ${pages.length} pages carry the footer`);
+  const footerLink = withFooter.filter((p) => /data-footer-app|<a\b[^>]*href="\/app"[^>]*>The app<\/a>/.test(readFileSync(p, 'utf8')));
+  check('the footer has no "The app" link, on any page that has the marketing footer',
+    withFooter.length >= 13 && footerLink.length === 0,
+    footerLink.length ? footerLink.map((p) => p.slice(PRE.length + 1)).join(', ') : `${withFooter.length} of ${pages.length} pages carry the footer`);
 
   // ── item 3: the pricing line ──────────────────────────────────────────
   const pricing = existsSync(join(PRE, 'pricing/index.html')) ? readFileSync(join(PRE, 'pricing/index.html'), 'utf8') : '';
@@ -257,13 +268,14 @@ export function runAppMarketing() {
     [...packFiles, ...packRefs].join(', ') || `${tracked.length} tracked files`);
 
   // ── the features accordion (site fixes batch 2) ───────────────────────
-  // Four bullets per row, 32 in all, the full text pinned in
-  // features-accordion-rows.mjs; here the count, the vendors line the owner
-  // wrote exactly, and that the colored bar's rule is gone.
+  // Four bullets per row, and five on vendors since the owner's rulings on
+  // #1092 (33 in all), the full text pinned in features-accordion-rows.mjs;
+  // here the count, the vendors line the owner wrote exactly, and that the
+  // colored bar's rule is gone.
   const featSrc = stripComments(readFileSync(resolve(ROOT, 'src/pages/Features.jsx'), 'utf8'));
   const featBlock = featSrc.slice(featSrc.indexOf('const ALL_FEATURES = ['), featSrc.indexOf('}];', featSrc.indexOf('const ALL_FEATURES = [')) + 3);
   const allBullets = [...featBlock.matchAll(/bullets: \[(.*?)\] \}/g)].flatMap((m) => [...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1]));
-  check('features accordion: 32 bullets, four per row', allBullets.length === 32, `${allBullets.length}`);
+  check('features accordion: 33 bullets, five on vendors and four on every other row', allBullets.length === 33, `${allBullets.length}`);
   check('features accordion: "A marketplace connected to Google Places, with vendors worldwide"', allBullets.includes('A marketplace connected to Google Places, with vendors worldwide'));
   const accSrc = featSrc.slice(featSrc.indexOf('function AccordionSection'), featSrc.indexOf('function AccordionSection') + 4000);
   check('features accordion: the colored left bar rule is gone', !/borderLeft|border-left/i.test(accSrc) && !/ACCORDION_BORDERS/.test(featSrc));

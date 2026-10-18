@@ -6,15 +6,13 @@ import ScrollProgress from "@/components/motion/ScrollProgress";
 import AnimDivider from "@/components/motion/AnimDivider";
 import { useMarketingSeo } from "@/hooks/useMarketingSeo";
 import FeatureTimeline from "@/components/home/FeatureTimeline";
-import FeatureGuests from "@/components/home/FeatureGuests";
 import FeatureBudget from "@/components/home/FeatureBudget";
 import FeatureSectionHeading, { featureBodyTextStyle } from "@/components/home/FeatureSectionHeading";
 import MarketingHero from "@/components/marketing/MarketingHero";
 import MarketingEndCap from "@/components/marketing/MarketingEndCap";
 import { responsivePhoto } from "@/lib/marketingImage";
 import FeaturesAppSection from "@/components/marketing/FeaturesAppSection";
-import FeatureStill from "@/components/marketing/FeatureStill";
-import { FEATURE_STILLS, FEATURE_SEATING_CLIP } from "@/lib/featureStills";
+import FeatureRow from "@/components/marketing/FeatureRow";
 
 // Both are web exports (1280x853 and 1600x1078), so 0.34x and 0.42x of the
 // device pixels their boxes need at dpr 2 is the ceiling until larger masters
@@ -22,6 +20,59 @@ import { FEATURE_STILLS, FEATURE_SEATING_CLIP } from "@/lib/featureStills";
 // advertising candidates Cloudinary would silently downgrade.
 const HERO = responsivePhoto("v1779185631/DTS_THE_INTERN_Shauna_Summers_Photos_ID11406_giy6nx", 1280);
 const END_CAP = responsivePhoto("DTS_CURATIVE_Chris_Abatzis_Photos_ID7678_dlsgrm", 1600);
+
+// REPLIES AND SEATING (owner ruling 2026-10-16). Two rows built exactly like
+// the quick start wizard (src/components/marketing/FeatureRow.jsx), which
+// between them take over Advanced guest management's two jobs: the replies,
+// and the seating. Owned Higgsfield photographs: the woman reading her phone
+// (038), and the long dinner table under paper lanterns (pin_kyoto_party).
+// THE BULLETS ARE FACTS (owner review of #1092, 2026-10-17), each confirmed
+// in the code before it was written:
+//   replies: the personal link, api/my-guest-links.js and api/send-invites.js;
+//     one answer per event, RSVPPage.jsx's EventCard and api/rsvp-submit.js;
+//     meal, dietary, plus-one and song on the form, RSVPPage.jsx; the
+//     deadline, SendInvitesModal.jsx's RsvpDeadlineField and rsvp-submit.js;
+//     the counts and the CSV with meals and tables, Guests.jsx
+//   seating: round and rectangle tables, AddTableModal.jsx, on the floor
+//     plan Seating.jsx imports; click a table then a name, and the unseated
+//     filter, Seating.jsx; Ava's plan with plus-ones beside their guest,
+//     AISeatingGenerator.jsx; one plan per event, Seating.jsx activeEventId;
+//     the one PDF of layout and names, Seating.jsx handleExportSeating
+const REPLIES_BULLETS = [
+  "A personal RSVP link for every guest, sent by email",
+  "One answer per event, from the ceremony to the reception",
+  "Meal choice, dietary needs, plus-ones and song requests on the form",
+  "A reply deadline you set, and the form closes after it",
+  "Attending, declined and awaiting at a glance, and a CSV with every meal and table",
+];
+const SEATING_BULLETS = [
+  "Round and rectangle tables, laid out on your venue's floor plan",
+  "Click a table, choose a name, and see who is still unseated",
+  "Ava drafts a plan and keeps plus-ones at their guest's table",
+  "A seating plan for each event",
+  "Export the layout and every table's names as one PDF",
+];
+
+// QUICK START FOLLOWS THE REFERENCE BLOCKS (owner rulings on #1092), five
+// facts confirmed in src/pages/Onboarding.jsx and its steps: names, date and
+// place, OnboardingStep1Names, Step2Date and Step3Location; the date and venue
+// skips, Step2Date's "We haven't set a date yet" and Step3Location's "Not sure
+// yet", editable later on EventDetails.jsx; the venue from Google Places with
+// its photo kept, Step3Location and onboardingSave.js; guest count, then the
+// optional style, setting and traditions, Step4GuestCount and
+// Step5WeddingType; progress saved after every step, Onboarding.jsx. The
+// budget and currency steps sit behind ONBOARDING_FORK_ON, off, so neither is
+// claimed.
+const QUICK_START_BULLETS = [
+  "Your names, your date and where you are celebrating",
+  "No date or venue yet? Skip it and add it later",
+  "Find your venue on Google Places, and its photo comes with it",
+  "Your guest count, then your style, setting and traditions if you want to share them",
+  "Progress saves after every step, so you can pick up where you left off",
+];
+
+const REPLIES_PHOTO = responsivePhoto("hf_20260905_124238_2e0981ad-2b66-46cc-948d-a8db441b4929_whdhah", 1536);
+const SEATING_PHOTO = responsivePhoto("pin_kyoto_party", 1664);
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
@@ -65,12 +116,18 @@ function useScrollReveal(threshold = 0.2) {
 // against the product before it shipped; the vendors row names Google Places
 // because the marketplace searches it.
 //
-// TWO ROWS CARRY THE PRODUCT (site fixes batch 3, item 4): vendors a still of
-// the couple's own list, seating a short clip. Both sit in the open panel
-// under the bullets, so the collapsed accordion is unchanged.
+// VENDORS FOLLOWS THE REFERENCE BLOCKS (owner rulings on #1092): no still, a
+// line in the reference tone and five facts, each confirmed in the code:
+//   contact, quote and deposit, VendorForm.jsx and VendorList.jsx (there is no
+//     amount-owed field, so the old "what is still owed" went); Google Places,
+//     VendorMarketplace.jsx through api/places-search.js; one tap to your list,
+//     VendorCard.jsx "Add to my vendors" and vendorPlaces.js; researching to
+//     booked, VendorForm.jsx's statuses; contracts, quotes and invoices filed,
+//     VendorDetailPanel.jsx's Documents tab. Nothing sends an enquiry from the
+//     studio (the marketplace links out), so that bullet went too.
 const ALL_FEATURES = [
-{ title: "Vendors and the marketplace", still: FEATURE_STILLS.vendors, bullets: ["Every vendor in one place, with contact, quote, deposit and what is still owed", "A marketplace connected to Google Places, with vendors worldwide", "Send an enquiry without leaving the studio", "Keep quotes, contracts and contacts with each vendor"] },
-{ title: "Seating chart and the visualizer", clip: FEATURE_SEATING_CLIP, bullets: ["Click a table, choose a name, and the seat is theirs.", "See who is still unseated at a glance", "Walk the room in the visualizer, the way guests will see it", "A seating plan for each event, from the reception to the brunch"] },
+{ title: "Vendors and the marketplace", body: "Find them, book them, keep them straight. Every vendor lives in one list, from the first search to the signed contract.", bullets: ["Every vendor in one place, with contact details, quote and deposit", "A marketplace connected to Google Places, with vendors worldwide", "Add a marketplace find to your vendors in one tap", "Track each one from researching to booked", "Contracts, quotes and invoices filed with each vendor"] },
+{ title: "Seating chart and the visualizer", bullets: ["Click a table, choose a name, and the seat is theirs.", "See who is still unseated at a glance", "Lay out the room on your venue's floor plan.", "A seating plan for each event, from the reception to the brunch"] },
 { title: "Calendar", bullets: ["One calendar for the whole engagement", "Deadlines, vendor payments and fittings beside every event on your run sheet", "Subscribe from your phone's calendar, so an edit here reaches it on its own.", "Export the run sheet for your vendors"] },
 { title: "Ava on every page", bullets: ["A short briefing each morning: what is coming up, what needs a decision", "Ask Ava from any page, about the page you are on", "Answers drawn from your own wedding, never generic advice", "Ask what is unpaid, who has not replied, or what still needs a decision"] },
 { title: "Mood board", bullets: ["Pin the looks you keep coming back to: colors, florals, dresses, tables", "Boards for the venue, the dress, the palette, or anything you name", "A note on every pin", "Inspiration next to the plan, not across six apps"] },
@@ -143,9 +200,37 @@ export default function Features() {
       <AccordionSection features={ALL_FEATURES} dots={DOTS} openFeature={openFeature} setOpenFeature={setOpenFeature} />
 
       {/* ── S7: FEATURE DEEP DIVES ───────────────────────── */}
+      {/* Timeline (white), then Replies (black) and Seating (white) in
+          Advanced guest management's place, then budget (black): the page
+          keeps alternating. Replies carries the Ultra badge: "Online RSVP
+          pages for guests" is in ULTRA_EXTRAS (src/lib/planFeatures.js), the
+          RSVP step is Ultra-gated in src/lib/journeySteps.js, and the guest's
+          meal choice in src/pages/FoodBeverage.jsx (MealOptionsUltraGate). */}
       <div style={{ background: "#FFFFFF" }}>
         <FeatureTimeline />
-        <FeatureGuests />
+        <FeatureRow
+          name="replies"
+          ground="black"
+          photo="right"
+          src={REPLIES_PHOTO.src}
+          srcSet={REPLIES_PHOTO.srcSet}
+          alt="A woman in a white slip dress smiling at her phone"
+          heading="Watch the replies roll in."
+          body="Every guest gets their own link. They RSVP in seconds, pick their meal, request a song (yes, ABBA counts) and it all lands in your guest list, sorted by household."
+          bullets={REPLIES_BULLETS}
+          ultra
+        />
+        <FeatureRow
+          name="seating"
+          ground="white"
+          photo="left"
+          src={SEATING_PHOTO.src}
+          srcSet={SEATING_PHOTO.srcSet}
+          alt="Guests seated along a long dinner table under paper lanterns at night"
+          heading="Seating, minus the drama."
+          body="Pick a table, tap a name, and watch the gaps close. Ava can even draft the first plan for you."
+          bullets={SEATING_BULLETS}
+        />
         <FeatureBudget />
       </div>
 
@@ -164,25 +249,22 @@ export default function Features() {
 }
 
 function QuickStartSection() {
-  const [ref, visible] = useScrollReveal(0.2);
+  // The row the Replies and Seating rows are built from, rendered through the
+  // same component so the three cannot drift apart; only the wizard keeps its
+  // pale blue wash over the photograph.
   return (
-    /* Direction is owned by the flex-col / lg:flex-row classes below. An
-       inline flexDirection: "row" used to override them, so these columns
-       stayed side by side under lg and the text ran off screen. */
-    <section ref={ref} style={{ background: "#0A0A0A", minHeight: "100vh", display: "flex", overflow: "hidden" }} className="flex-col lg:flex-row">
-      <div className="w-full lg:w-1/2 order-1" style={{ position: "relative", minHeight: 320, overflow: "hidden", flexShrink: 0 }}>
-        <img src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_INFLUENCER_Daniel_Farò_Photos_ID8195_hcbnri.jpg" alt="A person setting up their wedding plan on a laptop" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(-100px)", transition: `opacity 0.9s ${EASE}, transform 1s ${EASE}` }} />
-        <div style={{ position: "absolute", inset: 0, background: "rgba(194,229,243,0.12)", mixBlendMode: "multiply", pointerEvents: "none" }} />
-        <div className="lg:hidden" style={{ paddingBottom: "66.66%", position: "relative" }} />
-      </div>
-      <div className="w-full lg:w-1/2 order-2 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(40px)", transition: `opacity 0.9s ${EASE} 0.2s, transform 0.9s ${EASE} 0.2s` }}>
-        <div style={{ maxWidth: 552 }}>
-          <FeatureSectionHeading color="#FFFFFF">Quick start wizard</FeatureSectionHeading>
-          <p style={{ ...featureBodyTextStyle, color: "rgba(255,255,255,0.4)" }}>Get set up in seconds: enter your names, date, location, and vibe. No overwhelm, just momentum.</p>
-        </div>
-      </div>
-    </section>);
-
+    <FeatureRow
+      name="quick-start"
+      ground="black"
+      photo="left"
+      src="https://res.cloudinary.com/dsr84xknv/image/upload/f_auto,q_auto/DTS_INFLUENCER_Daniel_Farò_Photos_ID8195_hcbnri.jpg"
+      alt="A person setting up their wedding plan on a laptop"
+      heading="Quick start wizard"
+      body="Get set up in seconds: enter your names, date, location, and vibe. No overwhelm, just momentum."
+      bullets={QUICK_START_BULLETS}
+      tint="rgba(194,229,243,0.12)"
+    />
+  );
 }
 
 function DashboardSection() {
@@ -205,13 +287,8 @@ function DashboardSection() {
   const BULLETS = ["Invite your partner or planner", "Set role-based permissions", "Assign tasks with deadlines", "Real-time collaborative updates", "Shared vendor & budget views", "Manage who sees sensitive data"];
   return (
     <>
-    {/* THE MORNING PAGE, AS A BAND (owner ruling 2026-10-12): full width at
-        the top of this section, 2:1, above the row rather than inside it,
-        because the row below is held to one screen as the app section's
-        twin. Same white ground and the row's own side gutters. */}
-    <div data-dashboard-band style={{ background: "#FFFFFF", padding: "80px clamp(32px, 5vw, 64px) 0" }}>
-      <FeatureStill still={FEATURE_STILLS.morning} aspect="2 / 1" margin="0" sizes="calc(100vw - 2 * clamp(32px, 5vw, 64px))" />
-    </div>
+    {/* The morning band ("Morning, Isla") is gone (owner review of #1092,
+        2026-10-17): no screenshot or mock card on a Features section. */}
     <section ref={ref} style={{ background: "#FFFFFF", minHeight: "100vh", display: "flex", overflow: "hidden" }} className="flex-col lg:flex-row">
       <div className="w-full lg:w-1/2 order-2 lg:order-1 flex items-center" style={{ padding: "80px clamp(32px, 5vw, 64px)", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(60px)", transition: `opacity 0.9s ${EASE} 0.15s, transform 1s ${EASE} 0.15s` }}>
         <div style={{ maxWidth: 552 }}>
@@ -268,6 +345,7 @@ function AccordionSection({ features, dots, openFeature, setOpenFeature }) {
               </button>
               {openFeature === i &&
             <div style={{ paddingBottom: 32, paddingLeft: 20 }}>
+                  {f.body && <p style={{ color: "#444444", fontSize: 15, lineHeight: 1.6, margin: "0 0 12px", maxWidth: 560 }}>{f.body}</p>}
                   <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
                     {f.bullets.map((b, bi) =>
                 <li key={bi} style={{ padding: "10px 0", borderBottom: bi < f.bullets.length - 1 ? "1px solid #E8E8E8" : "none", color: "#444444", fontSize: 14, lineHeight: 1.5 }}>
@@ -275,11 +353,6 @@ function AccordionSection({ features, dots, openFeature, setOpenFeature }) {
                       </li>
                 )}
                   </ul>
-                  {(f.still || f.clip) &&
-              <div style={{ maxWidth: 480 }}>
-                      <FeatureStill still={f.still} clip={f.clip} sizes="(min-width: 768px) 480px, 100vw" />
-                    </div>
-              }
                 </div>
             }
             </div>
