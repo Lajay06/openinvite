@@ -391,16 +391,18 @@ export default function MusicPage() {
   // Step 2b stage (c): the Spotify OAuth connect flow is gone. Nothing writes
   // WeddingDetails.music.spotifyConnection any more — the callback and
   // session-fetch endpoints were deleted, so there is no token bundle to pick
-  // up and persist. Track search still works; it runs on the server's own app
-  // credentials and never needed a couple's account.
+  // up and persist. Track search is gone with it: nothing in this repository
+  // calls Spotify at all, and the stat strip below says the same. A couple
+  // types the song and artist into Add a song, and that is the launch
+  // behavior.
 
 
   const updateMusic = (field, value) =>
     updateMutation.mutate({ music: { ...(details?.music || {}), [field]: value } });
 
   // Step 2b stage (c): connect/disconnect handlers removed with the OAuth
-  // endpoints. Spotify track SEARCH is unaffected — it runs on the server's
-  // client_credentials app token and never used a couple's account.
+  // endpoints. Track search went too, so there is no Spotify call left in the
+  // product: a song is entered by hand.
 
   // ── Playlist link (music rebuild, 2026-08-18) ──────────────────────────
   // One link, stored raw. The SOURCE IS NOT STORED — parseMusicLink derives it

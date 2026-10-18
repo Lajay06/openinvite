@@ -525,10 +525,16 @@ export async function runDailyUpdatePage() {
   // points." Each block is a bold lead of at most six words and one plain
   // sentence, and the validator requires exactly that, three times.
   {
+    // THE HEADLINE IS A STATE, NOT A DAY COUNT (owner ruling 2026-10-18). This
+    // fixture used to open with "115 days to go", which is exactly what the
+    // ruling bars, so the old well-formed briefing is now a refused one. The
+    // day count moved into the third block's sentence, where it still belongs.
+    // tests/persistence/briefing-leads-with-the-state.mjs is where that rule
+    // is asserted; this fixture only has to be a briefing that passes.
     const good = [
-      '**115 days to go** That is the horizon everything else is measured against.',
+      '**Waiting** Nothing is on you today, and the replies are what the list is waiting on.',
       '**21 of 61 invitations** are still to reply, and 40 guests are confirmed as coming.',
-      '**2 things to pick up** They are at the top of This week, in order.',
+      '**The date** 115 days to go, and everything else is measured against it.',
     ].join('\n');
     check('PLANT: a briefing with two blocks is refused',
       validateTracking('**A** one.\n**B** two.').ok === false,

@@ -12,9 +12,18 @@
  * These are static assertions over the source tree: cheap, no network, and
  * they fail loudly if any of it is reintroduced without a deliberate decision.
  *
- * Deliberately NOT asserted: that Spotify search is gone. It isn't, and must
- * not be. Search runs on the server's own client_credentials app token and
- * never touched a couple's account, so guest song requests keep working.
+ * WHAT THIS HEADER USED TO CLAIM, AND WHY IT IS CORRECTED.
+ *
+ * It read: "Deliberately NOT asserted: that Spotify search is gone. It isn't,
+ * and must not be." That was true when the teardown landed. It is not true
+ * now, and a reader who trusted it would be misled about what the product
+ * does. There is no Spotify search anywhere in this repository: no call to
+ * api.spotify.com or accounts.spotify.com in src/, api/, base44/ or scripts/,
+ * and no server endpoint behind one. A couple adds a song by typing its title
+ * and artist, and that manual entry is the launch behavior.
+ *
+ * What this file still guards is the teardown of the OAuth connect flow, which
+ * is unchanged and worth keeping asserted.
  */
 
 import fs from 'fs';

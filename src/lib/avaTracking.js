@@ -32,6 +32,8 @@
  * rather than not at all.
  */
 
+import { STATE_BADGE } from './dayState.js';
+
 /** What Ava is asked for. Appended as the couple's turn by buildAvaPrompt. */
 export const TRACKING_REQUEST = [
   'Write a short briefing on how this wedding is tracking overall.',
@@ -39,7 +41,10 @@ export const TRACKING_REQUEST = [
   'Write EXACTLY THREE separate blocks, one per line, and no more.',
   'Each block is a bold lead phrase of at most six words in **double asterisks**, then ONE plain sentence after it on the same line.',
   'The lead phrase is a heading. It ends with no punctuation at all — no colon, no dash, no full stop.',
-  'Every block must be built on a real number or date from the wedding context above: how far out the date is, how many guests have not replied, how many things are overdue, when the next event is, or money in dollars.',
+  'Every block must be built on a real number or date from the wedding context above: how many guests have not replied, how many things are overdue, when the next event is, or money in dollars.',
+  '',
+  'The FIRST block is the day state, and its lead phrase is exactly one of these four words: Overdue, Today, Waiting, Clear. It is the same word the badge on the page shows.',
+  'NEVER lead a block with a number of days. The day count may appear inside a sentence, never as a lead phrase.',
   '',
   'NEVER a percentage of anything. NEVER an exclamation mark. NEVER an emoji.',
   'Do not offer to do anything, do not name a vendor to hire, and do not mention heritage, culture or religion.',
@@ -125,6 +130,19 @@ export function validateTracking(text) {
   const noBody = blocks.find((b) => !b.body);
   if (noBody) return { ok: false, blocks, error: 'a lead with no sentence under it' };
 
+  // THE HEADLINE IS A STATE, NOT A COUNTDOWN (owner ruling 2026-10-18). The
+  // briefing used to open with "99 days until the wedding", which tells a
+  // couple the one thing they already know and buries what is actually on
+  // them today. The prompt asks for the state word; this is the backstop, and
+  // it is deliberately narrower than the prompt: it rejects a day count in
+  // the FIRST lead rather than requiring one of the four words, because when
+  // a store could not be read there is no honest state to name and the
+  // authored stand-in says so instead.
+  const headline = blocks[0].lead;
+  if (/\d/.test(headline) && /\bdays?\b/i.test(headline)) {
+    return { ok: false, blocks, error: 'a day count as the headline' };
+  }
+
   // THE NUMBERS RULING, enforced in the copy: replies are per INVITATION.
   // A sentence that pairs a person count with "replied" is the 94-vs-61 defect
   // said out loud, and it is the one thing a model is most likely to get wrong
@@ -140,23 +158,48 @@ export function validateTracking(text) {
  * failed the check. Authored, three points, from the same numbers.
  *
  * @param {object} facts
+ * @param {string|null} facts.state      resolveDayState's own state, when the caller has it
  * @param {string|null} facts.countdown  e.g. "115 days to go"
  * @param {number} facts.unreplied
  * @param {number} facts.overdue
  * @param {number} facts.guests
  * @param {string[]} facts.unseen
  */
-export function authoredTracking({ countdown = null, invitationsPending = 0, invitations = 0, peopleAttending = 0, overdue = 0, unseen = [] } = {}) {
+export function authoredTracking({ state = null, countdown = null, invitationsPending = 0, invitations = 0, peopleAttending = 0, overdue = 0, unseen = [] } = {}) {
   const missing = unseen.length ? ` I could not read your ${unseen.join(' and ')}, so this is not the whole picture.` : '';
-  const when = countdown
-    ? `**${countdown}** That is the horizon everything else is measured against.${missing}`
-    : `**Your date is not set yet** Everything else is easier to judge once it is.${missing}`;
+
+  // THE FIRST BLOCK IS THE DAY STATE. `state` is resolveDayState's own answer
+  // when the caller has it, so the headline and the badge on the page cannot
+  // disagree. When it is absent the state is derived from the same counts this
+  // function already receives, which is why mobile leads with a state too
+  // without passing anything new. A derived state can never be 'today':
+  // that needs the due-today and events-today counts, which are not facts
+  // here, so only the authoritative value produces it.
+  //
+  // A STORE THAT DID NOT LOAD IS NOT A CLEAR DAY (dayState.js says the same
+  // about the badge). When anything is unseen there is no state to claim, so
+  // the headline says that rather than naming one.
+  const resolved = state || (overdue > 0 ? 'overdue' : invitationsPending > 0 ? 'waiting' : 'clear');
+  const STATE_SENTENCE = {
+    overdue: `${overdue} thing${overdue === 1 ? '' : 's'} ${overdue === 1 ? 'is' : 'are'} past ${overdue === 1 ? 'its' : 'their'} date, at the top of This week.`,
+    today: 'What is due today is at the top of This week.',
+    // The count itself belongs to the replies block below, which already
+    // prints it. Saying it twice is the briefing repeating itself.
+    waiting: 'Nothing is on you today, and the replies are what the list is waiting on.',
+    clear: 'Your list is clear for today.',
+  };
+  const when = unseen.length
+    ? `**One part is missing**${missing}`
+    : `**${STATE_BADGE[resolved]}** ${STATE_SENTENCE[resolved]}`;
   // INVITATIONS for replies, PEOPLE for attendance — never the other way round.
   const replies = invitations
     ? `**${invitationsPending} of ${invitations} invitations** are still to reply, and ${peopleAttending} ${peopleAttending === 1 ? 'guest is' : 'guests are'} confirmed as coming.`
     : '**No invitations sent yet** Adding your guest list is what starts the replies.';
-  const work = overdue
-    ? `**${overdue} thing${overdue === 1 ? '' : 's'} to pick up** They are at the top of This week, in order.`
-    : '**Nothing waiting on you** Your list is clear for today.';
-  return [when, replies, work].join('\n');
+  // The countdown still appears, and never as a heading (owner ruling
+  // 2026-10-18). A couple knows how far out their date is; the headline is
+  // for what is on them today.
+  const date = countdown
+    ? `**The date** ${countdown}, and everything else is measured against it.`
+    : '**Your date is not set yet** Everything else is easier to judge once it is.';
+  return [when, replies, date].join('\n');
 }
