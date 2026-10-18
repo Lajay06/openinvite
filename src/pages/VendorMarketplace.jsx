@@ -7,7 +7,8 @@ import AvaButton from '@/components/shared/AvaButton';
 import AvaModal from '@/components/layout/AvaModal';
 import VendorCard from '@/components/marketplace/VendorCard';
 import VendorProfileModal from '@/components/marketplace/VendorProfileModal';
-import { CATEGORIES, CATEGORY_QUERIES, saveVendorFromPlaces, getSavedPlaceIds } from '@/lib/vendorPlaces';
+import { CATEGORIES, CATEGORY_QUERIES, saveVendorFromPlaces, getSavedPlaceIds, removeVendorByPlaceId } from '@/lib/vendorPlaces';
+import { useConfirm } from '@/components/shared/ConfirmDialog';
 
 const PJS = "'Plus Jakarta Sans', sans-serif";
 
@@ -81,6 +82,7 @@ const REMOTE_PLAUSIBLE_CATEGORIES = ['Celebrant', 'Styling', 'Stationery', 'Ente
 // or a failed request shows an honest error, never invented vendors.
 
 export default function VendorMarketplace() {
+  const [askToConfirm, confirmDialog] = useConfirm();
   const [search, setSearch] = useState('');
   const [locationQ, setLocationQ] = useState('');
   const [category, setCategory] = useState('All');
@@ -168,6 +170,26 @@ export default function VendorMarketplace() {
       toast.success(created ? 'Added to my vendors' : 'Already in my vendors');
     } catch {
       toast.error('Failed to add vendor');
+    }
+    setSavingIds(prev => { const s = new Set(prev); s.delete(vendor.id); return s; });
+  };
+
+  // "ADDED" CAN BE UNDONE HERE. A couple who added the wrong business used
+  // to have to leave for My vendors to take it off. Removing asks first with
+  // the same question every other vendor removal asks (Vendors.jsx,
+  // VendorRosterSection.jsx), in the product's own dialog because native
+  // ones are ruled out (src/components/shared/ConfirmDialog.jsx), then
+  // deletes the saved record, so the card goes back to offering the add.
+  const handleRemove = async (vendor) => {
+    if (!savedIds.has(vendor.id)) return;
+    if (!(await askToConfirm('Delete this vendor?'))) return;
+    setSavingIds(prev => new Set([...prev, vendor.id]));
+    try {
+      await removeVendorByPlaceId(vendor.placeId || vendor.id);
+      setSavedIds(prev => { const s = new Set(prev); s.delete(vendor.id); return s; });
+      toast.success('Removed from my vendors');
+    } catch {
+      toast.error('Failed to remove vendor');
     }
     setSavingIds(prev => { const s = new Set(prev); s.delete(vendor.id); return s; });
   };
@@ -318,6 +340,7 @@ export default function VendorMarketplace() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF' }}>
+      {confirmDialog}
       <DashboardPageHeader title="Marketplace" subtitle="Find and connect with real wedding vendors" />
 
       {/* Ava button */}
@@ -513,6 +536,7 @@ export default function VendorMarketplace() {
                   vendor={vendor}
                   onViewProfile={handleViewProfile}
                   onSave={handleSave}
+                  onRemove={handleRemove}
                   isSaved={savedIds.has(vendor.id)}
                   isSaving={savingIds.has(vendor.id)}
                 />
@@ -527,6 +551,7 @@ export default function VendorMarketplace() {
           vendor={selectedVendor}
           onClose={() => setProfileOpen(false)}
           onSave={handleSave}
+          onRemove={handleRemove}
           isSaved={savedIds.has(selectedVendor.id)}
         />
       )}

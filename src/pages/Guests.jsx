@@ -14,7 +14,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Send, CalendarCheck } from "lucide-react";
 import toast from 'react-hot-toast';
 import { useAuth } from "@/lib/AuthContext";
-import { color } from "@/styles/tokens";
 
 import GuestForm from "../components/guests/GuestForm";
 import GuestList from "../components/guests/GuestList";
@@ -165,9 +164,6 @@ export default function Guests() {
   //
   // The thirty-second re-render tick went with them: it existed only to keep
   // that label counting up.
-  // fix/guest-rls-step1: collaborator guest viewing is parked (api/collaborator-guests.js
-  // returns 503) — see that file's header comment for why and the rebuild path.
-  const [collaboratorGuestsUnavailable, setCollaboratorGuestsUnavailable] = useState(false);
 
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [setEventsGuests, setSetEventsGuests] = useState(null); // array of guests, or null
@@ -236,15 +232,15 @@ export default function Guests() {
         const res = await fetch(`/api/collaborator-guests?ownerUserId=${encodeURIComponent(collab.ownerUserId)}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('base44_access_token')}` },
         });
-        if (res.status === 503) {
-          setCollaboratorGuestsUnavailable(true);
-          setGuests([]);
-          setTables([]);
-          setLoading(false);
-          return;
-        }
+        // NO PARKED STATE. A 503 used to mean "collaborator viewing is
+        // parked" and drew "temporarily unavailable, check back after launch"
+        // in place of the list. The endpoint has served GET since #1002 and
+        // never answers 503, so that branch could only ever turn a passing
+        // platform hiccup into a message saying the feature does not exist.
+        // Every refusal now reads as what it is: the list did not load.
+        // What a collaborator may see is decided by the endpoint's grant
+        // check, never here.
         if (!res.ok) throw new Error('Failed to load guests');
-        setCollaboratorGuestsUnavailable(false);
         const data = await res.json();
         setGuests(data.guests || []);
         setTables([]); // table sync isn't part of the collaborator model — see handleTableAssignment's own guard
@@ -1253,15 +1249,6 @@ export default function Guests() {
               </DialogContent>
             </Dialog>
 
-            {isCollaborating && collaboratorGuestsUnavailable ? (
-              <div style={{
-                padding: '48px 24px', textAlign: 'center',
-                color: color.textMuted, fontFamily: "'Plus Jakarta Sans', sans-serif",
-                fontSize: 14, lineHeight: 1.6,
-              }}>
-                Collaborator guest access is temporarily unavailable — check back after launch.
-              </div>
-            ) : (
             <GuestList
               guests={filteredGuests}
               onEdit={readOnly ? undefined : handleEdit}
@@ -1278,6 +1265,7 @@ export default function Guests() {
               onToggleSelectAll={readOnly ? undefined : toggleSelectAll}
               onEditEvents={readOnly ? undefined : handleEditEvents}
               onResend={readOnly ? undefined : handleResend}
+              onSetEventsAndSend={readOnly || isPro ? undefined : handleSetEventsAndSend}
               onAddToHousehold={readOnly ? undefined : handleAddToHousehold}
               onMoveOutOfHousehold={readOnly ? undefined : handleMoveOutOfHousehold}
               onToggleEvent={readOnly ? undefined : handleToggleEvent}
@@ -1286,7 +1274,6 @@ export default function Guests() {
               highlightedGuestId={highlightedGuestId}
               readOnly={readOnly}
             />
-            )}
           </TabsContent>
 
           {!isCollaborating && (

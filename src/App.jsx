@@ -11,6 +11,7 @@ import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import RouteLoadingFallback from '@/components/shared/RouteLoadingFallback';
 import { lazyWithReload } from '@/lib/lazyWithReload.js';
+import GuestSuiteGate from '@/components/studio/guest-suite/GuestSuiteGate';
 import InvitationNotAvailable from './components/guest-website/InvitationNotAvailable';
 
 // AUDIT_2026-07.md B1: every page below is lazy-loaded so each becomes its
@@ -388,7 +389,9 @@ const AuthenticatedApp = () => {
         <Route path="/w/" element={<InvitationNotAvailable />} />
         <Route path="/w/:weddingSlug" element={<MultiPageWeddingWebsite />} />
         <Route path="/w/:weddingSlug/:page" element={<MultiPageWeddingWebsite />} />
-        <Route path="/website-editor" element={<StudioWebsite />} />
+        {/* The same builder /studio/guest-suite opens, so the same plan gate
+            (GuestSuiteGate.jsx). It was ungated before batch 1, item 6. */}
+        <Route path="/website-editor" element={<GuestSuiteGate><StudioWebsite /></GuestSuiteGate>} />
         <Route path="/studio" element={
           <LayoutWrapper currentPageName="StudioHub">
             <StudioHub />

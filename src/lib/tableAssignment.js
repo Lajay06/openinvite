@@ -37,6 +37,7 @@ import {
   shouldWriteTableCache, validatePlanAssignments,
 } from '@/lib/tableAssignmentPayloads';
 import { isPlusOneId } from '@/lib/attendees';
+import { tableCapacityError, fitSeatsToCapacity } from '@/lib/tableCapacity';
 
 // Re-exported so callers have one import site; the split exists only so the
 // pure half can be loaded without the base44 client. See that file's header.
@@ -241,4 +242,26 @@ export async function propagateTableRename({ tableId, newName, tables }) {
   const guestIds = (table.assigned_guests || []).map(a => a.guest_id);
   await Promise.all(guestIds.map(id => Guest.update(id, { table_assignment: newName })));
   return guestIds;
+}
+
+/**
+ * Changes a table's capacity, under the same rule AddTableModal applies when
+ * the table is made (src/lib/tableCapacity.js) plus the condition only an
+ * existing table has: never below the guests already seated. Here rather
+ * than in Seating.jsx because it can renumber seats, and this file is the one
+ * writer of assigned_guests. Throws with the couple-facing reason when the
+ * capacity is refused; nothing is written then.
+ *
+ * @returns {{ capacity: number, assigned_guests: Array }} what was written
+ */
+export async function setTableCapacity({ tableId, capacity: raw, tables }) {
+  const table = tables.find(t => t.id === tableId);
+  if (!table) throw new Error('That table no longer exists.');
+  const assigned = table.assigned_guests || [];
+  const error = tableCapacityError(String(raw ?? '').trim(), assigned.length);
+  if (error) { const e = new Error(error); e.refused = true; throw e; }
+  const capacity = Number(raw);
+  const assigned_guests = fitSeatsToCapacity(assigned, capacity);
+  await Table.update(tableId, { capacity, assigned_guests });
+  return { capacity, assigned_guests };
 }

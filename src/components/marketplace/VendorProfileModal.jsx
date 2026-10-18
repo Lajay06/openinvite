@@ -84,7 +84,7 @@ function ReviewsTab({ vendor, details }) {
   );
 }
 
-function ContactTab({ vendor, details, onSave, isSaved }) {
+function ContactTab({ vendor, details, onSave, onRemove, isSaved }) {
   const website = details?.website;
   const phone = details?.phone;
   const mapsUrl = details?.mapsUrl || vendor.mapsUrl;
@@ -138,12 +138,23 @@ function ContactTab({ vendor, details, onSave, isSaved }) {
             : <Plus size={13} style={{ color: '#0A0A0A' }} />}
           {isSaved ? 'Added to my vendors' : 'Add to my vendors'}
         </button>
+        {/* The undo, said in words beside the state it undoes. */}
+        {isSaved && onRemove && (
+          <button
+            type="button"
+            data-remove-vendor
+            onClick={() => onRemove(vendor)}
+            style={{ display: 'block', margin: '10px auto 0', fontSize: 12, fontWeight: 600, fontFamily: PJS, color: 'rgba(10,10,10,0.6)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          >
+            Remove from my vendors
+          </button>
+        )}
       </div>
     </div>
   );
 }
 
-export default function VendorProfileModal({ vendor, onClose, onSave, isSaved }) {
+export default function VendorProfileModal({ vendor, onClose, onSave, onRemove, isSaved }) {
   const [tab, setTab] = useState('About');
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -232,7 +243,7 @@ export default function VendorProfileModal({ vendor, onClose, onSave, isSaved })
         <div style={{ padding: '24px 28px 32px' }}>
           {tab === 'About' && <AboutTab vendor={vendor} details={details} />}
           {tab === 'Reviews' && <ReviewsTab vendor={vendor} details={details} />}
-          {tab === 'Contact' && <ContactTab vendor={vendor} details={details} onSave={onSave} isSaved={isSaved} />}
+          {tab === 'Contact' && <ContactTab vendor={vendor} details={details} onSave={onSave} onRemove={onRemove} isSaved={isSaved} />}
         </div>
       </DialogContent>
     </Dialog>

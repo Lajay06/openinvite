@@ -2,7 +2,7 @@ import { FilterPill } from '@/components/shared/TableToolbar';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getMyRecords, getMyGuestsWithRsvp, getMyWeddingDetails } from '@/lib/resolveMyWedding';
-import { getGuestTableName, propagateTableRename, assignGuestToSeat, unassignSeat, applyEventSeatingPlan, validatePlanAssignments } from '@/lib/tableAssignment';
+import { getGuestTableName, propagateTableRename, setTableCapacity, assignGuestToSeat, unassignSeat, applyEventSeatingPlan, validatePlanAssignments } from '@/lib/tableAssignment';
 import { getWeddingEvents, getGuestEventResponse, RECEPTION_EVENT_ID } from '@/lib/weddingEvents';
 import { EventChip, DietaryCell } from '@/components/guests/GuestList';
 import GuestAvatar from '@/components/shared/GuestAvatar';
@@ -21,6 +21,7 @@ import VisualTable, { LABEL_FORMS, labelForName, availableLabelPx } from '../com
 import VisualAsset from '../components/seating/VisualAsset';
 import VenueAssetLibrary from '../components/seating/VenueAssetLibrary';
 import AddTableModal from '../components/seating/AddTableModal';
+import { MIN_TABLE_CAPACITY, MAX_TABLE_CAPACITY } from '@/lib/tableCapacity';
 import AISeatingGenerator from '../components/seating/AISeatingGenerator';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import AvaButton from '@/components/shared/AvaButton';
@@ -125,6 +126,8 @@ export default function SeatingPage() {
   const [deleteHoverId, setDeleteHoverId] = useState(null);
   const deleteHoverTimer = useRef(null);
   const [renamingTableId, setRenamingTableId] = useState(null);
+  const [editingCapacityId, setEditingCapacityId] = useState(null);
+  const [capacityValue, setCapacityValue] = useState('');
   const [renameValue, setRenameValue] = useState('');
 
   const handleItemHoverStart = (id) => {
@@ -530,6 +533,25 @@ export default function SeatingPage() {
     } catch {
       toast.error('Failed to rename table');
       setTables(prev => prev.map(t => t.id === tableId ? { ...t, name: prevName } : t)); // rollback
+    }
+  };
+
+  // CAPACITY AFTER CREATION, under the rule AddTableModal applies when the
+  // table is made (src/lib/tableCapacity.js), plus the one condition only an
+  // existing table has: it cannot drop below the guests already seated. Any
+  // guest whose seat number falls outside the new size moves to a free seat
+  // inside it in the same write, so nobody is left on a seat that is gone.
+  const handleCapacityChange = async (tableId, raw) => {
+    setEditingCapacityId(null);
+    const table = tables.find(t => t.id === tableId);
+    if (!table || String(raw).trim() === String(table.capacity)) return;
+    try {
+      const written = await setTableCapacity({ tableId, capacity: raw, tables });
+      setTables(p => p.map(t => t.id === tableId ? { ...t, ...written } : t));
+      if (selectedSeatIndex !== null && selectedSeatIndex >= written.capacity) setSelectedSeatIndex(null);
+      toast.success('Capacity updated');
+    } catch (err) {
+      toast.error(err?.refused ? err.message : 'Failed to update capacity');
     }
   };
 
@@ -1271,9 +1293,40 @@ export default function SeatingPage() {
                       ← Back
                     </button>
                   </div>
-                  <p style={{ fontSize: 11, color: '#444444', fontFamily: PJS, margin: 0 }}>
-                    {(selectedTable.assigned_guests || []).length}/{selectedTable.capacity} seats used, {activeEvent.name}
-                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <p style={{ fontSize: 11, color: '#444444', fontFamily: PJS, margin: 0 }}>
+                      {(selectedTable.assigned_guests || []).length}/{selectedTable.capacity} seats used, {activeEvent.name}
+                    </p>
+                    {!readOnly && (editingCapacityId === selectedTable.id ? (
+                      <input
+                        autoFocus
+                        type="number"
+                        aria-label={`Capacity of ${selectedTable.name}`}
+                        min={Math.max(MIN_TABLE_CAPACITY, (selectedTable.assigned_guests || []).length)}
+                        max={MAX_TABLE_CAPACITY}
+                        value={capacityValue}
+                        onChange={e => setCapacityValue(e.target.value)}
+                        onBlur={() => handleCapacityChange(selectedTable.id, capacityValue)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') { e.preventDefault(); handleCapacityChange(selectedTable.id, capacityValue); }
+                          if (e.key === 'Escape') setEditingCapacityId(null);
+                        }}
+                        style={{
+                          width: 52, fontSize: 11, color: '#0A0A0A', fontFamily: PJS, border: 'none',
+                          borderBottom: '1.5px solid #E03553', background: 'transparent', outline: 'none', padding: '0 0 1px',
+                        }}
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        data-edit-capacity
+                        onClick={() => { setEditingCapacityId(selectedTable.id); setCapacityValue(String(selectedTable.capacity)); }}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: 'rgba(10,10,10,0.6)', fontFamily: PJS, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                      >
+                        <Pencil size={10} />Edit capacity
+                      </button>
+                    ))}
+                  </div>
                   {/* Capacity bar */}
                   <div style={{ height: 3, background: 'rgba(10,10,10,0.08)', marginTop: 8 }}>
                     <div style={{ height: '100%', width: `${Math.min(100, ((selectedTable.assigned_guests || []).length / (selectedTable.capacity || 1)) * 100)}%`, background: 'linear-gradient(90deg, #E03553, #803D81)', transition: 'width 0.3s' }} />
