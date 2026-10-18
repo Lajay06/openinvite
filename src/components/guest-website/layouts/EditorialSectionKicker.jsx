@@ -7,8 +7,9 @@
  */
 import React from 'react';
 import ZelligeDivider from './ZelligeDivider';
+import { PAGE_ANCHOR } from './markAnchor';
 
-export default function EditorialSectionKicker({ kicker, theme, typography, align = 'left', textColor, as: Tag = 'p' }) {
+export default function EditorialSectionKicker({ kicker, theme, typography, align = PAGE_ANCHOR, textColor, as: Tag = 'p' }) {
   const color = textColor || theme.lightText;
   return (
     <div data-oi-anchor-root="" style={{ textAlign: align, marginBottom: 40 }}>
@@ -38,7 +39,7 @@ export default function EditorialSectionKicker({ kicker, theme, typography, alig
   );
 }
 
-// THE PAGE ANCHOR. `align` defaults to left, and every page that renders this
-// kicker without the prop gets a left mark. A caller passing align="center"
-// (the RSVP editorial branch) is the exception, not the anchor.
-EditorialSectionKicker.anchor = 'left';
+// THE PAGE ANCHOR. `align` defaults to the shared page anchor (center, Batch 2,
+// layout parity: see markAnchor.js), so every page that renders this kicker
+// without the prop sits on the same axis as the other nineteen universes.
+EditorialSectionKicker.anchor = 'center';

@@ -39,7 +39,7 @@ import { seededContext, dismissEntrance, SEED, PUBLISHED_WEDDING } from './lib/r
 
 const BASE = process.env.CAPTURE_BASE_URL || 'http://localhost:5173';
 
-/** id → the kicker that universe prints beside the names. tulum has none. */
+/** id → the kicker that universe prints beside the names. Every one has one now: tulum gained its copy block in Batch 2. */
 const UNIVERSES = [
   ['london', 'An invitation'], ['kyoto', 'A quiet gathering'], ['capri', "You're invited!"],
   ['marrakech', 'Nº 01 — Marrakech'], ['brooklyn', 'The wedding'], ['bali', 'Welcome, with love'],
@@ -48,7 +48,7 @@ const UNIVERSES = [
   ['taj', 'You are graciously invited'], ['havana', 'You are invited'],
   ['edinburgh', 'You are cordially invited'], ['monaco', 'You are invited'],
   ['florence', 'You are invited'], ['seoul', 'You are invited'], ['shanghai', 'You are invited'],
-  ['tulum', null],
+  ['tulum', 'Join us on the sand'],
 ];
 
 const NAME = 'Ada';
@@ -121,10 +121,14 @@ for (const [id, kicker] of UNIVERSES) {
 }
 
 // ── the date, on the one hero that prints one ───────────────────────────────
+//
+// That hero is the DEFAULT branch. It used to be reached through tulum, the
+// one universe with no layout; tulum has its own masthead now (Batch 2), so
+// the branch is reached the only way left to reach it: no universe at all.
 {
-  const on = await heroFor(browser, 'tulum', {});
-  const off = await heroFor(browser, 'tulum', { showDate: false });
-  check('tulum prints the date by default', /2027|2026|Date to be announced/.test(on.text),
+  const on = await heroFor(browser, null, {});
+  const off = await heroFor(browser, null, { showDate: false });
+  check('the default hero (no universe) prints the date by default', /2027|2026|Date to be announced/.test(on.text),
     (on.text.match(/\b\w+ \d{1,2}, \d{4}\b/) || ['none'])[0]);
   check('  and the date switch takes it off', !/\b\w+ \d{1,2}, \d{4}\b/.test(off.text),
     (off.text.match(/\b\w+ \d{1,2}, \d{4}\b/) || ['gone'])[0]);

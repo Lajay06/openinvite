@@ -131,19 +131,19 @@ export default function WeddingRSVPPage({
           </SectionReveal>
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <h1 data-oi-anchor="heading" style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(2.25rem, 5.5vw, 3.25rem)', margin: '0 0 24px' }}>
+            <h1 data-oi-anchor="heading" style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(2.25rem, 5.5vw, 3.25rem)', margin: '0 0 24px' }}>
               RSVP
             </h1>
           </SectionReveal>
 
           {content.rsvpDeadline && (
-            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontSize: '0.8125rem', letterSpacing: '0.04em', color: theme.accent, marginBottom: 32 }}>
+            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ textAlign: pageAnchorFor(universeConfig), fontSize: '0.8125rem', letterSpacing: '0.04em', color: theme.accent, marginBottom: 32 }}>
               Please respond by {formatDeadline(content.rsvpDeadline)}
             </SectionReveal>
           )}
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <p data-oi-anchor="paragraph" style={{ margin: '0 0 40px', fontSize: '0.9375rem', fontFamily: typography.bodyFont, lineHeight: 1.75 }}>
+            <p data-oi-anchor="paragraph" style={{ textAlign: pageAnchorFor(universeConfig), margin: '0 0 40px', fontSize: '0.9375rem', fontFamily: typography.bodyFont, lineHeight: 1.75 }}>
               {copy.rsvpIntro || GATE_FRAMING} {GATE_FUNCTIONAL}
             </p>
           </SectionReveal>
@@ -236,19 +236,19 @@ export default function WeddingRSVPPage({
           </SectionReveal>
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <h1 data-oi-anchor="heading" style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(2.25rem, 5.5vw, 3.25rem)', margin: '0 0 20px' }}>
+            <h1 data-oi-anchor="heading" style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(2.25rem, 5.5vw, 3.25rem)', margin: '0 0 20px' }}>
               RSVP
             </h1>
           </SectionReveal>
 
           {content.rsvpDeadline && (
-            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontSize: '0.875rem', fontWeight: 600, color: theme.accent, marginBottom: 28 }}>
+            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ textAlign: pageAnchorFor(universeConfig), fontSize: '0.875rem', fontWeight: 600, color: theme.accent, marginBottom: 28 }}>
               Please respond by {formatDeadline(content.rsvpDeadline)}
             </SectionReveal>
           )}
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <p data-oi-anchor="paragraph" className="wb-display-face" style={{ margin: '0 0 32px', fontSize: '1rem', fontFamily: typography.headingFont, lineHeight: 1.65 }}>
+            <p data-oi-anchor="paragraph" className="wb-display-face" style={{ textAlign: pageAnchorFor(universeConfig), margin: '0 0 32px', fontSize: '1rem', fontFamily: typography.headingFont, lineHeight: 1.65 }}>
               {copy.rsvpIntro || GATE_FRAMING} {GATE_FUNCTIONAL}
             </p>
           </SectionReveal>
@@ -340,19 +340,19 @@ export default function WeddingRSVPPage({
           </SectionReveal>
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <h1 data-oi-anchor="heading" style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, letterSpacing: '-0.01em', fontSize: 'clamp(2rem, 5vw, 2.75rem)', margin: '0 0 28px' }}>
+            <h1 data-oi-anchor="heading" style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, letterSpacing: '-0.01em', fontSize: 'clamp(2rem, 5vw, 2.75rem)', margin: '0 0 28px' }}>
               RSVP
             </h1>
           </SectionReveal>
 
           {content.rsvpDeadline && (
-            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontSize: '0.8125rem', color: theme.accent, marginBottom: 32 }}>
+            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ textAlign: pageAnchorFor(universeConfig), fontSize: '0.8125rem', color: theme.accent, marginBottom: 32 }}>
               Please respond by {formatDeadline(content.rsvpDeadline)}
             </SectionReveal>
           )}
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <p data-oi-anchor="paragraph" style={{ margin: '0 0 40px', fontSize: '0.9375rem', fontFamily: typography.bodyFont, lineHeight: 1.75 }}>
+            <p data-oi-anchor="paragraph" style={{ textAlign: pageAnchorFor(universeConfig), margin: '0 0 40px', fontSize: '0.9375rem', fontFamily: typography.bodyFont, lineHeight: 1.75 }}>
               {copy.rsvpIntro || GATE_FRAMING} {GATE_FUNCTIONAL}
             </p>
           </SectionReveal>
@@ -444,19 +444,19 @@ export default function WeddingRSVPPage({
           </SectionReveal>
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <h1 data-oi-anchor="heading" style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(2rem, 5vw, 2.75rem)', margin: '0 0 24px' }}>
+            <h1 data-oi-anchor="heading" style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(2rem, 5vw, 2.75rem)', margin: '0 0 24px' }}>
               RSVP
             </h1>
           </SectionReveal>
 
           {content.rsvpDeadline && (
-            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontSize: '0.875rem', color: theme.accent, marginBottom: 32 }}>
+            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ textAlign: pageAnchorFor(universeConfig), fontSize: '0.875rem', color: theme.accent, marginBottom: 32 }}>
               Please respond by {formatDeadline(content.rsvpDeadline)}
             </SectionReveal>
           )}
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <p data-oi-anchor="paragraph" className="wb-display-face" style={{ margin: '0 0 32px', fontSize: '1rem', fontFamily: typography.headingFont, lineHeight: 1.8 }}>
+            <p data-oi-anchor="paragraph" className="wb-display-face" style={{ textAlign: pageAnchorFor(universeConfig), margin: '0 0 32px', fontSize: '1rem', fontFamily: typography.headingFont, lineHeight: 1.8 }}>
               {copy.rsvpIntro || GATE_FRAMING} {GATE_FUNCTIONAL}
             </p>
           </SectionReveal>
@@ -550,19 +550,19 @@ export default function WeddingRSVPPage({
           </SectionReveal>
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <h1 data-oi-anchor="heading" style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', letterSpacing: '0.01em', margin: '0 0 28px' }}>
+            <h1 data-oi-anchor="heading" style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', letterSpacing: '0.01em', margin: '0 0 28px' }}>
               RSVP
             </h1>
           </SectionReveal>
 
           {content.rsvpDeadline && (
-            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontSize: '0.8125rem', color: theme.accent, marginBottom: 40 }}>
+            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ textAlign: pageAnchorFor(universeConfig), fontSize: '0.8125rem', color: theme.accent, marginBottom: 40 }}>
               Please respond by {formatDeadline(content.rsvpDeadline)}
             </SectionReveal>
           )}
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <p data-oi-anchor="paragraph" style={{ margin: '0 0 48px', fontSize: '1rem', fontFamily: typography.bodyFont, lineHeight: 1.9, opacity: 0.85 }}>
+            <p data-oi-anchor="paragraph" style={{ textAlign: pageAnchorFor(universeConfig), margin: '0 0 48px', fontSize: '1rem', fontFamily: typography.bodyFont, lineHeight: 1.9, opacity: 0.85 }}>
               {copy.rsvpIntro || GATE_FRAMING} {GATE_FUNCTIONAL}
             </p>
           </SectionReveal>
@@ -655,7 +655,7 @@ export default function WeddingRSVPPage({
           </SectionReveal>
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <h1 data-oi-anchor="heading" style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(2.5rem, 7vw, 4rem)', margin: '0 0 20px' }}>
+            <h1 data-oi-anchor="heading" style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(2.5rem, 7vw, 4rem)', margin: '0 0 20px' }}>
               RSVP
             </h1>
           </SectionReveal>
@@ -667,7 +667,7 @@ export default function WeddingRSVPPage({
           )}
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <p data-oi-anchor="paragraph" style={{ margin: '0 0 36px', fontSize: '1rem', fontFamily: typography.bodyFont, lineHeight: 1.7 }}>
+            <p data-oi-anchor="paragraph" style={{ textAlign: pageAnchorFor(universeConfig), margin: '0 0 36px', fontSize: '1rem', fontFamily: typography.bodyFont, lineHeight: 1.7 }}>
               {copy.rsvpIntro || GATE_FRAMING} {GATE_FUNCTIONAL}
             </p>
           </SectionReveal>
@@ -760,19 +760,19 @@ export default function WeddingRSVPPage({
           </SectionReveal>
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <h1 data-oi-anchor="heading" style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(2rem, 5vw, 3rem)', margin: '0 0 24px' }}>
+            <h1 data-oi-anchor="heading" style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontSize: 'clamp(2rem, 5vw, 3rem)', margin: '0 0 24px' }}>
               RSVP
             </h1>
           </SectionReveal>
 
           {content.rsvpDeadline && (
-            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontSize: '0.875rem', color: theme.accent, marginBottom: 32 }}>
+            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ textAlign: pageAnchorFor(universeConfig), fontSize: '0.875rem', color: theme.accent, marginBottom: 32 }}>
               Please respond by {formatDeadline(content.rsvpDeadline)}
             </SectionReveal>
           )}
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <p data-oi-anchor="paragraph" className="wb-display-face" style={{ margin: '0 0 32px', fontSize: '1rem', fontFamily: typography.headingFont, lineHeight: 1.75 }}>
+            <p data-oi-anchor="paragraph" className="wb-display-face" style={{ textAlign: pageAnchorFor(universeConfig), margin: '0 0 32px', fontSize: '1rem', fontFamily: typography.headingFont, lineHeight: 1.75 }}>
               {copy.rsvpIntro || GATE_FRAMING} {GATE_FUNCTIONAL}
             </p>
           </SectionReveal>
@@ -866,19 +866,19 @@ export default function WeddingRSVPPage({
           </SectionReveal>
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <h1 data-oi-anchor="heading" style={{ fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontStyle: 'italic', fontSize: 'clamp(2rem, 4.5vw, 2.75rem)', margin: '0 0 24px' }}>
+            <h1 data-oi-anchor="heading" style={{ textAlign: pageAnchorFor(universeConfig), fontFamily: typography.headingFont, fontWeight: typography.headingWeight, fontStyle: 'italic', fontSize: 'clamp(2rem, 4.5vw, 2.75rem)', margin: '0 0 24px' }}>
               RSVP
             </h1>
           </SectionReveal>
 
           {content.rsvpDeadline && (
-            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ fontSize: '0.8125rem', letterSpacing: '0.04em', color: theme.accent, marginBottom: 40 }}>
+            <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)} style={{ textAlign: pageAnchorFor(universeConfig), fontSize: '0.8125rem', letterSpacing: '0.04em', color: theme.accent, marginBottom: 40 }}>
               Please respond by {formatDeadline(content.rsvpDeadline)}
             </SectionReveal>
           )}
 
           <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
-            <p data-oi-anchor="paragraph" className="wb-display-face" style={{ margin: '0 0 48px', fontSize: '1rem', fontFamily: typography.headingFont, fontStyle: 'italic', lineHeight: 1.7, opacity: 0.85 }}>
+            <p data-oi-anchor="paragraph" className="wb-display-face" style={{ textAlign: pageAnchorFor(universeConfig), margin: '0 0 48px', fontSize: '1rem', fontFamily: typography.headingFont, fontStyle: 'italic', lineHeight: 1.7, opacity: 0.85 }}>
               {copy.rsvpIntro || GATE_FRAMING} {GATE_FUNCTIONAL}
             </p>
           </SectionReveal>
@@ -989,9 +989,10 @@ export default function WeddingRSVPPage({
   return (
     <div style={{ backgroundColor: theme.lightBg, color: theme.lightText, minHeight: '100dvh', padding: '60px 24px' }}>
       <div style={{ maxWidth: '520px', margin: '0 auto' }}>
-        {/* A universe with no rsvpKicker (tulum) has no words for a kicker, so
-            its mark carries the page title itself and is the page's only
-            heading — as GuestPageHeading does on every other page. */}
+        {/* A page with no rsvpKicker (no universe chosen; every one of the
+            twenty declares one since tulum gained its copy block) has no words
+            for a kicker, so its mark carries the page title itself and is the
+            page's only heading, as GuestPageHeading does on every other page. */}
         <SectionReveal universeConfig={universeConfig} disabled={!isMotionEnabled(weddingDetails)}>
           {copy.rsvpKicker
             ? <DefaultMark kicker={copy.rsvpKicker} theme={theme} typography={typography} accentColor={theme.accent} />

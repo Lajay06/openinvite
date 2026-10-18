@@ -87,6 +87,7 @@ import MonacoMast from '@/components/guest-website/layouts/MonacoMast';
 import FlorenceMasthead from '@/components/guest-website/layouts/FlorenceMasthead';
 import FlorenceVine from '@/components/guest-website/layouts/FlorenceVine';
 import SeoulMasthead from '@/components/guest-website/layouts/SeoulMasthead';
+import TulumMasthead from '@/components/guest-website/layouts/TulumMasthead';
 import SeoulOrb from '@/components/guest-website/layouts/SeoulOrb';
 import ShanghaiMasthead from '@/components/guest-website/layouts/ShanghaiMasthead';
 import ShanghaiCloud from '@/components/guest-website/layouts/ShanghaiCloud';
@@ -127,6 +128,7 @@ const MASTHEAD_BY_LAYOUT = {
   'monaco-marina': MonacoMasthead,
   'florence-editorial': FlorenceMasthead,
   'seoul-glass': SeoulMasthead,
+  'tulum-horizon': TulumMasthead,
   'shanghai-glamour': ShanghaiMasthead,
 };
 

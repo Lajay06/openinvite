@@ -14,6 +14,7 @@ import CapriMasthead from '../layouts/CapriMasthead';
 import MykonosMasthead from '../layouts/MykonosMasthead';
 import CapeTownMasthead from '../layouts/CapeTownMasthead';
 import AmalfiMasthead from '../layouts/AmalfiMasthead';
+import TulumMasthead from '../layouts/TulumMasthead';
 import AmalfiFooter from '../layouts/AmalfiFooter';
 import SedonaMasthead from '../layouts/SedonaMasthead';
 import SedonaFooter from '../layouts/SedonaFooter';
@@ -348,6 +349,7 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
   const isFlorence = universeConfig?.layout === 'florence-editorial';
   const isSeoul = universeConfig?.layout === 'seoul-glass';
   const isShanghai = universeConfig?.layout === 'shanghai-glamour';
+  const isTulum = universeConfig?.layout === 'tulum-horizon';
   const copy = universeConfig?.copy || {};
   const formattedDate = formatWeddingDate(weddingDetails.weddingDate, { month: 'long', day: 'numeric', year: 'numeric' });
 
@@ -362,6 +364,9 @@ function WeddingHomePageContent({ weddingDetails, theme, typography, universeCon
   if (isFlorence) return <GenericMastheadHero Masthead={FlorenceMasthead} Footer={FlorenceFooter} venueFallback="Florence" {...genericHeroProps} />;
   if (isSeoul) return <GenericMastheadHero Masthead={SeoulMasthead} Footer={SeoulFooter} venueFallback="Seoul" {...genericHeroProps} />;
   if (isShanghai) return <GenericMastheadHero Masthead={ShanghaiMasthead} Footer={ShanghaiFooter} venueFallback="Shanghai" {...genericHeroProps} />;
+  // Tulum had no layout and fell through to the default hero below. No
+  // footer: GenericMastheadHero renders none since the P5 hero restraint.
+  if (isTulum) return <GenericMastheadHero Masthead={TulumMasthead} venueFallback="Tulum" {...genericHeroProps} />;
 
   if (isParis) {
     return (

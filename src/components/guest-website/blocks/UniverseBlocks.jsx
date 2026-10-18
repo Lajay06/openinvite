@@ -54,6 +54,7 @@ import CitrusScallop from '../layouts/CitrusScallop';
 import VineRule from '../layouts/VineRule';
 import CubeBlock from '../layouts/CubeBlock';
 import AmalfiWave from '../layouts/AmalfiWave';
+import SunRayArc from '../layouts/SunRayArc';
 import SedonaContour from '../layouts/SedonaContour';
 import AspenPine from '../layouts/AspenPine';
 import TajArch from '../layouts/TajArch';
@@ -90,6 +91,7 @@ const DIVIDER_BY_LAYOUT = {
   'monaco-marina': MonacoMast,
   'florence-editorial': FlorenceVine,
   'seoul-glass': SeoulOrb,
+  'tulum-horizon': SunRayArc,
   'shanghai-glamour': ShanghaiCloud,
 };
 

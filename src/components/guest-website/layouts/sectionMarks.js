@@ -8,15 +8,15 @@
  * title with its own mark and its Home kicker with a plain label. One map.
  *
  * THE ANCHOR. Within a page, the kicker, heading, paragraph and quote share
- * one alignment and one left edge, and that anchor is the universe's own
- * SectionMark — left for the marks that set textAlign left or lay out as a
- * flex row, centered for the two that center (Minimal, Paris). The mark is
- * artwork and stays as designed; the body follows it (Batch 2, phase two).
- * Each mark declares `Component.anchor`; the guard
- * (scripts/test-page-anchor-parity.mjs) measures the painted mark and asserts
- * the declaration is true, so this cannot drift from the artwork unnoticed.
+ * one alignment and one edge, and that anchor is the universe's own
+ * SectionMark; the body follows it (Batch 2, phase two). Since Batch 2's
+ * layout parity every mark centers on the page's axis (markAnchor.js), so the
+ * anchor is the same in all twenty. Each mark declares `Component.anchor`;
+ * the guard (scripts/test-page-anchor-parity.mjs) measures the painted mark
+ * and asserts the declaration is true, and that all twenty agree.
  *
- * NO LAYOUT KEY (tulum, or no universe) resolves to MinimalSectionMark for a
+ * NO LAYOUT KEY (no universe chosen; every one of the twenty declares a layout
+ * since tulum gained 'tulum-horizon') resolves to MinimalSectionMark for a
  * page title, exactly as GuestPageHeading always has, so its anchor is
  * center. A Home kicker with no layout renders a plain label instead (see
  * UniverseKicker) and inherits its block's alignment, which is the same
@@ -39,6 +39,7 @@ import SedonaSectionMark from './SedonaSectionMark';
 import SeoulSectionMark from './SeoulSectionMark';
 import ShanghaiSectionMark from './ShanghaiSectionMark';
 import TajSectionMark from './TajSectionMark';
+import TulumSectionMark from './TulumSectionMark';
 import MinimalSectionMark from './MinimalSectionMark';
 import EditorialSectionKicker from './EditorialSectionKicker';
 
@@ -60,6 +61,7 @@ export const SECTION_MARK_BY_LAYOUT = {
   'seoul-glass': SeoulSectionMark,
   'shanghai-glamour': ShanghaiSectionMark,
   'taj-pavilion': TajSectionMark,
+  'tulum-horizon': TulumSectionMark,
   // london's mark is the shared minimal one; marrakech uses the editorial
   // kicker rather than a centered mark — both by their own layout's design.
   'london-minimal': MinimalSectionMark,

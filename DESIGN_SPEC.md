@@ -352,3 +352,28 @@ designed; the body follows it instead of fighting it.
   pages × 390/1440, painted first line + elementFromPoint, never rectangles
   alone. FAQ and Polls rows are shared UI, left by construction, and are not
   measured; Good to know and Experience keep their plain centered h1.
+
+## One axis in all twenty universes: owner ask, Batch 2 (2026-09-17), layout parity
+
+This supersedes the per-universe anchor above. Phase two made the body follow
+each universe's mark, which left seventeen bodies on the left under a hero
+that is centered in twelve of them: the "hero centered, text under it left"
+the owner first reported. The anchor is now the same everywhere.
+
+- Every SectionMark centers on the page's axis. The placement is shared in
+  `src/components/guest-website/layouts/markAnchor.js`: `STACKED_MARK_ROOT` for
+  an ornament above or below the kicker, `ROW_MARK_ROOT` for an ornament beside
+  it. The ornament and the kicker stay as drawn; only their placement is shared.
+- Every mark declares `Component.anchor = 'center'`, so `pageAnchorFor()`
+  returns center for all twenty and the heading, paragraph, quote, deadline
+  and Our story section headings follow it. `SectionReveal` gives a measured
+  text block the page anchor unless its caller sets `textAlign`.
+- A couple's own `style.align` on a block still wins. Hero mastheads are still
+  excluded and keep their own alignment.
+- Every universe declares a layout and the full copy block (heroKicker,
+  storyKicker, celebrationKicker, rsvpKicker, rsvpIntro, rsvpWelcome, rsvpCta,
+  rsvpSent). Tulum was the one without either and now has `tulum-horizon`.
+- Guards: `scripts/test-page-anchor-parity.mjs` asserts one declared anchor and,
+  per page and viewport, every universe's mark on the same axis.
+  `tests/persistence/universe-copy-and-layout.mjs` asserts the copy block, a
+  layout with a mark and Home and Our story branches, and the center anchor.
