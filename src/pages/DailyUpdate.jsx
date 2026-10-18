@@ -182,7 +182,10 @@ export default function DailyUpdate() {
       countdown: countdownLabel(daysUntilWedding(details?.weddingDate)),
       ...(() => { const c = guestCounts(data.guests || []);
         return { invitationsPending: c.invitations.pending, invitations: c.invitations.total, peopleAttending: c.people.attending }; })(),
-      overdue: resolveDayState({ tasks: todosFrom({ notes: data.notes }) }).counts.overdue,
+      // ONE resolveDayState CALL, so the briefing's headline is the same state
+      // the badge shows rather than a second derivation of it.
+      ...(() => { const d = resolveDayState({ tasks: todosFrom({ notes: data.notes }) });
+        return { state: d.state, overdue: d.counts.overdue }; })(),
       unseen: failed,
     };
     const nothingToRead = !facts.invitations && !(data.budget || []).length && !(data.vendors || []).length
