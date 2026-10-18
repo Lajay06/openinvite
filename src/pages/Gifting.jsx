@@ -57,7 +57,7 @@ function CheckIcon() {
   );
 }
 
-function PlanCard({ label, price, features, accent }) {
+function PlanCard({ label, price, features, accent, textColor = "#FFFFFF" }) {
   return (
     <div style={{
       flex: "0 1 300px", minWidth: 260, border: "1px solid #E5E5E5",
@@ -78,13 +78,14 @@ function PlanCard({ label, price, features, accent }) {
           </li>
         ))}
       </ul>
-      {/* Gifting v2 is live: a plan button opens the gift flow at /gift,
-          which starts by choosing the plan (it takes no plan parameter). */}
+      {/* Gifting v2 is live: a plan button opens the gift flow at /gift with
+          that plan already chosen, so the next page asks for their names and
+          email, never the plan again (owner ruling on #1092). */}
       <Link
-        to="/gift"
+        to={`/gift?plan=${label.toLowerCase()}`}
         style={{
           width: "100%", padding: "13px 0", borderRadius: 999, fontSize: 13, fontWeight: 700,
-          fontFamily: PJS, background: accent, color: "#FFFFFF", textDecoration: "none",
+          fontFamily: PJS, background: accent, color: textColor, textDecoration: "none",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}
       >
@@ -120,8 +121,9 @@ export default function Gifting() {
           </p>
           <div style={{ display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
             <PlanCard label="Pro" price="US$49" features={PRO_FEATURES.slice(0, 6)} accent="#E03553" />
-            {/* Give Ultra wears the Ultra badge's gradient (owner review of #1092). */}
-            <PlanCard label="Ultra" price="US$99" features={["Everything in Pro", ...ULTRA_EXTRAS.slice(0, 5)]} accent={PLAN_BADGE_BACKGROUND.ultra} />
+            {/* Give Ultra wears the Ultra badge's gradient with #0A0A0A text, 9.2:1
+                on #F59E0B and 11.9:1 on #FBBF24 (owner rulings on #1092). */}
+            <PlanCard label="Ultra" price="US$99" features={["Everything in Pro", ...ULTRA_EXTRAS.slice(0, 5)]} accent={PLAN_BADGE_BACKGROUND.ultra} textColor="#0A0A0A" />
           </div>
 
         </div>

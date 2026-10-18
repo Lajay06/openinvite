@@ -43,12 +43,15 @@ export function runFeaturesRows() {
   check('nothing floats over the photo: only the image and the wizard\'s wash are placed on it', absolutes === 2 && /tint \?/.test(row) && (page.match(/tint=/g) || []).length === 1);
 
   check('Replies, verbatim', page.includes('heading="Watch the replies roll in."') && !/yeses/.test(page) && page.includes('body="Every guest gets their own link. They RSVP in seconds, pick their meal, request a song (yes, ABBA counts) and it all lands in your guest list, sorted by household."'));
-  check('Seating, verbatim, without the phone clause', page.includes('heading="Seating, minus the drama."') && page.includes('body="Drag guests to tables and the rest sorts itself out: meals go to the caterer, names go on the place cards."') && !/every phone on the day/.test(page));
+  check('Seating, verbatim, without the phone clause', page.includes('heading="Seating, minus the drama."') && page.includes('body="Pick a table, tap a name, and watch the gaps close. Ava can even draft the first plan for you."') && !/every phone on the day/.test(page));
   const list = (name) => (new RegExp(`const ${name} = \\[([\\s\\S]*?)\\];`).exec(page)?.[1].match(/"[^"]+"/g) || []).map((x) => x.slice(1, -1));
   const replies = list('REPLIES_BULLETS');
   const seating = list('SEATING_BULLETS');
   check('Replies and Seating each carry five fact bullets', replies.length === 5 && seating.length === 5 && /bullets=\{REPLIES_BULLETS\}/.test(page) && /bullets=\{SEATING_BULLETS\}/.test(page), `${replies.length} and ${seating.length}`);
-  check('  in the reference blocks\' list style, with no dash and no sales line', /padding: "11px 0"/.test(row) && /fontSize: 14, lineHeight: 1\.5/.test(row) && ![...replies, ...seating].some((b) => /[–—!]/.test(b)));
+  // The wizard follows the same pattern (owner rulings on #1092).
+  const quick = list('QUICK_START_BULLETS');
+  check('the quick start wizard carries five fact bullets too', quick.length === 5 && /bullets=\{QUICK_START_BULLETS\}/.test(page), `${quick.length}`);
+  check('  in the reference blocks\' list style, with no dash and no sales line', /padding: "11px 0"/.test(row) && /fontSize: 14, lineHeight: 1\.5/.test(row) && ![...replies, ...seating, ...quick].some((b) => /[–—!]/.test(b)));
   check('no Features section carries a still under its bullets, and the morning band is gone',
     !/FeatureStill|FEATURE_STILLS/.test(stripComments(read('src/components/home/FeatureTimeline.jsx')) + stripComments(read('src/components/home/FeatureBudget.jsx')) + row)
       && !/data-dashboard-band|FEATURE_STILLS\.morning/.test(page));

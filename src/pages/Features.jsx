@@ -13,8 +13,6 @@ import MarketingEndCap from "@/components/marketing/MarketingEndCap";
 import { responsivePhoto } from "@/lib/marketingImage";
 import FeaturesAppSection from "@/components/marketing/FeaturesAppSection";
 import FeatureRow from "@/components/marketing/FeatureRow";
-import FeatureStill from "@/components/marketing/FeatureStill";
-import { FEATURE_STILLS } from "@/lib/featureStills";
 
 // Both are web exports (1280x853 and 1600x1078), so 0.34x and 0.42x of the
 // device pixels their boxes need at dpr 2 is the ceiling until larger masters
@@ -53,6 +51,24 @@ const SEATING_BULLETS = [
   "Ava drafts a plan and keeps plus-ones at their guest's table",
   "A seating plan for each event",
   "Export the layout and every table's names as one PDF",
+];
+
+// QUICK START FOLLOWS THE REFERENCE BLOCKS (owner rulings on #1092), five
+// facts confirmed in src/pages/Onboarding.jsx and its steps: names, date and
+// place, OnboardingStep1Names, Step2Date and Step3Location; the date and venue
+// skips, Step2Date's "We haven't set a date yet" and Step3Location's "Not sure
+// yet", editable later on EventDetails.jsx; the venue from Google Places with
+// its photo kept, Step3Location and onboardingSave.js; guest count, then the
+// optional style, setting and traditions, Step4GuestCount and
+// Step5WeddingType; progress saved after every step, Onboarding.jsx. The
+// budget and currency steps sit behind ONBOARDING_FORK_ON, off, so neither is
+// claimed.
+const QUICK_START_BULLETS = [
+  "Your names, your date and where you are celebrating",
+  "No date or venue yet? Skip it and add it later",
+  "Find your venue on Google Places, and its photo comes with it",
+  "Your guest count, then your style, setting and traditions if you want to share them",
+  "Progress saves after every step, so you can pick up where you left off",
 ];
 
 const REPLIES_PHOTO = responsivePhoto("hf_20260905_124238_2e0981ad-2b66-46cc-948d-a8db441b4929_whdhah", 1536);
@@ -100,12 +116,18 @@ function useScrollReveal(threshold = 0.2) {
 // against the product before it shipped; the vendors row names Google Places
 // because the marketplace searches it.
 //
-// TWO ROWS CARRY THE PRODUCT (site fixes batch 3, item 4): vendors a still of
-// the couple's own list, seating a short clip. Both sit in the open panel
-// under the bullets, so the collapsed accordion is unchanged.
+// VENDORS FOLLOWS THE REFERENCE BLOCKS (owner rulings on #1092): no still, a
+// line in the reference tone and five facts, each confirmed in the code:
+//   contact, quote and deposit, VendorForm.jsx and VendorList.jsx (there is no
+//     amount-owed field, so the old "what is still owed" went); Google Places,
+//     VendorMarketplace.jsx through api/places-search.js; one tap to your list,
+//     VendorCard.jsx "Add to my vendors" and vendorPlaces.js; researching to
+//     booked, VendorForm.jsx's statuses; contracts, quotes and invoices filed,
+//     VendorDetailPanel.jsx's Documents tab. Nothing sends an enquiry from the
+//     studio (the marketplace links out), so that bullet went too.
 const ALL_FEATURES = [
-{ title: "Vendors and the marketplace", still: FEATURE_STILLS.vendors, bullets: ["Every vendor in one place, with contact, quote, deposit and what is still owed", "A marketplace connected to Google Places, with vendors worldwide", "Send an enquiry without leaving the studio", "Keep quotes, contracts and contacts with each vendor"] },
-{ title: "Seating chart and the visualizer", bullets: ["Click a table, choose a name, and the seat is theirs.", "See who is still unseated at a glance", "Walk the room in the visualizer, the way guests will see it", "A seating plan for each event, from the reception to the brunch"] },
+{ title: "Vendors and the marketplace", body: "Find them, book them, keep them straight. Every vendor lives in one list, from the first search to the signed contract.", bullets: ["Every vendor in one place, with contact details, quote and deposit", "A marketplace connected to Google Places, with vendors worldwide", "Add a marketplace find to your vendors in one tap", "Track each one from researching to booked", "Contracts, quotes and invoices filed with each vendor"] },
+{ title: "Seating chart and the visualizer", bullets: ["Click a table, choose a name, and the seat is theirs.", "See who is still unseated at a glance", "Lay out the room on your venue's floor plan.", "A seating plan for each event, from the reception to the brunch"] },
 { title: "Calendar", bullets: ["One calendar for the whole engagement", "Deadlines, vendor payments and fittings beside every event on your run sheet", "Subscribe from your phone's calendar, so an edit here reaches it on its own.", "Export the run sheet for your vendors"] },
 { title: "Ava on every page", bullets: ["A short briefing each morning: what is coming up, what needs a decision", "Ask Ava from any page, about the page you are on", "Answers drawn from your own wedding, never generic advice", "Ask what is unpaid, who has not replied, or what still needs a decision"] },
 { title: "Mood board", bullets: ["Pin the looks you keep coming back to: colors, florals, dresses, tables", "Boards for the venue, the dress, the palette, or anything you name", "A note on every pin", "Inspiration next to the plan, not across six apps"] },
@@ -206,7 +228,7 @@ export default function Features() {
           srcSet={SEATING_PHOTO.srcSet}
           alt="Guests seated along a long dinner table under paper lanterns at night"
           heading="Seating, minus the drama."
-          body="Drag guests to tables and the rest sorts itself out: meals go to the caterer, names go on the place cards."
+          body="Pick a table, tap a name, and watch the gaps close. Ava can even draft the first plan for you."
           bullets={SEATING_BULLETS}
         />
         <FeatureBudget />
@@ -239,6 +261,7 @@ function QuickStartSection() {
       alt="A person setting up their wedding plan on a laptop"
       heading="Quick start wizard"
       body="Get set up in seconds: enter your names, date, location, and vibe. No overwhelm, just momentum."
+      bullets={QUICK_START_BULLETS}
       tint="rgba(194,229,243,0.12)"
     />
   );
@@ -322,6 +345,7 @@ function AccordionSection({ features, dots, openFeature, setOpenFeature }) {
               </button>
               {openFeature === i &&
             <div style={{ paddingBottom: 32, paddingLeft: 20 }}>
+                  {f.body && <p style={{ color: "#444444", fontSize: 15, lineHeight: 1.6, margin: "0 0 12px", maxWidth: 560 }}>{f.body}</p>}
                   <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
                     {f.bullets.map((b, bi) =>
                 <li key={bi} style={{ padding: "10px 0", borderBottom: bi < f.bullets.length - 1 ? "1px solid #E8E8E8" : "none", color: "#444444", fontSize: 14, lineHeight: 1.5 }}>
@@ -329,11 +353,6 @@ function AccordionSection({ features, dots, openFeature, setOpenFeature }) {
                       </li>
                 )}
                   </ul>
-                  {(f.still || f.clip) &&
-              <div style={{ maxWidth: 480 }}>
-                      <FeatureStill still={f.still} clip={f.clip} sizes="(min-width: 768px) 480px, 100vw" />
-                    </div>
-              }
                 </div>
             }
             </div>

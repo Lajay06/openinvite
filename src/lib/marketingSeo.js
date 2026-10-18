@@ -93,7 +93,7 @@ export const MARKETING_PAGE_SEO = {
   },
   '/register': {
     title: 'Openinvite | Create account',
-    description: 'Create a free Openinvite account and start planning your wedding today.',
+    description: 'Start your 14-day free trial of Openinvite.',
   },
   '/forgot-password': {
     title: 'Openinvite | Reset password',

@@ -112,16 +112,23 @@ export function runAppMarketing() {
   check('home: the only picture is that photograph', (block.match(/<img\b/g) || []).length === 1 && !/<video\b/.test(block));
   const homeSrc = readFileSync(resolve(ROOT, 'src/components/home/AppPhoneSection.jsx'), 'utf8');
   check('home: the scrim is the one specified, and the only overlay',
-    homeSrc.includes('linear-gradient(0deg, rgba(0,0,0,.78) 0%, rgba(0,0,0,.35) 45%, rgba(0,0,0,0) 75%)') && (block.match(/aria-hidden="true"/g) || []).length === 2);
+    homeSrc.includes('linear-gradient(0deg, rgba(0,0,0,.78) 0%, rgba(0,0,0,.35) 45%, rgba(0,0,0,0) 75%)') && (block.match(/aria-hidden="true"/g) || []).length === 1);
   check('home: framed with object-position 60% 40%, and 62% 30% on a phone, cover, no gravity crop',
     /\.home-app__photo \{[^}]*object-fit: cover;[^}]*object-position: 60% 40%;/.test(homeSrc) && /@media \(max-width: 768px\) \{[\s\S]*?\.home-app__photo \{ object-position: 62% 30%; \}/.test(homeSrc));
   check("home: the red section's height rule, 100vh with overflow hidden", /\.home-app \{[^}]*height: 100vh;[^}]*overflow: hidden;/.test(homeSrc));
-  check('home: the type as specified, 84, 22 and 16 at desktop and 44, 17 and 14 at 390',
-    /\.home-app__heading \{[^}]*font-size: 84px; line-height: 1\.02; letter-spacing: -0\.03em; font-weight: 700;/.test(homeSrc)
-      && /\.home-app__body \{[^}]*max-width: 600px; font-size: 22px; line-height: 1\.45; font-weight: 400;/.test(homeSrc)
+  // The heading shares the value prop's style (owner ruling on #1092): the
+  // class, not copied values, and the section sets no type of its own on it.
+  const shared = readFileSync(resolve(ROOT, 'src/components/home/homeStatementHeading.js'), 'utf8');
+  const valueProp = readFileSync(resolve(ROOT, 'src/components/home/ValuePropSection.jsx'), 'utf8');
+  check('home: the heading takes HOME_STATEMENT_HEADING, like "All the powerful tools", and sets no size of its own',
+    /\$\{homeStatementHeadingCss\('\.home-app__heading'\)\}/.test(homeSrc) && /\.\.\.HOME_STATEMENT_HEADING\.phone/.test(valueProp) && /\.\.\.HOME_STATEMENT_HEADING\.desktop/.test(valueProp)
+      && shared.includes("desktop: { fontSize: 'clamp(26px, 4.17vw, 97px)', fontWeight: 700, lineHeight: 1.15, letterSpacing: '-0.02em' }")
+      && !/\.home-app__heading \{[^}]*font-size/.test(homeSrc) && !/fontSize: "clamp/.test(valueProp));
+  check('home: the type as specified, 22 and 16 at desktop and 17 and 14 at 390',
+    /\.home-app__body \{[^}]*max-width: 600px; font-size: 22px; line-height: 1\.45; font-weight: 400;/.test(homeSrc)
       && /\.home-app__small \{[^}]*font-size: 16px;[^}]*font-weight: 500;[^}]*opacity: 0\.7;/.test(homeSrc)
-      && /\.home-app__heading \{ font-size: 44px; \}/.test(homeSrc) && /\.home-app__body \{ font-size: 17px; \}/.test(homeSrc) && /\.home-app__small \{ font-size: 14px; \}/.test(homeSrc));
-  check('home: the 56 by 4 rule in #E03553, 28px above the heading', /\.home-app__rule \{ width: 56px; height: 4px; background: #E03553; margin-bottom: 28px; \}/.test(homeSrc));
+      && /\.home-app__body \{ font-size: 17px; \}/.test(homeSrc) && /\.home-app__small \{ font-size: 14px; \}/.test(homeSrc));
+  check('home: no red line above the heading (owner ruling on #1092)', !/home-app__rule/.test(homeSrc));
   const t = textOf(block);
   check('home: the body, verbatim', t.includes('Plan on the train, on the couch, in line for coffee. Your guest list, budget and seating chart on your phone and your computer, always the same wedding.'));
   check('home: the small line, as text', t.includes('iPhone and Android. Coming at launch.') && /data-app-store-line/.test(block));
@@ -261,13 +268,14 @@ export function runAppMarketing() {
     [...packFiles, ...packRefs].join(', ') || `${tracked.length} tracked files`);
 
   // ── the features accordion (site fixes batch 2) ───────────────────────
-  // Four bullets per row, 32 in all, the full text pinned in
-  // features-accordion-rows.mjs; here the count, the vendors line the owner
-  // wrote exactly, and that the colored bar's rule is gone.
+  // Four bullets per row, and five on vendors since the owner's rulings on
+  // #1092 (33 in all), the full text pinned in features-accordion-rows.mjs;
+  // here the count, the vendors line the owner wrote exactly, and that the
+  // colored bar's rule is gone.
   const featSrc = stripComments(readFileSync(resolve(ROOT, 'src/pages/Features.jsx'), 'utf8'));
   const featBlock = featSrc.slice(featSrc.indexOf('const ALL_FEATURES = ['), featSrc.indexOf('}];', featSrc.indexOf('const ALL_FEATURES = [')) + 3);
   const allBullets = [...featBlock.matchAll(/bullets: \[(.*?)\] \}/g)].flatMap((m) => [...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1]));
-  check('features accordion: 32 bullets, four per row', allBullets.length === 32, `${allBullets.length}`);
+  check('features accordion: 33 bullets, five on vendors and four on every other row', allBullets.length === 33, `${allBullets.length}`);
   check('features accordion: "A marketplace connected to Google Places, with vendors worldwide"', allBullets.includes('A marketplace connected to Google Places, with vendors worldwide'));
   const accSrc = featSrc.slice(featSrc.indexOf('function AccordionSection'), featSrc.indexOf('function AccordionSection') + 4000);
   check('features accordion: the colored left bar rule is gone', !/borderLeft|border-left/i.test(accSrc) && !/ACCORDION_BORDERS/.test(featSrc));

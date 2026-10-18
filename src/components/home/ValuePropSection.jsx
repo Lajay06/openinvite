@@ -1,9 +1,12 @@
 /**
  * Value prop section — "All the powerful tools..."
  * Full-bleed photo at viewport height, object-fit cover, text overlaid.
+ * The heading's type is HOME_STATEMENT_HEADING (./homeStatementHeading.js), shared with
+ * the app section's "The whole planner, in your pocket." (AppPhoneSection.jsx).
  */
 import React, { useRef, useEffect, useState } from "react";
 import { wixPhoto } from "@/lib/wixImage";
+import { HOME_STATEMENT_HEADING } from "./homeStatementHeading";
 
 const EASE = "cubic-bezier(0.16,1,0.3,1)";
 const prefersReduced = () =>
@@ -84,10 +87,7 @@ export default function ValuePropSection() {
         
           <h2
           style={{
-            fontSize: "clamp(22px, 6vw, 40px)",
-            fontWeight: 700,
-            lineHeight: 1.2,
-            letterSpacing: "-0.02em",
+            ...HOME_STATEMENT_HEADING.phone,
             color: "#FFFFFF",
             opacity: textIn ? 1 : 0,
             transform: textIn ? "translateX(0)" : "translateX(-30px)",
@@ -145,10 +145,7 @@ export default function ValuePropSection() {
         
           <h2
           style={{
-            fontSize: "clamp(26px, 4.17vw, 97px)",
-            fontWeight: 700,
-            lineHeight: 1.15,
-            letterSpacing: "-0.02em",
+            ...HOME_STATEMENT_HEADING.desktop,
             color: "#FFFFFF",
             overflow: "visible",
             whiteSpace: "normal",
@@ -157,7 +154,7 @@ export default function ValuePropSection() {
             opacity: textIn ? 1 : 0,
             transform: textIn ? "translateX(0)" : "translateX(-40px)",
             transition: prefersReduced() ? "none" : `opacity 0.8s ${EASE}, transform 0.8s ${EASE}`
-          }} className="text-5xl">
+          }}>
           
             {TEXT}
           </h2>

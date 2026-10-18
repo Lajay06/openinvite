@@ -12,8 +12,9 @@
  *
  * NO STILL ON A FEATURES SECTION (owner review of #1092, 2026-10-17): the
  * morning band and the timeline and budget stills are gone, so /features
- * serves no inline still; the vendors still in the accordion's open panel
- * stays. The map keeps every entry for the studio tour.
+ * serves no inline still. The owner's rulings on #1092 took the vendors still
+ * out of the accordion too, so no row mounts media. The map keeps every entry
+ * for the studio tour.
  *
  * What it holds:
  *   - every asset is a versioned upload, never a placeholder or a v0 path, so
@@ -72,10 +73,8 @@ export function runFeatureStills() {
   const features = stripComments(read('src/pages/Features.jsx'));
   // The seating clip left the accordion on 2026-10-16 (the Seating row shows
   // the job now); the clip stays in the map for the studio tour.
-  check('vendors row carries the vendors still, and the seating row no clip',
-    /title: "Vendors and the marketplace", still: FEATURE_STILLS\.vendors,/.test(features) && /title: "Seating chart and the visualizer", bullets:/.test(features) && !/FEATURE_SEATING_CLIP/.test(features));
-  check('accordion media sits inside the open panel only, at 480 wide',
-    /openFeature === i &&[\s\S]*?<\/ul>\s*\{\(f\.still \|\| f\.clip\) &&\s*<div style=\{\{ maxWidth: 480 \}\}>/.test(features));
+  check('no accordion row carries a still or a clip, and the page imports none',
+    !/still:|clip:|FEATURE_STILLS|FEATURE_SEATING_CLIP|FeatureStill/.test(features));
 
   // ── the frame ──────────────────────────────────────────────────────────
   const comp = stripComments(read('src/components/marketing/FeatureStill.jsx'));
