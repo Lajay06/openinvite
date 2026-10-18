@@ -65,7 +65,16 @@ export async function runStarterInvitationDate() {
   // Driven, not grepped: both formatters are called and their output compared.
   const { formatAppDateWritten } = await import('../../src/mobile/lib/dates.js');
   const webStarter = (format) => formatWeddingDateText(DATE, format, { weekday: false });
-  const appStarter = (format) => formatAppDateWritten(DATE, { ...new Function(`return ${code(read(APP_STARTER)).match(/const shown = weddingDate \? formatAppDateWritten\(weddingDate, (\{[^}]*\})\)/)?.[1] ?? '{}'}`)(), format });
+  // THE OPTIONS ARE WRITTEN OUT, NOT SCRAPED AND EVALUATED. This line used to
+  // regex the options object out of PlanContainer.jsx and run it through
+  // `new Function`, so the comparison took its shape from whatever that file
+  // happened to say. Two things were wrong with that. A guard that evaluates
+  // repository source executes whatever is at that call site, inside CI. And
+  // when the regex missed it fell back to `{}`, which silently restored the
+  // weekday and turned a real date mismatch into what looked like a date bug.
+  // The options are the ruling, so they are stated here, and the assertion
+  // further down is what holds the call site to them.
+  const appStarter = (format) => formatAppDateWritten(DATE, { weekday: false, format });
   for (const format of ['dmy', 'mdy']) {
     check(`the web and app starters write the same date for ${format}`,
           webStarter(format), appStarter(format));
